@@ -1,18 +1,19 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 17D0EDDE24
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:11:37 +1000 (EST)
-Date: Tue, 28 Aug 2007 15:11:27 -0500
+	by ozlabs.org (Postfix) with ESMTP id 7D2FFDDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 06:14:47 +1000 (EST)
+Date: Tue, 28 Aug 2007 15:14:38 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: jgarzik@pobox.com
-Subject: [PATCH v3 1/8] Generic bitbanged MDIO library
-Message-ID: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+Subject: [PATCH v3 2/8] fs_enet: Whitespace cleanup.
+Message-ID: <20070828201438.GA24145@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,288 +24,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, bitbanged MDIO was only supported in individual
-hardware-specific drivers.  This code factors out the higher level
-protocol implementation, reducing the hardware-specific portion to
-functions setting direction, data, and clock.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/net/phy/Kconfig        |    9 ++
- drivers/net/phy/Makefile       |    1 +
- drivers/net/phy/mdio-bitbang.c |  187 ++++++++++++++++++++++++++++++++++++++++
- include/linux/mdio-bitbang.h   |   42 +++++++++
- 4 files changed, 239 insertions(+), 0 deletions(-)
- create mode 100644 drivers/net/phy/mdio-bitbang.c
- create mode 100644 include/linux/mdio-bitbang.h
+ drivers/net/fs_enet/fs_enet-main.c |   85 ++++++++++++++++-------------------
+ drivers/net/fs_enet/fs_enet.h      |    4 +-
+ drivers/net/fs_enet/mac-fcc.c      |    1 -
+ drivers/net/fs_enet/mii-fec.c      |    1 -
+ 4 files changed, 41 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index dd09011..72a98dd 100644
---- a/drivers/net/phy/Kconfig
-+++ b/drivers/net/phy/Kconfig
-@@ -76,4 +76,13 @@ config FIXED_MII_100_FDX
- 	bool "Emulation for 100M Fdx fixed PHY behavior"
- 	depends on FIXED_PHY
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a4a2a0e..f261b90 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -353,7 +353,6 @@ static void fs_enet_tx(struct net_device *dev)
  
-+config MDIO_BITBANG
-+	tristate "Support for bitbanged MDIO buses"
-+	help
-+	  This module implements the MDIO bus protocol in software,
-+	  for use by low level drivers that export the ability to
-+	  drive the relevant pins.
+ 	do_wake = do_restart = 0;
+ 	while (((sc = CBDR_SC(bdp)) & BD_ENET_TX_READY) == 0) {
+-
+ 		dirtyidx = bdp - fep->tx_bd_base;
+ 
+ 		if (fep->tx_free == fep->tx_ring)
+@@ -454,7 +453,6 @@ fs_enet_interrupt(int irq, void *dev_id)
+ 
+ 	nr = 0;
+ 	while ((int_events = (*fep->ops->get_int_events)(dev)) != 0) {
+-
+ 		nr++;
+ 
+ 		int_clr_events = int_events;
+@@ -710,45 +708,43 @@ static void fs_timeout(struct net_device *dev)
+  *-----------------------------------------------------------------------------*/
+ static void generic_adjust_link(struct  net_device *dev)
+ {
+-       struct fs_enet_private *fep = netdev_priv(dev);
+-       struct phy_device *phydev = fep->phydev;
+-       int new_state = 0;
+-
+-       if (phydev->link) {
+-
+-               /* adjust to duplex mode */
+-               if (phydev->duplex != fep->oldduplex){
+-                       new_state = 1;
+-                       fep->oldduplex = phydev->duplex;
+-               }
+-
+-               if (phydev->speed != fep->oldspeed) {
+-                       new_state = 1;
+-                       fep->oldspeed = phydev->speed;
+-               }
+-
+-               if (!fep->oldlink) {
+-                       new_state = 1;
+-                       fep->oldlink = 1;
+-                       netif_schedule(dev);
+-                       netif_carrier_on(dev);
+-                       netif_start_queue(dev);
+-               }
+-
+-               if (new_state)
+-                       fep->ops->restart(dev);
+-
+-       } else if (fep->oldlink) {
+-               new_state = 1;
+-               fep->oldlink = 0;
+-               fep->oldspeed = 0;
+-               fep->oldduplex = -1;
+-               netif_carrier_off(dev);
+-               netif_stop_queue(dev);
+-       }
+-
+-       if (new_state && netif_msg_link(fep))
+-               phy_print_status(phydev);
++	struct fs_enet_private *fep = netdev_priv(dev);
++	struct phy_device *phydev = fep->phydev;
++	int new_state = 0;
 +
-+	  If in doubt, say N.
++	if (phydev->link) {
++		/* adjust to duplex mode */
++		if (phydev->duplex != fep->oldduplex) {
++			new_state = 1;
++			fep->oldduplex = phydev->duplex;
++		}
 +
- endif # PHYLIB
-diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
-index 8885650..3d6cc7b 100644
---- a/drivers/net/phy/Makefile
-+++ b/drivers/net/phy/Makefile
-@@ -13,3 +13,4 @@ obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
- obj-$(CONFIG_BROADCOM_PHY)	+= broadcom.o
- obj-$(CONFIG_ICPLUS_PHY)	+= icplus.o
- obj-$(CONFIG_FIXED_PHY)		+= fixed.o
-+obj-$(CONFIG_MDIO_BITBANG)	+= mdio-bitbang.o
-diff --git a/drivers/net/phy/mdio-bitbang.c b/drivers/net/phy/mdio-bitbang.c
-new file mode 100644
-index 0000000..9bfc9ce
---- /dev/null
-+++ b/drivers/net/phy/mdio-bitbang.c
-@@ -0,0 +1,187 @@
-+/*
-+ * Bitbanged MDIO support.
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ * Copyright (c) 2007 Freescale Semiconductor
-+ *
-+ * Based on CPM2 MDIO code which is:
-+ *
-+ * Copyright (c) 2003 Intracom S.A.
-+ *  by Pantelis Antoniou <panto@intracom.gr>
-+ *
-+ * 2005 (c) MontaVista Software, Inc.
-+ * Vitaly Bordug <vbordug@ru.mvista.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
++		if (phydev->speed != fep->oldspeed) {
++			new_state = 1;
++			fep->oldspeed = phydev->speed;
++		}
 +
-+#include <linux/module.h>
-+#include <linux/mdio-bitbang.h>
-+#include <linux/slab.h>
-+#include <linux/types.h>
-+#include <linux/delay.h>
++		if (!fep->oldlink) {
++			new_state = 1;
++			fep->oldlink = 1;
++			netif_schedule(dev);
++			netif_carrier_on(dev);
++			netif_start_queue(dev);
++		}
 +
-+#define MDIO_READ 1
-+#define MDIO_WRITE 0
-+
-+#define MDIO_SETUP_TIME 10
-+#define MDIO_HOLD_TIME 10
-+
-+/* Minimum MDC period is 400 ns, plus some margin for error */
-+#define MDIO_DELAY 250
-+
-+/* The PHY may take up to 300 ns to produce data, plus some margin
-+ * for error.
-+ */
-+#define MDIO_READ_DELAY 350
-+
-+/* MDIO must already be configured as output. */
-+static void mdio_bitbang_send_bit(struct mdio_bitbang_ctrl *ctrl, int val)
-+{
-+	const struct mdio_bitbang_ops *ops = ctrl->ops;
-+
-+	ops->set_mdio_data(ctrl, val);
-+	ndelay(MDIO_DELAY);
-+	ops->set_mdc(ctrl, 1);
-+	ndelay(MDIO_DELAY);
-+	ops->set_mdc(ctrl, 0);
-+}
-+
-+/* MDIO must already be configured as input. */
-+static int mdio_bitbang_get_bit(struct mdio_bitbang_ctrl *ctrl)
-+{
-+	const struct mdio_bitbang_ops *ops = ctrl->ops;
-+
-+	ndelay(MDIO_DELAY);
-+	ops->set_mdc(ctrl, 1);
-+	ndelay(MDIO_READ_DELAY);
-+	ops->set_mdc(ctrl, 0);
-+
-+	return ops->get_mdio_data(ctrl);
-+}
-+
-+/* MDIO must already be configured as output. */
-+static void mdio_bitbang_send_num(struct mdio_bitbang_ctrl *ctrl,
-+                                  u16 val, int bits)
-+{
-+	int i;
-+
-+	for (i = bits - 1; i >= 0; i--)
-+		mdio_bitbang_send_bit(ctrl, (val >> i) & 1);
-+}
-+
-+/* MDIO must already be configured as input. */
-+static u16 mdio_bitbang_get_num(struct mdio_bitbang_ctrl *ctrl, int bits)
-+{
-+	int i;
-+	u16 ret = 0;
-+
-+	for (i = bits - 1; i >= 0; i--) {
-+		ret <<= 1;
-+		ret |= mdio_bitbang_get_bit(ctrl);
++		if (new_state)
++			fep->ops->restart(dev);
++	} else if (fep->oldlink) {
++		new_state = 1;
++		fep->oldlink = 0;
++		fep->oldspeed = 0;
++		fep->oldduplex = -1;
++		netif_carrier_off(dev);
++		netif_stop_queue(dev);
 +	}
 +
-+	return ret;
-+}
-+
-+/* Utility to send the preamble, address, and
-+ * register (common to read and write).
-+ */
-+static void mdio_bitbang_cmd(struct mdio_bitbang_ctrl *ctrl,
-+                             int read, u8 phy, u8 reg)
-+{
-+	const struct mdio_bitbang_ops *ops = ctrl->ops;
-+	int i;
-+
-+	ops->set_mdio_dir(ctrl, 1);
-+
-+	/*
-+	 * Send a 32 bit preamble ('1's) with an extra '1' bit for good
-+	 * measure.  The IEEE spec says this is a PHY optional
-+	 * requirement.  The AMD 79C874 requires one after power up and
-+	 * one after a MII communications error.  This means that we are
-+	 * doing more preambles than we need, but it is safer and will be
-+	 * much more robust.
-+	 */
-+
-+	for (i = 0; i < 32; i++)
-+		mdio_bitbang_send_bit(ctrl, 1);
-+
-+	/* send the start bit (01) and the read opcode (10) or write (10) */
-+	mdio_bitbang_send_bit(ctrl, 0);
-+	mdio_bitbang_send_bit(ctrl, 1);
-+	mdio_bitbang_send_bit(ctrl, read);
-+	mdio_bitbang_send_bit(ctrl, !read);
-+
-+	mdio_bitbang_send_num(ctrl, phy, 5);
-+	mdio_bitbang_send_num(ctrl, reg, 5);
-+}
-+
-+
-+static int mdio_bitbang_read(struct mii_bus *bus, int phy, int reg)
-+{
-+	struct mdio_bitbang_ctrl *ctrl = bus->priv;
-+	int ret, i;
-+
-+	mdio_bitbang_cmd(ctrl, MDIO_READ, phy, reg);
-+	ctrl->ops->set_mdio_dir(ctrl, 0);
-+
-+	/* check the turnaround bit: the PHY should be driving it to zero */
-+	if (mdio_bitbang_get_bit(ctrl) != 0) {
-+		/* PHY didn't drive TA low -- flush any bits it
-+		 * may be trying to send.
-+		 */
-+		for (i = 0; i < 32; i++)
-+			mdio_bitbang_get_bit(ctrl);
-+
-+		return 0xffff;
-+	}
-+
-+	ret = mdio_bitbang_get_num(ctrl, 16);
-+	mdio_bitbang_get_bit(ctrl);
-+	return ret;
-+}
-+
-+static int mdio_bitbang_write(struct mii_bus *bus, int phy, int reg, u16 val)
-+{
-+	struct mdio_bitbang_ctrl *ctrl = bus->priv;
-+
-+	mdio_bitbang_cmd(ctrl, MDIO_WRITE, phy, reg);
-+
-+	/* send the turnaround (10) */
-+	mdio_bitbang_send_bit(ctrl, 1);
-+	mdio_bitbang_send_bit(ctrl, 0);
-+
-+	mdio_bitbang_send_num(ctrl, val, 16);
-+
-+	ctrl->ops->set_mdio_dir(ctrl, 0);
-+	mdio_bitbang_get_bit(ctrl);
-+	return 0;
-+}
-+
-+struct mii_bus *alloc_mdio_bitbang(struct mdio_bitbang_ctrl *ctrl)
-+{
-+	struct mii_bus *bus;
-+
-+	bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
-+	if (!bus)
-+		return NULL;
-+
-+	__module_get(ctrl->ops->owner);
-+
-+	bus->read = mdio_bitbang_read;
-+	bus->write = mdio_bitbang_write;
-+	bus->priv = ctrl;
-+
-+	return bus;
-+}
-+
-+void free_mdio_bitbang(struct mii_bus *bus)
-+{
-+	struct mdio_bitbang_ctrl *ctrl = bus->priv;
-+
-+	module_put(ctrl->ops->owner);
-+	kfree(bus);
-+}
-diff --git a/include/linux/mdio-bitbang.h b/include/linux/mdio-bitbang.h
-new file mode 100644
-index 0000000..63a11dd
---- /dev/null
-+++ b/include/linux/mdio-bitbang.h
-@@ -0,0 +1,42 @@
-+#ifndef __LINUX_MDIO_BITBANG_H
-+#define __LINUX_MDIO_BITBANG_H
-+
-+#include <linux/phy.h>
-+#include <linux/module.h>
-+
-+struct mdio_bitbang_ctrl;
-+
-+struct mdio_bitbang_ops {
-+	struct module *owner;
-+
-+	/* Set the Management Data Clock high if level is one,
-+	 * low if level is zero.
-+	 */
-+	void (*set_mdc)(struct mdio_bitbang_ctrl *ctrl, int level);
-+
-+	/* Configure the Management Data I/O pin as an input if
-+	 * "output" is zero, or an output if "output" is one.
-+	 */
-+	void (*set_mdio_dir)(struct mdio_bitbang_ctrl *ctrl, int output);
-+
-+	/* Set the Management Data I/O pin high if value is one,
-+	 * low if "value" is zero.  This may only be called
-+	 * when the MDIO pin is configured as an output.
-+	 */
-+	void (*set_mdio_data)(struct mdio_bitbang_ctrl *ctrl, int value);
-+
-+	/* Retrieve the state Management Data I/O pin. */
-+	int (*get_mdio_data)(struct mdio_bitbang_ctrl *ctrl);
-+};
-+
-+struct mdio_bitbang_ctrl {
-+	const struct mdio_bitbang_ops *ops;
-+};
-+
-+/* The returned bus is not yet registered with the phy layer. */
-+struct mii_bus *alloc_mdio_bitbang(struct mdio_bitbang_ctrl *ctrl);
-+
-+/* The bus must already have been unregistered. */
-+void free_mdio_bitbang(struct mii_bus *bus);
-+
-+#endif
++	if (new_state && netif_msg_link(fep))
++		phy_print_status(phydev);
+ }
+ 
+ 
+@@ -792,7 +788,6 @@ static int fs_init_phy(struct net_device *dev)
+ 	return 0;
+ }
+ 
+-
+ static int fs_enet_open(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+@@ -978,7 +973,7 @@ static struct net_device *fs_init_instance(struct device *dev,
+ #endif
+ 
+ #ifdef CONFIG_FS_ENET_HAS_SCC
+-	if (fs_get_scc_index(fpi->fs_no) >=0 )
++	if (fs_get_scc_index(fpi->fs_no) >=0)
+ 		fep->ops = &fs_scc_ops;
+ #endif
+ 
+@@ -1069,9 +1064,8 @@ static struct net_device *fs_init_instance(struct device *dev,
+ 
+ 	return ndev;
+ 
+-      err:
++err:
+ 	if (ndev != NULL) {
+-
+ 		if (registered)
+ 			unregister_netdev(ndev);
+ 
+@@ -1262,7 +1256,6 @@ static int __init fs_init(void)
+ err:
+ 	cleanup_immap();
+ 	return r;
+-	
+ }
+ 
+ static void __exit fs_cleanup(void)
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index 569be22..72a61e9 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -15,8 +15,8 @@
+ #include <asm/commproc.h>
+ 
+ struct fec_info {
+-        fec_t*  fecp;
+-	u32     mii_speed;
++	fec_t *fecp;
++	u32 mii_speed;
+ };
+ #endif
+ 
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index 5603121..ad3c5fa 100644
+--- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -86,7 +86,6 @@
+ static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 mcn, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-
+ 	cpm2_map_t *immap = fs_enet_immap;
+ 	cpm_cpm2_t *cpmp = &immap->im_cpm;
+ 	u32 v;
+diff --git a/drivers/net/fs_enet/mii-fec.c b/drivers/net/fs_enet/mii-fec.c
+index 0a563a8..53db696 100644
+--- a/drivers/net/fs_enet/mii-fec.c
++++ b/drivers/net/fs_enet/mii-fec.c
+@@ -113,7 +113,6 @@ static int fs_enet_fec_mii_read(struct mii_bus *bus , int phy_id, int location)
+ 	}
+ 
+ 	return ret;
+-
+ }
+ 
+ static int fs_enet_fec_mii_write(struct mii_bus *bus, int phy_id, int location, u16 val)
 -- 
 1.5.0.3
