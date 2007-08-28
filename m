@@ -1,24 +1,16 @@
-Return-Path: <johnpol@2ka.mipt.ru>
-Received: from 2ka.mipt.ru (relay.2ka.mipt.ru [194.85.82.65])
-	by ozlabs.org (Postfix) with ESMTP id 1D772DDF87
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 22:24:20 +1000 (EST)
-Date: Tue, 28 Aug 2007 16:16:19 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: RFC: issues concerning the next NAPI interface
-Message-ID: <20070828121617.GA4160@2ka.mipt.ru>
-References: <46D2F301.7050105@katalix.com>
-	<20070827.145600.102570576.davem@davemloft.net>
-	<46D3E971.4010909@katalix.com>
-	<200708281348.21302.ossthema@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200708281348.21302.ossthema@de.ibm.com>
-Cc: tklein@de.ibm.com, themann@de.ibm.com, stefan.roscher@de.ibm.com,
-	netdev@vger.kernel.org, James Chapman <jchapman@katalix.com>,
-	raisch@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, akepner@sgi.com, meder@de.ibm.com,
-	shemminger@linux-foundation.org, David Miller <davem@davemloft.net>
+Return-Path: <mokuno@sm.sony.co.jp>
+Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
+	by ozlabs.org (Postfix) with ESMTP id DF8B2DDF8E
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2007 22:32:56 +1000 (EST)
+Date: Tue, 28 Aug 2007 21:32:29 +0900
+From: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+To: paulus@samba.org
+Subject: [PATCH] PS3: fix the bug the major version part is not compared
+Message-Id: <20070828211415.C2B5.MOKUNO@sm.sony.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 28, 2007 at 01:48:20PM +0200, Jan-Bernd Themann (ossthema@de.ibm.com) wrote:
-> I'm not sure if I understand your approach correctly.
-> This approach may reduce the number of interrupts, but it does so
-> by blocking the CPU for up to 1 jiffy (that can be quite some time
-> on some platforms). So no other application / tasklet / softIRQ type
-> can do anything in between. The CPU utilization does not drop at all, 
-> and I thought that is one reason why we try to reduce the number of interrupts.
+Fix the bug that the major version part of the firmware 
+is not compared.
 
-Only NICs interrupts are suposed to be stopped, system will continue to
-work as usual, since all others are alive.
-Having hrtimer to reshcedule NIC procesing can work only if number of
-timer's interrupts are much less than NICs and if rate of the timer's
-starts/changes (presumbly in NICs interrupt) is small too, otherwise
-having too many NIC interrupts will not gain anything (actually it is
-what is supposed to be dropped noticebly).
+Signed-off-by: Masakazu Mokuno <mokuno@sm.sony.co.jp>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ arch/powerpc/platforms/ps3/setup.c |    2 +-
+ include/asm-powerpc/ps3.h          |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-	Evgeniy Polyakov
+--- a/arch/powerpc/platforms/ps3/setup.c
++++ b/arch/powerpc/platforms/ps3/setup.c
+@@ -54,7 +54,7 @@ void ps3_get_firmware_version(union ps3_
+ }
+ EXPORT_SYMBOL_GPL(ps3_get_firmware_version);
+ 
+-int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
++s64 ps3_compare_firmware_version(u16 major, u16 minor, u16 rev)
+ {
+ 	union ps3_firmware_version x;
+ 
+--- a/include/asm-powerpc/ps3.h
++++ b/include/asm-powerpc/ps3.h
+@@ -36,7 +36,7 @@ union ps3_firmware_version {
+ };
+ 
+ void ps3_get_firmware_version(union ps3_firmware_version *v);
+-int ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
++s64 ps3_compare_firmware_version(u16 major, u16 minor, u16 rev);
+ 
+ /* 'Other OS' area */
+ 
+
+--
+Masakazu MOKUNO
