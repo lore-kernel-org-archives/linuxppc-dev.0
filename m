@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 69CF8DDDFF
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id A2BF3DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 09:05:41 +1000 (EST)
-In-Reply-To: <46D40510.3060805@scram.de>
-References: <46D40510.3060805@scram.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <611B8BA7-89B3-4DA0-A248-0FB57E4654ED@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page
-	instantiation
-Date: Wed, 29 Aug 2007 18:08:00 -0500
-To: Jochen Friedrich <jochen@scram.de>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Thu, 30 Aug 2007 09:28:03 +1000 (EST)
+To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ppc_8xx-gcc from eldk strange behaviour
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 29 Aug 2007 11:28:36 +0200."
+	<F1F6EC0C8B75034F9E3A79FC85122E8EA185B5@aquib01a>
+Date: Thu, 30 Aug 2007 01:28:00 +0200
+Sender: wd@denx.de
+Message-Id: <20070829232800.EBD0524044@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <F1F6EC0C8B75034F9E3A79FC85122E8EA185B5@aquib01a> you wrote:
+> > C does not specify the signedness of char.  If you care, you need to
+> > explicitly specify.
+> 
+> Sorry, I didn't know this. Anyway I would expect the same behaviour from
+> both host gcc and ppc_8xx-gcc. In this case host gcc is wrong. 
 
-On Aug 28, 2007, at 6:20 AM, Jochen Friedrich wrote:
+No, it is not wrong.  The  behaviour  is  just  not  defined  by  the
+standard,  so  the compiler is free to do what he likes. Some systems
+default to singend chars,  others  to  unsigned.  Both  is  perfectly
+legal.
 
-> Instantiation of 8MB pages on the TLB cache for the kernel static
-> mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
-> This ensures r3 gets saved and restored.
->
-> This has been posted to linuxppc-embedded by Marcelo Tosatti
-> <marcelo@kvack.org>, but only an incomplete version of the patch
-> has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
-> This patch adds the rest of the fix.
->
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/ppc/kernel/head_8xx.S |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
->
-> This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
-> diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
-> index 944c35c..eb8d26f 100644
-> --- a/arch/ppc/kernel/head_8xx.S
-> +++ b/arch/ppc/kernel/head_8xx.S
-> @@ -495,9 +495,7 @@ LoadLargeDTLB:
->  	lwz	r11, 4(r0)
->
->  	lwz	r12, 16(r0)
-> -#ifdef CONFIG_8xx_CPU6
->  	lwz	r3, 8(r0)
-> -#endif
->  	rfi
->
->  /* This is the data TLB error on the MPC8xx.  This could be due to
+It is code that makes any such assumptions which is broken.
 
-do we need this in arch/powerpc as well?
+Best regards,
 
-- k
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Death, when unnecessary, is a tragic thing.
+	-- Flint, "Requiem for Methuselah", stardate 5843.7
