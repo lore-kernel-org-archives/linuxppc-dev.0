@@ -1,23 +1,19 @@
-Return-Path: <orutsch@sympatec.com>
-Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
-	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7AE6ADDE35
+Return-Path: <rscop@matrix.com.br>
+Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
+	by ozlabs.org (Postfix) with ESMTP id C8E02DDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 22:54:15 +1000 (EST)
-Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
-	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
-	with ESMTPSA id 1982933 for linuxppc-embedded@ozlabs.org;
-	Wed, 29 Aug 2007 14:54:10 +0200
-Message-ID: <46D56C25.3020702@sympatec.com>
-Date: Wed, 29 Aug 2007 14:52:53 +0200
-From: Oliver Rutsch <orutsch@sympatec.com>
-MIME-Version: 1.0
+	Wed, 29 Aug 2007 15:17:59 +1000 (EST)
+From: Ricardo Scop <rscop@matrix.com.br>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: STK5200 pci_enable_device problem
-References: <20070829074902.7634024044@gemini.denx.de>
-In-Reply-To: <20070829074902.7634024044@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: ppc_8xx-gcc from eldk strange behaviour
+Date: Wed, 29 Aug 2007 01:50:46 -0300
+References: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200708290150.46317.rscop@matrix.com.br>
+Cc: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,51 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi, Antonio
 
+On Tuesday 28 August 2007 15:56, DI BACCO ANTONIO - technolabs wrote:
+> Consider the following C code snippet:
+[snip]
+>   char x = -4;
+[snip]
+>
+> If I compile it with host gcc, there is no warning and the message "x is
+> negative" is printed. If I compile it with ppc_8xx-gcc there is a warning
+> "main.c:11: warning: comparison is always false due to limited range of
+> data type" and the program prints message "x is positive". To correct the
+> problem I have to put signed before char.
+>
 
-> 
-> Probably it does not hang, but you just don't see any console output.
-> Eventually  you  just  forgot  to  set  the  correct  console  device
-> (/dev/ttyPSC0) or console speed.
-
-I checked this. I think the TQM5200 is really hanging after the ...OK 
-because I have activated the telnet server and normally I'm able to 
-connect to the device after booting via ethernet. No ping, no telnet. 
-With an older 2.6.19.2 kernel this was O.K.
-
-> 
-> Also, you need a recent version of U-Boot (for  example  99c2fdab  or
-> later).
-
-I'm using U-Boot 1.2.0-gbc2b9c33-dirty (Feb 22 2007 - 09:53:14). Is that 
-recent enough? (I don't know exactly what you mean with "99c2fdab", is 
-this the second number after "1.2.0-"?)
-> 
-> Try something like this:
-> 
-> => tftp 200000 /tftpboot/tqm5200/uImage
-> => tftp 400000 /tftpboot/tqm5200/tqm5200.dtb
-
-Maybe the problem is the missing tqm5200.dtb file. I have booted the 
-kernel without it (just bootm 200000). Does the kernel need this file? I 
-found a tqm5200.dts file the the kernel sources, but the device tree 
-compiler (dtc) seems not to be in the 4.1 ELDK. Do I have to install 
-this compiler and build the appropriate dtb file?
-
-
-> 
-> Please note that the device tree we have at the  moment  is  for  the
-> TQM5200 only and does not include support for the TQM5200S.
-> 
-> But probably you just had the same problem - missing or  bad  console
-> device specification.
-> 
-
-In older kernels it was O.K. just to uncheck the SM501 drivers in the 
-kernel configuration. Has this changed?
-
-Thanks and bye,
+You can also use the -fsigned-char compilation flag, in this case.
 
 -- 
-Dipl. Ing. Oliver Rutsch
+Ricardo Scop.
