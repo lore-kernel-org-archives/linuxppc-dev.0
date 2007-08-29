@@ -1,19 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 30 Aug 2007 15:58:12 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] Introduce new CPM device bindings.
-Message-ID: <20070830055812.GB32543@localhost.localdomain>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201619.GB24210@ld0162-tx32.am.freescale.net>
-	<20070829053941.GC3206@localhost.localdomain>
-	<20070829135806.GB30184@ld0162-tx32.am.freescale.net>
-	<20070830005559.GB22844@localhost.localdomain>
-	<20070830054854.GA21533@ld0162-tx32.am.freescale.net>
+Return-Path: <pete@bluelane.com>
+Received: from mse2fe1.mse2.exchange.ms (outbound.mse2.exchange.ms
+	[69.25.50.247]) by ozlabs.org (Postfix) with ESMTP id 788A6DDE20
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 09:56:12 +1000 (EST)
+Message-ID: <46D604BF.7090905@bluelane.com>
+Date: Wed, 29 Aug 2007 16:43:59 -0700
+From: Pete/Piet Delaney <pete@bluelane.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070830054854.GA21533@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+To: Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
+References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com>
+	<20070822165318.b82da13c.akpm@linux-foundation.org>
+	<46CCFE2C.4050306@windriver.com>
+In-Reply-To: <46CCFE2C.4050306@windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Reply-To: pete@bluelane.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 30, 2007 at 12:48:54AM -0500, Scott Wood wrote:
-> On Thu, Aug 30, 2007 at 10:55:59AM +1000, David Gibson wrote:
-> > Am I correct in thinking that it's basically an arch/ppc versus
-> > arch/powerpc thing.  In which case couldn't you use CONFIG_PPC_MERGE
-> > instead?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Jason Wessel wrote:
+> Andrew Morton wrote:
+>> On Wed, 22 Aug 2007 17:44:12 -0500
+>> Jason Wessel <jason.wessel@windriver.com> wrote:
+>>
+>>  
+>>> +    while (!atomic_read(&debugger_active));
+>>>     
+>>
+>> eek.  We're in the process of hunting down and eliminating exactly this
+>> construct.  There have been cases where the compiler cached the
+>> atomic_read() result in a register, turning the above into an infinite
+>> loop.
+>>
+>> Plus we should never add power-burners like that into the kernel
+>> anyway. That loop should have a cpu_relax() in it.  Which will also
+>> fix the
+>> compiler problem described above.
+>>
+>>   
+> Agreed, and fixed with a cpu_relax.
 > 
-> The idea was to allow boards to be converted incrementally, as I don't
-> have access to test 100% of the boards that use the CPM code.
-
-Hrm.  Right.  This is still problematical, because what happens if you
-have both old-binding and new-binding boards configured simultaneously?
-
-> > > It has a phandle to the phy node...  if you mean the mdio bus node, why?
-> > 
-> > Well, I'm just working of the example of 4xx EMAC.  The way it does
-> > mdio, it wants a handle on the mdio bus to perform various operations
-> > there as well on the phy to tell it how to address them.  fsl-enet may
-> > do things differently and have no particular need for such a handle.
+>> Thirdly, please always add a newline when coding statements like that:
+>>
+>>     while (expr())
+>>         ;
+>>   
 > 
-> Even if it did need such a handle, couldn't it just look at the phy
-> node's parent?
+> The other instances I found of the same problem in the kgdb core are
+> fixed too.
+> 
+> I merged all the changes into the for_mm branch in the kgdb git tree.
 
-Well, yes, but it's just a bit more fiddling.  For the purposes of
-emac, it seemed simpler to supply pass the mdio phandle as well.
+Where is the kgdb git tree?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+- -piet
+
+> 
+> Thanks,
+> Jason.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFG1gS/JICwm/rv3hoRAhfRAJ42F3QlzGwG4aQbs9hHVMI4kJ9SWQCfXrku
+UGo97ByKsB9yhyIu5c+2Jh0=
+=welB
+-----END PGP SIGNATURE-----
