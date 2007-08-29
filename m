@@ -4,13 +4,13 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39C8EDDEC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:46:45 +1000 (EST)
-Date: Wed, 29 Aug 2007 11:46:38 -0500
+	by ozlabs.org (Postfix) with ESMTP id 3B3F3DDF07
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:46:48 +1000 (EST)
+Date: Wed, 29 Aug 2007 11:46:40 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 2/9] bootwrapper: Add strtoull().
-Message-ID: <20070829164638.GA31640@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 3/9] bootwrapper: Add get_path().
+Message-ID: <20070829164640.GB31640@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
@@ -24,88 +24,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This will be needed by PlanetCore firmware support.
+This will be used by the PlanetCore firmware support to construct
+a linux,stdout-path from the serial node that it finds.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/Makefile |    2 +-
- arch/powerpc/boot/stdlib.c |   41 +++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/stdlib.h |    6 ++++++
- 3 files changed, 48 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/stdlib.c
- create mode 100644 arch/powerpc/boot/stdlib.h
+ arch/powerpc/boot/flatdevtree.c      |   59 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/flatdevtree.h      |    1 +
+ arch/powerpc/boot/flatdevtree_misc.c |    6 +++
+ arch/powerpc/boot/ops.h              |    9 +++++
+ 4 files changed, 75 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index cd7c057..90c2f6d 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -45,7 +45,7 @@ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
- 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
--		cpm-serial.c
-+		cpm-serial.c stdlib.c
- src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c cuboot-pq2.c
-diff --git a/arch/powerpc/boot/stdlib.c b/arch/powerpc/boot/stdlib.c
-new file mode 100644
-index 0000000..95877a0
---- /dev/null
-+++ b/arch/powerpc/boot/stdlib.c
-@@ -0,0 +1,41 @@
-+/*
-+ * stdlib functions
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
+diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
+index 0af7291..cf30675 100644
+--- a/arch/powerpc/boot/flatdevtree.c
++++ b/arch/powerpc/boot/flatdevtree.c
+@@ -975,3 +975,62 @@ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name)
+ 	}
+ 	return NULL;
+ }
++
++/* Returns the start of the path within the provided buffer, or NULL on
++ * error.
 + */
-+
-+#include "stdlib.h"
-+
-+/* Not currently supported: leading whitespace, sign, 0x prefix, zero base */
-+unsigned long long int strtoull(const char *ptr, char **end, int base)
++char *ft_get_path(struct ft_cxt *cxt, const void *phandle,
++                  char *buf, int len)
 +{
-+	unsigned long long ret = 0;
++	const char *path_comp[FT_MAX_DEPTH];
++	struct ft_atom atom;
++	char *p, *next, *pos;
++	int depth = 0, i;
++	void *node;
 +
-+	while (*ptr) {
-+		int digit;
++	node = ft_node_ph2node(cxt, phandle);
++	if (node == NULL)
++		return NULL;
 +
-+		if (*ptr >= '0' && *ptr <= '9' && *ptr < '0' + base)
-+			digit = *ptr - '0';
-+		else if (*ptr >= 'A' && *ptr < 'A' + base - 10)
-+			digit = *ptr - 'A' + 10;
-+		else if (*ptr >= 'a' && *ptr < 'z' + base - 10)
-+			digit = *ptr - 'a' + 10;
-+		else
++	p = ft_root_node(cxt);
++
++	while ((next = ft_next(cxt, p, &atom)) != NULL) {
++		switch (atom.tag) {
++		case OF_DT_BEGIN_NODE:
++			path_comp[depth++] = atom.name;
++			if (p == node)
++				goto found;
++
 +			break;
 +
-+		ret *= base;
-+		ret += digit;
-+		ptr++;
++		case OF_DT_END_NODE:
++			if (--depth == 0)
++				return NULL;
++		}
++
++		p = next;
 +	}
 +
-+	if (end)
-+		*end = (char *)ptr;
++found:
++	pos = buf;
++	for (i = 1; i < depth; i++) {
++		int this_len;
 +
-+	return ret;
++		if (len <= 1)
++			return NULL;
++
++		*pos++ = '/';
++		len--;
++
++		strncpy(pos, path_comp[i], len);
++
++		if (pos[len - 1] != 0)
++			return NULL;
++
++		this_len = strlen(pos);
++		len -= this_len;
++		pos += this_len;
++	}
++
++	return buf;
 +}
-diff --git a/arch/powerpc/boot/stdlib.h b/arch/powerpc/boot/stdlib.h
-new file mode 100644
-index 0000000..1bf01ac
---- /dev/null
-+++ b/arch/powerpc/boot/stdlib.h
-@@ -0,0 +1,6 @@
-+#ifndef _PPC_BOOT_STDLIB_H_
-+#define _PPC_BOOT_STDLIB_H_
+diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
+index 2c1c826..b0957a2 100644
+--- a/arch/powerpc/boot/flatdevtree.h
++++ b/arch/powerpc/boot/flatdevtree.h
+@@ -108,5 +108,6 @@ void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
+                                  const char *propname, const char *propval,
+                                  int proplen);
+ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name);
++char *ft_get_path(struct ft_cxt *cxt, const void *phandle, char *buf, int len);
+ 
+ #endif /* FLATDEVTREE_H */
+diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+index 8d1debe..b367009 100644
+--- a/arch/powerpc/boot/flatdevtree_misc.c
++++ b/arch/powerpc/boot/flatdevtree_misc.c
+@@ -58,6 +58,11 @@ static unsigned long fdtm_finalize(void)
+ 	return (unsigned long)cxt.bph;
+ }
+ 
++static char *fdtm_get_path(const void *phandle, char *buf, int len)
++{
++	return ft_get_path(&cxt, phandle, buf, len);
++}
 +
-+unsigned long long int strtoull(const char *ptr, char **end, int base);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device)
+ {
+ 	dt_ops.finddevice = fdtm_finddevice;
+@@ -67,6 +72,7 @@ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device)
+ 	dt_ops.create_node = fdtm_create_node;
+ 	dt_ops.find_node_by_prop_value = fdtm_find_node_by_prop_value;
+ 	dt_ops.finalize = fdtm_finalize;
++	dt_ops.get_path = fdtm_get_path;
+ 
+ 	return ft_open(&cxt, dt_blob, max_size, max_find_device,
+ 			platform_ops.realloc);
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 45c2268..703255b 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -47,6 +47,7 @@ struct dt_ops {
+ 	                                 const char *propname,
+ 	                                 const char *propval, int proplen);
+ 	unsigned long (*finalize)(void);
++	char *(*get_path)(const void *phandle, char *buf, int len);
+ };
+ extern struct dt_ops dt_ops;
+ 
+@@ -170,6 +171,14 @@ static inline void *find_node_by_linuxphandle(const u32 linuxphandle)
+ 			(char *)&linuxphandle, sizeof(u32));
+ }
+ 
++static inline char *get_path(const void *phandle, char *buf, int len)
++{
++	if (dt_ops.get_path)
++		return dt_ops.get_path(phandle, buf, len);
 +
-+#endif
++	return NULL;
++}
++
+ static inline void *malloc(unsigned long size)
+ {
+ 	return (platform_ops.malloc) ? platform_ops.malloc(size) : NULL;
 -- 
 1.5.0.3
