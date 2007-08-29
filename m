@@ -1,12 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Message-ID: <10801768.2815191188385972143.JavaMail.nabble@isper.nabble.com>
-From: angelalinyao@163.com
-To: Linuxppc-embedded@ozlabs.org
-Subject: linux2.6.17.4 with temac patch running on ML403 hung while
-	initializing from ramdisk
+Return-Path: <orutsch@sympatec.com>
+Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
+	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7AE6ADDE35
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 29 Aug 2007 22:54:15 +1000 (EST)
+Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
+	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
+	with ESMTPSA id 1982933 for linuxppc-embedded@ozlabs.org;
+	Wed, 29 Aug 2007 14:54:10 +0200
+Message-ID: <46D56C25.3020702@sympatec.com>
+Date: Wed, 29 Aug 2007 14:52:53 +0200
+From: Oliver Rutsch <orutsch@sympatec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 29 Aug 2007 04:12:52 -0700
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: STK5200 pci_enable_device problem
+References: <20070829074902.7634024044@gemini.denx.de>
+In-Reply-To: <20070829074902.7634024044@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,63 +28,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, all
-    I have run linux-xilinx-26.git based on kernel 2.6.17.4 on ML403 successfully.
-    Then I used a temac patch  from mvista (PAULUS)
-    The system hung while initializing from ramdisk after patched.
-    I use plb-temac v3.00a and hard_temac v3.00b, with EDK 9.1
-    The message printed is as follow. Any help would be appreciated.
---------------------------------------------------------------------------------------
-loaded at:     00400000 0069013C                                
-board data at: 0068E124 0068E13C                                
-relocated to:  004050E8 00405100                                
-zimage at:     004058B9 00527794                                
-initrd at:     00528000 0068DE1A                                
-avail ram:     00691000 04000000                                
+Hi,
 
-Linux/PPC load: console=ttyS0,9600 root=/dev/ram rw                                                   
-Uncompressing Linux...done.                           
-Now booting the kernel                      
-Linux version 2.6.17-rc4-smp (linyao@linux-177) (gcc version 3.3.1 (MontaVista 3                                                                                
-.3.1-3.0.10.0300532 2003-12-24)) #17 Wed Aug 29 16:36:51 CS                                                          
-Xilinx ML403 Reference System (Virtex-4 FX)                                           
-Built 1 zonelists                 
-Kernel command line: console=ttyS0,9600 root=/dev/ram rw                                                        
-Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000                                                 
-PID hash table entries: 512 (order: 9, 2048 bytes)                                                  
-Console: colour dummy device 80x25                                  
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)                                                             
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)                                                            
-Memory: 60604k available (1428k kernel code, 1352k data, 84k init, 0k highmem)                                                                              
-Security Framework v1.0.0 initialized                                     
-Capability LSM initial                     
-Mount-cache hash table entries: 512                                   
-checking if image is initramfs...it isn't (no cpio magic); looks like an initrd                                                                               
-Freeing initrd memory: 1431k freed                                  
-seclvl: seclvl_init: seclvl: Failure registering with the kernel.
-seclvl: seclvl_init: seclvl: Failure registering with primary security module.
-seclvl: Error during initialization: rc = [-22]
-Initializing Cryptographic API
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-Macintosh non-volatile memory driver v1.1
-Linux agpgart interface v0.101 (c) Dave Jones
-SyncLink PC Card driver $Revision: 4.34 $
-SyncLink PC Card driver $Revision: 4.34 $, tty major#253
-Serial: 8250/16550 driver $Revision: 1.90 $ 1 ports, IRQ sharing disabled
-serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 2) is a 16450
-RAMDISK driver initialized: 1 RAM disks of 8192K size 1024 blocksize
-loop: loaded (max 8 devices)
-i8042.c: No controller found.
-mice: PS/2 mouse device common for all mice
-oprofile: using timer interrupt.
-RAMDISK: Compressed image found at block 0
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 84k init
------------------------------------------------------------------------------------
-System hung here.
-                                                                                                                             linyao
-   
+
+> 
+> Probably it does not hang, but you just don't see any console output.
+> Eventually  you  just  forgot  to  set  the  correct  console  device
+> (/dev/ttyPSC0) or console speed.
+
+I checked this. I think the TQM5200 is really hanging after the ...OK 
+because I have activated the telnet server and normally I'm able to 
+connect to the device after booting via ethernet. No ping, no telnet. 
+With an older 2.6.19.2 kernel this was O.K.
+
+> 
+> Also, you need a recent version of U-Boot (for  example  99c2fdab  or
+> later).
+
+I'm using U-Boot 1.2.0-gbc2b9c33-dirty (Feb 22 2007 - 09:53:14). Is that 
+recent enough? (I don't know exactly what you mean with "99c2fdab", is 
+this the second number after "1.2.0-"?)
+> 
+> Try something like this:
+> 
+> => tftp 200000 /tftpboot/tqm5200/uImage
+> => tftp 400000 /tftpboot/tqm5200/tqm5200.dtb
+
+Maybe the problem is the missing tqm5200.dtb file. I have booted the 
+kernel without it (just bootm 200000). Does the kernel need this file? I 
+found a tqm5200.dts file the the kernel sources, but the device tree 
+compiler (dtc) seems not to be in the 4.1 ELDK. Do I have to install 
+this compiler and build the appropriate dtb file?
+
+
+> 
+> Please note that the device tree we have at the  moment  is  for  the
+> TQM5200 only and does not include support for the TQM5200S.
+> 
+> But probably you just had the same problem - missing or  bad  console
+> device specification.
+> 
+
+In older kernels it was O.K. just to uncheck the SM501 drivers in the 
+kernel configuration. Has this changed?
+
+Thanks and bye,
+
+-- 
+Dipl. Ing. Oliver Rutsch
