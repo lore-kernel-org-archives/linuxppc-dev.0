@@ -2,19 +2,19 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1A828DDF05
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 23:40:47 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 03020DDE40
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 23:41:35 +1000 (EST)
 Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7TDdgXJ020000
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 17:39:42 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7TDeU5V020024
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 17:40:30 +0400
 Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7TDdgUS019997
-	for linuxppc-dev@ozlabs.org; Wed, 29 Aug 2007 17:39:42 +0400
-Date: Wed, 29 Aug 2007 17:39:42 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7TDeUik020021
+	for linuxppc-dev@ozlabs.org; Wed, 29 Aug 2007 17:40:30 +0400
+Date: Wed, 29 Aug 2007 17:40:30 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/4] PowerPC 440EPx: Sequoia device tree
-Message-ID: <20070829133942.GA19983@ru.mvista.com>
+Subject: [PATCH 3/4] PowerPC 440EPx: Sequoia board support
+Message-ID: <20070829134030.GA20004@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070829133520.GA19925@ru.mvista.com>
@@ -27,300 +27,173 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-AMCC PPC440EPx Sequoia device tree.
+AMCC PPC440EPx Sequoia board support.
 
 Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/sequoia.dts |  286 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 286 insertions(+)
+ arch/powerpc/kernel/cputable.c       |   18 +++++++++
+ arch/powerpc/kernel/head_44x.S       |    2 -
+ arch/powerpc/platforms/44x/Kconfig   |   17 ++++++++-
+ arch/powerpc/platforms/44x/Makefile  |    1 
+ arch/powerpc/platforms/44x/sequoia.c |   66 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 102 insertions(+), 2 deletions(-)
 
-diff -ruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts
---- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	1970-01-01 03:00:00.000000000 +0300
-+++ linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts	2007-08-29 16:14:04.000000000 +0400
-@@ -0,0 +1,286 @@
+diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6.bld/arch/powerpc/kernel/cputable.c
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-08-28 17:52:46.000000000 +0400
++++ linux-2.6.bld/arch/powerpc/kernel/cputable.c	2007-08-29 16:14:07.000000000 +0400
+@@ -1132,6 +1132,24 @@
+ 		.dcache_bsize		= 32,
+ 		.platform		= "ppc440",
+ 	},
++	{ /* 440EPX */
++		.pvr_mask		= 0xf0000ffb,
++		.pvr_value		= 0x200008D0,
++		.cpu_name		= "440EPX",
++		.cpu_features		= CPU_FTRS_44X,
++		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++	},
++	{ /* 440GRX */
++		.pvr_mask		= 0xf0000ffb,
++		.pvr_value		= 0x200008D8,
++		.cpu_name		= "440GRX",
++		.cpu_features		= CPU_FTRS_44X,
++		.cpu_user_features	= COMMON_USER_BOOKE,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++	},
+ 	{	/* 440GP Rev. B */
+ 		.pvr_mask		= 0xf0000fff,
+ 		.pvr_value		= 0x40000440,
+diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6.bld/arch/powerpc/kernel/head_44x.S
+--- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-08-28 17:52:46.000000000 +0400
++++ linux-2.6.bld/arch/powerpc/kernel/head_44x.S	2007-08-29 16:14:07.000000000 +0400
+@@ -217,7 +217,7 @@
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+ 	mtspr	SPRN_IVPR,r4
+ 
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
+ 	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
+ 	mfspr	r2,SPRN_CCR0
+ 	lis	r3,0xffef
+diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig linux-2.6.bld/arch/powerpc/platforms/44x/Kconfig
+--- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-08-28 17:52:47.000000000 +0400
++++ linux-2.6.bld/arch/powerpc/platforms/44x/Kconfig	2007-08-29 16:14:07.000000000 +0400
+@@ -14,6 +14,14 @@
+ 	help
+ 	  This option enables support for the IBM PPC440GP evaluation board.
+ 
++config SEQUOIA
++	bool "Sequoia"
++	depends on 44x
++	default n
++	select 440EPX
++	help
++	  This option enables support for the AMCC PPC440EPX evaluation board.
++
+ #config LUAN
+ #	bool "Luan"
+ #	depends on 44x
+@@ -37,6 +45,13 @@
+ 	select IBM440EP_ERR42
+ #	select IBM_NEW_EMAC_ZMII
+ 
++config 440EPX
++	bool
++	select PPC_FPU
++# Disabled until the new EMAC Driver is merged.
++#	select IBM_NEW_EMAC_EMAC4
++#	select IBM_NEW_EMAC_ZMII
++
+ config 440GP
+ 	bool
+ # Disabled until the new EMAC Driver is merged.
+@@ -50,7 +65,7 @@
+ 
+ config 440A
+ 	bool
+-	depends on 440GX
++	depends on 440GX || 440EPX
+ 	default y
+ 
+ # 44x errata/workaround config symbols, selected by the CPU models above
+diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/Makefile linux-2.6.bld/arch/powerpc/platforms/44x/Makefile
+--- linux-2.6.orig/arch/powerpc/platforms/44x/Makefile	2007-08-28 17:52:47.000000000 +0400
++++ linux-2.6.bld/arch/powerpc/platforms/44x/Makefile	2007-08-29 16:14:07.000000000 +0400
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_44x)	:= misc_44x.o
+ obj-$(CONFIG_EBONY)	+= ebony.o
+ obj-$(CONFIG_BAMBOO) += bamboo.o
++obj-$(CONFIG_SEQUOIA)	+= sequoia.o
+diff -ruN linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c linux-2.6.bld/arch/powerpc/platforms/44x/sequoia.c
+--- linux-2.6.orig/arch/powerpc/platforms/44x/sequoia.c	1970-01-01 03:00:00.000000000 +0300
++++ linux-2.6.bld/arch/powerpc/platforms/44x/sequoia.c	2007-08-29 16:14:07.000000000 +0400
+@@ -0,0 +1,66 @@
 +/*
-+ * Device Tree Source for AMCC Sequoia
++ * Sequoia board specific routines
 + *
-+ * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ * Copyright (c) 2006, 2007 IBM Corp.
++ * Valentine Barshak <vbarshak@ru.mvista.com>
++ * Copyright 2007 MontaVista Software Inc.
 + *
-+ * FIXME: Draft only!
++ * Based on the Bamboo code by
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ * Copyright 2007 IBM Corporation
 + *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
++#include <linux/init.h>
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/of_platform.h>
++#include "44x.h"
 +
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "amcc,sequoia";
-+	compatible = "amcc,sequoia";
-+	dcr-parent = <&/cpus/PowerPC,440EPx@0>;
++static struct of_device_id sequoia_of_bus[] = {
++	{ .compatible = "ibm,plb4", },
++	{ .compatible = "ibm,opb", },
++	{ .compatible = "ibm,ebc", },
++	{},
++};
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++static int __init sequoia_device_probe(void)
++{
++	if (!machine_is(sequoia))
++		return 0;
 +
-+		PowerPC,440EPx@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <0>; /* Filled in by zImage */
-+			timebase-frequency = <0>; /* Filled in by zImage */
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
-+			i-cache-size = <8000>;
-+			d-cache-size = <8000>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
++	of_platform_bus_probe(NULL, sequoia_of_bus, NULL);
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0>; /* Filled in by zImage */
-+	};
++	return 0;
++}
++device_initcall(sequoia_device_probe);
 +
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-440epx","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
++static int __init sequoia_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
 +
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-440epx","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++	if (!of_flat_dt_is_compatible(root, "amcc,sequoia"))
++		return 0;
 +
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-440epx","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0e0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1c 4 1d 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++	return 1;
++}
 +
-+	SDR0: sdr {
-+		compatible = "ibm,sdr-440epx", "ibm,sdr-440ep";
-+		dcr-reg = <00e 002>;
-+	};
++static void __init sequoia_setup_arch(void)
++{
++}
 +
-+	CPR0: cpr {
-+		compatible = "ibm,cpr-440epx", "ibm,cpr-440ep";
-+		dcr-reg = <00c 002>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-440epx", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by zImage */
-+
-+		SDRAM0: sdram {
-+			device_type = "memory-controller";
-+			compatible = "ibm,sdram-440epx", "ibm,sdram-44x-ddr2denali";
-+			dcr-reg = <010 2>;
-+		};
-+
-+		DMA0: dma {
-+			compatible = "ibm,dma-440epx", "ibm,dma-4xx";
-+			dcr-reg = <100 027>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-440epx", "ibm,mcmal2";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <4>;
-+			num-rx-chans = <4>;
-+			interrupt-parent = <&MAL0>;
-+			interrupts = <0 1 2 3 4>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-+					/*RXEOB*/ 1 &UIC0 b 4
-+					/*SERR*/  2 &UIC1 0 4
-+					/*TXDE*/  3 &UIC1 1 4
-+					/*RXDE*/  4 &UIC1 2 4>;
-+			interrupt-map-mask = <ffffffff>;
-+		};
-+
-+		POB0: opb {
-+		  	compatible = "ibm,opb-440epx", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+		  	ranges = <00000000 1 00000000 80000000
-+			          80000000 1 80000000 80000000>;
-+		  	interrupt-parent = <&UIC1>;
-+		  	interrupts = <7 4>;
-+		  	clock-frequency = <0>; /* Filled in by zImage */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-440epx", "ibm,ebc";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by zImage */
-+				interrupts = <5 1>;
-+				interrupt-parent = <&UIC1>;
-+
-+				nor_flash@0,0 {
-+					device_type = "rom";
-+					compatible = "direct-mapped";
-+					probe-type = "CFI";
-+					bank-width = <2>;
-+					partitions = <	0	180000
-+							180000	200000
-+							380000	3aa0000
-+							3e20000	140000
-+							3f60000	40000
-+							3fa0000	60000>;
-+					partition-names = "Kernel", "ramdisk", "file system",
-+								"kozio", "env", "u-boot";
-+					reg = <0 000000 4000000>;
-+				};
-+
-+			};
-+
-+			UART0: serial@ef600300 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <ef600300 8>;
-+		   		virtual-reg = <ef600300>;
-+		   		clock-frequency = <0>; /* Filled in by zImage */
-+		   		current-speed = <1c200>;
-+		   		interrupt-parent = <&UIC0>;
-+		   		interrupts = <0 4>;
-+	   		};
-+
-+			UART1: serial@ef600400 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <ef600400 8>;
-+		   		virtual-reg = <ef600400>;
-+		   		clock-frequency = <0>;
-+		   		current-speed = <0>;
-+		   		interrupt-parent = <&UIC0>;
-+		   		interrupts = <1 4>;
-+	   		};
-+
-+			UART2: serial@ef600500 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <ef600500 8>;
-+		   		virtual-reg = <ef600500>;
-+		   		clock-frequency = <0>;
-+		   		current-speed = <0>;
-+		   		interrupt-parent = <&UIC1>;
-+		   		interrupts = <3 4>;
-+	   		};
-+
-+			UART3: serial@ef600600 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <ef600600 8>;
-+		   		virtual-reg = <ef600600>;
-+		   		clock-frequency = <0>;
-+		   		current-speed = <0>;
-+		   		interrupt-parent = <&UIC1>;
-+		   		interrupts = <4 4>;
-+	   		};
-+
-+			IIC0: i2c@ef600700 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440epx", "ibm,iic";
-+				reg = <ef600700 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+
-+			IIC1: i2c@ef600800 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440epx", "ibm,iic";
-+				reg = <ef600800 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <7 4>;
-+			};
-+
-+			ZMII0: emac-zmii@ef600d00 {
-+				device_type = "zmii-interface";
-+				compatible = "ibm,zmii-440epx", "ibm,zmii";
-+				reg = <ef600d00 c>;
-+			};
-+
-+			EMAC0: ethernet@ef600e00 {
-+				linux,network-index = <0>;
-+				device_type = "network";
-+				compatible = "ibm,emac-440epx", "ibm,emac4";
-+				interrupt-parent = <&EMAC0>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC0 18 4
-+						/*Wake*/  1 &UIC1 1d 4>;
-+				reg = <ef600e00 70>;
-+				local-mac-address = [000000000000];
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0 1>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rmii";
-+				phy-map = <00000000>;
-+				zmii-device = <&ZMII0>;
-+				zmii-channel = <0>;
-+			};
-+
-+			EMAC1: ethernet@ef600f00 {
-+				linux,network-index = <1>;
-+				device_type = "network";
-+				compatible = "ibm,emac-440epx", "ibm,emac4";
-+				interrupt-parent = <&EMAC1>;
-+				interrupts = <0 1>;
-+				#interrupt-cells = <1>;
-+				#address-cells = <0>;
-+				#size-cells = <0>;
-+				interrupt-map = </*Status*/ 0 &UIC0 19 4
-+						/*Wake*/  1 &UIC1 1f 4>;
-+				reg = <ef600f00 70>;
-+				local-mac-address = [000000000000];
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <2 3>;
-+				mal-rx-channel = <1>;
-+				cell-index = <1>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rmii";
-+				phy-map = <00000000>;
-+				zmii-device = <&ZMII0>;
-+				zmii-channel = <1>;
-+			};
-+		};
-+	};
-+
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@ef600300";
-+		bootargs = "console=ttyS0,115200";
-+	};
++define_machine(sequoia) {
++	.name 				= "Sequoia",
++	.probe 				= sequoia_probe,
++	.setup_arch			= sequoia_setup_arch,
++	.progress 			= udbg_progress,
++	.init_IRQ 			= uic_init_tree,
++	.get_irq 			= uic_get_irq,
++	.restart			= ppc44x_reset_system,
++	.calibrate_decr			= generic_calibrate_decr,
 +};
