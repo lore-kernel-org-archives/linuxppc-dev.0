@@ -1,20 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0A79ADE067
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:47:57 +1000 (EST)
-Date: Wed, 29 Aug 2007 11:47:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH 9/9] bootwrapper: Use fsl_get_immr() in cuboot-pq2.c.
-Message-ID: <20070829164750.GG31640@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id 44115DDDCA
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 04:12:57 +1000 (EST)
+Date: Wed, 29 Aug 2007 13:12:32 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+Message-ID: <20070829181232.GB23140@localdomain>
+References: <200708291815.18197.fenkes@de.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <200708291815.18197.fenkes@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/cuboot-pq2.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+Hi-
 
-diff --git a/arch/powerpc/boot/cuboot-pq2.c b/arch/powerpc/boot/cuboot-pq2.c
-index 8021fd4..9d12ddd 100644
---- a/arch/powerpc/boot/cuboot-pq2.c
-+++ b/arch/powerpc/boot/cuboot-pq2.c
-@@ -15,6 +15,7 @@
- #include "stdio.h"
- #include "cuboot.h"
- #include "io.h"
-+#include "fsl-soc.h"
- 
- #define TARGET_CPM2
- #define TARGET_HAS_ETH1
-@@ -139,23 +140,20 @@ static void fixup_pci(void)
- 	u32 *pci_regs[3];
- 	u8 *soc_regs;
- 	int i, len;
--	void *ctrl_node, *bus_node, *parent_node, *soc_node;
-+	void *ctrl_node, *bus_node, *parent_node;
- 	u32 naddr, nsize, bus_ph, mem_log2;
- 
- 	ctrl_node = finddevice("/soc/pci");
- 	if (!ctrl_node || !dt_is_compatible(ctrl_node, "fsl,pq2-pci"))
- 		return;
- 
--	soc_node = finddevice("/soc");
--	if (!soc_node || !dt_is_compatible(soc_node, "fsl,pq2-soc"))
--		goto err;
--
- 	for (i = 0; i < 3; i++)
- 		if (!dt_xlate_reg(ctrl_node, i,
- 		                  (unsigned long *)&pci_regs[i], NULL))
- 			goto err;
- 
--	if (!dt_xlate_reg(soc_node, 0, (unsigned long *)&soc_regs, NULL))
-+	soc_regs = (u8 *)fsl_get_immr();
-+	if (!soc_regs)
- 		goto err;
- 
- 	len = getprop(ctrl_node, "fsl,bus", &bus_ph, 4);
--- 
-1.5.0.3
+Joachim Fenkes wrote:
+> Previously, ibmebus derived a device's bus_id from its location code. The
+> location code is not guaranteed to be unique, so we might get bus_id
+> collisions if two devices share the same location code. The OFDT full_name,
+> however, is unique, so we use that instead.
+
+This is a userspace-visible change, but I guess it's unavoidable.
+Will anything break?
+
+Also, I dislike this approach of duplicating the firmware device tree
+path in sysfs.  Are GX/ibmebus devices guaranteed to be children of
+the same node in the OF device tree?  If so, their unit addresses will
+be unique, and therefore suitable values for bus_id.  I believe this
+is what the powerpc vio bus code does.
