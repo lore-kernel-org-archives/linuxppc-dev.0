@@ -1,20 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 699EBDDE1E
+Return-Path: <miroslaw.dach@psi.ch>
+Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
+	by ozlabs.org (Postfix) with ESMTP id 1652CDDE34
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 17:49:06 +1000 (EST)
-To: Oliver Rutsch <orutsch@sympatec.com>,
-	"Mustafa Cayir" <mustafa.cayir@bte.mam.gov.tr>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: STK5200 pci_enable_device problem
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 29 Aug 2007 08:02:51 +0200."
-	<46D50C0B.80402@sympatec.com>
-Date: Wed, 29 Aug 2007 09:49:02 +0200
-Sender: wd@denx.de
-Message-Id: <20070829074902.7634024044@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 29 Aug 2007 18:41:34 +1000 (EST)
+Date: Wed, 29 Aug 2007 10:41:33 +0200 (CEST)
+From: Miroslaw Dach <miroslaw.dach@psi.ch>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+In-Reply-To: <fa686aa40708280828h408ce7damf04b31a2048d40c4@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44.0708290947560.2407-100000@slslc02.psi.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,97 +22,126 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <46D50C0B.80402@sympatec.com> you wrote:
+Hi Grant,
+
+	My zImage.elf has 1.1 MB and uImage 968 KB.
+Could you tell me please how to hook up GDB to debug u-boot?
+
+I have examined the file in u-boot which does the bootelf:
+cat common/cmd_elf.c:
+
+int do_bootelf (cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+:
+:
+:
+:
+        addr = load_elf_image (addr);
+
+        printf ("## Starting application at 0x%08lx ...\n", addr);
+
+        /*
+         * QNX images require the data cache is disabled.
+         * Data cache is already flushed, so just turn it off.
+         */
+        if (dcache_status ())
+                dcache_disable ();
+     
+        /*
+         * pass address parameter as argv[0] (aka command name),
+         * and all remaining args
+         */
+        rc = ((ulong (*)(int, char *[])) addr) (--argc, &argv[1]);
+:
+:
+}
+
+and I have determined that the system hangs just after the command:
+rc = ((ulong (*)(int, char *[])) addr) (--argc, &argv[1]);
+
+This command starts executing the linux image from the location:
+0x00400000 
+
+On the console it is printed the following stuff:
+loaded at:     00400000 004F3138
+board data at: 004F1120 004F1138
+relocated to:  004040B4 004040CC
+zimage at:     00404E59 004F003D
+avail ram:     004F4000 01FFFFFF
+
+Linux/PPC load: console=ttyUL0,9600 root=/dev/nfs rw 
+nfsroot=129.117.144.113:/opt/eldk41/ppc_4xx,tcp  
+ip=::::virtex4-mirek:eth0:dhcp panic=1
+Uncompressing Linux...
+
+It seems to be that it is the Linux kernel which does the uncompression 
+and it hangs. The question remain why?
+
+
+Maybe it is not enough space in RAM or the address in RAM where the
+uncompression is done is wrong.
+
+When I load the u-boot to ram via jtag it is placed under the address:
+0x800000 as follows:
+
+        section, .text: 0x00800000-0x0081513c
+        section, .resetvec: 0x0081513c-0x00815140
+        section, .rodata: 0x00815140-0x00817ce0
+        section, .reloc: 0x00817d00-0x00818674
+        section, .data: 0x00818674-0x00818b08
+        section, .data.rel: 0x00818b08-0x00818b34
+        section, .data.rel.local: 0x00818b34-0x00818f6c
+        section, .u_boot_cmd: 0x00818f6c-0x008191dc
+        section, .bss: 0x00819200-0x0081dd04
+
+Than I load the zImage.elf via tftp to the memory location
+0xf00000.
+
+When I issue the command bootelf 0xf00000  the zImage.elf is placed in the 
+memory:
+
+0x400000 as follows:
+
+        section, .text: 0x00400000-0x004036cc
+        section, .data: 0x00404000-0x004f7000
+        section, .bss: 0x004f7000-0x004f9138
+
+After that uncompression of zImage.elf starts. I am just wandering which 
+memory location is involved for that?
+
+My evaluation board has 32 MB of SDRAM address range:
+  (0x00000000-0x01ffffff) DDR_SDRAM_1   plb  
+
+
+Any Idea?
+
+Best Regards
+
+Mirek
+
+
+
+
+
+
+
+On Tue, 28 Aug 2007, Grant Likely wrote:
+
+> On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> > This buffer refers to the kernel which I boot straight from jtag but not
+> > u-boot.
 > 
-> > i build Linux-2.6.22-gbcfc8d37 kernel lastest kernel from denx git for 
-> > the board (STK5200 with TQM5200-AB).
-> > ELDK 4.1 version is used.
-> > 
-> > make mrproper
-> > export ARCH=powerpc
-> > make tqm5200_defconfig
-> > make uImage
-> > 
-> > It hangs on after  following line
-> >   Uncompressing Kernel Image ... OK
-
-Probably it does not hang, but you just don't see any console output.
-Eventually  you  just  forgot  to  set  the  correct  console  device
-(/dev/ttyPSC0) or console speed.
-
-Also, you need a recent version of U-Boot (for  example  99c2fdab  or
-later).
-
-Try something like this:
-
-=> tftp 200000 /tftpboot/tqm5200/uImage
-=> tftp 400000 /tftpboot/tqm5200/tqm5200.dtb
-=> setenv bootargs root=/dev/nfs rw nfsroot=192.168.1.1:/opt/eldk/ppc_6xx ip=192.168.160.4:192.168.1.1:::tqm5200:eth0:off console=ttyPSC0,115200
-=> bootm 200000 - 400000
-## Booting image at 00200000 ...
-   Image Name:   Linux-2.6.22-gab27a987
-   Created:      2007-08-05   8:24:43 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1454249 Bytes =  1.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   Booting using flat device tree at 0x400000
-Using tqm5200 machine description
-Linux version 2.6.22-gab27a987 (wd@pollux.denx.de) (gcc version 4.0.0 (DENX ELDK 4.1 4.0.0)) #1 Sun Aug 5 10:24:37 MEST 2007
-Zone PFN ranges:
-  DMA             0 ->    16384
-  Normal      16384 ->    16384
-early_node_map[1] active PFN ranges
-    0:        0 ->    16384
-Built 1 zonelists.  Total pages: 16256
-Kernel command line: root=/dev/nfs rw nfsroot=192.168.1.1:/opt/eldk/ppc_6xx ip=192.168.160.4:192.168.1.1:::tqm5200:eth0:off panic=1 console=ttyPSC0,115200
-MPC52xx PIC is up and running!
-PID hash table entries: 256 (order: 8, 1024 bytes)
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 61704k/65536k available (2872k kernel code, 3772k reserved, 132k data, 142k bss, 156k init)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-MPC52xx BestComm inited
-SCSI subsystem initialized
-usbcore: registered new interface driver usbfs
-usbcore: registered new interface driver hub
-usbcore: registered new device driver usb
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 2048 (order: 2, 16384 bytes)
-TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
-TCP: Hash tables configured (established 2048 bind 2048)
-TCP reno registered
-...
-
-etc.
-
-
-> I encountered exactly the same problem. Using U-Boot 1.2 with Kernel 
-> Linux-2.6.22-gef92f1d7 and a TQM5200S-BD module on the STK52000. I tried 
-> to modify some kernel settings but it always stopped booting at the 
-> "Uncompressing Kernel Image ... OK" line.
-
-Please note that the device tree we have at the  moment  is  for  the
-TQM5200 only and does not include support for the TQM5200S.
-
-But probably you just had the same problem - missing or  bad  console
-device specification.
-
-Best regards,
-
-Wolfgang Denk
+> /me remembers something....
+> 
+> How big is your kernel image?  Seems to me I've had problems with
+> kernel images that were too large not being uncompressed properly.
+> Can you hook up GDB and debug u-boot?  Find out where it is hanging?
+> 
+> g.
+> 
+> 
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-That's their goal, remember, a goal that's really contrary to that of
-the programmer or administrator. We just want to get our  jobs  done.
-$Bill  just  wants  to  become  $$Bill. These aren't even marginallly
-congruent.
-         -- Tom Christiansen in <6jhtqk$qls$1@csnews.cs.colorado.edu>
+=============================================================================
+          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
+                PSI - Paul Scherrer Institut CH-5232 Villigen
+=============================================================================
