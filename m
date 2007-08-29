@@ -1,19 +1,20 @@
-Return-Path: <rscop@matrix.com.br>
-Received: from cosmos.digitel.com.br (cosmos.digitel.com.br [200.198.105.42])
-	by ozlabs.org (Postfix) with ESMTP id C8E02DDE20
+Return-Path: <marcelo@kvack.org>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id 68333DDE2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 15:17:59 +1000 (EST)
-From: Ricardo Scop <rscop@matrix.com.br>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: ppc_8xx-gcc from eldk strange behaviour
-Date: Wed, 29 Aug 2007 01:50:46 -0300
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200708290150.46317.rscop@matrix.com.br>
-Cc: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+	Wed, 29 Aug 2007 23:18:50 +1000 (EST)
+Date: Wed, 29 Aug 2007 08:22:43 -0400
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Jochen Friedrich <jochen@scram.de>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page
+	instantiation
+Message-ID: <20070829122243.GA21150@dmt>
+References: <46D40510.3060805@scram.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46D40510.3060805@scram.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Antonio
 
-On Tuesday 28 August 2007 15:56, DI BACCO ANTONIO - technolabs wrote:
-> Consider the following C code snippet:
-[snip]
->   char x = -4;
-[snip]
->
-> If I compile it with host gcc, there is no warning and the message "x is
-> negative" is printed. If I compile it with ppc_8xx-gcc there is a warning
-> "main.c:11: warning: comparison is always false due to limited range of
-> data type" and the program prints message "x is positive". To correct the
-> problem I have to put signed before char.
->
+Please apply. 
 
-You can also use the -fsigned-char compilation flag, in this case.
-
--- 
-Ricardo Scop.
+On Tue, Aug 28, 2007 at 01:20:48PM +0200, Jochen Friedrich wrote:
+> Instantiation of 8MB pages on the TLB cache for the kernel static
+> mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
+> This ensures r3 gets saved and restored.
+> 
+> This has been posted to linuxppc-embedded by Marcelo Tosatti
+> <marcelo@kvack.org>, but only an incomplete version of the patch
+> has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
+> This patch adds the rest of the fix.
+> 
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/ppc/kernel/head_8xx.S |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
