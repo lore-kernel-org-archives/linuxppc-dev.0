@@ -1,15 +1,22 @@
-Return-Path: <melinda.develey70@yahoo.com>
-Received: from web63904.mail.re1.yahoo.com (web63904.mail.re1.yahoo.com
-	[69.147.97.119]) by ozlabs.org (Postfix) with SMTP id 2E14FDDD07
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C353DDD09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 07:32:57 +1000 (EST)
-Date: Wed, 29 Aug 2007 14:26:15 -0700 (PDT)
-From: melinda develey <melinda.develey70@yahoo.com>
-Subject: spin_lock doesn't work?!?
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1374990440-1188422775=:15506"
-Message-ID: <177333.15506.qm@web63904.mail.re1.yahoo.com>
+	Thu, 30 Aug 2007 07:38:33 +1000 (EST)
+Date: Wed, 29 Aug 2007 16:38:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: melinda develey <melinda.develey70@yahoo.com>
+Subject: Re: spin_lock doesn't work?!?
+Message-ID: <20070829213824.GA16082@ld0162-tx32.am.freescale.net>
+References: <177333.15506.qm@web63904.mail.re1.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <177333.15506.qm@web63904.mail.re1.yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,23 +27,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1374990440-1188422775=:15506
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+On Wed, Aug 29, 2007 at 02:26:15PM -0700, melinda develey wrote: I
+> discovered that I called spin_lock two times consecutively without
+> calling spin_unlock but my code didn't lock (I was managing an ioctl). 
+> Probably I didn't understand how spin_lock works!!!!
 
-I discovered that I called spin_lock two times consecutively without calling spin_unlock but my code didn't lock (I was managing an ioctl). 
-Probably I didn't understand how spin_lock works!!!!
+spinlocks are no-ops on uniprocessor without preemption.
 
-Any help?
-
-       
----------------------------------
-Need a vacation? Get great deals to amazing places on Yahoo! Travel. 
---0-1374990440-1188422775=:15506
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-I discovered that I called spin_lock two times consecutively without calling spin_unlock but my code didn't lock (I was managing an ioctl). <br>Probably I didn't understand how spin_lock works!!!!<br><br>Any help?<br><p>&#32;
-      <hr size=1>Need a vacation? <a href="http://us.rd.yahoo.com/evt=48256/*http://travel.yahoo.com/;_ylc=X3oDMTFhN2hucjlpBF9TAzk3NDA3NTg5BHBvcwM1BHNlYwNncm91cHMEc2xrA2VtYWlsLW5jbQ--">Get great deals 
-to amazing places </a>on Yahoo! Travel. 
---0-1374990440-1188422775=:15506--
+-Scott
