@@ -1,17 +1,19 @@
-Return-Path: <miroslaw.dach@psi.ch>
-Received: from MAILSEND02.psi.ch (mailsend02.psi.ch [129.129.191.54])
-	by ozlabs.org (Postfix) with ESMTP id D58BDDDD07
+Return-Path: <charanya.venkatraman@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
+	by ozlabs.org (Postfix) with ESMTP id D81A1DDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 01:32:53 +1000 (EST)
-Date: Wed, 29 Aug 2007 17:32:49 +0200 (CEST)
-From: Miroslaw Dach <miroslaw.dach@psi.ch>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40708280828h408ce7damf04b31a2048d40c4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44.0708291351460.11545-100000@slslc02.psi.ch>
+	Thu, 30 Aug 2007 02:14:25 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id r27so104132ele
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 29 Aug 2007 09:14:23 -0700 (PDT)
+Message-ID: <fa84b3da0708290914m186cc4d7nccfdb487a8fc8dee@mail.gmail.com>
+Date: Wed, 29 Aug 2007 21:44:21 +0530
+From: "charanya venkatraman" <charanya.venkatraman@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: 2.6 kernel hangs after loading device tree
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1923_18438808.1188404061010"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,36 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have done further investigation with bootelf and zImage.elf (from
-u-boot) and it seems to be that the system fails during image
-uncompression: The last command executed is: r = zlib_inflate(&s,
-Z_FINISH); /* file: ./arch/ppc/boot/common/misc-common.c */
+------=_Part_1923_18438808.1188404061010
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-zlib_inflate function code is in ./lib/zlib_inflate/inflate.c
+Hi all
 
+------=_Part_1923_18438808.1188404061010
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Mirek
+Hi all<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
 
-
-
-On Tue, 28 Aug 2007, Grant Likely wrote:
-
-> On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
-> > This buffer refers to the kernel which I boot straight from jtag but not
-> > u-boot.
-> 
-> /me remembers something....
-> 
-> How big is your kernel image?  Seems to me I've had problems with
-> kernel images that were too large not being uncompressed properly.
-> Can you hook up GDB and debug u-boot?  Find out where it is hanging?
-> 
-> g.
-> 
-> 
-
--- 
-=============================================================================
-          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
-                PSI - Paul Scherrer Institut CH-5232 Villigen
-=============================================================================
+------=_Part_1923_18438808.1188404061010--
