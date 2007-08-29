@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 29 Aug 2007 12:18:51 +1000
+Date: Wed, 29 Aug 2007 12:22:50 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Fix summary calculation in testsuite
-Message-ID: <20070829021851.GA25233@localhost.localdomain>
+Subject: libfdt: Fix handling of trailing / in fdt_path_offset()
+Message-ID: <20070829022250.GA25468@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,39 +16,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bookkeeping for producing the testsuite summary (total number of
-tests passed, failed and so forth) is broken.  It uses $? across
-several tests, but for checks after the first, the value of $? will no
-longer contain the original return code, but just that from the
-previous test.  This patch fixes the problem.
+Currently, fdt_path_offset() returns FDL_ERR_BADOFFSET if given a path
+with a trailing '/'.  In particular this means that
+fdt_path_offset("/") returns FDT_ERR_BADOFFSET rather than 0 as one
+would expect.
+
+This patch fixes the function to accept and ignore trailing '/'
+characters.  As well as allowing fdt_path_offset("/") this means that
+fdt_path_offset("/foo/") will return the same as
+fdt_path_offset("/foo") which seems in keeping with the principle of
+least surprise.
+
+This also adds a testcase to ensure that fdt_path_offset("/") returns
+0 as it should.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/tests/run_tests.sh
+Index: dtc/tests/path_offset.c
 ===================================================================
---- dtc.orig/tests/run_tests.sh	2007-08-29 12:04:11.000000000 +1000
-+++ dtc/tests/run_tests.sh	2007-08-29 12:04:37.000000000 +1000
-@@ -15,12 +15,15 @@
-     echo -n "$@:	"
-     if PATH=".:$PATH" $ENV "$@"; then
- 	tot_pass=$[tot_pass + 1]
--    elif [ "$?" == "1" ]; then
--	tot_config=$[tot_config + 1]
--    elif [ "$?" == "2" ]; then
--	tot_fail=$[tot_fail + 1]
-     else
--	tot_strange=$[tot_strange + 1]
-+	ret="$?"
-+	if [ "$ret" == "1" ]; then
-+	    tot_config=$[tot_config + 1]
-+	elif [ "$ret" == "2" ]; then
-+	    tot_fail=$[tot_fail + 1]
-+	else
-+	    tot_strange=$[tot_strange + 1]
-+	fi
-     fi
- }
+--- dtc.orig/tests/path_offset.c	2007-08-29 12:04:54.000000000 +1000
++++ dtc/tests/path_offset.c	2007-08-29 12:04:57.000000000 +1000
+@@ -58,6 +58,7 @@
+ int main(int argc, char *argv[])
+ {
+ 	void *fdt;
++	int root_offset;
+ 	int subnode1_offset, subnode2_offset;
+ 	int subnode1_offset_p, subnode2_offset_p;
+ 	int subsubnode1_offset, subsubnode2_offset;
+@@ -66,6 +67,13 @@
+ 	test_init(argc, argv);
+ 	fdt = load_blob_arg(argc, argv);
  
++	root_offset = fdt_path_offset(fdt, "/");
++	if (root_offset < 0)
++		FAIL("fdt_path_offset(\"/\") failed: %s",
++		     fdt_strerror(root_offset));
++	else if (root_offset != 0)
++		FAIL("fdt_path_offset(\"/\") returns incorrect offset %d",
++		     root_offset);
+ 	subnode1_offset = check_subnode(fdt, 0, "subnode1");
+ 	subnode2_offset = check_subnode(fdt, 0, "subnode2");
+ 
+Index: dtc/libfdt/fdt_ro.c
+===================================================================
+--- dtc.orig/libfdt/fdt_ro.c	2007-08-29 12:08:48.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2007-08-29 12:08:55.000000000 +1000
+@@ -154,7 +154,7 @@
+ 		while (*p == '/')
+ 			p++;
+ 		if (! *p)
+-			return -FDT_ERR_BADPATH;
++			return offset;
+ 		q = strchr(p, '/');
+ 		if (! q)
+ 			q = end;
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
