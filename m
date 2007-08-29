@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42362DDDD8
+	by ozlabs.org (Postfix) with ESMTP id 69CF8DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 08:28:56 +1000 (EST)
-In-Reply-To: <40D0BF15B1434F469B8639BF3A31D6F20B5F28@wiems02014.ceu.corp.heidelberg.com>
-References: <40D0BF15B1434F469B8639BF3A31D6F20B5F28@wiems02014.ceu.corp.heidelberg.com>
+	Thu, 30 Aug 2007 09:05:41 +1000 (EST)
+In-Reply-To: <46D40510.3060805@scram.de>
+References: <46D40510.3060805@scram.de>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <35461E70-20B4-4459-A76A-9519DCCE310A@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <611B8BA7-89B3-4DA0-A248-0FB57E4654ED@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: ppc/powerpc, remote debugging (ptrace), floating point variables
-Date: Wed, 29 Aug 2007 17:31:14 -0500
-To: "Visser, Udo RD-IS-E23" <Udo.Visser@heidelberg.com>
-Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page
+	instantiation
+Date: Wed, 29 Aug 2007 18:08:00 -0500
+To: Jochen Friedrich <jochen@scram.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +27,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Aug 28, 2007, at 4:40 AM, Visser, Udo RD-IS-E23 wrote:
+On Aug 28, 2007, at 6:20 AM, Jochen Friedrich wrote:
 
+> Instantiation of 8MB pages on the TLB cache for the kernel static
+> mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
+> This ensures r3 gets saved and restored.
 >
-> Hello world, ;-)
+> This has been posted to linuxppc-embedded by Marcelo Tosatti
+> <marcelo@kvack.org>, but only an incomplete version of the patch
+> has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
+> This patch adds the rest of the fix.
 >
-> when stepping through my own software, which is using floating =20
-> point variables, gdb showed weird results (mostly NAN=B4s) for these =20=
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/ppc/kernel/head_8xx.S |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+>
+> This can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
+> diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+> index 944c35c..eb8d26f 100644
+> --- a/arch/ppc/kernel/head_8xx.S
+> +++ b/arch/ppc/kernel/head_8xx.S
+> @@ -495,9 +495,7 @@ LoadLargeDTLB:
+>  	lwz	r11, 4(r0)
+>
+>  	lwz	r12, 16(r0)
+> -#ifdef CONFIG_8xx_CPU6
+>  	lwz	r3, 8(r0)
+> -#endif
+>  	rfi
+>
+>  /* This is the data TLB error on the MPC8xx.  This could be due to
 
-> variables. Running the software without gdb did not show any =20
-> problems. The software is compiled with floating point instructions =20=
-
-> and the results (without gdb) are OK.
->
-> My setup:
->
-> MPC8349 target, "home grown", much like the MPC8349EMDS, running =20
-> 2.6.16 (ppc)
-> GDB, gdbserver 6.3 connected via ethernet with my Linux Host.
->
->
-> What I did to get rid of the described problem:
->
-> In module:     arch/powerpc/kernel/process.c
-> In function:   void flush_fp_to_thread(struct tast_struct *tsk)
->
-> I changed the line:  giveup_fpu(current);
-> to:                  giveup_fpu(tsk);
->
->
-> Now my questions: Has anybody else had such problems?
->                   Have I found a bug, or will I encounter any yet =20
-> unknown problems in the near future?
->
-> I would appreciate any comment on my changes, especially from the =20
-> maintainers.
-
-I have a patch to fix just this issue.
-
-take a look at:
-
-http://patchwork.ozlabs.org/linuxppc/patch?id=3D13219
+do we need this in arch/powerpc as well?
 
 - k
