@@ -1,14 +1,14 @@
 Return-Path: <miroslaw.dach@psi.ch>
 Received: from MAILSEND02.psi.ch (mailsend02.psi.ch [129.129.191.54])
-	by ozlabs.org (Postfix) with ESMTP id 4C0DCDDD09
+	by ozlabs.org (Postfix) with ESMTP id D58BDDDD07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 01:31:59 +1000 (EST)
-Date: Wed, 29 Aug 2007 17:31:56 +0200 (CEST)
+	Thu, 30 Aug 2007 01:32:53 +1000 (EST)
+Date: Wed, 29 Aug 2007 17:32:49 +0200 (CEST)
 From: Miroslaw Dach <miroslaw.dach@psi.ch>
 To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40708290817k897f8c2y5fdf12e5a48cc0ac@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44.0708291728450.20119-100000@slslc02.psi.ch>
+In-Reply-To: <fa686aa40708280828h408ce7damf04b31a2048d40c4@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44.0708291351460.11545-100000@slslc02.psi.ch>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
@@ -22,36 +22,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+I have done further investigation with bootelf and zImage.elf (from
+u-boot) and it seems to be that the system fails during image
+uncompression: The last command executed is: r = zlib_inflate(&s,
+Z_FINISH); /* file: ./arch/ppc/boot/common/misc-common.c */
 
-	Yes you are right that I should use uImage instead of zImage.elf
+zlib_inflate function code is in ./lib/zlib_inflate/inflate.c
 
-I have tried first bootm and uImage but it also hanged during 
-uncompression so next I have tried bootelf zImage.elf to see how this 
-works because I was able to run zImage.elf straight from EDK via jtag.
-
-Cheers
 
 Mirek
-  
 
-On Wed, 29 Aug 2007, Grant Likely wrote:
 
-> On 8/29/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
-> > Hi Grant,
-> >
-> >         My zImage.elf has 1.1 MB and uImage 968 KB.
-> > Could you tell me please how to hook up GDB to debug u-boot?
+
+On Tue, 28 Aug 2007, Grant Likely wrote:
+
+> On 8/28/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> > This buffer refers to the kernel which I boot straight from jtag but not
+> > u-boot.
 > 
-> Ah-HA!  You're using the wrong type of kernel image.  When booting
-> from u-boot, you should be using a 'uImage', not a 'zImage.elf'.
-> (generated with 'make uImage' in the kernel tree).  An you should use
-> the 'bootm' command to boot the kernel.
+> /me remembers something....
 > 
-> With bootm, u-boot can pass parameters to the kernel and it is u-boot
-> that does the uncompression (instead of the zImage wrapper).
+> How big is your kernel image?  Seems to me I've had problems with
+> kernel images that were too large not being uncompressed properly.
+> Can you hook up GDB and debug u-boot?  Find out where it is hanging?
 > 
-> Cheers,
 > g.
 > 
 > 
