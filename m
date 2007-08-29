@@ -1,35 +1,19 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 308D5DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:16:04 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l7TGFm17484352
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 16:15:48 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l7TGFlgf503978
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 17:15:47 +0100
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l7TGFUnN023006
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 17:15:31 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
-Date: Wed, 29 Aug 2007 18:15:17 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200708291815.18197.fenkes@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
-	Jan-Bernd Themann <themann@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BBF3BDDE23
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:45:44 +1000 (EST)
+Date: Wed, 29 Aug 2007 11:45:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH 1/9] bootwrapper: flatdevtree fixes
+Message-ID: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,66 +23,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, ibmebus derived a device's bus_id from its location code. The
-location code is not guaranteed to be unique, so we might get bus_id
-collisions if two devices share the same location code. The OFDT full_name,
-however, is unique, so we use that instead.
+1. ft_create_node was returning the internal pointer rather than a phandle.
+2. ft_find_device_rel was treating a "top" phandle of NULL as an error,
+rather than as the root of the tree.  The old, absolute ft_find_device
+is removed, and the relative version is renamed to ft_find_device().
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
+ arch/powerpc/boot/flatdevtree.c      |   41 +++++++++++++++------------------
+ arch/powerpc/boot/flatdevtree.h      |    7 ++---
+ arch/powerpc/boot/flatdevtree_misc.c |    2 +-
+ 3 files changed, 23 insertions(+), 27 deletions(-)
 
-The patch has been tested and works fine. If you think it's too much change
-for 2.6.23-rc5, please schedule for 2.6.24 instead.
-
- arch/powerpc/kernel/ibmebus.c |   30 +++++++++---------------------
- 1 files changed, 9 insertions(+), 21 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 9a8c9af..d6a38cd 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -188,33 +188,21 @@ static struct ibmebus_dev* __devinit ibmebus_register_device_node(
- 	struct device_node *dn)
+diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
+index 13761bf..0af7291 100644
+--- a/arch/powerpc/boot/flatdevtree.c
++++ b/arch/powerpc/boot/flatdevtree.c
+@@ -354,16 +354,21 @@ static void ft_put_bin(struct ft_cxt *cxt, const void *data, unsigned int sz)
+ 	cxt->p += sza;
+ }
+ 
+-int ft_begin_node(struct ft_cxt *cxt, const char *name)
++char *ft_begin_node(struct ft_cxt *cxt, const char *name)
  {
- 	struct ibmebus_dev *dev;
--	const char *loc_code;
--	int length;
+ 	unsigned long nlen = strlen(name) + 1;
+ 	unsigned long len = 8 + _ALIGN(nlen, 4);
++	char *ret;
+ 
+ 	if (!ft_make_space(cxt, &cxt->p, FT_STRUCT, len))
+-		return -1;
++		return NULL;
++
++	ret = cxt->p;
++
+ 	ft_put_word(cxt, OF_DT_BEGIN_NODE);
+ 	ft_put_bin(cxt, name, strlen(name) + 1);
+-	return 0;
++
++	return ret;
+ }
+ 
+ void ft_end_node(struct ft_cxt *cxt)
+@@ -625,25 +630,17 @@ void ft_end_tree(struct ft_cxt *cxt)
+ 	bph->dt_strings_size = cpu_to_be32(ssize);
+ }
+ 
+-void *ft_find_device(struct ft_cxt *cxt, const char *srch_path)
+-{
+-	char *node;
 -
--	loc_code = of_get_property(dn, "ibm,loc-code", NULL);
--	if (!loc_code) {
--                printk(KERN_WARNING "%s: node %s missing 'ibm,loc-code'\n",
--		       __FUNCTION__, dn->name ? dn->name : "<unknown>");
--		return ERR_PTR(-EINVAL);
--        }
+-	/* require absolute path */
+-	if (srch_path[0] != '/')
+-		return NULL;
+-	node = ft_find_descendent(cxt, ft_root_node(cxt), srch_path);
+-	return ft_get_phandle(cxt, node);
+-}
 -
--	if (strlen(loc_code) == 0) {
--	        printk(KERN_WARNING "%s: 'ibm,loc-code' is invalid\n",
--		       __FUNCTION__);
--		return ERR_PTR(-EINVAL);
--	}
-+	int i, len, bus_len;
+-void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
+-                         const char *srch_path)
++void *ft_find_device(struct ft_cxt *cxt, const void *top, const char *srch_path)
+ {
+ 	char *node;
  
- 	dev = kzalloc(sizeof(struct ibmebus_dev), GFP_KERNEL);
--	if (!dev) {
-+	if (!dev)
- 		return ERR_PTR(-ENOMEM);
--	}
+-	node = ft_node_ph2node(cxt, top);
+-	if (node == NULL)
+-		return NULL;
++	if (top) {
++		node = ft_node_ph2node(cxt, top);
++		if (node == NULL)
++			return NULL;
++	} else {
++		node = ft_root_node(cxt);
++	}
  
- 	dev->ofdev.node = of_node_get(dn);
+ 	node = ft_find_descendent(cxt, node, srch_path);
+ 	return ft_get_phandle(cxt, node);
+@@ -945,7 +942,7 @@ int ft_del_prop(struct ft_cxt *cxt, const void *phandle, const char *propname)
+ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name)
+ {
+ 	struct ft_atom atom;
+-	char *p, *next;
++	char *p, *next, *ret;
+ 	int depth = 0;
  
--	length = strlen(loc_code);
--	memcpy(dev->ofdev.dev.bus_id, loc_code
--		+ (length - min(length, BUS_ID_SIZE - 1)),
--		min(length, BUS_ID_SIZE - 1));
-+	len = strlen(dn->full_name + 1);
-+	bus_len = min(len, BUS_ID_SIZE - 1);
-+	memcpy(dev->ofdev.dev.bus_id, dn->full_name + 1
-+	       + (len - bus_len), bus_len);
-+	for (i = 0; i < bus_len; i++)
-+		if (dev->ofdev.dev.bus_id[i] == '/')
-+			dev->ofdev.dev.bus_id[i] = '_';
+ 	if (parent) {
+@@ -970,9 +967,9 @@ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name)
+ 				break;
+ 			/* end of node, insert here */
+ 			cxt->p = p;
+-			ft_begin_node(cxt, name);
++			ret = ft_begin_node(cxt, name);
+ 			ft_end_node(cxt);
+-			return p;
++			return ft_get_phandle(cxt, ret);
+ 		}
+ 		p = next;
+ 	}
+diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
+index cb26325..2c1c826 100644
+--- a/arch/powerpc/boot/flatdevtree.h
++++ b/arch/powerpc/boot/flatdevtree.h
+@@ -76,7 +76,7 @@ struct ft_cxt {
+ 	unsigned int nodes_used;
+ };
  
- 	/* Register with generic device framework. */
- 	if (ibmebus_register_device_common(dev, dn->name) != 0) {
+-int ft_begin_node(struct ft_cxt *cxt, const char *name);
++char *ft_begin_node(struct ft_cxt *cxt, const char *name);
+ void ft_end_node(struct ft_cxt *cxt);
+ 
+ void ft_begin_tree(struct ft_cxt *cxt);
+@@ -96,9 +96,8 @@ int ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size);
+ 
+ void ft_dump_blob(const void *bphp);
+ void ft_merge_blob(struct ft_cxt *cxt, void *blob);
+-void *ft_find_device(struct ft_cxt *cxt, const char *srch_path);
+-void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
+-                         const char *srch_path);
++void *ft_find_device(struct ft_cxt *cxt, const void *top,
++                     const char *srch_path);
+ void *ft_find_descendent(struct ft_cxt *cxt, void *top, const char *srch_path);
+ int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
+ 		void *buf, const unsigned int buflen);
+diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+index 4341e65..8d1debe 100644
+--- a/arch/powerpc/boot/flatdevtree_misc.c
++++ b/arch/powerpc/boot/flatdevtree_misc.c
+@@ -18,7 +18,7 @@ static struct ft_cxt cxt;
+ 
+ static void *fdtm_finddevice(const char *name)
+ {
+-	return ft_find_device(&cxt, name);
++	return ft_find_device(&cxt, NULL, name);
+ }
+ 
+ static int fdtm_getprop(const void *phandle, const char *propname,
 -- 
-1.5.2
+1.5.0.3
