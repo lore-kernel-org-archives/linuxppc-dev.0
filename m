@@ -1,28 +1,12 @@
-Return-Path: <npiggin@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A65DADDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 10:59:10 +1000 (EST)
-Date: Wed, 29 Aug 2007 02:59:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Brent Casavant <bcasavan@sgi.com>
-Subject: Re: wmb vs mmiowb
-Message-ID: <20070829005904.GB25335@wotan.suse.de>
-References: <20070822045714.GD26374@wotan.suse.de>
-	<alpine.LFD.0.999.0708221049560.30176@woody.linux-foundation.org>
-	<200708221202.12403.jesse.barnes@intel.com>
-	<20070823022043.GB18788@wotan.suse.de>
-	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
-	<20070823042038.GI18788@wotan.suse.de>
-	<alpine.LFD.0.999.0708230915000.30176@woody.linux-foundation.org>
-	<1187886462.5972.17.camel@localhost.localdomain>
-	<20070824030904.GC6989@wotan.suse.de>
-	<20070828151737.P5403@pkunk.americas.sgi.com>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 29 Aug 2007 12:18:51 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Fix summary calculation in testsuite
+Message-ID: <20070829021851.GA25233@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070828151737.P5403@pkunk.americas.sgi.com>
-Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,64 +16,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 28, 2007 at 03:56:28PM -0500, Brent Casavant wrote:
-> On Fri, 24 Aug 2007, Nick Piggin wrote:
-> 
-> > And all platforms other than sn2 don't appear to reorder IOs after
-> > they leave the CPU, so only sn2 needs to do the mmiowb thing before
-> > spin_unlock.
-> 
-> I'm sure all of the following is already known to most readers, but
-> I thought the paragraph above might potentially cause confusion as
-> to the nature of the problem mmiowb() is solving on SN2.  So for
-> the record...
-> 
-> SN2 does not reorder IOs issued from a single CPU (that would be
-> insane).  Neither does it reorder IOs once they've reached the IO
-> fabric (equally insane).  From an individual CPU's perspective, all
-> IOs that it issues to a device will arrive at that device in program
-> order.
+The bookkeeping for producing the testsuite summary (total number of
+tests passed, failed and so forth) is broken.  It uses $? across
+several tests, but for checks after the first, the value of $? will no
+longer contain the original return code, but just that from the
+previous test.  This patch fixes the problem.
 
-This is why I think mmiowb() is not like a Linux memory barrier.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-And I presume that the device would see IOs and regular stores from
-a CPU in program order, given the correct wmb()s? (but maybe I'm
-wrong... more below).
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2007-08-29 12:04:11.000000000 +1000
++++ dtc/tests/run_tests.sh	2007-08-29 12:04:37.000000000 +1000
+@@ -15,12 +15,15 @@
+     echo -n "$@:	"
+     if PATH=".:$PATH" $ENV "$@"; then
+ 	tot_pass=$[tot_pass + 1]
+-    elif [ "$?" == "1" ]; then
+-	tot_config=$[tot_config + 1]
+-    elif [ "$?" == "2" ]; then
+-	tot_fail=$[tot_fail + 1]
+     else
+-	tot_strange=$[tot_strange + 1]
++	ret="$?"
++	if [ "$ret" == "1" ]; then
++	    tot_config=$[tot_config + 1]
++	elif [ "$ret" == "2" ]; then
++	    tot_fail=$[tot_fail + 1]
++	else
++	    tot_strange=$[tot_strange + 1]
++	fi
+     fi
+ }
+ 
 
-
-> (In this entire message, all IOs are assumed to be memory-mapped.)
-> 
-> The problem mmiowb() helps solve on SN2 is the ordering of IOs issued
-> from multiple CPUs to a single device.  That ordering is undefined, as
-> IO transactions are not ordered across CPUs.  That is, if CPU A issues
-> an IO at time T, and CPU B at time T+1, CPU B's IO may arrive at the
-> IO fabric before CPU A's IO, particularly if CPU B happens to be closer
-> than CPU B to the target IO bridge on the NUMA network.
-> 
-> The simplistic method to solve this is a lock around the section
-> issuing IOs, thereby ensuring serialization of access to the IO
-> device.  However, as SN2 does not enforce an ordering between normal
-> memory transactions and memory-mapped IO transactions, you cannot
-> be sure that an IO transaction will arrive at the IO fabric "on the
-> correct side" of the unlock memory transaction using this scheme.
-
-Hmm. So what if you had the following code executed by a single CPU:
-
-writel(data, ioaddr);
-wmb(); 
-*mem = 10;
-
-Will the device see the io write before the store to mem?
-
-
-> Enter mmiowb().
-> 
-> mmiowb() causes SN2 to drain the pending IOs from the current CPU's
-> node.  Once the IOs are drained the CPU can safely unlock a normal
-> memory based lock without fear of the unlock's memory write passing
-> any outstanding IOs from that CPU.
-
-mmiowb needs to have the disclaimer that it's probably wrong if called
-outside a lock, and it's probably wrong if called between two io writes
-(need a regular wmb() in that case). I think some drivers are getting
-this wrong.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
