@@ -1,19 +1,22 @@
-Return-Path: <SRS0=yXWv=N2=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 61620DDE2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 22:26:58 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BBC8FDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 23:36:27 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l7TDZLVW019947
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 17:35:21 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l7TDZK4o019944
+	for linuxppc-dev@ozlabs.org; Wed, 29 Aug 2007 17:35:20 +0400
+Date: Wed, 29 Aug 2007 17:35:20 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/4] PowerPC 440EPx: Sequoia bootwrapper
-Date: Wed, 29 Aug 2007 14:28:23 +0200
-References: <20070828165321.GA1501@ru.mvista.com>
-	<20070828130921.13809093@weaponx.rchland.ibm.com>
-	<46D56226.8020500@ru.mvista.com>
-In-Reply-To: <46D56226.8020500@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708291428.23522.sr@denx.de>
+Subject: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
+Message-ID: <20070829133520.GA19925@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 29 August 2007, Valentine Barshak wrote:
-> >> +#define DDR_GET_VAL(val, mask, shift)	(((val) >> (shift)) & (mask))
-> >
-> > Hm.  Having these as just DDR_... seems like it would lead to confusion
-> > if there are other DDR controllers that get added later.  But I'm not
-> > too picky either way.
->
-> What names would you suggest? DDR_DENALI_... looks too long :)
-> The names have been taken from the docs, I've just prefixed them with DDR_.
-
-It's such a generic macro and not Denali or even SDRAM specific. So it really 
-should be no problem to keep it as is.
-
-Just my 0.02$.
-
-Best regards,
-Stefan
+The following patches add initial PowerPC 440EPx Sequoia board support.
+The code is based mainly on the Bamboo board support by Josh Boyer.
+These patches have been modified according the comments for the previous
+440EPx Sequoia patch series.
