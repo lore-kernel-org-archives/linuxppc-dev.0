@@ -4,14 +4,14 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 365B8DDEDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:47:50 +1000 (EST)
-Date: Wed, 29 Aug 2007 11:47:43 -0500
+	by ozlabs.org (Postfix) with ESMTP id DDD5DDDEDE
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 02:47:51 +1000 (EST)
+Date: Wed, 29 Aug 2007 11:47:35 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 7/9] bootwrapper: Only print MAC addresses when the node is
-	actually present.
-Message-ID: <20070829164743.GE31640@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 4/9] bootwrapper: Move strncmp() from flatdevtree_env.h to
+	string.S/string.h.
+Message-ID: <20070829164735.GC31640@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
@@ -25,38 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some firmwares (such as PlanetCore) only provide a base MAC address, and
-expect the kernel to set certain bits to generate the addresses for the
-other ports.  As such, MAC addresses are generated that may not correspond
-to actual hardware.
+It will be needed for PlanetCore firmware support.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/devtree.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+I prepared this patch before David posted his patch which also
+does strstr; if you apply that one, then please ignore this one.
 
-diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-index e1b8122..549463b 100644
---- a/arch/powerpc/boot/devtree.c
-+++ b/arch/powerpc/boot/devtree.c
-@@ -100,12 +100,14 @@ void __dt_fixup_mac_addresses(u32 startindex, ...)
- 		devp = find_node_by_prop_value(NULL, "linux,network-index",
- 					       (void*)&index, sizeof(index));
+ arch/powerpc/boot/flatdevtree_env.h |   14 +-------------
+ arch/powerpc/boot/string.S          |   13 +++++++++++++
+ arch/powerpc/boot/string.h          |    1 +
+ 3 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/boot/flatdevtree_env.h b/arch/powerpc/boot/flatdevtree_env.h
+index 83bc1c7..643bf7f 100644
+--- a/arch/powerpc/boot/flatdevtree_env.h
++++ b/arch/powerpc/boot/flatdevtree_env.h
+@@ -2,7 +2,7 @@
+  * This file adds the header file glue so that the shared files
+  * flatdevicetree.[ch] can compile and work in the powerpc bootwrapper.
+  *
+- * strncmp & strchr copied from <file:lib/strings.c>
++ * strchr copied from <file:lib/strings.c>
+  * Copyright (C) 1991, 1992  Linus Torvalds
+  *
+  * Maintained by: Mark A. Greer <mgreer@mvista.com>
+@@ -24,18 +24,6 @@
+ #define be64_to_cpu(x)		(x)
+ #define cpu_to_be64(x)		(x)
  
--		printf("ENET%d: local-mac-address <-"
--		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
--		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-+		if (devp) {
-+			printf("ENET%d: local-mac-address <-"
-+			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
-+			       addr[0], addr[1], addr[2],
-+			       addr[3], addr[4], addr[5]);
+-static inline int strncmp(const char *cs, const char *ct, size_t count)
+-{
+-	signed char __res = 0;
+-
+-	while (count) {
+-		if ((__res = *cs - *ct++) != 0 || !*cs++)
+-			break;
+-		count--;
+-	}
+-	return __res;
+-}
+-
+ static inline char *strchr(const char *s, int c)
+ {
+ 	for (; *s != (char)c; ++s)
+diff --git a/arch/powerpc/boot/string.S b/arch/powerpc/boot/string.S
+index ac3d43b..ce68c58 100644
+--- a/arch/powerpc/boot/string.S
++++ b/arch/powerpc/boot/string.S
+@@ -61,6 +61,19 @@ strcmp:
+ 	beq	1b
+ 	blr
  
--		if (devp)
- 			setprop(devp, "local-mac-address", addr, 6);
-+		}
++	.globl strncmp
++strncmp:
++	mtctr	r5
++	addi	r5,r3,-1
++	addi	r4,r4,-1
++1:	lbzu	r3,1(r5)
++	cmpwi	1,r3,0
++	lbzu	r0,1(r4)
++	subf.	r3,r0,r3
++	beqlr	1
++	bdnzt	2, 1b
++	blr
++
+ 	.globl	strlen
+ strlen:
+ 	addi	r4,r3,-1
+diff --git a/arch/powerpc/boot/string.h b/arch/powerpc/boot/string.h
+index 9fdff1c..db401b7 100644
+--- a/arch/powerpc/boot/string.h
++++ b/arch/powerpc/boot/string.h
+@@ -6,6 +6,7 @@ extern char *strcpy(char *dest, const char *src);
+ extern char *strncpy(char *dest, const char *src, size_t n);
+ extern char *strcat(char *dest, const char *src);
+ extern int strcmp(const char *s1, const char *s2);
++extern int strncmp(const char *s1, const char *s2, size_t n);
+ extern size_t strlen(const char *s);
+ extern size_t strnlen(const char *s, size_t count);
  
- 		index++;
- 	}
 -- 
 1.5.0.3
