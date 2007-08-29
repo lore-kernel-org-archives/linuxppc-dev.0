@@ -1,22 +1,24 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25D32DDE3C
+Return-Path: <orutsch@sympatec.com>
+Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
+	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 32FE9DDE28
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 05:02:06 +1000 (EST)
-Date: Tue, 28 Aug 2007 14:01:58 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
-Subject: Re: ppc_8xx-gcc from eldk strange behaviour
-Message-ID: <20070828190158.GA21155@ld0162-tx32.am.freescale.net>
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E2649AF@aquib01a>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 29 Aug 2007 16:03:52 +1000 (EST)
+Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
+	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
+	with ESMTPSA id 1981129 for linuxppc-embedded@ozlabs.org;
+	Wed, 29 Aug 2007 08:04:05 +0200
+Message-ID: <46D50C0B.80402@sympatec.com>
+Date: Wed, 29 Aug 2007 08:02:51 +0200
+From: Oliver Rutsch <orutsch@sympatec.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: STK5200 pci_enable_device problem
+References: <20070827191419.9A9CE24044@gemini.denx.de>
+	<7B9A8FF57DBB524190E98CABF6E56F070B9283@itri.bte.mam.gov.tr>
+In-Reply-To: <7B9A8FF57DBB524190E98CABF6E56F070B9283@itri.bte.mam.gov.tr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,12 +29,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 28, 2007 at 08:56:10PM +0200, DI BACCO ANTONIO - technolabs wrote:
-> If I compile it with host gcc, there is no warning and the message "x is negative" is printed.
-> If I compile it with ppc_8xx-gcc there is a warning "main.c:11: warning: comparison is always false due to limited range of data type" and the program prints message "x is positive". 
-> To correct the problem I have to put signed before char.
+Hi Mustafa,
 
-C does not specify the signedness of char.  If you care, you need to
-explicitly specify.
+> Hi,
+> 
+> i build Linux-2.6.22-gbcfc8d37 kernel lastest kernel from denx git for 
+> the board (STK5200 with TQM5200-AB).
+> ELDK 4.1 version is used.
+> 
+> make mrproper
+> export ARCH=powerpc
+> make tqm5200_defconfig
+> make uImage
+> 
+> It hangs on after  following line
+>   Uncompressing Kernel Image ... OK
+> 
 
--Scott
+I encountered exactly the same problem. Using U-Boot 1.2 with Kernel 
+Linux-2.6.22-gef92f1d7 and a TQM5200S-BD module on the STK52000. I tried 
+to modify some kernel settings but it always stopped booting at the 
+"Uncompressing Kernel Image ... OK" line.
+
+Bye,
+-- 
+Dipl. Ing. Oliver Rutsch
