@@ -1,21 +1,20 @@
-Return-Path: <fvoegel@carangul.com>
-Received: from asgard.akp-net.com (carangul.com [83.149.88.131])
-	by ozlabs.org (Postfix) with ESMTP id 0AE51DDDF9
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 42362DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 08:04:46 +1000 (EST)
-Received: from port-87-234-84-145.dynamic.qsc.de ([87.234.84.145] helo=lumpi.x)
-	by asgard.akp-net.com with esmtpa (Exim 4.62)
-	(envelope-from <fvoegel@carangul.com>) id 1IQVeU-0005nR-0P
-	for linuxppc-embedded@ozlabs.org; Thu, 30 Aug 2007 00:04:42 +0200
-Date: Thu, 30 Aug 2007 01:07:52 +0200
-From: "Florian A. Voegel" <fvoegel@carangul.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Network is blocked till ping is issued
-Message-Id: <20070830010752.0ca3d309.fvoegel@carangul.com>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8EA18695@aquib01a>
-References: <F1F6EC0C8B75034F9E3A79FC85122E8EA18695@aquib01a>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Aug 2007 08:28:56 +1000 (EST)
+In-Reply-To: <40D0BF15B1434F469B8639BF3A31D6F20B5F28@wiems02014.ceu.corp.heidelberg.com>
+References: <40D0BF15B1434F469B8639BF3A31D6F20B5F28@wiems02014.ceu.corp.heidelberg.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <35461E70-20B4-4459-A76A-9519DCCE310A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: ppc/powerpc, remote debugging (ptrace), floating point variables
+Date: Wed, 29 Aug 2007 17:31:14 -0500
+To: "Visser, Udo RD-IS-E23" <Udo.Visser@heidelberg.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,27 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Antonio,
 
-sounds to me like it could be a classical ARP problem. Have you checked the ARP cache on the non-Linux machine?
+On Aug 28, 2007, at 4:40 AM, Visser, Udo RD-IS-E23 wrote:
 
-On Wed, 29 Aug 2007 19:27:19 +0200
-"DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it> wrote:
+>
+> Hello world, ;-)
+>
+> when stepping through my own software, which is using floating =20
+> point variables, gdb showed weird results (mostly NAN=B4s) for these =20=
 
-> I have two hosts 100.1.0.1 (NotLinux) and 100.1.0.2 (linux-2.6.19.2) on
-> a vlan.
-> On the linux box the vlan interface is created with vconfig and is
-> attached to a Virtual PHY (fixed PHY).
-> When Linux box starts up, NotLinux wants to setup a TCP connection with
-> "Linux box" and sends a SYN packet receiving no answer from "Linux box".
-> If from the console of "Linux box" I issue a ping to NotLinux then,
-> after a while, the linux box starts responding to Windows.
-> 
-> Bye,
-> Antonio.
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+> variables. Running the software without gdb did not show any =20
+> problems. The software is compiled with floating point instructions =20=
+
+> and the results (without gdb) are OK.
+>
+> My setup:
+>
+> MPC8349 target, "home grown", much like the MPC8349EMDS, running =20
+> 2.6.16 (ppc)
+> GDB, gdbserver 6.3 connected via ethernet with my Linux Host.
+>
+>
+> What I did to get rid of the described problem:
+>
+> In module:     arch/powerpc/kernel/process.c
+> In function:   void flush_fp_to_thread(struct tast_struct *tsk)
+>
+> I changed the line:  giveup_fpu(current);
+> to:                  giveup_fpu(tsk);
+>
+>
+> Now my questions: Has anybody else had such problems?
+>                   Have I found a bug, or will I encounter any yet =20
+> unknown problems in the near future?
+>
+> I would appreciate any comment on my changes, especially from the =20
+> maintainers.
+
+I have a patch to fix just this issue.
+
+take a look at:
+
+http://patchwork.ozlabs.org/linuxppc/patch?id=3D13219
+
+- k
