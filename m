@@ -1,16 +1,14 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Please pull from 'for-2.6.23'
-Date: Thu, 30 Aug 2007 01:42:13 +0200
-References: <Pine.LNX.4.64.0708291727240.26956@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0708291727240.26956@blarg.am.freescale.net>
+Return-Path: <olof@lixom.net>
+Date: Wed, 29 Aug 2007 17:52:10 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@ozlabs.org
+Subject: Re: [PATCH] Move serial_dev_init to device_initcall()
+Message-ID: <20070829225210.GA5891@lixom.net>
+References: <20070823002637.GA24332@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708300142.14277.arnd@arndb.de>
-Cc: Christian Krafft <krafft@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Jeremy Kerr <jk@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070823002637.GA24332@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,66 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 30 August 2007, Kumar Gala wrote:
-> Please pull from 'for-2.6.23' branch of
+On Wed, Aug 22, 2007 at 07:26:37PM -0500, Olof Johansson wrote:
+> With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
+> initcall is now called before I/O space is setup, but it's dependent on
+> it being available.
 > 
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.23
-> 
+> Since there's no way to make dependencies between initcalls, we'll just
+> have to move it to device_initcall(). Yes, it's suboptimal but I'm not
+> aware of any better solution at this time.
 
-I also have a fix for the regression reported by Ishizaki Kou, see below.
+Paul, could we get this into 2.6.23? It's a regression from before.
 
-I've added that to Kumar's patches and uploaded to my git tree. Please
-pull from
+Andy Fleming reported no problems on the MMIO-based UART board he tested
+with, and Milton said the patch didn't break qemu/prep that has PIO UART
+(he hasn't yet tested to see if it's really required there though).
 
-master.kernel.org:/pub/scm/linux/kernel/git/arnd/cell-2.6.git for-2.6.23
 
-provided that Jeremy gives his OK.
-
-	Arnd <><
-
----
-Subject: spu_manage: fix spu_unit_number for celleb device tree
-
-From: Christian Krafft <krafft@de.ibm.com>
-This fixes a regression introduced with 2.6.23-rc4 after on some
-confusion about the device tree interfaces.
-
-IBM QS21 device trees provide "physical-id", so we changed the code to
-run on that and remain compatible with all IBM machines.
-
-However, the Toshiba Celleb device tree provides the "unit-id" property,
-which was in the Linux code, but never used in this way on IBM hardware.
-
-Legacy device tree used the reg property for the physical id of an spe.
-This patch fixes find_spu_unit_number to look for the spu id in that order.
-The length is checked to avoid misinterpretation in case the attributes
-unit-id or reg do not contain the id.
-
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Cc: Jeremy Kerr <jk@ozlabs.org>
-Cc: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-
-Index: linux-2.6/arch/powerpc/platforms/cell/spu_manage.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spu_manage.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spu_manage.c
-@@ -48,10 +48,18 @@ static u64 __init find_spu_unit_number(s
- {
- 	const unsigned int *prop;
- 	int proplen;
-+
-+	/* new device trees should provide the physical-id attribute */
- 	prop = of_get_property(spe, "physical-id", &proplen);
- 	if (proplen == 4)
- 		return (u64)*prop;
- 
-+	/* celleb device tree provides the unit-id */
-+	prop = of_get_property(spe, "unit-id", &proplen);
-+	if (proplen == 4)
-+		return (u64)*prop;
-+
-+	/* legacy device trees provide the id in the reg attribute */
- 	prop = of_get_property(spe, "reg", &proplen);
- 	if (proplen == 4)
- 		return (u64)*prop;
+-Olof
