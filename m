@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 29 Aug 2007 15:39:41 +1000
+Date: Wed, 29 Aug 2007 15:45:40 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] Introduce new CPM device bindings.
-Message-ID: <20070829053941.GC3206@localhost.localdomain>
+Subject: Re: [PATCH 3/3] Add early debug console for CPM serial ports.
+Message-ID: <20070829054540.GD3206@localhost.localdomain>
 References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201619.GB24210@ld0162-tx32.am.freescale.net>
+	<20070828201621.GC24210@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070828201619.GB24210@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070828201621.GC24210@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,162 +19,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Aug 28, 2007 at 03:16:19PM -0500, Scott Wood wrote:
-> This introduces a new device binding for the CPM and other devices on
-> these boards.  Some of the changes include:
+On Tue, Aug 28, 2007 at 03:16:21PM -0500, Scott Wood wrote:
+> This code assumes that the ports have been previously set up, with
+> buffers in DPRAM, and the descriptor address defined by platform code.
 > 
-> 1. Proper namespace scoping for Freescale compatibles and properties.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/Kconfig.debug       |    9 +++++++
+>  arch/powerpc/kernel/head_32.S    |   16 +++++++++++++
+>  arch/powerpc/kernel/udbg.c       |    2 +
+>  arch/powerpc/sysdev/Makefile     |    1 +
+>  arch/powerpc/sysdev/cpm_common.c |   44 ++++++++++++++++++++++++++++++++++++++
+>  arch/powerpc/sysdev/cpm_common.h |   16 +++++++++++++
+>  include/asm-powerpc/udbg.h       |    1 +
+>  7 files changed, 89 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/sysdev/cpm_common.c
+>  create mode 100644 arch/powerpc/sysdev/cpm_common.h
 > 
-> 2. Use compatible rather than things like device_type and model
-> to determine which particular variant of a device is present.
-> 
-> 3. Give the drivers the relevant CPM command word directly, rather than
-> requiring it to have a lookup table based on device-id, SCC v. SMC, and
-> CPM version.
-> 
-> 4. Specify the CPCR and the usable DPRAM region in the CPM's reg property.
-> 
-> Boards that do not require the legacy bindings should select
-> CONFIG_PPC_CPM_NEW_BINDING to enable the of_platform CPM devices. Once
-> all existing boards are converted and tested, the config option can
-> become default y to prevent new boards from using the old model.  Once
-> arch/ppc is gone, the config option can be removed altogether.
+> diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> index 22acece..d471154 100644
+> --- a/arch/powerpc/Kconfig.debug
+> +++ b/arch/powerpc/Kconfig.debug
+> @@ -211,6 +211,15 @@ config PPC_EARLY_DEBUG_44x
+>  	  Select this to enable early debugging for IBM 44x chips via the
+>  	  inbuilt serial port.
+>  
+> +config PPC_EARLY_DEBUG_CPM
+> +	bool "Early serial debugging for Freescale CPM-based serial ports"
+> +	depends on SERIAL_CPM
+> +	select PIN_TLB if PPC_8xx
 
-I think it would be better to change the name and reverse the sense of
-this config option, since what it actually does is disable the old
-binding, not enable the new one.
+I see this Kconfig line, but I don't see any code below that would set
+up a suitable TLB on 8xx for the CPM...?
 
 [snip]
-> @@ -1824,6 +1827,170 @@ platforms are moved over to use the flattened-device-tree model.
->  		fsl,has-rstcr;
->  	};
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+> index 08ce31e..5063e74 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -34,6 +34,7 @@ endif
 >  
-> +   l) Freescale Communications Processor Module
+>  # Temporary hack until we have migrated to asm-powerpc
+>  ifeq ($(ARCH),powerpc)
+> +obj-$(CONFIG_CPM1)$(CONFIG_CPM2) += cpm_common.o
+
+Uh.. I don't think this will work properly.  If CONFIG_CPM1 and
+CONFIG_CPM2 are both enabled, it will set obj-yy rather than obj-y.
+
+>  obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
+>  obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
+>  obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
+> diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+> new file mode 100644
+> index 0000000..1972a8f
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/cpm_common.c
+> @@ -0,0 +1,44 @@
+> +/*
+> + * Common CPM code
+> + *
+> + * Author: Scott Wood <scottwood@freescale.com>
+> + *
+> + * Copyright 2007 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of version 2 of the GNU General Public License as
+> + * published by the Free Software Foundation.
+> + */
 > +
-> +   NOTE: This is an interim binding, and will likely change slightly,
-> +   as more devices are supported.  The QE bindings especially are
-> +   incomplete.
+> +#include <linux/init.h>
+> +#include <asm/udbg.h>
+> +#include <asm/io.h>
+> +#include <asm/system.h>
+> +#include <mm/mmu_decl.h>
+> +#include "cpm_common.h"
 > +
-> +   i) Root CPM node
+> +#ifdef CONFIG_PPC_EARLY_DEBUG_CPM
+> +static void udbg_putc_cpm(char c)
+> +{
+> +	u8 __iomem *txbuf = (u8 __iomem __force *)in_be32(&cpm_udbg_txdesc[1]);
 > +
-> +   Properties:
-> +   - compatible : "fsl,cpm1", "fsl,cpm2", or "fsl,qe".
-> +   - reg : The first resource is a 48-byte region beginning with
-> +           CPCR.  The second is the available general-purpose
-> +           DPRAM.
-> +   - fsl,brg-frequency : the internal clock source frequency for baud-rate
-> +     generators in Hz.
+> +	if (c == '\n')
+> +		udbg_putc('\r');
 > +
-> +   Example:
-> +	cpm@119c0 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		#interrupt-cells = <2>;
-> +		compatible = "fsl,mpc8272-cpm", "fsl,cpm2";
-> +		reg = <119c0 30 0 2000>;
-> +		bus-frequency = <d#25000000>;
+> +	while (in_be32(&cpm_udbg_txdesc[0]) & 0x80000000)
+> +		;
+> +
+> +	out_8(txbuf, c);
+> +	out_be32(&cpm_udbg_txdesc[0], 0xa0000001);
+> +}
+> +
+> +void __init udbg_init_cpm(void)
+> +{
+> +	if (cpm_udbg_txdesc) {
+> +#ifdef CONFIG_CPM2
+> +		setbat(1, 0xf0000000, 0xf0000000, 1024*1024, _PAGE_IO);
+> +#endif
+> +		udbg_putc = udbg_putc_cpm;
 > +	}
+> +}
+> +#endif
 
-Your example has bus-frequency, but lacks fsl,brg-frequency, in
-contrast to the description above.
+Since this is all udbg related, it could go (within an ifdef) into
+udbg.c rather than creating a new file for it.
 
-Since you have a separate brg node defined below, maybe
-fsl,brg-frequency should just be replaced with a 'clock-frequency'
-property in that subnode.
+> diff --git a/arch/powerpc/sysdev/cpm_common.h b/arch/powerpc/sysdev/cpm_common.h
+> new file mode 100644
+> index 0000000..f42343f
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/cpm_common.h
+> @@ -0,0 +1,16 @@
+> +#ifndef _POWERPC_SYSDEV_CPM_COMMON_H
+> +#define _POWERPC_SYSDEV_CPM_COMMON_H
+> +
+> +#include <linux/types.h>
+> +
+> +/*
+> + * Board code must define this address if the early console is used.
+> + *
+> + * Note that this is not multi-platform safe, and thus the CPM
+> + * UDBG console must only be enabled when only a single platform
+> + * is selected.  It is done this way because udbg init runs before
+> + * platform probing.
+> + */
+> +extern u32 __iomem *cpm_udbg_txdesc;
 
-> +   ii) Properties common to mulitple CPM/QE devices
-> +
-> +   - fsl,cpm-command : This value is ORed with the opcode and command flag
-> +                       to specify the device on which a CPM command operates.
-> +
-> +   - fsl,cpm-brg : Indicates which baud rate generator the device
-> +                   is associated with.  If absent, an unused BRG
-> +                   should be dynamically allocated.
-
-Maybe a property with the brg node's phandle could be included as
-well, to avoid having to hop up to the CPM node, then back down to the
-brg-compatible node to find it?
-
-Or maybe even have a separate subnode for each brg, and just have a
-phandle to reference it from the other devices, rather than using this
-index.
+Urg... this is ugly, because it looks like it can be muti-platform,
+but actually isn't.  I think a better approach is to set the magic
+address as a Kconfig variable, as we do on 44x.  This approach can
+also be useful for hacking up early debug for new chips during the
+process of creating platform code for them.
 
 > +
-> +   - reg : Unless otherwise specified, the first resource represents the
-> +           scc/fcc/ucc registers, and the second represents the device's
-> +           parameter RAM region (if it has one).
-> +
-> +   iii) Serial
-> +
-> +   Currently defined compatibles:
-> +   - fsl,cpm1-smc-uart
-> +   - fsl,cpm2-smc-uart
-> +   - fsl,cpm1-scc-uart
-> +   - fsl,cpm2-scc-uart
-> +   - fsl,qe-uart
-> +
-> +   Example:
-> +
-> +	serial@11a00 {
-> +		device_type = "serial";
-> +		compatible = "fsl,mpc8272-scc-uart",
-> +		             "fsl,cpm2-scc-uart";
-> +		reg = <11a00 20 8000 100>;
-> +		interrupts = <28 8>;
-> +		interrupt-parent = <&PIC>;
-> +		fsl,cpm-brg = <1>;
-> +		fsl,cpm-command = <00800000>;
-> +	};
-> +
-> +   iii) Network
-> +
-> +   Currently defined compatibles:
-> +   - fsl,cpm1-scc-enet
-> +   - fsl,cpm2-scc-enet
-> +   - fsl,cpm1-fec-enet
-> +   - fsl,cpm2-fcc-enet (third resource is GFEMR)
-> +   - fsl,qe-enet
-> +
-> +   Example:
-> +
-> +	ethernet@11300 {
-> +		device_type = "network";
-> +		compatible = "fsl,mpc8272-fcc-enet",
-> +		             "fsl,cpm2-fcc-enet";
-> +		reg = <11300 20 8400 100 11390 1>;
-> +		local-mac-address = [ 00 00 00 00 00 00 ];
-> +		interrupts = <20 8>;
-> +		interrupt-parent = <&PIC>;
-> +		phy-handle = <&PHY0>;
-> +		linux,network-index = <0>;
-> +		fsl,cpm-command = <12000300>;
-> +	};
-
-Should this also have a phandle pointer to the mdio node?
-
-> +   iv) MDIO
-> +
-> +   Currently defined compatibles:
-> +   fsl,pq1-fec-mdio (reg is same as first resource of FEC device)
-> +   fsl,cpm2-mdio-bitbang (reg is port C registers)
-> +
-> +   Properties for fsl,cpm2-mdio-bitbang:
-> +   fsl,mdio-pin : pin of port C controlling mdio data
-> +   fsl,mdc-pin : pin of port C controlling mdio clock
-> +
-> +   Example:
-> +
-> +	mdio@10d40 {
-> +		device_type = "mdio";
-> +		compatible = "fsl,mpc8272ads-mdio-bitbang",
-> +		             "fsl,mpc8272-mdio-bitbang",
-> +		             "fsl,cpm2-mdio-bitbang";
-> +		reg = <10d40 14>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		fsl,mdio-pin = <12>;
-> +		fsl,mdc-pin = <13>;
-> +	};
+> +#endif
+> diff --git a/include/asm-powerpc/udbg.h b/include/asm-powerpc/udbg.h
+> index ce9d82f..a9e0b0e 100644
+> --- a/include/asm-powerpc/udbg.h
+> +++ b/include/asm-powerpc/udbg.h
+> @@ -48,6 +48,7 @@ extern void __init udbg_init_rtas_console(void);
+>  extern void __init udbg_init_debug_beat(void);
+>  extern void __init udbg_init_btext(void);
+>  extern void __init udbg_init_44x_as1(void);
+> +extern void __init udbg_init_cpm(void);
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_UDBG_H */
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
