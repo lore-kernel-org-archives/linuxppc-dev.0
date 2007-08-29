@@ -1,12 +1,11 @@
-Return-Path: <charanya.venkatraman@gmail.com>
-Message-ID: <fa84b3da0708290938l40d8f543oc0e34fa9bea806a4@mail.gmail.com>
-Date: Wed, 29 Aug 2007 22:08:01 +0530
-From: "charanya venkatraman" <charanya.venkatraman@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: 2.6 kernel hangs after loading device tree
+Return-Path: <jochen@scram.de>
+Message-ID: <46D5A715.7090802@scram.de>
+Date: Wed, 29 Aug 2007 19:04:21 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_2018_31310481.1188405481450"
+To: Linuxppc-embedded@ozlabs.org
+Subject: [PATCH] Fix CPM1 uart console
+Content-Type: multipart/mixed; boundary="------------080708010403060404070909"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,46 +16,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2018_31310481.1188405481450
-Content-Type: text/plain; charset=ISO-8859-1
+This is a multi-part message in MIME format.
+--------------080708010403060404070909
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hi all
-       Sorry about the previous mail.Got sent  by mistake.
+The powerpc version of commproc.c doesn't export cpm_dpram_phys due to
+a typo. The ppc version of cpm_dpram_addr returns a usable virtual address
+mapped to a physical address at the same location. cpm_dpram_phys returns
+complete garbage as it tries to calculate an offset based on an otherwise
+unused virtual adress returned by ioremap.
 
-Iam using the 2.6.22.5 kernel on MPC 8560 and MPC8540 on my custom
-board.Mykernel hangs after loading the device tree in both the
-processors .There is
-no output on the serial port after loading the device tree.Am using U-boot
-1.2.0 as the bootloader.After enabling debug in u-boot i could see that the
-control is getting transferred to the kernel after which it hangs.Earlier i
-tried using 2.6.21 which also hangs at the same point.The config files used
-were MPC8540ADS_defconfig and MPC8560ADS_defconfig under powerpc directory.
-The changes that were made to the device tree are:
-1.The reg and ranges properties of the soc node have been changed to account
-for the change in CCSRBAR of my board.
-2.Removed the PCI,mdio nodes and ethernet nodes since i dont need support
-for these as of now.
+This patch fixes the typo for powerpc and removes the unnecessary ioremap
+and corresponding virtual address for ppc.
 
-I have tried the following console arguments:
-MPC8540: bootargs root=/dev/ram rw console=ttyS0,115200
-MPC8560:bootargs root=/dev/ram rw console=ttyCPM0,115200
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c |    2 +-
+ arch/ppc/8xx_io/commproc.c     |    4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-Any help on this issue??
-
-Thanks.
-Charanya.
-
-------=_Part_2018_31310481.1188405481450
-Content-Type: text/html; charset=ISO-8859-1
+--------------080708010403060404070909
+Content-Type: text/x-patch;
+ name="60d3d5feb1e51a5c0d839c4b7b2b683b82b43fee.diff"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Disposition: inline;
+ filename="60d3d5feb1e51a5c0d839c4b7b2b683b82b43fee.diff"
 
-Hi all<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sorry about the previous mail.Got sent&nbsp; by mistake.<br><br>Iam using the <a href="http://2.6.22.5">2.6.22.5</a> kernel on MPC 8560 and MPC8540 on my custom board.My kernel hangs after loading the device tree in both the processors .There is no output on the serial port after loading the device 
-tree.Am using U-boot 1.2.0 as the bootloader.After enabling debug in u-boot i could see that the control is getting transferred to the kernel after which it hangs.Earlier i tried using 2.6.21 which also hangs at the same 
-point.The config files used were MPC8540ADS_defconfig and MPC8560ADS_defconfig under powerpc directory.<br>The changes that were made to the device tree are:<br>1.The reg and ranges properties of the soc node have been changed to account for the change in CCSRBAR of my board.
-<br>2.Removed the PCI,mdio nodes and ethernet nodes since i dont need support for these as of now.<br><br>I have tried the following console arguments:<br>MPC8540: bootargs root=/dev/ram rw console=ttyS0,115200<br>MPC8560:bootargs root=/dev/ram rw console=ttyCPM0,115200
-<br><br>Any help on this issue??<br><br>Thanks.<br>Charanya.<br><br><br>
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index 4f67b89..dd5417a 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -395,4 +395,4 @@ uint cpm_dpram_phys(u8* addr)
+ {
+ 	return (dpram_pbase + (uint)(addr - dpram_vbase));
+ }
+-EXPORT_SYMBOL(cpm_dpram_addr);
++EXPORT_SYMBOL(cpm_dpram_phys);
+diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+index 7088428..593b939 100644
+--- a/arch/ppc/8xx_io/commproc.c
++++ b/arch/ppc/8xx_io/commproc.c
+@@ -379,14 +379,12 @@ static rh_block_t cpm_boot_dpmem_rh_block[16];
+ static rh_info_t cpm_dpmem_info;
+ 
+ #define CPM_DPMEM_ALIGNMENT	8
+-static u8* dpram_vbase;
+ static uint dpram_pbase;
+ 
+ void m8xx_cpm_dpinit(void)
+ {
+ 	spin_lock_init(&cpm_dpmem_lock);
+ 
+-	dpram_vbase = immr_map_size(im_cpm.cp_dpmem, CPM_DATAONLY_BASE + CPM_DATAONLY_SIZE);
+ 	dpram_pbase = (uint)&((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem;
+ 
+ 	/* Initialize the info header */
+@@ -465,6 +463,6 @@ EXPORT_SYMBOL(cpm_dpram_addr);
+ 
+ uint cpm_dpram_phys(u8* addr)
+ {
+-	return (dpram_pbase + (uint)(addr - dpram_vbase));
++	return (uint)addr;
+ }
+ EXPORT_SYMBOL(cpm_dpram_phys);
 
-------=_Part_2018_31310481.1188405481450--
+
+--------------080708010403060404070909--
