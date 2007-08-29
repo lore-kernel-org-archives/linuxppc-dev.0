@@ -1,24 +1,18 @@
-Return-Path: <orutsch@sympatec.com>
-Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
-	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 32FE9DDE28
+Return-Path: <list.mail.for.bill@gmail.com>
+Received: from ug-out-f141.google.com (ug-out-f141.google.com [66.249.92.141])
+	by ozlabs.org (Postfix) with ESMTP id 6F4CFDDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 16:03:52 +1000 (EST)
-Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
-	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
-	with ESMTPSA id 1981129 for linuxppc-embedded@ozlabs.org;
-	Wed, 29 Aug 2007 08:04:05 +0200
-Message-ID: <46D50C0B.80402@sympatec.com>
-Date: Wed, 29 Aug 2007 08:02:51 +0200
-From: Oliver Rutsch <orutsch@sympatec.com>
-MIME-Version: 1.0
+	Wed, 29 Aug 2007 16:52:36 +1000 (EST)
+Received: by ug-out-f141.google.com with SMTP id x32so89765ugc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Aug 2007 23:52:34 -0700 (PDT)
+Message-ID: <7c1681440708282352o5ef5d03dm@mail.gmail.com>
+Date: Tue, 28 Aug 2007 23:52:34 -0700
+From: "Bill F" <list.mail.for.bill@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: STK5200 pci_enable_device problem
-References: <20070827191419.9A9CE24044@gemini.denx.de>
-	<7B9A8FF57DBB524190E98CABF6E56F070B9283@itri.bte.mam.gov.tr>
-In-Reply-To: <7B9A8FF57DBB524190E98CABF6E56F070B9283@itri.bte.mam.gov.tr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Bill F wants to chat
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,28 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mustafa,
+-----------------------------------------------------------------------
 
-> Hi,
-> 
-> i build Linux-2.6.22-gbcfc8d37 kernel lastest kernel from denx git for 
-> the board (STK5200 with TQM5200-AB).
-> ELDK 4.1 version is used.
-> 
-> make mrproper
-> export ARCH=powerpc
-> make tqm5200_defconfig
-> make uImage
-> 
-> It hangs on after  following line
->   Uncompressing Kernel Image ... OK
-> 
+Bill F wants to stay in better touch using some of Google's coolest new
+products.
 
-I encountered exactly the same problem. Using U-Boot 1.2 with Kernel 
-Linux-2.6.22-gef92f1d7 and a TQM5200S-BD module on the STK52000. I tried 
-to modify some kernel settings but it always stopped booting at the 
-"Uncompressing Kernel Image ... OK" line.
+If you already have Gmail or Google Talk, visit:
+http://mail.google.com/mail/b-786dedfe41-9ba528e872-9319a317c93199c9
+You'll need to click this link to be able to chat with Bill F.
 
-Bye,
--- 
-Dipl. Ing. Oliver Rutsch
+To get Gmail - a free email account from Google with over 2,800 megabytes of
+storage - and chat with Bill F, visit:
+http://mail.google.com/mail/a-786dedfe41-9ba528e872-8d8d2d59f9
+
+Gmail offers:
+- Instant messaging right inside Gmail
+- Powerful spam protection
+- Built-in search for finding your messages and a helpful way of organizing
+  emails into "conversations"
+- No pop-up ads or untargeted banners - just text ads and related information
+  that are relevant to the content of your messages
+
+All this, and its yours for free. But wait, there's more! By opening a Gmail
+account, you also get access to Google Talk, Google's instant messaging
+service:
+
+http://www.google.com/talk/
+
+Google Talk offers:
+- Web-based chat that you can use anywhere, without a download
+- A contact list that's synchronized with your Gmail account
+- Free, high quality PC-to-PC voice calls when you download the Google Talk
+  client
+
+Gmail and Google Talk are still in beta. We're working hard to add new features
+and make improvements, so we might also ask for your comments and suggestions
+periodically. We appreciate your help in making our products even better!
+
+Thanks,
+The Google Team
+
+To learn more about Gmail and Google Talk, visit:
+http://mail.google.com/mail/help/about.html
+http://www.google.com/talk/about.html
+
+(If clicking the URLs in this message does not work, copy and paste them into
+the address bar of your browser).
