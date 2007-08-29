@@ -1,16 +1,15 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id 58868DDE08
+Return-Path: <melinda.develey70@yahoo.com>
+Received: from web63904.mail.re1.yahoo.com (web63904.mail.re1.yahoo.com
+	[69.147.97.119]) by ozlabs.org (Postfix) with SMTP id 2E14FDDD07
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 04:38:24 +1000 (EST)
+	Thu, 30 Aug 2007 07:32:57 +1000 (EST)
+Date: Wed, 29 Aug 2007 14:26:15 -0700 (PDT)
+From: melinda develey <melinda.develey70@yahoo.com>
+Subject: spin_lock doesn't work?!?
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Register MII_SPEED periodically set to 0 (who is it?)
-Date: Wed, 29 Aug 2007 20:38:23 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8EA18699@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative; boundary="0-1374990440-1188422775=:15506"
+Message-ID: <177333.15506.qm@web63904.mail.re1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,10 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I had to add a setting of mii_speed register of MPC880  in mdio_read and
-mdio_write of mii-fec.c because it was periodically set to 0.
-My fs_enet is bind to a Virtual PHY and I don't understand who touches
-this register.
-=20
-Bye,
-Antonio.
+--0-1374990440-1188422775=:15506
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+I discovered that I called spin_lock two times consecutively without calling spin_unlock but my code didn't lock (I was managing an ioctl). 
+Probably I didn't understand how spin_lock works!!!!
+
+Any help?
+
+       
+---------------------------------
+Need a vacation? Get great deals to amazing places on Yahoo! Travel. 
+--0-1374990440-1188422775=:15506
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+I discovered that I called spin_lock two times consecutively without calling spin_unlock but my code didn't lock (I was managing an ioctl). <br>Probably I didn't understand how spin_lock works!!!!<br><br>Any help?<br><p>&#32;
+      <hr size=1>Need a vacation? <a href="http://us.rd.yahoo.com/evt=48256/*http://travel.yahoo.com/;_ylc=X3oDMTFhN2hucjlpBF9TAzk3NDA3NTg5BHBvcwM1BHNlYwNncm91cHMEc2xrA2VtYWlsLW5jbQ--">Get great deals 
+to amazing places </a>on Yahoo! Travel. 
+--0-1374990440-1188422775=:15506--
