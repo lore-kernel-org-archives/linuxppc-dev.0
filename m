@@ -1,22 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B83FEDDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 00:21:28 +1000 (EST)
-Date: Thu, 30 Aug 2007 09:21:15 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/9] bootwrapper: Add a zImage.bin.<platform> target.
-Message-ID: <20070830142115.GB24123@ld0162-tx32.am.freescale.net>
-References: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
-	<20070829164741.GD31640@ld0162-tx32.am.freescale.net>
-	<20070830003409.GE21072@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070830003409.GE21072@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B830EDDE21
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 00:30:19 +1000 (EST)
+In-Reply-To: <18134.44726.426680.221570@cargo.ozlabs.ibm.com>
+References: <18134.44726.426680.221570@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <83E8D3AD-080D-4F9E-B9F3-579B224C6CAF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull powerpc.git merge branch
+Date: Thu, 30 Aug 2007 09:32:33 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 30, 2007 at 10:34:09AM +1000, David Gibson wrote:
-> Hrm.. I think the --binary option at least should be removed, and
-> subsumed into the platform id - all other binary formats are selected
-> by the platform name at present.
-> 
-> And I think it's probably best to do that for --fixed-entry as well,
-> although it's a bit less clear there.
 
-I'm not particularly fond of having huge platform switch blocks in the
-wrapper script -- if it can be reasonably parameterized, why not do so?
+On Aug 30, 2007, at 6:49 AM, Paul Mackerras wrote:
 
--Scott
+> Linus,
+>
+> Please do
+>
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+>
+> There are a couple more bug fixes for Cell plus one from Kumar, and
+> defconfig updates.
+>
+> Paul.
+
+any reason you didn't pull this into your master branch as well, or  
+will just wait to do that after linus pulls?
+
+- k
