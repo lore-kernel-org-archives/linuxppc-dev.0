@@ -1,22 +1,35 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3DA76DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 04:22:42 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
-Date: Thu, 30 Aug 2007 20:22:23 +0200
-References: <200708291815.18197.fenkes@de.ibm.com>
-In-Reply-To: <200708291815.18197.fenkes@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200708302022.24167.arnd@arndb.de>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AAB9FDDE19
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 04:23:24 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7UINLc0015791
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 14:23:21 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7UINKd3427398
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 12:23:20 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7UINJYW021880
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 12:23:19 -0600
+Date: Thu, 30 Aug 2007 13:23:12 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Document and implement an improved flash device binding for
+	powerpc (v4)
+Message-ID: <20070830132312.56578744@zod.rchland.ibm.com>
+In-Reply-To: <20070830180450.GA3757@ld0162-tx32.am.freescale.net>
+References: <20070830012118.GF22844@localhost.localdomain>
+	<20070830172932.GA3317@ld0162-tx32.am.freescale.net>
+	<20070830125952.14c700ea@zod.rchland.ibm.com>
+	<20070830180450.GA3757@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 29 August 2007, Joachim Fenkes wrote:
-> Previously, ibmebus derived a device's bus_id from its location code. The
-> location code is not guaranteed to be unique, so we might get bus_id
-> collisions if two devices share the same location code. The OFDT full_name,
-> however, is unique, so we use that instead.
+On Thu, 30 Aug 2007 13:04:50 -0500
+Scott Wood <scottwood@freescale.com> wrote:
+
+> On Thu, Aug 30, 2007 at 12:59:52PM -0500, Josh Boyer wrote:
+> > On Thu, 30 Aug 2007 12:29:33 -0500
+> > Scott Wood <scottwood@freescale.com> wrote:
+> > 
+> > > On Thu, Aug 30, 2007 at 11:21:18AM +1000, David Gibson wrote:
+> > > > +    For JEDEC compatible devices, the following additional properties
+> > > > +    are defined:
+> > > > +
+> > > > +     - vendor-id : Contains the flash chip's vendor id (1 byte).
+> > > > +     - device-id : Contains the flash chip's device id (1 byte).
+> > > 
+> > > Are these required, or recommended?
+> > 
+> > For JEDEC, I believe those are required.
 > 
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> It can be probed, though...
 
-Actually, I think it would be much better to convert the code to be more
-like of_platform_device, or to even replace all of ibmebus with that.
+Yes, ignore me.  And looking at the updated ebony.dts in David's patch,
+it would seem they are optional.  Apparently I didn't drink enough
+coffee this morning.
 
-The whole logic of dynamically adding and removing device is rather bogus,
-and it prevents autoloading of device drivers. of_platform_make_bus_id
-is the function that is responsible for creating unique names over there.
-
-	Arnd <><
+josh
