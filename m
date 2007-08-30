@@ -1,22 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 89620DDE3A
+Return-Path: <orutsch@sympatec.com>
+Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
+	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D267DDDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 18:49:01 +1000 (EST)
-Message-ID: <46D68466.3060402@scram.de>
-Date: Thu, 30 Aug 2007 10:48:38 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Thu, 30 Aug 2007 19:20:42 +1000 (EST)
+Received: from [172.20.3.151] (account rutsch [172.20.3.151] verified)
+	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
+	with ESMTPSA id 1986906 for linuxppc-embedded@ozlabs.org;
+	Thu, 30 Aug 2007 11:20:55 +0200
+Message-ID: <46D68BA6.4020102@sympatec.com>
+Date: Thu, 30 Aug 2007 11:19:34 +0200
+From: Oliver Rutsch <orutsch@sympatec.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page
-	instantiation
-References: <46D40510.3060805@scram.de>
-	<611B8BA7-89B3-4DA0-A248-0FB57E4654ED@kernel.crashing.org>
-In-Reply-To: <611B8BA7-89B3-4DA0-A248-0FB57E4654ED@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: STK5200 pci_enable_device problem
+References: <20070829233106.9766C24044@gemini.denx.de>
+In-Reply-To: <20070829233106.9766C24044@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,15 +28,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+Hi again,
 
-> do we need this in arch/powerpc as well?
+> 
+> As mentioned above, with arch/powerpc you always need a  device  tree
+> blob.
+> 
+> Best regards,
+> 
+> Wolfgang Denk
+> 
 
-No. At least not until these patches are applied to powerpc, as well:
+Thanks, Wolfang, now it's booting fine!
+I've updated u-boot to the newest git version, builded the device tree 
+file and now everything's working.
 
-8f069b1a90bd97bf6d59a02ecabf0173d9175609 [PATCH] powerpc/8xx: Use 8MB D-TLB's for kernel static mapping faults
-3ea4807de7b2c5c903380ba2c2e7150bee942f42 [PATCH] powerpc/8xx: last two 8MB D-TLB entries are incorrectly set
-c51e078f82096a7d35ac8ec2416272e843a0e1c4 [PATCH] ppc32/8xx: Fix r3 trashing due to 8MB TLB page instantiation
+Bye,
 
-Thanks,
-Jochen
+-- 
+Dipl. Ing. Oliver Rutsch
