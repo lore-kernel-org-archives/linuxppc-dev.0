@@ -1,17 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 30 Aug 2007 10:58:00 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/3] Add early debug console for CPM serial ports.
-Message-ID: <20070830005800.GD22844@localhost.localdomain>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201621.GC24210@ld0162-tx32.am.freescale.net>
-	<20070829054540.GD3206@localhost.localdomain>
-	<20070829140239.GC30184@ld0162-tx32.am.freescale.net>
-	<20070829195837.GA6818@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070829195837.GA6818@ld0162-tx32.am.freescale.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E13D2DDE9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:04:51 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7U14mPA027960
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 21:04:48 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7U14m5Q362664
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 19:04:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7U14lH1022929
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 19:04:48 -0600
+Subject: Re: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20070829133520.GA19925@ru.mvista.com>
+References: <20070829133520.GA19925@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 29 Aug 2007 19:28:18 -0500
+Message-Id: <1188433699.3515.15.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,27 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2007 at 02:58:37PM -0500, Scott Wood wrote:
-> On Wed, Aug 29, 2007 at 09:02:39AM -0500, Scott Wood wrote:
-> > > >  # Temporary hack until we have migrated to asm-powerpc
-> > > >  ifeq ($(ARCH),powerpc)
-> > > > +obj-$(CONFIG_CPM1)$(CONFIG_CPM2) += cpm_common.o
-> > > 
-> > > Uh.. I don't think this will work properly.  If CONFIG_CPM1 and
-> > > CONFIG_CPM2 are both enabled, it will set obj-yy rather than obj-y.
-> > 
-> > The assumption was that CPM1 and CPM2 are never going to both be enabled,
-> > as CPM1 only exists on hardware with a unique MMU.
-> > 
-> > I could add an obj-y += $(obj-yy) if you like, though.
-> 
-> On second thought, I'll just add a CONFIG_CPM that CPM1 and CPM2 select;
-> that'll make things easier for further consolidation.
+On Wed, 2007-08-29 at 17:35 +0400, Valentine Barshak wrote:
+> The following patches add initial PowerPC 440EPx Sequoia board support.
+> The code is based mainly on the Bamboo board support by Josh Boyer.
+> These patches have been modified according the comments for the previous
+> 440EPx Sequoia patch series.
 
-Ah, yes, that's much nicer.
+I see David has beaten me to reviewing the individual patches, which of
+course is always welcome.  I just wanted add that I also think these
+look good.  Thanks!
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+josh
