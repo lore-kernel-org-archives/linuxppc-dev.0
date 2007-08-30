@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Fix summary calculation in testsuite 
-In-Reply-To: Your message of "Wed, 29 Aug 2007 12:18:51 +1000."
-	<20070829021851.GA25233@localhost.localdomain>
-References: <20070829021851.GA25233@localhost.localdomain> 
-Date: Thu, 30 Aug 2007 08:51:35 -0500
+Subject: Re: libfdt: Fix handling of trailing / in fdt_path_offset() 
+In-Reply-To: Your message of "Wed, 29 Aug 2007 12:22:50 +1000."
+	<20070829022250.GA25468@localhost.localdomain>
+References: <20070829022250.GA25468@localhost.localdomain> 
+Date: Thu, 30 Aug 2007 08:52:01 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IQkQp-0004aD-Hj@jdl.com>
+Message-Id: <E1IQkRF-0004aU-Jh@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,11 +18,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> The bookkeeping for producing the testsuite summary (total number of
-> tests passed, failed and so forth) is broken.  It uses $? across
-> several tests, but for checks after the first, the value of $? will no
-> longer contain the original return code, but just that from the
-> previous test.  This patch fixes the problem.
+> Currently, fdt_path_offset() returns FDL_ERR_BADOFFSET if given a path
+> with a trailing '/'.  In particular this means that
+> fdt_path_offset("/") returns FDT_ERR_BADOFFSET rather than 0 as one
+> would expect.
+> 
+> This patch fixes the function to accept and ignore trailing '/'
+> characters.  As well as allowing fdt_path_offset("/") this means that
+> fdt_path_offset("/foo/") will return the same as
+> fdt_path_offset("/foo") which seems in keeping with the principle of
+> least surprise.
+> 
+> This also adds a testcase to ensure that fdt_path_offset("/") returns
+> 0 as it should.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
