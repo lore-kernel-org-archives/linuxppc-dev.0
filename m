@@ -1,34 +1,28 @@
-Return-Path: <randy.dunlap@oracle.com>
-Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13C92DDE21
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 13:17:08 +1000 (EST)
-Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
-	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
-	l7U1fksX028651
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 19:41:46 -0600
-Date: Wed, 29 Aug 2007 18:38:42 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: pete@bluelane.com
-Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
-Message-Id: <20070829183842.5954b038.randy.dunlap@oracle.com>
-In-Reply-To: <46D61B21.1010703@bluelane.com>
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>
-	<200708222104.29432.m.kozlowski@tuxland.pl>
-	<20070822124743.fc316963.akpm@linux-foundation.org>
-	<46CCBC3C.7010307@windriver.com>
-	<20070822165318.b82da13c.akpm@linux-foundation.org>
-	<46CCFE2C.4050306@windriver.com> <46D604BF.7090905@bluelane.com>
-	<46D61B21.1010703@bluelane.com>
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 62554DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 13:36:49 +1000 (EST)
+Date: Thu, 30 Aug 2007 05:36:43 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Brent Casavant <bcasavan@sgi.com>
+Subject: Re: wmb vs mmiowb
+Message-ID: <20070830033643.GB26257@wotan.suse.de>
+References: <200708221202.12403.jesse.barnes@intel.com>
+	<20070823022043.GB18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708221953360.30176@woody.linux-foundation.org>
+	<20070823042038.GI18788@wotan.suse.de>
+	<alpine.LFD.0.999.0708230915000.30176@woody.linux-foundation.org>
+	<1187886462.5972.17.camel@localhost.localdomain>
+	<20070824030904.GC6989@wotan.suse.de>
+	<20070828151737.P5403@pkunk.americas.sgi.com>
+	<20070829005904.GB25335@wotan.suse.de>
+	<20070829125651.L13320@pkunk.americas.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Mackerras <paulus@samba.org>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	Andrew Morton <akpm@linux-foundation.org>, Paul
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070829125651.L13320@pkunk.americas.sgi.com>
+Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,115 +32,138 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2007 18:19:29 -0700 Pete/Piet Delaney wrote:
-
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
+On Wed, Aug 29, 2007 at 01:53:53PM -0500, Brent Casavant wrote:
+> On Wed, 29 Aug 2007, Nick Piggin wrote:
 > 
-> Pete/Piet Delaney wrote:
-> > Jason Wessel wrote:
-> >> Andrew Morton wrote:
-> >>> On Wed, 22 Aug 2007 17:44:12 -0500
-> >>> Jason Wessel <jason.wessel@windriver.com> wrote:
-> >>>
-> >>>  
-> >>>> +    while (!atomic_read(&debugger_active));
-> >>>>     
-> >>> eek.  We're in the process of hunting down and eliminating exactly this
-> >>> construct.  There have been cases where the compiler cached the
-> >>> atomic_read() result in a register, turning the above into an infinite
-> >>> loop.
-> >>>
-> >>> Plus we should never add power-burners like that into the kernel
-> >>> anyway. That loop should have a cpu_relax() in it.  Which will also
-> >>> fix the
-> >>> compiler problem described above.
-> >>>
-> >>>   
-> >> Agreed, and fixed with a cpu_relax.
+> > On Tue, Aug 28, 2007 at 03:56:28PM -0500, Brent Casavant wrote:
+> 
+> > > The simplistic method to solve this is a lock around the section
+> > > issuing IOs, thereby ensuring serialization of access to the IO
+> > > device.  However, as SN2 does not enforce an ordering between normal
+> > > memory transactions and memory-mapped IO transactions, you cannot
+> > > be sure that an IO transaction will arrive at the IO fabric "on the
+> > > correct side" of the unlock memory transaction using this scheme.
 > > 
-> >>> Thirdly, please always add a newline when coding statements like that:
-> >>>
-> >>>     while (expr())
-> >>>         ;
-> >>>   
-> >> The other instances I found of the same problem in the kgdb core are
-> >> fixed too.
+> > Hmm. So what if you had the following code executed by a single CPU:
 > > 
-> >> I merged all the changes into the for_mm branch in the kgdb git tree.
+> > writel(data, ioaddr);
+> > wmb(); 
+> > *mem = 10;
 > > 
-> > Where is the kgdb git tree?
+> > Will the device see the io write before the store to mem?
 > 
-> Why am I getting this when I do:
+> Not necessarily.  There is no guaranteed ordering between the IO write
+> arriving at the device and the order of the normal memory reference,
+> regardless of the intervening wmb(), at least on SN2.  I believe the
+> missing component in the mental model is the effect of the platform
+> chipset.
 > 
-> git clone
-> http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+> Perhaps this will help.  Uncached writes (i.e. IO writes) are posted
+> to the SN2 SHub ASIC and placed in their own queue which the SHub chip
+> then routes to the appropriate target.  This uncached write queue is
+> independent of the NUMA cache-coherency maintained by the SHub ASIC
+> for system memory; the relative order in which the uncached writes
+> and the system memory traffic appear at their respective targets is
+> undefined with respect to eachother.
 > 
-> -
-> ----------------------------------------------------------------------------
-> error: Couldn't get
-> http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git/refs/tags/v2.6.11
-> for tags/v2.6.11
-> The requested URL returned error: 404
-> error: Could not interpret tags/v2.6.11 as something to pull
-> rm: cannot remove directory
-> `/nethome/piet/Src/linux/git/jwessel/linux-2.6-kgdb/.git/clone-tmp':
-> Directory not empty
-> /nethome/piet/Src/linux/git/jwessel$
-> -
-> ----------------------------------------------------------------------------
-
-See the URLs at the top of
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=summary
-and try one of those (the git one preferably).
+> wmb() does not address this situation as it only guarantees that
+> the writes issued from the CPU have been posted to the chipset,
+> not that the chipset itself has posted the write to the final
+> destination.  mmiowb() guarantees that all outstanding IO writes
+> have been issued to the IO fabric before proceeding.
+> 
+> I like to think of it this way (probably not 100% accurate, but it
+> helps me wrap my brain around this particular point):
+> 
+> 	wmb(): Ensures preceding writes have issued from the CPU.
+> 	mmiowb(): Ensures preceding IO writes have issued from the
+> 		  system chipset.
+> 
+> mmiowb() on SN2 polls a register in SHub that reports the length
+> of the outstanding uncached write queue.  When the queue has emptied,
+> it is known that all subsequent normal memory writes will therefore
+> arrive at their destination after all preceding IO writes have arrived
+> at the IO fabric.
+> 
+> Thus, typical mmiowb() usage, for SN2's purpose, is to ensure that
+> all IO traffic from a CPU has made it out to the IO fabric before
+> issuing the normal memory transactions which release a RAM-based
+> lock.  The lock in this case is the one used to serialize access
+> to a particular IO device.
 
 
-> We are getting a problem with VMware where kernel text is the schedler
-> is getting wacked with four null bytes into the code. Thought I'd use
-> the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
-> patch to make kernel text readonly:
-> 
->  https://www.x86-64.org/pipermail/patches/2007-March/003666.html
-> 
-> I thought the kernel text was RO and gdb had to disable it to
-> insert a breakpoint.
-> 
-> - -piet
-> 
-> > 
-> > -piet
-> > 
-> >> Thanks,
-> >> Jason.
-> >> -
-> >> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> - -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.7 (GNU/Linux)
-> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-> 
-> iD8DBQFG1hshJICwm/rv3hoRAhTGAJ46pq69zYHqRmT+yTmRx+RVh8aBtgCfdyFM
-> gl91xCFTy0NJxHalVXpd9Os=
-> =c8FZ
-> -----END PGP SIGNATURE-----
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+OK, thanks for that. I think I have a rough idea of how they both
+work... I was just thinking (hoping) that, although the writel may
+not reach the device before the store reaches memory, it would
+_appear_ that way from the POV of the device (ie. if the device
+were to DMA from mem). But that's probably wishful thinking because
+the memory might be on some completely different part of the system.
+
+I don't know whether this is exactly a correct implementation of
+Linux's barrier semantics. On one hand, wmb _is_ ordering the stores
+as they come out of the CPU; on the other, it isn't ordering normal
+stores with respect to writel from the POV of the device (which is
+seems to be what is expected by the docs and device driver writers).
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+One argument says that the IO device or chipset is a seperate
+agent and thus isn't subject to ordering... which is sort of valid,
+but it is definitely not an agent equal to a CPU, because it can't
+actively participate in the synchronisation protocol.
+
+And on the other side, it just doesn't seem so useful just to know
+that stores coming out of the CPU are ordered if they can be reordered
+by an intermediate. Why even have wmb() at all, if it doesn't actually
+order stores to IO and RAM?  powerpc's wmb() could just as well be an
+'eieio' if it were to follow your model; that instruction orders IO,
+but not WRT cacheable stores.
+
+So you could argue that the chipset is an extention of the CPU's IO/memory
+subsystem and should follow the ordering specified by the CPU. I like this
+idea because it could make things simpler and more regular for the Linux
+barrier model.
+
+I guess it is too expensive for you to have mmiowb() in every wmb(),
+because _most_ of the time, all that's needed is ordering between IOs.
+So why not have io_mb(), io_rmb(), io_wmb(), which order IOs but ignore
+system memory. Then the non-prefixed primitives order everything (to the
+point that wmb() is like mmiowb on sn2).
+
+
+> > > mmiowb() causes SN2 to drain the pending IOs from the current CPU's
+> > > node.  Once the IOs are drained the CPU can safely unlock a normal
+> > > memory based lock without fear of the unlock's memory write passing
+> > > any outstanding IOs from that CPU.
+> > 
+> > mmiowb needs to have the disclaimer that it's probably wrong if called
+> > outside a lock, and it's probably wrong if called between two io writes
+> > (need a regular wmb() in that case). I think some drivers are getting
+> > this wrong.
+> 
+> There are situations where mmiowb() can be pressed into service to
+> some other end, but those are rather rare.  The only instance I am
+> personally familiar with is synchronizing a free-running counter on
+> a PCI device as closely as possible to the execution of a particular
+> line of driver code.  A write of the new counter value to the device
+> and subsequent mmiowb() synchronizes that execution point as closely
+> as practical to the IO write arriving at the device.  Not perfect, but
+> good enough for my purposes.  (This was a hack, by the way, pressing
+> a bit of hardware into a purpose for which it wasn't really designed,
+> ideally the hardware would have had a better mechanism to accomplish
+> this goal.)
+
+I guess that would be fine. You probably have a slightly better
+understanding of the issues than the average device driver writer
+so you could ignore the warnings ;)
+
+
+> But in the normal case, I believe you are 100% correct -- wmb() would
+> ensure that the memory-mapped IO writes arrive at the chipset in a
+> particular order, and thus should arrive at the IO hardware in a particular
+> order.  mmiowb() would not necessarily accomplish this goal, and is
+> incorrectly used wherever that is the intention.  At least for SN2.
+
+Now I guess it's strictly also needed if you want to ensure cacheable
+stores and IO stores are visible to the device in the correct order
+too. I think we'd normally hope wmb() does that for us too (hence all
+my rambling above).
