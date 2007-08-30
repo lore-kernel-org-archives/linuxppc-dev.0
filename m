@@ -1,9 +1,9 @@
 Return-Path: <jason.wessel@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 1BFBEDDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 12:07:28 +1000 (EST)
-Message-ID: <46D62661.5010608@windriver.com>
-Date: Wed, 29 Aug 2007 21:07:29 -0500
+	by ozlabs.org (Postfix) with ESMTP id 9112ADDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 12:13:05 +1000 (EST)
+Message-ID: <46D627B6.9060208@windriver.com>
+Date: Wed, 29 Aug 2007 21:13:10 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 MIME-Version: 1.0
 To: pete@bluelane.com
@@ -29,16 +29,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Pete/Piet Delaney wrote:
-> Why am I getting this when I do:
+> We are getting a problem with VMware where kernel text is the schedler
+> is getting wacked with four null bytes into the code. Thought I'd use
+> the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
+> patch to make kernel text readonly:
 >
-> git clone
-> http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+>  https://www.x86-64.org/pipermail/patches/2007-March/003666.html
+>
+> I thought the kernel text was RO and gdb had to disable it to
+> insert a breakpoint.
+>
 >   
 
-I have only ever used:
-
-git clone 
-git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
-
+If you are going to make all the kernel text RO, then you are going to 
+have to add some code to the kgdb write memory so as to unprotect a 
+given page or all the breakpoint writes are going to fail.  
+Alternatively you can use HW breakpoints.  But, I have no idea if your 
+VM Ware simulated HW emulate HW breakpoint registers or not.
 
 Jason.
