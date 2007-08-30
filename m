@@ -1,29 +1,33 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E3A0DDE2B
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 40F9CDDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 19:53:29 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1IQgiC-0008D4-AG
-	for linuxppc-embedded@ozlabs.org; Thu, 30 Aug 2007 11:53:16 +0200
-Received: from p5497eb40.dip.t-dialin.net ([84.151.235.64])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Aug 2007 11:53:16 +0200
-Received: from dzu by p5497eb40.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Aug 2007 11:53:16 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Detlev Zundel <dzu@denx.de>
-Subject: Re: how to debug the linux kernel with a BDI2000
-Date: Thu, 30 Aug 2007 11:52:10 +0200
-Message-ID: <m2hcmhfiyd.fsf@ohwell.denx.de>
-References: <479723497.472031188208291804.JavaMail.coremail@bj163app103.163.com>
+	Thu, 30 Aug 2007 21:53:13 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7UBqoWm025585
+	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Aug 2007 07:52:50 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7UBqnOl458742
+	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Aug 2007 05:52:49 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7UBqn6V031218
+	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Aug 2007 05:52:49 -0600
+Date: Thu, 30 Aug 2007 06:50:39 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: melinda develey <melinda.develey70@yahoo.com>
+Subject: Re: spin_lock doesn't work?!?
+Message-ID: <20070830065039.0f660dad@zod.rchland.ibm.com>
+In-Reply-To: <762949.1267.qm@web63906.mail.re1.yahoo.com>
+References: <20070829214050.8C47A1A2804D@mail19-sin.bigfish.com>
+	<762949.1267.qm@web63906.mail.re1.yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,30 +38,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Denny,
+On Wed, 29 Aug 2007 23:30:22 -0700 (PDT)
+melinda develey <melinda.develey70@yahoo.com> wrote:
 
-> My kernel hanged in when passed the parameters to it, and I dump nothing from
-> the log_buf, so I guss it is crashed at the very beginning.
->  
-> however I didn't know how to setup the KDB to load the kernel with the BDI2000
-> ethernet? is there anyone has even loaded and debugged the kernel with the
-> BDI2000 ethernet? if so pls show me how it goes?
+>   >You should still put the spin_lock calls into your code because >you
+> >never know if someone else will compile it and for another >target. If
+> >someone would, for example, compile the same code for a SMP >machine then
+> >the spin_lock will actually lock.
+> 
+>   I used the spinlock both in an interrupt handler to protect a group of variables (because in an interrupt I can't use a semaphore) and the same spinlock in a ioctl handler where the same group of variables is accessed. Is this wrong? I have a 2.6.19.2 linux kernel.
 
-You don't need KDB to use the BDI2000 to debug a linux kernel, in fact
-you need nothing on the target side.  Simply attach the BDI to your
-hardware, and use a (cross-)gdb with the "target remote
-<ipaddr>:<port>" command.  Our DULG shows how to do that with
-U-Boot[1].  Debugging (static) Linux is exactly the same...
+You might want to use spin_lock_irq instead.  That will disable
+interrupts in the critical section in the ioctl.  Seems more like what
+you are trying to do.
 
-Cheers
-  Detlev
-
-[1] http://www.denx.de/wiki/view/DULG/DebuggingUBoot
-
--- 
-debian is a prototype for a future version of emacs.
-                         -- Thien-Thi Nguyen in <7eekubiffq.fsf@ada2.unipv.it>
---
-DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
+josh
