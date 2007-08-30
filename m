@@ -1,30 +1,30 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E13D2DDE9A
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:04:51 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7U14mPA027960
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 21:04:48 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7U14m5Q362664
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 19:04:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7U14lH1022929
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Aug 2007 19:04:48 -0600
-Subject: Re: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-In-Reply-To: <20070829133520.GA19925@ru.mvista.com>
-References: <20070829133520.GA19925@ru.mvista.com>
-Content-Type: text/plain
-Date: Wed, 29 Aug 2007 19:28:18 -0500
-Message-Id: <1188433699.3515.15.camel@localhost.localdomain>
-Mime-Version: 1.0
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1147FDDE28
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:18:24 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id l7U1IDM3003345
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:18:13 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7U1I97P1585212
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:18:09 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7U2I92G019235
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 12:18:09 +1000
+Date: Thu, 30 Aug 2007 11:18:04 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: Document and implement an improved flash device binding
+Message-ID: <20070830011804.GE22844@localhost.localdomain>
+References: <20070829061300.GF3206@localhost.localdomain>
+	<20070829084341.GS13994@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070829084341.GS13994@moe.telargo.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,14 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-08-29 at 17:35 +0400, Valentine Barshak wrote:
-> The following patches add initial PowerPC 440EPx Sequoia board support.
-> The code is based mainly on the Bamboo board support by Josh Boyer.
-> These patches have been modified according the comments for the previous
-> 440EPx Sequoia patch series.
+On Wed, Aug 29, 2007 at 10:43:41AM +0200, Domen Puncer wrote:
+> On 29/08/07 16:13 +1000, David Gibson wrote:
+> 
+> <snip>
+> >  static int __devinit of_physmap_probe(struct of_device *dev, const struct of_device_id *match)
+> >  {
+> >  	struct device_node *dp = dev->node;
+> >  	struct resource res;
+> >  	struct physmap_flash_info *info;
+> > -	const char **probe_type;
+> > -	const char *of_probe;
+> > +	const char *probe_type = (const char *)match->data;
+> >  	const u32 *width;
+> >  	int err;
+> >  
+> > +	dev_warn(&dev->dev, "Device tree uses obsolete \"direct-mapped\" "
+> > +		 "flash binding\n");
+> 
+> This is printed for new binding too :-)
 
-I see David has beaten me to reviewing the individual patches, which of
-course is always welcome.  I just wanted add that I also think these
-look good.  Thanks!
+Duh, put that warning in completely the wrong place.  I was awake,
+obviously :-/
 
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
