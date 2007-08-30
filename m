@@ -1,32 +1,35 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo3so.prod.shaw.ca (shawidc-mo1.cg.shawcable.net
-	[24.71.223.10]) by ozlabs.org (Postfix) with ESMTP id C61CFDDECE
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:28:17 +1000 (EST)
-Received: from pd3mr5so.prod.shaw.ca (pd3mr5so-qfe3.prod.shaw.ca [10.0.141.12])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JNL00GGGSS2DP00@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 30 Aug 2007 14:26:26 -0600 (MDT)
-Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
-	by pd3mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JNL00FAKSS1H670@pd3mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Thu, 30 Aug 2007 14:26:26 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JNL001LOSRYXJ51@l-daemon> for linuxppc-dev@ozlabs.org;
-	Thu, 30 Aug 2007 14:26:22 -0600 (MDT)
-Date: Thu, 30 Aug 2007 14:26:24 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/3] mpc8349: Add linux,
-	network-index to ethernet nodes in device tree
-In-reply-to: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
-To: linuxppc-dev@ozlabs.org
-Message-id: <20070830202624.9927.50088.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 80FA1DDE45
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:36:39 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7UKaYhw030363
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7UKaY4h673690
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7UKaXPw026697
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
+Message-ID: <46D72A4E.6060106@austin.ibm.com>
+Date: Thu, 30 Aug 2007 15:36:30 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+References: <OF9D1ED44F.896DCCC5-ONC1257347.0044D256-C1257347.004CFB07@de.ibm.com>
+In-Reply-To: <OF9D1ED44F.896DCCC5-ONC1257347.0044D256-C1257347.004CFB07@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,71 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+> There are currently two GX devices, eHCA and eHEA, which both reside 
+> beneath the root node - this is required by architecture for those 
+> devices. Unless they invent a device called 
+> "supercalifragilisticexpialidocious", devices in the root note will have a 
+> full_name of less than 31 chars. Even in that case, the truncation occurs 
+> at the beginning, so the @xxx part that makes the nodes unique will stay 
+> in place.
+> 
 
-cuImage need to know the logical index of the ethernet devices in order
-to assign mac addresses.  This patch adds the needed properties
+OK, didn't realize it had to be beneath the root node, and that the 
+truncation truncated the front and not the back.  I would have done it 
+differently, but this should work.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-CC: Scott Wood <scottwood@freescale.com>
-CC: Kumar Gala <galak@kernel.crashing.org>
-CC: Timur Tabi <timur@freescale.com>
----
-
- arch/powerpc/boot/dts/mpc8349emitx.dts   |    2 ++
- arch/powerpc/boot/dts/mpc8349emitxgp.dts |    1 +
- arch/powerpc/boot/dts/mpc834x_mds.dts    |    2 ++
- 3 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 502f47c..a4e2284 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -141,6 +141,7 @@
- 			interrupts = <20 8 21 8 22 8>;
- 			interrupt-parent = < &ipic >;
- 			phy-handle = < &phy1c >;
-+			linux,network-index = <0>;
- 		};
- 
- 		ethernet@25000 {
-@@ -160,6 +161,7 @@
- 			interrupts = <23 8 24 8 25 8>;
- 			interrupt-parent = < &ipic >;
- 			phy-handle = < &phy1f >;
-+			linux,network-index = <1>;
- 		};
- 
- 		serial@4500 {
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index 0b83871..004b737 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -116,6 +116,7 @@
- 			interrupts = <20 8 21 8 22 8>;
- 			interrupt-parent = < &ipic >;
- 			phy-handle = < &phy1c >;
-+			linux,network-index = <0>;
- 		};
- 
- 		serial@4500 {
-diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
-index 4810997..251c233 100644
---- a/arch/powerpc/boot/dts/mpc834x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
-@@ -146,6 +146,7 @@
- 			interrupts = <20 8 21 8 22 8>;
- 			interrupt-parent = < &ipic >;
- 			phy-handle = < &phy0 >;
-+			linux,network-index = <0>;
- 		};
- 
- 		ethernet@25000 {
-@@ -165,6 +166,7 @@
- 			interrupts = <23 8 24 8 25 8>;
- 			interrupt-parent = < &ipic >;
- 			phy-handle = < &phy1 >;
-+			linux,network-index = <1>;
- 		};
- 
- 		serial@4500 {
+Acked-by: Joel Schopp <jschopp@austin.ibm.com>
