@@ -1,16 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 30 Aug 2007 10:55:59 +1000
+Date: Thu, 30 Aug 2007 10:57:41 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] Introduce new CPM device bindings.
-Message-ID: <20070830005559.GB22844@localhost.localdomain>
+Subject: Re: [PATCH 3/3] Add early debug console for CPM serial ports.
+Message-ID: <20070830005741.GC22844@localhost.localdomain>
 References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201619.GB24210@ld0162-tx32.am.freescale.net>
-	<20070829053941.GC3206@localhost.localdomain>
-	<20070829135806.GB30184@ld0162-tx32.am.freescale.net>
+	<20070828201621.GC24210@ld0162-tx32.am.freescale.net>
+	<20070829054540.GD3206@localhost.localdomain>
+	<20070829140239.GC30184@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070829135806.GB30184@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070829140239.GC30184@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,79 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2007 at 08:58:06AM -0500, Scott Wood wrote:
-> On Wed, Aug 29, 2007 at 03:39:41PM +1000, David Gibson wrote:
-> > On Tue, Aug 28, 2007 at 03:16:19PM -0500, Scott Wood wrote:
-> > > Boards that do not require the legacy bindings should select
-> > > CONFIG_PPC_CPM_NEW_BINDING to enable the of_platform CPM devices. Once
-> > > all existing boards are converted and tested, the config option can
-> > > become default y to prevent new boards from using the old model.  Once
-> > > arch/ppc is gone, the config option can be removed altogether.
+On Wed, Aug 29, 2007 at 09:02:39AM -0500, Scott Wood wrote:
+> On Wed, Aug 29, 2007 at 03:45:40PM +1000, David Gibson wrote:
+> > > diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+> > > index 22acece..d471154 100644
+> > > --- a/arch/powerpc/Kconfig.debug
+> > > +++ b/arch/powerpc/Kconfig.debug
+> > > @@ -211,6 +211,15 @@ config PPC_EARLY_DEBUG_44x
+> > >  	  Select this to enable early debugging for IBM 44x chips via the
+> > >  	  inbuilt serial port.
+> > >  
+> > > +config PPC_EARLY_DEBUG_CPM
+> > > +	bool "Early serial debugging for Freescale CPM-based serial ports"
+> > > +	depends on SERIAL_CPM
+> > > +	select PIN_TLB if PPC_8xx
 > > 
-> > I think it would be better to change the name and reverse the sense of
-> > this config option, since what it actually does is disable the old
-> > binding, not enable the new one.
+> > I see this Kconfig line, but I don't see any code below that would set
+> > up a suitable TLB on 8xx for the CPM...?
 > 
-> But then boards would have to deselect rather than select the option...
-> can kconfig do that?
-
-Sorry, as I read later patches in the series, I realised your config
-option didn't do what I thought it did when I said that.
-
-Am I correct in thinking that it's basically an arch/ppc versus
-arch/powerpc thing.  In which case couldn't you use CONFIG_PPC_MERGE
-instead?
-
-[snip]
-> > > +   ii) Properties common to mulitple CPM/QE devices
-> > > +
-> > > +   - fsl,cpm-command : This value is ORed with the opcode and command flag
-> > > +                       to specify the device on which a CPM command operates.
-> > > +
-> > > +   - fsl,cpm-brg : Indicates which baud rate generator the device
-> > > +                   is associated with.  If absent, an unused BRG
-> > > +                   should be dynamically allocated.
+> There's existing code that pins the IMMR when that option is enabled.
+> It's a bit broken, but there's a patch in the 8xx series that fixes it.
+> 
+> > >  # Temporary hack until we have migrated to asm-powerpc
+> > >  ifeq ($(ARCH),powerpc)
+> > > +obj-$(CONFIG_CPM1)$(CONFIG_CPM2) += cpm_common.o
 > > 
-> > Maybe a property with the brg node's phandle could be included as
-> > well, to avoid having to hop up to the CPM node, then back down to the
-> > brg-compatible node to find it?
+> > Uh.. I don't think this will work properly.  If CONFIG_CPM1 and
+> > CONFIG_CPM2 are both enabled, it will set obj-yy rather than obj-y.
 > 
-> Enh... it doesn't convey any new information, and in practice, it's done
-> by common CPM code that doesn't know about the individual device's node
-> anyway.
+> The assumption was that CPM1 and CPM2 are never going to both be enabled,
+> as CPM1 only exists on hardware with a unique MMU.
 
+Hrm.  I guess it's ok in that case, although it's a non-obvious
+constraint.
 
-> > Or maybe even have a separate subnode for each brg, and just have a
-> > phandle to reference it from the other devices, rather than using this
-> > index.
+> I could add an obj-y += $(obj-yy) if you like, though.
+
+Ouch, no, that would be even uglier.
+
+> > Since this is all udbg related, it could go (within an ifdef) into
+> > udbg.c rather than creating a new file for it.
 > 
-> Seems a little complex relative to the gain.
-
-Hrm, I guess.  I just have a dislike for random indices into things.
-
-> > > +   Example:
-> > > +
-> > > +	ethernet@11300 {
-> > > +		device_type = "network";
-> > > +		compatible = "fsl,mpc8272-fcc-enet",
-> > > +		             "fsl,cpm2-fcc-enet";
-> > > +		reg = <11300 20 8400 100 11390 1>;
-> > > +		local-mac-address = [ 00 00 00 00 00 00 ];
-> > > +		interrupts = <20 8>;
-> > > +		interrupt-parent = <&PIC>;
-> > > +		phy-handle = <&PHY0>;
-> > > +		linux,network-index = <0>;
-> > > +		fsl,cpm-command = <12000300>;
-> > > +	};
-> > 
-> > Should this also have a phandle pointer to the mdio node?
+> Well, I was hoping that more consolidation between cpm1 and cpm2 (and
+> qe/cpm3, for that matter) would happen in the future, and this would be a
+> place to put it.
 > 
-> It has a phandle to the phy node...  if you mean the mdio bus node, why?
-
-Well, I'm just working of the example of 4xx EMAC.  The way it does
-mdio, it wants a handle on the mdio bus to perform various operations
-there as well on the phy to tell it how to address them.  fsl-enet may
-do things differently and have no particular need for such a handle.
+> > Urg... this is ugly, because it looks like it can be muti-platform,
+> > but actually isn't.  I think a better approach is to set the magic
+> > address as a Kconfig variable, as we do on 44x.  This approach can
+> > also be useful for hacking up early debug for new chips during the
+> > process of creating platform code for them.
+> 
+> OK.
+> 
+> -Scott
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
