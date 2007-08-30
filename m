@@ -1,35 +1,22 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 80FA1DDE45
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:36:39 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7UKaYhw030363
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7UKaY4h673690
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7UKaXPw026697
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 16:36:34 -0400
-Message-ID: <46D72A4E.6060106@austin.ibm.com>
-Date: Thu, 30 Aug 2007 15:36:30 -0500
-From: Joel Schopp <jschopp@austin.ibm.com>
+Return-Path: <rael@edge.ping.de>
+Received: from lilly.ping.de (lilly.ping.de [83.97.42.2])
+	by ozlabs.org (Postfix) with SMTP id E9B80DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:42:50 +1000 (EST)
+Date: 30 Aug 2007 22:42:46 +0200
+Message-ID: <46D72BC6.3020809@edge.ping.de>
+From: "Tim Teulings" <rael@edge.ping.de>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+	"=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@gmail.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	"Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-To: Joachim Fenkes <FENKES@de.ibm.com>
-Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
-References: <OF9D1ED44F.896DCCC5-ONC1257347.0044D256-C1257347.004CFB07@de.ibm.com>
-In-Reply-To: <OF9D1ED44F.896DCCC5-ONC1257347.0044D256-C1257347.004CFB07@de.ibm.com>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
+In-Reply-To: <46D279E8.10001@edge.ping.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,17 +26,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> There are currently two GX devices, eHCA and eHEA, which both reside 
-> beneath the root node - this is required by architecture for those 
-> devices. Unless they invent a device called 
-> "supercalifragilisticexpialidocious", devices in the root note will have a 
-> full_name of less than 31 chars. Even in that case, the truncation occurs 
-> at the beginning, so the @xxx part that makes the nodes unique will stay 
-> in place.
-> 
+Hello!
 
-OK, didn't realize it had to be beneath the root node, and that the 
-truncation truncated the front and not the back.  I would have done it 
-differently, but this should work.
+> I don't have traces at hand and due to lack of time cannot reproduce it=
+=20
+> up to tomorrow. However this hint may speed up your analysis!
 
-Acked-by: Joel Schopp <jschopp@austin.ibm.com>
+Sorry for the delay, but my desktop PC had an urgent hard disk problem I =
+
+had to fix ASASP.
+
+So here is the output from dmesg that suggested to me that firewire=20
+might be a problem:
+
+> usb_endpoint usbdev2.2_ep81: PM: suspend 0->2, parent 2-1:1.0 already 2=
+
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2=
+
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
+(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
+> ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+> hdb: Enabling Ultra DMA 2
+> usb_endpoint usbdev1.1_ep00: PM: resume from 0, parent usb1 still 2
+> usb_endpoint usbdev1.1_ep81: PM: resume from 0, parent 1-0:1.0 still 2
+> usb_device usbdev1.1: PM: resume from 0, parent usb1 still 2
+> Driver sleep failed
+> Sleep rejected by devices
+> adb: starting probe task...
+> adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+> ADB keyboard at 2, handler 1
+> ADB mouse at 3, handler set to 4 (trackpad)
+> adb: finished probe task...
+> usb_device usbdev1.1: PM: suspend 0->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep81: PM: suspend 0->2, parent 1-0:1.0 already 2=
+
+> hub 1-0:1.0: PM: suspend 2->2, parent usb1 already 2
+> usb_endpoint usbdev1.1_ep00: PM: suspend 0->2, parent usb1 already 2
+> eth2: Airport entering sleep mode
+> eth0: suspending, WakeOnLan disabled
+> Trying to free already-free IRQ 40
+> pci_set_power_state(): 0002:20:0e.0: state=3D3, current state=3D5
+> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend=
+(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+> suspend_device(): pci_device_suspend+0x0/0x98() returns -22
+> Could not suspend device 0002:20:0e.0: error -22
+> eth0: resuming
+> PHY ID: 4061e4, addr: 0
+> eth2: Airport waking up
+> eth2: New link status: Connected (0001)
+> hda: Enabling Ultra DMA 2
+> hdb: Enabling Ultra DMA 2
+> eth0: Link is up at 100 Mbps, full-duplex.
+> eth0: Pause is disabled
+
+The problem wa sinitiated by closing the lid. The iBook then seems to=20
+permanetly try to go to sleep (I can hear the cd-rom drive get=20
+periodically initialized). So above contains more than one iteration.
+
+The kernel is:
+> Linux kismet 2.6.22-1-powerpc #1 Sun Jul 29 13:58:06 CEST 2007 ppc GNU/=
+Linux
+
+The relveant debian package:
+> linux-image-2.6.22-1-powerpc_2.6.22-3_powerpc.deb
+
+I'm running a mixture of debian testing/unstable.
+
+The firewire and the USB connector were unused, the network connector=20
+was used.
+
+If there are questions regarding other packages, or somebody wants me to =
+
+test a fix (I would prever a debian package), don't hesitate - I would=20
+like to get the bug fixed :-)
+
+--=20
+Gru=DF...
+        Tim
