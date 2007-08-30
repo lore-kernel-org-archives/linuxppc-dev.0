@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: Jon Loeliger <jdl@freescale.com>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/3] libfdt: Add fdt_get_name() to retrieve a node's name
+Subject: [PATCH 2/3] libfdt: Add fdt_get_path() function
 In-Reply-To: <20070830045253.GA32543@localhost.localdomain>
-Message-Id: <20070830045404.0743FDDE2E@ozlabs.org>
+Message-Id: <20070830045404.0C428DDE2F@ozlabs.org>
 Date: Thu, 30 Aug 2007 14:54:04 +1000 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,98 +15,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new fdt_get_name() function to libfdt which will
-return a node's name string (including unit address, if any).
+This patch adds an fdt_get_path() function to libfdt, which returns
+the full path of a given node in a caller supplied buffer.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 ---
- libfdt/fdt_ro.c      |   24 ++++++++++++++
+ libfdt/fdt_ro.c      |   66 ++++++++++++++++++++++++++++++++++++
  libfdt/libfdt.h      |    2 +
- tests/Makefile.tests |    3 +
- tests/get_name.c     |   83 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/Makefile.tests |    2 -
+ tests/get_path.c     |   91 +++++++++++++++++++++++++++++++++++++++++++++++++++
  tests/run_tests.sh   |    1 
- 5 files changed, 112 insertions(+), 1 deletion(-)
+ 5 files changed, 161 insertions(+), 1 deletion(-)
 
 Index: dtc/libfdt/fdt_ro.c
 ===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2007-08-29 13:14:06.000000000 +1000
-+++ dtc/libfdt/fdt_ro.c	2007-08-29 14:09:29.000000000 +1000
-@@ -169,6 +169,30 @@
- 	return offset;	
+--- dtc.orig/libfdt/fdt_ro.c	2007-08-29 14:09:52.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2007-08-29 14:28:32.000000000 +1000
+@@ -283,3 +283,69 @@
+ 
+ 	return prop->data;
  }
- 
-+const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
++
++int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
 +{
-+	const struct fdt_node_header *nh;
-+	int err;
++	uint32_t tag;
++	int p = 0, overflow = 0;
++	int offset, nextoffset, namelen;
++	const char *name;
 +
-+	if ((err = _fdt_check_header(fdt)) != 0)
-+		goto fail;
++	CHECK_HEADER(fdt);
 +
-+	err = -FDT_ERR_BADOFFSET;
-+	nh = fdt_offset_ptr(fdt, nodeoffset, sizeof(*nh));
-+	if (!nh || (fdt32_to_cpu(nh->tag) != FDT_BEGIN_NODE))
-+		goto fail;
++	tag = _fdt_next_tag(fdt, 0, &nextoffset);
++	if (tag != FDT_BEGIN_NODE)
++		return -FDT_ERR_BADSTRUCTURE;
 +
-+	if (len)
-+		*len = strlen(nh->name);
++	if (buflen < 2)
++		return -FDT_ERR_NOSPACE;
++	buf[0] = '/';
++	p = 1;
 +
-+	return nh->name;
++	while (offset < nodeoffset) {
++		offset = nextoffset;
++		tag = _fdt_next_tag(fdt, offset, &nextoffset);
++		switch (tag) {
++		case FDT_END:
++			return -FDT_ERR_BADOFFSET;
 +
-+ fail:
-+	if (len)
-+		*len = err;
-+	return NULL;
++		case FDT_BEGIN_NODE:
++			name = fdt_get_name(fdt, offset, &namelen);
++			if (!name)
++				return namelen;
++			if (overflow || ((p + namelen + 1) > buflen)) {
++				overflow++;
++				break;
++			}
++			memcpy(buf + p, name, namelen);
++			p += namelen;
++			buf[p++] = '/';
++			break;
++
++		case FDT_END_NODE:
++			if (overflow) {
++				overflow--;
++				break;
++			}
++			do {
++				p--;
++			} while  (buf[p-1] != '/');
++			break;
++
++		case FDT_PROP:
++		case FDT_NOP:
++			break;
++
++		default:
++			return -FDT_ERR_BADSTRUCTURE;
++		}
++	}
++
++	if (overflow)
++		return -FDT_ERR_NOSPACE;
++
++	if (p > 1) /* special case so that root path is "/", not "" */
++		p--;
++	buf[p] = '\0';
++	return p;
 +}
-+
- const struct fdt_property *fdt_get_property(const void *fdt,
- 					    int nodeoffset,
- 					    const char *name, int *lenp)
-Index: dtc/libfdt/libfdt.h
-===================================================================
---- dtc.orig/libfdt/libfdt.h	2007-08-29 13:14:06.000000000 +1000
-+++ dtc/libfdt/libfdt.h	2007-08-29 14:09:29.000000000 +1000
-@@ -115,6 +115,8 @@
- 
- int fdt_path_offset(const void *fdt, const char *path);
- 
-+const char *fdt_get_name(const void *fdt, int nodeoffset, int *baselen);
-+
- const struct fdt_property *fdt_get_property(const void *fdt, int nodeoffset,
- 					    const char *name, int *lenp);
- 
-Index: dtc/tests/Makefile.tests
-===================================================================
---- dtc.orig/tests/Makefile.tests	2007-08-29 13:14:06.000000000 +1000
-+++ dtc/tests/Makefile.tests	2007-08-29 14:09:29.000000000 +1000
-@@ -1,4 +1,5 @@
--LIB_TESTS_L = root_node find_property subnode_offset path_offset getprop \
-+LIB_TESTS_L = root_node find_property subnode_offset path_offset \
-+	get_name getprop \
- 	notfound \
- 	setprop_inplace nop_property nop_node \
- 	sw_tree1 \
-Index: dtc/tests/run_tests.sh
-===================================================================
---- dtc.orig/tests/run_tests.sh	2007-08-29 13:14:06.000000000 +1000
-+++ dtc/tests/run_tests.sh	2007-08-29 14:09:29.000000000 +1000
-@@ -35,6 +35,7 @@
-     run_test find_property $TREE
-     run_test subnode_offset $TREE
-     run_test path_offset $TREE
-+    run_test get_name $TREE
-     run_test getprop $TREE
-     run_test notfound $TREE
- 
-Index: dtc/tests/get_name.c
+Index: dtc/tests/get_path.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/get_name.c	2007-08-29 13:14:50.000000000 +1000
-@@ -0,0 +1,83 @@
++++ dtc/tests/get_path.c	2007-08-29 14:09:53.000000000 +1000
+@@ -0,0 +1,91 @@
 +/*
 + * libfdt - Flat Device Tree manipulation
-+ *	Testcase for fdt_get_name()
++ *	Testcase for fdt_get_path()
 + * Copyright (C) 2006 David Gibson, IBM Corporation.
 + *
 + * This library is free software; you can redistribute it and/or
@@ -123,6 +126,8 @@ Index: dtc/tests/get_name.c
 + * License along with this library; if not, write to the Free Software
 + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 + */
++#define _GNU_SOURCE
++
 +#include <stdlib.h>
 +#include <stdio.h>
 +#include <string.h>
@@ -134,42 +139,48 @@ Index: dtc/tests/get_name.c
 +#include "tests.h"
 +#include "testdata.h"
 +
-+void check_name(void *fdt, const char *path)
++#define POISON	('\xff')
++
++void check_path_buf(void *fdt, const char *path, int pathlen, int buflen)
 +{
 +	int offset;
-+	const char *getname, *getname2, *checkname;
++	char buf[buflen+1];
 +	int len;
-+
-+	checkname = strrchr(path, '/');
-+	if (!checkname)
-+		TEST_BUG();
-+	checkname += 1;
 +
 +	offset = fdt_path_offset(fdt, path);
 +	if (offset < 0)
-+		FAIL("Couldn't find %s", path);
++		FAIL("Couldn't find path \"%s\": %s", path, fdt_strerror(offset));
 +
-+	getname = fdt_get_name(fdt, offset, &len);
-+	verbose_printf("fdt_get_name(%d) returns \"%s\" (len=%d)\n",
-+		       offset, getname, len);
-+	if (!getname)
-+		FAIL("fdt_get_name(%d): %s", offset, fdt_strerror(len));
++	memset(buf, POISON, sizeof(buf)); /* poison the buffer */
 +
-+	if (strcmp(getname, checkname) != 0)
-+		FAIL("fdt_get_name(%s) returned \"%s\" instead of \"%s\"",
-+		     path, getname, checkname);
++	len = fdt_get_path(fdt, offset, buf, buflen);
++	if (buflen <= pathlen) {
++		if (len != -FDT_ERR_NOSPACE)
++			FAIL("fdt_get_path([%d bytes]) returns %d with "
++			     "insufficient buffer space", buflen, len);
++	} else {
++		if (len < 0)
++			FAIL("fdt_get_path([%d bytes]): %s", buflen,
++			     fdt_strerror(len));
++		if (len != pathlen)
++			FAIL("fdt_get_path([%d bytes]) reports length %d "
++			     "instead of %d", buflen, len, pathlen);
++		if (strcmp(buf, path) != 0)
++			FAIL("fdt_get_path([%d bytes]) returns \"%s\" "
++			     "instead of \"%s\"", buflen, buf, path);
++	}
 +
-+	if (len != strlen(getname))
-+		FAIL("fdt_get_name(%s) returned length %d instead of %d",
-+		     path, len, strlen(getname));
++	if (buf[buflen] != POISON)
++		FAIL("fdt_get_path([%d bytes]) overran buffer", buflen);
++}
 +
-+	/* Now check that it doesn't break if we omit len */
-+	getname2 = fdt_get_name(fdt, offset, NULL);
-+	if (!getname2)
-+		FAIL("fdt_get_name(%d, NULL) failed", offset);
-+	if (strcmp(getname2, getname) != 0)
-+		FAIL("fdt_get_name(%d, NULL) returned \"%s\" instead of \"%s\"",
-+		     offset, getname2, getname);
++void check_path(void *fdt, const char *path)
++{
++	int pathlen = strlen(path);
++
++	check_path_buf(fdt, path, pathlen, 1024);
++	check_path_buf(fdt, path, pathlen, pathlen+1);
++	check_path_buf(fdt, path, pathlen, pathlen);
 +}
 +
 +int main(int argc, char *argv[])
@@ -179,11 +190,47 @@ Index: dtc/tests/get_name.c
 +	test_init(argc, argv);
 +	fdt = load_blob_arg(argc, argv);
 +
-+	check_name(fdt, "/");
-+	check_name(fdt, "/subnode1");
-+	check_name(fdt, "/subnode2");
-+	check_name(fdt, "/subnode1/subsubnode");
-+	check_name(fdt, "/subnode2/subsubnode");
++	check_path(fdt, "/");
++	check_path(fdt, "/subnode1");
++	check_path(fdt, "/subnode2");
++	check_path(fdt, "/subnode1/subsubnode");
++	check_path(fdt, "/subnode2/subsubnode");
 +
 +	PASS();
 +}
+Index: dtc/tests/Makefile.tests
+===================================================================
+--- dtc.orig/tests/Makefile.tests	2007-08-29 14:09:52.000000000 +1000
++++ dtc/tests/Makefile.tests	2007-08-29 14:09:53.000000000 +1000
+@@ -1,5 +1,5 @@
+ LIB_TESTS_L = root_node find_property subnode_offset path_offset \
+-	get_name getprop \
++	get_name getprop get_path \
+ 	notfound \
+ 	setprop_inplace nop_property nop_node \
+ 	sw_tree1 \
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2007-08-29 14:09:52.000000000 +1000
++++ dtc/tests/run_tests.sh	2007-08-29 14:09:53.000000000 +1000
+@@ -37,6 +37,7 @@
+     run_test path_offset $TREE
+     run_test get_name $TREE
+     run_test getprop $TREE
++    run_test get_path $TREE
+     run_test notfound $TREE
+ 
+     # Write-in-place tests
+Index: dtc/libfdt/libfdt.h
+===================================================================
+--- dtc.orig/libfdt/libfdt.h	2007-08-29 14:09:52.000000000 +1000
++++ dtc/libfdt/libfdt.h	2007-08-29 14:10:28.000000000 +1000
+@@ -136,6 +136,8 @@
+ 	return (void *)fdt_getprop(fdt, nodeoffset, name, lenp);
+ }
+ 
++int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen);
++
+ /* Write-in-place functions */
+ int fdt_setprop_inplace(void *fdt, int nodeoffset, const char *name,
+ 			const void *val, int len);
