@@ -1,23 +1,23 @@
-Return-Path: <adgospod@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.249])
-	by ozlabs.org (Postfix) with ESMTP id BA2B2DDDD5
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
+	by ozlabs.org (Postfix) with ESMTP id 1FE63DDDF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 22:52:05 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so88857anc
+	Thu, 30 Aug 2007 23:21:31 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so341746wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 05:52:04 -0700 (PDT)
-Message-ID: <bdfc5d6e0708300552g71a995c9x10f17322613ca9c1@mail.gmail.com>
-Date: Thu, 30 Aug 2007 08:52:03 -0400
-From: "Andy Gospodarek" <andy@greyhouse.net>
-Sender: adgospod@gmail.com
-To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-Subject: Re: Network is blocked till ping is issued
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8EA1869B@aquib01a>
+	Thu, 30 Aug 2007 06:21:29 -0700 (PDT)
+Message-ID: <fa686aa40708300621n1e60c643j957c73d997a7d262@mail.gmail.com>
+Date: Thu, 30 Aug 2007 07:21:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Miroslaw Dach" <miroslaw.dach@psi.ch>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+In-Reply-To: <Pine.LNX.4.44.0708300923140.12294-100000@slslc02.psi.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20070830010752.0ca3d309.fvoegel@carangul.com>
-	<F1F6EC0C8B75034F9E3A79FC85122E8EA1869B@aquib01a>
-Cc: "Florian A. Voegel" <fvoegel@carangul.com>, linuxppc-embedded@ozlabs.org
+References: <fa686aa40708290817k897f8c2y5fdf12e5a48cc0ac@mail.gmail.com>
+	<Pine.LNX.4.44.0708300923140.12294-100000@slslc02.psi.ch>
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +28,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/30/07, DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it> wrote:
-> > sounds to me like it could be a classical ARP problem. Have you
-> checked the ARP cache on the non-Linux
-> > machine?
+On 8/30/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
 >
-> But if Linux received the SYN packet of TCP connection, shouldn't the
-> Linux machine reply to the source mac address of SYN packet with a
-> SYN,ACK packet?
->
+> When I try to start zImage.elf with bootelf command the system hangs during
+> uncompressing.
+> When I try to start uImage with bootm command the image is uncompressed
+> but it does not start properly.
 
-No.  You are confusing Ethernet frames and IP packets a little bit.
-If a Linux machine receives a SYN from a remote host (not on the same
-network) then the Linux machine needs to ARP for the router that is
-listed as the default route in the routing table.
+Ugh, I'm stumped.  Sorry.  I'd spend some more quality time with your
+debugger to trace the exact boot path.
 
-If no such default route exists, you will not be able to reach the
-remote host.  If the router doesn't reply to your ARP request, you
-will not be able to reach the remote host.
+g.
 
-Check to make sure you are not having either one of these problems.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
