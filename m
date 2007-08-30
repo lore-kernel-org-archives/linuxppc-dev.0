@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 32407DDE09
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E4D52DDE2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Aug 2007 10:29:03 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so66547anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Aug 2007 17:29:03 -0700 (PDT)
-Message-ID: <fa686aa40708291729j3f63a57dl32e5d4df647326b5@mail.gmail.com>
-Date: Wed, 29 Aug 2007 18:29:02 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Robert Woodworth" <rwoodworth@securics.com>
-Subject: Re: Xilinx Virtex boot
-In-Reply-To: <1188430494.8717.26.camel@PisteOff>
+	Thu, 30 Aug 2007 12:19:31 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IQZd2-0007F8-LZ
+	for linuxppc-embedded@ozlabs.org; Wed, 29 Aug 2007 19:19:28 -0700
+Message-ID: <12399427.post@talk.nabble.com>
+Date: Wed, 29 Aug 2007 19:19:28 -0700 (PDT)
+From: Qin Lin <linkinge@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: ML403 AC97 ALSA Driver problem
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1188430494.8717.26.camel@PisteOff>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,39 +26,230 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 8/29/07, Robert Woodworth <rwoodworth@securics.com> wrote:
-> I'm trying to port Linux to a new Virtex Platform.  The kernel will not
-> uncompress, I get the following on the console:
->
-> loaded at:     00400000 004FB19C
-> board data at: 004F9120 004F919C
-> relocated to:  00404054 004040D0
-> zimage at:     00404E50 004F8409
-> avail ram:     004FC000 04000000
->
-> Linux/PPC load: console=ttyUL root=/dev/xsa2
-> Uncompressing Linux...
-> zlib_inflateInit2 returned 00506530
-> exit
->
-> Any ideas what causes this error??
-> Is something mis-configured on my EDK project?
->
 
-Possibly, do you know that EDK has your ram is configured correctly
-(ie. have you run a memory test application)?
+hi all
 
->
-> I have 64MB DDR on the OPB *not* the PLB.
-> Is that a problem??
+when i use the ac97driver posted by Joachim F=C3=B6rster  recently,there is=
+ a
+kernel stack overflow while testing .
 
-It shouldn't be the problem, but why are you doing that?
+Does anybody kindly suggest me to take some step to find out the problem?
+Thanks
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+
+Joachim F=C3=B6rster 's driver here:
+http://www.nabble.com/Re%3A--PATCHv2-1-2--Xilinx-ML403-AC97-Controller-Refe=
+rence-device-driver-p12106850.html
+
+testing program is alsa-app  aplay ,the output here:=20
+# strace aplay /root/aq_ac97/yonggan.wav
+execve("/usr/bin/aplay", ["aplay", "/root/aq_ac97/yonggan.wav"], [/* 7 vars
+*/]) =3D 0
+uname({sys=3D"Linux", node=3D"(none)", ...}) =3D 0
+brk(0)                                  =3D 0x10022000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) =
+=3D
+0x30017000
+access("/etc/ld.so.preload", R_OK)      =3D -1 ENOENT (No such file or
+directory)
+open("/etc/ld.so.cache", O_RDONLY)      =3D 3
+fstat64(3, {st_mode=3DS_IFREG|0644, st_size=3D17602, ...}) =3D 0
+mmap(NULL, 17602, PROT_READ, MAP_PRIVATE, 3, 0) =3D 0x30018000
+close(3)                                =3D 0
+open("/lib/tls/ppc405/libasound.so.2", O_RDONLY) =3D -1 ENOENT (No such fil=
+e
+or directory)
+stat64("/lib/tls/ppc405", 0x7ffec288)   =3D -1 ENOENT (No such file or
+directory)
+open("/lib/tls/libaso[   30.843423] Kernel stack overflow in process
+c02dcb90, r1=3Dc02d3f30
+
+
+# aplay yonggan.wav
+Playing WAVE 'yonggan.wav' : Signed 16 bit Little Endian, Rate 44100 Hz,
+Stereo
+[   82.689668] Kernel stack overflow in process c02a6490, r1=3Dc02f7f30
+[   82.763235] Oops: kernel access of bad area, sig: 11 [#1]
+[   82.827330] NIP: C001327C LR: C001666C CTR: 00000000
+[   82.886699] REGS: c01931f0 TRAP: 0300   Not tainted  (2.6.20)
+[   82.955428] MSR: 00021030 <ME,IR,DR>  CR: 28000028  XER: 00000000
+[   83.028333] DAR: 00000005, DSISR: 00000000
+[   83.077290] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   83.141855] GPR00: 00000001 C01932A0 C02A6490 00000000 C01B3770 00000012
+00000300 00000010
+[   83.241838] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   83.341823] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   83.441806] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0193470
+[   83.543874] NIP [C001327C] xmon_write+0x38/0xbc
+[   83.598032] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   83.654272] Call Trace:
+[   83.683435] Instruction dump:
+[   83.718848] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   83.811540] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   83.906354] Oops: kernel access of bad area, sig: 11 [#2]
+[   83.970893] NIP: C001327C LR: C001666C CTR: 00000000
+[   84.030263] REGS: c0192d30 TRAP: 0300   Not tainted  (2.6.20)
+[   84.098992] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   84.171898] DAR: 00000005, DSISR: 00000000
+[   84.220854] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   84.285419] GPR00: 00000001 C0192DE0 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   84.385403] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   84.485387] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   84.585371] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0193040
+[   84.687439] NIP [C001327C] xmon_write+0x38/0xbc
+[   84.741598] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   84.797838] Call Trace:
+[   84.827000] Instruction dump:
+[   84.862412] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   84.955105] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   85.049913] Oops: kernel access of bad area, sig: 11 [#3]
+[   85.114460] NIP: C001327C LR: C001666C CTR: 00000000
+[   85.173828] REGS: c0192870 TRAP: 0300   Not tainted  (2.6.20)
+[   85.242559] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   85.315463] DAR: 00000005, DSISR: 00000000
+[   85.364419] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   85.428985] GPR00: 00000001 C0192920 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   85.528969] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   85.628952] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   85.728936] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0192B80
+[   85.831004] NIP [C001327C] xmon_write+0x38/0xbc
+[   85.885163] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   85.941404] Call Trace:
+[   85.970565] Instruction dump:
+[   86.005979] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   86.098670] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   86.193480] Oops: kernel access of bad area, sig: 11 [#4]
+[   86.258024] NIP: C001327C LR: C001666C CTR: 00000000
+[   86.317392] REGS: c01923b0 TRAP: 0300   Not tainted  (2.6.20)
+[   86.386123] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   86.459028] DAR: 00000005, DSISR: 00000000
+[   86.507985] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   86.572551] GPR00: 00000001 C0192460 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   86.672534] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   86.772518] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   86.872502] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C01926C0
+[   86.974570] NIP [C001327C] xmon_write+0x38/0xbc
+[   87.028727] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   87.084967] Call Trace:
+[   87.114130] Instruction dump:
+[   87.149544] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   87.242236] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   87.337041] Oops: kernel access of bad area, sig: 11 [#5]
+[   87.401589] NIP: C001327C LR: C001666C CTR: 00000000
+[   87.460958] REGS: c0191ef0 TRAP: 0300   Not tainted  (2.6.20)
+[   87.529687] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   87.602593] DAR: 00000005, DSISR: 00000000
+[   87.651549] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   87.716115] GPR00: 00000001 C0191FA0 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   87.816099] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   87.916083] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   88.016067] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0192200
+[   88.118134] NIP [C001327C] xmon_write+0x38/0xbc
+[   88.172293] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   88.228531] Call Trace:
+[   88.257695] Instruction dump:
+[   88.293108] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   88.385801] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   88.480614] Oops: kernel access of bad area, sig: 11 [#6]
+[   88.545155] NIP: C001327C LR: C001666C CTR: 00000000
+[   88.604522] REGS: c0191a30 TRAP: 0300   Not tainted  (2.6.20)
+[   88.673253] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   88.746158] DAR: 00000005, DSISR: 00000000
+[   88.795114] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   88.859680] GPR00: 00000001 C0191AE0 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   88.959664] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   89.059648] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   89.159632] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0191D40
+[   89.261699] NIP [C001327C] xmon_write+0x38/0xbc
+[   89.315858] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   89.372097] Call Trace:
+[   89.401261] Instruction dump:
+[   89.436673] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   89.529366] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   89.624178] Oops: kernel access of bad area, sig: 11 [#7]
+[   89.688719] NIP: C001327C LR: C001666C CTR: 00000000
+[   89.748087] REGS: c0191570 TRAP: 0300   Not tainted  (2.6.20)
+[   89.816818] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   89.889724] DAR: 00000005, DSISR: 00000000
+[   89.938679] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   90.003245] GPR00: 00000001 C0191620 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   90.103229] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   90.203213] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   90.303197] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C0191880
+[   90.405265] NIP [C001327C] xmon_write+0x38/0xbc
+[   90.459422] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   90.515662] Call Trace:
+[   90.544826] Instruction dump:
+[   90.580238] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   90.672930] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+[   90.767743] Oops: kernel access of bad area, sig: 11 [#8]
+[   90.832285] NIP: C001327C LR: C001666C CTR: 00000000
+[   90.891654] REGS: c01910b0 TRAP: 0300   Not tainted  (2.6.20)
+[   90.960383] MSR: 00021030 <ME,IR,DR>  CR: 28000048  XER: 00000000
+[   91.033289] DAR: 00000005, DSISR: 00000000
+[   91.082245] TASK =3D c02a6490[134] 'xsysace' THREAD: c02f8000
+[   91.146811] GPR00: 00000001 C0191160 C02A6490 00000000 C01B3770 00000012
+00000700 00000010
+[   91.246795] GPR08: FFFFFFFA 00000020 00000000 00000005 00000000 FFFF87B8
+03FD0700 00000000
+[   91.346779] GPR16: 00000001 00800000 03FCF588 00000000 FFFFFFFF 007FFF00
+03FC9FFC 00000002
+[   91.446762] GPR24: 03E667C0 C01B0000 C010600C C01B3770 00000012 00000000
+00000000 C01913C0
+[   91.548831] NIP [C001327C] xmon_write+0x38/0xbc
+[   91.602989] LR [C001666C] xmon_vfprintf+0x34/0x48
+[   91.659227] Call Trace:
+[   91.688390] Instruction dump:
+[   91.723804] bf61000c 90010024 3d20c01b 8009f1bc 7c9b2378 2f800000
+7cbc2b78 40be0008
+[   91.816495] 4bfffe2d 3ba00000 3bc00000 48000054 <880b0000> 7c0a4839
+4182fff8 7ffbf0ae
+
+
+Qin Lin
+--=20
+View this message in context: http://www.nabble.com/ML403-AC97-ALSA-Driver-=
+problem-tf4351591.html#a12399427
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
