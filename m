@@ -1,9 +1,9 @@
 Return-Path: <pete@bluelane.com>
 Received: from mse2fe1.mse2.exchange.ms (outbound.mse2.exchange.ms
-	[69.25.50.247]) by ozlabs.org (Postfix) with ESMTP id 2FDCFDDE27
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 10:05:31 +1000 (EST)
-Message-ID: <46D609C5.2020906@bluelane.com>
-Date: Wed, 29 Aug 2007 17:05:25 -0700
+	[69.25.50.247]) by ozlabs.org (Postfix) with ESMTP id 66B5ADDE39
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:19:36 +1000 (EST)
+Message-ID: <46D61B21.1010703@bluelane.com>
+Date: Wed, 29 Aug 2007 18:19:29 -0700
 From: Pete/Piet Delaney <pete@bluelane.com>
 MIME-Version: 1.0
 To: pete@bluelane.com
@@ -66,10 +66,34 @@ Pete/Piet Delaney wrote:
 > 
 > Where is the kgdb git tree?
 
-Trying:
+Why am I getting this when I do:
 
 git clone
 http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+
+-
+----------------------------------------------------------------------------
+error: Couldn't get
+http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git/refs/tags/v2.6.11
+for tags/v2.6.11
+The requested URL returned error: 404
+error: Could not interpret tags/v2.6.11 as something to pull
+rm: cannot remove directory
+`/nethome/piet/Src/linux/git/jwessel/linux-2.6-kgdb/.git/clone-tmp':
+Directory not empty
+/nethome/piet/Src/linux/git/jwessel$
+-
+----------------------------------------------------------------------------
+
+We are getting a problem with VMware where kernel text is the schedler
+is getting wacked with four null bytes into the code. Thought I'd use
+the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
+patch to make kernel text readonly:
+
+ https://www.x86-64.org/pipermail/patches/2007-March/003666.html
+
+I thought the kernel text was RO and gdb had to disable it to
+insert a breakpoint.
 
 - -piet
 
@@ -95,7 +119,7 @@ Please read the FAQ at  http://www.tux.org/lkml/
 Version: GnuPG v1.4.7 (GNU/Linux)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFG1gnFJICwm/rv3hoRApOoAJ9BHXLsIuxDiOCaAFRfAZGwrDXATQCeLL3O
-bxtr3qz0soPRghPmtSZgOqc=
-=kQd1
+iD8DBQFG1hshJICwm/rv3hoRAhTGAJ46pq69zYHqRmT+yTmRx+RVh8aBtgCfdyFM
+gl91xCFTy0NJxHalVXpd9Os=
+=c8FZ
 -----END PGP SIGNATURE-----
