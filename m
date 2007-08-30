@@ -1,16 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 30 Aug 2007 10:34:30 +1000
+Date: Thu, 30 Aug 2007 10:37:41 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 7/9] bootwrapper: Only print MAC addresses when the node
-	is actually present.
-Message-ID: <20070830003430.GF21072@localhost.localdomain>
-References: <20070829164534.GA31585@ld0162-tx32.am.freescale.net>
-	<20070829164743.GE31640@ld0162-tx32.am.freescale.net>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 2/4] PowerPC 440EPx: Sequoia device tree
+Message-ID: <20070830003741.GH21072@localhost.localdomain>
+References: <20070829133520.GA19925@ru.mvista.com>
+	<20070829133942.GA19983@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070829164743.GE31640@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <20070829133942.GA19983@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +19,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Aug 29, 2007 at 11:47:43AM -0500, Scott Wood wrote:
-> Some firmwares (such as PlanetCore) only provide a base MAC address, and
-> expect the kernel to set certain bits to generate the addresses for the
-> other ports.  As such, MAC addresses are generated that may not correspond
-> to actual hardware.
+On Wed, Aug 29, 2007 at 05:39:42PM +0400, Valentine Barshak wrote:
+> AMCC PPC440EPx Sequoia device tree.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
