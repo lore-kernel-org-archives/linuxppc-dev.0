@@ -1,18 +1,13 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 55CE6DDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 23:29:37 +1000 (EST)
-Message-ID: <46D6C600.9040709@ru.mvista.com>
-Date: Thu, 30 Aug 2007 17:28:32 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
-References: <20070829133520.GA19925@ru.mvista.com>
-	<1188433699.3515.15.camel@localhost.localdomain>
-In-Reply-To: <1188433699.3515.15.camel@localhost.localdomain>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Cc: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Fix summary calculation in testsuite 
+In-Reply-To: Your message of "Wed, 29 Aug 2007 12:18:51 +1000."
+	<20070829021851.GA25233@localhost.localdomain>
+References: <20070829021851.GA25233@localhost.localdomain> 
+Date: Thu, 30 Aug 2007 08:51:35 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IQkQp-0004aD-Hj@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +17,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, 2007-08-29 at 17:35 +0400, Valentine Barshak wrote:
->> The following patches add initial PowerPC 440EPx Sequoia board support.
->> The code is based mainly on the Bamboo board support by Josh Boyer.
->> These patches have been modified according the comments for the previous
->> 440EPx Sequoia patch series.
+So, like, the other day David Gibson mumbled:
+> The bookkeeping for producing the testsuite summary (total number of
+> tests passed, failed and so forth) is broken.  It uses $? across
+> several tests, but for checks after the first, the value of $? will no
+> longer contain the original return code, but just that from the
+> previous test.  This patch fixes the problem.
 > 
-> I see David has beaten me to reviewing the individual patches, which of
-> course is always welcome.  I just wanted add that I also think these
-> look good.  Thanks!
-> 
-> josh
-> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Thanks guys :)
+Applied.
 
-Valentine
+Thanks,
+jdl
