@@ -1,25 +1,15 @@
-Return-Path: <pete@bluelane.com>
-Received: from mse2fe1.mse2.exchange.ms (outbound.mse2.exchange.ms
-	[69.25.50.247]) by ozlabs.org (Postfix) with ESMTP id 66B5ADDE39
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 11:19:36 +1000 (EST)
-Message-ID: <46D61B21.1010703@bluelane.com>
-Date: Wed, 29 Aug 2007 18:19:29 -0700
-From: Pete/Piet Delaney <pete@bluelane.com>
+Return-Path: <SRS0=k936=N3=stefan-roese.de=ml@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 6D9BDDDE32
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Aug 2007 18:31:29 +1000 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [POWERPC] PCI Bug fix for MRM failure in PPC 440EPx
+Date: Thu, 30 Aug 2007 10:33:28 +0200
 MIME-Version: 1.0
-To: pete@bluelane.com
-Subject: Re: [Kgdb-bugreport] 2.6.23-rc3-mm1: kgdb build failure on powerpc
-References: <20070822020648.5ea3a612.akpm@linux-foundation.org>	<200708222104.29432.m.kozlowski@tuxland.pl>	<20070822124743.fc316963.akpm@linux-foundation.org>	<46CCBC3C.7010307@windriver.com>
-	<20070822165318.b82da13c.akpm@linux-foundation.org>
-	<46CCFE2C.4050306@windriver.com> <46D604BF.7090905@bluelane.com>
-In-Reply-To: <46D604BF.7090905@bluelane.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: kgdb-bugreport@lists.sourceforge.net, amitkale@linsyssoft.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Mariusz Kozlowski <m.kozlowski@tuxland.pl>,
-	Paul Mackerras <paulus@samba.org>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-Reply-To: pete@bluelane.com
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200708301033.28423.ml@stefan-roese.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,97 +19,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Problem Description and Fix : Memory Read Multiples(MRM) do not work
+correctly on PPC 440EPX based systems. A PCI driver determines whether
+MRMs are supported by reading the PCI cache line size register. If this
+value is zero then MRMs are not supported. However some PCI drivers
+write to the PCI cache line size register on initialization. This
+results in MRMs being sent to system memory on 440EPX based systems.
+Since MRMs do not work correctly in 440EPX based systems this may cause
+system hang. This patch solves this problem by modifying the PPC
+platform specific PCI configuration register write function, by forcing
+any value written to PCI_CACHE_LINE_SIZE register to be 0. This fix was
+tested on different PCI cards : i.e. Silicon Image ATA card and Intel
+E1000 GIGE card. On Silicon Image ATA card without this fix in place
+creating a filesystem on IDE drive "mke2fs /dev/hda" was hanging the
+system. MRMs issued by the PCI card were seen on the PCI analyzer since
+the Silicon Image driver was setting the PCI_CACHE_LINE_SIZE register to
+255. With this patch the PCI_CACHE_LINE_SIZE register was 0 and only
+Memory Reads were seen on PCI analyzer.
 
-Pete/Piet Delaney wrote:
-> Jason Wessel wrote:
->> Andrew Morton wrote:
->>> On Wed, 22 Aug 2007 17:44:12 -0500
->>> Jason Wessel <jason.wessel@windriver.com> wrote:
->>>
->>>  
->>>> +    while (!atomic_read(&debugger_active));
->>>>     
->>> eek.  We're in the process of hunting down and eliminating exactly this
->>> construct.  There have been cases where the compiler cached the
->>> atomic_read() result in a register, turning the above into an infinite
->>> loop.
->>>
->>> Plus we should never add power-burners like that into the kernel
->>> anyway. That loop should have a cpu_relax() in it.  Which will also
->>> fix the
->>> compiler problem described above.
->>>
->>>   
->> Agreed, and fixed with a cpu_relax.
-> 
->>> Thirdly, please always add a newline when coding statements like that:
->>>
->>>     while (expr())
->>>         ;
->>>   
->> The other instances I found of the same problem in the kgdb core are
->> fixed too.
-> 
->> I merged all the changes into the for_mm branch in the kgdb git tree.
-> 
-> Where is the kgdb git tree?
+Signed-off-by: Pravin M. Bathija <pbathija@amcc.com>
+Signed-off-by: Stefan Roese <sr@denx.de>
 
-Why am I getting this when I do:
+---
+I know this patch is a little "dirty", but perhaps somebody has a better
+idea to fix this problem. Thanks.
 
-git clone
-http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git
+commit bae603c964831f26d9816e85ffc923afc3275e44
+tree 6fb93d22bcb56670a8e6f344afbe8a4a8438692c
+parent b07d68b5ca4d55a16fab223d63d5fb36f89ff42f
+author Stefan Roese <sr@denx.de> Thu, 30 Aug 2007 10:30:09 +0200
+committer Stefan Roese <sr@denx.de> Thu, 30 Aug 2007 10:30:09 +0200
 
--
-----------------------------------------------------------------------------
-error: Couldn't get
-http://master.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git/refs/tags/v2.6.11
-for tags/v2.6.11
-The requested URL returned error: 404
-error: Could not interpret tags/v2.6.11 as something to pull
-rm: cannot remove directory
-`/nethome/piet/Src/linux/git/jwessel/linux-2.6-kgdb/.git/clone-tmp':
-Directory not empty
-/nethome/piet/Src/linux/git/jwessel$
--
-----------------------------------------------------------------------------
+ arch/powerpc/sysdev/indirect_pci.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-We are getting a problem with VMware where kernel text is the schedler
-is getting wacked with four null bytes into the code. Thought I'd use
-the current linux-2.6-kgdb.git tree and possible the CONFIG_DEBUG_RODATA
-patch to make kernel text readonly:
-
- https://www.x86-64.org/pipermail/patches/2007-March/003666.html
-
-I thought the kernel text was RO and gdb had to disable it to
-insert a breakpoint.
-
-- -piet
-
-> 
-> -piet
-> 
->> Thanks,
->> Jason.
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-- -
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFG1hshJICwm/rv3hoRAhTGAJ46pq69zYHqRmT+yTmRx+RVh8aBtgCfdyFM
-gl91xCFTy0NJxHalVXpd9Os=
-=c8FZ
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/sysdev/indirect_pci.c b/arch/powerpc/sysdev/indirect_pci.c
+index 5294560..d694acc 100644
+--- a/arch/powerpc/sysdev/indirect_pci.c
++++ b/arch/powerpc/sysdev/indirect_pci.c
+@@ -128,6 +128,13 @@ indirect_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
+ 	 * suitably aligned and that len is 1, 2 or 4.
+ 	 */
+ 	cfg_data = hose->cfg_data + (offset & 3);
++
++#if defined(CONFIG_440EPX) || defined(CONFIG_440GRX)
++	/* Workaround for MRM failure in 440EPx/GRx */
++	if (offset == PCI_CACHE_LINE_SIZE)
++		val = 0;
++#endif
++
+ 	switch (len) {
+ 	case 1:
+ 		out_8(cfg_data, val);
