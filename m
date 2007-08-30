@@ -1,22 +1,15 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29959DDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 07:52:38 +1000 (EST)
-Date: Fri, 31 Aug 2007 01:52:27 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/9] cpm2: Fix off-by-one error in setbrg().
-Message-ID: <20070831015227.26e3b43f@localhost.localdomain>
-In-Reply-To: <20070830201311.GA5144@ld0162-tx32.am.freescale.net>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201921.GB24329@ld0162-tx32.am.freescale.net>
-	<20070830020907.59052c67@localhost.localdomain>
-	<20070830201311.GA5144@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <matt@genesi-usa.com>
+Message-ID: <46D734AA.1050206@genesi-usa.com>
+Date: Thu, 30 Aug 2007 22:20:42 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc5200: add cuimage support for mpc5200 boards
+References: <20070830205550.11315.98506.stgit@trillian.cg.shawcable.net>	<20070830210507.GA7757@ld0162-tx32.am.freescale.net>
+	<fa686aa40708301415g15df8bf1na84f437ac8f17dcb@mail.gmail.com>
+In-Reply-To: <fa686aa40708301415g15df8bf1na84f437ac8f17dcb@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 30 Aug 2007 15:13:12 -0500
-Scott Wood wrote:
 
-> On Thu, Aug 30, 2007 at 02:09:07AM +0400, Vitaly Bordug wrote:
-> > On Tue, 28 Aug 2007 15:19:21 -0500
-> > Scott Wood wrote:
-> > 
-> > > The hardware adds one to the BRG value to get the divider, so it
-> > > must be subtracted by software.
-> > 
-> > Prolly a note why it used to work, or what exactly this is
-> > resulting in the code. IIRC this was just fw-ported so arch/ppc
-> > should have this as well.
-> 
-> It *didn't* work before -- hence the fix.
-> 
-It used to work at least at the time I did initial port, but I am not going to argue.
++/*
++ * Old U-boot compatibility for 8200
++ *
 
-> The failure mode from being off by just one isn't total
-> nonfunctionality, but rather a corrupted character now and then,
-> which could explain why it wasn't fixed before.
-Can this be added to description please? Someone may be grepping for such a weirdness in some custom code forked off
-some kernel.org revision, and will be happy to know it is addressed.
-
-> 
-> As for arch/ppc, I'm just trying to not break it more than it already
-> is.
-I mean, when powerpc/ was nearly empty, same issue in ppc/ went unnoticed for years...
+And this one?
 
 -- 
-Sincerely, Vitaly
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Grant Likely wrote:
+> On 8/30/07, Scott Wood <scottwood@freescale.com> wrote:
+>> On Thu, Aug 30, 2007 at 02:57:40PM -0600, Grant Likely wrote:
+>>> diff --git a/arch/powerpc/boot/mpc52xx-psc.c b/arch/powerpc/boot/mpc52xx-psc.c
+>>> new file mode 100644
+>>> index 0000000..46eecf0
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/boot/mpc52xx-psc.c
+>>> @@ -0,0 +1,89 @@
+>>> +/*
+>>> + * CPM serial console support.
+>>> + *
+>>> + * Copyright 2007 Freescale Semiconductor, Inc.
+>>> + * Author: Scott Wood <scottwood@freescale.com>
+>>> + *
+>>> + * It is assumed that the firmware (or the platform file) has already set
+>>> + * up the port.
+>> Might want to update that comment block... :-)
+> 
+> HAHAHAHAHAHAHA!  Yeah, I'll fix that.  :-)
+> 
+> g.
+> 
