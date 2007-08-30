@@ -1,8 +1,8 @@
 Return-Path: <rwoodworth@securics.com>
-Received: from securics.com (mail.securics.com [128.198.58.14])
-	by ozlabs.org (Postfix) with ESMTP id 49741DDE18
+Received: from securics.com (dns2.securics.com [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id D4396DDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Aug 2007 00:44:41 +1000 (EST)
+	Fri, 31 Aug 2007 00:50:44 +1000 (EST)
 Subject: Re: Xilinx Virtex boot
 From: Robert Woodworth <rwoodworth@securics.com>
 To: Grant Likely <grant.likely@secretlab.ca>
@@ -10,8 +10,8 @@ In-Reply-To: <fa686aa40708291729j3f63a57dl32e5d4df647326b5@mail.gmail.com>
 References: <1188430494.8717.26.camel@PisteOff>
 	<fa686aa40708291729j3f63a57dl32e5d4df647326b5@mail.gmail.com>
 Content-Type: text/plain
-Date: Thu, 30 Aug 2007 08:44:32 -0600
-Message-Id: <1188485072.8717.42.camel@PisteOff>
+Date: Thu, 30 Aug 2007 08:50:36 -0600
+Message-Id: <1188485436.8717.47.camel@PisteOff>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -46,33 +46,17 @@ On Wed, 2007-08-29 at 18:29 -0600, Grant Likely wrote:
 > 
 > Possibly, do you know that EDK has your ram is configured correctly
 > (ie. have you run a memory test application)?
-
-Yes, I ran the sample memory test application that EDK builds
-automatically.  It ran fine.
-
-The fact that the above prints on the console, tells me that the
-zImage.elf is getting loaded at the correct start location and that its
-partly executing.
-
-What is the return code that I'm seeing??  I have been unable to figure
-that out from the source yet.
-
-
+>
+>
 > >
 > > I have 64MB DDR on the OPB *not* the PLB.
 > > Is that a problem??
 > 
 > It shouldn't be the problem, but why are you doing that?
 
-We are building an image-processing application inside the FPGA.  The
-application is very memory intensive.  I have been told that the PPC
-always has priority on the PLB and that if I want to have my FPGA module
-have priority on memory, that I should place the memory and my FPGA
-module on the OPB.  Yes, this can significantly slow down the PPC, but
-in my case the PPC is only used for UI and networking.
+I did notice in my configuration, that when the memory is on the PLB it
+has an interrupt flag and when it's on the OPB it doesn't.  What is the
+interrupt for?  DMA's?
 
-I will actually build in *two* OPBs one for the memory + my module and
-the second for the other peripherals. 
-
-
-Woody.
+Could Linux be doing a DMA in the uncompression where the lack of an
+interrupt causes and error?
