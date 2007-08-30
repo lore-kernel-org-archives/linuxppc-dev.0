@@ -1,22 +1,23 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 57BFADDE1A
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:13:21 +1000 (EST)
-Date: Thu, 30 Aug 2007 15:13:12 -0500
+	by ozlabs.org (Postfix) with ESMTP id BC59CDDE29
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 06:15:12 +1000 (EST)
+Date: Thu, 30 Aug 2007 15:15:00 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 2/9] cpm2: Fix off-by-one error in setbrg().
-Message-ID: <20070830201311.GA5144@ld0162-tx32.am.freescale.net>
+Subject: Re: [PATCH 3/9] cpm2: Add SCCs to cpm2_clk_setup(),
+	and cpm2_smc_clk_setup().
+Message-ID: <20070830201500.GB5144@ld0162-tx32.am.freescale.net>
 References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201921.GB24329@ld0162-tx32.am.freescale.net>
-	<20070830020907.59052c67@localhost.localdomain>
+	<20070828201922.GC24329@ld0162-tx32.am.freescale.net>
+	<20070830022548.6e0ce296@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070830020907.59052c67@localhost.localdomain>
+In-Reply-To: <20070830022548.6e0ce296@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,23 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 30, 2007 at 02:09:07AM +0400, Vitaly Bordug wrote:
-> On Tue, 28 Aug 2007 15:19:21 -0500
-> Scott Wood wrote:
-> 
-> > The hardware adds one to the BRG value to get the divider, so it must
-> > be subtracted by software.
-> 
-> Prolly a note why it used to work, or what exactly this is resulting in
-> the code. IIRC this was just fw-ported so arch/ppc should have this as
-> well.
+On Thu, Aug 30, 2007 at 02:25:48AM +0400, Vitaly Bordug wrote:
+> I would have it in the same patch, that adds clocking stuff to 8xx.
 
-It *didn't* work before -- hence the fix.
+I was trying to keep the 8xx and 82xx patchsets reasonably separate.
 
-The failure mode from being off by just one isn't total nonfunctionality,
-but rather a corrupted character now and then, which could explain why it
-wasn't fixed before.
+> And maybe in the same, segregate source rather then having it in the
+> foo_common.c, to ease fix/update/rework.
 
-As for arch/ppc, I'm just trying to not break it more than it already is.
+I'm not sure I understand what you mean -- where do you want the code to
+go?
 
 -Scott
