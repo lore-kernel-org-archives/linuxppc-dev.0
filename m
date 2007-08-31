@@ -1,9 +1,12 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Aug 2007 14:30:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Fix use of uninitialized variable in fdt_get_path()
-Message-ID: <20070831043016.GM19271@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id B97A4DDDFC
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:52:45 +1000 (EST)
+Date: Thu, 30 Aug 2007 22:58:51 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] export new __io{re,un}map_at() symbols
+Message-ID: <20070831035851.GA24414@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,32 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My recent implemenetation of fdt_get_path() had a bug - the while loop
-tested offset which was unitialized on the first iteration.  Depending
-on code surrounding the call, this could cause fdt_get_path() to
-return incorrect results.
+Export new __io{re,un}map_at() symbols so modules can use them.
 
-This patch corrects the problem by applying some more correct thinking
-to the loop condition.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Index: dtc/libfdt/fdt_ro.c
+
+Index: mainline/arch/powerpc/mm/pgtable_64.c
 ===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2007-08-31 14:26:26.000000000 +1000
-+++ dtc/libfdt/fdt_ro.c	2007-08-31 14:26:31.000000000 +1000
-@@ -302,7 +302,7 @@
- 	buf[0] = '/';
- 	p = 1;
- 
--	while (offset < nodeoffset) {
-+	while (nextoffset <= nodeoffset) {
- 		offset = nextoffset;
- 		tag = _fdt_next_tag(fdt, offset, &nextoffset);
- 		switch (tag) {
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--- mainline.orig/arch/powerpc/mm/pgtable_64.c
++++ mainline/arch/powerpc/mm/pgtable_64.c
+@@ -228,5 +228,7 @@ void iounmap(volatile void __iomem *toke
+ EXPORT_SYMBOL(ioremap);
+ EXPORT_SYMBOL(ioremap_flags);
+ EXPORT_SYMBOL(__ioremap);
++EXPORT_SYMBOL(__ioremap_at);
+ EXPORT_SYMBOL(iounmap);
+ EXPORT_SYMBOL(__iounmap);
++EXPORT_SYMBOL(__iounmap_at);
