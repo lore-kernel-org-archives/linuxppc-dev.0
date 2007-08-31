@@ -1,12 +1,9 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B97A4DDDFC
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:52:45 +1000 (EST)
-Date: Thu, 30 Aug 2007 22:58:51 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] export new __io{re,un}map_at() symbols
-Message-ID: <20070831035851.GA24414@lixom.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 31 Aug 2007 16:04:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make make print a message when linking testcases
+Message-ID: <20070831060427.GB29721@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -19,21 +16,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Export new __io{re,un}map_at() symbols so modules can use them.
+Currently, dtc relies on make's implicit rule to build the testcases.
+This means that when not making verbosely (V=0, the default) there is
+no message at all while relinking the testsuites.  This can be very
+confusing when updating libfdt.a (upon which the testcases depend) and
+make appears to do nothing.
 
+This patch corrects the situation, borrowing the rule used to link dtc
+itself to link all the testcases as well.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-
-Index: mainline/arch/powerpc/mm/pgtable_64.c
+Index: dtc/Makefile
 ===================================================================
---- mainline.orig/arch/powerpc/mm/pgtable_64.c
-+++ mainline/arch/powerpc/mm/pgtable_64.c
-@@ -228,5 +228,7 @@ void iounmap(volatile void __iomem *toke
- EXPORT_SYMBOL(ioremap);
- EXPORT_SYMBOL(ioremap_flags);
- EXPORT_SYMBOL(__ioremap);
-+EXPORT_SYMBOL(__ioremap_at);
- EXPORT_SYMBOL(iounmap);
- EXPORT_SYMBOL(__iounmap);
-+EXPORT_SYMBOL(__iounmap_at);
+--- dtc.orig/Makefile	2007-08-31 15:58:40.000000000 +1000
++++ dtc/Makefile	2007-08-31 15:58:59.000000000 +1000
+@@ -101,8 +101,6 @@
+ 	$(LEX) $<
+ 
+ dtc: $(DTC_OBJS)
+-	@$(VECHO) LD $@
+-	$(LINK.c) -o $@ $^
+ 
+ ftdump:	ftdump.o
+ 
+@@ -168,6 +166,10 @@
+ #
+ # Generic compile rules
+ #
++%: %.o
++	@$(VECHO) LD $@
++	$(LINK.c) -o $@ $^
++
+ %.o: %.c
+ 	@$(VECHO) CC $@
+ 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
