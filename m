@@ -1,12 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Aug 2007 16:21:23 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Optimise by default, fix warnings thus uncovered
-Message-ID: <20070831062123.GC29721@localhost.localdomain>
+Return-Path: <FENKES@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BDE54DDED1
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 18:57:37 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l7V8vWOS285086
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 08:57:32 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l7V8vVQH2134020
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 10:57:31 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l7V8vVik008527
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 10:57:31 +0200
+In-Reply-To: <20070830212816.GA4263@austin.ibm.com>
+To: linas@austin.ibm.com (Linas Vepstas)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFD83AA06B.BECCA59D-ONC1257348.0030CA33-C1257348.003132C0@de.ibm.com>
+Date: Fri, 31 Aug 2007 10:57:28 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	Paul Mackerras <pmac@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,100 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch turns on optimisation in the Makefile by default.  With the
-optimizer on, some uninitialized variable warnings (one real, two
-bogus) are now generated.  This patch also squashes those again.
+linas@austin.ibm.com (Linas Vepstas) wrote on 30.08.2007 23:28:16:
 
-Index: dtc/Makefile
-===================================================================
---- dtc.orig/Makefile	2007-08-31 16:00:25.000000000 +1000
-+++ dtc/Makefile	2007-08-31 16:00:28.000000000 +1000
-@@ -45,7 +45,7 @@
- 
- 
- CPPFLAGS = -I libfdt
--CFLAGS = -Wall -g
-+CFLAGS = -Wall -g -Os
- LDFLAGS = -Llibfdt
- 
- BISON = bison
-Index: dtc/tests/truncated_property.c
-===================================================================
---- dtc.orig/tests/truncated_property.c	2007-08-31 16:05:27.000000000 +1000
-+++ dtc/tests/truncated_property.c	2007-08-31 16:05:38.000000000 +1000
-@@ -33,7 +33,6 @@
- {
- 	void *fdt = &_truncated_property;
- 	const void *prop;
--	int err;
- 	int len;
- 
- 	test_init(argc, argv);
-@@ -43,7 +42,7 @@
- 		FAIL("fdt_getprop() succeeded on truncated property");
- 	if (len != -FDT_ERR_BADSTRUCTURE)
- 		FAIL("fdt_getprop() failed with \"%s\" instead of \"%s\"",
--		     fdt_strerror(err), fdt_strerror(-FDT_ERR_BADSTRUCTURE));
-+		     fdt_strerror(len), fdt_strerror(-FDT_ERR_BADSTRUCTURE));
- 
- 	PASS();
- }
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2007-08-31 16:08:06.000000000 +1000
-+++ dtc/flattree.c	2007-08-31 16:09:29.000000000 +1000
-@@ -909,6 +909,7 @@
- 		fprintf(stderr, "\tboot_cpuid_phys:\t0x%x\n",
- 			be32_to_cpu(bph->boot_cpuid_phys));
- 
-+	size_str = -1;
- 	if (version >= 3) {
- 		size_str = be32_to_cpu(bph->size_dt_strings);
- 		fprintf(stderr, "\tsize_dt_strings:\t%d\n", size_str);
-@@ -932,10 +933,10 @@
- 	inbuf_init(&memresvbuf,
- 		   blob + off_mem_rsvmap, blob + totalsize);
- 	inbuf_init(&dtbuf, blob + off_dt, blob + totalsize);
--	inbuf_init(&strbuf, blob + off_str, blob + totalsize);
--
--	if (version >= 3)
--		strbuf.limit = strbuf.base + size_str;
-+	if (size_str >= 0)
-+		inbuf_init(&strbuf, blob + off_str, blob + off_str + size_str);
-+	else
-+		inbuf_init(&strbuf, blob + off_str, blob + totalsize);
- 
- 	reservelist = flat_read_mem_reserve(&memresvbuf);
- 
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2007-08-31 16:10:23.000000000 +1000
-+++ dtc/dtc.c	2007-08-31 16:12:44.000000000 +1000
-@@ -71,7 +71,7 @@
- 		fill_fullpaths(child, tree->fullpath);
- }
- 
--static void usage(void)
-+static void  __attribute__ ((noreturn)) usage(void)
- {
- 	fprintf(stderr, "Usage:\n");
- 	fprintf(stderr, "\tdtc [options] <input file>\n");
-Index: dtc/dtc.h
-===================================================================
---- dtc.orig/dtc.h	2007-08-31 16:13:01.000000000 +1000
-+++ dtc/dtc.h	2007-08-31 16:13:07.000000000 +1000
-@@ -43,7 +43,7 @@
- extern int reservenum;		/* Number of memory reservation slots */
- extern int minsize;		/* Minimum blob size */
- 
--static inline void die(char * str, ...)
-+static inline void __attribute__((noreturn)) die(char * str, ...)
- {
- 	va_list ap;
- 
+> On Thu, Aug 30, 2007 at 04:00:56PM +0200, Joachim Fenkes wrote:
+> > 
+> > Plus, I rather like using 
+> > the full_name since it also contains a descriptive name as opposed to 
+> > being just nondescript numbers, helping the layman (ie user) to make 
+sense 
+> > out of a dev_id.
+>
+> [...]
+> Location codes are nice. 
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I sure agree with you. Still, they're not unique, so we can't use them as 
+bus_id. That's why we're having this discussion at all.
+
+What I meant was "I like using the full_name over using the device address 
+/ DRC index / you-name-it only". Location code is right out.
+
+Cheers,
+  Joachim
