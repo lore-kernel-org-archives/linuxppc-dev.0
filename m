@@ -1,20 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Aug 2007 12:48:04 +1000
+Date: Fri, 31 Aug 2007 12:44:27 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/3] Introduce new CPM device bindings.
-Message-ID: <20070831024804.GC19271@localhost.localdomain>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201619.GB24210@ld0162-tx32.am.freescale.net>
-	<20070829053941.GC3206@localhost.localdomain>
-	<20070829135806.GB30184@ld0162-tx32.am.freescale.net>
-	<20070830005559.GB22844@localhost.localdomain>
-	<20070830054854.GA21533@ld0162-tx32.am.freescale.net>
-	<20070830055812.GB32543@localhost.localdomain>
-	<20070830141046.GA24123@ld0162-tx32.am.freescale.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/3] mpc8349: Add linux,
+	network-index to ethernet nodes in device tree
+Message-ID: <20070831024427.GB19271@localhost.localdomain>
+References: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
+	<20070830202624.9927.50088.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070830141046.GA24123@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070830202624.9927.50088.stgit@trillian.cg.shawcable.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,24 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 30, 2007 at 09:10:46AM -0500, Scott Wood wrote:
-> On Thu, Aug 30, 2007 at 03:58:12PM +1000, David Gibson wrote:
-> > On Thu, Aug 30, 2007 at 12:48:54AM -0500, Scott Wood wrote:
-> > > On Thu, Aug 30, 2007 at 10:55:59AM +1000, David Gibson wrote:
-> > > > Am I correct in thinking that it's basically an arch/ppc versus
-> > > > arch/powerpc thing.  In which case couldn't you use CONFIG_PPC_MERGE
-> > > > instead?
-> > > 
-> > > The idea was to allow boards to be converted incrementally, as I don't
-> > > have access to test 100% of the boards that use the CPM code.
-> > 
-> > Hrm.  Right.  This is still problematical, because what happens if you
-> > have both old-binding and new-binding boards configured simultaneously?
+On Thu, Aug 30, 2007 at 02:26:24PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> Multiplatform will not be supported for old-binding boards.
+> cuImage need to know the logical index of the ethernet devices in order
+> to assign mac addresses.  This patch adds the needed properties
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> CC: Scott Wood <scottwood@freescale.com>
+> CC: Kumar Gala <galak@kernel.crashing.org>
+> CC: Timur Tabi <timur@freescale.com>
 
-Hmm, ok.  Well, let's try to kill the old binding off as fast as we
-can, at least the portions that still infect arch/powerpc.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
