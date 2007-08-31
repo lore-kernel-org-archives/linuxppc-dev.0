@@ -1,24 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id D2B9BDDF3D
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Sep 2007 01:29:05 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so149155anc
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 08:29:04 -0700 (PDT)
-Message-ID: <fa686aa40708310829s344e825dxb1a6d5c3823fa999@mail.gmail.com>
-Date: Fri, 31 Aug 2007 09:29:03 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Grant Likely" <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
-	"Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH 1/3] bootwrapper: In cuImage,
-	print message for ENET devices not found in tree
-In-Reply-To: <20070831042536.GL19271@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 35B2DDDFBA
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Sep 2007 03:10:17 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [PATCH 2.6.23] ibmebus: Prevent bus_id collisions
+Date: Fri, 31 Aug 2007 19:08:04 +0200
+References: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
+In-Reply-To: <OFBB1BA4B6.29175A76-ONC1257348.004DBCB3-C1257348.0050161C@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
-	<20070831024356.GA19271@localhost.localdomain>
-	<fa686aa40708302114g77b916bftb01c14e1b3357506@mail.gmail.com>
-	<20070831042536.GL19271@localhost.localdomain>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200708311908.05255.arnd@arndb.de>
+Cc: Thomas Q Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
+	Jan-Bernd Themann <themann@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 8/30/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> Sorry, I was misleading.  Scott moved the printf() into the if (devp)
-> as you do, but *didn't* add the alternative warning message in the
-> else.
->
-> The reason for this is that Planetcore only supplies the first MAC
-> address, and the bootwrapper must derive the addresses for all the
-> ENETs from that.  That in turn means it is much more convenient to
-> call fixup_mac_addresses() with more addresses than there are
-> ethernets, so we don't want a warning message when that happens.
+On Friday 31 August 2007, Joachim Fenkes wrote:
+> > The whole logic of dynamically adding and removing device is rather 
+> bogus,
+> > and it prevents autoloading of device drivers. of_platform_make_bus_id
+> > is the function that is responsible for creating unique names over 
+> there.
+> 
+> The plaintiff makes a valid point. How about a staging approach: We put 
+> the patch as it is now into 2.6.23 so the problem is fixed, and I'll post 
+> a "nice" version with autoloading support and a generic of_make_bus_id 
+> function for 2.6.24. Agree?
 
-Okay, that makes sense.  I just found Scott's patch which does the
-same, so I'll drop my version.
+Ok, sounds fair. Can you make sure that the resulting bus_id is the same
+for the final version then?
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	Arnd <><
