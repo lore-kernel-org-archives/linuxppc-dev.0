@@ -1,14 +1,20 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 31 Aug 2007 12:43:56 +1000
+Date: Fri, 31 Aug 2007 12:48:04 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3] bootwrapper: In cuImage,
-	print message for ENET devices not found in tree
-Message-ID: <20070831024356.GA19271@localhost.localdomain>
-References: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/3] Introduce new CPM device bindings.
+Message-ID: <20070831024804.GC19271@localhost.localdomain>
+References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+	<20070828201619.GB24210@ld0162-tx32.am.freescale.net>
+	<20070829053941.GC3206@localhost.localdomain>
+	<20070829135806.GB30184@ld0162-tx32.am.freescale.net>
+	<20070830005559.GB22844@localhost.localdomain>
+	<20070830054854.GA21533@ld0162-tx32.am.freescale.net>
+	<20070830055812.GB32543@localhost.localdomain>
+	<20070830141046.GA24123@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070830202618.9927.32588.stgit@trillian.cg.shawcable.net>
+In-Reply-To: <20070830141046.GA24123@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,55 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Aug 30, 2007 at 02:26:18PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Thu, Aug 30, 2007 at 09:10:46AM -0500, Scott Wood wrote:
+> On Thu, Aug 30, 2007 at 03:58:12PM +1000, David Gibson wrote:
+> > On Thu, Aug 30, 2007 at 12:48:54AM -0500, Scott Wood wrote:
+> > > On Thu, Aug 30, 2007 at 10:55:59AM +1000, David Gibson wrote:
+> > > > Am I correct in thinking that it's basically an arch/ppc versus
+> > > > arch/powerpc thing.  In which case couldn't you use CONFIG_PPC_MERGE
+> > > > instead?
+> > > 
+> > > The idea was to allow boards to be converted incrementally, as I don't
+> > > have access to test 100% of the boards that use the CPM code.
+> > 
+> > Hrm.  Right.  This is still problematical, because what happens if you
+> > have both old-binding and new-binding boards configured simultaneously?
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: Scott Wood <scottwood@freescale.com>
-> CC: Kumar Gala <galak@kernel.crashing.org>
-> CC: David Gibson <david@gibson.dropbear.id.au>
+> Multiplatform will not be supported for old-binding boards.
 
-Hrm... I thought Scott had deliberately removed that message in his
-patch set, to work with the way PlanetCore generates Ethernet
-addresses.
-
-> ---
-> 
->  arch/powerpc/boot/devtree.c |   14 +++++++-------
->  1 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-> index e1b8122..8451a1c 100644
-> --- a/arch/powerpc/boot/devtree.c
-> +++ b/arch/powerpc/boot/devtree.c
-> @@ -99,14 +99,14 @@ void __dt_fixup_mac_addresses(u32 startindex, ...)
->  	while ((addr = va_arg(ap, const u8 *))) {
->  		devp = find_node_by_prop_value(NULL, "linux,network-index",
->  					       (void*)&index, sizeof(index));
-> -
-> -		printf("ENET%d: local-mac-address <-"
-> -		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
-> -		       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-> -
-> -		if (devp)
-> +		if (devp) {
-> +			printf("ENET%d: local-mac-address <-"
-> +			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
-> +			       addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
->  			setprop(devp, "local-mac-address", addr, 6);
-> -
-> +		} else {
-> +			printf("ENET%d: no device in tree\n\r", index);
-> +		}
->  		index++;
->  	}
->  	va_end(ap);
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+Hmm, ok.  Well, let's try to kill the old binding off as fast as we
+can, at least the portions that still infect arch/powerpc.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
