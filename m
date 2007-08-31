@@ -1,15 +1,17 @@
-Return-Path: <josel_am2@yahoo.es>
-Received: from web25711.mail.ukl.yahoo.com (web25711.mail.ukl.yahoo.com
-	[217.12.10.53]) by ozlabs.org (Postfix) with SMTP id 536E8DE09C
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 94C74DE092
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Sep 2007 03:44:09 +1000 (EST)
-Date: Fri, 31 Aug 2007 17:44:07 +0000 (GMT)
-From: =?iso-8859-1?Q?Jos=E9_Luis_A=F1amuro?= <josel_am2@yahoo.es>
-Subject: To post to this list
-To: linuxppc-embedded@ozlabs.org
+	Sat,  1 Sep 2007 07:47:24 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-597772405-1188582247=:80981"
-Message-ID: <711637.80981.qm@web25711.mail.ukl.yahoo.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Ethernet weirdness on 82xx
+Date: Fri, 31 Aug 2007 16:35:19 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0353A6AB@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <linuxppc-embedded@ozlabs.org>,
+	<netdev@vger.kernel.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,25 +22,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-597772405-1188582247=:80981
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+I'm not sure if this is by design or an actual bug.
 
-To post to this list=0A=0AJose Luis=0A=0A=0A       =0A_____________________=
-_______________________________________________________________=0AS=E9 un M=
-ejor Amante del Cine                         =0A=BFQuieres saber c=F3mo? =
-=A1Deja que otras personas te ayuden!=0Ahttp://advision.webevents.yahoo.com=
-/reto/entretenimiento.html
---0-597772405-1188582247=:80981
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
+We have a system witb an 8280 with two active ethernets (fcc2 and fcc3)
+We are running kernel 2.6.18.1 (and won't be upgrading in a while) out
+of arch/ppc
 
-<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
-ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
-font-size:12pt"><DIV>To post to this list<BR></DIV>=0A<DIV>Jose Luis</DIV><=
-/div><br>=0A=0A=0A      <hr size=3D1><br><font face=3D"Verdana" size=3D"-2"=
->S=E9 un Mejor Amante del Cine<br>=BFQuieres saber c=F3mo? <a href=3D"http:=
-//us.rd.yahoo.com/mail/es/tagline/beabetter/*http://advision.webevents.yaho=
-o.com/reto/entretenimiento.html">=A1Deja que otras personas te ayuden!=0A</=
-a>.<br></font></body></html>
---0-597772405-1188582247=:80981--
+Eth0 and eth1 are in totally different subnets.
+We happened to have both ehternets connected to the same network, and I
+ran a arping agains the IP on eth0.
+Both ports (eth0 and eth1) responded with the same address, but
+different macs....
+
+sudo /sbin/arping -c1 172.23.12.114
+ARPING 172.23.12.114 from 172.23.15.21 eth0
+Unicast reply from 172.23.12.114 [00:30:D7:00:14:55]  0.838ms
+Unicast reply from 172.23.12.114 [00:30:D7:00:14:54]  0.890ms
+Sent 1 probes (1 broadcast(s))
+Received 2 response(s)
+
+It only gets both responses on the first (broadcast) query from arping
+All responses afterward is then from the wrong port....
+
+The ethernet setup on the target box:
+
+eth0      Link encap:Ethernet  HWaddr 00:30:D7:00:14:54
+          inet addr:172.23.12.114  Bcast:172.23.15.255
+Mask:255.255.248.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:473244 errors:0 dropped:2 overruns:0 frame:0
+          TX packets:186655 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:162928671 (155.3 Mb)  TX bytes:42222862 (40.2 Mb)
+          Base address:0x8500
+
+eth1      Link encap:Ethernet  HWaddr 00:30:D7:00:14:55
+          inet addr:192.168.0.100  Bcast:192.168.0.255
+Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1553 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:4 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:203182 (198.4 Kb)  TX bytes:168 (168.0 b)
+          Base address:0x8600
