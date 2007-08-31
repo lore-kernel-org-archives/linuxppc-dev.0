@@ -1,10 +1,15 @@
-Return-Path: <dale@farnsworth.org>
-Date: 31 Aug 2007 09:43:43 -0700
-Message-ID: <20070831164343.452.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: joachim.bader@diehl-aerospace.de, Linuxppc-embedded@ozlabs.org
-Subject: Re: [linux kernel 2.6.19] ethernet driver for Marvell bridge GT-64260
-In-Reply-To: <OF71BAC825.59CE0529-ONC1257348.0056D44E-C1257348.0057BBA0@diehl-gruppe.de>
+Return-Path: <josel_am2@yahoo.es>
+Received: from web25714.mail.ukl.yahoo.com (web25714.mail.ukl.yahoo.com
+	[217.12.10.56]) by ozlabs.org (Postfix) with SMTP id 2D9B7DDF8A
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  1 Sep 2007 03:22:20 +1000 (EST)
+Date: Fri, 31 Aug 2007 17:22:18 +0000 (GMT)
+From: =?iso-8859-1?Q?Jos=E9_Luis_A=F1amuro?= <josel_am2@yahoo.es>
+Subject: to post to this list
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-614860299-1188580938=:82274"
+Message-ID: <346074.82274.qm@web25714.mail.ukl.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -15,26 +20,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> I am porting linux kernel 2.6.19 on a platform based on PPC750FX together 
-> with a Marvell GT64260.
-> I use a patched 643xx driver which is back ported to 64260 by Steven J. 
-> Hill.
-> I have ethernet now up and running, but only if I switch debug on, which 
-> generates a big bunch of screen messages.
-> As soon as I switch debug off, I get the message "Virtual device %s asks 
-> to queue packet!" on every transmission request.
-> 
-> This happens on ping an other system.
-> 
-> Has anyone experience in such an event? Is there anything how I can speed 
-> up performance with the 64260?
-> Is there a similar problem known with the 64360?
+--0-614860299-1188580938=:82274
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-No, this does not happen on the mv64360.  As I recall, that message occurs
-when something attempts to queue a packet to a driver that has called
-netif_stop_queue() but hasn't yet called netif_wake_queue().  I would
-guess that when you turn debug on, you are changing the driver logic
-in addition to the timing.
+to post to this list=0A=0AJos=E9 Luis=0A=0A=0A       =0A___________________=
+_________________________________________________________________=0AS=E9 un=
+ Mejor Amante del Cine                         =0A=BFQuieres saber c=F3mo? =
+=A1Deja que otras personas te ayuden!=0Ahttp://advision.webevents.yahoo.com=
+/reto/entretenimiento.html
+--0-614860299-1188580938=:82274
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
--Dale
+<html><head><style type=3D"text/css"><!-- DIV {margin:0px;} --></style></he=
+ad><body><div style=3D"font-family:times new roman, new york, times, serif;=
+font-size:12pt"><DIV>to post to this list</DIV>=0A<DIV>&nbsp;</DIV>=0A<DIV>=
+Jos=E9 Luis</DIV></div><br>=0A=0A=0A      <hr size=3D1><br><font face=3D"Ve=
+rdana" size=3D"-2">S=E9 un Mejor Amante del Cine<br>=BFQuieres saber c=F3mo=
+? <a href=3D"http://us.rd.yahoo.com/mail/es/tagline/beabetter/*http://advis=
+ion.webevents.yahoo.com/reto/entretenimiento.html">=A1Deja que otras person=
+as te ayuden!=0A</a>.<br></font></body></html>
+--0-614860299-1188580938=:82274--
