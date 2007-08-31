@@ -1,31 +1,32 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 63F9ADE0FE
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Sep 2007 06:53:43 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l7VKrciO008268
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 16:53:38 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l7VKrc7I491486
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:38 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l7VKrcVp005699
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:38 -0600
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5AA16DE114
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Sep 2007 06:53:44 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l7VJkN1m016070
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 15:46:23 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l7VKrd0l407376
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:39 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l7VKrduZ009225
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:39 -0600
 Received: from [9.10.86.36] (weaponx.rchland.ibm.com [9.10.86.36])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l7VKrbcP005668
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:37 -0600
-Message-Id: <20070831200643.514442000@linux.vnet.ibm.com>>
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l7VKrc53009202
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Aug 2007 14:53:38 -0600
+Message-Id: <20070831200643.675381000@linux.vnet.ibm.com>>
 References: <20070831200449.598781000@linux.vnet.ibm.com>>
-Date: Fri, 31 Aug 2007 15:04:54 -0500
+Date: Fri, 31 Aug 2007 15:04:55 -0500
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 5/6] Walnut board support
+Subject: [patch 6/6] Walnut zImage wrapper
 In-Reply-To: <20070831200449.598781000@linux.vnet.ibm.com>>
 Content-Type: text/plain
 Mime-Version: 1.0
@@ -38,139 +39,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Board support for the PPC405 Walnut evaluation board
+Add zImage wrapper for walnut board
 
 Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
- arch/powerpc/platforms/40x/Kconfig  |   14 +++----
- arch/powerpc/platforms/40x/Makefile |    2 -
- arch/powerpc/platforms/40x/walnut.c |   68 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig      |    2 -
- arch/powerpc/platforms/Makefile     |    2 -
- 5 files changed, 78 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/Makefile          |    3 
+ arch/powerpc/boot/treeboot-walnut.c |  133 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 135 insertions(+), 1 deletion(-)
 
---- linux-2.6.orig/arch/powerpc/platforms/40x/Makefile
-+++ linux-2.6/arch/powerpc/platforms/40x/Makefile
-@@ -1 +1 @@
--# empty makefile so make clean works
-\ No newline at end of file
-+obj-$(CONFIG_WALNUT) += walnut.o
+--- linux-2.6.orig/arch/powerpc/boot/Makefile
++++ linux-2.6/arch/powerpc/boot/Makefile
+@@ -49,7 +49,7 @@ src-wlib := string.S crt0.S stdio.c main
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+-		cuboot-pq2.c cuboot-bamboo.c
++		cuboot-pq2.c cuboot-bamboo.c treeboot-walnut.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -147,6 +147,7 @@ image-$(CONFIG_PPC_83xx)		+= cuImage.83x
+ image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
+ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
+ image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
++image-$(CONFIG_WALNUT)			+= treeImage.walnut
+ endif
+ 
+ # For 32-bit powermacs, build the COFF and miboot images
 --- /dev/null
-+++ linux-2.6/arch/powerpc/platforms/40x/walnut.c
-@@ -0,0 +1,68 @@
++++ linux-2.6/arch/powerpc/boot/treeboot-walnut.c
+@@ -0,0 +1,133 @@
 +/*
-+ * Architecture- / platform-specific boot-time initialization code for
-+ * IBM PowerPC 4xx based boards. Adapted from original
-+ * code by Gary Thomas, Cort Dougan <cort@fsmlabs.com>, and Dan Malek
-+ * <dan@net4x.com>.
++ * Old U-boot compatibility for Walnut
 + *
-+ * Copyright(c) 1999-2000 Grant Erickson <grant@lcse.umn.edu>
++ * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 + *
-+ * Rewritten and ported to the merged powerpc tree:
 + * Copyright 2007 IBM Corporation
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ *   Based on cuboot-83xx.c, which is:
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
 + *
-+ * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
 + */
 +
-+#include <linux/init.h>
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/of_platform.h>
++#include "ops.h"
++#include "stdio.h"
++#include "dcr.h"
++#include "4xx.h"
++#include "io.h"
 +
-+static struct of_device_id walnut_of_bus[] = {
-+	{ .compatible = "ibm,plb3", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
++BSS_STACK(4096);
 +
-+static int __init walnut_device_probe(void)
++void ibm405gp_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
 +{
-+	if (!machine_is(walnut))
-+		return 0;
++	u32 pllmr = mfdcr(0xb0);
++	u32 cpc0_cr0 = mfdcr(0xb1);
++	u32 cpc0_cr1 = mfdcr(0xb2);
++	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
++	u32 fwdv, fbdv, cbdv, opdv, epdv, udiv;
 +
-+	/* FIXME: do bus probe here */
-+	of_platform_bus_probe(NULL, walnut_of_bus, NULL);
++	fwdv = (8 - ((pllmr & 0xe0000000) >> 29));
++	fbdv = (pllmr & 0x1e000000) >> 25;
++	cbdv = ((pllmr & 0x00060000) >> 17) + 1;
++	opdv = ((pllmr & 0x00018000) >> 15) + 1;
++	epdv = ((pllmr & 0x00001800) >> 13) + 2;
++	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
 +
-+	return 0;
++	m = fwdv * fbdv * cbdv;
++
++	cpu = sysclk * m / fwdv;
++	plb = cpu / cbdv;
++	opb = plb / opdv;
++	ebc = plb / epdv;
++
++	if (cpc0_cr0 & 0x80) {
++		/* uart0 uses the external clock */
++		uart0 = ser_clk;
++	} else {
++		uart0 = cpu / udiv;
++	}
++
++	if (cpc0_cr0 & 0x40) {
++		/* uart1 uses the external clock */
++		uart1 = ser_clk;
++	} else {
++		uart1 = cpu / udiv;
++	}
++
++	/* setup the timebase clock to tick at the cpu frequency */
++	cpc0_cr1 = cpc0_cr1 & ~ 0x00800000;
++	mtdcr(0xb2, cpc0_cr1);
++	tb = cpu;
++
++	dt_fixup_cpu_clocks(cpu, tb, 0);
++	dt_fixup_clock("/plb", plb);
++	dt_fixup_clock("/plb/opb", opb);
++	dt_fixup_clock("/plb/ebc", ebc);
++	dt_fixup_clock("/plb/opb/serial@300", uart0);
++	dt_fixup_clock("/plb/opb/serial@400", uart1);
 +}
-+device_initcall(walnut_device_probe);
 +
-+static int __init walnut_probe(void)
++static void walnut_flashsel_fixup(void)
 +{
-+	unsigned long root = of_get_flat_dt_root();
++	void *devp, *sram;
++	u32 reg_flash[3] = {0x0, 0x0, 0x80000};
++	u32 reg_sram[3] = {0x0, 0x0, 0x80000};
++	u8 *fpga;
++	u8 fpga_brds1 = 0x0;
 +
-+	if (!of_flat_dt_is_compatible(root, "ibm,walnut"))
-+		return 0;
++	devp = finddevice("/plb/ebc/fpga");
++	if (!devp)
++		fatal("Couldn't locate FPGA node\n\r");
 +
-+	return 1;
++	if (getprop(devp, "virtual-reg", &fpga, sizeof(fpga)) != sizeof(fpga))
++		fatal("no virtual-reg property\n\r");
++
++	fpga_brds1 = in_8(fpga);
++
++	printf("FPGA_BRDS1: %08x\n", fpga_brds1);
++
++	devp = finddevice("/plb/ebc/flash");
++	if (!devp)
++		fatal("Couldn't locate flash node\n\r");
++
++	if (getprop(devp, "reg", reg_flash, sizeof(reg_flash)) != sizeof(reg_flash))
++		fatal("flash reg property has unexpected size\n\r");
++
++	sram = finddevice("/plb/ebc/sram");
++	if (!sram)
++		fatal("Couldn't locate sram node\n\r");
++
++	if (getprop(sram, "reg", reg_sram, sizeof(reg_sram)) != sizeof(reg_sram))
++		fatal("sram reg property has unexpected size\n\r");
++
++	if (fpga_brds1 & 0x1) {
++		reg_flash[1] ^= 0x80000;
++		reg_sram[1] ^= 0x80000;
++	}
++
++	setprop(devp, "reg", reg_flash, sizeof(reg_flash));
++	setprop(sram, "reg", reg_sram, sizeof(reg_sram));
 +}
 +
-+static void __init walnut_setup_arch(void)
++static void walnut_fixups(void)
 +{
++	ibm4xx_fixup_memsize();
++	ibm405gp_fixup_clocks(33330000, 0xa8c000);
++	ibm4xx_quiesce_eth((u32 *)0xef600800, NULL);
++	ibm4xx_fixup_ebc_ranges("/plb/ebc");
++	walnut_flashsel_fixup();
 +}
 +
-+define_machine(walnut) {
-+	.name			= "Walnut",
-+	.probe			= walnut_probe,
-+	.setup_arch		= walnut_setup_arch,
-+	.progress		= udbg_progress,
-+	.init_IRQ		= uic_init_tree,
-+	.get_irq		= uic_get_irq,
-+	.calibrate_decr	= generic_calibrate_decr,
-+};
---- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
-@@ -53,13 +53,13 @@
- #	help
- #	  This option enables support for the IBM PPC405GPr evaluation board.
- 
--#config WALNUT
--#	bool "Walnut"
--#	depends on 40x
--#	default y
--#	select 405GP
--#	help
--#	  This option enables support for the IBM PPC405GP evaluation board.
-+config WALNUT
-+	bool "Walnut"
-+	depends on 40x
-+	default y
-+	select 405GP
-+	help
-+	  This option enables support for the IBM PPC405GP evaluation board.
- 
- #config XILINX_ML300
- #	bool "Xilinx-ML300"
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig
-+++ linux-2.6/arch/powerpc/platforms/Kconfig
-@@ -59,7 +59,7 @@ source "arch/powerpc/platforms/85xx/Kcon
- source "arch/powerpc/platforms/86xx/Kconfig"
- source "arch/powerpc/platforms/embedded6xx/Kconfig"
- source "arch/powerpc/platforms/44x/Kconfig"
--#source "arch/powerpc/platforms/4xx/Kconfig
-+source "arch/powerpc/platforms/40x/Kconfig"
- 
- config PPC_NATIVE
- 	bool
---- linux-2.6.orig/arch/powerpc/platforms/Makefile
-+++ linux-2.6/arch/powerpc/platforms/Makefile
-@@ -9,7 +9,7 @@ obj-$(CONFIG_PPC_PMAC)		+= powermac/
- endif
- endif
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
--#obj-$(CONFIG_4xx)		+= 4xx/
-+obj-$(CONFIG_40x)		+= 40x/
- obj-$(CONFIG_44x)		+= 44x/
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_8xx)		+= 8xx/
++void platform_init(void)
++{
++	unsigned long end_of_ram = 0x2000000;
++	unsigned long avail_ram = end_of_ram - (unsigned long) _end;
++
++	simple_alloc_init(_end, avail_ram, 32, 32);
++	platform_ops.fixups = walnut_fixups;
++	platform_ops.exit = ibm40x_dbcr_reset;
++	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++	serial_console_init();
++}
 
 -- 
