@@ -1,22 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 7BFE1DE1E4
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Sep 2007 07:10:37 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 2/2] IB/ehca: SRQ fixes to enable IPoIB CM
-References: <200708311601.42220.fenkes@de.ibm.com>
-	<200708311603.38822.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 31 Aug 2007 13:59:03 -0700
-In-Reply-To: <200708311603.38822.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Fri, 31 Aug 2007 16:03:37 +0200")
-Message-ID: <adamyw7whd4.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 14342DE1AF
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Sep 2007 10:00:03 +1000 (EST)
+In-Reply-To: <989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
+	<46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in	QE,
+	register mmc_spi stub
+Date: Sun, 2 Sep 2007 01:59:45 +0200
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,4 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied 1 and 2.
+>>> +	par_io_config_pin(3, 13, 1, 0, 0, 0); /* !SD_CS,    O */
+>>> +	par_io_config_pin(3, 14, 2, 0, 0, 0); /* SD_INSERT, I */
+>>> +	par_io_config_pin(3, 15, 2, 0, 0, 0); /* SD_PROTECT,I */
+>>
+>> Why are you doing this here, and not in the device tree?
+>
+> I saw you used pio node, but later changed to make it hardcoded.  
+> What's
+> the reason?  IMO, device tree is used to describe the hardware 
+> settings,
+> pio node is a perfect match.
+
+Not at all.  The device tree describe how the hardware _is_
+set up (after firmware, bootloader etc.); now how it _should
+be_ set up by the kernel.
+
+It would make a lot of sense to do this work in the firmware
+instead, but it doesn't make sense at all to put this stuff
+into the device tree.
+
+> Moreover, changing the device tree is much
+> easier than changing the code.
+
+How so?  You don't like C code?  :-)
+
+
+Segher
