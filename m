@@ -1,24 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AE1D6DDEEB
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 23:55:26 +1000 (EST)
-Message-ID: <46DC126C.9060603@freescale.com>
-Date: Mon, 03 Sep 2007 08:55:56 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D32ADDDE02
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 00:58:17 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Mon, 03 Sep 2007 16:58:14 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <20070903013431.GG31499@localhost.localdomain>
+Message-ID: <20070903145814.101070@gmx.net>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
-	QE, register mmc_spi stub
-References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
-	<46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-In-Reply-To: <ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070831175006.17240@gmx.net>
+	<20070903013431.GG31499@localhost.localdomain>
+Subject: Re: [RFC] AmigaOne device tree source v2
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,38 +22,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+Hi,
 
-> Not at all.  The device tree describe how the hardware _is_
-> set up (after firmware, bootloader etc.); now how it _should
-> be_ set up by the kernel.
+-------- Original-Nachricht --------
+> Datum: Mon, 3 Sep 2007 11:34:31 +1000
+> Von: David Gibson <david@gibson.dropbear.id.au>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@ozlabs.org
+> Betreff: Re: [RFC] AmigaOne device tree source v2
 
-I agree with this general sentiment, but in the case of QE pin configuration, 
-then device tree, in a sense, does contain how the hardware is set up.  The 
-par_io section in the device tree describes they layout of the wiring between 
-the SOC and peripherals.  If the par_io registers are not programmed 
-correctly, the SOC won't be able to communicate with the peripheral.
+> Interrupt routing information is really necessary.  If it differs
+> between the models then either you will need different device tree
+> source for each of them, or you will need to fill in the correct
+> interrupt routing information from the bootwrapper, whichever approach
+> is easier.
+Okay, I could probe the southbridge's PCI interrupt registers to fill in
+some of the interrupt routing information from the bootwrapper.
 
-Sure, the kernel currently reads the device tree and programs the par_io 
-registers accordingly, but that doesn't mean the information *shouldn't* be in 
-the device tree.
+> I believe that's handled by the bridge's compatible and reg
+> properties.  The platform or bridge code will have to know that this
+> type of bridge (as encoded in compatible) uses indirect addressing,
+> and which resource (from the reg property) has the indirect access
+> registers.
+Well, then I'll copy and paste from the CHRP/Pegasos PCI setup code,
+which should exactly do that. :-)
 
-> It would make a lot of sense to do this work in the firmware
-> instead, but it doesn't make sense at all to put this stuff
-> into the device tree.
+> I don't know enough about PCI to answer most of the above questions,
+> but I spotted a bunch of problems with the device tree anyway...
+> >   	pci@80000000 {
+> > 		device_type = "pci";
+> > 		bus-frequency = <01fca055>;		// 33.3MHz
+> > 		bus-range = <0 1>;
+> > 		reg = <80000000 7f000000>;				//
+> >Whole PCI space.
+> 
+> 'reg' and 'ranges' should not typically overlap.  'reg' should only
+> encode control registers for the bridge, not the whole PCI space (not
+> that I'm even entirely sure what you mean by that).
+Hmm, strange. I'm sure I found this in another device tree. I define
+"whole PCI space" as PCI (prefetchable) memory and PCI I/O space.
 
-1) If the firmware does configure the pins, then the device tree *will* 
-describe how the hardware is set up.
+> > 		host@0 {
+> 
+> The unit address (after the @) should be derived from the first range
+> listed in the 'reg' property.  It's a bus address, not a slot number.
+AFAIK it's the device number, which is 0 for this host/PCI bridge.
 
-2) How would the firmware know how to do board configuration if it doesn't 
-have the instructions in the device tree?
+> > 			vendor-id = 0x000010cc;
+> 
+> Um.. evidentally you have never even tried compiling this device tree,
+> since this is invalid syntax.  That would need to be:
+> 			vendor-id = <000010cc>;
+> and likewise all the others below.
+Uh, yeah! I thought I fixed all these typos. You're right, I didn't try
+to compile the device tree yet.
 
-Besides, every other board does it's par_io configuration based on the device 
-tree.  So if Anton is going to break that pattern, we should be talking about 
-moving all that code into U-boot, instead of just putting in a one-time 
-exception (especially since the patch contains no explanation as to why these 
-par_io pins are being configured differently than every other board).
+> > 			#interrupt-cells = <2>;
+> > 			#address-cells = <2>;
+> > 			#size-cells = <1>;
+> > 
+> > 			dma-controller {
+> 
+> All these devices should have unit addresses.
+Okay, that would be dma-controller@0, interrupt-controller@20 and so.
+Will be fixed!
 
+> > 		ide@7,1 {
+> 
+> This will need a compatible property, at least.
+I hoped the class-code property is enough for a PCI device, as it
+clearly identifies this device as a PCI IDE conroller with primary and
+secondary master functionality.
+
+Thanks!
+
+regards,
+
+Gerhard
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
