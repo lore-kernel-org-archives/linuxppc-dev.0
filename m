@@ -1,22 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14342DE1AF
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Sep 2007 10:00:03 +1000 (EST)
-In-Reply-To: <989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
-	<46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in	QE,
-	register mmc_spi stub
-Date: Sun, 2 Sep 2007 01:59:45 +0200
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <timur@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 3 Sep 2007 10:44:56 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] mpc5200: add cuimage support for mpc5200 boards
+Message-ID: <20070903004456.GA31499@localhost.localdomain>
+References: <20070831173437.11244.80596.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070831173437.11244.80596.stgit@trillian.cg.shawcable.net>
+Cc: linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +18,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +	par_io_config_pin(3, 13, 1, 0, 0, 0); /* !SD_CS,    O */
->>> +	par_io_config_pin(3, 14, 2, 0, 0, 0); /* SD_INSERT, I */
->>> +	par_io_config_pin(3, 15, 2, 0, 0, 0); /* SD_PROTECT,I */
->>
->> Why are you doing this here, and not in the device tree?
->
-> I saw you used pio node, but later changed to make it hardcoded.  
-> What's
-> the reason?  IMO, device tree is used to describe the hardware 
-> settings,
-> pio node is a perfect match.
+On Fri, Aug 31, 2007 at 11:34:37AM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-Not at all.  The device tree describe how the hardware _is_
-set up (after firmware, bootloader etc.); now how it _should
-be_ set up by the kernel.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-It would make a lot of sense to do this work in the firmware
-instead, but it doesn't make sense at all to put this stuff
-into the device tree.
+With all these FSL boards poking the bus-frequency and so forth in the
+soc node, we should see if it's possible to make a common helper
+function to do some of it.
 
-> Moreover, changing the device tree is much
-> easier than changing the code.
-
-How so?  You don't like C code?  :-)
-
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
