@@ -1,32 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AE0EADDFA0
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 23:42:52 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l83Dgndw012934
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 09:42:49 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l83Dgn88191556
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 07:42:49 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l83DgmoN021541
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 07:42:49 -0600
-Subject: Re: [patch 2/6] cuimage for Bamboo board
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070903010111.GC31499@localhost.localdomain>
-References: <20070831200449.598781000@linux.vnet.ibm.com> >
-	<20070831200643.029244000@linux.vnet.ibm.com>
-	<20070903010111.GC31499@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 03 Sep 2007 08:42:11 -0500
-Message-Id: <1188826931.3772.11.camel@localhost.localdomain>
-Mime-Version: 1.0
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AE1D6DDEEB
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 23:55:26 +1000 (EST)
+Message-ID: <46DC126C.9060603@freescale.com>
+Date: Mon, 03 Sep 2007 08:55:56 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
+	QE, register mmc_spi stub
+References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
+	<46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+In-Reply-To: <ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,44 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-09-03 at 11:01 +1000, David Gibson wrote:
-> On Fri, Aug 31, 2007 at 03:04:51PM -0500, Josh Boyer wrote:
-> > Add a cuboot wrapper for the Bamboo board.  This also removes some obsoleted
-> > linker declarations that have been moved into ops.h
-> > 
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> 
-> [snip]
-> > --- linux-2.6.orig/arch/powerpc/boot/bamboo.c
-> > +++ linux-2.6/arch/powerpc/boot/bamboo.c
-> > @@ -24,8 +24,7 @@
-> >  #include "4xx.h"
-> >  #include "44x.h"
-> >  
-> > -extern char _dtb_start[];
-> > -extern char _dtb_end[];
-> > +static u8 *bamboo_mac0, *bamboo_mac1;
-> >  
-> >  static void bamboo_fixups(void)
-> >  {
-> > @@ -34,12 +33,16 @@ static void bamboo_fixups(void)
-> >  	ibm440ep_fixup_clocks(sysclk, 11059200);
-> >  	ibm4xx_fixup_memsize();
-> >  	ibm4xx_quiesce_eth((u32 *)0xef600e00, (u32 *)0xef600f00);
-> > +	if (bamboo_mac0 && bamboo_mac1)
-> > +		dt_fixup_mac_addresses(bamboo_mac0, bamboo_mac1);
-> 
-> Bit ugly that you only set the MAC address for any ethernet if they're
-> supplied for every ethernet.
+Segher Boessenkool wrote:
 
-Good point.  Will fix.
+> Not at all.  The device tree describe how the hardware _is_
+> set up (after firmware, bootloader etc.); now how it _should
+> be_ set up by the kernel.
 
-> >  	simple_alloc_init(_end, avail_ram, 32, 64);
-> > -	bamboo_init();
-> > +	bamboo_init(NULL, NULL);
-> 
-> There must surely be a way to get the MAC addresses out of OpenBIOS...
+I agree with this general sentiment, but in the case of QE pin configuration, 
+then device tree, in a sense, does contain how the hardware is set up.  The 
+par_io section in the device tree describes they layout of the wiring between 
+the SOC and peripherals.  If the par_io registers are not programmed 
+correctly, the SOC won't be able to communicate with the peripheral.
 
-Probably.  I just need to find out where they are stored.
+Sure, the kernel currently reads the device tree and programs the par_io 
+registers accordingly, but that doesn't mean the information *shouldn't* be in 
+the device tree.
 
-josh
+> It would make a lot of sense to do this work in the firmware
+> instead, but it doesn't make sense at all to put this stuff
+> into the device tree.
+
+1) If the firmware does configure the pins, then the device tree *will* 
+describe how the hardware is set up.
+
+2) How would the firmware know how to do board configuration if it doesn't 
+have the instructions in the device tree?
+
+Besides, every other board does it's par_io configuration based on the device 
+tree.  So if Anton is going to break that pattern, we should be talking about 
+moving all that code into U-boot, instead of just putting in a one-time 
+exception (especially since the patch contains no explanation as to why these 
+par_io pins are being configured differently than every other board).
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
