@@ -1,18 +1,22 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D32ADDDE02
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 00:58:17 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Mon, 03 Sep 2007 16:58:14 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <20070903013431.GG31499@localhost.localdomain>
-Message-ID: <20070903145814.101070@gmx.net>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A4FF3DDEAB
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 01:11:16 +1000 (EST)
+Date: Mon, 3 Sep 2007 19:13:19 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
+	QE, register mmc_spi stub
+Message-ID: <20070903151319.GA24840@localhost.localdomain>
+References: <46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+	<46DC126C.9060603@freescale.com>
 MIME-Version: 1.0
-References: <20070831175006.17240@gmx.net>
-	<20070903013431.GG31499@localhost.localdomain>
-Subject: Re: [RFC] AmigaOne device tree source v2
-To: David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <46DC126C.9060603@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,83 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Sep 03, 2007 at 08:55:56AM -0500, Timur Tabi wrote:
+[...]
+> Besides, every other board does it's par_io configuration based on the 
+> device tree.
 
--------- Original-Nachricht --------
-> Datum: Mon, 3 Sep 2007 11:34:31 +1000
-> Von: David Gibson <david@gibson.dropbear.id.au>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: [RFC] AmigaOne device tree source v2
+My words. ;-) See
+http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040685.html
 
-> Interrupt routing information is really necessary.  If it differs
-> between the models then either you will need different device tree
-> source for each of them, or you will need to fill in the correct
-> interrupt routing information from the bootwrapper, whichever approach
-> is easier.
-Okay, I could probe the southbridge's PCI interrupt registers to fill in
-some of the interrupt routing information from the bootwrapper.
+Also, see how it was made initially:
+http://ozlabs.org/pipermail/linuxppc-dev/2007-August/040440.html
 
-> I believe that's handled by the bridge's compatible and reg
-> properties.  The platform or bridge code will have to know that this
-> type of bridge (as encoded in compatible) uses indirect addressing,
-> and which resource (from the reg property) has the indirect access
-> registers.
-Well, then I'll copy and paste from the CHRP/Pegasos PCI setup code,
-which should exactly do that. :-)
+par_io was in the device tree. But Kumar and Segher convinced me to
+not do that.
 
-> I don't know enough about PCI to answer most of the above questions,
-> but I spotted a bunch of problems with the device tree anyway...
-> >   	pci@80000000 {
-> > 		device_type = "pci";
-> > 		bus-frequency = <01fca055>;		// 33.3MHz
-> > 		bus-range = <0 1>;
-> > 		reg = <80000000 7f000000>;				//
-> >Whole PCI space.
-> 
-> 'reg' and 'ranges' should not typically overlap.  'reg' should only
-> encode control registers for the bridge, not the whole PCI space (not
-> that I'm even entirely sure what you mean by that).
-Hmm, strange. I'm sure I found this in another device tree. I define
-"whole PCI space" as PCI (prefetchable) memory and PCI I/O space.
+> So if Anton is going to break that pattern, we should be 
+> talking about moving all that code into U-boot,
+[...]
 
-> > 		host@0 {
-> 
-> The unit address (after the @) should be derived from the first range
-> listed in the 'reg' property.  It's a bus address, not a slot number.
-AFAIK it's the device number, which is 0 for this host/PCI bridge.
+To my personal taste that's bad idea. In that scheme, I need to upgrade
+bootloader to use such a little thing as SPI from the kernel.
 
-> > 			vendor-id = 0x000010cc;
-> 
-> Um.. evidentally you have never even tried compiling this device tree,
-> since this is invalid syntax.  That would need to be:
-> 			vendor-id = <000010cc>;
-> and likewise all the others below.
-Uh, yeah! I thought I fixed all these typos. You're right, I didn't try
-to compile the device tree yet.
+I expect very few things from the bootloader: setup memory controller,
+copy kernel from the source (flash, ethernet, rs232, ide, sata, ...)
+into the RAM and boot it. Everything else from the bootloader side is
+profusion.
 
-> > 			#interrupt-cells = <2>;
-> > 			#address-cells = <2>;
-> > 			#size-cells = <1>;
-> > 
-> > 			dma-controller {
-> 
-> All these devices should have unit addresses.
-Okay, that would be dma-controller@0, interrupt-controller@20 and so.
-Will be fixed!
+p.s. Cc'ing Kumar.
 
-> > 		ide@7,1 {
-> 
-> This will need a compatible property, at least.
-I hoped the class-code property is enough for a PCI device, as it
-clearly identifies this device as a PCI IDE conroller with primary and
-secondary master functionality.
-
-Thanks!
-
-regards,
-
-Gerhard
 -- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
