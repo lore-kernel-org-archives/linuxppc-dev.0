@@ -1,30 +1,30 @@
 Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+Received: from e23smtp02.au.ibm.com (E23SMTP02.au.ibm.com [202.81.18.163])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39EDADDF97
+	(Client CN "e23smtp02.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 35B14DDF96
 	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 11:14:02 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l831E0Oh030283
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:14:00 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l831Dx603653832
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:13:59 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l831Dxo8016128
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:13:59 +1000
-Date: Mon, 3 Sep 2007 11:11:12 +1000
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp02.au.ibm.com (8.13.1/8.13.1) with ESMTP id l831E1IA025950
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:14:01 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l831HXtW168858
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:17:33 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l832DwJJ002481
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 12:13:58 +1000
+Date: Mon, 3 Sep 2007 10:58:20 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 5/6] Walnut board support
-Message-ID: <20070903011112.GE31499@localhost.localdomain>
+Subject: Re: [patch 1/6] Fix bus probe on Bamboo board
+Message-ID: <20070903005820.GB31499@localhost.localdomain>
 References: <20070831200449.598781000@linux.vnet.ibm.com>>
-	<20070831200643.514442000@linux.vnet.ibm.com>
+	<20070831200642.866425000@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070831200643.514442000@linux.vnet.ibm.com>
+In-Reply-To: <20070831200642.866425000@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,34 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 31, 2007 at 03:04:54PM -0500, Josh Boyer wrote:
-> Board support for the PPC405 Walnut evaluation board
+On Fri, Aug 31, 2007 at 03:04:50PM -0500, Josh Boyer wrote:
+> Commit 804ace8881d21 changed the behavior of how compatible nodes are found.
+> This highlighted a bug on the Bamboo board where it wasn't probing the bus
+> specified in the DTS file.  We fix it by being explicit about which bus to
+> probe.
 > 
 > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-[snip]
-> --- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
-> +++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
-> @@ -53,13 +53,13 @@
->  #	help
->  #	  This option enables support for the IBM PPC405GPr evaluation board.
->  
-> -#config WALNUT
-> -#	bool "Walnut"
-> -#	depends on 40x
-> -#	default y
-> -#	select 405GP
-> -#	help
-> -#	  This option enables support for the IBM PPC405GP evaluation board.
-> +config WALNUT
-> +	bool "Walnut"
-> +	depends on 40x
-> +	default y
-> +	select 405GP
-> +	help
-> +	  This option enables support for the IBM PPC405GP evaluation board.
+Acked-by: David Gibson <david@gibson.dropbvear.id.au>
 
-Surely this needs WANT_DEVICE_TREE, too.
+> 
+> ---
+>  arch/powerpc/platforms/44x/bamboo.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2.6.orig/arch/powerpc/platforms/44x/bamboo.c
+> +++ linux-2.6/arch/powerpc/platforms/44x/bamboo.c
+> @@ -23,7 +23,7 @@
+>  #include "44x.h"
+>  
+>  static struct of_device_id bamboo_of_bus[] = {
+> -	{ .compatible = "ibm,plb", },
+> +	{ .compatible = "ibm,plb4", },
+>  	{ .compatible = "ibm,opb", },
+>  	{ .compatible = "ibm,ebc", },
+>  	{},
+> 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
