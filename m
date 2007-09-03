@@ -1,29 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id B1E20DDF8F
+Return-Path: <ssaravanan@mail2web.com>
+Received: from xsmtp01.mail2web.com (xsmtp01.mail2web.com [168.144.250.211])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B281DDF53
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Sep 2007 23:41:36 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so252327anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 03 Sep 2007 06:41:35 -0700 (PDT)
-Message-ID: <fa686aa40709030641w5bc57fd9iac8f4f1d7f4ad648@mail.gmail.com>
-Date: Mon, 3 Sep 2007 07:41:35 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: schardt <g.schardt@fz-juelich.de>,
-	"Linux PPC Linux PPC" <linuxppc-embedded@ozlabs.org>
-Subject: Re: Newbie and linux on virtex-II ppc
-In-Reply-To: <46DBA4F9.2010703@fz-juelich.de>
+	Mon,  3 Sep 2007 23:44:59 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46D2C9A5.9030708@fz-juelich.de> <46D4257C.7060208@fz-juelich.de>
-	<fa686aa40708280655mf0c08cct43eb9dbd75452690@mail.gmail.com>
-	<46D42D40.9040204@fz-juelich.de>
-	<fa686aa40708280743i7b3b4ef3g9df015e4be39a9cd@mail.gmail.com>
-	<fa686aa40708280744g29cb8e17r6153271cd67117ed@mail.gmail.com>
-	<46D53C82.8030308@fz-juelich.de> <46D5753C.70702@fz-juelich.de>
-	<fa686aa40708290744w261adfe8ya617a045e4860656@mail.gmail.com>
-	<46DBA4F9.2010703@fz-juelich.de>
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C7EE30.D18C01AF"
+Date: Mon, 3 Sep 2007 09:45:57 -0400
+Message-ID: <F3D55679E1DCFF49A57570501B70475F070D83BB@CL5EXBE04.ad2.softcom.biz>
+From: "dnl" <ssaravanan@mail2web.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: PCI:cannot allocate resource region 0 of device 0001:01:00.0?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,190 +22,272 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/3/07, schardt <g.schardt@fz-juelich.de> wrote:
-> Hi Grant,
->
-> i added the devices, but stil no tty access
-> i have no vga-card or something to use, i'm listening on one serial
-> port. i think i must forward the tty to ttyUL0 or something like that ???=
-?
+This is a multi-part message in MIME format.
 
-You should check that /etc/inittab is using the correct device.
-
-BTW, Please remember to CC: the mailing list
-
-Cheers,
-g.
->
-> Georg
->
->
-> Grant Likely wrote:
-> > On 8/29/07, schardt <g.schardt@fz-juelich.de> wrote:
-> >
-> >> me again :)
-> >>
-> >> i added a /dev/ttyUL0 (mknod ttyUL0 c 204 187) device and and a consol=
-e
-> >> link to it.
-> >>
-> >
-> > Yeah, you don't want a symlink, you want a console device node instead:
-> >
-> > mknod /dev/tty 5 0
-> > mknod /dev/console 5 1
-> >
-> >
-> >> no warning anymore, but i think i'm listen on the "wrong" console ??? =
-i
-> >> see bootmessages
-> >> and an errormessage from init ("init: can't open /dev/null: no such
-> >> device or directory")
-> >>
-> >
-> > I would say you need to add a /dev/null device node, or fix it's
-> > permissions.  :-)
-> >
-> > mknod /dev/null 1 3
-> >
-> >
-> >> but the messages from init.d/rcS did not appear
-> >>
-> >> this is my inittab (from klingauf mkrootfs):
-> >>
-> >> ::sysinit:/etc/init.d/rcS
-> >> ::askfirst:-/bin/sh
-> >> ::ctrlaltdel:/sbin/reboot
-> >> ::shutdown:/sbin/swapoff -a
-> >> ::shutdown:/bin/umount -a -r
-> >> ::restart:/sbin/init
-> >> ::respawn:/sbin/getty 9600 tts/0
-> >>
-> >> Georg
-> >>
-> >> schardt wrote:
-> >>
-> >>> Step by step i becomes running :)
-> >>>
-> >>> kernel is booting, root-fs is mounting on systemace, busybox compiled
-> >>> and rootfs installed (i used klingauf's mkrootfs)
-> >>>
-> >>> but now it says:
-> >>> [    2.964978] Freeing unused kernel memory: 92k init
-> >>> [    3.081332] Warning: unable to open an initial console.
-> >>> [    3.306406] request_module: runaway loop modprobe binfmt-4c46
-> >>> [    3.375612] request_module: runaway loop modprobe binfmt-4c46
-> >>> [    3.446800] request_module: runaway loop modprobe binfmt-4c46
-> >>>
-> >>> and i don't know what this is :(
-> >>>
-> >>> Can give me a hint, where to look ?
-> >>>
-> >>> thx
-> >>> Georg
-> >>>
-> >>> Grant Likely wrote:
-> >>>
-> >>>
-> >>>> On 8/28/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> >>>>
-> >>>>
-> >>>>
-> >>>>> On 8/28/07, schardt <g.schardt@fz-juelich.de> wrote:
-> >>>>>
-> >>>>>
-> >>>>>
-> >>>>>> Okay, im really blind i think, so i started again :
-> >>>>>>
-> >>>>>> - 2.6.22 kernel from kernel.org
-> >>>>>> - cp /arch/ppc/configs/ml300_defconfig .config
-> >>>>>>
-> >>>>>>
-> >>>>>>
-> >>>> BTW, "make ml300_defconfig" does this for you.
-> >>>>
-> >>>> g.
-> >>>>
-> >>>>
-> >>>>
-> >>>>
-> >>>
-> >>> ---------------------------------------------------------------------=
---------------------
-> >>> ---------------------------------------------------------------------=
---------------------
-> >>> Forschungszentrum J=FClich GmbH
-> >>> 52425 J=FClich
-> >>>
-> >>> Sitz der Gesellschaft: J=FClich
-> >>> Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
-> >>> Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
-> >>> Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (s=
-tellv.
-> >>> Vorsitzender)
-> >>> ---------------------------------------------------------------------=
---------------------
-> >>> ---------------------------------------------------------------------=
---------------------
-> >>> _______________________________________________
-> >>> Linuxppc-embedded mailing list
-> >>> Linuxppc-embedded@ozlabs.org
-> >>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>>
-> >>>
-> >>>
-> >>
-> >> ----------------------------------------------------------------------=
--------------------
-> >> ----------------------------------------------------------------------=
--------------------
-> >> Forschungszentrum J=FClich GmbH
-> >> 52425 J=FClich
-> >>
-> >> Sitz der Gesellschaft: J=FClich
-> >> Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
-> >> Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
-> >> Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (st=
-ellv.
-> >> Vorsitzender)
-> >> ----------------------------------------------------------------------=
--------------------
-> >> ----------------------------------------------------------------------=
--------------------
-> >> _______________________________________________
-> >> Linuxppc-embedded mailing list
-> >> Linuxppc-embedded@ozlabs.org
-> >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >>
-> >>
-> >
-> >
-> >
->
->
->
-> -------------------------------------------------------------------------=
-----------------
-> -------------------------------------------------------------------------=
-----------------
-> Forschungszentrum J=FClich GmbH
-> 52425 J=FClich
->
-> Sitz der Gesellschaft: J=FClich
-> Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
-> Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
-> Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stell=
-v.
-> Vorsitzender)
-> -------------------------------------------------------------------------=
-----------------
-> -------------------------------------------------------------------------=
-----------------
->
+------_=_NextPart_001_01C7EE30.D18C01AF
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_002_01C7EE30.D18C01AF"
 
 
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+------_=_NextPart_002_01C7EE30.D18C01AF
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi all,
+
+ I using Montavista kernel for custom MPC8555CDS board and one PCI slot =
+on the Board.
+
+ When my kernel boots i am getting the following Messages :
+=20
+ PCI: Probing PCI hardware
+ PCI: Cannot allocate resource region 0 of device 0001:01:00.0
+ PCI: Cannot allocate resource region 1 of device 0001:01:00.0
+ PCI: Failed to allocate mem resource #1:80000000@0 for 0001:01:00.
+
+ please find attached Kernel boot messages and corresponding pci =
+directory after kernel boots.
+could anyone face similar problem?=20
+
+
+------_=_NextPart_002_01C7EE30.D18C01AF
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>PCI:cannot allocate resource region 0 of device =
+0001:01:00.0?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>Hi all,<BR>
+<BR>
+&nbsp;I using Montavista kernel for custom MPC8555CDS board and one PCI =
+slot on the Board.<BR>
+<BR>
+&nbsp;When my kernel boots i am getting the following Messages :<BR>
+<BR>
+&nbsp;PCI: Probing PCI hardware<BR>
+&nbsp;PCI: Cannot allocate resource region 0 of device 0001:01:00.0<BR>
+&nbsp;PCI: Cannot allocate resource region 1 of device 0001:01:00.0<BR>
+&nbsp;PCI: Failed to allocate mem resource #1:80000000@0 for =
+0001:01:00.<BR>
+<BR>
+&nbsp;please find attached Kernel boot messages and corresponding pci =
+directory after kernel boots.<BR>
+could anyone face similar problem?<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_002_01C7EE30.D18C01AF--
+
+------_=_NextPart_001_01C7EE30.D18C01AF
+Content-Type: text/plain;
+	name="pci_screenshot.txt"
+Content-Transfer-Encoding: base64
+Content-Description: pci_screenshot.txt
+Content-Disposition: attachment;
+	filename="pci_screenshot.txt"
+
+VS1Cb290IDEuMS42IChBdWcgMjEgMjAwNyAtIDE4OjM3OjA3KQoKQ1BVOiAgIDg1NTUsIFZlcnNp
+b246IDEuMSwgKDB4ODA3OTAwMTEpCkNvcmU6ICBFNTAwLCBWZXJzaW9uOiAyLjAsICgweDgwMjAw
+MDIwKQpDbG9jayBDb25maWd1cmF0aW9uOgogICAgICAgQ1BVOiAzOTYgTUh6LCBDQ0I6IDE5OCBN
+SHosCiAgICAgICBERFI6ICA5OSBNSHosIExCQzogIDI0IE1IegpMMTogICAgRC1jYWNoZSAzMiBr
+QiBlbmFibGVkCiAgICAgICBJLWNhY2hlIDMyIGtCIGVuYWJsZWQKQm9hcmQ6IENEUyBWZXJzaW9u
+IDB4MTAsIFBDSSBTbG90IDEKQ1BVIEJvYXJkIFJldmlzaW9uIDEuMCAoMHgwMTAwKQogICAgUENJ
+MTogMzIgYml0LCAzMyBNSHosIHN5bmMKICAgIFBDSTI6IGRpc2FibGVkCkRSQU06ICBJbml0aWFs
+aXppbmcKRERSOiBudW1iZXIgb2YgcmFua3MgPSAxCkREUjogRERSIEkgcmFuayBkZW5zaXR5ID0g
+MHgwNDAwMDAwMAoKRERSOiBjczBfYm5kcyAgID0gMHgwMDAwMDAwMwpERFI6IGNzMF9jb25maWcg
+PSAweDgwODAwMTAxCkREUjogY2FzbGF0IFNQRCBiaXQgaXMgMQpERFI6IHRDS21pbiA9IDYwMDAg
+cHMKRERSOiBNb2R1bGUgbWF4IGRhdGEgcmF0ZSA9IDMzMyBNaHoKRERSOiBlZmZlY3RpdmUgZGF0
+YSByYXRlIGlzIDIwMCBNSHoKRERSOiBjYXNsYXQgU1BEIGJpdCBpcyAxLCBjb250cm9sbGVyIGZp
+ZWxkIGlzIDB4MgpERFI6IGV4dF9yZWZyZWMgPSAweDAwMDAwMDAwCkREUjogdGltaW5nX2NmZ18x
+ICA9IDB4MjYyNDEzNDEKRERSOiB0aW1pbmdfY2ZnXzIgPSAweDAwMDAxMDAwCkREUjogc2RyYW1f
+bW9kZSAgID0gMHgwMDAwMDA2MgpERFI6IHNkcmFtX21vZGVfMiA9IDB4MDAwMDAwMDAKRERSOiBz
+ZHJhbV9pbnRlcnZhbCA9IDB4MDUyMDAwMDAKRERSOiBzZHJhbV9jZmdfMiAgPSAweDAwMDAwMDAw
+CkREUjogc2RyYW1fY2xrX2NudGwgPSAweDgzMDAwMDAwCkREUjogc2RyYW1fY2ZnICAgPSAweGMy
+MDA4MDAwCkREUjogTUFTMD0weDEwMDgwMDAwCkREUjogTUFTMT0weGMwMDAwODAwCkREUjogTUFT
+Mj0weDAwMDAwMDAwCkREUjogTUFTMz0weDAwMDAwMDE1CkREUjogTEFXQkFSMT0weDAwMDAwMDAw
+CkREUjogTEFSQVIxPTB4ODBmMDAwMTkKICAgIEREUjogNjQgTUIKVG9wIG9mIFJBTSB1c2FibGUg
+Zm9yIFUtQm9vdCBhdDogMDQwMDAwMDAKUmVzZXJ2aW5nIDE5MGsgZm9yIFUtQm9vdCBhdDogMDNm
+ZDAwMDAKUmVzZXJ2aW5nIDEzNmsgZm9yIG1hbGxvYygpIGF0OiAwM2ZhZTAwMApSZXNlcnZpbmcg
+ODggQnl0ZXMgZm9yIEJvYXJkIEluZm8gYXQ6IDAzZmFkZmE4ClJlc2VydmluZyA3MiBCeXRlcyBm
+b3IgR2xvYmFsIERhdGEgYXQ6IDAzZmFkZjYwClN0YWNrIFBvaW50ZXIgYXQ6IDAzZmFkZjQ4Ck5l
+dyBTdGFjayBQb2ludGVyIGlzOiAwM2ZhZGY0OApOb3cgcnVubmluZyBpbiBSQU0gLSBVLUJvb3Qg
+YXQ6IDAzZmQwMDAwCkwyIGNhY2hlIDI1NktCOiBlbmFibGVkCioqKiBXYXJuaW5nIC0gYmFkIENS
+QywgdXNpbmcgZGVmYXVsdCBlbnZpcm9ubWVudAoKSW46ICAgIHNlcmlhbApPdXQ6ICAgc2VyaWFs
+CkVycjogICBzZXJpYWwKVS1Cb290IHJlbG9jYXRlZCB0byAwM2ZkMDAwMApOZXQ6ICAgVFNFQzA6
+IFBIWSBpZCBmZmZmZmZmZiBpcyBub3Qgc3VwcG9ydGVkIQpUU0VDMDogTm8gUEhZIGZvdW5kClRT
+RUMxOiBQSFkgaWQgZmZmZmZmZmYgaXMgbm90IHN1cHBvcnRlZCEKVFNFQzE6IE5vIFBIWSBmb3Vu
+ZApUU0VDMCwgVFNFQzEKIyMjIG1haW5fbG9vcCBlbnRlcmVkOiBib290ZGVsYXk9NQoKIyMjIG1h
+aW5fbG9vcDogYm9vdGNtZD0iYm9vdG0gMHhmZmQwMDAwMCAweGZmYTAwMDAwIgpIaXQgYW55IGtl
+eSB0byBzdG9wIGF1dG9ib290OiAgMAojIyBCb290aW5nIGltYWdlIGF0IGZmZDAwMDAwIC4uLgog
+ICBJbWFnZSBOYW1lOiAgIExpbnV4LTIuNi4xMF9tdmw0MDEtODU1NWNkcwogICBJbWFnZSBUeXBl
+OiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpCiAgIERhdGEg
+U2l6ZTogICAgMTE2NTA3OCBCeXRlcyA9ICAxLjEgTUIKICAgTG9hZCBBZGRyZXNzOiAwMDAwMDAw
+MAogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwCiAgIFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sK
+ICAgVW5jb21wcmVzc2luZyBLZXJuZWwgSW1hZ2UgLi4uIE9LCiMjIEN1cnJlbnQgc3RhY2sgZW5k
+cyBhdCAweDAzRkFEQ0YwID0+IHNldCB1cHBlciBsaW1pdCB0byAweDAwODAwMDAwCiMjIGNtZGxp
+bmUgYXQgMHgwMDdGRkYwMCAuLi4gMHgwMDdGRkYyQwojIyBMb2FkaW5nIFJBTURpc2sgSW1hZ2Ug
+YXQgZmZhMDAwMDAgLi4uCiAgIEltYWdlIE5hbWU6ICAgdUltYWdlLnJhbWRpc2sKICAgSW1hZ2Ug
+VHlwZTogICBQb3dlclBDIExpbnV4IFJBTURpc2sgSW1hZ2UgKGd6aXAgY29tcHJlc3NlZCkKICAg
+RGF0YSBTaXplOiAgICAyNDAyMzA3IEJ5dGVzID0gIDIuMyBNQgogICBMb2FkIEFkZHJlc3M6IDAw
+MDAwMDAwCiAgIEVudHJ5IFBvaW50OiAgMDAwMDAwMDAKICAgVmVyaWZ5aW5nIENoZWNrc3VtIC4u
+LiBPSwojIyBpbml0cmQgYXQgMHhGRkEwMDA0MCAuLi4gMHhGRkM0QTg0MiAobGVuPTI0MDIzMDc9
+MHgyNEE4MDMpCiAgIExvYWRpbmcgUmFtZGlzayB0byAwM2Q2MjAwMCwgZW5kIDAzZmFjODAzIC4u
+LiBPSwojIyBUcmFuc2ZlcnJpbmcgY29udHJvbCB0byBMaW51eCAoYXQgYWRkcmVzcyAwMDAwMDAw
+MCkgLi4uCk1lbW9yeSBDQU0gbWFwcGluZzogQ0FNMD02NE1iLCBDQU0xPTBNYiwgQ0FNMj0wTWIg
+cmVzaWR1YWw6IDBNYgpMaW51eCB2ZXJzaW9uIDIuNi4xMF9tdmw0MDEtODU1NWNkcyAocm9vdEBE
+MTIuYXJhc29yLmluKSAoZ2NjIHZlcnNpb24gMy40LjMgKE1vbnRhVmlzdGEgMy40LjMtMjUuMC43
+MC4wNTAxOTYxIDIwMDUtMTItMTgpKSA3CkNEUyBWZXJzaW9uID0gMCBpbiBQQ0kgc2xvdCA0CkJ1
+aWx0IDEgem9uZWxpc3RzCktlcm5lbCBjb21tYW5kIGxpbmU6IGNvbnNvbGU9dHR5UzEsMTE1MjAw
+IHJvb3Q9L2Rldi9yYW0gcncgaXA9b2ZmCk9wZW5QSUMgVmVyc2lvbiAxLjIgKDEgQ1BVcyBhbmQg
+NDQgSVJRIHNvdXJjZXMpIGF0IGZiZjc2MDAwClBJRCBoYXNoIHRhYmxlIGVudHJpZXM6IDUxMiAo
+b3JkZXI6IDksIDgxOTIgYnl0ZXMpClRPREMgcmVhbC10aW1lLWNsb2NrIHdhcyBzdG9wcGVkLiBO
+b3cgc3RhcnRpbmcuLi4KV2FybmluZzogcmVhbCB0aW1lIGNsb2NrIHNlZW1zIHN0dWNrIQpEZW50
+cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVz
+KQpJbm9kZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDgxOTIgKG9yZGVyOiAzLCAzMjc2OCBi
+eXRlcykKTWVtb3J5OiA1OTY0OGsgYXZhaWxhYmxlICgxOTcyayBrZXJuZWwgY29kZSwgNjk2ayBk
+YXRhLCAxMTZrIGluaXQsIDBrIGhpZ2htZW0pCk1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50cmll
+czogNTEyIChvcmRlcjogMCwgNDA5NiBieXRlcykKc3Bhd25fZGVzY2hlZF90YXNrKDAwMDAwMDAw
+KQpkZXNjaGVkIGNwdV9jYWxsYmFjayAzLzAwMDAwMDAwCmtzb2Z0aXJxZCBzdGFydGVkIHVwLgpk
+ZXNjaGVkIGNwdV9jYWxsYmFjayAyLzAwMDAwMDAwCmNoZWNraW5nIGlmIGltYWdlIGlzIGluaXRy
+YW1mcy4uLmRlc2NoZWQgdGhyZWFkIDAgc3RhcnRlZCB1cC4KaXQgaXNuJ3QgKG5vIGNwaW8gbWFn
+aWMpOyBsb29rcyBsaWtlIGFuIGluaXRyZApGcmVlaW5nIGluaXRyZCBtZW1vcnk6IDIzNDZrIGZy
+ZWVkCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTYKUENJOiBQcm9iaW5nIFBDSSBo
+YXJkd2FyZQpQQ0k6IENhbm5vdCBhbGxvY2F0ZSByZXNvdXJjZSByZWdpb24gMCBvZiBkZXZpY2Ug
+MDAwMTowMTowMC4wClBDSTogQ2Fubm90IGFsbG9jYXRlIHJlc291cmNlIHJlZ2lvbiAxIG9mIGRl
+dmljZSAwMDAxOjAxOjAwLjAKUENJOiBGYWlsZWQgdG8gYWxsb2NhdGUgbWVtIHJlc291cmNlICMx
+OjgwMDAwMDAwQDAgZm9yIDAwMDE6MDE6MDAuMApKRkZTMiB2ZXJzaW9uIDIuMi4gKE5BTkQpIChD
+KSAyMDAxLTIwMDMgUmVkIEhhdCwgSW5jLgpHZW5lcmljIFJUQyBEcml2ZXIgdjEuMDcKaTgwNDIu
+YzogaTgwNDIgY29udHJvbGxlciBzZWxmIHRlc3QgdGltZW91dC4KU2VyaWFsOiA4MjUwLzE2NTUw
+IGRyaXZlciAkUmV2aXNpb246IDEuOTAgJCA0IHBvcnRzLCBJUlEgc2hhcmluZyBkaXNhYmxlZAp0
+dHlTMCBhdCBNTUlPIDB4ZTAwMDQ1MDAgKGlycSA9IDEwNikgaXMgYSAxNjU1MEEKdHR5UzEgYXQg
+TU1JTyAweGUwMDA0NjAwIChpcnEgPSAxMDYpIGlzIGEgMTY1NTBBCmlvIHNjaGVkdWxlciBub29w
+IHJlZ2lzdGVyZWQKaW8gc2NoZWR1bGVyIGFudGljaXBhdG9yeSByZWdpc3RlcmVkCmlvIHNjaGVk
+dWxlciBkZWFkbGluZSByZWdpc3RlcmVkCmlvIHNjaGVkdWxlciBjZnEgcmVnaXN0ZXJlZApSQU1E
+SVNLIGRyaXZlciBpbml0aWFsaXplZDogMTYgUkFNIGRpc2tzIG9mIDgxOTJLIHNpemUgMTAyNCBi
+bG9ja3NpemUKbG9vcDogbG9hZGVkIChtYXggOCBkZXZpY2VzKQpldGgwOiBHaWFuZmFyIEV0aGVy
+bmV0IENvbnRyb2xsZXIgVmVyc2lvbiAxLjEsIDAwOmUwOjBjOjAwOjAwOmZkCmV0aDA6IFJ1bm5p
+bmcgd2l0aCBOQVBJIGVuYWJsZWQKZXRoMDogMjU2LzI1NiBSWC9UWCBCRCByaW5nIHNpemUKZXRo
+MTogR2lhbmZhciBFdGhlcm5ldCBDb250cm9sbGVyIFZlcnNpb24gMS4xLCAwMDplMDowYzowMDow
+MTpmZApldGgxOiBSdW5uaW5nIHdpdGggTkFQSSBlbmFibGVkCmV0aDE6IDI1Ni8yNTYgUlgvVFgg
+QkQgcmluZyBzaXplCmkyYyAvZGV2IGVudHJpZXMgZHJpdmVyClVuaWZvcm0gTXVsdGktUGxhdGZv
+cm0gRS1JREUgZHJpdmVyIFJldmlzaW9uOiA3LjAwYWxwaGEyCmlkZTogQXNzdW1pbmcgMzNNSHog
+c3lzdGVtIGJ1cyBzcGVlZCBmb3IgUElPIG1vZGVzOyBvdmVycmlkZSB3aXRoIGlkZWJ1cz14eApl
+bGV2YXRvcjogdXNpbmcgYW50aWNpcGF0b3J5IGFzIGRlZmF1bHQgaW8gc2NoZWR1bGVyCnBoeXNt
+YXAgZmxhc2ggZGV2aWNlOiAxMDAwMDAwIGF0IGZmMDAwMDAwCk5FVDogUmVnaXN0ZXJlZCBwcm90
+b2NvbCBmYW1pbHkgMgpJUDogcm91dGluZyBjYWNoZSBoYXNoIHRhYmxlIG9mIDUxMiBidWNrZXRz
+LCA0S2J5dGVzClRDUDogSGFzaCB0YWJsZXMgY29uZmlndXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBi
+aW5kIDgxOTIpCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMQpORVQ6IFJlZ2lzdGVy
+ZWQgcHJvdG9jb2wgZmFtaWx5IDE3ClJBTURJU0s6IENvbXByZXNzZWQgaW1hZ2UgZm91bmQgYXQg
+YmxvY2sgMApSQU1ESVNLOiBpbmNvbXBsZXRlIHdyaXRlICgtMjggIT0gMzI3NjgpIDgzODg2MDgK
+RVhUMi1mcyB3YXJuaW5nOiBjaGVja3RpbWUgcmVhY2hlZCwgcnVubmluZyBlMmZzY2sgaXMgcmVj
+b21tZW5kZWQKVkZTOiBNb3VudGVkIHJvb3QgKGV4dDIgZmlsZXN5c3RlbSkuCkZyZWVpbmcgdW51
+c2VkIGtlcm5lbCBtZW1vcnk6IDExNmsgaW5pdAptb2Rwcm9iZTogRkFUQUw6IENvdWxkIG5vdCBs
+b2FkIC9saWIvbW9kdWxlcy8yLjYuMTBfbXZsNDAxLTg1NTVjZHMvbW9kdWxlcy5kZXA6IE5vIHN1
+Y2ggZmlsZSBvciBkaXJlY3RvcnkKCm1vZHByb2JlOiBGQVRBTDogQ291bGQgbm90IGxvYWQgL2xp
+Yi9tb2R1bGVzLzIuNi4xMF9tdmw0MDEtODU1NWNkcy9tb2R1bGVzLmRlcDogTm8gc3VjaCBmaWxl
+IG9yIGRpcmVjdG9yeQoKSU5JVDogdmVyc2lvbiAyLjg1IGJvb3RpbmcKMApNb3VudGluZyBhIHRt
+cGZzIG92ZXIgL2Rldi4uLmRvbmUuCkNyZWF0aW5nIGluaXRpYWwgZGV2aWNlIG5vZGVzLi4uZG9u
+ZS4KMApNb3VudGluZyBsb2NhbCBmaWxlc3lzdGVtczogbW91bnQgbm9uZSBvbiAvdmFyL3J1biB0
+eXBlIHRtcGZzIChydykKbm9uZSBvbiAvdG1wIHR5cGUgdG1wZnMgKHJ3KQpTdGFydGluZyBob3Rw
+bHVnIHN1YnN5c3RlbToKICAgcGNpCiAgIHBjaSAgICAgIFtzdWNjZXNzXQogICB1c2IKICAgdXNi
+ICAgICAgW3N1Y2Nlc3NdCiAgIGlzYXBucAogICBpc2FwbnAgICBbc3VjY2Vzc10KICAgaWRlCiAg
+IGlkZSAgICAgIFtzdWNjZXNzXQogICBpbnB1dAogICBpbnB1dCAgICBbc3VjY2Vzc10KICAgc2Nz
+aQogICBzY3NpICAgICBbc3VjY2Vzc10KZG9uZS4KU3RhcnRpbmcgcG9ydG1hcCBkYWVtb246IHBv
+cnRtYXAvZXRjL3JjLmQvcmNTLmQvUzQxcG9ydG1hcDogMTU2OiBuaWNlOiBub3QgZm91bmQKSU5J
+VDogRWludGVyaW5nIHJ1bmxldmVTdGFydGluZyBpbnRlcm5ldCBzdXBlcnNlcnZlcjogaW5ldGQu
+CgpNb250YVZpc3RhKFIpIExpbnV4KFIpIFByb2Zlc3Npb25hbCBFZGl0aW9uIDQuMC4xICgwNTAy
+MDIwKQoKKG5vbmUpIGxvZ2luOiByb290CgoKV2VsY29tZSB0byBNb250YVZpc3RhKFIpIExpbnV4
+KFIpIFByb2Zlc3Npb25hbCBFZGl0aW9uIDQuMC4xICgwNTAyMDIwKS4KCmxvZ2luWzgzM106IHJv
+b3QgbG9naW4gIG9uIGBjb25zb2xlJwoKIyB1bmFtZSAtYQpMaW51eCAobm9uZSkgMi42LjEwX212
+bDQwMS04NTU1Y2RzICMzMCBNb24gQXVnIDIwIDE2OjMzOjQ0IElTVCAyMDA3IHBwYyB1bmtub3du
+CgojIGNhdCAvcHJvYy9idXMvcGNpL2RldmljZXMKMDEwMCAgICAxMDU3MDAwYSAgICAgICAgMCAg
+ICAgICBhMDAwMDAwMCAgICAgICAgMDAwMDAwMDggICAgICAgIDAwMDAwMDAwICAgICAgICAwMDAw
+MDAwMCAgICAgICAgMDAwMDAwMDAgICAgICAgIDAwMDAwMDAwICAgMAoKIyBscyAvc3lzL2J1cy9w
+Y2kvZGV2aWNlcy8KMDAwMTowMTowMC4wCgoKIyBscyAtbCAvc3lzL2J1cy9wY2kvZGV2aWNlcy8w
+MDAxXDowMVw6MDAuMC8KLXItLXItLXItLSAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICA0MDk2
+IEF1ZyAgOCAyMDowMSBjbGFzcwotcnctci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAg
+ICAyNTYgQXVnICA4IDIwOjQzIGNvbmZpZwotcnctci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAg
+ICAgICAgIDQwOTYgQXVnICA4IDIwOjQzIGRldGFjaF9zdGF0ZQotci0tci0tci0tICAgIDEgcm9v
+dCAgICAgcm9vdCAgICAgICAgIDQwOTYgQXVnICA4IDIwOjAxIGRldmljZQotci0tci0tci0tICAg
+IDEgcm9vdCAgICAgcm9vdCAgICAgICAgIDQwOTYgQXVnICA4IDIwOjQzIGlycQotci0tci0tci0t
+ICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgIDQwOTYgQXVnICA4IDIwOjQzIGxvY2FsX2NwdXMK
+LXItLXItLXItLSAgICAxIHJvb3QgICAgIHJvb3QgICAgICAgICA0MDk2IEF1ZyAgOCAyMDo0MyBy
+ZXNvdXJjZQotci0tci0tci0tICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAgIDQwOTYgQXVnICA4
+IDIwOjAxIHN1YnN5c3RlbV9kZXZpY2UKLXItLXItLXItLSAgICAxIHJvb3QgICAgIHJvb3QgICAg
+ICAgICA0MDk2IEF1ZyAgOCAyMDowMSBzdWJzeXN0ZW1fdmVuZG9yCi1yLS1yLS1yLS0gICAgMSBy
+b290ICAgICByb290ICAgICAgICAgNDA5NiBBdWcgIDggMjA6MDEgdmVuZG9yCgojIGxzIC1sIC9z
+eXMvYnVzL3BjaS9kZXZpY2VzLwpscnd4cnd4cnd4ICAgIDEgcm9vdCAgICAgcm9vdCAgICAgICAg
+ICAgIDAgQXVnICA4IDIwOjAxIDAwMDE6MDE6MDAuMCAtPiAuLi8uLi8uLi9kZXZpY2VzL3BjaTAw
+MDE6MDEvMDAwMTowMTowMC4wCiMKCiMgZG1lc2cKTWVtb3J5IENBTSBtYXBwaW5nOiBDQU0wPTY0
+TWIsIENBTTE9ME1iLCBDQU0yPTBNYiByZXNpZHVhbDogME1iCkxpbnV4IHZlcnNpb24gMi42LjEw
+X212bDQwMS04NTU1Y2RzIChyb290QEQxMi5hcmFzb3IuaW4pIChnY2MgdmVyc2lvbiAzLjQuMyAo
+TW9udGFWaXN0YSAzLjQuMy0yNS4wLjcwLjA1MDE5NjEgMjAwNS0xMi0xOCkpIDcKQ0RTIFZlcnNp
+b24gPSAwIGluIFBDSSBzbG90IDQKT24gbm9kZSAwIHRvdGFscGFnZXM6IDE2Mzg0CiAgRE1BIHpv
+bmU6IDE2Mzg0IHBhZ2VzLCBMSUZPIGJhdGNoOjQKICBOb3JtYWwgem9uZTogMCBwYWdlcywgTElG
+TyBiYXRjaDoxCiAgSGlnaE1lbSB6b25lOiAwIHBhZ2VzLCBMSUZPIGJhdGNoOjEKQnVpbHQgMSB6
+b25lbGlzdHMKS2VybmVsIGNvbW1hbmQgbGluZTogY29uc29sZT10dHlTMSwxMTUyMDAgcm9vdD0v
+ZGV2L3JhbSBydyBpcD1vZmYKT3BlblBJQyBWZXJzaW9uIDEuMiAoMSBDUFVzIGFuZCA0NCBJUlEg
+c291cmNlcykgYXQgZmJmNzYwMDAKUElEIGhhc2ggdGFibGUgZW50cmllczogNTEyIChvcmRlcjog
+OSwgODE5MiBieXRlcykKVE9EQyByZWFsLXRpbWUtY2xvY2sgd2FzIHN0b3BwZWQuIE5vdyBzdGFy
+dGluZy4uLgpXYXJuaW5nOiByZWFsIHRpbWUgY2xvY2sgc2VlbXMgc3R1Y2shCkRlbnRyeSBjYWNo
+ZSBoYXNoIHRhYmxlIGVudHJpZXM6IDE2Mzg0IChvcmRlcjogNCwgNjU1MzYgYnl0ZXMpCklub2Rl
+LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogODE5MiAob3JkZXI6IDMsIDMyNzY4IGJ5dGVzKQpN
+ZW1vcnk6IDU5NjQ4ayBhdmFpbGFibGUgKDE5NzJrIGtlcm5lbCBjb2RlLCA2OTZrIGRhdGEsIDEx
+NmsgaW5pdCwgMGsgaGlnaG1lbSkKQ2FsaWJyYXRpbmcgZGVsYXkgbG9vcC4uLiAzOTQuMjQgQm9n
+b01JUFMgKGxwaj0xOTcxMjApCk1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyIChv
+cmRlcjogMCwgNDA5NiBieXRlcykKc3Bhd25fZGVzY2hlZF90YXNrKDAwMDAwMDAwKQpkZXNjaGVk
+IGNwdV9jYWxsYmFjayAzLzAwMDAwMDAwCmtzb2Z0aXJxZCBzdGFydGVkIHVwLgpkZXNjaGVkIGNw
+dV9jYWxsYmFjayAyLzAwMDAwMDAwCmNoZWNraW5nIGlmIGltYWdlIGlzIGluaXRyYW1mcy4uLmRl
+c2NoZWQgdGhyZWFkIDAgc3RhcnRlZCB1cC4KaXQgaXNuJ3QgKG5vIGNwaW8gbWFnaWMpOyBsb29r
+cyBsaWtlIGFuIGluaXRyZApGcmVlaW5nIGluaXRyZCBtZW1vcnk6IDIzNDZrIGZyZWVkCk5FVDog
+UmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTYKUENJOiBQcm9iaW5nIFBDSSBoYXJkd2FyZQpQ
+Q0k6IENhbm5vdCBhbGxvY2F0ZSByZXNvdXJjZSByZWdpb24gMCBvZiBkZXZpY2UgMDAwMTowMTow
+MC4wClBDSTogQ2Fubm90IGFsbG9jYXRlIHJlc291cmNlIHJlZ2lvbiAxIG9mIGRldmljZSAwMDAx
+OjAxOjAwLjAKUENJOiBGYWlsZWQgdG8gYWxsb2NhdGUgbWVtIHJlc291cmNlICMxOjgwMDAwMDAw
+QDAgZm9yIDAwMDE6MDE6MDAuMApSZWdpc3RlcmluZyBvcGVucGljIHdpdGggc3lzZnMuLi4KSkZG
+UzIgdmVyc2lvbiAyLjIuIChOQU5EKSAoQykgMjAwMS0yMDAzIFJlZCBIYXQsIEluYy4KR2VuZXJp
+YyBSVEMgRHJpdmVyIHYxLjA3Cmk4MDQyLmM6IGk4MDQyIGNvbnRyb2xsZXIgc2VsZiB0ZXN0IHRp
+bWVvdXQuClNlcmlhbDogODI1MC8xNjU1MCBkcml2ZXIgJFJldmlzaW9uOiAxLjkwICQgNCBwb3J0
+cywgSVJRIHNoYXJpbmcgZGlzYWJsZWQKdHR5UzAgYXQgTU1JTyAweGUwMDA0NTAwIChpcnEgPSAx
+MDYpIGlzIGEgMTY1NTBBCnR0eVMxIGF0IE1NSU8gMHhlMDAwNDYwMCAoaXJxID0gMTA2KSBpcyBh
+IDE2NTUwQQppbyBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCmlvIHNjaGVkdWxlciBhbnRpY2lw
+YXRvcnkgcmVnaXN0ZXJlZAppbyBzY2hlZHVsZXIgZGVhZGxpbmUgcmVnaXN0ZXJlZAppbyBzY2hl
+ZHVsZXIgY2ZxIHJlZ2lzdGVyZWQKUkFNRElTSyBkcml2ZXIgaW5pdGlhbGl6ZWQ6IDE2IFJBTSBk
+aXNrcyBvZiA4MTkySyBzaXplIDEwMjQgYmxvY2tzaXplCmxvb3A6IGxvYWRlZCAobWF4IDggZGV2
+aWNlcykKZXRoMDogR2lhbmZhciBFdGhlcm5ldCBDb250cm9sbGVyIFZlcnNpb24gMS4xLCAwMDpl
+MDowYzowMDowMDpmZApldGgwOiBSdW5uaW5nIHdpdGggTkFQSSBlbmFibGVkCmV0aDA6IDI1Ni8y
+NTYgUlgvVFggQkQgcmluZyBzaXplCmV0aDE6IEdpYW5mYXIgRXRoZXJuZXQgQ29udHJvbGxlciBW
+ZXJzaW9uIDEuMSwgMDA6ZTA6MGM6MDA6MDE6ZmQKZXRoMTogUnVubmluZyB3aXRoIE5BUEkgZW5h
+YmxlZApldGgxOiAyNTYvMjU2IFJYL1RYIEJEIHJpbmcgc2l6ZQppMmMgL2RldiBlbnRyaWVzIGRy
+aXZlcgpVbmlmb3JtIE11bHRpLVBsYXRmb3JtIEUtSURFIGRyaXZlciBSZXZpc2lvbjogNy4wMGFs
+cGhhMgppZGU6IEFzc3VtaW5nIDMzTUh6IHN5c3RlbSBidXMgc3BlZWQgZm9yIFBJTyBtb2Rlczsg
+b3ZlcnJpZGUgd2l0aCBpZGVidXM9eHgKZWxldmF0b3I6IHVzaW5nIGFudGljaXBhdG9yeSBhcyBk
+ZWZhdWx0IGlvIHNjaGVkdWxlcgpwaHlzbWFwIGZsYXNoIGRldmljZTogMTAwMDAwMCBhdCBmZjAw
+MDAwMApDRkk6IEZvdW5kIG5vIHBoeXNfbWFwcGVkX2ZsYXNoIGRldmljZSBhdCBsb2NhdGlvbiB6
+ZXJvCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMgpJUDogcm91dGluZyBjYWNoZSBo
+YXNoIHRhYmxlIG9mIDUxMiBidWNrZXRzLCA0S2J5dGVzClRDUDogSGFzaCB0YWJsZXMgY29uZmln
+dXJlZCAoZXN0YWJsaXNoZWQgNDA5NiBiaW5kIDgxOTIpCk5FVDogUmVnaXN0ZXJlZCBwcm90b2Nv
+bCBmYW1pbHkgMQpORVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDE3ClJBTURJU0s6IENv
+bXByZXNzZWQgaW1hZ2UgZm91bmQgYXQgYmxvY2sgMApSQU1ESVNLOiBpbmNvbXBsZXRlIHdyaXRl
+ICgtMjggIT0gMzI3NjgpIDgzODg2MDgKRVhUMi1mcyB3YXJuaW5nOiBjaGVja3RpbWUgcmVhY2hl
+ZCwgcnVubmluZyBlMmZzY2sgaXMgcmVjb21tZW5kZWQKVkZTOiBNb3VudGVkIHJvb3QgKGV4dDIg
+ZmlsZXN5c3RlbSkuCkZyZWVpbmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDExNmsgaW5pdAoK
+
+------_=_NextPart_001_01C7EE30.D18C01AF--
