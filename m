@@ -2,29 +2,29 @@ Return-Path: <dwg@au1.ibm.com>
 Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E9D87DDF64
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 11:14:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 17008DDF6E
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Sep 2007 11:14:01 +1000 (EST)
 Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id l831E2wY010757
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id l831E2NQ010761
 	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:14:02 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
 	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l831HXbc168860
+	l831HXte210992
 	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 11:17:33 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
 	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l832DxHM002496
+	l832DxdU002510
 	for <linuxppc-dev@ozlabs.org>; Mon, 3 Sep 2007 12:13:59 +1000
-Date: Mon, 3 Sep 2007 11:08:59 +1000
+Date: Mon, 3 Sep 2007 11:13:52 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 3/6] Walnut DTS
-Message-ID: <20070903010859.GD31499@localhost.localdomain>
+Subject: Re: [patch 6/6] Walnut zImage wrapper
+Message-ID: <20070903011352.GF31499@localhost.localdomain>
 References: <20070831200449.598781000@linux.vnet.ibm.com>>
-	<20070831200643.202414000@linux.vnet.ibm.com>
+	<20070831200643.675381000@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070831200643.202414000@linux.vnet.ibm.com>
+In-Reply-To: <20070831200643.675381000@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,211 +35,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 31, 2007 at 03:04:52PM -0500, Josh Boyer wrote:
-> Device tree source file for the PPC405 Walnut evaluation board.
+On Fri, Aug 31, 2007 at 03:04:55PM -0500, Josh Boyer wrote:
+> Add zImage wrapper for walnut board
 > 
 > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> 
-> ---
->  arch/powerpc/boot/dts/walnut.dts |  183 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 183 insertions(+)
-> 
+
+[snip]
 > --- /dev/null
-> +++ linux-2.6/arch/powerpc/boot/dts/walnut.dts
-> @@ -0,0 +1,183 @@
+> +++ linux-2.6/arch/powerpc/boot/treeboot-walnut.c
+> @@ -0,0 +1,133 @@
 > +/*
-> + * Device Tree Source for IBM Walnut
+> + * Old U-boot compatibility for Walnut
 > + *
-> + * Copyright 2007 IBM Corp.
-> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> + * Author: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 > + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
+> + * Copyright 2007 IBM Corporation
+> + *   Based on cuboot-83xx.c, which is:
+> + * Copyright (c) 2007 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
 > + */
 > +
-> +/ {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "ibm,walnut";
-> +	compatible = "ibm,walnut";
-> +	dcr-parent = <&/cpus/PowerPC,405GP@0>;
+> +#include "ops.h"
+> +#include "stdio.h"
+> +#include "dcr.h"
+> +#include "4xx.h"
+> +#include "io.h"
 > +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
+> +BSS_STACK(4096);
 > +
-> +		PowerPC,405GP@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			clock-frequency = <bebc200>; /* Filled in by zImage */
-> +			timebase-frequency = <0>; /* Filled in by zImage */
-> +			i-cache-line-size = <20>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-size = <4000>;
-> +			d-cache-size = <4000>;
-> +			dcr-controller;
-> +			dcr-access-method = "native";
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0 0>; /* Filled in by zImage */
-> +	};
-> +
-> +	UIC0: interrupt-controller {
-> +		compatible = "ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <0>;
-> +		dcr-reg = <0c0 9>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +	};
-> +
-> +	plb {
-> +		compatible = "ibm,plb3";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +		clock-frequency = <0>; /* Filled in by zImage */
-> +
-> +		SDRAM0: memory-controller {
-> +			compatible = "ibm,sdram-405gp";
-> +			dcr-reg = <010 2>;
-> +		};
-> +
-> +		MAL: mcmal {
-> +			compatible = "ibm,mcmal-405gp", "ibm,mcmal";
-> +			dcr-reg = <180 62>;
-> +			num-tx-chans = <2>;
-> +			num-rx-chans = <1>;
-> +			interrupt-parent = <&UIC0>;
-> +			interrupts = <a 4 b 4 c 4 d 4 e 4>;
-> +		};
-> +
-> +		POB0: opb {
-> +			compatible = "ibm,opb";
+> +void ibm405gp_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
+> +{
+> +	u32 pllmr = mfdcr(0xb0);
 
-Need an opb-405gp here, too.
+Please add #defines for the DCR numbers, rather than using literals.
 
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <0 ef600000 a00000>;
-
-Hrm... something we ought to clarify is the interpretation of the
-POB0_BEAR register with respect to the bridge's ranges property.  For
-440 I think the BEAR will need to be interpreted as an OPB address,
-rather than a PLB address, but I'm not sure if that will work here
-with the limited ranges property you have.
-
-> +			dcr-reg = <0a0 5>;
-> +			clock-frequency = <0>; /* Filled in by zImage */
+> +	u32 cpc0_cr0 = mfdcr(0xb1);
+> +	u32 cpc0_cr1 = mfdcr(0xb2);
+> +	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
+> +	u32 fwdv, fbdv, cbdv, opdv, epdv, udiv;
 > +
-> +			UART0: serial@300 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <300 8>;
-> +				virtual-reg = <ef600300>;
-> +				clock-frequency = <0>; /* Filled in by zImage */
-> +				current-speed = <2580>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <0 4>;
-> +			};
+> +	fwdv = (8 - ((pllmr & 0xe0000000) >> 29));
+> +	fbdv = (pllmr & 0x1e000000) >> 25;
+> +	cbdv = ((pllmr & 0x00060000) >> 17) + 1;
+> +	opdv = ((pllmr & 0x00018000) >> 15) + 1;
+> +	epdv = ((pllmr & 0x00001800) >> 13) + 2;
+> +	udiv = ((cpc0_cr0 & 0x3e) >> 1) + 1;
 > +
-> +			UART1: serial@400 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <400 8>;
-> +				virtual-reg = <ef600400>;
-> +				clock-frequency = <0>; /* Filled in by zImage */
-> +				current-speed = <2580>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <1 4>;
-> +			};
+> +	m = fwdv * fbdv * cbdv;
 > +
-> +			IIC: i2c@500 {
-> +				compatible = "ibm,iic-405gp", "ibm,iic";
-> +				reg = <500 11>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <2 4>;
-> +			};
+> +	cpu = sysclk * m / fwdv;
+> +	plb = cpu / cbdv;
+> +	opb = plb / opdv;
+> +	ebc = plb / epdv;
 > +
-> +			GPIO: gpio@700 {
-> +				compatible = "ibm,gpio-405gp";
-> +				reg = <700 20>;
-> +			};
+> +	if (cpc0_cr0 & 0x80) {
+> +		/* uart0 uses the external clock */
+> +		uart0 = ser_clk;
+> +	} else {
+> +		uart0 = cpu / udiv;
+> +	}
 > +
-> +			EMAC: ethernet@800 {
-> +				linux,network-index = <0>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-405gp", "ibm,emac";
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <9 4 f 4>;
-> +				reg = <800 70>;
-> +				mal-device = <&MAL>;
-> +				mal-tx-channel = <0 1>;
-> +				mal-rx-channel = <0>;
-> +				cell-index = <0>;
-> +				max-frame-size = <5dc>;
-> +				rx-fifo-size = <1000>;
-> +				tx-fifo-size = <800>;
-> +				phy-mode = "rmii";
-> +				phy-map = <00000001>;
-> +			};
+> +	if (cpc0_cr0 & 0x40) {
+> +		/* uart1 uses the external clock */
+> +		uart1 = ser_clk;
+> +	} else {
+> +		uart1 = cpu / udiv;
+> +	}
 > +
-> +		};
+> +	/* setup the timebase clock to tick at the cpu frequency */
+> +	cpc0_cr1 = cpc0_cr1 & ~ 0x00800000;
+> +	mtdcr(0xb2, cpc0_cr1);
+> +	tb = cpu;
 > +
-> +		EBC0: ebc {
-> +			compatible = "ibm,ebc-405gp", "ibm,ebc";
-> +			dcr-reg = <012 2>;
-> +			#address-cells = <2>;
-> +			#size-cells = <1>;
-> +			clock-frequency = <0>; /* Filled in by zImage */
+> +	dt_fixup_cpu_clocks(cpu, tb, 0);
+> +	dt_fixup_clock("/plb", plb);
+> +	dt_fixup_clock("/plb/opb", opb);
+> +	dt_fixup_clock("/plb/ebc", ebc);
+> +	dt_fixup_clock("/plb/opb/serial@300", uart0);
+> +	dt_fixup_clock("/plb/opb/serial@400", uart1);
+> +}
 > +
-> +			sram@0,0 {
-> +				reg = <0 0 80000>;
-> +			};
+> +static void walnut_flashsel_fixup(void)
+> +{
+> +	void *devp, *sram;
+> +	u32 reg_flash[3] = {0x0, 0x0, 0x80000};
+> +	u32 reg_sram[3] = {0x0, 0x0, 0x80000};
+> +	u8 *fpga;
+> +	u8 fpga_brds1 = 0x0;
 > +
-> +			flash@0,80000 {
-> +				device_type = "rom";
-> +				compatible = "direct-mapped";
-> +				probe-type = "JEDEC";
-> +				bank-width = <1>;
-> +				partitions = <0 80000>;
-> +				partition-names = "OpenBIOS";
-> +				reg = <0 80000 80000>;
-> +			};
+> +	devp = finddevice("/plb/ebc/fpga");
+> +	if (!devp)
+> +		fatal("Couldn't locate FPGA node\n\r");
 > +
-> +			ds1743@1,0 {
-> +				/* NVRAM and RTC */
-> +				compatible = "ds1743";
-> +				reg = <1 0 2000>;
-> +			};
+> +	if (getprop(devp, "virtual-reg", &fpga, sizeof(fpga)) != sizeof(fpga))
+> +		fatal("no virtual-reg property\n\r");
 > +
-> +			keyboard@2,0 {
-> +				compatible = "intel,82C42PC";
-> +				reg = <2 0 2>;
-> +			};
+> +	fpga_brds1 = in_8(fpga);
 > +
-> +			ir@3,0 {
-> +				compatible = "ti,TIR2000PAG";
-> +				reg = <3 0 10>;
-> +			};
+> +	printf("FPGA_BRDS1: %08x\n", fpga_brds1);
 > +
-> +			fpga@7,0 {
-> +				compatible = "Walnut-FPGA";
-> +				reg = <7 0 10>;
-> +				virtual-reg = <f0300005>;
-> +			};
-> +		};
-> +	};
+> +	devp = finddevice("/plb/ebc/flash");
+> +	if (!devp)
+> +		fatal("Couldn't locate flash node\n\r");
 > +
-> +	chosen {
-> +		linux,stdout-path = "/plb/opb/serial@300";
-> +	};
-> +};
+> +	if (getprop(devp, "reg", reg_flash, sizeof(reg_flash)) != sizeof(reg_flash))
+> +		fatal("flash reg property has unexpected size\n\r");
+> +
+> +	sram = finddevice("/plb/ebc/sram");
+> +	if (!sram)
+> +		fatal("Couldn't locate sram node\n\r");
+> +
+> +	if (getprop(sram, "reg", reg_sram, sizeof(reg_sram)) != sizeof(reg_sram))
+> +		fatal("sram reg property has unexpected size\n\r");
+> +
+> +	if (fpga_brds1 & 0x1) {
+> +		reg_flash[1] ^= 0x80000;
+> +		reg_sram[1] ^= 0x80000;
+> +	}
+> +
+> +	setprop(devp, "reg", reg_flash, sizeof(reg_flash));
+> +	setprop(sram, "reg", reg_sram, sizeof(reg_sram));
+> +}
+> +
+> +static void walnut_fixups(void)
+> +{
+> +	ibm4xx_fixup_memsize();
+> +	ibm405gp_fixup_clocks(33330000, 0xa8c000);
+> +	ibm4xx_quiesce_eth((u32 *)0xef600800, NULL);
+> +	ibm4xx_fixup_ebc_ranges("/plb/ebc");
+> +	walnut_flashsel_fixup();
+> +}
+> +
+> +void platform_init(void)
+> +{
+> +	unsigned long end_of_ram = 0x2000000;
+> +	unsigned long avail_ram = end_of_ram - (unsigned long) _end;
+> +
+> +	simple_alloc_init(_end, avail_ram, 32, 32);
+> +	platform_ops.fixups = walnut_fixups;
+> +	platform_ops.exit = ibm40x_dbcr_reset;
+> +	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
+> +	serial_console_init();
+> +}
 > 
 
 -- 
