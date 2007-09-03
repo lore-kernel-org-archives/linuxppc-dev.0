@@ -1,28 +1,23 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 2752FDDE11
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id C6DA8DDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 00:59:49 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 0349229EC8
+	Tue,  4 Sep 2007 01:57:55 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so257778anc
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Sep 2007 16:28:30 +0200 (CEST)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 06023-10 for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Sep 2007 16:28:27 +0200 (CEST)
-Received: from archvile.prtnl (archvile.prtnl [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id 3FDBE29EB9
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Sep 2007 16:28:27 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: eraseblock-size independent flash rootfs
-Date: Mon, 3 Sep 2007 16:32:12 +0200
+	Mon, 03 Sep 2007 08:57:54 -0700 (PDT)
+Message-ID: <fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
+Date: Mon, 3 Sep 2007 09:57:54 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Domen Puncer" <domen@coderock.org>
+Subject: Re: [RFC PATCH v0.2] net driver: mpc52xx fec
+In-Reply-To: <20070902074143.GB2642@nd47.coderock.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200709031632.13146.david.jander@protonic.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070810095153.GC13994@moe.telargo.com>
+	<20070902074143.GB2642@nd47.coderock.org>
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,42 +28,188 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 9/2/07, Domen Puncer <domen@coderock.org> wrote:
+> Hi!
+>
+> new in this version:
+> - fixed stuff that was commented on.
+> - added 7-wire support (compile at least, if someone has the hardware,
+>         please test!)
+> - ethtool support
 
-Hi,
+Thanks for this work Domen, comments below...
 
-I have been looking for a practical way to build an embedded system with a 
-root filesystem which can be modified file-by-file eventually (to apply small 
-software patches for example), but is independent of flash attributes such as 
-erase-block size (which happens to change sometimes from one production 
-series to another without much notice, for instance S29GL256M11 with 64k 
-blocks to S29GL256N90 with 128k blocks).
+This is a large patch, and it should be broken up into logical
+changes.  ie. split into dts changes, bestcomm changes, fec driver and
+mdio driver.  Easier to review that way.  The bestcomm and dts changes
+don't need to go to the netdev list.
 
-The problem with using plain jffs2 until now is that we cannot make one jffs2 
-image for both hardware versions, since the image has to be generated 
-specifying the erase-block size.
+> --- /dev/null
+> +++ linux.git/drivers/net/fec_mpc52xx/Kconfig
+> @@ -0,0 +1,25 @@
+> +menu "MPC5200 Networking Options"
+> +       depends PPC_MPC52xx && NET_ETHERNET
+> +
+> +config FEC_MPC52xx
+> +       tristate "FEC Ethernet"
+> +       depends on NET_ETHERNET
+> +       select PPC_BESTCOMM
+> +       select PPC_BESTCOMM_FEC
+> +       select CRC32
+> +       ---help---
+> +         This option enables support for the MPC5200's on-chip
+> +         Fast Ethernet Controller
+> +
+> +config FEC_MPC52xx_MDIO
+> +       bool "Use external Ethernet MII PHY"
+> +       depends on FEC_MPC52xx
+> +       select PHYLIB
+> +       default y
+> +       ---help---
+> +         The MPC5200's FEC can connect to the Ethernet either with
+> +         an external MII PHY chip or 10 Mbps 7-wire interface
+> +         (Motorola? industry standard).
+> +         If your board uses an external PHY, say y, else n.
 
-I am considering on using a read-only filesystem like squashfs or cramfs and, 
-layered on top of it, a read-only filesystem like jffs2 for modifications.
-The jffs2 partition could just start out as empty flash, so it doesn't matter 
-much if the device has 64k erase-blocks or 128k eraseblocks... it just has to 
-start at an 128k boundary.
+This option should change.  Either build the MDIO driver into the FEC
+driver unconditionally and drop this option, or make the MDIO driver
+independent from the FEC driver (it does use the MDIO bus
+infrastructure after all).  Either way the FEC driver should detect
+the phy type at runtime (possibly based on the presence/absence of a
+phy-handle property) instead of being hard compiled.  5200 support is
+now multiplatform after all.
 
-I have to make the following choices and I am curious if anybody has something 
-to tell against or in favour of any of them:
+If you drop the MDIO config option, then I'd also consider eliminating
+driver/net/fec_mpc52xx/Kconfig entirely and rolling the single
+MPC52xx_FEC option into drivers/net/Kconfig.
 
-1.- Which read-only fs to use: squashfs or cramfs?
-Squashfs seems newer and better performing, so I guess I'll go with that one.
+> +
+> +endmenu
+> Index: linux.git/drivers/net/fec_mpc52xx/Makefile
+> ===================================================================
+> --- /dev/null
+> +++ linux.git/drivers/net/fec_mpc52xx/Makefile
+> @@ -0,0 +1,7 @@
+> +obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx.o
+> +
+> +fec_mpc52xx-objs := fec.o
+> +
+> +ifeq ($(CONFIG_FEC_MPC52xx_MDIO),y)
+> +fec_mpc52xx-objs += fec_phy.o
+> +endif
 
-2.- Which union-fs to use: unionfs, aufs or mini_fo?
-Don't know which to choose. Unionfs is in latest -mm trees and also supports 
-2.4 kernels (one of our products still runs on 2.4.xx), so chances are it 
-gets part of the main tree some day... but aufs seems more popular, and many 
-developers seem to switch from unionfs to aufs lately, but I don't seem to 
-find much information about this.
+Hmm, is the phy driver separate or not?  You've got the logic in place
+to probe MDIO separately from the FEC driver, yet they are linked as a
+single driver.
 
-Any suggestions are welcome.
+> Index: linux.git/drivers/net/fec_mpc52xx/fec.c
+> ===================================================================
+> --- /dev/null
+> +++ linux.git/drivers/net/fec_mpc52xx/fec.c
+> @@ -0,0 +1,1127 @@
+> +/*
+> + * drivers/drivers/net/fec_mpc52xx/fec.c
+> + *
+> + * Driver for the MPC5200 Fast Ethernet Controller
+> + *
+> + * Originally written by Dale Farnsworth <dfarnsworth@mvista.com> and
+> + * now maintained by Sylvain Munaut <tnt@246tNt.com>
+> + *
+> + * Copyright (C) 2007  Domen Puncer, Telargo, Inc.
+> + * Copyright (C) 2007  Sylvain Munaut <tnt@246tNt.com>
+> + * Copyright (C) 2003-2004  MontaVista, Software, Inc.
+> + *
+> + * This file is licensed under the terms of the GNU General Public License
+> + * version 2. This program is licensed "as is" without any warranty of any
+> + * kind, whether express or implied.
+> + *
+> + */
+> +
+> +#include <linux/module.h>
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/types.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/errno.h>
+> +#include <linux/init.h>
+> +#include <linux/crc32.h>
+> +#include <linux/hardirq.h>
+> +#include <linux/delay.h>
+> +
+> +#include <linux/netdevice.h>
+> +#include <linux/etherdevice.h>
+> +#include <linux/ethtool.h>
+> +#include <linux/skbuff.h>
+> +
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
+> +#include <asm/io.h>
+> +#include <asm/delay.h>
+> +#include <asm/mpc52xx.h>
+> +
+> +#include <sysdev/bestcomm/bestcomm.h>
+> +#include <sysdev/bestcomm/fec.h>
+> +
+> +#include "fec.h"
+> +
+> +#define DRIVER_NAME "mpc52xx-fec"
+> +
+> +static irqreturn_t fec_interrupt(int, void *);
+> +static irqreturn_t fec_rx_interrupt(int, void *);
+> +static irqreturn_t fec_tx_interrupt(int, void *);
+> +static struct net_device_stats *fec_get_stats(struct net_device *);
+> +static void fec_set_multicast_list(struct net_device *dev);
+> +static void fec_hw_init(struct net_device *dev);
+> +static void fec_stop(struct net_device *dev);
+> +static void fec_start(struct net_device *dev);
+> +static void fec_reset(struct net_device *dev);
 
-Greetings,
+Nit: Are all these forward decls needed?
+
+> +
+> +static u8 mpc52xx_fec_mac_addr[6];
+
+Why isn't this part of struct fec_priv?
+
+> +static const u8 null_mac[6];
+
+null_mac?!?  Just for comparing a mac addr against 0?
+
+<snip>
+
+> +#ifdef CONFIG_FEC_MPC52xx_MDIO
+
+Once again; don't make this a conditional compile; detect at runtime.
+
+<snip>
+
+> +static void __init fec_str2mac(char *str, unsigned char *mac)
+> +{
+> +       int i;
+> +       u64 val64;
+> +
+> +       val64 = simple_strtoull(str, NULL, 16);
+> +
+> +       for (i = 0; i < 6; i++)
+> +               mac[5-i] = val64 >> (i*8);
+> +}
+> +
+> +static int __init mpc52xx_fec_mac_setup(char *mac_address)
+> +{
+> +       fec_str2mac(mac_address, mpc52xx_fec_mac_addr);
+> +       return 0;
+> +}
+
+fec_str2mac is called in *1* place.  I'd roll it into mpc52xx_fec_mac_setup.
+
+> +
+> +__setup("mpc52xx-mac=", mpc52xx_fec_mac_setup);
+> +
+
+
 
 -- 
-David Jander
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
