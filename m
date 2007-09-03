@@ -2,23 +2,23 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2FFABDDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 08:52:20 +1000 (EST)
-In-Reply-To: <20070903161156.306700@gmx.net>
-References: <20070831175006.17240@gmx.net>
-	<20070903013431.GG31499@localhost.localdomain>
-	<1188808900.5972.133.camel@localhost.localdomain>
-	<ad58529dfd4a248ab904c2c5871258bf@kernel.crashing.org>
-	<20070903101234.GA12212@localhost.localdomain>
-	<20070903161156.306700@gmx.net>
+	by ozlabs.org (Postfix) with ESMTP id DBAB7DDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 09:12:50 +1000 (EST)
+In-Reply-To: <46DC126C.9060603@freescale.com>
+References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
+	<46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+	<46DC126C.9060603@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6858c7a36ed061265937daa7b14cc5ac@kernel.crashing.org>
+Message-Id: <6c73dab2fcf21490edc64b9b7ec52295@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] AmigaOne device tree source v2
-Date: Tue, 4 Sep 2007 00:52:02 +0200
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in QE,
+	register mmc_spi stub
+Date: Tue, 4 Sep 2007 01:12:20 +0200
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,53 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Yeah, PCI is a special case for Linux.  Maybe add a "pciclass,XXXX"
->>> compatible property though, for good measure.  Anything else isn't
->>> all that useful I think.
-> Wouldn't that be the same as the class-code property?
+>> Not at all.  The device tree describe how the hardware _is_
+>> set up (after firmware, bootloader etc.); now how it _should
+>> be_ set up by the kernel.
+>
+> I agree with this general sentiment, but in the case of QE pin 
+> configuration, then device tree, in a sense, does contain how the 
+> hardware is set up.  The par_io section in the device tree describes 
+> they layout of the wiring between the SOC and peripherals.  If the 
+> par_io registers are not programmed correctly, the SOC won't be able 
+> to communicate with the peripheral.
+>
+> Sure, the kernel currently reads the device tree and programs the 
+> par_io registers accordingly, but that doesn't mean the information 
+> *shouldn't* be in the device tree.
 
-Sure, except it is a different property.  If you use the "class-code"
-thing, you really should implement _all_ of the PCI binding's required
-properties.  If you don't (since Linux doesn't use it anyway), it might
-still be nice to have a "compatible" property at least (since that is
-what is used for figuring out what device driver to use for this device
-node).  Linux doesn't currently use that either, so you don't have to,
-but you could put it there and it would make sense, that's all.
+It is fine if the device tree describes how things are wired together;
+that's part of the device tree's purpose, after all.
 
->> Indeed, since PCI is probable, it's unclear whether these device nodes
->> are even necessary at all.  Depends on whether there's anything
->> interesting in the omitted interrupt routing information.
-> Well, I mainly specified the device node for the IDE controller, 
-> because
-> it works in compatible mode and thus the IDE driver needs to know about
-> the I/O ports. I guess the driver doesn't probe the BARs, if the
-> controller is configured for compatible mode (and AFAIK a VIA IDE
-> controller cannot be made work in fully native mode).
+It is not fine if the device tree says _how to_ configure the hardware;
+you are supposed to put your device drivers elsewhere, not in the
+device tree!
 
-Yeah most of those are nasty.
+>> It would make a lot of sense to do this work in the firmware
+>> instead, but it doesn't make sense at all to put this stuff
+>> into the device tree.
+>
+> 1) If the firmware does configure the pins, then the device tree 
+> *will* describe how the hardware is set up.
 
-If the driver grabs some hardcoded legacy I/O ranges if the controller
-is in legacy mode, the only thing that showing those ranges in the
-"reg" property helps are _other_ parts of the kernel that might care,
-not that driver since it hardcodes the address; and those other parts
-of the kernel shouldn't care anyway, since _they_ shouldn't use any
-hardcoded ranges either!
+Yes.  It won't show pario register contents though.
 
-If those addresses really show up in the PCI BARs (most controllers
-don't do that in legacy mode), the kernel's own PCI probing will
-see it already; if they aren't in BARs, it is a bit tricky to encode
-that correctly in the "reg" (it's perfectly well-defined, just a bit
-hard to get it right).
+> 2) How would the firmware know how to do board configuration if it 
+> doesn't have the instructions in the device tree?
 
-> The interrupts for the IDE controller are another story. Judging from
-> what some developers wrote on this mailing list, there doesn't seem to
-> be a way to define legacy IDE interrupts (14 & 15) for a PCI device 
-> node.
+This kind of thing is typically hardcoded into the firmware (just like
+the device tree is) -- just put it somewhere _next to_ the device tree,
+not _in_ it.  The device tree is not a config file for the firmware; it
+is an interface between the firmware and its client (an OS, typically).
 
-There is no such thing as "interrupt 14 and 15" on PCI.  You can use
-the interrupt mapping recommended practice to show two interrupts
-(and their polarity, and how they are routed to the relevant interrupt
-controller) in the IDE node.
+> Besides, every other board does it's par_io configuration based on the 
+> device tree.  So if Anton is going to break that pattern, we should be 
+> talking about moving all that code into U-boot, instead of just 
+> putting in a one-time exception (especially since the patch contains 
+> no explanation as to why these par_io pins are being configured 
+> differently than every other board).
+
+Yes, I definitely didn't mean to single out Anton's patch, sorry if it
+sounded that way.
 
 
 Segher
