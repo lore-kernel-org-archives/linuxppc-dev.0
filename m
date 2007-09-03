@@ -1,26 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 0EEDFDDE3E
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp109.biz.mail.mud.yahoo.com (smtp109.biz.mail.mud.yahoo.com
+	[68.142.201.178]) by ozlabs.org (Postfix) with SMTP id 91FBDDDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 02:41:52 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so259610anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 03 Sep 2007 09:41:51 -0700 (PDT)
-Message-ID: <fa686aa40709030941x1dee3898ud881497b534cc6aa@mail.gmail.com>
-Date: Mon, 3 Sep 2007 10:41:51 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [RFC PATCH v0.2] net driver: mpc52xx fec
-In-Reply-To: <9e4733910709030909j50710faaw96c95cb369a810b3@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<9e4733910709030909j50710faaw96c95cb369a810b3@mail.gmail.com>
-Cc: netdev@vger.kernel.org, Domen Puncer <domen@coderock.org>,
-	linuxppc-embedded@ozlabs.org
+	Tue,  4 Sep 2007 05:27:37 +1000 (EST)
+In-Reply-To: <F3D55679E1DCFF49A57570501B70475F070D83BC@CL5EXBE04.ad2.softcom.biz>
+References: <F3D55679E1DCFF49A57570501B70475F070D83BC@CL5EXBE04.ad2.softcom.biz>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: multipart/alternative; boundary=Apple-Mail-2-86657980
+Message-Id: <2E051C72-669C-43A2-AB4D-8BBA4907B5BE@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Breakpoint is not hitting for Kernel Debugging
+Date: Mon, 3 Sep 2007 12:20:55 -0700
+To: dnl <ssaravanan@mail2web.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,38 +23,107 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/3/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 9/3/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On 9/2/07, Domen Puncer <domen@coderock.org> wrote:
-> > > Hi!
-> > >
-> > > new in this version:
-> > > - fixed stuff that was commented on.
-> > > - added 7-wire support (compile at least, if someone has the hardware,
-> > >         please test!)
-> > > - ethtool support
-> >
-> > Thanks for this work Domen, comments below...
-> >
-> > This is a large patch, and it should be broken up into logical
-> > changes.  ie. split into dts changes, bestcomm changes, fec driver and
-> > mdio driver.  Easier to review that way.  The bestcomm and dts changes
-> > don't need to go to the netdev list.
+
+--Apple-Mail-2-86657980
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	delsp=yes;
+	format=flowed
+
+
+On Sep 3, 2007, at 7:02 AM, dnl wrote:
+
+> Hi all,
 >
-> A similar patch that is already broken up is available for Efika.
-> http://dev.gentoo.org/~nixnut/efika/efika-patches-2.6.22.tar.bz2
+> I am using uboot and montavista kernel for our custom MPC8555CDS  
+> board.
 
-No.  That series is Sylvain's full patchset including the old FEC
-driver.  Domen's patch is a reworked FEC driver, and it only replaces
-patch 0008 from that series.  However, this patch should be split up
-further because it makes changes to both the device tree and the
-bestcomm code.
+You should contact MontaVista first, since we really
+don't know what your source code looks like.  I'm
+assuming it's a ppc, not powerpc, although the patch
+is similar for either choice.  I'd suggest this as a starting
+point:
 
-Cheers,
-g.
+diff -Naru linux-2.6.21/arch/ppc/kernel/head_fsl_booke.S linux-2.6.21- 
+dbg/arch/ppc/kernel/head_fsl_booke.S
+--- linux-2.6.21/arch/ppc/kernel/head_fsl_booke.S       2007-07-05  
+13:08:16.000000000 -0800
++++ linux-2.6.21-dbg/arch/ppc/kernel/head_fsl_booke.S   2007-07-10  
+03:45:33.000000000 -0800
+@@ -317,6 +322,16 @@
+         /* clear any residual debug events */
+         li      r2,-1
+         mtspr   SPRN_DBSR,r2
++#else
++       /* Enable BDI200 debugging beyond this point for "normal"
++        * kernel debugging.  If you are debugging code prior to this
++        * point, it needs to be done with more specific set up
++        * of configuration files and boot rom.
++        */
++       mfmsr   r2
++       ori     r2, r2, MSR_DE
++       mtmsr   r2
++       isync
+#endif
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Your first breakpoint should be a hard breakpoint
+at the label start_kernel.  You can then switch to
+soft breakpoints and continue your debugging.
+
+Ultimate Solutions have some useful white papers
+on kernel debugging with the BDI2000 (that some
+people have plagiarized).  Check out ultsol.com
+
+Good Luck.
+
+	-- Dan
+
+
+--Apple-Mail-2-86657980
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=ISO-8859-1
+
+<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
+-khtml-line-break: after-white-space; "><BR><DIV><DIV>On Sep 3, 2007, at =
+7:02 AM, dnl wrote:</DIV><BR =
+class=3D"Apple-interchange-newline"><BLOCKQUOTE type=3D"cite"><P><FONT =
+size=3D"2">Hi all,<BR> <BR> I am using uboot and montavista kernel for =
+our custom MPC8555CDS board.<BR></FONT></P></BLOCKQUOTE><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV>You should contact MontaVista =
+first, since we really</DIV><DIV>don't know what your source code looks =
+like.=A0 I'm</DIV><DIV>assuming it's a ppc, not powerpc, although the =
+patch</DIV><DIV>is similar for either choice.=A0 I'd=A0suggest this as a =
+starting</DIV><DIV>point:</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>diff -Naru =
+linux-2.6.21/arch/ppc/kernel/head_fsl_booke.S =
+linux-2.6.21-dbg/arch/ppc/kernel/head_fsl_booke.S</DIV><DIV>--- =
+linux-2.6.21/arch/ppc/kernel/head_fsl_booke.S=A0 =A0 =A0=A0 2007-07-05 =
+13:08:16.000000000 -0800</DIV><DIV>+++ =
+linux-2.6.21-dbg/arch/ppc/kernel/head_fsl_booke.S=A0=A0 2007-07-10 =
+03:45:33.000000000 -0800</DIV><DIV>@@ -317,6 +322,16 @@</DIV><DIV>=A0 =A0 =
+=A0 =A0 /* clear any residual debug events */</DIV><DIV>=A0 =A0 =A0 =A0 =
+li=A0 =A0 =A0 r2,-1</DIV><DIV>=A0 =A0 =A0 =A0 mtspr=A0=A0 =
+SPRN_DBSR,r2</DIV><DIV>+#else=A0 </DIV><DIV>+=A0 =A0 =A0=A0 /* Enable =
+BDI200 debugging beyond this point for "normal"</DIV><DIV>+=A0 =A0 =A0 =A0=
+ * kernel debugging.=A0 If you are debugging code prior to =
+this</DIV><DIV>+=A0 =A0 =A0 =A0 * point, it needs to be done with more =
+specific set up</DIV><DIV>+=A0 =A0 =A0 =A0 * of configuration files and =
+boot rom.</DIV><DIV>+=A0 =A0 =A0 =A0 */</DIV><DIV>+=A0 =A0 =A0=A0 =
+mfmsr=A0=A0 r2</DIV><DIV>+=A0 =A0 =A0=A0 ori=A0 =A0=A0 r2, r2, =
+MSR_DE</DIV><DIV>+=A0 =A0 =A0=A0 mtmsr=A0=A0 r2</DIV><DIV>+=A0 =A0 =A0=A0 =
+isync</DIV><DIV> #endif</DIV><DIV><BR><BLOCKQUOTE =
+type=3D"cite"></BLOCKQUOTE></DIV>Your first breakpoint should be a hard =
+breakpoint<DIV>at the label start_kernel.=A0 You can then switch =
+to</DIV><DIV>soft breakpoints and continue your debugging.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>Ultimate Solutions have =
+some useful white papers</DIV><DIV>on kernel debugging with the BDI2000 =
+(that some</DIV><DIV>people have=A0plagiarized).=A0 Check out =
+ultsol.com</DIV><DIV><BR><DIV>Good Luck.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV><SPAN =
+class=3D"Apple-tab-span" style=3D"white-space:pre">	</SPAN>-- =
+Dan</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV></DIV></BODY></HTML>=
+
+--Apple-Mail-2-86657980--
