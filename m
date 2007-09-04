@@ -1,20 +1,14 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B60A2DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 16:39:04 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1ISS3u-0005gb-7t
-	for linuxppc-dev@ozlabs.org; Mon, 03 Sep 2007 23:38:58 -0700
-Message-ID: <12472670.post@talk.nabble.com>
-Date: Mon, 3 Sep 2007 23:38:58 -0700 (PDT)
-From: sivaji <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Regarding immap_86xx.h
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DB143DDE0F
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 19:49:57 +1000 (EST)
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 04 Sep 2007 11:49:54 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20070904094954.303440@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Need Pegasos I/II device tree
+To: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
 Hi,
-         I am using 2.6.23-rc3 kernel. In this kernel immap_86xx.h file was
-loacted in the path: include/asm-powerpc/immap_86xx.h.
-        
-          This file contains only PCI and Global utility Regsiters
-Declarations. LocalBus Controller, Local Access Registers and Rapid IO
-Register Declarations are missing.   Where i can find these registers
-declaration and tell the reason why the CCSRBAR Registers are missing in the
-file immap_86xx.h
 
-by
-Sivaji
-           
+Can somebody post the device tree of a Pegasos I (prefered) or a Pegasos II
+(or any other similar machine) here, please.
+
+Thanks!
+
+regards,
+
+Gerhard
 -- 
-View this message in context: http://www.nabble.com/Regarding-immap_86xx.h-tf4375801.html#a12472670
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
+Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
