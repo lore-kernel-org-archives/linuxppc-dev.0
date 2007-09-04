@@ -1,16 +1,21 @@
-Return-Path: <mgaouar@solacom.com>
-Received: from solacom.com (unknown [209.217.64.195])
-	by ozlabs.org (Postfix) with ESMTP id 2FE95DDE16
+Return-Path: <wolfgang.reissnegger@xilinx.com>
+Received: from outbound3-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 78B57DDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Sep 2007 05:53:17 +1000 (EST)
+	Wed,  5 Sep 2007 07:34:16 +1000 (EST)
+Date: Tue, 04 Sep 2007 14:33:23 -0700
+From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C7EF2D.3B9E7EAD"
-Subject: Problems with MPC8272ADS
-Date: Tue, 4 Sep 2007 15:53:15 -0400
-Message-ID: <9A1468054ED2FD40907CC3B2C1871D400106CC73@hermes.versatel.com>
-From: "Manil Gaouar" <mgaouar@solacom.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Thomas Gerlach <gerlach@kip.uni-heidelberg.de>
+Subject: Re: Newbie on embedded linux on PPC: error: cannot find boot.o
+References: <46DD65BF.5090304@kip.uni-heidelberg.de>
+In-Reply-To: <46DD65BF.5090304@kip.uni-heidelberg.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <20070904213339.D3DB7788046@mail56-fra.bigfish.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,118 +26,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Thomas,
 
-------_=_NextPart_001_01C7EF2D.3B9E7EAD
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Xilinx is building the tools in the EDK to work with VxWorks and for Standalone systems. In order to compile a Linux kernel you need to get a toolchain from one of the Third Party vendors, such as MontaVista. They have the correct linker scripts for building a kernel.
 
-Hi,
+Cheers,
+   Wolfgang
 
-=20
-
-I am a bit newbie in this. I tried compiling Linux 2.4 using
-ADS8272_deconfig from the kernel 2.6 and I have many compilation errors.
-Are the deconfig files from 2.4 to 2.6 that different, or can I use the
-2.6 file with little changes???
-
-=20
-
-I don't understand why there is support for this board in 2.6 and not in
-2.4, since Denx recommend 2.4.
-
-=20
-
-Thx for your help!
-
-
-------_=_NextPart_001_01C7EF2D.3B9E7EAD
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am a bit newbie in this. I tried compiling Linux =
-2.4 using
-ADS8272_deconfig from the kernel 2.6 and I have many compilation errors. =
-Are
-the deconfig files from 2.4 to 2.6 that different, or can I use the 2.6 =
-file
-with little changes???<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I don&#8217;t understand why there is support for =
-this board
-in 2.6 and not in 2.4, since Denx recommend =
-2.4.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thx for your help!<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C7EF2D.3B9E7EAD--
+Thomas Gerlach wrote:
+> hi folks,
+> 
+> 
+> my name is thomas trying to make embedded linux run on a powerpc, but
+> we've got special boards here, although we use a xilinx virtex4
+> fpga...
+> 
+> as you said in the nabble-thread (see subject), i set up edk9.1
+> software platform settings und ran libgen to get the xparameters*
+> files. i copied those bsp files into the kernel tree (i use your
+> kernel linux-2.6-virtex from git.secretlabs.ca/git). after
+> configuring the kernel settigs, i try
+> 
+> $ make ARCH=ppc CROSS_COMPILE=powerpc-eabi-
+> 
+> what i get is the following output:
+> 
+>>   CHK     include/linux/version.h
+>>   CHK     include/linux/utsrelease.h
+>>   CALL    scripts/checksyscalls.sh
+>>   CHK     include/linux/compile.h
+>>   LD      init/mounts.o
+>> powerpc-eabi-ld: cannot find boot.o
+>> make[1]: *** [init/mounts.o] Error 1
+>> make: *** [init] Error 2
+> 
+> so, i searched for boot.o (it exists) and even copied it into several
+> dirs of the linux kernel tree (where i thought i would make sense),
+> but the problem still remains.
+> 
+> googling results in
+> 
+> http://www.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&getPagePath=17462&BV_SessionID=@@@@1197140711.1188909240@@@@&BV_EngineID=cccgaddllgmfkflcefeceihdffhdfkf.0
+> 
+> 
+> and this, too, doesn't take me further in solving the problem.
+> 
+> i hope you can help me.
+> 
+> many thanks in advance,
+> 
+> kind regards
+> thomas gerlach
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
