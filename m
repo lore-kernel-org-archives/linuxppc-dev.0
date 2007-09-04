@@ -1,20 +1,19 @@
-Return-Path: <bbuchli@xes-inc.com>
-Received: from xes-mad.com (xes-mad.com [216.165.139.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 06410DDE18
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 00:39:18 +1000 (EST)
-From: Ben Buchli <bbuchli@xes-inc.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: ppc Floating Point support status
-Date: Tue, 4 Sep 2007 09:40:04 -0500
-References: <200708221337.21729.bbuchli@xes-inc.com>
-	<662F11BD-C521-4914-966C-8FCB84D5F808@kernel.crashing.org>
-In-Reply-To: <662F11BD-C521-4914-966C-8FCB84D5F808@kernel.crashing.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
+	by ozlabs.org (Postfix) with ESMTP id CB2A1DDDF2
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 00:48:02 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so300994anc
+	for <linuxppc-dev@ozlabs.org>; Tue, 04 Sep 2007 07:47:58 -0700 (PDT)
+Message-ID: <fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
+Date: Tue, 4 Sep 2007 08:47:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Thomas Gerlach" <gerlach@kip.uni-heidelberg.de>
+Subject: Re: Newbie on embedded linux on PPC: error: cannot find boot.o
+In-Reply-To: <46DD6238.6030204@kip.uni-heidelberg.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709040940.04801.bbuchli@xes-inc.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <46DD6238.6030204@kip.uni-heidelberg.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,38 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 22 August 2007 15:52:09 Kumar Gala wrote:
-> On Aug 22, 2007, at 1:37 PM, Ben Buchli wrote:
-> > Hello everybody,
-> > I was wondering what the status was on supporting floating-point
-> > instructions
-> > for the mpc8548.  I found the suggested patch:
-> > http://patchwork.ozlabs.org/linuxppc/patch?
-> > order=patch&filter=none&id=9455,
-> > but I'm not sure for what kernel version this is and when it will be
-> > officially supported.
-> >
-> > Thanks a lot for your help!
-> >
-> > Please CC to me (bbuchli at xes-inc.com) as I haven't subscribed to
-> > this list.
+On 9/4/07, Thomas Gerlach <gerlach@kip.uni-heidelberg.de> wrote:
+> hi folks,
 >
-> I thing these are still up in the air based on having some sense of
-> testing related to them.
 >
-> - k
+> my name is thomas trying to make embedded linux run on a powerpc, but we've got special boards here, although we use a xilinx virtex4 fpga...
+>
+> as you said in the nabble-thread (see subject), i set up edk9.1 software platform settings und ran libgen to get the xparameters* files. i copied those bsp files into the kernel tree (i use your kernel linux-2.6-virtex from git.secretlabs.ca/git). after configuring the kernel settigs, i try
+>
+> $ make ARCH=ppc CROSS_COMPILE=powerpc-eabi-
 
-Kumar,
-thanks for getting back with me.
-We're doing some early performance testing on one of our boards with an 
-mpc8548e. I was wondering if there's a snapshot available that we could use 
-and maybe do some working/testing on.
-Thanks a lot.
+You should be using a Linux cross compiler, not powerpc-eabi-.  The
+Xilinx cross compiler will not work to compile Linux kernels.
 
-Ben
+You can build yourself a cross compiler using 'crosstool':
+http://www.kegel.org/crosstool.
+
+Alternately, you can download ELDK:
+http://www.denx.de/wiki/view/DULG/ELDKAvailability
+
+Cheers,
+g.
 
 -- 
---
-Ben Buchli
-Extreme Engineering Solutions, Inc.
-608-833-1155 ext 202
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
