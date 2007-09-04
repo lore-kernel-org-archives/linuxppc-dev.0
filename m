@@ -1,20 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id CB2A1DDDF2
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 00:48:02 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so300994anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Sep 2007 07:47:58 -0700 (PDT)
-Message-ID: <fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
-Date: Tue, 4 Sep 2007 08:47:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Thomas Gerlach" <gerlach@kip.uni-heidelberg.de>
-Subject: Re: Newbie on embedded linux on PPC: error: cannot find boot.o
-In-Reply-To: <46DD6238.6030204@kip.uni-heidelberg.de>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id CEC95DDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 02:02:10 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 4 Sep 2007 18:02:06 +0200
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: "atomic" 64-bit math on 32-bit ppc's?
+Message-ID: <20070904160206.GA12698@iram.es>
+References: <46DD3CE2.4060301@genesi-usa.com> <20070904113937.GA3994@iram.es>
+	<46DD500B.4020207@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46DD6238.6030204@kip.uni-heidelberg.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46DD500B.4020207@genesi-usa.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/4/07, Thomas Gerlach <gerlach@kip.uni-heidelberg.de> wrote:
-> hi folks,
->
->
-> my name is thomas trying to make embedded linux run on a powerpc, but we've got special boards here, although we use a xilinx virtex4 fpga...
->
-> as you said in the nabble-thread (see subject), i set up edk9.1 software platform settings und ran libgen to get the xparameters* files. i copied those bsp files into the kernel tree (i use your kernel linux-2.6-virtex from git.secretlabs.ca/git). after configuring the kernel settigs, i try
->
-> $ make ARCH=ppc CROSS_COMPILE=powerpc-eabi-
+On Tue, Sep 04, 2007 at 01:31:07PM +0100, Matt Sealey wrote:
+> 
+> Gabriel Paubert wrote:
+> >On Tue, Sep 04, 2007 at 12:09:22PM +0100, Matt Sealey wrote:
+> >>Hi guys,
+> >>
+> >>The Solaris PPC code drop included most of these functions for 32-bit ops 
+> >>on
+> >>32-bit PPC architectures but the 64-bit operations are not present. What I
+> >>a not clear on is the operation of lwarx and stwcx. and if they will work 
+> >>if
+> >>you are doing operations on two words at a time.
+> >
+> >No. There is a single reservation for a single word.
+> 
+> This is what I gathered from the programming environments manual at least.
 
-You should be using a Linux cross compiler, not powerpc-eabi-.  The
-Xilinx cross compiler will not work to compile Linux kernels.
+Well, that's because it is fundamentally impossible to 
+have more than one, what would the hardware do if the second
+update fails after the first has succeeded?
 
-You can build yourself a cross compiler using 'crosstool':
-http://www.kegel.org/crosstool.
+> 
+> >the 64 bit operations inside a spinlock on PPC32, and then select the
+> >number /location of spinlock(s) based on your needs, from one global
+> >per machine to one per 64 bit variable if you find excessive contention.
+> 
+> Okay that makes sense, but it would have to be a super global big lock,
+> I don't think the code is there in ZFS to give every 64-bit variable it's
+> own dedicated spinlock (kind of an overhaul) and I'm trying to be fast..
 
-Alternately, you can download ELDK:
-http://www.denx.de/wiki/view/DULG/ELDKAvailability
+I don't know at all the ZFS code, not any filesystem code for the
+matter. But how many spinlocks would you have to take and release 
+per actual disk operation?
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	Regards,
+	Gabriel
