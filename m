@@ -1,21 +1,21 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
-	by ozlabs.org (Postfix) with ESMTP id 919D2DDE1A
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 21:54:46 +1000 (EST)
-Received: from mail5.sony.co.jp (localhost [127.0.0.1])
-	by mail5.sony.co.jp (R8/Sony) with ESMTP id l84BshBs026860
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 20:54:43 +0900 (JST)
+Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
+	by ozlabs.org (Postfix) with ESMTP id 49C4CDDF16
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 21:54:56 +1000 (EST)
+Received: from mail34.sony.co.jp (localhost [127.0.0.1])
+	by mail34.sony.co.jp (R8/Sony) with ESMTP id l84Bst7B025082
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 20:54:55 +0900 (JST)
 Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
-	by mail5.sony.co.jp (R8/Sony) with SMTP id l84Bshbd026849
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 20:54:43 +0900 (JST)
-Message-ID: <46DD4777.8050402@am.sony.com>
-Date: Tue, 04 Sep 2007 04:54:31 -0700
+	by mail34.sony.co.jp (R8/Sony) with SMTP id l84BssnR025073
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 20:54:54 +0900 (JST)
+Message-ID: <46DD4783.9040103@am.sony.com>
+Date: Tue, 04 Sep 2007 04:54:43 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
-Subject: [patch 1/2] PS3: Clear SPU Class 0 interrupts in handler
+Subject: [patch 2/2] Cell: Wrap master run control bit
 Content-Type: text/plain; charset=UTF-8
-Cc: "Noguchi, Masato" <Masato.Noguchi@jp.sony.com>,
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>,
 	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,89 +30,214 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 
-Fix a bug that causes the PS3 to hang on the SPU Class 0 interrupt.
+Add platform specific SPU run control routines.
 
-The Cell BE Architecture spec states that the SPU MFC Class 0 interrupt
-is delivered as a pulse.  The current spu interrupt handler assumes this
-behavior and does not clear the interrupt status.
-
-The PS3 hypervisor visualizes all SPU interrupts as level, and on return
-from the interrupt handler the hypervisor will deliver a new virtual
-interrupt for any unmasked interrupts which for which the status has not
-been cleared.  This fix clears the interrupt status in the interrupt
-handler.
+The current spufs_run_spu() implementation uses the SPU master
+run control bit (MFC_SR1[S]) to control SPE execution, but the
+PS3 hypervisor does not support the use of this feature.  This
+change adds run control wrapper routines.  The  bare metal
+routines use the master run control bit, and the PS3 specific
+routines use the priv2 run control register.
 
 Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
 
 Arnd, please consider for 2.6.24.
-Tested on QS20, and seems OK.
 
- arch/powerpc/platforms/cell/spu_base.c |   23 +++++++++++++++--------
- include/asm-powerpc/spu.h              |    2 +-
- 2 files changed, 16 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/cell/spu_manage.c        |   15 +++++++++++++++
+ arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 ++++++
+ arch/powerpc/platforms/cell/spufs/hw_ops.c      |   10 ++++++++++
+ arch/powerpc/platforms/cell/spufs/run.c         |    4 ++--
+ arch/powerpc/platforms/cell/spufs/spufs.h       |    1 +
+ arch/powerpc/platforms/ps3/spu.c                |   14 ++++++++++++++
+ include/asm-powerpc/spu_priv1.h                 |   15 +++++++++++++++
+ 7 files changed, 63 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -236,27 +236,34 @@ static irqreturn_t
- spu_irq_class_0(int irq, void *data)
- {
- 	struct spu *spu;
-+	unsigned long stat, mask;
+--- a/arch/powerpc/platforms/cell/spu_manage.c
++++ b/arch/powerpc/platforms/cell/spu_manage.c
+@@ -35,6 +35,7 @@
+ #include <asm/firmware.h>
+ #include <asm/prom.h>
  
- 	spu = data;
--	spu->class_0_pending = 1;
-+
-+	mask = spu_int_mask_get(spu, 0);
-+	stat = spu_int_stat_get(spu, 0);
-+	stat &= mask;
-+
-+	spin_lock(&spu->register_lock);
-+	spu->class_0_pending |= stat;
-+	spin_unlock(&spu->register_lock);
-+
- 	spu->stop_callback(spu);
++#include "spufs/spufs.h"
+ #include "interrupt.h"
  
-+	spu_int_stat_clear(spu, 0, stat);
-+
- 	return IRQ_HANDLED;
+ struct device_node *spu_devnode(struct spu *spu)
+@@ -369,6 +370,18 @@ static int of_destroy_spu(struct spu *sp
+ 	return 0;
  }
  
- int
- spu_irq_class_0_bottom(struct spu *spu)
++static int enable_spu_by_master_run(struct spu_context *ctx)
++{
++	ctx->ops->master_start(ctx);
++	return 0;
++}
++
++static int disable_spu_by_master_run(struct spu_context *ctx)
++{
++	ctx->ops->master_stop(ctx);
++	return 0;
++}
++
+ /* Hardcoded affinity idxs for qs20 */
+ #define QS20_SPES_PER_BE 8
+ static int qs20_reg_idxs[QS20_SPES_PER_BE] =   { 0, 2, 4, 6, 7, 5, 3, 1 };
+@@ -535,5 +548,7 @@ const struct spu_management_ops spu_mana
+ 	.enumerate_spus = of_enumerate_spus,
+ 	.create_spu = of_create_spu,
+ 	.destroy_spu = of_destroy_spu,
++	.enable_spu = enable_spu_by_master_run,
++	.disable_spu = disable_spu_by_master_run,
+ 	.init_affinity = init_affinity,
+ };
+--- a/arch/powerpc/platforms/cell/spufs/backing_ops.c
++++ b/arch/powerpc/platforms/cell/spufs/backing_ops.c
+@@ -285,6 +285,11 @@ static void spu_backing_runcntl_write(st
+ 	spin_unlock(&ctx->csa.register_lock);
+ }
+ 
++static void spu_backing_runcntl_stop(struct spu_context *ctx)
++{
++	spu_backing_runcntl_write(ctx, SPU_RUNCNTL_STOP);
++}
++
+ static void spu_backing_master_start(struct spu_context *ctx)
  {
--	unsigned long stat, mask;
- 	unsigned long flags;
--
--	spu->class_0_pending = 0;
-+	unsigned long stat;
+ 	struct spu_state *csa = &ctx->csa;
+@@ -381,6 +386,7 @@ struct spu_context_ops spu_backing_ops =
+ 	.get_ls = spu_backing_get_ls,
+ 	.runcntl_read = spu_backing_runcntl_read,
+ 	.runcntl_write = spu_backing_runcntl_write,
++	.runcntl_stop = spu_backing_runcntl_stop,
+ 	.master_start = spu_backing_master_start,
+ 	.master_stop = spu_backing_master_stop,
+ 	.set_mfc_query = spu_backing_set_mfc_query,
+--- a/arch/powerpc/platforms/cell/spufs/hw_ops.c
++++ b/arch/powerpc/platforms/cell/spufs/hw_ops.c
+@@ -220,6 +220,15 @@ static void spu_hw_runcntl_write(struct 
+ 	spin_unlock_irq(&ctx->spu->register_lock);
+ }
  
- 	spin_lock_irqsave(&spu->register_lock, flags);
--	mask = spu_int_mask_get(spu, 0);
--	stat = spu_int_stat_get(spu, 0);
--
--	stat &= mask;
-+	stat = spu->class_0_pending;
-+	spu->class_0_pending = 0;
++static void spu_hw_runcntl_stop(struct spu_context *ctx)
++{
++	spin_lock_irq(&ctx->spu->register_lock);
++	out_be32(&ctx->spu->problem->spu_runcntl_RW, SPU_RUNCNTL_STOP);
++	while(in_be32(&ctx->spu->problem->spu_status_R) & SPU_STATUS_RUNNING)
++		cpu_relax();
++	spin_unlock_irq(&ctx->spu->register_lock);
++}
++
+ static void spu_hw_master_start(struct spu_context *ctx)
+ {
+ 	struct spu *spu = ctx->spu;
+@@ -321,6 +330,7 @@ struct spu_context_ops spu_hw_ops = {
+ 	.get_ls = spu_hw_get_ls,
+ 	.runcntl_read = spu_hw_runcntl_read,
+ 	.runcntl_write = spu_hw_runcntl_write,
++	.runcntl_stop = spu_hw_runcntl_stop,
+ 	.master_start = spu_hw_master_start,
+ 	.master_stop = spu_hw_master_stop,
+ 	.set_mfc_query = spu_hw_set_mfc_query,
+--- a/arch/powerpc/platforms/cell/spufs/run.c
++++ b/arch/powerpc/platforms/cell/spufs/run.c
+@@ -302,7 +302,7 @@ long spufs_run_spu(struct spu_context *c
+ 	if (mutex_lock_interruptible(&ctx->run_mutex))
+ 		return -ERESTARTSYS;
  
- 	if (stat & 1) /* invalid DMA alignment */
- 		__spu_trap_dma_align(spu);
---- a/include/asm-powerpc/spu.h
-+++ b/include/asm-powerpc/spu.h
-@@ -130,6 +130,7 @@ struct spu {
- 	u64 flags;
- 	u64 dar;
- 	u64 dsisr;
-+	u64 class_0_pending;
- 	size_t ls_size;
- 	unsigned int slb_replace;
- 	struct mm_struct *mm;
-@@ -138,7 +139,6 @@ struct spu {
- 	unsigned long long timestamp;
- 	pid_t pid;
- 	pid_t tgid;
--	int class_0_pending;
- 	spinlock_t register_lock;
+-	ctx->ops->master_start(ctx);
++	spu_enable_spu(ctx);
+ 	ctx->event_return = 0;
  
- 	void (* wbox_callback)(struct spu *spu);
+ 	spu_acquire(ctx);
+@@ -376,7 +376,7 @@ long spufs_run_spu(struct spu_context *c
+ 		ctx->stats.libassist++;
+ 
+ 
+-	ctx->ops->master_stop(ctx);
++	spu_disable_spu(ctx);
+ 	ret = spu_run_fini(ctx, npc, &status);
+ 	spu_yield(ctx);
+ 
+--- a/arch/powerpc/platforms/cell/spufs/spufs.h
++++ b/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -170,6 +170,7 @@ struct spu_context_ops {
+ 	char*(*get_ls) (struct spu_context * ctx);
+ 	 u32 (*runcntl_read) (struct spu_context * ctx);
+ 	void (*runcntl_write) (struct spu_context * ctx, u32 data);
++	void (*runcntl_stop) (struct spu_context * ctx);
+ 	void (*master_start) (struct spu_context * ctx);
+ 	void (*master_stop) (struct spu_context * ctx);
+ 	int (*set_mfc_query)(struct spu_context * ctx, u32 mask, u32 mode);
+--- a/arch/powerpc/platforms/ps3/spu.c
++++ b/arch/powerpc/platforms/ps3/spu.c
+@@ -28,6 +28,7 @@
+ #include <asm/spu_priv1.h>
+ #include <asm/lv1call.h>
+ 
++#include "../cell/spufs/spufs.h"
+ #include "platform.h"
+ 
+ /* spu_management_ops */
+@@ -419,10 +420,23 @@ static int ps3_init_affinity(void)
+ 	return 0;
+ }
+ 
++static int ps3_enable_spu(struct spu_context *ctx)
++{
++	return -ENOSYS;
++}
++
++static int ps3_disable_spu(struct spu_context *ctx)
++{
++	ctx->ops->runcntl_stop(ctx);
++	return -ENOSYS;
++}
++
+ const struct spu_management_ops spu_management_ps3_ops = {
+ 	.enumerate_spus = ps3_enumerate_spus,
+ 	.create_spu = ps3_create_spu,
+ 	.destroy_spu = ps3_destroy_spu,
++	.enable_spu = ps3_enable_spu,
++	.disable_spu = ps3_disable_spu,
+ 	.init_affinity = ps3_init_affinity,
+ };
+ 
+--- a/include/asm-powerpc/spu_priv1.h
++++ b/include/asm-powerpc/spu_priv1.h
+@@ -24,6 +24,7 @@
+ #include <linux/types.h>
+ 
+ struct spu;
++struct spu_context;
+ 
+ /* access to priv1 registers */
+ 
+@@ -178,6 +179,8 @@ struct spu_management_ops {
+ 	int (*enumerate_spus)(int (*fn)(void *data));
+ 	int (*create_spu)(struct spu *spu, void *data);
+ 	int (*destroy_spu)(struct spu *spu);
++	int (*enable_spu)(struct spu_context *ctx);
++	int (*disable_spu)(struct spu_context *ctx);
+ 	int (*init_affinity)(void);
+ };
+ 
+@@ -207,6 +210,18 @@ spu_init_affinity (void)
+ 	return spu_management_ops->init_affinity();
+ }
+ 
++static inline int
++spu_enable_spu (struct spu_context *ctx)
++{
++	return spu_management_ops->enable_spu(ctx);
++}
++
++static inline int
++spu_disable_spu (struct spu_context *ctx)
++{
++	return spu_management_ops->disable_spu(ctx);
++}
++
+ /*
+  * The declarations folowing are put here for convenience
+  * and only intended to be used by the platform setup code.
