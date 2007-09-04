@@ -1,20 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6D02DDE09
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 07:28:56 +1000 (EST)
-Date: Wed, 5 Sep 2007 00:51:05 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/9] cpm2: Add cpm2_set_pin().
-Message-ID: <20070905005105.38c00829@localhost.localdomain>
-In-Reply-To: <20070828201924.GD24329@ld0162-tx32.am.freescale.net>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201924.GD24329@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id E3F2EDDE29
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 08:45:29 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 2/2] Cell: Wrap master run control bit
+Date: Wed, 5 Sep 2007 00:42:13 +0200
+References: <46DD4783.9040103@am.sony.com>
+In-Reply-To: <46DD4783.9040103@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200709050042.13926.arnd@arndb.de>
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,85 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 28 Aug 2007 15:19:24 -0500
-Scott Wood wrote:
-
-> This provides a generic way for board code to set up CPM pins, rather
-> than directly poking magic values into registers.
+On Tuesday 04 September 2007, Geoff Levand wrote:
 > 
-Please provide more info either here or somewhere in Documentation/, or inside the code at least.
-We're adding new utility function here, and need to describe in a nutshell now the thing works.
-
-This is completely self-explanatory for limited amount of people, I mean.
-
-
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/sysdev/cpm2_common.c |   33
-> +++++++++++++++++++++++++++++++++ include/asm-powerpc/cpm2.h
-> |    9 +++++++++ 2 files changed, 42 insertions(+), 0 deletions(-)
+> From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
 > 
-> diff --git a/arch/powerpc/sysdev/cpm2_common.c
-> b/arch/powerpc/sysdev/cpm2_common.c index 549da4b..b8460c0 100644
-> --- a/arch/powerpc/sysdev/cpm2_common.c
-> +++ b/arch/powerpc/sysdev/cpm2_common.c
-> @@ -418,3 +418,36 @@ void *cpm_dpram_addr(unsigned long offset)
->  	return (void __force *)(im_dprambase + offset);
->  }
->  EXPORT_SYMBOL(cpm_dpram_addr);
-> +
-> +struct cpm2_ioports {
-> +	u32	dir, par, sor, odr, dat;
-> +	u32	res[3];
-> +};
-> +
-> +void cpm2_set_pin(int port, int pin, int flags)
-> +{
-> +	struct cpm2_ioports __iomem *iop =
-> +		(struct cpm2_ioports __iomem *)&cpm2_immr->im_ioport;
-> +
-> +	pin = 1 << (31 - pin);
-> +
-> +	if (flags & CPM_PIN_OUTPUT)
-> +		setbits32(&iop[port].dir, pin);
-> +	else
-> +		clrbits32(&iop[port].dir, pin);
-> +
-> +	if (!(flags & CPM_PIN_GPIO))
-> +		setbits32(&iop[port].par, pin);
-> +	else
-> +		clrbits32(&iop[port].par, pin);
-> +
-> +	if (flags & CPM_PIN_SECONDARY)
-> +		setbits32(&iop[port].sor, pin);
-> +	else
-> +		clrbits32(&iop[port].sor, pin);
-> +
-> +	if (flags & CPM_PIN_OPENDRAIN)
-> +		setbits32(&iop[port].odr, pin);
-> +	else
-> +		clrbits32(&iop[port].odr, pin);
-> +}
-> diff --git a/include/asm-powerpc/cpm2.h b/include/asm-powerpc/cpm2.h
-> index 41a45db..d7b57ac 100644
-> --- a/include/asm-powerpc/cpm2.h
-> +++ b/include/asm-powerpc/cpm2.h
-> @@ -1247,5 +1247,14 @@ enum cpm_clk {
->  extern int cpm2_clk_setup(enum cpm_clk_target target, int clock, int
-> mode); extern int cpm2_smc_clk_setup(enum cpm_clk_target target, int
-> clock); 
-> +#define CPM_PIN_INPUT     0
-> +#define CPM_PIN_OUTPUT    1
-> +#define CPM_PIN_PRIMARY   0
-> +#define CPM_PIN_SECONDARY 2
-> +#define CPM_PIN_GPIO      4
-> +#define CPM_PIN_OPENDRAIN 8
-> +
-> +void cpm2_set_pin(int port, int pin, int flags);
-> +
->  #endif /* __CPM2__ */
->  #endif /* __KERNEL__ */
+> Add platform specific SPU run control routines.
+> 
+> The current spufs_run_spu() implementation uses the SPU master
+> run control bit (MFC_SR1[S]) to control SPE execution, but the
+> PS3 hypervisor does not support the use of this feature.  This
+> change adds run control wrapper routines.  The  bare metal
+> routines use the master run control bit, and the PS3 specific
+> routines use the priv2 run control register.
+> 
+> Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
+Hmm, ok. Since I don't think we'll get to do the right solution
+(unmapping the ps registers on the ps3) that soon, doing this
+patch is at least better than the current situation where we
+end up with an oops every time we leave spu_run.
 
--- 
-Sincerely, Vitaly
+It would probably be good to mention the remaining problem
+with the current approach in the changelog and as a comment
+in the ps3 specific functions.
+
+> @@ -178,6 +179,8 @@ struct spu_management_ops {
+>  	int (*enumerate_spus)(int (*fn)(void *data));
+>  	int (*create_spu)(struct spu *spu, void *data);
+>  	int (*destroy_spu)(struct spu *spu);
+> +	int (*enable_spu)(struct spu_context *ctx);
+> +	int (*disable_spu)(struct spu_context *ctx);
+>  	int (*init_affinity)(void);
+>  };
+
+Also, I think you should make the return type of the callback
+'void' since the result is not used anywhere.
+
+	Arnd <><
