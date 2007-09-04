@@ -1,12 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 4 Sep 2007 10:43:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Assume properties preced subnodes in the flattened tree
-Message-ID: <20070904004303.GC20549@localhost.localdomain>
+Return-Path: <chenxurcy@yahoo.com.cn>
+Received: from n10a.bullet.mail.re3.yahoo.com (n10a.bullet.mail.re3.yahoo.com
+	[68.142.236.51]) by ozlabs.org (Postfix) with SMTP id 41AA8DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2007 11:37:48 +1000 (EST)
+Date: Tue, 4 Sep 2007 09:31:24 +0800 (CST)
+From: xu chen <chenxurcy@yahoo.com.cn>
+Subject: Please help me with my opb_ethernet driver!!!
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-518570467-1188869484=:87879"
+Message-ID: <674410.87879.qm@web15603.mail.cnb.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,84 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With kernel commit eff2ebd207af9f501af0ef667a7d14befcb36c1b, we
-clarified that in the flattened tree format, a particular nodes
-properties are required to precede its subdnodes.
+--0-518570467-1188869484=:87879
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-At present however, both dtc and libfdt will process trees which don't
-meet this condition.  This patch simplifies the code for
-fdt_get_property() based on assuming that constraint.  dtc continues
-to be able to handle such an invalid tree - on the grounds that it's
-useful for dtc to be able to correct such a broken tree - but this
-patch adds a warning when this condition is not met while reading a
-flattened tree.
+I have used ml403 reference board recently, and now I am porting the opb_ethernet driver downloaded from the net onto the board. I use the EDK9.1 developing environment, and the driver files like "xemac.c" are copied from the EDK drivers lib. My opb_ethernet driver can work in the "No DMA mode", but the speed of FIFO is too slow to transport big files. So I transfer to "Simple DMA mode". I configured the hardware IP core in the EDK, in details, I only changed the DMA mode of opb_ethernet IP core to "Simple DMA", and then synthesize the hardware again. After that I recompile the kernel of the new xparameters.h file. But when I ping the board, in the Recv ISR function, the result of DMA operation from Recv FIFO to kernel memory is always "DMA timed out". I checked the pdf of opb_ethernet and the ipif, but I can't find any problem, especially the manner of DMA. I can only guess that there are some problems in the hardware configuration, so who can help me about that problem?
+ Thank you very much.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+       
+---------------------------------
+ —≈ª¢√‚∑—” œ‰£¨»´«Úµ⁄“ª” œ‰∆∑≈∆£°
+--0-518570467-1188869484=:87879
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-Index: dtc/libfdt/fdt_ro.c
-===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2007-08-31 15:59:38.000000000 +1000
-+++ dtc/libfdt/fdt_ro.c	2007-08-31 16:23:09.000000000 +1000
-@@ -197,7 +197,6 @@
- 					    int nodeoffset,
- 					    const char *name, int *lenp)
- {
--	int level = 0;
- 	uint32_t tag;
- 	const struct fdt_property *prop;
- 	int namestroff;
-@@ -225,17 +224,11 @@
- 			goto fail;
- 
- 		case FDT_BEGIN_NODE:
--			level++;
--			break;
--
- 		case FDT_END_NODE:
--			level--;
-+		case FDT_NOP:
- 			break;
- 
- 		case FDT_PROP:
--			if (level != 0)
--				continue;
--
- 			err = -FDT_ERR_BADSTRUCTURE;
- 			prop = fdt_offset_ptr_typed(fdt, offset, prop);
- 			if (! prop)
-@@ -256,14 +249,11 @@
- 			}
- 			break;
- 
--		case FDT_NOP:
--			break;
--
- 		default:
- 			err = -FDT_ERR_BADSTRUCTURE;
- 			goto fail;
- 		}
--	} while (level >= 0);
-+	} while ((tag != FDT_BEGIN_NODE) && (tag != FDT_END_NODE));
- 
- 	err = -FDT_ERR_NOTFOUND;
-  fail:
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2007-08-31 16:34:34.000000000 +1000
-+++ dtc/flattree.c	2007-08-31 16:39:11.000000000 +1000
-@@ -779,6 +779,9 @@
- 		val = flat_read_word(dtbuf);
- 		switch (val) {
- 		case OF_DT_PROP:
-+			if (node->children)
-+				fprintf(stderr, "Warning: Flat tree input has "
-+					"subnodes preceding a property.\n");
- 			prop = flat_read_property(dtbuf, strbuf, flags);
- 			add_property(node, prop);
- 			break;
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I have used ml403 reference board recently, and now I am porting the opb_ethernet driver downloaded from the net onto the board. I use the EDK9.1 developing environment, and the driver files like "xemac.c" are copied from the EDK drivers lib. My opb_ethernet driver can work in the "No DMA mode", but the speed of FIFO is too slow to transport big files. So I transfer to "Simple DMA mode". I configured the hardware IP core in the EDK, in details, I only changed the DMA mode of opb_ethernet IP core to "Simple DMA", and then synthesize the hardware again. After that I recompile the kernel of the new xparameters.h file. But when I ping the board, in the Recv ISR function, the result of DMA operation from Recv FIFO to kernel memory is always "DMA timed out". I checked the pdf of opb_ethernet and the ipif, but I can't find any problem, especially the manner of DMA. I can only guess that there are some problems in the hardware configuration, so who can help me about that problem?
+ Thank you very much.<br><p>&#32;
+      <hr size=1><a href="http://mail.yahoo.com.cn/?id=89034" target=blank> 
+—≈ª¢√‚∑—” œ‰£¨»´«Úµ⁄“ª” œ‰∆∑≈∆£°</a>
+--0-518570467-1188869484=:87879--
