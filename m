@@ -1,17 +1,20 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (gwmail.lzu.edu.cn [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id 3F2CFDDE17
+Return-Path: <list.mail.for.bill@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
+	by ozlabs.org (Postfix) with ESMTP id 37DEBDDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 12:49:49 +1000 (EST)
-Message-ID: <388935922.07297@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
+	Tue,  4 Sep 2007 14:07:19 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id h3so1429031nfh
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 03 Sep 2007 21:07:16 -0700 (PDT)
+Message-ID: <7c1681440709032107u3feb0684x34dcf44b5e43616@mail.gmail.com>
+Date: Tue, 4 Sep 2007 14:07:10 +1000
+From: "Bill F" <list.mail.for.bill@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: disable interrput under ppc?
-Date: Tue, 4 Sep 2007 10:44:14 +0800
+Subject: Re: Breakpoint is not hitting for Kernel Debugging
+In-Reply-To: <F3D55679E1DCFF49A57570501B70475F070D83BC@CL5EXBE04.ad2.softcom.biz>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart10082962.iXU5BefuCo";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200709041044.16525.wangbj@lzu.edu.cn>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <F3D55679E1DCFF49A57570501B70475F070D83BC@CL5EXBE04.ad2.softcom.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart10082962.iXU5BefuCo
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On 9/4/07, dnl <ssaravanan@mail2web.com> wrote:
+>  I enabled the following options in Kernel for kernel Debugging,
+> CONFIG_BDI_SWITCH=y CONFIG_DEBUG_INFO=y under kernel hacking and MMU XALT in
+> BDI config file. After uboot initialization I fixed break point at
+> start_kernel(0xc02784bc), and then I booted the kernel. Without breaking  at
+> start_kernel, it came to login prompt. Please find attached config file with
+> this mail. Could anybody help me to solve this problem?
 
-hi, list
+Hi Saravanan,
+Try adding this line to your BDI config to clear/invalidate the page
+table base address so that the MMU translation works before the MMU
+has been initialised.
 
-  How can I disable interrput like `cli' in x86? I want the following code=
-=20
-freeze the box but it doesn't, $MSR is altered however the box is still=20
-alive, how can I freeze the box like `cli' in x86? Thanks very much!
+  ;; Following is to clear the page table base address
+  WM32    0x000000f0      0x00000000
 
-static
-void cli(void)
-{
-        unsigned long msr;
-        __asm__ __volatile__("": : :"memory");
-        msr =3D mfmsr();
-        printk("msr: 0x%lx\n", msr);
+Make sure that you reload the BDI config, I use the  the BDI "BOOT"
+command to do this.
 
-        __asm__ __volatile__("sync" : : :"memory");
-        __asm__ __volatile__("wrteei 0" : : :"memory");
+Are you obtaining the start_kernel address from your kernel System.map
+file and setting the breakpoint using the BDI command "BI 0xc02784bc"
+or are you using a gdb debugger frontend ?
 
-        msr =3D mfmsr();
-        printk("msr: 0x%lx\n", msr);
-        printk(KERN_EMERG"!!msr: 0x%lx\n", msr);
-}
-
-P.S: the box is BOOKE compatible, the printk has shown is altered!
-
-  Regards,
-Wang
-=2D-=20
-Wang, Baojun                                        Lanzhou University
-Distributed & Embedded System Lab              http://dslab.lzu.edu.cn
-School of Information Science and Engeneering        wangbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000                     .P.R.China
-Tel:+86-931-8912025                                Fax:+86-931-8912022
-
---nextPart10082962.iXU5BefuCo
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBG3MZ+IuIOr7tpgg0RApMYAKCk9jGr4SLpDDlvcLbxM5rHqzZOsACfWht2
-kRn+CEHjEOvwNQR3egGJk1E=
-=n34f
------END PGP SIGNATURE-----
-
---nextPart10082962.iXU5BefuCo--
+Bill
