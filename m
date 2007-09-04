@@ -1,24 +1,17 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6A8DDDDFD
+Return-Path: <wangbj@lzu.edu.cn>
+Received: from eyou.net (gwmail.lzu.edu.cn [202.201.0.146])
+	by ozlabs.org (Postfix) with SMTP id 3F2CFDDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 11:58:44 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1ISNgf-00089Q-6i
-	for linuxppc-embedded@ozlabs.org; Mon, 03 Sep 2007 18:58:41 -0700
-Message-ID: <12470485.post@talk.nabble.com>
-Date: Mon, 3 Sep 2007 18:58:41 -0700 (PDT)
-From: Qin Lin <linkinge@gmail.com>
+	Tue,  4 Sep 2007 12:49:49 +1000 (EST)
+Message-ID: <388935922.07297@eyou.net>
+From: "Wang, Baojun" <wangbj@lzu.edu.cn>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: ML403 AC97 ALSA Driver problem
-In-Reply-To: <1188852155.5738.21.camel@localhost>
+Subject: disable interrput under ppc?
+Date: Tue, 4 Sep 2007 10:44:14 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <12399427.post@talk.nabble.com>
-	<1188852155.5738.21.camel@localhost>
+Content-Type: multipart/signed; boundary="nextPart10082962.iXU5BefuCo";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200709041044.16525.wangbj@lzu.edu.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,57 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--nextPart10082962.iXU5BefuCo
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi Joachim
-Every time aplay wavfile ,there is kernel stack overflow.And the "xsysace"
-is a CF card driver .
-when i just writing data to codec 0 with a simple program ,it is OK, but if
-i read data from CF card=20
-and play ,it overflow also.
-Maybe there is something conflict with CF card driver and AC97 driver .
+hi, list
 
-Thanks for your note ,i will test it again.
+  How can I disable interrput like `cli' in x86? I want the following code=
+=20
+freeze the box but it doesn't, $MSR is altered however the box is still=20
+alive, how can I freeze the box like `cli' in x86? Thanks very much!
 
-Qin Lin =20
+static
+void cli(void)
+{
+        unsigned long msr;
+        __asm__ __volatile__("": : :"memory");
+        msr =3D mfmsr();
+        printk("msr: 0x%lx\n", msr);
 
-Joachim F=C3=B6rster wrote:
->=20
-> Hi Qin Lin,
->=20
-> Do you get this overflow everytime you try aplay? Or, do you get it
-> sometimes, only?
->=20
-> What confuses me is, that in your kernel messages the "TASK =3D ...
-> 'xsysace'" is mentioned. Perhaps there is some relation with the sysace
-> driver? Or do I miss something, here?
-> Did you try play a .wav file from a RAM disk or NFS-mounted location? I
-> have to note, that I am not using sysace and I haven't tried it jet -
-> especially together with my AC97 driver.
->=20
-> As a first step, no matter what, you could compile your kernel with
-> CONFIG_SND_DEBUG and additionally replace the line
->=20
-> #define PDEBUG_FACILITIES (UNKNOWN | INIT_FAILURE | WORK_FAILURE)
->=20
-> in ml403-ac97cr.c with
->=20
-> #define PDEBUG_FACILITIES (UNKNOWN | INIT_FAILURE | WORK_FAILURE |
-> WORK_INFO | INIT_INFO)
->=20
-> This will give you a, well, huge amount of debugging messages
-> (KERN_DEBUG). There we should see, how far my driver is getting (to some
-> extent).
->=20
->  Joachim
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
->=20
+        __asm__ __volatile__("sync" : : :"memory");
+        __asm__ __volatile__("wrteei 0" : : :"memory");
 
---=20
-View this message in context: http://www.nabble.com/ML403-AC97-ALSA-Driver-=
-problem-tf4351591.html#a12470485
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+        msr =3D mfmsr();
+        printk("msr: 0x%lx\n", msr);
+        printk(KERN_EMERG"!!msr: 0x%lx\n", msr);
+}
+
+P.S: the box is BOOKE compatible, the printk has shown is altered!
+
+  Regards,
+Wang
+=2D-=20
+Wang, Baojun                                        Lanzhou University
+Distributed & Embedded System Lab              http://dslab.lzu.edu.cn
+School of Information Science and Engeneering        wangbj@lzu.edu.cn
+Tianshui South Road 222. Lanzhou 730000                     .P.R.China
+Tel:+86-931-8912025                                Fax:+86-931-8912022
+
+--nextPart10082962.iXU5BefuCo
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBG3MZ+IuIOr7tpgg0RApMYAKCk9jGr4SLpDDlvcLbxM5rHqzZOsACfWht2
+kRn+CEHjEOvwNQR3egGJk1E=
+=n34f
+-----END PGP SIGNATURE-----
+
+--nextPart10082962.iXU5BefuCo--
