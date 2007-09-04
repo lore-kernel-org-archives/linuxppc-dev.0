@@ -1,33 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4C55EDDE29
+Return-Path: <mgaouar@solacom.com>
+Received: from solacom.com (unknown [209.217.64.195])
+	by ozlabs.org (Postfix) with ESMTP id 2FE95DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Sep 2007 04:37:54 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l84IbpCD000795
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Sep 2007 14:37:51 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l84Ibk77241810
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Sep 2007 12:37:47 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l84Ibjlv009852
-	for <linuxppc-embedded@ozlabs.org>; Tue, 4 Sep 2007 12:37:45 -0600
-Date: Tue, 4 Sep 2007 13:37:43 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: disable interrput under ppc?
-Message-ID: <20070904133743.67a7a651@weaponx.rchland.ibm.com>
-In-Reply-To: <20070904182433.GD18280@ld0162-tx32.am.freescale.net>
-References: <200709041044.16525.wangbj@lzu.edu.cn>
-	<20070904182433.GD18280@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  5 Sep 2007 05:53:17 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7EF2D.3B9E7EAD"
+Subject: Problems with MPC8272ADS
+Date: Tue, 4 Sep 2007 15:53:15 -0400
+Message-ID: <9A1468054ED2FD40907CC3B2C1871D400106CC73@hermes.versatel.com>
+From: "Manil Gaouar" <mgaouar@solacom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,26 +21,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 4 Sep 2007 13:24:33 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+This is a multi-part message in MIME format.
 
-> On Tue, Sep 04, 2007 at 10:44:14AM +0800, Wang, Baojun wrote:
-> > hi, list
-> > 
-> >   How can I disable interrput like `cli' in x86?
-> 
-> local_irq_disable().
-> 
-> > I want the following code freeze the box but it doesn't, $MSR is
-> > altered however the box is still alive, how can I freeze the box like
-> > `cli' in x86? Thanks very much!
-> 
-> Disabling interrupts doesn't freeze the machine by itself -- it depends
-> on what you do afterwards, which you didn't show.
+------_=_NextPart_001_01C7EF2D.3B9E7EAD
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-If you're using a BOOKE variant, there is a way to use the DBCR0
-register to set debug wait enable or something to basically hang the
-CPU until something external clears that bit.  But why you would want
-to do that, I have no idea.
+Hi,
 
-josh
+=20
+
+I am a bit newbie in this. I tried compiling Linux 2.4 using
+ADS8272_deconfig from the kernel 2.6 and I have many compilation errors.
+Are the deconfig files from 2.4 to 2.6 that different, or can I use the
+2.6 file with little changes???
+
+=20
+
+I don't understand why there is support for this board in 2.6 and not in
+2.4, since Denx recommend 2.4.
+
+=20
+
+Thx for your help!
+
+
+------_=_NextPart_001_01C7EF2D.3B9E7EAD
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am a bit newbie in this. I tried compiling Linux =
+2.4 using
+ADS8272_deconfig from the kernel 2.6 and I have many compilation errors. =
+Are
+the deconfig files from 2.4 to 2.6 that different, or can I use the 2.6 =
+file
+with little changes???<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I don&#8217;t understand why there is support for =
+this board
+in 2.6 and not in 2.4, since Denx recommend =
+2.4.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thx for your help!<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C7EF2D.3B9E7EAD--
