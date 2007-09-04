@@ -1,20 +1,18 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 2C25BDDE1A
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id CCE0CDDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 22:12:00 +1000 (EST)
-Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
-	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
-	42D851000421for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Sep 2007 14:11:58 +0200 (CEST)
-Message-ID: <46DD4B6A.3020401@fz-juelich.de>
-Date: Tue, 04 Sep 2007 14:11:22 +0200
-From: schardt <g.schardt@fz-juelich.de>
+	Tue,  4 Sep 2007 22:28:06 +1000 (EST)
+Message-ID: <46DD4F69.8060804@anagramm.de>
+Date: Tue, 04 Sep 2007 14:28:25 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Thanks and new problems
-Content-Type: text/plain;
-	charset=ISO-8859-1
+To: schardt <g.schardt@fz-juelich.de>
+Subject: Re: Thanks and new problems
+References: <46DD4B6A.3020401@fz-juelich.de>
+In-Reply-To: <46DD4B6A.3020401@fz-juelich.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-First, many many thanks to Grant. My VirtexII Demo Board ist running a
-2.6. Linux :))
+schardt schrieb:
+> First, many many thanks to Grant. My VirtexII Demo Board ist running a
+> 2.6. Linux :))
+> 
+> But now, i switched to a Virtex4-Board with Ethernet (Mini Module from
+> Avnet)
+> This will i used in my application, if i can handle it. :)
+> 
+> Linux is up and running, the ethernet is detected as eth0, link led is on
+> but, and thats the problem, speed negotiating das not work.
 
-But now, i switched to a Virtex4-Board with Ethernet (Mini Module from
-Avnet)
-This will i used in my application, if i can handle it. :)
+Check the PHY configuration (i.e. the bootstrap pins on the PHY).
 
-Linux is up and running, the ethernet is detected as eth0, link led is on
-but, and thats the problem, speed negotiating das not work.
+And - if appropriate - read out the PHY configuration (MDIO) and see
+if it's correct.
 
-is this more a linux problem or hardware ???
-
-Regards
-Georg
-
-
------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------
-Forschungszentrum Jülich GmbH
-52425 Jülich
-
-Sitz der Gesellschaft: Jülich
-Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
-Vorsitzender)
------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
