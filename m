@@ -1,22 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DA1AFDDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 02:52:14 +1000 (EST)
-Message-ID: <46DD8D34.6000102@freescale.com>
-Date: Tue, 04 Sep 2007 11:52:04 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 216C8DDDE7
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 03:38:36 +1000 (EST)
+Message-ID: <46DD9879.7040401@genesi-usa.com>
+Date: Tue, 04 Sep 2007 18:40:09 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Regarding immap_86xx.h
-References: <12472670.post@talk.nabble.com>
-	<706FA05F-6E3E-4A9C-9DB0-52840E178F06@kernel.crashing.org>
-In-Reply-To: <706FA05F-6E3E-4A9C-9DB0-52840E178F06@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, sivaji <rameshmrm@gmail.com>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: "atomic" 64-bit math on 32-bit ppc's?
+References: <46DD3CE2.4060301@genesi-usa.com> <20070904113937.GA3994@iram.es>
+	<46DD500B.4020207@genesi-usa.com> <20070904160206.GA12698@iram.es>
+In-Reply-To: <20070904160206.GA12698@iram.es>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Gabriel Paubert wrote:
+> I don't know at all the ZFS code, not any filesystem code for the
+> matter. But how many spinlocks would you have to take and release 
+> per actual disk operation?
 
-> Its most likely been removed since these structures have been  
-> distributed to the places they are used.
+I have no idea, but considering the space supported by the filesystem
+it's probably a hell of a lot.
 
-Not only that, but I submitted a patch to remove the PCI structure, so all 
-that's left is the GUTS structure.
+It seems like we've solved it; the Solaris ppc-dev repository has an
+updated atomic.c which implements a kernel mutex for 64-bit ops. I've
+forwarded this on, hopefully it ISN'T a hell of a lot or this is going
+to knock filesystem performance on the head for 32-bit ppc :D
 
-The GUTS structure is different from other devices since it contains registers 
-used by a variety of devices.  It's a sort of catch-all for miscellaneous 
-hardware configuration.  That's why there's no GUTS device driver, and why I 
-left the structure in immap_86xx.h.
+Thanks for your help.
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
