@@ -1,12 +1,28 @@
-Return-Path: <Martin.Leisner@xerox.com>
+Return-Path: <temerkhanov@yandex.ru>
+Received: from smtp3.yandex.ru (smtp3.yandex.ru [213.180.200.14])
+	by ozlabs.org (Postfix) with ESMTP id A3A1DDDFA0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  6 Sep 2007 07:36:45 +1000 (EST)
+Received: from ppp91-76-72-246.pppoe.mtu-net.ru ([91.76.72.246]:11582 "EHLO
+	asus-a6t.local" smtp-auth: "temerkhanov" TLS-CIPHER:
+	"DHE-RSA-AES256-SHA
+	keybits 256/256 version TLSv1/SSLv3" TLS-PEER-CN1: <none>)
+	by mail.yandex.ru with ESMTP id S4747740AbXIEVgl (ORCPT
+	<rfc822;linuxppc-embedded@ozlabs.org>);
+	Thu, 6 Sep 2007 01:36:41 +0400
+From: Sergey Temerkhanov <temerkhanov@yandex.ru>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Xilinx FX60
+Date: Thu, 6 Sep 2007 01:36:46 +0400
+References: <1189017748.6185.49.camel@PisteOff>
+	<200709052342.34177.temerkhanov@yandex.ru>
+	<1189023628.6185.59.camel@PisteOff>
+In-Reply-To: <1189023628.6185.59.camel@PisteOff>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: 7448 pll registers
-Date: Wed, 5 Sep 2007 17:24:09 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C066B5BD4@USA0300MS03.na.xerox.net>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: <Linuxppc-embedded@ozlabs.org>
+  charset="utf-8"
+Message-Id: <200709060136.47171.temerkhanov@yandex.ru>
+Reply-To: temerkhanov@yandex.ru
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,41 +33,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm going to get DFS into the 7448 (it looks like I'm going to take a
-different
-tactic then I see in 2.6.20.16 -- it hinges on powermac, and I don't
-know if it
-even compiles).
+On Thursday 06 September 2007 00:20:28 Robert Woodworth wrote:
+> Is it then possible to run two independent kernels, one on each PPC??
+AMP must work there.
 
-In include/asm-powerpc, its missing definitions for HID1/{PC4,PC5}.
-
-bash2 :2 mleisner@linuxcom-01 05:18:58; rcsdiff -u reg.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-RCS file: reg.h,v
-retrieving revision 1.1
-diff -u -r1.1 reg.h
---- reg.h       2007/09/05 20:45:36     1.1
-+++ reg.h       2007/09/05 20:46:56
-@@ -253,6 +253,8 @@
- #define HID1_PC1       (1<<15)         /* 7450 PLL_CFG[1] */
- #define HID1_PC2       (1<<14)         /* 7450 PLL_CFG[2] */
- #define HID1_PC3       (1<<13)         /* 7450 PLL_CFG[3] */
-+#define HID1_PC4       (1<<12)         /* ???? PLL_CFG[4] */
-+#define HID1_PC5       (1<<17)         /* 7448 specific bit --
-PLL_CFG[5] */
- #define HID1_SYNCBE    (1<<11)         /* 7450 ABE for sync, eieio */
- #define HID1_ABE       (1<<10)         /* 7450 Address Broadcast Enable
-*/
- #define HID1_PS                (1<<16)         /* 750FX PLL selection
-*/
-
-
-PC4 seems "generic", PC5 is a "MPC7448 specific bit"
-
-I'm not sure what HID1_PS means ( 750FX PLL selection ), its the same
-bit as=20
-HID1_PC0.
-
-marty
+>
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
