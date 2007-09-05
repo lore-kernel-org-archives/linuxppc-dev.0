@@ -1,30 +1,16 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 494FCDDE28
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:01:34 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8531VGZ020419
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 13:01:31 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l85355Rd145944
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 13:05:05 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8531V50030293
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 13:01:31 +1000
-Date: Wed, 5 Sep 2007 13:01:25 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 5/6] Walnut board support
-Message-ID: <20070905030125.GH17189@localhost.localdomain>
-References: <20070831200449.598781000@linux.vnet.ibm.com>>
-	<20070831200643.514442000@linux.vnet.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A15D3DDEBB
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:01:39 +1000 (EST)
+Date: Tue, 4 Sep 2007 21:08:30 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [POWERPC] pasemi: add pasemi_pci_getcfgaddr()
+Message-ID: <20070905020830.GB25900@lixom.net>
+References: <20070905020733.GA25900@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070831200643.514442000@linux.vnet.ibm.com>
+In-Reply-To: <20070905020733.GA25900@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,15 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Aug 31, 2007 at 03:04:54PM -0500, Josh Boyer wrote:
-> Board support for the PPC405 Walnut evaluation board
-> 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+commit aa37284d64c33d4755072d4bb4b5b1304d415d97
+Author: Olof Johansson <olof@lixom.net>
+Date:   Sat Sep 1 15:43:52 2007 -0500
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+    [POWERPC] pasemi: add pasemi_pci_getcfgaddr()
+    
+    Add pasemi_pci_getcfgaddr(), to get the remapped address of a specific
+    config register for a PCI device.
+    
+    Signed-off-by: Olof Johansson <olof@lixom.net>
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
+index be84954..6fd2fe7 100644
+--- a/arch/powerpc/platforms/pasemi/pasemi.h
++++ b/arch/powerpc/platforms/pasemi/pasemi.h
+@@ -6,6 +6,8 @@ extern void pas_pci_init(void);
+ extern void __devinit pas_pci_irq_fixup(struct pci_dev *dev);
+ extern void __devinit pas_pci_dma_dev_setup(struct pci_dev *dev);
+ 
++extern void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
++
+ extern void __init alloc_iobmap_l2(void);
+ 
+ extern void __init pasemi_idle_init(void);
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index 03d1d07..fcfb3df 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -175,3 +175,12 @@ void __init pas_pci_init(void)
+ 	/* Use the common resource allocation mechanism */
+ 	pci_probe_only = 1;
+ }
++
++void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
++{
++	struct pci_controller *hose;
++
++	hose = pci_bus_to_host(bus);
++
++	return pa_pxp_cfg_addr(hose, hose->number, dev->devfn, int offset)
++}
