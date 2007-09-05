@@ -1,33 +1,32 @@
 Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DEC43DDE01
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E14CFDDE02
 	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 11:13:22 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id l851DLkL009135
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l851DLGL009586
 	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:13:21 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l851GtpA163106
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:16:55 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l851DLt4004747
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l851DLfQ4464656
 	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:13:21 +1000
-Date: Wed, 5 Sep 2007 11:09:45 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l851DLV7022886
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:13:21 +1000
+Date: Wed, 5 Sep 2007 11:10:45 +1000
 From: David Gibson <dwg@au1.ibm.com>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 5/6] Walnut board support
-Message-ID: <20070905010945.GB17189@localhost.localdomain>
+Subject: Re: [patch 2/6] cuimage for Bamboo board
+Message-ID: <20070905011045.GC17189@localhost.localdomain>
 References: <20070831200449.598781000@linux.vnet.ibm.com>
-	<20070831200643.514442000@linux.vnet.ibm.com>
-	<20070903011112.GE31499@localhost.localdomain>
-	<1188741546.3772.5.camel@localhost.localdomain>
-	<20070904073741.1adab0ba@weaponx.rchland.ibm.com>
+	<20070831200643.029244000@linux.vnet.ibm.com>
+	<20070903010111.GC31499@localhost.localdomain>
+	<1188826931.3772.11.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070904073741.1adab0ba@weaponx.rchland.ibm.com>
+In-Reply-To: <1188826931.3772.11.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,48 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2007 at 07:37:41AM -0500, Josh Boyer wrote:
-> On Sun, 02 Sep 2007 08:59:06 -0500
-> Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> 
-> > On Mon, 2007-09-03 at 11:11 +1000, David Gibson wrote:
-> > > On Fri, Aug 31, 2007 at 03:04:54PM -0500, Josh Boyer wrote:
-> > > > Board support for the PPC405 Walnut evaluation board
-> > > > 
-> > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+On Mon, Sep 03, 2007 at 08:42:11AM -0500, Josh Boyer wrote:
+> On Mon, 2007-09-03 at 11:01 +1000, David Gibson wrote:
+> > On Fri, Aug 31, 2007 at 03:04:51PM -0500, Josh Boyer wrote:
+> > > Add a cuboot wrapper for the Bamboo board.  This also removes some obsoleted
+> > > linker declarations that have been moved into ops.h
 > > > 
-> > > [snip]
-> > > > --- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
-> > > > +++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
-> > > > @@ -53,13 +53,13 @@
-> > > >  #	help
-> > > >  #	  This option enables support for the IBM PPC405GPr evaluation board.
-> > > >  
-> > > > -#config WALNUT
-> > > > -#	bool "Walnut"
-> > > > -#	depends on 40x
-> > > > -#	default y
-> > > > -#	select 405GP
-> > > > -#	help
-> > > > -#	  This option enables support for the IBM PPC405GP evaluation board.
-> > > > +config WALNUT
-> > > > +	bool "Walnut"
-> > > > +	depends on 40x
-> > > > +	default y
-> > > > +	select 405GP
-> > > > +	help
-> > > > +	  This option enables support for the IBM PPC405GP evaluation board.
-> > > 
-> > > Surely this needs WANT_DEVICE_TREE, too.
+> > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 > > 
-> > Yes, will be fixed.
+> > [snip]
+> > > --- linux-2.6.orig/arch/powerpc/boot/bamboo.c
+> > > +++ linux-2.6/arch/powerpc/boot/bamboo.c
+> > > @@ -24,8 +24,7 @@
+> > >  #include "4xx.h"
+> > >  #include "44x.h"
+> > >  
+> > > -extern char _dtb_start[];
+> > > -extern char _dtb_end[];
+> > > +static u8 *bamboo_mac0, *bamboo_mac1;
+> > >  
+> > >  static void bamboo_fixups(void)
+> > >  {
+> > > @@ -34,12 +33,16 @@ static void bamboo_fixups(void)
+> > >  	ibm440ep_fixup_clocks(sysclk, 11059200);
+> > >  	ibm4xx_fixup_memsize();
+> > >  	ibm4xx_quiesce_eth((u32 *)0xef600e00, (u32 *)0xef600f00);
+> > > +	if (bamboo_mac0 && bamboo_mac1)
+> > > +		dt_fixup_mac_addresses(bamboo_mac0, bamboo_mac1);
+> > 
+> > Bit ugly that you only set the MAC address for any ethernet if they're
+> > supplied for every ethernet.
 > 
-> Er, actually no it won't.  It doesn't need to be selected here, as 40x
-> in arch/powerpc/platforms/Kconfig.cputype already selects
-> WANT_DEVICE_TREE.  Same thing that ebony and bamboo do for 44x.
+> Good point.  Will fix.
+> 
+> > >  	simple_alloc_init(_end, avail_ram, 32, 64);
+> > > -	bamboo_init();
+> > > +	bamboo_init(NULL, NULL);
+> > 
+> > There must surely be a way to get the MAC addresses out of OpenBIOS...
+> 
+> Probably.  I just need to find out where they are stored.
 
-Oh, yes, so it does, sorry.  Though we may need to change that if
-anyone goes and puts a real OF implementation on some 44x board.
+It's not buried somewhere in the arch/ppc/boot code?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
