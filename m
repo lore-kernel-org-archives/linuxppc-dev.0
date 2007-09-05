@@ -1,21 +1,26 @@
-Return-Path: <gerlach@kip.uni-heidelberg.de>
-Received: from relay2.uni-heidelberg.de (relay2.uni-heidelberg.de
-	[129.206.210.211])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51650DDE21
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 19:18:08 +1000 (EST)
-Message-ID: <46DE65FF.3040202@kip.uni-heidelberg.de>
-Date: Wed, 05 Sep 2007 10:17:03 +0200
-From: Thomas Gerlach <gerlach@kip.uni-heidelberg.de>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8158ADDE19
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 21:38:30 +1000 (EST)
+Date: Wed, 5 Sep 2007 15:40:23 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
+	QE, register mmc_spi stub
+Message-ID: <20070905114023.GA4072@localhost.localdomain>
+References: <46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+	<46DC126C.9060603@freescale.com>
+	<20070903151319.GA24840@localhost.localdomain>
+	<fdaf530168b099fcb5a3fbbe45e38271@kernel.crashing.org>
+	<20070904104750.GA32451@localhost.localdomain>
+	<20070904182028.GC18280@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Newbie on embedded linux on PPC: error: cannot find boot.o
-References: <46DD6238.6030204@kip.uni-heidelberg.de>
-	<fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
-In-Reply-To: <fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20070904182028.GC18280@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 9/4/07, Thomas Gerlach <gerlach@kip.uni-heidelberg.de> wrote:
->   
->> hi folks,
->>
->>
->> my name is thomas trying to make embedded linux run on a powerpc, but we've got special boards here, although we use a xilinx virtex4 fpga...
->>
->> as you said in the nabble-thread (see subject), i set up edk9.1 software platform settings und ran libgen to get the xparameters* files. i copied those bsp files into the kernel tree (i use your kernel linux-2.6-virtex from git.secretlabs.ca/git). after configuring the kernel settigs, i try
->>
->> $ make ARCH=ppc CROSS_COMPILE=powerpc-eabi-
->>     
->
-> You should be using a Linux cross compiler, not powerpc-eabi-.  The
-> Xilinx cross compiler will not work to compile Linux kernels.
->
-> You can build yourself a cross compiler using 'crosstool':
-> http://www.kegel.org/crosstool.
->
-> Alternately, you can download ELDK:
-> http://www.denx.de/wiki/view/DULG/ELDKAvailability
->
-> Cheers,
-> g.
->
->   
+On Tue, Sep 04, 2007 at 01:20:28PM -0500, Scott Wood wrote:
+> On Tue, Sep 04, 2007 at 02:47:50PM +0400, Anton Vorontsov wrote:
+> > > _and system GPIOs_ :-)
+> > 
+> > Yup, firmware should set up gpios, to make initial kernel boot.
+> 
+> No, it should set all pins and similar setup-once type initialization
+> that is board-specific rather than device-specific -- there's no reason
+> for the kernel to need to care about that sort of thing.
+> 
+> > After that, kernel can and should manage GPIOs. Few examples.
+> > 
+> > Say units (like USB or SPI) can work in very different modes. And
+> > it's okay if user want to change device mode in the runtime.
+> 
+> This is a special case that warrants kernel involvement.  It should not
+> be used as justification for the bootloader leaving pins unconfigured in
+> the majority of cases where it does not make sense to change them at
+> runtime.
+> 
+> > Another example, power management - if some unit temporarily unused,
+> > to save power GPIOs should be set up differently. Say if SPI unit
+> > turned off (unused just now), it's wise to bring their dedicated
+> > GPIOs to "power saving" state (be it output0/1 or input, it
+> > depends).
+> 
+> The kernel is of course welcome to do so -- and this may be a valid
+> reason to attach pin information to specific device nodes, if it actually
+> saves a non-negligible amount of power -- but it's not a reason to force
+> the kernel to have to care by not setting things up in the firmware.
 
-hi,
-thank you much for this hint. this was the last thing i thought of... ;)
+Well, I might agree here. But to me it seems unnatural that I have to
+upgrade bootloader to use SPI -- I can already boot the kernel.
 
-so long, keep on cross-compiling! :)
+Bootloader's duties are finished when kernel booted. And if already
+running kernel is unable to do something, it's not bootloader's fault
+anymore, but kernel's itself. At least I like to think so. Maybe I'm
+wrong, yet not sure. ;-)
 
-regards,
-thomas
+And from the practical point of view, upgrading bootloader is much
+more error-prone and risky for the users without proper rescue tools
+and knowledge. Kernel is easier to deploy after bug-fixing (and
+wrongly set up GPIO pin is a bug). That's why I tend to like "dumb
+and simple" bootloaders and do not hang up too much duties on it.
+
+Anyhow, all above is just my own preference, I'm not arguing at
+all, because personally I'm fine with any option, be it dts, board
+file, device driver's file, the bootloader, or all at once. ;-)
+
+> -Scott
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
