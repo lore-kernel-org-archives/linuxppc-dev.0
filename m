@@ -1,24 +1,30 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DEF3CDDF40
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:37:38 +1000 (EST)
-Date: Wed, 5 Sep 2007 12:37:26 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 3/9] 8xx: Add pin and clock setting functions.
-Message-ID: <20070905173726.GA26917@ld0162-tx32.am.freescale.net>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201719.GC24260@ld0162-tx32.am.freescale.net>
-	<20070830013833.4c4d5d0b@localhost.localdomain>
-	<20070831204418.GA3461@ld0162-tx32.am.freescale.net>
-	<20070905113957.2ed9e498@localhost.localdomain>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1774ADDF4B
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:41:33 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l85HfUOh006570
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 13:41:30 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l85HfUDi428862
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:41:30 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l85HfUnl002573
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:41:30 -0600
+Date: Wed, 5 Sep 2007 12:41:28 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
+Message-ID: <20070905124128.7432d6fd@weaponx.rchland.ibm.com>
+In-Reply-To: <20070829133520.GA19925@ru.mvista.com>
+References: <20070829133520.GA19925@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905113957.2ed9e498@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,41 +35,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 11:39:57AM +0400, Vitaly Bordug wrote:
-> > Note that this code is mostly duplicated from the existing CPM2
-> > version.
-> > 
-> Then it would be good to mention that in short comment block before function.
+On Wed, 29 Aug 2007 17:35:20 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-The code would very quickly become unreadable if we kept comments around
-for every movement of code.  Given the current state of things, it's
-pretty much a given that most functions in commproc.c have a
-corresponding function in cpm2_common.c, and vice versa.
+> The following patches add initial PowerPC 440EPx Sequoia board support.
+> The code is based mainly on the Bamboo board support by Josh Boyer.
+> These patches have been modified according the comments for the previous
+> 440EPx Sequoia patch series.
 
-I'd like to merge some of it at some point.
+FYI, I'll be pulling this series into my git tree this week.
 
-> > > We're adding helper functions and should be ready that something
-> > > somewhere won't work as expected.  
-> > 
-> > Could you elaborate on what you expect to possibly not work, or what
-> > we should do to "be ready"?
-> Some new PQ-like board being added to powerpc. I mean, each newly-added
-> non-static function should have some sort of description unless
-> it(function) is completely self-explanatory.
-
-I thought it was completely self-explanatory.
-
-> Just a few words either here as a comment or in patch description, what
-> the function supposed to do and which way, so that someone not familiar
-> with cpm/cpm2, would quickly understand what's happening in there.
-
-If they're not familiar with CPM, and want to understand how hardware
-setup for it works, the user's manual for one of the chips would be a
-good place to start...  As it is, it's pretty clear without knowledge of
-the CPM that it's a helper function that sets and clears bits in certain
-registers.
-
-Since we seem to have differing views of the target audience, could you
-suggest a specific wording that you're looking for?
-
--Scott
+josh
