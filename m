@@ -1,18 +1,19 @@
 Return-Path: <dan@embeddedalley.com>
-Received: from smtp110.biz.mail.mud.yahoo.com (smtp110.biz.mail.mud.yahoo.com
-	[68.142.201.179]) by ozlabs.org (Postfix) with SMTP id 15E11DE053
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:27:28 +1000 (EST)
-In-Reply-To: <20070905205951.GA1047@ld0162-tx32.am.freescale.net>
+Received: from smtp109.biz.mail.mud.yahoo.com (smtp109.biz.mail.mud.yahoo.com
+	[68.142.201.178]) by ozlabs.org (Postfix) with SMTP id 8B3DADE019
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:42:00 +1000 (EST)
+In-Reply-To: <20070905222310.GA11433@ld0162-tx32.am.freescale.net>
 References: <20070905192727.GA32365@ld0162-tx32.am.freescale.net>
 	<4F58F233-56E5-4910-9D33-28A44FCB393C@embeddedalley.com>
 	<20070905205301.GA807@ld0162-tx32.am.freescale.net>
-	<20070905205951.GA1047@ld0162-tx32.am.freescale.net>
+	<CF1B6B97-44FA-4002-9030-3C1A20F2F2F4@embeddedalley.com>
+	<20070905222310.GA11433@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <63F66EED-7808-40A3-B63D-AA53664CB1A0@embeddedalley.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <04819433-30F0-4789-864D-57B474485E32@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
 Subject: Re: [PATCH 1/9] 8xx: Fix CONFIG_PIN_TLB.
-Date: Wed, 5 Sep 2007 15:27:31 -0700
+Date: Wed, 5 Sep 2007 15:42:03 -0700
 To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,25 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 5, 2007, at 1:59 PM, Scott Wood wrote:
+On Sep 5, 2007, at 3:23 PM, Scott Wood wrote:
 
-> BTW, it seems I misremembered what the conflict was -- it's not with
-> ioremap space, but with the default location of the consistent memory
-> pool (at 0xff100000).
+> The IMMRs I've seen from the bootloader are ff000000 (Freescale  
+> boards)
+> and fa200000 (Embedded Planet).  AFAICT, the number of fixed TLB  
+> entries
+> is fixed at 4 on these chips, so using the fourth for flash  
+> wouldn't take
+> away any general-purpose TLB entries.
 
-Change the configuration option to move this somewhere
-else, outside of the wired mapping.
+On these same boards, the memory controllers are usually
+configured to put the flash somewhere in that space as well.
+This is useful for flash file system performance.  If you don't
+need that, you can allocate the space differently.  The point is
+cover as much as you can with the IMMR entry and beyond.
+Some people like to map external devices out there.
 
-As I said in the last message, these lower end processors
-are very resource challenged, and we need to clever
-about the memory mapping and use of the TLBs.  This
-isn't a place to be creating fancy memory maps and
-algorithms to manage them.  Use maximum mappings
-whenever possible, configure the memory controller
-to pack as much stuff into this single TLB mapping
-as possible.  Something configurable like this memory
-pool should not be a reason to give up these performance
-enhancements.
+The 8xx variants have different TLB configurations.
+You can't assume anything here.  Some parts don't have
+enough TLBs to make pinning useful, some allow hardware
+wiring of only 2.  When using hardware wiring, it's always
+the upper entries that are wired.  Since the number of
+entries varies, you can't assume which TLB index
+will be wired.
+
+> I certainly agree that it would be nice to check -- my immediate  
+> goal is
+> to get things working, though.
+
+It's more than nice.  If you want this to work correctly
+and also get the performance enhancement, it needs
+to be done.
 
 Thanks.
 
