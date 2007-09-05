@@ -4,13 +4,13 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B8CFDFBE1
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 05:28:33 +1000 (EST)
-Date: Wed, 5 Sep 2007 14:28:20 -0500
+	by ozlabs.org (Postfix) with ESMTP id EE365DFC10
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 05:28:34 +1000 (EST)
+Date: Wed, 5 Sep 2007 14:28:22 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 8/9] 8xx: Adder 875 support
-Message-ID: <20070905192820.GG32398@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 9/9] 8xx: Embedded Planet EP88xC support
+Message-ID: <20070905192822.GH32398@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070905192727.GA32365@ld0162-tx32.am.freescale.net>
@@ -24,26 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This board is also resold by Freescale under the names
+"QUICCStart MPC885 Evaluation System" and "CWH-PPC-885XN-VE".
+
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/dts/adder875.dts    |  159 +++++++
- arch/powerpc/configs/adder875_config  |  794 +++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/8xx/Kconfig    |    9 +
+ arch/powerpc/boot/Makefile            |    4 +-
+ arch/powerpc/boot/dts/ep88xc.dts      |  191 +++++++++
+ arch/powerpc/boot/ep88xc.c            |   54 +++
+ arch/powerpc/boot/wrapper             |    4 +
+ arch/powerpc/configs/ep88xc_defconfig |  751 +++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/8xx/Kconfig    |   10 +
  arch/powerpc/platforms/8xx/Makefile   |    1 +
- arch/powerpc/platforms/8xx/adder875.c |  122 +++++
- 5 files changed, 1085 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/adder875.dts
- create mode 100644 arch/powerpc/configs/adder875_config
- create mode 100644 arch/powerpc/platforms/8xx/adder875.c
+ arch/powerpc/platforms/8xx/ep88xc.c   |  176 ++++++++
+ 8 files changed, 1190 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/ep88xc.dts
+ create mode 100644 arch/powerpc/boot/ep88xc.c
+ create mode 100644 arch/powerpc/configs/ep88xc_defconfig
+ create mode 100644 arch/powerpc/platforms/8xx/ep88xc.c
 
-diff --git a/arch/powerpc/boot/dts/adder875.dts b/arch/powerpc/boot/dts/adder875.dts
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index e6bed21..7fc2c33 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -49,7 +49,8 @@ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c \
+-		cuboot-8xx.c cuboot-pq2.c fixed-head.S raw-platform.c
++		cuboot-8xx.c cuboot-pq2.c fixed-head.S raw-platform.c \
++		ep88xc.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -142,6 +143,7 @@ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ 
+ ifneq ($(CONFIG_DEVICE_TREE),"")
+ image-$(CONFIG_PPC_8xx)			+= cuImage.8xx
++image-$(CONFIG_PPC_EP88XC)		+= zImage.ep88xc
+ image-$(CONFIG_8260)			+= cuImage.pq2
+ image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
+ image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
+diff --git a/arch/powerpc/boot/dts/ep88xc.dts b/arch/powerpc/boot/dts/ep88xc.dts
 new file mode 100644
-index 0000000..ac1e523
+index 0000000..fbf79b5
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/adder875.dts
-@@ -0,0 +1,159 @@
++++ b/arch/powerpc/boot/dts/ep88xc.dts
+@@ -0,0 +1,191 @@
 +/*
-+ * MPC885 ADS Device Tree Source
++ * EP88xC Device Tree Source
 + *
 + * Copyright 2006 MontaVista Software, Inc.
 + * Copyright 2007 Freescale Semiconductor, Inc.
@@ -56,25 +85,25 @@ index 0000000..ac1e523
 +
 +
 +/ {
-+	model = "Analogue & Micro Adder MPC875";
-+	compatible = "analogue-and-micro,adder875";
++	model = "EP88xC";
++	compatible = "fsl,ep88xc";
 +	#address-cells = <1>;
-+	#size-cells = <mem_size_cells: 1>;
++	#size-cells = <1>;
 +
 +	cpus {
 +		#address-cells = <1>;
 +		#size-cells = <0>;
 +
-+		PowerPC,875@0 {
++		PowerPC,885@0 {
 +			device_type = "cpu";
 +			reg = <0>;
 +			d-cache-line-size = <d#16>;
 +			i-cache-line-size = <d#16>;
 +			d-cache-size = <d#8192>;
 +			i-cache-size = <d#8192>;
-+			timebase-frequency = <timebase: d#2500000>;
-+			bus-frequency = <d#50000000>;
-+			clock-frequency = <d#50000000>;
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
 +			interrupts = <f 2>;	// decrementer interrupt
 +			interrupt-parent = <&PIC>;
 +		};
@@ -82,33 +111,34 @@ index 0000000..ac1e523
 +
 +	memory {
 +		device_type = "memory";
-+		reg = <0 memsize: 01000000>;
++		reg = <0 0>;
 +	};
 +
 +	chipselect {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		ranges;
++		board-control@fa400000 {
++			reg = <fa400000 10>;
++			compatible = "fsl,ep88xc-bcsr";
++		};
 +
 +		flash@fe000000 {
 +			device_type = "rom";
 +			compatible = "direct-mapped";
-+			reg = <fe000000 800000>;
++			reg = <fe000000 2000000>;
 +			probe-type = "CFI";
-+			bank-width = <2>;
++			bank-width = <4>;
 +		};
 +	};
 +
-+	soc@ff000000 {
-+		compatible = "fsl,mpc875", "fsl,pq1-soc";
++	soc@fa200000 {
++		compatible = "fsl,mpc885", "fsl,pq1-soc";
 +		#address-cells = <1>;
 +		#size-cells = <1>;
 +		device_type = "soc";
-+		ranges = <0 ff000000 00004000>;
-+		bus-frequency = <d#50000000>;
++		ranges = <0 fa200000 00004000>;
++		bus-frequency = <0>;
 +
 +		mdio@e00 {
-+			compatible = "fsl,mpc875-fec-mdio", "fsl,pq1-fec-mdio";
++			compatible = "fsl,mpc885-fec-mdio", "fsl,pq1-fec-mdio";
 +			reg = <e00 188>;
 +			#address-cells = <1>;
 +			#size-cells = <0>;
@@ -126,10 +156,10 @@ index 0000000..ac1e523
 +
 +		ethernet@e00 {
 +			device_type = "network";
-+			compatible = "fsl,mpc875-fec-enet",
++			compatible = "fsl,mpc885-fec-enet",
 +			             "fsl,pq1-fec-enet";
 +			reg = <e00 188>;
-+			local-mac-address = [ 00 e0 0c 00 84 00 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
 +			interrupts = <3 1>;
 +			interrupt-parent = <&PIC>;
 +			phy-handle = <&PHY0>;
@@ -138,10 +168,10 @@ index 0000000..ac1e523
 +
 +		ethernet@1e00 {
 +			device_type = "network";
-+			compatible = "fsl,mpc875-fec-enet",
++			compatible = "fsl,mpc885-fec-enet",
 +			             "fsl,pq1-fec-enet";
 +			reg = <1e00 188>;
-+			local-mac-address = [ 00 e0 0c 00 84 01 ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
 +			interrupts = <7 1>;
 +			interrupt-parent = <&PIC>;
 +			phy-handle = <&PHY1>;
@@ -152,13 +182,24 @@ index 0000000..ac1e523
 +			interrupt-controller;
 +			#interrupt-cells = <2>;
 +			reg = <0 24>;
-+			compatible = "fsl,mpc875-pic", "fsl,pq1-pic";
++			compatible = "fsl,mpc885-pic", "fsl,pq1-pic";
++		};
++
++		pcmcia@80 {
++			#address-cells = <3>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			compatible = "fsl,pq-pcmcia";
++			device_type = "pcmcia";
++			reg = <80 80>;
++			interrupt-parent = <&PIC>;
++			interrupts = <d 1>;
 +		};
 +
 +		cpm@9c0 {
 +			#address-cells = <1>;
 +			#size-cells = <1>;
-+			compatible = "fsl,mpc875-cpm", "fsl,cpm1";
++			compatible = "fsl,mpc885-cpm", "fsl,cpm1";
 +			command-proc = <9c0>;
 +			interrupts = <0>;	// cpm error interrupt
 +			interrupt-parent = <&CPM_PIC>;
@@ -166,11 +207,10 @@ index 0000000..ac1e523
 +			ranges;
 +
 +			brg@9f0 {
-+				compatible = "fsl,mpc875-brg",
++				compatible = "fsl,mpc885-brg",
 +				             "fsl,cpm1-brg",
 +				             "fsl,cpm-brg";
 +				reg = <9f0 10>;
-+				clock-frequency = <d#50000000>;
 +			};
 +
 +			CPM_PIC: interrupt-controller@930 {
@@ -179,38 +219,134 @@ index 0000000..ac1e523
 +				interrupts = <5 2 0 2>;
 +				interrupt-parent = <&PIC>;
 +				reg = <930 20>;
-+				compatible = "fsl,mpc875-cpm-pic",
++				compatible = "fsl,mpc885-cpm-pic",
 +				             "fsl,cpm1-pic";
 +			};
 +
++			// MON-1
 +			serial@a80 {
 +				device_type = "serial";
-+				compatible = "fsl,mpc875-smc-uart",
++				compatible = "fsl,mpc885-smc-uart",
 +				             "fsl,cpm1-smc-uart";
 +				reg = <a80 10 3e80 40>;
 +				interrupts = <4>;
 +				interrupt-parent = <&CPM_PIC>;
 +				fsl,cpm-brg = <1>;
 +				fsl,cpm-command = <0090>;
-+				current-speed = <115200>;
++				linux,planetcore-label = "SMC1";
++			};
++
++			// SER-1
++			serial@a20 {
++				device_type = "serial";
++				compatible = "fsl,mpc885-scc-uart",
++				             "fsl,cpm1-scc-uart";
++				reg = <a20 20 3d00 80>;
++				interrupts = <1d>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-brg = <2>;
++				fsl,cpm-command = <0040>;
++				linux,planetcore-label = "SCC2";
++			};
++
++			usb@a00 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "fsl,mpc885-usb",
++				             "fsl,cpm1-usb";
++				reg = <a00 18 1c00 80>;
++				interrupt-parent = <&CPM_PIC>;
++				interrupts = <1e>;
++				fsl,cpm-command = <0000>;
 +			};
 +		};
 +	};
-+
-+	chosen {
-+		linux,stdout-path = "/soc/cpm/serial@a80";
-+	};
 +};
-diff --git a/arch/powerpc/configs/adder875_config b/arch/powerpc/configs/adder875_config
+diff --git a/arch/powerpc/boot/ep88xc.c b/arch/powerpc/boot/ep88xc.c
 new file mode 100644
-index 0000000..f49f30b
+index 0000000..6b87cdc
 --- /dev/null
-+++ b/arch/powerpc/configs/adder875_config
-@@ -0,0 +1,794 @@
++++ b/arch/powerpc/boot/ep88xc.c
+@@ -0,0 +1,54 @@
++/*
++ * Embedded Planet EP88xC with PlanetCore firmware
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include "ops.h"
++#include "stdio.h"
++#include "planetcore.h"
++#include "mpc8xx.h"
++
++static char *table;
++static u64 mem_size;
++
++static void platform_fixups(void)
++{
++	u64 val;
++
++	dt_fixup_memory(0, mem_size);
++	planetcore_set_mac_addrs(table);
++
++	if (!planetcore_get_decimal(table, PLANETCORE_KEY_CRYSTAL_HZ, &val)) {
++		printf("No PlanetCore crystal frequency key.\r\n");
++		return;
++	}
++
++	mpc885_fixup_clocks(val);
++}
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++                   unsigned long r6, unsigned long r7)
++{
++	table = (char *)r3;
++	planetcore_prepare_table(table);
++
++	if (!planetcore_get_decimal(table, PLANETCORE_KEY_MB_RAM, &mem_size))
++		return;
++
++	mem_size *= 1024 * 1024;
++	simple_alloc_init(_end, mem_size - (unsigned long)_end, 32, 64);
++
++	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
++
++	planetcore_set_stdout_path(table);
++
++	serial_console_init();
++	platform_ops.fixups = platform_fixups;
++}
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index a6501e9..66305cd 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -159,6 +159,10 @@ raw)
+     platformo="$object/fixed-head.o $object/raw-platform.o"
+     binary=y
+     ;;
++ep88xc)
++    platformo="$object/fixed-head.o $object/$platform.o"
++    binary=y
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+diff --git a/arch/powerpc/configs/ep88xc_defconfig b/arch/powerpc/configs/ep88xc_defconfig
+new file mode 100644
+index 0000000..8cf9d03
+--- /dev/null
++++ b/arch/powerpc/configs/ep88xc_defconfig
+@@ -0,0 +1,751 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.23-rc4
-+# Fri Aug 31 17:49:26 2007
++# Wed Sep  5 13:42:29 2007
 +#
 +# CONFIG_PPC64 is not set
 +
@@ -331,7 +467,8 @@ index 0000000..f49f30b
 +# CONFIG_MPC8XXFADS is not set
 +# CONFIG_MPC86XADS is not set
 +# CONFIG_MPC885ADS is not set
-+CONFIG_PPC_ADDER875=y
++# CONFIG_PPC_ADDER875 is not set
++CONFIG_PPC_EP88XC=y
 +
 +#
 +# MPC8xx CPM Options
@@ -367,11 +504,11 @@ index 0000000..f49f30b
 +# Kernel options
 +#
 +# CONFIG_HIGHMEM is not set
-+# CONFIG_HZ_100 is not set
++CONFIG_HZ_100=y
 +# CONFIG_HZ_250 is not set
 +# CONFIG_HZ_300 is not set
-+CONFIG_HZ_1000=y
-+CONFIG_HZ=1000
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=100
 +CONFIG_PREEMPT_NONE=y
 +# CONFIG_PREEMPT_VOLUNTARY is not set
 +# CONFIG_PREEMPT is not set
@@ -393,13 +530,13 @@ index 0000000..f49f30b
 +CONFIG_ZONE_DMA_FLAG=1
 +CONFIG_BOUNCE=y
 +CONFIG_VIRT_TO_BUS=y
-+# CONFIG_PROC_DEVICETREE is not set
++CONFIG_PROC_DEVICETREE=y
 +# CONFIG_CMDLINE_BOOL is not set
 +# CONFIG_PM is not set
 +# CONFIG_SECCOMP is not set
 +CONFIG_WANT_DEVICE_TREE=y
-+CONFIG_BUILD_RAW_IMAGE=y
-+CONFIG_DEVICE_TREE="adder875.dts"
++# CONFIG_BUILD_RAW_IMAGE is not set
++CONFIG_DEVICE_TREE="ep88xc.dts"
 +CONFIG_ISA_DMA_API=y
 +
 +#
@@ -632,9 +769,9 @@ index 0000000..f49f30b
 +# MII PHY device drivers
 +#
 +# CONFIG_MARVELL_PHY is not set
-+CONFIG_DAVICOM_PHY=y
++# CONFIG_DAVICOM_PHY is not set
 +# CONFIG_QSEMI_PHY is not set
-+# CONFIG_LXT_PHY is not set
++CONFIG_LXT_PHY=y
 +# CONFIG_CICADA_PHY is not set
 +# CONFIG_VITESSE_PHY is not set
 +# CONFIG_SMSC_PHY is not set
@@ -668,55 +805,12 @@ index 0000000..f49f30b
 +#
 +# Input device support
 +#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+# CONFIG_INPUT_POLLDEV is not set
-+
-+#
-+# Userland interfaces
-+#
-+CONFIG_INPUT_MOUSEDEV=y
-+CONFIG_INPUT_MOUSEDEV_PSAUX=y
-+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-+# CONFIG_INPUT_JOYDEV is not set
-+# CONFIG_INPUT_TSDEV is not set
-+# CONFIG_INPUT_EVDEV is not set
-+# CONFIG_INPUT_EVBUG is not set
-+
-+#
-+# Input Device Drivers
-+#
-+CONFIG_INPUT_KEYBOARD=y
-+CONFIG_KEYBOARD_ATKBD=y
-+# CONFIG_KEYBOARD_SUNKBD is not set
-+# CONFIG_KEYBOARD_LKKBD is not set
-+# CONFIG_KEYBOARD_XTKBD is not set
-+# CONFIG_KEYBOARD_NEWTON is not set
-+# CONFIG_KEYBOARD_STOWAWAY is not set
-+CONFIG_INPUT_MOUSE=y
-+CONFIG_MOUSE_PS2=y
-+CONFIG_MOUSE_PS2_ALPS=y
-+CONFIG_MOUSE_PS2_LOGIPS2PP=y
-+CONFIG_MOUSE_PS2_SYNAPTICS=y
-+CONFIG_MOUSE_PS2_LIFEBOOK=y
-+CONFIG_MOUSE_PS2_TRACKPOINT=y
-+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-+# CONFIG_MOUSE_SERIAL is not set
-+# CONFIG_MOUSE_VSXXXAA is not set
-+# CONFIG_INPUT_JOYSTICK is not set
-+# CONFIG_INPUT_TABLET is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+# CONFIG_INPUT_MISC is not set
++# CONFIG_INPUT is not set
 +
 +#
 +# Hardware I/O ports
 +#
-+CONFIG_SERIO=y
-+CONFIG_SERIO_I8042=y
-+CONFIG_SERIO_SERPORT=y
-+CONFIG_SERIO_LIBPS2=y
-+# CONFIG_SERIO_RAW is not set
++# CONFIG_SERIO is not set
 +# CONFIG_GAMEPORT is not set
 +
 +#
@@ -788,7 +882,7 @@ index 0000000..f49f30b
 +#
 +# CONFIG_DISPLAY_SUPPORT is not set
 +# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=y
++# CONFIG_VIDEO_OUTPUT_CONTROL is not set
 +# CONFIG_FB is not set
 +# CONFIG_FB_IBM_GXT4500 is not set
 +
@@ -796,7 +890,6 @@ index 0000000..f49f30b
 +# Sound
 +#
 +# CONFIG_SOUND is not set
-+# CONFIG_HID_SUPPORT is not set
 +# CONFIG_USB_SUPPORT is not set
 +# CONFIG_MMC is not set
 +# CONFIG_NEW_LEDS is not set
@@ -1002,60 +1095,59 @@ index 0000000..f49f30b
 +# CONFIG_SECURITY is not set
 +# CONFIG_CRYPTO is not set
 diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 0d4ff0a..dab557b 100644
+index dab557b..ade6efd 100644
 --- a/arch/powerpc/platforms/8xx/Kconfig
 +++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -33,6 +33,15 @@ config MPC885ADS
- 	  The MPC885ADS is meant to serve as a platform for s/w and h/w
- 	  development around the MPC885 processor family.
+@@ -42,6 +42,16 @@ config PPC_ADDER875
+ 	  This enables support for the Analogue & Micro Adder 875
+ 	  board.
  
-+config PPC_ADDER875
-+	bool "Analogue & Micro Adder 875"
++config PPC_EP88XC
++	bool "Embedded Planet EP88xC (a.k.a. CWH-PPC-885XN-VE)"
 +	select CPM1
 +	select PPC_CPM_NEW_BINDING
-+	select BUILD_RAW_IMAGE
 +	help
-+	  This enables support for the Analogue & Micro Adder 875
-+	  board.
++	  This enables support for the Embedded Planet EP88xC board.
++
++	  This board is also resold by Freescale as the QUICCStart
++	  MPC885 Evaluation System and/or the CWH-PPC-885XN-VE.
 +
  endchoice
  
  menu "Freescale Ethernet driver platform-specific options"
 diff --git a/arch/powerpc/platforms/8xx/Makefile b/arch/powerpc/platforms/8xx/Makefile
-index 5e2dae3..e2c438b 100644
+index e2c438b..d7d8332 100644
 --- a/arch/powerpc/platforms/8xx/Makefile
 +++ b/arch/powerpc/platforms/8xx/Makefile
-@@ -4,3 +4,4 @@
- obj-$(CONFIG_PPC_8xx)	  += m8xx_setup.o
+@@ -5,3 +5,4 @@ obj-$(CONFIG_PPC_8xx)	  += m8xx_setup.o
  obj-$(CONFIG_MPC885ADS)   += mpc885ads_setup.o
  obj-$(CONFIG_MPC86XADS)   += mpc86xads_setup.o
-+obj-$(CONFIG_PPC_ADDER875) += adder875.o
-diff --git a/arch/powerpc/platforms/8xx/adder875.c b/arch/powerpc/platforms/8xx/adder875.c
+ obj-$(CONFIG_PPC_ADDER875) += adder875.o
++obj-$(CONFIG_PPC_EP88XC)  += ep88xc.o
+diff --git a/arch/powerpc/platforms/8xx/ep88xc.c b/arch/powerpc/platforms/8xx/ep88xc.c
 new file mode 100644
-index 0000000..fc76d79
+index 0000000..c458e78
 --- /dev/null
-+++ b/arch/powerpc/platforms/8xx/adder875.c
-@@ -0,0 +1,122 @@
-+/* Analogue & Micro Adder MPC875 board support
++++ b/arch/powerpc/platforms/8xx/ep88xc.c
+@@ -0,0 +1,176 @@
++/*
++ * Platform setup for the Embedded Planet EP88xC board
 + *
 + * Author: Scott Wood <scottwood@freescale.com>
++ * Copyright 2007 Freescale Semiconductor, Inc.
 + *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
 + */
 +
 +#include <linux/init.h>
-+#include <linux/fs_enet_pd.h>
 +#include <linux/of_platform.h>
 +
-+#include <asm/time.h>
 +#include <asm/machdep.h>
-+#include <asm/commproc.h>
-+#include <asm/fs_pd.h>
++#include <asm/io.h>
 +#include <asm/udbg.h>
++#include <asm/commproc.h>
 +
 +#include <sysdev/commproc.h>
 +
@@ -1063,70 +1155,126 @@ index 0000000..fc76d79
 +	int port, pin, flags;
 +};
 +
-+static struct cpm_pin adder875_pins[] = {
++static struct cpm_pin ep88xc_pins[] = {
 +	/* SMC1 */
-+	{CPM_PORTB, 24, CPM_PIN_INPUT}, /* RX */
-+	{CPM_PORTB, 25, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
++	{1, 24, CPM_PIN_INPUT}, /* RX */
++	{1, 25, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
++
++	/* SCC2 */
++	{0, 12, CPM_PIN_INPUT}, /* TX */
++	{0, 13, CPM_PIN_INPUT}, /* RX */
++	{2, 8, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_GPIO}, /* CD */
++	{2, 9, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_GPIO}, /* CTS */
++	{2, 14, CPM_PIN_INPUT}, /* RTS */
 +
 +	/* MII1 */
-+	{CPM_PORTA, 0, CPM_PIN_INPUT},
-+	{CPM_PORTA, 1, CPM_PIN_INPUT},
-+	{CPM_PORTA, 2, CPM_PIN_INPUT},
-+	{CPM_PORTA, 3, CPM_PIN_INPUT},
-+	{CPM_PORTA, 4, CPM_PIN_OUTPUT},
-+	{CPM_PORTA, 10, CPM_PIN_OUTPUT},
-+	{CPM_PORTA, 11, CPM_PIN_OUTPUT},
-+	{CPM_PORTB, 19, CPM_PIN_INPUT},
-+	{CPM_PORTB, 31, CPM_PIN_INPUT},
-+	{CPM_PORTC, 12, CPM_PIN_INPUT},
-+	{CPM_PORTC, 13, CPM_PIN_INPUT},
-+	{CPM_PORTE, 30, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 31, CPM_PIN_OUTPUT},
++	{0, 0, CPM_PIN_INPUT},
++	{0, 1, CPM_PIN_INPUT},
++	{0, 2, CPM_PIN_INPUT},
++	{0, 3, CPM_PIN_INPUT},
++	{0, 4, CPM_PIN_OUTPUT},
++	{0, 10, CPM_PIN_OUTPUT},
++	{0, 11, CPM_PIN_OUTPUT},
++	{1, 19, CPM_PIN_INPUT},
++	{1, 31, CPM_PIN_INPUT},
++	{2, 12, CPM_PIN_INPUT},
++	{2, 13, CPM_PIN_INPUT},
++	{3, 8, CPM_PIN_INPUT},
++	{4, 30, CPM_PIN_OUTPUT},
++	{4, 31, CPM_PIN_OUTPUT},
 +
 +	/* MII2 */
-+	{CPM_PORTE, 14, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 15, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 16, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 17, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 18, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 19, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 20, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
-+	{CPM_PORTE, 21, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 22, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 23, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 24, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 25, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 26, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 27, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
-+	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
++	{4, 14, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 15, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 16, CPM_PIN_OUTPUT},
++	{4, 17, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 18, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 19, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 20, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{4, 21, CPM_PIN_OUTPUT},
++	{4, 22, CPM_PIN_OUTPUT},
++	{4, 23, CPM_PIN_OUTPUT},
++	{4, 24, CPM_PIN_OUTPUT},
++	{4, 25, CPM_PIN_OUTPUT},
++	{4, 26, CPM_PIN_OUTPUT},
++	{4, 27, CPM_PIN_OUTPUT},
++	{4, 28, CPM_PIN_OUTPUT},
++	{4, 29, CPM_PIN_OUTPUT},
++
++	/* USB */
++	{0, 6, CPM_PIN_INPUT},  /* CLK2 */
++	{0, 14, CPM_PIN_INPUT}, /* USBOE */
++	{0, 15, CPM_PIN_INPUT}, /* USBRXD */
++	{2, 6, CPM_PIN_OUTPUT}, /* USBTXN */
++	{2, 7, CPM_PIN_OUTPUT}, /* USBTXP */
++	{2, 10, CPM_PIN_INPUT}, /* USBRXN */
++	{2, 11, CPM_PIN_INPUT}, /* USBRXP */
++
++	/* Misc */
++	{1, 26, CPM_PIN_INPUT}, /* BRGO2 */
++	{1, 27, CPM_PIN_INPUT}, /* BRGO1 */
 +};
 +
 +static void __init init_ioports(void)
 +{
 +	int i;
 +
-+	for (i = 0; i < ARRAY_SIZE(adder875_pins); i++) {
-+		struct cpm_pin *pin = &adder875_pins[i];
++	for (i = 0; i < ARRAY_SIZE(ep88xc_pins); i++) {
++		struct cpm_pin *pin = &ep88xc_pins[i];
 +		cpm1_set_pin(pin->port, pin->pin, pin->flags);
 +	}
 +
 +	cpm1_clk_setup(CPM_CLK_SMC1, CPM_BRG1, CPM_CLK_RTX);
-+
-+	/* Set FEC1 and FEC2 to MII mode */
-+	clrbits32(&mpc8xx_immr->im_cpm.cp_cptr, 0x00000180);
++	cpm1_clk_setup(CPM_CLK_SCC1, CPM_CLK2, CPM_CLK_TX); /* USB */
++	cpm1_clk_setup(CPM_CLK_SCC1, CPM_CLK2, CPM_CLK_RX);
++	cpm1_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_TX);
++	cpm1_clk_setup(CPM_CLK_SCC2, CPM_BRG2, CPM_CLK_RX);
 +}
 +
-+static void __init adder875_setup(void)
++static u8 __iomem *ep88xc_bcsr;
++
++#define BCSR7_SCC2_ENABLE 0x10
++
++#define BCSR8_PHY1_ENABLE 0x80
++#define BCSR8_PHY1_POWER  0x40
++#define BCSR8_PHY2_ENABLE 0x20
++#define BCSR8_PHY2_POWER  0x10
++
++#define BCSR9_USB_ENABLE  0x80
++#define BCSR9_USB_POWER   0x40
++#define BCSR9_USB_HOST    0x20
++#define BCSR9_USB_FULL_SPEED_TARGET 0x10
++
++static void __init ep88xc_setup_arch(void)
 +{
++	struct device_node *np;
++
 +	cpm_reset();
 +	init_ioports();
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,ep88xc-bcsr");
++	if (!np) {
++		printk(KERN_CRIT "Could not find fsl,ep88xc-bcsr node\n");
++		return;
++	}
++
++	ep88xc_bcsr = of_iomap(np, 0);
++	of_node_put(np);
++
++	if (!ep88xc_bcsr) {
++		printk(KERN_CRIT "Could not remap BCSR\n");
++		return;
++	}
++
++	setbits8(&ep88xc_bcsr[7], BCSR7_SCC2_ENABLE);
++	setbits8(&ep88xc_bcsr[8], BCSR8_PHY1_ENABLE | BCSR8_PHY1_POWER |
++	                          BCSR8_PHY2_ENABLE | BCSR8_PHY2_POWER);
 +}
 +
-+static int __init adder875_probe(void)
++static int __init ep88xc_probe(void)
 +{
 +	unsigned long root = of_get_flat_dt_root();
-+	return of_flat_dt_is_compatible(root, "analogue-and-micro,adder875");
++	return of_flat_dt_is_compatible(root, "fsl,ep88xc");
 +}
 +
 +static struct of_device_id __initdata of_bus_ids[] = {
@@ -1139,21 +1287,21 @@ index 0000000..fc76d79
 +static int __init declare_of_platform_devices(void)
 +{
 +	/* Publish the QE devices */
-+	if (machine_is(adder875))
++	if (machine_is(ep88xc))
 +		of_platform_bus_probe(NULL, of_bus_ids, NULL);
 +
 +	return 0;
 +}
 +device_initcall(declare_of_platform_devices);
 +
-+define_machine(adder875) {
-+	.name = "Adder MPC875",
-+	.probe = adder875_probe,
-+	.setup_arch = adder875_setup,
++define_machine(ep88xc) {
++	.name = "Embedded Planet EP88xC",
++	.probe = ep88xc_probe,
++	.setup_arch = ep88xc_setup_arch,
 +	.init_IRQ = m8xx_pic_init,
-+	.get_irq = mpc8xx_get_irq,
++	.get_irq	= mpc8xx_get_irq,
 +	.restart = mpc8xx_restart,
-+	.calibrate_decr = generic_calibrate_decr,
++	.calibrate_decr = mpc8xx_calibrate_decr,
 +	.set_rtc_time = mpc8xx_set_rtc_time,
 +	.get_rtc_time = mpc8xx_get_rtc_time,
 +	.progress = udbg_progress,
