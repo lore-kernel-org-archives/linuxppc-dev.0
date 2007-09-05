@@ -1,22 +1,25 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 746E1DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:33:05 +1000 (EST)
-Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l85HVo2G027816
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 21:31:50 +0400
-Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l85HVoMS027813
-	for linuxppc-dev@ozlabs.org; Wed, 5 Sep 2007 21:31:50 +0400
-Date: Wed, 5 Sep 2007 21:31:50 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PCI e100 interrupt quirk fix
-Message-ID: <20070905173150.GA27798@ru.mvista.com>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DEF3CDDF40
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:37:38 +1000 (EST)
+Date: Wed, 5 Sep 2007 12:37:26 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 3/9] 8xx: Add pin and clock setting functions.
+Message-ID: <20070905173726.GA26917@ld0162-tx32.am.freescale.net>
+References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+	<20070828201719.GC24260@ld0162-tx32.am.freescale.net>
+	<20070830013833.4c4d5d0b@localhost.localdomain>
+	<20070831204418.GA3461@ld0162-tx32.am.freescale.net>
+	<20070905113957.2ed9e498@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070905113957.2ed9e498@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PCI memory space may have a 64-bit offset on some architectures
-and the actual PCI memory address has to fixed up before remapping.
-So, pci_iomap should be used instead of reading and remapping PCI BAR
-directly.
+On Wed, Sep 05, 2007 at 11:39:57AM +0400, Vitaly Bordug wrote:
+> > Note that this code is mostly duplicated from the existing CPM2
+> > version.
+> > 
+> Then it would be good to mention that in short comment block before function.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
+The code would very quickly become unreadable if we kept comments around
+for every movement of code.  Given the current state of things, it's
+pretty much a given that most functions in commproc.c have a
+corresponding function in cpm2_common.c, and vice versa.
 
---- linux-2.6.orig/drivers/pci/quirks.c	2007-09-04 21:15:43.000000000 +0400
-+++ linux-2.6.bld/drivers/pci/quirks.c	2007-09-05 20:46:14.000000000 +0400
-@@ -1432,9 +1432,9 @@
- static void __devinit quirk_e100_interrupt(struct pci_dev *dev)
- {
- 	u16 command;
--	u32 bar;
- 	u8 __iomem *csr;
- 	u8 cmd_hi;
-+	int rc;
- 
- 	switch (dev->device) {
- 	/* PCI IDs taken from drivers/net/e100.c */
-@@ -1464,16 +1464,17 @@
- 	 * re-enable them when it's ready.
- 	 */
- 	pci_read_config_word(dev, PCI_COMMAND, &command);
--	pci_read_config_dword(dev, PCI_BASE_ADDRESS_0, &bar);
- 
--	if (!(command & PCI_COMMAND_MEMORY) || !bar)
-+	rc = pci_request_region(dev, 0, "e100_quirk");
-+
-+	if (!(command & PCI_COMMAND_MEMORY) || (rc < 0))
- 		return;
- 
--	csr = ioremap(bar, 8);
-+	csr = pci_iomap(dev, 0, 8);
- 	if (!csr) {
- 		printk(KERN_WARNING "PCI: Can't map %s e100 registers\n",
- 			pci_name(dev));
--		return;
-+		goto e100_quirk_exit;
- 	}
- 
- 	cmd_hi = readb(csr + 3);
-@@ -1483,7 +1484,9 @@
- 		writeb(1, csr + 3);
- 	}
- 
--	iounmap(csr);
-+	pci_iounmap(dev, csr);
-+e100_quirk_exit:
-+	pci_release_region(dev, 0);
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_e100_interrupt);
- 
+I'd like to merge some of it at some point.
+
+> > > We're adding helper functions and should be ready that something
+> > > somewhere won't work as expected.  
+> > 
+> > Could you elaborate on what you expect to possibly not work, or what
+> > we should do to "be ready"?
+> Some new PQ-like board being added to powerpc. I mean, each newly-added
+> non-static function should have some sort of description unless
+> it(function) is completely self-explanatory.
+
+I thought it was completely self-explanatory.
+
+> Just a few words either here as a comment or in patch description, what
+> the function supposed to do and which way, so that someone not familiar
+> with cpm/cpm2, would quickly understand what's happening in there.
+
+If they're not familiar with CPM, and want to understand how hardware
+setup for it works, the user's manual for one of the chips would be a
+good place to start...  As it is, it's pretty clear without knowledge of
+the CPM that it's a helper function that sets and clears bits in certain
+registers.
+
+Since we seem to have differing views of the target audience, could you
+suggest a specific wording that you're looking for?
+
+-Scott
