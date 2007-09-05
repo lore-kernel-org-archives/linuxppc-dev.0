@@ -1,16 +1,16 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BAB9DDDFF3
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:06:46 +1000 (EST)
-Date: Wed, 5 Sep 2007 17:06:38 -0500
+	by ozlabs.org (Postfix) with ESMTP id E41BDDE02D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:06:48 +1000 (EST)
+Date: Wed, 5 Sep 2007 17:06:40 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 2/3] pm: Handle HID0_SLEEP in the TLF_NAPPING hack.
-Message-ID: <20070905220638.GA11353@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 3/3] Add 6xx-style HID0_SLEEP support.
+Message-ID: <20070905220640.GB11353@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070905220438.GA11283@ld0162-tx32.am.freescale.net>
@@ -24,82 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The e300 core (and probably most other 6xx chips) can only come out of
-sleep mode with an interrupt.  However, interrupts are logically disabled
-by the power management layer.
-
-This hack extends the existing doze/nap hack to also suppress the running
-of the interrupt handler when in sleep mode.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/idle_6xx.S |   40 +++++++++++++++++++++++++++++++++++++---
- 1 files changed, 37 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/6xx-suspend.S |   52 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/Makefile      |    4 +++
+ include/asm-powerpc/mpc6xx.h      |    6 ++++
+ 3 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/6xx-suspend.S
+ create mode 100644 include/asm-powerpc/mpc6xx.h
 
-diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index 01bcd52..d176042 100644
---- a/arch/powerpc/kernel/idle_6xx.S
-+++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -147,6 +147,12 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	isync
- 	b	1b
- 
-+#ifdef CONFIG_SUSPEND
+diff --git a/arch/powerpc/sysdev/6xx-suspend.S b/arch/powerpc/sysdev/6xx-suspend.S
+new file mode 100644
+index 0000000..976ee07
+--- /dev/null
++++ b/arch/powerpc/sysdev/6xx-suspend.S
+@@ -0,0 +1,52 @@
++/*
++ * Enter and leave sleep state on chips with 6xx-style HID0
++ * power management bits.
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (c) 2006-2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <asm/ppc_asm.h>
++#include <asm/reg.h>
++#include <asm/thread_info.h>
++#include <asm/asm-offsets.h>
++
++_GLOBAL(mpc6xx_enter_sleep)
++	mflr	r4
++
++	mfspr	r5, SPRN_HID0
++	rlwinm	r5, r5, 0, ~(HID0_DOZE | HID0_NAP)
++	oris	r5, r5, HID0_SLEEP@h
++	mtspr	SPRN_HID0, r5
++	isync
++
++	lis	r5, ret_from_sleep@h
++	ori	r5, r5, ret_from_sleep@l
++	mtlr	r5
++
++	rlwinm	r5, r1, 0, 0, 31-THREAD_SHIFT
++	lwz	r6, TI_LOCAL_FLAGS(r5)
++	ori	r6, r6, _TLF_NAPPING
++	stw	r6, TI_LOCAL_FLAGS(r5)
++
++	mfmsr	r5
++	ori	r5, r5, MSR_EE
++	oris	r5, r5, MSR_POW@h
++	sync
++	mtmsr	r5
++	isync
++
++1:	b	1b
++
 +ret_from_sleep:
-+	.long	ret_from_except
-+	.long	ret_from_except
++	mfspr	r5, SPRN_HID0
++	rlwinm	r5, r5, 0, ~HID0_SLEEP
++	mtspr	SPRN_HID0, r5
++
++	mtlr	r4
++	blr
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 08ce31e..84a0800 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -38,3 +38,7 @@ obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
+ obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
+ obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
+ endif
++
++ifeq ($(CONFIG_SUSPEND),y)
++obj-$(CONFIG_6xx)		+= 6xx-suspend.o
++endif
+diff --git a/include/asm-powerpc/mpc6xx.h b/include/asm-powerpc/mpc6xx.h
+new file mode 100644
+index 0000000..01a33ed
+--- /dev/null
++++ b/include/asm-powerpc/mpc6xx.h
+@@ -0,0 +1,6 @@
++#ifndef __ASM_POWERPC_MPC6xx_H
++#define __ASM_POWERPC_MPC6xx_H
++
++void mpc6xx_enter_sleep(void);
++
 +#endif
-+
- /*
-  * Return from NAP/DOZE mode, restore some CPU specific registers,
-  * we are called with DR/IR still off and r2 containing physical
-@@ -154,7 +160,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-  * address).  We have to preserve r10.
-  */
- _GLOBAL(power_save_6xx_restore)
--	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
-+#ifdef CONFIG_SUSPEND
-+	mfspr	r8, SPRN_HID0
-+	andis.	r9, r8, HID0_SLEEP@h
-+	beq+	1f
-+
-+	/*
-+	 * SLEEP mode is invoked through the PM subsystem, which means
-+	 * that interrupts should be disabled.  However, the hardware
-+	 * requires them to be enabled to wake up.  To prevent the
-+	 * interrupt from being visible to Linux, return immediately
-+	 * rather than run the interrupt handler.
-+	 */
-+	lis	r9, ret_from_sleep@h
-+	ori	r9, r9, ret_from_sleep@l
-+	tophys(r9, r9)
-+	mtlr	r9
-+
-+	/*
-+	 * Disable interrupts, so that the interrupt doesn't happen
-+	 * again until the PM code sets MSR[EE].
-+	 */
-+	lwz	r9, _MSR(r11)
-+	rlwinm	r9, r9, 0, ~MSR_EE
-+	stw	r9, _MSR(r11)
-+#endif
-+
-+1:	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
- 	stw	r9,_NIP(r11)		/* make it do a blr */
- 
- #ifdef CONFIG_SMP
-@@ -168,8 +200,10 @@ _GLOBAL(power_save_6xx_restore)
- 	 * and load r11 (@ha part + CPU offset) only once
- 	 */
- BEGIN_FTR_SECTION
--	mfspr	r9,SPRN_HID0
--	andis.	r9,r9,HID0_NAP@h
-+#ifndef CONFIG_SUSPEND
-+	mfspr 	r8,SPRN_HID0
-+#endif
-+	andis.	r9,r8,HID0_NAP@h
- 	beq	1f
- 	addis	r9,r11,(nap_save_msscr0-KERNELBASE)@ha
- 	lwz	r9,nap_save_msscr0@l(r9)
 -- 
 1.5.3
