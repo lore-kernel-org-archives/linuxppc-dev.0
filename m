@@ -1,16 +1,38 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6D3F8DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 01:20:47 +1000 (EST)
-Date: Wed, 5 Sep 2007 09:27:43 -0500
-From: Olof Johansson <olof@lixom.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
-Message-ID: <20070905142742.GA1760@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-pcmcia@lists.infradead.org, hch@lst.de
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 15D43DDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 02:33:53 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l85GXaMX005445
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 12:33:36 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l85GXSZq161308
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 10:33:30 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l85GXLNX001845
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 10:33:23 -0600
+Date: Wed, 5 Sep 2007 11:33:17 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: [patch 3/6] Walnut DTS
+Message-ID: <20070905113317.630ee687@weaponx.rchland.ibm.com>
+In-Reply-To: <412bb2e63637100c8d47595a19f888ae@kernel.crashing.org>
+References: <20070831200449.598781000@linux.vnet.ibm.com>
+	<20070831200643.202414000@linux.vnet.ibm.com>
+	<20070903010859.GD31499@localhost.localdomain>
+	<1188741584.3772.7.camel@localhost.localdomain>
+	<20070904074203.748030c7@weaponx.rchland.ibm.com>
+	<20070905023612.GD17189@localhost.localdomain>
+	<1188952766.3223.3.camel@localhost.localdomain>
+	<412bb2e63637100c8d47595a19f888ae@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,88 +42,199 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert the io_req_t members to kio_addr_t, to allow use on machines with
-more than 16 bits worth of IO port address space (ppc64 in this case,
-but it applies to others as well).
-    
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Updated DTS below
 
+Device tree source file for the PPC405 Walnut evaluation board.
+
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
+ arch/powerpc/boot/dts/walnut.dts |  183 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 183 insertions(+)
 
-I'm not at home in the PCMCIA stack, so I'd appreciate some extra eyes
-on it to avoid regressions. As far as I can tell, the io_req_t structure
-is not exported through any userspace interface and only used internally.
-
-This supersedes the earlier (rejected) "increase ioaddr_t to 32-bits"
-patch (http://patchwork.ozlabs.org/linuxppc/patch?id=11908) for ppc64,
-since with this change that would not be needed.
-
-
-Thanks,
-
-Olof
-
-diff --git a/drivers/pcmcia/pcmcia_resource.c b/drivers/pcmcia/pcmcia_resource.c
-index 0ce39de..585c14b 100644
---- a/drivers/pcmcia/pcmcia_resource.c
-+++ b/drivers/pcmcia/pcmcia_resource.c
-@@ -65,8 +65,8 @@ extern int ds_pc_debug;
-  * Special stuff for managing IO windows, because they are scarce
-  */
- 
--static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
--			  ioaddr_t num, u_int lines)
-+static int alloc_io_space(struct pcmcia_socket *s, u_int attr, kio_addr_t *base,
-+			  kio_addr_t num, u_int lines)
- {
- 	int i;
- 	kio_addr_t try, align;
-@@ -74,14 +74,14 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
- 	align = (*base) ? (lines ? 1<<lines : 0) : 1;
- 	if (align && (align < num)) {
- 		if (*base) {
--			ds_dbg(s, 0, "odd IO request: num %#x align %#lx\n",
-+			ds_dbg(s, 0, "odd IO request: num %#lx align %#lx\n",
- 			       num, align);
- 			align = 0;
- 		} else
- 			while (align && (align < num)) align <<= 1;
- 	}
- 	if (*base & ~(align-1)) {
--		ds_dbg(s, 0, "odd IO request: base %#x align %#lx\n",
-+		ds_dbg(s, 0, "odd IO request: base %#lx align %#lx\n",
- 		       *base, align);
- 		align = 0;
- 	}
-@@ -132,8 +132,8 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
- } /* alloc_io_space */
- 
- 
--static void release_io_space(struct pcmcia_socket *s, ioaddr_t base,
--			     ioaddr_t num)
-+static void release_io_space(struct pcmcia_socket *s, kio_addr_t base,
-+			     kio_addr_t num)
- {
- 	int i;
- 
-diff --git a/include/pcmcia/cs.h b/include/pcmcia/cs.h
-index d5838c3..657d653 100644
---- a/include/pcmcia/cs.h
-+++ b/include/pcmcia/cs.h
-@@ -147,11 +147,11 @@ typedef struct config_req_t {
- 
- /* For RequestIO and ReleaseIO */
- typedef struct io_req_t {
--    ioaddr_t	BasePort1;
--    ioaddr_t	NumPorts1;
-+    kio_addr_t	BasePort1;
-+    kio_addr_t	NumPorts1;
-     u_int	Attributes1;
--    ioaddr_t	BasePort2;
--    ioaddr_t	NumPorts2;
-+    kio_addr_t	BasePort2;
-+    kio_addr_t	NumPorts2;
-     u_int	Attributes2;
-     u_int	IOAddrLines;
- } io_req_t;
+--- /dev/null
++++ linux-2.6/arch/powerpc/boot/dts/walnut.dts
+@@ -0,0 +1,183 @@
++/*
++ * Device Tree Source for IBM Walnut
++ *
++ * Copyright 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ */
++
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	model = "ibm,walnut";
++	compatible = "ibm,walnut";
++	dcr-parent = <&/cpus/PowerPC,405GP@0>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,405GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <bebc200>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <4000>;
++			d-cache-size = <4000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0>; /* Filled in by zImage */
++	};
++
++	UIC0: interrupt-controller {
++		compatible = "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 9>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
++
++	plb {
++		compatible = "ibm,plb3";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++
++		SDRAM0: memory-controller {
++			compatible = "ibm,sdram-405gp";
++			dcr-reg = <010 2>;
++		};
++
++		MAL: mcmal {
++			compatible = "ibm,mcmal-405gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <2>;
++			num-rx-chans = <1>;
++			interrupt-parent = <&UIC0>;
++			interrupts = <a 4 b 4 c 4 d 4 e 4>;
++		};
++
++		POB0: opb {
++			compatible = "ibm,opb-405gp", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges = <ef600000 ef600000 a00000>;
++			dcr-reg = <0a0 5>;
++			clock-frequency = <0>; /* Filled in by zImage */
++
++			UART0: serial@ef600300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600300 8>;
++				virtual-reg = <ef600300>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@ef600400 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <ef600400 8>;
++				virtual-reg = <ef600400>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC: i2c@ef600500 {
++				compatible = "ibm,iic-405gp", "ibm,iic";
++				reg = <ef600500 11>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			GPIO: gpio@ef600700 {
++				compatible = "ibm,gpio-405gp";
++				reg = <ef600700 20>;
++			};
++
++			EMAC: ethernet@ef600800 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-405gp", "ibm,emac";
++				interrupt-parent = <&UIC0>;
++				interrupts = <9 4 f 4>;
++				reg = <ef600800 70>;
++				mal-device = <&MAL>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++			};
++
++		};
++
++		EBC0: ebc {
++			compatible = "ibm,ebc-405gp", "ibm,ebc";
++			dcr-reg = <012 2>;
++			#address-cells = <2>;
++			#size-cells = <1>;
++			clock-frequency = <0>; /* Filled in by zImage */
++
++			sram@0,0 {
++				reg = <0 0 80000>;
++			};
++
++			flash@0,80000 {
++				device_type = "rom";
++				compatible = "direct-mapped";
++				probe-type = "JEDEC";
++				bank-width = <1>;
++				partitions = <0 80000>;
++				partition-names = "OpenBIOS";
++				reg = <0 80000 80000>;
++			};
++
++			ds1743@1,0 {
++				/* NVRAM and RTC */
++				compatible = "ds1743";
++				reg = <1 0 2000>;
++			};
++
++			keyboard@2,0 {
++				compatible = "intel,82C42PC";
++				reg = <2 0 2>;
++			};
++
++			ir@3,0 {
++				compatible = "ti,TIR2000PAG";
++				reg = <3 0 10>;
++			};
++
++			fpga@7,0 {
++				compatible = "Walnut-FPGA";
++				reg = <7 0 10>;
++				virtual-reg = <f0300005>;
++			};
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@ef600300";
++	};
++};
