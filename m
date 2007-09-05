@@ -1,34 +1,21 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AC0B3DDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 15:47:20 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l855l4bA023881
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 15:47:04 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l855l4592957514
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 15:47:04 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l855l4sY007924
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 15:47:04 +1000
-Date: Wed, 5 Sep 2007 15:46:45 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 2/6] cuimage for Bamboo board
-Message-ID: <20070905054645.GA26788@localhost.localdomain>
-References: <20070831200449.598781000@linux.vnet.ibm.com>
-	<20070831200643.029244000@linux.vnet.ibm.com>
-	<20070903010111.GC31499@localhost.localdomain>
-	<1188826931.3772.11.camel@localhost.localdomain>
-	<20070905011045.GC17189@localhost.localdomain>
-	<1188952819.3223.5.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1188952819.3223.5.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 886BEDDE17
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 17:40:10 +1000 (EST)
+Date: Wed, 5 Sep 2007 11:39:57 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/9] 8xx: Add pin and clock setting functions.
+Message-ID: <20070905113957.2ed9e498@localhost.localdomain>
+In-Reply-To: <20070831204418.GA3461@ld0162-tx32.am.freescale.net>
+References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+	<20070828201719.GC24260@ld0162-tx32.am.freescale.net>
+	<20070830013833.4c4d5d0b@localhost.localdomain>
+	<20070831204418.GA3461@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -39,62 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2007 at 07:40:19PM -0500, Josh Boyer wrote:
-> On Wed, 2007-09-05 at 11:10 +1000, David Gibson wrote:
-> > On Mon, Sep 03, 2007 at 08:42:11AM -0500, Josh Boyer wrote:
-> > > On Mon, 2007-09-03 at 11:01 +1000, David Gibson wrote:
-> > > > On Fri, Aug 31, 2007 at 03:04:51PM -0500, Josh Boyer wrote:
-> > > > > Add a cuboot wrapper for the Bamboo board.  This also removes some obsoleted
-> > > > > linker declarations that have been moved into ops.h
-> > > > > 
-> > > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > > > 
-> > > > [snip]
-> > > > > --- linux-2.6.orig/arch/powerpc/boot/bamboo.c
-> > > > > +++ linux-2.6/arch/powerpc/boot/bamboo.c
-> > > > > @@ -24,8 +24,7 @@
-> > > > >  #include "4xx.h"
-> > > > >  #include "44x.h"
-> > > > >  
-> > > > > -extern char _dtb_start[];
-> > > > > -extern char _dtb_end[];
-> > > > > +static u8 *bamboo_mac0, *bamboo_mac1;
-> > > > >  
-> > > > >  static void bamboo_fixups(void)
-> > > > >  {
-> > > > > @@ -34,12 +33,16 @@ static void bamboo_fixups(void)
-> > > > >  	ibm440ep_fixup_clocks(sysclk, 11059200);
-> > > > >  	ibm4xx_fixup_memsize();
-> > > > >  	ibm4xx_quiesce_eth((u32 *)0xef600e00, (u32 *)0xef600f00);
-> > > > > +	if (bamboo_mac0 && bamboo_mac1)
-> > > > > +		dt_fixup_mac_addresses(bamboo_mac0, bamboo_mac1);
-> > > > 
-> > > > Bit ugly that you only set the MAC address for any ethernet if they're
-> > > > supplied for every ethernet.
-> > > 
-> > > Good point.  Will fix.
-> > > 
-> > > > >  	simple_alloc_init(_end, avail_ram, 32, 64);
-> > > > > -	bamboo_init();
-> > > > > +	bamboo_init(NULL, NULL);
-> > > > 
-> > > > There must surely be a way to get the MAC addresses out of OpenBIOS...
-> > > 
-> > > Probably.  I just need to find out where they are stored.
-> > 
-> > It's not buried somewhere in the arch/ppc/boot code?
-> 
-> It's not OpenBIOS, it's PIBS.  And the arch/ppc port uses __res, which
-> I'd rather avoid.  But I did find where it's stored in flash, so I can
-> read it from there.  I just need to do a little more work to get it in a
-> manner that can be used.
+On Fri, 31 Aug 2007 15:44:18 -0500
+Scott Wood wrote:
 
-Hrm.. is that address actually guaranteed to be stable across PIBS
-versions?  If arch/ppc uses __res, I think we should do that too.  It
-shouldn't be any worse than what we already do fot cuboot.
+> > > +	u32 mask = 7;
+> > > +  
+> > gotta at least briefly explain the clue here, too.  
+> 
+> I'm not sure what you mean... what exactly are you asking me to
+> explain?
+> 
+> Note that this code is mostly duplicated from the existing CPM2
+> version.
+> 
+Then it would be good to mention that in short comment block before function.
+
+
+> > We're adding helper functions and should be ready that something
+> > somewhere won't work as expected.  
+> 
+> Could you elaborate on what you expect to possibly not work, or what
+> we should do to "be ready"?
+Some new PQ-like board being added to powerpc. I mean, each newly-added non-static function should have some sort of
+description unless it(function) is completely self-explanatory.
+
+Just a few words either here as a comment or in patch description, what the function supposed to do
+and which way, so that someone not familiar with cpm/cpm2,  would quickly understand
+what's happening in there.
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sincerely, Vitaly
