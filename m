@@ -1,16 +1,16 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EBE0CE0342
+	by ozlabs.org (Postfix) with ESMTP id 2D92EE0348
 	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 05:29:27 +1000 (EST)
-Date: Wed, 5 Sep 2007 14:29:17 -0500
+Date: Wed, 5 Sep 2007 14:29:19 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 07/10] mpc82xx: Rename mpc82xx_ads to mpc8272_ads.
-Message-ID: <20070905192917.GF32462@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 08/10] mpc8272ads: Change references from 82xx_ADS to 8272_ADS.
+Message-ID: <20070905192919.GG32462@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070905192841.GA32441@ld0162-tx32.am.freescale.net>
@@ -24,56 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is just a rename patch; internal references to mpc82xx_ads will be
-changed in the next one.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/platforms/82xx/Kconfig                |    8 ++++----
- arch/powerpc/platforms/82xx/Makefile               |    2 +-
- .../82xx/{mpc82xx_ads.c => mpc8272_ads.c}          |    0 
- 3 files changed, 5 insertions(+), 5 deletions(-)
- rename arch/powerpc/platforms/82xx/{mpc82xx_ads.c => mpc8272_ads.c} (100%)
+ arch/powerpc/platforms/82xx/mpc8272_ads.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/Kconfig b/arch/powerpc/platforms/82xx/Kconfig
-index 89fde43..f260c01 100644
---- a/arch/powerpc/platforms/82xx/Kconfig
-+++ b/arch/powerpc/platforms/82xx/Kconfig
-@@ -1,17 +1,17 @@
- choice
- 	prompt "82xx Board Type"
- 	depends on PPC_82xx
--	default MPC82xx_ADS
-+	default MPC8272_ADS
+diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+index 64e8ca9..994a859 100644
+--- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
++++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
+@@ -1,5 +1,5 @@
+ /*
+- * MPC82xx_ads setup and early boot code plus other random bits.
++ * MPC8272_ads setup and early boot code plus other random bits.
+  *
+  * Author: Vitaly Bordug <vbordug@ru.mvista.com>
+  * m82xx_restart fix by Wade Farnsworth <wfarnsworth@mvista.com>
+@@ -64,7 +64,7 @@ static struct irq_host *pci_pic_host;
+ static struct device_node *pci_pic_node;
+ #endif
  
--config MPC82xx_ADS
--	bool "Freescale MPC82xx ADS"
-+config MPC8272_ADS
-+	bool "Freescale MPC8272 ADS"
- 	select DEFAULT_UIMAGE
- 	select PQ2ADS
- 	select 8272
- 	select 8260
- 	select FSL_SOC
- 	help
--	This option enables support for the MPC8272 ADS board
-+	  This option enables support for the MPC8272 ADS board
+-static void __init mpc82xx_ads_pic_init(void)
++static void __init mpc8272_ads_pic_init(void)
+ {
+ 	struct device_node *np = of_find_compatible_node(NULL, "cpm-pic", "CPM2");
+ 	struct resource r;
+@@ -562,14 +562,14 @@ static void __init mpc82xx_add_bridge(struct device_node *np)
+ /*
+  * Setup the architecture
+  */
+-static void __init mpc82xx_ads_setup_arch(void)
++static void __init mpc8272_ads_setup_arch(void)
+ {
+ #ifdef CONFIG_PCI
+ 	struct device_node *np;
+ #endif
  
- endchoice
+ 	if (ppc_md.progress)
+-		ppc_md.progress("mpc82xx_ads_setup_arch()", 0);
++		ppc_md.progress("mpc8272_ads_setup_arch()", 0);
+ 	cpm2_reset();
  
-diff --git a/arch/powerpc/platforms/82xx/Makefile b/arch/powerpc/platforms/82xx/Makefile
-index 534c353..9b7c851 100644
---- a/arch/powerpc/platforms/82xx/Makefile
-+++ b/arch/powerpc/platforms/82xx/Makefile
-@@ -1,4 +1,4 @@
- #
- # Makefile for the PowerPC 82xx linux kernel.
- #
--obj-$(CONFIG_MPC82xx_ADS) += mpc82xx_ads.o
-+obj-$(CONFIG_MPC8272_ADS) += mpc8272_ads.o
-diff --git a/arch/powerpc/platforms/82xx/mpc82xx_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-similarity index 100%
-rename from arch/powerpc/platforms/82xx/mpc82xx_ads.c
-rename to arch/powerpc/platforms/82xx/mpc8272_ads.c
+ 	/* Map I/O region to a 256MB BAT */
+@@ -591,13 +591,13 @@ static void __init mpc82xx_ads_setup_arch(void)
+ #endif
+ 
+ 	if (ppc_md.progress)
+-		ppc_md.progress("mpc82xx_ads_setup_arch(), finish", 0);
++		ppc_md.progress("mpc8272_ads_setup_arch(), finish", 0);
+ }
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+  */
+-static int __init mpc82xx_ads_probe(void)
++static int __init mpc8272_ads_probe(void)
+ {
+ 	/* We always match for now, eventually we should look at
+ 	 * the flat dev tree to ensure this is the board we are
+@@ -621,14 +621,14 @@ static void m82xx_restart(char *cmd)
+ 	while (1) ;
+ }
+ 
+-define_machine(mpc82xx_ads)
++define_machine(mpc8272_ads)
+ {
+-	.name = "MPC82xx ADS",
+-	.probe = mpc82xx_ads_probe,
+-	.setup_arch =    mpc82xx_ads_setup_arch,
+-	.init_IRQ =    mpc82xx_ads_pic_init,
+-	.show_cpuinfo =    mpc82xx_ads_show_cpuinfo,
+-	.get_irq =    cpm2_get_irq,
++	.name = "MPC8272 ADS",
++	.probe = mpc8272_ads_probe,
++	.setup_arch = mpc8272_ads_setup_arch,
++	.init_IRQ = mpc8272_ads_pic_init,
++	.show_cpuinfo = mpc8272_ads_show_cpuinfo,
++	.get_irq = cpm2_get_irq,
+ 	.calibrate_decr = generic_calibrate_decr,
+ 	.restart = m82xx_restart,
+ };
 -- 
 1.5.3
