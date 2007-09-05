@@ -1,21 +1,19 @@
-Return-Path: <rwoodworth@securics.com>
-Received: from securics.com (mail.securics.com [128.198.58.14])
-	by ozlabs.org (Postfix) with ESMTP id 5DF00DDED4
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 9AFBBDDEE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 04:42:30 +1000 (EST)
-Received: from [192.168.0.38] (unknown [192.168.0.38])
-	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
-	(No client certificate requested)
-	by securics.com (Postfix) with ESMTP id C4E11B8C0B8
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Sep 2007 12:42:28 -0600 (MDT)
-Subject: Xilinx FX60
-From: Robert Woodworth <rwoodworth@securics.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 05 Sep 2007 12:42:28 -0600
-Message-Id: <1189017748.6185.49.camel@PisteOff>
-Mime-Version: 1.0
+	Thu,  6 Sep 2007 04:48:30 +1000 (EST)
+To: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Problems enabling NTP on ELDK
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 05 Sep 2007 13:29:38 +0200."
+	<46DE9322.7080901@dutchspace.nl>
+Date: Wed, 05 Sep 2007 20:48:27 +0200
+Sender: wd@denx.de
+Message-Id: <20070905184827.26859247AF@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-After achieving complete success with my Linux kernel on the ML403, I've
-now started to build a kernel for my real target board with a
-Virtex4-FX60 (dual PPC cores)
+In message <46DE9322.7080901@dutchspace.nl> you wrote:
+> 
+> I tried enabling NTP on my embedded machine (using ELDK 4.1, ppc_85xx, 
+> kernel version 2.6.14 with Xenomai 2.3.2). After I did that I noticed 
+> that ksoftirqd/0 suddenly took almost all processor time (> 95%). What 
+> is causing this? Is there a way around this, or is this something that 
+> does not cause any problems?
 
-Has anyone built a kernel for a dual core PPC Virtex?  I have found very
-little docs on how to architect software for the dual-core PPC's.  
-Will SMP Linux work on this platform?  What would the bus setup be?
+You probably have some poroblems in your kernel port - check the  RTC
+driver  and  related  modules like I2C etc. Of course this depends on
+the NTP configuration you use, but the only kernel interaction I  can
+think  of  that  could cause this is if you interact with the RTC. [I
+guess that normal network traffic is working fine on your board.]
 
+BTW: ELDK 4.1 comes with a 2.6.19.2  kernel  -  is  there  a  special
+reason that you use such an obsoletel kernel tree?
 
+Best regards,
 
-My kernel is partially booting, some of the time... I'm mystified by the
-situation.  One time, I get all the happy boot messages through the
-UARTLite port, then the next reboot it stops at "Now booting the kernel"
-I'm only getting about 10% successful boots......
+Wolfgang Denk
 
-
-My EDK setup is as follows;  I've disconnected the second PPC from the
-PLB to have a single PPC system, 32MB DDR on PLB, TEMAC on PLB, UARTLite
-on OPB.
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Bankers do it with interest (penalty for early withdrawal).
