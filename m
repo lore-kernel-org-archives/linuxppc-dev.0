@@ -1,21 +1,18 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp109.biz.mail.mud.yahoo.com (smtp109.biz.mail.mud.yahoo.com
-	[68.142.201.178]) by ozlabs.org (Postfix) with SMTP id 8B3DADE019
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:42:00 +1000 (EST)
-In-Reply-To: <20070905222310.GA11433@ld0162-tx32.am.freescale.net>
-References: <20070905192727.GA32365@ld0162-tx32.am.freescale.net>
-	<4F58F233-56E5-4910-9D33-28A44FCB393C@embeddedalley.com>
-	<20070905205301.GA807@ld0162-tx32.am.freescale.net>
-	<CF1B6B97-44FA-4002-9030-3C1A20F2F2F4@embeddedalley.com>
-	<20070905222310.GA11433@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <04819433-30F0-4789-864D-57B474485E32@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/9] 8xx: Fix CONFIG_PIN_TLB.
-Date: Wed, 5 Sep 2007 15:42:03 -0700
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 482EADDF3D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 09:39:53 +1000 (EST)
+Date: Thu, 6 Sep 2007 09:39:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: use of asm/prom.h
+Message-Id: <20070906093943.95037b79.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG"
+Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
+	Helt <krzysztof.h1@wp.pl>, Krzysztof
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sep 5, 2007, at 3:23 PM, Scott Wood wrote:
+Hi all,
 
-> The IMMRs I've seen from the bootloader are ff000000 (Freescale  
-> boards)
-> and fa200000 (Embedded Planet).  AFAICT, the number of fixed TLB  
-> entries
-> is fixed at 4 on these chips, so using the fourth for flash  
-> wouldn't take
-> away any general-purpose TLB entries.
+I noticed in the ALSA tree:
 
-On these same boards, the memory controllers are usually
-configured to put the flash somewhere in that space as well.
-This is useful for flash file system performance.  If you don't
-need that, you can allocate the space differently.  The point is
-cover as much as you can with the IMMR entry and beyond.
-Some people like to map external devices out there.
+------------------------------ sound/sparc/dbri.c -------------------------=
+-----
+index 12d11fc..e96023f 100644
+@@ -66,6 +66,7 @@
+ #include <sound/control.h>
+ #include <sound/initval.h>
+=20
++#include <asm/prom.h>
+ #include <asm/sbus.h>
+ #include <asm/atomic.h>
 
-The 8xx variants have different TLB configurations.
-You can't assume anything here.  Some parts don't have
-enough TLBs to make pinning useful, some allow hardware
-wiring of only 2.  When using hardware wiring, it's always
-the upper entries that are wired.  Since the number of
-entries varies, you can't assume which TLB index
-will be wired.
+(I don't mean to pick on this particular example, it is just what was in
+front of me.)
 
-> I certainly agree that it would be nice to check -- my immediate  
-> goal is
-> to get things working, though.
+Could people please consider using linux/{of,of_device,of_platform}.h
+instead of asm/prom.h now that these exist.  Using asm/prom.h only works
+now because it includes the above files, but that may (will?) change
+eventually.
 
-It's more than nice.  If you want this to work correctly
-and also get the performance enhancement, it needs
-to be done.
+Most includes of asm/prom.h are there to get access to the routines and
+data structures associated with the Open Firmware device tree, and these
+are now all available from the above files instead.
 
-Thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-	-- Dan
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG3z5DTgG2atn1QN8RAoHGAJ9yjtabflhdM1Nv3px2GJgbZlmXwQCbBY5y
+gl3or8BlSbUkAu99u9qtXEY=
+=hUZa
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Sep_2007_09_39_43_+1000_O6x2KOb=HuJVEOYG--
