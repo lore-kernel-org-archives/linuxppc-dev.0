@@ -1,33 +1,17 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 540CEDDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 12:38:28 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l852cRnh009561
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 12:38:27 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l852cRs94358360
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 12:38:27 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l852cRqL016839
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 12:38:27 +1000
-Date: Wed, 5 Sep 2007 12:36:12 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 3/6] Walnut DTS
-Message-ID: <20070905023612.GD17189@localhost.localdomain>
-References: <20070831200449.598781000@linux.vnet.ibm.com>
-	<20070831200643.202414000@linux.vnet.ibm.com>
-	<20070903010859.GD31499@localhost.localdomain>
-	<1188741584.3772.7.camel@localhost.localdomain>
-	<20070904074203.748030c7@weaponx.rchland.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 5 Sep 2007 12:48:05 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Subject: Re: [RFC] AmigaOne device tree source v2
+Message-ID: <20070905024805.GE17189@localhost.localdomain>
+References: <20070831175006.17240@gmx.net>
+	<20070903013431.GG31499@localhost.localdomain>
+	<20070903145814.101070@gmx.net>
+	<f460b176a7c30dae101bfc00d1d4b8e9@kernel.crashing.org>
+	<20070904114945.303440@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070904074203.748030c7@weaponx.rchland.ibm.com>
+In-Reply-To: <20070904114945.303440@gmx.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,51 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2007 at 07:42:03AM -0500, Josh Boyer wrote:
-> On Sun, 02 Sep 2007 08:59:44 -0500
-> Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-[snip]
-> > > > +		POB0: opb {
-> > > > +			compatible = "ibm,opb";
-> > > 
-> > > Need an opb-405gp here, too.
-> > 
-> > Yep.
+On Tue, Sep 04, 2007 at 01:49:45PM +0200, Gerhard Pircher wrote:
 > 
-> Fixed.
+> -------- Original-Nachricht --------
+> > Datum: Tue, 4 Sep 2007 00:32:57 +0200
+> > Von: Segher Boessenkool <segher@kernel.crashing.org>
+> > An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+> > CC: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+> > Betreff: Re: [RFC] AmigaOne device tree source v2
 > 
-> > > > +			#address-cells = <1>;
-> > > > +			#size-cells = <1>;
-> > > > +			ranges = <0 ef600000 a00000>;
-> > > 
-> > > Hrm... something we ought to clarify is the interpretation of the
-> > > POB0_BEAR register with respect to the bridge's ranges property.  For
-> > > 440 I think the BEAR will need to be interpreted as an OPB address,
-> > > rather than a PLB address, but I'm not sure if that will work here
-> > > with the limited ranges property you have.
-> > 
-> > Ok, I'll look at this.
+> > PCI memory space sits on the PCI bus, not on the PCI host bridge,
+> > so is not part of "reg" but is part of "ranges" here, since it is
+> > direct mapped into the host's address space.
+> That's right, but what about this example here (from a Pegasos II):
 > 
-> The BEAR will still be interpreted as a PLB address here as far as I
-> can see.  The ranges spans the entire OPB space.  Am I missing
-> something?
+> /proc/device-tree/pci@80000000:
+> name             "pci"
+> linux,phandle    0fc59260 (264606304)
+> bus-range        00000000 00000000
+> pci-bridge-number 00000000
+> reg              80000000 40000000
+> 8259-interrupt-acknowledge f1000cb4
+> ranges           01000000 00000000 00000000 fe000000 00000000 00010000
+> 		 02000000 00000000 80000000 80000000 00000000 40000000
+> clock-frequency  01fca055 (33333333)
+> #size-cells      00000002
+> #address-cells   00000003
+> device_type      "pci"
+> 
+> AFAIU the reg property overlaps the ranges property for the PCI memory
+> space from 0x80000000 to 0xC0000000 or the CPU address space at the
+> same location!? Would be good to know, why it was defined like this.
 
-Ah, sorry, my mistake.  I thought the BEAR register would encode an
-OPB address rather than a PLB address (and thus, be only 32-bits wide
-on 440).  In fact it appears it does encode a PLB address (and is
-split into BEARH and BEARL registers on 440).
+That looks totally bogus.  Unlike Segher, I think there are a few
+cases where overlapping reg and ranges can make sense (PCI bridges
+where config space is accessed indirectly via MMIO registers which lie
+in the legacy ISA IO space is an example).  But this doesn't look like
+such a case - it just looks like whoever did the device tree
+misunderstood the distinction between reg and ranges.
 
-Hrm.. I'm still slightly uneasy though.  In my Ebony device tree, the
-POB's ranges exists to embed the 32-bit OPB space into the 64-bit PLB
-space by tacking on a 0x1 in bits 32:35.  In your 405gp ranges, you're
-describing just the address range used by OPB peripherals
-(0xef600000-0xf0000000) as residing at address 0 in OPB-space.
+> > PCI legacy I/O is not direct mapped: there is no legacy I/O on a
+> > PowerPC system bus.  So, it can not be mentioned in the "ranges"
+> > property, but the PHB registers used to access it should be shown
+> > in the "reg" property.  It could be a simple linear window (it
+> > sounds like it is here?), but it could for example also be implemented
+> > via an address/data register pair.
 
-Since the ranges will still generate the right physical addresses, I
-guess it doesn't matter.  But I'm not sure it meets the principle of
-least surprise - since I think the documentation generally talks as
-though addresses on the 405 OPB bus are identical to addreses on the
-PLB.
+Err... huh?  The legacy IO space is assigned a block of addresses in
+3-word "OF-PCI-space by the PCI binding.  When that is translated into
+an MMIO range by the bridge, there's no reason that can't be encoded
+into the ranges property.
+
+> Yes, it is a simple linear address window. I'll remove its address range
+> from the reg property.
+> 
+> > The order of the "reg" entries depends on the exact model of PCI
+> > bridge, so a device binding for it has to be written.
+> Only the Pegasos I and the AmigaOne use this PCI bridge. I guess it should
+> be enough to check for the board type, but a compatible property doesn't
+> hurt.
+
+The whole damn point of the device tree is to avoid using this kind of
+non-local information "I know what the board type is over there, so it
+must be this PCI bridge over here".  The node should have a compatible
+property which is sufficient to select the right bridge driver.
+
+I think this is typically badly done at the moment, simply because PCI
+has historically been set up by the platform code, rather than by a
+"host bridge driver" in the mould of other drivers.  I don't see that
+changing real soon, but that doesn't mean we shouldn't at least put
+enough information in the device tree to make it possible.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
