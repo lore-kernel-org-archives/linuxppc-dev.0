@@ -1,15 +1,34 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Sep 2007 11:04:05 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: "atomic" 64-bit math on 32-bit ppc's?
-Message-ID: <20070905010405.GA17189@localhost.localdomain>
-References: <46DD3CE2.4060301@genesi-usa.com> <20070904113937.GA3994@iram.es>
-	<46DD500B.4020207@genesi-usa.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DEC43DDE01
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 11:13:22 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id l851DLkL009135
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:13:21 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l851GtpA163106
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:16:55 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l851DLt4004747
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:13:21 +1000
+Date: Wed, 5 Sep 2007 11:09:45 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [patch 5/6] Walnut board support
+Message-ID: <20070905010945.GB17189@localhost.localdomain>
+References: <20070831200449.598781000@linux.vnet.ibm.com>
+	<20070831200643.514442000@linux.vnet.ibm.com>
+	<20070903011112.GE31499@localhost.localdomain>
+	<1188741546.3772.5.camel@localhost.localdomain>
+	<20070904073741.1adab0ba@weaponx.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46DD500B.4020207@genesi-usa.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20070904073741.1adab0ba@weaponx.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2007 at 01:31:07PM +0100, Matt Sealey wrote:
+On Tue, Sep 04, 2007 at 07:37:41AM -0500, Josh Boyer wrote:
+> On Sun, 02 Sep 2007 08:59:06 -0500
+> Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 > 
-> Gabriel Paubert wrote:
-> > On Tue, Sep 04, 2007 at 12:09:22PM +0100, Matt Sealey wrote:
-> >> Hi guys,
-> >>
-> >> The Solaris PPC code drop included most of these functions for 32-bit ops on
-> >> 32-bit PPC architectures but the 64-bit operations are not present. What I
-> >> a not clear on is the operation of lwarx and stwcx. and if they will work if
-> >> you are doing operations on two words at a time.
+> > On Mon, 2007-09-03 at 11:11 +1000, David Gibson wrote:
+> > > On Fri, Aug 31, 2007 at 03:04:54PM -0500, Josh Boyer wrote:
+> > > > Board support for the PPC405 Walnut evaluation board
+> > > > 
+> > > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > > 
+> > > [snip]
+> > > > --- linux-2.6.orig/arch/powerpc/platforms/40x/Kconfig
+> > > > +++ linux-2.6/arch/powerpc/platforms/40x/Kconfig
+> > > > @@ -53,13 +53,13 @@
+> > > >  #	help
+> > > >  #	  This option enables support for the IBM PPC405GPr evaluation board.
+> > > >  
+> > > > -#config WALNUT
+> > > > -#	bool "Walnut"
+> > > > -#	depends on 40x
+> > > > -#	default y
+> > > > -#	select 405GP
+> > > > -#	help
+> > > > -#	  This option enables support for the IBM PPC405GP evaluation board.
+> > > > +config WALNUT
+> > > > +	bool "Walnut"
+> > > > +	depends on 40x
+> > > > +	default y
+> > > > +	select 405GP
+> > > > +	help
+> > > > +	  This option enables support for the IBM PPC405GP evaluation board.
+> > > 
+> > > Surely this needs WANT_DEVICE_TREE, too.
 > > 
-> > No. There is a single reservation for a single word.
+> > Yes, will be fixed.
 > 
-> This is what I gathered from the programming environments manual at least.
-> 
-> > the 64 bit operations inside a spinlock on PPC32, and then select the
-> > number /location of spinlock(s) based on your needs, from one global
-> > per machine to one per 64 bit variable if you find excessive contention.
-> 
-> Okay that makes sense, but it would have to be a super global big lock,
-> I don't think the code is there in ZFS to give every 64-bit variable it's
-> own dedicated spinlock (kind of an overhaul) and I'm trying to be fast..
+> Er, actually no it won't.  It doesn't need to be selected here, as 40x
+> in arch/powerpc/platforms/Kconfig.cputype already selects
+> WANT_DEVICE_TREE.  Same thing that ebony and bamboo do for 44x.
 
-These aren't the only two options.  You could use a hashed array of
-locks, based on the address where you're doing the atomic operation.
+Oh, yes, so it does, sorry.  Though we may need to change that if
+anyone goes and puts a real OF implementation on some 44x board.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
