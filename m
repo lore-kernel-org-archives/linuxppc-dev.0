@@ -1,21 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gerlach@kip.uni-heidelberg.de>
+Received: from relay2.uni-heidelberg.de (relay2.uni-heidelberg.de
+	[129.206.210.211])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 886BEDDE17
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 17:40:10 +1000 (EST)
-Date: Wed, 5 Sep 2007 11:39:57 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/9] 8xx: Add pin and clock setting functions.
-Message-ID: <20070905113957.2ed9e498@localhost.localdomain>
-In-Reply-To: <20070831204418.GA3461@ld0162-tx32.am.freescale.net>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201719.GC24260@ld0162-tx32.am.freescale.net>
-	<20070830013833.4c4d5d0b@localhost.localdomain>
-	<20070831204418.GA3461@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTP id 51650DDE21
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 19:18:08 +1000 (EST)
+Message-ID: <46DE65FF.3040202@kip.uni-heidelberg.de>
+Date: Wed, 05 Sep 2007 10:17:03 +0200
+From: Thomas Gerlach <gerlach@kip.uni-heidelberg.de>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Newbie on embedded linux on PPC: error: cannot find boot.o
+References: <46DD6238.6030204@kip.uni-heidelberg.de>
+	<fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
+In-Reply-To: <fa686aa40709040747j503a2054x27ba2b8146a93ff8@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,33 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 31 Aug 2007 15:44:18 -0500
-Scott Wood wrote:
+Grant Likely wrote:
+> On 9/4/07, Thomas Gerlach <gerlach@kip.uni-heidelberg.de> wrote:
+>   
+>> hi folks,
+>>
+>>
+>> my name is thomas trying to make embedded linux run on a powerpc, but we've got special boards here, although we use a xilinx virtex4 fpga...
+>>
+>> as you said in the nabble-thread (see subject), i set up edk9.1 software platform settings und ran libgen to get the xparameters* files. i copied those bsp files into the kernel tree (i use your kernel linux-2.6-virtex from git.secretlabs.ca/git). after configuring the kernel settigs, i try
+>>
+>> $ make ARCH=ppc CROSS_COMPILE=powerpc-eabi-
+>>     
+>
+> You should be using a Linux cross compiler, not powerpc-eabi-.  The
+> Xilinx cross compiler will not work to compile Linux kernels.
+>
+> You can build yourself a cross compiler using 'crosstool':
+> http://www.kegel.org/crosstool.
+>
+> Alternately, you can download ELDK:
+> http://www.denx.de/wiki/view/DULG/ELDKAvailability
+>
+> Cheers,
+> g.
+>
+>   
 
-> > > +	u32 mask = 7;
-> > > +  
-> > gotta at least briefly explain the clue here, too.  
-> 
-> I'm not sure what you mean... what exactly are you asking me to
-> explain?
-> 
-> Note that this code is mostly duplicated from the existing CPM2
-> version.
-> 
-Then it would be good to mention that in short comment block before function.
+hi,
+thank you much for this hint. this was the last thing i thought of... ;)
 
+so long, keep on cross-compiling! :)
 
-> > We're adding helper functions and should be ready that something
-> > somewhere won't work as expected.  
-> 
-> Could you elaborate on what you expect to possibly not work, or what
-> we should do to "be ready"?
-Some new PQ-like board being added to powerpc. I mean, each newly-added non-static function should have some sort of
-description unless it(function) is completely self-explanatory.
-
-Just a few words either here as a comment or in patch description, what the function supposed to do
-and which way, so that someone not familiar with cpm/cpm2,  would quickly understand
-what's happening in there.
-
--- 
-Sincerely, Vitaly
+regards,
+thomas
