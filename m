@@ -1,19 +1,23 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp110.biz.mail.mud.yahoo.com (smtp110.biz.mail.mud.yahoo.com
-	[68.142.201.179]) by ozlabs.org (Postfix) with SMTP id B8BF8DDE1B
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ED608DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 02:31:37 +1000 (EST)
-In-Reply-To: <m2wsv58cp1.fsf@ohwell.denx.de>
-References: <F3D55679E1DCFF49A57570501B70475F070D83BC@CL5EXBE04.ad2.softcom.biz>
-	<7c1681440709032107u3feb0684x34dcf44b5e43616@mail.gmail.com>
-	<m2wsv58cp1.fsf@ohwell.denx.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2D63A00B-C9A8-4C11-BDB2-B3597FACA3AF@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Breakpoint is not hitting for Kernel Debugging
-Date: Wed, 5 Sep 2007 09:31:40 -0700
-To: Detlev Zundel <dzu@denx.de>
+	Thu,  6 Sep 2007 02:32:10 +1000 (EST)
+Date: Wed, 5 Sep 2007 11:31:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Wang, Baojun" <wangbj@lzu.edu.cn>
+Subject: Re: disable interrput under ppc?
+Message-ID: <20070905163151.GA26107@ld0162-tx32.am.freescale.net>
+References: <200709041044.16525.wangbj@lzu.edu.cn>
+	<20070904182433.GD18280@ld0162-tx32.am.freescale.net>
+	<388931546.05165@lzu.edu.cn> <200709051000.46281.wangbj@lzu.edu.cn>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200709051000.46281.wangbj@lzu.edu.cn>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,78 +29,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, Sep 05, 2007 at 10:00:46AM +0800, Wang, Baojun wrote:
+> hw_enable_irq() and hw_disable_irq() is exactly the same as 
+> local_irq_enable()/local_irq_disable(), but the output shows while running 
+> hw_eable_irq() (at that point irq is disabled), the rest of the code is 
+> blocked, and I don't know why:
+> 
+> output:
+> [  172.049381] sync_root_events: looping!
+> [  172.053159] sync_root_events: looping 2!
+> [  172.057094] sync_root_events: looping 3!
+> [  172.061027] hw_irq_disabled?: 1
+> [  172.997338] sync_root_events: looping!
+> [  173.001095] sync_root_events: looping 2!
+> [  173.005028] sync_root_events: looping 3!
+> [  173.008961] hw_irq_disabled?: 1
 
-On Sep 5, 2007, at 6:27 AM, Detlev Zundel wrote:
+What did you expect the output to be?  I assume that you're taking an
+interrupt after you enable interrupts?
 
-> Hi,
->
->>   ;; Following is to clear the page table base address
->>   WM32    0x000000f0      0x00000000
->
-> Did you really need this under any circumstance?  To only hit a
-> breakpoint?
-
-No, you don't.  For the identify mapped kernel
-space, only the MMU XLAT is required, which
-covers nearly all kernel.  This is only necessary for
-tracking vmalloc()'ed space, like for loadable
-modules.
-
-However, this WM32 should not be necessary
-in any case, as the page table pointers for
-BDI information tracking are set up by the
-kernel initialization functions.
-
-> I am asking because recent experiences with BDI debugging showed that
-> there are some pitfalls that one can fall into (and these are only the
-> ones that I got aware of):
-
-Yes, and I apologize for not allocating the
-time to work with Abatron to make this
-work better.  The page tables changes
-that have taken (and still take) place in
-2.6 caused our original 2.4 implementation
-to not work well.  Abatron has made updates
-that work well, but there are still some edge
-cases that may not work well.  I need to find
-those and provide some assistance.
-
-The whole of the Linux BDI configuration
-has been abused as well, the BDI_SWITCH
-should not be used as it is today.  That
-was not the intention for this particular
-configuration option.
-
->    So for the original poster I would say a PTBASE 0x0 would be in
->    order.
-
-It changes a little among the processor variants,
-in particular traditional Power versus Book E.
-Check the release notes and manuals for the
-BDI2000, along with the information from
-Ultimate Solutions to determine what is best.
-
-> b) Moreover even with a _wrong_ PTBASE on a 440EPx the BDI translated
->    start_kernel just fine by only subtracting 0xc0000000 (using a
->    "default" translation) - it was only later (debugging dynamic
->    modules) that the wrong PTBASE hit me hard.
-
-That's correct.  If the BDI firmware can find the
-translation in the TLB, it will just use that.  In the
-case of many processors, this is either a wired
-entry or a BAT.  If the BDI firmware can't find
-a valid translation, it walks the page tables.
-For 8xx and some 40x, the PTBASE is required
-as there may be no wired entries by default.
-
-Just remember that the values for both MMU XLAT
-and PTBASE must match the kernel software and
-configuration.  This is the only correct answer :-)
-Documentation will describe the public source,
-default configuration at the time of the writing,
-but it's very easy to change and will cause
-debugging problems.
-
-Thanks.
-
-	-- Dan
+-Scott
