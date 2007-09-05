@@ -4,19 +4,15 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 09C31DDFCA
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 07:59:02 +1000 (EST)
-Date: Wed, 5 Sep 2007 16:58:51 -0500
+	by ozlabs.org (Postfix) with ESMTP id 10A18DDFE7
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 08:04:46 +1000 (EST)
+Date: Wed, 5 Sep 2007 17:04:38 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 1/3] CPM: Change from fsl,
-	brg-frequency to brg/clock-frequency
-Message-ID: <20070905215851.GA7965@ld0162-tx32.am.freescale.net>
-References: <20070905191313.GA31927@ld0162-tx32.am.freescale.net>
-	<20070905215708.GA8718@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH v2] Check _PAGE_RW and _PAGE_PRESENT on kernel addresses.
+Message-ID: <20070905220438.GA11283@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905215708.GA8718@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,21 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 04:57:08PM -0500, Olof Johansson wrote:
-> On Wed, Sep 05, 2007 at 02:13:13PM -0500, Scott Wood wrote:
-> > As suggested by David Gibson, now that we have a separate node
-> > for the baud rate generators, it's better to use the standard
-> > clock-frequency property than a cpm-node-level fsl,brg-frequency
-> > property.
-> > 
-> > This patch updates existing places where fsl,brg-frequency is
-> > used.
-> 
-> What about older platforms that were booted with the older device
-> tree? Don't you have to stay compatible with them?
+Previously, the TLB miss handlers assumed that pages above KERNELBASE are
+always present and read/write.  This assumption is false in the case of
+CONFIG_DEBUG_PAGEALLOC.
 
-The older platforms use /soc/cpm/brg-frequency, not
-/soc/cpm/fsl,brg-frequency -- and that is still supported.  The latter
-only exists as one patch in Kumar's tree.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/kernel/head_32.S |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
--Scott
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index 7d73a13..0e3df1f 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -475,10 +475,10 @@ InstructionTLBMiss:
+ 	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+@@ -549,10 +549,10 @@ DataLoadTLBMiss:
+ 	li	r1,_PAGE_USER|_PAGE_PRESENT /* low addresses tested as user */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+@@ -621,10 +621,10 @@ DataStoreTLBMiss:
+ 	li	r1,_PAGE_RW|_PAGE_USER|_PAGE_PRESENT /* access flags */
+ 	lwz	r2,PGDIR(r2)
+ 	blt+	112f
++	mfspr	r2,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
++	rlwimi	r1,r2,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 	lis	r2,swapper_pg_dir@ha	/* if kernel address, use */
+ 	addi	r2,r2,swapper_pg_dir@l	/* kernel page table */
+-	mfspr	r1,SPRN_SRR1		/* and MSR_PR bit from SRR1 */
+-	rlwinm	r1,r1,32-12,29,29	/* shift MSR_PR to _PAGE_USER posn */
+ 112:	tophys(r2,r2)
+ 	rlwimi	r2,r3,12,20,29		/* insert top 10 bits of address */
+ 	lwz	r2,0(r2)		/* get pmd entry */
+-- 
+1.5.3
