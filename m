@@ -1,31 +1,25 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1774ADDF4B
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:41:33 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l85HfUOh006570
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 13:41:30 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l85HfUDi428862
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:41:30 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l85HfUnl002573
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 11:41:30 -0600
-Date: Wed, 5 Sep 2007 12:41:28 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 0/4] PowerPC 440EPx: Initial Sequoia support
-Message-ID: <20070905124128.7432d6fd@weaponx.rchland.ibm.com>
-In-Reply-To: <20070829133520.GA19925@ru.mvista.com>
-References: <20070829133520.GA19925@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 864D1DDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 03:45:15 +1000 (EST)
+Message-ID: <46DEEAC1.7020900@s5r6.in-berlin.de>
+Date: Wed, 05 Sep 2007 19:43:29 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: Sleep problems with kernels >= 2.6.21 on powerpc
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>	<20070827065246.GA21220@ime.usp.br>	<46D279E8.10001@edge.ping.de>	<46D72BC6.3020809@edge.ping.de>	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
+	<20070905102824.a481060c.randy.dunlap@oracle.com>
+In-Reply-To: <20070905102824.a481060c.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: michal.k.k.piotrowski@gmail.com, rbrito@gmail.com,
+	linux-kernel@vger.kernel.org, rjw@sisk.pl,
+	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-pm@lists.linux-foundation.org, Tim Teulings <rael@edge.ping.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,14 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2007 17:35:20 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+Randy Dunlap wrote:
+> On Wed, 5 Sep 2007 10:07:54 -0700 Andrew Morton wrote:
+>>> So here is the output from dmesg that suggested to me that firewire 
+>>> might be a problem:
+>> Straightforward regression, two reporters, nothing happening.
+> 
+> (material for ksummit discussion, e.g.)
 
-> The following patches add initial PowerPC 440EPx Sequoia board support.
-> The code is based mainly on the Bamboo board support by Josh Boyer.
-> These patches have been modified according the comments for the previous
-> 440EPx Sequoia patch series.
-
-FYI, I'll be pulling this series into my git tree this week.
-
-josh
+It's a simple thing in this incident:  I don't read all posts on LKML.
+But I typically catch everything where I am in the CC list thanks to the
+wonders of sieve.  Andrew, thanks for putting me in the CCs.
+-- 
+Stefan Richter
+-=====-=-=== =--= --=-=
+http://arcgraph.de/sr/
