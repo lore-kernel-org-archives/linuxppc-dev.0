@@ -1,12 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DB0B1DDE37
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:35:08 +1000 (EST)
-Date: Tue, 4 Sep 2007 21:41:59 -0500
+	by ozlabs.org (Postfix) with ESMTP id 76271DDE3C
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:35:39 +1000 (EST)
+Date: Tue, 4 Sep 2007 21:42:30 -0500
 From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org
-Subject: [PATCH] powerpc: Don't use generic machine check parsing everywhere
-Message-ID: <20070905024159.GB27139@lixom.net>
+Subject: [PATCH] powerpc: Move lowlevel runlatch calls under cpu feature
+	control
+Message-ID: <20070905024230.GC27139@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -19,79 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If a platform provide it's own machine check handler, assume that code
-will handle the reason parsing and reporting the error. The current
-default fall-though only makes sense on a few 32-bit platforms that
-lack individual handlers.
+There's no need to call the runlatch on functions on processors that
+don't implement them (CPU_FTR_CTRL).
     
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ccfc99d..ce1aafc 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -440,34 +440,36 @@ void machine_check_exception(struct pt_regs *regs)
- 	if (reason & MCSR_BUS_WRERR)
- 		printk("Bus - Write Bus Error on buffered store or cache line push\n");
- #else /* !CONFIG_4xx && !CONFIG_E500 && !CONFIG_E200 */
--	printk("Machine check in kernel mode.\n");
--	printk("Caused by (from SRR1=%lx): ", reason);
--	switch (reason & 0x601F0000) {
--	case 0x80000:
--		printk("Machine check signal\n");
--		break;
--	case 0:		/* for 601 */
--	case 0x40000:
--	case 0x140000:	/* 7450 MSS error and TEA */
--		printk("Transfer error ack signal\n");
--		break;
--	case 0x20000:
--		printk("Data parity error signal\n");
--		break;
--	case 0x10000:
--		printk("Address parity error signal\n");
--		break;
--	case 0x20000000:
--		printk("L1 Data Cache error\n");
--		break;
--	case 0x40000000:
--		printk("L1 Instruction Cache error\n");
--		break;
--	case 0x00100000:
--		printk("L2 data cache parity error\n");
--		break;
--	default:
--		printk("Unknown values in msr\n");
-+	if (!ppc_md.machine_check_exception) {
-+		printk("Machine check in kernel mode.\n");
-+		printk("Caused by (from SRR1=%lx): ", reason);
-+		switch (reason & 0x601F0000) {
-+		case 0x80000:
-+			printk("Machine check signal\n");
-+			break;
-+		case 0:		/* for 601 */
-+		case 0x40000:
-+		case 0x140000:	/* 7450 MSS error and TEA */
-+			printk("Transfer error ack signal\n");
-+			break;
-+		case 0x20000:
-+			printk("Data parity error signal\n");
-+			break;
-+		case 0x10000:
-+			printk("Address parity error signal\n");
-+			break;
-+		case 0x20000000:
-+			printk("L1 Data Cache error\n");
-+			break;
-+		case 0x40000000:
-+			printk("L1 Instruction Cache error\n");
-+			break;
-+		case 0x00100000:
-+			printk("L2 data cache parity error\n");
-+			break;
-+		default:
-+			printk("Unknown values in msr\n");
-+		}
- 	}
- #endif /* CONFIG_4xx */
- 
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 33c4e8c..cec5908 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -656,7 +656,9 @@ hardware_interrupt_common:
+ 	FINISH_NAP
+ hardware_interrupt_entry:
+ 	DISABLE_INTS
++BEGIN_FTR_SECTION
+ 	bl	.ppc64_runlatch_on
++END_FTR_SECTION_IFSET(CPU_FTR_CTRL)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.do_IRQ
+ 	b	.ret_from_except_lite
+diff --git a/include/asm-powerpc/exception.h b/include/asm-powerpc/exception.h
+index d850c8e..39abdb0 100644
+--- a/include/asm-powerpc/exception.h
++++ b/include/asm-powerpc/exception.h
+@@ -282,7 +282,9 @@ label##_common:						\
+ 	EXCEPTION_PROLOG_COMMON(trap, PACA_EXGEN);	\
+ 	FINISH_NAP;					\
+ 	DISABLE_INTS;					\
++BEGIN_FTR_SECTION					\
+ 	bl	.ppc64_runlatch_on;			\
++END_FTR_SECTION_IFSET(CPU_FTR_CTRL)			\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;		\
+ 	bl	hdlr;					\
+ 	b	.ret_from_except_lite
