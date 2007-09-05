@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2595ADDE36
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 00:08:58 +1000 (EST)
-In-Reply-To: <200709040940.04801.bbuchli@xes-inc.com>
-References: <200708221337.21729.bbuchli@xes-inc.com>
-	<662F11BD-C521-4914-966C-8FCB84D5F808@kernel.crashing.org>
-	<200709040940.04801.bbuchli@xes-inc.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F3300B35-6C18-451B-83A1-7D3F1FE64E67@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: ppc Floating Point support status
-Date: Wed, 5 Sep 2007 09:11:22 -0500
-To: Ben Buchli <bbuchli@xes-inc.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 6D3F8DDE26
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 01:20:47 +1000 (EST)
+Date: Wed, 5 Sep 2007 09:27:43 -0500
+From: Olof Johansson <olof@lixom.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
+Message-ID: <20070905142742.GA1760@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	linux-pcmcia@lists.infradead.org, hch@lst.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +20,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Convert the io_req_t members to kio_addr_t, to allow use on machines with
+more than 16 bits worth of IO port address space (ppc64 in this case,
+but it applies to others as well).
+    
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-On Sep 4, 2007, at 9:40 AM, Ben Buchli wrote:
 
-> On Wednesday 22 August 2007 15:52:09 Kumar Gala wrote:
->> On Aug 22, 2007, at 1:37 PM, Ben Buchli wrote:
->>> Hello everybody,
->>> I was wondering what the status was on supporting floating-point
->>> instructions
->>> for the mpc8548.  I found the suggested patch:
->>> http://patchwork.ozlabs.org/linuxppc/patch?
->>> order=patch&filter=none&id=9455,
->>> but I'm not sure for what kernel version this is and when it will be
->>> officially supported.
->>>
->>> Thanks a lot for your help!
->>>
->>> Please CC to me (bbuchli at xes-inc.com) as I haven't subscribed to
->>> this list.
->>
->> I thing these are still up in the air based on having some sense of
->> testing related to them.
->>
->> - k
->
-> Kumar,
-> thanks for getting back with me.
-> We're doing some early performance testing on one of our boards  
-> with an
-> mpc8548e. I was wondering if there's a snapshot available that we  
-> could use
-> and maybe do some working/testing on.
-> Thanks a lot.
+---
 
-I'm confused as to what you are looking for.  Is 2.6.23-rc5 not  
-sufficient?
+I'm not at home in the PCMCIA stack, so I'd appreciate some extra eyes
+on it to avoid regressions. As far as I can tell, the io_req_t structure
+is not exported through any userspace interface and only used internally.
 
-- k
+This supersedes the earlier (rejected) "increase ioaddr_t to 32-bits"
+patch (http://patchwork.ozlabs.org/linuxppc/patch?id=11908) for ppc64,
+since with this change that would not be needed.
+
+
+Thanks,
+
+Olof
+
+diff --git a/drivers/pcmcia/pcmcia_resource.c b/drivers/pcmcia/pcmcia_resource.c
+index 0ce39de..585c14b 100644
+--- a/drivers/pcmcia/pcmcia_resource.c
++++ b/drivers/pcmcia/pcmcia_resource.c
+@@ -65,8 +65,8 @@ extern int ds_pc_debug;
+  * Special stuff for managing IO windows, because they are scarce
+  */
+ 
+-static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+-			  ioaddr_t num, u_int lines)
++static int alloc_io_space(struct pcmcia_socket *s, u_int attr, kio_addr_t *base,
++			  kio_addr_t num, u_int lines)
+ {
+ 	int i;
+ 	kio_addr_t try, align;
+@@ -74,14 +74,14 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+ 	align = (*base) ? (lines ? 1<<lines : 0) : 1;
+ 	if (align && (align < num)) {
+ 		if (*base) {
+-			ds_dbg(s, 0, "odd IO request: num %#x align %#lx\n",
++			ds_dbg(s, 0, "odd IO request: num %#lx align %#lx\n",
+ 			       num, align);
+ 			align = 0;
+ 		} else
+ 			while (align && (align < num)) align <<= 1;
+ 	}
+ 	if (*base & ~(align-1)) {
+-		ds_dbg(s, 0, "odd IO request: base %#x align %#lx\n",
++		ds_dbg(s, 0, "odd IO request: base %#lx align %#lx\n",
+ 		       *base, align);
+ 		align = 0;
+ 	}
+@@ -132,8 +132,8 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+ } /* alloc_io_space */
+ 
+ 
+-static void release_io_space(struct pcmcia_socket *s, ioaddr_t base,
+-			     ioaddr_t num)
++static void release_io_space(struct pcmcia_socket *s, kio_addr_t base,
++			     kio_addr_t num)
+ {
+ 	int i;
+ 
+diff --git a/include/pcmcia/cs.h b/include/pcmcia/cs.h
+index d5838c3..657d653 100644
+--- a/include/pcmcia/cs.h
++++ b/include/pcmcia/cs.h
+@@ -147,11 +147,11 @@ typedef struct config_req_t {
+ 
+ /* For RequestIO and ReleaseIO */
+ typedef struct io_req_t {
+-    ioaddr_t	BasePort1;
+-    ioaddr_t	NumPorts1;
++    kio_addr_t	BasePort1;
++    kio_addr_t	NumPorts1;
+     u_int	Attributes1;
+-    ioaddr_t	BasePort2;
+-    ioaddr_t	NumPorts2;
++    kio_addr_t	BasePort2;
++    kio_addr_t	NumPorts2;
+     u_int	Attributes2;
+     u_int	IOAddrLines;
+ } io_req_t;
