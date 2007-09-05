@@ -1,18 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 21717DDE2F
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 10:32:29 +1000 (EST)
-Date: Tue, 4 Sep 2007 18:39:18 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: [POWERPC] flags as passed to spin_*_irqsave() should be
-	unsigned long.
-Message-ID: <20070904233918.GA20412@lixom.net>
-References: <20070905002314.GT10345@bakeyournoodle.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 5 Sep 2007 11:04:05 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: "atomic" 64-bit math on 32-bit ppc's?
+Message-ID: <20070905010405.GA17189@localhost.localdomain>
+References: <46DD3CE2.4060301@genesi-usa.com> <20070904113937.GA3994@iram.es>
+	<46DD500B.4020207@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905002314.GT10345@bakeyournoodle.com>
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <46DD500B.4020207@genesi-usa.com>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 10:23:14AM +1000, Tony Breeds wrote:
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+On Tue, Sep 04, 2007 at 01:31:07PM +0100, Matt Sealey wrote:
 > 
-> ---
-> Found trying to build a -rt kernel, which has a BUILD_BUG_ON(), in this
-> caswe.
+> Gabriel Paubert wrote:
+> > On Tue, Sep 04, 2007 at 12:09:22PM +0100, Matt Sealey wrote:
+> >> Hi guys,
+> >>
+> >> The Solaris PPC code drop included most of these functions for 32-bit ops on
+> >> 32-bit PPC architectures but the 64-bit operations are not present. What I
+> >> a not clear on is the operation of lwarx and stwcx. and if they will work if
+> >> you are doing operations on two words at a time.
+> > 
+> > No. There is a single reservation for a single word.
+> 
+> This is what I gathered from the programming environments manual at least.
+> 
+> > the 64 bit operations inside a spinlock on PPC32, and then select the
+> > number /location of spinlock(s) based on your needs, from one global
+> > per machine to one per 64 bit variable if you find excessive contention.
+> 
+> Okay that makes sense, but it would have to be a super global big lock,
+> I don't think the code is there in ZFS to give every 64-bit variable it's
+> own dedicated spinlock (kind of an overhaul) and I'm trying to be fast..
 
-Thanks, applied. I'll batch it up with the next set of updates to jgarzik.
+These aren't the only two options.  You could use a hashed array of
+locks, based on the address where you're doing the atomic operation.
 
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
