@@ -1,16 +1,34 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C1DDFDDE9C
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:02:54 +1000 (EST)
-Date: Tue, 4 Sep 2007 21:09:45 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [POWERPC] pasemi: Move pasemi_idle_init() to late_initcall()
-Message-ID: <20070905020945.GF25900@lixom.net>
-References: <20070905020733.GA25900@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905020733.GA25900@lixom.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C98E6DDE35
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2007 13:05:59 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8535ubs011369
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 23:05:56 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8535uYh408546
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 23:05:56 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8535uKu014496
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Sep 2007 23:05:56 -0400
+Subject: Re: [patch 3/6] Walnut DTS
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20070905023612.GD17189@localhost.localdomain>
+References: <20070831200449.598781000@linux.vnet.ibm.com>
+	<20070831200643.202414000@linux.vnet.ibm.com>
+	<20070903010859.GD31499@localhost.localdomain>
+	<1188741584.3772.7.camel@localhost.localdomain>
+	<20070904074203.748030c7@weaponx.rchland.ibm.com>
+	<20070905023612.GD17189@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 04 Sep 2007 19:39:26 -0500
+Message-Id: <1188952766.3223.3.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,69 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-commit 6a30bd1e2160e921a8fb051b472dfaf068f4f386
-Author: Olof Johansson <olof@lixom.net>
-Date:   Tue Sep 4 21:53:30 2007 -0500
+On Wed, 2007-09-05 at 12:36 +1000, David Gibson wrote:
+> On Tue, Sep 04, 2007 at 07:42:03AM -0500, Josh Boyer wrote:
+> > On Sun, 02 Sep 2007 08:59:44 -0500
+> > Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+> [snip]
+> > > > > +		POB0: opb {
+> > > > > +			compatible = "ibm,opb";
+> > > > 
+> > > > Need an opb-405gp here, too.
+> > > 
+> > > Yep.
+> > 
+> > Fixed.
+> > 
+> > > > > +			#address-cells = <1>;
+> > > > > +			#size-cells = <1>;
+> > > > > +			ranges = <0 ef600000 a00000>;
+> > > > 
+> > > > Hrm... something we ought to clarify is the interpretation of the
+> > > > POB0_BEAR register with respect to the bridge's ranges property.  For
+> > > > 440 I think the BEAR will need to be interpreted as an OPB address,
+> > > > rather than a PLB address, but I'm not sure if that will work here
+> > > > with the limited ranges property you have.
+> > > 
+> > > Ok, I'll look at this.
+> > 
+> > The BEAR will still be interpreted as a PLB address here as far as I
+> > can see.  The ranges spans the entire OPB space.  Am I missing
+> > something?
+> 
+> Ah, sorry, my mistake.  I thought the BEAR register would encode an
+> OPB address rather than a PLB address (and thus, be only 32-bits wide
+> on 440).  In fact it appears it does encode a PLB address (and is
+> split into BEARH and BEARL registers on 440).
 
-    [POWERPC] pasemi: Move pasemi_idle_init() to late_initcall()
-    
-    Move pasemi_idle_init() to be a late_initcall instead of being called from
-    setup_arch(). This way the cpufreq driver has a chance to initialize and
-    save away the boot time astate before we go to idle for the first time.
-    
-    Signed-off-by: Olof Johansson <olof@lixom.net>
+Right.
 
-diff --git a/arch/powerpc/platforms/pasemi/idle.c b/arch/powerpc/platforms/pasemi/idle.c
-index 3c962d5..d8e1fcc 100644
---- a/arch/powerpc/platforms/pasemi/idle.c
-+++ b/arch/powerpc/platforms/pasemi/idle.c
-@@ -72,8 +72,11 @@ static int pasemi_system_reset_exception(struct pt_regs *regs)
- 	return 1;
- }
- 
--void __init pasemi_idle_init(void)
-+static int __init pasemi_idle_init(void)
- {
-+	if (!machine_is(pasemi))
-+		return -ENODEV;
-+
- #ifndef CONFIG_PPC_PASEMI_CPUFREQ
- 	printk(KERN_WARNING "No cpufreq driver, powersavings modes disabled\n");
- 	current_mode = 0;
-@@ -82,7 +85,10 @@ void __init pasemi_idle_init(void)
- 	ppc_md.system_reset_exception = pasemi_system_reset_exception;
- 	ppc_md.power_save = modes[current_mode].entry;
- 	printk(KERN_INFO "Using PA6T idle loop (%s)\n", modes[current_mode].name);
-+
-+	return 0;
- }
-+late_initcall(pasemi_idle_init);
- 
- static int __init idle_param(char *p)
- {
-diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platforms/pasemi/pasemi.h
-index 6fd2fe7..516acab 100644
---- a/arch/powerpc/platforms/pasemi/pasemi.h
-+++ b/arch/powerpc/platforms/pasemi/pasemi.h
-@@ -10,8 +10,6 @@ extern void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset);
- 
- extern void __init alloc_iobmap_l2(void);
- 
--extern void __init pasemi_idle_init(void);
--
- /* Power savings modes, implemented in asm */
- extern void idle_spin(void);
- extern void idle_doze(void);
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index fe9a5d6..5ddf40a 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -115,8 +115,6 @@ void __init pas_setup_arch(void)
- 	/* Remap SDC register for doing reset */
- 	/* XXXOJN This should maybe come out of the device tree */
- 	reset_reg = ioremap(0xfc101100, 4);
--
--	pasemi_idle_init();
- }
- 
- static int __init pas_setup_mce_regs(void)
+> Hrm.. I'm still slightly uneasy though.  In my Ebony device tree, the
+> POB's ranges exists to embed the 32-bit OPB space into the 64-bit PLB
+> space by tacking on a 0x1 in bits 32:35.  In your 405gp ranges, you're
+> describing just the address range used by OPB peripherals
+> (0xef600000-0xf0000000) as residing at address 0 in OPB-space.
+> 
+> Since the ranges will still generate the right physical addresses, I
+> guess it doesn't matter.  But I'm not sure it meets the principle of
+> least surprise - since I think the documentation generally talks as
+> though addresses on the 405 OPB bus are identical to addreses on the
+> PLB.
+
+I don't care either way.  If I remember correctly, this way of doing it
+came out of a discussion with Segher.
+
+josh
