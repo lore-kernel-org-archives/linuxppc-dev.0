@@ -1,16 +1,33 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s9.bay0.hotmail.com (bay0-omc2-s9.bay0.hotmail.com
-	[65.54.246.145]) by ozlabs.org (Postfix) with ESMTP id 92E73DE01B
+Return-Path: <robert.wood@gefanuc.com>
+Received: from ext-nj2ut-12.online-age.net (ext-nj2ut-12.online-age.net
+	[64.14.54.245])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 27076DDEA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 06:40:37 +1000 (EST)
-Message-ID: <BAY138-F2634DB70ACDB83FA7430FEB2CB0@phx.gbl>
-In-Reply-To: <200709052342.34177.temerkhanov@yandex.ru>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: temerkhanov@yandex.ru, linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx FX60
-Date: Wed, 05 Sep 2007 20:40:33 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+	Thu,  6 Sep 2007 05:03:47 +1000 (EST)
+Received: from int-nj2ut-1.online-age.net (int-nj2ut-1.online-age.net
+	[3.159.237.70])
+	by ext-nj2ut-12.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id l85IuMNe015366
+	for <linuxppc-embedded@ozlabs.org>; Wed, 5 Sep 2007 14:56:22 -0400
+Received: from cinmlef10.e2k.ad.ge.com (int-nj2ut-1.online-age.net
+	[3.159.237.70])
+	by int-nj2ut-1.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id l85IuLQ6009730
+	for <linuxppc-embedded@ozlabs.org>; Wed, 5 Sep 2007 14:56:22 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Xilinx FX60
+Date: Wed, 5 Sep 2007 14:56:21 -0400
+Message-ID: <0F3B2CB6574F1A488E62523706BF8A770226B07D@LOUMLVEM03.e2k.ad.ge.com>
+In-Reply-To: <1189017748.6185.49.camel@PisteOff>
+References: <1189017748.6185.49.camel@PisteOff>
+From: "Wood, Robert (GE Indust, GE Fanuc)" <robert.wood@gefanuc.com>
+To: "Robert Woodworth" <rwoodworth@securics.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,13 +38,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+We've been using Virtex 2 PRO with dual cores. We found it necessary to
+very tightly constrain clocks and resets. Also, constrain the reset
+block to adjacent to the ports on the PPC.
 
->It won't. There is no hardware cache coherency on Virtex.
+Another lightly documented feature is that the core clock must be an
+integer multiple of the PLB clock, say 300MHz/100MHz.
 
-Is that possible if we turn off the cache?
+Robert Wood
+GEFanuc Sensor Processing
+5430 Canotek Road
+Ottawa, Ontario
+Canada K1J 9G2
+613-749-9241 x270
+=20
 
-BR
-Ming
+-----Original Message-----
+From: linuxppc-embedded-bounces+rwood=3Dics-ltd.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+rwood=3Dics-ltd.com@ozlabs.org] On
+Behalf Of Robert Woodworth
+Sent: Wednesday, September 05, 2007 2:42 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: Xilinx FX60
 
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+After achieving complete success with my Linux kernel on the ML403, I've
+now started to build a kernel for my real target board with a
+Virtex4-FX60 (dual PPC cores)
+
+Has anyone built a kernel for a dual core PPC Virtex?  I have found very
+little docs on how to architect software for the dual-core PPC's. =20
+Will SMP Linux work on this platform?  What would the bus setup be?
+
+
+
+My kernel is partially booting, some of the time... I'm mystified by the
+situation.  One time, I get all the happy boot messages through the
+UARTLite port, then the next reboot it stops at "Now booting the kernel"
+I'm only getting about 10% successful boots......
+
+
+My EDK setup is as follows;  I've disconnected the second PPC from the
+PLB to have a single PPC system, 32MB DDR on PLB, TEMAC on PLB, UARTLite
+on OPB.
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
