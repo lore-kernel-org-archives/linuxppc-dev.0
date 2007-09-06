@@ -3,11 +3,11 @@ Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail.ovro.caltech.edu",
 	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AD4D7DDED0
+	by ozlabs.org (Postfix) with ESMTP id 7CF97DDED0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 06:14:34 +1000 (EST)
-Message-ID: <46E05FFD.3020605@ovro.caltech.edu>
-Date: Thu, 06 Sep 2007 13:15:57 -0700
+	Fri,  7 Sep 2007 06:24:29 +1000 (EST)
+Message-ID: <46E06259.5010305@ovro.caltech.edu>
+Date: Thu, 06 Sep 2007 13:26:01 -0700
 From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
 To: Leonid <Leonid@a-k-a.net>
@@ -29,47 +29,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi Leonid,
 
-> Does somebody have any experience of using AMCC PPC chips (such as
-> PPC440ep) or any other PPC at all as PCI target (slave)? PPC440ep has
-> PCI-PLB bridge which certainly can be configured as slave. CPU will need
-> to do configuration and then I assume another CPU (PCI host) will be
-> able to access all memories via the bridge including peripherals'
-> controllers. Slave CPU involvement would be minimal then.
-> 
-> Can anybody point me to design like this or to that end to any SW design
-> where PPC CPU works as PCI slave?
+In case they are not in the document:
 
-I have an application where I want to communicate with up
-to 20 cPCI slaves per cPCI chassis, where the slave devices
-each use a PowerPC based processor. (The masters happen
-to be x86 CPUs; because I have them).
+There are several fundamental problems with the AMCC 440EP
+acting as a PCI target/slave;
 
-I looked at the 440EP using the Yosemite board
+1. As a PCI target, there is only one way to generate
+    an interrupt to a host; you basically toggle the
+    interrupt pin. This makes it tricky to develop a
+    host-to-slave communications protocol, eg. its
+    hard to use the single interrupt to indicate various
+    interrupt states, eg. target-to-host buffer has
+    data versus host-to-target buffer has been emptied.
+    Ideally AMCC should have implemented mailboxes and/or
+    doorbell registers like any other sane PCI target
+    device (eg. some the Freescale processors, or any of
+    the PLX technologies chips).
 
-http://www.ovro.caltech.edu/~dwh/powerpc_440ep.pdf
+2. Look in the data sheet and see if you can figure out
+    how the host processor can generate an interrupt to
+    the PowerPC core ... oops, you can't. That kind of
+    makes it difficult to work with doesn't it.
 
-and the Freescale MPC8349E
+    A work around would be to have the host write to the
+    GPIO register and wire a GPIO pin back to an external
+    interrupt pin. Then you would not be able to use any
+    other GPIO pin in that GPIO register since there is
+    no way to arbitrate host access versus PowerPC core
+    access.
 
-http://www.ovro.caltech.edu/~dwh/powerpc_mpc8349e.pdf
+This was the other reason I ditched the AMCC part in
+favor of the Freescale part.
 
-I had some trouble the with AMCC chips; the DMA controller
-operation was weird, and AMCC tech support was pretty
-much useless.
+If you are looking at other parts, make sure you look
+in the PCI configuration space of the processor reference
+manual. Many processors have the interrupt pin register
+hardwired to zero, i.e., they can not be used as target
+devices, only hosts. In that case you'd have to add an
+intel 21555 non-transparent bridge to make the device
+a target.
 
-Freescale's technical (design) support is great, and they
-(the software developers; Kim, Timur, etc) are actively
-maintaining/contributing to git trees for u-boot and Linux.
-If you can change processors, I'd recommend any Freescale
-part over an AMCC part.
-
-I'm working on a cPCI board design at the moment, you're
-welcome to look at the design;
-
-  * PowerPC
-  * Altera Stratix II FPGAs
-  * dual 8-bit 1GHz ADCs
-
-http://www.ovro.caltech.edu/~dwh/carma_board/
-
-Regards,
+Cheers,
 Dave
