@@ -1,26 +1,27 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 288A4DDEE4
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:13:57 +1000 (EST)
-In-Reply-To: <46DCCE19.6050401@freescale.com>
-References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
-	<46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-	<46DC126C.9060603@freescale.com>
-	<6c73dab2fcf21490edc64b9b7ec52295@kernel.crashing.org>
-	<46DCCE19.6050401@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3299c27fe2551315c6f5ecff3569f2e0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in QE,
-	register mmc_spi stub
-Date: Thu, 6 Sep 2007 16:13:56 +0200
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A86E1DDF01
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:15:16 +1000 (EST)
+Date: Thu, 6 Sep 2007 09:15:01 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: PCI I/O space -- reg or ranges?
+Message-ID: <20070906141501.GA16353@ld0162-tx32.am.freescale.net>
+References: <20070831175006.17240@gmx.net>
+	<20070903013431.GG31499@localhost.localdomain>
+	<20070903145814.101070@gmx.net>
+	<f460b176a7c30dae101bfc00d1d4b8e9@kernel.crashing.org>
+	<20070904114945.303440@gmx.net>
+	<20070905024805.GE17189@localhost.localdomain>
+	<22dc6fa3382b591fe721c1b9dee88097@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <22dc6fa3382b591fe721c1b9dee88097@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> This kind of thing is typically hardcoded into the firmware (just like
->> the device tree is) -- just put it somewhere _next to_ the device 
->> tree,
->> not _in_ it.
->
-> What is next to the device tree?
+On Thu, Sep 06, 2007 at 03:56:38PM +0200, Segher Boessenkool wrote:
+> > Err... huh?  The legacy IO space is assigned a block of addresses in
+> > 3-word "OF-PCI-space by the PCI binding.  When that is translated into
+> > an MMIO range by the bridge, there's no reason that can't be encoded
+> > into the ranges property.
+> 
+> Sure, it can be encoded like that.  But does it make sense?
+> You cannot use legacy I/O space as normal memory space.
 
-"Anywhere else in the firmware".
+Why does it not make sense?  I'm not sure what you mean by using it as
+"normal memory space", but if the PCI bridge does a straightforward
+linear mapping of I/O into memory space (like most non-x86 bridges do),
+it seems to make sense to me to reuse the existing ranges mechanism
+rather than require each driver to have extra glue code.
 
-> AFAIK, there is no other standard data structure that could take place 
-> of the par_io nodes in the DTS.
+And given the substantial impact of such a change on many existing device
+trees and the kernel, it should probably be brought up in a thread with a
+subject that will clue people in to what is being discussed, rather than
+buried in "AmigaOne device tree source v2".
 
-The device tree is not a dumping ground for all your "I need some
-standard data structure" stuff.  Use an XML file if you have to ;-)
+BTW, memory space could be non-linear as well, so should we stop using
+ranges for that?  For an example, see the old Alphas which lacked
+byte/word I/O, and thus used a weird sparse mapping to control the size
+of the access that went out over the bus.
 
-> I agree with your points, Segher, but replacing the par_io node with a 
-> bunch of par_io_config_pin() calls in the kernel is not really an 
-> improvement, I think.  Until we migrate the QE pin configuration code 
-> to U-boot, I suggest that we keep the device tree structure as-is and 
-> continue to use it for new code.  That way, it will all stay in one 
-> place.
+> Also, from a driver standpoint, a PHB driver needs to find out
+> two main things about the bridge: a) how and where to generate
+> config cycles; b) how and where to generate legacy I/O cycles.
+> It is told "how" by the "compatible" property, and "where" by
+> the "reg" property, normally.
 
-Sure, some migration plan is in order, things won't change overnight.
-That doesn't mean you don't need to start planning _now_ ;-)
+All it currently needs to do is a), provided it's a normal linear mapping
+and the I/O space is in ranges.
 
-
-Segher
+-Scott
