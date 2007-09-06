@@ -1,22 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7CF97DDED0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 05ECCDDF0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 06:24:29 +1000 (EST)
-Message-ID: <46E06259.5010305@ovro.caltech.edu>
-Date: Thu, 06 Sep 2007 13:26:01 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Leonid <Leonid@a-k-a.net>
+	Fri,  7 Sep 2007 09:30:24 +1000 (EST)
+To: David Hawkins <dwh@ovro.caltech.edu>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: PCI target implementation on AMCC PPC CPUs
-References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>	<20070906184308.GA22380@ld0162-tx32.am.freescale.net>
-	<406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 06 Sep 2007 13:15:57 PDT."
+	<46E05FFD.3020605@ovro.caltech.edu>
+Date: Fri, 07 Sep 2007 01:30:21 +0200
+Sender: wd@denx.de
+Message-Id: <20070906233021.59D1C247AF@gemini.denx.de>
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Leonid,
+In message <46E05FFD.3020605@ovro.caltech.edu> you wrote:
+> 
+> Freescale's technical (design) support is great, and they
+> (the software developers; Kim, Timur, etc) are actively
+> maintaining/contributing to git trees for u-boot and Linux.
+> If you can change processors, I'd recommend any Freescale
+> part over an AMCC part.
 
-In case they are not in the document:
+But then,  a  lot  of  people  with  in-depth  experience  with  AMCC
+processors hang out on the lists and on IRC, too. AMCC is pretty well
+supported at least as far as U-Boot and Linux (and the ELDK) go.
 
-There are several fundamental problems with the AMCC 440EP
-acting as a PCI target/slave;
+Best regards,
 
-1. As a PCI target, there is only one way to generate
-    an interrupt to a host; you basically toggle the
-    interrupt pin. This makes it tricky to develop a
-    host-to-slave communications protocol, eg. its
-    hard to use the single interrupt to indicate various
-    interrupt states, eg. target-to-host buffer has
-    data versus host-to-target buffer has been emptied.
-    Ideally AMCC should have implemented mailboxes and/or
-    doorbell registers like any other sane PCI target
-    device (eg. some the Freescale processors, or any of
-    the PLX technologies chips).
+Wolfgang Denk
 
-2. Look in the data sheet and see if you can figure out
-    how the host processor can generate an interrupt to
-    the PowerPC core ... oops, you can't. That kind of
-    makes it difficult to work with doesn't it.
-
-    A work around would be to have the host write to the
-    GPIO register and wire a GPIO pin back to an external
-    interrupt pin. Then you would not be able to use any
-    other GPIO pin in that GPIO register since there is
-    no way to arbitrate host access versus PowerPC core
-    access.
-
-This was the other reason I ditched the AMCC part in
-favor of the Freescale part.
-
-If you are looking at other parts, make sure you look
-in the PCI configuration space of the processor reference
-manual. Many processors have the interrupt pin register
-hardwired to zero, i.e., they can not be used as target
-devices, only hosts. In that case you'd have to add an
-intel 21555 non-transparent bridge to make the device
-a target.
-
-Cheers,
-Dave
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If a group of N persons implements a COBOL compiler,  there  will  be
+N-1 passes. Someone in the group has to be the manager. - T. Cheatham
