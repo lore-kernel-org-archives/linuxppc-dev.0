@@ -1,33 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 78369DDEB9
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 02:51:37 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l86GqxY9021604
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:52:59 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l86GpYTh693124
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:51:34 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l86GpXBY027129
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:51:34 -0400
-Date: Thu, 6 Sep 2007 11:51:33 -0500
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Keep On Debugging You
-Message-ID: <20070906165133.GV4584@austin.ibm.com>
-References: <46DE1A36.3010300@tabi.org>
-	<46B96294322F7D458F9648B60E15112C81293B@zch01exm26.fsl.freescale.net>
-	<46E01B07.3040804@freescale.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 89AA5DDEE0
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 02:55:42 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Thu, 6 Sep 2007 18:55:35 +0200
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC/PATCH 1/2] Basic generic time/clocksource code for PowerPC
+Message-ID: <20070906165535.GA11420@iram.es>
+References: <18144.4514.601900.881855@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46E01B07.3040804@freescale.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@tabi.org>,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <18144.4514.601900.881855@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2007 at 10:21:43AM -0500, Timur Tabi wrote:
-> Zhang Wei-r63237 wrote:
-> > Oops!
-> > 
-> > Could you give us a live show version? :D  
+On Fri, Sep 07, 2007 at 12:41:38AM +1000, Paul Mackerras wrote:
+> This changes PowerPC to use the generic time infrastructure for
+> gettimeofday et al.  We register a clocksource which uses the timebase
+> register, or the RTC on the 601.
 > 
-> Sorry, I'm booked up for the rest of the year.
+> It also gets rid of the RTC update stuff.  IIRC we discussed removing
+> this some time ago but never actually did it.
 
-Hmm. Maybe someone could sneak a videocam into one of the
-venues, and, you know, post a pirated, illegal copy on
-youtube or something.
+So who will be in charge of updating the RTC now? The update 
+every 11 min is there to stay on x86(-64) it seems.
 
---linas
+Removing this will have strange side effects: as an example,
+your laptop clock will be good if it synchronized on NTP, 
+then you put it to sleep, disconnect the network and RTC read 
+on wake up returns a wrong value, giving wrong timestamps.
+
+As someone who has a network of tens of machines using
+NTP for synchornisation I think it is a very bad idea
+unless we have a replacement.
+
+	Gabriel
