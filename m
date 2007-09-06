@@ -1,29 +1,25 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CC1A4DDE17
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 12:59:39 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l862xWvb007191
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 19:59:33 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l862xVuu007911
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2007 21:59:31 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Keep On Debugging You
-Date: Thu, 6 Sep 2007 10:59:28 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C81293B@zch01exm26.fsl.freescale.net>
-In-Reply-To: <46DE1A36.3010300@tabi.org>
-References: <46DE1A36.3010300@tabi.org>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Timur Tabi" <timur@tabi.org>
+	by ozlabs.org (Postfix) with ESMTP id 89566DDF8D
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 13:01:58 +1000 (EST)
+Date: Wed, 5 Sep 2007 22:01:46 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 1/9] 8xx: Fix CONFIG_PIN_TLB.
+Message-ID: <20070906030146.GA12955@ld0162-tx32.am.freescale.net>
+References: <20070905192727.GA32365@ld0162-tx32.am.freescale.net>
+	<4F58F233-56E5-4910-9D33-28A44FCB393C@embeddedalley.com>
+	<20070905205301.GA807@ld0162-tx32.am.freescale.net>
+	<CF1B6B97-44FA-4002-9030-3C1A20F2F2F4@embeddedalley.com>
+	<20070905222310.GA11433@ld0162-tx32.am.freescale.net>
+	<04819433-30F0-4789-864D-57B474485E32@embeddedalley.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <04819433-30F0-4789-864D-57B474485E32@embeddedalley.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,59 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Oops!
+On Wed, Sep 05, 2007 at 03:42:03PM -0700, Dan Malek wrote:
+> On Sep 5, 2007, at 3:23 PM, Scott Wood wrote:
+> 
+> >The IMMRs I've seen from the bootloader are ff000000 (Freescale  
+> >boards)
+> >and fa200000 (Embedded Planet).  AFAICT, the number of fixed TLB  
+> >entries
+> >is fixed at 4 on these chips, so using the fourth for flash  
+> >wouldn't take
+> >away any general-purpose TLB entries.
+> 
+> On these same boards, the memory controllers are usually
+> configured to put the flash somewhere in that space as well.
 
-Could you give us a live show version? :D =20
+Not on any of the boards I've worked with.
 
-Cheers!
-- zw
-> -----Original Message-----
-> From: linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.or
-> g] On Behalf Of Timur Tabi
-> Sent: Wednesday, September 05, 2007 10:54 AM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Keep On Debugging You
->=20
-> I wrote this last year in frustration with an out-of-order=20
-> execution bug=20
-> I was trying to fix.
->=20
->=20
-> Keep On Debugging You
-> Sung to the tune of REO Speedwagon's "Keep on Loving' You"
->=20
-> You should've seen by the opcodes in the queue, baby
-> There was something missin'
-> You should known by the registers, too, maybe
-> But you were too busy bitchin'
-> You stalled ahead
-> But you never fed
-> Instead my instructions
-> All ended up switchin'
->=20
-> And though I know all flushes
-> Still I don't remember
-> Cause it was stwu way before lwzu
-> And they're still together
-> And I meant every line I wrote
-> When I wrote them in order I meant
-> That I wanted them in order
->=20
-> And I'm gonna keep on debugging you
-> Cause it's the only thing I'm paid to do
-> I don't have time to sleep
-> I just want to keep on debugging you
->=20
-> (solo)
->=20
-> And I meant every line I wrote
-> When I wrote them in order I meant
-> That I wanted them in order
->=20
-> (chorus)
->=20
->=20
-> --=20
-> Timur Tabi
->=20
+> >I certainly agree that it would be nice to check -- my immediate goal
+> >is to get things working, though.
+> 
+> It's more than nice.  If you want this to work correctly and also get
+> the performance enhancement, it needs to be done.
+
+And my point was that getting that performance enhancement is "nice". 
+It's not there now.  If you want to submit a patch to add it, go right
+ahead, but it's not really related to this patch.
+
+-Scott
