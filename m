@@ -1,25 +1,16 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E59A6DDE24
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 05:13:07 +1000 (EST)
-Date: Thu, 6 Sep 2007 14:12:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 8/9] 8xx: Adder 875 support
-Message-ID: <20070906191255.GA22663@ld0162-tx32.am.freescale.net>
-References: <20070905192820.GG32398@ld0162-tx32.am.freescale.net>
-	<85281ec227e35a9e466e68e3fdc7e6ef@kernel.crashing.org>
-	<20070906141620.GB16353@ld0162-tx32.am.freescale.net>
-	<f26578467468e38345e795ea5f1f7c42@kernel.crashing.org>
-	<20070906180922.GA18750@ld0162-tx32.am.freescale.net>
-	<598e0baf0dc1ca63b91f2a80ec8abe19@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9C09DDDF38
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 05:15:08 +1000 (EST)
+Date: Thu, 6 Sep 2007 14:15:16 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC/PATCH 2/2] Generic clockevents and no-idle-HZ for PowerPC
+Message-ID: <20070906191516.GA20090@lixom.net>
+References: <18144.4702.673658.336384@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <598e0baf0dc1ca63b91f2a80ec8abe19@kernel.crashing.org>
+In-Reply-To: <18144.4702.673658.336384@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,25 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2007 at 08:48:12PM +0200, Segher Boessenkool wrote:
-> >>>>>+	model = "Analogue & Micro Adder MPC875";
-> >>>>
-> >>>>This should probably be just "MPC875".
-> >>>
-> >>>There's more than one board with an MPC875 on it.
-> >>
-> >>"model" is the model name the vendor uses.  It isn't supposed to
-> >>be unique globally, nor does it say what CPU is on the board.
-> >
-> >The name the vendor uses is "Adder MPC875".  The name of the vendor is
-> >"Analogue & Micro", which seems useful to include, even if it's not
-> >mandatory that it be globally unique.
-> 
-> So it should be "Adder MPC875", then :-)
+Hi,
 
-Any particular reason to leave out potentially useful information in a
-field that is for human consumption?
+Nice! I've been looking forward to these patches. Should help keep power
+consumption down on machines with powersavings support for idle.
 
-Other than Because Segher Says So(tm). :-)
+On Fri, Sep 07, 2007 at 12:44:46AM +1000, Paul Mackerras wrote:
 
--Scott
+> @@ -749,6 +805,8 @@ void __init clocksource_init(void)
+>  	printk(KERN_INFO "clocksource: %s mult[%x] shift[%d] registered\n",
+>  	       clocksource_timebase.name,
+>  	       clocksource_timebase.mult, clocksource_timebase.shift);
+> +
+> +	init_decrementer_clockevent();
+>  }
+>  
+>  /* This function is only called on the boot processor */
+> @@ -874,8 +932,7 @@ void __init time_init(void)
+>  	/* Register the clocksource */
+>  	clocksource_init();
+>  
+> -	/* Not exact, but the timer interrupt takes care of this */
+> -	set_dec(tb_ticks_per_jiffy);
+> +	set_dec(DECREMENTER_MAX);
+>  }
+
+I don't think that set_dec() is needed any more. I get a very long
+delay during "Calibrating delay loop..." with it there.
+
+Looks like decrementer_set_next_event() already sets a reasonable
+decementer value, it's called through the notify chain set off
+from register_decrementer_clockevent() -> ... -> tick_notify() ->
+tick_setup_periodic() -> clockevents_program_event().
+
+
+-Olof
