@@ -1,15 +1,21 @@
-Return-Path: <shriramjanardhan@yahoo.com>
-Received: from web58514.mail.re3.yahoo.com (web58514.mail.re3.yahoo.com
-	[68.142.236.197]) by ozlabs.org (Postfix) with SMTP id D1E9DDDFC6
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.237])
+	by ozlabs.org (Postfix) with ESMTP id 97A6BDDFB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 11:55:26 +1000 (EST)
-Date: Wed, 5 Sep 2007 18:48:44 -0700 (PDT)
-From: Shriram Janardhan <shriramjanardhan@yahoo.com>
-Subject: Gianfar - MPC8541 - tx buffer overrun errors
-To: linuxppc-embedded@ozlabs.org
+	Thu,  6 Sep 2007 13:12:43 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so23601wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 05 Sep 2007 20:12:43 -0700 (PDT)
+Message-ID: <7d1d9c250709052012n14525933r40cb26acc605ec95@mail.gmail.com>
+Date: Wed, 5 Sep 2007 23:12:43 -0400
+From: "Paul Gortmaker" <paul.gortmaker@gmail.com>
+To: "=?GB2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+Subject: Re: The question about the relocate_code on u-boot for MPC8360?
+In-Reply-To: <388526407.00819@tsinghua.org.cn>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1999323389-1189043324=:90580"
-Message-ID: <852639.90580.qm@web58514.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=GB2312
+References: <388526407.00819@tsinghua.org.cn>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,29 +26,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1999323389-1189043324=:90580
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-All,
-   
-  I am running 2.6.11 version of the kernel on MPC8541.  Have one of the TSECs configured at 100Mbps/Full Duplex.  The TSEC MAC is connected to a Marvell Ethernet switch MAC without any PHY in between.  MAC level flow control is enabled but no pause frames sent or received.
-   
-  I see a high number of transmit buffer overrun errors (tx_fifo_empty errors in the gianfar driver).  I don't have NAPI enabled.  In addition to other things, I was thinking of enabling NAPI and see if it helps - is there any downside to it??  Are there any other parameters that I could tweak to reduce/eliminate the overrun errors??
-   
-  Thanks,
-  Shriram.
-   
-
-       
----------------------------------
-Got a little couch potato? 
-Check out fun summer activities for kids.
---0-1999323389-1189043324=:90580
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>All,</div>  <div>&nbsp;</div>  <div>I am running 2.6.11 version of the kernel on MPC8541.&nbsp;&nbsp;Have one of the TSECs configured at 100Mbps/Full Duplex.&nbsp; The TSEC MAC is connected to a Marvell Ethernet switch MAC without any PHY in between.&nbsp; MAC level flow control is enabled but no pause frames sent or received.</div>  <div>&nbsp;</div>  <div>I see a high number of transmit buffer overrun errors (tx_fifo_empty errors in the gianfar driver).&nbsp; I don't have NAPI enabled.&nbsp; In addition to other things, I was thinking of enabling NAPI and see if it helps - is there any downside to it??&nbsp; Are there any other parameters that I could tweak to reduce/eliminate the overrun errors??</div>  <div>&nbsp;</div>  <div>Thanks,</div>  <div>Shriram.</div>  <div>&nbsp;</div><p>&#32;
-      <hr size=1>Got a little couch potato? <br>
-Check out fun <a href="http://us.rd.yahoo.com/evt=48248/*http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz">summer activities for kids.</a>
---0-1999323389-1189043324=:90580--
+T24gOC8zMC8wNywgufm+oiA8Z3VvamluMDJAdHNpbmdodWEub3JnLmNuPiB3cm90ZToKPgo+IEhp
+LCBGcmllbmRzLAo+Cj4KPiBJIGFtIGRlYnVnaW5nIHRoZSB1LWJvb3Qgb24gZnJlZXNjYWxlIE1Q
+QzgzNjAsIHRoZSB2ZXJzaW9uIG9mIHUtYm9vdCBpcyAxLjIuMCwgdGhlCj4gY29kZSBvbiBmbGFz
+aCBpcyBPSyxidXQgdGhlIGNvZGUgZnJvbSBGTEFTSCB0byBERFIgaXMgYnJva2VuLCB0aGF0IGlz
+LCBhZnRlciB0aGUKPiByZWxvY2F0ZV9jb2RlIGZ1bmN0aW9uLCB0aGUgdS1ib290IHN0YXJ0IGFn
+YWluLiBJIHRlc3RlZCB0aGUgRERSIG9uIHUtYm9vdCwgaXQncwo+IE9LLiBJIHdhcyB3b25kZXJp
+bmcgdGhhdCBob3QgdG8gZGVhbCB3aXRoIHRoaXMgcHJvYmxlbT8gZm9sbG93IGlzIHRoZSBDT00g
+b3V0cHV0Cj4gZnJvbSB1LWJvb3QuIFRoYW5rcy4KPgoKSSB0aGluayB5b3Ugd2lsbCBmaW5kIHRo
+YXQgdGhlIGRlZmF1bHQgMS4yLjAgdHJlZSBkb2VzIG5vdCBjb250YWluIHRoZQpzdXBwb3J0IGZv
+ciBuZXdlciA4MzYwTURTIGJvYXJkcyB3aXRoIHRoZSByZXYyIENQVSBhbmQgdGhlIEREUjIuClRo
+ZXJlIHdlcmUgZ2l0IGNvbW1pdHMgcG9zdCAxLjIuMCB0aGF0IGFkZGVkIHN1cHBvcnQgZm9yIHRo
+ZXNlIC0tIGZvcgpleGFtcGxlOgoKICAgICAgICBGaXggdHdvIGJ1Z3MgZm9yIE1QQzgzeHggRERS
+MiBjb250cm9sbGVyIFNQRCBJbml0CiAgICAgICAgY29tbWl0IDZmYmYyNjFmOGRmMjk0ZTU4OWNm
+YWRlYmViZTU0NjhlM2MwZjI5ZTkKCiAgICAgICAgbXBjODN4eDogQWRkIEREUjIgY29udHJvbGxl
+ciBmaXhlZC9TUEQgSW5pdCBmb3IgTVBDODN4eAogICAgICAgIGNvbW1pdCBkNjE4NTNjZjI0NzJl
+MGI4YmNiZDEzMTQ2MWE5M2QxYzQ5ZmYwYzFmCgpUaGVyZSB3ZXJlIGFsc28gc29tZSBERFIyIHJl
+bGF0ZWQgY2hhbmdlcyB0aGF0IGNhbWUgaW4gd2l0aCB0aGUKbXBjODMyeE1EUyBwYXRjaGVzLgoK
+UGF1bC4KCgoKCj4KPgo+Cj4KPgo+Cj4gVS1Cb290IDEuMi4wIChBdWcgMjkgMjAwNyAtIDIwOjUw
+OjM3KSBNUEM4M1hYCj4KPiBDbG9jayBjb25maWd1cmF0aW9uOgo+ICAgQ29oZXJlbnQgU3lzdGVt
+IEJ1czogIDI2NCBNSHoKPiAgIENvcmU6ICAgICAgICAgICAgICAgICA1MjggTUh6Cj4gICBRRTog
+ICAgICAgICAgICAgICAgICAgMTk4IE1Iego+ICAgTG9jYWwgQnVzIENvbnRyb2xsZXI6IDI2NCBN
+SHoKPiAgIExvY2FsIEJ1czogICAgICAgICAgICAgNjYgTUh6Cj4gICBERFI6ICAgICAgICAgICAg
+ICAgICAgMjY0IE1Iego+ICAgRERSIFNlY29uZGFyeTogICAgICAgIDI2NCBNSHoKPiAgIFNFQzog
+ICAgICAgICAgICAgICAgICAgODggTUh6Cj4gICBJMkMxOiAgICAgICAgICAgICAgICAgMjY0IE1I
+ego+ICAgSTJDMjogICAgICAgICAgICAgICAgIDI2NCBNSHoKPiBDUFU6IFJldjogVW5rbm93biBn
+dW9qaW5nIG1vZGlmaWVkIHNvdXJjZSBjb2RlCj4gUmV2OiAyMCBhdCA1MjggTUh6Cj4gQm9hcmQ6
+IEZyZWVzY2FsZSBNUEM4MzYwRU1EUwo+IEkyQzogICByZWFkeQo+IERSQU06Cj4gICAgU0RSQU0g
+b24gTG9jYWwgQnVzOiA2NCBNQgo+ICAgIEREUiBSQU06IDI1NiBNQgo+IEREUiB0ZXN0IHBoYXNl
+IDE6Cj4gRERSIHRlc3QgcGhhc2UgMjoKPiBERFIgdGVzdCBwYXNzZWQuCj4gaW5pdF9zZXF1ZW5j
+ZSBmaW5pc2hlZAo+IGJlZ2luIHNldCB1cCBhIG5ldyBzdGFjawo+IGJlZ2lubmluZyBtZW1jcHkK
+PiBlbmRlZCBtZW1jcHksYmVnaW5uaW5nIHJlbG9jYXRlX2NvZGUKPgo+Cj4gVS1Cb290IDEuMi4w
+IChBdWcgMjkgMjAwNyAtIDIwOjUwOjM3KSBNUEM4M1hYCj4KPiBDbG9jayBjb25maWd1cmF0aW9u
+Ogo+ICAgQ29oZXJlbnQgU3lzdGVtIEJ1czogIDI2NCBNSHoKPiAgIENvcmU6ICAgICAgICAgICAg
+ICAgICA1MjggTUh6Cj4gICBRRTogICAgICAgICAgICAgICAgICAgMTk4IE1Iego+ICAgTG9jYWwg
+QnVzIENvbnRyb2xsZXI6IDI2NCBNSHoKPiAgIExvY2FsIEJ1czogICAgICAgICAgICAgNjYgTUh6
+Cj4gICBERFI6ICAgICAgICAgICAgICAgICAgMjY0IE1Iego+ICAgRERSIFNlY29uZGFyeTogICAg
+ICAgIDI2NCBNSHoKPiAgIFNFQzogICAgICAgICAgICAgICAgICAgODggTUh6Cj4gICBJMkMxOiAg
+ICAgICAgICAgICAgICAgMjY0IE1Iego+ICAgSTJDMjogICAgICAgICAgICAgICAgIDI2NCBNSHoK
+PiBDUFU6IFJldjogVW5rbm93biBndW9qaW5nIG1vZGlmaWVkIHNvdXJjZSBjb2RlCj4gUmV2OiAy
+MCBhdCA1MjggTUh6Cj4gQm9hcmQ6IEZyZWVzY2FsZSBNUEM4MzYwRU1EUwo+IEkyQzogICByZWFk
+eQo+IERSQU06Cj4gICAgU0RSQU0gb24gTG9jYWwgQnVzOiA2NCBNQgo+ICAgIEREUiBSQU06IDI1
+NiBNQgo+IEREUiB0ZXN0IHBoYXNlIDE6Cj4gRERSIHRlc3QgcGhhc2UgMjoKPiBERFIgdGVzdCBw
+YXNzZWQuCj4gaW5pdF9zZXF1ZW5jZSBmaW5pc2hlZAo+IGJlZ2luIHNldCB1cCBhIG5ldyBzdGFj
+awo+IGJlZ2lubmluZyBtZW1jcHkKPiBlbmRlZCBtZW1jcHksYmVnaW5uaW5nIHJlbG9jYXRlX2Nv
+ZGUKPgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+PiBMaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3QKPiBMaW51eHBwYy1lbWJlZGRlZEBvemxh
+YnMub3JnCj4gaHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1i
+ZWRkZWQKPgo=
