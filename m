@@ -1,18 +1,17 @@
-Return-Path: <j.borkhuis@dutchspace.nl>
-Received: from kirk.dutchspace.nl (kirk.dutchspace.nl [193.200.147.14])
-	by ozlabs.org (Postfix) with ESMTP id 98FBDDDE43
+Return-Path: <Sylvain.Joyeau@thomson.net>
+Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
+	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id 001B5DDF13
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 17:43:15 +1000 (EST)
-Message-ID: <46DFAF91.3060102@dutchspace.nl>
-Date: Thu, 06 Sep 2007 09:43:13 +0200
-From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+	Thu,  6 Sep 2007 18:44:38 +1000 (EST)
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problems enabling NTP on ELDK
-References: <20070905184827.26859247AF@gemini.denx.de>
-In-Reply-To: <20070905184827.26859247AF@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Gianfar - MPC8541 - tx buffer overrun errors
+Date: Thu, 6 Sep 2007 10:43:09 +0200
+Message-ID: <B00307ADBC68954AA8D6FB3AC8FD66F3014E1FC4@rennsmail05.eu.thmulti.com>
+From: "Joyeau Sylvain" <Sylvain.Joyeau@thomson.net>
+To: "Shriram Janardhan" <shriramjanardhan@yahoo.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,43 +22,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <46DE9322.7080901@dutchspace.nl> you wrote:
->   
->> I tried enabling NTP on my embedded machine (using ELDK 4.1, ppc_85xx, 
->> kernel version 2.6.14 with Xenomai 2.3.2). After I did that I noticed 
->> that ksoftirqd/0 suddenly took almost all processor time (> 95%). What 
->> is causing this? Is there a way around this, or is this something that 
->> does not cause any problems?
->>     
->
-> You probably have some poroblems in your kernel port - check the  RTC
-> driver  and  related  modules like I2C etc. Of course this depends on
-> the NTP configuration you use, but the only kernel interaction I  can
-> think  of  that  could cause this is if you interact with the RTC. [I
-> guess that normal network traffic is working fine on your board.]
->   
+Hi Shriram,
 
-All other functions are working fine: no problem with network or other 
-PCI devices.
+Try to increase the DEFAULT_TX_RING_SIZE parameter in gianfar.h.
+Enabling NAPI mechanism should have no effect on transmission side.
 
-I disabled all RTC and I2C devices, and the problem disappeared. After 
-enabling all items one by one the cause of the problem seems to be the 
-DS1375 RTC: after I enable this and start NTPD ksoftirqd goes wild 
-again. I do not see any other special activity: no extra interrupts in 
-/proc/interrupts, and also no other RTC related errors or messages. Also 
-OpenPIC does not show any extra interrupts.
-Is there a way to find out what interrupt is causing ksoftirqd to be 
-triggered?
+Cheers
+--
+sj
 
-> BTW: ELDK 4.1 comes with a 2.6.19.2  kernel  -  is  there  a  special
-> reason that you use such an obsoletel kernel tree?
->   
 
-I am using an MVME3100 board together with Xenomai. This board has 
-support for version 2.6.14-ppc and 2.6.20-ppc, while Xenomai/Adeos is 
-supported on 2.6.14 and 2.6.19. I did not yet find time to backport the 
-support to 2.6.19.
+________________________________
 
-Kind regards,
-    Johan Borkhuis
+	From:
+linuxppc-embedded-bounces+sylvain.joyeau=3Dthomson.net@ozlabs.org
+[mailto:linuxppc-embedded-bounces+sylvain.joyeau=3Dthomson.net@ozlabs.org=
+]
+On Behalf Of Shriram Janardhan
+	Sent: jeudi 6 septembre 2007 03:49
+	To: linuxppc-embedded@ozlabs.org
+	Subject: Gianfar - MPC8541 - tx buffer overrun errors
+=09
+=09
+	All,
+	=20
+	I am running 2.6.11 version of the kernel on MPC8541.  Have one
+of the TSECs configured at 100Mbps/Full Duplex.  The TSEC MAC is
+connected to a Marvell Ethernet switch MAC without any PHY in between.
+MAC level flow control is enabled but no pause frames sent or received.
+	=20
+	I see a high number of transmit buffer overrun errors
+(tx_fifo_empty errors in the gianfar driver).  I don't have NAPI
+enabled.  In addition to other things, I was thinking of enabling NAPI
+and see if it helps - is there any downside to it??  Are there any other
+parameters that I could tweak to reduce/eliminate the overrun errors??
+	=20
+	Thanks,
+	Shriram.
+	=20
+
+	________________________________
+
+	Got a little couch potato?=20
+	Check out fun summer activities for kids.
+<http://us.rd.yahoo.com/evt=3D48248/*http://search.yahoo.com/search?fr=3D=
+oni
+_on_mail&p=3Dsummer+activities+for+kids&cs=3Dbz>=20
