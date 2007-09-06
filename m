@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DBF70DE027
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AD4D7DDED0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 05:15:34 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l86JFViW011396
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 15:15:31 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l86JFVtA655986
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 15:15:31 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l86JFVnc031626
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 15:15:31 -0400
-Date: Thu, 6 Sep 2007 14:15:05 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: finding out the processor frequency
-Message-ID: <20070906141505.18bd399a@zod.rchland.ibm.com>
-In-Reply-To: <20070906184308.GA22380@ld0162-tx32.am.freescale.net>
-References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>
-	<20070906184308.GA22380@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "Leisner, Martin" <Martin.Leisner@xerox.com>, linuxppc-embedded@ozlabs.org
+	Fri,  7 Sep 2007 06:14:34 +1000 (EST)
+Message-ID: <46E05FFD.3020605@ovro.caltech.edu>
+Date: Thu, 06 Sep 2007 13:15:57 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: Leonid <Leonid@a-k-a.net>
+Subject: Re: PCI target implementation on AMCC PPC CPUs
+References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>	<20070906184308.GA22380@ld0162-tx32.am.freescale.net>
+	<406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,25 +27,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 6 Sep 2007 13:43:08 -0500
-Scott Wood <scottwood@freescale.com> wrote:
+Hi Leonid,
 
-> On Thu, Sep 06, 2007 at 02:24:30PM -0400, Leisner, Martin wrote:
-> > What exactly do we mean by "timebase"?
-> > 
-> > There a symbol in arch/powerpc/time.c:ppc_proc_freq which looks like the
-> > processor frequency (derived from the dts).  But its not exported.
-> > 
-> > There's also ppc_tb_freq.
+> Does somebody have any experience of using AMCC PPC chips (such as
+> PPC440ep) or any other PPC at all as PCI target (slave)? PPC440ep has
+> PCI-PLB bridge which certainly can be configured as slave. CPU will need
+> to do configuration and then I assume another CPU (PCI host) will be
+> able to access all memories via the bridge including peripherals'
+> controllers. Slave CPU involvement would be minimal then.
 > 
-> The timebase is the rate at which the timebase and decrementer registers
-> tick.  It is not the same as the CPU core frequency.
+> Can anybody point me to design like this or to that end to any SW design
+> where PPC CPU works as PCI slave?
 
-Unless your timebase and decrementer clock source is tied to the CPU
-clock. :)
+I have an application where I want to communicate with up
+to 20 cPCI slaves per cPCI chassis, where the slave devices
+each use a PowerPC based processor. (The masters happen
+to be x86 CPUs; because I have them).
 
-So it depends on the board, and it can even depend on how the board is
-initialized.  Some boards can change the timebase clock source on the
-fly.
+I looked at the 440EP using the Yosemite board
 
-josh
+http://www.ovro.caltech.edu/~dwh/powerpc_440ep.pdf
+
+and the Freescale MPC8349E
+
+http://www.ovro.caltech.edu/~dwh/powerpc_mpc8349e.pdf
+
+I had some trouble the with AMCC chips; the DMA controller
+operation was weird, and AMCC tech support was pretty
+much useless.
+
+Freescale's technical (design) support is great, and they
+(the software developers; Kim, Timur, etc) are actively
+maintaining/contributing to git trees for u-boot and Linux.
+If you can change processors, I'd recommend any Freescale
+part over an AMCC part.
+
+I'm working on a cPCI board design at the moment, you're
+welcome to look at the design;
+
+  * PowerPC
+  * Altera Stratix II FPGAs
+  * dual 8-bit 1GHz ADCs
+
+http://www.ovro.caltech.edu/~dwh/carma_board/
+
+Regards,
+Dave
