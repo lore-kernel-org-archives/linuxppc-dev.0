@@ -1,25 +1,30 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <stefanr@s5r6.in-berlin.de>
+Received: from einhorn.in-berlin.de (einhorn.in-berlin.de [192.109.42.8])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5A15EDDFB9
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 13:12:04 +1000 (EST)
-Date: Wed, 5 Sep 2007 22:11:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/9] 8xx: Fix CONFIG_PIN_TLB.
-Message-ID: <20070906031155.GB12955@ld0162-tx32.am.freescale.net>
-References: <20070905192727.GA32365@ld0162-tx32.am.freescale.net>
-	<4F58F233-56E5-4910-9D33-28A44FCB393C@embeddedalley.com>
-	<20070905205301.GA807@ld0162-tx32.am.freescale.net>
-	<20070905205951.GA1047@ld0162-tx32.am.freescale.net>
-	<63F66EED-7808-40A3-B63D-AA53664CB1A0@embeddedalley.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <63F66EED-7808-40A3-B63D-AA53664CB1A0@embeddedalley.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.vr.in-berlin.de",
+	Issuer "IN-Berlin Server CA (G2)" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4BBE5DDE19
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 17:51:02 +1000 (EST)
+Date: Thu, 6 Sep 2007 09:50:30 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] Re: Sleep problems with kernels >= 2.6.21 on powerpc
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <tkrat.29a16d2ec8698ff2@s5r6.in-berlin.de>
+Message-ID: <tkrat.c799685836167333@s5r6.in-berlin.de>
+References: <6540c930708251937o2a9a23efv72a0f2b8947067bd@mail.gmail.com>
+	<6bffcb0e0708261621q25316becqce7b3ae2176f45a8@mail.gmail.com>
+	<20070827065246.GA21220@ime.usp.br> <46D279E8.10001@edge.ping.de>
+	<46D72BC6.3020809@edge.ping.de>
+	<20070905100754.57ab4e3e.akpm@linux-foundation.org>
+	<46DEEBBE.4070201@s5r6.in-berlin.de>
+	<20070905124411.bc15f48c.akpm@linux-foundation.org>
+	<tkrat.29a16d2ec8698ff2@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Cc: michal.k.k.piotrowski@gmail.com, rbrito@gmail.com, krh@redhat.com,
+	linux-kernel@vger.kernel.org, rjw@sisk.pl,
+	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	linux-pm@lists.linux-foundation.org, rael@edge.ping.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +34,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 03:27:31PM -0700, Dan Malek wrote:
-> On Sep 5, 2007, at 1:59 PM, Scott Wood wrote:
+On  5 Sep, Stefan Richter wrote:
+> On  5 Sep, Andrew Morton wrote:
+>>> >>> Trying to free already-free IRQ 40
+>>> >>> pci_set_power_state(): 0002:20:0e.0: state=3, current state=5
+>>> >>> firewire_ohci: pci_set_power_state failed with -22<3>pci_device_suspend(): pci_suspend+0x0/0x9c [firewire_ohci]() returns -22
+...
+>> It's not clear _why_ pci_set_power_state() is failing.
 > 
-> >BTW, it seems I misremembered what the conflict was -- it's not with
-> >ioremap space, but with the default location of the consistent memory
-> >pool (at 0xff100000).
+> The only -22 error path in pci_set_power_state is this:
 > 
-> Change the configuration option to move this somewhere
-> else, outside of the wired mapping.
+> 	/* Validate current state:
+> 	 * Can enter D0 from any state, but if we can only go deeper 
+> 	 * to sleep if we're already in a low power state
+> 	 */
+> 	if (state != PCI_D0 && dev->current_state > state) {
+> 		printk(KERN_ERR "%s(): %s: state=%d, current state=%d\n",
+> 			__FUNCTION__, pci_name(dev), state, dev->current_state);
+> 		return -EINVAL;
+> 	} [...else...]
 
-Sure, that'd work too -- though then I'd either have to change the
-default for all platforms and hope I didn't break any of them, or have
-8xx be different for what might amount to be no reason.
 
-Would any platforms have a problem with setting the default to
-0xfd000000?  Anything over 0xfe000000 is particularly likely to conflict
-with something.
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firewire: fw-ohci: ignore failure of pci_set_power_state (fix suspend regression)
 
-> As I said in the last message, these lower end processors are very
-> resource challenged, and we need to clever about the memory mapping and
-> use of the TLBs.  This isn't a place to be creating fancy memory maps
-> and algorithms to manage them.
+Fixes (papers over) "Sleep problems with kernels >= 2.6.21 on powerpc",
+http://lkml.org/lkml/2007/8/25/155.  The issue is that the FireWire
+controller's pci_dev.current_state of iBook G3 and presumably older
+PowerBooks is still in PCI_UNKNOWN instead of PCI_D0 when the firewire
+driver's .suspend method is called.
 
-Actually, being slightly fancier by dynamically choosing where to place
-the consistent memory pool would have avoided this issue.
+Like it was suggested earlier in http://lkml.org/lkml/2006/10/24/13, we
+do not fail .suspend anymore if pci_set_power_state failed.
 
-I agree that not using a pinned TLB entry for the IMMR sucks, and maybe
-I'll do something about it later -- just not right now.  This patchset's
-been floating for long enough without expanding its scope further.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-> Use maximum mappings whenever possible, configure the memory controller
-> to pack as much stuff into this single TLB mapping as possible. 
-> Something configurable like this memory pool should not be a reason to
-> give up these performance enhancements.
+Update:
+  - omit comment which will become outdated if the underlying problem is fixed
+  - log the error return value
+  - document the actual bug in the patch description
 
-Sure.  I still don't think it's that big of a deal when none of the
-currently supported boards have anything useful in the 8MB after the
-IMMR (and pinning is only used for the debug console anyway), and custom
-boards can always use custom TLB mappings, but moving the coherent region
-to somewhere a little more polite is something that we should do anyway.
+IMO the actual bug here (operating the controller while it is in
+PCI_UNKNOWN state, which is surely a fault in the PPC platform code) is
+something to be fixed post 2.6.23 release.
 
--Scott
+ drivers/firewire/fw-ohci.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+Index: linux/drivers/firewire/fw-ohci.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-ohci.c
++++ linux/drivers/firewire/fw-ohci.c
+@@ -1973,10 +1973,8 @@ static int pci_suspend(struct pci_dev *p
+ 		return err;
+ 	}
+ 	err = pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-	if (err) {
+-		fw_error("pci_set_power_state failed\n");
+-		return err;
+-	}
++	if (err)
++		fw_error("pci_set_power_state failed with %d\n", err);
+ 
+ 	return 0;
+ }
+
+
+-- 
+Stefan Richter
+-=====-=-=== =--= --==-
+http://arcgraph.de/sr/
