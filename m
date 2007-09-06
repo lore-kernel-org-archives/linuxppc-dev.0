@@ -2,24 +2,18 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AAD13DDDFC
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:00:46 +1000 (EST)
-In-Reply-To: <20070905115419.321990@gmx.net>
-References: <20070831175006.17240@gmx.net>
-	<20070903013431.GG31499@localhost.localdomain>
-	<20070903145814.101070@gmx.net>
-	<f460b176a7c30dae101bfc00d1d4b8e9@kernel.crashing.org>
-	<20070904114945.303440@gmx.net>
-	<20070905024805.GE17189@localhost.localdomain>
-	<20070905115419.321990@gmx.net>
+	by ozlabs.org (Postfix) with ESMTP id 4D797DDE18
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:08:45 +1000 (EST)
+In-Reply-To: <20070905192820.GG32398@ld0162-tx32.am.freescale.net>
+References: <20070905192820.GG32398@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <007113bd4008c022872fae697d5dd20f@kernel.crashing.org>
+Message-Id: <85281ec227e35a9e466e68e3fdc7e6ef@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] AmigaOne device tree source v2
-Date: Thu, 6 Sep 2007 16:00:45 +0200
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 8/9] 8xx: Adder 875 support
+Date: Thu, 6 Sep 2007 16:08:43 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,15 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The node should have a compatible
->> property which is sufficient to select the right bridge driver.
-> Yeah, I defined a compatible = "mai,articias"; property in the pci 
-> node.
-> Are there any naming conventions (maybe lower case only)?
+> +/ {
+> +	model = "Analogue & Micro Adder MPC875";
 
-It's conventional for the part behind the comma to be lower-case
-only, yes.  There are more stringent rules for the part before
-the comma (the manufacturer part).  What is "mai"?
+This should probably be just "MPC875".
 
 
 Segher
