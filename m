@@ -1,23 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 5A135DDFEF
+Return-Path: <shriramjanardhan@yahoo.com>
+Received: from web58514.mail.re3.yahoo.com (web58514.mail.re3.yahoo.com
+	[68.142.236.197]) by ozlabs.org (Postfix) with SMTP id D1E9DDDFC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Sep 2007 08:55:12 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so377704anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 05 Sep 2007 15:55:10 -0700 (PDT)
-Message-ID: <fa686aa40709051555m7f10bd95r48bd2eac7c7d0830@mail.gmail.com>
-Date: Wed, 5 Sep 2007 16:55:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Ming Liu" <eemingliu@hotmail.com>
-Subject: Re: Xilinx FX60
-In-Reply-To: <BAY138-F27BF81B9795BD26A16564BB2CB0@phx.gbl>
+	Thu,  6 Sep 2007 11:55:26 +1000 (EST)
+Date: Wed, 5 Sep 2007 18:48:44 -0700 (PDT)
+From: Shriram Janardhan <shriramjanardhan@yahoo.com>
+Subject: Gianfar - MPC8541 - tx buffer overrun errors
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40709051331q4a733c2dha6d182adb5778c83@mail.gmail.com>
-	<BAY138-F27BF81B9795BD26A16564BB2CB0@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-1999323389-1189043324=:90580"
+Message-ID: <852639.90580.qm@web58514.mail.re3.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,29 +20,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/5/07, Ming Liu <eemingliu@hotmail.com> wrote:
->
-> > > Is it then possible to run two independent kernels, one on each PPC??
-> >
-> >Absolutely.
->
-> Are you meaning two entirely seperate systems, or two ones which share a
-> common HW such as memory space? Is that possible without any memory
-> confliction?
+--0-1999323389-1189043324=:90580
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-You can share physical memory as long as each processor is dedicated
-to separate regions.  However, Linux on power expects memory to be
-based at 0.  Therefore you need to tweak the memory design so that the
-second processor sees a different area of the ram based at zero.
+All,
+   
+  I am running 2.6.11 version of the kernel on MPC8541.  Have one of the TSECs configured at 100Mbps/Full Duplex.  The TSEC MAC is connected to a Marvell Ethernet switch MAC without any PHY in between.  MAC level flow control is enabled but no pause frames sent or received.
+   
+  I see a high number of transmit buffer overrun errors (tx_fifo_empty errors in the gianfar driver).  I don't have NAPI enabled.  In addition to other things, I was thinking of enabling NAPI and see if it helps - is there any downside to it??  Are there any other parameters that I could tweak to reduce/eliminate the overrun errors??
+   
+  Thanks,
+  Shriram.
+   
 
-You can even setup a shared memory region between the two processors,
-but you that region should be cache-inhibited.
+       
+---------------------------------
+Got a little couch potato? 
+Check out fun summer activities for kids.
+--0-1999323389-1189043324=:90580
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+<div>All,</div>  <div>&nbsp;</div>  <div>I am running 2.6.11 version of the kernel on MPC8541.&nbsp;&nbsp;Have one of the TSECs configured at 100Mbps/Full Duplex.&nbsp; The TSEC MAC is connected to a Marvell Ethernet switch MAC without any PHY in between.&nbsp; MAC level flow control is enabled but no pause frames sent or received.</div>  <div>&nbsp;</div>  <div>I see a high number of transmit buffer overrun errors (tx_fifo_empty errors in the gianfar driver).&nbsp; I don't have NAPI enabled.&nbsp; In addition to other things, I was thinking of enabling NAPI and see if it helps - is there any downside to it??&nbsp; Are there any other parameters that I could tweak to reduce/eliminate the overrun errors??</div>  <div>&nbsp;</div>  <div>Thanks,</div>  <div>Shriram.</div>  <div>&nbsp;</div><p>&#32;
+      <hr size=1>Got a little couch potato? <br>
+Check out fun <a href="http://us.rd.yahoo.com/evt=48248/*http://search.yahoo.com/search?fr=oni_on_mail&p=summer+activities+for+kids&cs=bz">summer activities for kids.</a>
+--0-1999323389-1189043324=:90580--
