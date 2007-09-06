@@ -2,22 +2,24 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 969ADDDEE1
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:12:37 +1000 (EST)
-In-Reply-To: <20070906084109.315544ea@zod.rchland.ibm.com>
-References: <20070905181703.GA30904@ru.mvista.com>
-	<20070905160008.201a243a@vader.jdub.homelinux.org>
-	<b9fb2fad5d6b04a07996416842df7f72@kernel.crashing.org>
-	<20070906081732.079bc45d@zod.rchland.ibm.com>
-	<46E000E0.4080203@ru.mvista.com>
-	<20070906084109.315544ea@zod.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 288A4DDEE4
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:13:57 +1000 (EST)
+In-Reply-To: <46DCCE19.6050401@freescale.com>
+References: <20070823113349.GA11870@localhost.localdomain><20070823113600.GC18080@localhost.localdomain>
+	<46D73166.6080103@freescale.com>
+	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
+	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
+	<46DC126C.9060603@freescale.com>
+	<6c73dab2fcf21490edc64b9b7ec52295@kernel.crashing.org>
+	<46DCCE19.6050401@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f6be8e61e378a9358eb60f2fb0042592@kernel.crashing.org>
+Message-Id: <3299c27fe2551315c6f5ecff3569f2e0@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: OF NDFC
-Date: Thu, 6 Sep 2007 16:06:20 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in QE,
+	register mmc_spi stub
+Date: Thu, 6 Sep 2007 16:13:56 +0200
+To: Timur Tabi <timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,27 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> AFAIK, NAND flash is autodetected by reading it's ID at runtime, so
->> there should be no need for flash bindings.
+>> This kind of thing is typically hardcoded into the firmware (just like
+>> the device tree is) -- just put it somewhere _next to_ the device 
+>> tree,
+>> not _in_ it.
 >
-> Well, I'm not really sure.  CFI and JEDEC can both be probed as well,
-> and we're working on a binding there.
+> What is next to the device tree?
 
-JEDEC cannot be reliably probed.  CFI can be _almost_ probed,
-you need to know the interleaving though, to handle some edge
-cases.  Oh, and you need to know it _is_ CFI, of course.
+"Anywhere else in the firmware".
 
-> But if you think you can come up
-> with a driver for NDFC that doesn't require some kind of device tree
-> description of the devices it controls, then by all means go for it.
+> AFAIK, there is no other standard data structure that could take place 
+> of the par_io nodes in the DTS.
 
-I don't know whether NAND can be reliably probed; most "standard"
-NAND devices can be, but I don't know what standards are involved
-here, if any.  We'll need some MTD people help here.
+The device tree is not a dumping ground for all your "I need some
+standard data structure" stuff.  Use an XML file if you have to ;-)
 
-OTOH, it definitely is better to describe only the NAND controller
-and not the devices, than to put nothing at all in the device tree.
-We had this same situation with NOR flash before, already...
+> I agree with your points, Segher, but replacing the par_io node with a 
+> bunch of par_io_config_pin() calls in the kernel is not really an 
+> improvement, I think.  Until we migrate the QE pin configuration code 
+> to U-boot, I suggest that we keep the device tree structure as-is and 
+> continue to use it for new code.  That way, it will all stay in one 
+> place.
+
+Sure, some migration plan is in order, things won't change overnight.
+That doesn't mean you don't need to start planning _now_ ;-)
 
 
 Segher
