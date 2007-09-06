@@ -1,23 +1,35 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D8DDDDF24
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 23:36:31 +1000 (EST)
-In-Reply-To: <20070904114945.303440@gmx.net>
-References: <20070831175006.17240@gmx.net>
-	<20070903013431.GG31499@localhost.localdomain>
-	<20070903145814.101070@gmx.net>
-	<f460b176a7c30dae101bfc00d1d4b8e9@kernel.crashing.org>
-	<20070904114945.303440@gmx.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3acb0846724373a8f9edcf4650cc5455@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] AmigaOne device tree source v2
-Date: Thu, 6 Sep 2007 15:36:30 +0200
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B922DDDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Sep 2007 23:41:56 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l86DfX7j001420
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 09:41:33 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l86DfXce354100
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 07:41:33 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l86DfWLU017842
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 07:41:32 -0600
+Date: Thu, 6 Sep 2007 08:41:09 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: OF NDFC
+Message-ID: <20070906084109.315544ea@zod.rchland.ibm.com>
+In-Reply-To: <46E000E0.4080203@ru.mvista.com>
+References: <20070905181703.GA30904@ru.mvista.com>
+	<20070905160008.201a243a@vader.jdub.homelinux.org>
+	<b9fb2fad5d6b04a07996416842df7f72@kernel.crashing.org>
+	<20070906081732.079bc45d@zod.rchland.ibm.com>
+	<46E000E0.4080203@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,50 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> PCI memory space sits on the PCI bus, not on the PCI host bridge,
->> so is not part of "reg" but is part of "ranges" here, since it is
->> direct mapped into the host's address space.
-> That's right, but what about this example here (from a Pegasos II):
->
-> /proc/device-tree/pci@80000000:
+On Thu, 06 Sep 2007 17:30:08 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-> reg              80000000 40000000
+> AFAIK, NAND flash is autodetected by reading it's ID at runtime, so 
+> there should be no need for flash bindings.
 
-> ranges           01000000 00000000 00000000 fe000000 00000000 00010000
-> 		 02000000 00000000 80000000 80000000 00000000 40000000
+Well, I'm not really sure.  CFI and JEDEC can both be probed as well,
+and we're working on a binding there.  But if you think you can come up
+with a driver for NDFC that doesn't require some kind of device tree
+description of the devices it controls, then by all means go for it.
 
-That's just broken.
-
-> AFAIU the reg property overlaps the ranges property for the PCI memory
-> space from 0x80000000 to 0xC0000000 or the CPU address space at the
-> same location!?
-
-reg = < something for pci config space >,
-       < fe000000 10000 >
-
-ranges = < 02000000 0 80000000  80000000  0 40000000 >
-
->> PCI legacy I/O is not direct mapped: there is no legacy I/O on a
->> PowerPC system bus.  So, it can not be mentioned in the "ranges"
->> property, but the PHB registers used to access it should be shown
->> in the "reg" property.  It could be a simple linear window (it
->> sounds like it is here?), but it could for example also be implemented
->> via an address/data register pair.
-> Yes, it is a simple linear address window. I'll remove its address 
-> range
-> from the reg property.
-
-No, please remove it from the "ranges" property, instead.
-
->> The order of the "reg" entries depends on the exact model of PCI
->> bridge, so a device binding for it has to be written.
-> Only the Pegasos I and the AmigaOne use this PCI bridge. I guess it 
-> should
-> be enough to check for the board type, but a compatible property 
-> doesn't
-> hurt.
-
-Please always use "compatible" to probe any devices.
-
-
-Segher
+josh
