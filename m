@@ -1,16 +1,33 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Thu, 6 Sep 2007 18:14:57 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2.6.23] PS3: Ignore storage devices that are still being probed
-Message-ID: <Pine.LNX.4.62.0709061813090.22591@pademelon.sonytel.be>
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 78369DDEB9
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 02:51:37 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l86GqxY9021604
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:52:59 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l86GpYTh693124
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:51:34 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l86GpXBY027129
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Sep 2007 12:51:34 -0400
+Date: Thu, 6 Sep 2007 11:51:33 -0500
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Keep On Debugging You
+Message-ID: <20070906165133.GV4584@austin.ibm.com>
+References: <46DE1A36.3010300@tabi.org>
+	<46B96294322F7D458F9648B60E15112C81293B@zch01exm26.fsl.freescale.net>
+	<46E01B07.3040804@freescale.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1057582484-1189095297=:22591"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46E01B07.3040804@freescale.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@tabi.org>,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,94 +37,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, Sep 06, 2007 at 10:21:43AM -0500, Timur Tabi wrote:
+> Zhang Wei-r63237 wrote:
+> > Oops!
+> > 
+> > Could you give us a live show version? :D  
+> 
+> Sorry, I'm booked up for the rest of the year.
 
----584337861-1057582484-1189095297=:22591
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Hmm. Maybe someone could sneak a videocam into one of the
+venues, and, you know, post a pirated, illegal copy on
+youtube or something.
 
-PS3: A storage device may show up in the repository before the hypervisor has
-finished probing:
-  - If its type is not yet known, it shows up as PS3_DEV_TYPE_STOR_DUMMY,
-  - If its regions are being probed, it shows up as having zero regions.
-If any of these happen, consider the device not yet present.  The storage
-probe thread will retry later.
-
-This fixes the timing-dependent problem where a kernel booted from FLASH ROM
-sometimes cannot find the hard disk.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/platforms/ps3/platform.h   |    1 +
- arch/powerpc/platforms/ps3/repository.c |   29 +++++++++++++++++++++++++++++
- 2 files changed, 30 insertions(+)
-
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -83,6 +83,7 @@ enum ps3_dev_type {
- 	PS3_DEV_TYPE_STOR_ROM = TYPE_ROM,	/* 5 */
- 	PS3_DEV_TYPE_SB_GPIO = 6,
- 	PS3_DEV_TYPE_STOR_FLASH = TYPE_RBC,	/* 14 */
-+	PS3_DEV_TYPE_STOR_DUMMY = 32,
- 	PS3_DEV_TYPE_NOACCESS = 255,
- };
- 
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -349,6 +349,35 @@ int ps3_repository_find_device(struct ps
- 		return result;
- 	}
- 
-+	if (tmp.bus_type == PS3_BUS_TYPE_STORAGE) {
-+		/*
-+		 * A storage device may show up in the repository before the
-+		 * hypervisor has finished probing its type and regions
-+		 */
-+		unsigned int num_regions;
-+
-+		if (tmp.dev_type == PS3_DEV_TYPE_STOR_DUMMY) {
-+			pr_debug("%s:%u storage device not ready\n", __func__,
-+				 __LINE__);
-+			return -ENODEV;
-+		}
-+
-+		result = ps3_repository_read_stor_dev_num_regions(tmp.bus_index,
-+								  tmp.dev_index,
-+								  &num_regions);
-+		if (result) {
-+			pr_debug("%s:%d read_stor_dev_num_regions failed\n",
-+				 __func__, __LINE__);
-+			return result;
-+		}
-+
-+		if (!num_regions) {
-+			pr_debug("%s:%u storage device has no regions yet\n",
-+				 __func__, __LINE__);
-+			return -ENODEV;
-+		}
-+	}
-+
- 	result = ps3_repository_read_dev_id(tmp.bus_index, tmp.dev_index,
- 		&tmp.dev_id);
- 
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1057582484-1189095297=:22591--
+--linas
