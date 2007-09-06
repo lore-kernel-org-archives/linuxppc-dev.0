@@ -1,23 +1,14 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 74004DDEF9
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 04:09:31 +1000 (EST)
-Date: Thu, 6 Sep 2007 13:09:22 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 8/9] 8xx: Adder 875 support
-Message-ID: <20070906180922.GA18750@ld0162-tx32.am.freescale.net>
-References: <20070905192820.GG32398@ld0162-tx32.am.freescale.net>
-	<85281ec227e35a9e466e68e3fdc7e6ef@kernel.crashing.org>
-	<20070906141620.GB16353@ld0162-tx32.am.freescale.net>
-	<f26578467468e38345e795ea5f1f7c42@kernel.crashing.org>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f26578467468e38345e795ea5f1f7c42@kernel.crashing.org>
+Message-ID: <18144.17628.612658.91528@cargo.ozlabs.ibm.com>
+Date: Fri, 7 Sep 2007 04:20:12 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [RFC/PATCH 1/2] Basic generic time/clocksource code for PowerPC
+In-Reply-To: <20070906165535.GA11420@iram.es>
+References: <18144.4514.601900.881855@cargo.ozlabs.ibm.com>
+	<20070906165535.GA11420@iram.es>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,18 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2007 at 07:50:32PM +0200, Segher Boessenkool wrote:
-> >>>+	model = "Analogue & Micro Adder MPC875";
-> >>
-> >>This should probably be just "MPC875".
-> >
-> >There's more than one board with an MPC875 on it.
+Gabriel Paubert writes:
+
+> On Fri, Sep 07, 2007 at 12:41:38AM +1000, Paul Mackerras wrote:
+> > This changes PowerPC to use the generic time infrastructure for
+> > gettimeofday et al.  We register a clocksource which uses the timebase
+> > register, or the RTC on the 601.
+> > 
+> > It also gets rid of the RTC update stuff.  IIRC we discussed removing
+> > this some time ago but never actually did it.
 > 
-> "model" is the model name the vendor uses.  It isn't supposed to
-> be unique globally, nor does it say what CPU is on the board.
+> So who will be in charge of updating the RTC now? The update 
+> every 11 min is there to stay on x86(-64) it seems.
 
-The name the vendor uses is "Adder MPC875".  The name of the vendor is
-"Analogue & Micro", which seems useful to include, even if it's not
-mandatory that it be globally unique.
+I had an impression that ntpd would do it, but that seems to be wrong.
 
--Scott
+I also have been unable to find where in the kernel source there is
+code for x86[-64] to do the RTC updates.  Do you know where it is?
+
+Doing the updates from timer_interrupt will no longer really be
+suitable since it is not called at regular intervals any more.  The
+best thing would be for the ntp code to set up a timer when it reaches
+synchronization.
+
+> Removing this will have strange side effects: as an example,
+> your laptop clock will be good if it synchronized on NTP, 
+> then you put it to sleep, disconnect the network and RTC read 
+> on wake up returns a wrong value, giving wrong timestamps.
+
+No, the suspend/resume code reads the RTC on both suspend and resume,
+and advances xtime by the difference between the two readings.  So the
+time might be out by up to a second after resume, but it shouldn't be
+way off, assuming that your RTC is advancing at the right speed.
+
+> As someone who has a network of tens of machines using
+> NTP for synchornisation I think it is a very bad idea
+> unless we have a replacement.
+
+OK, but I think that doing it in timer_interrupt is the wrong place.
+
+Paul.
