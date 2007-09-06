@@ -1,29 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 16774DDEFA
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:35:37 +1000 (EST)
-Message-ID: <46E01031.9090608@freescale.com>
-Date: Thu, 06 Sep 2007 09:35:29 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id 6ACEDDDF09
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 00:40:39 +1000 (EST)
+Date: Thu, 6 Sep 2007 16:09:40 +0200
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
-	QE, register mmc_spi stub
-References: <46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-	<46DC126C.9060603@freescale.com>
-	<20070903151319.GA24840@localhost.localdomain>
-	<fdaf530168b099fcb5a3fbbe45e38271@kernel.crashing.org>
-	<20070904104750.GA32451@localhost.localdomain>
-	<6242650d3fca3afaff242518972bc494@kernel.crashing.org>
-In-Reply-To: <6242650d3fca3afaff242518972bc494@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] AmigaOne device tree source v2
+Message-ID: <20070906140940.GA3947@powerlinux.fr>
+References: <20070831175006.17240@gmx.net>
+	<20070903013431.GG31499@localhost.localdomain>
+	<20070903145814.101070@gmx.net>
+	<f460b176a7c30dae101bfc00d1d4b8e9@kernel.crashing.org>
+	<20070904114945.303440@gmx.net>
+	<20070905024805.GE17189@localhost.localdomain>
+	<20070905115419.321990@gmx.net>
+	<007113bd4008c022872fae697d5dd20f@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <007113bd4008c022872fae697d5dd20f@kernel.crashing.org>
+From: Sven Luther <sven@powerlinux.fr>
+Cc: David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>> _and system GPIOs_ :-)
->>
->> Yup, firmware should set up gpios, to make initial kernel boot.
->> After that, kernel can and should manage GPIOs.
+On Thu, Sep 06, 2007 at 04:00:45PM +0200, Segher Boessenkool wrote:
+> >> The node should have a compatible
+> >> property which is sufficient to select the right bridge driver.
+> > Yeah, I defined a compatible = "mai,articias"; property in the pci 
+> > node.
+> > Are there any naming conventions (maybe lower case only)?
 > 
-> Sure.  But only the GPIOs it _does_ need to toggle, not the ones
-> that have to be fixed to a certain value (like everything that is
-> described in the par_io nodes now).
+> It's conventional for the part behind the comma to be lower-case
+> only, yes.  There are more stringent rules for the part before
+> the comma (the manufacturer part).  What is "mai"?
 
-Some history:
+mai logic (some mentor arc derivative i think, ma stands for mentor arc)
+was the firm who produced the articia northbridge. The Articia S
+northbridge was known to be defective, and i am unsure if mai survived
+it or something. 
 
-The par_io nodes are statically defined because the we don't support the 
-concept of moving devices from one UCC to another.  When the boards are 
-designed, typically the external PHYs (UART, Ethernet, whatever) are 
-hard-wired to a particular UCC, and so its par_io configuration is static.
+Friendly,
 
-This works only because there are usually more than enough UCCs for every 
-device.  The 8360, for instance, has 8 UCCs, but the MPC8360EMDS only uses two 
-of them, for Ethernet.
-
-So having the par_io nodes in the device tree is very convenient, because it
-
-A) Is simple and compact
-B) Doesn't require full-blown GPIO support
-C) The device drivers can ignore par_io programming - they can just assume 
-that the pins are configured correctly.
-D) It makes it easy for U-Boot and/or Linux to configure the pins.
-
-There are some drawbacks.  For instance on UART, in loopback mode, the par_io 
-pins should be reconfigured.  Since loopback mode is a configurable option for 
-serial drivers, that means that a UCC UART driver (which I'm working on) needs 
-to be aware of the par_io pins.  It would be nice if there were a way I could 
-tag a par_io node as being for loopback.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Sven Luther
