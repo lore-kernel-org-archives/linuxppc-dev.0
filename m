@@ -1,30 +1,21 @@
-Return-Path: <Martin.Leisner@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "wvmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 40766DDF1B
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (unknown [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id F21E3DDF23
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 04:24:57 +1000 (EST)
-Received: from wvmlir2.mail.xerox.com (wvmlir2.mail.xerox.com [13.147.8.222])
-	by wvmler1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
-	l86IOsgd020228
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 11:24:54 -0700
-Received: from wvmlir2.mail.xerox.com (localhost [127.0.0.1])
-	by wvmlir2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l86IOk77015659
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 11:24:46 -0700
-Received: from USA7061GW002.na.xerox.net (usa7061gw002.na.xerox.net
-	[13.151.210.15])
-	by wvmlir2.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l86IOiOw015604
-	for <linuxppc-embedded@ozlabs.org>; Thu, 6 Sep 2007 11:24:46 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: finding out the processor frequency
-Date: Thu, 6 Sep 2007 14:24:30 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Fri,  7 Sep 2007 04:32:33 +1000 (EST)
+Received: from [192.168.0.38] (unknown [192.168.0.38])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(No client certificate requested)
+	by securics.com (Postfix) with ESMTP id 76C15B8C0B8
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  6 Sep 2007 12:32:32 -0600 (MDT)
+Subject: Kernel Debug on Virtex4-FX
+From: Robert Woodworth <rwoodworth@securics.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 06 Sep 2007 12:32:31 -0600
+Message-Id: <1189103551.6185.66.camel@PisteOff>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,11 +26,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-What exactly do we mean by "timebase"?
+Is it possible to debug the kernel via Xilinx JTAG Platform USB cable?
 
-There a symbol in arch/powerpc/time.c:ppc_proc_freq which looks like the
-processor frequency (derived from the dts).  But its not exported.
+If so, how?
+I can debug through the embedded-config.c and boot loader, but once the
+kernel boots, (VM on) I cannot debug anymore.  
 
-There's also ppc_tb_freq.
 
-marty
+Or do I have to use kgdb through serial? 
+
+
+
+
+Rob.
