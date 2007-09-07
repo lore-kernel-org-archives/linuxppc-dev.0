@@ -1,15 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070907032353.GA3082@localhost.localdomain>
-References: <20070907032353.GA3082@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2fcd14e175d5a215cd8d602ac74fce21@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Document and implement an improved flash device binding for
-	powerpc (v5)
-Date: Fri, 7 Sep 2007 16:25:10 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4A855DDF19
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2007 00:26:48 +1000 (EST)
+Date: Fri, 7 Sep 2007 09:26:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 10/10] bootwrapper: Add fsl_get_immr() and 8xx/pq2 clock
+	functions.
+Message-ID: <20070907142639.GC14768@ld0162-tx32.am.freescale.net>
+References: <20070905192001.GA32049@ld0162-tx32.am.freescale.net>
+	<20070905192119.GJ32113@ld0162-tx32.am.freescale.net>
+	<20070907005357.GI26079@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070907005357.GI26079@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch replaces the binding for flash chips in
-> booting-without-of.txt with an clarified and improved version.  It
-> also makes drivers/mtd/maps/physmap_of.c recognize this new binding.
-> Finally it revises the Ebony device tree source to use the new binding
-> as an example.
->
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Fri, Sep 07, 2007 at 10:53:57AM +1000, David Gibson wrote:
+> Uh... doesn't this need to go in the series *before* the patch that
+> uses fsl_get_immr() for the pq2 code..?
 
-Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+Oops, yes.
 
-Thanks for doing this work David!
-
-
-> +	/* First look for RedBoot table or partitions on the command
-> +	 * line, these take precedence over device tree information */
-
-Any specific reason you chose this order?  Just curious...
-
-> +		.data		= (void *)"jedec_probe",
-
-Hrm, this cast is only getting rid of the const-ness of the
-string literal -- maybe .data should be declared const, or
-does the majority of users want it writable?
-
-
-Segher
+-Scott
