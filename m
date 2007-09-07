@@ -1,21 +1,17 @@
-Return-Path: <willis@arlut.utexas.edu>
-Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5ADB5DDECA
+Return-Path: <lipovsky@cs.bu.edu>
+Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
+	by ozlabs.org (Postfix) with ESMTP id BC8BFDDEFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Sep 2007 01:55:51 +1000 (EST)
-Subject: Re: Flash paritioning and JFFS2
-From: Michael Brian Willis <willis@arlut.utexas.edu>
-To: Mirek23 <miroslaw.dach@psi.ch>
-In-Reply-To: <12557406.post@talk.nabble.com>
-References: <12293748.post@talk.nabble.com> <1187885337.5160.55.camel@louie>
-	<12557406.post@talk.nabble.com>
-Content-Type: text/plain
-Date: Fri, 07 Sep 2007 10:55:41 -0500
-Message-Id: <1189180542.4826.33.camel@louie>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  8 Sep 2007 02:52:18 +1000 (EST)
+From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
+To: "'Benedict, Michael'" <MBenedict@twacs.com>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: futex priority based wakeup
+Date: Fri, 7 Sep 2007 12:41:12 -0400
+Message-ID: <000901c7f16d$fbbc9d40$3a0d10ac@Radstone.Local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BCD@twx-exch01.twacs.local>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +22,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-09-07 at 08:23 -0700, Mirek23 wrote:
->  I have the Flash memory which is CFI 
-> compliant (Intel NOR Flash TE28F640 J3C120) so I presume that for it is a
-> default driver?
-If the flash is CFI compliant, then a default driver will probably
-work. 
+Looks like it is a libc issue. Apparently, GNU libc supports priority
+futexes only in version 2.5 and higher.
 
-When the kernel boots up are you able to see a message saying that it
-found your flash? You might have to play around with the kernel
-configuration to get it to properly recognize your flash. 
+-----Original Message-----
+From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+[mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org] On Behalf
+Of Benedict, Michael
+Sent: Friday, September 07, 2007 11:02 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: futex priority based wakeup
+
+I recently upgraded to 2.6.22 to get the priority based futex wakeup
+behavior.  However, when I run a simple program (see below), based on
+either a pthread_mutex_t or a sem_t, it seems that threads are woken up
+in FIFO order.  I am using glibc 2.3.6 with NPTL and TLS, based off
+crossdev-0.43.  Could someone help me get priority-based wakeup or point
+me to a better place to get this question answered?
+	Thank you,
+		Michael
+
+Code:
+
+pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+
+void *important(void *ign)
+{
+        sleep(1);
+        printf("important waiting for mutex\n");
+        if(pthread_mutex_lock(&mymutex)) {
+                perror("sem_wait");
+                exit(1);
+        } else {
+                printf("important got mutex!\n");
+                pthread_mutex_unlock(&mymutex);
+        }
+
+        return NULL;
+}
 
 
-> Do I have to create a specific file for it in drivers/mtd/maps/ ?
-Yes, at least this is the way I did it. For example, I used
-drivers/mtd/maps/tqm85xx.c as a starting point for my board specific
-file. (I am using the DENX kernel). 
+void *unimportant(void *ign)
+{
+        printf("unimportant waiting for mutex\n");
+        if(pthread_mutex_lock(&mymutex)) {
+                perror("sem_wait");
+                exit(1);
+        } else {
+                printf("unimportant got mutex!\n");
+                pthread_mutex_unlock(&mymutex);
+        }
 
+        return NULL;
+}
 
-Regards, 
+int main()
+{
+        struct sched_param p;
+        pthread_attr_t attr;
+        pthread_t i, u;
 
-Michael Willis
-Applied Research Labs - University of Texas
+        pthread_mutex_lock(&mymutex);
+
+        p.__sched_priority = sched_get_priority_min(SCHED_FIFO);
+        if(-1 == p.__sched_priority) {
+                perror("sched_get_priority_min");
+                return 1;
+        }
+        pthread_attr_init(&attr);
+        pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        pthread_attr_setschedparam(&attr, &p);
+        pthread_create(&u, &attr, unimportant, NULL);
+
+        p.__sched_priority = sched_get_priority_max(SCHED_FIFO);
+        pthread_attr_setschedparam(&attr, &p);
+        pthread_create(&i, &attr, important, NULL);
+
+        sleep(5);
+        printf("main unlocking mutex\n");
+        pthread_mutex_unlock(&mymutex);
+
+        pthread_join(u, NULL);
+        pthread_join(i, NULL);
+
+        return 0;
+}
+
+Which produces:
+unimportant waiting for mutex
+important waiting for mutex
+main unlocking mutex
+unimportant got mutex!
+important got mutex!
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
