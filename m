@@ -1,35 +1,23 @@
-Return-Path: <MBenedict@twacs.com>
-Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E39EBDDEE9
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C9F31DDEEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Sep 2007 01:02:28 +1000 (EST)
-Received: from outbound1-cpk.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound1-cpk-R.bigfish.com (Postfix) with ESMTP id B490E330A46
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 15:02:25 +0000 (UTC)
-Received: from mail61-cpk-R.bigfish.com (unknown [10.2.40.3])
-	by outbound1-cpk.bigfish.com (Postfix) with ESMTP id B30635A004D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 15:02:25 +0000 (UTC)
-Received: from mail61-cpk (localhost.localdomain [127.0.0.1])
-	by mail61-cpk-R.bigfish.com (Postfix) with ESMTP id 791AD8302AF
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 15:02:25 +0000 (UTC)
-Received: from mail.twacs.com (unknown [68.89.149.4])
-	by mail61-cpk.bigfish.com (Postfix) with ESMTP id E99D8AB0055
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 15:02:24 +0000 (UTC)
+	Sat,  8 Sep 2007 01:23:48 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1ITfgO-0000Ri-QM
+	for linuxppc-embedded@ozlabs.org; Fri, 07 Sep 2007 08:23:44 -0700
+Message-ID: <12557406.post@talk.nabble.com>
+Date: Fri, 7 Sep 2007 08:23:44 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Flash paritioning and JFFS2
+In-Reply-To: <1187885337.5160.55.camel@louie>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: futex priority based wakeup
-Date: Fri, 7 Sep 2007 10:02:18 -0500
-Message-ID: <BAF8B1E0BB28024A90895E746A3B610D1C2BCD@twx-exch01.twacs.local>
-From: "Benedict, Michael" <MBenedict@twacs.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <12293748.post@talk.nabble.com> <1187885337.5160.55.camel@louie>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,84 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I recently upgraded to 2.6.22 to get the priority based futex wakeup
-behavior.  However, when I run a simple program (see below), based on
-either a pthread_mutex_t or a sem_t, it seems that threads are woken up
-in FIFO order.  I am using glibc 2.3.6 with NPTL and TLS, based off
-crossdev-0.43.  Could someone help me get priority-based wakeup or point
-me to a better place to get this question answered?
-	Thank you,
-		Michael
 
-Code:
+Hi Michael,
 
-pthread_mutex_t mymutex =3D PTHREAD_MUTEX_INITIALIZER;
+>The partition information probably should go in a file that you create
+>for your board located at "drivers/mtd/maps/<your_file>.c"
 
-void *important(void *ign)
-{
-        sleep(1);
-        printf("important waiting for mutex\n");
-        if(pthread_mutex_lock(&mymutex)) {
-                perror("sem_wait");
-                exit(1);
-        } else {
-                printf("important got mutex!\n");
-                pthread_mutex_unlock(&mymutex);
-        }
+        Thank you very much for your answer. I went through the links you
+suggested.
+I got a main concept how to setup the kernel to deal with Flash and JFFS2
+but I do not know in which file 
+should be hardcoded the partition table and what should be its name. I have
+the Flash memory which is CFI 
+compliant (Intel NOR Flash TE28F640 J3C120) so I presume that for it is a
+default driver?
+Do I have to create a specific file for it in drivers/mtd/maps/ ?
 
-        return NULL;
-}
+Best Regards 
 
+Mirek
 
-void *unimportant(void *ign)
-{
-        printf("unimportant waiting for mutex\n");
-        if(pthread_mutex_lock(&mymutex)) {
-                perror("sem_wait");
-                exit(1);
-        } else {
-                printf("unimportant got mutex!\n");
-                pthread_mutex_unlock(&mymutex);
-        }
-
-        return NULL;
-}
-
-int main()
-{
-        struct sched_param p;
-        pthread_attr_t attr;
-        pthread_t i, u;
-
-        pthread_mutex_lock(&mymutex);
-
-        p.__sched_priority =3D sched_get_priority_min(SCHED_FIFO);
-        if(-1 =3D=3D p.__sched_priority) {
-                perror("sched_get_priority_min");
-                return 1;
-        }
-        pthread_attr_init(&attr);
-        pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
-        pthread_attr_setschedparam(&attr, &p);
-        pthread_create(&u, &attr, unimportant, NULL);
-
-        p.__sched_priority =3D sched_get_priority_max(SCHED_FIFO);
-        pthread_attr_setschedparam(&attr, &p);
-        pthread_create(&i, &attr, important, NULL);
-
-        sleep(5);
-        printf("main unlocking mutex\n");
-        pthread_mutex_unlock(&mymutex);
-
-        pthread_join(u, NULL);
-        pthread_join(i, NULL);
-
-        return 0;
-}
-
-Which produces:
-unimportant waiting for mutex
-important waiting for mutex
-main unlocking mutex
-unimportant got mutex!
-important got mutex!
+-- 
+View this message in context: http://www.nabble.com/Flash-paritioning-and-JFFS2-tf4317566.html#a12557406
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
