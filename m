@@ -1,17 +1,17 @@
 Return-Path: <lipovsky@cs.bu.edu>
 Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
-	by ozlabs.org (Postfix) with ESMTP id BC8BFDDEFC
+	by ozlabs.org (Postfix) with ESMTP id B6410DDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Sep 2007 02:52:18 +1000 (EST)
+	Sat,  8 Sep 2007 03:16:59 +1000 (EST)
 From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
 To: "'Benedict, Michael'" <MBenedict@twacs.com>, <linuxppc-embedded@ozlabs.org>
 Subject: RE: futex priority based wakeup
-Date: Fri, 7 Sep 2007 12:41:12 -0400
-Message-ID: <000901c7f16d$fbbc9d40$3a0d10ac@Radstone.Local>
+Date: Fri, 7 Sep 2007 13:16:27 -0400
+Message-ID: <000a01c7f172$e5a5e9d0$3a0d10ac@Radstone.Local>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BCD@twx-exch01.twacs.local>
+In-Reply-To: <000901c7f16d$fbbc9d40$3a0d10ac@Radstone.Local>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,6 +21,17 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+...Or maybe I am wrong :). Could you put fflush(stdout) after each printf,
+just to be completely certain that it misbehaves?
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+[mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org] On Behalf
+Of Ilya Lipovsky
+Sent: Friday, September 07, 2007 12:41 PM
+To: 'Benedict, Michael'; linuxppc-embedded@ozlabs.org
+Subject: RE: futex priority based wakeup
 
 Looks like it is a libc issue. Apparently, GNU libc supports priority
 futexes only in version 2.5 and higher.
@@ -114,6 +125,11 @@ important waiting for mutex
 main unlocking mutex
 unimportant got mutex!
 important got mutex!
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 _______________________________________________
 Linuxppc-embedded mailing list
