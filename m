@@ -1,38 +1,17 @@
-Return-Path: <MBenedict@twacs.com>
-Received: from outbound3-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 57E64DDF1B
+Return-Path: <lipovsky@cs.bu.edu>
+Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
+	by ozlabs.org (Postfix) with ESMTP id EC19CDDEE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Sep 2007 03:25:16 +1000 (EST)
-Received: from outbound3-cpk.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound3-cpk-R.bigfish.com (Postfix) with ESMTP id 279E76689BD
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 17:25:12 +0000 (UTC)
-Received: from mail34-cpk-R.bigfish.com (unknown [10.2.40.3])
-	by outbound3-cpk.bigfish.com (Postfix) with ESMTP id 25C2480004D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 17:25:12 +0000 (UTC)
-Received: from mail34-cpk (localhost.localdomain [127.0.0.1])
-	by mail34-cpk-R.bigfish.com (Postfix) with ESMTP id 17ED7AE0150
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 17:25:12 +0000 (UTC)
-Received: from mail.twacs.com (unknown [68.89.149.4])
-	by mail34-cpk.bigfish.com (Postfix) with ESMTP id A57F1488046
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 17:25:11 +0000 (UTC)
+	Sat,  8 Sep 2007 03:46:32 +1000 (EST)
+From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
+To: "'Benedict, Michael'" <MBenedict@twacs.com>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: futex priority based wakeup
+Date: Fri, 7 Sep 2007 13:45:56 -0400
+Message-ID: <000e01c7f177$05ab1990$3a0d10ac@Radstone.Local>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: futex priority based wakeup
-Date: Fri, 7 Sep 2007 12:24:54 -0500
-Message-ID: <BAF8B1E0BB28024A90895E746A3B610D1C2BD7@twx-exch01.twacs.local>
-In-Reply-To: <000a01c7f172$e5a5e9d0$3a0d10ac@Radstone.Local>
-References: <000901c7f16d$fbbc9d40$3a0d10ac@Radstone.Local>
-	<000a01c7f172$e5a5e9d0$3a0d10ac@Radstone.Local>
-From: "Benedict, Michael" <MBenedict@twacs.com>
-To: <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BD7@twx-exch01.twacs.local>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -42,6 +21,34 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Yes, I am uncertain. If it isn't a major headache, I think you can try the
+newest version (I think it's 2.6.1) and see if you get some resolution.
+
+Your code looks correct to me, so if the kernel developers did their job
+correctly, the only potentially weak link is glibc.
+
+I think pthread priority inheritance is an independent concept, but you
+shouldn't care since you explicitly set priorities.
+
+My kernel is 2.6.21, so I am of no help here, unfortunately.
+
+By the way, kudos to you for making crosstool compile glibc with NPTL
+support, I had issues getting there (I have 2.4 with NPTL, but it is
+natively installed)! How did you manage to get around the intermediate's
+compiler's lack of "__thread" support issue?
+
+Please do share the outcome!!
+
+-Ilya
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+[mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org] On Behalf
+Of Benedict, Michael
+Sent: Friday, September 07, 2007 1:25 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: futex priority based wakeup
 
 Thank you for the help!
 
@@ -63,24 +70,24 @@ Ilya Lipovsky wrote:
 > ...Or maybe I am wrong :). Could you put fflush(stdout) after
 > each printf,
 > just to be completely certain that it misbehaves?
->=20
+> 
 > -----Original Message-----
-> From: linuxppc-embedded-bounces+lipovsky=3Dcs.bu.edu@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+lipovsky=3Dcs.bu.edu@ozlabs.or g] On
+> From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.or g] On
 > Behalf Of Ilya Lipovsky Sent: Friday, September 07, 2007 12:41 PM
 > To: 'Benedict, Michael'; linuxppc-embedded@ozlabs.org
 > Subject: RE: futex priority based wakeup
->=20
+> 
 > Looks like it is a libc issue. Apparently, GNU libc supports priority
 > futexes only in version 2.5 and higher.
->=20
+> 
 > -----Original Message-----
-> From: linuxppc-embedded-bounces+lipovsky=3Dcs.bu.edu@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+lipovsky=3Dcs.bu.edu@ozlabs.or g] On
+> From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.or g] On
 > Behalf Of Benedict, Michael Sent: Friday, September 07, 2007 11:02 AM
 > To: linuxppc-embedded@ozlabs.org
 > Subject: futex priority based wakeup
->=20
+> 
 > I recently upgraded to 2.6.22 to get the priority based futex wakeup
 > behavior.  However, when I run a simple program (see below), based on
 > either a pthread_mutex_t or a sem_t, it seems that threads
@@ -90,11 +97,11 @@ Ilya Lipovsky wrote:
 > wakeup or point
 > me to a better place to get this question answered? 	Thank you,
 > 		Michael
->=20
+> 
 > Code:
->=20
-> pthread_mutex_t mymutex =3D PTHREAD_MUTEX_INITIALIZER;
->=20
+> 
+> pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+> 
 > void *important(void *ign)
 > {
 >         sleep(1);
@@ -106,11 +113,11 @@ Ilya Lipovsky wrote:
 >                 printf("important got mutex!\n");
 >                 pthread_mutex_unlock(&mymutex);
 >         }
->=20
+> 
 >         return NULL;
 > }
->=20
->=20
+> 
+> 
 > void *unimportant(void *ign)
 > {
 >         printf("unimportant waiting for mutex\n");
@@ -121,20 +128,20 @@ Ilya Lipovsky wrote:
 >                 printf("unimportant got mutex!\n");
 >                 pthread_mutex_unlock(&mymutex);
 >         }
->=20
+> 
 >         return NULL;
 > }
->=20
+> 
 > int main()
 > {
 >         struct sched_param p;
 >         pthread_attr_t attr;
 >         pthread_t i, u;
->=20
+> 
 >         pthread_mutex_lock(&mymutex);
->=20
->         p.__sched_priority =3D sched_get_priority_min(SCHED_FIFO);
->         if(-1 =3D=3D p.__sched_priority) {
+> 
+>         p.__sched_priority = sched_get_priority_min(SCHED_FIFO);
+>         if(-1 == p.__sched_priority) {
 >                 perror("sched_get_priority_min");
 >                 return 1;
 >         }
@@ -142,34 +149,40 @@ Ilya Lipovsky wrote:
 >         pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
 >         pthread_attr_setschedparam(&attr, &p);
 >         pthread_create(&u, &attr, unimportant, NULL);
->=20
->         p.__sched_priority =3D sched_get_priority_max(SCHED_FIFO);
+> 
+>         p.__sched_priority = sched_get_priority_max(SCHED_FIFO);
 >         pthread_attr_setschedparam(&attr, &p);
 >         pthread_create(&i, &attr, important, NULL);
->=20
+> 
 >         sleep(5);
 >         printf("main unlocking mutex\n");
 >         pthread_mutex_unlock(&mymutex);
->=20
+> 
 >         pthread_join(u, NULL);
 >         pthread_join(i, NULL);
->=20
+> 
 >         return 0;
 > }
->=20
+> 
 > Which produces:
 > unimportant waiting for mutex
 > important waiting for mutex
 > main unlocking mutex
 > unimportant got mutex!
 > important got mutex!
->=20
+> 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
+> 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
