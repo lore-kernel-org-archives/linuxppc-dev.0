@@ -1,21 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Sep 2007 13:37:53 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in QE,
-	register mmc_spi stub
-Message-ID: <20070907033753.GC3082@localhost.localdomain>
-References: <46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-	<46DC126C.9060603@freescale.com>
-	<6c73dab2fcf21490edc64b9b7ec52295@kernel.crashing.org>
-	<46DCCE19.6050401@freescale.com>
-	<3299c27fe2551315c6f5ecff3569f2e0@kernel.crashing.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id F1197DDE33
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 18:21:52 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Fri, 7 Sep 2007 10:21:43 +0200
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC/PATCH 1/2] Basic generic time/clocksource code for PowerPC
+Message-ID: <20070907082143.GA27058@iram.es>
+References: <18144.4514.601900.881855@cargo.ozlabs.ibm.com>
+	<20070906165535.GA11420@iram.es>
+	<20070906170123.GA17990@ld0162-tx32.am.freescale.net>
+	<20070906170547.GA12432@iram.es>
+	<20070906172415.GA18226@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3299c27fe2551315c6f5ecff3569f2e0@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <20070906172415.GA18226@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2007 at 04:13:56PM +0200, Segher Boessenkool wrote:
-> >> This kind of thing is typically hardcoded into the firmware (just like
-> >> the device tree is) -- just put it somewhere _next to_ the device 
-> >> tree,
-> >> not _in_ it.
-> >
-> > What is next to the device tree?
+On Thu, Sep 06, 2007 at 12:24:15PM -0500, Scott Wood wrote:
+> On Thu, Sep 06, 2007 at 07:05:47PM +0200, Gabriel Paubert wrote:
+> > On Thu, Sep 06, 2007 at 12:01:23PM -0500, Scott Wood wrote:
+> > > On Thu, Sep 06, 2007 at 06:55:35PM +0200, Gabriel Paubert wrote:
+> > > > So who will be in charge of updating the RTC now? The update 
+> > > > every 11 min is there to stay on x86(-64) it seems.
+> > > 
+> > > Put something in crontab to run hwclock periodically.
+> > 
+> > I have many machines on which cron is not even installed.
 > 
-> "Anywhere else in the firmware".
-> 
-> > AFAIK, there is no other standard data structure that could take place 
-> > of the par_io nodes in the DTS.
-> 
-> The device tree is not a dumping ground for all your "I need some
-> standard data structure" stuff.  Use an XML file if you have to ;-)
+> OK, so use something else that waits in a loop and periodically updates
+> the clock.  It shouldn't be the kernel's responsibility.
 
-Actually, I think "I need a standard data structure" is well within
-the purview of what we hoped the flat device tree could do.  We don't
-have to follow IEEE1275 slavishly.
+It ha been the kernel's reposnibility ever since the NTP code
+was included with the kernel. The only way to move it out
+is to agree to something with NTP folks.
 
-To isolate this sort of thing out from the device tree "proper", we
-may wish to define some new "virtual" device nodes to go at the root
-level (in the same way that /chosen and /aliases already have defined
-purposes that don't involve describing real devices).
+It is going to break working setups who rely on this feature, 
+which is a big no-no.
 
-I can't speak specifically to the par_io nodes, because their function
-was not obvious to me from my glance at the examples we have, and I
-don't recall whatever previous discussions they were described in.
+The solution now used by i386/x86-64/sparc64 is
+CONFIG_GENERIC_CMOS_UPDATE. Maybe powerpc should be switched
+to use something similar, but the generic code has some
+problems (it assumes that you have to set the clock
+on a half-second, which is not the case of the RTC on 
+my boards to start with).
 
-We do want, where possible, though, to make it unambiguous what things
-are describing immutable facts about the hardware and what are hints
-or startup configuration only.
+Now I'm aware that some PowerPC RTC are messy to handle
+in a timer/interrupt/whatever because some hardware designers
+thought it was wise to put the RTC on a dog-slow bus like
+I2C. You have however a variable to disable this update
+if you want (no_sync_cmos_clock), set it to 1 by default
+but please let people that use (and need) the functionality
+enable it (even do it by default when the RTC access is fast).
 
-> > I agree with your points, Segher, but replacing the par_io node with a 
-> > bunch of par_io_config_pin() calls in the kernel is not really an 
-> > improvement, I think.  Until we migrate the QE pin configuration code 
-> > to U-boot, I suggest that we keep the device tree structure as-is and 
-> > continue to use it for new code.  That way, it will all stay in one 
-> > place.
-> 
-> Sure, some migration plan is in order, things won't change overnight.
-> That doesn't mean you don't need to start planning _now_ ;-)
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+	Gabriel
