@@ -1,23 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <willis@arlut.utexas.edu>
+Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C9F31DDEEA
+	by ozlabs.org (Postfix) with ESMTP id 5ADB5DDECA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Sep 2007 01:23:48 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1ITfgO-0000Ri-QM
-	for linuxppc-embedded@ozlabs.org; Fri, 07 Sep 2007 08:23:44 -0700
-Message-ID: <12557406.post@talk.nabble.com>
-Date: Fri, 7 Sep 2007 08:23:44 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-embedded@ozlabs.org
+	Sat,  8 Sep 2007 01:55:51 +1000 (EST)
 Subject: Re: Flash paritioning and JFFS2
-In-Reply-To: <1187885337.5160.55.camel@louie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Michael Brian Willis <willis@arlut.utexas.edu>
+To: Mirek23 <miroslaw.dach@psi.ch>
+In-Reply-To: <12557406.post@talk.nabble.com>
 References: <12293748.post@talk.nabble.com> <1187885337.5160.55.camel@louie>
+	<12557406.post@talk.nabble.com>
+Content-Type: text/plain
+Date: Fri, 07 Sep 2007 10:55:41 -0500
+Message-Id: <1189180542.4826.33.camel@louie>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,26 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-09-07 at 08:23 -0700, Mirek23 wrote:
+>  I have the Flash memory which is CFI 
+> compliant (Intel NOR Flash TE28F640 J3C120) so I presume that for it is a
+> default driver?
+If the flash is CFI compliant, then a default driver will probably
+work. 
 
-Hi Michael,
+When the kernel boots up are you able to see a message saying that it
+found your flash? You might have to play around with the kernel
+configuration to get it to properly recognize your flash. 
 
->The partition information probably should go in a file that you create
->for your board located at "drivers/mtd/maps/<your_file>.c"
 
-        Thank you very much for your answer. I went through the links you
-suggested.
-I got a main concept how to setup the kernel to deal with Flash and JFFS2
-but I do not know in which file 
-should be hardcoded the partition table and what should be its name. I have
-the Flash memory which is CFI 
-compliant (Intel NOR Flash TE28F640 J3C120) so I presume that for it is a
-default driver?
-Do I have to create a specific file for it in drivers/mtd/maps/ ?
+> Do I have to create a specific file for it in drivers/mtd/maps/ ?
+Yes, at least this is the way I did it. For example, I used
+drivers/mtd/maps/tqm85xx.c as a starting point for my board specific
+file. (I am using the DENX kernel). 
 
-Best Regards 
 
-Mirek
+Regards, 
 
--- 
-View this message in context: http://www.nabble.com/Flash-paritioning-and-JFFS2-tf4317566.html#a12557406
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Michael Willis
+Applied Research Labs - University of Texas
