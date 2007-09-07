@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Sep 2007 10:53:57 +1000
+Date: Fri, 7 Sep 2007 10:58:03 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 10/10] bootwrapper: Add fsl_get_immr() and 8xx/pq2 clock
-	functions.
-Message-ID: <20070907005357.GI26079@localhost.localdomain>
+Subject: Re: [PATCH 08/10] bootwrapper: Add a firmware-independent "raw"
+	target.
+Message-ID: <20070907005803.GJ26079@localhost.localdomain>
 References: <20070905192001.GA32049@ld0162-tx32.am.freescale.net>
-	<20070905192119.GJ32113@ld0162-tx32.am.freescale.net>
+	<20070905192116.GH32113@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905192119.GJ32113@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070905192116.GH32113@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,23 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 02:21:19PM -0500, Scott Wood wrote:
-> fsl_get_immr() is equivalent to the kernel's get_immrbase() function.
+On Wed, Sep 05, 2007 at 02:21:16PM -0500, Scott Wood wrote:
+> This target produces a flat binary rather than an ELF file,
+> fixes the entry point at the beginning of the image, and takes
+> a complete device tree with no fixups needed.
 > 
-> mpc885_get_clock() transforms a crystal frequency into a system frequency
-> according to the PLL register settings.
-> 
-> pq2_get_clocks() does the same as the above for the PowerQUICC II,
-> except that it produces several different clocks.
-> 
-> The mpc8xx/pq2 set_clocks() functions modify common properties in
-> the device tree based on the given clock data.
-> 
-> The mpc885/pq2 fixup_clocks() functions call get_clocks(), and
-> pass the results to set_clocks().
+> The device tree must have labels on /#address-cells, the timebase
+> frequency, and the memory size.
 
-Uh... doesn't this need to go in the series *before* the patch that
-uses fsl_get_immr() for the pq2 code..?
+Hrm... the actual contents of this patch are less about producing an
+unheadered binary image than they are about introducing the "raw"
+platform.  I don't mind the idea of a "raw" platform (although I'm not
+sure I like that name for it), but the patch comment needs work.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
