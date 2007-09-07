@@ -1,17 +1,22 @@
-Return-Path: <sdeven.lee@163.com>
-Received: from m5-81.163.com (m5-81.163.com [202.108.5.81])
-	by ozlabs.org (Postfix) with SMTP id C9AB1DDE34
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2C931DDE9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 12:19:01 +1000 (EST)
-Date: Fri, 7 Sep 2007 10:03:36 +0800
-From: "sdeven.lee" <sdeven.lee@163.com>
-To: "David Hawkins" <dwh@ovro.caltech.edu>
-Subject: Re: Re: PCI target implementation on AMCC PPC CPUs
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <46E0B518.00C806.05513@m5-81.163.com>
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Fri,  7 Sep 2007 12:32:51 +1000 (EST)
+Message-ID: <46E0B8A3.3010305@ovro.caltech.edu>
+Date: Thu, 06 Sep 2007 19:34:11 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: Leonid <Leonid@a-k-a.net>
+Subject: Re: PCI target implementation on AMCC PPC CPUs
+References: <46E0B178.00C522.05513@m5-81.163.com>
+	<406A31B117F2734987636D6CCC93EE3C022418FF@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C022418FF@ehost011-3.exch011.intermedia.net>
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,46 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-RGF2aWQgSGF3a2lucyzE+rrDo6ENCg0KCUkgaGF2ZSBiZWVuIGZpbmlzaGVkIGFuIGFwcGxpY2F0
-aW9uIHVzaW5nIEFNQ0MgUFBDNDQwR1AgYXMgUENJIHRhcmdldChzbGF2ZSkgaW4gdGhlIGxhc3Qg
-MiBtb250aC5JIHVzZSBhIG5vbi10cmFuc3BhcmVudCBicmlkZ2UoQU1DQyBQQ0k2NDY2KSB0byBt
-YWtlIHRoZSBkZXZpY2UgYSB0YXJnZXQoc2xhdmUpIGxpa2UgZGF2aWQgaGFzIHNhaWQuDQoNCj09
-PT09PT0gMjAwNy0wOS0wNyAwNDoyNjowMSDE+tTawLTQxdbQ0LS1wKO6PT09PT09PQ0KDQo+SGkg
-TGVvbmlkLA0KPg0KPkluIGNhc2UgdGhleSBhcmUgbm90IGluIHRoZSBkb2N1bWVudDoNCj4NCj5U
-aGVyZSBhcmUgc2V2ZXJhbCBmdW5kYW1lbnRhbCBwcm9ibGVtcyB3aXRoIHRoZSBBTUNDIDQ0MEVQ
-DQo+YWN0aW5nIGFzIGEgUENJIHRhcmdldC9zbGF2ZTsNCj4NCj4xLiBBcyBhIFBDSSB0YXJnZXQs
-IHRoZXJlIGlzIG9ubHkgb25lIHdheSB0byBnZW5lcmF0ZQ0KPiAgICBhbiBpbnRlcnJ1cHQgdG8g
-YSBob3N0OyB5b3UgYmFzaWNhbGx5IHRvZ2dsZSB0aGUNCj4gICAgaW50ZXJydXB0IHBpbi4gVGhp
-cyBtYWtlcyBpdCB0cmlja3kgdG8gZGV2ZWxvcCBhDQo+ICAgIGhvc3QtdG8tc2xhdmUgY29tbXVu
-aWNhdGlvbnMgcHJvdG9jb2wsIGVnLiBpdHMNCj4gICAgaGFyZCB0byB1c2UgdGhlIHNpbmdsZSBp
-bnRlcnJ1cHQgdG8gaW5kaWNhdGUgdmFyaW91cw0KPiAgICBpbnRlcnJ1cHQgc3RhdGVzLCBlZy4g
-dGFyZ2V0LXRvLWhvc3QgYnVmZmVyIGhhcw0KPiAgICBkYXRhIHZlcnN1cyBob3N0LXRvLXRhcmdl
-dCBidWZmZXIgaGFzIGJlZW4gZW1wdGllZC4NCj4gICAgSWRlYWxseSBBTUNDIHNob3VsZCBoYXZl
-IGltcGxlbWVudGVkIG1haWxib3hlcyBhbmQvb3INCj4gICAgZG9vcmJlbGwgcmVnaXN0ZXJzIGxp
-a2UgYW55IG90aGVyIHNhbmUgUENJIHRhcmdldA0KPiAgICBkZXZpY2UgKGVnLiBzb21lIHRoZSBG
-cmVlc2NhbGUgcHJvY2Vzc29ycywgb3IgYW55IG9mDQo+ICAgIHRoZSBQTFggdGVjaG5vbG9naWVz
-IGNoaXBzKS4NCj4NCj4yLiBMb29rIGluIHRoZSBkYXRhIHNoZWV0IGFuZCBzZWUgaWYgeW91IGNh
-biBmaWd1cmUgb3V0DQo+ICAgIGhvdyB0aGUgaG9zdCBwcm9jZXNzb3IgY2FuIGdlbmVyYXRlIGFu
-IGludGVycnVwdCB0bw0KPiAgICB0aGUgUG93ZXJQQyBjb3JlIC4uLiBvb3BzLCB5b3UgY2FuJ3Qu
-IFRoYXQga2luZCBvZg0KPiAgICBtYWtlcyBpdCBkaWZmaWN1bHQgdG8gd29yayB3aXRoIGRvZXNu
-J3QgaXQuDQo+DQo+ICAgIEEgd29yayBhcm91bmQgd291bGQgYmUgdG8gaGF2ZSB0aGUgaG9zdCB3
-cml0ZSB0byB0aGUNCj4gICAgR1BJTyByZWdpc3RlciBhbmQgd2lyZSBhIEdQSU8gcGluIGJhY2sg
-dG8gYW4gZXh0ZXJuYWwNCj4gICAgaW50ZXJydXB0IHBpbi4gVGhlbiB5b3Ugd291bGQgbm90IGJl
-IGFibGUgdG8gdXNlIGFueQ0KPiAgICBvdGhlciBHUElPIHBpbiBpbiB0aGF0IEdQSU8gcmVnaXN0
-ZXIgc2luY2UgdGhlcmUgaXMNCj4gICAgbm8gd2F5IHRvIGFyYml0cmF0ZSBob3N0IGFjY2VzcyB2
-ZXJzdXMgUG93ZXJQQyBjb3JlDQo+ICAgIGFjY2Vzcy4NCj4NCj5UaGlzIHdhcyB0aGUgb3RoZXIg
-cmVhc29uIEkgZGl0Y2hlZCB0aGUgQU1DQyBwYXJ0IGluDQo+ZmF2b3Igb2YgdGhlIEZyZWVzY2Fs
-ZSBwYXJ0Lg0KPg0KPklmIHlvdSBhcmUgbG9va2luZyBhdCBvdGhlciBwYXJ0cywgbWFrZSBzdXJl
-IHlvdSBsb29rDQo+aW4gdGhlIFBDSSBjb25maWd1cmF0aW9uIHNwYWNlIG9mIHRoZSBwcm9jZXNz
-b3IgcmVmZXJlbmNlDQo+bWFudWFsLiBNYW55IHByb2Nlc3NvcnMgaGF2ZSB0aGUgaW50ZXJydXB0
-IHBpbiByZWdpc3Rlcg0KPmhhcmR3aXJlZCB0byB6ZXJvLCBpLmUuLCB0aGV5IGNhbiBub3QgYmUg
-dXNlZCBhcyB0YXJnZXQNCj5kZXZpY2VzLCBvbmx5IGhvc3RzLiBJbiB0aGF0IGNhc2UgeW91J2Qg
-aGF2ZSB0byBhZGQgYW4NCj5pbnRlbCAyMTU1NSBub24tdHJhbnNwYXJlbnQgYnJpZGdlIHRvIG1h
-a2UgdGhlIGRldmljZQ0KPmEgdGFyZ2V0Lg0KPg0KPkNoZWVycywNCj5EYXZlDQo+DQo+X19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj5MaW51eHBwYy1lbWJl
-ZGRlZCBtYWlsaW5nIGxpc3QNCj5MaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+aHR0cHM6
-Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCg0KPSA9ID0g
-PSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9DQoJCQkNCg0KoaGhoaGhoaGhoaGhoaGh
-odbCDQrA8aOhDQogDQoJCQkJIA0KoaGhoaGhoaGhoaGhoaGhoXNkZXZlbi5sZWUNCqGhoaGhoaGh
-oaGhoaGhoaFzZGV2ZW4ubGVlQDE2My5jb20NCqGhoaGhoaGhoaGhoaGhoaGhoaGhMjAwNy0wOS0w
-Nw0KDQo=
+Hi guys,
+
+> You want to say  PPC440GP cannot be PCI slave without
+> this non-transparent bridge because as David said
+> its "interrupt pin register hardwired to zero" or
+> there other reasons?  I'm trying to use
+> PPC440ep(or epx) and from its datasheet I don't
+> see anything about this zero hardwiring.
+> Does it mean "vanilla" PPC440ep will work?
+
+Look in the user manual p562
+
+https://www.amcc.com/MyAMCC/retrieveDocument/PowerPC/440GP/PPC440GP_UM2002_v1_11.pdf
+
+The processor can generate INTA#.
+
+> I have been finished an application using AMCC
+> PPC440GP as PCI target(slave) in the last 2 month.
+> I use a non-transparent bridge(AMCC PCI6466) to
+> make the device a target(slave) like david has said.
+
+However in this case, the bridge was not required
+to make the processor target-capable. Most likely
+the board required a local PCI bus, and so the
+non-transparent bridge is used to hide the board
+PCI devices from the other PCI host.
+
+In this type of design the processor is acting
+a *host* on the target board. When a host wants
+to interrupt the target, it asserts an interrupt
+in the bridge, and that interrupt asserts an
+interrupt input on the processor.
+
+When the target processor wants to interrupt the
+host it writes to a register in the bridge and
+the bridge interrupt the host using its INTA#.
+
+In both cases the bridge is the target and the
+processors are both hosts.
+
+:)
+
+Dave
