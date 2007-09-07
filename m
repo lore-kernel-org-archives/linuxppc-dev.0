@@ -1,23 +1,15 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2A8E7DDEC0
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2007 00:24:26 +1000 (EST)
-Date: Fri, 7 Sep 2007 09:24:17 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 06/10] bootwrapper: Move strncmp() from flatdevtree_env.h
-	to string.S/string.h.
-Message-ID: <20070907142417.GB14768@ld0162-tx32.am.freescale.net>
-References: <20070905192001.GA32049@ld0162-tx32.am.freescale.net>
-	<20070905192114.GF32113@ld0162-tx32.am.freescale.net>
-	<20070907005131.GF26079@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070907005131.GF26079@localhost.localdomain>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070907032353.GA3082@localhost.localdomain>
+References: <20070907032353.GA3082@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2fcd14e175d5a215cd8d602ac74fce21@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Document and implement an improved flash device binding for
+	powerpc (v5)
+Date: Fri, 7 Sep 2007 16:25:10 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 07, 2007 at 10:51:31AM +1000, David Gibson wrote:
-> On Wed, Sep 05, 2007 at 02:21:14PM -0500, Scott Wood wrote:
-> > It will be needed for PlanetCore firmware support.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> 
-> I still have a patch that already does this, plus strchr() as well,
-> pending...
+> This patch replaces the binding for flash chips in
+> booting-without-of.txt with an clarified and improved version.  It
+> also makes drivers/mtd/maps/physmap_of.c recognize this new binding.
+> Finally it revises the Ebony device tree source to use the new binding
+> as an example.
+>
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Sure, and I noted last time that this patch should be dropped if yours is
-merged.  I kept it in the patchset because it's needed to make later
-patches build and work.
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
 
--Scott
+Thanks for doing this work David!
+
+
+> +	/* First look for RedBoot table or partitions on the command
+> +	 * line, these take precedence over device tree information */
+
+Any specific reason you chose this order?  Just curious...
+
+> +		.data		= (void *)"jedec_probe",
+
+Hrm, this cast is only getting rid of the const-ness of the
+string literal -- maybe .data should be declared const, or
+does the majority of users want it writable?
+
+
+Segher
