@@ -1,21 +1,27 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id F1197DDE33
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 18:21:52 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 7 Sep 2007 10:21:43 +0200
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC/PATCH 1/2] Basic generic time/clocksource code for PowerPC
-Message-ID: <20070907082143.GA27058@iram.es>
-References: <18144.4514.601900.881855@cargo.ozlabs.ibm.com>
-	<20070906165535.GA11420@iram.es>
-	<20070906170123.GA17990@ld0162-tx32.am.freescale.net>
-	<20070906170547.GA12432@iram.es>
-	<20070906172415.GA18226@ld0162-tx32.am.freescale.net>
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mgw2.sony.co.jp (MGW2.Sony.CO.JP [137.153.0.14])
+	by ozlabs.org (Postfix) with ESMTP id 3A826DDE45
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 18:50:11 +1000 (EST)
+Received: from mail3.sony.co.jp (localhost [127.0.0.1])
+	by mail3.sony.co.jp (R8/Sony) with ESMTP id l878o9J1022114
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 17:50:09 +0900 (JST)
+Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
+	by mail3.sony.co.jp (R8/Sony) with SMTP id l878o8qF022094
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 17:50:08 +0900 (JST)
+Message-ID: <46E1108B.30300@am.sony.com>
+Date: Fri, 07 Sep 2007 01:49:15 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070906172415.GA18226@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 2.6.23] PS3: Ignore storage devices that are still being
+	probed
+References: <Pine.LNX.4.62.0709061813090.22591@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0709061813090.22591@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 06, 2007 at 12:24:15PM -0500, Scott Wood wrote:
-> On Thu, Sep 06, 2007 at 07:05:47PM +0200, Gabriel Paubert wrote:
-> > On Thu, Sep 06, 2007 at 12:01:23PM -0500, Scott Wood wrote:
-> > > On Thu, Sep 06, 2007 at 06:55:35PM +0200, Gabriel Paubert wrote:
-> > > > So who will be in charge of updating the RTC now? The update 
-> > > > every 11 min is there to stay on x86(-64) it seems.
-> > > 
-> > > Put something in crontab to run hwclock periodically.
-> > 
-> > I have many machines on which cron is not even installed.
+Geert Uytterhoeven wrote:
+> PS3: A storage device may show up in the repository before the hypervisor has
+> finished probing:
+>   - If its type is not yet known, it shows up as PS3_DEV_TYPE_STOR_DUMMY,
+>   - If its regions are being probed, it shows up as having zero regions.
+> If any of these happen, consider the device not yet present.  The storage
+> probe thread will retry later.
 > 
-> OK, so use something else that waits in a loop and periodically updates
-> the clock.  It shouldn't be the kernel's responsibility.
+> This fixes the timing-dependent problem where a kernel booted from FLASH ROM
+> sometimes cannot find the hard disk.
+> 
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-It ha been the kernel's reposnibility ever since the NTP code
-was included with the kernel. The only way to move it out
-is to agree to something with NTP folks.
+Paul,
 
-It is going to break working setups who rely on this feature, 
-which is a big no-no.
+This fixes a problem reported by users, so it would be nice for it to go
+in for 2.6.23 if possible.  Sorry for it being so late. 
 
-The solution now used by i386/x86-64/sparc64 is
-CONFIG_GENERIC_CMOS_UPDATE. Maybe powerpc should be switched
-to use something similar, but the generic code has some
-problems (it assumes that you have to set the clock
-on a half-second, which is not the case of the RTC on 
-my boards to start with).
-
-Now I'm aware that some PowerPC RTC are messy to handle
-in a timer/interrupt/whatever because some hardware designers
-thought it was wise to put the RTC on a dog-slow bus like
-I2C. You have however a variable to disable this update
-if you want (no_sync_cmos_clock), set it to 1 by default
-but please let people that use (and need) the functionality
-enable it (even do it by default when the RTC access is fast).
-
-	Gabriel
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
