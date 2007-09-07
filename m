@@ -1,18 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3F955DDE21
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 19:21:28 +1000 (EST)
-Date: Fri, 7 Sep 2007 04:21:43 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH v2] powerpc: Add workaround for MPICs with broken register
-	reads
-Message-ID: <20070907092143.GB32102@lixom.net>
-References: <20070905024417.GE27139@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905024417.GE27139@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, miltonm@bga.com
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8D4BDDDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 19:22:22 +1000 (EST)
+Date: Fri, 7 Sep 2007 13:22:12 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Vinu <vvaghasia@gen10technology.com>
+Subject: Re: How to use MMC-over-SPI on MPC8313E
+Message-ID: <20070907132212.36cd5cc6@localhost.localdomain>
+In-Reply-To: <46E02F48.6090005@gen10technology.com>
+References: <46E02F48.6090005@gen10technology.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,96 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some versions of PWRficient 1682M have an interrupt controller in which
-the first register in each pair for interrupt sources doesn't always
-read with the right polarity/sense values.
+On Thu, 06 Sep 2007 11:48:08 -0500
+Vinu wrote:
 
-To work around this, keep a software copy of the register instead. Since
-it's not modified from the mpic itself, it's a feasible solution. Still,
-keep it under a config option to avoid wasting memory on other platforms.
+> Hi all,
+> 
+> I am working on MPC8313ERDB  Eval board, and want to  use SD Memory
+> card to store Linux OS and file system.
+> The SD card controller is connected directly with the SPI bus.
+> 
+> I simply don't know how to use MMC-over-SPI  technology to make SD
+> card usable.
+> 
+> It would be a great help if anybody have any documentation or driver
+> etc.
+> 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 041df77..f2e7049 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -137,6 +137,18 @@ config MPIC_U3_HT_IRQS
- 	depends on PPC_MAPLE
- 	default y
- 
-+config MPIC_BROKEN_REGREAD
-+	bool "MPIC workaround for broken register reads"
-+	depends on MPIC
-+	help
-+	  Say Y here to enable a MPIC driver workaround for some chips that
-+	  have a bug that causes some interrupt source information to not
-+	  read back properly. It is safe to use on other chips as well, but
-+	  enabling it uses about 8KB of memory to keep copies of the register
-+	  contents in software.
-+
-+	  Say N if you are unsure.
-+
- config IBMVIO
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	bool
-diff --git a/arch/powerpc/platforms/pasemi/Kconfig b/arch/powerpc/platforms/pasemi/Kconfig
-index 95cd90f..117d90a 100644
---- a/arch/powerpc/platforms/pasemi/Kconfig
-+++ b/arch/powerpc/platforms/pasemi/Kconfig
-@@ -5,6 +5,7 @@ config PPC_PASEMI
- 	select MPIC
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
-+	select MPIC_BROKEN_REGREAD
- 	help
- 	  This option enables support for PA Semi's PWRficient line
- 	  of SoC processors, including PA6T-1682M
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 74c64c0..c0fe063 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -228,8 +228,13 @@ static inline u32 _mpic_irq_read(struct mpic *mpic, unsigned int src_no, unsigne
- 	unsigned int	isu = src_no >> mpic->isu_shift;
- 	unsigned int	idx = src_no & mpic->isu_mask;
- 
--	return _mpic_read(mpic->reg_type, &mpic->isus[isu],
--			  reg + (idx * MPIC_INFO(IRQ_STRIDE)));
-+#ifdef CONFIG_MPIC_BROKEN_REGREAD
-+	if (reg == 0)
-+		return mpic->isu_reg0_shadow[idx];
-+	else
-+#endif
-+		return _mpic_read(mpic->reg_type, &mpic->isus[isu],
-+				  reg + (idx * MPIC_INFO(IRQ_STRIDE)));
- }
- 
- static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
-@@ -240,6 +245,11 @@ static inline void _mpic_irq_write(struct mpic *mpic, unsigned int src_no,
- 
- 	_mpic_write(mpic->reg_type, &mpic->isus[isu],
- 		    reg + (idx * MPIC_INFO(IRQ_STRIDE)), value);
-+
-+#ifdef CONFIG_MPIC_BROKEN_REGREAD
-+	if (reg == 0)
-+		mpic->isu_reg0_shadow[idx] = value;
-+#endif
- }
- 
- #define mpic_read(b,r)		_mpic_read(mpic->reg_type,&(b),(r))
-diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
-index 262db6b..c877fa7 100644
---- a/include/asm-powerpc/mpic.h
-+++ b/include/asm-powerpc/mpic.h
-@@ -309,6 +309,10 @@ struct mpic
- 	unsigned long		*hwirq_bitmap;
- #endif
- 
-+#ifdef CONFIG_MPIC_BROKEN_REGREAD
-+	u32			isu_reg0_shadow[MPIC_MAX_IRQ_SOURCES];
-+#endif
-+
- 	/* link */
- 	struct mpic		*next;
- 
+Please search list - there is 8323 support... We /mvista/ did such a thing not long ago. All the stuff releated to spi/mmc layer is already in mainline kernel, you'll just need to do board-specific patch for 8313 which should be similar to mentioned.
+-- 
+Sincerely, Vitaly
