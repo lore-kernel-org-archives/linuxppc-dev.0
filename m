@@ -1,18 +1,20 @@
-Return-Path: <sdeven.lee@163.com>
-Received: from m5-81.163.com (m5-81.163.com [202.108.5.81])
-	by ozlabs.org (Postfix) with SMTP id 92DE3DDEBF
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 631C7DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  7 Sep 2007 12:52:52 +1000 (EST)
-Date: Fri, 7 Sep 2007 10:52:40 +0800
-From: "sdeven.lee" <sdeven.lee@163.com>
-To: "Leonid" <Leonid@a-k-a.net>,
- "David Hawkins" <dwh@ovro.caltech.edu>
-Subject: Re: RE: Re: PCI target implementation on AMCC PPC CPUs
-Mime-Version: 1.0
+	Fri,  7 Sep 2007 17:34:52 +1000 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	0A5E41000783for <linuxppc-embedded@ozlabs.org>;
+	Fri,  7 Sep 2007 09:34:50 +0200 (CEST)
+Message-ID: <46E0FEF3.8010500@fz-juelich.de>
+Date: Fri, 07 Sep 2007 09:34:11 +0200
+From: schardt <g.schardt@fz-juelich.de>
+MIME-Version: 1.0
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: Flash Filesystem
 Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <46E0BCFC.00CDFF.05513@m5-81.163.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,69 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-TGVvbmlkLMT6usOjoQ0KDQoJU29ycnksIEkgd2FzIHdyb25nLCBub3QgQU1DQyBQQ0k2NDY2LCBi
-dXQgUExYIFBDSTY0NjYgbm9uLXRyYW5zcGFyZW50IGJyaWRnZS4NCg0KCUkgdXNlIHRoZSBub24t
-dHJhbnNwYXJlbnQgYnJpZGdlIGp1c3QgZm9yIHNvbWUgc3BlY2lhbCBwdXJwb3NlLiBJbiB0aGlz
-IGNhc2UsIHRoZSBob3N0IENQVSBjYW4ndCAgYWNjZXNzIHRoZSBtZW1vcnkgdmlhIHRoZSBicmlk
-Z2UuIEkga25vdyBQUEM0NDBHUCBjYW4gcnVuIGluIGFnZW50IG1vZGUganVzdCBsaWtlIHlvdXIg
-YXBwbGljYXRpb24uIEJ1dCBpdCBuZWVkcyBzcGVjaWFsIGNvbm5lY3Rpb24gb2YgdGhlIHBpbnMu
-ICANCg0KPT09PT09PSAyMDA3LTA5LTA3IDEwOjEzOjMyIMT61NrAtNDF1tDQtLXAo7o9PT09PT09
-DQoNCj5IaToNCj4NCj5Zb3Ugd2FudCB0byBzYXkgIFBQQzQ0MEdQIGNhbm5vdCBiZSBQQ0kgc2xh
-dmUgd2l0aG91dCB0aGlzIG5vbi10cmFuc3BhcmVudCBicmlkZ2UgYmVjYXVzZSBhcyBEYXZpZCBz
-YWlkIGl0cyAiaW50ZXJydXB0IHBpbiByZWdpc3RlciBoYXJkd2lyZWQgdG8gemVybyIgb3IgdGhl
-cmUgb3RoZXIgcmVhc29ucz8gDQo+SSdtIHRyeWluZyB0byB1c2UgUFBDNDQwZXAob3IgZXB4KSBh
-bmQgZnJvbSBpdHMgZGF0YXNoZWV0IEkgZG9uJ3Qgc2VlIGFueXRoaW5nIGFib3V0IHRoaXMgemVy
-byBoYXJkd2lyaW5nLiBEb2VzIGl0IG1lYW4gInZhbmlsbGEiIFBQQzQ0MGVwIHdpbGwgd29yaz8N
-Cj4NCj5BbmQgd2hhdCBkaWQgeW91IHVzZSBmb3IgUENJIEhvc3Q/DQo+DQo+QWxzbywgaXMgeW91
-ciBjb2RlIGF2YWlsYWJsZSBzb213aGVyZT8NCj4NCj5UaGFua3MsDQo+DQo+TGVvbmlkLg0KPi0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+RnJvbTogc2RldmVuLmxlZSBbbWFpbHRvOnNkZXZl
-bi5sZWVAMTYzLmNvbV0gDQo+U2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAwNiwgMjAwNyA3OjA0
-IFBNDQo+VG86IERhdmlkIEhhd2tpbnMNCj5DYzogTGVvbmlkOyBsaW51eHBwYy1lbWJlZGRlZA0K
-PlN1YmplY3Q6IFJlOiBSZTogUENJIHRhcmdldCBpbXBsZW1lbnRhdGlvbiBvbiBBTUNDIFBQQyBD
-UFVzDQo+DQo+RGF2aWQgSGF3a2lucyzE+rrDo6ENCj4NCj4JSSBoYXZlIGJlZW4gZmluaXNoZWQg
-YW4gYXBwbGljYXRpb24gdXNpbmcgQU1DQyBQUEM0NDBHUCBhcyBQQ0kgdGFyZ2V0KHNsYXZlKSBp
-biB0aGUgbGFzdCAyIG1vbnRoLkkgdXNlIGEgbm9uLXRyYW5zcGFyZW50IGJyaWRnZShBTUNDIFBD
-STY0NjYpIHRvIG1ha2UgdGhlIGRldmljZSBhIHRhcmdldChzbGF2ZSkgbGlrZSBkYXZpZCBoYXMg
-c2FpZC4NCj4NCj49PT09PT09IDIwMDctMDktMDcgMDQ6MjY6MDEgxPrU2sC00MXW0NC0tcCjuj09
-PT09PT0NCj4NCj4+SGkgTGVvbmlkLA0KPj4NCj4+SW4gY2FzZSB0aGV5IGFyZSBub3QgaW4gdGhl
-IGRvY3VtZW50Og0KPj4NCj4+VGhlcmUgYXJlIHNldmVyYWwgZnVuZGFtZW50YWwgcHJvYmxlbXMg
-d2l0aCB0aGUgQU1DQyA0NDBFUCBhY3RpbmcgYXMgYSANCj4+UENJIHRhcmdldC9zbGF2ZTsNCj4+
-DQo+PjEuIEFzIGEgUENJIHRhcmdldCwgdGhlcmUgaXMgb25seSBvbmUgd2F5IHRvIGdlbmVyYXRl
-DQo+PiAgICBhbiBpbnRlcnJ1cHQgdG8gYSBob3N0OyB5b3UgYmFzaWNhbGx5IHRvZ2dsZSB0aGUN
-Cj4+ICAgIGludGVycnVwdCBwaW4uIFRoaXMgbWFrZXMgaXQgdHJpY2t5IHRvIGRldmVsb3AgYQ0K
-Pj4gICAgaG9zdC10by1zbGF2ZSBjb21tdW5pY2F0aW9ucyBwcm90b2NvbCwgZWcuIGl0cw0KPj4g
-ICAgaGFyZCB0byB1c2UgdGhlIHNpbmdsZSBpbnRlcnJ1cHQgdG8gaW5kaWNhdGUgdmFyaW91cw0K
-Pj4gICAgaW50ZXJydXB0IHN0YXRlcywgZWcuIHRhcmdldC10by1ob3N0IGJ1ZmZlciBoYXMNCj4+
-ICAgIGRhdGEgdmVyc3VzIGhvc3QtdG8tdGFyZ2V0IGJ1ZmZlciBoYXMgYmVlbiBlbXB0aWVkLg0K
-Pj4gICAgSWRlYWxseSBBTUNDIHNob3VsZCBoYXZlIGltcGxlbWVudGVkIG1haWxib3hlcyBhbmQv
-b3INCj4+ICAgIGRvb3JiZWxsIHJlZ2lzdGVycyBsaWtlIGFueSBvdGhlciBzYW5lIFBDSSB0YXJn
-ZXQNCj4+ICAgIGRldmljZSAoZWcuIHNvbWUgdGhlIEZyZWVzY2FsZSBwcm9jZXNzb3JzLCBvciBh
-bnkgb2YNCj4+ICAgIHRoZSBQTFggdGVjaG5vbG9naWVzIGNoaXBzKS4NCj4+DQo+PjIuIExvb2sg
-aW4gdGhlIGRhdGEgc2hlZXQgYW5kIHNlZSBpZiB5b3UgY2FuIGZpZ3VyZSBvdXQNCj4+ICAgIGhv
-dyB0aGUgaG9zdCBwcm9jZXNzb3IgY2FuIGdlbmVyYXRlIGFuIGludGVycnVwdCB0bw0KPj4gICAg
-dGhlIFBvd2VyUEMgY29yZSAuLi4gb29wcywgeW91IGNhbid0LiBUaGF0IGtpbmQgb2YNCj4+ICAg
-IG1ha2VzIGl0IGRpZmZpY3VsdCB0byB3b3JrIHdpdGggZG9lc24ndCBpdC4NCj4+DQo+PiAgICBB
-IHdvcmsgYXJvdW5kIHdvdWxkIGJlIHRvIGhhdmUgdGhlIGhvc3Qgd3JpdGUgdG8gdGhlDQo+PiAg
-ICBHUElPIHJlZ2lzdGVyIGFuZCB3aXJlIGEgR1BJTyBwaW4gYmFjayB0byBhbiBleHRlcm5hbA0K
-Pj4gICAgaW50ZXJydXB0IHBpbi4gVGhlbiB5b3Ugd291bGQgbm90IGJlIGFibGUgdG8gdXNlIGFu
-eQ0KPj4gICAgb3RoZXIgR1BJTyBwaW4gaW4gdGhhdCBHUElPIHJlZ2lzdGVyIHNpbmNlIHRoZXJl
-IGlzDQo+PiAgICBubyB3YXkgdG8gYXJiaXRyYXRlIGhvc3QgYWNjZXNzIHZlcnN1cyBQb3dlclBD
-IGNvcmUNCj4+ICAgIGFjY2Vzcy4NCj4+DQo+PlRoaXMgd2FzIHRoZSBvdGhlciByZWFzb24gSSBk
-aXRjaGVkIHRoZSBBTUNDIHBhcnQgaW4gZmF2b3Igb2YgdGhlIA0KPj5GcmVlc2NhbGUgcGFydC4N
-Cj4+DQo+PklmIHlvdSBhcmUgbG9va2luZyBhdCBvdGhlciBwYXJ0cywgbWFrZSBzdXJlIHlvdSBs
-b29rIGluIHRoZSBQQ0kgDQo+PmNvbmZpZ3VyYXRpb24gc3BhY2Ugb2YgdGhlIHByb2Nlc3NvciBy
-ZWZlcmVuY2UgbWFudWFsLiBNYW55IHByb2Nlc3NvcnMgDQo+PmhhdmUgdGhlIGludGVycnVwdCBw
-aW4gcmVnaXN0ZXIgaGFyZHdpcmVkIHRvIHplcm8sIGkuZS4sIHRoZXkgY2FuIG5vdCANCj4+YmUg
-dXNlZCBhcyB0YXJnZXQgZGV2aWNlcywgb25seSBob3N0cy4gSW4gdGhhdCBjYXNlIHlvdSdkIGhh
-dmUgdG8gYWRkIA0KPj5hbiBpbnRlbCAyMTU1NSBub24tdHJhbnNwYXJlbnQgYnJpZGdlIHRvIG1h
-a2UgdGhlIGRldmljZSBhIHRhcmdldC4NCj4+DQo+PkNoZWVycywNCj4+RGF2ZQ0KPj4NCj4+X19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4+TGludXhwcGMt
-ZW1iZWRkZWQgbWFpbGluZyBsaXN0DQo+PkxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcNCj4+
-aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCj4N
-Cj49ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0NCj4JCQkNCj4NCj6hoaGh
-oaGhoaGhoaGhoaGh1sINCj7A8aOhDQo+IA0KPgkJCQkgDQo+oaGhoaGhoaGhoaGhoaGhoXNkZXZl
-bi5sZWUNCj6hoaGhoaGhoaGhoaGhoaGhc2RldmVuLmxlZUAxNjMuY29tDQo+oaGhoaGhoaGhoaGh
-oaGhoaGhoaEyMDA3LTA5LTA3DQoNCj0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9
-ID0gPQ0KCQkJDQoNCqGhoaGhoaGhoaGhoaGhoaHWwg0KwPGjoQ0KIA0KCQkJCSANCqGhoaGhoaGh
-oaGhoaGhoaFzZGV2ZW4ubGVlDQqhoaGhoaGhoaGhoaGhoaGhc2RldmVuLmxlZUAxNjMuY29tDQqh
-oaGhoaGhoaGhoaGhoaGhoaGhoTIwMDctMDktMDcNCg0K
+Hi
+
+i've some problems using the on board flash memory with linux.
+i added the support for adm/fujittsu flash in kernel config and add the
+right parameters for the "cfi  flash device in physical memory".
+
+cat /proc/mtd gives me
+
+dev:    size   erasesize  name
+mtd0: 00400000 00010000 "physmap-flash.0"
+
+i added /dev/mtd0 c 90 0 and /dev/mtdblock0 b 31 0
+
+how do i add a partition and filesystem ????
+fdisk /dev/mtd0  seems me not to be correct :)
+
+Greets
+Georg
+
+
+
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+Vorstand: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
