@@ -1,33 +1,34 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A3542DDEB9
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 11:28:07 +1000 (EST)
-Message-ID: <46E0A953.8080202@freescale.com>
-Date: Thu, 06 Sep 2007 20:28:51 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0A6B1DDEE0
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 11:29:01 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l871T11b026803
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 11:29:01 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l871WX43203696
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 11:32:33 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l872Sxcm007216
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 12:28:59 +1000
+Date: Fri, 7 Sep 2007 11:22:17 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [patch 6/6] Walnut zImage wrapper
+Message-ID: <20070907012217.GP26079@localhost.localdomain>
+References: <20070831200449.598781000@linux.vnet.ibm.com>
+	<20070831200643.675381000@linux.vnet.ibm.com>
+	<20070903011352.GF31499@localhost.localdomain>
+	<1188741519.3772.3.camel@localhost.localdomain>
+	<20070905113604.746ee01c@weaponx.rchland.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
-	Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-	Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v7 3/3] [POWERPC] MPC832x_RDB: update dts to use SPI1in
-	QE, register mmc_spi stub
-References: <46D73166.6080103@freescale.com>
-	<989B956029373F45A0B8AF02970818900147BD4D@zch01exm26.fsl.freescale.net>
-	<ac803797588b40e3d33bbd6f758a5663@kernel.crashing.org>
-	<46DC126C.9060603@freescale.com>
-	<20070903151319.GA24840@localhost.localdomain>
-	<fdaf530168b099fcb5a3fbbe45e38271@kernel.crashing.org>
-	<20070904104750.GA32451@localhost.localdomain>
-	<20070904182028.GC18280@ld0162-tx32.am.freescale.net>
-	<20070905114023.GA4072@localhost.localdomain>
-	<20070905132106.GB24637@ld0162-tx32.am.freescale.net>
-	<20070907011553.GO26079@localhost.localdomain>
-In-Reply-To: <20070907011553.GO26079@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070905113604.746ee01c@weaponx.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +38,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Wed, Sep 05, 2007 at 11:36:04AM -0500, Josh Boyer wrote:
+> Updated patch below
+> 
+> Add zImage wrapper for walnut board
+> 
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-> Firmwares are, more often than not, crap, and that's unlikely to
-> change.  For a lot of things, having the kernel or bootwrapper cope as
-> a special case with a handful of crap firmwares which don't set things
-> up properly isn't actually any easier than having it set them up
-> itself, always.
-
-Similarly, firmware is very often unlikely to be updated.  So we need to 
-support situations where we use old firmware with new kernels.  The cuImage 
-support is a classic example of this.  Moving code from kernel to firmware 
-just because some people think it belongs in the firmware is usually impractical.
-
-If we added code to U-Boot today to configure the par_io pins, it would 
-probably still be years before we could safely remove that code from the kernel.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
