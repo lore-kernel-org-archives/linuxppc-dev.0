@@ -1,34 +1,25 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0A6B1DDEE0
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 11:29:01 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l871T11b026803
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 11:29:01 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l871WX43203696
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 11:32:33 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l872Sxcm007216
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 12:28:59 +1000
-Date: Fri, 7 Sep 2007 11:22:17 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 6/6] Walnut zImage wrapper
-Message-ID: <20070907012217.GP26079@localhost.localdomain>
-References: <20070831200449.598781000@linux.vnet.ibm.com>
-	<20070831200643.675381000@linux.vnet.ibm.com>
-	<20070903011352.GF31499@localhost.localdomain>
-	<1188741519.3772.3.camel@localhost.localdomain>
-	<20070905113604.746ee01c@weaponx.rchland.ibm.com>
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mgw4.sony.co.jp (MGW4.Sony.CO.JP [137.153.0.46])
+	by ozlabs.org (Postfix) with ESMTP id 980A8DDEB9
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Sep 2007 11:32:09 +1000 (EST)
+Received: from mail2.sony.co.jp (localhost [127.0.0.1])
+	by mail2.sony.co.jp (R8/Sony) with ESMTP id l871W8n1017225
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 10:32:08 +0900 (JST)
+Received: from mailgw02.scei.sony.co.jp (mailgw02.scei.sony.co.jp [43.27.73.8])
+	by mail2.sony.co.jp (R8/Sony) with SMTP id l871W8g6017221
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Sep 2007 10:32:08 +0900 (JST)
+Message-ID: <46E0A9E8.3050701@am.sony.com>
+Date: Thu, 06 Sep 2007 18:31:20 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070905113604.746ee01c@weaponx.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [patch 2/2] Cell: Wrap master run control bit
+References: <46DD4783.9040103@am.sony.com> <200709050042.13926.arnd@arndb.de>
+In-Reply-To: <200709050042.13926.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,17 +29,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 05, 2007 at 11:36:04AM -0500, Josh Boyer wrote:
-> Updated patch below
+Arnd Bergmann wrote:
+> On Tuesday 04 September 2007, Geoff Levand wrote:
+>> 
+>> From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+>> 
+>> Add platform specific SPU run control routines.
+>> 
+>> The current spufs_run_spu() implementation uses the SPU master
+>> run control bit (MFC_SR1[S]) to control SPE execution, but the
+>> PS3 hypervisor does not support the use of this feature.  This
+>> change adds run control wrapper routines.  The  bare metal
+>> routines use the master run control bit, and the PS3 specific
+>> routines use the priv2 run control register.
+>> 
+>> Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+>> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 > 
-> Add zImage wrapper for walnut board
+> Hmm, ok. Since I don't think we'll get to do the right solution
+> (unmapping the ps registers on the ps3) that soon, doing this
+> patch is at least better than the current situation where we
+> end up with an oops every time we leave spu_run.
 > 
-> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> It would probably be good to mention the remaining problem
+> with the current approach in the changelog and as a comment
+> in the ps3 specific functions.
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Ok, I did that.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>> @@ -178,6 +179,8 @@ struct spu_management_ops {
+>>  	int (*enumerate_spus)(int (*fn)(void *data));
+>>  	int (*create_spu)(struct spu *spu, void *data);
+>>  	int (*destroy_spu)(struct spu *spu);
+>> +	int (*enable_spu)(struct spu_context *ctx);
+>> +	int (*disable_spu)(struct spu_context *ctx);
+>>  	int (*init_affinity)(void);
+>>  };
+> 
+> Also, I think you should make the return type of the callback
+> 'void' since the result is not used anywhere.
+
+Noguchi-san was hesitant to do this.  I also thought lets leave it
+as is until we consider the unmapping support, as maybe a return
+value might make sense.  Jeremy, if you think it better to return
+void, please make the update.
+
+-Geoff
