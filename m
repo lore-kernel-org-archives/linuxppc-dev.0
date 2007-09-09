@@ -1,17 +1,18 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
-	by ozlabs.org (Postfix) with ESMTP id 857DDDDE01
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Sep 2007 04:38:08 +1000 (EST)
-Date: Sun, 9 Sep 2007 20:39:29 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id DEDB4DDDFE
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Sep 2007 06:39:41 +1000 (EST)
+Date: Sun, 9 Sep 2007 15:40:17 -0500
+From: Olof Johansson <olof@lixom.net>
 To: Adrian Bunk <bunk@kernel.org>
 Subject: Re: [2.6 patch] powerpc: proper defconfig for crosscompiles
-Message-ID: <20070909183929.GA20443@uranus.ravnborg.org>
+Message-ID: <20070909204017.GA7275@lixom.net>
 References: <20070909182117.GJ3563@stusta.de>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070909182117.GJ3563@stusta.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,8 +31,8 @@ On Sun, Sep 09, 2007 at 08:21:17PM +0200, Adrian Bunk wrote:
 > and this patch therefore chooses g5_defconfig if $(CROSS_COMPILE) is 
 > non-empty.
 
-Thanks - much appreciated.
+You should probably use ppc64_defconfig instead, since it's the "superset"
+config that will compile a multiplatform kernel.
 
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-	Sam
+-Olof
