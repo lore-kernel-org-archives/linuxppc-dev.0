@@ -1,22 +1,22 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8B09ADDD07
-	for <linuxppc-dev@ozlabs.org>; Sun,  9 Sep 2007 02:02:07 +1000 (EST)
-Date: Sat, 8 Sep 2007 11:01:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 01/10] cpm2: Infrastructure code cleanup.
-Message-ID: <20070908160154.GA31862@ld0162-tx32.am.freescale.net>
-References: <20070905192841.GA32441@ld0162-tx32.am.freescale.net>
-	<200709081648.54960.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200709081648.54960.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dan.j.williams@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.238])
+	by ozlabs.org (Postfix) with ESMTP id 6EE23DDDFC
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Sep 2007 03:53:46 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so800959wxd
+	for <linuxppc-dev@ozlabs.org>; Sun, 09 Sep 2007 10:53:45 -0700 (PDT)
+Message-ID: <e9c3a7c20709091053u607e710ay1eb76c53312706ea@mail.gmail.com>
+Date: Sun, 9 Sep 2007 10:53:44 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+Sender: dan.j.williams@gmail.com
+To: "Zhang Wei" <wei.zhang@freescale.com>
+Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx
+	processors.
+In-Reply-To: <11891624582950-git-send-email-wei.zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <11891624582950-git-send-email-wei.zhang@freescale.com>
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +26,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Sep 08, 2007 at 04:48:53PM +0200, Arnd Bergmann wrote:
-> On Wednesday 05 September 2007, Scott Wood wrote:
-> > 
-> >  void *cpm_dpram_addr(unsigned long offset)
-> >  {
-> > -       return (void *)(im_dprambase + offset);
-> > +       return (void __force *)(im_dprambase + offset);
-> >  }
-> >  EXPORT_SYMBOL(cpm_dpram_addr);
-> 
-> This does not look like a legitimate use of __force. I think it's better
-> to leave the warning in place for cases like this, so that someone else
-> can clean up the remaining users of this.
-> 
-> In this particular case, it seems that the function should either
-> be removed or changed to return an __iomem pointer so you get the
-> warning in the mac-fcc driver using it.
+On 9/7/07, Zhang Wei <wei.zhang@freescale.com> wrote:
+> The driver implements DMA engine API for Freescale MPC85xx DMA
+> controller, which could be used for MEM<-->MEM, IO_ADDR<-->MEM
+> and IO_ADDR<-->IO_ADDR data transfer.
+> The driver supports the Basic mode of Freescale MPC85xx DMA controller.
+> The MPC85xx processors supported include MPC8540/60, MPC8555, MPC8548,
+> MPC8641 and so on.
+> The support for MPC83xx(MPC8349, MPC8360) is experimental.
+>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
+> ---
+Greetings,
 
-Yeah, there's a fair amount of crud in the CPM API...
+Please copy me on any updates to this driver, drivers/dma, or crypto/async_tx.
 
-I wanted to avoid changing it until arch/ppc is gone (or at least until
-CPM platforms are officially no longer supported in it) so I don't have
-to worry about breaking it.  I'm OK with leaving the warning there as a
-reminder.
+Below are a few review comments...
 
--Scott
+Regards,
+Dan
+
+> +/**
+> + * fsl_dma_alloc_descriptor - Allocate descriptor from channel's DMA pool.
+> + *
+> + * Return - The descriptor allocated. NULL for failed.
+> + */
+> +static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+> +                                       struct fsl_dma_chan *fsl_chan,
+> +                                       gfp_t flags)
+> +{
+> +       dma_addr_t pdesc;
+> +       struct fsl_desc_sw *desc_sw;
+> +
+> +       desc_sw = dma_pool_alloc(fsl_chan->desc_pool, flags, &pdesc);
+> +       if (desc_sw) {
+> +               memset(desc_sw, 0, sizeof(struct fsl_desc_sw));
+> +               dma_async_tx_descriptor_init(&desc_sw->async_tx,
+> +                                               &fsl_chan->common);
+> +               desc_sw->async_tx.tx_set_src = fsl_dma_set_src;
+> +               desc_sw->async_tx.tx_set_dest = fsl_dma_set_dest;
+> +               desc_sw->async_tx.tx_submit = fsl_dma_tx_submit;
+> +               INIT_LIST_HEAD(&desc_sw->async_tx.tx_list);
+> +               desc_sw->async_tx.phys = pdesc;
+> +       }
+> +
+> +       return desc_sw;
+> +}
+
+I suggest pre-allocating the descriptors:
+1/ It alleviates the need to initialize these async_tx fields which never change
+2/ The GFP_ATOMIC allocation can be removed.
+
+iop-adma gets by with one PAGE_SIZE buffer (128 descriptors).
+
+[..]
+> +static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+> +{
+> +       struct fsl_dma_chan *fsl_chan = (struct fsl_dma_chan *)data;
+> +       dma_addr_t stat;
+> +
+> +       stat = get_sr(fsl_chan);
+> +       dev_dbg(fsl_chan->device->dev, "event: channel %d, stat = 0x%x\n",
+> +                                               fsl_chan->id, stat);
+> +       set_sr(fsl_chan, stat);         /* Clear the event register */
+> +
+> +       stat &= ~(FSL_DMA_SR_CB | FSL_DMA_SR_CH);
+> +       if (!stat)
+> +               return IRQ_NONE;
+> +
+> +       /* If the link descriptor segment transfer finishes,
+> +        * we will recycle the used descriptor.
+> +        */
+> +       if (stat & FSL_DMA_SR_EOSI) {
+> +               dev_dbg(fsl_chan->device->dev, "event: End-of-segments INT\n");
+> +               dev_dbg(fsl_chan->device->dev, "event: clndar 0x%016llx, "
+> +                               "nlndar 0x%016llx\n", (u64)get_cdar(fsl_chan),
+> +                               (u64)get_ndar(fsl_chan));
+> +               stat &= ~FSL_DMA_SR_EOSI;
+> +               fsl_chan_ld_cleanup(fsl_chan, 1);
+> +       }
+> +
+> +       /* If it current transfer is the end-of-transfer,
+> +        * we should clear the Channel Start bit for
+> +        * prepare next transfer.
+> +        */
+> +       if (stat & (FSL_DMA_SR_EOLNI | FSL_DMA_SR_EOCDI)) {
+> +               dev_dbg(fsl_chan->device->dev, "event: End-of-link INT\n");
+> +               stat &= ~FSL_DMA_SR_EOLNI;
+> +               fsl_chan_xfer_ld_queue(fsl_chan);
+> +       }
+> +
+> +       if (stat)
+> +               dev_dbg(fsl_chan->device->dev, "event: unhandled sr 0x%02x\n",
+> +                                       stat);
+> +
+> +       dev_dbg(fsl_chan->device->dev, "event: Exit\n");
+> +       tasklet_hi_schedule(&dma_tasklet);
+> +       return IRQ_HANDLED;
+> +}
+
+This driver implements locking and callbacks inconsistently with how
+it is done in ioatdma and iop-adma.  The big changes are that all
+locks have been upgraded from 'spin_lock_bh' to 'spin_lock_irqsave',
+and async_tx callbacks can happen in irq context.  I would like to
+keep everything in bottom-half context to lessen the restrictions on
+what async_tx clients can perform in their callback routines.  What
+are the implications of moving 'fsl_chan_ld_cleanup' to the tasklet
+and changing the 'tasklet_hi_schedule' to 'tasklet_schedule'?
+
+[..]
+> +static struct dma_chan *of_find_dma_chan_by_phandle(phandle phandle)
+> +{
+> +       struct device_node *np;
+> +       struct dma_chan *chan;
+> +       struct fsl_dma_device *fdev;
+> +
+> +       np = of_find_node_by_phandle(phandle);
+> +       if (!np || !of_device_is_compatible(np->parent, "fsl,dma"))
+> +               return NULL;
+> +
+> +       fdev = dev_get_drvdata(&of_find_device_by_node(np->parent)->dev);
+> +
+> +       list_for_each_entry(chan, &fdev->common.channels, device_node)
+> +               if (to_of_device(to_fsl_chan(chan)->chan_dev)->node == np)
+> +                       return chan;
+> +       return NULL;
+> +}
+> +EXPORT_SYMBOL(of_find_dma_chan_by_phandle);
+
+This routine implies that there is a piece of code somewhere that
+wants to select which channels it can use.  A similar effect can be
+achieved by registering a dma_client with the dmaengine interface
+('dma_async_client_register').  Then when the client code makes a call
+to 'dma_async_client_chan_request' it receives a 'dma_event_callback'
+for each channel in the system.  It will also be asynchronously
+notified of channels entering and leaving the system.  The goal is to
+share a common infrastructure for channel management.
+
+> +
+> +static int __devinit of_fsl_dma_probe(struct of_device *dev,
+> +                       const struct of_device_id *match)
+> +{
+> +       int err;
+> +       unsigned int irq;
+> +       struct fsl_dma_device *fdev;
+> +
+> +       fdev = kzalloc(sizeof(struct fsl_dma_device), GFP_KERNEL);
+> +       if (!fdev) {
+> +               dev_err(&dev->dev, "No enough memory for 'priv'\n");
+> +               err = -ENOMEM;
+> +               goto err;
+> +       }
+> +       fdev->dev = &dev->dev;
+> +       INIT_LIST_HEAD(&fdev->common.channels);
+> +
+> +       /* get DMA controller register base */
+> +       err = of_address_to_resource(dev->node, 0, &fdev->reg);
+> +       if (err) {
+> +               dev_err(&dev->dev, "Can't get %s property 'reg'\n",
+> +                               dev->node->full_name);
+> +               goto err;
+> +       }
+> +
+> +       dev_info(&dev->dev, "Probe the Freescale DMA driver for %s "
+> +                       "controller at 0x%08x...\n",
+> +                       match->compatible, fdev->reg.start);
+> +       fdev->reg_base = ioremap(fdev->reg.start, fdev->reg.end
+> +                                               - fdev->reg.start + 1);
+> +
+> +       dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+> +       fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+> +       fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+> +       fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
+> +       fdev->common.device_is_tx_complete = fsl_dma_is_complete;
+> +       fdev->common.device_issue_pending = fsl_dma_memcpy_issue_pending;
+> +       fdev->common.device_dependency_added = fsl_dma_dependency_added;
+> +       fdev->common.dev = &dev->dev;
+> +
+If this driver adds:
+
+dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
+
+It will be able to take advantage of interrupt triggered callbacks in
+async_tx.  Without these changes async_tx will poll for the completion
+of each transaction.
+
+[..]
