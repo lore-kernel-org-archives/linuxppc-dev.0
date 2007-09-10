@@ -1,21 +1,18 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 11449DDEB6
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 02:09:09 +1000 (EST)
-In-Reply-To: <20070910142513.GB21670@ld0162-tx32.am.freescale.net>
-References: <20070907005803.GJ26079@localhost.localdomain>
-	<d16e868937a1f77cbf080754f5742ad9@bga.com>
-	<20070910142513.GB21670@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6c36dd35d7c6ee967223dc36ecf37d0c@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 08/10] bootwrapper: Add a firmware-independent "raw"
-	target.
-Date: Mon, 10 Sep 2007 11:09:27 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <apw@shadowen.org>
+Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 570BFDDE28
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 03:44:06 +1000 (EST)
+Date: Mon, 10 Sep 2007 18:43:34 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc4-mm1 -- powerpc per_cpu__cpu_sibling_map compile failure
+Message-ID: <20070910174334.GB30335@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070831215822.26e1432b.akpm@linux-foundation.org>
+Cc: mel@csn.ul.ie, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Am seeing the following compile error on all of my powerpc platforms:
 
-On Sep 10, 2007, at 9:25 AM, Scott Wood wrote:
+  CC      kernel/sched.o
+  kernel/sched.c: In function `cpu_to_phys_group':
+  kernel/sched.c:5937: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)
+  kernel/sched.c:5937: error: (Each undeclared identifier is reported only once
+  kernel/sched.c:5937: error: for each function it appears in.)
+  kernel/sched.c:5937: warning: type defaults to `int' in declaration of `type name'
+  kernel/sched.c:5937: error: invalid type argument of `unary *'
+  kernel/sched.c: In function `build_sched_domains':
+  kernel/sched.c:6172: error: `per_cpu__cpu_sibling_map' undeclared (first use in this function)
+  kernel/sched.c:6172: warning: type defaults to `int' in declaration of `type name'
+  kernel/sched.c:6172: error: invalid type argument of `unary *'
+  kernel/sched.c:6183: warning: type defaults to `int' in declaration of `type name'
+  kernel/sched.c:6183: error: invalid type argument of `unary *'
+  make[1]: *** [kernel/sched.o] Error 1
+  make: *** [kernel] Error 2
 
->>>> +static inline void disable_irq(void)
->>>> +{
->>>> +       int dummy;
->>>> +       asm volatile("mfmsr %0; rlwinm %0, %0, 0, ~(1<<15); mtmsr 
->>>> %0"
->>>> :
->>>> +                    "=r" (dummy) : : "memory");
->>>> +}
->>
->> This will fail (mtmsr illegal instruction) on 64 bit processors that 
->> do
->> not implement the bridge facility (POWER4, 5, 6, PPC970, ...)
->
-> Ouch...  And given the One wrapper.a To Rule Them All mandate, we can't
-> ifdef it here, but instead must make separate platform files. :-P
-
-Rather than a seperate c file, I think this should go in your 
-_zimage_start, renaming fixed-head.S.
-
-milton
+-apw
