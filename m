@@ -1,19 +1,38 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 5B0C6DDE0C
+Return-Path: <MBenedict@twacs.com>
+Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3573EDDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Sep 2007 04:28:15 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1824311wag
+	Tue, 11 Sep 2007 04:51:44 +1000 (EST)
+Received: from outbound1-fra.bigfish.com (localhost.localdomain [127.0.0.1])
+	by outbound1-fra-R.bigfish.com (Postfix) with ESMTP id 128928E3D36
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 11:28:14 -0700 (PDT)
-Message-ID: <fa686aa40709101128q557f51c9n24fd5404bb1d51cb@mail.gmail.com>
-Date: Mon, 10 Sep 2007 12:28:14 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>, linuxppc-embedded@ozlabs.org
-Subject: Need confirmation on MP8349 configuration problem
+	Mon, 10 Sep 2007 18:51:35 +0000 (UTC)
+Received: from mail26-fra-R.bigfish.com (unknown [10.4.252.3])
+	by outbound1-fra.bigfish.com (Postfix) with ESMTP id 10A93570001
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 18:51:35 +0000 (UTC)
+Received: from mail26-fra (localhost.localdomain [127.0.0.1])
+	by mail26-fra-R.bigfish.com (Postfix) with ESMTP id 73ADE408589
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 18:51:41 +0000 (UTC)
+Received: from mail.twacs.com (unknown [68.89.149.4])
+	by mail26-fra.bigfish.com (Postfix) with ESMTP id C29F1D008B
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 18:51:40 +0000 (UTC)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: futex priority based wakeup
+Date: Mon, 10 Sep 2007 13:51:32 -0500
+Message-ID: <BAF8B1E0BB28024A90895E746A3B610D1C2BE3@twx-exch01.twacs.local>
+In-Reply-To: <000e01c7f177$05ab1990$3a0d10ac@Radstone.Local>
+References: <BAF8B1E0BB28024A90895E746A3B610D1C2BD7@twx-exch01.twacs.local>
+	<000e01c7f177$05ab1990$3a0d10ac@Radstone.Local>
+From: "Benedict, Michael" <MBenedict@twacs.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +43,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hey Timur,
+Ilya Lipovsky wrote:
+> Yes, I am uncertain. If it isn't a major headache, I think
+> you can try the
+> newest version (I think it's 2.6.1) and see if you get some
+> resolution.=20
+<snip>
+> Please do share the outcome!!
+>=20
+> -Ilya
 
-As we talked about on IRC, I'm having problems getting the BDI-2000 to
-configure the MPC8349 when CFG_RESET_SOURCE is set to a hard coded
-config (Like 100 or 111).
+No luck with 2.6.1:
 
-Can you please confirm what I'm seeing on one of your boards?
+~ $ /lib/libc.so.6
+GNU C Library stable release version 2.6.1, by Roland McGrath et al.
+Copyright (C) 2007 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.
+There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.
+Compiled by GNU CC version 4.1.1.
+Compiled on a Linux 2.6.12 system on 2007-09-10.
+Available extensions:
+        crypt add-on version 2.1 by Michael Glad and others
+        Native POSIX Threads Library by Ulrich Drepper et al
+        BIND-8.2.3-T5B
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/libc/bugs.html>.
+~ $ ./bar
+unimportant waiting for mutex
+important waiting for mutex
+main unlocking mutex
+unimportant got mutex!
+important got mutex!
 
-Steps to reproduce:
 
-1. Set BDI config to override default RCW and initialize FLASH/RAM
-2. Power up board and verify that BDI can read DDR and FLASH (using md commands)
-3. Power down and remove jumpers A, B & C.
-4. Power up and read DDR/FLASH again.  At this point I get '# SAP:
-read access failed' from the BDI-2000.
-
-Thanks,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+I will continue investigating and follow up on this thread if I come
+across anything.
+	-Michael
