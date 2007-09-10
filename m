@@ -1,20 +1,42 @@
-Return-Path: <silvio.fricke@googlemail.com>
-Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.236])
-	by ozlabs.org (Postfix) with ESMTP id A526DDDE06
+Return-Path: <nschichan@freebox.fr>
+Received: from smtp4-g19.free.fr (smtp4-g19.free.fr [212.27.42.30])
+	by ozlabs.org (Postfix) with ESMTP id 67B05DDDCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 19:03:15 +1000 (EST)
-Received: by hu-out-0506.google.com with SMTP id 24so376494hud
+	Mon, 10 Sep 2007 23:48:35 +1000 (EST)
+Received: from smtp4-g19.free.fr (localhost.localdomain [127.0.0.1])
+	by smtp4-g19.free.fr (Postfix) with ESMTP id 986A86F525
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 02:03:13 -0700 (PDT)
-Date: Mon, 10 Sep 2007 11:03:05 +0200
+	Mon, 10 Sep 2007 15:48:33 +0200 (CEST)
+Received: from bobafett.staff.proxad.net (bobafett.staff.proxad.net
+	[213.228.1.121])
+	by smtp4-g19.free.fr (Postfix) with ESMTP id 8B6FB6F515
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 15:48:33 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by bobafett.staff.proxad.net (Postfix) with ESMTP id 146E02868E
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 15:48:29 +0200 (CEST)
+Received: from bobafett.staff.proxad.net ([127.0.0.1])
+	by localhost (bobafett.staff.proxad.net [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with LMTP id jLQFhJsc8sqc for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 15:48:28 +0200 (CEST)
+Received: from nschichan.priv.staff.proxad.net
+	(nschichan.priv.staff.proxad.net [172.18.3.120])
+	by bobafett.staff.proxad.net (Postfix) with ESMTP id 20B33287A3
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 15:48:28 +0200 (CEST)
+From: Nicolas Schichan <nschichan@freebox.fr>
 To: linuxppc-embedded@ozlabs.org
-Subject: Interrupt-problem mpc5200
-Message-ID: <20070910090305.GG11807@sfrouter>
+Subject: Re: random panic and freezes on mpc8349 itx
+Date: Mon, 10 Sep 2007 15:48:27 +0200
+References: <200709071405.06500.nschichan@freebox.fr>
+	<BAF8B1E0BB28024A90895E746A3B610D1C2BDF@twx-exch01.twacs.local>
+In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BDF@twx-exch01.twacs.local>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="JkW1gnuWHDypiMFO"
-From: "S. Fricke" <silvio.fricke@googlemail.com>
-Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709101548.27882.nschichan@freebox.fr>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,74 +47,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Friday 07 September 2007 23:16:35 Benedict, Michael wrote:
+> What version of U-boot are you using?
 
---JkW1gnuWHDypiMFO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Until recently I was using the u-boot-1.2.0 available on the 
+ftp://ftp.denx.de/pub/u-boot/ apparently there since january 2007.
 
-Hello all.
+I now use the git tree of today, and everything seems to work fine. I dit not 
+notice any freeze or random panic. "stress --cpu 256" is running on the board 
+and after 10 minutes it is still alive.
 
-What are the steps to configure an MPC500B-Board to react on an IRQ (2)?
+Thank you for the hint :)
 
-I have written a test-driver with this code-snippets, but the prozessor
-hangs when loading the driver.
+Regards,
 
-my __init-function looks like:
-
-static int __init mod_init( void )=20
-{
-    volatile static struct mpc52xx_intr __iomem *intr;
-    u32 intr_ctrl;
-
-    // ...
-
-    printk( "intmod.ko: interrupt init ");
-    if (request_irq(MPC52xx_IRQ2, intmod_isr, IRQF_SHARED , "intmod",
-                INTMOD_IRQ_BOARD) =3D=3D -EBUSY)
-        printk("KO\n");
-    else
-        printk("OK\n");
-
-    intr =3D ioremap(MPC52xx_MBAR+MPC52xx_INTR_OFFSET, MPC52xx_INTR_SIZE);
-
-    // read - modify - write
-    intr_ctrl =3D in_be32(&intr->ctrl);
-    intr_ctrl &=3D 0xfff3ffff;
-    intr_ctrl |=3D 0x00080200;
-    out_be32(&intr->ctrl, intr_ctrl);       // ERROR!
-
-    if(intr) iounmap(intr);
-
-    // ...
-}
-
-On the Line, marked with "ERROR!" the prozessor hangs and the kernel drops
-out.
-
-TIA: Silvio
-
-
-Mit freundlichen Gruessen
-Silvio Fricke
-
---=20
--- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
-   Diplom-Informatiker (FH)
-   Linux-Entwicklung                       JABBER:      fricke@jabber.org
-----------------------------------------------------------------------------
-
-
---JkW1gnuWHDypiMFO
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG5QhJ8WEBxatmn40RAnGKAKDDtcPFaDbIROqOOdimcaRpfKUvLwCeJkR6
-tuhGrnt83hz+fvWSyMO19ao=
-=9nZv
------END PGP SIGNATURE-----
-
---JkW1gnuWHDypiMFO--
+-- 
+Nicolas Schichan
