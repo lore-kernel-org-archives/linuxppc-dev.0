@@ -1,42 +1,32 @@
-Return-Path: <nschichan@freebox.fr>
-Received: from smtp4-g19.free.fr (smtp4-g19.free.fr [212.27.42.30])
-	by ozlabs.org (Postfix) with ESMTP id 67B05DDDCA
+Return-Path: <Hesam.Kohanteb@Sun.COM>
+Received: from sca-es-mail-1.sun.com (sca-es-mail-1.Sun.COM [192.18.43.132])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C93D0DDE47
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 23:48:35 +1000 (EST)
-Received: from smtp4-g19.free.fr (localhost.localdomain [127.0.0.1])
-	by smtp4-g19.free.fr (Postfix) with ESMTP id 986A86F525
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 15:48:33 +0200 (CEST)
-Received: from bobafett.staff.proxad.net (bobafett.staff.proxad.net
-	[213.228.1.121])
-	by smtp4-g19.free.fr (Postfix) with ESMTP id 8B6FB6F515
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 15:48:33 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by bobafett.staff.proxad.net (Postfix) with ESMTP id 146E02868E
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 15:48:29 +0200 (CEST)
-Received: from bobafett.staff.proxad.net ([127.0.0.1])
-	by localhost (bobafett.staff.proxad.net [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with LMTP id jLQFhJsc8sqc for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 15:48:28 +0200 (CEST)
-Received: from nschichan.priv.staff.proxad.net
-	(nschichan.priv.staff.proxad.net [172.18.3.120])
-	by bobafett.staff.proxad.net (Postfix) with ESMTP id 20B33287A3
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 15:48:28 +0200 (CEST)
-From: Nicolas Schichan <nschichan@freebox.fr>
+	Tue, 11 Sep 2007 02:37:17 +1000 (EST)
+Received: from fe-sfbay-09.sun.com ([192.18.43.129])
+	by sca-es-mail-1.sun.com (8.13.7+Sun/8.12.9) with ESMTP id
+	l8AGGovK028408 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 09:16:50 -0700 (PDT)
+Received: from conversion-daemon.fe-sfbay-09.sun.com by fe-sfbay-09.sun.com
+	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
+	id <0JO500501UC1SW00@fe-sfbay-09.sun.com>
+	(original mail from Hesam.Kohanteb@Sun.COM) for
+	linuxppc-embedded@ozlabs.org; Mon, 10 Sep 2007 09:16:50 -0700 (PDT)
+Received: from [129.145.155.189] by fe-sfbay-09.sun.com
+	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
+	with ESMTPSA id <0JO500DDJUJUQX80@fe-sfbay-09.sun.com> for
+	linuxppc-embedded@ozlabs.org; Mon, 10 Sep 2007 09:16:43 -0700 (PDT)
+Date: Mon, 10 Sep 2007 09:16:42 -0700
+From: Hesam Kohanteb <Hesam.Kohanteb@Sun.COM>
+Subject: SPI driver?
+Sender: Hesam.Kohanteb@Sun.COM
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: random panic and freezes on mpc8349 itx
-Date: Mon, 10 Sep 2007 15:48:27 +0200
-References: <200709071405.06500.nschichan@freebox.fr>
-	<BAF8B1E0BB28024A90895E746A3B610D1C2BDF@twx-exch01.twacs.local>
-In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BDF@twx-exch01.twacs.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709101548.27882.nschichan@freebox.fr>
+Message-id: <46E56DEA.3060205@Sun.COM>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Reply-To: Hesam.Kohanteb@Sun.COM
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -47,19 +37,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 07 September 2007 23:16:35 Benedict, Michael wrote:
-> What version of U-boot are you using?
+We need a Linux based SPI driver for MPC885. Do you know where can I 
+possibly find the code.
 
-Until recently I was using the u-boot-1.2.0 available on the 
-ftp://ftp.denx.de/pub/u-boot/ apparently there since january 2007.
-
-I now use the git tree of today, and everything seems to work fine. I dit not 
-notice any freeze or random panic. "stress --cpu 256" is running on the board 
-and after 10 minutes it is still alive.
-
-Thank you for the hint :)
-
-Regards,
+Regards. --Hesam
 
 -- 
-Nicolas Schichan
+Hesam Yehuda Kohanteb
+(Netra Systems & Networking), 
+M/S USCA12-216  4120 Network Circle
+Santa Clara, CA  95054
+(W) 408-276-7329 X17329, Fax 408-276-4552
