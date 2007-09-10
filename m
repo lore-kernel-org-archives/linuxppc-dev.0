@@ -1,22 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CE7F6DDE3A
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 05:45:23 +1000 (EST)
-Message-ID: <46E59E9E.30707@freescale.com>
-Date: Mon, 10 Sep 2007 14:44:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 02/10] cpm2: Fix off-by-one error in setbrg().
-References: <20070905192910.GA32462@ld0162-tx32.am.freescale.net>
-	<EDF5D1CF-E423-449F-A435-9BD044206F4F@kernel.crashing.org>
-In-Reply-To: <EDF5D1CF-E423-449F-A435-9BD044206F4F@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 25E20DDE2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 06:40:03 +1000 (EST)
+Subject: Re: "atomic" 64-bit math on 32-bit ppc's?
+From: Jon Loeliger <jdl@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <b976a70bd1942da7e31b9a409b2de569@kernel.crashing.org>
+References: <46DD3CE2.4060301@genesi-usa.com> <20070904113937.GA3994@iram.es>
+	<20070904184810.GG18280@ld0162-tx32.am.freescale.net>
+	<e1d766f8390851a75a6fe83800484ab7@kernel.crashing.org>
+	<20070906134354.GA16153@ld0162-tx32.am.freescale.net>
+	<b976a70bd1942da7e31b9a409b2de569@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1189456795.25425.93.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Mon, 10 Sep 2007 15:39:55 -0500
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Thu, 2007-09-06 at 09:09, Segher Boessenkool wrote:
+> >> Either way, it's a bit late to change this, no?
+> >
+> > Sure, I was just whining due to having been bitten by this sort of bug 
+> > in
+> > the past. :-)
 > 
-> On Sep 5, 2007, at 2:29 PM, Scott Wood wrote:
-> 
->> The hardware adds one to the BRG value to get the divider, so it must
->> be subtracted by software.  Without this patch, characters will 
->> occasionally
->> be corrupted.
->>
->> Signed-off-by: Scott Wood <scottwood@freescale.com>
->> ---
->>  arch/powerpc/sysdev/cpm2_common.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> What was this patch against?
-> 
-> I ended up applying it by hand for 2.6.23 since its fixing a bug..  But, 
-> I'm wondering if there was a base set of changes this patchset was against?
+> Write a song about it, it's therapeutical it seems!
 
-It was against head-of-your-tree as of the time I sent it.
+One of these things is not like the others,
+One of these things just doesn't belong,
+Can you tell which thing is not like the others 
+By the time I finish my song?
 
--Scott
+Never mind.
+
+jdl
