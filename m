@@ -1,32 +1,23 @@
-Return-Path: <Hesam.Kohanteb@Sun.COM>
-Received: from sca-es-mail-1.sun.com (sca-es-mail-1.Sun.COM [192.18.43.132])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C93D0DDE47
+Return-Path: <ivica.babarovic@asist.si>
+Received: from mx1.telemach.net (mx1.telemach.net [213.143.65.10])
+	by ozlabs.org (Postfix) with ESMTP id 8B7B3DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Sep 2007 02:37:17 +1000 (EST)
-Received: from fe-sfbay-09.sun.com ([192.18.43.129])
-	by sca-es-mail-1.sun.com (8.13.7+Sun/8.12.9) with ESMTP id
-	l8AGGovK028408 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Sep 2007 09:16:50 -0700 (PDT)
-Received: from conversion-daemon.fe-sfbay-09.sun.com by fe-sfbay-09.sun.com
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	id <0JO500501UC1SW00@fe-sfbay-09.sun.com>
-	(original mail from Hesam.Kohanteb@Sun.COM) for
-	linuxppc-embedded@ozlabs.org; Mon, 10 Sep 2007 09:16:50 -0700 (PDT)
-Received: from [129.145.155.189] by fe-sfbay-09.sun.com
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	with ESMTPSA id <0JO500DDJUJUQX80@fe-sfbay-09.sun.com> for
-	linuxppc-embedded@ozlabs.org; Mon, 10 Sep 2007 09:16:43 -0700 (PDT)
-Date: Mon, 10 Sep 2007 09:16:42 -0700
-From: Hesam Kohanteb <Hesam.Kohanteb@Sun.COM>
-Subject: SPI driver?
-Sender: Hesam.Kohanteb@Sun.COM
+	Tue, 11 Sep 2007 03:35:20 +1000 (EST)
+Received: from linux.asist (tm.213.143.88.152.dc.telemach.net [213.143.88.152])
+	by mx1.telemach.net (Postfix) with ESMTP id F076A6641D
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 19:10:40 +0200 (CEST)
+Received: from [192.168.254.58] (unknown [192.168.254.58])
+	by linux.asist (Postfix) with ESMTP id 4D11771C1B4
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 10 Sep 2007 19:10:53 +0200 (CEST)
+Message-ID: <46E57A9D.2020506@asist.si>
+Date: Mon, 10 Sep 2007 19:10:53 +0200
+From: Babarovic Ivica <ivica.babarovic@asist.si>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Message-id: <46E56DEA.3060205@Sun.COM>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=us-ascii
-Reply-To: Hesam.Kohanteb@Sun.COM
+Subject: Which 2.6 kernel for MPC5200
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,14 +28,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We need a Linux based SPI driver for MPC885. Do you know where can I 
-possibly find the code.
+Hi!
 
-Regards. --Hesam
+What kernel should I get/pull for MPC5200 clone board.
+I've been away from coding on mpc5200 for quite some time now.
+I've read some archives from ML.
+Git repo on Sylvain Munauts url:
+http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.gitpage
+isn't working. Nothing on http://*git*.secretlab.ca/cgi-bin/*gitweb*.cgi
+<http://git.secretlab.ca/cgi-bin/gitweb.cgi> to.
 
--- 
-Hesam Yehuda Kohanteb
-(Netra Systems & Networking), 
-M/S USCA12-216  4120 Network Circle
-Santa Clara, CA  95054
-(W) 408-276-7329 X17329, Fax 408-276-4552
+I've pulled the sources from kernel.org git server.
+git clone
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+linux-2.6-mpc52xx
+
+How recent are these sources?
+
+Regards,
+I.
