@@ -1,26 +1,23 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <randy.dunlap@oracle.com>
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 28554DDEF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 00:20:32 +1000 (EST)
-Date: Tue, 11 Sep 2007 09:20:14 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3B3F2DDEFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 00:21:39 +1000 (EST)
+Message-ID: <46E6A419.9070101@oracle.com>
+Date: Tue, 11 Sep 2007 07:20:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+MIME-Version: 1.0
 To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx
 	processors.
-Message-ID: <20070911142014.GG1932@ld0162-tx32.am.freescale.net>
 References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	<BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com>
-	<46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com, "Nelson,
-	Shannon" <shannon.nelson@intel.com>, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+	<20070907085845.54dc88f8.randy.dunlap@oracle.com>
+	<46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,19 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2007 at 06:10:53PM +0800, Zhang Wei-r63237 wrote:
-> > >+
-> > >+	fsl_dma_memcpy_issue_pending(chan);
-> > >+	while (fsl_dma_is_complete(chan, cookie, NULL, NULL)
-> > >+			!= DMA_SUCCESS);
-> > 
-> > Again, is it possible to hang your thread here?
-> > 
-> > [...]
+Zhang Wei-r63237 wrote:
+
+>>> +/**
+>>> + * fsl_chan_xfer_ld_queue -- Transfer the link descriptors 
+>> in channel
+>>> + *                           ld_queue.
+>> The function's "short description" (unfortunately) must be on only one
+>> line.  E.g.:
+>>
+>>  * fsl_chan_xfer_ld_queue - Transfer link descriptors in 
+>> channel ld_queue.
+>>
 > 
-> I'll add msleep here.
+> How about it's length greater than 80?
 
-I think what was being sought was a timout, causing the test to return
-failure.
+If it's close to 80+, you can just leave it like that.
+If it's much longer, you can use this format:
 
--Scott
+/**
+ * function_name - short description
+ * @parameters: prm description
+ *
+ * Longer
+ *      function
+ *             description.
+ */
+
+
+
+Thanks,
+~Randy
