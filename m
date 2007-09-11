@@ -1,23 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9402BDDE9B
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.236])
+	by ozlabs.org (Postfix) with ESMTP id BBE98DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Sep 2007 22:49:22 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IV5B8-0004yF-Fb
-	for linuxppc-embedded@ozlabs.org; Tue, 11 Sep 2007 05:49:18 -0700
-Message-ID: <12613692.post@talk.nabble.com>
-Date: Tue, 11 Sep 2007 05:49:18 -0700 (PDT)
-From: WITTROCK <jwittrock@maginst.com>
+	Tue, 11 Sep 2007 23:48:14 +1000 (EST)
+Received: by hu-out-0506.google.com with SMTP id 24so586580hud
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Sep 2007 06:48:13 -0700 (PDT)
+Date: Tue, 11 Sep 2007 15:48:08 +0200
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: Interrupt-problem mpc5200
-In-Reply-To: <20070910090305.GG11807@sfrouter>
+Message-ID: <20070911134808.GK11807@sfrouter>
+References: <20070910090305.GG11807@sfrouter> <12613692.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <20070910090305.GG11807@sfrouter>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/rDaUNvWv5XYRSKj"
+In-Reply-To: <12613692.post@talk.nabble.com>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,81 +28,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hello,
+--/rDaUNvWv5XYRSKj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Is it possible that this call failed?
-intr = ioremap(MPC52xx_MBAR+MPC52xx_INTR_OFFSET, MPC52xx_INTR_SIZE); 
+>=20
+> Hello,
+>=20
+> Is it possible that this call failed?
+> intr =3D ioremap(MPC52xx_MBAR+MPC52xx_INTR_OFFSET, MPC52xx_INTR_SIZE);=20
 
-Maybe intr is invalid at this point?
-out_be32(&intr->ctrl, intr_ctrl);       // ERROR!
+That call did not fail, but you are right
+I have forgotten this snipped
+
+    if(!intr) {
+        panic(__FILE__ ": mpc52xx-pic - MAP failed");
+    }
+
+Thank you!
+
+Silvio
 
 
-Regards,
-WITTROCK
+Mit freundlichen Gruessen
+Silvio Fricke
+
+--=20
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)
+   Linux-Entwicklung                       JABBER:      fricke@jabber.org
+----------------------------------------------------------------------------
 
 
-S. Fricke wrote:
-> 
-> Hello all.
-> 
-> What are the steps to configure an MPC500B-Board to react on an IRQ (2)?
-> 
-> I have written a test-driver with this code-snippets, but the prozessor
-> hangs when loading the driver.
-> 
-> my __init-function looks like:
-> 
-> static int __init mod_init( void ) 
-> {
->     volatile static struct mpc52xx_intr __iomem *intr;
->     u32 intr_ctrl;
-> 
->     // ...
-> 
->     printk( "intmod.ko: interrupt init ");
->     if (request_irq(MPC52xx_IRQ2, intmod_isr, IRQF_SHARED , "intmod",
->                 INTMOD_IRQ_BOARD) == -EBUSY)
->         printk("KO\n");
->     else
->         printk("OK\n");
-> 
->     intr = ioremap(MPC52xx_MBAR+MPC52xx_INTR_OFFSET, MPC52xx_INTR_SIZE);
-> 
->     // read - modify - write
->     intr_ctrl = in_be32(&intr->ctrl);
->     intr_ctrl &= 0xfff3ffff;
->     intr_ctrl |= 0x00080200;
->     out_be32(&intr->ctrl, intr_ctrl);       // ERROR!
-> 
->     if(intr) iounmap(intr);
-> 
->     // ...
-> }
-> 
-> On the Line, marked with "ERROR!" the prozessor hangs and the kernel drops
-> out.
-> 
-> TIA: Silvio
-> 
-> 
-> Mit freundlichen Gruessen
-> Silvio Fricke
-> 
-> -- 
-> -- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com
-> --
->    Diplom-Informatiker (FH)
->    Linux-Entwicklung                       JABBER:      fricke@jabber.org
-> ----------------------------------------------------------------------------
-> 
-> 
->  
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+--/rDaUNvWv5XYRSKj
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
--- 
-View this message in context: http://www.nabble.com/Interrupt-problem-mpc5200-tf4413834.html#a12613692
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG5pyY8WEBxatmn40RAkwKAJsGhdkickTt9ZWmqR2p/RslRrgdFwCfQGjS
+9OWYOsNiQuK3f1WIX1FknrM=
+=rAFE
+-----END PGP SIGNATURE-----
+
+--/rDaUNvWv5XYRSKj--
