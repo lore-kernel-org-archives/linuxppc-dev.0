@@ -1,24 +1,21 @@
-Return-Path: <shannon.nelson@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
-	by ozlabs.org (Postfix) with ESMTP id DEBACDDF13
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:16:27 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx
-	processors.
-Date: Tue, 11 Sep 2007 08:15:30 -0700
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03023D9E@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20070911142014.GG1932@ld0162-tx32.am.freescale.net>
-References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	<BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com>
-	<46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
-	<20070911142014.GG1932@ld0162-tx32.am.freescale.net>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Scott Wood" <scottwood@freescale.com>,
-	"Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, "Williams, Dan J" <dan.j.williams@intel.com>,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BFD43DDEBC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:45:43 +1000 (EST)
+In-Reply-To: <20070911135717.GD1932@ld0162-tx32.am.freescale.net>
+References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
+	<1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
+	<20070911135717.GD1932@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
+Date: Tue, 11 Sep 2007 10:48:26 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From: Scott Wood [mailto:scottwood@freescale.com]=20
->Sent: Tuesday, September 11, 2007 7:20 AM
->To: Zhang Wei-r63237
->Cc: Nelson, Shannon; paulus@samba.org;=20
->linuxppc-dev@ozlabs.org; Williams, Dan J; linux-kernel@vger.kernel.org
->Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale=20
->MPC85xx processors.
->
->On Tue, Sep 11, 2007 at 06:10:53PM +0800, Zhang Wei-r63237 wrote:
->> > >+
->> > >+	fsl_dma_memcpy_issue_pending(chan);
->> > >+	while (fsl_dma_is_complete(chan, cookie, NULL, NULL)
->> > >+			!=3D DMA_SUCCESS);
->> >=20
->> > Again, is it possible to hang your thread here?
->> >=20
->> > [...]
->>=20
->> I'll add msleep here.
->
->I think what was being sought was a timout, causing the test to return
->failure.
->
->-Scott
->
 
-Either a timeout to stop the polling, or msleep() followed by a single
-call to fsl_dma_is_complete().  However, using the msleep() method is
-likely to be kinder to the rest of the kernel than polling for very
-long.
+On Sep 11, 2007, at 8:57 AM, Scott Wood wrote:
 
-sln
+> On Tue, Sep 11, 2007 at 12:35:56AM -0500, Kumar Gala wrote:
+>>
+>> On Aug 28, 2007, at 3:16 PM, Scott Wood wrote:
+>>
+>>> 1. Fix get_immrbase() to use ranges, rather than reg.
+>>>
+>>> It is not always the case that the SoC's first reg property points
+>>> to the beginning of the entire SoC block.
+>>
+>> when is this true?
+>
+> The intent was to eliminate the need for the reg property in /soc.
+>
+>> Upon further testing this breaks some platforms.  I don't think
+>> assuming the first range entry is mapping to the SOC register space
+>> is a good idea.
+>
+> Let me guess, 8544ds and 8548cds?  Because of the same recent ranges
+> changes that we were arguing about in another thread? :-P
+
+Yep.  However, after some discussion with Segher on this for 83xx/ 
+85xx/86xx I think we want to keep the reg prop and have it cover the  
+initial soc registers [size on 83xx is 0x100, size on 85xx/86xx would  
+be 0x1000].
+
+What we need is a saner way to determine immr on 82xx & 8xx.   
+Segher's rule is that a given "reg" prop shouldn't overlap w/any  
+other reg.  We currently violate that on 8xx.  Not as clear on 82xx  
+if we do that.
+
+I'm thinking on 8xx we should move to grabbing a top level compat  
+value (mpc8xx) and use the SPRN_IMMR to set immrbase. On mpc82xx-pq2  
+we could add a immr "device" to search for.
+
+- k
