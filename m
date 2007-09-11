@@ -2,24 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E6332DDE09
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 03:56:36 +1000 (EST)
-In-Reply-To: <46E6D4D4.2050600@freescale.com>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141821.GA32545@lixom.net>
-	<230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
-	<20070911155558.GA10743@lixom.net>
-	<11B85E70-D643-4013-A9B3-59CD76F9D7AB@kernel.crashing.org>
-	<20070911171521.GB10743@lixom.net> <46E6CE9A.8080402@freescale.com>
-	<20070911173308.GA11951@lixom.net> <46E6D4D4.2050600@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 75D09DDEFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 03:57:57 +1000 (EST)
+In-Reply-To: <20070911172000.GC10743@lixom.net>
+References: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
+	<20070911172000.GC10743@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C1272D92-42A0-43E4-9AE0-12161178AAA2@kernel.crashing.org>
+Message-Id: <9C9F1918-1B55-4426-8138-842B9AAA5BD5@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Tue, 11 Sep 2007 12:59:22 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Fix interrupt routing and setup of ULI M1575 on
+	FSL boards
+Date: Tue, 11 Sep 2007 13:00:47 -0500
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,32 +26,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 11, 2007, at 12:48 PM, Scott Wood wrote:
+On Sep 11, 2007, at 12:20 PM, Olof Johansson wrote:
 
-> Olof Johansson wrote:
->> On Tue, Sep 11, 2007 at 12:21:30PM -0500, Scott Wood wrote:
->>> Olof Johansson wrote:
->>>> On Tue, Sep 11, 2007 at 11:00:28AM -0500, Kumar Gala wrote:
->>>>> well the ifdefs are orthogonal.  We don't have a way of knowing
->>>>> primary from the device tree today.
->>>> How about something like "fsl,primary-phb" in the bus device  
->>>> node? I don't
->>>> know, maybe it's already been discussed and turned down for some  
->>>> reason.
->>> It's more of a Linux issue than anything to do with the hardware.
+> On Fri, Aug 17, 2007 at 12:03:48AM -0500, Kumar Gala wrote:
 >>
->> That doesn't stop firmware from telling linux which bus is the  
->> primary
->> one on the system to help out.
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>>  arch/powerpc/boot/dts/mpc8544ds.dts        |   88 ++++------
+>>  arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  114 +++----------
+>>  arch/powerpc/platforms/85xx/Kconfig        |    1 +
+>>  arch/powerpc/platforms/85xx/mpc8544_ds.c   |  214 + 
+>> +----------------------
+>>  arch/powerpc/platforms/86xx/Kconfig        |    1 +
+>>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  224 + 
+>> +-----------------------
+>>  arch/powerpc/platforms/Kconfig             |    8 +
+>>  arch/powerpc/platforms/Makefile            |    3 +
+>>  arch/powerpc/platforms/fsl_uli1575.c       |  255 ++++++++++++++++ 
+>> ++++++++++++
+>>  9 files changed, 363 insertions(+), 545 deletions(-)
+>>  create mode 100644 arch/powerpc/platforms/fsl_uli1575.c
+>>
 >
-> The entire notion of a "primary" PCI bus is due to a Linux flaw.
+> Since when do we add code directly under powerpc/platforms? Isn't that
+> what we have sysdev for?
 >
-> If we did put it in the device tree, it should be something like
-> "linux,primary-phb".  But since Linux can tell from the node's  
-> children,
-> there doesn't seem to be much point.
+> I know this is already picked up, but I just noticed it when  
+> looking at
+> Kumar's 8572 patch. :-(
 
-Once someone rights code to do this I'm happy to change over.  I took  
-this model of explicitly knowing the primary PHB from the pmac code.
+I put it in platforms since it was related to the boards not the  
+chips.  We can go around about what sysdev actual means, but I'm  
+using the assumption that its for processor & bridges (for discrete  
+processors 10x, mv640x0, etc).  Things that are board specific like  
+the ULI I'm putting under platforms/
 
 - k
