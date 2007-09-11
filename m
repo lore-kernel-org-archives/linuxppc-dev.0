@@ -1,23 +1,24 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id F3F14DDF11
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 00:51:53 +1000 (EST)
-Date: Tue, 11 Sep 2007 09:51:31 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 08/12] IB/ehca: Replace get_paca()->paca_index by the more
-	portable smp_processor_id()
-Message-ID: <20070911145131.GN32388@localdomain>
-References: <200709111518.26276.fenkes@de.ibm.com>
-	<200709111533.14333.fenkes@de.ibm.com>
+Return-Path: <shannon.nelson@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id DEBACDDF13
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:16:27 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200709111533.14333.fenkes@de.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx
+	processors.
+Date: Tue, 11 Sep 2007 08:15:30 -0700
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C03023D9E@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20070911142014.GG1932@ld0162-tx32.am.freescale.net>
+References: <11891624582950-git-send-email-wei.zhang@freescale.com>
+	<BAE9DCEF64577A439B3A37F36F9B691C02FF08A1@orsmsx418.amr.corp.intel.com>
+	<46B96294322F7D458F9648B60E15112C85D61E@zch01exm26.fsl.freescale.net>
+	<20070911142014.GG1932@ld0162-tx32.am.freescale.net>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Scott Wood" <scottwood@freescale.com>,
+	"Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, "Williams, Dan J" <dan.j.williams@intel.com>,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+>From: Scott Wood [mailto:scottwood@freescale.com]=20
+>Sent: Tuesday, September 11, 2007 7:20 AM
+>To: Zhang Wei-r63237
+>Cc: Nelson, Shannon; paulus@samba.org;=20
+>linuxppc-dev@ozlabs.org; Williams, Dan J; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale=20
+>MPC85xx processors.
+>
+>On Tue, Sep 11, 2007 at 06:10:53PM +0800, Zhang Wei-r63237 wrote:
+>> > >+
+>> > >+	fsl_dma_memcpy_issue_pending(chan);
+>> > >+	while (fsl_dma_is_complete(chan, cookie, NULL, NULL)
+>> > >+			!=3D DMA_SUCCESS);
+>> >=20
+>> > Again, is it possible to hang your thread here?
+>> >=20
+>> > [...]
+>>=20
+>> I'll add msleep here.
+>
+>I think what was being sought was a timout, causing the test to return
+>failure.
+>
+>-Scott
+>
 
-Joachim Fenkes wrote:
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-> ---
->  drivers/infiniband/hw/ehca/ehca_tools.h |   14 +++++++-------
->  1 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
-> index f9b264b..863f972 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_tools.h
-> +++ b/drivers/infiniband/hw/ehca/ehca_tools.h
-> @@ -73,37 +73,37 @@ extern int ehca_debug_level;
->  		if (unlikely(ehca_debug_level)) \
->  			dev_printk(KERN_DEBUG, (ib_dev)->dma_device, \
->  				   "PU%04x EHCA_DBG:%s " format "\n", \
-> -				   get_paca()->paca_index, __FUNCTION__, \
-> +				   smp_processor_id(), __FUNCTION__, \
->  				   ## arg); \
->  	} while (0)
->  
->  #define ehca_info(ib_dev, format, arg...) \
->  	dev_info((ib_dev)->dma_device, "PU%04x EHCA_INFO:%s " format "\n", \
-> -		 get_paca()->paca_index, __FUNCTION__, ## arg)
-> +		 smp_processor_id(), __FUNCTION__, ## arg)
->  
->  #define ehca_warn(ib_dev, format, arg...) \
->  	dev_warn((ib_dev)->dma_device, "PU%04x EHCA_WARN:%s " format "\n", \
-> -		 get_paca()->paca_index, __FUNCTION__, ## arg)
-> +		 smp_processor_id(), __FUNCTION__, ## arg)
->  
->  #define ehca_err(ib_dev, format, arg...) \
->  	dev_err((ib_dev)->dma_device, "PU%04x EHCA_ERR:%s " format "\n", \
-> -		get_paca()->paca_index, __FUNCTION__, ## arg)
-> +		smp_processor_id(), __FUNCTION__, ## arg)
+Either a timeout to stop the polling, or msleep() followed by a single
+call to fsl_dma_is_complete().  However, using the msleep() method is
+likely to be kinder to the rest of the kernel than polling for very
+long.
 
-I think I see these macros used in preemptible code (e.g. ehca_probe),
-where smp_processor_id() will print a warning when
-CONFIG_DEBUG_PREEMPT=y.  Probably better to use raw_smp_processor_id.
+sln
