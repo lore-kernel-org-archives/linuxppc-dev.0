@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 5D485DDDF5
+Return-Path: <lipovsky@cs.bu.edu>
+Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
+	by ozlabs.org (Postfix) with ESMTP id 4AA42DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 06:19:28 +1000 (EST)
-To: "Nicholas Hickman" <nhickman@dtechlabs.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: SPI driver?
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 11 Sep 2007 11:50:56 EDT."
-	<8140AAF341CC904BA92C3D6A5A1909782F0D4F@ditech-1.ditechllc.com>
-Date: Tue, 11 Sep 2007 22:19:26 +0200
-Sender: wd@denx.de
-Message-Id: <20070911201926.2B0EA247CE@gemini.denx.de>
-Cc: Hesam.Kohanteb@Sun.COM, linuxppc-embedded@ozlabs.org
+	Wed, 12 Sep 2007 09:00:01 +1000 (EST)
+From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
+To: "'Benedict, Michael'" <MBenedict@twacs.com>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: futex priority based wakeup
+Date: Tue, 11 Sep 2007 18:59:28 -0400
+Message-ID: <000001c7f4c7$7a7ab5c0$3a0d10ac@Radstone.Local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <BAF8B1E0BB28024A90895E746A3B610D1C2BE7@twx-exch01.twacs.local>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +22,130 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <8140AAF341CC904BA92C3D6A5A1909782F0D4F@ditech-1.ditechllc.com> you wrote:
-> I am also in search of this, or some information about one.  Please let
-> me know if you find anything.
+Hmm. Just for kicks - inside the important thread could you add:
+
+int curpolicy;
+struct sched_param sp;
+pthread_getschedparam (pthread_self (), &curpolicy, &sp)
+printf("important's policy is %d and priority is %d\n", curpolicy,
+sp.__sched_priority);
+
+before the very first futex syscall and after your "printf("important got
+futex!\n");" line.
+
+Do similar for the unimportant thread, and see if you get anything weird -
+e.g. priorities come out to be the same for threads.
+
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org
+[mailto:linuxppc-embedded-bounces+lipovsky=cs.bu.edu@ozlabs.org] On Behalf
+Of Benedict, Michael
+Sent: Monday, September 10, 2007 5:41 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: futex priority based wakeup
+
+Ilya Lipovsky wrote:
+> Your code looks correct to me, so if the kernel developers
+> did their job
+> correctly, the only potentially weak link is glibc.
 > 
-> I ran across an existing platform that used an mpc8270.  During boot up
-> it displayed:
-> [   17.828513] SPIDriver: module license 'Proprietary' taints kernel.
-> [   17.865052] CPM SPI Driver: $Revision: 1.0 $ wd@denx.de
-> 
-> I have been all over denx and have not been able to find it.  This
-> particular system used the SPI for a DSP chip. 
 
-Probably somebody copied and modified a  driver  they  found  in  our
-trees. We release all such code under GPL...
+Well, either the kernel developers didn't do their job, or I am missing
+something.  The following also fails, and it should be bypassing glibc:
 
-You can find SPI driver code in our old linuxppc_2_4_devel tree,  but
-this  does  not  include  support  for  MPC82xx; and then there is an
-ancient (5+ years) 82xx SPI driver in our  linux-2.4  (2.4.4)  kernel
-tree.
+#define _XOPEN_SOURCE 600
 
-Best regards,
+#include <linux/futex.h>
+#include <sys/time.h>
+#include <asm/atomic.h>
 
-Wolfgang Denk
+#include <sys/syscall.h>
+#include <unistd.h>
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Thought for the day: What if there were no hypothetical situations?
+#include <sched.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int myfutex = 0;
+
+void *important(void *ign)
+{
+        sleep(1);
+        printf("important waiting for futex\n");
+        fflush(stdout);
+        if(syscall(SYS_futex, &myfutex, FUTEX_WAIT, 0, NULL)) {
+                perror("futex");
+                exit(1);
+        } else {
+                printf("important got futex!\n");
+                fflush(stdout);
+                syscall(SYS_futex, &myfutex, FUTEX_WAKE, 1, NULL);
+}
+
+        return NULL;
+}
+
+
+void *unimportant(void *ign)
+{
+        printf("unimportant waiting for futex\n");
+        fflush(stdout);
+        if(syscall(SYS_futex, &myfutex, FUTEX_WAIT, 0, NULL)) {
+                perror("futex");
+                exit(1);
+        } else {
+                printf("unimportant got futex!\n");
+                fflush(stdout);
+                syscall(SYS_futex, &myfutex, FUTEX_WAKE, 1, NULL);
+}
+
+        return NULL;
+}
+
+int main()
+{
+        struct sched_param p;
+        pthread_attr_t attr;
+        pthread_t i, u;
+
+        p.__sched_priority = sched_get_priority_min(SCHED_FIFO);
+        if(-1 == p.__sched_priority) {
+                perror("sched_get_priority_min");
+                return 1;
+        }
+        pthread_attr_init(&attr);
+        pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+        pthread_attr_setschedparam(&attr, &p);
+        pthread_create(&u, &attr, unimportant, NULL);
+
+        p.__sched_priority = sched_get_priority_max(SCHED_FIFO);
+        pthread_attr_setschedparam(&attr, &p);
+        pthread_create(&i, &attr, important, NULL);
+
+        sleep(5);
+        printf("futex FUTEX_WAKE\n");
+        fflush(stdout);
+        syscall(SYS_futex, &myfutex, FUTEX_WAKE, 1, NULL);
+
+        pthread_join(u, NULL);
+        pthread_join(i, NULL);
+
+        return 0;
+}
+
+Which produces:
+unimportant waiting for futex
+important waiting for futex
+futex FUTEX_WAKE
+unimportant got futex!
+important got futex!
+
+
+Could someone with 2.6.22 please verify?  
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
