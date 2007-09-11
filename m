@@ -1,22 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E348DDE46
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 02:19:51 +1000 (EST)
-In-Reply-To: <46E6B98C.1070207@freescale.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 421CCDDE33
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 02:25:28 +1000 (EST)
+Message-ID: <46E6C145.2050006@freescale.com>
+Date: Tue, 11 Sep 2007 11:24:37 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
 References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
 	<1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
 	<20070911135717.GD1932@ld0162-tx32.am.freescale.net>
 	<3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
 	<46E6B98C.1070207@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B247D7AF-6AB9-4009-BFB8-0A365D3F0DF2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
-Date: Tue, 11 Sep 2007 11:22:34 -0500
-To: Scott Wood <scottwood@freescale.com>
+	<B247D7AF-6AB9-4009-BFB8-0A365D3F0DF2@kernel.crashing.org>
+In-Reply-To: <B247D7AF-6AB9-4009-BFB8-0A365D3F0DF2@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,42 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> On Sep 11, 2007, at 10:51 AM, Scott Wood wrote:
+>> Any particular reason to special-case it, when we already need code to 
+>> do it the other way for every other fsl soc?
+> 
+> If you suggest a sane way of getting the value let me know.  The mpc8xx 
+> doesn't appear to have what I would call 'soc' level registers like 
+> 83xx/85xx/86xx does.  How do you propose we determine the immrbase?
 
-On Sep 11, 2007, at 10:51 AM, Scott Wood wrote:
+What exactly do you mean by "soc"-level registers?
 
-> Kumar Gala wrote:
->> Yep.  However, after some discussion with Segher on this for 83xx/ 
->> 85xx/86xx I think we want to keep the reg prop and have it cover  
->> the initial soc registers [size on 83xx is 0x100, size on 85xx/ 
->> 86xx would be 0x1000].
->> What we need is a saner way to determine immr on 82xx & 8xx.   
->> Segher's rule is that a given "reg" prop shouldn't overlap w/any  
->> other reg.  We currently violate that on 8xx.  Not as clear on  
->> 82xx if we do that.
->> I'm thinking on 8xx we should move to grabbing a top level compat  
->> value (mpc8xx) and use the SPRN_IMMR to set immrbase.
->
-> Any particular reason to special-case it, when we already need code  
-> to do it the other way for every other fsl soc?
+I propose we do it by defining the first (and ideally only, but that's 
+another argument) entry in ranges as the immr, and getting rid of /soc/reg.
 
-If you suggest a sane way of getting the value let me know.  The  
-mpc8xx doesn't appear to have what I would call 'soc' level registers  
-like 83xx/85xx/86xx does.  How do you propose we determine the immrbase?
+>> And why is 82xx-pq2 special?  Wouldn't you need this on 83xx, 85xx, 
+>> and 86xx as well?
+> 
+> The range will cover the whole immr space on 83xx/85xx/86xx.
 
->> On mpc82xx-pq2 we could add a immr "device" to search for.
->
-> Enh.  The soc node *is* the immr "device".  I'd rather add a node  
-> for the "initial" registers (they generally don't involve  
-> configuring the immr "bus" itself, but rather the chipselect bus  
-> and other miscellaneous things) if needed, get rid of /soc/reg, and  
-> have ranges cover the whole immr.
+And why can't it do that on 82xx?
 
-> And why is 82xx-pq2 special?  Wouldn't you need this on 83xx, 85xx,  
-> and 86xx as well?
+> 82xx-pq2 is special in that its soc regs are in the middle of the immr 
+> address map.
 
-The range will cover the whole immr space on 83xx/85xx/86xx.
+The /soc node is misnamed; it should really be /immr.  Why do we need 
+these particular registers to be in /soc/reg rather than a subnode?
 
-82xx-pq2 is special in that its soc regs are in the middle of the  
-immr address map.
-
-- k
+-Scott
