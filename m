@@ -1,19 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0F971DDE2C
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 09:33:30 +1000 (EST)
-Date: Mon, 10 Sep 2007 18:34:17 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] export new __io{re,un}map_at() symbols
-Message-ID: <20070910233417.GA29773@lixom.net>
-References: <20070831035851.GA24414@lixom.net>
-	<18149.48608.754709.782967@cargo.ozlabs.ibm.com>
-	<20070910224136.GA28808@lixom.net>
-	<18149.52956.875510.937857@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18149.52956.875510.937857@cargo.ozlabs.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 68A3ADDE08
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 15:33:12 +1000 (EST)
+In-Reply-To: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
+References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
+Date: Tue, 11 Sep 2007 00:35:56 -0500
+To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,30 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2007 at 09:10:20AM +1000, Paul Mackerras wrote:
-> Olof Johansson writes:
-> 
-> > electra_cf uses it, that driver is currently in -mm including below
-> > update to use benh's rewritten interfaces:
-> > 
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=13237
-> > 
-> > It gets the effective addresses to use out of the device tree.
-> 
-> Huh?  What does firmware (or the device tree) know about how the
-> kernel uses effective addresses?
 
-Oh, sorry, of course it doesn't (I was thinking of the physical address
-but writing effective).
+On Aug 28, 2007, at 3:16 PM, Scott Wood wrote:
 
-I get effective address by allocating it with __get_vm_area same way
-the pseries pci hotplug does:
+> 1. Fix get_immrbase() to use ranges, rather than reg.
+>
+> It is not always the case that the SoC's first reg property points
+> to the beginning of the entire SoC block.
 
-	area = __get_vm_area(cf->io_size, 0, PHB_IO_BASE, PHB_IO_END);
-	if (area == NULL)
-		return -ENOMEM;
+when is this true?
 
-	cf->io_virt = (void __iomem *)(area->addr);
+Upon further testing this breaks some platforms.  I don't think  
+assuming the first range entry is mapping to the SOC register space  
+is a good idea.
 
+I've dropped this portion of the patch from my tree for the time being.
 
--Olof
+- k
