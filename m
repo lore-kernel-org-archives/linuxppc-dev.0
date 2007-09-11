@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71E1FDDEDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:47:28 +1000 (EST)
-In-Reply-To: <20070911141821.GA32545@lixom.net>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141821.GA32545@lixom.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Tue, 11 Sep 2007 10:50:18 -0500
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0D5BADDF19
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:51:49 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l8BFpgvx017317
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 08:51:42 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] QE: simplify GUEMR register initialization
+Date: Tue, 11 Sep 2007 10:51:39 -0500
+Message-Id: <11895258991411-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,92 +25,253 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The initialization of the QE's GUEMR register is overly complicated, involving
+multiple functions and a redundant ucc_common structure.  This patch removes
+struct ucc_common, merges ucc_init_guemr() into ucc_set_type() (every caller
+of ucc_init_guemr() also calls ucc_set_type() immediately afterward), and
+removes the unused enum ucc_pram_initial_offset.
 
-On Sep 11, 2007, at 9:18 AM, Olof Johansson wrote:
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/qe_lib/ucc.c      |   62 ++++++++++++++++++++-------------
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |   12 +-----
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 +-----
+ include/asm-powerpc/immap_qe.h        |   11 +-----
+ include/asm-powerpc/qe.h              |    7 ++--
+ include/asm-powerpc/ucc.h             |   24 +------------
+ 6 files changed, 48 insertions(+), 80 deletions(-)
 
-> Hi,
->
-> On Tue, Sep 11, 2007 at 01:29:18AM -0500, Kumar Gala wrote:
->> Added basic board port for MPC8572 DS reference platform that is
->> similiar to the MPC8544/33 DS reference platform in uniprocessor  
->> mode.
->>
->> ---
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/ 
->> powerpc/platforms/85xx/mpc85xx_ds.c
->> index 3a5c3c4..1e2eba8 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> @@ -181,6 +181,23 @@ static int __init mpc8544_ds_probe(void)
->>  	}
->>  }
->>
->> +/*
->> + * Called very early, device-tree isn't unflattened
->> + */
->> +static int __init mpc8572_ds_probe(void)
->> +{
->> +	unsigned long root = of_get_flat_dt_root();
->> +
->> +	if (of_flat_dt_is_compatible(root, "MPC8572DS")) {
->> +#ifdef CONFIG_PCI
->> +		primary_phb_addr = 0x8000;
->> +#endif
->> +		return 1;
->> +	} else {
->> +		return 0;
->> +	}
->> +}
->> +
->>  define_machine(mpc8544_ds) {
->>  	.name			= "MPC8544 DS",
->>  	.probe			= mpc8544_ds_probe,
->> @@ -194,3 +211,17 @@ define_machine(mpc8544_ds) {
->>  	.calibrate_decr		= generic_calibrate_decr,
->>  	.progress		= udbg_progress,
->>  };
->> +
->> +define_machine(mpc8572_ds) {
->> +	.name			= "MPC8572 DS",
->> +	.probe			= mpc8572_ds_probe,
->> +	.setup_arch		= mpc85xx_ds_setup_arch,
->> +	.init_IRQ		= mpc85xx_ds_pic_init,
->> +#ifdef CONFIG_PCI
->> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->> +#endif
->> +	.get_irq		= mpic_get_irq,
->> +	.restart		= mpc85xx_restart,
->> +	.calibrate_decr		= generic_calibrate_decr,
->> +	.progress		= udbg_progress,
->> +};
->
-> How different are these boards really? Could you just detect MPC85xxDS
-> and have a generic platform for them, or are they different enough  
-> that
-> you need individual ones for it?
-
-I wanted a different probe.  I figured having a different struct was  
-a simple solution.
-
->
->
->> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
->> index 06d23e1..c98b867 100644
->> --- a/include/linux/pci_ids.h
->> +++ b/include/linux/pci_ids.h
->> @@ -374,10 +374,9 @@
->>  #define PCI_DEVICE_ID_ATI_IXP400_SATA   0x4379
->>  #define PCI_DEVICE_ID_ATI_IXP400_SATA2	0x437a
->>  #define PCI_DEVICE_ID_ATI_IXP600_SATA	0x4380
->> -#define PCI_DEVICE_ID_ATI_IXP600_SMBUS	0x4385
->> +#define PCI_DEVICE_ID_ATI_SBX00_SMBUS	0x4385
->>  #define PCI_DEVICE_ID_ATI_IXP600_IDE	0x438c
->>  #define PCI_DEVICE_ID_ATI_IXP700_SATA	0x4390
->> -#define PCI_DEVICE_ID_ATI_IXP700_SMBUS	0x4395
->>  #define PCI_DEVICE_ID_ATI_IXP700_IDE	0x439c
->
-> This looks like it doesn't belong in this patch.
-
-oops :)  {copying from an different tree}
-
-- k
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/qe_lib/ucc.c
+index f970e54..597204f 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc.c
+@@ -43,43 +43,57 @@ int ucc_set_qe_mux_mii_mng(int ucc_num)
+ }
+ EXPORT_SYMBOL(ucc_set_qe_mux_mii_mng);
+ 
+-int ucc_set_type(int ucc_num, struct ucc_common *regs,
+-		 enum ucc_speed_type speed)
++/* Configure the UCC to either Slow or Fast.
++ *
++ * A given UCC can be figured to support either "slow" devices (e.g. UART)
++ * or "fast" devices (e.g. Ethernet).
++ *
++ * 'ucc_num' is the UCC number, from 0 - 7.
++ *
++ * This function also sets the UCC_GUEMR_SET_RESERVED3 bit because that bit
++ * must always be set to 1.
++ */
++int ucc_set_type(unsigned int ucc_num, enum ucc_speed_type speed)
+ {
+-	u8 guemr = 0;
++	u8 __iomem *p_guemr;
++	u8 mode;	/* The GUEMR register mode bits */
+ 
+-	/* check if the UCC number is in range. */
+-	if ((ucc_num > UCC_MAX_NUM - 1) || (ucc_num < 0))
++	/* The GUEMR register is at the same location for both slow and fast
++	   devices, so we just use uccX.slow.guemr. */
++	switch (ucc_num) {
++	case 0: p_guemr = &qe_immr->ucc1.slow.guemr;
++		break;
++	case 1: p_guemr = &qe_immr->ucc2.slow.guemr;
++		break;
++	case 2: p_guemr = &qe_immr->ucc3.slow.guemr;
++		break;
++	case 3: p_guemr = &qe_immr->ucc4.slow.guemr;
++		break;
++	case 4: p_guemr = &qe_immr->ucc5.slow.guemr;
++		break;
++	case 5: p_guemr = &qe_immr->ucc6.slow.guemr;
++		break;
++	case 6: p_guemr = &qe_immr->ucc7.slow.guemr;
++		break;
++	case 7: p_guemr = &qe_immr->ucc8.slow.guemr;
++		break;
++	default:
+ 		return -EINVAL;
++	}
+ 
+-	guemr = regs->guemr;
+-	guemr &= ~(UCC_GUEMR_MODE_MASK_RX | UCC_GUEMR_MODE_MASK_TX);
+ 	switch (speed) {
+ 	case UCC_SPEED_TYPE_SLOW:
+-		guemr |= (UCC_GUEMR_MODE_SLOW_RX | UCC_GUEMR_MODE_SLOW_TX);
++		mode = UCC_GUEMR_MODE_SLOW_RX | UCC_GUEMR_MODE_SLOW_TX;
+ 		break;
+ 	case UCC_SPEED_TYPE_FAST:
+-		guemr |= (UCC_GUEMR_MODE_FAST_RX | UCC_GUEMR_MODE_FAST_TX);
++		mode = UCC_GUEMR_MODE_FAST_RX | UCC_GUEMR_MODE_FAST_TX;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	regs->guemr = guemr;
+-
+-	return 0;
+-}
+-
+-int ucc_init_guemr(struct ucc_common *regs)
+-{
+-	u8 guemr = 0;
+-
+-	if (!regs)
+-		return -EINVAL;
+-
+-	/* Set bit 3 (which is reserved in the GUEMR register) to 1 */
+-	guemr = UCC_GUEMR_SET_RESERVED3;
+ 
+-	regs->guemr = guemr;
++	out_8(p_guemr, (in_8(p_guemr) & ~UCC_GUEMR_MODE_MASK) |
++		UCC_GUEMR_SET_RESERVED3 | mode);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 3df202e..aa0fdd4 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -226,17 +226,9 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 	uccf->rx_discarded = 0;
+ #endif				/* STATISTICS */
+ 
+-	/* Init Guemr register */
+-	if ((ret = ucc_init_guemr((struct ucc_common *) (uf_regs)))) {
+-		printk(KERN_ERR "%s: cannot init GUEMR", __FUNCTION__);
+-		ucc_fast_free(uccf);
+-		return ret;
+-	}
+-
+ 	/* Set UCC to fast type */
+-	if ((ret = ucc_set_type(uf_info->ucc_num,
+-				(struct ucc_common *) (uf_regs),
+-				UCC_SPEED_TYPE_FAST))) {
++	ret = ucc_set_type(uf_info->ucc_num, UCC_SPEED_TYPE_FAST);
++	if (ret) {
+ 		printk(KERN_ERR "%s: cannot set UCC type", __FUNCTION__);
+ 		ucc_fast_free(uccf);
+ 		return ret;
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+index 1f65c26..bc30e1c 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+@@ -187,17 +187,9 @@ int ucc_slow_init(struct ucc_slow_info * us_info, struct ucc_slow_private ** ucc
+ 
+ 	uccs->us_pram = qe_muram_addr(uccs->us_pram_offset);
+ 
+-	/* Init Guemr register */
+-	if ((ret = ucc_init_guemr((struct ucc_common *) us_regs))) {
+-		printk(KERN_ERR "%s: cannot init GUEMR", __FUNCTION__);
+-		ucc_slow_free(uccs);
+-		return ret;
+-	}
+-
+ 	/* Set UCC to slow type */
+-	if ((ret = ucc_set_type(us_info->ucc_num,
+-				(struct ucc_common *) us_regs,
+-				UCC_SPEED_TYPE_SLOW))) {
++	ret = ucc_set_type(us_info->ucc_num, UCC_SPEED_TYPE_SLOW);
++	if (ret) {
+ 		printk(KERN_ERR "%s: cannot set UCC type", __FUNCTION__);
+ 		ucc_slow_free(uccs);
+ 		return ret;
+diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+index 1020b7f..16ed82f 100644
+--- a/include/asm-powerpc/immap_qe.h
++++ b/include/asm-powerpc/immap_qe.h
+@@ -260,7 +260,6 @@ struct ucc_slow {
+ 	__be16	utpt;
+ 	u8	res4[0x52];
+ 	u8	guemr;		/* UCC general extended mode register */
+-	u8	res5[0x200 - 0x091];
+ } __attribute__ ((packed));
+ 
+ /* QE UCC Fast */
+@@ -293,21 +292,13 @@ struct ucc_fast {
+ 	__be32	urtry;		/* UCC retry counter register */
+ 	u8	res8[0x4C];
+ 	u8	guemr;		/* UCC general extended mode register */
+-	u8	res9[0x100 - 0x091];
+-} __attribute__ ((packed));
+-
+-/* QE UCC */
+-struct ucc_common {
+-	u8	res1[0x90];
+-	u8	guemr;
+-	u8	res2[0x200 - 0x091];
+ } __attribute__ ((packed));
+ 
+ struct ucc {
+ 	union {
+ 		struct	ucc_slow slow;
+ 		struct	ucc_fast fast;
+-		struct	ucc_common common;
++		u8	res[0x200];	/* UCC blocks are 512 bytes each */
+ 	};
+ } __attribute__ ((packed));
+ 
+diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
+index 9d304b1..2256188 100644
+--- a/include/asm-powerpc/qe.h
++++ b/include/asm-powerpc/qe.h
+@@ -321,13 +321,14 @@ enum qe_clock {
+ #define UPGCR_ADDR	0x10000000	/* Master MPHY Addr multiplexing */
+ #define UPGCR_DIAG	0x01000000	/* Diagnostic mode */
+ 
+-/* UCC */
++/* UCC GUEMR register */
+ #define UCC_GUEMR_MODE_MASK_RX	0x02
+-#define UCC_GUEMR_MODE_MASK_TX	0x01
+ #define UCC_GUEMR_MODE_FAST_RX	0x02
+-#define UCC_GUEMR_MODE_FAST_TX	0x01
+ #define UCC_GUEMR_MODE_SLOW_RX	0x00
++#define UCC_GUEMR_MODE_MASK_TX	0x01
++#define UCC_GUEMR_MODE_FAST_TX	0x01
+ #define UCC_GUEMR_MODE_SLOW_TX	0x00
++#define UCC_GUEMR_MODE_MASK (UCC_GUEMR_MODE_MASK_RX | UCC_GUEMR_MODE_MASK_TX)
+ #define UCC_GUEMR_SET_RESERVED3	0x10	/* Bit 3 in the guemr is reserved but
+ 					   must be set 1 */
+ 
+diff --git a/include/asm-powerpc/ucc.h b/include/asm-powerpc/ucc.h
+index afe3076..f96ea54 100644
+--- a/include/asm-powerpc/ucc.h
++++ b/include/asm-powerpc/ucc.h
+@@ -28,35 +28,13 @@ enum ucc_speed_type {
+ 	UCC_SPEED_TYPE_FAST, UCC_SPEED_TYPE_SLOW
+ };
+ 
+-/* Initial UCCs Parameter RAM address relative to: MEM_MAP_BASE (IMMR).
+-*/
+-enum ucc_pram_initial_offset {
+-	UCC_PRAM_OFFSET_UCC1 = 0x8400,
+-	UCC_PRAM_OFFSET_UCC2 = 0x8500,
+-	UCC_PRAM_OFFSET_UCC3 = 0x8600,
+-	UCC_PRAM_OFFSET_UCC4 = 0x9000,
+-	UCC_PRAM_OFFSET_UCC5 = 0x8000,
+-	UCC_PRAM_OFFSET_UCC6 = 0x8100,
+-	UCC_PRAM_OFFSET_UCC7 = 0x8200,
+-	UCC_PRAM_OFFSET_UCC8 = 0x8300
+-};
+-
+ /* ucc_set_type
+  * Sets UCC to slow or fast mode.
+  *
+  * ucc_num - (In) number of UCC (0-7).
+- * regs    - (In) pointer to registers base for the UCC.
+  * speed   - (In) slow or fast mode for UCC.
+  */
+-int ucc_set_type(int ucc_num, struct ucc_common *regs,
+-		 enum ucc_speed_type speed);
+-
+-/* ucc_init_guemr
+- * Init the Guemr register.
+- *
+- * regs - (In) pointer to registers base for the UCC.
+- */
+-int ucc_init_guemr(struct ucc_common *regs);
++int ucc_set_type(unsigned int ucc_num, enum ucc_speed_type speed);
+ 
+ int ucc_set_qe_mux_mii_mng(int ucc_num);
+ 
+-- 
+1.5.2.4
