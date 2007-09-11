@@ -1,22 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0ADA8DDE06
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 96781DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 04:16:25 +1000 (EST)
-Message-ID: <46E6DBC9.5090203@ovro.caltech.edu>
-Date: Tue, 11 Sep 2007 11:17:45 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-Subject: Re: PCI target implementation on AMCC PPC CPUs
-References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>	<406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>	<46E06259.5010305@ovro.caltech.edu>	<200709111113.46508.matthias.fuchs@esd-electronics.com>
-	<46E6D131.2030904@ovro.caltech.edu>
-In-Reply-To: <46E6D131.2030904@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
+	Wed, 12 Sep 2007 06:07:56 +1000 (EST)
+To: Babarovic Ivica <ivica.babarovic@asist.si>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Which 2.6 kernel for MPC5200
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 10 Sep 2007 19:10:53 +0200."
+	<46E57A9D.2020506@asist.si>
+Date: Tue, 11 Sep 2007 22:07:54 +0200
+Sender: wd@denx.de
+Message-Id: <20070911200754.87407247DB@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,86 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matthias,
+In message <46E57A9D.2020506@asist.si> you wrote:
 > 
->> we build a couple of PCI target designs using AMCC PowerPCs.
->> You are right that some things could be better. But ..
+> What kernel should I get/pull for MPC5200 clone board.
+> I've been away from coding on mpc5200 for quite some time now.
+> I've read some archives from ML.
+> Git repo on Sylvain Munauts url:
+> http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.gitpage
+> isn't working. Nothing on http://*git*.secretlab.ca/cgi-bin/*gitweb*.cgi
+> <http://git.secretlab.ca/cgi-bin/gitweb.cgi> to.
 
-Since you build a couple of target designs, I assume you
-(or someone working with you) must have written some host
-to target communication device drivers.
+We have working support for  the  MPC5200  (based  on  Sylvain's  and
+Grant's)  code  in  our  linux-2.6-denx  repository, at least for the
+lite5200b and TQM5200 boards; I recommend to  stick  with  commit  ID
+85ab69c5  = tag DENX-2007-08-30-1748 at the moment, as the 2.6.23-rc5
+coe is not completely tested yet. [Well, actually *all* this is  work
+in progress...]
 
-The reason I refer to the AMCC interrupt solution as
-'cheesy' is that there is only one way to generate
-an interrupt; this is distinct from the fact that
-there is one interrupt signal (in each direction).
+Best regards,
 
-The PCI-to-local bus bridges from PLX, and the messaging
-units found in other processors still only have one
-interrupt signal between the target and the host
-(an INTA# PCI line), and a host-to-target interrupt
-by way of some interrupt controller line internal to the
-SoC. However, these devices have multiple bits to
-assert the interrupt signals.
+Wolfgang Denk
 
-The nicest feature I've used for developing a host-to-target
-communications mechanism is the mailbox registers.
-A mailbox register can be written by the host using
-write-1 to set, and then cleared by the target using
-write-1 to clear. Its important that a write-1 interface
-is used, if read-modify-write was used, then interrupts
-could be missed.
-
-I wrote up the method I used to create an interprocessor
-handshake (used much like a mutex)
-
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/cobra_driver.pdf
-
-The host processor and the target processor use this
-protocol for protecting access to a common resource; the
-read and write data buffers. The buffers are transferred
-using DMA.
-
-Page 8-10 of the document shows a simplified version analogous
-to the serial ports of a UART.
-
-A key part of the protocol described is that, analogous to
-a serial port, two interrupt sources are required;
-  * transmitter empty
-  * receiver ready
-
-The host CPU writes to a transmitter ready bit to generate
-a receiver ready interrupt at the target, and once the
-target has moved the transmitter data out of the transmit
-buffer, it writes to the transmitter empty bit to generate
-a transmitter empty interrupt to the host. And the
-analogous operation happens for the target to host
-transmissions. Hence there are two mailbox bits that
-the devices write to to generate an interrupt to the other
-processor, and two mailbox bits that generate interrupts,
-so are cleared by each processor.
-
-The two interprocessor data paths are independent and
-asynchronous with respect to each other, and no polling
-is required; upon receiving a mailbox interrupt the
-ISR can schedule a receive task, or a transmit task,
-or both, depending on the state of the mailbox bits.
-
-How then with only one interrupt source do you implement
-a robust interprocessor handshake with the AMCC
-single-interrupt, without resorting to polling anywhere
-in a driver?
-
-Obviously the above driver was just my take on how to
-create such an interface. After I wrote it, I had a look
-around and found Micheal Barr had created something similar
-(not in the context of a linux driver though).
-
-BTW; I'm not trying to start a flame-war of AMCC verus
-Freescale. This just happened to be a downside to this
-processor for my specific application. I found plenty
-of downsides with Coldfire's, and PowerQuiccIIs and IIIs
-too.
-
-Cheers,
-Dave
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+There are always alternatives.
+	-- Spock, "The Galileo Seven", stardate 2822.3
