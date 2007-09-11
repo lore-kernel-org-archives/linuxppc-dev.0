@@ -1,19 +1,19 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 96781DDDF2
+	by ozlabs.org (Postfix) with ESMTP id 5D485DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 06:07:56 +1000 (EST)
-To: Babarovic Ivica <ivica.babarovic@asist.si>
+	Wed, 12 Sep 2007 06:19:28 +1000 (EST)
+To: "Nicholas Hickman" <nhickman@dtechlabs.com>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Which 2.6 kernel for MPC5200
+Subject: Re: SPI driver?
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 10 Sep 2007 19:10:53 +0200."
-	<46E57A9D.2020506@asist.si>
-Date: Tue, 11 Sep 2007 22:07:54 +0200
+In-reply-to: Your message of "Tue, 11 Sep 2007 11:50:56 EDT."
+	<8140AAF341CC904BA92C3D6A5A1909782F0D4F@ditech-1.ditechllc.com>
+Date: Tue, 11 Sep 2007 22:19:26 +0200
 Sender: wd@denx.de
-Message-Id: <20070911200754.87407247DB@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Message-Id: <20070911201926.2B0EA247CE@gemini.denx.de>
+Cc: Hesam.Kohanteb@Sun.COM, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <46E57A9D.2020506@asist.si> you wrote:
+In message <8140AAF341CC904BA92C3D6A5A1909782F0D4F@ditech-1.ditechllc.com> you wrote:
+> I am also in search of this, or some information about one.  Please let
+> me know if you find anything.
 > 
-> What kernel should I get/pull for MPC5200 clone board.
-> I've been away from coding on mpc5200 for quite some time now.
-> I've read some archives from ML.
-> Git repo on Sylvain Munauts url:
-> http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.gitpage
-> isn't working. Nothing on http://*git*.secretlab.ca/cgi-bin/*gitweb*.cgi
-> <http://git.secretlab.ca/cgi-bin/gitweb.cgi> to.
+> I ran across an existing platform that used an mpc8270.  During boot up
+> it displayed:
+> [   17.828513] SPIDriver: module license 'Proprietary' taints kernel.
+> [   17.865052] CPM SPI Driver: $Revision: 1.0 $ wd@denx.de
+> 
+> I have been all over denx and have not been able to find it.  This
+> particular system used the SPI for a DSP chip. 
 
-We have working support for  the  MPC5200  (based  on  Sylvain's  and
-Grant's)  code  in  our  linux-2.6-denx  repository, at least for the
-lite5200b and TQM5200 boards; I recommend to  stick  with  commit  ID
-85ab69c5  = tag DENX-2007-08-30-1748 at the moment, as the 2.6.23-rc5
-coe is not completely tested yet. [Well, actually *all* this is  work
-in progress...]
+Probably somebody copied and modified a  driver  they  found  in  our
+trees. We release all such code under GPL...
+
+You can find SPI driver code in our old linuxppc_2_4_devel tree,  but
+this  does  not  include  support  for  MPC82xx; and then there is an
+ancient (5+ years) 82xx SPI driver in our  linux-2.4  (2.4.4)  kernel
+tree.
 
 Best regards,
 
@@ -49,5 +52,4 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-There are always alternatives.
-	-- Spock, "The Galileo Seven", stardate 2822.3
+Thought for the day: What if there were no hypothetical situations?
