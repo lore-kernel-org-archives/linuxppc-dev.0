@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFD43DDEBC
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:45:43 +1000 (EST)
-In-Reply-To: <20070911135717.GD1932@ld0162-tx32.am.freescale.net>
-References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
-	<1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
-	<20070911135717.GD1932@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 71E1FDDEDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:47:28 +1000 (EST)
+In-Reply-To: <20070911141821.GA32545@lixom.net>
+References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
+	<20070911141821.GA32545@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
+Message-Id: <230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
-Date: Tue, 11 Sep 2007 10:48:26 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Tue, 11 Sep 2007 10:50:18 -0500
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +25,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 11, 2007, at 8:57 AM, Scott Wood wrote:
+On Sep 11, 2007, at 9:18 AM, Olof Johansson wrote:
 
-> On Tue, Sep 11, 2007 at 12:35:56AM -0500, Kumar Gala wrote:
->>
->> On Aug 28, 2007, at 3:16 PM, Scott Wood wrote:
->>
->>> 1. Fix get_immrbase() to use ranges, rather than reg.
->>>
->>> It is not always the case that the SoC's first reg property points
->>> to the beginning of the entire SoC block.
->>
->> when is this true?
+> Hi,
 >
-> The intent was to eliminate the need for the reg property in /soc.
+> On Tue, Sep 11, 2007 at 01:29:18AM -0500, Kumar Gala wrote:
+>> Added basic board port for MPC8572 DS reference platform that is
+>> similiar to the MPC8544/33 DS reference platform in uniprocessor  
+>> mode.
+>>
+>> ---
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/ 
+>> powerpc/platforms/85xx/mpc85xx_ds.c
+>> index 3a5c3c4..1e2eba8 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> @@ -181,6 +181,23 @@ static int __init mpc8544_ds_probe(void)
+>>  	}
+>>  }
+>>
+>> +/*
+>> + * Called very early, device-tree isn't unflattened
+>> + */
+>> +static int __init mpc8572_ds_probe(void)
+>> +{
+>> +	unsigned long root = of_get_flat_dt_root();
+>> +
+>> +	if (of_flat_dt_is_compatible(root, "MPC8572DS")) {
+>> +#ifdef CONFIG_PCI
+>> +		primary_phb_addr = 0x8000;
+>> +#endif
+>> +		return 1;
+>> +	} else {
+>> +		return 0;
+>> +	}
+>> +}
+>> +
+>>  define_machine(mpc8544_ds) {
+>>  	.name			= "MPC8544 DS",
+>>  	.probe			= mpc8544_ds_probe,
+>> @@ -194,3 +211,17 @@ define_machine(mpc8544_ds) {
+>>  	.calibrate_decr		= generic_calibrate_decr,
+>>  	.progress		= udbg_progress,
+>>  };
+>> +
+>> +define_machine(mpc8572_ds) {
+>> +	.name			= "MPC8572 DS",
+>> +	.probe			= mpc8572_ds_probe,
+>> +	.setup_arch		= mpc85xx_ds_setup_arch,
+>> +	.init_IRQ		= mpc85xx_ds_pic_init,
+>> +#ifdef CONFIG_PCI
+>> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>> +#endif
+>> +	.get_irq		= mpic_get_irq,
+>> +	.restart		= mpc85xx_restart,
+>> +	.calibrate_decr		= generic_calibrate_decr,
+>> +	.progress		= udbg_progress,
+>> +};
 >
->> Upon further testing this breaks some platforms.  I don't think
->> assuming the first range entry is mapping to the SOC register space
->> is a good idea.
+> How different are these boards really? Could you just detect MPC85xxDS
+> and have a generic platform for them, or are they different enough  
+> that
+> you need individual ones for it?
+
+I wanted a different probe.  I figured having a different struct was  
+a simple solution.
+
 >
-> Let me guess, 8544ds and 8548cds?  Because of the same recent ranges
-> changes that we were arguing about in another thread? :-P
+>
+>> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+>> index 06d23e1..c98b867 100644
+>> --- a/include/linux/pci_ids.h
+>> +++ b/include/linux/pci_ids.h
+>> @@ -374,10 +374,9 @@
+>>  #define PCI_DEVICE_ID_ATI_IXP400_SATA   0x4379
+>>  #define PCI_DEVICE_ID_ATI_IXP400_SATA2	0x437a
+>>  #define PCI_DEVICE_ID_ATI_IXP600_SATA	0x4380
+>> -#define PCI_DEVICE_ID_ATI_IXP600_SMBUS	0x4385
+>> +#define PCI_DEVICE_ID_ATI_SBX00_SMBUS	0x4385
+>>  #define PCI_DEVICE_ID_ATI_IXP600_IDE	0x438c
+>>  #define PCI_DEVICE_ID_ATI_IXP700_SATA	0x4390
+>> -#define PCI_DEVICE_ID_ATI_IXP700_SMBUS	0x4395
+>>  #define PCI_DEVICE_ID_ATI_IXP700_IDE	0x439c
+>
+> This looks like it doesn't belong in this patch.
 
-Yep.  However, after some discussion with Segher on this for 83xx/ 
-85xx/86xx I think we want to keep the reg prop and have it cover the  
-initial soc registers [size on 83xx is 0x100, size on 85xx/86xx would  
-be 0x1000].
-
-What we need is a saner way to determine immr on 82xx & 8xx.   
-Segher's rule is that a given "reg" prop shouldn't overlap w/any  
-other reg.  We currently violate that on 8xx.  Not as clear on 82xx  
-if we do that.
-
-I'm thinking on 8xx we should move to grabbing a top level compat  
-value (mpc8xx) and use the SPRN_IMMR to set immrbase. On mpc82xx-pq2  
-we could add a immr "device" to search for.
+oops :)  {copying from an different tree}
 
 - k
