@@ -1,35 +1,33 @@
 Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B7FE1DDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 20:01:47 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l8BA1fJW023315
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 03:01:42 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id E491DDDE41
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 20:06:17 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l8BA6CiF012333
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 03:06:12 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l8BA1ekL015700
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 05:01:41 -0500 (CDT)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l8BA6BKj019336
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 05:06:11 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="US-ASCII"
-Subject: RE: [PATCH 1/5] Add Freescale DMA and DMA channel to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Tue, 11 Sep 2007 18:01:39 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070910032529.GA27828@localhost.localdomain>
-References: <11891624353752-git-send-email-wei.zhang@freescale.com>
-	<1189162437484-git-send-email-wei.zhang@freescale.com>
-	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
-	<20070910032529.GA27828@localhost.localdomain>
+Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xx
+	processors.
+Date: Tue, 11 Sep 2007 18:06:10 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C85D61C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20070907085845.54dc88f8.randy.dunlap@oracle.com>
+References: <11891624582950-git-send-email-wei.zhang@freescale.com>
+	<20070907085845.54dc88f8.randy.dunlap@oracle.com>
 From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: shannon.nelson@intel.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, dan.j.williams@intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,22 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Hi,=20
+> --- /dev/null
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -0,0 +1,995 @@
 >=20
-> On Fri, Sep 07, 2007 at 04:43:35PM +0200, Segher Boessenkool wrote:
-> > > +   l) Freescale DMA
-> >=20
-> > > +    - compatible : Should be "fsl,dma".
-> >=20
-> > Please choose some more specific name.  "fsl,mpc8540-dma" would
-> > be a reasonable choice perhaps.
+> Thanks for using kernel-doc notation.  However, ...
 >=20
-> More precisely, the compatible property should always have an specific
-> entry based on the exact chip the DMA engine resides in, as well as a
-> more general entry for any fsl dma engine of this type.
+> > +/**
+> > + * fsl_dma_alloc_descriptor - Allocate descriptor from=20
+> channel's DMA pool.
 >=20
-There is only difference in DMA channel and not in DMA node now. Does it
-need add the precise compatible property name?
+> Function parameters need to be listed & described here.
+> See Documentation/kernel-doc-nano-HOWTO.txt or other source files
+> for examples.
+>=20
+> (Applies to all documented function interfaces here.)
+
+All right, I'll add full descriptions here. :P
+
+>=20
+> > + *
+> > + * Return - The descriptor allocated. NULL for failed.
+> > + */
+> > +static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+> > +					struct fsl_dma_chan *fsl_chan,
+> > +					gfp_t flags)
+> > +{
+> ...
+> > +}
+>=20
+> > +/**
+> > + * fsl_chan_xfer_ld_queue -- Transfer the link descriptors=20
+> in channel
+> > + *                           ld_queue.
+>=20
+> The function's "short description" (unfortunately) must be on only one
+> line.  E.g.:
+>=20
+>  * fsl_chan_xfer_ld_queue - Transfer link descriptors in=20
+> channel ld_queue.
+>=20
+
+How about it's length greater than 80?
+
+> > + */
+> > +static void fsl_chan_xfer_ld_queue(struct fsl_dma_chan *fsl_chan)
+> > +{
+> ...
+> > +}
+>=20
+> > diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+> > new file mode 100644
+> > index 0000000..05be9ed
+> > --- /dev/null
+> > +++ b/drivers/dma/fsldma.h
+> > @@ -0,0 +1,188 @@
+> > +struct fsl_dma_chan_regs {
+> > +	__mix32	mr;		/* 0x00 - Mode Register */
+> > +	__mix32	sr;		/* 0x04 - Status Register */
+> > +	__mix64	cdar;		/* 0x08 - Cureent descriptor=20
+> address register */
+>=20
+>                                           Current
+>=20
+
+I'll fix it.
 
 Thanks!
 - zw
