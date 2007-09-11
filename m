@@ -1,19 +1,24 @@
-Return-Path: <nhickman@dtechlabs.com>
-Received: from mail.dtechlabs.com
-	(ip66-104-11-166.z11-104-66.customer.algx.net [66.104.11.166])
-	by ozlabs.org (Postfix) with SMTP id 0848ADDF0F
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 25FA9DDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 02:03:02 +1000 (EST)
+	Wed, 12 Sep 2007 03:31:35 +1000 (EST)
+Message-ID: <46E6D131.2030904@ovro.caltech.edu>
+Date: Tue, 11 Sep 2007 10:32:33 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: SPI driver?
-Date: Tue, 11 Sep 2007 11:50:56 -0400
-Message-ID: <8140AAF341CC904BA92C3D6A5A1909782F0D4F@ditech-1.ditechllc.com>
-In-Reply-To: <46E56DEA.3060205@Sun.COM>
-From: "Nicholas Hickman" <nhickman@dtechlabs.com>
-To: <Hesam.Kohanteb@Sun.COM>,
-	<linuxppc-embedded@ozlabs.org>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: PCI target implementation on AMCC PPC CPUs
+References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>
+	<406A31B117F2734987636D6CCC93EE3C022417D2@ehost011-3.exch011.intermedia.net>
+	<46E06259.5010305@ovro.caltech.edu>
+	<200709111113.46508.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200709111113.46508.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +29,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am also in search of this, or some information about one.  Please let
-me know if you find anything.
+Hi Matthias,
 
-I ran across an existing platform that used an mpc8270.  During boot up
-it displayed:
-[   17.828513] SPIDriver: module license 'Proprietary' taints kernel.
-[   17.865052] CPM SPI Driver: $Revision: 1.0 $ wd@denx.de
+> we build a couple of PCI target designs using AMCC PowerPCs.
+> You are right that some things could be better. But ..
+> 
+> On Thursday 06 September 2007 22:26, David Hawkins wrote:
+>> There are several fundamental problems with the AMCC 440EP
+>> acting as a PCI target/slave;
+>>
+>> 2. Look in the data sheet and see if you can figure out
+>>     how the host processor can generate an interrupt to
+>>     the PowerPC core ... oops, you can't. That kind of
+>>     makes it difficult to work with doesn't it.
+>
+> You CAN! You can generate an interrupt to the PowerPC from the host
+> CPU bei writing to the PCI command register. You have to read the user manual
+> carefully. Perhaps it not that obvious.
 
-I have been all over denx and have not been able to find it.  This
-particular system used the SPI for a DSP chip.=20
+Really!? Someone should tell AMCC tech support then.
+When I failed to find a method (other than hooking up
+an external GPIO), I contacted them and they came to
+the same conclusion (on the 440EP anyway).
 
+I'll look in the latest user manual to be sure ...
 
+PPC440EP_UM2000_v1_23.pdf
 
--Nick
+p394 has their 'cheesy' implementation of PCI INTA# control;
+toggle a single bit.
 
------Original Message-----
-From: linuxppc-embedded-bounces+nhickman=3Ddtechlabs.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+nhickman=3Ddtechlabs.com@ozlabs.org] =
-On
-Behalf Of Hesam Kohanteb
-Sent: Monday, September 10, 2007 12:17 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: SPI driver?
+Then backing up a little, p388 has the PCI command register ...
+Nope, no comment there that a write causes an interrupt to
+the PowerPC core.
 
-We need a Linux based SPI driver for MPC885. Do you know where can I
-possibly find the code.
+Ok, so going back to the UIC in Chapter 10, p224.
 
-Regards. --Hesam
+Ah-ha, PCI CMD write generates an interrupt 5!
 
---
-Hesam Yehuda Kohanteb
-(Netra Systems & Networking),
-M/S USCA12-216  4120 Network Circle
-Santa Clara, CA  95054
-(W) 408-276-7329 X17329, Fax 408-276-4552
+So, I stand corrected; the host can generate an interrupt to
+the PowerPC core, and the method is 'cheesier' than the PCI
+INTA# control.
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+And my experience with AMCC's tech support is now a notch
+lower, as even they did not offer this as a solution :)
+
+I sure am glad I changed to a Freescale processor ;)
+
+Cheers,
+Dave
