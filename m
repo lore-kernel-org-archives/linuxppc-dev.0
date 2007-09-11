@@ -1,23 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kumar.gala@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4CF7FDDEDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 04:31:06 +1000 (EST)
-In-Reply-To: <20070911182234.GA12802@lixom.net>
-References: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
-	<20070911172000.GC10743@lixom.net>
-	<9C9F1918-1B55-4426-8138-842B9AAA5BD5@kernel.crashing.org>
-	<20070911182234.GA12802@lixom.net>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 26491DDEE8
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 03:44:15 +1000 (EST)
+In-Reply-To: <46E6CBB9.90008@freescale.com>
+References: <11895258991411-git-send-email-timur@freescale.com>
+	<46E6CBB9.90008@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <424B650B-C272-45FC-BBC6-F090A9474082@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Fix interrupt routing and setup of ULI M1575 on
-	FSL boards
-Date: Tue, 11 Sep 2007 13:33:51 -0500
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-Id: <0504E7DF-D3C4-48D3-934D-AEA5888DEC2D@freescale.com>
+From: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH] [POWERPC] QE: simplify GUEMR register initialization
+Date: Tue, 11 Sep 2007 12:47:01 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,67 +27,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 11, 2007, at 1:22 PM, Olof Johansson wrote:
+On Sep 11, 2007, at 12:09 PM, Timur Tabi wrote:
 
-> On Tue, Sep 11, 2007 at 01:00:47PM -0500, Kumar Gala wrote:
->>
->> On Sep 11, 2007, at 12:20 PM, Olof Johansson wrote:
->>
->>> On Fri, Aug 17, 2007 at 12:03:48AM -0500, Kumar Gala wrote:
->>>>
->>>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>>> ---
->>>>  arch/powerpc/boot/dts/mpc8544ds.dts        |   88 ++++------
->>>>  arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  114 +++----------
->>>>  arch/powerpc/platforms/85xx/Kconfig        |    1 +
->>>>  arch/powerpc/platforms/85xx/mpc8544_ds.c   |  214
->>>> ++----------------------
->>>>  arch/powerpc/platforms/86xx/Kconfig        |    1 +
->>>>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  224
->>>> ++-----------------------
->>>>  arch/powerpc/platforms/Kconfig             |    8 +
->>>>  arch/powerpc/platforms/Makefile            |    3 +
->>>>  arch/powerpc/platforms/fsl_uli1575.c       |  255
->>>> ++++++++++++++++++++++++++++
->>>>  9 files changed, 363 insertions(+), 545 deletions(-)
->>>>  create mode 100644 arch/powerpc/platforms/fsl_uli1575.c
->>>>
->>>
->>> Since when do we add code directly under powerpc/platforms? Isn't  
->>> that
->>> what we have sysdev for?
->>>
->>> I know this is already picked up, but I just noticed it when  
->>> looking at
->>> Kumar's 8572 patch. :-(
->>
->> I put it in platforms since it was related to the boards not the  
->> chips.  We
->> can go around about what sysdev actual means, but I'm using the  
->> assumption
->> that its for processor & bridges (for discrete processors 10x,  
->> mv640x0,
->> etc).  Things that are board specific like the ULI I'm putting under
->> platforms/
+> Paul and Kumar,
 >
-> Hmm, I don't like the pollution of that directory myself,  
-> especially since
-> we've been able to keep it clean up until now.
-
-What's it matter if we have files under platforms/
-
-Would you feel better if it was in platforms/common/ or platforms/fsl
-
-> Maybe it would make more sense for you guys to slice the platforms
-> differently, and have a common platform for the eval boards you have
-> with ULi on them instead of grouping it by core used by the processor
-> on the board.
+> It turns out that I have a bunch more QE library code clean-up, so  
+> please ignore this patch.  I'll submit a more comprehensive one  
+> later this week.
 >
-> (In other words, move 86xx over under 85xx, since there wouldn't be  
-> much
-> left over anyway).
+> Timur Tabi wrote:
+>> The initialization of the QE's GUEMR register is overly  
+>> complicated, involving
+>> multiple functions and a redundant ucc_common structure.  This  
+>> patch removes
+>> struct ucc_common, merges ucc_init_guemr() into ucc_set_type()  
+>> (every caller
+>> of ucc_init_guemr() also calls ucc_set_type() immediately  
+>> afterward), and
+>> removes the unused enum ucc_pram_initial_offset.
 
-Moving 86xx (classic 74xx core) under 85xx (book e500 core) makes  
-even less sense to me.
+ok
 
 - k
