@@ -1,35 +1,36 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7D8C8DDF78
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 23:33:48 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8BDXhIA180228
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 13:33:43 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8BDXgY62265206
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 15:33:43 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8BDXfBW008706
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 15:33:42 +0200
+	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA95EDDF9C
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 23:33:51 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l8BDXlUQ066676
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 13:33:47 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8BDXlSA3104874
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 14:33:47 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8BDXUE0003512
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 14:33:31 +0100
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	"OF-General" <general@lists.openfabrics.org>,
 	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 09/12] IB/ehca: Add check for max #SGE to create_qp()
+Subject: [PATCH 08/12] IB/ehca: Replace get_paca()->paca_index by the more
+	portable smp_processor_id()
 References: <200709111518.26276.fenkes@de.ibm.com>
 In-Reply-To: <200709111518.26276.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 11 Sep 2007 15:33:40 +0200
+Date: Tue, 11 Sep 2007 15:33:13 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709111533.41250.fenkes@de.ibm.com>
+Message-Id: <200709111533.14333.fenkes@de.ibm.com>
 Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -43,40 +44,57 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_qp.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_tools.h |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index d2ab84a..7154f62 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -513,7 +513,7 @@ static struct ehca_qp *internal_create_qp(
- 			} else if (init_attr->cap.max_send_wr > 255) {
- 				ehca_err(pd->device,
- 					 "Invalid Number of "
--					 "ax_send_wr=%x for UD QP_TYPE=%x",
-+					 "max_send_wr=%x for UD QP_TYPE=%x",
- 					 init_attr->cap.max_send_wr, qp_type);
- 				return ERR_PTR(-EINVAL);
- 			}
-@@ -524,6 +524,18 @@ static struct ehca_qp *internal_create_qp(
- 			return ERR_PTR(-EINVAL);
- 			break;
- 		}
-+	} else {
-+		int max_sge = (qp_type == IB_QPT_UD || qp_type == IB_QPT_SMI
-+			       || qp_type == IB_QPT_GSI) ? 250 : 252;
-+
-+		if (init_attr->cap.max_send_sge > max_sge
-+		    || init_attr->cap.max_recv_sge > max_sge) {
-+			ehca_err(pd->device, "Invalid number of SGEs requested "
-+				 "send_sge=%x recv_sge=%x max_sge=%x",
-+				 init_attr->cap.max_send_sge,
-+				 init_attr->cap.max_recv_sge, max_sge);
-+			return ERR_PTR(-EINVAL);
-+		}
- 	}
+diff --git a/drivers/infiniband/hw/ehca/ehca_tools.h b/drivers/infiniband/hw/ehca/ehca_tools.h
+index f9b264b..863f972 100644
+--- a/drivers/infiniband/hw/ehca/ehca_tools.h
++++ b/drivers/infiniband/hw/ehca/ehca_tools.h
+@@ -73,37 +73,37 @@ extern int ehca_debug_level;
+ 		if (unlikely(ehca_debug_level)) \
+ 			dev_printk(KERN_DEBUG, (ib_dev)->dma_device, \
+ 				   "PU%04x EHCA_DBG:%s " format "\n", \
+-				   get_paca()->paca_index, __FUNCTION__, \
++				   smp_processor_id(), __FUNCTION__, \
+ 				   ## arg); \
+ 	} while (0)
  
- 	if (pd->uobject && udata)
+ #define ehca_info(ib_dev, format, arg...) \
+ 	dev_info((ib_dev)->dma_device, "PU%04x EHCA_INFO:%s " format "\n", \
+-		 get_paca()->paca_index, __FUNCTION__, ## arg)
++		 smp_processor_id(), __FUNCTION__, ## arg)
+ 
+ #define ehca_warn(ib_dev, format, arg...) \
+ 	dev_warn((ib_dev)->dma_device, "PU%04x EHCA_WARN:%s " format "\n", \
+-		 get_paca()->paca_index, __FUNCTION__, ## arg)
++		 smp_processor_id(), __FUNCTION__, ## arg)
+ 
+ #define ehca_err(ib_dev, format, arg...) \
+ 	dev_err((ib_dev)->dma_device, "PU%04x EHCA_ERR:%s " format "\n", \
+-		get_paca()->paca_index, __FUNCTION__, ## arg)
++		smp_processor_id(), __FUNCTION__, ## arg)
+ 
+ /* use this one only if no ib_dev available */
+ #define ehca_gen_dbg(format, arg...) \
+ 	do { \
+ 		if (unlikely(ehca_debug_level)) \
+ 			printk(KERN_DEBUG "PU%04x EHCA_DBG:%s " format "\n", \
+-			       get_paca()->paca_index, __FUNCTION__, ## arg); \
++			       smp_processor_id(), __FUNCTION__, ## arg); \
+ 	} while (0)
+ 
+ #define ehca_gen_warn(format, arg...) \
+ 	printk(KERN_INFO "PU%04x EHCA_WARN:%s " format "\n", \
+-	       get_paca()->paca_index, __FUNCTION__, ## arg)
++	       smp_processor_id(), __FUNCTION__, ## arg)
+ 
+ #define ehca_gen_err(format, arg...) \
+ 	printk(KERN_ERR "PU%04x EHCA_ERR:%s " format "\n", \
+-	       get_paca()->paca_index, __FUNCTION__, ## arg)
++	       smp_processor_id(), __FUNCTION__, ## arg)
+ 
+ /**
+  * ehca_dmp - printk a memory block, whose length is n*8 bytes.
 -- 
 1.5.2
