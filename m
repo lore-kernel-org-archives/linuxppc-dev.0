@@ -1,17 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id BB556DDF0A
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 00:17:29 +1000 (EST)
-Date: Tue, 11 Sep 2007 09:18:21 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Message-ID: <20070911141821.GA32545@lixom.net>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2BDABDDEE8
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 00:19:17 +1000 (EST)
+Date: Tue, 11 Sep 2007 09:19:07 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
+Message-ID: <20070911141907.GF1932@ld0162-tx32.am.freescale.net>
+References: <11891624353752-git-send-email-wei.zhang@freescale.com>
+	<1189162437484-git-send-email-wei.zhang@freescale.com>
+	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
+	<20070910032529.GA27828@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,81 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Tue, Sep 11, 2007 at 01:29:18AM -0500, Kumar Gala wrote:
-> Added basic board port for MPC8572 DS reference platform that is
-> similiar to the MPC8544/33 DS reference platform in uniprocessor mode.
+On Tue, Sep 11, 2007 at 06:01:39PM +0800, Zhang Wei-r63237 wrote:
 > 
-> ---
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> index 3a5c3c4..1e2eba8 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> @@ -181,6 +181,23 @@ static int __init mpc8544_ds_probe(void)
->  	}
->  }
-> 
-> +/*
-> + * Called very early, device-tree isn't unflattened
-> + */
-> +static int __init mpc8572_ds_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +
-> +	if (of_flat_dt_is_compatible(root, "MPC8572DS")) {
-> +#ifdef CONFIG_PCI
-> +		primary_phb_addr = 0x8000;
-> +#endif
-> +		return 1;
-> +	} else {
-> +		return 0;
-> +	}
-> +}
-> +
->  define_machine(mpc8544_ds) {
->  	.name			= "MPC8544 DS",
->  	.probe			= mpc8544_ds_probe,
-> @@ -194,3 +211,17 @@ define_machine(mpc8544_ds) {
->  	.calibrate_decr		= generic_calibrate_decr,
->  	.progress		= udbg_progress,
->  };
-> +
-> +define_machine(mpc8572_ds) {
-> +	.name			= "MPC8572 DS",
-> +	.probe			= mpc8572_ds_probe,
-> +	.setup_arch		= mpc85xx_ds_setup_arch,
-> +	.init_IRQ		= mpc85xx_ds_pic_init,
-> +#ifdef CONFIG_PCI
-> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-> +#endif
-> +	.get_irq		= mpic_get_irq,
-> +	.restart		= mpc85xx_restart,
-> +	.calibrate_decr		= generic_calibrate_decr,
-> +	.progress		= udbg_progress,
-> +};
+>  
+> > 
+> > On Fri, Sep 07, 2007 at 04:43:35PM +0200, Segher Boessenkool wrote:
+> > > > +   l) Freescale DMA
+> > > 
+> > > > +    - compatible : Should be "fsl,dma".
+> > > 
+> > > Please choose some more specific name.  "fsl,mpc8540-dma" would
+> > > be a reasonable choice perhaps.
+> > 
+> > More precisely, the compatible property should always have an specific
+> > entry based on the exact chip the DMA engine resides in, as well as a
+> > more general entry for any fsl dma engine of this type.
+> > 
+> There is only difference in DMA channel and not in DMA node now. Does it
+> need add the precise compatible property name?
 
-How different are these boards really? Could you just detect MPC85xxDS
-and have a generic platform for them, or are they different enough that
-you need individual ones for it?
+Yes.  First of all, there most likely is a difference -- the endianness
+of the shared status summary register.  Secondly, the device tree should
+not make assumptions as far as whether the user is going to bind to
+individual channels or the whole controller.
 
-
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index 06d23e1..c98b867 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -374,10 +374,9 @@
->  #define PCI_DEVICE_ID_ATI_IXP400_SATA   0x4379
->  #define PCI_DEVICE_ID_ATI_IXP400_SATA2	0x437a
->  #define PCI_DEVICE_ID_ATI_IXP600_SATA	0x4380
-> -#define PCI_DEVICE_ID_ATI_IXP600_SMBUS	0x4385
-> +#define PCI_DEVICE_ID_ATI_SBX00_SMBUS	0x4385
->  #define PCI_DEVICE_ID_ATI_IXP600_IDE	0x438c
->  #define PCI_DEVICE_ID_ATI_IXP700_SATA	0x4390
-> -#define PCI_DEVICE_ID_ATI_IXP700_SMBUS	0x4395
->  #define PCI_DEVICE_ID_ATI_IXP700_IDE	0x439c
-
-This looks like it doesn't belong in this patch.
-
-
--Olof
+-Scott
