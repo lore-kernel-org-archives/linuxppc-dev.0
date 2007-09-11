@@ -1,13 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5C1D4DDE03
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 07:33:54 +1000 (EST)
+Message-ID: <46E70991.3060208@freescale.com>
+Date: Tue, 11 Sep 2007 16:33:05 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18151.1452.702936.394284@cargo.ozlabs.ibm.com>
-Date: Wed, 12 Sep 2007 07:16:28 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH 1/3] Implement arch disable/enable irq hooks.
-In-Reply-To: <20070905220607.GA11330@ld0162-tx32.am.freescale.net>
 References: <20070905220607.GA11330@ld0162-tx32.am.freescale.net>
+	<18151.1452.702936.394284@cargo.ozlabs.ibm.com>
+In-Reply-To: <18151.1452.702936.394284@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,32 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood writes:
+Paul Mackerras wrote:
+> It might be better to use hard_irq_disable rather than
+> local_irq_disable here, since I think we will need that on 64-bit (and
+> on 32-bit if we ever do lazy irq disabling there).
 
-> These hooks ensure that a decrementer interrupt is not pending when
-> suspending; otherwise, problems may occur.  For example, with deep sleep
-> on the 831x, a pending decrementer will cause a system freeze because the
-> SoC thinks the decrementer interrupt would have woken the system, but the
-> core must have interrupts disabled due to the setup required for deep
-> sleep.
+OK.
 
-> +	set_dec(0x7fffffff);
-> +	local_irq_disable();
-> +	set_dec(0x7fffffff);
+>> +/* Overrides the weak version in kernel/power/main.c */
+>> +void arch_suspend_disable_irqs(void)
+>> +{
+>> +	if (ppc_md.suspend_disable_irqs)
+>> +		ppc_md.suspend_disable_irqs();
+>> +	else
+>> +		generic_suspend_disable_irqs();
+> 
+> Any particular reason why we need a ppc_md hook here?  Do we expect
+> some platform to need to do something different?
 
-It might be better to use hard_irq_disable rather than
-local_irq_disable here, since I think we will need that on 64-bit (and
-on 32-bit if we ever do lazy irq disabling there).
+Not that I know the details of, but others requested it.
 
-> +/* Overrides the weak version in kernel/power/main.c */
-> +void arch_suspend_disable_irqs(void)
-> +{
-> +	if (ppc_md.suspend_disable_irqs)
-> +		ppc_md.suspend_disable_irqs();
-> +	else
-> +		generic_suspend_disable_irqs();
-
-Any particular reason why we need a ppc_md hook here?  Do we expect
-some platform to need to do something different?
-
-Paul.
+-Scott
