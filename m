@@ -1,41 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2EAE2DDE9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 03:09:04 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l8BG1Lok022522
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 12:01:21 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8BH8tKV403098
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 11:08:58 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8BH8sUO024004
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 11:08:55 -0600
-Date: Tue, 11 Sep 2007 12:08:53 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: SOC registers/immr determination from device tree (was Re:
-	[PATCH 1/3] fsl_soc.c cleanup)
-Message-ID: <20070911120853.450aa9ff@weaponx.rchland.ibm.com>
-In-Reply-To: <46E6CA63.1040703@freescale.com>
-References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
-	<1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
-	<20070911135717.GD1932@ld0162-tx32.am.freescale.net>
-	<3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
-	<46E6B98C.1070207@freescale.com>
-	<B247D7AF-6AB9-4009-BFB8-0A365D3F0DF2@kernel.crashing.org>
-	<46E6C145.2050006@freescale.com>
-	<D3BBD38C-B050-4694-8B38-EF9C75DD2D8F@kernel.crashing.org>
-	<46E6CA63.1040703@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
+	by ozlabs.org (Postfix) with ESMTP id 5CE0DDDE9A
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 03:09:09 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so3689500pyi
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 10:09:08 -0700 (PDT)
+Message-ID: <fa686aa40709111009j64925edag511078d88ff904c@mail.gmail.com>
+Date: Tue, 11 Sep 2007 11:09:07 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Michal Simek" <Monstr@seznam.cz>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: FDT for Microblaze and PPC405
+In-Reply-To: <2057.3992-23959-31980099-1189527824@seznam.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40709110901k11082946r626fc8532d47eab5@mail.gmail.com>
+	<2057.3992-23959-31980099-1189527824@seznam.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,13 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 11 Sep 2007 12:03:31 -0500
-Scott Wood <scottwood@freescale.com> wrote:
-> 
-> It'd probably be more efficient to discuss this in person; can you stop
-> by my cube sometime when you're around and not in a meeting?
+On 9/11/07, Michal Simek <Monstr@seznam.cz> wrote:
+> Hi Grant,
 
-Please be sure to post a summary of the discussion if you do that so the
-other people that care can at least see an end result.
+(Adding linuxppc-dev mailing list to CC list because we're discussing
+FDT issues)
 
-josh
+> I made EDK repository file for generation dts file from Xilinx design. I sent it to Wolfgang and Steve this week.
+> It is in the same config file as I use for configuration Microblaze for U-BOOT. If you want I can send you this repository files.
+
+Yes, please do.
+
+> And I start with redesigning Linux kernel for Microblaze. I ported some peripherals as timer and intc etc.
+> But for some peripherals I need better configuration.
+>
+> I have no time to read information about fdt. Can you tell me what labels I can use?
+
+Steve has already done a bunch of work in this direction on
+microblaze, I would converse with him.
+
+>
+> For example emaclite driver needs information about turning on/off ping pong buffer...
+>
+> I would like to make this properly.
+
+FDT design is just as much art as it is science.  It takes taste and
+judgement to desgin a nice set of bindings.  Your best option is to
+draft something and post it to the linuxppc-embedded mailing list for
+review.
+
+>
+> And second question is on early console logs and timers setting. I read about aliases in FDT. I think that aliases can cover this setting.
+> For example my design contain 4 serial line and I would like to know which serial line is set on early console.
+
+You use the chosen node for this.  In the chosen node, you add a
+property called "linux,stdout-path" which holds the path to your
+console.  You can look at examples under arch/powerpc/boot/dts/*
+
+Cheers,
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
