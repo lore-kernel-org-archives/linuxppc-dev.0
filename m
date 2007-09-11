@@ -2,18 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B9A0DDF13
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:55:59 +1000 (EST)
-In-Reply-To: <20070911141711.GE1932@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 58BA5DDF1F
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:57:39 +1000 (EST)
+In-Reply-To: <20070911155558.GA10743@lixom.net>
 References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141711.GE1932@ld0162-tx32.am.freescale.net>
+	<20070911141821.GA32545@lixom.net>
+	<230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
+	<20070911155558.GA10743@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
+Message-Id: <11B85E70-D643-4013-A9B3-59CD76F9D7AB@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Tue, 11 Sep 2007 10:58:43 -0500
-To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 11 Sep 2007 11:00:28 -0500
+To: Olof Johansson <olof@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,187 +27,80 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 11, 2007, at 9:17 AM, Scott Wood wrote:
+On Sep 11, 2007, at 10:55 AM, Olof Johansson wrote:
 
-> On Tue, Sep 11, 2007 at 01:29:18AM -0500, Kumar Gala wrote:
->> diff --git a/arch/powerpc/boot/dts/mpc8572ds.dts b/arch/powerpc/ 
->> boot/dts/mpc8572ds.dts
->> new file mode 100644
->> index 0000000..9d23561
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/mpc8572ds.dts
->> @@ -0,0 +1,378 @@
->> +/*
->> + * MPC8572 DS Device Tree Source
->> + *
->> + * Copyright 2007 Freescale Semiconductor Inc.
->> + *
->> + * This program is free software; you can redistribute  it and/or  
->> modify it
->> + * under  the terms of  the GNU General  Public License as  
->> published by the
->> + * Free Software Foundation;  either version 2 of the  License,  
->> or (at your
->> + * option) any later version.
->> + */
->> +
->> +/ {
->> +	model = "MPC8572DS";
->> +	compatible = "MPC8572DS", "MPC85xxDS";
+> On Tue, Sep 11, 2007 at 10:50:18AM -0500, Kumar Gala wrote:
+>>>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>>> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>>> index 3a5c3c4..1e2eba8 100644
+>>>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>>> @@ -181,6 +181,23 @@ static int __init mpc8544_ds_probe(void)
+>>>>  	}
+>>>>  }
+>>>>
+>>>> +/*
+>>>> + * Called very early, device-tree isn't unflattened
+>>>> + */
+>>>> +static int __init mpc8572_ds_probe(void)
+>>>> +{
+>>>> +	unsigned long root = of_get_flat_dt_root();
+>>>> +
+>>>> +	if (of_flat_dt_is_compatible(root, "MPC8572DS")) {
+>>>> +#ifdef CONFIG_PCI
+>>>> +		primary_phb_addr = 0x8000;
+>>>> +#endif
+>>>> +		return 1;
+>>>> +	} else {
+>>>> +		return 0;
+>>>> +	}
+>>>> +}
+>>>> +
+>>>>  define_machine(mpc8544_ds) {
+>>>>  	.name			= "MPC8544 DS",
+>>>>  	.probe			= mpc8544_ds_probe,
+>>>> @@ -194,3 +211,17 @@ define_machine(mpc8544_ds) {
+>>>>  	.calibrate_decr		= generic_calibrate_decr,
+>>>>  	.progress		= udbg_progress,
+>>>>  };
+>>>> +
+>>>> +define_machine(mpc8572_ds) {
+>>>> +	.name			= "MPC8572 DS",
+>>>> +	.probe			= mpc8572_ds_probe,
+>>>> +	.setup_arch		= mpc85xx_ds_setup_arch,
+>>>> +	.init_IRQ		= mpc85xx_ds_pic_init,
+>>>> +#ifdef CONFIG_PCI
+>>>> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>>>> +#endif
+>>>> +	.get_irq		= mpic_get_irq,
+>>>> +	.restart		= mpc85xx_restart,
+>>>> +	.calibrate_decr		= generic_calibrate_decr,
+>>>> +	.progress		= udbg_progress,
+>>>> +};
+>>>
+>>> How different are these boards really? Could you just detect  
+>>> MPC85xxDS
+>>> and have a generic platform for them, or are they different  
+>>> enough that
+>>> you need individual ones for it?
+>>
+>> I wanted a different probe.  I figured having a different struct  
+>> was a
+>> simple solution.
 >
-> "fsl," prefix on compatible.
->
->> +	#address-cells = <1>;
->> +	#size-cells = <1>;
->> +
->> +	cpus {
->> +		#cpus = <1>;
->
-> Where is #cpus defined or used?  I don't see it used in any other  
-> trees, either.
+> Seems like the only reason to need that is the setting of
+> primary_phb_addr.  Can't that information be derived out of the device
+> tree instead? That'd avoid alot of code duplication (code that  
+> includes
+> ifdefs, FWIW :-)
 
-will kill.
+well the ifdefs are orthogonal.  We don't have a way of knowing  
+primary from the device tree today.
 
->
->> +		#address-cells = <1>;
->> +		#size-cells = <0>;
->> +
->> +		PowerPC,8572@0 {
->> +			device_type = "cpu";
->> +			reg = <0>;
->> +			d-cache-line-size = <20>;	// 32 bytes
->> +			i-cache-line-size = <20>;	// 32 bytes
->> +			d-cache-size = <8000>;		// L1, 32K
->> +			i-cache-size = <8000>;		// L1, 32K
->> +			timebase-frequency = <0>;
->> +			bus-frequency = <0>;
->> +			clock-frequency = <0>;
->> +			32-bit;
->
-> Where is 32-bit; defined or used?
+> It just seems like a slippery slope. I'm not objecting directly to  
+> this
+> patch, but I think it should be fixed for the longer term.
 
-its a copy paste error.  Will kill 32-bit on other platforms.
-
->
->> +	soc8572@ffe00000 {
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +		#interrupt-cells = <2>;
->> +		device_type = "soc";
->> +		ranges = <00000000 ffe00000 00100000
->> +			  80000000 80000000 20000000
->> +			  a0000000 a0000000 20000000
->> +			  c0000000 c0000000 20000000
->> +			  ffc00000 ffc00000 00010000
->> +			  ffc10000 ffc10000 00010000
->> +			  ffc20000 ffc20000 00010000>;
->> +
->> +		reg = <ffe00000 00001000>;	// CCSRBAR 1M
->
-> Comment doesn't match what's actually in reg.
-
-will fix.
-
->
->> +		bus-frequency = <0>;		// Filled out by uboot.
->> +
->> +		memory-controller@2000 {
->> +			compatible = "fsl,8572-memory-controller";
->
-> Is it compatible with any other 85xx memory controller?
-
-maybe, but I don't want to get into that just yet.
-
->
->> +			reg = <2000 1000>;
->> +			interrupt-parent = <&mpic>;
->> +			interrupts = <12 2>;
->> +		};
->> +
->> +		l2-cache-controller@20000 {
->> +			compatible = "fsl,8572-l2-cache-controller";
->> +			reg = <20000 1000>;
->> +			cache-line-size = <20>;	// 32 bytes
->> +			cache-size = <80000>;	// L2, 512K
->> +			interrupt-parent = <&mpic>;
->> +			interrupts = <10 2>;
->> +		};
->
-> Should this node be referenced by an l2-cache property in the cpu  
-> node?
-
-No, its a front side cache.
-
->
->> +		pcie@8000 {
->> +			compatible = "fsl,mpc8641-pcie";
->
-> Should probably be "fsl,mpc8572-pcie", "fsl,mpc8641-pcie".
-
-this should "fsl,mpc8548-pcie" to match other 85xx pcie.
-
->
->> +			device_type = "pci";
->> +			#interrupt-cells = <1>;
->> +			#size-cells = <2>;
->> +			#address-cells = <3>;
->> +			reg = <8000 1000>;
->> +			bus-range = <0 ff>;
->> +			ranges = <02000000 0 80000000 80000000 0 20000000
->> +				  01000000 0 00000000 ffc00000 0 00010000>;
->
-> No prefetchable mem space?
-
-we haven't normally provided prefetch on 85xx/86xx.. will deal with  
-this later.
-
->
->> +			clock-frequency = <1fca055>;
->
-> Decimal would be nicer.
->
->> +		pcie@9000 {
->> +			compatible = "fsl,mpc8548-pcie";
->
-> Why is this one 8548-compatible and the previous one 8641-compatible?
-
-copy paste, will fix.
-
->
->> +		mpic: pic@40000 {
->> +			clock-frequency = <0>;
->> +			interrupt-controller;
->> +			#address-cells = <0>;
->> +			#interrupt-cells = <2>;
->> +			reg = <40000 40000>;
->> +			built-in;
->> +			compatible = "chrp,open-pic";
->> +			device_type = "open-pic";
->> +			big-endian;
->> +		};
->
-> Where is the built-in; property defined or used?
-
-defined in chrp OF spec, not sure why we bother with it.
-
->
->> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
->> index 06d23e1..c98b867 100644
->> --- a/include/linux/pci_ids.h
->> +++ b/include/linux/pci_ids.h
->> @@ -374,10 +374,9 @@
->>  #define PCI_DEVICE_ID_ATI_IXP400_SATA   0x4379
->>  #define PCI_DEVICE_ID_ATI_IXP400_SATA2	0x437a
->>  #define PCI_DEVICE_ID_ATI_IXP600_SATA	0x4380
->> -#define PCI_DEVICE_ID_ATI_IXP600_SMBUS	0x4385
->> +#define PCI_DEVICE_ID_ATI_SBX00_SMBUS	0x4385
->>  #define PCI_DEVICE_ID_ATI_IXP600_IDE	0x438c
->>  #define PCI_DEVICE_ID_ATI_IXP700_SATA	0x4390
->> -#define PCI_DEVICE_ID_ATI_IXP700_SMBUS	0x4395
->>  #define PCI_DEVICE_ID_ATI_IXP700_IDE	0x439c
->
-> What's going on here?
-
-copied file over from an older tree.
+Once we have a clean way of knowing primary PHB than I'm happy to fixup.
 
 - k
