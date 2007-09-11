@@ -1,24 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4A056DDF1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:52:33 +1000 (EST)
-Message-ID: <46E6B98C.1070207@freescale.com>
-Date: Tue, 11 Sep 2007 10:51:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0DEB1DDF13
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:55:05 +1000 (EST)
+Date: Tue, 11 Sep 2007 10:55:58 -0500
+From: Olof Johansson <olof@lixom.net>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] fsl_soc.c cleanup
-References: <20070828201618.GA24210@ld0162-tx32.am.freescale.net>
-	<1E0D95DC-03E8-4BF0-9E22-69AECFA73FCF@kernel.crashing.org>
-	<20070911135717.GD1932@ld0162-tx32.am.freescale.net>
-	<3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
-In-Reply-To: <3583FF3E-35E3-4B0A-A170-D69135E902F2@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Message-ID: <20070911155558.GA10743@lixom.net>
+References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
+	<20070911141821.GA32545@lixom.net>
+	<230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Yep.  However, after some discussion with Segher on this for 
-> 83xx/85xx/86xx I think we want to keep the reg prop and have it cover 
-> the initial soc registers [size on 83xx is 0x100, size on 85xx/86xx 
-> would be 0x1000].
-> 
-> What we need is a saner way to determine immr on 82xx & 8xx.  Segher's 
-> rule is that a given "reg" prop shouldn't overlap w/any other reg.  We 
-> currently violate that on 8xx.  Not as clear on 82xx if we do that.
-> 
-> I'm thinking on 8xx we should move to grabbing a top level compat value 
-> (mpc8xx) and use the SPRN_IMMR to set immrbase.
+On Tue, Sep 11, 2007 at 10:50:18AM -0500, Kumar Gala wrote:
+>>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c 
+>>> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>> index 3a5c3c4..1e2eba8 100644
+>>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>>> @@ -181,6 +181,23 @@ static int __init mpc8544_ds_probe(void)
+>>>  	}
+>>>  }
+>>>
+>>> +/*
+>>> + * Called very early, device-tree isn't unflattened
+>>> + */
+>>> +static int __init mpc8572_ds_probe(void)
+>>> +{
+>>> +	unsigned long root = of_get_flat_dt_root();
+>>> +
+>>> +	if (of_flat_dt_is_compatible(root, "MPC8572DS")) {
+>>> +#ifdef CONFIG_PCI
+>>> +		primary_phb_addr = 0x8000;
+>>> +#endif
+>>> +		return 1;
+>>> +	} else {
+>>> +		return 0;
+>>> +	}
+>>> +}
+>>> +
+>>>  define_machine(mpc8544_ds) {
+>>>  	.name			= "MPC8544 DS",
+>>>  	.probe			= mpc8544_ds_probe,
+>>> @@ -194,3 +211,17 @@ define_machine(mpc8544_ds) {
+>>>  	.calibrate_decr		= generic_calibrate_decr,
+>>>  	.progress		= udbg_progress,
+>>>  };
+>>> +
+>>> +define_machine(mpc8572_ds) {
+>>> +	.name			= "MPC8572 DS",
+>>> +	.probe			= mpc8572_ds_probe,
+>>> +	.setup_arch		= mpc85xx_ds_setup_arch,
+>>> +	.init_IRQ		= mpc85xx_ds_pic_init,
+>>> +#ifdef CONFIG_PCI
+>>> +	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>>> +#endif
+>>> +	.get_irq		= mpic_get_irq,
+>>> +	.restart		= mpc85xx_restart,
+>>> +	.calibrate_decr		= generic_calibrate_decr,
+>>> +	.progress		= udbg_progress,
+>>> +};
+>>
+>> How different are these boards really? Could you just detect MPC85xxDS
+>> and have a generic platform for them, or are they different enough that
+>> you need individual ones for it?
+>
+> I wanted a different probe.  I figured having a different struct was a 
+> simple solution.
 
-Any particular reason to special-case it, when we already need code to 
-do it the other way for every other fsl soc?
+Seems like the only reason to need that is the setting of
+primary_phb_addr.  Can't that information be derived out of the device
+tree instead? That'd avoid alot of code duplication (code that includes
+ifdefs, FWIW :-)
 
-> On mpc82xx-pq2 we could 
-> add a immr "device" to search for.
+It just seems like a slippery slope. I'm not objecting directly to this
+patch, but I think it should be fixed for the longer term.
 
-Enh.  The soc node *is* the immr "device".  I'd rather add a node for 
-the "initial" registers (they generally don't involve configuring the 
-immr "bus" itself, but rather the chipselect bus and other miscellaneous 
-things) if needed, get rid of /soc/reg, and have ranges cover the whole 
-immr.
 
-And why is 82xx-pq2 special?  Wouldn't you need this on 83xx, 85xx, and 
-86xx as well?
-
--Scott
+-Olof
