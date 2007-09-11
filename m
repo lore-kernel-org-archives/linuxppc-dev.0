@@ -1,25 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 72C45DDE9B
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 05:44:46 +1000 (EST)
-Date: Tue, 11 Sep 2007 14:45:41 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH] [POWERPC] Fix interrupt routing and setup of ULI M1575
-	on FSL boards
-Message-ID: <20070911194541.GB13105@lixom.net>
-References: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
-	<20070911172000.GC10743@lixom.net>
-	<9C9F1918-1B55-4426-8138-842B9AAA5BD5@kernel.crashing.org>
-	<20070911182234.GA12802@lixom.net>
-	<424B650B-C272-45FC-BBC6-F090A9474082@kernel.crashing.org>
-	<24F46474-1425-4C8B-A400-4D18D28932F2@freescale.com>
-	<6EF5E5F8-703B-4C49-B458-92CD0CDF89A0@kernel.crashing.org>
-	<65BEA2C0-2494-490E-B0EE-B51C96B64075@freescale.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <65BEA2C0-2494-490E-B0EE-B51C96B64075@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-ID: <18151.1452.702936.394284@cargo.ozlabs.ibm.com>
+Date: Wed, 12 Sep 2007 07:16:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/3] Implement arch disable/enable irq hooks.
+In-Reply-To: <20070905220607.GA11330@ld0162-tx32.am.freescale.net>
+References: <20070905220607.GA11330@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2007 at 02:22:21PM -0500, Becky Bruce wrote:
+Scott Wood writes:
 
-> >>
-> >> I'm also guilty of not noticing the original patch - my apologies.
-> >
-> > maybe we should just have a platforms/fsl for all boards from  
-> > freescale.  Not having things broken up by which processor family  
-> > they are for.
-> 
-> What do you envision as being under there?  Subdirs?  How's it  
-> organized? In some ways that might make sense, but I think we'd need  
-> to sit down and think it through with all the twisted combinations  
-> our hardware people come up with.  The fact is that there's really no  
-> clean way to deal with all the wackiness.  So we just pick something  
-> that fits OK and go with it.
+> These hooks ensure that a decrementer interrupt is not pending when
+> suspending; otherwise, problems may occur.  For example, with deep sleep
+> on the 831x, a pending decrementer will cause a system freeze because the
+> SoC thinks the decrementer interrupt would have woken the system, but the
+> core must have interrupts disabled due to the setup required for deep
+> sleep.
 
-Given the amount of stuff under ??xx, it would be pretty easy to contain
-already. All the drivers are under sysdev/ and all core support is under
-kernel/. There's really very little under each platform directory at
-the moment, just a few shared device tree parsers and some device fixups.
+> +	set_dec(0x7fffffff);
+> +	local_irq_disable();
+> +	set_dec(0x7fffffff);
 
+It might be better to use hard_irq_disable rather than
+local_irq_disable here, since I think we will need that on 64-bit (and
+on 32-bit if we ever do lazy irq disabling there).
 
--Olof
+> +/* Overrides the weak version in kernel/power/main.c */
+> +void arch_suspend_disable_irqs(void)
+> +{
+> +	if (ppc_md.suspend_disable_irqs)
+> +		ppc_md.suspend_disable_irqs();
+> +	else
+> +		generic_suspend_disable_irqs();
+
+Any particular reason why we need a ppc_md hook here?  Do we expect
+some platform to need to do something different?
+
+Paul.
