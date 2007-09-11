@@ -1,36 +1,35 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25C16DDEDD
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 23:31:13 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8BDV84I076360
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 13:31:08 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8BDV8bP1925122
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 15:31:08 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8BDV7S6023288
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 15:31:08 +0200
+	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CE8C4DDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 23:32:08 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l8BDW3KW542758
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 13:32:03 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8BDW2E62912320
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 14:32:02 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8BDVusY027228
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 14:31:56 +0100
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
 	"OF-General" <general@lists.openfabrics.org>,
 	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH 04/12] IB/ehca: Use remap_4k_pfn() to map firmware contexts to
-	user space
+Subject: [PATCH 05/12] IB/ehca: Refactor hvcall tracing
 References: <200709111518.26276.fenkes@de.ibm.com>
 In-Reply-To: <200709111518.26276.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 11 Sep 2007 15:31:06 +0200
+Date: Tue, 11 Sep 2007 15:31:49 +0200
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709111531.07604.fenkes@de.ibm.com>
+Message-Id: <200709111531.50039.fenkes@de.ibm.com>
 Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -42,95 +41,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-
-Use Paul's new remap_4k_pfn() function to map our 4K firmware contexts into
-user space on 64K-page machines without exposing neighboring firmware
-contexts. Return the context's offset within a 64K page to user space so it
-can determine the proper virtual address.
-
-For details about remap_4k_pfn(), see commit 721151d0 or
-http://patchwork.ozlabs.org/linuxppc/patch?id=10281
+Change hvcall trace output towards better readability: reg numbers instead
+of argument numbers, return code as signed decimal instead of unsigned hex.
 
 Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_classes.h |    4 +++-
- drivers/infiniband/hw/ehca/ehca_cq.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_qp.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_uverbs.c  |    6 +++---
- 4 files changed, 10 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/ehca/hcp_if.c |   57 ++++++++++++++--------------------
+ 1 files changed, 24 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index b5e9603..206d4eb 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -337,6 +337,8 @@ struct ehca_create_cq_resp {
- 	u32 cq_number;
- 	u32 token;
- 	struct ipzu_queue_resp ipz_queue;
-+	u32 fw_handle_ofs;
-+	u32 dummy;
- };
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 8534061..32f465b 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -84,6 +84,10 @@
+ #define H_MP_SHUTDOWN                   EHCA_BMASK_IBM(48, 48)
+ #define H_MP_RESET_QKEY_CTR             EHCA_BMASK_IBM(49, 49)
  
- struct ehca_create_qp_resp {
-@@ -347,7 +349,7 @@ struct ehca_create_qp_resp {
- 	u32 qkey;
- 	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
- 	u32 real_qp_num;
--	u32 dummy; /* padding for 8 byte alignment */
-+	u32 fw_handle_ofs;
- 	struct ipzu_queue_resp ipz_squeue;
- 	struct ipzu_queue_resp ipz_rqueue;
- };
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index a6f17e4..d68603d 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -281,6 +281,8 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 		resp.ipz_queue.queue_length = ipz_queue->queue_length;
- 		resp.ipz_queue.pagesize = ipz_queue->pagesize;
- 		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
-+		resp.fw_handle_ofs = (u32)
-+			(my_cq->galpas.user.fw_handle & (PAGE_SIZE - 1));
- 		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
- 			ehca_err(device, "Copy to udata failed.");
- 			goto create_cq_exit4;
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index e886e3b..3a3880f 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -751,6 +751,8 @@ static struct ehca_qp *internal_create_qp(
- 			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
- 		if (HAS_RQ(my_qp))
- 			queue2resp(&resp.ipz_rqueue, &my_qp->ipz_rqueue);
-+		resp.fw_handle_ofs = (u32)
-+			(my_qp->galpas.user.fw_handle & (PAGE_SIZE - 1));
++#define HCALL4_REGS_FORMAT "r4=%lx r5=%lx r6=%lx r7=%lx"
++#define HCALL7_REGS_FORMAT HCALL4_REGS_FORMAT " r8=%lx r9=%lx r10=%lx"
++#define HCALL9_REGS_FORMAT HCALL7_REGS_FORMAT " r11=%lx r12=%lx"
++
+ static DEFINE_SPINLOCK(hcall_lock);
  
- 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
- 			ehca_err(pd->device, "Copy to udata failed");
-diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-index 3340f49..84a16bc 100644
---- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-@@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	u64 vsize, physical;
+ static u32 get_longbusy_msecs(int longbusy_rc)
+@@ -118,8 +122,7 @@ static long ehca_plpar_hcall_norets(unsigned long opcode,
+ 	long ret;
+ 	int i, sleep_msecs;
  
- 	vsize = vma->vm_end - vma->vm_start;
--	if (vsize != EHCA_PAGESIZE) {
-+	if (vsize < EHCA_PAGESIZE) {
- 		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
- 		return -EINVAL;
+-	ehca_gen_dbg("opcode=%lx arg1=%lx arg2=%lx arg3=%lx arg4=%lx "
+-		     "arg5=%lx arg6=%lx arg7=%lx",
++	ehca_gen_dbg("opcode=%lx " HCALL7_REGS_FORMAT,
+ 		     opcode, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+ 
+ 	for (i = 0; i < 5; i++) {
+@@ -133,16 +136,13 @@ static long ehca_plpar_hcall_norets(unsigned long opcode,
+ 		}
+ 
+ 		if (ret < H_SUCCESS)
+-			ehca_gen_err("opcode=%lx ret=%lx"
+-				     " arg1=%lx arg2=%lx arg3=%lx arg4=%lx"
+-				     " arg5=%lx arg6=%lx arg7=%lx ",
+-				     opcode, ret,
+-				     arg1, arg2, arg3, arg4, arg5,
+-				     arg6, arg7);
+-
+-		ehca_gen_dbg("opcode=%lx ret=%lx", opcode, ret);
+-		return ret;
++			ehca_gen_err("opcode=%lx ret=%li " HCALL7_REGS_FORMAT,
++				     opcode, ret, arg1, arg2, arg3,
++				     arg4, arg5, arg6, arg7);
++		else
++			ehca_gen_dbg("opcode=%lx ret=%li", opcode, ret);
+ 
++		return ret;
  	}
-@@ -118,8 +118,8 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
- 	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
--	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
--			      vsize, vma->vm_page_prot);
-+	ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
-+			   vma->vm_page_prot);
- 	if (unlikely(ret)) {
- 		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
- 		return -ENOMEM;
+ 
+ 	return H_BUSY;
+@@ -164,10 +164,8 @@ static long ehca_plpar_hcall9(unsigned long opcode,
+ 	int i, sleep_msecs, lock_is_set = 0;
+ 	unsigned long flags = 0;
+ 
+-	ehca_gen_dbg("opcode=%lx arg1=%lx arg2=%lx arg3=%lx arg4=%lx "
+-		     "arg5=%lx arg6=%lx arg7=%lx arg8=%lx arg9=%lx",
+-		     opcode, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+-		     arg8, arg9);
++	ehca_gen_dbg("INPUT -- opcode=%lx " HCALL9_REGS_FORMAT, opcode,
++		     arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+ 
+ 	for (i = 0; i < 5; i++) {
+ 		if ((opcode == H_ALLOC_RESOURCE) && (arg2 == 5)) {
+@@ -188,26 +186,19 @@ static long ehca_plpar_hcall9(unsigned long opcode,
+ 			continue;
+ 		}
+ 
+-		if (ret < H_SUCCESS)
+-			ehca_gen_err("opcode=%lx ret=%lx"
+-				     " arg1=%lx arg2=%lx arg3=%lx arg4=%lx"
+-				     " arg5=%lx arg6=%lx arg7=%lx arg8=%lx"
+-				     " arg9=%lx"
+-				     " out1=%lx out2=%lx out3=%lx out4=%lx"
+-				     " out5=%lx out6=%lx out7=%lx out8=%lx"
+-				     " out9=%lx",
+-				     opcode, ret,
+-				     arg1, arg2, arg3, arg4, arg5,
+-				     arg6, arg7, arg8, arg9,
+-				     outs[0], outs[1], outs[2], outs[3],
++		if (ret < H_SUCCESS) {
++			ehca_gen_err("INPUT -- opcode=%lx " HCALL9_REGS_FORMAT,
++				     opcode, arg1, arg2, arg3, arg4, arg5,
++				     arg6, arg7, arg8, arg9);
++			ehca_gen_err("OUTPUT -- ret=%li " HCALL9_REGS_FORMAT,
++				     ret, outs[0], outs[1], outs[2], outs[3],
++				     outs[4], outs[5], outs[6], outs[7],
++				     outs[8]);
++		} else
++			ehca_gen_dbg("OUTPUT -- ret=%li " HCALL9_REGS_FORMAT,
++				     ret, outs[0], outs[1], outs[2], outs[3],
+ 				     outs[4], outs[5], outs[6], outs[7],
+ 				     outs[8]);
+-
+-		ehca_gen_dbg("opcode=%lx ret=%lx out1=%lx out2=%lx out3=%lx "
+-			     "out4=%lx out5=%lx out6=%lx out7=%lx out8=%lx "
+-			     "out9=%lx",
+-			     opcode, ret, outs[0], outs[1], outs[2], outs[3],
+-			     outs[4], outs[5], outs[6], outs[7], outs[8]);
+ 		return ret;
+ 	}
+ 
 -- 
 1.5.2
