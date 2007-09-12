@@ -1,21 +1,19 @@
-Return-Path: <matthias.fuchs@esd-electronics.com>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id C2F28DDE27
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
+	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id 5B6DEDDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 17:18:05 +1000 (EST)
-From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: PCI target implementation on AMCC PPC CPUs
-Date: Wed, 12 Sep 2007 09:17:29 +0200
-References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>
-	<200709111113.46508.matthias.fuchs@esd-electronics.com>
-	<46E6D131.2030904@ovro.caltech.edu>
-In-Reply-To: <46E6D131.2030904@ovro.caltech.edu>
+	Wed, 12 Sep 2007 19:10:17 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Flash on ep8248e standard motherboards
+Date: Wed, 12 Sep 2007 11:10:12 +0200
+References: <bfa0697f0709041108u2c6b719dj600cb2eb25b66a4a@mail.gmail.com>
+In-Reply-To: <bfa0697f0709041108u2c6b719dj600cb2eb25b66a4a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709120917.29767.matthias.fuchs@esd-electronics.com>
-Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
+Message-Id: <200709121110.12296.laurentp@cse-semaphore.com>
+Cc: Alan Bennett <embedded@akb.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,74 +24,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+Hi Alan,
 
-I must admit, that the AMCC PowerPC's PCI interrupt capabilities could
-be better:-) In both directions the host CPU has to do PCI
-configuration cycles either to generate or acknowledge an interrupt.
-The later is problematic for some OS coming from Redmond: you 
-have to do pci configuration cycles from interrupt level - and
-these OS do not 'like' that. 
+On Tuesday 04 September 2007 20:08, Alan Bennett wrote:
+> Please accept my apologies for sending the last email and accept this
+> email address and question.  without the disclaimer.
+> ---------------------------------------------------
+>
+> Hello;
+> We have a custom board based on the ep8248e design from Embedded
+> Planet and I'm trying to use something other than codewarrior to flash
+> u-boot srec's
+>
+> I'm not sure where the problem is, but I'm unable to flash the
+> u-boot.srec onto the Embedded Planet board (using the BDI2000), let
+> alone our custom board.
+>    1. Embedded Planet ep8248E
+>         64 MB SDRAM
+>         64 MB Flash (x2 Am29LV256M)
+>    2. Custom
+>        128 MB SDRAM
+>        128 MB Flash (X2 Spansion S29GL512N)
+>
+> NOTE: CW successfully flashes both parts, but then again, it's CW.
+>
+>
+> BDI 2000 Config File:
+>   ;  initialize - FLASH BR0 & OR0 (64 Mbyte)
+>   ;*******************************************
+>   WM32    0xf0010100     0xfc001801
+>   WM32     0xf0010104     0xfc0008c2
+>   [FLASH]
+>   CHIPTYPE    MIRRORX16
+>   CHIPSIZE    0x2000000
+>   BUSWIDTH    16
+>
+> I then attempt to unlock/erase/program
+> Check for Sanity (NOTE: using BDI 2000 PROMPT)
+>   md 0xf0010100 2
+>   f0010100 : 0xf8001801  - 134211583  ....
+>   f0010104 : 0xf80008b2  - 134215502  ....
+>   md 0xfff00000 2
+>   fff00000 : 0x10101010    269488144  ....
+>   fff00004 : 0x10101010    269488144  ....
+> All looks good.  (10101010 is the existing planet core header)
+>
+> TRY TO UNLOCK
+>   unlock 0xfff00000 1000
+>   Unlocking flash at 0xfff00000
+>   # Invalid parameter for flash programming
+>
+> TRY TO ERASE
+>   erase 0xfff00000 UNLOCK 1000
+>   Erasing flash at 0xfff00000
+>   # Erasing flash memory failed
+> BUT
+>   erase 0xffff0000 UNLOCK 1000
+>   Erasing flash at 0xffff0000
+>   Erasing flash passed
+> HOWEVER
+>   mm 0xffff0000 0xdeadbeef
+>   md 0xffff0000 1
+>   ffff0000 : 0xffffffff
+> SO it doesn't seem to allow write access afterall...
 
-In later designs and where possible we also switched to alternative
-interrupt mechanisms (GPIO for target to host and gated flags in FPGA
-registers for the other direction). Multiple interrupt sources 
-are identified by messages that are written to the other sides
-memory.
+You need to use the 'prog' command to write to flash. 'md' won't do.
 
-I think we should stop this discussion because its a little bit
-off-topic on this list.
+> Is there anyone that has a BDI 2000 config file for flashing the
+> ep8248e motherboard the 8MB Flash Version (64 MB flash version)
 
-Matthias
+Regards,
 
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
 
-On Tuesday 11 September 2007 19:32, David Hawkins wrote:
-> Hi Matthias,
-> 
-> > we build a couple of PCI target designs using AMCC PowerPCs.
-> > You are right that some things could be better. But ..
-> > 
-> > On Thursday 06 September 2007 22:26, David Hawkins wrote:
-> >> There are several fundamental problems with the AMCC 440EP
-> >> acting as a PCI target/slave;
-> >>
-> >> 2. Look in the data sheet and see if you can figure out
-> >>     how the host processor can generate an interrupt to
-> >>     the PowerPC core ... oops, you can't. That kind of
-> >>     makes it difficult to work with doesn't it.
-> >
-> > You CAN! You can generate an interrupt to the PowerPC from the host
-> > CPU bei writing to the PCI command register. You have to read the user manual
-> > carefully. Perhaps it not that obvious.
-> 
-> Really!? Someone should tell AMCC tech support then.
-> When I failed to find a method (other than hooking up
-> an external GPIO), I contacted them and they came to
-> the same conclusion (on the 440EP anyway).
-> 
-> I'll look in the latest user manual to be sure ...
-> 
-> PPC440EP_UM2000_v1_23.pdf
-> 
-> p394 has their 'cheesy' implementation of PCI INTA# control;
-> toggle a single bit.
-> 
-> Then backing up a little, p388 has the PCI command register ...
-> Nope, no comment there that a write causes an interrupt to
-> the PowerPC core.
-> 
-> Ok, so going back to the UIC in Chapter 10, p224.
-> 
-> Ah-ha, PCI CMD write generates an interrupt 5!
-> 
-> So, I stand corrected; the host can generate an interrupt to
-> the PowerPC core, and the method is 'cheesier' than the PCI
-> INTA# control.
-> 
-> And my experience with AMCC's tech support is now a notch
-> lower, as even they did not offer this as a solution :)
-> 
-> I sure am glad I changed to a Freescale processor ;)
-> 
-> Cheers,
-> Dave
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
