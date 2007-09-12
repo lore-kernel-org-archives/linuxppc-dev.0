@@ -1,16 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 12 Sep 2007 12:03:39 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: FDT for Microblaze and PPC405
-Message-ID: <20070912020339.GC16001@localhost.localdomain>
-References: <fa686aa40709110901k11082946r626fc8532d47eab5@mail.gmail.com>
-	<2057.3992-23959-31980099-1189527824@seznam.cz>
-	<fa686aa40709111009j64925edag511078d88ff904c@mail.gmail.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	akpm@linux-foundation.org, paulus@samba.org,
+	Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40709111009j64925edag511078d88ff904c@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michal Simek <Monstr@seznam.cz>
+Subject: [PATCH] powerpc: add new required termio functions
+Date: Wed, 12 Sep 2007 12:04:39 +1000
+Message-ID: <8018.1189562679@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +17,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2007 at 11:09:07AM -0600, Grant Likely wrote:
-> On 9/11/07, Michal Simek <Monstr@seznam.cz> wrote:
-> > For example emaclite driver needs information about turning on/off ping pong buffer...
-> >
-> > I would like to make this properly.
-> 
-> FDT design is just as much art as it is science.  It takes taste and
-> judgement to desgin a nice set of bindings.  Your best option is to
-> draft something and post it to the linuxppc-embedded mailing list for
-> review.
+The "tty: termios locking functions break with new termios type" patch
+(f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+This adds the required API to asm-powerpc.
 
-Yes, this is the preferred procedure, for now.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+--
+This needs to go up for 2.6.23.
 
-> > And second question is on early console logs and timers setting. I read about aliases in FDT. I think that aliases can cover this setting.
-> > For example my design contain 4 serial line and I would like to know which serial line is set on early console.
-> 
-> You use the chosen node for this.  In the chosen node, you add a
-> property called "linux,stdout-path" which holds the path to your
-> console.  You can look at examples under arch/powerpc/boot/dts/*
+Should we really put these definitions in asm-generic/termios.h as I'm
+guessing other architectures are broken too?
 
-Yes.  Currently we don't use /aliases in the flat device tree.  This
-is possibly a mistake, and something I'm thinking about changing.
-But, for now, linux,stdout-path in /chosen is the way to do this.
+coopers@include/ % git grep kernel_termios_to_user_termios_1
+asm-arm/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-cris/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-h8300/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-i386/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-ia64/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-m32r/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-m68k/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-mips/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-v850/termios.h:#define kernel_termios_to_user_termios_1(u, k)
+asm-x86_64/termios.h:#define kernel_termios_to_user_termios_1(u, k)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ include/asm-powerpc/termios.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+Index: linux-2.6-ozlabs/include/asm-powerpc/termios.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/termios.h
++++ linux-2.6-ozlabs/include/asm-powerpc/termios.h
+@@ -80,6 +80,9 @@ struct termio {
+ 
+ #include <asm-generic/termios.h>
+ 
++#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
++
+ #endif	/* __KERNEL__ */
+ 
+ #endif	/* _ASM_POWERPC_TERMIOS_H */
