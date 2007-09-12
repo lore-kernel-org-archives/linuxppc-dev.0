@@ -1,23 +1,30 @@
-Return-Path: <davem@davemloft.net>
-Received: from picasso.davemloft.net (unknown [74.93.104.98])
+Return-Path: <SRS0+8f0e197e6e608bebd9c3+1480+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1CEEDDDFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 23:28:39 +1000 (EST)
-Date: Wed, 12 Sep 2007 06:27:32 -0700 (PDT)
-Message-Id: <20070912.062732.68054135.davem@davemloft.net>
-To: RAISCH@de.ibm.com
-Subject: Re: new NAPI interface broken for POWER architecture?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <OF2D6ED296.BDB04FBF-ONC1257354.00473703-C1257354.0048406C@de.ibm.com>
-References: <200709071137.02801.ossthema@de.ibm.com>
-	<20070912.055004.88490155.davem@davemloft.net>
-	<OF2D6ED296.BDB04FBF-ONC1257354.00473703-C1257354.0048406C@de.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id D9C6EDDD0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 23:49:24 +1000 (EST)
+Date: Wed, 12 Sep 2007 14:49:10 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912134910.GA12660@infradead.org>
+References: <8018.1189562679@neuling.org>
+	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
+	<20070912040109.3f6a9149.akpm@linux-foundation.org>
+	<20070912113409.GA7253@infradead.org>
+	<20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: ossthema@linux.vnet.ibm.com, pmac@au1.ibm.com, netdev@vger.kernel.org,
-	THEMANN@de.ibm.com, linuxppc-dev@ozlabs.org, ARNDB@de.ibm.com,
-	ellerman@au1.ibm.com, shemminger@linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Alan Cox <alan@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Wed, 12 Sep 2007 15:10:08 +0200
+On Wed, Sep 12, 2007 at 01:52:57PM +0200, Heiko Carstens wrote:
+> > I might be missing something, but the the right fix is probably to
+> > apply the arch patches from Alan to powerpc and s390.  We don't want to
+> > be left over without all the nice termios features on these platforms,
+> > do we?
+> 
+> But not in rc6 timeframe, I would guess?
 
-> This is definitely not something we can change in the HEA device driver
-> alone.
-
-And it shouldn't be, x86 implements the policy in irq balance
-daemon, powerpc should do it wherever it would be appropriate
-there.
-
-> Paul, Michael, Arndt, what is your opinion here?
-
-I'm all ears too :)
+Ask Alan..
