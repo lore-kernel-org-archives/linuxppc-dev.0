@@ -1,23 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86E67DDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 01:57:57 +1000 (EST)
-In-Reply-To: <0D968216-6743-498E-9723-F029FF3746C1@kernel.crashing.org>
-References: <A0830B08-2A3A-4BC1-BAAB-82D1C1D3CB7E@kernel.crashing.org>
-	<4948353cd5e9c566a8151eca8c4bbcb7@kernel.crashing.org>
-	<0D968216-6743-498E-9723-F029FF3746C1@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <536DDC0F-E665-4C50-AB75-AE9DBDB8820D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: still using stabs debug format?
-Date: Wed, 12 Sep 2007 11:00:32 -0500
-To: bje@air.net.au, Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Ed Swarthout <Ed.Swarthout@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.235])
+	by ozlabs.org (Postfix) with ESMTP id 25C2BDDE41
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 02:02:20 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id e11so228996qbe
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 09:02:19 -0700 (PDT)
+Message-ID: <fa686aa40709120902q28d4d8bcr93020005dcf4f6f7@mail.gmail.com>
+Date: Wed, 12 Sep 2007 10:02:18 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: Patches for 2.6.24
+In-Reply-To: <B658701C-576E-459B-9FF4-BF43B429FCBB@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40709120848x4720554jc46c8cd9ae3f355@mail.gmail.com>
+	<B658701C-576E-459B-9FF4-BF43B429FCBB@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben, Uli
-
-Paul/BenH suggested that you might be able to help with my question.
-
-> On Aug 17, 2007, at 7:54 PM, Segher Boessenkool wrote:
+On 9/12/07, Kumar Gala <galak@kernel.crashing.org> wrote:
 >
->>> Is anyone really still using the stabs format for kernel debug?
->>>
->>> can we kill off the .stabs references?
->>
->> What, you want to replace them with dwarf markup?  Or just
->> get rid of the debug info completely?
+> On Sep 12, 2007, at 10:48 AM, Grant Likely wrote:
 >
-> There are two users today:
+> > Kumar, can you please pick up the following patches and push them
+> > to paulus?
+> >
+> > http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11303
 >
-> * N_SO for file information we can easily make into .file
-> * N_FUN used in _GLOBAL() that marks it a 'function' is a bit
-> misleading since we use this for both functions and data.  Not sure
-> what to do about that one, any suggestions?
+> I'll hand this one.
+>
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=13235
+> > http://patchwork.ozlabs.org/linuxppc/patch?id=13249
+>
+> bootwrapper patches should be ack'd by david gibson and picked up by
+> paul at this point.
 
-#define _GLOBAL(n)      \
-         .text;          \
-         .stabs __stringify(n:F-1),N_FUN,0,0,n;\
-         .globl n;       \
-n:
+Okay, David has already acked these.  Paulus, can you please pick them up?
 
-this is the .stabs reference I'm trying to figure out what the dwarf  
-equiv would be.
+Thanks,
+g.
 
-- k
+>
+> Did you have some other 834x defconfig updates as well?
+
+I did; but it look like I need to rebase it again.  I'll try to get
+that done today.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
