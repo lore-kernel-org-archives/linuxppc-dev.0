@@ -1,18 +1,20 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 4AC93DDE0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 14:56:21 +1000 (EST)
-Date: Wed, 12 Sep 2007 14:56:20 +1000
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [RFC/PATCH] Implement {read,update}_persistent_clock. v2
-Message-ID: <20070912045620.GI9814@bakeyournoodle.com>
-References: <20070911081746.GF9814@bakeyournoodle.com>
-	<4d781cd1a4751e20098cae29aa4d2b60@bga.com>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EC292DDDFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 15:32:18 +1000 (EST)
+Date: Wed, 12 Sep 2007 07:32:07 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Heiko Schocher <hs@denx.de>
+Message-ID: <20070912053207.GH23573@pengutronix.de>
+References: <1189503798.6674.46.camel@Zeus.EmbLux>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4d781cd1a4751e20098cae29aa4d2b60@bga.com>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1189503798.6674.46.camel@Zeus.EmbLux>
+Subject: Re: SYSFS: need a noncaching read
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2007 at 09:34:13AM -0500, Milton Miller wrote:
- 
-> Previously we called ppc_md.get_boot_time at most once.  How about 
-> moving the check for it into the if (first) block?
+On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
+> I have developed a device driver and use the sysFS to export some
+> registers to userspace.
 
-Yup on investigatiion it looks like moving it inside the "if (fist)" is
-safe.
- 
-> Have you tested with a platform that doesn't implement get_rtc_time?
+Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
+not to play around with registers from userspace.
 
-Well no I haven't.  AFAICT without my patch read_persistent_clock() is a
-weak symbol that always returns 0.  So any platform that doesn't have a
-ppc_md.get_boot_time() or ppc_md.get_rtc_time() will still get a 0 at
-all the call sites.
+> I opened the sysFS File for one register and did some reads from this
+> File, but I alwas becoming the same value from the register, whats not
+> OK, because they are changing. So I found out that the sysFS caches
+> the reads ... :-(
 
-I'll locate a machine and verify I'm not making things worse.
+Yes, it does. What you can do is close()ing the file handle between
+accesses, which makes it work but is slow.
 
-Yours Tony
+> Is there a way to retrigger the reads (in that way, that the sysFS
+> rereads the values from the driver), without closing and opening the
+> sysFS Files? Or must I better use the ioctl () Driver-interface for
+> exporting these registers?
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+What kind of problem do you want to solve? Userspace is for
+applications, and applications usually don't have to know about hardware
+details like registers. So if you have to do something every 10 ms from
+userspace, your design is probably wrong.
+
+If you absolutely need to do such things from userspace, have a look at
+uio. But in most cases the answer is: make a proper abstraction for the
+problem you wanna solve and write a proper driver.
+
+Robert
+-- 
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
