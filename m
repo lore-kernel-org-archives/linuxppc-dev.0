@@ -1,21 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.235])
-	by ozlabs.org (Postfix) with ESMTP id 25C2BDDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 02:02:20 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id e11so228996qbe
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 09:02:19 -0700 (PDT)
-Message-ID: <fa686aa40709120902q28d4d8bcr93020005dcf4f6f7@mail.gmail.com>
-Date: Wed, 12 Sep 2007 10:02:18 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: Patches for 2.6.24
-In-Reply-To: <B658701C-576E-459B-9FF4-BF43B429FCBB@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40709120848x4720554jc46c8cd9ae3f355@mail.gmail.com>
-	<B658701C-576E-459B-9FF4-BF43B429FCBB@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 71CE0DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 02:07:17 +1000 (EST)
+Date: Wed, 12 Sep 2007 20:07:06 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64 bit
+	pci_process_bridge_OF_ranges() instances
+Message-ID: <20070912200706.449fe450@localhost.localdomain>
+In-Reply-To: <200709121013.51500.arnd@arndb.de>
+References: <20070911224952.9838.46644.stgit@localhost.localdomain>
+	<200709120057.18873.arnd@arndb.de>
+	<20070912035602.0be0d47e@localhost.localdomain>
+	<200709121013.51500.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/12/07, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Sep 12, 2007, at 10:48 AM, Grant Likely wrote:
->
-> > Kumar, can you please pick up the following patches and push them
-> > to paulus?
-> >
-> > http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=11303
->
-> I'll hand this one.
->
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=13235
-> > http://patchwork.ozlabs.org/linuxppc/patch?id=13249
->
-> bootwrapper patches should be ack'd by david gibson and picked up by
-> paul at this point.
+On Wed, 12 Sep 2007 10:13:50 +0200
+Arnd Bergmann wrote:
 
-Okay, David has already acked these.  Paulus, can you please pick them up?
+> On Wednesday 12 September 2007, Vitaly Bordug wrote:
+> 
+> > 
+> > Well, it's more a rewrite than a move, based on 64-bit
+> > implementation.
+> 
+> ok.
+> 
+> > > Could you perhaps split the patch into two separate changesets,
+> > > one that makes both functions identical in place, and one that
+> > > merges them to live in a common location?
+> > > 
+> > I'm not sure I'm following what you are requesting. What is a
+> > benefit of code duplication? I was thinking about, if it will look
+> > good enough, to provide this function at generic level but changing
+> > its name a little, while leaving old stuff in place, and
+> > encouraging people to use it in favour of 32 or 64-bit-specific
+> > approaches. That way we won't kill many boards at once(in case, for
+> > example,odd dts with missed ranges for pci subnode).     
+> 
+> I wasn't suggesting to leave the duplicated code in, but rather to
+> make the review easier by first modifying the code in place.
+> 
+> If you're taking the 64 bit code as a base, you can for instance make
+> the first patch leave pci_32 alone, and modify the 64 bit 
+> pci_process_bridge_OF_ranges to look exactly like the merged version.
+> That allows us to see what changed in the 64 bit case.
+> 
+> The second patch would then move the functions over, but leave the
+> code identical to the result of the first patch.
+> 
 
-Thanks,
-g.
+ok, makes sense, will do it that way.
 
->
-> Did you have some other 834x defconfig updates as well?
+> > > > diff --git a/include/asm-powerpc/ppc-pci.h
+> > > > b/include/asm-powerpc/ppc-pci.h index b847aa1..882b8bc 100644
+> > > > --- a/include/asm-powerpc/ppc-pci.h
+> > > > +++ b/include/asm-powerpc/ppc-pci.h
+> > > > @@ -15,6 +15,13 @@
+> > > >  #include <linux/pci.h>
+> > > >  #include <asm/pci-bridge.h>
+> > > >  
+> > > > +struct ranges_pci {
+> > > > +	unsigned int pci_space;
+> > > > +	u64 pci_addr;
+> > > > +	phys_addr_t phys_addr;
+> > > > +	u64 size;
+> > > > +} __attribute__((packed));
+> > > > +
+> > > 
+> > > This structure definition uses unaligned members because of the
+> > > 'packed' attribute. Is that really what you intended?
+> > > 
+> > yes, exactly, because I'm mapping this struct on ranges extracted
+> > from the dts instead of juggling with ranges[foo] offsets.
+> 
+> I see. It does however look wrong to me, because you are using a
+> hardcoded phys_addr_t type. This breaks when phys_addr has a
+> different size from what you expect, e.g. when booting a pure 32 bit
+> kernel on a machine that has a 64 bit physical address space.
+> 
+I wondered around with "32 bit phys" and "64 bit phys" struct definitions first,  but, well, it does not look good.
+In fact it already verified with alike case (on 4xx), and I thought it would be fair tradeoff to have 64 bit ranges definition.
 
-I did; but it look like I need to rebase it again.  I'll try to get
-that done today.
-
-Cheers,
-g.
+otoh, there might be cases when phys_addr_t is u64 and pci stuff resides on some 32-bit SoC bus. I will try to address that next iteration.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Sincerely, Vitaly
