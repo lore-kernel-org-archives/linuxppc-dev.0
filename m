@@ -1,17 +1,14 @@
-Return-Path: <Monstr@seznam.cz>
-Received: from mxh.seznam.cz (mxhn.seznam.cz [212.80.76.26])
-	by ozlabs.org (Postfix) with SMTP id 2AC5CDDE3C
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 17:34:37 +1000 (EST)
-In-Reply-To: <20070912020339.GC16001@localhost.localdomain>
-Date: Wed, 12 Sep 2007 09:34:33 +0200 (CEST)
-To: =?us-ascii?Q?David=20Gibson?= <david@gibson.dropbear.id.au>
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?Re=3A=20FDT=20for=20Microblaze=20and=20PPC405?=
-Mime-Version: 1.0
-Message-Id: <3266.6156-24105-795007998-1189582473@seznam.cz>
-Content-Type: text/plain;
-	charset="us-ascii"
-Cc: =?us-ascii?Q?linuxppc=2Ddev?= <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+Date: Thu, 13 Sep 2007 01:16:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org
+Subject: Define termios_1 functions for powerpc, s390, avr32 and frv
+Cc: Michael Neuling <mikey@neuling.org>, hskinnemoen@atmel.com,
+	heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David and Grant
+Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
+kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
+on all architectures.  However, powerpc, s390, avr32 and frv don't
+currently define those functions since their termios struct didn't
+need to be changed when the arbitrary baud rate stuff was added, and
+thus the kernel won't currently build on those architectures.
 
->> > For example emaclite driver needs information about turning on/off ping pong
-buffer...
->> >
->> > I would like to make this properly.
->>
->> FDT design is just as much art as it is science.  It takes taste and
->> judgement to desgin a nice set of bindings.  Your best option is to
->> draft something and post it to the linuxppc-embedded mailing list for
->> review.
->
->Yes, this is the preferred procedure, for now.
+This adds definitions of kernel_termios_to_user_termios_1 and
+user_termios_to_kernel_termios_1 to include/asm-generic/termios.h
+which are identical to kernel_termios_to_user_termios and
+user_termios_to_kernel_termios respectively.  The definitions are the
+same because the "old" termios and "new" termios are in fact the same
+on these architectures (which are the same ones that use
+asm-generic/termios.h).
 
-OK. Science is good for me because I am looking for theme for dissertation thesis
-and FPGA based FDT can be good choice.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
->> > And second question is on early console logs and timers setting. I read
->about aliases in FDT. I think that aliases can cover this setting.
->> > For example my design contain 4 serial line and I would like to know which
->serial line is set on early console.
->>
->> You use the chosen node for this.  In the chosen node, you add a
->> property called "linux,stdout-path" which holds the path to your
->> console.  You can look at examples under arch/powerpc/boot/dts/*
+Linus, this seems a bit cleaner than putting ifdefs in
+drivers/char/tty_ioctl.c, and it fixes the compile error on powerpc.
+Your choice whether to use this patch or Tony's.
 
->Yes.  Currently we don't use /aliases in the flat device tree.  This
->is possibly a mistake, and something I'm thinking about changing.
->But, for now, linux,stdout-path in /chosen is the way to do this.
-
-OK. I will make the first draft and send it to list for review but it will be
-only part of patch rely on with ppc405 because we don't have microblaze kernel code.
-
-Michal Simek
+diff --git a/include/asm-generic/termios.h b/include/asm-generic/termios.h
+index 3769e6b..33dca30 100644
+--- a/include/asm-generic/termios.h
++++ b/include/asm-generic/termios.h
+@@ -63,6 +63,8 @@ static inline int kernel_termios_to_user_termio(struct termio __user *termio,
+ 
+ #define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+ #define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
++#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
+ 
+ #endif	/* __ARCH_TERMIO_GETPUT */
+ 
