@@ -1,19 +1,15 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: SYSFS: need a noncaching read
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070912031132.GC20218@localhost.localdomain>
+References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
+	<20070912031132.GC20218@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AC5C6EF4-EE8E-487F-BF45-3653A5C2617D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Tue, 11 Sep 2007 22:33:20 -0500
 To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070912020526.GD16001@localhost.localdomain>
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	<20070912020526.GD16001@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-yL/TQX95aW0JgamhmoYK"
-Date: Wed, 12 Sep 2007 13:18:11 +1000
-Message-Id: <1189567091.17835.3.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Heiko Schocher <hs@denx.de>,
-	linux-kernel@vger.kernel.org, Detlev Zundel <dzu@denx.de>
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,70 +20,210 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-yL/TQX95aW0JgamhmoYK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Sep 11, 2007, at 10:11 PM, David Gibson wrote:
 
-On Wed, 2007-09-12 at 12:05 +1000, David Gibson wrote:
-> On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > Hello,
-> >=20
-> > I have developed a device driver and use the sysFS to export some
-> > registers to userspace. I opened the sysFS File for one register and di=
-d
-> > some reads from this File, but I alwas becoming the same value from the
-> > register, whats not OK, because they are changing. So I found out that
-> > the sysFS caches the reads ... :-(
-> >=20
-> > Is there a way to retrigger the reads (in that way, that the sysFS
-> > rereads the values from the driver), without closing and opening the
-> > sysFS Files? Or must I better use the ioctl () Driver-interface for
-> > exporting these registers?
-> >=20
-> > I am asking this, because I must read every 10 ms 2 registers, so
-> > doing a open/read/close for reading one registers is a little bit too
-> > much overhead.
-> >=20
-> > I made a sysFS seek function, which retriggers the read, and that works
-> > fine, but I have again 2 syscalls, whats also is not optimal.
-> >=20
-> > Or can we make a open () with a (new?)Flag, that informs the sysFS to
-> > always reread the values from the underlying driver?
-> >=20
-> > Or a new flag in the "struct attribute_group" in include/linux/sysfs.h,
-> > which let the sysfs rereading the values?
->=20
-> This sounds more like sysfs is really not the right interface for
-> polling your registers.  You would probably be better off having your
-> driver export a character device from which the register values could
-> be read.
+> On Tue, Sep 11, 2007 at 02:37:56PM -0500, Kumar Gala wrote:
+>> Added basic board port for MPC8572 DS reference platform that is
+>> similiar to the MPC8544/33 DS reference platform in uniprocessor  
+>> mode.
+>>
+>> ---
+>>
+>> Rev 3 -- updates to the device tree based on discussion on how we  
+>> want
+>> to handle memory busses going forward.
+>
+> [snip]
+>> +		mdio@24520 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>> +			device_type = "mdio";
+>
+> I don't think we actually have an mdio device_type binding defined.
 
-I thought relay(fs) was the trendy way to do this these days?
+We've had this on 83xx/85xx/86xx device trees for a far amount of  
+time now.  Look at section 2a in booting-without-of.txt
 
-Documentation/filesystems/relay.txt
+>
+>
+>> +			compatible = "gianfar";
+>
+> This needs to be more specific.  And it certainly shouldn't be the
+> same compatible string as the ethernet MACs have.
 
-cheers
+Why not its the same controller?  Again, we've been doing this for  
+some period of time already.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+>
+>> +			reg = <24520 20>;
+>> +			phy0: ethernet-phy@0 {
+>> +				interrupt-parent = <&mpic>;
+>> +				interrupts = <a 1>;
+>> +				reg = <0>;
+>> +				device_type = "ethernet-phy";
+>
+> Do we actually have an ethernet-phy device_type binding?  If not, we
+> should kill this.  'compatible' properties for phys would probably be
+> a good idea, though (giving the actual phy model).
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Look section 2c in booting-without-of.txt
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+>> +			};
+>> +			phy1: ethernet-phy@1 {
+>> +				interrupt-parent = <&mpic>;
+>> +				interrupts = <a 1>;
+>> +				reg = <1>;
+>> +				device_type = "ethernet-phy";
+>> +			};
+>> +			phy2: ethernet-phy@2 {
+>> +				interrupt-parent = <&mpic>;
+>> +				interrupts = <a 1>;
+>> +				reg = <2>;
+>> +				device_type = "ethernet-phy";
+>> +			};
+>> +			phy3: ethernet-phy@3 {
+>> +				interrupt-parent = <&mpic>;
+>> +				interrupts = <a 1>;
+>> +				reg = <3>;
+>> +				device_type = "ethernet-phy";
+>> +			};
+>> +		};
 
---=-yL/TQX95aW0JgamhmoYK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+[snip]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+>>
+>> +		global-utilities@e0000 {	//global utilities block
+>> +			compatible = "fsl,mpc8548-guts";
+>
+> Hrm... this should have "fsp,mpc8572-guts" in addition to the older
+> model with which it is compatible.
 
-iD8DBQBG51pzdSjSd0sB4dIRAj6kAKCcrXZQQyYF3CuRR5ecgN2GJJ3u1wCglpsb
-sxLP+sBnwApo7sSmM1K17sg=
-=M5UB
------END PGP SIGNATURE-----
+I've changed this to just fsl,mpc8572-guts
 
---=-yL/TQX95aW0JgamhmoYK--
+>
+>> +			reg = <e0000 1000>;
+>> +			fsl,has-rstcr;
+>> +		};
+>> +
+>> +		mpic: pic@40000 {
+>> +			clock-frequency = <0>;
+>> +			interrupt-controller;
+>> +			#address-cells = <0>;
+>> +			#interrupt-cells = <2>;
+>> +			reg = <40000 40000>;
+>> +			compatible = "chrp,open-pic";
+>> +			device_type = "open-pic";
+>> +			big-endian;
+>> +		};
+>> +	};
+>> +
+>> +	pcie@ffe08000 {
+>> +		compatible = "fsl,mpc8548-pcie";
+>
+> And again, "fsl,mpc8572-pcie", "fsl,mpc8548-pcie".
+
+But why?  there is no difference between the PCIe controller in  
+mpc8548 and mpc8572?
+
+>
+>> +		device_type = "pci";
+>> +		#interrupt-cells = <1>;
+>> +		#size-cells = <2>;
+>> +		#address-cells = <3>;
+>> +		reg = <ffe08000 1000>;
+>> +		bus-range = <0 ff>;
+>> +		ranges = <02000000 0 80000000 80000000 0 20000000
+>> +			  01000000 0 00000000 ffc00000 0 00010000>;
+>> +		clock-frequency = <1fca055>;
+>> +		interrupt-parent = <&mpic>;
+>> +		interrupts = <18 2>;
+>> +		interrupt-map-mask = <fb00 0 0 0>;
+>> +		interrupt-map = <
+>> +			/* IDSEL 0x11 - PCI slot 1 */
+>> +			8800 0 0 1 &mpic 2 1
+>> +			8800 0 0 2 &mpic 3 1
+>> +			8800 0 0 3 &mpic 4 1
+>> +			8800 0 0 4 &mpic 1 1
+>> +
+>> +			/* IDSEL 0x12 - PCI slot 2 */
+>> +			9000 0 0 1 &mpic 3 1
+>> +			9000 0 0 2 &mpic 4 1
+>> +			9000 0 0 3 &mpic 1 1
+>> +			9000 0 0 4 &mpic 2 1
+>> +
+>> +			// IDSEL 0x1c  USB
+>> +			e000 0 0 0 &i8259 c 2
+>> +			e100 0 0 0 &i8259 9 2
+>> +			e200 0 0 0 &i8259 a 2
+>> +			e300 0 0 0 &i8259 b 2
+>> +
+>> +			// IDSEL 0x1d  Audio
+>> +			e800 0 0 0 &i8259 6 2
+>> +
+>> +			// IDSEL 0x1e Legacy
+>> +			f000 0 0 0 &i8259 7 2
+>> +			f100 0 0 0 &i8259 7 2
+>> +
+>> +			// IDSEL 0x1f IDE/SATA
+>> +			f800 0 0 0 &i8259 e 2
+>> +			f900 0 0 0 &i8259 5 2
+>> +
+>> +			>;
+>> +		uli1575@0 {
+>> +			reg = <0 0 0 0 0>;
+>
+> This looks kind of bogus...
+
+Its a PCIe to PCI bridge that is transparent.
+
+>> +			#size-cells = <2>;
+>> +			#address-cells = <3>;
+>> +			ranges = <02000000 0 80000000
+>> +				  02000000 0 80000000
+>> +				  0 20000000
+>> +				  01000000 0 00000000
+>> +				  01000000 0 00000000
+>> +				  0 00100000>;
+>> +
+>> +			pci_bridge@0 {
+>
+> Ok.. why is pci_bridge nested within uli1575 - with the matching reg
+> and ranges, it looks like they ought to be one device.  Also if this
+> is a PCI<->PCI bridge, I believe it shold have device_type = "pci".
+
+We've been using this as it stands for a while.  If there are some  
+changes here that make sense I'm willing to make them.
+
+>> +				reg = <0 0 0 0 0>;
+>> +				#size-cells = <2>;
+>> +				#address-cells = <3>;
+>> +				ranges = <02000000 0 80000000
+>> +					  02000000 0 80000000
+>> +					  0 20000000
+>> +					  01000000 0 00000000
+>> +					  01000000 0 00000000
+>> +					  0 00100000>;
+>> +
+>> +				isa@1e {
+>> +					device_type = "isa";
+>> +					#interrupt-cells = <2>;
+>> +					#size-cells = <1>;
+>> +					#address-cells = <2>;
+>> +					reg = <f000 0 0 0 0>;
+>> +					ranges = <1 0 01000000 0 0
+>> +						  00001000>;
+>> +					interrupt-parent = <&i8259>;
+>> +
+>> +					i8259: interrupt-controller@20 {
+>> +						reg = <1 20 2
+>> +						       1 a0 2
+>> +						       1 4d0 2>;
+>> +						clock-frequency = <0>;
+>
+> Hrm.. what is clock-frequency for on an i8259?  I see that other 8259
+> descriptions have this as well, so it's not a problem with this patch
+> specifically.
+
+Its a copy-paste thing so I don't know.
+
+- k
