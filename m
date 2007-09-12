@@ -1,15 +1,28 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 52C22DDF2A
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:55 +1000 (EST)
-Date: Wed, 12 Sep 2007 15:26:01 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH] phy: implement release function
-Message-ID: <20070912112601.GE15556@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <SRS0+8f0e197e6e608bebd9c3+1480+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CCE72DDE43
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:34:28 +1000 (EST)
+Date: Wed, 12 Sep 2007 12:34:09 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912113409.GA7253@infradead.org>
+References: <8018.1189562679@neuling.org>
+	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
+	<20070912040109.3f6a9149.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070912040109.3f6a9149.akpm@linux-foundation.org>
+Cc: Michael Neuling <mikey@neuling.org>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Alan Cox <alan@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,110 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Lately I've got this nice badness on mdio bus removal:
+On Wed, Sep 12, 2007 at 04:01:09AM -0700, Andrew Morton wrote:
+> On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> 
+> > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
+> > > The "tty: termios locking functions break with new termios type" patch
+> > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> > > [...]
+> > > I'm guessing other architectures are broken too?
+> > 
+> > FWIW, the above quoted patch breaks s390 as well.
+> 
+> Does this fix it?
 
-Device 'e0103120:06' does not have a release() function, it is broken and must be fixed.
-------------[ cut here ]------------
-Badness at drivers/base/core.c:107
-NIP: c015c1a8 LR: c015c1a8 CTR: c0157488
-REGS: c34bdcf0 TRAP: 0700   Not tainted  (2.6.23-rc5-g9ebadfbb-dirty)
-MSR: 00029032 <EE,ME,IR,DR>  CR: 24088422  XER: 00000000
-...
-[c34bdda0] [c015c1a8] device_release+0x78/0x80 (unreliable)
-[c34bddb0] [c01354cc] kobject_cleanup+0x80/0xbc
-[c34bddd0] [c01365f0] kref_put+0x54/0x6c
-[c34bdde0] [c013543c] kobject_put+0x24/0x34
-[c34bddf0] [c015c384] put_device+0x1c/0x2c
-[c34bde00] [c0180e84] mdiobus_unregister+0x2c/0x58
-...
-
-Though actually there is nothing broken, it just device
-subsystem core expects another "pattern" of resource managment.
-
-This patch implement phy device's release function, thus
-we're getting rid of this badness.
-
-Also small hidden bug fixed, hope none other introduced. ;-)
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/phy/mdio_bus.c   |    9 +++++----
- drivers/net/phy/phy_device.c |   13 +++++++++++++
- include/linux/phy.h          |    1 +
- 3 files changed, 19 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index fc2f0e6..c30196d 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -91,9 +91,12 @@ int mdiobus_register(struct mii_bus *bus)
- 
- 			err = device_register(&phydev->dev);
- 
--			if (err)
-+			if (err) {
- 				printk(KERN_ERR "phy %d failed to register\n",
- 						i);
-+				phy_device_free(phydev);
-+				phydev = NULL;
-+			}
- 		}
- 
- 		bus->phy_map[i] = phydev;
-@@ -110,10 +113,8 @@ void mdiobus_unregister(struct mii_bus *bus)
- 	int i;
- 
- 	for (i = 0; i < PHY_MAX_ADDR; i++) {
--		if (bus->phy_map[i]) {
-+		if (bus->phy_map[i])
- 			device_unregister(&bus->phy_map[i]->dev);
--			kfree(bus->phy_map[i]);
--		}
- 	}
- }
- EXPORT_SYMBOL(mdiobus_unregister);
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index e275df8..80c283c 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -44,6 +44,17 @@ static struct phy_driver genphy_driver;
- extern int mdio_bus_init(void);
- extern void mdio_bus_exit(void);
- 
-+void phy_device_free(struct phy_device *phydev)
-+{
-+	kfree(phydev);
-+}
-+EXPORT_SYMBOL(phy_device_free);
-+
-+static void phy_device_release(struct device *dev)
-+{
-+	phy_device_free(to_phy_device(dev));
-+}
-+
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- {
- 	struct phy_device *dev;
-@@ -54,6 +65,8 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
- 	if (NULL == dev)
- 		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
- 
-+	dev->dev.release = phy_device_release;
-+
- 	dev->speed = 0;
- 	dev->duplex = -1;
- 	dev->pause = dev->asym_pause = 0;
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 2a65978..9ec1363 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -398,6 +398,7 @@ int phy_mii_ioctl(struct phy_device *phydev,
- int phy_start_interrupts(struct phy_device *phydev);
- void phy_print_status(struct phy_device *phydev);
- struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
-+void phy_device_free(struct phy_device *phydev);
- 
- extern struct bus_type mdio_bus_type;
- #endif /* __PHY_H */
--- 
-1.5.0.6
+I might be missing something, but the the right fix is probably to
+apply the arch patches from Alan to powerpc and s390.  We don't want to
+be left over without all the nice termios features on these platforms,
+do we?
