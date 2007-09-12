@@ -1,16 +1,16 @@
 Return-Path: <arnd@arndb.de>
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 09/15] Internal __spufs_get_foo() routines should take a
-	spu_context *
-Date: Wed, 12 Sep 2007 10:53:02 +0200
+Subject: Re: [PATCH 08/15] Use spufs_coredump_num_notes everywhere,
+	and don't NULL terminate
+Date: Wed, 12 Sep 2007 10:55:39 +0200
 References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
-	<6e0eb3cefccb1e79c306afd10604f478069d768d.1189583010.git.michael@ellerman.id.au>
-In-Reply-To: <6e0eb3cefccb1e79c306afd10604f478069d768d.1189583010.git.michael@ellerman.id.au>
+	<163f3c08c2c47d47103f234d6caa517ed9a44036.1189583010.git.michael@ellerman.id.au>
+In-Reply-To: <163f3c08c2c47d47103f234d6caa517ed9a44036.1189583010.git.michael@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709121053.02675.arnd@arndb.de>
+Message-Id: <200709121055.40170.arnd@arndb.de>
 Cc: Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,12 +22,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wednesday 12 September 2007, Michael Ellerman wrote:
-> The SPUFS attribute get routines take a void * because the generic attribute
-> code doesn't know what sort of data it's passing around.
-> 
-> However our internal __spufs_get_foo() routines can take a spu_context *
-> directly, which saves plonking it in and out of a void * again.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> The spufs_coredump_read array is NULL terminated, and we also store the size.
+> We only need one or the other, and storing the size should save a teensy bit
+> of memory vs NULL terminating, so do that.
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Given that we have another array in there with almost the same contents
+and that is NULL terminated, I'd vote for doing it the other way and also
+use NULL-termination instead of the count here.
+
+	Arnd <><
