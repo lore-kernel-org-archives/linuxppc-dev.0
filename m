@@ -1,21 +1,18 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 7775ADDEED
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:10:55 +1000 (EST)
-Subject: Re: SYSFS: need a noncaching read
-From: Heiko Schocher <hs@denx.de>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20070912100123.GA23182@kroah.com>
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	<20070912053207.GH23573@pengutronix.de>
-	<20070912100123.GA23182@kroah.com>
-Content-Type: text/plain
-Date: Wed, 12 Sep 2007 13:13:32 +0200
-Message-Id: <1189595612.6659.23.camel@Zeus.EmbLux>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Detlev Zundel <dzu@denx.de>
-Reply-To: hs@denx.de
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] powerpc: add new required termio functions 
+In-reply-to: <20070912040109.3f6a9149.akpm@linux-foundation.org> 
+References: <8018.1189562679@neuling.org>
+	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
+	<20070912040109.3f6a9149.akpm@linux-foundation.org>
+Date: Wed, 12 Sep 2007 21:16:19 +1000
+Message-ID: <3350.1189595779@neuling.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, Alan Cox <alan@redhat.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Greg
-
-Am Mittwoch, den 12.09.2007, 03:01 -0700 schrieb Greg KH:
-> On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
-> > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > > I have developed a device driver and use the sysFS to export some
-> > > registers to userspace.
-> > 
-> > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
-> > not to play around with registers from userspace.
-> > 
-> > > I opened the sysFS File for one register and did some reads from this
-> > > File, but I alwas becoming the same value from the register, whats not
-> > > OK, because they are changing. So I found out that the sysFS caches
-> > > the reads ... :-(
-> > 
-> > Yes, it does. What you can do is close()ing the file handle between
-> > accesses, which makes it work but is slow.
+In message <20070912040109.3f6a9149.akpm@linux-foundation.org> you wrote:
+> On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 > 
-> Do an lseek back to 0 and then re-read, you will get called in your
-> driver again.
+> > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
+> > > The "tty: termios locking functions break with new termios type" patch
+> > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> > > [...]
+> > > I'm guessing other architectures are broken too?
+> > 
+> > FWIW, the above quoted patch breaks s390 as well.
+> 
+> Does this fix it?
 
-No thats not true. I thought this too, but if I make a:
+FYI it does fix powerpc, but I suspect you were asking about s390 here.
 
-seek (fd, 0L, SEEK_SET);
+Mikey
 
-in Userspace, there is no retrigger in the sysFS, my driver is *not*
-called again. So I made a own sysfs_seek function, which does retrigger
-the driver ...
-
-Is this really wanted in the sysFS, that there is no way to retrigger a
-read?
-
-thanks
-Heiko
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> 
+> diff -puN drivers/char/tty_ioctl.c~powerpc-add-new-required-termio-functions 
+drivers/char/tty_ioctl.c
+> --- a/drivers/char/tty_ioctl.c~powerpc-add-new-required-termio-functions
+> +++ a/drivers/char/tty_ioctl.c
+> @@ -795,6 +795,19 @@ int n_tty_ioctl(struct tty_struct * tty,
+>  			if (L_ICANON(tty))
+>  				retval = inq_canon(tty);
+>  			return put_user(retval, (unsigned int __user *) arg);
+> +#ifndef TCGETS2
+> +		case TIOCGLCKTRMIOS:
+> +			if (kernel_termios_to_user_termios((struct termios __us
+er *)arg, real_tty->termios_locked))
+> +				return -EFAULT;
+> +			return 0;
+> +
+> +		case TIOCSLCKTRMIOS:
+> +			if (!capable(CAP_SYS_ADMIN))
+> +				return -EPERM;
+> +			if (user_termios_to_kernel_termios(real_tty->termios_lo
+cked, (struct termios __user *) arg))
+> +				return -EFAULT;
+> +			return 0;
+> +#else
+>  		case TIOCGLCKTRMIOS:
+>  			if (kernel_termios_to_user_termios_1((struct termios __
+user *)arg, real_tty->termios_locked))
+>  				return -EFAULT;
+> @@ -806,6 +819,7 @@ int n_tty_ioctl(struct tty_struct * tty,
+>  			if (user_termios_to_kernel_termios_1(real_tty->termios_
+locked, (struct termios __user *) arg))
+>  				return -EFAULT;
+>  			return 0;
+> +#endif
+>  
+>  		case TIOCPKT:
+>  		{
+> _
+> 
