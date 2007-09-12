@@ -1,16 +1,18 @@
-Return-Path: <travis@sgi.com>
-Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id D1834DDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 11:56:49 +1000 (EST)
-Message-Id: <20070912015646.938985912@sgi.com>
-References: <20070912015644.927677070@sgi.com>
-Date: Tue, 11 Sep 2007 18:56:51 -0700
-From: travis@sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 07/10] x86: acpi-use-cpu_physical_id (v3)
-Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Christoph Lameter <clameter@sgi.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 4AC93DDE0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 14:56:21 +1000 (EST)
+Date: Wed, 12 Sep 2007 14:56:20 +1000
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [RFC/PATCH] Implement {read,update}_persistent_clock. v2
+Message-ID: <20070912045620.GI9814@bakeyournoodle.com>
+References: <20070911081746.GF9814@bakeyournoodle.com>
+	<4d781cd1a4751e20098cae29aa4d2b60@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4d781cd1a4751e20098cae29aa4d2b60@bga.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,60 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is from an earlier message from Christoph Lameter:
-
-    processor_core.c currently tries to determine the apicid by special casing
-    for IA64 and x86. The desired information is readily available via
-
-	    cpu_physical_id()
-
-    on IA64, i386 and x86_64.
-
-    Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Additionally, boot_cpu_id needed to be exported to fix compile errors in
-dma code when !CONFIG_SMP.
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86_64/kernel/mpparse.c  |    2 ++
- drivers/acpi/processor_core.c |    8 +-------
- 2 files changed, 3 insertions(+), 7 deletions(-)
-
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -419,12 +419,6 @@
- 	return 0;
- }
+On Tue, Sep 11, 2007 at 09:34:13AM -0500, Milton Miller wrote:
  
--#ifdef CONFIG_IA64
--#define arch_cpu_to_apicid 	ia64_cpu_to_sapicid
--#else
--#define arch_cpu_to_apicid 	x86_cpu_to_apicid
--#endif
--
- static int map_madt_entry(u32 acpi_id)
- {
- 	unsigned long madt_end, entry;
-@@ -498,7 +492,7 @@
- 		return apic_id;
- 
- 	for (i = 0; i < NR_CPUS; ++i) {
--		if (arch_cpu_to_apicid[i] == apic_id)
-+		if (cpu_physical_id(i) == apic_id)
- 			return i;
- 	}
- 	return -1;
---- a/arch/x86_64/kernel/mpparse.c
-+++ b/arch/x86_64/kernel/mpparse.c
-@@ -57,6 +57,8 @@
- 
- /* Processor that is doing the boot up */
- unsigned int boot_cpu_id = -1U;
-+EXPORT_SYMBOL(boot_cpu_id);
-+
- /* Internal processor count */
- unsigned int num_processors __cpuinitdata = 0;
- 
+> Previously we called ppc_md.get_boot_time at most once.  How about 
+> moving the check for it into the if (first) block?
 
--- 
+Yup on investigatiion it looks like moving it inside the "if (fist)" is
+safe.
+ 
+> Have you tested with a platform that doesn't implement get_rtc_time?
+
+Well no I haven't.  AFAICT without my patch read_persistent_clock() is a
+weak symbol that always returns 0.  So any platform that doesn't have a
+ppc_md.get_boot_time() or ppc_md.get_rtc_time() will still get a 0 at
+all the call sites.
+
+I'll locate a machine and verify I'm not making things worse.
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
