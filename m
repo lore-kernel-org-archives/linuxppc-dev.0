@@ -1,30 +1,40 @@
-Return-Path: <SRS0+8f0e197e6e608bebd9c3+1480+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D9C6EDDD0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 23:49:24 +1000 (EST)
-Date: Wed, 12 Sep 2007 14:49:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] powerpc: add new required termio functions
-Message-ID: <20070912134910.GA12660@infradead.org>
-References: <8018.1189562679@neuling.org>
-	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
-	<20070912040109.3f6a9149.akpm@linux-foundation.org>
-	<20070912113409.GA7253@infradead.org>
-	<20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Alan Cox <alan@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB7F0DDE00
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 00:42:57 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8CEgqFF1360934
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 14:42:52 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8CEgqQV2080800
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:42:52 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8CEgpFr022454
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:42:52 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH 08/12] IB/ehca: Replace get_paca()->paca_index by the more
+	portable smp_processor_id()
+Date: Wed, 12 Sep 2007 16:42:50 +0200
+References: <200709111518.26276.fenkes@de.ibm.com>
+	<200709111533.14333.fenkes@de.ibm.com>
+	<20070911145131.GN32388@localdomain>
+In-Reply-To: <20070911145131.GN32388@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709121642.51198.fenkes@de.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,12 +44,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 12, 2007 at 01:52:57PM +0200, Heiko Carstens wrote:
-> > I might be missing something, but the the right fix is probably to
-> > apply the arch patches from Alan to powerpc and s390.  We don't want to
-> > be left over without all the nice termios features on these platforms,
-> > do we?
-> 
-> But not in rc6 timeframe, I would guess?
+On Tuesday 11 September 2007 16:51, Nathan Lynch wrote:
 
-Ask Alan..
+> > -				   get_paca()->paca_index, __FUNCTION__, \
+> > +				   smp_processor_id(), __FUNCTION__, \
+> 
+> I think I see these macros used in preemptible code (e.g. ehca_probe),
+> where smp_processor_id() will print a warning when
+> CONFIG_DEBUG_PREEMPT=y.  Probably better to use raw_smp_processor_id.
+
+You're right, man. The processor id doesn't need to be preemption-safe in this
+context, so that would be a bogus warning. Thanks for pointing this out. I'll
+post a new version of this patch.
+
+Joachim
