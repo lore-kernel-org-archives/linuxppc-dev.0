@@ -1,24 +1,21 @@
-Return-Path: <neilb@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F1E81DDDE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 03:58:39 +1000 (EST)
-From: Neil Brown <neilb@suse.de>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Date: Wed, 12 Sep 2007 19:57:13 +0200
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18152.10361.790323.494668@notabene.brown>
-Subject: Re: SYSFS: need a noncaching read
-In-Reply-To: message from Nick Piggin on Wednesday September 12
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	<20070912053207.GH23573@pengutronix.de>
-	<20070912100123.GA23182@kroah.com>
-	<200709120519.39960.nickpiggin@yahoo.com.au>
-Cc: Detlev Zundel <dzu@denx.de>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Heiko Schocher <hs@denx.de>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25034DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 04:21:21 +1000 (EST)
+In-Reply-To: <20070912112601.GE15556@localhost.localdomain>
+References: <20070912112601.GE15556@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <349316B4-E3B3-4F03-9847-6FE4B7405414@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] phy: implement release function
+Date: Wed, 12 Sep 2007 13:21:22 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday September 12, nickpiggin@yahoo.com.au wrote:
-> On Wednesday 12 September 2007 20:01, Greg KH wrote:
-> > On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
-> > > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > > > I have developed a device driver and use the sysFS to export some
-> > > > registers to userspace.
-> > >
-> > > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
-> > > not to play around with registers from userspace.
-> > >
-> > > > I opened the sysFS File for one register and did some reads from this
-> > > > File, but I alwas becoming the same value from the register, whats not
-> > > > OK, because they are changing. So I found out that the sysFS caches
-> > > > the reads ... :-(
-> > >
-> > > Yes, it does. What you can do is close()ing the file handle between
-> > > accesses, which makes it work but is slow.
-> >
-> > Do an lseek back to 0 and then re-read, you will get called in your
-> > driver again.
-> 
-> Can you do a pread with offset 0 to avoid the two syscalls? (which some
-> people seem to be concerned about)
 
-No.
-Looking in fs/sysfs/file.c, we notice the field "needs_read_fill" in
-struct sysfs_buffer.
+On Sep 12, 2007, at 06:26, Anton Vorontsov wrote:
 
-sysfs_read_file will only call fill_read_buffer  (which calls the
-->show routine) if this is 1;
+> Lately I've got this nice badness on mdio bus removal:
+>
+> Device 'e0103120:06' does not have a release() function, it is  
+> broken and must be fixed.
+> ------------[ cut here ]------------
+> Badness at drivers/base/core.c:107
+> NIP: c015c1a8 LR: c015c1a8 CTR: c0157488
+> REGS: c34bdcf0 TRAP: 0700   Not tainted  (2.6.23-rc5-g9ebadfbb-dirty)
+> MSR: 00029032 <EE,ME,IR,DR>  CR: 24088422  XER: 00000000
+> ...
+> [c34bdda0] [c015c1a8] device_release+0x78/0x80 (unreliable)
+> [c34bddb0] [c01354cc] kobject_cleanup+0x80/0xbc
+> [c34bddd0] [c01365f0] kref_put+0x54/0x6c
+> [c34bdde0] [c013543c] kobject_put+0x24/0x34
+> [c34bddf0] [c015c384] put_device+0x1c/0x2c
+> [c34bde00] [c0180e84] mdiobus_unregister+0x2c/0x58
+> ...
+>
+> Though actually there is nothing broken, it just device
+> subsystem core expects another "pattern" of resource managment.
+>
+> This patch implement phy device's release function, thus
+> we're getting rid of this badness.
+>
+> Also small hidden bug fixed, hope none other introduced. ;-)
+>
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-It is cleared by fill_read_buffer and set to 1:
- - at open
- - by fill_write_buffer (i.e. if you write to the file descriptor)
- - by sysfs_poll when an event was detected.
+Acked-by: Andy Fleming <afleming@freescale.com>
 
-So currently you cannot simply open a sysfs file an read multiple
-times.
-
-One option would be to call fill_read_buffer if *ppos == 0.
-I cannot see that being a problem in practice, but maybe there is a
-reason why it wasn't done that way.
-Another option might be to call fill_read_buffer also if 
-	buffer->event != atomic_read(&attr_sd->s_event)
-and require drivers to call sysfs_notify when they make a change that
-should be noticed.  But I doubt that is really important.
-
-NeilBrown
+Andy
