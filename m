@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
-Date: Thu, 13 Sep 2007 01:16:31 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org
-Subject: Define termios_1 functions for powerpc, s390, avr32 and frv
-Cc: Michael Neuling <mikey@neuling.org>, hskinnemoen@atmel.com,
-	heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>, davem@davemloft.net
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D5F82DDEC4
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 01:18:08 +1000 (EST)
+In-Reply-To: <20070912094536.013bf903@weaponx.rchland.ibm.com>
+References: <200708301033.28423.ml@stefan-roese.de>
+	<20070912094536.013bf903@weaponx.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AD3577C7-050E-4D29-AF23-2C53A93E443F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [POWERPC] PCI Bug fix for MRM failure in PPC 440EPx
+Date: Wed, 12 Sep 2007 10:14:29 -0500
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
-kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
-on all architectures.  However, powerpc, s390, avr32 and frv don't
-currently define those functions since their termios struct didn't
-need to be changed when the arbitrary baud rate stuff was added, and
-thus the kernel won't currently build on those architectures.
 
-This adds definitions of kernel_termios_to_user_termios_1 and
-user_termios_to_kernel_termios_1 to include/asm-generic/termios.h
-which are identical to kernel_termios_to_user_termios and
-user_termios_to_kernel_termios respectively.  The definitions are the
-same because the "old" termios and "new" termios are in fact the same
-on these architectures (which are the same ones that use
-asm-generic/termios.h).
+On Sep 12, 2007, at 9:45 AM, Josh Boyer wrote:
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+> On Thu, 30 Aug 2007 10:33:28 +0200
+> Stefan Roese <ml@stefan-roese.de> wrote:
+>
+>> Problem Description and Fix : Memory Read Multiples(MRM) do not work
+>> correctly on PPC 440EPX based systems. A PCI driver determines  
+>> whether
+>> MRMs are supported by reading the PCI cache line size register. If  
+>> this
+>> value is zero then MRMs are not supported. However some PCI drivers
+>> write to the PCI cache line size register on initialization. This
+>> results in MRMs being sent to system memory on 440EPX based systems.
+>> Since MRMs do not work correctly in 440EPX based systems this may  
+>> cause
+>> system hang. This patch solves this problem by modifying the PPC
+>> platform specific PCI configuration register write function, by  
+>> forcing
+>> any value written to PCI_CACHE_LINE_SIZE register to be 0. This  
+>> fix was
+>> tested on different PCI cards : i.e. Silicon Image ATA card and Intel
+>> E1000 GIGE card. On Silicon Image ATA card without this fix in place
+>> creating a filesystem on IDE drive "mke2fs /dev/hda" was hanging the
+>> system. MRMs issued by the PCI card were seen on the PCI analyzer  
+>> since
+>> the Silicon Image driver was setting the PCI_CACHE_LINE_SIZE  
+>> register to
+>> 255. With this patch the PCI_CACHE_LINE_SIZE register was 0 and only
+>> Memory Reads were seen on PCI analyzer.
+>>
+>> Signed-off-by: Pravin M. Bathija <pbathija@amcc.com>
+>> Signed-off-by: Stefan Roese <sr@denx.de>
+>>
+>> ---
+>> I know this patch is a little "dirty", but perhaps somebody has a  
+>> better
+>> idea to fix this problem. Thanks.
+>
+> For the peanut gallery, Stefan and I discussed this a bit on IRC today
+> and a different approach for arch/powerpc is going to be looked at
+> instead.  Namely, introducing a new flag for indirect_type in the
+> pci_controller structure to key off of instead of having ifdefs.
 
-Linus, this seems a bit cleaner than putting ifdefs in
-drivers/char/tty_ioctl.c, and it fixes the compile error on powerpc.
-Your choice whether to use this patch or Tony's.
+I assume you'll be adding to the 'quirk' flags that we already have  
+in place.
 
-diff --git a/include/asm-generic/termios.h b/include/asm-generic/termios.h
-index 3769e6b..33dca30 100644
---- a/include/asm-generic/termios.h
-+++ b/include/asm-generic/termios.h
-@@ -63,6 +63,8 @@ static inline int kernel_termios_to_user_termio(struct termio __user *termio,
- 
- #define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
- #define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
-+#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
- 
- #endif	/* __ARCH_TERMIO_GETPUT */
- 
+- k
