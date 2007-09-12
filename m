@@ -2,21 +2,19 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 874DBDDF59
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:10:00 +1000 (EST)
-In-Reply-To: <200709121013.51500.arnd@arndb.de>
-References: <20070911224952.9838.46644.stgit@localhost.localdomain>
-	<200709120057.18873.arnd@arndb.de>
-	<20070912035602.0be0d47e@localhost.localdomain>
-	<200709121013.51500.arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id D7285DDF70
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:10:02 +1000 (EST)
+In-Reply-To: <1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
+References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
+	<20070911141711.GE1932@ld0162-tx32.am.freescale.net>
+	<1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4cd6407b936b2ce65c11092883e7b8d5@kernel.crashing.org>
+Message-Id: <6b92503d73565f8add983e64ad5d5d39@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64 bit
-	pci_process_bridge_OF_ranges() instances
-Date: Wed, 12 Sep 2007 16:51:25 +0200
-To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Wed, 12 Sep 2007 15:20:25 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,34 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +struct ranges_pci {
->>>> +	unsigned int pci_space;
->>>> +	u64 pci_addr;
->>>> +	phys_addr_t phys_addr;
->>>> +	u64 size;
->>>> +} __attribute__((packed));
->>>> +
->>>
->>> This structure definition uses unaligned members because of the
->>> 'packed' attribute. Is that really what you intended?
->>>
->> yes, exactly, because I'm mapping this struct on ranges extracted from
->> the dts instead of juggling with ranges[foo] offsets.
+>>> +		l2-cache-controller@20000 {
+>>> +			compatible = "fsl,8572-l2-cache-controller";
+>>> +			reg = <20000 1000>;
+>>> +			cache-line-size = <20>;	// 32 bytes
+>>> +			cache-size = <80000>;	// L2, 512K
+>>> +			interrupt-parent = <&mpic>;
+>>> +			interrupts = <10 2>;
+>>> +		};
+>>
+>> Should this node be referenced by an l2-cache property in the cpu
+>> node?
 >
-> I see. It does however look wrong to me, because you are using a 
-> hardcoded
-> phys_addr_t type. This breaks when phys_addr has a different size from 
-> what
-> you expect, e.g. when booting a pure 32 bit kernel on a machine that 
-> has
-> a 64 bit physical address space.
+> No, its a front side cache.
 
-More generally, you can even have a different size for the "phys_addr"
-for different nodes in the same device tree.
+What is a "front side cache"?  What exactly does it cache?  If it's
+a cache for one CPU only, that fact should be shown in the device
+tree somehow.
 
-You really should look at the #address-cells in this node's parent,
-and translate that all the way up to the root node to get a CPU
-address.
+>>> +			device_type = "pci";
+>>> +			#interrupt-cells = <1>;
+>>> +			#size-cells = <2>;
+>>> +			#address-cells = <3>;
+>>> +			reg = <8000 1000>;
+>>> +			bus-range = <0 ff>;
+>>> +			ranges = <02000000 0 80000000 80000000 0 20000000
+>>> +				  01000000 0 00000000 ffc00000 0 00010000>;
+>>
+>> No prefetchable mem space?
+>
+> we haven't normally provided prefetch on 85xx/86xx.. will deal with
+> this later.
+
+If you don't set up prefetchable memory regions on the PCI from
+the firmware, this code is fine, sure.  It would be a good plan
+to do map all BARs that say they are prefetchable in some
+prefetchable PCI window, it gives a nice speed boost, even when
+the kernel accesses it as simple non-cacheable space: the PCI
+bridges in between can streamline loads from these areas.
+
+In any case, the device tree should be in synch with how the
+firmware set up the PCI hardware, and it seems that's what you
+have now, so all is fine.
 
 
 Segher
