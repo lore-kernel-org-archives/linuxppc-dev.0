@@ -1,21 +1,12 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25034DDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 04:21:21 +1000 (EST)
-In-Reply-To: <20070912112601.GE15556@localhost.localdomain>
-References: <20070912112601.GE15556@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <349316B4-E3B3-4F03-9847-6FE4B7405414@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] phy: implement release function
-Date: Wed, 12 Sep 2007 13:21:22 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18152.12123.495587.248673@cargo.ozlabs.ibm.com>
+Date: Thu, 13 Sep 2007 04:26:35 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch again
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +16,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-On Sep 12, 2007, at 06:26, Anton Vorontsov wrote:
+Please do
 
-> Lately I've got this nice badness on mdio bus removal:
->
-> Device 'e0103120:06' does not have a release() function, it is  
-> broken and must be fixed.
-> ------------[ cut here ]------------
-> Badness at drivers/base/core.c:107
-> NIP: c015c1a8 LR: c015c1a8 CTR: c0157488
-> REGS: c34bdcf0 TRAP: 0700   Not tainted  (2.6.23-rc5-g9ebadfbb-dirty)
-> MSR: 00029032 <EE,ME,IR,DR>  CR: 24088422  XER: 00000000
-> ...
-> [c34bdda0] [c015c1a8] device_release+0x78/0x80 (unreliable)
-> [c34bddb0] [c01354cc] kobject_cleanup+0x80/0xbc
-> [c34bddd0] [c01365f0] kref_put+0x54/0x6c
-> [c34bdde0] [c013543c] kobject_put+0x24/0x34
-> [c34bddf0] [c015c384] put_device+0x1c/0x2c
-> [c34bde00] [c0180e84] mdiobus_unregister+0x2c/0x58
-> ...
->
-> Though actually there is nothing broken, it just device
-> subsystem core expects another "pattern" of resource managment.
->
-> This patch implement phy device's release function, thus
-> we're getting rid of this badness.
->
-> Also small hidden bug fixed, hope none other introduced. ;-)
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Acked-by: Andy Fleming <afleming@freescale.com>
+to get four small bug-fixes for embedded powerpc from Kumar, plus a
+one-liner from Olof that I missed putting in the previous batch.
 
-Andy
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/legacy_serial.c        |    2 +-
+ arch/powerpc/platforms/85xx/mpc8544_ds.c   |    2 ++
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c  |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    2 ++
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 ++
+ arch/powerpc/platforms/Kconfig             |    1 +
+ arch/powerpc/sysdev/cpm2_common.c          |    2 +-
+ arch/ppc/kernel/head_8xx.S                 |    2 --
+ 8 files changed, 10 insertions(+), 5 deletions(-)
+
+commit ee56c47440ab04c6a35c835a9bcc4193304adf93
+Author: Olof Johansson <olof@lixom.net>
+Date:   Wed Aug 22 19:26:37 2007 -0500
+
+    [POWERPC] Move serial_dev_init to device_initcall()
+    
+    With the I/O space rewrite by BenH, the legacy_serial serial_dev_init()
+    initcall is now called before I/O space is setup, but it's dependent on
+    it being available.
+    
+    Since there's no way to make dependencies between initcalls, we'll just
+    have to move it to device_initcall(). Yes, it's suboptimal but I'm not
+    aware of any better solution at this time, and it fixes a regression
+    from 2.6.22.
+    
+    Signed-off-by: Olof Johansson <olof@lixom.net>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+commit fb4f0e8832e0075849b41b65f6bb9fdfa7593b99
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Mon Sep 10 14:57:34 2007 -0500
+
+    [POWERPC] Enable GENERIC_ISA_DMA if FSL_ULI1575 to fix compile issue
+    
+    Since the ULI1575 has a ISA bus we need to enable the generic ISA dma
+    support for drivers that might expect it.  Without this we get compile
+    errors like the following:
+    
+    ound/built-in.o: In function `claim_dma_lock':
+    /home/galak/git/linux-8572/include/asm/dma.h:189: undefined reference to `dma_spin_lock'
+    /home/galak/git/linux-8572/include/asm/dma.h:189: undefined reference to `dma_spin_lock'
+    sound/built-in.o: In function `release_dma_lock':
+    /home/galak/git/linux-8572/include/asm/dma.h:195: undefined reference to `dma_spin_lock'
+    sound/built-in.o: In function `claim_dma_lock':
+    /home/galak/git/linux-8572/include/asm/dma.h:189: undefined reference to `dma_spin_lock'
+    /home/galak/git/linux-8572/include/asm/dma.h:189: undefined reference to `dma_spin_lock'
+    sound/built-in.o:/home/galak/git/linux-8572/include/asm/dma.h:195: more undefined references to `dma_spin_lock' follow
+    make: *** [.tmp_vmlinux1] Error 1
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+commit 83fcdb4b352f74a8a74737aedeaf622c37140c73
+Author: Scott Wood <scottwood@freescale.com>
+Date:   Wed Sep 5 14:29:10 2007 -0500
+
+    [POWERPC] cpm2: Fix off-by-one error in setbrg().
+    
+    The hardware adds one to the BRG value to get the divider, so it must
+    be subtracted by software.  Without this patch, characters will occasionally
+    be corrupted.
+    
+    Signed-off-by: Scott Wood <scottwood@freescale.com>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+commit 36c50f729b77144cae8d43457fefca66a4eeff6a
+Author: Jochen Friedrich <jochen@scram.de>
+Date:   Tue Aug 28 13:20:48 2007 +0200
+
+    [PPC] 8xx: Fix r3 trashing due to 8MB TLB page instantiation
+    
+    Instantiation of 8MB pages on the TLB cache for the kernel static
+    mapping trashes r3 register on !CONFIG_8xx_CPU6 configurations.
+    This ensures r3 gets saved and restored.
+    
+    This has been posted to linuxppc-embedded by Marcelo Tosatti
+    <marcelo@kvack.org>, but only an incomplete version of the patch
+    has been applied in c51e078f82096a7d35ac8ec2416272e843a0e1c4.
+    This patch adds the rest of the fix.
+    
+    Signed-off-by: Jochen Friedrich <jochen@scram.de>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+commit 2af8569dc9f29c303bf4aa012d991afcfaeed0c3
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Mon Sep 10 14:30:33 2007 -0500
+
+    [POWERPC] 8{5,6}xx: Fix build issue with !CONFIG_PCI
+    
+    We needed some ifdef CONFIG_PCI protection for pcibios_fixup so we
+    can build !CONFIG_PCI.
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
