@@ -1,21 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 15/15] Add DEFINE_SPUFS_ATTRIBUTE()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200709121047.05471.arnd@arndb.de>
-References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
-	<f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
-	<1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
-	<200709121047.05471.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-oYh9g2k3bx1l2wvBffuN"
-Date: Thu, 13 Sep 2007 12:05:41 +1000
-Message-Id: <1189649141.19087.13.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
-	linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B0244DDE05
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:09:48 +1000 (EST)
+In-Reply-To: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Wed, 12 Sep 2007 15:36:55 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,77 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Looks a lot better, thanks!
 
---=-oYh9g2k3bx1l2wvBffuN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Some minor nits and suggestions...
 
-On Wed, 2007-09-12 at 10:47 +0200, Arnd Bergmann wrote:
-> On Wednesday 12 September 2007, Michael Ellerman wrote:
-> > On Wed, 2007-09-12 at 17:43 +1000, Michael Ellerman wrote:
-> > > This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
-> > > DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
-> > > routine for us.
-> > >=20
-> > > Unfortunately we need two get routines (a locked and unlocked version=
-) to
-> > > support the coredump code. This patch hides one of those (the locked =
-version)
-> > > inside the macro foo.
->=20
-> >=20
-> > jk said:
-> > > "Good god man!"
-> >=20
-> > Yeah, I'm a bit lukewarm on this one. But the diffstat is nice, 50% cod=
-e
-> > reduction ain't bad :)
->=20
-> Have you looked at the change in object code size? I would expect the
-> object code to actually become bigger. I also think that it hurts
-> readability rather than help it.
+> +/ {
+> +	model = "fsl,MPC8572DS";
+> +	compatible = "fsl,MPC8572DS", "fsl,MPC85xxDS";
 
-Yeah I did, it's smaller actually:
+We don't want "xx" compatible entries; especially here it makes
+no sense at all.  If the board is compatible to some other (older)
+board, just name that board explicitly.
 
-   text    data     bss     dec     hex filename
-  44898   17804     120   62822    f566 spufs-before.o
-  44886   17804     120   62810    f55a spufs-after.o
+> +		PowerPC,8572@0 {
 
-> Maybe a better solution is to change the core dump code to not
-> require the mutex to be held in the first place. By the time
-> we get to call the get functions, it should already be in
-> saved state and no longer be able to get scheduled, so we might
-> not actually need all the extra tricks with avoiding the
-> mutex to be taken again.
+Maybe it would be good to use "PowerPC,e500" instead -- it would
+make it easier to probe for the actual CPU type, that way.  Not
+that Linux uses the name/compatible here at all ;-)
 
-Well that'd be nice, but I don't see anywhere that that happens. AFAICT
-the acquire we do in the first coredump callback is the first the SPU
-contexts know about their PPE process dying. And spufs is still live, so
-I think we definitely need to grab the mutex, or we might race with
-userspace accessing spufs files.
+> +	soc8572@ffe00000 {
 
-cheers
+You should put an interrupt-parent in here, so you can get rid of
+it in all the children.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+And then there's the pci_bridge thing we're discussing on IRC, of
+course -- basically, get rid of the pci_bridge pseudo-node, and
+move the interrupt-map for the south-bridge devices into the
+south-bridge node.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
 
---=-oYh9g2k3bx1l2wvBffuN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG6Jr1dSjSd0sB4dIRAmdjAKCI23oMOPJddZy9CBS8dLfeLMmH7QCgnpLf
-AGfWajn6wu1RqSSRhoAvRRs=
-=W2xN
------END PGP SIGNATURE-----
-
---=-oYh9g2k3bx1l2wvBffuN--
+Segher
