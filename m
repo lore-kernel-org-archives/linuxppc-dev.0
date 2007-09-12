@@ -1,17 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4CCD1DDE98
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:21:52 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 305CC8810
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:21:49 +0500 (SAMST)
-Date: Wed, 12 Sep 2007 15:24:56 +0400
+	by ozlabs.org (Postfix) with ESMTP id 6B732DDE9D
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:08 +1000 (EST)
+Date: Wed, 12 Sep 2007 15:25:14 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] ucc_geth: fix compilation
-Message-ID: <20070912112456.GA15556@localhost.localdomain>
+Subject: [PATCH] [POWERPC] ucc_geth: fix module removal
+Message-ID: <20070912112514.GB15556@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
+Cc: netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is against paulus/powerpc.git or galak/powerpc.git tree.
-Both affected.
-
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-
-There is no qe_bd_t typedef any longer, now it's struct qe_bd.
+- uccf should be set to NULL to not double-free memory on
+  subsequent calls;
+- ind_hash_q and group_hash_q lists should be initialized in the
+  probe() function, instead of struct_init() (called by open()),
+  otherwise there will be an oops if ucc_geth_driver removed
+  prior 'ifconfig ethX up';
+- add unregister_netdev();
+- reorder geth_remove() steps.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/ucc_geth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/ucc_geth.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 12e01b2..9a38dfe 100644
+index 9a38dfe..bc2b3bf 100644
 --- a/drivers/net/ucc_geth.c
 +++ b/drivers/net/ucc_geth.c
-@@ -2148,7 +2148,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 		for (j = 0; j < ugeth->ug_info->bdRingLenTx[i]; j++) {
- 			if (ugeth->tx_skbuff[i][j]) {
- 				dma_unmap_single(NULL,
--						 ((qe_bd_t *)bd)->buf,
-+						 ((struct qe_bd *)bd)->buf,
- 						 (in_be32((u32 *)bd) &
- 						  BD_LENGTH_MASK),
- 						 DMA_TO_DEVICE);
+@@ -2080,8 +2080,10 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 	if (!ugeth)
+ 		return;
+ 
+-	if (ugeth->uccf)
++	if (ugeth->uccf) {
+ 		ucc_fast_free(ugeth->uccf);
++		ugeth->uccf = NULL;
++	}
+ 
+ 	if (ugeth->p_thread_data_tx) {
+ 		qe_muram_free(ugeth->thread_dat_tx_offset);
+@@ -2312,10 +2314,6 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
+ 	ug_info = ugeth->ug_info;
+ 	uf_info = &ug_info->uf_info;
+ 
+-	/* Create CQs for hash tables */
+-	INIT_LIST_HEAD(&ugeth->group_hash_q);
+-	INIT_LIST_HEAD(&ugeth->ind_hash_q);
+-
+ 	if (!((uf_info->bd_mem_part == MEM_PART_SYSTEM) ||
+ 	      (uf_info->bd_mem_part == MEM_PART_MURAM))) {
+ 		if (netif_msg_probe(ugeth))
+@@ -3949,6 +3947,10 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	ugeth = netdev_priv(dev);
+ 	spin_lock_init(&ugeth->lock);
+ 
++	/* Create CQs for hash tables */
++	INIT_LIST_HEAD(&ugeth->group_hash_q);
++	INIT_LIST_HEAD(&ugeth->ind_hash_q);
++
+ 	dev_set_drvdata(device, dev);
+ 
+ 	/* Set the dev->base_addr to the gfar reg region */
+@@ -4002,9 +4004,10 @@ static int ucc_geth_remove(struct of_device* ofdev)
+ 	struct net_device *dev = dev_get_drvdata(device);
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+ 
+-	dev_set_drvdata(device, NULL);
+-	ucc_geth_memclean(ugeth);
++	unregister_netdev(dev);
+ 	free_netdev(dev);
++	ucc_geth_memclean(ugeth);
++	dev_set_drvdata(device, NULL);
+ 
+ 	return 0;
+ }
 -- 
 1.5.0.6
