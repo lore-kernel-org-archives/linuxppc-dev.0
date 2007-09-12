@@ -1,18 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] powerpc: add new required termio functions 
-In-reply-to: <20070912040109.3f6a9149.akpm@linux-foundation.org> 
-References: <8018.1189562679@neuling.org>
-	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
-	<20070912040109.3f6a9149.akpm@linux-foundation.org>
-Date: Wed, 12 Sep 2007 21:16:19 +1000
-Message-ID: <3350.1189595779@neuling.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, Alan Cox <alan@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4CCD1DDE98
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:21:52 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 305CC8810
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:21:49 +0500 (SAMST)
+Date: Wed, 12 Sep 2007 15:24:56 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] ucc_geth: fix compilation
+Message-ID: <20070912112456.GA15556@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20070912040109.3f6a9149.akpm@linux-foundation.org> you wrote:
-> On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> 
-> > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
-> > > The "tty: termios locking functions break with new termios type" patch
-> > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
-> > > [...]
-> > > I'm guessing other architectures are broken too?
-> > 
-> > FWIW, the above quoted patch breaks s390 as well.
-> 
-> Does this fix it?
+This patch is against paulus/powerpc.git or galak/powerpc.git tree.
+Both affected.
 
-FYI it does fix powerpc, but I suspect you were asking about s390 here.
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Mikey
+There is no qe_bd_t typedef any longer, now it's struct qe_bd.
 
-> 
-> diff -puN drivers/char/tty_ioctl.c~powerpc-add-new-required-termio-functions 
-drivers/char/tty_ioctl.c
-> --- a/drivers/char/tty_ioctl.c~powerpc-add-new-required-termio-functions
-> +++ a/drivers/char/tty_ioctl.c
-> @@ -795,6 +795,19 @@ int n_tty_ioctl(struct tty_struct * tty,
->  			if (L_ICANON(tty))
->  				retval = inq_canon(tty);
->  			return put_user(retval, (unsigned int __user *) arg);
-> +#ifndef TCGETS2
-> +		case TIOCGLCKTRMIOS:
-> +			if (kernel_termios_to_user_termios((struct termios __us
-er *)arg, real_tty->termios_locked))
-> +				return -EFAULT;
-> +			return 0;
-> +
-> +		case TIOCSLCKTRMIOS:
-> +			if (!capable(CAP_SYS_ADMIN))
-> +				return -EPERM;
-> +			if (user_termios_to_kernel_termios(real_tty->termios_lo
-cked, (struct termios __user *) arg))
-> +				return -EFAULT;
-> +			return 0;
-> +#else
->  		case TIOCGLCKTRMIOS:
->  			if (kernel_termios_to_user_termios_1((struct termios __
-user *)arg, real_tty->termios_locked))
->  				return -EFAULT;
-> @@ -806,6 +819,7 @@ int n_tty_ioctl(struct tty_struct * tty,
->  			if (user_termios_to_kernel_termios_1(real_tty->termios_
-locked, (struct termios __user *) arg))
->  				return -EFAULT;
->  			return 0;
-> +#endif
->  
->  		case TIOCPKT:
->  		{
-> _
-> 
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 12e01b2..9a38dfe 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -2148,7 +2148,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
+ 		for (j = 0; j < ugeth->ug_info->bdRingLenTx[i]; j++) {
+ 			if (ugeth->tx_skbuff[i][j]) {
+ 				dma_unmap_single(NULL,
+-						 ((qe_bd_t *)bd)->buf,
++						 ((struct qe_bd *)bd)->buf,
+ 						 (in_be32((u32 *)bd) &
+ 						  BD_LENGTH_MASK),
+ 						 DMA_TO_DEVICE);
+-- 
+1.5.0.6
