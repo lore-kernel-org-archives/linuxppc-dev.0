@@ -1,15 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 6B732DDE9D
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:08 +1000 (EST)
-Date: Wed, 12 Sep 2007 15:25:14 +0400
+	by ozlabs.org (Postfix) with ESMTP id CB542DE175
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:15 +1000 (EST)
+Date: Wed, 12 Sep 2007 15:25:21 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] ucc_geth: fix module removal
-Message-ID: <20070912112514.GB15556@localhost.localdomain>
+Subject: [PATCH] [POWERPC] ucc_fast: fix debug output
+Message-ID: <20070912112521.GC15556@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,70 +19,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- uccf should be set to NULL to not double-free memory on
-  subsequent calls;
-- ind_hash_q and group_hash_q lists should be initialized in the
-  probe() function, instead of struct_init() (called by open()),
-  otherwise there will be an oops if ucc_geth_driver removed
-  prior 'ifconfig ethX up';
-- add unregister_netdev();
-- reorder geth_remove() steps.
+Timur, want to take this along with your qe_lib cleanup queue?
+
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/net/ucc_geth.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |   40 ++++++++++++++++----------------
+ 1 files changed, 20 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 9a38dfe..bc2b3bf 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2080,8 +2080,10 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 	if (!ugeth)
- 		return;
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 3df202e..ab4b3cf 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -30,45 +30,45 @@
  
--	if (ugeth->uccf)
-+	if (ugeth->uccf) {
- 		ucc_fast_free(ugeth->uccf);
-+		ugeth->uccf = NULL;
-+	}
+ void ucc_fast_dump_regs(struct ucc_fast_private * uccf)
+ {
+-	printk(KERN_INFO "UCC%d Fast registers:", uccf->uf_info->ucc_num);
+-	printk(KERN_INFO "Base address: 0x%08x", (u32) uccf->uf_regs);
++	printk(KERN_INFO "UCC%d Fast registers:\n", uccf->uf_info->ucc_num);
++	printk(KERN_INFO "Base address: 0x%08x\n", (u32) uccf->uf_regs);
  
- 	if (ugeth->p_thread_data_tx) {
- 		qe_muram_free(ugeth->thread_dat_tx_offset);
-@@ -2312,10 +2314,6 @@ static int ucc_struct_init(struct ucc_geth_private *ugeth)
- 	ug_info = ugeth->ug_info;
- 	uf_info = &ug_info->uf_info;
- 
--	/* Create CQs for hash tables */
--	INIT_LIST_HEAD(&ugeth->group_hash_q);
--	INIT_LIST_HEAD(&ugeth->ind_hash_q);
--
- 	if (!((uf_info->bd_mem_part == MEM_PART_SYSTEM) ||
- 	      (uf_info->bd_mem_part == MEM_PART_MURAM))) {
- 		if (netif_msg_probe(ugeth))
-@@ -3949,6 +3947,10 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	ugeth = netdev_priv(dev);
- 	spin_lock_init(&ugeth->lock);
- 
-+	/* Create CQs for hash tables */
-+	INIT_LIST_HEAD(&ugeth->group_hash_q);
-+	INIT_LIST_HEAD(&ugeth->ind_hash_q);
-+
- 	dev_set_drvdata(device, dev);
- 
- 	/* Set the dev->base_addr to the gfar reg region */
-@@ -4002,9 +4004,10 @@ static int ucc_geth_remove(struct of_device* ofdev)
- 	struct net_device *dev = dev_get_drvdata(device);
- 	struct ucc_geth_private *ugeth = netdev_priv(dev);
- 
--	dev_set_drvdata(device, NULL);
--	ucc_geth_memclean(ugeth);
-+	unregister_netdev(dev);
- 	free_netdev(dev);
-+	ucc_geth_memclean(ugeth);
-+	dev_set_drvdata(device, NULL);
- 
- 	return 0;
+-	printk(KERN_INFO "gumr  : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "gumr  : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->gumr, in_be32(&uccf->uf_regs->gumr));
+-	printk(KERN_INFO "upsmr : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "upsmr : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->upsmr, in_be32(&uccf->uf_regs->upsmr));
+-	printk(KERN_INFO "utodr : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "utodr : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->utodr, in_be16(&uccf->uf_regs->utodr));
+-	printk(KERN_INFO "udsr  : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "udsr  : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->udsr, in_be16(&uccf->uf_regs->udsr));
+-	printk(KERN_INFO "ucce  : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "ucce  : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->ucce, in_be32(&uccf->uf_regs->ucce));
+-	printk(KERN_INFO "uccm  : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "uccm  : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->uccm, in_be32(&uccf->uf_regs->uccm));
+-	printk(KERN_INFO "uccs  : addr - 0x%08x, val - 0x%02x",
++	printk(KERN_INFO "uccs  : addr - 0x%08x, val - 0x%02x\n",
+ 		  (u32) & uccf->uf_regs->uccs, uccf->uf_regs->uccs);
+-	printk(KERN_INFO "urfb  : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "urfb  : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->urfb, in_be32(&uccf->uf_regs->urfb));
+-	printk(KERN_INFO "urfs  : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "urfs  : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->urfs, in_be16(&uccf->uf_regs->urfs));
+-	printk(KERN_INFO "urfet : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "urfet : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->urfet, in_be16(&uccf->uf_regs->urfet));
+-	printk(KERN_INFO "urfset: addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "urfset: addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->urfset,
+ 		  in_be16(&uccf->uf_regs->urfset));
+-	printk(KERN_INFO "utfb  : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "utfb  : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->utfb, in_be32(&uccf->uf_regs->utfb));
+-	printk(KERN_INFO "utfs  : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "utfs  : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->utfs, in_be16(&uccf->uf_regs->utfs));
+-	printk(KERN_INFO "utfet : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "utfet : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->utfet, in_be16(&uccf->uf_regs->utfet));
+-	printk(KERN_INFO "utftt : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "utftt : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->utftt, in_be16(&uccf->uf_regs->utftt));
+-	printk(KERN_INFO "utpt  : addr - 0x%08x, val - 0x%04x",
++	printk(KERN_INFO "utpt  : addr - 0x%08x, val - 0x%04x\n",
+ 		  (u32) & uccf->uf_regs->utpt, in_be16(&uccf->uf_regs->utpt));
+-	printk(KERN_INFO "urtry : addr - 0x%08x, val - 0x%08x",
++	printk(KERN_INFO "urtry : addr - 0x%08x, val - 0x%08x\n",
+ 		  (u32) & uccf->uf_regs->urtry, in_be32(&uccf->uf_regs->urtry));
+-	printk(KERN_INFO "guemr : addr - 0x%08x, val - 0x%02x",
++	printk(KERN_INFO "guemr : addr - 0x%08x, val - 0x%02x\n",
+ 		  (u32) & uccf->uf_regs->guemr, uccf->uf_regs->guemr);
  }
+ EXPORT_SYMBOL(ucc_fast_dump_regs);
 -- 
 1.5.0.6
