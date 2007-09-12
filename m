@@ -1,36 +1,36 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Return-Path: <RAISCH@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B49FFDDDF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 22:39:38 +1000 (EST)
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 82B31DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 23:22:50 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8CCdXdB144208
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 12:39:33 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8CDMkVT105516
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:22:46 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8CCdXHs2035900
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 14:39:33 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8CCdXpg024504
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 14:39:33 +0200
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"OF-General" <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Make sure user pages are from hugetlb before using
-	MR large pages
+	ESMTP id l8CDMkJS1859646
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 15:22:46 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8CDMjL5017536
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 15:22:46 +0200
+In-Reply-To: <20070912.055004.88490155.davem@davemloft.net>
+References: <200709071137.02801.ossthema@de.ibm.com>
+	<20070912.055004.88490155.davem@davemloft.net>
+Subject: Re: new NAPI interface broken for POWER architecture?
+To: David Miller <davem@davemloft.net>
+Message-ID: <OF2D6ED296.BDB04FBF-ONC1257354.00473703-C1257354.0048406C@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Wed, 12 Sep 2007 15:10:08 +0200
 MIME-Version: 1.0
-Date: Wed, 12 Sep 2007 14:39:31 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709121439.32641.fenkes@de.ibm.com>
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: ossthema@linux.vnet.ibm.com, Paul Mackerras <pmac@au1.ibm.com>,
+	netdev@vger.kernel.org, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	linuxppc-dev@ozlabs.org, Arnd Bergmann <ARNDB@de.ibm.com>,
+	Michael Ellerman <ellerman@au1.ibm.com>, shemminger@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,154 +40,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 
-...because, on virtualized hardware like System p, we can't be sure that the
-physical pages behind them are contiguous.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+David Miller <davem@davemloft.net> wrote on 12.09.2007 14:50:04:
 
-Another patch for 2.6.24 that will apply cleanly on top of my previous
-patchset. Please review and apply. Thanks!
+> From: Jan-Bernd Themann <ossthema@de.ibm.com>
+> Date: Fri, 7 Sep 2007 11:37:02 +0200
+>
+> > 2) On SMP systems: after netif_rx_complete has been called on CPU1
+> >    (+interruts enabled), netif_rx_schedule could be called on CPU2
+> >    (irq handler) before net_rx_action on CPU1 has checked
+NAPI_STATE_SCHED.
+> >    In that case the device would be added to poll lists of CPU1 and
+CPU2
+> >    as net_rx_action would see NAPI_STATE_SCHED set.
+> >    This must not happen. It will be caught when netif_rx_complete is
+> >    called the second time (BUG() called)
+> >
+> > This would mean we have a problem on all SMP machines right now.
+>
+> This is not a correct statement.
+>
+> Only on your platform do network device interrupts get moved
+> around, no other platform does this.
+>
+> Sparc64 doesn't, all interrupts stay in one location after
+> the cpu is initially choosen.
+>
+> x86 and x86_64 specifically do not move around network
+> device interrupts, even though other device types do
+> get dynamic IRQ cpu distribution.
+>
+> That's why you are the only person seeing this problem.
+>
+> I agree that it should be fixed, but we should also fix the IRQ
+> distribution scheme used on powerpc platforms which is totally
+> broken in these cases.
 
- drivers/infiniband/hw/ehca/ehca_classes.h |    8 ++--
- drivers/infiniband/hw/ehca/ehca_mrmw.c    |   82 +++++++++++++++++++++++++----
- 2 files changed, 75 insertions(+), 15 deletions(-)
+This is definitely not something we can change in the HEA device driver
+alone.
+It could also affect any other networking cards on POWER (e1000,s2io...).
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index 206d4eb..c2edd4c 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -99,10 +99,10 @@ struct ehca_sport {
- 	struct ehca_sma_attr saved_attr;
- };
- 
--#define HCA_CAP_MR_PGSIZE_4K  1
--#define HCA_CAP_MR_PGSIZE_64K 2
--#define HCA_CAP_MR_PGSIZE_1M  4
--#define HCA_CAP_MR_PGSIZE_16M 8
-+#define HCA_CAP_MR_PGSIZE_4K  0x80000000
-+#define HCA_CAP_MR_PGSIZE_64K 0x40000000
-+#define HCA_CAP_MR_PGSIZE_1M  0x20000000
-+#define HCA_CAP_MR_PGSIZE_16M 0x10000000
- 
- struct ehca_shca {
- 	struct ib_device ib_device;
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index 4c8f3b3..1bb9d23 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -41,6 +41,8 @@
-  */
- 
- #include <asm/current.h>
-+#include <linux/mm.h>
-+#include <linux/hugetlb.h>
- 
- #include <rdma/ib_umem.h>
- 
-@@ -51,6 +53,7 @@
- 
- #define NUM_CHUNKS(length, chunk_size) \
- 	(((length) + (chunk_size - 1)) / (chunk_size))
-+
- /* max number of rpages (per hcall register_rpages) */
- #define MAX_RPAGES 512
- 
-@@ -279,6 +282,52 @@ reg_phys_mr_exit0:
- } /* end ehca_reg_phys_mr() */
- 
- /*----------------------------------------------------------------------*/
-+static int ehca_is_mem_hugetlb(unsigned long addr, unsigned long size)
-+{
-+	struct vm_area_struct **vma_list;
-+	unsigned long cur_base;
-+	unsigned long npages;
-+	int ret, i;
-+
-+	vma_list = (struct vm_area_struct **) __get_free_page(GFP_KERNEL);
-+	if (!vma_list) {
-+		ehca_gen_err("Can not alloc vma_list");
-+		return -ENOMEM;
-+	}
-+
-+	down_write(&current->mm->mmap_sem);
-+	npages = PAGE_ALIGN(size + (addr & ~PAGE_MASK)) >> PAGE_SHIFT;
-+	cur_base = addr & PAGE_MASK;
-+
-+	while (npages) {
-+		ret = get_user_pages(current, current->mm, cur_base,
-+				     min_t(int, npages,
-+					   PAGE_SIZE / sizeof (*vma_list)),
-+				     1, 0, NULL, vma_list);
-+
-+		if (ret < 0) {
-+			ehca_gen_err("get_user_pages() failed "
-+				     "ret=%x cur_base=%lx", ret, cur_base);
-+			goto is_hugetlb_out;
-+		}
-+
-+		for (i = 0; i < ret; ++i)
-+			if (!is_vm_hugetlb_page(vma_list[i])) {
-+				ret = 0;
-+				goto is_hugetlb_out;
-+			}
-+
-+		cur_base += ret * PAGE_SIZE;
-+		npages -= ret;
-+	}
-+	ret = 1;
-+
-+is_hugetlb_out:
-+	up_write(&current->mm->mmap_sem);
-+	free_page((unsigned long) vma_list);
-+
-+	return ret;
-+}
- 
- struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
- 			       u64 virt, int mr_access_flags,
-@@ -346,18 +395,29 @@ struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd, u64 start, u64 length,
- 	num_kpages = NUM_CHUNKS((virt % PAGE_SIZE) + length, PAGE_SIZE);
- 	/* select proper hw_pgsize */
- 	if (ehca_mr_largepage &&
--	    (shca->hca_cap_mr_pgsize & HCA_CAP_MR_PGSIZE_16M)) {
--		if (length <= EHCA_MR_PGSIZE4K
--		    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
--			hwpage_size = EHCA_MR_PGSIZE4K;
--		else if (length <= EHCA_MR_PGSIZE64K)
--			hwpage_size = EHCA_MR_PGSIZE64K;
--		else if (length <= EHCA_MR_PGSIZE1M)
--			hwpage_size = EHCA_MR_PGSIZE1M;
--		else
--			hwpage_size = EHCA_MR_PGSIZE16M;
-+	    shca->hca_cap_mr_pgsize & HCA_CAP_MR_PGSIZE_16M) {
-+		ret = ehca_is_mem_hugetlb(virt, length);
-+		switch (ret) {
-+		case 0: /* mem is not from hugetlb */
-+			hwpage_size = PAGE_SIZE;
-+			break;
-+		case 1:
-+			if (length <= EHCA_MR_PGSIZE4K
-+			    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
-+				hwpage_size = EHCA_MR_PGSIZE4K;
-+			else if (length <= EHCA_MR_PGSIZE64K)
-+				hwpage_size = EHCA_MR_PGSIZE64K;
-+			else if (length <= EHCA_MR_PGSIZE1M)
-+				hwpage_size = EHCA_MR_PGSIZE1M;
-+			else
-+				hwpage_size = EHCA_MR_PGSIZE16M;
-+			break;
-+		default: /* out of mem */
-+			ib_mr = ERR_PTR(-ENOMEM);
-+			goto reg_user_mr_exit1;
-+		}
- 	} else
--		hwpage_size = EHCA_MR_PGSIZE4K;
-+		hwpage_size = EHCA_MR_PGSIZE4K; /* ehca1 can only 4k */
- 	ehca_dbg(pd->device, "hwpage_size=%lx", hwpage_size);
- 
- reg_user_mr_fallback:
--- 
-1.5.2
+Paul, Michael, Arndt, what is your opinion here?
+
+Gruss / Regards
+Christoph Raisch
