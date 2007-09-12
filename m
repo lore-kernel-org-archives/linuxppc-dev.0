@@ -1,24 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D117CDDE46
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:39:32 +1000 (EST)
-Date: Wed, 12 Sep 2007 04:39:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Heiko Schocher <hs@denx.de>
-Subject: Re: SYSFS: need a noncaching read
-Message-ID: <20070912113907.GA24087@kroah.com>
-References: <1189503798.6674.46.camel@Zeus.EmbLux>
-	<20070912053207.GH23573@pengutronix.de>
-	<20070912100123.GA23182@kroah.com>
-	<1189595612.6659.23.camel@Zeus.EmbLux>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id ED3E4DDEA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:51:29 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 7D765221C5C
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:51:28 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.152.220.ip-pool.NEFkom.net
+	[83.171.152.220])
+	by mail.mnet-online.de (Postfix) with ESMTP id 73DCD90146
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:51:28 +0200 (CEST)
+Date: Wed, 12 Sep 2007 13:51:54 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: resume crashes with active cpufreq_userspace
+Message-ID: <20070912115154.GA871@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1189595612.6659.23.camel@Zeus.EmbLux>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Detlev Zundel <dzu@denx.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,46 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 12, 2007 at 01:13:32PM +0200, Heiko Schocher wrote:
-> Hello Greg
-> 
-> Am Mittwoch, den 12.09.2007, 03:01 -0700 schrieb Greg KH:
-> > On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
-> > > On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
-> > > > I have developed a device driver and use the sysFS to export some
-> > > > registers to userspace.
-> > > 
-> > > Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
-> > > not to play around with registers from userspace.
-> > > 
-> > > > I opened the sysFS File for one register and did some reads from this
-> > > > File, but I alwas becoming the same value from the register, whats not
-> > > > OK, because they are changing. So I found out that the sysFS caches
-> > > > the reads ... :-(
-> > > 
-> > > Yes, it does. What you can do is close()ing the file handle between
-> > > accesses, which makes it work but is slow.
-> > 
-> > Do an lseek back to 0 and then re-read, you will get called in your
-> > driver again.
-> 
-> No thats not true. I thought this too, but if I make a:
-> 
-> seek (fd, 0L, SEEK_SET);
-> 
-> in Userspace, there is no retrigger in the sysFS, my driver is *not*
-> called again. So I made a own sysfs_seek function, which does retrigger
-> the driver ...
 
-Hm, are you sure?  Otherwise the poll() stuff would not work at all.
+2.6.22.5 crashes on resume on an iBook G3 600MHz. when cpufreq_userspace is
+active. System is PowerBook4,3, 750FX revision 2.3
+2.6.18 crashed also on resume, but I dont know if this was the same bug.
 
-> Is this really wanted in the sysFS, that there is no way to retrigger a
-> read?
+The oopes differ. Once I get an 'Unrecoverable FP Unavailable
+Exception 801' in audit_log_vformat, hald-addon-cpuf was the active task.
+Only the first two function were printed in the oops backtrace.
 
-Yes, use the sysfs poll/select stuff to do that.
+Another one was during a pagefault in cpufreq code, while events/0 was
+the active task.
 
-And "sysfs" has no upper-case letters :)
+Most of the time, the screen stays black with only the cursor in the
+upper left corner, sometimes not even that.
 
-thanks,
-
-greg k-h
+Resume seems to work ok on other models, like my own ibook with 745/755
+cpu, revision 51.17, PowerBook4,1
