@@ -1,17 +1,18 @@
-Return-Path: <geoff@white.local.net>
-Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D58EEDDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 18:45:06 +1000 (EST)
-Message-Id: <20070912084314.371119136@am.sony.com>
-References: <20070912084314.057513210@am.sony.com>
-Date: Wed, 12 Sep 2007 01:43:17 -0700
-From: geoffrey.levand@am.sony.com
-To: paulus@samba.org
-Subject: [patch 3/3] PS3: Enhance storage probe debug output
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ michael@ellerman.id.au
+Subject: Re: [PATCH 15/15] Add DEFINE_SPUFS_ATTRIBUTE()
+Date: Wed, 12 Sep 2007 10:47:04 +0200
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+	<f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
+	<1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200709121047.05471.arnd@arndb.de>
+Cc: Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add some more info to the PS3 storage probe debug output.
+On Wednesday 12 September 2007, Michael Ellerman wrote:
+> On Wed, 2007-09-12 at 17:43 +1000, Michael Ellerman wrote:
+> > This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
+> > DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
+> > routine for us.
+> > 
+> > Unfortunately we need two get routines (a locked and unlocked version) to
+> > support the coredump code. This patch hides one of those (the locked version)
+> > inside the macro foo.
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
----
- arch/powerpc/platforms/ps3/device-init.c |   24 ++++++++++++++++--------
- 1 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> jk said:
+> > "Good god man!"
+> 
+> Yeah, I'm a bit lukewarm on this one. But the diffstat is nice, 50% code
+> reduction ain't bad :)
 
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -297,8 +297,8 @@ static int ps3_storage_wait_for_device(c
- 		u64 dev_port;
- 	} *notify_event;
- 
--	pr_debug(" -> %s:%u: bus_id %u, dev_id %u, dev_type %u\n", __func__,
--		 __LINE__, repo->bus_id, repo->dev_id, repo->dev_type);
-+	pr_debug(" -> %s:%u: (%u:%u:%u)\n", __func__, __LINE__, repo->bus_id,
-+		 repo->dev_id, repo->dev_type);
- 
- 	buf = kzalloc(512, GFP_KERNEL);
- 	if (!buf)
-@@ -359,6 +359,11 @@ static int ps3_storage_wait_for_device(c
- 			break;
- 		}
- 
-+		pr_debug("%s:%d: notify event (%u:%u:%u): event_type 0x%lx, "
-+			 "port %lu\n", __func__, __LINE__, repo->bus_index,
-+			 repo->dev_index, repo->dev_type,
-+			 notify_event->event_type, notify_event->dev_port);
-+
- 		if (notify_event->event_type != notify_region_probe ||
- 		    notify_event->bus_id != repo->bus_id) {
- 			pr_debug("%s:%u: bad notify_event: event %lu, "
-@@ -370,8 +375,9 @@ static int ps3_storage_wait_for_device(c
- 
- 		if (notify_event->dev_id == repo->dev_id &&
- 		    notify_event->dev_type == repo->dev_type) {
--			pr_debug("%s:%u: device ready: dev_id %u\n", __func__,
--				 __LINE__, repo->dev_id);
-+			pr_debug("%s:%u: device ready (%u:%u:%u)\n", __func__,
-+				 __LINE__, repo->bus_index, repo->dev_index,
-+				 repo->dev_type);
- 			error = 0;
- 			break;
- 		}
-@@ -412,9 +418,10 @@ static int ps3_setup_storage_dev(const s
- 		return -ENODEV;
- 	}
- 
--	pr_debug("%s:%u: index %u:%u: port %lu blk_size %lu num_blocks %lu "
-+	pr_debug("%s:%u: (%u:%u:%u): port %lu blk_size %lu num_blocks %lu "
- 		 "num_regions %u\n", __func__, __LINE__, repo->bus_index,
--		 repo->dev_index, port, blk_size, num_blocks, num_regions);
-+		 repo->dev_index, repo->dev_type, port, blk_size, num_blocks,
-+		 num_regions);
- 
- 	p = kzalloc(sizeof(struct ps3_storage_device) +
- 		    num_regions * sizeof(struct ps3_storage_region),
-@@ -681,8 +688,9 @@ static int ps3_probe_thread(void *data)
- 				pr_debug("%s:%u: find device error.\n",
- 					__func__, __LINE__);
- 			else {
--				pr_debug("%s:%u: found device\n", __func__,
--					__LINE__);
-+				pr_debug("%s:%u: found device (%u:%u:%u)\n",
-+					 __func__, __LINE__, repo->bus_index,
-+					 repo->dev_index, repo->dev_type);
- 				ps3_register_repository_device(repo);
- 				ps3_repository_bump_device(repo);
- 				ms = 250;
+Have you looked at the change in object code size? I would expect the
+object code to actually become bigger. I also think that it hurts
+readability rather than help it.
 
--- 
+Maybe a better solution is to change the core dump code to not
+require the mutex to be held in the first place. By the time
+we get to call the get functions, it should already be in
+saved state and no longer be able to get scheduled, so we might
+not actually need all the extra tricks with avoiding the
+mutex to be taken again.
+
+	Arnd <><
