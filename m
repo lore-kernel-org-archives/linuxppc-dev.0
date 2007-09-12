@@ -1,17 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20070912035351.GF20218@localhost.localdomain>
-References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
-	<20070912031132.GC20218@localhost.localdomain>
-	<AC5C6EF4-EE8E-487F-BF45-3653A5C2617D@kernel.crashing.org>
-	<20070912035351.GF20218@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE7CB083-8474-4EB6-B10E-C0D76BEBE620@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Wed, 12 Sep 2007 10:13:35 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Monstr@seznam.cz>
+Received: from mxh.seznam.cz (mxhn.seznam.cz [212.80.76.26])
+	by ozlabs.org (Postfix) with SMTP id 2AC5CDDE3C
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 17:34:37 +1000 (EST)
+In-Reply-To: <20070912020339.GC16001@localhost.localdomain>
+Date: Wed, 12 Sep 2007 09:34:33 +0200 (CEST)
+To: =?us-ascii?Q?David=20Gibson?= <david@gibson.dropbear.id.au>
+From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
+Subject: =?us-ascii?Q?Re=3A=20FDT=20for=20Microblaze=20and=20PPC405?=
+Mime-Version: 1.0
+Message-Id: <3266.6156-24105-795007998-1189582473@seznam.cz>
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: =?us-ascii?Q?linuxppc=2Ddev?= <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,82 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +			reg = <e0000 1000>;
->>>> +			fsl,has-rstcr;
->>>> +		};
->>>> +
->>>> +		mpic: pic@40000 {
->>>> +			clock-frequency = <0>;
->>>> +			interrupt-controller;
->>>> +			#address-cells = <0>;
->>>> +			#interrupt-cells = <2>;
->>>> +			reg = <40000 40000>;
->>>> +			compatible = "chrp,open-pic";
->>>> +			device_type = "open-pic";
->>>> +			big-endian;
->>>> +		};
->>>> +	};
->>>> +
->>>> +	pcie@ffe08000 {
->>>> +		compatible = "fsl,mpc8548-pcie";
->>>
->>> And again, "fsl,mpc8572-pcie", "fsl,mpc8548-pcie".
+Hi David and Grant
+
+>> > For example emaclite driver needs information about turning on/off ping pong
+buffer...
+>> >
+>> > I would like to make this properly.
 >>
->> But why?  there is no difference between the PCIe controller in
->> mpc8548 and mpc8572?
+>> FDT design is just as much art as it is science.  It takes taste and
+>> judgement to desgin a nice set of bindings.  Your best option is to
+>> draft something and post it to the linuxppc-embedded mailing list for
+>> review.
 >
-> As far as you've yet discovered...
+>Yes, this is the preferred procedure, for now.
 
-Its the same actual block from design.  I'll think some on this.  If  
-I had some macro support in the dtc I wouldn't feel so bad about  
-doing this.  Its the edit/modify/fix cycle that's a pain.
+OK. Science is good for me because I am looking for theme for dissertation thesis
+and FPGA based FDT can be good choice.
 
->>>> +		uli1575@0 {
->>>> +			reg = <0 0 0 0 0>;
->>>
->>> This looks kind of bogus...
+>> > And second question is on early console logs and timers setting. I read
+>about aliases in FDT. I think that aliases can cover this setting.
+>> > For example my design contain 4 serial line and I would like to know which
+>serial line is set on early console.
 >>
->> Its a PCIe to PCI bridge that is transparent.
->
-> Right.... if it has no control registers, I think it should just lack
-> 'reg', not define a zero-length register block.
->
->>>> +			#size-cells = <2>;
->>>> +			#address-cells = <3>;
->>>> +			ranges = <02000000 0 80000000
->>>> +				  02000000 0 80000000
->>>> +				  0 20000000
->>>> +				  01000000 0 00000000
->>>> +				  01000000 0 00000000
->>>> +				  0 00100000>;
->
-> And if truly transparent, it should perhaps have just ranges;
-> indicating that child addresses are identity mapped to parent
-> addresses.
->
->>>> +
->>>> +			pci_bridge@0 {
->>>
->>> Ok.. why is pci_bridge nested within uli1575 - with the matching reg
->>> and ranges, it looks like they ought to be one device.  Also if this
->>> is a PCI<->PCI bridge, I believe it shold have device_type = "pci".
->>
->> We've been using this as it stands for a while.  If there are some
->> changes here that make sense I'm willing to make them.
->
-> Right, at present I don't see why you couldn't just ditch the
-> pci_bridge node, and drop its contents straight into the uli1575 node.
+>> You use the chosen node for this.  In the chosen node, you add a
+>> property called "linux,stdout-path" which holds the path to your
+>> console.  You can look at examples under arch/powerpc/boot/dts/*
 
-upon further review and discussion you are right about dropping the  
-pci_bridge@0 node from the ULI.  However we do need to add a pcie@0  
-node to cover the virtual P2P bridge in the PHB. So we have something  
-like:
+>Yes.  Currently we don't use /aliases in the flat device tree.  This
+>is possibly a mistake, and something I'm thinking about changing.
+>But, for now, linux,stdout-path in /chosen is the way to do this.
 
-pcie@ff808000 {
-   pcie@0 {
-     uli@0 {
-     }
-   }
-}
+OK. I will make the first draft and send it to list for review but it will be
+only part of patch rely on with ppc405 because we don't have microblaze kernel code.
 
-- k
+Michal Simek
