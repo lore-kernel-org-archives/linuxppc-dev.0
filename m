@@ -1,13 +1,13 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <556445368AFA1C438794ABDA8901891C066B5BD4@USA0300MS03.na.xerox.net>
-References: <556445368AFA1C438794ABDA8901891C066B5BD4@USA0300MS03.na.xerox.net>
+In-Reply-To: <46D5A715.7090802@scram.de>
+References: <46D5A715.7090802@scram.de>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3BEB1230-5FE7-48EF-998C-B46ACC51E6B6@kernel.crashing.org>
+Message-Id: <F204A1A4-12E1-41B3-9C3C-783103765E60@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 7448 pll registers
-Date: Wed, 12 Sep 2007 17:57:03 -0500
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: Re: [PATCH] Fix CPM1 uart console
+Date: Wed, 12 Sep 2007 17:57:53 -0500
+To: Jochen Friedrich <jochen@scram.de>
 Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -20,47 +20,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 5, 2007, at 4:24 PM, Leisner, Martin wrote:
+On Aug 29, 2007, at 12:04 PM, Jochen Friedrich wrote:
 
-> I'm going to get DFS into the 7448 (it looks like I'm going to take a
-> different
-> tactic then I see in 2.6.20.16 -- it hinges on powermac, and I don't
-> know if it
-> even compiles).
+> The powerpc version of commproc.c doesn't export cpm_dpram_phys due to
+> a typo. The ppc version of cpm_dpram_addr returns a usable virtual  
+> address
+> mapped to a physical address at the same location. cpm_dpram_phys  
+> returns
+> complete garbage as it tries to calculate an offset based on an  
+> otherwise
+> unused virtual adress returned by ioremap.
 >
-> In include/asm-powerpc, its missing definitions for HID1/{PC4,PC5}.
+> This patch fixes the typo for powerpc and removes the unnecessary  
+> ioremap
+> and corresponding virtual address for ppc.
 >
-> bash2 :2 mleisner@linuxcom-01 05:18:58; rcsdiff -u reg.h
-> ===================================================================
-> RCS file: reg.h,v
-> retrieving revision 1.1
-> diff -u -r1.1 reg.h
-> --- reg.h       2007/09/05 20:45:36     1.1
-> +++ reg.h       2007/09/05 20:46:56
-> @@ -253,6 +253,8 @@
->  #define HID1_PC1       (1<<15)         /* 7450 PLL_CFG[1] */
->  #define HID1_PC2       (1<<14)         /* 7450 PLL_CFG[2] */
->  #define HID1_PC3       (1<<13)         /* 7450 PLL_CFG[3] */
-> +#define HID1_PC4       (1<<12)         /* ???? PLL_CFG[4] */
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/powerpc/sysdev/commproc.c |    2 +-
+>  arch/ppc/8xx_io/commproc.c     |    4 +---
+>  2 files changed, 2 insertions(+), 4 deletions(-)
+> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/ 
+> commproc.c
+> index 4f67b89..dd5417a 100644
+> --- a/arch/powerpc/sysdev/commproc.c
+> +++ b/arch/powerpc/sysdev/commproc.c
+> @@ -395,4 +395,4 @@ uint cpm_dpram_phys(u8* addr)
+>  {
+>  	return (dpram_pbase + (uint)(addr - dpram_vbase));
+>  }
+> -EXPORT_SYMBOL(cpm_dpram_addr);
+> +EXPORT_SYMBOL(cpm_dpram_phys);
+> diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+> index 7088428..593b939 100644
+> --- a/arch/ppc/8xx_io/commproc.c
+> +++ b/arch/ppc/8xx_io/commproc.c
+> @@ -379,14 +379,12 @@ static rh_block_t cpm_boot_dpmem_rh_block[16];
+>  static rh_info_t cpm_dpmem_info;
+>
+>  #define CPM_DPMEM_ALIGNMENT	8
+> -static u8* dpram_vbase;
+>  static uint dpram_pbase;
+>
+>  void m8xx_cpm_dpinit(void)
+>  {
+>  	spin_lock_init(&cpm_dpmem_lock);
+>
+> -	dpram_vbase = immr_map_size(im_cpm.cp_dpmem, CPM_DATAONLY_BASE +  
+> CPM_DATAONLY_SIZE);
+>  	dpram_pbase = (uint)&((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem;
+>
+>  	/* Initialize the info header */
+> @@ -465,6 +463,6 @@ EXPORT_SYMBOL(cpm_dpram_addr);
+>
+>  uint cpm_dpram_phys(u8* addr)
+>  {
+> -	return (dpram_pbase + (uint)(addr - dpram_vbase));
+> +	return (uint)addr;
 
-7455 for PLL_CFG[4]
+this doesn't seem quite right.
 
-> +#define HID1_PC5       (1<<17)         /* 7448 specific bit --
-> PLL_CFG[5] */
->  #define HID1_SYNCBE    (1<<11)         /* 7450 ABE for sync, eieio */
->  #define HID1_ABE       (1<<10)         /* 7450 Address Broadcast  
-> Enable
-> */
->  #define HID1_PS                (1<<16)         /* 750FX PLL selection
-> */
+>  }
+>  EXPORT_SYMBOL(cpm_dpram_phys);
 >
->
-> PC4 seems "generic", PC5 is a "MPC7448 specific bit"
->
-> I'm not sure what HID1_PS means ( 750FX PLL selection ), its the same
-> bit as
-> HID1_PC0.
-
-Do you want this patch in the kernel?  If so we'll need a signed-off-by.
-
-- k
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
