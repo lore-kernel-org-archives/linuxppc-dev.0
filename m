@@ -1,14 +1,16 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 939A7DDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:58:54 +1000 (EST)
-Date: Wed, 12 Sep 2007 13:58:54 +1000
-To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Subject: Whitespace changes to define_machine(mpc885_ads).
-Message-ID: <20070912035854.GH9814@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-From: tony@bakeyournoodle.com (Tony Breeds)
+Return-Path: <travis@sgi.com>
+Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id D97F8DDE0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 11:56:48 +1000 (EST)
+Message-Id: <20070912015645.290833956@sgi.com>
+References: <20070912015644.927677070@sgi.com>
+Date: Tue, 11 Sep 2007 18:56:45 -0700
+From: travis@sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 01/10] x86: remove x86_cpu_to_log_apicid array (v3)
+Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,43 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make the define_machine() block for mpc885_ads more greppable and consistent
-with other examples in tree.
+This is a copy of an older patch that is in rc3-mm1.  It's needed
+to allow the remaining patches to integrate correctly.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-
+Signed-off-by: Mike Travis <travis@sgi.com>
 ---
+ arch/x86_64/kernel/genapic.c      |    2 --
+ arch/x86_64/kernel/genapic_flat.c |    1 -
+ arch/x86_64/kernel/smpboot.c      |    1 -
+ include/asm-x86_64/smp.h          |    1 -
+ 4 files changed, 5 deletions(-)
 
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |   17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
-
-Index: working/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-===================================================================
---- working.orig/arch/powerpc/platforms/8xx/mpc885ads_setup.c	2007-09-10 16:56:54.000000000 +1000
-+++ working/arch/powerpc/platforms/8xx/mpc885ads_setup.c	2007-09-12 13:53:17.000000000 +1000
-@@ -441,9 +441,14 @@ static int __init mpc885ads_probe(void)
+--- a/arch/x86_64/kernel/genapic.c
++++ b/arch/x86_64/kernel/genapic.c
+@@ -29,8 +29,6 @@
+ 					= { [0 ... NR_CPUS-1] = BAD_APICID };
+ EXPORT_SYMBOL(x86_cpu_to_apicid);
  
- define_machine(mpc885_ads)
- {
--.name = "MPC885 ADS",.probe = mpc885ads_probe,.setup_arch =
--	    mpc885ads_setup_arch,.init_IRQ =
--	    m8xx_pic_init,.show_cpuinfo = mpc8xx_show_cpuinfo,.get_irq =
--	    mpc8xx_get_irq,.restart = mpc8xx_restart,.calibrate_decr =
--	    mpc8xx_calibrate_decr,.set_rtc_time =
--	    mpc8xx_set_rtc_time,.get_rtc_time = mpc8xx_get_rtc_time,};
-+	.name            = "MPC885 ADS",
-+	.probe           = mpc885ads_probe,
-+	.setup_arch      = mpc885ads_setup_arch,
-+	.init_IRQ        = m8xx_pic_init,
-+	.show_cpuinfo    = mpc8xx_show_cpuinfo,
-+	.get_irq         = mpc8xx_get_irq,
-+	.restart         = mpc8xx_restart,
-+	.calibrate_decr  = mpc8xx_calibrate_decr,
-+	.set_rtc_time    = mpc8xx_set_rtc_time,
-+	.get_rtc_time    = mpc8xx_get_rtc_time,
-+};
+-u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
+-
+ struct genapic __read_mostly *genapic = &apic_flat;
+ 
+ /*
+--- a/arch/x86_64/kernel/genapic_flat.c
++++ b/arch/x86_64/kernel/genapic_flat.c
+@@ -52,7 +52,6 @@
+ 
+ 	num = smp_processor_id();
+ 	id = 1UL << num;
+-	x86_cpu_to_log_apicid[num] = id;
+ 	apic_write(APIC_DFR, APIC_DFR_FLAT);
+ 	val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
+ 	val |= SET_APIC_LOGICAL_ID(id);
+--- a/arch/x86_64/kernel/smpboot.c
++++ b/arch/x86_64/kernel/smpboot.c
+@@ -702,7 +702,6 @@
+ 		cpu_clear(cpu, cpu_present_map);
+ 		cpu_clear(cpu, cpu_possible_map);
+ 		x86_cpu_to_apicid[cpu] = BAD_APICID;
+-		x86_cpu_to_log_apicid[cpu] = BAD_APICID;
+ 		return -EIO;
+ 	}
+ 
+--- a/include/asm-x86_64/smp.h
++++ b/include/asm-x86_64/smp.h
+@@ -78,7 +78,6 @@
+  * the real APIC ID <-> CPU # mapping.
+  */
+ extern u8 x86_cpu_to_apicid[NR_CPUS];	/* physical ID */
+-extern u8 x86_cpu_to_log_apicid[NR_CPUS];
+ extern u8 bios_cpu_apicid[];
+ 
+ static inline int cpu_present_to_apicid(int mps_cpu)
 
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+-- 
