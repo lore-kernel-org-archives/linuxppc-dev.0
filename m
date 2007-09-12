@@ -1,27 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.230])
-	by ozlabs.org (Postfix) with ESMTP id 879DCDDE3F
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F2070DDEC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Sep 2007 01:15:02 +1000 (EST)
-Received: by qb-out-0506.google.com with SMTP id e11so215628qbe
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Sep 2007 08:15:00 -0700 (PDT)
-Message-ID: <fa686aa40709120814h6a73e4a5j5734d086401b0f2d@mail.gmail.com>
-Date: Wed, 12 Sep 2007 09:14:59 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: Which 2.6 kernel for MPC5200
-In-Reply-To: <9e4733910709120808i687ab5far924201f8a910759c@mail.gmail.com>
+	Thu, 13 Sep 2007 02:02:57 +1000 (EST)
+Message-ID: <46E80E08.2090204@ovro.caltech.edu>
+Date: Wed, 12 Sep 2007 09:04:24 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46E57A9D.2020506@asist.si>
-	<fa686aa40709101120u1310845et866b8fa6df7c5154@mail.gmail.com>
-	<9e4733910709101622u6978baa6n8618975f75ae1315@mail.gmail.com>
-	<20070912062819.GI23573@pengutronix.de>
-	<9e4733910709120808i687ab5far924201f8a910759c@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
-	Babarovic Ivica <ivica.babarovic@asist.si>
+To: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+Subject: Re: PCI target implementation on AMCC PPC CPUs
+References: <556445368AFA1C438794ABDA8901891C06460054@USA0300MS03.na.xerox.net>
+	<200709111113.46508.matthias.fuchs@esd-electronics.com>
+	<46E6D131.2030904@ovro.caltech.edu>
+	<200709120917.29767.matthias.fuchs@esd-electronics.com>
+In-Reply-To: <200709120917.29767.matthias.fuchs@esd-electronics.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Leonid <Leonid@a-k-a.net>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,55 +29,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/12/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 9/12/07, Robert Schwebel <r.schwebel@pengutronix.de> wrote:
-> > We have the OSELAS.BSP patch stack for the PCM030 working ontop of
-> > Linus' git. It still uses an older version of the Bestcom patches, so if
-> > you do some work in that area, please keep me informed about your
-> > progress.
->
-> What is the best way to proceed? I need to be on current git since we
-> are integrating a wireless driver that is tracking current git and the
-> mac80211 work.
->
-> I have Phytec (pcm030) and Efika hardware but I don't have a 5200lite.
-> Our prototype hardware uses the pcm030 module on a custom baseboard.
->
-> The best thing for me would be to get a FEC driver merged. That is the
-> largest piece of code  that is floating around. Getting that merged
-> would give me a stable base to build future patches on.
->
-> I'd also like to get support for the pcm030 (minus real-time) merged.
-> That isn't a lot of code once FEC is in the kernel.
->
-> Domen has posted this driver "[RFC PATCH v0.1] net driver: mpc52xx
-> fec". I can work on breaking that up, but I don't have a 5200lite so I
-> will have to port to pcm030. I don't want to start on this if someone
-> else is already doing it.
+Hi Matthias,
 
-Sylvain's bestcomm patches need be cleaned up and resubmitted before
-the next merge window opens.  AFAIK, the code is pretty much ready,
-and all the comments have been addressed.  All that is required is the
-final push to tidy the patchset and post to the list one more time.
-Sylvain said that he was going to get this done last weekend, but I
-haven't heard back from him yet.
+> I must admit, that the AMCC PowerPC's PCI interrupt capabilities could
+> be better:-) In both directions the host CPU has to do PCI
+> configuration cycles either to generate or acknowledge an interrupt.
+> The later is problematic for some OS coming from Redmond: you 
+> have to do pci configuration cycles from interrupt level - and
+> these OS do not 'like' that. 
 
-Sylvain, if you need help, please let me know.  I'll happily take on
-the last bit of tidy work if that's what is needed to be finished
-before the merge window.  (And it needs to be ready *before*, not
-during if I'm judging the prevailing winds correctly).
+Yikes. I'm sure there were some headaches there.
+
+> In later designs and where possible we also switched to alternative
+> interrupt mechanisms (GPIO for target to host and gated flags in FPGA
+> registers for the other direction). Multiple interrupt sources 
+> are identified by messages that are written to the other sides
+> memory.
+> 
+> I think we should stop this discussion because its a little bit
+> off-topic on this list.
+
+I think this particular piece of info is important on
+this list. It'll help those looking for processor options
+that happen to search back through the list messages.
+
+I'm done now, I just wanted to satisfy my curiosity
+(and I did learn how the host can interrupt the core!).
+
+I know that Leonid has hardware with these CPUs on them,
+and he wanted some feedback on the AMCCs as target processor.
+I'd eliminated the processor before getting it fully into
+a design; so your experience is a little further on.
+
+However, the conclusion remains the same; try to avoid
+using the 440EP as a PCI target device.
 
 Cheers,
-g.
->
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Dave
