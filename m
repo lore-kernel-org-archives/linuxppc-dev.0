@@ -1,31 +1,11 @@
-Return-Path: <ed.swarthout@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0BA4DDE2C
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:35:52 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l8C6Zj2n008766
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2007 23:35:46 -0700 (MST)
-Received: from az33exm20.fsl.freescale.net (az33exm20.am.freescale.net
-	[10.64.32.6])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l8C6ZjLa023101
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 01:35:45 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] Fix interrupt routing and setup of ULI M1575
-	onFSL boards
-Date: Tue, 11 Sep 2007 23:33:11 -0700
-Message-ID: <B52955765C54604CB1A62A9967F22C73026651A8@az33exm20.fsl.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0708170003210.21006@blarg.am.freescale.net>
-From: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 01/15] Extract the file descriptor search logic in SPU
+	coredump code
+Date: Wed, 12 Sep 2007 17:43:39 +1000 (EST)
+Cc: Jeremy Kerr <jk@ozlabs.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,30 +15,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kumar Gala:
-...
-> Fixed RTC support that requires a dummy memory read on the P2P
-> bridge to unlock the RTC and setup the default of the RTC alarm
-> registers to match with a basic x86 style CMOS RTC.
-...
-> diff --git a/arch/powerpc/platforms/fsl_uli1575.c
-...
-> +/* We have to do a dummy read on the P2P for the RTC to work, WTF
-> +static void __devinit quirk_final_uli5249(struct pci_dev *dev)
-...
-> +	for (i =3D 0; i < PCI_BUS_NUM_RESOURCES; i++) {
-> +		if ((bus->resource[i]) &&
-> +			(bus->resource[i]->flags & IORESOURCE_MEM)) {
-> +			dummy =3D ioremap(bus->resource[i]->start, 0x4);
-> +			if (dummy) {
-> +				in_8(dummy);
+Extract the logic for searching through the file descriptors for spu contexts
+into a separate routine, coredump_next_context(), so we can use it elsewhere
+in future. In the process we flatten the for loop, and move the NOSCHED test
+into coredump_next_context().
 
-This read (to resource->start) can cause a hang on 8572ds when there
-is a PCI card plugged into the uli slot and the card is configured
-(but not enabled) in the memory space.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ arch/powerpc/platforms/cell/spufs/coredump.c |   58 +++++++++++++++++---------
+ 1 files changed, 38 insertions(+), 20 deletions(-)
 
-The read is going to the slot, 2.11, which has 0x8000_0000 assigned.
-=20
-To be safe, the read needs to go to a device internal to the uli.
-
--ELS
+diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
+index 5e31799..99f8e0b 100644
+--- a/arch/powerpc/platforms/cell/spufs/coredump.c
++++ b/arch/powerpc/platforms/cell/spufs/coredump.c
+@@ -109,16 +109,11 @@ static int spufs_ctx_note_size(struct spufs_ctx_info *ctx_info)
+ 	return total;
+ }
+ 
+-static int spufs_add_one_context(struct file *file, int dfd)
++static int spufs_add_one_context(struct spu_context *ctx, int dfd)
+ {
+-	struct spu_context *ctx;
+ 	struct spufs_ctx_info *ctx_info;
+ 	int size;
+ 
+-	ctx = SPUFS_I(file->f_dentry->d_inode)->i_ctx;
+-	if (ctx->flags & SPU_CREATE_NOSCHED)
+-		return 0;
+-
+ 	ctx_info = kzalloc(sizeof(*ctx_info), GFP_KERNEL);
+ 	if (unlikely(!ctx_info))
+ 		return -ENOMEM;
+@@ -142,22 +137,45 @@ static int spufs_add_one_context(struct file *file, int dfd)
+  * internal functionality to dump them without needing to actually
+  * open the files.
+  */
+-static int spufs_arch_notes_size(void)
++static struct spu_context *coredump_next_context(int *fd)
+ {
+ 	struct fdtable *fdt = files_fdtable(current->files);
+-	int size = 0, fd;
+-
+-	for (fd = 0; fd < fdt->max_fds; fd++) {
+-		if (FD_ISSET(fd, fdt->open_fds)) {
+-			struct file *file = fcheck(fd);
+-
+-			if (file && file->f_op == &spufs_context_fops) {
+-				int rval = spufs_add_one_context(file, fd);
+-				if (rval < 0)
+-					break;
+-				size += rval;
+-			}
+-		}
++	struct file *file;
++	struct spu_context *ctx = NULL;
++
++	for (; *fd < fdt->max_fds; (*fd)++) {
++		if (!FD_ISSET(*fd, fdt->open_fds))
++			continue;
++
++		file = fcheck(*fd);
++
++		if (!file || file->f_op != &spufs_context_fops)
++			continue;
++
++		ctx = SPUFS_I(file->f_dentry->d_inode)->i_ctx;
++		if (ctx->flags & SPU_CREATE_NOSCHED)
++			continue;
++
++		/* start searching the next fd next time we're called */
++		(*fd)++;
++		break;
++	}
++
++	return ctx;
++}
++
++static int spufs_arch_notes_size(void)
++{
++	struct spu_context *ctx;
++	int size = 0, rc, fd;
++
++	fd = 0;
++	while ((ctx = coredump_next_context(&fd)) != NULL) {
++		rc = spufs_add_one_context(ctx, fd);
++		if (rc < 0)
++			break;
++
++		size += rc;
+ 	}
+ 
+ 	return size;
+-- 
+1.5.1.3.g7a33b
