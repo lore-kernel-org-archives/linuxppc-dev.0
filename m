@@ -6,15 +6,12 @@ References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
 	<20070912035351.GF20218@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E7F0FE04-5200-4295-9950-ECE387EB65C0@kernel.crashing.org>
+Message-Id: <AE7CB083-8474-4EB6-B10E-C0D76BEBE620@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: MDIO & phy device tree bindings (was Re: [PATCH v3] [POWERPC] 85xx:
-	Add basic Uniprocessor MPC8572 DS port)
-Date: Wed, 12 Sep 2007 10:08:53 -0500
-To: David Gibson <david@gibson.dropbear.id.au>,
-	Andy Fleming <afleming@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Wed, 12 Sep 2007 10:13:35 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,62 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David,
-
-I'm splitting this up since the mdio & phy comments are more general  
-that the 8572.dts
-
->>> [snip]
->>>> +		mdio@24520 {
->>>> +			#address-cells = <1>;
->>>> +			#size-cells = <0>;
->>>> +			device_type = "mdio";
+>>>> +			reg = <e0000 1000>;
+>>>> +			fsl,has-rstcr;
+>>>> +		};
+>>>> +
+>>>> +		mpic: pic@40000 {
+>>>> +			clock-frequency = <0>;
+>>>> +			interrupt-controller;
+>>>> +			#address-cells = <0>;
+>>>> +			#interrupt-cells = <2>;
+>>>> +			reg = <40000 40000>;
+>>>> +			compatible = "chrp,open-pic";
+>>>> +			device_type = "open-pic";
+>>>> +			big-endian;
+>>>> +		};
+>>>> +	};
+>>>> +
+>>>> +	pcie@ffe08000 {
+>>>> +		compatible = "fsl,mpc8548-pcie";
 >>>
->>> I don't think we actually have an mdio device_type binding defined.
+>>> And again, "fsl,mpc8572-pcie", "fsl,mpc8548-pcie".
 >>
->> We've had this on 83xx/85xx/86xx device trees for a far amount of
->> time now.  Look at section 2a in booting-without-of.txt
+>> But why?  there is no difference between the PCIe controller in
+>> mpc8548 and mpc8572?
 >
-> Ah, so we have; sorry.  Although the binding as it is currently
-> written is pretty much pointless - it should actually define some
-> mappings between dt properties / addresses and the standards defining
-> the MDIO bus.x
+> As far as you've yet discovered...
 
-that's a doc issue at this point
+Its the same actual block from design.  I'll think some on this.  If  
+I had some macro support in the dtc I wouldn't feel so bad about  
+doing this.  Its the edit/modify/fix cycle that's a pain.
 
->>>> +			compatible = "gianfar";
+>>>> +		uli1575@0 {
+>>>> +			reg = <0 0 0 0 0>;
 >>>
->>> This needs to be more specific.  And it certainly shouldn't be the
->>> same compatible string as the ethernet MACs have.
+>>> This looks kind of bogus...
 >>
->> Why not its the same controller?  Again, we've been doing this for
->> some period of time already.
+>> Its a PCIe to PCI bridge that is transparent.
 >
-> Yes you have, but it's still crap.  'compatible' should be sufficient
-> to distinguish the driver needed for device nodes, but the MACs and
-> MDIO should clearly have different drivers (or at least, different
-> parts of a driver).
-
-don't disagree will see about coming up with a better name, and  
-deprecating 'gianfar'.
-
->>>> +			reg = <24520 20>;
->>>> +			phy0: ethernet-phy@0 {
->>>> +				interrupt-parent = <&mpic>;
->>>> +				interrupts = <a 1>;
->>>> +				reg = <0>;
->>>> +				device_type = "ethernet-phy";
+> Right.... if it has no control registers, I think it should just lack
+> 'reg', not define a zero-length register block.
+>
+>>>> +			#size-cells = <2>;
+>>>> +			#address-cells = <3>;
+>>>> +			ranges = <02000000 0 80000000
+>>>> +				  02000000 0 80000000
+>>>> +				  0 20000000
+>>>> +				  01000000 0 00000000
+>>>> +				  01000000 0 00000000
+>>>> +				  0 00100000>;
+>
+> And if truly transparent, it should perhaps have just ranges;
+> indicating that child addresses are identity mapped to parent
+> addresses.
+>
+>>>> +
+>>>> +			pci_bridge@0 {
 >>>
->>> Do we actually have an ethernet-phy device_type binding?  If not, we
->>> should kill this.  'compatible' properties for phys would  
->>> probably be
->>> a good idea, though (giving the actual phy model).
+>>> Ok.. why is pci_bridge nested within uli1575 - with the matching reg
+>>> and ranges, it looks like they ought to be one device.  Also if this
+>>> is a PCI<->PCI bridge, I believe it shold have device_type = "pci".
 >>
->> Look section 2c in booting-without-of.txt
+>> We've been using this as it stands for a while.  If there are some
+>> changes here that make sense I'm willing to make them.
 >
-> Ah, yes.  That one's a rather less redeemable pointless device_type
-> binding.  We should kill it from booting-without-of.txt.
+> Right, at present I don't see why you couldn't just ditch the
+> pci_bridge node, and drop its contents straight into the uli1575 node.
 
-agreed, will poke andy on this.
+upon further review and discussion you are right about dropping the  
+pci_bridge@0 node from the ULI.  However we do need to add a pcie@0  
+node to cover the virtual P2P bridge in the PHB. So we have something  
+like:
+
+pcie@ff808000 {
+   pcie@0 {
+     uli@0 {
+     }
+   }
+}
 
 - k
