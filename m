@@ -1,15 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] powerpc: add new required termio functions 
-In-reply-to: <alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org>
-References: <8018.1189562679@neuling.org>
-	<alpine.LFD.0.999.0709111915350.16478@woody.linux-foundation.org>
-Date: Wed, 12 Sep 2007 12:34:08 +1000
-Message-ID: <10146.1189564448@neuling.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Alan Cox <alan@redhat.com>, akpm@linux-foundation.org,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 12 Sep 2007 13:00:05 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Message-ID: <20070912030005.GA20218@localhost.localdomain>
+References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
+	<20070911141821.GA32545@lixom.net>
+	<230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>
+	<20070911155558.GA10743@lixom.net>
+	<11B85E70-D643-4013-A9B3-59CD76F9D7AB@kernel.crashing.org>
+	<20070911171521.GB10743@lixom.net> <46E6CE9A.8080402@freescale.com>
+	<20070911173308.GA11951@lixom.net> <46E6D4D4.2050600@freescale.com>
+	<C1272D92-42A0-43E4-9AE0-12161178AAA2@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <C1272D92-42A0-43E4-9AE0-12161178AAA2@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Wed, 12 Sep 2007, Michael Neuling wrote:
+On Tue, Sep 11, 2007 at 12:59:22PM -0500, Kumar Gala wrote:
+> 
+> On Sep 11, 2007, at 12:48 PM, Scott Wood wrote:
+> 
+> > Olof Johansson wrote:
+> >> On Tue, Sep 11, 2007 at 12:21:30PM -0500, Scott Wood wrote:
+> >>> Olof Johansson wrote:
+> >>>> On Tue, Sep 11, 2007 at 11:00:28AM -0500, Kumar Gala wrote:
+> >>>>> well the ifdefs are orthogonal.  We don't have a way of knowing
+> >>>>> primary from the device tree today.
+> >>>> How about something like "fsl,primary-phb" in the bus device  
+> >>>> node? I don't
+> >>>> know, maybe it's already been discussed and turned down for some  
+> >>>> reason.
+> >>> It's more of a Linux issue than anything to do with the hardware.
+> >>
+> >> That doesn't stop firmware from telling linux which bus is the  
+> >> primary
+> >> one on the system to help out.
 > >
-> > The "tty: termios locking functions break with new termios type" patch
-> > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> > The entire notion of a "primary" PCI bus is due to a Linux flaw.
+> >
+> > If we did put it in the device tree, it should be something like
+> > "linux,primary-phb".  But since Linux can tell from the node's  
+> > children,
+> > there doesn't seem to be much point.
 > 
-> Really?
-> 
-> It shouldn't. The use of kernel_termios_to_user_termios_1() is conditional 
-> on the architecture having a define for TCGETS2, and I think they match 
-> up. I see:
-> 
-> 	[torvalds@woody linux]$ git grep -l kernel_termios_to_user_termios_1 in
-clude | wc -l
-> 	10
-> 	[torvalds@woody linux]$ git grep -l TCGETS2 include | wc -l
-> 	10
-> 
-> and in neither case is ppc in that list of architecures.
-> 
-> So maybe you just read the patch without actually testing whether it 
-> actually broke powerpc?
+> Once someone rights code to do this I'm happy to change over.  I took  
+> this model of explicitly knowing the primary PHB from the pmac code.
 
-Not, I actually compiled it.
+In the meantime, couldn't the code still be merged, using an explicit
+test of the root node's 'compatible' or 'model' properties to decide
+on the right primary bus.
 
-> Or is something subtler going on?
-
-Looks like those new calls are not protected by the TCGETS2 define.
-Adding those ifdefs seems like the correct fix.  
-
-Mikey
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
