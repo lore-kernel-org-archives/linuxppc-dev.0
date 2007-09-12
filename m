@@ -1,17 +1,15 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E8DA6DE347
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:30 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 792BC8814
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 16:22:29 +0500 (SAMST)
-Date: Wed, 12 Sep 2007 15:25:36 +0400
+	by ozlabs.org (Postfix) with ESMTP id 52C22DDF2A
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:22:55 +1000 (EST)
+Date: Wed, 12 Sep 2007 15:26:01 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] mpc8568e_mds: UCC0's PHY is at 0x7, not 0x1
-Message-ID: <20070912112536.GD15556@localhost.localdomain>
+To: netdev@vger.kernel.org
+Subject: [PATCH] phy: implement release function
+Message-ID: <20070912112601.GE15556@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +19,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There was probably a typo in the documentation, or it's hw errata.
-Recent u-boot also using 0x7.
+Lately I've got this nice badness on mdio bus removal:
+
+Device 'e0103120:06' does not have a release() function, it is broken and must be fixed.
+------------[ cut here ]------------
+Badness at drivers/base/core.c:107
+NIP: c015c1a8 LR: c015c1a8 CTR: c0157488
+REGS: c34bdcf0 TRAP: 0700   Not tainted  (2.6.23-rc5-g9ebadfbb-dirty)
+MSR: 00029032 <EE,ME,IR,DR>  CR: 24088422  XER: 00000000
+...
+[c34bdda0] [c015c1a8] device_release+0x78/0x80 (unreliable)
+[c34bddb0] [c01354cc] kobject_cleanup+0x80/0xbc
+[c34bddd0] [c01365f0] kref_put+0x54/0x6c
+[c34bdde0] [c013543c] kobject_put+0x24/0x34
+[c34bddf0] [c015c384] put_device+0x1c/0x2c
+[c34bde00] [c0180e84] mdiobus_unregister+0x2c/0x58
+...
+
+Though actually there is nothing broken, it just device
+subsystem core expects another "pattern" of resource managment.
+
+This patch implement phy device's release function, thus
+we're getting rid of this badness.
+
+Also small hidden bug fixed, hope none other introduced. ;-)
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc8568mds.dts |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/phy/mdio_bus.c   |    9 +++++----
+ drivers/net/phy/phy_device.c |   13 +++++++++++++
+ include/linux/phy.h          |    1 +
+ 3 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index b1dcfbe..719929c 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -97,10 +97,10 @@
- 			device_type = "mdio";
- 			compatible = "gianfar";
- 			reg = <24520 20>;
--			phy0: ethernet-phy@0 {
-+			phy0: ethernet-phy@7 {
- 				interrupt-parent = <&mpic>;
- 				interrupts = <1 1>;
--				reg = <0>;
-+				reg = <7>;
- 				device_type = "ethernet-phy";
- 			};
- 			phy1: ethernet-phy@1 {
-@@ -417,10 +417,10 @@
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index fc2f0e6..c30196d 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -91,9 +91,12 @@ int mdiobus_register(struct mii_bus *bus)
  
- 			/* These are the same PHYs as on
- 			 * gianfar's MDIO bus */
--			qe_phy0: ethernet-phy@00 {
-+			qe_phy0: ethernet-phy@07 {
- 				interrupt-parent = <&mpic>;
- 				interrupts = <1 1>;
--				reg = <0>;
-+				reg = <7>;
- 				device_type = "ethernet-phy";
- 			};
- 			qe_phy1: ethernet-phy@01 {
+ 			err = device_register(&phydev->dev);
+ 
+-			if (err)
++			if (err) {
+ 				printk(KERN_ERR "phy %d failed to register\n",
+ 						i);
++				phy_device_free(phydev);
++				phydev = NULL;
++			}
+ 		}
+ 
+ 		bus->phy_map[i] = phydev;
+@@ -110,10 +113,8 @@ void mdiobus_unregister(struct mii_bus *bus)
+ 	int i;
+ 
+ 	for (i = 0; i < PHY_MAX_ADDR; i++) {
+-		if (bus->phy_map[i]) {
++		if (bus->phy_map[i])
+ 			device_unregister(&bus->phy_map[i]->dev);
+-			kfree(bus->phy_map[i]);
+-		}
+ 	}
+ }
+ EXPORT_SYMBOL(mdiobus_unregister);
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index e275df8..80c283c 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -44,6 +44,17 @@ static struct phy_driver genphy_driver;
+ extern int mdio_bus_init(void);
+ extern void mdio_bus_exit(void);
+ 
++void phy_device_free(struct phy_device *phydev)
++{
++	kfree(phydev);
++}
++EXPORT_SYMBOL(phy_device_free);
++
++static void phy_device_release(struct device *dev)
++{
++	phy_device_free(to_phy_device(dev));
++}
++
+ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+ {
+ 	struct phy_device *dev;
+@@ -54,6 +65,8 @@ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
+ 	if (NULL == dev)
+ 		return (struct phy_device*) PTR_ERR((void*)-ENOMEM);
+ 
++	dev->dev.release = phy_device_release;
++
+ 	dev->speed = 0;
+ 	dev->duplex = -1;
+ 	dev->pause = dev->asym_pause = 0;
+diff --git a/include/linux/phy.h b/include/linux/phy.h
+index 2a65978..9ec1363 100644
+--- a/include/linux/phy.h
++++ b/include/linux/phy.h
+@@ -398,6 +398,7 @@ int phy_mii_ioctl(struct phy_device *phydev,
+ int phy_start_interrupts(struct phy_device *phydev);
+ void phy_print_status(struct phy_device *phydev);
+ struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
++void phy_device_free(struct phy_device *phydev);
+ 
+ extern struct bus_type mdio_bus_type;
+ #endif /* __PHY_H */
 -- 
 1.5.0.6
