@@ -2,19 +2,22 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E2E9EDDED4
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:09:59 +1000 (EST)
-In-Reply-To: <46E6CE9A.8080402@freescale.com>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>	<20070911141821.GA32545@lixom.net>	<230A7A2A-3184-4BC2-B8AC-C94090B532B0@kernel.crashing.org>	<20070911155558.GA10743@lixom.net>	<11B85E70-D643-4013-A9B3-59CD76F9D7AB@kernel.crashing.org>
-	<20070911171521.GB10743@lixom.net> <46E6CE9A.8080402@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 874DBDDF59
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:10:00 +1000 (EST)
+In-Reply-To: <200709121013.51500.arnd@arndb.de>
+References: <20070911224952.9838.46644.stgit@localhost.localdomain>
+	<200709120057.18873.arnd@arndb.de>
+	<20070912035602.0be0d47e@localhost.localdomain>
+	<200709121013.51500.arnd@arndb.de>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <41e2e527c0f0dfceedf2ffe6cdf34816@kernel.crashing.org>
+Message-Id: <4cd6407b936b2ce65c11092883e7b8d5@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Wed, 12 Sep 2007 15:20:14 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64 bit
+	pci_process_bridge_OF_ranges() instances
+Date: Wed, 12 Sep 2007 16:51:25 +0200
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> well the ifdefs are orthogonal.  We don't have a way of knowing
->>> primary from the device tree today.
->>
->> How about something like "fsl,primary-phb" in the bus device node? I 
->> don't
->> know, maybe it's already been discussed and turned down for some 
->> reason.
+>>>> +struct ranges_pci {
+>>>> +	unsigned int pci_space;
+>>>> +	u64 pci_addr;
+>>>> +	phys_addr_t phys_addr;
+>>>> +	u64 size;
+>>>> +} __attribute__((packed));
+>>>> +
+>>>
+>>> This structure definition uses unaligned members because of the
+>>> 'packed' attribute. Is that really what you intended?
+>>>
+>> yes, exactly, because I'm mapping this struct on ranges extracted from
+>> the dts instead of juggling with ranges[foo] offsets.
 >
-> It's more of a Linux issue than anything to do with the hardware.
+> I see. It does however look wrong to me, because you are using a 
+> hardcoded
+> phys_addr_t type. This breaks when phys_addr has a different size from 
+> what
+> you expect, e.g. when booting a pure 32 bit kernel on a machine that 
+> has
+> a 64 bit physical address space.
 
-Yeah, many machines actually have multiple "primary PHBs", and
-Linux cannot really deal with that.  It's probably best to handle
-this from platform code.
+More generally, you can even have a different size for the "phys_addr"
+for different nodes in the same device tree.
 
->> Or would it be sufficient to check children of that device node to see
->> if the ULi is on that bus?
->
-> Or more generally, see if an isa node is somewhere in that subtree.
-
-And if there is no ISA node, find any other legacy device (non-native
-ATA controllers, ...), etc.
+You really should look at the #address-cells in this node's parent,
+and translate that all the way up to the root node to get a CPU
+address.
 
 
 Segher
