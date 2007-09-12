@@ -1,21 +1,40 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id ED3E4DDEA0
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:51:29 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 7D765221C5C
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:51:28 +0200 (CEST)
-Received: from ibook.aepfle.de (DSL01.83.171.152.220.ip-pool.NEFkom.net
-	[83.171.152.220])
-	by mail.mnet-online.de (Postfix) with ESMTP id 73DCD90146
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 13:51:28 +0200 (CEST)
-Date: Wed, 12 Sep 2007 13:51:54 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: resume crashes with active cpufreq_userspace
-Message-ID: <20070912115154.GA871@aepfle.de>
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1EB0BDDEB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:53:35 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l8CBrVgn134758
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 11:53:31 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+	[9.149.37.212])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8CBrVwA479318
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 12:53:31 +0100
+Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8CBrEEc006154
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 12:53:15 +0100
+Date: Wed, 12 Sep 2007 13:52:57 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Michael Neuling <mikey@neuling.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org,
+	Alan Cox <alan@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] powerpc: add new required termio functions
+Message-ID: <20070912115257.GC7858@osiris.boeblingen.de.ibm.com>
+References: <8018.1189562679@neuling.org>
+	<20070912102032.GB7858@osiris.boeblingen.de.ibm.com>
+	<20070912040109.3f6a9149.akpm@linux-foundation.org>
+	<20070912113409.GA7253@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070912113409.GA7253@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +44,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Sep 12, 2007 at 12:34:09PM +0100, Christoph Hellwig wrote:
+> On Wed, Sep 12, 2007 at 04:01:09AM -0700, Andrew Morton wrote:
+> > On Wed, 12 Sep 2007 12:20:32 +0200 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > 
+> > > On Wed, Sep 12, 2007 at 12:04:39PM +1000, Michael Neuling wrote:
+> > > > The "tty: termios locking functions break with new termios type" patch
+> > > > (f629307c857c030d5a3dd777fee37c8bb395e171) breaks the powerpc compile.
+> > > > [...]
+> > > > I'm guessing other architectures are broken too?
+> > > 
+> > > FWIW, the above quoted patch breaks s390 as well.
+> > 
+> > Does this fix it?
 
-2.6.22.5 crashes on resume on an iBook G3 600MHz. when cpufreq_userspace is
-active. System is PowerBook4,3, 750FX revision 2.3
-2.6.18 crashed also on resume, but I dont know if this was the same bug.
+Yes, it does.
 
-The oopes differ. Once I get an 'Unrecoverable FP Unavailable
-Exception 801' in audit_log_vformat, hald-addon-cpuf was the active task.
-Only the first two function were printed in the oops backtrace.
+> I might be missing something, but the the right fix is probably to
+> apply the arch patches from Alan to powerpc and s390.  We don't want to
+> be left over without all the nice termios features on these platforms,
+> do we?
 
-Another one was during a pagefault in cpufreq code, while events/0 was
-the active task.
-
-Most of the time, the screen stays black with only the cursor in the
-upper left corner, sometimes not even that.
-
-Resume seems to work ok on other models, like my own ibook with 745/755
-cpu, revision 51.17, PowerBook4,1
+But not in rc6 timeframe, I would guess?
