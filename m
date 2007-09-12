@@ -1,11 +1,17 @@
 Return-Path: <geoff@white.local.net>
-Message-Id: <20070912084314.190886340@am.sony.com>
+Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D58EEDDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 18:45:06 +1000 (EST)
+Message-Id: <20070912084314.371119136@am.sony.com>
 References: <20070912084314.057513210@am.sony.com>
-Date: Wed, 12 Sep 2007 01:43:15 -0700
+Date: Wed, 12 Sep 2007 01:43:17 -0700
 From: geoffrey.levand@am.sony.com
 To: paulus@samba.org
-Subject: [patch 1/3] PS3: Fix CONFIG_SMP=n, CONFIG_KEXEC=y build
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
+Subject: [patch 3/3] PS3: Enhance storage probe debug output
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,33 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jeremy Kerr <jk@ozlabs.org>
+Add some more info to the PS3 storage probe debug output.
 
-Currently, the ps3 kernel fails to build without smp but with kexec, as
-ps3_kexec_cpu_down needs ps3_smp_cleanup_cpu, which isn't defined on UP
-kernels. This change adds an empty ps3_smp_cleanup_cpu for UP kernels.
-
-Booted on ps3.
-
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/platform.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/platforms/ps3/device-init.c |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -47,7 +47,11 @@ void __init ps3_register_ipi_debug_brk(u
- /* smp */
+--- a/arch/powerpc/platforms/ps3/device-init.c
++++ b/arch/powerpc/platforms/ps3/device-init.c
+@@ -297,8 +297,8 @@ static int ps3_storage_wait_for_device(c
+ 		u64 dev_port;
+ 	} *notify_event;
  
- void smp_init_ps3(void);
-+#ifdef CONFIG_SMP
- void ps3_smp_cleanup_cpu(int cpu);
-+#else
-+static inline void ps3_smp_cleanup_cpu(int cpu) { }
-+#endif
+-	pr_debug(" -> %s:%u: bus_id %u, dev_id %u, dev_type %u\n", __func__,
+-		 __LINE__, repo->bus_id, repo->dev_id, repo->dev_type);
++	pr_debug(" -> %s:%u: (%u:%u:%u)\n", __func__, __LINE__, repo->bus_id,
++		 repo->dev_id, repo->dev_type);
  
- /* time */
+ 	buf = kzalloc(512, GFP_KERNEL);
+ 	if (!buf)
+@@ -359,6 +359,11 @@ static int ps3_storage_wait_for_device(c
+ 			break;
+ 		}
  
++		pr_debug("%s:%d: notify event (%u:%u:%u): event_type 0x%lx, "
++			 "port %lu\n", __func__, __LINE__, repo->bus_index,
++			 repo->dev_index, repo->dev_type,
++			 notify_event->event_type, notify_event->dev_port);
++
+ 		if (notify_event->event_type != notify_region_probe ||
+ 		    notify_event->bus_id != repo->bus_id) {
+ 			pr_debug("%s:%u: bad notify_event: event %lu, "
+@@ -370,8 +375,9 @@ static int ps3_storage_wait_for_device(c
+ 
+ 		if (notify_event->dev_id == repo->dev_id &&
+ 		    notify_event->dev_type == repo->dev_type) {
+-			pr_debug("%s:%u: device ready: dev_id %u\n", __func__,
+-				 __LINE__, repo->dev_id);
++			pr_debug("%s:%u: device ready (%u:%u:%u)\n", __func__,
++				 __LINE__, repo->bus_index, repo->dev_index,
++				 repo->dev_type);
+ 			error = 0;
+ 			break;
+ 		}
+@@ -412,9 +418,10 @@ static int ps3_setup_storage_dev(const s
+ 		return -ENODEV;
+ 	}
+ 
+-	pr_debug("%s:%u: index %u:%u: port %lu blk_size %lu num_blocks %lu "
++	pr_debug("%s:%u: (%u:%u:%u): port %lu blk_size %lu num_blocks %lu "
+ 		 "num_regions %u\n", __func__, __LINE__, repo->bus_index,
+-		 repo->dev_index, port, blk_size, num_blocks, num_regions);
++		 repo->dev_index, repo->dev_type, port, blk_size, num_blocks,
++		 num_regions);
+ 
+ 	p = kzalloc(sizeof(struct ps3_storage_device) +
+ 		    num_regions * sizeof(struct ps3_storage_region),
+@@ -681,8 +688,9 @@ static int ps3_probe_thread(void *data)
+ 				pr_debug("%s:%u: find device error.\n",
+ 					__func__, __LINE__);
+ 			else {
+-				pr_debug("%s:%u: found device\n", __func__,
+-					__LINE__);
++				pr_debug("%s:%u: found device (%u:%u:%u)\n",
++					 __func__, __LINE__, repo->bus_index,
++					 repo->dev_index, repo->dev_type);
+ 				ps3_register_repository_device(repo);
+ 				ps3_repository_bump_device(repo);
+ 				ms = 250;
 
 -- 
