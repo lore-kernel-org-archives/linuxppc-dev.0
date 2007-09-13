@@ -1,23 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE743DF47C
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 07:21:02 +1000 (EST)
-In-Reply-To: <5bba19e33a518178eb46f2a1758cff40@kernel.crashing.org>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141711.GE1932@ld0162-tx32.am.freescale.net>
-	<1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
-	<6b92503d73565f8add983e64ad5d5d39@kernel.crashing.org>
-	<A78D5AE1-8578-4971-800E-7209258365F1@kernel.crashing.org>
-	<5bba19e33a518178eb46f2a1758cff40@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C5470240-1B7C-4AE2-912B-62B280C0904E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Thu, 13 Sep 2007 16:23:50 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 86BDCDDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 08:30:40 +1000 (EST)
+In-Reply-To: <96A13129-D16E-440D-B317-29BED85852D9@kernel.crashing.org>
+References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
+	<a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
+	<39A1A44F-CD73-4CC1-89DE-608A1041AAF7@kernel.crashing.org>
+	<b6ecc5c703232a936eab8942de37e8ec@kernel.crashing.org>
+	<96A13129-D16E-440D-B317-29BED85852D9@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <bad36d212328a6fcdf273411609e842d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Date: Fri, 14 Sep 2007 00:30:28 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,23 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sep 13, 2007, at 11:53 AM, Segher Boessenkool wrote:
-
->>> What is a "front side cache"?  What exactly does it cache?  If it's
->>> a cache for one CPU only, that fact should be shown in the device
->>> tree somehow.
+>>>>> +		PowerPC,8572@0 {
+>>>>
+>>>> Maybe it would be good to use "PowerPC,e500" instead -- it would
+>>>> make it easier to probe for the actual CPU type, that way.  Not
+>>>> that Linux uses the name/compatible here at all ;-)
+>>>
+>>> I thought about this, not sure what the best solution is.
 >>
->> Its in front of the memory controllers.  Its not specific to a  
->> given CPU.
+>> Since the CPU cores on all these SoCs are identical (well, there
+>> might be a few revisions, or different cache sizes or such -- minor
+>> differences that can be probed for separately), it probably is a
+>> good idea to name them in the tree instead of having each client
+>> have its own table.
+>>
+>> Or is there anything about the CPU that can be derived from "8572"
+>> but not from "e500"?
 >
-> Ah, I see.  That relationship is implicit in the device tree already,
-> both this cache controller and that memory controller are child nodes
-> of the same soc node, so your device tree is fine.
+> Only in so much that we need something that states what the actual 
+> processor is.
+
+You mean, something needs to say "8572"?  I think the "soc" node
+would be best for that.
+
+It's all not terribly important, just something to think about.
+
+>>>> And then there's the pci_bridge thing we're discussing on IRC, of
+>>>> course -- basically, get rid of the pci_bridge pseudo-node, and
+>>>> move the interrupt-map for the south-bridge devices into the
+>>>> south-bridge node.
+>>>
+>>> Leaving the interrupt-map in the PHB because that works and moving 
+>>> it down has issues.
+>>
+>> Okay, fair enough.  Are you looking at resolving those kernel issues?
 >
-> Just for my own understanding, is this a coherent cache?  (I'm too
-> lazy to read the manual ;-) )
+> No.  I've had enough of this device tree foo for a while :)
 
-yes its coherent.  Our caches tend to be coherent.
+Heh okay :-)
 
-- k
+> [I'm happy to test any patches related to this, if someone else comes 
+> up with them]
+
+Well I don't know what the problem is ("it doesn't work" doesn't
+say much), and don't have your hardware to test.  Maybe we can do
+it on IRC again ;-)
+
+
+Segher
