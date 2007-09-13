@@ -1,17 +1,5 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4DDB3DDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 00:52:52 +1000 (EST)
-Date: Thu, 13 Sep 2007 09:52:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
-	Documentation/powerpc/booting-without-of.txt file.
-Message-ID: <20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070913145236.GC32043@ld0162-tx32.am.freescale.net>
 References: <11891624353752-git-send-email-wei.zhang@freescale.com>
 	<1189162437484-git-send-email-wei.zhang@freescale.com>
 	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
@@ -21,11 +9,17 @@ References: <11891624353752-git-send-email-wei.zhang@freescale.com>
 	<46B96294322F7D458F9648B60E15112C85D755@zch01exm26.fsl.freescale.net>
 	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
 	<fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
-	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
+	<20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <45A974B9-31AF-46AB-B1CA-525F15BC5DDB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Thu, 13 Sep 2007 10:11:57 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+	paulus@samba.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,21 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2007 at 04:09:29AM +0200, Segher Boessenkool wrote:
-> >>I have a strange issue here. If I rename 'fsl,dma' to 
-> >>'fsl,mpc8540-dma',
-> >>the 'fsl,mpc8540-dma-channel' will be also regarded as DMA device not
-> >>DMA channel.
-> >
-> >What tree are you using?  Commit 
-> >804ace8881d211ac448082e871dd312132393049
-> >in Paul's git tree should have fixed that.
-> 
-> Strange, I don't see that commit -- maybe gitweb is broken, or
-> maybe the patch was superseded, or maybe it just disappeared?
-> It's still shown in patchworks with this commit id fwiw.
 
-I see it here:
-http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit;h=804ace8881d211ac448082e871dd312132393049
+On Sep 13, 2007, at 9:52 AM, Scott Wood wrote:
 
--Scott
+> On Thu, Sep 13, 2007 at 04:09:29AM +0200, Segher Boessenkool wrote:
+>>>> I have a strange issue here. If I rename 'fsl,dma' to
+>>>> 'fsl,mpc8540-dma',
+>>>> the 'fsl,mpc8540-dma-channel' will be also regarded as DMA  
+>>>> device not
+>>>> DMA channel.
+
+Have we closed on what the device-tree parts for this should look  
+like?  I'd like to at least get those parts of this patch into my  
+tree if possible for 2.6.24.
+
+- k
