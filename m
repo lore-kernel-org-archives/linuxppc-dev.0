@@ -1,14 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <46D5A715.7090802@scram.de>
-References: <46D5A715.7090802@scram.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F204A1A4-12E1-41B3-9C3C-783103765E60@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Fix CPM1 uart console
-Date: Wed, 12 Sep 2007 17:57:53 -0500
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay007.isp.belgacom.be (mailrelay007.isp.belgacom.be
+	[195.238.6.173]) by ozlabs.org (Postfix) with ESMTP id E9888DDE10
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 13 Sep 2007 18:40:02 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Flash Filesystem
+Date: Thu, 13 Sep 2007 10:39:55 +0200
+References: <46E0FEF3.8010500@fz-juelich.de>
+In-Reply-To: <46E0FEF3.8010500@fz-juelich.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709131039.56077.laurentp@cse-semaphore.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,71 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Georg,
 
-On Aug 29, 2007, at 12:04 PM, Jochen Friedrich wrote:
+On Friday 07 September 2007 09:34, schardt wrote:
+> Hi
+>
+> i've some problems using the on board flash memory with linux.
+> i added the support for adm/fujittsu flash in kernel config and add the
+> right parameters for the "cfi  flash device in physical memory".
+>
+> cat /proc/mtd gives me
+>
+> dev:    size   erasesize  name
+> mtd0: 00400000 00010000 "physmap-flash.0"
+>
+> i added /dev/mtd0 c 90 0 and /dev/mtdblock0 b 31 0
+>
+> how do i add a partition and filesystem ????
+> fdisk /dev/mtd0  seems me not to be correct :)
 
-> The powerpc version of commproc.c doesn't export cpm_dpram_phys due to
-> a typo. The ppc version of cpm_dpram_addr returns a usable virtual  
-> address
-> mapped to a physical address at the same location. cpm_dpram_phys  
-> returns
-> complete garbage as it tries to calculate an offset based on an  
-> otherwise
-> unused virtual adress returned by ioremap.
->
-> This patch fixes the typo for powerpc and removes the unnecessary  
-> ioremap
-> and corresponding virtual address for ppc.
->
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/sysdev/commproc.c |    2 +-
->  arch/ppc/8xx_io/commproc.c     |    4 +---
->  2 files changed, 2 insertions(+), 4 deletions(-)
-> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/ 
-> commproc.c
-> index 4f67b89..dd5417a 100644
-> --- a/arch/powerpc/sysdev/commproc.c
-> +++ b/arch/powerpc/sysdev/commproc.c
-> @@ -395,4 +395,4 @@ uint cpm_dpram_phys(u8* addr)
->  {
->  	return (dpram_pbase + (uint)(addr - dpram_vbase));
->  }
-> -EXPORT_SYMBOL(cpm_dpram_addr);
-> +EXPORT_SYMBOL(cpm_dpram_phys);
-> diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
-> index 7088428..593b939 100644
-> --- a/arch/ppc/8xx_io/commproc.c
-> +++ b/arch/ppc/8xx_io/commproc.c
-> @@ -379,14 +379,12 @@ static rh_block_t cpm_boot_dpmem_rh_block[16];
->  static rh_info_t cpm_dpmem_info;
->
->  #define CPM_DPMEM_ALIGNMENT	8
-> -static u8* dpram_vbase;
->  static uint dpram_pbase;
->
->  void m8xx_cpm_dpinit(void)
->  {
->  	spin_lock_init(&cpm_dpmem_lock);
->
-> -	dpram_vbase = immr_map_size(im_cpm.cp_dpmem, CPM_DATAONLY_BASE +  
-> CPM_DATAONLY_SIZE);
->  	dpram_pbase = (uint)&((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem;
->
->  	/* Initialize the info header */
-> @@ -465,6 +463,6 @@ EXPORT_SYMBOL(cpm_dpram_addr);
->
->  uint cpm_dpram_phys(u8* addr)
->  {
-> -	return (dpram_pbase + (uint)(addr - dpram_vbase));
-> +	return (uint)addr;
+There are several ways to definie partitions on an MTD device. Make sure yo=
+u=20
+enable the 'MTD partitioning support' option and have a look at 'RedBoot=20
+partition table parsing' and 'Command line partition table parsing':
 
-this doesn't seem quite right.
+Device Drivers
+<*> Memory Technology Device (MTD) support
+    [*] MTD partitioning support
+        < > RedBoot partition table parsing
+        < > Command line partition table parsing
 
->  }
->  EXPORT_SYMBOL(cpm_dpram_phys);
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Another option is to hardcode the partition table in the platform data for =
+the=20
+physmap driver.
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
