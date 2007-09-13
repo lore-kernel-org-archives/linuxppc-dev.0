@@ -1,22 +1,25 @@
-Return-Path: <babu.pci81@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
-	by ozlabs.org (Postfix) with ESMTP id 3B528DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 15:23:59 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so269307rvf
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 22:23:57 -0700 (PDT)
-Message-ID: <a38e30640709122223m60913ad5xf3c95e636e3b3350@mail.gmail.com>
-Date: Thu, 13 Sep 2007 10:53:57 +0530
-From: "lakshminarayana babu" <babu.pci81@gmail.com>
-To: "Olof Johansson" <olof@lixom.net>
-Subject: Re: Linuxppc-dev Digest, Vol 37, Issue 84
-In-Reply-To: <20070913044011.GA7706@lixom.net>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E33E9DDE2B
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 15:24:25 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IVhBe-0002hs-V7
+	for linuxppc-dev@ozlabs.org; Wed, 12 Sep 2007 22:24:22 -0700
+Message-ID: <12648913.post@talk.nabble.com>
+Date: Wed, 12 Sep 2007 22:24:22 -0700 (PDT)
+From: sivaji <rameshmrm@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.23-rc3 boot hang on MPC8641D
+In-Reply-To: <5850B6F4-61FD-4866-B50E-8F7FEA3FA9AD@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_7244_17520494.1189661037686"
-References: <mailman.2011.1189652741.2970.linuxppc-dev@ozlabs.org>
-	<a38e30640709122131g14642e9pa599681551ed9c23@mail.gmail.com>
-	<20070913044011.GA7706@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <12648489.post@talk.nabble.com>
+	<46B96294322F7D458F9648B60E15112C85D7FB@zch01exm26.fsl.freescale.net>
+	<12648696.post@talk.nabble.com>
+	<5850B6F4-61FD-4866-B50E-8F7FEA3FA9AD@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_7244_17520494.1189661037686
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-sir,
-   can you plese suggest any book for pci driver writing...At present i am
-studying linux device drivers by alexandrorubini
 
-On 9/13/07, Olof Johansson <olof@lixom.net> wrote:
->
-> On Thu, Sep 13, 2007 at 10:01:36AM +0530, lakshminarayana babu wrote:
-> > i am new to the linux.....can you tell me how to access the pci
-> > configuration space using ioremap function...but  it is implicit
-> function
-> > declaration...
->
-> That is architecture and platform dependent. Some platforms don't even
-> have a memory-mappable interface to configuration space.
->
-> Instead, please use the abstracted config access functions that the
-> kernel provides. (pci_read_config_word and friends).
->
->
-> -Olof
->
+Hi,
+        I am not willing to upgrade the uboot. Becuase it takes some time to
+port the new uboot for my custom boad.
+whether the current problem is related to uboot ? One more point, previously
+i tried 2.6.21 with the same uboot(1.1.6) we got linux prompt but we face
+some issue in the pci express in that version. so we plan to upgrade the
+kernel version.
+by
+Sivaji
 
-------=_Part_7244_17520494.1189661037686
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Kumar Gala-3 wrote:
+> 
+> 
+> On Sep 12, 2007, at 11:52 PM, sivaji wrote:
+> 
+>>
+>>
+>> Hi,
+>>           I tired to move the dtb to 0x2000000, but the result was  
+>> same.
+>> uboot version is 1.1.6
+> 
+> seems like a pretty old u-boot.  Willing to try a 1.3.0-rc1?
+> 
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
 
-sir,<br>&nbsp;&nbsp; can you plese suggest any book for pci driver writing...At present i am studying linux device drivers by alexandrorubini<br><br><div><span class="gmail_quote">On 9/13/07, <b class="gmail_sendername">Olof Johansson
-</b> &lt;<a href="mailto:olof@lixom.net">olof@lixom.net</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">On Thu, Sep 13, 2007 at 10:01:36AM +0530, lakshminarayana babu wrote:
-<br>&gt; i am new to the linux.....can you tell me how to access the pci<br>&gt; configuration space using ioremap function...but&nbsp;&nbsp;it is implicit function<br>&gt; declaration...<br><br>That is architecture and platform dependent. Some platforms don&#39;t even
-<br>have a memory-mappable interface to configuration space.<br><br>Instead, please use the abstracted config access functions that the<br>kernel provides. (pci_read_config_word and friends).<br><br><br>-Olof<br></blockquote>
-</div><br>
-
-------=_Part_7244_17520494.1189661037686--
+-- 
+View this message in context: http://www.nabble.com/2.6.23-rc3-boot-hang-on-MPC8641D-tf4433508.html#a12648913
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
