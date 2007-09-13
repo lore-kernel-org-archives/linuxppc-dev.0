@@ -1,21 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D1EADDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 08:32:07 +1000 (EST)
-Message-ID: <46E8689F.3010702@freescale.com>
-Date: Wed, 12 Sep 2007 17:30:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Esben Haabendal <eha@doredevelopment.dk>
-Subject: Re: Problems with mii-bitbang.c on MPC8270
-References: <fa1a16f246925e0db38eb3a52e51934e@127.0.0.1>
-In-Reply-To: <fa1a16f246925e0db38eb3a52e51934e@127.0.0.1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 15/15] Add DEFINE_SPUFS_ATTRIBUTE()
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200709121047.05471.arnd@arndb.de>
+References: <2900ea4dbfd6e98e71ff400cbd25d1283a278972.1189583010.git.michael@ellerman.id.au>
+	<f5fe712aef37d925902f3f6183f024b916cc89db.1189583010.git.michael@ellerman.id.au>
+	<1189583353.17835.22.camel@concordia.ozlabs.ibm.com>
+	<200709121047.05471.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-oYh9g2k3bx1l2wvBffuN"
+Date: Thu, 13 Sep 2007 12:05:41 +1000
+Message-Id: <1189649141.19087.13.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +25,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Esben Haabendal wrote:
-> Also, fs_enet_mdio_bb_exit does not work, as shown in the log below.
-> Not that I need it, but I guess it should be working when it is there.
 
-I think this is a generic PHY issue, addressed by this patch:
+--=-oYh9g2k3bx1l2wvBffuN
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042342.html
+On Wed, 2007-09-12 at 10:47 +0200, Arnd Bergmann wrote:
+> On Wednesday 12 September 2007, Michael Ellerman wrote:
+> > On Wed, 2007-09-12 at 17:43 +1000, Michael Ellerman wrote:
+> > > This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
+> > > DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
+> > > routine for us.
+> > >=20
+> > > Unfortunately we need two get routines (a locked and unlocked version=
+) to
+> > > support the coredump code. This patch hides one of those (the locked =
+version)
+> > > inside the macro foo.
+>=20
+> >=20
+> > jk said:
+> > > "Good god man!"
+> >=20
+> > Yeah, I'm a bit lukewarm on this one. But the diffstat is nice, 50% cod=
+e
+> > reduction ain't bad :)
+>=20
+> Have you looked at the change in object code size? I would expect the
+> object code to actually become bigger. I also think that it hurts
+> readability rather than help it.
 
--Scott
+Yeah I did, it's smaller actually:
+
+   text    data     bss     dec     hex filename
+  44898   17804     120   62822    f566 spufs-before.o
+  44886   17804     120   62810    f55a spufs-after.o
+
+> Maybe a better solution is to change the core dump code to not
+> require the mutex to be held in the first place. By the time
+> we get to call the get functions, it should already be in
+> saved state and no longer be able to get scheduled, so we might
+> not actually need all the extra tricks with avoiding the
+> mutex to be taken again.
+
+Well that'd be nice, but I don't see anywhere that that happens. AFAICT
+the acquire we do in the first coredump callback is the first the SPU
+contexts know about their PPE process dying. And spufs is still live, so
+I think we definitely need to grab the mutex, or we might race with
+userspace accessing spufs files.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-oYh9g2k3bx1l2wvBffuN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG6Jr1dSjSd0sB4dIRAmdjAKCI23oMOPJddZy9CBS8dLfeLMmH7QCgnpLf
+AGfWajn6wu1RqSSRhoAvRRs=
+=W2xN
+-----END PGP SIGNATURE-----
+
+--=-oYh9g2k3bx1l2wvBffuN--
