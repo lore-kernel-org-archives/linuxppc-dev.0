@@ -1,5 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DFD5ADDEC6
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 05:00:01 +1000 (EST)
+Message-ID: <46E9887D.3090200@freescale.com>
+Date: Thu, 13 Sep 2007 13:59:09 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
 References: <11891624353752-git-send-email-wei.zhang@freescale.com>
 	<1189162437484-git-send-email-wei.zhang@freescale.com>
 	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
@@ -10,14 +23,9 @@ References: <11891624353752-git-send-email-wei.zhang@freescale.com>
 	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
 	<fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
 	<20070913145236.GC32043@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <045c872e8a912921da3259586595c0f3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
-	Documentation/powerpc/booting-without-of.txt file.
-Date: Thu, 13 Sep 2007 20:55:47 +0200
-To: Scott Wood <scottwood@freescale.com>
+	<045c872e8a912921da3259586595c0f3@kernel.crashing.org>
+In-Reply-To: <045c872e8a912921da3259586595c0f3@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
 	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,22 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> What tree are you using?  Commit
->>> 804ace8881d211ac448082e871dd312132393049
->>> in Paul's git tree should have fixed that.
+Segher Boessenkool wrote:
+>>>> What tree are you using?  Commit
+>>>> 804ace8881d211ac448082e871dd312132393049
+>>>> in Paul's git tree should have fixed that.
+>>>
+>>> Strange, I don't see that commit -- maybe gitweb is broken, or
+>>> maybe the patch was superseded, or maybe it just disappeared?
+>>> It's still shown in patchworks with this commit id fwiw.
 >>
->> Strange, I don't see that commit -- maybe gitweb is broken, or
->> maybe the patch was superseded, or maybe it just disappeared?
->> It's still shown in patchworks with this commit id fwiw.
->
-> I see it here:
-> http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit; 
-> h=804ace8881d211ac448082e871dd312132393049
+>> I see it here:
+>> http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit;h=804ace8881d211ac448082e871dd312132393049 
+>>
+> 
+> Ah okay.  The gitweb search functionality is broken.
+> 
+> Shouldn't this patch have gone to .23?  It's a pretty important
+> bugfix I think.
 
-Ah okay.  The gitweb search functionality is broken.
+Probably not, in the absence of a specific failing match that's already 
+in .23.  It has the potential to break things that were working by chance.
 
-Shouldn't this patch have gone to .23?  It's a pretty important
-bugfix I think.
-
-
-Segher
+-Scott
