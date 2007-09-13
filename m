@@ -1,32 +1,22 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BC1E5DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 20:13:14 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l8DAD7Nc020366
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 03:13:07 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l8DAD64l006793
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 05:13:06 -0500 (CDT)
+Return-Path: <lethal@linux-sh.org>
+Received: from smtp.ocgnet.org (smtp.ocgnet.org [64.20.243.3])
+	by ozlabs.org (Postfix) with ESMTP id 43D75DDDFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 20:19:43 +1000 (EST)
+Date: Thu, 13 Sep 2007 18:53:46 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+Message-ID: <20070913095346.GA28194@linux-sh.org>
+References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+	<46E8DF49.7090402@l4x.org> <5058.1189668156@neuling.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xxprocessors.
-Date: Thu, 13 Sep 2007 18:13:06 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20070907223553.GA18599@freescale.com>
-References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	<20070907223553.GA18599@freescale.com>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Wood Scott-B07421" <scottwood@freescale.com>, <dan.j.williams@intel.com>
-Cc: linuxppc-dev@ozlabs.org, shannon.nelson@intel.com, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5058.1189668156@neuling.org>
+Cc: hskinnemoen@atmel.com, Jan Dittmer <jdi@l4x.org>, heiko.carstens@de.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Alan Cox <alan@redhat.com>,
+	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,189 +26,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,=20
+On Thu, Sep 13, 2007 at 05:22:36PM +1000, Michael Neuling wrote:
+> > > Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
+> > > kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
+> > > on all architectures.  However, powerpc, s390, avr32 and frv don't
+> > > currently define those functions since their termios struct didn't
+> > > need to be changed when the arbitrary baud rate stuff was added, and
+> > > thus the kernel won't currently build on those architectures.
+> > 
+> > alpha, parisc, sh, sparc{64,}, xtensa are still broken with this error...
+> 
+> They need to include <asm-generic/termios.h> in asm-<arch>/termios.h
+> like in powerpc.
+> 
+> Alternatively tonyb's patch should fix them.  Could also do that?
+> 
+Is there a consensus for this? It's a bit annoying to have this stuff
+broken this late in 2.6.23. If Tony's patch gets applied, then this stuff
+will work itself out. Otherwise everything has to be patched for
+asm-generic/termios.h. In which case.. here's the patch to define them on
+sh and sh64.
 
-> > +static void fsl_dma_set_src(dma_addr_t addr,
-> > +				struct dma_async_tx_descriptor=20
-> *tx, int index)
-> > +{
->=20
-> What is index supposed to mean?  It's not used, or documented=20
-> anywhere than
-> I can see.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-I've also got more document here. Hi, Dan, could you give me some
-explanation about this API? :)
+--
 
->=20
-> > +		else {
-> > +			/* Run the link descriptor callback function */
-> > +			if (desc->async_tx.callback) {
-> > +			=09
-> spin_unlock_irqrestore(&fsl_chan->desc_lock,
-> > +								flags);
-> > +				dev_dbg(fsl_chan->device->dev,
-> > +					"link descriptor %p=20
-> callback\n", desc);
-> > +				desc->async_tx.callback(
-> > +					=09
-> desc->async_tx.callback_param);
-> > +			=09
-> spin_lock_irqsave(&fsl_chan->desc_lock, flags);
->=20
-> After dropping the lock, you can no longer assume that your=20
-> iterator is
-> still valid; you need to work off of the list head.
->=20
+ include/asm-sh/termios.h   |   34 +---------------------------------
+ include/asm-sh64/termios.h |   34 +---------------------------------
+ 2 files changed, 2 insertions(+), 66 deletions(-)
 
-list_for_each_entry_safe() is used here. I think the safe should be ok.
-:P
-
-> > +	/* Find the first un-transfer desciptor */
-> > +	for (ld_node =3D fsl_chan->ld_queue.next;
-> > +		(ld_node !=3D &fsl_chan->ld_queue)
-> > +			&& (DMA_SUCCESS =3D=3D dma_async_is_complete(
-> > +				=09
-> to_fsl_desc(ld_node)->async_tx.cookie,
-> > +					fsl_chan->completed_cookie,
-> > +					fsl_chan->common.cookie));
-> > +		ld_node =3D ld_node->next);
->=20
-> Call fsl_dma_is_complete directly, don't waste time going through the
-> virtual call.
->=20
-> And you have a recursive lock usage here; fsl_dma_is_complete calls
-> fsl_chan_ld_cleanup, which acquires desc_lock, but you=20
-> already have it.
->=20
-> Couldn't you just call fsl_chan_ld_cleanup, and then check=20
-> what's at the
-> head of the list?
->=20
-
-I'll split interrupt and poll here.
-
-> > +static irqreturn_t fsl_dma_do_interrupt(int irq, void *data)
-> > +{
-> > +	struct fsl_dma_device *fdev =3D (struct fsl_dma_device *)data;
-> > +	struct fsl_dma_chan *fsl_chan =3D NULL;
-> > +	u32 gsr;
-> > +	int ch_nr;
-> > +	struct dma_chan *int_chan;
-> > +
-> > +	gsr =3D (fdev->feature & FSL_DMA_BIG_ENDIAN) ?=20
-> in_be32(fdev->reg_base)
-> > +			: in_le32(fdev->reg_base);
-> > +	ch_nr =3D (32 - ffs(gsr)) / 8;
-> > +
-> > +	list_for_each_entry(int_chan, &fdev->common.channels,=20
-> device_node)
-> > +		if (to_fsl_chan(int_chan)->id =3D=3D ch_nr)
-> > +			fsl_chan =3D to_fsl_chan(int_chan);
->=20
-> Why not use an array of channels?
-
-The list is used in dma engine core file. And it's possible that there
-are not all channel listed in dts and array.
-
-> > +
-> > +	return fsl_chan ? fsl_dma_chan_do_interrupt(irq,=20
-> fsl_chan) : IRQ_NONE;
-> > +
-> > +}
-> > +
-> > +static void dma_do_tasklet(unsigned long unused)
-> > +{
-> > +	struct fsl_desc_sw *desc, *_desc;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&recy_ln_lock, flags);
-> > +	list_for_each_entry_safe(desc, _desc, &recy_ln_chain, node) {
-> > +		struct fsl_dma_chan *fsl_chan =3D
-> > +				=09
-> to_fsl_chan(desc->async_tx.chan);
-> > +		/* Run the link descriptor callback function */
-> > +		if (desc->async_tx.callback) {
-> > +			spin_unlock_irqrestore(&recy_ln_lock, flags);
-> > +			dev_dbg(fsl_chan->device->dev,
-> > +				"dma_tasklet: link descriptor=20
-> %p callback\n",
-> > +				desc);
-> > +			desc->async_tx.callback(
-> > +					desc->async_tx.callback_param);
-> > +			spin_lock_irqsave(&recy_ln_lock, flags);
-> > +		}
-> > +		/* Recycle it! */
-> > +		list_del(&desc->node);
->=20
-> You should remove it from the list before dropping the lock,=20
-> as otherwise
-> something else could come along and remove it again.
-
-All right!
-
->=20
-> > +	if (strcmp(match->compatible, "fsl,mpc8540-dma-channel") =3D=3D 0)
-> > +		new_fsl_chan->feature =3D FSL_DMA_IP_86XX |=20
-> FSL_DMA_BIG_ENDIAN;
->=20
-> Shouldn't it be 85XX, to be consistent?
->=20
-> > +	else if (strcmp(match->compatible,=20
-> "fsl,mpc8349-dma-channel") =3D=3D 0)
-> > +		new_fsl_chan->feature =3D FSL_DMA_IP_83XX |=20
-> FSL_DMA_LITTLE_ENDIAN;
->=20
-> You could have the features be part of the match struct, so=20
-> you don't have
-> to do extra strcmps.
->=20
-
-Can I use the data field of struct of_device_id?
-
->=20
-> > +static struct of_device_id of_fsl_dma_ids[] =3D {
-> > +	{ .compatible =3D "fsl,dma", },
-> > +};
->=20
-> Why do we need to bind to the parent node at all?
-
-Yes, the MPC83xx should get interrupt source from DMA device register.
-
->=20
-> > +/* There is no asm instructions for 64 bits reverse loads=20
-> and stores */
-> > +static u64 in_le64(const u64 __iomem *addr)
-> > +{
-> > +	return le64_to_cpu(in_be64(addr));
-> > +}
-> > +
-> > +static void out_le64(u64 __iomem *addr, u64 val)
-> > +{
-> > +	out_be64(addr, cpu_to_le64(val));
-> > +}
-> > +#endif
->=20
-> You can use asm instructions for this, as such:
-
-Aha, they are just copied from io.h.
-
->=20
-> static u64 in_le64(const u64 __iomem *addr)
-> {
-> 	return ((u64)in_le32((u32 *)addr + 1) << 32) |=20
-> (in_le32((u32 *)addr));
-> }
->=20
->=20
-> static void out_le64(u64 __iomem *addr, u64 val)
-> {
-> 	out_le32((u32 *)addr, (u32)val);
-> 	out_le32((u32 *)addr + 1, val >> 32);
-> }
->=20
-
-And I agree with your other comments.
-
-Thanks a lot!
-- zw
+diff --git a/include/asm-sh/termios.h b/include/asm-sh/termios.h
+index e7c8f86..c57f74e 100644
+--- a/include/asm-sh/termios.h
++++ b/include/asm-sh/termios.h
+@@ -49,39 +49,7 @@ struct termio {
+ */
+ #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+ 
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#include <asm-generic/termios.h>
+ 
+ #endif	/* __KERNEL__ */
+ 
+diff --git a/include/asm-sh64/termios.h b/include/asm-sh64/termios.h
+index dc44e6e..b61ce95 100644
+--- a/include/asm-sh64/termios.h
++++ b/include/asm-sh64/termios.h
+@@ -60,39 +60,7 @@ struct termio {
+ */
+ #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+ 
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
++#include <asm-generic/termios.h>
+ 
+ #endif	/* __KERNEL__ */
+ 
