@@ -1,23 +1,20 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B258DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:14:13 +1000 (EST)
-Message-ID: <46E8B909.2050201@garzik.org>
-Date: Thu, 13 Sep 2007 00:14:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	by ozlabs.org (Postfix) with ESMTP id F1334DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:18:24 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IVg9l-0001VV-Hz
+	for linuxppc-dev@ozlabs.org; Wed, 12 Sep 2007 21:18:21 -0700
+Message-ID: <12648489.post@talk.nabble.com>
+Date: Wed, 12 Sep 2007 21:18:21 -0700 (PDT)
+From: sivaji <rameshmrm@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: 2.6.23-rc3 boot hang on MPC8641D
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 1/2][RESEND] ehea: propagate physical port state
-References: <200709071230.18395.ossthema@de.ibm.com>
-In-Reply-To: <200709071230.18395.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> Introduces a module parameter to decide whether the physical
-> port link state is propagated to the network stack or not.
-> It makes sense not to take the physical port state into account
-> on machines with more logical partitions that communicate
-> with each other. This is always possible no matter what the physical
-> port state is. Thus eHEA can be considered as a switch there.
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-applied 1-2
+Hi,
+        I am try to boot the 2.6.23-rc3 kernel to my custom board based on
+8641D Processor. After uncompressing the kernel it was hang. I got the
+following messages.
+
+   Uncompressing Kernel Image ... OK
+   Booting using flat device tree at 0x600000. 
+
+       Then i tried to debug with GDB. In my source path i given the command
+${CROSS_COMPILE}gdb vmlinux, I got GDB Prompt after i tried to set the
+breakpoint at start_kernel. I got follwing messages
+
+gdb) b start_kernel
+Cannot access memory at address 0xc02b44ec
+
+Processor Information:
+8641D processor and the silicon revision is 2.0.
+Part : MPC8641D
+Revision:  2.0
+e600 Core Revision:  2.2
+DeviceMarking:  B
+Processor Version Register Value: 0x8004_0202
+System Version Register Value:   0x8090_0120
+
+     I don't know how to proceed. Please tell the way how to start kernel
+debug in this situation.
+
+By
+Sivaji
+-- 
+View this message in context: http://www.nabble.com/2.6.23-rc3-boot-hang-on-MPC8641D-tf4433508.html#a12648489
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
