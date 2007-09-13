@@ -1,22 +1,27 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from smtp.ocgnet.org (smtp.ocgnet.org [64.20.243.3])
-	by ozlabs.org (Postfix) with ESMTP id 43D75DDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 20:19:43 +1000 (EST)
-Date: Thu, 13 Sep 2007 18:53:46 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 07394DDD07
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 20:56:27 +1000 (EST)
+Date: Thu, 13 Sep 2007 03:55:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>
 Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-Message-ID: <20070913095346.GA28194@linux-sh.org>
+Message-Id: <20070913035506.b599e84f.akpm@linux-foundation.org>
+In-Reply-To: <20070913095346.GA28194@linux-sh.org>
 References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
 	<46E8DF49.7090402@l4x.org> <5058.1189668156@neuling.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5058.1189668156@neuling.org>
-Cc: hskinnemoen@atmel.com, Jan Dittmer <jdi@l4x.org>, heiko.carstens@de.ibm.com,
+	<20070913095346.GA28194@linux-sh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Michael Neuling <mikey@neuling.org>, hskinnemoen@atmel.com,
+	Jan Dittmer <jdi@l4x.org>, heiko.carstens@de.ibm.com,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Alan Cox <alan@redhat.com>,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	davem@davemloft.net
+	Mackerras <paulus@samba.org>, Alan Cox <alan@redhat.com>, Paul,
+	Linus Torvalds <torvalds@linux-foundation.org>, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,122 +31,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2007 at 05:22:36PM +1000, Michael Neuling wrote:
-> > > Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
-> > > kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
-> > > on all architectures.  However, powerpc, s390, avr32 and frv don't
-> > > currently define those functions since their termios struct didn't
-> > > need to be changed when the arbitrary baud rate stuff was added, and
-> > > thus the kernel won't currently build on those architectures.
+On Thu, 13 Sep 2007 18:53:46 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+
+> On Thu, Sep 13, 2007 at 05:22:36PM +1000, Michael Neuling wrote:
+> > > > Commit f629307c857c030d5a3dd777fee37c8bb395e171 introduced uses of
+> > > > kernel_termios_to_user_termios_1 and user_termios_to_kernel_termios_1
+> > > > on all architectures.  However, powerpc, s390, avr32 and frv don't
+> > > > currently define those functions since their termios struct didn't
+> > > > need to be changed when the arbitrary baud rate stuff was added, and
+> > > > thus the kernel won't currently build on those architectures.
+> > > 
+> > > alpha, parisc, sh, sparc{64,}, xtensa are still broken with this error...
 > > 
-> > alpha, parisc, sh, sparc{64,}, xtensa are still broken with this error...
-> 
-> They need to include <asm-generic/termios.h> in asm-<arch>/termios.h
-> like in powerpc.
-> 
-> Alternatively tonyb's patch should fix them.  Could also do that?
-> 
-Is there a consensus for this? It's a bit annoying to have this stuff
-broken this late in 2.6.23. If Tony's patch gets applied, then this stuff
-will work itself out. Otherwise everything has to be patched for
-asm-generic/termios.h. In which case.. here's the patch to define them on
-sh and sh64.
+> > They need to include <asm-generic/termios.h> in asm-<arch>/termios.h
+> > like in powerpc.
+> > 
+> > Alternatively tonyb's patch should fix them.  Could also do that?
+> > 
+> Is there a consensus for this? It's a bit annoying to have this stuff
+> broken this late in 2.6.23. If Tony's patch gets applied, then this stuff
+> will work itself out. Otherwise everything has to be patched for
+> asm-generic/termios.h. In which case.. here's the patch to define them on
+> sh and sh64.
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+I think we need to go with Tony's patch.  sparc32 and sparc64 are
+presently broken too, and the patch which converts sparc to use the
+new interfaces introduces a few build errors.
 
---
 
- include/asm-sh/termios.h   |   34 +---------------------------------
- include/asm-sh64/termios.h |   34 +---------------------------------
- 2 files changed, 2 insertions(+), 66 deletions(-)
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-diff --git a/include/asm-sh/termios.h b/include/asm-sh/termios.h
-index e7c8f86..c57f74e 100644
---- a/include/asm-sh/termios.h
-+++ b/include/asm-sh/termios.h
-@@ -49,39 +49,7 @@ struct termio {
- */
- #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+Add Guards around TIOCSLCKTRMIOS and TIOCGLCKTRMIOS.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/tty_ioctl.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff -puN drivers/char/tty_ioctl.c~sparc64-and-others-fix-tty_ioctlc-build drivers/char/tty_ioctl.c
+--- a/drivers/char/tty_ioctl.c~sparc64-and-others-fix-tty_ioctlc-build
++++ a/drivers/char/tty_ioctl.c
+@@ -795,6 +795,19 @@ int n_tty_ioctl(struct tty_struct * tty,
+ 			if (L_ICANON(tty))
+ 				retval = inq_canon(tty);
+ 			return put_user(retval, (unsigned int __user *) arg);
++#ifndef TCGETS2
++		case TIOCGLCKTRMIOS:
++			if (kernel_termios_to_user_termios((struct termios __user *)arg, real_tty->termios_locked))
++				return -EFAULT;
++			return 0;
++
++		case TIOCSLCKTRMIOS:
++			if (!capable(CAP_SYS_ADMIN))
++				return -EPERM;
++			if (user_termios_to_kernel_termios(real_tty->termios_locked, (struct termios __user *) arg))
++				return -EFAULT;
++			return 0;
++#else
+ 		case TIOCGLCKTRMIOS:
+ 			if (kernel_termios_to_user_termios_1((struct termios __user *)arg, real_tty->termios_locked))
+ 				return -EFAULT;
+@@ -806,6 +819,7 @@ int n_tty_ioctl(struct tty_struct * tty,
+ 			if (user_termios_to_kernel_termios_1(real_tty->termios_locked, (struct termios __user *) arg))
+ 				return -EFAULT;
+ 			return 0;
++#endif
  
--/*
-- * Translate a "termio" structure into a "termios". Ugh.
-- */
--#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
--	unsigned short __tmp; \
--	get_user(__tmp,&(termio)->x); \
--	*(unsigned short *) &(termios)->x = __tmp; \
--}
--
--#define user_termio_to_kernel_termios(termios, termio) \
--({ \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
--	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
--})
--
--/*
-- * Translate a "termios" structure into a "termio". Ugh.
-- */
--#define kernel_termios_to_user_termio(termio, termios) \
--({ \
--	put_user((termios)->c_iflag, &(termio)->c_iflag); \
--	put_user((termios)->c_oflag, &(termio)->c_oflag); \
--	put_user((termios)->c_cflag, &(termio)->c_cflag); \
--	put_user((termios)->c_lflag, &(termio)->c_lflag); \
--	put_user((termios)->c_line,  &(termio)->c_line); \
--	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
--})
--
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#include <asm-generic/termios.h>
- 
- #endif	/* __KERNEL__ */
- 
-diff --git a/include/asm-sh64/termios.h b/include/asm-sh64/termios.h
-index dc44e6e..b61ce95 100644
---- a/include/asm-sh64/termios.h
-+++ b/include/asm-sh64/termios.h
-@@ -60,39 +60,7 @@ struct termio {
- */
- #define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
- 
--/*
-- * Translate a "termio" structure into a "termios". Ugh.
-- */
--#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
--	unsigned short __tmp; \
--	get_user(__tmp,&(termio)->x); \
--	*(unsigned short *) &(termios)->x = __tmp; \
--}
--
--#define user_termio_to_kernel_termios(termios, termio) \
--({ \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag); \
--	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag); \
--	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
--})
--
--/*
-- * Translate a "termios" structure into a "termio". Ugh.
-- */
--#define kernel_termios_to_user_termio(termio, termios) \
--({ \
--	put_user((termios)->c_iflag, &(termio)->c_iflag); \
--	put_user((termios)->c_oflag, &(termio)->c_oflag); \
--	put_user((termios)->c_cflag, &(termio)->c_cflag); \
--	put_user((termios)->c_lflag, &(termio)->c_lflag); \
--	put_user((termios)->c_line,  &(termio)->c_line); \
--	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
--})
--
--#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios))
--#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios))
-+#include <asm-generic/termios.h>
- 
- #endif	/* __KERNEL__ */
- 
+ 		case TIOCPKT:
+ 		{
+_
