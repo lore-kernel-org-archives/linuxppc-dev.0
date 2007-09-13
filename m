@@ -4,21 +4,28 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8C051DDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 00:49:30 +1000 (EST)
-Date: Thu, 13 Sep 2007 09:49:19 -0500
+	by ozlabs.org (Postfix) with ESMTP id 4DDB3DDDD8
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 00:52:52 +1000 (EST)
+Date: Thu, 13 Sep 2007 09:52:36 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Subject: Re: [PATCH 5/5] Add DMA engine driver for Freescale MPC85xxprocessors.
-Message-ID: <20070913144919.GB32043@ld0162-tx32.am.freescale.net>
-References: <11891624582950-git-send-email-wei.zhang@freescale.com>
-	<20070907223553.GA18599@freescale.com>
-	<46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
+Message-ID: <20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+References: <11891624353752-git-send-email-wei.zhang@freescale.com>
+	<1189162437484-git-send-email-wei.zhang@freescale.com>
+	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
+	<20070910032529.GA27828@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
+	<20070911141907.GF1932@ld0162-tx32.am.freescale.net>
+	<46B96294322F7D458F9648B60E15112C85D755@zch01exm26.fsl.freescale.net>
+	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
+	<fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D8A5@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, dan.j.williams@intel.com, shannon.nelson@intel.com,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+In-Reply-To: <fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
+	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2007 at 03:13:06AM -0700, Zhang Wei-r63237 wrote:
-> > After dropping the lock, you can no longer assume that your 
-> > iterator is
-> > still valid; you need to work off of the list head.
-> > 
+On Thu, Sep 13, 2007 at 04:09:29AM +0200, Segher Boessenkool wrote:
+> >>I have a strange issue here. If I rename 'fsl,dma' to 
+> >>'fsl,mpc8540-dma',
+> >>the 'fsl,mpc8540-dma-channel' will be also regarded as DMA device not
+> >>DMA channel.
+> >
+> >What tree are you using?  Commit 
+> >804ace8881d211ac448082e871dd312132393049
+> >in Paul's git tree should have fixed that.
 > 
-> list_for_each_entry_safe() is used here. I think the safe should be ok.
-> :P
+> Strange, I don't see that commit -- maybe gitweb is broken, or
+> maybe the patch was superseded, or maybe it just disappeared?
+> It's still shown in patchworks with this commit id fwiw.
 
-Nope.  The safety is against the particular item you're iterating on
-being removed; it doesn't protect against the *next* entry being removed
-when you drop the lock.
-
-> > Why not use an array of channels?
-> 
-> The list is used in dma engine core file. And it's possible that there
-> are not all channel listed in dts and array.
-
-I'm not sure I understand what you mean by the latter comment...
-
-> > You could have the features be part of the match struct, so 
-> > you don't have
-> > to do extra strcmps.
-> > 
-> 
-> Can I use the data field of struct of_device_id?
-
-Yes, that's what it's there for. :-)
-
-> > > +static struct of_device_id of_fsl_dma_ids[] = {
-> > > +	{ .compatible = "fsl,dma", },
-> > > +};
-> > 
-> > Why do we need to bind to the parent node at all?
-> 
-> Yes, the MPC83xx should get interrupt source from DMA device register.
-
-You don't need to bind to it for that, though -- just call of_get_parent
-from the channel probe.  Though it might be easier to bind to the parent
-to ensure that you only register the IRQ once.
+I see it here:
+http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit;h=804ace8881d211ac448082e871dd312132393049
 
 -Scott
