@@ -1,33 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DFD5ADDEC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 05:00:01 +1000 (EST)
-Message-ID: <46E9887D.3090200@freescale.com>
-Date: Thu, 13 Sep 2007 13:59:09 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A2AEADDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 06:55:48 +1000 (EST)
+Date: Thu, 13 Sep 2007 15:55:35 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from for-2.6.24
+Message-ID: <Pine.LNX.4.64.0709131554530.29675@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
-	Documentation/powerpc/booting-without-of.txt file.
-References: <11891624353752-git-send-email-wei.zhang@freescale.com>
-	<1189162437484-git-send-email-wei.zhang@freescale.com>
-	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
-	<20070910032529.GA27828@localhost.localdomain>
-	<46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
-	<20070911141907.GF1932@ld0162-tx32.am.freescale.net>
-	<46B96294322F7D458F9648B60E15112C85D755@zch01exm26.fsl.freescale.net>
-	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
-	<fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
-	<20070913145236.GC32043@ld0162-tx32.am.freescale.net>
-	<045c872e8a912921da3259586595c0f3@kernel.crashing.org>
-In-Reply-To: <045c872e8a912921da3259586595c0f3@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
-	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +21,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>> What tree are you using?  Commit
->>>> 804ace8881d211ac448082e871dd312132393049
->>>> in Paul's git tree should have fixed that.
->>>
->>> Strange, I don't see that commit -- maybe gitweb is broken, or
->>> maybe the patch was superseded, or maybe it just disappeared?
->>> It's still shown in patchworks with this commit id fwiw.
->>
->> I see it here:
->> http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit;h=804ace8881d211ac448082e871dd312132393049 
->>
-> 
-> Ah okay.  The gitweb search functionality is broken.
-> 
-> Shouldn't this patch have gone to .23?  It's a pretty important
-> bugfix I think.
+Please pull from 'for-2.6.24' branch of
 
-Probably not, in the absence of a specific failing match that's already 
-in .23.  It has the potential to break things that were working by chance.
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
 
--Scott
+to receive the following updates:
+
+ arch/powerpc/boot/dts/holly.dts                  |    1
+ arch/powerpc/boot/dts/kuroboxHD.dts              |    6
+ arch/powerpc/boot/dts/kuroboxHG.dts              |    6
+ arch/powerpc/boot/dts/lite5200.dts               |   49
+ arch/powerpc/boot/dts/lite5200b.dts              |   59
+ arch/powerpc/boot/dts/mpc7448hpc2.dts            |   17
+ arch/powerpc/boot/dts/mpc8272ads.dts             |    5
+ arch/powerpc/boot/dts/mpc8313erdb.dts            |   63
+ arch/powerpc/boot/dts/mpc832x_mds.dts            |  122 -
+ arch/powerpc/boot/dts/mpc832x_rdb.dts            |   72 -
+ arch/powerpc/boot/dts/mpc8349emitx.dts           |   98 -
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts         |   47
+ arch/powerpc/boot/dts/mpc834x_mds.dts            |  243 +--
+ arch/powerpc/boot/dts/mpc836x_mds.dts            |  123 -
+ arch/powerpc/boot/dts/mpc8540ads.dts             |  175 +-
+ arch/powerpc/boot/dts/mpc8541cds.dts             |  196 +--
+ arch/powerpc/boot/dts/mpc8544ds.dts              |  377 +++--
+ arch/powerpc/boot/dts/mpc8548cds.dts             |  404 +++---
+ arch/powerpc/boot/dts/mpc8555cds.dts             |  196 +--
+ arch/powerpc/boot/dts/mpc8560ads.dts             |  185 +-
+ arch/powerpc/boot/dts/mpc8568mds.dts             |    4
+ arch/powerpc/boot/dts/mpc8572ds.dts              |  404 ++++++
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts           |  275 ++--
+ arch/powerpc/boot/dts/mpc866ads.dts              |    5
+ arch/powerpc/boot/dts/mpc885ads.dts              |    5
+ arch/powerpc/boot/dts/prpmc2800.dts              |    1
+ arch/powerpc/configs/mpc8544_ds_defconfig        |    2
+ arch/powerpc/configs/mpc8572_ds_defconfig        | 1496 +++++++++++++++++++++++
+ arch/powerpc/kernel/align.c                      |  250 +++
+ arch/powerpc/kernel/cputable.c                   |   23
+ arch/powerpc/kernel/entry_32.S                   |    4
+ arch/powerpc/kernel/head_32.S                    |   17
+ arch/powerpc/kernel/head_40x.S                   |   12
+ arch/powerpc/kernel/head_44x.S                   |    6
+ arch/powerpc/kernel/head_8xx.S                   |    9
+ arch/powerpc/kernel/head_fsl_booke.S             |    6
+ arch/powerpc/kernel/process.c                    |   15
+ arch/powerpc/kernel/ptrace.c                     |    6
+ arch/powerpc/kernel/vmlinux.lds.S                |    2
+ arch/powerpc/platforms/83xx/mpc8313_rdb.c        |    2
+ arch/powerpc/platforms/83xx/mpc832x_mds.c        |    1
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c        |   48
+ arch/powerpc/platforms/83xx/mpc834x_itx.c        |    2
+ arch/powerpc/platforms/83xx/mpc834x_mds.c        |    2
+ arch/powerpc/platforms/83xx/mpc836x_mds.c        |    1
+ arch/powerpc/platforms/83xx/mpc83xx.h            |    2
+ arch/powerpc/platforms/83xx/pci.c                |    7
+ arch/powerpc/platforms/85xx/Kconfig              |    8
+ arch/powerpc/platforms/85xx/Makefile             |    2
+ arch/powerpc/platforms/85xx/mpc8544_ds.c         |  188 --
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c        |   13
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c        |   13
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c         |  227 +++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c        |   11
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c       |   14
+ arch/powerpc/platforms/embedded6xx/linkstation.c |    1
+ arch/powerpc/platforms/embedded6xx/ls_uart.c     |   14
+ arch/powerpc/sysdev/fsl_pci.c                    |    2
+ arch/powerpc/sysdev/fsl_soc.c                    |  114 +
+ arch/powerpc/sysdev/fsl_soc.h                    |    7
+ drivers/net/ucc_geth_mii.c                       |    1
+ drivers/serial/mpc52xx_uart.c                    |    2
+ include/asm-powerpc/cputable.h                   |   26
+ include/asm-powerpc/immap_86xx.h                 |  151 --
+ include/asm-powerpc/io.h                         |   23
+ include/asm-powerpc/ppc_asm.h                    |    4
+ include/asm-powerpc/qe.h                         |    3
+ include/asm-ppc/io.h                             |    3
+ include/linux/pci_ids.h                          |    2
+ 69 files changed, 4049 insertions(+), 1831 deletions(-)
+
+Anton Vorontsov (3):
+      [POWERPC] QE: extern par_io_config_pin and par_io_data_set funcs
+      [POWERPC] fsl_soc: add support for fsl_spi
+      [POWERPC] MPC832x_RDB: Update dts to use SPI1 in QE, register mmc_spi stub
+
+Guennadi Liakhovetski (1):
+      [POWERPC] linkstation updates
+
+John Rigby (1):
+      [POWERPC] 52xx: Fix mpc52xx_uart_of_assign to use correct index
+
+Jon Loeliger (2):
+      [POWERPC] 86xx: Remove unnecessary loops_per_jiffy initialization code.
+      [POWERPC] 85xx: Remove unnecessary loops_per_jiffy initialization code.
+
+Kumar Gala (10):
+      ucc_geth: kill unused include
+      [POWERPC] 85xx: Renamed mpc8544_ds.c to mpc85xx_ds.c
+      [POWERPC] 85xx: Clean up from 85xx_ds rename
+      [POWERPC] Handle alignment faults on SPE load/store instructions
+      [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+      [POWERPC] DTS cleanup
+      [POWERPC] Move PCI nodes to be sibilings with SOC nodes
+      [POWERPC] 83xx: Removed PCI exclude of PHB
+      [POWERPC] Add cpu feature for SPE handling
+      [POWERPC] Fix modpost warnings from head*.S on ppc32
+
+Roy Zang (1):
+      [POWERPC] Update mpc7448hpc2 device tree to be compatible for tsi109 chip
+
+Scott Wood (2):
+      [POWERPC] fsl_soc.c cleanup
+      [PPC] Add clrbits8 and setbits8.
+
+Timur Tabi (2):
+      [POWERPC] add clrsetbits macros
+      [POWERPC] 86xx: Fix definition of global-utilites structure
