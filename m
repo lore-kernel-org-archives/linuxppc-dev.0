@@ -1,17 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070912035351.GF20218@localhost.localdomain>
-References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
-	<20070912031132.GC20218@localhost.localdomain>
-	<AC5C6EF4-EE8E-487F-BF45-3653A5C2617D@kernel.crashing.org>
-	<20070912035351.GF20218@localhost.localdomain>
+In-Reply-To: <20070912151938.GA15561@ld0162-tx32.am.freescale.net>
+References: <11891624353752-git-send-email-wei.zhang@freescale.com>
+	<1189162437484-git-send-email-wei.zhang@freescale.com>
+	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
+	<20070910032529.GA27828@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
+	<20070911141907.GF1932@ld0162-tx32.am.freescale.net>
+	<46B96294322F7D458F9648B60E15112C85D755@zch01exm26.fsl.freescale.net>
+	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <44b4b3a133980aeb6c596aad71612e6c@kernel.crashing.org>
+Message-Id: <fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Wed, 12 Sep 2007 16:00:38 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Thu, 13 Sep 2007 04:09:29 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
+	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +		uli1575@0 {
->>>> +			reg = <0 0 0 0 0>;
->>>
->>> This looks kind of bogus...
->>
->> Its a PCIe to PCI bridge that is transparent.
+>> I have a strange issue here. If I rename 'fsl,dma' to 
+>> 'fsl,mpc8540-dma',
+>> the 'fsl,mpc8540-dma-channel' will be also regarded as DMA device not
+>> DMA channel.
 >
-> Right.... if it has no control registers, I think it should just lack
-> 'reg', not define a zero-length register block.
+> What tree are you using?  Commit 
+> 804ace8881d211ac448082e871dd312132393049
+> in Paul's git tree should have fixed that.
 
-"reg" for PCI config registers has length 0 always, it's defined that
-way in the PCI binding.
-
-But if this thing is transparent, it doesn't have PCI config regs.
-
->>>> +			#size-cells = <2>;
->>>> +			#address-cells = <3>;
->>>> +			ranges = <02000000 0 80000000
->>>> +				  02000000 0 80000000
->>>> +				  0 20000000
->>>> +				  01000000 0 00000000
->>>> +				  01000000 0 00000000
->>>> +				  0 00100000>;
->
-> And if truly transparent, it should perhaps have just ranges;
-> indicating that child addresses are identity mapped to parent
-> addresses.
-
-If truly transparent, the node should just not be there at all!
-
->>>> +			pci_bridge@0 {
->>>
->>> Ok.. why is pci_bridge nested within uli1575 - with the matching reg
->>> and ranges, it looks like they ought to be one device.  Also if this
->>> is a PCI<->PCI bridge, I believe it shold have device_type = "pci".
->>
->> We've been using this as it stands for a while.  If there are some
->> changes here that make sense I'm willing to make them.
->
-> Right, at present I don't see why you couldn't just ditch the
-> pci_bridge node, and drop its contents straight into the uli1575 node.
-
-Yeah.  The preferred name for PCI-to-PCI bridge nodes is simply "pci", 
-btw.
+Strange, I don't see that commit -- maybe gitweb is broken, or
+maybe the patch was superseded, or maybe it just disappeared?
+It's still shown in patchworks with this commit id fwiw.
 
 
 Segher
