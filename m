@@ -2,20 +2,18 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BB52ADDDD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 02:54:04 +1000 (EST)
-In-Reply-To: <A78D5AE1-8578-4971-800E-7209258365F1@kernel.crashing.org>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141711.GE1932@ld0162-tx32.am.freescale.net>
-	<1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
-	<6b92503d73565f8add983e64ad5d5d39@kernel.crashing.org>
-	<A78D5AE1-8578-4971-800E-7209258365F1@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 952E5DDE2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 02:56:51 +1000 (EST)
+In-Reply-To: <8FFFBF2E-8255-40FB-836D-AB5B19222DD9@kernel.crashing.org>
+References: <Pine.LNX.4.64.0709121154120.19816@blarg.am.freescale.net>
+	<919c9b76c3e6e45af6e3fb887611a681@kernel.crashing.org>
+	<8FFFBF2E-8255-40FB-836D-AB5B19222DD9@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5bba19e33a518178eb46f2a1758cff40@kernel.crashing.org>
+Message-Id: <39e2f86a62574776183feb82935cd79c@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Thu, 13 Sep 2007 18:53:46 +0200
+Subject: Re: [PATCH] [POWERPC] DTS cleanup
+Date: Thu, 13 Sep 2007 18:56:39 +0200
 To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,19 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> What is a "front side cache"?  What exactly does it cache?  If it's
->> a cache for one CPU only, that fact should be shown in the device
->> tree somehow.
+>>> * built-in for non-standard buses (ISA, PCI)
+>>
+>> "built-in" is some weird CHRP property, so yes we don't need it
+>> or want it.
 >
-> Its in front of the memory controllers.  Its not specific to a given 
-> CPU.
+> Do you suggest we get ride of it from ISA nodes as well?
 
-Ah, I see.  That relationship is implicit in the device tree already,
-both this cache controller and that memory controller are child nodes
-of the same soc node, so your device tree is fine.
+Yes.  You aren't CHRP so you don't have to follow the CHRP binding.
+Of course it is good to copy from that binding where it makes sense,
+but how is "built-in" useful to you?
 
-Just for my own understanding, is this a coherent cache?  (I'm too
-lazy to read the manual ;-) )
+>>> * Fixed ranges on lite5200*
+>>
+>> This has a problem still:
+>>
+>>>  		model = "fsl,mpc5200";
+>>>  		compatible = "mpc5200";
+>>>  		revision = "";			// from bootloader
+>>> -		#interrupt-cells = <3>;
+>>>  		device_type = "soc";
+>>> -		ranges = <0 f0000000 f0010000>;
+>>> -		reg = <f0000000 00010000>;
+>>> +		ranges = <0 f0000000 0000c000>;
+>>> +		reg = <f0000000 0000c000>;
+>>
+>> That makes "reg" and "ranges" identify an identical address range,
+>> which means no subnode can claim any address in that range, so the
+>> "ranges" property should go.  Alternatively, the "reg" might be
+>> claiming too big a space.
+>>
+>> Which is it?
+>
+> Yeah, I think it should be 0x100 for the 'soc' regs on 52xx so I'll 
+> set regs to that.
+
+Okido.
+
+Did I say "nice cleanups, thank you!" already?  :-)
 
 
 Segher
