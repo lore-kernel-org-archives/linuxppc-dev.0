@@ -1,23 +1,25 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A05FCDDE9D
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 04:25:58 +1000 (EST)
-Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l8DIOrmn026566
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 22:24:53 +0400
-Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l8DIOrWP026563
-	for linuxppc-dev@ozlabs.org; Thu, 13 Sep 2007 22:24:53 +0400
-Date: Thu, 13 Sep 2007 22:24:53 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC: usb ehci of_platform bindings for Sequoia 440EPx
-Message-ID: <20070913182453.GA26541@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070913131851.56fcc377@weaponx.rchland.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+References: <11891624353752-git-send-email-wei.zhang@freescale.com>
+	<1189162437484-git-send-email-wei.zhang@freescale.com>
+	<3b29878a7d3d1b14f84b5d3b182cdb98@kernel.crashing.org>
+	<20070910032529.GA27828@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C85D61B@zch01exm26.fsl.freescale.net>
+	<20070911141907.GF1932@ld0162-tx32.am.freescale.net>
+	<46B96294322F7D458F9648B60E15112C85D755@zch01exm26.fsl.freescale.net>
+	<20070912151938.GA15561@ld0162-tx32.am.freescale.net>
+	<fd81b53021e39a13ea65c0a0319aab77@kernel.crashing.org>
+	<20070913145236.GC32043@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <045c872e8a912921da3259586595c0f3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] Add Freescale DMA and DMA channel to
+	Documentation/powerpc/booting-without-of.txt file.
+Date: Thu, 13 Sep 2007 20:55:47 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>,
+	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-EHCI OF bindings for PowerPC 440EPx Sequoia.
+>>> What tree are you using?  Commit
+>>> 804ace8881d211ac448082e871dd312132393049
+>>> in Paul's git tree should have fixed that.
+>>
+>> Strange, I don't see that commit -- maybe gitweb is broken, or
+>> maybe the patch was superseded, or maybe it just disappeared?
+>> It's still shown in patchworks with this commit id fwiw.
+>
+> I see it here:
+> http://git.kernel.org/?p=linux/kernel/git/paulus/powerpc.git;a=commit; 
+> h=804ace8881d211ac448082e871dd312132393049
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/boot/dts/sequoia.dts |    7 +++++++
- 1 files changed, 7 insertions(+)
+Ah okay.  The gitweb search functionality is broken.
 
-diff -ruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts
---- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-09-13 20:58:18.000000000 +0400
-+++ linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts	2007-09-13 21:32:49.000000000 +0400
-@@ -122,6 +122,13 @@
- 			interrupt-map-mask = <ffffffff>;
- 		};
- 
-+		usb@e0000300 {
-+			compatible = "ibm,ehci-440epx", "ehci-be-desc", "ehci-be-mmio";
-+			interrupt-parent = <&UIC0>;
-+			interrupts = <1a 4>;
-+			reg = <0 e0000300 ff>;
-+		};
-+
- 		POB0: opb {
- 		  	compatible = "ibm,opb-440epx", "ibm,opb";
- 			#address-cells = <1>;
+Shouldn't this patch have gone to .23?  It's a pretty important
+bugfix I think.
+
+
+Segher
