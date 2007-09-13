@@ -1,17 +1,22 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D7A3FDDD07
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 01:20:36 +1000 (EST)
-Date: Thu, 13 Sep 2007 19:23:33 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ucc_geth: fix compilation
-Message-ID: <20070913152333.GA2381@localhost.localdomain>
-References: <20070912112456.GA15556@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070912112456.GA15556@localhost.localdomain>
-Cc: netdev@vger.kernel.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0493CDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 02:05:54 +1000 (EST)
+Date: Thu, 13 Sep 2007 11:05:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 10/10] mpc82xx: Add pq2fads board support.
+Message-ID: <20070913160539.GA32696@ld0162-tx32.am.freescale.net>
+References: <20070905192924.GI32462@ld0162-tx32.am.freescale.net>
+	<9BC5B02A-4E9D-42DD-90C3-F8C3382F2A96@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9BC5B02A-4E9D-42DD-90C3-F8C3382F2A96@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently qe_bd_t is used in the macro call -- dma_unmap_single,
-which is a no-op on PPC32, thus error is hidden today. Starting
-with 2.6.24, macro will be replaced by the empty static function,
-and erroneous use of qe_bd_t will trigger compilation error.
+On Thu, Sep 13, 2007 at 01:39:58AM -0500, Kumar Gala wrote:
+> >+	CS: chipselect {
+> 
+> We need to document this in booting-without-of.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+OK.
 
-Reposting this to include netdev in Cc.
+> >+		PIC: interrupt-controller@10c00 {
+> >+			#interrupt-cells = <2>;
+> >+			interrupt-controller;
+> >+			reg = <10c00 80>;
+> >+			compatible = "fsl,mpc8280-pic", "fsl,pq2-pic";
+> 
+> this should also have a "fsl,cpm2-pic" or something of that form.   
+> (exact same pic exists on 8560, 85xx+CPM)
 
- drivers/net/ucc_geth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+OK...  I did it as pq2 rather than cpm2 because IIRC it wasn't described
+under the CPM section of the manual, so I didn't know if 85xx CPM2 had
+the same thing.
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 12e01b2..9a38dfe 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2148,7 +2148,7 @@ static void ucc_geth_memclean(struct ucc_geth_private *ugeth)
- 		for (j = 0; j < ugeth->ug_info->bdRingLenTx[i]; j++) {
- 			if (ugeth->tx_skbuff[i][j]) {
- 				dma_unmap_single(NULL,
--						 ((qe_bd_t *)bd)->buf,
-+						 ((struct qe_bd *)bd)->buf,
- 						 (in_be32((u32 *)bd) &
- 						  BD_LENGTH_MASK),
- 						 DMA_TO_DEVICE);
--- 
-1.5.0.6
+-Scott
