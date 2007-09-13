@@ -1,20 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7285DDF70
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 12:10:02 +1000 (EST)
-In-Reply-To: <1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
-References: <Pine.LNX.4.64.0709110128040.27648@blarg.am.freescale.net>
-	<20070911141711.GE1932@ld0162-tx32.am.freescale.net>
-	<1DE5CB62-9EF1-42BA-93F3-CE15DD94F5DD@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6b92503d73565f8add983e64ad5d5d39@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Wed, 12 Sep 2007 15:20:25 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id DA5A8DDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 13:05:39 +1000 (EST)
+In-Reply-To: <919c9b76c3e6e45af6e3fb887611a681@kernel.crashing.org>
+References: <Pine.LNX.4.64.0709121154120.19816@blarg.am.freescale.net>
+	<919c9b76c3e6e45af6e3fb887611a681@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8FFFBF2E-8255-40FB-836D-AB5B19222DD9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] DTS cleanup
+Date: Wed, 12 Sep 2007 22:08:33 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,48 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +		l2-cache-controller@20000 {
->>> +			compatible = "fsl,8572-l2-cache-controller";
->>> +			reg = <20000 1000>;
->>> +			cache-line-size = <20>;	// 32 bytes
->>> +			cache-size = <80000>;	// L2, 512K
->>> +			interrupt-parent = <&mpic>;
->>> +			interrupts = <10 2>;
->>> +		};
->>
->> Should this node be referenced by an l2-cache property in the cpu
->> node?
+
+On Sep 12, 2007, at 5:10 PM, Segher Boessenkool wrote:
+
+>> * 32-bit in cpu node -- doesn't exist in any spec and not used by  
+>> kernel
 >
-> No, its a front side cache.
-
-What is a "front side cache"?  What exactly does it cache?  If it's
-a cache for one CPU only, that fact should be shown in the device
-tree somehow.
-
->>> +			device_type = "pci";
->>> +			#interrupt-cells = <1>;
->>> +			#size-cells = <2>;
->>> +			#address-cells = <3>;
->>> +			reg = <8000 1000>;
->>> +			bus-range = <0 ff>;
->>> +			ranges = <02000000 0 80000000 80000000 0 20000000
->>> +				  01000000 0 00000000 ffc00000 0 00010000>;
->>
->> No prefetchable mem space?
+> Yeah.
 >
-> we haven't normally provided prefetch on 85xx/86xx.. will deal with
-> this later.
+>> * built-in for non-standard buses (ISA, PCI)
+>
+> "built-in" is some weird CHRP property, so yes we don't need it
+> or want it.
 
-If you don't set up prefetchable memory regions on the PCI from
-the firmware, this code is fine, sure.  It would be a good plan
-to do map all BARs that say they are prefetchable in some
-prefetchable PCI window, it gives a nice speed boost, even when
-the kernel accesses it as simple non-cacheable space: the PCI
-bridges in between can streamline loads from these areas.
+Do you suggest we get ride of it from ISA nodes as well?
 
-In any case, the device tree should be in synch with how the
-firmware set up the PCI hardware, and it seems that's what you
-have now, so all is fine.
+>
+>> * Removed #interrupt-cells in places they don't need to be set
+>
+> Great :-)
+>
+>> * Fixed ranges on lite5200*
+>
+> This has a problem still:
+>
+>>  		model = "fsl,mpc5200";
+>>  		compatible = "mpc5200";
+>>  		revision = "";			// from bootloader
+>> -		#interrupt-cells = <3>;
+>>  		device_type = "soc";
+>> -		ranges = <0 f0000000 f0010000>;
+>> -		reg = <f0000000 00010000>;
+>> +		ranges = <0 f0000000 0000c000>;
+>> +		reg = <f0000000 0000c000>;
+>
+> That makes "reg" and "ranges" identify an identical address range,
+> which means no subnode can claim any address in that range, so the
+> "ranges" property should go.  Alternatively, the "reg" might be
+> claiming too big a space.
+>
+> Which is it?
 
+Yeah, I think it should be 0x100 for the 'soc' regs on 52xx so I'll  
+set regs to that.
 
-Segher
+- k
