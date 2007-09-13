@@ -1,23 +1,29 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
-	by ozlabs.org (Postfix) with ESMTP id D5F95DDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:33:47 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before
-	using MR large pages
-References: <200709121439.32641.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 12 Sep 2007 21:33:45 -0700
-In-Reply-To: <200709121439.32641.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Wed, 12 Sep 2007 14:39:31 +0200")
-Message-ID: <adaps0nmbfa.fsf@cisco.com>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 19272DDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:38:40 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l8D4cZ8R022722
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 21:38:36 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l8D4cYvv024583
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 23:38:35 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: 2.6.23-rc3 boot hang on MPC8641D
+Date: Thu, 13 Sep 2007 12:38:33 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C85D7FB@zch01exm26.fsl.freescale.net>
+In-Reply-To: <12648489.post@talk.nabble.com>
+References: <12648489.post@talk.nabble.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "sivaji" <rameshmrm@gmail.com>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +33,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > -#define HCA_CAP_MR_PGSIZE_4K  1
- > -#define HCA_CAP_MR_PGSIZE_64K 2
- > -#define HCA_CAP_MR_PGSIZE_1M  4
- > -#define HCA_CAP_MR_PGSIZE_16M 8
- > +#define HCA_CAP_MR_PGSIZE_4K  0x80000000
- > +#define HCA_CAP_MR_PGSIZE_64K 0x40000000
- > +#define HCA_CAP_MR_PGSIZE_1M  0x20000000
- > +#define HCA_CAP_MR_PGSIZE_16M 0x10000000
+Hi,=20
 
-Not sure I understand what this has to do with things... is this an
-unrelated fix?
+Your flat device tree address seems too low. Try to move the dtb to
+higher address such as 0x2000000.
 
- > +static int ehca_is_mem_hugetlb(unsigned long addr, unsigned long size)
+And which version of your u-boot?
 
-This is rather awful -- another call to get_user_pages() to iterate
-over all the vmas...
+Cheers!
+- zw
 
-I would suggest extending ib_umem_get() to check the vmas and adding a
-member to struct ib_umem to say whether the memory is entirely covered
-by hugetlb pages or not.
-
- > +		ret = ehca_is_mem_hugetlb(virt, length);
- > +		switch (ret) {
- > +		case 0: /* mem is not from hugetlb */
- > +			hwpage_size = PAGE_SIZE;
- > +			break;
- > +		case 1:
- > +			if (length <= EHCA_MR_PGSIZE4K
- > +			    && PAGE_SIZE == EHCA_MR_PGSIZE4K)
- > +				hwpage_size = EHCA_MR_PGSIZE4K;
- > +			else if (length <= EHCA_MR_PGSIZE64K)
- > +				hwpage_size = EHCA_MR_PGSIZE64K;
- > +			else if (length <= EHCA_MR_PGSIZE1M)
- > +				hwpage_size = EHCA_MR_PGSIZE1M;
- > +			else
- > +				hwpage_size = EHCA_MR_PGSIZE16M;
- > +			break;
- > +		default: /* out of mem */
- > +			ib_mr = ERR_PTR(-ENOMEM);
- > +			goto reg_user_mr_exit1;
-
-It seems like it would be better to just assume the memory is not from
-a hugetlb is ehca_is_mem_hugetlb() fails its memory allocation and
-fall back to the PAGE_SIZE case rather than failing entirely.
-
-Also if someone runs a kernel with 64K pages on a machine where they
-end up being simulated from 4K pages, do you have the same issue with
-the hypervisor ganging together non-contiguous pages?
-
- - R.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.or
+> g] On Behalf Of sivaji
+> Sent: Thursday, September 13, 2007 12:18 PM
+> To: linuxppc-dev@ozlabs.org
+> Subject: 2.6.23-rc3 boot hang on MPC8641D
+>=20
+>=20
+> Hi,
+>         I am try to boot the 2.6.23-rc3 kernel to my custom=20
+> board based on
+> 8641D Processor. After uncompressing the kernel it was hang. I got the
+> following messages.
+>=20
+>    Uncompressing Kernel Image ... OK
+>    Booting using flat device tree at 0x600000.=20
+>=20
+>        Then i tried to debug with GDB. In my source path i=20
+> given the command
+> ${CROSS_COMPILE}gdb vmlinux, I got GDB Prompt after i tried to set the
+> breakpoint at start_kernel. I got follwing messages
+>=20
+> gdb) b start_kernel
+> Cannot access memory at address 0xc02b44ec
+>=20
+> Processor Information:
+> 8641D processor and the silicon revision is 2.0.
+> Part : MPC8641D
+> Revision:  2.0
+> e600 Core Revision:  2.2
+> DeviceMarking:  B
+> Processor Version Register Value: 0x8004_0202
+> System Version Register Value:   0x8090_0120
+>=20
+>      I don't know how to proceed. Please tell the way how to=20
+> start kernel
+> debug in this situation.
+>=20
+> By
+> Sivaji
+> --=20
+> View this message in context:=20
+> http://www.nabble.com/2.6.23-rc3-boot-hang-on-MPC8641D-tf44335
+> 08.html#a12648489
+> Sent from the linuxppc-dev mailing list archive at Nabble.com.
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
