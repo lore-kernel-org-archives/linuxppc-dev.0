@@ -1,19 +1,19 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
-	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id EA13EDDDFC
+Return-Path: <raul.moreno@telvent.abengoa.com>
+Received: from c07.abengoa.com (envio.abengoa.com [217.15.37.68])
+	by ozlabs.org (Postfix) with ESMTP id 41619DDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Sep 2007 00:16:48 +1000 (EST)
-Message-ID: <46E944BE.1010007@qstreams.com>
-Date: Thu, 13 Sep 2007 10:10:06 -0400
-From: Ben Warren <bwarren@qstreams.com>
+	Fri, 14 Sep 2007 00:23:49 +1000 (EST)
+In-Reply-To: <f8f856500709130705t2109e559v19f0ffac318a4756@mail.gmail.com>
+Subject: Re: Informations about mem and proc environment between bootloader and
+	kernel
+To: "fabien boucher" <fabien.fb@gmail.com>
+Message-ID: <OFD1DD4A9B.76E5C9ED-ONC1257355.004E8905-C1257355.004F16D9@abengoa.com>
+Date: Thu, 13 Sep 2007 16:23:59 +0200
+From: raul.moreno@telvent.abengoa.com
 MIME-Version: 1.0
-To: Erik Christiansen <erik@dd.nec.com.au>
-Subject: Re: Flash on ep8248e standard motherboards
-References: <bfa0697f0709041108u2c6b719dj600cb2eb25b66a4a@mail.gmail.com>
-	<20070913082558.GB8968@dd.nec.com.au>
-In-Reply-To: <20070913082558.GB8968@dd.nec.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +24,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Erik Christiansen wrote:
-> On Tue, Sep 04, 2007 at 12:08:47PM -0600, Alan Bennett wrote:
->   
->> BDI 2000 Config File:
->>   ;  initialize - FLASH BR0 & OR0 (64 Mbyte)
->>   ;*******************************************
->>   WM32    0xf0010100     0xfc001801
->>   WM32     0xf0010104     0xfc0008c2
->>   [FLASH]
->>   CHIPTYPE    MIRRORX16
->>   CHIPSIZE    0x2000000
->>   BUSWIDTH    16
->>     
->
-> Having just taken delivery of an ep8248e, I'm surprised that the
-> supplied flash config is commented out and erroneous:
->
-> [FLASH]
-> ;CHIPTYPE    AM29F       ;Flash type (AM29F | AM29BX8 | AM29BX16 | I28BX8 | I28BX16)
-> ;CHIPSIZE    0x200000    ;The size of one flash chip in bytes (e.g. AM29F010 = 0x20000)
-> ;BUSWIDTH    8           ;The width of the flash memory bus in bits (8 | 16 | 32 | 64)
-> ;
->
-> Did you start with the Embedded Planet offering, in your current effort
-> to create a usable config? Is MIRRORX16 more than a guess?
->
-> I've found that my flash chips are "spansion GL256N10FFI02", which
-> AFAICT are S29GL256N10FFI02 from AMD, as we used to know them.
-> I wonder if S29M32X16 is a likely guess for CHIPTYPE on the card which
-> has landed in my lap?
->
->   
-MIRRORX16 is the correct type for Spansion GL series NOR flash. AMD spun 
-off their flash business a while ago and renamed it Spansion. If you 
-look on the datasheet you'll see that Spansion calls the GL technology 
-'MirrorBit', and in all likelihood the device has a 16-bit data bus. The 
-AMD algorithm may work but the MIRRORX16 definitely will.
+Hello Fabien,
 
-regards,
-Ben
+you should download the U-boot sources from sourceforge.net. There is a=
+
+README file there where you can read about porting U-boot.
+The porting to a custom board of U-boot is easier when your cpu is incl=
+ude,
+like in your case (mpc8xx). Basically you have to create a new entry in=
+
+board directory. There you have to insert the initialization code for y=
+our
+flash, sdram and other devices. You also have to make a file as the one=
+s in
+/include/configs/ with your configuration board.
+
+It is essential to have correct environment variables when Linux takes =
+the
+control.
+If you use the u-boot command "bootm" in order to boot Linux, the file
+where U-Boot transfer the control to Linux is /common/cmd_bootm.c.
+
+Moreover I would recommend you a book which explains many things regard=
+ing
+porting Linux (and U-boot):
+Embedded Linux Primer: A practical, real-world  approach.
+
+Cheers,
+
+Ra=FAl Moreno
+
+
+
+Ra=FAl Moreno Beltr=E1n
+Telvent Energ=EDa, S. A.
+Divisi=F3n de Tecnolog=EDa. Desarrollo Software
+Tlfo: 954935670
+
+
+
+"fabien boucher" <fabien.fb@gmail.com>
+"fabien boucher"
+Enviado por:
+linuxppc-embedded-bounces+raul.moreno=3Dtelvent.abengoa.com@ozlabs.org
+13/09/2007 16:05
+                                                                       =
+                                                
+ Para:   linuxppc-embedded@ozlabs.org                                  =
+                                                
+                                                                       =
+                                                
+ cc:                                                                   =
+                                                
+                                                                       =
+                                                
+ Asunto: Informations about mem and proc environment between bootloader=
+ and     kernel                                 
+                                                                       =
+                                                
+
+
+
+
+
+And I need some help for my project (I'm in internship) to port linux o=
+n a
+custom board.
+This board has been developped by the company where i'm doing the inter=
+ship
+and it's
+based on a MPC875 with RAM and Flash chips and several other devices.
+Currently the board run with a BSP developped
+by the company's developpers, the BSP launch Psos.
+This BSP is able to decompress an image and load it in RAM.
+I plan to use U-boot to be more able to boot a kernel but as it's not a=
+
+common
+board so it's not initialy supported by U-boot. So I have two choices f=
+irst
+use the BSP with some changes to adapt it for loading the Linux kernel =
+or
+using U-boot.
+I'm looking for informations about the memory and processor environment=
+
+needed by linux to
+boot properly for evaluate whether the use of a customize BSP is the
+easiest way against
+the port of a new board under U-boot. So if someone know where i can fo=
+und
+those informations
+concerning the step between where the boot program have control of the =
+cpu
+and where Linux
+take control.
+
+Thank you,
+Fabien
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded=
