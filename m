@@ -1,17 +1,36 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 928B5DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 23:28:04 +1000 (EST)
-Date: Thu, 13 Sep 2007 08:29:13 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Juergen Beisert <jbe@pengutronix.de>
-Subject: Re: oftree and external connected devices
-Message-ID: <20070913132913.GA9031@lixom.net>
-References: <200709131326.27325.jbe@pengutronix.de>
+Return-Path: <FENKES@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E6029DDD0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 00:27:09 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8DER5IG140510
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:27:05 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8DER5sj2109488
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 16:27:05 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8DER4jv030812
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 16:27:05 +0200
+In-Reply-To: <adaps0nmbfa.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200709131326.27325.jbe@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] IB/ehca: Make sure user pages are from hugetlb before
+	using MR large pages
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF2FF112E2.22D1AA53-ONC1257355.00360D85-C1257355.004F61C6@de.ibm.com>
+Date: Thu, 13 Sep 2007 16:27:03 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: OF-EWG <ewg@lists.openfabrics.org>, LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2007 at 01:26:26PM +0200, Juergen Beisert wrote:
-> Hi,
+Roland Dreier <rdreier@cisco.com> wrote on 13.09.2007 06:33:45:
+
+>  > -#define HCA_CAP_MR_PGSIZE_4K  1
+>  > -#define HCA_CAP_MR_PGSIZE_64K 2
+>  > -#define HCA_CAP_MR_PGSIZE_1M  4
+>  > -#define HCA_CAP_MR_PGSIZE_16M 8
+>  > +#define HCA_CAP_MR_PGSIZE_4K  0x80000000
+>  > +#define HCA_CAP_MR_PGSIZE_64K 0x40000000
+>  > +#define HCA_CAP_MR_PGSIZE_1M  0x20000000
+>  > +#define HCA_CAP_MR_PGSIZE_16M 0x10000000
 > 
-> I'm using an MPC5200B based system with various external connected devices to 
-> its LocalPlusBus. On other architectures I would register them as platform 
-> devices (no chance to autodetect these devices). But on PowerPC architecture?
+> Not sure I understand what this has to do with things... is this an
+> unrelated fix?
 
-If it's a special case of something that it's unlikely that you'll reuse
-the driver for, I'd say go ahead with a platform driver. There's nothing in the
-PPC kernel that stops it from working.
+Kinda. I can put it into its own patch if you want.
+ 
+> I would suggest extending ib_umem_get() to check the vmas and adding a
+> member to struct ib_umem to say whether the memory is entirely covered
+> by hugetlb pages or not.
 
-We're just trying to avoid it for common devices that platforms might share,
-and instead of describing hardware in the platform devices setup, describe it
-in the device tree instead.
+I like that approach - one patch coming right up! =)
+ 
+>  > +      default: /* out of mem */
+>  > +         ib_mr = ERR_PTR(-ENOMEM);
+>  > +         goto reg_user_mr_exit1;
+> 
+> It seems like it would be better to just assume the memory is not from
+> a hugetlb is ehca_is_mem_hugetlb() fails its memory allocation and
+> fall back to the PAGE_SIZE case rather than failing entirely.
 
-So it depends on how much work you want to invest in it, and if you're
-planning on ever submitting the driver upstream. If you are, going
-with a simple device tree definiton would be best (the kernel side,
-to move a platform driver to instead be an of_platform driver is easy,
-and can be done afterwards).
+If ehca_is_mem_hugetlb() runs out of memory, ehca_reg_mr() is rather 
+unlikely to get the memory, but it's worth a try, I'll give you that. I'll 
+make the umem patch work that way.
 
-> Is the oftree description also intended to describe these kind of external 
-> devices, or only SoC's internal devices? If its also intended for external 
-> devices, how to do so? Are there any examples? I didn't find anything useful 
-> yet.
-
-It can be used to describe on-board or off-board devices alike.
-
-
--Olof
+Joachim
