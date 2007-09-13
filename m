@@ -1,10 +1,16 @@
-Return-Path: <michael@ozlabs.org>
-To: Greg Kroah-Hartman <greg@kroah.com>
-Message-Id: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Allow sysfs_remove_group() to be called on non-added groups
-Date: Thu, 13 Sep 2007 14:25:38 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 13 Sep 2007 14:21:38 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
+Message-ID: <20070913042138.GB14905@localhost.localdomain>
+References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
+	<a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
+	<39A1A44F-CD73-4CC1-89DE-608A1041AAF7@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <39A1A44F-CD73-4CC1-89DE-608A1041AAF7@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,43 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It would be nice to be able to do:
+On Wed, Sep 12, 2007 at 10:28:24PM -0500, Kumar Gala wrote:
+[snip]
+> >> +	soc8572@ffe00000 {
+> >
+> > You should put an interrupt-parent in here, so you can get rid of
+> > it in all the children.
+> 
+> Are interrupt-parent's inherited by child nodes?
 
-for_each_thing(thing) {
- 	error = sysfs_create_group(&thing->kobj, attrs);
- 	if (error) {
- 		for_each_thing(thing)
- 			sysfs_remove_group(&thing->kobj, attrs);
-		return error;
-	}
-}
+Strictly speaking, a node's default interrupt-parent is its physical
+parent.  And a node without interrupt-map identity maps all interrupts
+to *its* parent.  So the interrupt is notionally wired from the child
+to its parent and so forth up the bus tree until it reaches a node
+with a specified interrupt-parent or interrupt-map.
 
-But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
-were never added.
-
-As discussed here ...
-http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
-
-.. we should just return in that case instead of BUG'ing.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- fs/sysfs/group.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index f318b73..a256775 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
- 
- 	if (grp->name) {
- 		sd = sysfs_get_dirent(dir_sd, grp->name);
--		BUG_ON(!sd);
-+		if (!sd)
-+			return;
- 	} else
- 		sd = sysfs_get(dir_sd);
- 
 -- 
-1.5.1.3.g7a33b
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
