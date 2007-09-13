@@ -1,17 +1,21 @@
-Return-Path: <bwalle@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 12555DDF78
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 02:14:36 +1000 (EST)
-Message-Id: <20070913161430.028741111@strauss.suse.de>
-References: <20070913161428.343951643@strauss.suse.de>
-Date: Thu, 13 Sep 2007 18:14:33 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org
-Subject: [patch 5/7] Use extended crashkernel command line on ppc64
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <alan@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id E5617DDE98
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 02:32:26 +1000 (EST)
+Date: Thu, 13 Sep 2007 12:31:56 -0400
+From: Alan Cox <alan@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
+Message-ID: <20070913163156.GA29118@devserv.devel.redhat.com>
+References: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18152.719.316280.579601@cargo.ozlabs.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, hskinnemoen@atmel.com,
+	heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Alan Cox <alan@redhat.com>,
+	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,97 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adapts the ppc64 code to use the generic parse_crashkernel()
-function introduced in the generic patch of that series.
+On Thu, Sep 13, 2007 at 01:16:31AM +1000, Paul Mackerras wrote:
+> asm-generic/termios.h).
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/powerpc/kernel/machine_kexec.c |   52 ++++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
-
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -61,45 +61,39 @@ NORET_TYPE void machine_kexec(struct kim
- 	for(;;);
- }
- 
--static int __init early_parse_crashk(char *p)
-+void __init reserve_crashkernel(void)
- {
--	unsigned long size;
--
--	if (!p)
--		return 1;
--
--	size = memparse(p, &p);
-+	unsigned long long crash_size = 0, crash_base;
-+	int ret;
- 
--	if (*p == '@')
--		crashk_res.start = memparse(p + 1, &p);
--	else
--		crashk_res.start = KDUMP_KERNELBASE;
--
--	crashk_res.end = crashk_res.start + size - 1;
--
--	return 0;
--}
--early_param("crashkernel", early_parse_crashk);
-+	/* this is necessary because of lmb_phys_mem_size() */
-+	lmb_analyze();
- 
--void __init reserve_crashkernel(void)
--{
--	unsigned long size;
-+	/* use common parsing */
-+	ret = parse_crashkernel(boot_command_line, lmb_phys_mem_size(),
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size > 0) {
-+		if (crash_base == 0)
-+			crash_base = KDUMP_KERNELBASE;
-+		crashk_res.start = crash_base;
-+	} else {
-+		/* handle the device tree */
-+		crash_size = crashk_res.end - crashk_res.start + 1;
-+	}
- 
--	if (crashk_res.start == 0)
-+	if (crash_size == 0)
- 		return;
- 
- 	/* We might have got these values via the command line or the
- 	 * device tree, either way sanitise them now. */
- 
--	size = crashk_res.end - crashk_res.start + 1;
--
- 	if (crashk_res.start != KDUMP_KERNELBASE)
- 		printk("Crash kernel location must be 0x%x\n",
- 				KDUMP_KERNELBASE);
- 
- 	crashk_res.start = KDUMP_KERNELBASE;
--	size = PAGE_ALIGN(size);
--	crashk_res.end = crashk_res.start + size - 1;
-+	crash_size = PAGE_ALIGN(crash_size);
-+	crashk_res.end = crashk_res.start + crash_size - 1;
- 
- 	/* Crash kernel trumps memory limit */
- 	if (memory_limit && memory_limit <= crashk_res.end) {
-@@ -108,7 +102,13 @@ void __init reserve_crashkernel(void)
- 				memory_limit);
- 	}
- 
--	lmb_reserve(crashk_res.start, size);
-+	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+			"for crashkernel (System RAM: %ldMB)\n",
-+			(unsigned long)(crash_size >> 20),
-+			(unsigned long)(crashk_res.start >> 20),
-+			(unsigned long)(lmb_phys_mem_size() >> 20));
-+
-+	lmb_reserve(crashk_res.start, crash_size);
- }
- 
- int overlaps_crashkernel(unsigned long start, unsigned long size)
-
--- 
+Acked-by: Alan Cox <alan@redhat.com>
