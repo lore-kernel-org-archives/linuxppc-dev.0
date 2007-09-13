@@ -1,19 +1,31 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 13 Sep 2007 15:11:01 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64 bit
-	pci_process_bridge_OF_ranges() instances
-Message-ID: <20070913051101.GE14905@localhost.localdomain>
-References: <20070911224952.9838.46644.stgit@localhost.localdomain>
-	<200709120057.18873.arnd@arndb.de>
-	<20070912035602.0be0d47e@localhost.localdomain>
-	<200709121013.51500.arnd@arndb.de>
-	<20070912200706.449fe450@localhost.localdomain>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D3383DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 15:19:24 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l8D5JIuI004387
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2007 22:19:19 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l8D5JHb7013633
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 00:19:18 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070912200706.449fe450@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: 2.6.23-rc3 boot hang on MPC8641D
+Date: Thu, 13 Sep 2007 13:19:17 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C85D808@zch01exm26.fsl.freescale.net>
+In-Reply-To: <5850B6F4-61FD-4866-B50E-8F7FEA3FA9AD@kernel.crashing.org>
+References: <12648489.post@talk.nabble.com><46B96294322F7D458F9648B60E15112C85D7FB@zch01exm26.fsl.freescale.net><12648696.post@talk.nabble.com>
+	<5850B6F4-61FD-4866-B50E-8F7FEA3FA9AD@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, "sivaji" <rameshmrm@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,87 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 12, 2007 at 08:07:06PM +0400, Vitaly Bordug wrote:
-> On Wed, 12 Sep 2007 10:13:50 +0200
-> Arnd Bergmann wrote:
-> 
-> > On Wednesday 12 September 2007, Vitaly Bordug wrote:
-> > 
-> > > 
-> > > Well, it's more a rewrite than a move, based on 64-bit
-> > > implementation.
-> > 
-> > ok.
-> > 
-> > > > Could you perhaps split the patch into two separate changesets,
-> > > > one that makes both functions identical in place, and one that
-> > > > merges them to live in a common location?
-> > > > 
-> > > I'm not sure I'm following what you are requesting. What is a
-> > > benefit of code duplication? I was thinking about, if it will look
-> > > good enough, to provide this function at generic level but changing
-> > > its name a little, while leaving old stuff in place, and
-> > > encouraging people to use it in favour of 32 or 64-bit-specific
-> > > approaches. That way we won't kill many boards at once(in case, for
-> > > example,odd dts with missed ranges for pci subnode).     
-> > 
-> > I wasn't suggesting to leave the duplicated code in, but rather to
-> > make the review easier by first modifying the code in place.
-> > 
-> > If you're taking the 64 bit code as a base, you can for instance make
-> > the first patch leave pci_32 alone, and modify the 64 bit 
-> > pci_process_bridge_OF_ranges to look exactly like the merged version.
-> > That allows us to see what changed in the 64 bit case.
-> > 
-> > The second patch would then move the functions over, but leave the
-> > code identical to the result of the first patch.
-> 
-> ok, makes sense, will do it that way.
-> 
-> > > > > diff --git a/include/asm-powerpc/ppc-pci.h
-> > > > > b/include/asm-powerpc/ppc-pci.h index b847aa1..882b8bc 100644
-> > > > > --- a/include/asm-powerpc/ppc-pci.h
-> > > > > +++ b/include/asm-powerpc/ppc-pci.h
-> > > > > @@ -15,6 +15,13 @@
-> > > > >  #include <linux/pci.h>
-> > > > >  #include <asm/pci-bridge.h>
-> > > > >  
-> > > > > +struct ranges_pci {
-> > > > > +	unsigned int pci_space;
-> > > > > +	u64 pci_addr;
-> > > > > +	phys_addr_t phys_addr;
-> > > > > +	u64 size;
-> > > > > +} __attribute__((packed));
-> > > > > +
-> > > > 
-> > > > This structure definition uses unaligned members because of the
-> > > > 'packed' attribute. Is that really what you intended?
-> > > > 
-> > > yes, exactly, because I'm mapping this struct on ranges extracted
-> > > from the dts instead of juggling with ranges[foo] offsets.
-> > 
-> > I see. It does however look wrong to me, because you are using a
-> > hardcoded phys_addr_t type. This breaks when phys_addr has a
-> > different size from what you expect, e.g. when booting a pure 32 bit
-> > kernel on a machine that has a 64 bit physical address space.
-> > 
-> I wondered around with "32 bit phys" and "64 bit phys" struct
-> definitions first, but, well, it does not look good.  In fact it
-> already verified with alike case (on 4xx), and I thought it would be
-> fair tradeoff to have 64 bit ranges definition.
-> 
-> otoh, there might be cases when phys_addr_t is u64 and pci stuff
-> resides on some 32-bit SoC bus. I will try to address that next
-> iteration.
+Yes, It's too old. Maybe not fully supports FDT. You can try the version
+of Kumar said or in the BSP of Freescale released.
 
-Yes, I was going to point out this sort of case.  I don't think
-including the parent-address in the structure is going to work.
+- zw
 
-Oh, also, since this structure is only used in this function, it
-should go in the .c file, not a .h file.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> -----Original Message-----
+> From: linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+wei.zhang=3Dfreescale.com@ozlabs.or
+> g] On Behalf Of Kumar Gala
+> Sent: Thursday, September 13, 2007 1:11 PM
+> To: sivaji
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: 2.6.23-rc3 boot hang on MPC8641D
+>=20
+>=20
+> On Sep 12, 2007, at 11:52 PM, sivaji wrote:
+>=20
+> >
+> >
+> > Hi,
+> >           I tired to move the dtb to 0x2000000, but the result was =20
+> > same.
+> > uboot version is 1.1.6
+>=20
+> seems like a pretty old u-boot.  Willing to try a 1.3.0-rc1?
+>=20
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
