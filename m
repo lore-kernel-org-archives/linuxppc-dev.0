@@ -2,17 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 306D9DDF07
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 07:08:16 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 37FE0DDFD2
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 07:08:21 +1000 (EST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/22] [POWERPC] 85xx: Clean up from 85xx_ds rename
-Date: Thu, 13 Sep 2007 16:07:41 -0500
-Message-Id: <11897176841013-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1189717683471-git-send-email-galak@kernel.crashing.org>
+Subject: [PATCH 04/22] [POWERPC] Update mpc7448hpc2 device tree to be
+	compatible for tsi109 chip
+Date: Thu, 13 Sep 2007 16:07:42 -0500
+Message-Id: <11897176851400-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <11897176841013-git-send-email-galak@kernel.crashing.org>
 References: <11897176803590-git-send-email-galak@kernel.crashing.org>
 	<1189717681533-git-send-email-galak@kernel.crashing.org>
 	<1189717683471-git-send-email-galak@kernel.crashing.org>
+	<11897176841013-git-send-email-galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,141 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Renamed functions in 85xx_ds from 8544 to 85xx.
+From: Roy Zang <tie-fei.zang@freescale.com>
 
-Kept an unique machine def/probe for the MPC8544 DS board to
-handle some subtle differences between the future board based
-on the DS platform.
+Update mpc7448hpc2 device tree to be compatible for tsi109 chip.
 
-Also fixed building w/o CONFIG_PCI and minor whitespace fixes.
-
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |   36 ++++++++++++++++++-----------
- 1 files changed, 22 insertions(+), 14 deletions(-)
+ arch/powerpc/boot/dts/mpc7448hpc2.dts |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 48983bc..3a5c3c4 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -1,5 +1,5 @@
- /*
-- * MPC8544 DS Board Setup
-+ * MPC85xx DS Board Setup
-  *
-  * Author Xianghua Xiao (x.xiao@freescale.com)
-  * Roy Zang <tie-fei.zang@freescale.com>
-@@ -44,7 +44,7 @@
- #endif
+diff --git a/arch/powerpc/boot/dts/mpc7448hpc2.dts b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+index b9158eb..c60ad34 100644
+--- a/arch/powerpc/boot/dts/mpc7448hpc2.dts
++++ b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+@@ -41,11 +41,12 @@
+ 		       >;
+ 	};
  
- #ifdef CONFIG_PPC_I8259
--static void mpc8544_8259_cascade(unsigned int irq, struct irq_desc *desc)
-+static void mpc85xx_8259_cascade(unsigned int irq, struct irq_desc *desc)
- {
- 	unsigned int cascade_irq = i8259_irq();
+-  	tsi108@c0000000 {
++	tsi109@c0000000 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		#interrupt-cells = <2>;
+ 		device_type = "tsi-bridge";
++		compatible = "tsi109-bridge", "tsi108-bridge";
+ 		ranges = <00000000 c0000000 00010000>;
+ 		reg = <c0000000 00010000>;
+ 		bus-frequency = <0>;
+@@ -55,12 +56,12 @@
+ 			interrupts = <E 0>;
+ 			reg = <7000 400>;
+ 			device_type = "i2c";
+-			compatible  = "tsi108-i2c";
++			compatible  = "tsi109-i2c", "tsi108-i2c";
+ 		};
  
-@@ -55,7 +55,7 @@ static void mpc8544_8259_cascade(unsigned int irq, struct irq_desc *desc)
- }
- #endif	/* CONFIG_PPC_I8259 */
- 
--void __init mpc8544_ds_pic_init(void)
-+void __init mpc85xx_ds_pic_init(void)
- {
- 	struct mpic *mpic;
- 	struct resource r;
-@@ -104,16 +104,17 @@ void __init mpc8544_ds_pic_init(void)
- 		return;
- 	}
- 
--	DBG("mpc8544ds: cascade mapped to irq %d\n", cascade_irq);
-+	DBG("mpc85xxds: cascade mapped to irq %d\n", cascade_irq);
- 
- 	i8259_init(cascade_node, 0);
- 	of_node_put(cascade_node);
- 
--	set_irq_chained_handler(cascade_irq, mpc8544_8259_cascade);
-+	set_irq_chained_handler(cascade_irq, mpc85xx_8259_cascade);
- #endif	/* CONFIG_PPC_I8259 */
- }
- 
- #ifdef CONFIG_PCI
-+static int primary_phb_addr;
- extern int uses_fsl_uli_m1575;
- extern int uli_exclude_device(struct pci_controller *hose,
- 				u_char bus, u_char devfn);
-@@ -121,13 +122,13 @@ extern int uli_exclude_device(struct pci_controller *hose,
- static int mpc85xx_exclude_device(struct pci_controller *hose,
- 				   u_char bus, u_char devfn)
- {
--	struct device_node* node;	
-+	struct device_node* node;
- 	struct resource rsrc;
- 
- 	node = (struct device_node *)hose->arch_data;
- 	of_address_to_resource(node, 0, &rsrc);
- 
--	if ((rsrc.start & 0xfffff) == 0xb000) {
-+	if ((rsrc.start & 0xfffff) == primary_phb_addr) {
- 		return uli_exclude_device(hose, bus, devfn);
- 	}
- 
-@@ -138,20 +139,20 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
- /*
-  * Setup the architecture
-  */
--static void __init mpc8544_ds_setup_arch(void)
-+static void __init mpc85xx_ds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
- #endif
- 
- 	if (ppc_md.progress)
--		ppc_md.progress("mpc8544_ds_setup_arch()", 0);
-+		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
- 		struct resource rsrc;
- 		of_address_to_resource(np, 0, &rsrc);
--		if ((rsrc.start & 0xfffff) == 0xb000)
-+		if ((rsrc.start & 0xfffff) == primary_phb_addr)
- 			fsl_add_bridge(np, 1);
- 		else
- 			fsl_add_bridge(np, 0);
-@@ -160,7 +161,7 @@ static void __init mpc8544_ds_setup_arch(void)
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- 
--	printk("MPC8544 DS board from Freescale Semiconductor\n");
-+	printk("MPC85xx DS board from Freescale Semiconductor\n");
- }
- 
- /*
-@@ -170,14 +171,21 @@ static int __init mpc8544_ds_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	return of_flat_dt_is_compatible(root, "MPC8544DS");
-+	if (of_flat_dt_is_compatible(root, "MPC8544DS")) {
-+#ifdef CONFIG_PCI
-+		primary_phb_addr = 0xb000;
-+#endif
-+		return 1;
-+	} else {
-+		return 0;
-+	}
- }
- 
- define_machine(mpc8544_ds) {
- 	.name			= "MPC8544 DS",
- 	.probe			= mpc8544_ds_probe,
--	.setup_arch		= mpc8544_ds_setup_arch,
--	.init_IRQ		= mpc8544_ds_pic_init,
-+	.setup_arch		= mpc85xx_ds_setup_arch,
-+	.init_IRQ		= mpc85xx_ds_pic_init,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
- #endif
+ 		MDIO: mdio@6000 {
+ 			device_type = "mdio";
+-			compatible = "tsi108-mdio";
++			compatible = "tsi109-mdio", "tsi108-mdio";
+ 			reg = <6000 50>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -82,7 +83,7 @@
+ 		ethernet@6200 {
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			compatible = "tsi108-ethernet";
++			compatible = "tsi109-ethernet", "tsi108-ethernet";
+ 			reg = <6000 200>;
+ 			address = [ 00 06 D2 00 00 01 ];
+ 			interrupts = <10 2>;
+@@ -95,7 +96,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			device_type = "network";
+-			compatible = "tsi108-ethernet";
++			compatible = "tsi109-ethernet", "tsi108-ethernet";
+ 			reg = <6400 200>;
+ 			address = [ 00 06 D2 00 00 02 ];
+ 			interrupts = <11 2>;
+@@ -134,7 +135,7 @@
+                        	big-endian;
+ 		};
+ 		pci@1000 {
+-			compatible = "tsi108-pci";
++			compatible = "tsi109-pci", "tsi108-pci";
+ 			device_type = "pci";
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
 -- 
 1.5.2.4
