@@ -1,11 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18153.30975.926456.819248@cargo.ozlabs.ibm.com>
-Date: Fri, 14 Sep 2007 03:53:03 +1000
-From: Paul Mackerras <paulus@samba.org>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 98140DDED2
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 03:58:13 +1000 (EST)
+Date: Thu, 13 Sep 2007 21:57:02 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Patches added to powerpc.git for-2.6.24 branch
+Subject: [PATCH] usb: add support for device tree aware EHCI driver
+Message-ID: <20070913175702.GA24682@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,66 +21,353 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson (2):
-      [POWERPC] Move bootwrapper's strchr() and strncmp() from .h to string.S
-      [POWERPC] Document and implement an improved flash device binding for powerpc
+Some PowerPC systems have a built-in EHCI controller.
+This is a device tree aware version of the EHCI controller driver.
+Currently it's been tested on the PowerPC 440EPx Sequoia board.
+Other platforms can be added later.
+The code is based on the ehci-ppc-soc driver by Stefan Roese <sr@denx.de>.
+The of_platform support is based on ohci-ppc-of driver
+by Sylvain Munaut <tnt@246tNt.com>.
 
-Geert Uytterhoeven (1):
-      [POWERPC] PS3: Add new LV1 error codes
+Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-Geoff Levand (1):
-      [POWERPC] PS3: Enhance storage probe debug output
+---
+ drivers/usb/host/Kconfig       |    8 +
+ drivers/usb/host/ehci-hcd.c    |   16 ++
+ drivers/usb/host/ehci-ppc-of.c |  251 +++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/host/ehci.h        |    2 
+ 4 files changed, 275 insertions(+), 2 deletions(-)
 
-Jeremy Kerr (1):
-      [POWERPC] PS3: Fix CONFIG_SMP=n, CONFIG_KEXEC=y build
-
-Josh Boyer (6):
-      [POWERPC] Remove dtc build cruft from DTS files
-      [POWERPC] Fix bus probe on Bamboo board
-      [POWERPC] Walnut DTS
-      [POWERPC] Walnut defconfig
-      [POWERPC] Walnut board support
-      [POWERPC] Walnut zImage wrapper
-
-Kumar Gala (3):
-      [POWERPC] Remove old includes from arch/ppc
-      [POWERPC] Copy over headers from arch/ppc to arch/powerpc that we need
-      [POWERPC] Stop include asm-ppc when building ARCH=powerpc for ppc32
-
-Linas Vepstas (4):
-      [POWERPC] IOMMU virtual merge is no longer experimental
-      [POWERPC] prom_init whitespace cleanup, typo fix
-      [POWERPC] prom.c whitespace cleanup
-      [POWERPC] setup_64.c and prom.c comment cleanup
-
-Michael Ellerman (5):
-      [POWERPC] Add an optional device_node pointer to the irq_host
-      [POWERPC] Invert null match behaviour for irq_hosts
-      [POWERPC] Provide a default irq_host match, which matches on an exact of_node
-      [POWERPC] Initialise hwirq for legacy irqs
-      [POWERPC] Export virq mapping via debugfs
-
-Olof Johansson (10):
-      [POWERPC] Export new __io{re,un}map_at() symbols
-      [POWERPC] pasemi: Add pasemi_pci_getcfgaddr()
-      [POWERPC] pasemi: Add workaround for erratum 5945
-      [POWERPC] pasemi: Export more SPRs to sysfs when CONFIG_DEBUG_KERNEL=y
-      [POWERPC] pasemi: Print more information at machine check
-      [POWERPC] pasemi: Move pasemi_idle_init() to late_initcall()
-      [POWERPC] Remove unused platform_machine_check()
-      [POWERPC] Move lowlevel runlatch calls under cpu feature control
-      [POWERPC] Remove warning in arch/powerpc/kernel/sysfs.c
-      [POWERPC] Add workaround for MPICs with broken register reads
-
-Scott Wood (5):
-      [POWERPC] bootwrapper: flatdevtree fixes
-      [POWERPC] bootwrapper: Add strtoull()
-      [POWERPC] bootwrapper: Add get_path()
-      [POWERPC] bootwrapper: Only print MAC addresses when the node is actually present
-      [POWERPC] Check _PAGE_RW and _PAGE_PRESENT on kernel addresses
-
-Valentine Barshak (4):
-      [POWERPC] PowerPC 440EPx: Sequoia device tree
-      [POWERPC] PowerPC 440EPx: Sequoia defconfig
-      [POWERPC] PowerPC 440EPx: Sequoia board support
-      [POWERPC] PowerPC 440EPx: Sequoia bootwrapper
+diff -ruN linux-2.6.orig/drivers/usb/host/ehci.h linux-2.6.bld/drivers/usb/host/ehci.h
+--- linux-2.6.orig/drivers/usb/host/ehci.h	2007-09-05 22:03:19.000000000 +0400
++++ linux-2.6.bld/drivers/usb/host/ehci.h	2007-09-13 18:50:45.000000000 +0400
+@@ -725,7 +725,7 @@
+  * definition below can die once the 4xx support is
+  * finally ported over.
+  */
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC) && !defined(CONFIG_PPC_MERGE)
+ #define readl_be(addr)		in_be32((__force unsigned *)addr)
+ #define writel_be(val, addr)	out_be32((__force unsigned *)addr, val)
+ #endif
+diff -ruN linux-2.6.orig/drivers/usb/host/ehci-hcd.c linux-2.6.bld/drivers/usb/host/ehci-hcd.c
+--- linux-2.6.orig/drivers/usb/host/ehci-hcd.c	2007-09-05 22:03:19.000000000 +0400
++++ linux-2.6.bld/drivers/usb/host/ehci-hcd.c	2007-09-13 18:53:37.000000000 +0400
+@@ -944,11 +944,16 @@
+ #define	PS3_SYSTEM_BUS_DRIVER	ps3_ehci_driver
+ #endif
+ 
+-#ifdef CONFIG_440EPX
++#if defined(CONFIG_440EPX) && !defined(CONFIG_PPC_MERGE)
+ #include "ehci-ppc-soc.c"
+ #define	PLATFORM_DRIVER		ehci_ppc_soc_driver
+ #endif
+ 
++#ifdef CONFIG_USB_EHCI_HCD_PPC_OF
++#include "ehci-ppc-of.c"
++#define OF_PLATFORM_DRIVER	ehci_hcd_ppc_of_driver
++#endif
++
+ #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER) && \
+     !defined(PS3_SYSTEM_BUS_DRIVER)
+ #error "missing bus glue for ehci-hcd"
+@@ -963,6 +968,12 @@
+ 		 sizeof(struct ehci_qh), sizeof(struct ehci_qtd),
+ 		 sizeof(struct ehci_itd), sizeof(struct ehci_sitd));
+ 
++#ifdef OF_PLATFORM_DRIVER
++	retval = of_register_platform_driver(&OF_PLATFORM_DRIVER);
++	if (retval < 0)
++		return retval;
++#endif
++
+ #ifdef PLATFORM_DRIVER
+ 	retval = platform_driver_register(&PLATFORM_DRIVER);
+ 	if (retval < 0)
+@@ -998,6 +1009,9 @@
+ 
+ static void __exit ehci_hcd_cleanup(void)
+ {
++#ifdef OF_PLATFORM_DRIVER
++	of_unregister_platform_driver(&OF_PLATFORM_DRIVER);
++#endif
+ #ifdef PLATFORM_DRIVER
+ 	platform_driver_unregister(&PLATFORM_DRIVER);
+ #endif
+diff -ruN linux-2.6.orig/drivers/usb/host/ehci-ppc-of.c linux-2.6.bld/drivers/usb/host/ehci-ppc-of.c
+--- linux-2.6.orig/drivers/usb/host/ehci-ppc-of.c	1970-01-01 03:00:00.000000000 +0300
++++ linux-2.6.bld/drivers/usb/host/ehci-ppc-of.c	2007-09-13 18:45:02.000000000 +0400
+@@ -0,0 +1,253 @@
++/*
++ * EHCI HCD (Host Controller Driver) for USB.
++ *
++ * Bus Glue for PPC On-Chip EHCI driver on the of_platform bus
++ * Tested on AMCC PPC 440EPx
++ *
++ * Valentine Barshak <vbarshak@ru.mvista.com>
++ *
++ * Based on "ehci-ppc-soc.c" by Stefan Roese <sr@denx.de>
++ * and "ohci-ppc-of.c" by Sylvain Munaut <tnt@246tNt.com>
++ *
++ * This file is licenced under the GPL.
++ */
++
++#include <linux/signal.h>
++
++#include <asm/of_platform.h>
++#include <asm/prom.h>
++
++/* called during probe() after chip reset completes */
++static int ehci_ppc_of_setup(struct usb_hcd *hcd)
++{
++	struct ehci_hcd	*ehci = hcd_to_ehci(hcd);
++	int		retval;
++
++	retval = ehci_halt(ehci);
++	if (retval)
++		return retval;
++
++	retval = ehci_init(hcd);
++	if (retval)
++		return retval;
++
++	ehci->sbrn = 0x20;
++	return ehci_reset(ehci);
++}
++
++
++static const struct hc_driver ehci_ppc_of_hc_driver = {
++	.description = hcd_name,
++	.product_desc = "OF EHCI",
++	.hcd_priv_size = sizeof(struct ehci_hcd),
++
++	/*
++	 * generic hardware linkage
++	 */
++	.irq = ehci_irq,
++	.flags = HCD_MEMORY | HCD_USB2,
++
++	/*
++	 * basic lifecycle operations
++	 */
++	.reset = ehci_ppc_of_setup,
++	.start = ehci_run,
++	.stop = ehci_stop,
++	.shutdown = ehci_shutdown,
++
++	/*
++	 * managing i/o requests and associated device resources
++	 */
++	.urb_enqueue = ehci_urb_enqueue,
++	.urb_dequeue = ehci_urb_dequeue,
++	.endpoint_disable = ehci_endpoint_disable,
++
++	/*
++	 * scheduling support
++	 */
++	.get_frame_number = ehci_get_frame,
++
++	/*
++	 * root hub support
++	 */
++	.hub_status_data = ehci_hub_status_data,
++	.hub_control = ehci_hub_control,
++#ifdef	CONFIG_PM
++	.hub_suspend = ehci_hub_suspend,
++	.hub_resume = ehci_hub_resume,
++#endif
++};
++
++
++static int __devinit
++ehci_hcd_ppc_of_probe(struct of_device *op, const struct of_device_id *match)
++{
++	struct device_node *dn = op->node;
++	struct usb_hcd *hcd;
++	struct ehci_hcd	*ehci;
++	struct resource res;
++	int irq;
++
++	int rv;
++	int is_be_desc, is_be_mmio;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	is_be_desc =
++		of_device_is_compatible(dn, "ehci-bigendian-desc") ||
++		of_device_is_compatible(dn, "ehci-be-desc");
++	is_be_mmio =
++		of_device_is_compatible(dn, "ehci-bigendian-mmio") ||
++		of_device_is_compatible(dn, "ehci-be-mmio");
++
++	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
++
++	rv = of_address_to_resource(dn, 0, &res);
++	if (rv)
++		return rv;
++
++	hcd = usb_create_hcd(&ehci_ppc_of_hc_driver, &op->dev, "PPC-OF USB");
++	if (!hcd)
++		return -ENOMEM;
++
++	hcd->rsrc_start = res.start;
++	hcd->rsrc_len = res.end - res.start + 1;
++
++	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len, hcd_name)) {
++		printk(KERN_ERR __FILE__ ": request_mem_region failed\n");
++		rv = -EBUSY;
++		goto err_rmr;
++	}
++
++	irq = irq_of_parse_and_map(dn, 0);
++	if (irq == NO_IRQ) {
++		printk(KERN_ERR __FILE__ ": irq_of_parse_and_map failed\n");
++		rv = -EBUSY;
++		goto err_irq;
++	}
++
++	hcd->regs = ioremap(hcd->rsrc_start, hcd->rsrc_len);
++	if (!hcd->regs) {
++		printk(KERN_ERR __FILE__ ": ioremap failed\n");
++		rv = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	ehci = hcd_to_ehci(hcd);
++	if (is_be_desc)
++		ehci->big_endian_desc = 1;
++	if (is_be_mmio)
++		ehci->big_endian_mmio = 1;
++
++	ehci->caps = hcd->regs;
++	ehci->regs = hcd->regs + HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
++
++	/* cache this readonly data; minimize chip reads */
++	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
++
++	if (of_device_is_compatible(dn, "ibm,ehci-440epx")) {
++		/*
++		 * 440EPx Errata USBH_3
++		 * Fix: Enable Break Memory Transfer (BMT) in INSNREG3
++		 */
++		out_be32((void *)((ulong)(&ehci->regs->command) + 0x8c), (1 << 0));
++		ehci_dbg(ehci, "Break Memory Transfer (BMT) has beed enabled!\n");
++	}
++
++	rv = usb_add_hcd(hcd, irq, 0);
++	if (rv == 0)
++		return 0;
++
++	iounmap(hcd->regs);
++err_ioremap:
++	irq_dispose_mapping(irq);
++err_irq:
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++err_rmr:
++ 	usb_put_hcd(hcd);
++
++	return rv;
++}
++
++
++static int ehci_hcd_ppc_of_remove(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++	dev_set_drvdata(&op->dev, NULL);
++
++	dev_dbg(&op->dev, "stopping PPC-OF USB Controller\n");
++
++	usb_remove_hcd(hcd);
++
++	iounmap(hcd->regs);
++	irq_dispose_mapping(hcd->irq);
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++
++	usb_put_hcd(hcd);
++
++	return 0;
++}
++
++
++static int ehci_hcd_ppc_of_shutdown(struct of_device *op)
++{
++	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
++
++        if (hcd->driver->shutdown)
++                hcd->driver->shutdown(hcd);
++
++	return 0;
++}
++
++
++static struct of_device_id ehci_hcd_ppc_of_match[] = {
++#ifdef CONFIG_USB_EHCI_BIG_ENDIAN_DESC
++	{
++		.name = "usb",
++		.compatible = "ehci-bigendian-desc",
++	},
++	{
++		.name = "usb",
++		.compatible = "ehci-be-desc",
++	},
++#endif
++#ifdef CONFIG_USB_EHCI_BIG_ENDIAN_MMIO
++	{
++		.name = "usb",
++		.compatible = "ehci-bigendian-mmio",
++	},
++	{
++		.name = "usb",
++		.compatible = "ehci-be-mmio",
++	},
++#endif
++	{
++		.name = "usb",
++		.compatible = "ehci-littledian",
++	},
++	{
++		.name = "usb",
++		.compatible = "ehci-le",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, ehci_hcd_ppc_of_match);
++
++
++static struct of_platform_driver ehci_hcd_ppc_of_driver = {
++	.name		= "ppc-of-ehci",
++	.match_table	= ehci_hcd_ppc_of_match,
++	.probe		= ehci_hcd_ppc_of_probe,
++	.remove		= ehci_hcd_ppc_of_remove,
++	.shutdown 	= ehci_hcd_ppc_of_shutdown,
++#ifdef CONFIG_PM
++	/*.suspend	= ehci_hcd_ppc_of_drv_suspend,*/
++	/*.resume	= ehci_hcd_ppc_of_drv_resume,*/
++#endif
++	.driver		= {
++		.name	= "ppc-of-ehci",
++		.owner	= THIS_MODULE,
++	},
++};
++
+diff -ruN linux-2.6.orig/drivers/usb/host/Kconfig linux-2.6.bld/drivers/usb/host/Kconfig
+--- linux-2.6.orig/drivers/usb/host/Kconfig	2007-09-05 22:03:19.000000000 +0400
++++ linux-2.6.bld/drivers/usb/host/Kconfig	2007-09-13 18:49:03.000000000 +0400
+@@ -84,6 +84,14 @@
+ 	---help---
+ 	  Variation of ARC USB block used in some Freescale chips.
+ 
++config USB_EHCI_HCD_PPC_OF
++	bool "EHCI support for PPC USB controller on OF platform bus"
++	depends on USB_EHCI_HCD && PPC_OF
++	default y
++	---help---
++	  Enables support for the USB controller PowerPC present on the
++	  OpenFirmware platform bus.
++
+ config USB_ISP116X_HCD
+ 	tristate "ISP116X HCD support"
+ 	depends on USB
