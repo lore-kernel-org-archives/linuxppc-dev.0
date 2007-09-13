@@ -1,19 +1,10 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 321CFDDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 14:22:15 +1000 (EST)
-In-Reply-To: <12648489.post@talk.nabble.com>
-References: <12648489.post@talk.nabble.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <85940BCC-C5A7-4461-B49C-A5C1879708C3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 2.6.23-rc3 boot hang on MPC8641D
-Date: Wed, 12 Sep 2007 23:25:10 -0500
-To: sivaji <rameshmrm@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Greg Kroah-Hartman <greg@kroah.com>
+Message-Id: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Allow sysfs_remove_group() to be called on non-added groups
+Date: Thu, 13 Sep 2007 14:25:38 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +14,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It would be nice to be able to do:
 
-On Sep 12, 2007, at 11:18 PM, sivaji wrote:
+for_each_thing(thing) {
+ 	error = sysfs_create_group(&thing->kobj, attrs);
+ 	if (error) {
+ 		for_each_thing(thing)
+ 			sysfs_remove_group(&thing->kobj, attrs);
+		return error;
+	}
+}
 
->
-> Hi,
->         I am try to boot the 2.6.23-rc3 kernel to my custom board  
-> based on
-> 8641D Processor. After uncompressing the kernel it was hang. I got the
-> following messages.
->
->    Uncompressing Kernel Image ... OK
->    Booting using flat device tree at 0x600000.
->
->        Then i tried to debug with GDB. In my source path i given  
-> the command
-> ${CROSS_COMPILE}gdb vmlinux, I got GDB Prompt after i tried to set the
-> breakpoint at start_kernel. I got follwing messages
->
-> gdb) b start_kernel
-> Cannot access memory at address 0xc02b44ec
+But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
+were never added.
 
-how are you connecting gdb to the board?
+As discussed here ...
+http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
 
-do you have a JTAG debugger connected to the board?
+.. we should just return in that case instead of BUG'ing.
 
-- k
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ fs/sysfs/group.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index f318b73..a256775 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
+ 
+ 	if (grp->name) {
+ 		sd = sysfs_get_dirent(dir_sd, grp->name);
+-		BUG_ON(!sd);
++		if (!sd)
++			return;
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
+-- 
+1.5.1.3.g7a33b
