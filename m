@@ -2,21 +2,17 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86BDCDDECF
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 08:30:40 +1000 (EST)
-In-Reply-To: <96A13129-D16E-440D-B317-29BED85852D9@kernel.crashing.org>
-References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
-	<a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
-	<39A1A44F-CD73-4CC1-89DE-608A1041AAF7@kernel.crashing.org>
-	<b6ecc5c703232a936eab8942de37e8ec@kernel.crashing.org>
-	<96A13129-D16E-440D-B317-29BED85852D9@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 06800DDEE6
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 08:37:03 +1000 (EST)
+In-Reply-To: <20070913182453.GA26541@ru.mvista.com>
+References: <20070913182453.GA26541@ru.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <bad36d212328a6fcdf273411609e842d@kernel.crashing.org>
+Message-Id: <2c5fb8f063c275286b6b26ca734ed64d@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Fri, 14 Sep 2007 00:30:28 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: usb ehci of_platform bindings for Sequoia 440EPx
+Date: Fri, 14 Sep 2007 00:36:53 +0200
+To: Valentine Barshak <vbarshak@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,51 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> +		PowerPC,8572@0 {
->>>>
->>>> Maybe it would be good to use "PowerPC,e500" instead -- it would
->>>> make it easier to probe for the actual CPU type, that way.  Not
->>>> that Linux uses the name/compatible here at all ;-)
->>>
->>> I thought about this, not sure what the best solution is.
->>
->> Since the CPU cores on all these SoCs are identical (well, there
->> might be a few revisions, or different cache sizes or such -- minor
->> differences that can be probed for separately), it probably is a
->> good idea to name them in the tree instead of having each client
->> have its own table.
->>
->> Or is there anything about the CPU that can be derived from "8572"
->> but not from "e500"?
->
-> Only in so much that we need something that states what the actual 
-> processor is.
+> EHCI OF bindings for PowerPC 440EPx Sequoia.
 
-You mean, something needs to say "8572"?  I think the "soc" node
-would be best for that.
+Those aren't bindings, they are examples.  Bindings are pieces
+of documentation that describe what device-specific properties
+mean what, what standard properties are required with what
+values, etc.
 
-It's all not terribly important, just something to think about.
+Examples are good to have, of course.
 
->>>> And then there's the pci_bridge thing we're discussing on IRC, of
->>>> course -- basically, get rid of the pci_bridge pseudo-node, and
->>>> move the interrupt-map for the south-bridge devices into the
->>>> south-bridge node.
->>>
->>> Leaving the interrupt-map in the PHB because that works and moving 
->>> it down has issues.
->>
->> Okay, fair enough.  Are you looking at resolving those kernel issues?
->
-> No.  I've had enough of this device tree foo for a while :)
-
-Heh okay :-)
-
-> [I'm happy to test any patches related to this, if someone else comes 
-> up with them]
-
-Well I don't know what the problem is ("it doesn't work" doesn't
-say much), and don't have your hardware to test.  Maybe we can do
-it on IRC again ;-)
+One thing you really need to document is what "ehci-be-desc"
+and friends mean.  I can give you one comment already: for
+devices that are usually little-endian, but an implementation
+implements registers as big-endian, precedent is to show that
+in the device tree by including an (empty) "big-endian" property,
+rather than inventing new "compatible" values.
 
 
 Segher
