@@ -1,17 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <cbff3b332b53f61721a8e14472347b98@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B563DDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2007 13:25:29 +1000 (EST)
+In-Reply-To: <a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
 References: <Pine.LNX.4.64.0709111436290.14121@blarg.am.freescale.net>
-	<20070912031132.GC20218@localhost.localdomain>
-	<AC5C6EF4-EE8E-487F-BF45-3653A5C2617D@kernel.crashing.org>
-	<cbff3b332b53f61721a8e14472347b98@kernel.crashing.org>
+	<a58bb9a05680c3befc4d3588992caed0@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <75C5D3E1-F5E0-4DB6-B9E6-9FC6B3013485@kernel.crashing.org>
+Message-Id: <39A1A44F-CD73-4CC1-89DE-608A1041AAF7@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH v3] [POWERPC] 85xx: Add basic Uniprocessor MPC8572 DS port
-Date: Wed, 12 Sep 2007 22:27:42 -0500
+Date: Wed, 12 Sep 2007 22:28:24 -0500
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +25,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 12, 2007, at 9:10 AM, Segher Boessenkool wrote:
+On Sep 12, 2007, at 8:36 AM, Segher Boessenkool wrote:
 
->>>> +					i8259: interrupt-controller@20 {
->>>> +						reg = <1 20 2
->>>> +						       1 a0 2
->>>> +						       1 4d0 2>;
->>>> +						clock-frequency = <0>;
->>>
->>> Hrm.. what is clock-frequency for on an i8259?  I see that other  
->>> 8259
->>> descriptions have this as well, so it's not a problem with this  
->>> patch
->>> specifically.
->>
->> Its a copy-paste thing so I don't know.
+> Looks a lot better, thanks!
 >
-> If your bootwrapper doesn't fill in this value, you should get rid
-> of this property -- better to have no value than to have the wrong
-> value, esp. since it's probably unused anyway.
+> Some minor nits and suggestions...
+>
+>> +/ {
+>> +	model = "fsl,MPC8572DS";
+>> +	compatible = "fsl,MPC8572DS", "fsl,MPC85xxDS";
+>
+> We don't want "xx" compatible entries; especially here it makes
+> no sense at all.  If the board is compatible to some other (older)
+> board, just name that board explicitly.
 
-I'm going to kill this since I can't find it spec'd anywhere.
+removed.
+
+>
+>> +		PowerPC,8572@0 {
+>
+> Maybe it would be good to use "PowerPC,e500" instead -- it would
+> make it easier to probe for the actual CPU type, that way.  Not
+> that Linux uses the name/compatible here at all ;-)
+
+I thought about this, not sure what the best solution is.
+
+>> +	soc8572@ffe00000 {
+>
+> You should put an interrupt-parent in here, so you can get rid of
+> it in all the children.
+
+Are interrupt-parent's inherited by child nodes?
+
+> And then there's the pci_bridge thing we're discussing on IRC, of
+> course -- basically, get rid of the pci_bridge pseudo-node, and
+> move the interrupt-map for the south-bridge devices into the
+> south-bridge node.
+
+Leaving the interrupt-map in the PHB because that works and moving it  
+down has issues.
 
 - k
