@@ -1,11 +1,13 @@
-Return-Path: <jk@ozlabs.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 14 Sep 2007 15:54:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Andrew Morton <akpm@osdl.org>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: rtc-ds1742.c should use resource_size_t for base address
+Message-ID: <20070914055427.GM481@localhost.localdomain>
 MIME-Version: 1.0
-Subject: [PATCH 1/2] cell: don't cast the result of of_get_property()
-Message-Id: <1189748800.165136.731062325870.1.gpush@pokey>
-To: <linuxppc-dev@ozlabs.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Fri, 14 Sep 2007 15:46:40 +1000
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,28 +17,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The cast to u32 * isn't required, of_get_property returns a void *.
+Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
+the base mmio address of the NVRAM/RTC.  This breaks on systems like
+PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
+on the system, including the RTC, is typically above the 4GB point,
+and cannot fit into an unsigned long.
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+This patch fixes the problem by replacing the unsigned long with a
+resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
+instantiate the ds1742 platform device appropriately).
 
----
- arch/powerpc/platforms/cell/spu_manage.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-diff --git a/arch/powerpc/platforms/cell/spu_manage.c b/arch/powerpc/platforms/cell/spu_manage.c
-index 0e14f53..1b01070 100644
---- a/arch/powerpc/platforms/cell/spu_manage.c
-+++ b/arch/powerpc/platforms/cell/spu_manage.c
-@@ -377,10 +377,10 @@ static int qs20_reg_memory[QS20_SPES_PER_BE] = { 1, 1, 0, 0, 0, 0, 0, 0 };
- static struct spu *spu_lookup_reg(int node, u32 reg)
- {
- 	struct spu *spu;
--	u32 *spu_reg;
-+	const u32 *spu_reg;
+Index: working-2.6/drivers/rtc/rtc-ds1742.c
+===================================================================
+--- working-2.6.orig/drivers/rtc/rtc-ds1742.c	2007-09-14 15:43:31.000000000 +1000
++++ working-2.6/drivers/rtc/rtc-ds1742.c	2007-09-14 15:44:09.000000000 +1000
+@@ -55,7 +55,7 @@ struct rtc_plat_data {
+ 	void __iomem *ioaddr_rtc;
+ 	size_t size_nvram;
+ 	size_t size;
+-	unsigned long baseaddr;
++	resource_size_t baseaddr;
+ 	unsigned long last_jiffies;
+ };
  
- 	list_for_each_entry(spu, &cbe_spu_info[node].spus, cbe_list) {
--		spu_reg = (u32*)of_get_property(spu_devnode(spu), "reg", NULL);
-+		spu_reg = of_get_property(spu_devnode(spu), "reg", NULL);
- 		if (*spu_reg == reg)
- 			return spu;
- 	}
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
