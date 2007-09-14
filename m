@@ -1,23 +1,35 @@
-Return-Path: <davem@davemloft.net>
-Received: from picasso.davemloft.net (unknown [74.93.104.98])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C726FDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 04:36:07 +1000 (EST)
-Date: Fri, 14 Sep 2007 11:33:24 -0700 (PDT)
-Message-Id: <20070914.113324.104043149.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Subject: Re: Define termios_1 functions for powerpc, s390, avr32 and frv
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070913035506.b599e84f.akpm@linux-foundation.org>
-References: <5058.1189668156@neuling.org> <20070913095346.GA28194@linux-sh.org>
-	<20070913035506.b599e84f.akpm@linux-foundation.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7B42BDDE08
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 04:37:35 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8EIbCP2026543
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 14:37:12 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8EIbCFJ413680
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 12:37:12 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8EIbB3w018016
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 12:37:11 -0600
+Date: Fri, 14 Sep 2007 13:37:10 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from for-2.6.24
+Message-ID: <20070914133710.541f0dbb@weaponx.rchland.ibm.com>
+In-Reply-To: <16B381A2-66F5-4E7A-BDDC-6E536296C933@kernel.crashing.org>
+References: <Pine.LNX.4.64.0709131554530.29675@blarg.am.freescale.net>
+	<AC7B9A70-5050-4191-A20E-B92686B675D4@kernel.crashing.org>
+	<20070914122510.6dffb747@weaponx.rchland.ibm.com>
+	<16B381A2-66F5-4E7A-BDDC-6E536296C933@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: mikey@neuling.org, hskinnemoen@atmel.com, torvalds@linux-foundation.org,
-	heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, lethal@linux-sh.org, paulus@samba.org,
-	alan@redhat.com, jdi@l4x.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,61 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 13 Sep 2007 03:55:06 -0700
+On Fri, 14 Sep 2007 13:24:17 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> I think we need to go with Tony's patch.  sparc32 and sparc64 are
-> presently broken too, and the patch which converts sparc to use the
-> new interfaces introduces a few build errors.
+> >>> Roy Zang (1):
+> >>>       [POWERPC] Update mpc7448hpc2 device tree to be compatible for
+> >>> tsi109 chip
+> >>
+> >> Dropped for now.  I doubt we want this based on Segher's comments.
+> >> (pretty sure its a ts108 on the hpc2 board).
+> >
+> > It is a tsi108 on hpc2.  Holly has tsi109.  From a Linux perspective,
+> > there is no difference.  And the comment Segher made on the list was
+> > "Looks good, thanks!"  So what other comment are you talking about?
+> 
+> I think that was to the .dts clean ups.  The patch from Roy wasn't  
+> part of that.
+> 
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042499.html
 
-The problem with the asm-generic/termios.h thing is it only works
-if your copying functions are just a copy_{to,from}_user() and you
-can define that __ARCH_* macro.
+Nope, on the original patch:
 
-In retrospect what that header should do is, outside of the
-ARCH_* block, define the foo_1 interfaces plainly to foo.
+http://ozlabs.org/pipermail/linuxppc-dev/2007-July/039289.html
 
-Alternatively, here is a patch that gets sparc compiling and
-working again in the current tree.
+Guess Segher changed his mind :)
 
-This whole termios thing hasn't been handled very well, and it's maybe
-not what we should be doing so late in the -rc cycle.  And yes,
-this is coming from the guy who added the TCP oops'er two weeks ago
-:-P
+> But, I think segher is right in saying we should have tsi109 props if  
+> the HW is actually tsi108.
 
-[SPARC]: Fix build due to termios changes.
+Yeah, that's probably true.
 
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/asm-sparc/termios.h b/include/asm-sparc/termios.h
-index d767f20..25e9cbb 100644
---- a/include/asm-sparc/termios.h
-+++ b/include/asm-sparc/termios.h
-@@ -142,6 +142,11 @@ struct winsize {
- 	0; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC_TERMIOS_H */
-diff --git a/include/asm-sparc64/termios.h b/include/asm-sparc64/termios.h
-index f05d390..6fc71e6 100644
---- a/include/asm-sparc64/termios.h
-+++ b/include/asm-sparc64/termios.h
-@@ -145,6 +145,11 @@ struct winsize {
- 	err; \
- })
- 
-+#define user_termios_to_kernel_termios_1(k, u) \
-+	user_termios_to_kernel_termios(k, u)
-+#define kernel_termios_to_user_termios_1(u, k) \
-+	kernel_termios_to_user_termios(u, k)
-+
- #endif	/* __KERNEL__ */
- 
- #endif /* _SPARC64_TERMIOS_H */
+josh
