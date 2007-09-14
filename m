@@ -1,22 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 537CBDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 02:28:26 +1000 (EST)
-Message-ID: <46EAB69C.104@freescale.com>
-Date: Fri, 14 Sep 2007 11:28:12 -0500
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] DTS cleanup
-References: <Pine.LNX.4.64.0709121154120.19816@blarg.am.freescale.net>	<919c9b76c3e6e45af6e3fb887611a681@kernel.crashing.org>	<8FFFBF2E-8255-40FB-836D-AB5B19222DD9@kernel.crashing.org>	<39e2f86a62574776183feb82935cd79c@kernel.crashing.org>
-	<B89BC392-2366-42E0-BEA0-4A781A9437D3@kernel.crashing.org>
-In-Reply-To: <B89BC392-2366-42E0-BEA0-4A781A9437D3@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <anemo@mba.ocn.ne.jp>
+Received: from smtp.mba.ocn.ne.jp (mba.ocn.ne.jp [122.1.235.107])
+	by ozlabs.org (Postfix) with ESMTP id 08902DDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 02:44:53 +1000 (EST)
+Date: Sat, 15 Sep 2007 01:09:40 +0900 (JST)
+Message-Id: <20070915.010940.25476256.anemo@mba.ocn.ne.jp>
+To: david@gibson.dropbear.id.au
+Subject: Re: rtc-ds1742.c should use resource_size_t for base address
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070914055427.GM481@localhost.localdomain>
+References: <20070914055427.GM481@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-
-> Someone really needs to add some macro/preprocessor magic into DTC so  
-> this is made a lot simpler.
+On Fri, 14 Sep 2007 15:54:27 +1000, David Gibson <david@gibson.dropbear.id.au> wrote:
+> Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
+> the base mmio address of the NVRAM/RTC.  This breaks on systems like
+> PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
+> on the system, including the RTC, is typically above the 4GB point,
+> and cannot fit into an unsigned long.
 > 
-> - k
+> This patch fixes the problem by replacing the unsigned long with a
+> resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
+> instantiate the ds1742 platform device appropriately).
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Kumar,
+Thanks!
 
-I am seriously contemplating this problem.
-The trick is, I need to quit with the whole
-Power Point Programmer job title for a bit...
-
-jdl
+Acked-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
