@@ -1,24 +1,34 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6F7ACDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 09:32:34 +1000 (EST)
-Date: Fri, 14 Sep 2007 16:32:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: travis@sgi.com
-Subject: Re: [PATCH 00/10] x86: Reduce Memory Usage and Inter-Node message
-	traffic (v3)
-Message-Id: <20070914163223.20759e54.akpm@linux-foundation.org>
-In-Reply-To: <20070912015644.927677070@sgi.com>
-References: <20070912015644.927677070@sgi.com>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A45BDDE07
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 09:41:03 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8ENexD0014688
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 19:40:59 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8ENexru412230
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 17:40:59 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8ENexQT009672
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 17:40:59 -0600
+Subject: Re: Device tree aware EMAC driver
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1187854236.5972.6.camel@localhost.localdomain>
+References: <20070823035601.GL7042@localhost.localdomain>
+	<1187854236.5972.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 17:37:47 -0500
+Message-Id: <1189809467.24878.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Christoph Lameter <clameter@sgi.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@oss.sgi.com,
+	Jeff Garzik <jgarzik@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,36 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 11 Sep 2007 18:56:44 -0700
-travis@sgi.com wrote:
-
-> Changes for version v3:
+On Thu, 2007-08-23 at 09:30 +0200, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-08-23 at 13:56 +1000, David Gibson wrote:
+> > 
+> > 
+> > Jeff, I've discussed this with BenH, and although there are some
+> > problems with the driver still, we think it's good enough to merge in
+> > 2.6.24, the warts can be fixed up later.  Please apply...
 > 
-> cpu_sibling_map has been converted to a per_cpu data array to fix
-> build errors on ia64, ppc64 and sparc64 to accomodate references in
-> block/blktrace.c and kernel/sched.c when CONFIG_SCHED_SMT is defined.
+> Or to be more precise:
 > 
-> Warning: ppc64 and sparc64 have not yet been built nor tested.
+> This driver will work well for 4xx platforms and will allow us to move a
+> big step toward getting rid of arch/ppc. The issues with DMA mapping
+> really only concern the case where this is used within the cell "Axon"
+> southbridge, which doesn't happen on any released product at this stage.
 
-These patches all seem to be unaltered from what I had.
+Since we have 4 boards that could use this now, and at least one more on
+the way, I've put this in the 'emac' branch of my git tree.  That branch
+is based off of the current 'upstream' branch of the netdev-2.6 tree.
 
-The first patch (x86: remove x86_cpu_to_log_apicid array) is in Andi's
-tree as x86_64-mm-remove-x86_cpu_to_log_apicid.patch so I don't apply that.
+This is just intended to make it easier for those that want to use
+ibm_newemac on their boards while we work the driver into the netdev
+tree.
 
-The sparc64/ppc64/ia64 convert-cpu_sibling_map-to-a-per_cpu-data-array
-patches need to be folded into the base patch so that we don't break the build
-at any stage.
-
-So what I ended up with was
-
-x86-fix-cpu_to_node-references.patch
-x86-convert-cpu_core_map-to-be-a-per-cpu-variable.patch
-convert-cpu_sibling_map-to-be-a-per-cpu-variable.patch
-convert-cpu_sibling_map-to-a-per_cpu-data-array-ia64.patch
-convert-cpu_sibling_map-to-a-per_cpu-data-array-ppc64.patch
-convert-cpu_sibling_map-to-a-per_cpu-data-array-sparc64.patch
-x86-convert-x86_cpu_to_apicid-to-be-a-per-cpu-variable.patch
-x86-convert-cpu_llc_id-to-be-a-per-cpu-variable.patch
-
-where the four convert-cpu_sibling_map-to-* will be clumped into a
-single diff.
+josh
