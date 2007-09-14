@@ -1,17 +1,12 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 14 Sep 2007 14:09:34 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 2/9] 8xx: Infrastructure code cleanup.
-Message-ID: <20070914040934.GK481@localhost.localdomain>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201718.GB24260@ld0162-tx32.am.freescale.net>
-	<20070913071125.GC24281@localhost.localdomain>
-	<20070913121640.5764f656@localhost.localdomain>
+Return-Path: <jk@ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070913121640.5764f656@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/2] fsl/embedded6xx: don't cast the result of of_get_property
+Message-Id: <1189748800.165997.810365539433.2.gpush@pokey>
+In-Reply-To: <1189748800.165136.731062325870.1.gpush@pokey>
+To: <linuxppc-dev@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Fri, 14 Sep 2007 15:46:40 +1000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +16,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 13, 2007 at 12:16:40PM +0400, Vitaly Bordug wrote:
-[snip]
-> > This looks bogus.  You're replacing the old crap immr_map() functions,
-> > which ioremap()ed the registers every time, with a much simpler
-> > version which uses an established-once mapping of the register
-> > region.  AFAICT, anywah.
-> > 
-> > So far, so good - but your immr_unmap() still does an iounmap() which
-> > is surely wrong - it should now be a no-op, leaving the mpc8xx_immr
-> > mapping intact.  You probably get away with it by accident, because I
-> > imagine attempting to unmap an unaligned chunk of the region will just
-> > fail.
-> >
-> 
-> yes, it should do nop instead of iounmap. 
-> > In fact, with this patch in place, I'd like to see another patch which
-> > removes all calls to immr_map() and immr_unmap(), simply accessing the
-> > common mapping directly.
-> > 
-> Sorry, but originally, that stuff was created to get rid of BSP
-> ifdefs in drivers. For PQ family, it is a common practice to have
-> single driver handling all 3 CPU families, which use the same logic,
-> but immr structure differs a little bit.
-> 
-> At this point it's clear case-by-case ioremapping does not have firm
-> benefit, but getting back to the way it was is useless either.  In
-> ideal world, we'd have all those stuff put into dts and have
-> specific drivers be a shim layer between core hw and IO drivers.
+Use a temporary variable of the correct type instead.
 
-Err.. I don't understand what you're getting at.  As the code stands
-after Scott's cleanup, the map() and unmap() calls can certainly be
-trivially removed, regardless of the history for them.
+Also, this allows us to check the return value in ls_uarts_init, to
+avoid dereferencing a null pointer if required properties aren't
+present.
 
-And, yes, the drivers should certainly uses addresses from the device
-tree, rather than that revolting structure covering all the inbuilt
-device retgisters.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+---
+ arch/powerpc/platforms/embedded6xx/ls_uart.c |   14 +++++++++-----
+ arch/powerpc/sysdev/fsl_soc.c                |   18 ++++++++++--------
+ 2 files changed, 19 insertions(+), 13 deletions(-)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+index d0bee9f..9d4b40c 100644
+--- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
++++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+@@ -103,20 +103,24 @@ static void __init ls_uart_init(void)
+ static int __init ls_uarts_init(void)
+ {
+ 	struct device_node *avr;
+-	phys_addr_t phys_addr;
++	const u32 *avr_clock_prop, *phys_addr;
+ 	int len;
+ 
+ 	avr = of_find_node_by_path("/soc10x/serial@80004500");
+ 	if (!avr)
+ 		return -EINVAL;
+ 
+-	avr_clock = *(u32*)of_get_property(avr, "clock-frequency", &len);
+-	phys_addr = ((u32*)of_get_property(avr, "reg", &len))[0];
++	phys_addr = of_get_property(avr, "reg", &len);
++	avr_clock_prop = of_get_property(avr, "clock-frequency", &len);
+ 
+-	if (!avr_clock || !phys_addr)
++	if (!avr_clock_prop || !phys_addr)
+ 		return -EINVAL;
+ 
+-	avr_addr = ioremap(phys_addr, 32);
++	avr_clock = *avr_clock_prop;
++	if (!avr_clock || !phys_addr[0])
++		return -EINVAL;
++
++	avr_addr = ioremap(phys_addr[0], 32);
+ 	if (!avr_addr)
+ 		return -EFAULT;
+ 
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 1cf29c9..564d5e5 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -673,6 +673,7 @@ static int __init fs_enet_of_init(void)
+ 		struct fs_platform_info fs_enet_data;
+ 		const unsigned int *id, *phy_addr, *phy_irq;
+ 		const void *mac_addr;
++		const u32 *clk;
+ 		const phandle *ph;
+ 		const char *model;
+ 
+@@ -740,10 +741,10 @@ static int __init fs_enet_of_init(void)
+                         goto unreg;
+                 }
+ 
+-		fs_enet_data.clk_rx = *((u32 *)of_get_property(np,
+-						"rx-clock", NULL));
+-		fs_enet_data.clk_tx = *((u32 *)of_get_property(np,
+-						"tx-clock", NULL));
++		clk = of_get_property(np, "rx-clock", NULL);
++		fs_enet_data.clk_rx = *clk;
++		clk = of_get_property(np, "tx-clock", NULL);
++		fs_enet_data.clk_tx = *clk;
+ 
+ 		if (strstr(model, "FCC")) {
+ 			int fcc_index = *id - 1;
+@@ -844,6 +845,7 @@ static int __init cpm_uart_of_init(void)
+ 		struct resource r[3];
+ 		struct fs_uart_platform_info cpm_uart_data;
+ 		const int *id;
++		const u32 *clk;
+ 		const char *model;
+ 
+ 		memset(r, 0, sizeof(r));
+@@ -882,10 +884,10 @@ static int __init cpm_uart_of_init(void)
+ 		cpm_uart_data.tx_buf_size = 32;
+ 		cpm_uart_data.rx_num_fifo = 4;
+ 		cpm_uart_data.rx_buf_size = 32;
+-		cpm_uart_data.clk_rx = *((u32 *)of_get_property(np,
+-						"rx-clock", NULL));
+-		cpm_uart_data.clk_tx = *((u32 *)of_get_property(np,
+-						"tx-clock", NULL));
++		clk = of_get_property(np, "rx-clock", NULL);
++		cpm_uart_data.clk_rx = *clk;
++		clk = of_get_property(np, "tx-clock", NULL);
++		cpm_uart_data.clk_tx = *clk;
+ 
+ 		ret =
+ 		    platform_device_add_data(cpm_uart_dev, &cpm_uart_data,
