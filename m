@@ -1,26 +1,21 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AC7FDDDE17
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 01:17:18 +1000 (EST)
-Message-ID: <46EAA65E.5080006@genesi-usa.com>
-Date: Fri, 14 Sep 2007 16:18:54 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [NEWBIE] Interrupt-problem mpc5200
-References: <20070906133050.GE11807@sfrouter>
-	<20070911124154.GI11807@sfrouter>	
-	<fa686aa40709110719j26a5bf30uc075253c6d1a6d97@mail.gmail.com>	
-	<20070911182811.GA3582@sfrouter>	
-	<fa686aa40709111205n5d9f9654m6f2b96d468dfd017@mail.gmail.com>	
-	<46EA8CD7.2050304@genesi-usa.com>
-	<fa686aa40709140753sb3e0e9cv28fa5215f4db3a@mail.gmail.com>
-In-Reply-To: <fa686aa40709140753sb3e0e9cv28fa5215f4db3a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, "S. Fricke" <silvio.fricke@gmail.com>
+	by ozlabs.org (Postfix) with ESMTP id 6BC05DDE11
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 01:32:14 +1000 (EST)
+In-Reply-To: <46EA9B44.6030606@ru.mvista.com>
+References: <20070913182453.GA26541@ru.mvista.com>
+	<2c5fb8f063c275286b6b26ca734ed64d@kernel.crashing.org>
+	<46EA9B44.6030606@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A0F54060-0F39-4AAD-94DA-CA16AC0D4E1C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: usb ehci of_platform bindings for Sequoia 440EPx
+Date: Fri, 14 Sep 2007 10:35:05 -0500
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,46 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 9/14/07, Matt Sealey <matt@genesi-usa.com> wrote:
->> sparse, irq_of_find_and_map isn't much help). Maybe I am just not
->> looking in the right place but not being an MPC52xx PIC Expert I
->> wouldn't even know where to start...
-> 
-> The l2 irq numbers map directly to the interrupt numbers listed in the
-> 5200b user guide.  For example, on p7-11, the masks are listed for
-> main interrupts 0 through 16.  and on p7-17,18, the peripherial
-> interrupts are listed as numbered from 0 to 23 (but notice that it
-> does *not* line up with bit positions).
 
-Wow I even had to search.. it's on p7-13 here..
+On Sep 14, 2007, at 9:31 AM, Valentine Barshak wrote:
 
-Right but it does start from a certain bit and progress linearly
-across the rest of the register.
+> Segher Boessenkool wrote:
+>>> EHCI OF bindings for PowerPC 440EPx Sequoia.
+>>
+>> Those aren't bindings, they are examples.  Bindings are pieces
+>> of documentation that describe what device-specific properties
+>> mean what, what standard properties are required with what
+>> values, etc.
+>>
+>> Examples are good to have, of course.
+>>
+>> One thing you really need to document is what "ehci-be-desc"
+>> and friends mean.  I can give you one comment already: for
+>> devices that are usually little-endian, but an implementation
+>> implements registers as big-endian, precedent is to show that
+>> in the device tree by including an (empty) "big-endian" property,
+>> rather than inventing new "compatible" values.
+>
+> I was looking at the ohci-ppc-of driver that has "ohci-bigendian"
+> compatible string and enables both be-mmio and be-desc for the  
+> device in
+> this case. I just wanted to separate mmio and desc stuff for ehci,  
+> since
+> some devices need be-mmio only.
+> I'll use "big-endian" property instead of "ehci-be-mmio" compatible
+> value. That's a good point, thanks.
+> Do I have to add "sequoia usb ehci" description to
+> Documentation/powerpc/booting-without-of.txt?
+> Do I also have to describe ehci-ppc-of stuff in general?
+> BTW, I see nothing about ohci-ppc-of there.
 
-However, what is interrupt 0 and what is interrupt 16? Do you start
-from the left or the right (i.e. Motorola big endian or Rest Of
-World big endian)??
+We may need to comprehend the Freescale USB controller since its  
+technically an EHCI controller.  There should be some stuff in  
+booting-without-of.txt related to it.
 
-> However, it is interesting to note that other than in the register
-> definitions, I don't think there is anywhere in the 5200b user manual
-> that simple lists the interrupt numbers for each interrupt type.
-
-I think the interesting note is that picking out "what does IRQ 4
-in the main interrupt group handle" or picking out a device and
-saying "this is IRQ 10" is still, even with your explanation, a
-matter of luck and handedness.
-
-Personally I would count from the right (Motorola bit 31) and
-work my way from LSB to MSB, but Motorola likes it's backwards
-representation and so do some other people. So, does bit 31
-equal interrupt 0 or interrupt 16? :)
-
-Then there are the status encoded registers, which report which
-IRQ is firing. They are just values. But which value corresponds
-to which interrupt (left or right reading) here or do they even
-have completely different ones?
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+- k
