@@ -1,9 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 18/25] spufs: Get rid of spufs_coredump_num_notes,
-	it's not needed if we NULL terminate
-Message-Id: <1189751574.108845.438873583935.18.gpush@pokey>
+Subject: [PATCH 08/25] Fix restore_decr_wrapped() to match CBE Handbook
+Message-Id: <1189751574.103493.873307761185.8.gpush@pokey>
 In-Reply-To: <1189751574.98527.127994196313.1.gpush@pokey>
 To: <linuxppc-dev@ozlabs.org>
 From: Jeremy Kerr <jk@ozlabs.org>
@@ -17,52 +16,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
+Based on an original patch from Masato Noguchi
+<Masato.Noguchi@jp.sony.com>.
 
-The spufs_coredump_read array is NULL terminated, and we also store the size.
-We only need one or the other, and the other arrays in file.c are NULL
-terminated, so do that.
+We're currently not restoring the SPE decrementer as specified by the
+CBE handbook. This change fixes our implementation to match, and makes
+the function read more like the docs.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
 ---
- arch/powerpc/platforms/cell/spufs/coredump.c |    4 ++--
- arch/powerpc/platforms/cell/spufs/file.c     |    4 +---
- 2 files changed, 3 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/cell/spufs/switch.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index 52d6219..fc988fd 100644
---- a/arch/powerpc/platforms/cell/spufs/coredump.c
-+++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -72,7 +72,7 @@ static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
- 	char *name;
- 	char fullname[80];
+diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
+index 2506619..de7e5ee 100644
+--- a/arch/powerpc/platforms/cell/spufs/switch.c
++++ b/arch/powerpc/platforms/cell/spufs/switch.c
+@@ -1559,15 +1559,15 @@ static inline void restore_decr_wrapped(struct spu_state *csa, struct spu *spu)
+ 	 *     "wrapped" flag is set, OR in a '1' to
+ 	 *     CSA.SPU_Event_Status[Tm].
+ 	 */
+-	if (csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED) {
+-		csa->spu_chnldata_RW[0] |= 0x20;
+-	}
+-	if ((csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED) &&
+-	    (csa->spu_chnlcnt_RW[0] == 0 &&
+-	     ((csa->spu_chnldata_RW[2] & 0x20) == 0x0) &&
+-	     ((csa->spu_chnldata_RW[0] & 0x20) != 0x1))) {
++	if (!(csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED))
++		return;
++
++	if ((csa->spu_chnlcnt_RW[0] == 0) &&
++	    (csa->spu_chnldata_RW[1] & 0x20) &&
++	    !(csa->spu_chnldata_RW[0] & 0x20))
+ 		csa->spu_chnlcnt_RW[0] = 1;
+-	}
++
++	csa->spu_chnldata_RW[0] |= 0x20;
+ }
  
--	for (i = 0; spufs_coredump_read[i].name; i++) {
-+	for (i = 0; spufs_coredump_read[i].name != NULL; i++) {
- 		name = spufs_coredump_read[i].name;
- 		sz = spufs_coredump_read[i].size;
- 
-@@ -194,7 +194,7 @@ static void spufs_arch_write_notes(struct file *file)
- 	while ((ctx = coredump_next_context(&fd)) != NULL) {
- 		spu_acquire_saved(ctx);
- 
--		for (j = 0; j < spufs_coredump_num_notes; j++)
-+		for (j = 0; spufs_coredump_read[j].name != NULL; j++)
- 			spufs_arch_write_note(ctx, j, file, fd);
- 
- 		spu_release_saved(ctx);
-diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
-index 85edbec..6095fb1 100644
---- a/arch/powerpc/platforms/cell/spufs/file.c
-+++ b/arch/powerpc/platforms/cell/spufs/file.c
-@@ -2250,7 +2250,5 @@ struct spufs_coredump_reader spufs_coredump_read[] = {
- 	{ "proxydma_info", __spufs_proxydma_info_read,
- 			   NULL, sizeof(struct spu_proxydma_info)},
- 	{ "object-id", NULL, __spufs_object_id_get, 19 },
--	{ },
-+	{ NULL },
- };
--int spufs_coredump_num_notes = ARRAY_SIZE(spufs_coredump_read) - 1;
--
+ static inline void restore_ch_part1(struct spu_state *csa, struct spu *spu)
