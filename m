@@ -2,18 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1DCECDDD0A
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 23:59:06 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.64.0709131554530.29675@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0709131554530.29675@blarg.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id CCF02DDE18
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 00:04:43 +1000 (EST)
+In-Reply-To: <20070913152333.GA2381@localhost.localdomain>
+References: <20070912112456.GA15556@localhost.localdomain>
+	<20070913152333.GA2381@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AC7B9A70-5050-4191-A20E-B92686B675D4@kernel.crashing.org>
+Message-Id: <C844988E-F6B9-44B9-AB78-C44E19A2E605@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from for-2.6.24
-Date: Fri, 14 Sep 2007 09:02:04 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ucc_geth: fix compilation
+Date: Fri, 14 Sep 2007 09:07:34 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +26,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 13, 2007, at 3:55 PM, Kumar Gala wrote:
+On Sep 13, 2007, at 10:23 AM, Anton Vorontsov wrote:
 
-> Please pull from 'for-2.6.24' branch of
+> Currently qe_bd_t is used in the macro call -- dma_unmap_single,
+> which is a no-op on PPC32, thus error is hidden today. Starting
+> with 2.6.24, macro will be replaced by the empty static function,
+> and erroneous use of qe_bd_t will trigger compilation error.
 >
-> 	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git  
-> for-2.6.24
->
-> to receive the following updates:
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
 
-I've updated the branch with the following changes:
-
-> Anton Vorontsov (3):
->       [POWERPC] MPC832x_RDB: Update dts to use SPI1 in QE, register  
-> mmc_spi stub
-
-Updated commit message.  (let me know if you want me to drop this for  
-now and wait til mmc_spi gets merged)
-
-> Roy Zang (1):
->       [POWERPC] Update mpc7448hpc2 device tree to be compatible for  
-> tsi109 chip
-
-Dropped for now.  I doubt we want this based on Segher's comments.   
-(pretty sure its a ts108 on the hpc2 board).
+Jeff, I'm going to pick this up via the powerpc.git tree since its  
+currently only broken in our for-2.6.24 branch (because of other  
+changes in there).  Any issues?
 
 - k
+
+>
+> Reposting this to include netdev in Cc.
+>
+>  drivers/net/ucc_geth.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 12e01b2..9a38dfe 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -2148,7 +2148,7 @@ static void ucc_geth_memclean(struct  
+> ucc_geth_private *ugeth)
+>  		for (j = 0; j < ugeth->ug_info->bdRingLenTx[i]; j++) {
+>  			if (ugeth->tx_skbuff[i][j]) {
+>  				dma_unmap_single(NULL,
+> -						 ((qe_bd_t *)bd)->buf,
+> +						 ((struct qe_bd *)bd)->buf,
+>  						 (in_be32((u32 *)bd) &
+>  						  BD_LENGTH_MASK),
+>  						 DMA_TO_DEVICE);
+> -- 
+> 1.5.0.6
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
