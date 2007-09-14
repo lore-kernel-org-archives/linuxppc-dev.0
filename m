@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 08/25] Fix restore_decr_wrapped() to match CBE Handbook
-Message-Id: <1189751574.103493.873307761185.8.gpush@pokey>
+Subject: [PATCH 20/25] spufs: Add contents of npc file to SPU coredumps
+Message-Id: <1189751574.110113.426063259127.20.gpush@pokey>
 In-Reply-To: <1189751574.98527.127994196313.1.gpush@pokey>
 To: <linuxppc-dev@ozlabs.org>
 From: Jeremy Kerr <jk@ozlabs.org>
@@ -16,44 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Based on an original patch from Masato Noguchi
-<Masato.Noguchi@jp.sony.com>.
+From: Michael Ellerman <michael@ellerman.id.au>
 
-We're currently not restoring the SPE decrementer as specified by the
-CBE handbook. This change fixes our implementation to match, and makes
-the function read more like the docs.
-
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- arch/powerpc/platforms/cell/spufs/switch.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/cell/spufs/file.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
-index 2506619..de7e5ee 100644
---- a/arch/powerpc/platforms/cell/spufs/switch.c
-+++ b/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -1559,15 +1559,15 @@ static inline void restore_decr_wrapped(struct spu_state *csa, struct spu *spu)
- 	 *     "wrapped" flag is set, OR in a '1' to
- 	 *     CSA.SPU_Event_Status[Tm].
- 	 */
--	if (csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED) {
--		csa->spu_chnldata_RW[0] |= 0x20;
--	}
--	if ((csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED) &&
--	    (csa->spu_chnlcnt_RW[0] == 0 &&
--	     ((csa->spu_chnldata_RW[2] & 0x20) == 0x0) &&
--	     ((csa->spu_chnldata_RW[0] & 0x20) != 0x1))) {
-+	if (!(csa->lscsa->decr_status.slot[0] & SPU_DECR_STATUS_WRAPPED))
-+		return;
-+
-+	if ((csa->spu_chnlcnt_RW[0] == 0) &&
-+	    (csa->spu_chnldata_RW[1] & 0x20) &&
-+	    !(csa->spu_chnldata_RW[0] & 0x20))
- 		csa->spu_chnlcnt_RW[0] = 1;
--	}
-+
-+	csa->spu_chnldata_RW[0] |= 0x20;
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 4cd34e5..985c86b 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1606,12 +1606,17 @@ static void spufs_npc_set(void *data, u64 val)
+ 	spu_release(ctx);
  }
  
- static inline void restore_ch_part1(struct spu_state *csa, struct spu *spu)
++static u64 __spufs_npc_get(struct spu_context *ctx)
++{
++	return ctx->ops->npc_read(ctx);
++}
++
+ static u64 spufs_npc_get(void *data)
+ {
+ 	struct spu_context *ctx = data;
+ 	u64 ret;
+ 	spu_acquire(ctx);
+-	ret = ctx->ops->npc_read(ctx);
++	ret = __spufs_npc_get(ctx);
+ 	spu_release(ctx);
+ 	return ret;
+ }
+@@ -2242,5 +2247,6 @@ struct spufs_coredump_reader spufs_coredump_read[] = {
+ 	{ "proxydma_info", __spufs_proxydma_info_read,
+ 			   NULL, sizeof(struct spu_proxydma_info)},
+ 	{ "object-id", NULL, __spufs_object_id_get, 19 },
++	{ "npc", NULL, __spufs_npc_get, 19 },
+ 	{ NULL },
+ };
