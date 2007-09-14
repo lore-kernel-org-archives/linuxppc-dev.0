@@ -1,20 +1,17 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 205F4DDF85
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 17:56:24 +1000 (EST)
-Date: Fri, 14 Sep 2007 09:43:14 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH 19/25] spufs: Internal __spufs_get_foo() routines should
-	take a spu_context *
-Message-ID: <20070914074313.GB18011@lst.de>
-References: <1189751574.98527.127994196313.1.gpush@pokey>
-	<1189751574.109563.102927754470.19.gpush@pokey>
+Return-Path: <vitb@kernel.crashing.org>
+Date: Fri, 14 Sep 2007 12:21:14 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 2/9] 8xx: Infrastructure code cleanup.
+Message-ID: <20070914122114.30327773@localhost.localdomain>
+In-Reply-To: <20070914040934.GK481@localhost.localdomain>
+References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
+	<20070828201718.GB24260@ld0162-tx32.am.freescale.net>
+	<20070913071125.GC24281@localhost.localdomain>
+	<20070913121640.5764f656@localhost.localdomain>
+	<20070914040934.GK481@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1189751574.109563.102927754470.19.gpush@pokey>
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,13 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2007 at 04:32:54PM +1000, Jeremy Kerr wrote:
-> From: Michael Ellerman <michael@ellerman.id.au>
-> 
-> The SPUFS attribute get routines take a void * because the generic attribute
-> code doesn't know what sort of data it's passing around.
-> 
-> However our internal __spufs_get_foo() routines can take a spu_context *
-> directly, which saves plonking it in and out of a void * again.
+Hello David,
 
-Looks good.
+On Fri, 14 Sep 2007 14:09:34 +1000
+David Gibson wrote:
+
+> On Thu, Sep 13, 2007 at 12:16:40PM +0400, Vitaly Bordug wrote:
+> [snip]
+> > > This looks bogus.  You're replacing the old crap immr_map() functions,
+> > > which ioremap()ed the registers every time, with a much simpler
+> > > version which uses an established-once mapping of the register
+> > > region.  AFAICT, anywah.
+> > > 
+> > > So far, so good - but your immr_unmap() still does an iounmap() which
+> > > is surely wrong - it should now be a no-op, leaving the mpc8xx_immr
+> > > mapping intact.  You probably get away with it by accident, because I
+> > > imagine attempting to unmap an unaligned chunk of the region will just
+> > > fail.
+> > >
+> > 
+> > yes, it should do nop instead of iounmap. 
+> > > In fact, with this patch in place, I'd like to see another patch which
+> > > removes all calls to immr_map() and immr_unmap(), simply accessing the
+> > > common mapping directly.
+> > > 
+> > Sorry, but originally, that stuff was created to get rid of BSP
+> > ifdefs in drivers. For PQ family, it is a common practice to have
+> > single driver handling all 3 CPU families, which use the same logic,
+> > but immr structure differs a little bit.
+> > 
+> > At this point it's clear case-by-case ioremapping does not have firm
+> > benefit, but getting back to the way it was is useless either.  In
+> > ideal world, we'd have all those stuff put into dts and have
+> > specific drivers be a shim layer between core hw and IO drivers.
+> 
+> Err.. I don't understand what you're getting at.  As the code stands
+> after Scott's cleanup, the map() and unmap() calls can certainly be
+> trivially removed, regardless of the history for them.
+> 
+I don't argue if they can be removed, but if we aught to do that. Direct immr 
+dereference adds plenty of mess into driver code. I would like to keep the
+situation when immr accesses factored out as a starting point, rather then turn them back to
+&immap-> or cpm2_immr-> refs.
+> And, yes, the drivers should certainly uses addresses from the device
+> tree, rather than that revolting structure covering all the inbuilt
+> device retgisters.
+hehe, then you prolly know, that this structure does not fin well into device/driver model, either platform_ or
+of_device. And I am going to sort it out at some point...
+
+
+-- 
+Sincerely, Vitaly
