@@ -1,28 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2FCEEDDE00
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 00:26:00 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IWC7J-00041v-3L
-	for linuxppc-dev@ozlabs.org; Fri, 14 Sep 2007 07:25:57 -0700
-Message-ID: <12676464.post@talk.nabble.com>
-Date: Fri, 14 Sep 2007 07:25:57 -0700 (PDT)
-From: sivaji <rameshmrm@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: RE: 2.6.23-rc3 boot hang on MPC8641D
-In-Reply-To: <46B96294322F7D458F9648B60E15112C85D82D@zch01exm26.fsl.freescale.net>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id CFCB0DDE32
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 00:32:35 +1000 (EST)
+Message-ID: <46EA9B44.6030606@ru.mvista.com>
+Date: Fri, 14 Sep 2007 18:31:32 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <12648489.post@talk.nabble.com>
-	<46B96294322F7D458F9648B60E15112C85D7FB@zch01exm26.fsl.freescale.net>
-	<12648696.post@talk.nabble.com>
-	<5850B6F4-61FD-4866-B50E-8F7FEA3FA9AD@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C85D808@zch01exm26.fsl.freescale.net>
-	<12648963.post@talk.nabble.com>
-	<46B96294322F7D458F9648B60E15112C85D82D@zch01exm26.fsl.freescale.net>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: usb ehci of_platform bindings for Sequoia 440EPx
+References: <20070913182453.GA26541@ru.mvista.com>
+	<2c5fb8f063c275286b6b26ca734ed64d@kernel.crashing.org>
+In-Reply-To: <2c5fb8f063c275286b6b26ca734ed64d@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,148 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Hi Zhang,
-                Asper ur idea, i downloaded latest BSP(Jun,2007) and the 
-kernel (2.6.23-rc4) from the Paul's Git tree. 
-Uboot(1.2.0) was taken from the latest BSP. I portted the new uboot to my
-custom board, i got uboot prompt.
-
-When i compiling the kernel i got following warning messages
-WARNING: vmlinux.o(.text+0x169f6): Section mismatch: reference to
-.init.data:boot_command_line (between 'note_bootable_part' and
-'pmac_restart')
-WARNING: vmlinux.o(.text+0x16a02): Section mismatch: reference to
-.init.data:boot_command_line (between 'note_bootable_part' and
-'pmac_restart')
-WARNING: vmlinux.o(.text+0x16a12): Section mismatch: reference to
-.init.data:boot_command_line (between 'note_bootable_part' and
-'pmac_restart') 
-
-               When i try to boot the kernel, I got following messages
-
-  Booting image at 00200000 ...
-   Image Name:   Linux-2.6.23-rc4-g5326152f-dirty
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1842307 Bytes =  1.8 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-   Booting using flat device tree at 0x600000
-
-              I can't know whether the problem is related to uboot or
-kernel. But i tested the board with the 2.6.21 kernel, it was up.In that
-kernel we face some issues on PCI Express so we plan to upgrade the kernel.
-But the latest kernel was not up.
-Please advice me.
-    
-By
-Sivaji 
-
-         
-
-
-
-Zhang Wei-r63237 wrote:
+Segher Boessenkool wrote:
+>> EHCI OF bindings for PowerPC 440EPx Sequoia.
 > 
-> Hi, Sivaji,
+> Those aren't bindings, they are examples.  Bindings are pieces
+> of documentation that describe what device-specific properties
+> mean what, what standard properties are required with what
+> values, etc.
 > 
-> I've tested the newest git tree of Paul's, which is aleady updated to
-> 2.6.23-rc4. The kernel is no problem with the u-boot of our released BSP
-> (Jun, 2007) on MPC8641HPCN board.
+> Examples are good to have, of course.
 > 
-> Maybe you could update to the newest kernel git tree and try again.
-> 
-> Cheers!
-> -zw
-> 
->> -----Original Message-----
->> From: linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.org 
->> [mailto:linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.or
->> g] On Behalf Of sivaji
->> Sent: Thursday, September 13, 2007 1:32 PM
->> To: linuxppc-dev@ozlabs.org
->> Subject: RE: 2.6.23-rc3 boot hang on MPC8641D
->> 
->> 
->> Hi,
->>           Sorry i specify the wrong version, we r using 
->> 1.2.0. This uboot
->> was taken from the BSP which was released by Freescale. 
->> Previously we tested
->> linux 2.6.21 kernel, we got linux prompt. For this we are 
->> using the same
->> uboot(1.2.0).
->> In that version we face some issues in the pci express, at 
->> that time kumar
->> suggest to upgrade the kernel verison 2.6.23-rc3.
->> Zhang did u suspect the problem is related to uboot?.
->> by
->> sivaji
->> 
->> 
->> Zhang Wei-r63237 wrote:
->> > 
->> > Yes, It's too old. Maybe not fully supports FDT. You can 
->> try the version
->> > of Kumar said or in the BSP of Freescale released.
->> > 
->> > - zw
->> > 
->> >> -----Original Message-----
->> >> From: linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.org 
->> >> [mailto:linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.or
->> >> g] On Behalf Of Kumar Gala
->> >> Sent: Thursday, September 13, 2007 1:11 PM
->> >> To: sivaji
->> >> Cc: linuxppc-dev@ozlabs.org
->> >> Subject: Re: 2.6.23-rc3 boot hang on MPC8641D
->> >> 
->> >> 
->> >> On Sep 12, 2007, at 11:52 PM, sivaji wrote:
->> >> 
->> >> >
->> >> >
->> >> > Hi,
->> >> >           I tired to move the dtb to 0x2000000, but the 
->> result was  
->> >> > same.
->> >> > uboot version is 1.1.6
->> >> 
->> >> seems like a pretty old u-boot.  Willing to try a 1.3.0-rc1?
->> >> 
->> >> - k
->> >> _______________________________________________
->> >> Linuxppc-dev mailing list
->> >> Linuxppc-dev@ozlabs.org
->> >> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->> >> 
->> > _______________________________________________
->> > Linuxppc-dev mailing list
->> > Linuxppc-dev@ozlabs.org
->> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
->> > 
->> > 
->> 
->> -- 
->> View this message in context: 
->> http://www.nabble.com/2.6.23-rc3-boot-hang-on-MPC8641D-tf44335
->> 08.html#a12648963
->> Sent from the linuxppc-dev mailing list archive at Nabble.com.
->> 
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> One thing you really need to document is what "ehci-be-desc"
+> and friends mean.  I can give you one comment already: for
+> devices that are usually little-endian, but an implementation
+> implements registers as big-endian, precedent is to show that
+> in the device tree by including an (empty) "big-endian" property,
+> rather than inventing new "compatible" values.
+
+I was looking at the ohci-ppc-of driver that has "ohci-bigendian" 
+compatible string and enables both be-mmio and be-desc for the device in 
+this case. I just wanted to separate mmio and desc stuff for ehci, since 
+some devices need be-mmio only.
+I'll use "big-endian" property instead of "ehci-be-mmio" compatible 
+value. That's a good point, thanks.
+Do I have to add "sequoia usb ehci" description to 
+Documentation/powerpc/booting-without-of.txt?
+Do I also have to describe ehci-ppc-of stuff in general?
+BTW, I see nothing about ohci-ppc-of there.
+Thanks,
+Valentine.
+
 > 
 > 
-
--- 
-View this message in context: http://www.nabble.com/2.6.23-rc3-boot-hang-on-MPC8641D-tf4433508.html#a12676464
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> Segher
+> 
