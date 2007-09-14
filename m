@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B88CDDDDFD
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay005.isp.belgacom.be (mailrelay005.isp.belgacom.be
+	[195.238.6.171]) by ozlabs.org (Postfix) with ESMTP id 0F40ADDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Sep 2007 23:23:48 +1000 (EST)
-In-Reply-To: <1189761900.5113.8.camel@p60635-ste.ids.de>
-References: <1189761900.5113.8.camel@p60635-ste.ids.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <98868E6B-F810-49B3-9232-62EF627C313F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] adds support for Micrel KS8721BL PHY
-Date: Fri, 14 Sep 2007 08:26:40 -0500
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 15 Sep 2007 01:55:50 +1000 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/2] [POWERPC] Add SCC clock support to cpm2_clk_setup()
+Date: Fri, 14 Sep 2007 17:55:45 +0200
+References: <200707111517.52663.laurent.pinchart@technotrade.biz>
+In-Reply-To: <200707111517.52663.laurent.pinchart@technotrade.biz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709141755.45559.laurentp@cse-semaphore.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Sep 14, 2007, at 4:25 AM, Sergej Stepanov wrote:
-
-> The patch adds the support for Micrel KS8721BL PHY
+> On Sep 13, 2007, at 8:53 AM, Laurent Pinchart wrote:
+>> On Wednesday 11 July 2007 15:17, Laurent Pinchart wrote:
+>>> cpm2_clk_setup() supports setting FCC clocks only, even though the
+>>> cpm_clk_target enumeration lists SCC clocks. This patch adds SCC =20
+>>> clock support.
+>>
+>> Any chance this patch (and its 2/2 brother) could be committed ?
 >
-> Signed-off-by: Sergej Stepanov <Sergej.Stepanov@ids.de>
-> --
+> Have you looked at Scott Wood's cleanup patches.  They seem to do =20
+> some of this.
 
-Such patches should be sent to the netdev list.
+Where can I find them ? I checked in
 
-- k
+git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6
+
+and found nothing relevant.
+
+Best regard,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
