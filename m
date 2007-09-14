@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 12/25] spufs: Remove ctx_info and ctx_info_list
-Message-Id: <1189751574.105488.580988137839.12.gpush@pokey>
+Subject: [PATCH 25/25] spufs: Add DEFINE_SPUFS_ATTRIBUTE()
+Message-Id: <1189751574.127889.688961693084.25.gpush@pokey>
 In-Reply-To: <1189751574.98527.127994196313.1.gpush@pokey>
 To: <linuxppc-dev@ozlabs.org>
 From: Jeremy Kerr <jk@ozlabs.org>
@@ -18,172 +18,370 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <michael@ellerman.id.au>
 
-Remove the ctx_info struct entirely, and also the ctx_info_list. This fixes
-a race where two processes can clobber each other's ctx_info structs.
+This patch adds DEFINE_SPUFS_ATTRIBUTE(), a wraper around
+DEFINE_SIMPLE_ATTRIBUTE which does the specified locking for the get
+routine for us.
 
-Instead of using the list, we just repeat the search through the file
-descriptor table.
+Unfortunately we need two get routines (a locked and unlocked version) to
+support the coredump code. This patch hides one of those (the locked version)
+inside the macro foo.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
 ---
- arch/powerpc/platforms/cell/spufs/coredump.c |   79 ++++++---------------------
- 1 file changed, 19 insertions(+), 60 deletions(-)
+ arch/powerpc/platforms/cell/spufs/file.c |  216 ++++++++++---------------------
+ 1 file changed, 76 insertions(+), 140 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index 99f8e0b..6663669 100644
---- a/arch/powerpc/platforms/cell/spufs/coredump.c
-+++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -31,15 +31,6 @@
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 985c86b..b93a027 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1076,6 +1076,36 @@ static const struct file_operations spufs_signal2_nosched_fops = {
+ 	.mmap = spufs_signal2_mmap,
+ };
  
- #include "spufs.h"
- 
--struct spufs_ctx_info {
--	struct list_head list;
--	int dfd;
--	int memsize; /* in bytes */
--	struct spu_context *ctx;
--};
--
--static LIST_HEAD(ctx_info_list);
--
- static ssize_t do_coredump_read(int num, struct spu_context *ctx, void __user *buffer,
- 				size_t size, loff_t *off)
++/*
++ * This is a wrapper around DEFINE_SIMPLE_ATTRIBUTE which does the
++ * work of acquiring (or not) the SPU context before calling through
++ * to the actual get routine. The set routine is called directly.
++ */
++#define SPU_ATTR_NOACQUIRE	0
++#define SPU_ATTR_ACQUIRE	1
++#define SPU_ATTR_ACQUIRE_SAVED	2
++
++#define DEFINE_SPUFS_ATTRIBUTE(__name, __get, __set, __fmt, __acquire)	\
++static u64 __##__get(void *data)					\
++{									\
++	struct spu_context *ctx = data;					\
++	u64 ret;							\
++									\
++	if (__acquire == SPU_ATTR_ACQUIRE) {				\
++		spu_acquire(ctx);					\
++		ret = __get(ctx);					\
++		spu_release(ctx);					\
++	} else if (__acquire == SPU_ATTR_ACQUIRE_SAVED)	{		\
++		spu_acquire_saved(ctx);					\
++		ret = __get(ctx);					\
++		spu_release_saved(ctx);					\
++	} else								\
++		ret = __get(ctx);					\
++									\
++	return ret;							\
++}									\
++DEFINE_SIMPLE_ATTRIBUTE(__name, __##__get, __set, __fmt);
++
+ static void spufs_signal1_type_set(void *data, u64 val)
  {
-@@ -73,25 +64,17 @@ static int spufs_dump_seek(struct file *file, loff_t off)
- 	return 1;
+ 	struct spu_context *ctx = data;
+@@ -1085,24 +1115,13 @@ static void spufs_signal1_type_set(void *data, u64 val)
+ 	spu_release(ctx);
  }
  
--static void spufs_fill_memsize(struct spufs_ctx_info *ctx_info)
-+static u64 ctx_ls_size(struct spu_context *ctx)
+-static u64 __spufs_signal1_type_get(struct spu_context *ctx)
++static u64 spufs_signal1_type_get(struct spu_context *ctx)
  {
--	struct spu_context *ctx;
--	unsigned long long lslr;
--
--	ctx = ctx_info->ctx;
--	lslr = ctx->csa.priv2.spu_lslr_RW;
--	ctx_info->memsize = lslr + 1;
-+	return ctx->csa.priv2.spu_lslr_RW + 1;
+ 	return ctx->ops->signal1_type_get(ctx);
  }
++DEFINE_SPUFS_ATTRIBUTE(spufs_signal1_type, spufs_signal1_type_get,
++		       spufs_signal1_type_set, "%llu", SPU_ATTR_ACQUIRE);
  
--static int spufs_ctx_note_size(struct spufs_ctx_info *ctx_info)
-+static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
- {
--	int dfd, memsize, i, sz, total = 0;
-+	int i, sz, total = 0;
- 	char *name;
- 	char fullname[80];
- 
--	dfd = ctx_info->dfd;
--	memsize = ctx_info->memsize;
--
- 	for (i = 0; spufs_coredump_read[i].name; i++) {
- 		name = spufs_coredump_read[i].name;
- 		sz = spufs_coredump_read[i].size;
-@@ -101,7 +84,7 @@ static int spufs_ctx_note_size(struct spufs_ctx_info *ctx_info)
- 		total += sizeof(struct elf_note);
- 		total += roundup(strlen(fullname) + 1, 4);
- 		if (!strcmp(name, "mem"))
--			total += roundup(memsize, 4);
-+			total += roundup(ctx_ls_size(ctx), 4);
- 		else
- 			total += roundup(sz, 4);
- 	}
-@@ -109,25 +92,6 @@ static int spufs_ctx_note_size(struct spufs_ctx_info *ctx_info)
- 	return total;
- }
- 
--static int spufs_add_one_context(struct spu_context *ctx, int dfd)
+-static u64 spufs_signal1_type_get(void *data)
 -{
--	struct spufs_ctx_info *ctx_info;
--	int size;
+-	struct spu_context *ctx = data;
+-	u64 ret;
 -
--	ctx_info = kzalloc(sizeof(*ctx_info), GFP_KERNEL);
--	if (unlikely(!ctx_info))
--		return -ENOMEM;
+-	spu_acquire(ctx);
+-	ret = __spufs_signal1_type_get(ctx);
+-	spu_release(ctx);
 -
--	ctx_info->dfd = dfd;
--	ctx_info->ctx = ctx;
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_signal1_type, spufs_signal1_type_get,
+-					spufs_signal1_type_set, "%llu");
+ 
+ static void spufs_signal2_type_set(void *data, u64 val)
+ {
+@@ -1113,24 +1132,12 @@ static void spufs_signal2_type_set(void *data, u64 val)
+ 	spu_release(ctx);
+ }
+ 
+-static u64 __spufs_signal2_type_get(struct spu_context *ctx)
++static u64 spufs_signal2_type_get(struct spu_context *ctx)
+ {
+ 	return ctx->ops->signal2_type_get(ctx);
+ }
 -
--	spufs_fill_memsize(ctx_info);
+-static u64 spufs_signal2_type_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
 -
--	size = spufs_ctx_note_size(ctx_info);
--	list_add(&ctx_info->list, &ctx_info_list);
--	return size;
+-	spu_acquire(ctx);
+-	ret = __spufs_signal2_type_get(ctx);
+-	spu_release(ctx);
+-
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_signal2_type, spufs_signal2_type_get,
+-					spufs_signal2_type_set, "%llu");
++DEFINE_SPUFS_ATTRIBUTE(spufs_signal2_type, spufs_signal2_type_get,
++		       spufs_signal2_type_set, "%llu", SPU_ATTR_ACQUIRE);
+ 
+ #if SPUFS_MMAP_4K
+ static unsigned long spufs_mss_mmap_nopfn(struct vm_area_struct *vma,
+@@ -1606,22 +1613,12 @@ static void spufs_npc_set(void *data, u64 val)
+ 	spu_release(ctx);
+ }
+ 
+-static u64 __spufs_npc_get(struct spu_context *ctx)
++static u64 spufs_npc_get(struct spu_context *ctx)
+ {
+ 	return ctx->ops->npc_read(ctx);
+ }
+-
+-static u64 spufs_npc_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
+-	spu_acquire(ctx);
+-	ret = __spufs_npc_get(ctx);
+-	spu_release(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_npc_ops, spufs_npc_get, spufs_npc_set,
+-			"0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_npc_ops, spufs_npc_get, spufs_npc_set,
++		       "0x%llx\n", SPU_ATTR_ACQUIRE);
+ 
+ static void spufs_decr_set(void *data, u64 val)
+ {
+@@ -1632,23 +1629,13 @@ static void spufs_decr_set(void *data, u64 val)
+ 	spu_release_saved(ctx);
+ }
+ 
+-static u64 __spufs_decr_get(struct spu_context *ctx)
++static u64 spufs_decr_get(struct spu_context *ctx)
+ {
+ 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+ 	return lscsa->decr.slot[0];
+ }
+-
+-static u64 spufs_decr_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
+-	spu_acquire_saved(ctx);
+-	ret = __spufs_decr_get(ctx);
+-	spu_release_saved(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_decr_ops, spufs_decr_get, spufs_decr_set,
+-			"0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_decr_ops, spufs_decr_get, spufs_decr_set,
++		       "0x%llx\n", SPU_ATTR_ACQUIRE_SAVED);
+ 
+ static void spufs_decr_status_set(void *data, u64 val)
+ {
+@@ -1661,25 +1648,16 @@ static void spufs_decr_status_set(void *data, u64 val)
+ 	spu_release_saved(ctx);
+ }
+ 
+-static u64 __spufs_decr_status_get(struct spu_context *ctx)
++static u64 spufs_decr_status_get(struct spu_context *ctx)
+ {
+ 	if (ctx->csa.priv2.mfc_control_RW & MFC_CNTL_DECREMENTER_RUNNING)
+ 		return SPU_DECR_STATUS_RUNNING;
+ 	else
+ 		return 0;
+ }
+-
+-static u64 spufs_decr_status_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
+-	spu_acquire_saved(ctx);
+-	ret = __spufs_decr_status_get(ctx);
+-	spu_release_saved(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_decr_status_ops, spufs_decr_status_get,
+-			spufs_decr_status_set, "0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_decr_status_ops, spufs_decr_status_get,
++		       spufs_decr_status_set, "0x%llx\n",
++		       SPU_ATTR_ACQUIRE_SAVED);
+ 
+ static void spufs_event_mask_set(void *data, u64 val)
+ {
+@@ -1690,25 +1668,17 @@ static void spufs_event_mask_set(void *data, u64 val)
+ 	spu_release_saved(ctx);
+ }
+ 
+-static u64 __spufs_event_mask_get(struct spu_context *ctx)
++static u64 spufs_event_mask_get(struct spu_context *ctx)
+ {
+ 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+ 	return lscsa->event_mask.slot[0];
+ }
+ 
+-static u64 spufs_event_mask_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
+-	spu_acquire_saved(ctx);
+-	ret = __spufs_event_mask_get(ctx);
+-	spu_release_saved(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_event_mask_ops, spufs_event_mask_get,
+-			spufs_event_mask_set, "0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_event_mask_ops, spufs_event_mask_get,
++		       spufs_event_mask_set, "0x%llx\n",
++		       SPU_ATTR_ACQUIRE_SAVED);
+ 
+-static u64 __spufs_event_status_get(struct spu_context *ctx)
++static u64 spufs_event_status_get(struct spu_context *ctx)
+ {
+ 	struct spu_state *state = &ctx->csa;
+ 	u64 stat;
+@@ -1717,19 +1687,8 @@ static u64 __spufs_event_status_get(struct spu_context *ctx)
+ 		return state->spu_chnldata_RW[0];
+ 	return 0;
+ }
+-
+-static u64 spufs_event_status_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret = 0;
+-
+-	spu_acquire_saved(ctx);
+-	ret = __spufs_event_status_get(ctx);
+-	spu_release_saved(ctx);
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_event_status_ops, spufs_event_status_get,
+-			NULL, "0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_event_status_ops, spufs_event_status_get,
++		       NULL, "0x%llx\n", SPU_ATTR_ACQUIRE_SAVED)
+ 
+ static void spufs_srr0_set(void *data, u64 val)
+ {
+@@ -1740,44 +1699,32 @@ static void spufs_srr0_set(void *data, u64 val)
+ 	spu_release_saved(ctx);
+ }
+ 
+-static u64 spufs_srr0_get(void *data)
++static u64 spufs_srr0_get(struct spu_context *ctx)
+ {
+-	struct spu_context *ctx = data;
+ 	struct spu_lscsa *lscsa = ctx->csa.lscsa;
+-	u64 ret;
+-	spu_acquire_saved(ctx);
+-	ret = lscsa->srr0.slot[0];
+-	spu_release_saved(ctx);
+-	return ret;
++	return lscsa->srr0.slot[0];
+ }
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_srr0_ops, spufs_srr0_get, spufs_srr0_set,
+-			"0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_srr0_ops, spufs_srr0_get, spufs_srr0_set,
++		       "0x%llx\n", SPU_ATTR_ACQUIRE_SAVED)
+ 
+-static u64 spufs_id_get(void *data)
++static u64 spufs_id_get(struct spu_context *ctx)
+ {
+-	struct spu_context *ctx = data;
+ 	u64 num;
+ 
+-	spu_acquire(ctx);
+ 	if (ctx->state == SPU_STATE_RUNNABLE)
+ 		num = ctx->spu->number;
+ 	else
+ 		num = (unsigned int)-1;
+-	spu_release(ctx);
+ 
+ 	return num;
+ }
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_id_ops, spufs_id_get, NULL, "0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_id_ops, spufs_id_get, NULL, "0x%llx\n",
++		       SPU_ATTR_ACQUIRE)
+ 
+-static u64 __spufs_object_id_get(struct spu_context *ctx)
+-{
+-	return ctx->object_id;
 -}
 -
- /*
-  * The additional architecture-specific notes for Cell are various
-  * context files in the spu context.
-@@ -171,7 +135,7 @@ static int spufs_arch_notes_size(void)
- 
- 	fd = 0;
- 	while ((ctx = coredump_next_context(&fd)) != NULL) {
--		rc = spufs_add_one_context(ctx, fd);
-+		rc = spufs_ctx_note_size(ctx, fd);
- 		if (rc < 0)
- 			break;
- 
-@@ -181,12 +145,11 @@ static int spufs_arch_notes_size(void)
- 	return size;
+-static u64 spufs_object_id_get(void *data)
++static u64 spufs_object_id_get(struct spu_context *ctx)
+ {
+ 	/* FIXME: Should there really be no locking here? */
+-	return __spufs_object_id_get((struct spu_context *)data);
++	return ctx->object_id;
  }
  
--static void spufs_arch_write_note(struct spufs_ctx_info *ctx_info, int i,
--				struct file *file)
-+static void spufs_arch_write_note(struct spu_context *ctx, int i,
-+				struct file *file, int dfd)
+ static void spufs_object_id_set(void *data, u64 id)
+@@ -1786,26 +1733,15 @@ static void spufs_object_id_set(void *data, u64 id)
+ 	ctx->object_id = id;
+ }
+ 
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_object_id_ops, spufs_object_id_get,
+-		spufs_object_id_set, "0x%llx\n");
++DEFINE_SPUFS_ATTRIBUTE(spufs_object_id_ops, spufs_object_id_get,
++		       spufs_object_id_set, "0x%llx\n", SPU_ATTR_NOACQUIRE);
+ 
+-static u64 __spufs_lslr_get(struct spu_context *ctx)
++static u64 spufs_lslr_get(struct spu_context *ctx)
  {
--	struct spu_context *ctx;
- 	loff_t pos = 0;
--	int sz, dfd, rc, total = 0;
-+	int sz, rc, total = 0;
- 	const int bufsz = PAGE_SIZE;
- 	char *name;
- 	char fullname[80], *buf;
-@@ -196,18 +159,13 @@ static void spufs_arch_write_note(struct spufs_ctx_info *ctx_info, int i,
- 	if (!buf)
- 		return;
- 
--	dfd = ctx_info->dfd;
- 	name = spufs_coredump_read[i].name;
- 
- 	if (!strcmp(name, "mem"))
--		sz = ctx_info->memsize;
-+		sz = ctx_ls_size(ctx);
- 	else
- 		sz = spufs_coredump_read[i].size;
- 
--	ctx = ctx_info->ctx;
--	if (!ctx)
--		goto out;
+ 	return ctx->csa.priv2.spu_lslr_RW;
+ }
 -
- 	sprintf(fullname, "SPU/%d/%s", dfd, name);
- 	en.n_namesz = strlen(fullname) + 1;
- 	en.n_descsz = sz;
-@@ -237,16 +195,17 @@ out:
+-static u64 spufs_lslr_get(void *data)
+-{
+-	struct spu_context *ctx = data;
+-	u64 ret;
+-
+-	spu_acquire_saved(ctx);
+-	ret = __spufs_lslr_get(ctx);
+-	spu_release_saved(ctx);
+-
+-	return ret;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(spufs_lslr_ops, spufs_lslr_get, NULL, "0x%llx\n")
++DEFINE_SPUFS_ATTRIBUTE(spufs_lslr_ops, spufs_lslr_get, NULL, "0x%llx\n",
++		       SPU_ATTR_ACQUIRE_SAVED);
  
- static void spufs_arch_write_notes(struct file *file)
+ static int spufs_info_open(struct inode *inode, struct file *file)
  {
--	int j;
--	struct spufs_ctx_info *ctx_info, *next;
-+	struct spu_context *ctx;
-+	int fd, j;
-+
-+	fd = 0;
-+	while ((ctx = coredump_next_context(&fd)) != NULL) {
-+		spu_acquire_saved(ctx);
- 
--	list_for_each_entry_safe(ctx_info, next, &ctx_info_list, list) {
--		spu_acquire_saved(ctx_info->ctx);
- 		for (j = 0; j < spufs_coredump_num_notes; j++)
--			spufs_arch_write_note(ctx_info, j, file);
--		spu_release_saved(ctx_info->ctx);
--		list_del(&ctx_info->list);
--		kfree(ctx_info);
-+			spufs_arch_write_note(ctx, j, file, fd);
-+
-+		spu_release_saved(ctx);
- 	}
- }
- 
+@@ -2230,23 +2166,23 @@ struct tree_descr spufs_dir_nosched_contents[] = {
+ struct spufs_coredump_reader spufs_coredump_read[] = {
+ 	{ "regs", __spufs_regs_read, NULL, sizeof(struct spu_reg128[128])},
+ 	{ "fpcr", __spufs_fpcr_read, NULL, sizeof(struct spu_reg128) },
+-	{ "lslr", NULL, __spufs_lslr_get, 19 },
+-	{ "decr", NULL, __spufs_decr_get, 19 },
+-	{ "decr_status", NULL, __spufs_decr_status_get, 19 },
++	{ "lslr", NULL, spufs_lslr_get, 19 },
++	{ "decr", NULL, spufs_decr_get, 19 },
++	{ "decr_status", NULL, spufs_decr_status_get, 19 },
+ 	{ "mem", __spufs_mem_read, NULL, LS_SIZE, },
+ 	{ "signal1", __spufs_signal1_read, NULL, sizeof(u32) },
+-	{ "signal1_type", NULL, __spufs_signal1_type_get, 19 },
++	{ "signal1_type", NULL, spufs_signal1_type_get, 19 },
+ 	{ "signal2", __spufs_signal2_read, NULL, sizeof(u32) },
+-	{ "signal2_type", NULL, __spufs_signal2_type_get, 19 },
+-	{ "event_mask", NULL, __spufs_event_mask_get, 19 },
+-	{ "event_status", NULL, __spufs_event_status_get, 19 },
++	{ "signal2_type", NULL, spufs_signal2_type_get, 19 },
++	{ "event_mask", NULL, spufs_event_mask_get, 19 },
++	{ "event_status", NULL, spufs_event_status_get, 19 },
+ 	{ "mbox_info", __spufs_mbox_info_read, NULL, sizeof(u32) },
+ 	{ "ibox_info", __spufs_ibox_info_read, NULL, sizeof(u32) },
+ 	{ "wbox_info", __spufs_wbox_info_read, NULL, 4 * sizeof(u32)},
+ 	{ "dma_info", __spufs_dma_info_read, NULL, sizeof(struct spu_dma_info)},
+ 	{ "proxydma_info", __spufs_proxydma_info_read,
+ 			   NULL, sizeof(struct spu_proxydma_info)},
+-	{ "object-id", NULL, __spufs_object_id_get, 19 },
+-	{ "npc", NULL, __spufs_npc_get, 19 },
++	{ "object-id", NULL, spufs_object_id_get, 19 },
++	{ "npc", NULL, spufs_npc_get, 19 },
+ 	{ NULL },
+ };
