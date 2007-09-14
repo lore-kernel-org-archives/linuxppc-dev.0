@@ -1,15 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5A967DDDFA
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 10:26:39 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] add Kconfig option for optimizing for cell
-Date: Sat, 15 Sep 2007 02:21:57 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709150221.57825.arnd@arndb.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5B225DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 10:32:54 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8F0Wpnu029306
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 20:32:51 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8F0WpTd667704
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 20:32:51 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8F0WpK3009265
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 20:32:51 -0400
+Subject: Re: [PATCH] add Kconfig option for optimizing for cell
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200709150221.57825.arnd@arndb.de>
+References: <200709150221.57825.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 14 Sep 2007 18:07:44 -0500
+Message-Id: <1189811264.24878.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,48 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since the PPE on cell is an in-order core, it suffers significantly
-from wrong instruction scheduling. This adds an Kconfig option that
-enables passing -mtune=cell to gcc in order to generate object
-code that runs well on cell.
+On Sat, 2007-09-15 at 02:21 +0200, Arnd Bergmann wrote:
+> Since the PPE on cell is an in-order core, it suffers significantly
+> from wrong instruction scheduling. This adds an Kconfig option that
+> enables passing -mtune=cell to gcc in order to generate object
+> code that runs well on cell.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6015a92..87aff53 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -92,6 +92,10 @@ else
- endif
- endif
- 
-+ifeq ($(CONFIG_TUNE_CELL),y)
-+	CFLAGS += $(call cc-option,-mtune=cell)
-+endif
-+
- # No AltiVec instruction when building kernel
- CFLAGS += $(call cc-option,-mno-altivec)
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 86eb4cf..4c315be 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -71,6 +71,18 @@ config POWER4
- 	depends on PPC64
- 	def_bool y
- 
-+config TUNE_CELL
-+	bool "Optimize for Cell Broadband Engine"
-+	depends on PPC64
-+	help
-+	  Cause the compiler to optimize for the PPE of the Cell Broadband
-+	  Engine. This will make the code run considerably faster on Cell
-+	  but somewhat slower on other machines. This option only changes
-+	  the scheduling of instructions, not the selection of instructions
-+	  itself, so the resulting kernel will keep running on all other
-+	  machines. When building a kernel that is supposed to run only
-+	  on Cell, you should also select the POWER4_ONLY option.
-+
- config 6xx
- 	bool
- 
+Which version of gcc supports that?
+
+josh
