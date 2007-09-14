@@ -1,19 +1,33 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A7511DDDF8
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 02:51:14 +1000 (EST)
-Date: Fri, 14 Sep 2007 11:52:33 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] pcmcia: Convert io_req_t to use kio_addr_t
-Message-ID: <20070914165233.GA3045@lixom.net>
-References: <20070905142742.GA1760@lixom.net>
-	<20070914034854.1658a9cf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070914034854.1658a9cf.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org, hch@lst.de
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A0BA2DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 03:20:44 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8EHKegH024082
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 13:20:40 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8EHKdlX490528
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 11:20:39 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8EHKc1k031293
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 11:20:39 -0600
+Date: Fri, 14 Sep 2007 12:20:37 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: rtc-ds1742.c should use resource_size_t for base address
+Message-ID: <20070914122037.65a08f48@weaponx.rchland.ibm.com>
+In-Reply-To: <20070914055427.GM481@localhost.localdomain>
+References: <20070914055427.GM481@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+	linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +37,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2007 at 03:48:54AM -0700, Andrew Morton wrote:
-> On Wed, 5 Sep 2007 09:27:43 -0500 Olof Johansson <olof@lixom.net> wrote:
-> 
-> > Convert the io_req_t members to kio_addr_t, to allow use on machines with
-> > more than 16 bits worth of IO port address space (ppc64 in this case,
-> > but it applies to others as well).
-> 
-> drivers/usb/host/sl811_cs.c: In function 'sl811_cs_config':
-> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'kio_addr_t'
-> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
-> 
-> That's not just a cosmetic thing - the printk can print junk and if there's
-> a %s in the control string after the %x's, printk() will crash.
-> 
-> I don't know how many instances of this are in the tree, but they'll all
-> need to be found and fixed.
+On Fri, 14 Sep 2007 15:54:27 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-A crap, I completely forgot to check drivers/, and my default builds
-don't contain many of them. My bad.
+> Currently the rtc driver, rtc-ds1742.c uses an unsigned long to store
+> the base mmio address of the NVRAM/RTC.  This breaks on systems like
+> PowerPC 440, which is a 32-bit core with 36-bit physical addresses: IO
+> on the system, including the RTC, is typically above the 4GB point,
+> and cannot fit into an unsigned long.
+> 
+> This patch fixes the problem by replacing the unsigned long with a
+> resource_size_t.  Tested on Ebony (PPC440) (with additional patches to
+> instantiate the ds1742 platform device appropriately).
 
-I'll do a full pass and review all references to the changed variables. So
-far I've only noticed printk stuff, but I'm not done. There's a fair
-amount lot of places where they're cast into ints instead of longs,
-but that's a whole other ball of wax (and shouldn't cause regressions
-like the printk ones could).
+Where would those additional patches be? :)
 
-
--Olof
+josh
