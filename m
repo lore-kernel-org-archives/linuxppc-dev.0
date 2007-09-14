@@ -1,9 +1,9 @@
 Return-Path: <jk@ozlabs.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 16/25] spufs: Correctly calculate the size of the local-store
-	to dump
-Message-Id: <1189751574.107898.72193755822.16.gpush@pokey>
+Subject: [PATCH 18/25] spufs: Get rid of spufs_coredump_num_notes,
+	it's not needed if we NULL terminate
+Message-Id: <1189751574.108845.438873583935.18.gpush@pokey>
 In-Reply-To: <1189751574.98527.127994196313.1.gpush@pokey>
 To: <linuxppc-dev@ozlabs.org>
 From: Jeremy Kerr <jk@ozlabs.org>
@@ -19,56 +19,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <michael@ellerman.id.au>
 
-The routine to dump the local store, __spufs_mem_read(), does not take the
-spu_lslr_RW value into account - so we shouldn't check it when we're
-calculating the size either.
+The spufs_coredump_read array is NULL terminated, and we also store the size.
+We only need one or the other, and the other arrays in file.c are NULL
+terminated, so do that.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- arch/powerpc/platforms/cell/spufs/coredump.c |   16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/cell/spufs/coredump.c |    4 ++--
+ arch/powerpc/platforms/cell/spufs/file.c     |    4 +---
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/platforms/cell/spufs/coredump.c b/arch/powerpc/platforms/cell/spufs/coredump.c
-index c65b717..52d6219 100644
+index 52d6219..fc988fd 100644
 --- a/arch/powerpc/platforms/cell/spufs/coredump.c
 +++ b/arch/powerpc/platforms/cell/spufs/coredump.c
-@@ -66,11 +66,6 @@ static int spufs_dump_seek(struct file *file, loff_t off)
- 	return 1;
- }
+@@ -72,7 +72,7 @@ static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
+ 	char *name;
+ 	char fullname[80];
  
--static u64 ctx_ls_size(struct spu_context *ctx)
--{
--	return ctx->csa.priv2.spu_lslr_RW + 1;
--}
+-	for (i = 0; spufs_coredump_read[i].name; i++) {
++	for (i = 0; spufs_coredump_read[i].name != NULL; i++) {
+ 		name = spufs_coredump_read[i].name;
+ 		sz = spufs_coredump_read[i].size;
+ 
+@@ -194,7 +194,7 @@ static void spufs_arch_write_notes(struct file *file)
+ 	while ((ctx = coredump_next_context(&fd)) != NULL) {
+ 		spu_acquire_saved(ctx);
+ 
+-		for (j = 0; j < spufs_coredump_num_notes; j++)
++		for (j = 0; spufs_coredump_read[j].name != NULL; j++)
+ 			spufs_arch_write_note(ctx, j, file, fd);
+ 
+ 		spu_release_saved(ctx);
+diff --git a/arch/powerpc/platforms/cell/spufs/file.c b/arch/powerpc/platforms/cell/spufs/file.c
+index 85edbec..6095fb1 100644
+--- a/arch/powerpc/platforms/cell/spufs/file.c
++++ b/arch/powerpc/platforms/cell/spufs/file.c
+@@ -2250,7 +2250,5 @@ struct spufs_coredump_reader spufs_coredump_read[] = {
+ 	{ "proxydma_info", __spufs_proxydma_info_read,
+ 			   NULL, sizeof(struct spu_proxydma_info)},
+ 	{ "object-id", NULL, __spufs_object_id_get, 19 },
+-	{ },
++	{ NULL },
+ };
+-int spufs_coredump_num_notes = ARRAY_SIZE(spufs_coredump_read) - 1;
 -
- static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
- {
- 	int i, sz, total = 0;
-@@ -85,10 +80,7 @@ static int spufs_ctx_note_size(struct spu_context *ctx, int dfd)
- 
- 		total += sizeof(struct elf_note);
- 		total += roundup(strlen(fullname) + 1, 4);
--		if (!strcmp(name, "mem"))
--			total += roundup(ctx_ls_size(ctx), 4);
--		else
--			total += roundup(sz, 4);
-+		total += roundup(sz, 4);
- 	}
- 
- 	return total;
-@@ -164,11 +156,7 @@ static void spufs_arch_write_note(struct spu_context *ctx, int i,
- 		return;
- 
- 	name = spufs_coredump_read[i].name;
--
--	if (!strcmp(name, "mem"))
--		sz = ctx_ls_size(ctx);
--	else
--		sz = spufs_coredump_read[i].size;
-+	sz = spufs_coredump_read[i].size;
- 
- 	sprintf(fullname, "SPU/%d/%s", dfd, name);
- 	en.n_namesz = strlen(fullname) + 1;
