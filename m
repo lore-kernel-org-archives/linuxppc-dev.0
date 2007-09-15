@@ -1,16 +1,18 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 0102ADDF1C
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id C5633DDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Sep 2007 06:28:20 +1000 (EST)
+	Sat, 15 Sep 2007 13:39:00 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1261362wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 14 Sep 2007 20:38:59 -0700 (PDT)
+Message-ID: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
+Date: Fri, 14 Sep 2007 23:38:59 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Domen Puncer" <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
+Subject: Domen's MPC5200 FEC cleanup patch.
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Change console port after boot
-Date: Fri, 14 Sep 2007 15:28:18 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0360A07C@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,67 +23,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi..
+This patch doesn't seem to working quite right on my hardware (Phytec
+pcm030). At boot I get a long pause.
 
-Does anybody know if there is a way to change the console port after
-linux has started?
+I have a long pause when Ethernet is initializing
 
-I have a serial port cosole (82xx, ttyCPM0), that is used for initial
-console.
-After the system is booted, there are times where I need to use that
-serial port to talk to some equipment.
-My problem is that I get output from kernel/init and other things that
-have the console open also.
+[    0.798529] NET: Registered protocol family 1
+[    0.802988] NET: Registered protocol family 17
+[    1.313708] net eth0: attached phy 0 to driver Generic PHY
+[    2.320013] Sending DHCP requests ...... timed out!
+[   81.968863] IP-Config: Retrying forever (NFS root)...
+[   82.477527] net eth0: attached phy 0 to driver Generic PHY
+[   83.487809] Sending DHCP requests .<6>PHY: f0003000:00 - Link is Up
+- 100/Full
+[   86.323795] ., OK
+[   88.579802] IP-Config: Got DHCP answer from 192.168.1.200, my
+address is 192.168.1.5
+[   88.587923] IP-Config: Complete:
 
-Right now I kill the login process on the serial port, set
-/proc/sys/kernel/printk to "0 0 0 0" and try to find anything with
-/dev/console open and kill them.
+Reverting back to
+0008-drivers-net-Add-support-for-Freescale-MPC5200-SoC-i.patch the
+pause goes away.
 
-This does work, but not always.=20
-What I'd like to do is be able to shut off all output from /dev/console
-and kernel so only /dev/ttyCPM0 works.
+[    0.793916] TCP cubic registered
+[    0.797309] NET: Registered protocol family 1
+[    0.801808] NET: Registered protocol family 17
+[    1.309611] eth0: config: auto-negotiation on, 100HDX, 10HDX.
+[    2.316014] Sending DHCP requests .., OK
+[    7.124005] IP-Config: Got DHCP answer from 192.168.1.200, my
+address is 192.168.1.5
+[    7.132121] IP-Config: Complete:
+[    7.135212]       device=eth0, addr=192.168.1.5,
+mask=255.255.255.0, gw=192.168.1.200,
+[    7.143192]      host=MPC, domain=home, nis-domain=(none),
+[    7.148778]      bootserver=192.168.1.200, rootserver=192.168.1.4, rootpath=
 
-This is the script I use now:
-#!/bin/sh
+Something not quite right with interrupts maybe? I'm trying to debug it.
 
-# turn off serial login shell
-echo 0 0 0 0 > /proc/sys/kernel/printk
-
-sed -ri "s/^(::askfirst)/#\1/; s|(^ttyCPM0::respawn:).*$|#\1-/bin/sh|;"
-/etc/inittab
-init -q
-
-PIDS=3D`ps | sed -nr "s|^ *([0-9]+) .*[-/]sh *$|\1|p"`
-
-for p in ${PIDS}
-do
-        #echo ${p}
-        OUT=3D`ls -l /proc/${p}/fd/0 | grep console`
-
-        #echo ${OUT}
-        if [ "${OUT}" !=3D "" ]
-        then
-                #echo send kill to pid ${p}
-                kill -9 ${p}
-        fi
-
-        OUT=3D`ls -l /proc/${p}/fd/0 | grep ttyCPM0`
-
-        #echo ${OUT}
-        if [ "${OUT}" !=3D "" ]
-        then
-                #echo send kill to pid ${p}
-                kill -9 ${p}
-        fi
-done
-
-sleep 1
-echo "Use ~ to enter menu"
-echo "~tm changes linefeed mode"
-echo "~x  exits"
-microcom -D/dev/ttyCPM0
-echo 7 4 1 7 > /proc/sys/kernel/printk
-
-# turn login shell back on
-sed -ri "s|#(ttyCPM0)|\1|;" /etc/inittab
-init -q
+-- 
+Jon Smirl
+jonsmirl@gmail.com
