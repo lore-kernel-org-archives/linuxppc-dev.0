@@ -1,31 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 750A2DDDE4
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
+	by ozlabs.org (Postfix) with ESMTP id 1080DDDD0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Sep 2007 00:05:42 +1000 (EST)
-Received: from localhost (mail0.scram.de [78.47.204.202])
-	by localhost (Postfix) with ESMTP id B58B9548F3
+	Sun, 16 Sep 2007 01:55:47 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so837586rvf
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Sep 2007 16:05:31 +0200 (CEST)
-Received: from mail0.scram.de ([78.47.204.202])
-	by localhost (amavis.colab.de [88.198.23.89]) (amavisd-new, port 10024)
-	with ESMTP id 8yzo5X99uvJr for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Sep 2007 16:05:26 +0200 (CEST)
-Received: from [192.168.95.6] (p54B1ECC0.dip.t-dialin.net [84.177.236.192])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested) (Authenticated sender: scram287)
-	by mail0.scram.de (Postfix) with ESMTP id 68147548CB
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Sep 2007 16:05:26 +0200 (CEST)
-Message-ID: <46EBE6B1.9090209@scram.de>
-Date: Sat, 15 Sep 2007 16:05:37 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Sat, 15 Sep 2007 08:55:46 -0700 (PDT)
+Message-ID: <9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
+Date: Sat, 15 Sep 2007 11:55:46 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: Domen's MPC5200 FEC cleanup patch.
+In-Reply-To: <20070915122218.GB19857@nd47.coderock.org>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] [PPC] Compile fix for 8xx CPM Ehernet driver
-Content-Type: multipart/mixed; boundary="------------060303070409080306000605"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
+	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
+	<20070915122218.GB19857@nd47.coderock.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,46 +28,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060303070409080306000605
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On 9/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> On 15/09/07 00:28 -0400, Jon Smirl wrote:
+> > On 9/14/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > > This patch doesn't seem to working quite right on my hardware (Phytec
+> > > pcm030). At boot I get a long pause.
+> >
+> > It also doesn't compile if  CONFIG_FEC_MPC52xx_MDIO is undefined.
+>
+> Right, darn.
+> Try this one: http://coderock.org/tmp/fec-v3rc1/
+
+    0.776407] 0x00f40000-0x00f80000 : "oftree"
+[    0.782101] 0x00f80000-0x01000000 : "space"
+[    0.788100] TCP cubic registered
+[    0.791427] NET: Registered protocol family 1
+[    0.795904] NET: Registered protocol family 17
+[    1.305579] f0003000:00 not found
+[    1.308985] net eth0: phy_connect failed
+[    1.312961] net eth0: fec_init_phy failed
+[    1.317188] IP-Config: Failed to open eth0
+[    1.321362] IP-Config: No network devices available.
+[    1.326973] Looking up port of RPC 100003/3 on 192.168.1.4
 
 
-Add #include <asm/cacheflush.h> for flush_dcache_range
-to make the driver compile again.
 
-  CC      arch/ppc/8xx_io/enet.o
-arch/ppc/8xx_io/enet.c: In function 'scc_enet_start_xmit':
-arch/ppc/8xx_io/enet.c:240: error: implicit declaration of function
-'flush_dcache_range'
-make[1]: *** [arch/ppc/8xx_io/enet.o] Error 1
-make: *** [arch/ppc/8xx_io] Error 2
+>
+> Does it work without phy-handle in device tree, but
+> with this part being unconditional (fec.c):
+>  709 //        if (priv->has_phy)
+>  710                 rcntrl |= FEC_RCNTRL_MII_MODE;
+>
+> This effectively disables phy part of the driver,
+> but still allows hardware to use PHY/MII.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/ppc/8xx_io/enet.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Makes no difference
 
---------------060303070409080306000605
-Content-Type: text/x-patch;
- name="bc5766a0a6e25ccdf6bc1068960cf197ebe5acf5.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="bc5766a0a6e25ccdf6bc1068960cf197ebe5acf5.diff"
-
-diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
-index 703d47e..eace3bc 100644
---- a/arch/ppc/8xx_io/enet.c
-+++ b/arch/ppc/8xx_io/enet.c
-@@ -44,6 +44,7 @@
- #include <asm/mpc8xx.h>
- #include <asm/uaccess.h>
- #include <asm/commproc.h>
-+#include <asm/cacheflush.h>
- 
- /*
-  *				Theory of Operation
+>
+> I am puzzled by the symptoms you see.
+>
+>
+>         Domen
+>
+> >
+> > --
+> > Jon Smirl
+> > jonsmirl@gmail.com
+>
 
 
---------------060303070409080306000605--
+-- 
+Jon Smirl
+jonsmirl@gmail.com
