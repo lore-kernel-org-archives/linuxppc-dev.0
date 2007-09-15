@@ -1,17 +1,29 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 21496DDDF6
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 01:09:14 +1000 (EST)
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-From: Wolfgang Denk <wd@denx.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 121FADDDF6
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 03:37:00 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8FHatkA018395
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 13:36:55 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8FHatFV688878
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 13:36:55 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8FHatDo016179
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 13:36:55 -0400
 Subject: Re: [patch 3/4] 4xx: Convert Walnut flash mappings to new binding
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 15 Sep 2007 09:26:19 CDT."
-	<1189866379.17593.2.camel@localhost.localdomain>
-Date: Sat, 15 Sep 2007 17:09:01 +0200
-Sender: wd@denx.de
-Message-Id: <20070915150901.AC712247CE@gemini.denx.de>
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20070915150901.AC712247CE@gemini.denx.de>
+References: <20070915150901.AC712247CE@gemini.denx.de>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 12:35:48 -0500
+Message-Id: <1189877748.17593.9.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
 	david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,31 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <1189866379.17593.2.camel@localhost.localdomain> Josh Boyer wrote:
-> On Sat, 2007-09-15 at 05:23 +0200, Stefan Roese wrote:
-...
-> > There are not only Bamboo board running PIBS, but running U-Boot too. How 
-> > should we handle this different FLASH partitioning? Same goes for Ebony too 
-> > btw.
+On Sat, 2007-09-15 at 17:09 +0200, Wolfgang Denk wrote:
+> In message <1189866379.17593.2.camel@localhost.localdomain> Josh Boyer wrote:
+> > On Sat, 2007-09-15 at 05:23 +0200, Stefan Roese wrote:
+> ...
+> > > There are not only Bamboo board running PIBS, but running U-Boot too. How 
+> > > should we handle this different FLASH partitioning? Same goes for Ebony too 
+> > > btw.
+> > 
+> > That's a good question.  I'm working on making the NOR flash show up for
+> > Bamboo right now, and I had intended to just leave the partition
+> > subnodes missing.
 > 
-> That's a good question.  I'm working on making the NOR flash show up for
-> Bamboo right now, and I had intended to just leave the partition
-> subnodes missing.
+> Maybe we can have  U-Boot  add  the  partition  information  if  it's
+> missing in the device tree, and extend the mtdparts command in U-Boot
+> to add / adjust settings so they match what is defined in U-Boot.
 
-Maybe we can have  U-Boot  add  the  partition  information  if  it's
-missing in the device tree, and extend the mtdparts command in U-Boot
-to add / adjust settings so they match what is defined in U-Boot.
+That would be great for newer U-Boots.  For existing older ones, it
+doesn't really solve the problem.  But then again, there's no way to
+possibly define all the partitioning schemes people may have adopted to
+their needs on their boards.  And I believe that is why David has
+RedBoot and command line partitioning override what is in the DTS today.
 
-Stefan, what do you think?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Without facts, the decision cannot be made logically. You  must  rely
-on your human intuition.
-	-- Spock, "Assignment: Earth", stardate unknown
+josh
