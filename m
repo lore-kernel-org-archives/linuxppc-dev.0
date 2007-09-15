@@ -1,20 +1,14 @@
-Return-Path: <SRS0=6MgZ=OL=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 523E7DDE06
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 13:32:23 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 4/4] 4xx: Convert Seqouia flash mappings to new binding
-Date: Sat, 15 Sep 2007 05:32:46 +0200
-References: <20070914185410.387074000@linux.vnet.ibm.com>
-	<20070914185649.551007000@linux.vnet.ibm.com>
-	<20070915022318.GG25414@localhost.localdomain>
-In-Reply-To: <20070915022318.GG25414@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709150532.46448.sr@denx.de>
-Cc: David Gibson <dwg@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18155.24590.33276.113415@cargo.ozlabs.ibm.com>
+Date: Sat, 15 Sep 2007 14:31:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Stefan Roese <ml@stefan-roese.de>
+Subject: Re: PPC4xx maintainer?
+In-Reply-To: <200709142208.43342.ml@stefan-roese.de>
+References: <200709142208.43342.ml@stefan-roese.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 15 September 2007, David Gibson wrote:
-> On Fri, Sep 14, 2007 at 01:54:14PM -0500, Josh Boyer wrote:
-> > A new binding for flash devices was recently introduced.  This updates
-> > the Sequoia DTS to use the new binding and enabled MTD in the defconfig.
-> >
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->
-> Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Stefan Roese writes:
 
-Acked-by: Stefan Roese <sr@denx.de>
+> I really think that now, as the PPC4xx Linux development is picking up in 
+> speed in the ongoing move to arch/powerpc, we need an "active" maintainer for 
+> the 4xx Linux kernel platform. Since I haven't heard anything from Matt in a 
+> long time, perhaps it would be better if somebody else takes care of this 
+> matter. I propose that Josh Boyer takes over this maintainership, and I know 
+> that he is competent enough and willing to dedicate the needed time for this 
+> task.
 
-Best regards,
-Stefan
+Glad you think so. :)  I asked Josh to be the 4xx maintainer a couple of
+weeks ago but didn't make an announcement about it, which I should
+have done - sorry about that.
+
+Josh, please send me a patch for MAINTAINERS.
+
+Paul.
