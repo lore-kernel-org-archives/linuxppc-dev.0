@@ -1,18 +1,17 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 6BF30DDDFB
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 12938DDDFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Sep 2007 22:23:22 +1000 (EST)
-Date: Sat, 15 Sep 2007 14:22:18 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Domen's MPC5200 FEC cleanup patch.
-Message-ID: <20070915122218.GB19857@nd47.coderock.org>
-References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
-	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
+	Sat, 15 Sep 2007 23:42:29 +1000 (EST)
+Message-ID: <46EBE143.60106@anagramm.de>
+Date: Sat, 15 Sep 2007 15:42:27 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Nicholas Hickman <nhickman@dtechlabs.com>
+Subject: Re: SPI INT line
+References: <8140AAF341CC904BA92C3D6A5A1909782F0E9D@ditech-1.ditechllc.com>
+In-Reply-To: <8140AAF341CC904BA92C3D6A5A1909782F0E9D@ditech-1.ditechllc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,30 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 15/09/07 00:28 -0400, Jon Smirl wrote:
-> On 9/14/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > This patch doesn't seem to working quite right on my hardware (Phytec
-> > pcm030). At boot I get a long pause.
-> 
-> It also doesn't compile if  CONFIG_FEC_MPC52xx_MDIO is undefined.
+Nicholas Hickman schrieb:
+> We are developing a system around the mpc8270.  On this system we are
+> using an ISDN controller connected to the SPI interface of the 8270.
+> For the INT line coming from the controller, should this be connected to
+> one of the IRQ lines that we typically use for PCI bus, or should we
+> connect it to one of the GPIO Group C pins?  Currently we have it to
+> IRQ4, but I am worried that this is incorrect.
 
-Right, darn.
-Try this one: http://coderock.org/tmp/fec-v3rc1/
+I would use an otherwise unused (even in reference 82xx platforms)
+IRQ line and have a look into the kernel and see which
+IRQs are free so minimize/eliminate extra patches.
 
-Does it work without phy-handle in device tree, but
-with this part being unconditional (fec.c):
- 709 //        if (priv->has_phy)
- 710                 rcntrl |= FEC_RCNTRL_MII_MODE;
+Regards,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-This effectively disables phy part of the driver,
-but still allows hardware to use PHY/MII.
-
-I am puzzled by the symptoms you see.
-
-
-	Domen
-
-> 
-> -- 
-> Jon Smirl
-> jonsmirl@gmail.com
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
