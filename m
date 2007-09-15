@@ -1,18 +1,32 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 83156DDDE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 23:34:51 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] add Kconfig option for optimizing for cell
-Date: Sat, 15 Sep 2007 15:30:15 +0200
-References: <200709150221.57825.arnd@arndb.de>
-	<1189862035.3742.5.camel@shinybook.infradead.org>
-In-Reply-To: <1189862035.3742.5.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200709151530.15441.arnd@arndb.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 332C3DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 00:25:51 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8FEPmJl013162
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 10:25:48 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8FEPmhj409568
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 08:25:48 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8FEPljZ025175
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 08:25:48 -0600
+Subject: Re: [patch 3/4] 4xx: Convert Walnut flash mappings to new binding
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20070915022228.GF25414@localhost.localdomain>
+References: <20070914185410.387074000@linux.vnet.ibm.com> >
+	<20070914185649.272138000@linux.vnet.ibm.com>
+	<20070915022228.GF25414@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 15 Sep 2007 09:25:31 -0500
+Message-Id: <1189866331.17593.0.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,20 +37,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 15 September 2007, David Woodhouse wrote:
-> On Sat, 2007-09-15 at 02:21 +0200, Arnd Bergmann wrote:
-> > Since the PPE on cell is an in-order core, it suffers significantly
-> > from wrong instruction scheduling. This adds an Kconfig option that
-> > enables passing -mtune=cell to gcc in order to generate object
-> > code that runs well on cell.
+On Sat, 2007-09-15 at 12:22 +1000, David Gibson wrote:
+> On Fri, Sep 14, 2007 at 01:54:13PM -0500, Josh Boyer wrote:
+> > A new binding for flash devices was recently introduced.  This updates the
+> > Walnut DTS to use the new binding.
+> > 
+> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Acked-by: David Gibson <david@gibson.dropbear.id.au>
 > 
-> Do we have an option which is useful for a multiplatform kernel (and for
-> userspace) and which lies between the two extremes? Something which will
-> improve performance on Cell (and POWER6?) without sucking too hard
-> elsewhere?
+> We should both really figure out the vendor/device ids of the JEDEC
+> flash chips in use here and on Ebony, and add the appropriate
+> properties as per the binding.
 
-No, not really. The impact of -mtune=cell should not be too bad on other
-out-of-order CPUs, but we don't have any good measurements to back that
-up, and it may also be really bad for POWER6 and other in-order cores.
+Yeah, I'll do that soon.
 
-	Arnd <><
+josh
