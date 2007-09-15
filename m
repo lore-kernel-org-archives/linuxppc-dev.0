@@ -1,34 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8A45BDDE07
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 09:41:03 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8ENexD0014688
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 19:40:59 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8ENexru412230
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 17:40:59 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8ENexQT009672
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Sep 2007 17:40:59 -0600
-Subject: Re: Device tree aware EMAC driver
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1187854236.5972.6.camel@localhost.localdomain>
-References: <20070823035601.GL7042@localhost.localdomain>
-	<1187854236.5972.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 14 Sep 2007 17:37:47 -0500
-Message-Id: <1189809467.24878.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@oss.sgi.com,
-	Jeff Garzik <jgarzik@pobox.com>, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5A967DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 10:26:39 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] add Kconfig option for optimizing for cell
+Date: Sat, 15 Sep 2007 02:21:57 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709150221.57825.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,27 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-08-23 at 09:30 +0200, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-08-23 at 13:56 +1000, David Gibson wrote:
-> > 
-> > 
-> > Jeff, I've discussed this with BenH, and although there are some
-> > problems with the driver still, we think it's good enough to merge in
-> > 2.6.24, the warts can be fixed up later.  Please apply...
-> 
-> Or to be more precise:
-> 
-> This driver will work well for 4xx platforms and will allow us to move a
-> big step toward getting rid of arch/ppc. The issues with DMA mapping
-> really only concern the case where this is used within the cell "Axon"
-> southbridge, which doesn't happen on any released product at this stage.
+Since the PPE on cell is an in-order core, it suffers significantly
+from wrong instruction scheduling. This adds an Kconfig option that
+enables passing -mtune=cell to gcc in order to generate object
+code that runs well on cell.
 
-Since we have 4 boards that could use this now, and at least one more on
-the way, I've put this in the 'emac' branch of my git tree.  That branch
-is based off of the current 'upstream' branch of the netdev-2.6 tree.
-
-This is just intended to make it easier for those that want to use
-ibm_newemac on their boards while we work the driver into the netdev
-tree.
-
-josh
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 6015a92..87aff53 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -92,6 +92,10 @@ else
+ endif
+ endif
+ 
++ifeq ($(CONFIG_TUNE_CELL),y)
++	CFLAGS += $(call cc-option,-mtune=cell)
++endif
++
+ # No AltiVec instruction when building kernel
+ CFLAGS += $(call cc-option,-mno-altivec)
+ 
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 86eb4cf..4c315be 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -71,6 +71,18 @@ config POWER4
+ 	depends on PPC64
+ 	def_bool y
+ 
++config TUNE_CELL
++	bool "Optimize for Cell Broadband Engine"
++	depends on PPC64
++	help
++	  Cause the compiler to optimize for the PPE of the Cell Broadband
++	  Engine. This will make the code run considerably faster on Cell
++	  but somewhat slower on other machines. This option only changes
++	  the scheduling of instructions, not the selection of instructions
++	  itself, so the resulting kernel will keep running on all other
++	  machines. When building a kernel that is supposed to run only
++	  on Cell, you should also select the POWER4_ONLY option.
++
+ config 6xx
+ 	bool
+ 
