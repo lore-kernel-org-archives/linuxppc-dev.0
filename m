@@ -1,18 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 15 Sep 2007 12:25:35 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 2/9] 8xx: Infrastructure code cleanup.
-Message-ID: <20070915022535.GH25414@localhost.localdomain>
-References: <20070828201127.GA24068@ld0162-tx32.am.freescale.net>
-	<20070828201718.GB24260@ld0162-tx32.am.freescale.net>
-	<20070913071125.GC24281@localhost.localdomain>
-	<20070913121640.5764f656@localhost.localdomain>
-	<20070914040934.GK481@localhost.localdomain>
-	<20070914122114.30327773@localhost.localdomain>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 10912DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 12:29:07 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8F2T7o5028489
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 12:29:07 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8F2WdsX022470
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 12:32:40 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8F2T5B0012146
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Sep 2007 12:29:05 +1000
+Date: Sat, 15 Sep 2007 12:23:18 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [patch 4/4] 4xx: Convert Seqouia flash mappings to new binding
+Message-ID: <20070915022318.GG25414@localhost.localdomain>
+References: <20070914185410.387074000@linux.vnet.ibm.com>>
+	<20070914185649.551007000@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070914122114.30327773@localhost.localdomain>
+In-Reply-To: <20070914185649.551007000@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,65 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 14, 2007 at 12:21:14PM +0400, Vitaly Bordug wrote:
-> Hello David,
+On Fri, Sep 14, 2007 at 01:54:14PM -0500, Josh Boyer wrote:
+> A new binding for flash devices was recently introduced.  This updates the
+> Sequoia DTS to use the new binding and enabled MTD in the defconfig.
 > 
-> On Fri, 14 Sep 2007 14:09:34 +1000
-> David Gibson wrote:
-> 
-> > On Thu, Sep 13, 2007 at 12:16:40PM +0400, Vitaly Bordug wrote:
-> > [snip]
-> > > > This looks bogus.  You're replacing the old crap immr_map() functions,
-> > > > which ioremap()ed the registers every time, with a much simpler
-> > > > version which uses an established-once mapping of the register
-> > > > region.  AFAICT, anywah.
-> > > > 
-> > > > So far, so good - but your immr_unmap() still does an iounmap() which
-> > > > is surely wrong - it should now be a no-op, leaving the mpc8xx_immr
-> > > > mapping intact.  You probably get away with it by accident, because I
-> > > > imagine attempting to unmap an unaligned chunk of the region will just
-> > > > fail.
-> > > >
-> > > 
-> > > yes, it should do nop instead of iounmap. 
-> > > > In fact, with this patch in place, I'd like to see another patch which
-> > > > removes all calls to immr_map() and immr_unmap(), simply accessing the
-> > > > common mapping directly.
-> > > > 
-> > > Sorry, but originally, that stuff was created to get rid of BSP
-> > > ifdefs in drivers. For PQ family, it is a common practice to have
-> > > single driver handling all 3 CPU families, which use the same logic,
-> > > but immr structure differs a little bit.
-> > > 
-> > > At this point it's clear case-by-case ioremapping does not have firm
-> > > benefit, but getting back to the way it was is useless either.  In
-> > > ideal world, we'd have all those stuff put into dts and have
-> > > specific drivers be a shim layer between core hw and IO drivers.
-> > 
-> > Err.. I don't understand what you're getting at.  As the code stands
-> > after Scott's cleanup, the map() and unmap() calls can certainly be
-> > trivially removed, regardless of the history for them.
-> > 
-> I don't argue if they can be removed, but if we aught to do
-> that. Direct immr dereference adds plenty of mess into driver
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-Um... better one line of mess than the 3 lines it is now
-(map/access/unmap).
-
-> code. I would like to keep the situation when immr accesses factored
-> out as a starting point, rather then turn them back to &immap-> or
-> cpm2_immr-> refs.
-
-I can see no advantage to the current "factoring".
-
-> > And, yes, the drivers should certainly uses addresses from the device
-> > tree, rather than that revolting structure covering all the inbuilt
-> > device retgisters.
-> hehe, then you prolly know, that this structure does not fin well
-> into device/driver model, either platform_ or of_device. And I am
-> going to sort it out at some point...
-
-Well, that's good to know.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
