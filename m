@@ -1,16 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Sun, 16 Sep 2007 22:31:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: [PATCH 4/7] powerpc: BestComm core support for Freescale MPC5200
-Message-Id: <20070916223113.0259fe32.sfr@canb.auug.org.au>
-In-Reply-To: <1189940011134-git-send-email-tnt@246tNt.com>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <1189940011152-git-send-email-tnt@246tNt.com>
 References: <11899400103383-git-send-email-tnt@246tNt.com>
-	<1189940011134-git-send-email-tnt@246tNt.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__16_Sep_2007_22_31_13_+1000_60W_WR4Y80jX0XPZ"
+	<1189940011152-git-send-email-tnt@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <03B2F809-EF9E-4B98-BC93-2E98A2DBD225@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/7] powerpc: Changes the config mechanism for rheap
+Date: Sun, 16 Sep 2007 10:59:34 -0500
+To: Sylvain Munaut <tnt@246tNt.com>
 Cc: Grant Likely <glikely@gmail.com>, Paul Mackerras <paulus@samba.org>,
 	PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,91 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__16_Sep_2007_22_31_13_+1000_60W_WR4Y80jX0XPZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Sun, 16 Sep 2007 12:53:27 +0200 Sylvain Munaut <tnt@246tNt.com> wrote:
+On Sep 16, 2007, at 5:53 AM, Sylvain Munaut wrote:
+
+> Instead of having in the makefile all the option that
+> requires rheap, we define a configuration symbol
+> and when needed we make sure it's selected.
 >
-> +++ b/arch/powerpc/sysdev/bestcomm/Makefile
-> @@ -0,0 +1,8 @@
-> +#
-> +# Makefile for BestComm & co
-> +#
-> +
-> +bestcomm-core-objs	:=3D bestcomm.o sram.o
-> +
-> +obj-$(CONFIG_PPC_BESTCOMM)		+=3D bestcomm-core.o
+> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+> ---
+>  arch/powerpc/Kconfig                   |    2 ++
+>  arch/powerpc/lib/Kconfig               |    3 +++
+>  arch/powerpc/lib/Makefile              |    5 +----
+>  arch/powerpc/platforms/Kconfig         |    2 ++
+>  arch/powerpc/platforms/Kconfig.cputype |    1 +
+>  5 files changed, 9 insertions(+), 4 deletions(-)
+>  create mode 100644 arch/powerpc/lib/Kconfig
 
-Or just obj-y since the whole makefile is dependent on CONFIG_PPC_BESTCOMM.
+This probably breaks arch/ppc in that you'll need to add the proper  
+select PPC_LIB_RHEAP to its Kconfig(s) for 8xx & CPM2.
 
-> +++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 00099ef..76063b9 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -634,6 +634,8 @@ source "fs/Kconfig"
 >
-> +#include <asm/io.h>
-> +#include <asm/irq.h>
-> +#include <asm/prom.h>
-> +#include <asm/mpc52xx.h>
-> +#include <asm/of_device.h>
-> +#include <asm/of_platform.h>
-
-Please include linux/of_device.h and linux/of_platform.h instead.
-And linux/of.h instead of asm/prom.h.
-
-> +	ofn_bcom =3D op->node;
-> +	of_node_get(ofn_bcom);
-
-The usual idiom is ofn_bcom =3D of_get_node(op->node);
-
-> +	/* Save the node */
-> +	bcom_eng->ofnode =3D ofn_bcom;
+>  source "arch/powerpc/sysdev/qe_lib/Kconfig"
+>
+> +source "arch/powerpc/lib/Kconfig"
 > +
-> +	/* Get, reserve & map io */
-> +	if (of_address_to_resource(bcom_eng->ofnode, 0, &res_bcom)) {
-                                   ^^^^^^^^^^^^^^^^
-Any reason not to use ofn_bcom here?
+>  source "lib/Kconfig"
+>
+>  menu "Instrumentation Support"
+> diff --git a/arch/powerpc/lib/Kconfig b/arch/powerpc/lib/Kconfig
+> new file mode 100644
+> index 0000000..f383ad4
 
-> +	/* Error path */
-> +error_unmap:
-> +	iounmap(bcom_eng->regs);
-> +error_release:
-> +	release_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma));
-> +error_sramclean:
-> +	bcom_sram_cleanup();
-> +error_ofput:
-> +	of_node_put(bcom_eng->ofnode);
-                    ^^^^^^^^^^^^^^^^
-And here?  Also bcom_eng doesn't get freed in the error path.
+why not just stick this in the toplevel powerpc/Kconfig
 
-> +++ b/arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
-> +#include <linux/spinlock.h>
-> +#include <asm/io.h>
-> +#include <asm/prom.h>
+> --- /dev/null
+> +++ b/arch/powerpc/lib/Kconfig
+> @@ -0,0 +1,3 @@
+> +config PPC_LIB_RHEAP
+> +	bool
+> +	default n
 
-Again please include linux/of.h instead of asm/prom.h
+Please add a help description here.
 
-> +++ b/arch/powerpc/sysdev/bestcomm/sram.c
-> +
-> +#include <asm/io.h>
-> +#include <asm/mmu.h>
-> +#include <asm/prom.h>
+[snip]
 
-And again.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__16_Sep_2007_22_31_13_+1000_60W_WR4Y80jX0XPZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG7SIWTgG2atn1QN8RAsBWAJ47+zkjoReuAlymNnmPp2ItEje3eQCfY3QL
-B3DN5F1NcRke0L7OsR1ywy8=
-=7xFp
------END PGP SIGNATURE-----
-
---Signature=_Sun__16_Sep_2007_22_31_13_+1000_60W_WR4Y80jX0XPZ--
+- k
