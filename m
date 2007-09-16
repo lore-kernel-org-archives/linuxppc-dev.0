@@ -1,13 +1,13 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <1189940011152-git-send-email-tnt@246tNt.com>
+In-Reply-To: <1189940011134-git-send-email-tnt@246tNt.com>
 References: <11899400103383-git-send-email-tnt@246tNt.com>
-	<1189940011152-git-send-email-tnt@246tNt.com>
+	<1189940011134-git-send-email-tnt@246tNt.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <03B2F809-EF9E-4B98-BC93-2E98A2DBD225@kernel.crashing.org>
+Message-Id: <684322B3-96A7-4867-8FA1-648E7ABCC7FF@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/7] powerpc: Changes the config mechanism for rheap
-Date: Sun, 16 Sep 2007 10:59:34 -0500
+Subject: Re: [PATCH 4/7] powerpc: BestComm core support for Freescale MPC5200
+Date: Sun, 16 Sep 2007 11:07:52 -0500
 To: Sylvain Munaut <tnt@246tNt.com>
 Cc: Grant Likely <glikely@gmail.com>, Paul Mackerras <paulus@samba.org>,
 	PowerPC dev list <Linuxppc-dev@ozlabs.org>
@@ -23,51 +23,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Sep 16, 2007, at 5:53 AM, Sylvain Munaut wrote:
 
-> Instead of having in the makefile all the option that
-> requires rheap, we define a configuration symbol
-> and when needed we make sure it's selected.
+> This patch adds support for the core of the BestComm API
+> for the Freescale MPC5200(b). The BestComm engine is a
+> microcode-controlled / tasks-based DMA used by several
+> of the onchip devices.
+>
+> Setting up the tasks / memory allocation and all common
+> low level functions are handled by this patch.
+> The specifics details of each tasks and their microcode
+> are split-out in separate patches.
+>
+> This is not the official API, but a much cleaner one.
+> (hopefully)
 >
 > Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 > ---
->  arch/powerpc/Kconfig                   |    2 ++
->  arch/powerpc/lib/Kconfig               |    3 +++
->  arch/powerpc/lib/Makefile              |    5 +----
->  arch/powerpc/platforms/Kconfig         |    2 ++
->  arch/powerpc/platforms/Kconfig.cputype |    1 +
->  5 files changed, 9 insertions(+), 4 deletions(-)
->  create mode 100644 arch/powerpc/lib/Kconfig
+>  arch/powerpc/platforms/Kconfig               |    2 +
+>  arch/powerpc/sysdev/Makefile                 |    1 +
+>  arch/powerpc/sysdev/bestcomm/Kconfig         |   18 +
+>  arch/powerpc/sysdev/bestcomm/Makefile        |    8 +
+>  arch/powerpc/sysdev/bestcomm/bestcomm.c      |  657 +++++++++++++++ 
+> +++++++++++
+>  arch/powerpc/sysdev/bestcomm/bestcomm.h      |  136 ++++++
+>  arch/powerpc/sysdev/bestcomm/bestcomm_priv.h |  325 +++++++++++++
+>  arch/powerpc/sysdev/bestcomm/sram.c          |  177 +++++++
+>  arch/powerpc/sysdev/bestcomm/sram.h          |   54 +++
+>  9 files changed, 1378 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/Kconfig
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/Makefile
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.c
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.h
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/sram.c
+>  create mode 100644 arch/powerpc/sysdev/bestcomm/sram.h
 
-This probably breaks arch/ppc in that you'll need to add the proper  
-select PPC_LIB_RHEAP to its Kconfig(s) for 8xx & CPM2.
+this version still doesn't address comments made back in may:
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 00099ef..76063b9 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -634,6 +634,8 @@ source "fs/Kconfig"
->
->  source "arch/powerpc/sysdev/qe_lib/Kconfig"
->
-> +source "arch/powerpc/lib/Kconfig"
-> +
->  source "lib/Kconfig"
->
->  menu "Instrumentation Support"
-> diff --git a/arch/powerpc/lib/Kconfig b/arch/powerpc/lib/Kconfig
-> new file mode 100644
-> index 0000000..f383ad4
+http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036224.html
 
-why not just stick this in the toplevel powerpc/Kconfig
-
-> --- /dev/null
-> +++ b/arch/powerpc/lib/Kconfig
-> @@ -0,0 +1,3 @@
-> +config PPC_LIB_RHEAP
-> +	bool
-> +	default n
-
-Please add a help description here.
-
-[snip]
+Also, what about splitting bestcomm.c into bestcomm_task.c &  
+bestcomm_drv.c (or just bestcomm.c) or something like that.  It seems  
+'private API' isn't really the proper term.
 
 - k
