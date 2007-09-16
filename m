@@ -1,16 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <1189940011134-git-send-email-tnt@246tNt.com>
-References: <11899400103383-git-send-email-tnt@246tNt.com>
-	<1189940011134-git-send-email-tnt@246tNt.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <684322B3-96A7-4867-8FA1-648E7ABCC7FF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/7] powerpc: BestComm core support for Freescale MPC5200
-Date: Sun, 16 Sep 2007 11:07:52 -0500
-To: Sylvain Munaut <tnt@246tNt.com>
-Cc: Grant Likely <glikely@gmail.com>, Paul Mackerras <paulus@samba.org>,
-	PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6ED8ADDDFF
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 02:27:59 +1000 (EST)
+Date: Sun, 16 Sep 2007 18:27:47 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Stefan Roese <sr@denx.de>
+Message-ID: <20070916162747.GV23573@pengutronix.de>
+References: <200709161352.03459.sr@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200709161352.03459.sr@denx.de>
+Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,49 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Sep 16, 2007 at 01:52:02PM +0200, Stefan Roese wrote:
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index 9f3a4cd..12453e2 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -220,7 +220,17 @@ config I2C_PIIX4
+>  
+>  config I2C_IBM_IIC
+>  	tristate "IBM PPC 4xx on-chip I2C interface"
+> -	depends on IBM_OCP
+> +	depends on !PPC_MERGE
+> +	help
+> +	  Say Y here if you want to use IIC peripheral found on 
+> +	  embedded IBM PPC 4xx based systems. 
 
-On Sep 16, 2007, at 5:53 AM, Sylvain Munaut wrote:
+Can we agree on one nomenclature - either i2c or iic?
 
-> This patch adds support for the core of the BestComm API
-> for the Freescale MPC5200(b). The BestComm engine is a
-> microcode-controlled / tasks-based DMA used by several
-> of the onchip devices.
->
-> Setting up the tasks / memory allocation and all common
-> low level functions are handled by this patch.
-> The specifics details of each tasks and their microcode
-> are split-out in separate patches.
->
-> This is not the official API, but a much cleaner one.
-> (hopefully)
->
-> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
-> ---
->  arch/powerpc/platforms/Kconfig               |    2 +
->  arch/powerpc/sysdev/Makefile                 |    1 +
->  arch/powerpc/sysdev/bestcomm/Kconfig         |   18 +
->  arch/powerpc/sysdev/bestcomm/Makefile        |    8 +
->  arch/powerpc/sysdev/bestcomm/bestcomm.c      |  657 +++++++++++++++ 
-> +++++++++++
->  arch/powerpc/sysdev/bestcomm/bestcomm.h      |  136 ++++++
->  arch/powerpc/sysdev/bestcomm/bestcomm_priv.h |  325 +++++++++++++
->  arch/powerpc/sysdev/bestcomm/sram.c          |  177 +++++++
->  arch/powerpc/sysdev/bestcomm/sram.h          |   54 +++
->  9 files changed, 1378 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/sysdev/bestcomm/Kconfig
->  create mode 100644 arch/powerpc/sysdev/bestcomm/Makefile
->  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.c
->  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm.h
->  create mode 100644 arch/powerpc/sysdev/bestcomm/bestcomm_priv.h
->  create mode 100644 arch/powerpc/sysdev/bestcomm/sram.c
->  create mode 100644 arch/powerpc/sysdev/bestcomm/sram.h
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called i2c-ibm_iic.
 
-this version still doesn't address comments made back in may:
+Are these drivers the same functionality (host i2c driver for 4xx)? If
+yes, shouldn't all in-tree users be migrated over and the old style
+driver be removed (with deprecation period)?
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036224.html
+> +#define DBG_LEVEL 0
+> +
+> +#ifdef DBG
+> +#undef DBG
+> +#endif
+> +
+> +#ifdef DBG2
+> +#undef DBG2
+> +#endif
+> +
+> +#if DBG_LEVEL > 0
+> +#  define DBG(f,x...)	printk(KERN_DEBUG "ibm-iic" f, ##x)
+> +#else
+> +#  define DBG(f,x...)	((void)0)
+> +#endif
+> +#if DBG_LEVEL > 1
+> +#  define DBG2(f,x...) 	DBG(f, ##x)
+> +#else
+> +#  define DBG2(f,x...) 	((void)0)
+> +#endif
 
-Also, what about splitting bestcomm.c into bestcomm_task.c &  
-bestcomm_drv.c (or just bestcomm.c) or something like that.  It seems  
-'private API' isn't really the proper term.
+Any reason why you can't use pr_debug?
 
-- k
+Robert
+-- 
+Pengutronix - Linux Solutions for Science and Industry
+Entwicklungszentrum Nord     http://www.pengutronix.de
