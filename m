@@ -1,20 +1,21 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 944F1DDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 09:32:27 +1000 (EST)
-Message-ID: <46EC6B86.3050405@garzik.org>
-Date: Sat, 15 Sep 2007 19:32:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <SRS0=24Qs=OM=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 9CD0BDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 19:07:30 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
+Date: Sun, 16 Sep 2007 11:07:23 +0200
+References: <200709151108.01849.sr@denx.de>
+	<20070915100434.GA4978@gate.ebshome.net>
+	<20070915152921.36ccbec7@localhost.localdomain>
+In-Reply-To: <20070915152921.36ccbec7@localhost.localdomain>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH] ucc_geth: fix compilation
-References: <20070912112456.GA15556@localhost.localdomain>
-	<20070913152333.GA2381@localhost.localdomain>
-In-Reply-To: <20070913152333.GA2381@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709161107.23309.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
-> Currently qe_bd_t is used in the macro call -- dma_unmap_single,
-> which is a no-op on PPC32, thus error is hidden today. Starting
-> with 2.6.24, macro will be replaced by the empty static function,
-> and erroneous use of qe_bd_t will trigger compilation error.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> Reposting this to include netdev in Cc.
-> 
->  drivers/net/ucc_geth.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Saturday 15 September 2007, Vitaly Bordug wrote:
+> > Where is dev->clkdiv initialized?
+> >
+> > My original version used iic_clkdiv() to calculate correct devider
+> > based on OPB frequency. Did you even test this code?
 
-applied
+Yes, I tested it successfully on the Sequoia eval board.
+
+> heh, just my $0.02: the upper clearly shows one like missing, maybe during
+> cleanup (since there is opb freq pulled in quote):
+>
+>         dev->clckdiv = iic_clckdiv(*prop); or smth like that
+
+Could be. Thanks for the hint. I'll take a look at it an resubmit.
+
+Best regards,
+Stefan
