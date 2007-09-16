@@ -1,30 +1,24 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 759D1DDE16
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id C2E20DDE19
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Sep 2007 04:54:44 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1831045wag
+	Mon, 17 Sep 2007 05:05:54 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1833685wag
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Sep 2007 11:54:43 -0700 (PDT)
-Message-ID: <9e4733910709161154m2ade8f58o8ce615feffd01406@mail.gmail.com>
-Date: Sun, 16 Sep 2007 14:54:43 -0400
+	Sun, 16 Sep 2007 12:05:53 -0700 (PDT)
+Message-ID: <9e4733910709161205k15106ba1sd2f0597f2601f222@mail.gmail.com>
+Date: Sun, 16 Sep 2007 15:05:53 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
+To: "Domen Puncer" <domen.puncer@telargo.com>
 Subject: Re: Domen's MPC5200 FEC cleanup patch.
-In-Reply-To: <20070916185041.GY23573@pengutronix.de>
+In-Reply-To: <9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
+	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
 	<20070915122218.GB19857@nd47.coderock.org>
 	<9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
-	<9e4733910709161000i64622520i77caa00e56abc7a8@mail.gmail.com>
-	<9e4733910709161005u4f400ab7wb1bf55dac1b45193@mail.gmail.com>
-	<9e4733910709161100i456c176ay664d89ac638c9958@mail.gmail.com>
-	<9e4733910709161125u15dcd02cj300c0e3a7fda4c0a@mail.gmail.com>
-	<20070916183446.GX23573@pengutronix.de>
-	<9e4733910709161138m177edb1k99e5df120e9ca9df@mail.gmail.com>
-	<20070916185041.GY23573@pengutronix.de>
-Cc: Domen Puncer <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,21 +29,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/16/07, Robert Schwebel <r.schwebel@pengutronix.de> wrote:
-> On Sun, Sep 16, 2007 at 02:38:55PM -0400, Jon Smirl wrote:
-> > Any idea why my DNS servers are getting set up from DHCP?
->
-> Well, check your DHCP server config :-)
+This adjustment to the error counting is in the Efika patches and not
+in yours, should it be in yours too?
 
-My x86/arm boxes are getting it ok from same server.
+--- a/drivers/net/fec_mpc52xx/fec.c 2007-05-30 16:04:50.000000000 +0200
++++ b/drivers/net/fec_mpc52xx/fec.c 2007-05-30 16:09:02.000000000 +0200
+@@ -411,7 +411,9 @@
 
->
-> Robert
-> --
-> Pengutronix - Linux Solutions for Science and Industry
-> Entwicklungszentrum Nord     http://www.pengutronix.de
->
-
+ 	stats->rx_bytes = in_be32(&fec->rmon_r_octets);
+ 	stats->rx_packets = in_be32(&fec->rmon_r_packets);
+-	stats->rx_errors = stats->rx_packets - in_be32(&fec->ieee_r_frame_ok);
++	stats->rx_errors = stats->rx_packets - (
++			in_be32(&fec->ieee_r_frame_ok) +
++			in_be32(&fec->rmon_r_mc_pkt));
+ 	stats->tx_bytes = in_be32(&fec->rmon_t_octets);
+ 	stats->tx_packets = in_be32(&fec->rmon_t_packets);
+ 	stats->tx_errors = stats->tx_packets - (
 
 -- 
 Jon Smirl
