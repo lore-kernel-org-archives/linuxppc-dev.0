@@ -1,9 +1,9 @@
 Return-Path: <tnt@246tNt.com>
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/7] powerpc: exports rheap symbol to modules
-Date: Sun, 16 Sep 2007 12:53:24 +0200
-Message-Id: <1189940010114-git-send-email-tnt@246tNt.com>
+Subject: [PATCH 2/7] powerpc: Changes the config mechanism for rheap
+Date: Sun, 16 Sep 2007 12:53:25 +0200
+Message-Id: <1189940011152-git-send-email-tnt@246tNt.com>
 In-Reply-To: <11899400103383-git-send-email-tnt@246tNt.com>
 References: <11899400103383-git-send-email-tnt@246tNt.com>
 Cc: Grant Likely <glikely@gmail.com>, Sylvain Munaut <tnt@246tNt.com>,
@@ -17,126 +17,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Theses can be useful in modules too. So we export them.
+Instead of having in the makefile all the option that
+requires rheap, we define a configuration symbol
+and when needed we make sure it's selected.
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
- arch/powerpc/lib/rheap.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ arch/powerpc/Kconfig                   |    2 ++
+ arch/powerpc/lib/Kconfig               |    3 +++
+ arch/powerpc/lib/Makefile              |    5 +----
+ arch/powerpc/platforms/Kconfig         |    2 ++
+ arch/powerpc/platforms/Kconfig.cputype |    1 +
+ 5 files changed, 9 insertions(+), 4 deletions(-)
+ create mode 100644 arch/powerpc/lib/Kconfig
 
-diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
-index ada5b42..22c3b4f 100644
---- a/arch/powerpc/lib/rheap.c
-+++ b/arch/powerpc/lib/rheap.c
-@@ -15,6 +15,7 @@
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/mm.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-@@ -275,6 +276,7 @@ rh_info_t *rh_create(unsigned int alignment)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 00099ef..76063b9 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -634,6 +634,8 @@ source "fs/Kconfig"
  
- 	return info;
- }
-+EXPORT_SYMBOL_GPL(rh_create);
+ source "arch/powerpc/sysdev/qe_lib/Kconfig"
  
- /*
-  * Destroy a dynamically created remote heap.  Deallocate only if the areas
-@@ -288,6 +290,7 @@ void rh_destroy(rh_info_t * info)
- 	if ((info->flags & RHIF_STATIC_INFO) == 0)
- 		kfree(info);
- }
-+EXPORT_SYMBOL_GPL(rh_destroy);
- 
- /*
-  * Initialize in place a remote heap info block.  This is needed to support
-@@ -320,6 +323,7 @@ void rh_init(rh_info_t * info, unsigned int alignment, int max_blocks,
- 	for (i = 0, blk = block; i < max_blocks; i++, blk++)
- 		list_add(&blk->list, &info->empty_list);
- }
-+EXPORT_SYMBOL_GPL(rh_init);
- 
- /* Attach a free memory region, coalesces regions if adjuscent */
- int rh_attach_region(rh_info_t * info, unsigned long start, int size)
-@@ -360,6 +364,7 @@ int rh_attach_region(rh_info_t * info, unsigned long start, int size)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(rh_attach_region);
- 
- /* Detatch given address range, splits free block if needed. */
- unsigned long rh_detach_region(rh_info_t * info, unsigned long start, int size)
-@@ -428,6 +433,7 @@ unsigned long rh_detach_region(rh_info_t * info, unsigned long start, int size)
- 
- 	return s;
- }
-+EXPORT_SYMBOL_GPL(rh_detach_region);
- 
- /* Allocate a block of memory at the specified alignment.  The value returned
-  * is an offset into the buffer initialized by rh_init(), or a negative number
-@@ -502,6 +508,7 @@ unsigned long rh_alloc_align(rh_info_t * info, int size, int alignment, const ch
- 
- 	return start;
- }
-+EXPORT_SYMBOL_GPL(rh_alloc_align);
- 
- /* Allocate a block of memory at the default alignment.  The value returned is
-  * an offset into the buffer initialized by rh_init(), or a negative number if
-@@ -511,6 +518,7 @@ unsigned long rh_alloc(rh_info_t * info, int size, const char *owner)
- {
- 	return rh_alloc_align(info, size, info->alignment, owner);
- }
-+EXPORT_SYMBOL_GPL(rh_alloc);
- 
- /* Allocate a block of memory at the given offset, rounded up to the default
-  * alignment.  The value returned is an offset into the buffer initialized by
-@@ -594,6 +602,7 @@ unsigned long rh_alloc_fixed(rh_info_t * info, unsigned long start, int size, co
- 
- 	return start;
- }
-+EXPORT_SYMBOL_GPL(rh_alloc_fixed);
- 
- /* Deallocate the memory previously allocated by one of the rh_alloc functions.
-  * The return value is the size of the deallocated block, or a negative number
-@@ -626,6 +635,7 @@ int rh_free(rh_info_t * info, unsigned long start)
- 
- 	return size;
- }
-+EXPORT_SYMBOL_GPL(rh_free);
- 
- int rh_get_stats(rh_info_t * info, int what, int max_stats, rh_stats_t * stats)
- {
-@@ -663,6 +673,7 @@ int rh_get_stats(rh_info_t * info, int what, int max_stats, rh_stats_t * stats)
- 
- 	return nr;
- }
-+EXPORT_SYMBOL_GPL(rh_get_stats);
- 
- int rh_set_owner(rh_info_t * info, unsigned long start, const char *owner)
- {
-@@ -687,6 +698,7 @@ int rh_set_owner(rh_info_t * info, unsigned long start, const char *owner)
- 
- 	return size;
- }
-+EXPORT_SYMBOL_GPL(rh_set_owner);
- 
- void rh_dump(rh_info_t * info)
- {
-@@ -722,6 +734,7 @@ void rh_dump(rh_info_t * info)
- 		       st[i].size, st[i].owner != NULL ? st[i].owner : "");
- 	printk(KERN_INFO "\n");
- }
-+EXPORT_SYMBOL_GPL(rh_dump);
- 
- void rh_dump_blk(rh_info_t * info, rh_block_t * blk)
- {
-@@ -729,3 +742,5 @@ void rh_dump_blk(rh_info_t * info, rh_block_t * blk)
- 	       "blk @0x%p: 0x%lx-0x%lx (%u)\n",
- 	       blk, blk->start, blk->start + blk->size, blk->size);
- }
-+EXPORT_SYMBOL_GPL(rh_dump_blk);
++source "arch/powerpc/lib/Kconfig"
 +
+ source "lib/Kconfig"
+ 
+ menu "Instrumentation Support"
+diff --git a/arch/powerpc/lib/Kconfig b/arch/powerpc/lib/Kconfig
+new file mode 100644
+index 0000000..f383ad4
+--- /dev/null
++++ b/arch/powerpc/lib/Kconfig
+@@ -0,0 +1,3 @@
++config PPC_LIB_RHEAP
++	bool
++	default n
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 0a486d4..f75c2a1 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -13,7 +13,6 @@ endif
+ 
+ obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o
+-obj-$(CONFIG_QUICC_ENGINE) += rheap.o
+ obj-$(CONFIG_XMON)	+= sstep.o
+ obj-$(CONFIG_KPROBES)	+= sstep.o
+ obj-$(CONFIG_NOT_COHERENT_CACHE)	+= dma-noncoherent.o
+@@ -22,6 +21,4 @@ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
+ endif
+ 
+-# Temporary hack until we have migrated to asm-powerpc
+-obj-$(CONFIG_8xx)	+= rheap.o
+-obj-$(CONFIG_CPM2)	+= rheap.o
++obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 19d4628..9189ba5 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -257,6 +257,7 @@ config TAU_AVERAGE
+ 
+ config QUICC_ENGINE
+ 	bool
++	select PPC_LIB_RHEAP
+ 	help
+ 	  The QUICC Engine (QE) is a new generation of communications
+ 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+@@ -266,6 +267,7 @@ config QUICC_ENGINE
+ config CPM2
+ 	bool
+ 	default n
++	select PPC_LIB_RHEAP
+ 	help
+ 	  The CPM2 (Communications Processor Module) is a coprocessor on
+ 	  embedded CPUs made by Freescale.  Selecting this option means that
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index e4b2aee..29d8eff 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -36,6 +36,7 @@ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+ 	select 8xx
++	select PPC_LIB_RHEAP
+ 
+ config 40x
+ 	bool "AMCC 40x"
 -- 
 1.5.3
