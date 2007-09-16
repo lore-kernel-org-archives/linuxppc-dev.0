@@ -1,18 +1,24 @@
-Return-Path: <stelios@stelioscellar.com>
-Received: from memova2.tellas.gr (memova2.tellas.gr [62.169.194.61])
-	by ozlabs.org (Postfix) with ESMTP id 21812DDDF2
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id 9FD3BDDE00
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Sep 2007 01:37:40 +1000 (EST)
-From: "Stelios Koroneos" <stelios@stelioscellar.com>
-To: "Junqiang Hu" <jqhu936@yahoo.com>,
-	<linuxppc-embedded@ozlabs.org>
-Subject: RE: Linux booting problem on Xilinx ppc
-Date: Sun, 16 Sep 2007 18:37:33 +0300
-Message-ID: <HOECLKEKOHLAMMGDLLBHEEKMMEAA.stelios@stelioscellar.com>
+	Mon, 17 Sep 2007 03:00:21 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1802553wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 16 Sep 2007 10:00:20 -0700 (PDT)
+Message-ID: <9e4733910709161000i64622520i77caa00e56abc7a8@mail.gmail.com>
+Date: Sun, 16 Sep 2007 13:00:19 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: Domen's MPC5200 FEC cleanup patch.
+In-Reply-To: <9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <12696686.post@talk.nabble.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
+	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
+	<20070915122218.GB19857@nd47.coderock.org>
+	<9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,111 +29,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We are seeing similar problems (wrong memory displayed, kernel hangup) when
-compiling a 2.6.23-rc2 kernel with gcc 4.1.1 for an ml403 board.
-Using gcc 3.4.4 to compile the kernel, then there is no problem (the kernel
-boots)
-Setting mem in the kernel config does not solve the issue.
+On 9/15/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On 9/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> > On 15/09/07 00:28 -0400, Jon Smirl wrote:
+> > > On 9/14/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > > > This patch doesn't seem to working quite right on my hardware (Phytec
+> > > > pcm030). At boot I get a long pause.
+> > >
+> > > It also doesn't compile if  CONFIG_FEC_MPC52xx_MDIO is undefined.
+> >
+> > Right, darn.
+> > Try this one: http://coderock.org/tmp/fec-v3rc1/
+>
+>     0.776407] 0x00f40000-0x00f80000 : "oftree"
+> [    0.782101] 0x00f80000-0x01000000 : "space"
+> [    0.788100] TCP cubic registered
+> [    0.791427] NET: Registered protocol family 1
+> [    0.795904] NET: Registered protocol family 17
+> [    1.305579] f0003000:00 not found
+> [    1.308985] net eth0: phy_connect failed
+> [    1.312961] net eth0: fec_init_phy failed
+> [    1.317188] IP-Config: Failed to open eth0
+> [    1.321362] IP-Config: No network devices available.
+> [    1.326973] Looking up port of RPC 100003/3 on 192.168.1.4
 
-Stelios S. Koroneos
+This fixes the problem....
 
-Digital OPSiS - Embedded Intelligence
-http://www.digital-opsis.com
+diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
+index 922e9a8..c4442e0 100644
+--- a/drivers/net/fec_mpc52xx/fec.c
++++ b/drivers/net/fec_mpc52xx/fec.c
+@@ -1087,11 +1087,13 @@ static struct of_platform_driver mpc52xx_fec_driver = {
+ /* ======================================================================== */
+ /* Module                                                                   */
+ /* ======================================================================== */
++extern int fec_mdio_init(void);
++void fec_mdio_exit(void);
+
+ static int __init
+ mpc52xx_fec_init(void)
+ {
+-#ifdef FEC_MPC52xx_MDIO
++#ifdef CONFIG_FEC_MPC52xx_MDIO
+        int ret;
+        ret = fec_mdio_init();
+        if (ret) {
+@@ -1106,7 +1108,7 @@ static void __exit
+ mpc52xx_fec_exit(void)
+ {
+        of_unregister_platform_driver(&mpc52xx_fec_driver);
+-#ifdef FEC_MPC52xx_MDIO
++#ifdef CONFIG_FEC_MPC52xx_MDIO
+        fec_mdio_exit();
+ #endif
+ }
 
 
-> -----Original Message-----
-> From:
-> linuxppc-embedded-bounces+stelios=stelioscellar.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+stelios=stelioscellar.com@ozlabs
-> .org]On Behalf Of Junqiang Hu
-> Sent: Sunday, September 16, 2007 7:40 AM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: Re: Linux booting problem on Xilinx ppc
->
->
->
->
-> Hi Grant,
->
->    Thank you so much for the reply!  Fortunately I got it work now -- it's
-> the crosstool compiler problem.  Originally I was using
-> gcc-4.1.0, yet when
-> compiling kernel 2.6.22, I noticed that it says gcc-4.1.0 will miscompile
-> the kernel, so I changed to another version, and now I can let it go!
->
->   Right now still not fully booted because of the SystemACE problem, or
-> maybe the partition is not correct.  I'm still working on it, hopefully to
-> get it solved soon :-)
->
-> Thanks,
-> -J.
->
->
-> Grant Likely-2 wrote:
-> >
-> > On 9/15/07, Junqiang Hu <jqhu936@yahoo.com> wrote:
-> >>
-> >>
-> >> Dear friends,
-> >>
-> >>    I'm trying to run Linux in AvNet (Memec) Xilinx-XC2VP50-EVKT-FF1152
-> >>  board.  The Linux version I'm using is 2.4; the cross-compiler is
-> >> gcc-4.1.0, glibc 2.3.6.  When booting the kernel, it shows:
-> >>       loaded at:     00400000 004B51E4
-> >>       board data at: 00000000 00000018
-> >>       relocated to:  0040526C 00405284
-> >>       zimage at:     00405B2B 004B177C
-> >>       avail ram:     004B6000 60000000
-> >
-> > I strongly recommend moving to a 2.6 kernel.  Recent mainline has
-> > support for the Xilinx ppc built in.
-> >>
-> >>       Linux/PPC load: console=ttyS0,9600
-> root=/dev/xsysace/disc0/part3 rw
-> >>       Uncompressing Linux...done.
-> >>       Now booting the kernel
-> >>
-> >> Then it hangs. First it seems to me that the "avail ram" is
-> not correct,
-> >> since I configured only 32MB SDRAM.  Moreover, if it's first
-> powered on,
-> >> the
-> >> end address of "avail ram" would be FFD9FBED. Then I tried to
-> investigate
-> >> the problem using xmd.  When  launched, it says:
-> >
-> > (If you're using u-boot) You might have a mismatch between the board
-> > info structure used by u-boot and the one used by Linux.
-> >
-> > Also, you should use your debugger to inspect the __log_buf memory of
-> > the kernel.  A common problem is the kernel starts booting, but the
-> > console is setup incorrectly and so you see nothing.  But, you can
-> > read the console output directly from memory if you look at the
-> > __log_buf region (find the address in the System.map file; you might
-> > need to subtract 0xC0000000 from the address to view the memory)
-> >
-> > Cheers,
-> > g.
-> >
-> > --
-> > Grant Likely, B.Sc., P.Eng.
-> > Secret Lab Technologies Ltd.
-> > grant.likely@secretlab.ca
-> > (403) 399-0195
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->
-> --
-> View this message in context:
-> http://www.nabble.com/Linux-booting-problem-on-Xilinx-ppc-tf444906
-0.html#a12696686
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Jon Smirl
+jonsmirl@gmail.com
