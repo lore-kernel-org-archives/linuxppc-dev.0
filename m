@@ -1,19 +1,12 @@
-Return-Path: <SRS0=a+gK=ON=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 77E63DDDFF
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 15:33:39 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
-Date: Mon, 17 Sep 2007 07:34:08 +0200
-References: <200709161352.03459.sr@denx.de>
-	<20070916185330.GA32314@gate.ebshome.net>
-In-Reply-To: <20070916185330.GA32314@gate.ebshome.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 17 Sep 2007 15:42:36 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Consistently use big-endian property data in testcases
+Message-ID: <20070917054236.GA9303@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709170734.09079.sr@denx.de>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +16,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 16 September 2007, Eugene Surovegin wrote:
-> Hmm, I just noticed that you basically added a copy of existing
-> driver with small changes to support OF while keeping OCP one.
->
-> Why not just add OF support to the existing code (under some ifdef),
-> and then remove OCP support as soon as ppc -> powerpc transition is
-> finished? Why have two almost identical code in the tree?
+Flat device trees always have integers in their structure stored as
+big-endian.  From this point of view, property values are
+bags-of-bytes and any endianness is up to users of the device tree to
+determine.
 
-My understanding was, that adding many #ifdef's into the code was not the 
-preferred way. I could of course change this patch to not add an additional 
-driver but extend the existing driver with a bunch of #ifdef's to support 
-both versions.
+The libfdt testcases which use properties with integer values,
+currently use native endian format for the architecture on which the
+testcases are run.  This works ok for now, since both the creation and
+checking of the example device trees happen in the same endianness.
 
-This approach of multiple drivers seems to be common in the kernel right now:
+This will become a problem, however, for tests of dtc which we want to
+add in the nearish future.  dtc always uses big-endian format for
+'cell' format data in properties; as it needs to in order to produce
+powerpc-usable device trees when hosted on a little-endian
+architecture.
 
-drivers/mtd/maps/physmap.c
-drivers/mtd/maps/physmap_of.c
+This patch, therefore, changes the libfdt testsuite to use big-endian
+format always for integer format data, in order to interoperate sanely
+with future dtc testcases.  This also means that the example trees
+created by the testsuite should now be byte-for-byte identical
+regardless of dtc and libfdt's host platform, which is arguably an
+advantage.
 
-or
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-drivers/usb/host/ohci-ppc-soc.c
-drivers/usb/host/ohci-ppc-of.c
+Index: dtc/tests/testdata.h
+===================================================================
+--- dtc.orig/tests/testdata.h	2007-09-17 11:50:21.000000000 +1000
++++ dtc/tests/testdata.h	2007-09-17 15:41:10.000000000 +1000
+@@ -1,5 +1,16 @@
+-#define TEST_VALUE_1	0xdeadbeef
+-#define TEST_VALUE_2	0xabcd1234
++#include <endian.h>
++
++#if __BYTE_ORDER == __BIG_ENDIAN
++#define cell_to_fdt(x)	(x)
++#else
++/* We do this as a big hairy expression instead of using bswap_32()
++ * because we need it to work in asm as well as C. */
++#define cell_to_fdt(x)	((((x) >> 24) & 0xff) | (((x) >> 8) & 0xff00) \
++			 | (((x) << 8) & 0xff0000) | (((x) << 24) & 0xff000000))
++#endif
++
++#define TEST_VALUE_1	cell_to_fdt(0xdeadbeef)
++#define TEST_VALUE_2	cell_to_fdt(0xabcd1234)
+ 
+ #define TEST_STRING_1	"hello world"
+ 
 
-Any other opinions on this? How should this be handled to get accepted 
-upstream? Two different drivers with removing the "old" one later when 
-arch/ppc is gone, or one driver which supports both versions and removing the 
-ocp support in this driver later?
 
-> I also personally don't like this _iic -> _of name change (you
-> removed peripheral name and added something which has nothing to do
-> with iic, I never heard of OF peripheral in 4xx chips). Whether you
-> use OCP or OF to pass a little information is quite irrelevant to the
-> iic driver operation.
-
-The "old" name "i2c-ibm_iic" is kind of redundant. Nearly all bus drivers are 
-named "i2c-platform". Perhaps a better name would be "i2c-ppc4xx" then. 
-This "of" name was borrowed from already existing device-tree aware drivers 
-like drivers/mtd/maps/physmap_of.c or drivers/usb/host/ohci-ppc-of.c.
-
-> If you insist on this approach, please add yourself as a maintainer of
-> this code, because I'm not going to support two identical copies of my
-> code in the kernel tree.
-
-I "insist" in nothing. I'm just trying to get this device-tree aware I2C 
-driver support upstream.
-
-Best regards,
-Stefan
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
