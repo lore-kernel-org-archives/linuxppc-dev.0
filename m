@@ -1,22 +1,24 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B74DBDDE08
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:22:59 +1000 (EST)
-Date: Sun, 16 Sep 2007 23:22:57 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
-Message-ID: <20070917062257.GC32314@gate.ebshome.net>
-References: <200709161352.03459.sr@denx.de>
-	<20070916185330.GA32314@gate.ebshome.net>
-	<200709170734.09079.sr@denx.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 539E1DDE11
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:28:47 +1000 (EST)
+Date: Mon, 17 Sep 2007 16:28:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: travis@sgi.com
+Subject: Re: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data
+	array (v3)
+Message-Id: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
+In-Reply-To: <20070912015647.486500682@sgi.com>
+References: <20070912015644.927677070@sgi.com>
+	<20070912015647.486500682@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200709170734.09079.sr@denx.de>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl"
+Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 07:34:08AM +0200, Stefan Roese wrote:
-> 
-> My understanding was, that adding many #ifdef's into the code was not the 
-> preferred way. 
+--Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But just making a copy seems to be a proffered one? Wow.
+On Tue, 11 Sep 2007 18:56:53 -0700 travis@sgi.com wrote:
+>
+> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
+> architecture.  This fixes build errors in block/blktrace.c and
+> kernel/sched.c when CONFIG_SCHED_SMT is defined.
+>=20
+> Note: these changes have not been built nor tested.
 
-OCP and/or OF part is quite small part of the driver; another approach 
-would been completely splitting OCP and OF specific part out 
-(e.g. i2c-ibm_iic.c + i2c-ibm_iic_ocp.c / i2c_ibm_iic_of.c). I 
-personally thing it's not worth the effort and just adding couple of 
-ifdef'ed code is good enough, especially as a transitional thing.
+After applying all 10 patches, the ppc64_defconfig builds but:
 
-> I could of course change this patch to not add an additional 
-> driver but extend the existing driver with a bunch of #ifdef's to support 
-> both versions.
-> 
-> This approach of multiple drivers seems to be common in the kernel right now:
-> 
-> drivers/mtd/maps/physmap.c
-> drivers/mtd/maps/physmap_of.c
-> 
-> or
-> 
-> drivers/usb/host/ohci-ppc-soc.c
-> drivers/usb/host/ohci-ppc-of.c
+	vmlinux is larger:
 
-I don't think these are good examples, physmap.c seems to differ from 
-physmap_of.c significantly. These drivers are mostly a glue, and it 
-makes sense to have different versions, because there isn't much there 
-except for platform/bus/glue specific code.
+   text    data     bss     dec     hex filename
+7705776 1756984  504624 9967384  981718 ppc64/vmlinux
+7706228 1757120  504624 9967972  981964 trav.bld/vmlinux
 
-> Any other opinions on this? How should this be handled to get accepted 
-> upstream? Two different drivers with removing the "old" one later when 
-> arch/ppc is gone,
+	the topology (on my POWERPC5+ box) is not correct:
 
-ppc has been going away for the last two years at least and still 
-isn't gone. What makes you think this isn't gonna take another year or 
-two :) ?
+cpu0/topology/thread_siblings:0000000f
+cpu1/topology/thread_siblings:0000000f
+cpu2/topology/thread_siblings:0000000f
+cpu3/topology/thread_siblings:0000000f
 
-> 
-> The "old" name "i2c-ibm_iic" is kind of redundant. Nearly all bus drivers are 
-> named "i2c-platform". Perhaps a better name would be "i2c-ppc4xx" then. 
+it used to be:
 
-Sure, that'd be a much better choice.
+cpu0/topology/thread_siblings:00000003
+cpu1/topology/thread_siblings:00000003
+cpu2/topology/thread_siblings:0000000c
+cpu3/topology/thread_siblings:0000000c
 
--- 
-Eugene
+Similarly on my iSeries box, the topology is displayed as above
+while it used to be:
+
+cpu0/topology/thread_siblings:00000001
+cpu1/topology/thread_siblings:00000002
+cpu2/topology/thread_siblings:00000004
+cpu3/topology/thread_siblings:00000008
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG7h6VTgG2atn1QN8RAmB+AJ9HOw5MvcVaJSHu/pECUTF9I4l5VACgj//+
+2tXfkc5WNeX4tppxSpnOXis=
+=XiPX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl--
