@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B27E0DDEE9
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 02:58:13 +1000 (EST)
-Date: Mon, 17 Sep 2007 11:57:31 -0500
+	by ozlabs.org (Postfix) with ESMTP id 22100DDEED
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 02:58:15 +1000 (EST)
+Date: Mon, 17 Sep 2007 11:57:35 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 03/28] Document local bus nodes in the device tree.
-Message-ID: <20070917165731.GC6563@loki.buserror.net>
+Subject: [PATCH 06/28] bootwrapper: Add PlanetCore firmware support.
+Message-ID: <20070917165735.GF6563@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070917165643.GA6545@loki.buserror.net>
@@ -24,125 +24,267 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-cuboot-pq2 is updated to match the binding, and get rid of phandle linkage.
+This is a library that board code can use to extract information from the
+PlanetCore configuration keys.  PlanetCore is used on various boards from
+Embedded Planet.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   38 ++++++++++++++++++++++++++
- arch/powerpc/boot/cuboot-pq2.c               |   29 +++++--------------
- 2 files changed, 46 insertions(+), 21 deletions(-)
+ arch/powerpc/boot/Makefile     |    2 +-
+ arch/powerpc/boot/planetcore.c |  175 ++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/planetcore.h |   49 +++++++++++
+ 3 files changed, 225 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/planetcore.c
+ create mode 100644 arch/powerpc/boot/planetcore.h
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index a599f1a..42cbfb0 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -2017,6 +2017,44 @@ platforms are moved over to use the flattened-device-tree model.
- 		fsl,cpm-command = <2e600000>;
- 	};
- 
-+   m) Chipselect/Local Bus
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index cffef14..9ec785c 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -45,7 +45,7 @@ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+-		cpm-serial.c stdlib.c
++		cpm-serial.c stdlib.c planetcore.c
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+diff --git a/arch/powerpc/boot/planetcore.c b/arch/powerpc/boot/planetcore.c
+new file mode 100644
+index 0000000..82d3dbd
+--- /dev/null
++++ b/arch/powerpc/boot/planetcore.c
+@@ -0,0 +1,175 @@
++/*
++ * PlanetCore configuration data support functions
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
 +
-+   Properties:
-+   - name : Should be localbus
-+   - #address-cells : Should be either two or three.  The first cell is the
-+                      chipselect number, and the remaining cells are the
-+                      offset into the chipselect.
-+   - #size-cells : Either one or two, depending on how large each chipselect
-+                   can be.
-+   - ranges : Each range should correspond to a single chipselect, and cover
-+              the entire access window as configured.
++#include "stdio.h"
++#include "stdlib.h"
++#include "ops.h"
++#include "planetcore.h"
++#include "io.h"
 +
-+   Example:
-+	localbus@f0010100 {
-+		compatible = "fsl,mpc8272ads-localbus",
-+		             "fsl,mpc8272-localbus",
-+		             "fsl,pq2-localbus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		reg = <f0010100 40>;
++/* PlanetCore passes information to the OS in the form of
++ * a table of key=value strings, separated by newlines.
++ *
++ * The list is terminated by an empty string (i.e. two
++ * consecutive newlines).
++ *
++ * To make it easier to parse, we first convert all the
++ * newlines into null bytes.
++ */
 +
-+		ranges = <0 0 fe000000 02000000
-+		          1 0 f4500000 00008000>;
++void planetcore_prepare_table(char *table)
++{
++	do {
++		if (*table == '\n')
++			*table = 0;
 +
-+		flash@0,0 {
-+			compatible = "jedec-flash";
-+			reg = <0 0 2000000>;
-+			bank-width = <4>;
-+			device-width = <1>;
-+		};
++		table++;
++	} while (*(table - 1) || *table != '\n');
 +
-+		board-control@1,0 {
-+			reg = <1 0 20>;
-+			compatible = "fsl,mpc8272ads-bcsr";
-+		};
-+	};
++	*table = 0;
++}
 +
++const char *planetcore_get_key(const char *table, const char *key)
++{
++	int keylen = strlen(key);
 +
-    More devices will be defined as this spec matures.
- 
- VII - Specifying interrupt information for devices
-diff --git a/arch/powerpc/boot/cuboot-pq2.c b/arch/powerpc/boot/cuboot-pq2.c
-index b150bd4..e5d94ff 100644
---- a/arch/powerpc/boot/cuboot-pq2.c
-+++ b/arch/powerpc/boot/cuboot-pq2.c
-@@ -43,22 +43,21 @@ struct pci_range pci_ranges_buf[MAX_PROP_LEN / sizeof(struct pci_range)];
-  * some don't set up the PCI PIC at all, so we assume the device tree is
-  * sane and update the BRx registers appropriately.
-  *
-- * For any node defined as compatible with fsl,pq2-chipselect,
-- * #address/#size must be 2/1 for chipselect bus, 1/1 for parent bus,
-- * and ranges must be for whole chip selects.
-+ * For any node defined as compatible with fsl,pq2-localbus,
-+ * #address/#size must be 2/1 for the localbus, and 1/1 for the parent bus.
-+ * Ranges must be for whole chip selects.
-  */
- static void update_cs_ranges(void)
- {
--	u32 ctrl_ph;
--	void *ctrl_node, *bus_node, *parent_node;
-+	void *bus_node, *parent_node;
- 	u32 *ctrl_addr;
- 	unsigned long ctrl_size;
- 	u32 naddr, nsize;
- 	int len;
- 	int i;
- 
--	bus_node = finddevice("/chipselect");
--	if (!bus_node || !dt_is_compatible(bus_node, "fsl,pq2-chipselect"))
-+	bus_node = finddevice("/localbus");
-+	if (!bus_node || !dt_is_compatible(bus_node, "fsl,pq2-localbus"))
- 		return;
- 
- 	dt_get_reg_format(bus_node, &naddr, &nsize);
-@@ -73,19 +72,7 @@ static void update_cs_ranges(void)
- 	if (naddr != 1 || nsize != 1)
- 		goto err;
- 
--	len = getprop(bus_node, "fsl,ctrl", &ctrl_ph, 4);
--	if (len != 4)
--		goto err;
--
--	ctrl_node = find_node_by_prop_value(NULL, "linux,phandle",
--	                                    (char *)&ctrl_ph, 4);
--	if (!ctrl_node)
--		goto err;
--
--	if (!dt_is_compatible(ctrl_node, "fsl,pq2-chipselect-ctrl"))
--		goto err;
--
--	if (!dt_xlate_reg(ctrl_node, 0, (unsigned long *)&ctrl_addr,
-+	if (!dt_xlate_reg(bus_node, 0, (unsigned long *)&ctrl_addr,
- 	                  &ctrl_size))
- 		goto err;
- 
-@@ -122,7 +109,7 @@ static void update_cs_ranges(void)
- 	return;
- 
- err:
--	printf("Bad /chipselect or fsl,pq2-chipselect-ctrl node\r\n");
-+	printf("Bad /localbus node\r\n");
- }
- 
- /* Older u-boots don't set PCI up properly.  Update the hardware to match
++	do {
++		if (!strncmp(table, key, keylen) && table[keylen] == '=')
++			return table + keylen + 1;
++
++		table += strlen(table) + 1;
++	} while (strlen(table) != 0);
++
++	return NULL;
++}
++
++int planetcore_get_decimal(const char *table, const char *key, u64 *val)
++{
++	const char *str = planetcore_get_key(table, key);
++	if (!str)
++		return 0;
++
++	*val = strtoull(str, NULL, 10);
++	return 1;
++}
++
++int planetcore_get_hex(const char *table, const char *key, u64 *val)
++{
++	const char *str = planetcore_get_key(table, key);
++	if (!str)
++		return 0;
++
++	*val = strtoull(str, NULL, 16);
++	return 1;
++}
++
++static u64 mac_table[4] = {
++	0x000000000000,
++	0x000000800000,
++	0x000000400000,
++	0x000000c00000,
++};
++
++void planetcore_set_mac_addrs(const char *table)
++{
++	char addr[4][6];
++	u64 int_addr;
++	u32 i;
++	int j;
++	void *node;
++
++	if (!planetcore_get_hex(table, PLANETCORE_KEY_MAC_ADDR, &int_addr))
++		return;
++
++	for (i = 0; i < 4; i++) {
++		u64 this_dev_addr = int_addr | mac_table[i];
++
++		for (j = 5; j >= 0; j--) {
++			addr[i][j] = this_dev_addr & 0xff;
++			this_dev_addr >>= 8;
++		}
++
++		node = find_node_by_prop_value(NULL, "linux,network-index",
++		                               (void *)&i, 4);
++		if (node) {
++			printf("ENET%u: local-mac-address <-"
++			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", i,
++			       addr[i][0], addr[i][1], addr[i][2],
++			       addr[i][3], addr[i][4], addr[i][5]);
++
++			setprop(node, "local-mac-address", addr[i], 6);
++		}
++	}
++}
++
++static char prop_buf[MAX_PROP_LEN];
++
++void planetcore_set_stdout_path(const char *table)
++{
++	char *path;
++	const char *label;
++	void *node, *chosen;
++
++	label = planetcore_get_key(table, PLANETCORE_KEY_SERIAL_PORT);
++	if (!label)
++		return;
++
++	node = find_node_by_prop_value_str(NULL, "linux,planetcore-label",
++	                                   label);
++	if (!node)
++		return;
++
++	path = get_path(node, prop_buf, MAX_PROP_LEN);
++	if (!path)
++		return;
++
++	chosen = finddevice("/chosen");
++	if (!chosen)
++		chosen = create_node(NULL, "chosen");
++	if (!chosen)
++		return;
++
++	setprop_str(chosen, "linux,stdout-path", path);
++}
++
++void planetcore_set_serial_speed(const char *table)
++{
++	void *chosen, *stdout;
++	u64 baud;
++	u32 baud32;
++	int len;
++
++	chosen = finddevice("/chosen");
++	if (!chosen)
++		return;
++
++	len = getprop(chosen, "linux,stdout-path", prop_buf, MAX_PROP_LEN);
++	if (len <= 0)
++		return;
++
++	stdout = finddevice(prop_buf);
++	if (!stdout) {
++		printf("planetcore_set_serial_speed: "
++		       "Bad /chosen/linux,stdout-path.\r\n");
++
++		return;
++	}
++
++	if (!planetcore_get_decimal(table, PLANETCORE_KEY_SERIAL_BAUD,
++	                            &baud)) {
++		printf("planetcore_set_serial_speed: No SB tag.\r\n");
++		return;
++	}
++
++	baud32 = baud;
++	setprop(stdout, "current-speed", &baud32, 4);
++}
+diff --git a/arch/powerpc/boot/planetcore.h b/arch/powerpc/boot/planetcore.h
+new file mode 100644
+index 0000000..0d4094f
+--- /dev/null
++++ b/arch/powerpc/boot/planetcore.h
+@@ -0,0 +1,49 @@
++#ifndef _PPC_BOOT_PLANETCORE_H_
++#define _PPC_BOOT_PLANETCORE_H_
++
++#include "types.h"
++
++#define PLANETCORE_KEY_BOARD_TYPE   "BO"
++#define PLANETCORE_KEY_BOARD_REV    "BR"
++#define PLANETCORE_KEY_MB_RAM       "D1"
++#define PLANETCORE_KEY_MAC_ADDR     "EA"
++#define PLANETCORE_KEY_FLASH_SPEED  "FS"
++#define PLANETCORE_KEY_IP_ADDR      "IP"
++#define PLANETCORE_KEY_KB_NVRAM     "NV"
++#define PLANETCORE_KEY_PROCESSOR    "PR"
++#define PLANETCORE_KEY_PROC_VARIANT "PV"
++#define PLANETCORE_KEY_SERIAL_BAUD  "SB"
++#define PLANETCORE_KEY_SERIAL_PORT  "SP"
++#define PLANETCORE_KEY_SWITCH       "SW"
++#define PLANETCORE_KEY_TEMP_OFFSET  "TC"
++#define PLANETCORE_KEY_TARGET_IP    "TIP"
++#define PLANETCORE_KEY_CRYSTAL_HZ   "XT"
++
++/* Prepare the table for processing, by turning all newlines
++ * into NULL bytes.
++ */
++void planetcore_prepare_table(char *table);
++
++/* Return the value associated with a given key in text,
++ * decimal, or hex format.
++ *
++ * Returns zero/NULL on failure, non-zero on success.
++ */
++const char *planetcore_get_key(const char *table, const char *key);
++int planetcore_get_decimal(const char *table, const char *key, u64 *val);
++int planetcore_get_hex(const char *table, const char *key, u64 *val);
++
++/* Updates the device tree local-mac-address properties based
++ * on the EA tag.
++ */
++void planetcore_set_mac_addrs(const char *table);
++
++/* Sets the linux,stdout-path in the /chosen node.  This requires the
++ * linux,planetcore-label property in each serial node.
++ */
++void planetcore_set_stdout_path(const char *table);
++
++/* Sets the current-speed property in the serial node. */
++void planetcore_set_serial_speed(const char *table);
++
++#endif
 -- 
 1.5.3.1
