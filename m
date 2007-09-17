@@ -1,20 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 539E1DDE11
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:28:47 +1000 (EST)
-Date: Mon, 17 Sep 2007 16:28:31 +1000
+	by ozlabs.org (Postfix) with ESMTP id EDF8DDDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:40:08 +1000 (EST)
+Date: Mon, 17 Sep 2007 16:39:54 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: travis@sgi.com
 Subject: Re: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data
 	array (v3)
-Message-Id: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
-In-Reply-To: <20070912015647.486500682@sgi.com>
+Message-Id: <20070917163954.1c3b91fd.sfr@canb.auug.org.au>
+In-Reply-To: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
 References: <20070912015644.927677070@sgi.com>
 	<20070912015647.486500682@sgi.com>
+	<20070917162831.b2a9d675.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl"
+	boundary="Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh"
 Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
 	Andrew Morton <akpm@linux-foundation.org>,
@@ -28,63 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl
+--Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 11 Sep 2007 18:56:53 -0700 travis@sgi.com wrote:
+On Mon, 17 Sep 2007 16:28:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
 >
-> Convert cpu_sibling_map to a per_cpu cpumask_t array for the ppc64
-> architecture.  This fixes build errors in block/blktrace.c and
-> kernel/sched.c when CONFIG_SCHED_SMT is defined.
+> 	the topology (on my POWERPC5+ box) is not correct:
 >=20
-> Note: these changes have not been built nor tested.
+> cpu0/topology/thread_siblings:0000000f
+> cpu1/topology/thread_siblings:0000000f
+> cpu2/topology/thread_siblings:0000000f
+> cpu3/topology/thread_siblings:0000000f
+>=20
+> it used to be:
+>=20
+> cpu0/topology/thread_siblings:00000003
+> cpu1/topology/thread_siblings:00000003
+> cpu2/topology/thread_siblings:0000000c
+> cpu3/topology/thread_siblings:0000000c
 
-After applying all 10 patches, the ppc64_defconfig builds but:
-
-	vmlinux is larger:
-
-   text    data     bss     dec     hex filename
-7705776 1756984  504624 9967384  981718 ppc64/vmlinux
-7706228 1757120  504624 9967972  981964 trav.bld/vmlinux
-
-	the topology (on my POWERPC5+ box) is not correct:
-
-cpu0/topology/thread_siblings:0000000f
-cpu1/topology/thread_siblings:0000000f
-cpu2/topology/thread_siblings:0000000f
-cpu3/topology/thread_siblings:0000000f
-
-it used to be:
-
-cpu0/topology/thread_siblings:00000003
-cpu1/topology/thread_siblings:00000003
-cpu2/topology/thread_siblings:0000000c
-cpu3/topology/thread_siblings:0000000c
-
-Similarly on my iSeries box, the topology is displayed as above
-while it used to be:
-
-cpu0/topology/thread_siblings:00000001
-cpu1/topology/thread_siblings:00000002
-cpu2/topology/thread_siblings:00000004
-cpu3/topology/thread_siblings:00000008
+This would be because we are setting up the cpu_sibling map before we
+call setup_per_cpu_areas().
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl
+--Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFG7h6VTgG2atn1QN8RAmB+AJ9HOw5MvcVaJSHu/pECUTF9I4l5VACgj//+
-2tXfkc5WNeX4tppxSpnOXis=
-=XiPX
+iD8DBQFG7iFATgG2atn1QN8RAnoiAJ4p0Hk26M2K13DgUt0wVOd2o5fJAACfQD5+
+XWiCERDNRgIjs6BvH/3Ffcs=
+=wQi8
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__17_Sep_2007_16_28_31_+1000_tjewKN/mkN4kGaNl--
+--Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh--
