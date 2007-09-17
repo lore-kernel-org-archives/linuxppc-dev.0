@@ -1,11 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <f2d1c6be4dd138a847c2573ae1cde5c2ac253dfa.1190009070.git.michael@ellerman.id.au>
-In-Reply-To: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
-References: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 7/7] Remove msic_dcr_read() and use dcr_map_reg() in axon_msi.c
-Date: Mon, 17 Sep 2007 16:05:05 +1000 (EST)
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B74DBDDE08
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:22:59 +1000 (EST)
+Date: Sun, 16 Sep 2007 23:22:57 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
+Message-ID: <20070917062257.GC32314@gate.ebshome.net>
+References: <200709161352.03459.sr@denx.de>
+	<20070916185330.GA32314@gate.ebshome.net>
+	<200709170734.09079.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200709170734.09079.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,76 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-msic_dcr_read() doesn't really do anything useful, just replace it with
-direct calls to dcr_read().
+On Mon, Sep 17, 2007 at 07:34:08AM +0200, Stefan Roese wrote:
+> 
+> My understanding was, that adding many #ifdef's into the code was not the 
+> preferred way. 
 
-Use dcr_map_reg() in the axon_msi setup code, rather than essentially doing
-it by hand.
+But just making a copy seems to be a proffered one? Wow.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/cell/axon_msi.c |   22 +++-------------------
- 1 files changed, 3 insertions(+), 19 deletions(-)
+OCP and/or OF part is quite small part of the driver; another approach 
+would been completely splitting OCP and OF specific part out 
+(e.g. i2c-ibm_iic.c + i2c-ibm_iic_ocp.c / i2c_ibm_iic_of.c). I 
+personally thing it's not worth the effort and just adding couple of 
+ifdef'ed code is good enough, especially as a transitional thing.
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 26a5e88..57a6149 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -80,18 +80,13 @@ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
- 	dcr_write(msic->dcr_host, dcr_n, val);
- }
- 
--static u32 msic_dcr_read(struct axon_msic *msic, unsigned int dcr_n)
--{
--	return dcr_read(msic->dcr_host, dcr_n);
--}
--
- static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
- {
- 	struct axon_msic *msic = get_irq_data(irq);
- 	u32 write_offset, msi;
- 	int idx;
- 
--	write_offset = msic_dcr_read(msic, MSIC_WRITE_OFFSET_REG);
-+	write_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
- 	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
- 
- 	/* write_offset doesn't wrap properly, so we have to mask it */
-@@ -306,7 +301,7 @@ static int axon_msi_notify_reboot(struct notifier_block *nb,
- 	list_for_each_entry(msic, &axon_msic_list, list) {
- 		pr_debug("axon_msi: disabling %s\n",
- 			  msic->irq_host->of_node->full_name);
--		tmp  = msic_dcr_read(msic, MSIC_CTRL_REG);
-+		tmp  = dcr_read(msic->dcr_host, MSIC_CTRL_REG);
- 		tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
- 		msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
- 	}
-@@ -323,7 +318,6 @@ static int axon_msi_setup_one(struct device_node *dn)
- 	struct page *page;
- 	struct axon_msic *msic;
- 	unsigned int virq;
--	int dcr_base, dcr_len;
- 
- 	pr_debug("axon_msi: setting up dn %s\n", dn->full_name);
- 
-@@ -334,17 +328,7 @@ static int axon_msi_setup_one(struct device_node *dn)
- 		goto out;
- 	}
- 
--	dcr_base = dcr_resource_start(dn, 0);
--	dcr_len = dcr_resource_len(dn, 0);
--
--	if (dcr_base == 0 || dcr_len == 0) {
--		printk(KERN_ERR
--		       "axon_msi: couldn't parse dcr properties on %s\n",
--			dn->full_name);
--		goto out;
--	}
--
--	msic->dcr_host = dcr_map(dn, dcr_base, dcr_len);
-+	msic->dcr_host = dcr_map_reg(dn, 0);
- 	if (!DCR_MAP_OK(msic->dcr_host)) {
- 		printk(KERN_ERR "axon_msi: dcr_map failed for %s\n",
- 		       dn->full_name);
+> I could of course change this patch to not add an additional 
+> driver but extend the existing driver with a bunch of #ifdef's to support 
+> both versions.
+> 
+> This approach of multiple drivers seems to be common in the kernel right now:
+> 
+> drivers/mtd/maps/physmap.c
+> drivers/mtd/maps/physmap_of.c
+> 
+> or
+> 
+> drivers/usb/host/ohci-ppc-soc.c
+> drivers/usb/host/ohci-ppc-of.c
+
+I don't think these are good examples, physmap.c seems to differ from 
+physmap_of.c significantly. These drivers are mostly a glue, and it 
+makes sense to have different versions, because there isn't much there 
+except for platform/bus/glue specific code.
+
+> Any other opinions on this? How should this be handled to get accepted 
+> upstream? Two different drivers with removing the "old" one later when 
+> arch/ppc is gone,
+
+ppc has been going away for the last two years at least and still 
+isn't gone. What makes you think this isn't gonna take another year or 
+two :) ?
+
+> 
+> The "old" name "i2c-ibm_iic" is kind of redundant. Nearly all bus drivers are 
+> named "i2c-platform". Perhaps a better name would be "i2c-ppc4xx" then. 
+
+Sure, that'd be a much better choice.
+
 -- 
-1.5.1.3.g7a33b
+Eugene
