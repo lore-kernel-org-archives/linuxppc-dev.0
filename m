@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <5022a72815fe6334b5255dbe1288036131c2c961.1190009070.git.michael@ellerman.id.au>
+Message-Id: <2a6b3b82775119b4a1e1fd9b290051b1fef66d55.1190009070.git.michael@ellerman.id.au>
 In-Reply-To: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
 References: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/7] Use dcr_host_t.base in ibm_emac_mal
-Date: Mon, 17 Sep 2007 16:05:01 +1000 (EST)
+Subject: [PATCH 4/7] Update axon_msi to use dcr_host_t.base
+Date: Mon, 17 Sep 2007 16:05:02 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,58 +15,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This requires us to do a sort-of fake dcr_map(), so that base is set
-properly. This will be fixed/removed when the device-tree-aware emac driver
-is merged.
+Now that dcr_host_t contains the base address, we can use that in the
+axon_msi code, rather than storing it separately.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- drivers/net/ibm_emac/ibm_emac_mal.c |    5 ++++-
- drivers/net/ibm_emac/ibm_emac_mal.h |    5 ++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/cell/axon_msi.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ibm_emac/ibm_emac_mal.c b/drivers/net/ibm_emac/ibm_emac_mal.c
-index cabd984..b08da96 100644
---- a/drivers/net/ibm_emac/ibm_emac_mal.c
-+++ b/drivers/net/ibm_emac/ibm_emac_mal.c
-@@ -421,7 +421,10 @@ static int __init mal_probe(struct ocp_device *ocpdev)
- 		       ocpdev->def->index);
- 		return -ENOMEM;
- 	}
--	mal->dcrbase = maldata->dcr_base;
-+
-+	/* XXX This only works for native dcr for now */
-+	mal->dcrhost = dcr_map(NULL, maldata->dcr_base, 0);
-+
- 	mal->def = ocpdev->def;
- 
- 	INIT_LIST_HEAD(&mal->poll_list);
-diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
-index 64bc338..6b1fbeb 100644
---- a/drivers/net/ibm_emac/ibm_emac_mal.h
-+++ b/drivers/net/ibm_emac/ibm_emac_mal.h
-@@ -191,7 +191,6 @@ struct mal_commac {
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 74407af..23e039a 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -69,7 +69,6 @@ struct axon_msic {
+ 	dcr_host_t dcr_host;
+ 	struct list_head list;
+ 	u32 read_offset;
+-	u32 dcr_base;
  };
  
- struct ibm_ocp_mal {
--	int			dcrbase;
- 	dcr_host_t		dcrhost;
- 
- 	struct list_head	poll_list;
-@@ -209,12 +208,12 @@ struct ibm_ocp_mal {
- 
- static inline u32 get_mal_dcrn(struct ibm_ocp_mal *mal, int reg)
+ static LIST_HEAD(axon_msic_list);
+@@ -78,12 +77,12 @@ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
  {
--	return dcr_read(mal->dcrhost, mal->dcrbase + reg);
-+	return dcr_read(mal->dcrhost, mal->dcrhost.base + reg);
+ 	pr_debug("axon_msi: dcr_write(0x%x, 0x%x)\n", val, dcr_n);
+ 
+-	dcr_write(msic->dcr_host, msic->dcr_base + dcr_n, val);
++	dcr_write(msic->dcr_host, msic->dcr_host.base + dcr_n, val);
  }
  
- static inline void set_mal_dcrn(struct ibm_ocp_mal *mal, int reg, u32 val)
+ static u32 msic_dcr_read(struct axon_msic *msic, unsigned int dcr_n)
  {
--	dcr_write(mal->dcrhost, mal->dcrbase + reg, val);
-+	dcr_write(mal->dcrhost, mal->dcrhost.base + reg, val);
+-	return dcr_read(msic->dcr_host, msic->dcr_base + dcr_n);
++	return dcr_read(msic->dcr_host, msic->dcr_host.base + dcr_n);
  }
  
- /* Register MAL devices */
+ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+@@ -324,7 +323,7 @@ static int axon_msi_setup_one(struct device_node *dn)
+ 	struct page *page;
+ 	struct axon_msic *msic;
+ 	unsigned int virq;
+-	int dcr_len;
++	int dcr_base, dcr_len;
+ 
+ 	pr_debug("axon_msi: setting up dn %s\n", dn->full_name);
+ 
+@@ -335,17 +334,17 @@ static int axon_msi_setup_one(struct device_node *dn)
+ 		goto out;
+ 	}
+ 
+-	msic->dcr_base = dcr_resource_start(dn, 0);
++	dcr_base = dcr_resource_start(dn, 0);
+ 	dcr_len = dcr_resource_len(dn, 0);
+ 
+-	if (msic->dcr_base == 0 || dcr_len == 0) {
++	if (dcr_base == 0 || dcr_len == 0) {
+ 		printk(KERN_ERR
+ 		       "axon_msi: couldn't parse dcr properties on %s\n",
+ 			dn->full_name);
+ 		goto out;
+ 	}
+ 
+-	msic->dcr_host = dcr_map(dn, msic->dcr_base, dcr_len);
++	msic->dcr_host = dcr_map(dn, dcr_base, dcr_len);
+ 	if (!DCR_MAP_OK(msic->dcr_host)) {
+ 		printk(KERN_ERR "axon_msi: dcr_map failed for %s\n",
+ 		       dn->full_name);
 -- 
 1.5.1.3.g7a33b
