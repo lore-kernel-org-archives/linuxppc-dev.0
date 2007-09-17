@@ -1,21 +1,20 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Received: from jdub.homelinux.org (unknown [209.180.55.243])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CB125DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 00:01:18 +1000 (EST)
-Date: Mon, 17 Sep 2007 09:00:39 -0500
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] usb: add device-tree-aware ehci driver
-Message-ID: <20070917090039.7c05e3bc@weaponx.rchland.ibm.com>
-In-Reply-To: <20070917232809.1221acd9.sfr@canb.auug.org.au>
-References: <20070917125039.GA29525@ru.mvista.com>
-	<20070917125543.GA29584@ru.mvista.com>
-	<20070917232809.1221acd9.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id C6EE4DDE27
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 00:47:23 +1000 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1189800008.3343.21.camel@localhost.localdomain>
+References: <1189800008.3343.21.camel@localhost.localdomain>
+	<598D5675D34BE349929AF5EDE9B03E27015558EA@az33exm24.fsl.freescale.net>
+To: James Bottomley <James.Bottomley@SteelEye.com>, akpm@osdl.org,
+	jens.axboe@oracle.com
+Subject: Re: CONFIG_BLK_DEV_BSG=n
+Date: Mon, 17 Sep 2007 15:46:30 +0100
+Message-ID: <19650.1190040390@redhat.com>
+Sender: dhowells@redhat.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-scsi@vger.kernel.org,
+	Gala Kumar-B11780 <kumar.gala@freescale.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Sep 2007 23:28:09 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> On Mon, 17 Sep 2007 16:55:43 +0400 Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-> >
-> > +++ linux-2.6/drivers/usb/host/ehci-ppc-of.c	2007-09-15 16:12:56.000000000 +0400
-> > @@ -0,0 +1,220 @@
-> > +
-> > +#include <asm/of_platform.h>
-> > +#include <asm/prom.h>
+James Bottomley <James.Bottomley@SteelEye.com> wrote:
+
+> > Which solution would you be more comfortable with?
 > 
-> Please use linux/of.h and linux/of_platform.h instead.
+> The one which is currently in -mm is this one:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=49892223f7d3a2333ef9e6cbdd526676e1fc517a
 
-This seems to be a common error these days.  Perhaps a #warning in the
-asm/ files if _LINUX_OF_PLATFORM_H and _LINUX_OF_H aren't defined would
-be helpful.
+In my opinion, this is the wrong fix.  There shouldn't be anything in the
+kernel using stuff from bsg.h if CONFIG_BLOCK=n, so there should be an error if
+anything tries to.  The correct fix is to exclude the non-userspace-visible
+contents of bsg.h with #ifdef CONFIG_BLOCK, not to declare things that we've
+tried to make sure specifically aren't declared.
 
-josh
+David
+---
+
+[PATCH] VFS: Make BSG declarations dependent on CONFIG_BLOCK
+
+From: David Howells <dhowells@redhat.com>
+
+Make BSG function declarations dependent on CONFIG_BLOCK as they are not
+compilable if the block layer is compiled out.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/bsg.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/bsg.h b/include/linux/bsg.h
+index 60e377b..28f5d44 100644
+--- a/include/linux/bsg.h
++++ b/include/linux/bsg.h
+@@ -52,6 +52,7 @@ struct sg_io_v4 {
+ };
+ 
+ #ifdef __KERNEL__
++#ifdef CONFIG_BLOCK
+ 
+ #if defined(CONFIG_BLK_DEV_BSG)
+ struct bsg_class_device {
+@@ -73,6 +74,7 @@ static inline void bsg_unregister_queue(struct request_queue *rq)
+ }
+ #endif
+ 
++#endif /* CONFIG_BLOCK */
+ #endif /* __KERNEL__ */
+ 
+ #endif
