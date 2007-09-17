@@ -1,32 +1,24 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <satyam@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 638DBDDECC
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 08:43:29 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l8HMhOx0001703
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 15:43:24 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l8HMhNOe004825
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 17:43:23 -0500 (CDT)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5CF2BDDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 09:40:55 +1000 (EST)
+Date: Tue, 18 Sep 2007 05:13:40 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from panic
+	codepath
+In-Reply-To: <a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+References: <46EA5CEB.7020104@linux.vnet.ibm.com>
+	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] Fix build errors when BLOCK=n
-Date: Mon, 17 Sep 2007 15:43:22 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E2701555C08@az33exm24.fsl.freescale.net>
-In-Reply-To: <16939.1190068482@redhat.com>
-References: <11900663131073-git-send-email-Emilian.Medve@Freescale.com>
-	<16939.1190068482@redhat.com>
-From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-To: <dhowells@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
-	paulus@samba.org, bzolnier@gmail.com, linux-ide@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,64 +28,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David,
 
+> ------------[ cut here ]------------
+> Badness at arch/powerpc/kernel/smp.c:202
 
-I've seen you patch earlier, but I'm not trying to solve the BSG related
-problem/warnings. That's why I put a reference to an already existing
-commit addressing the BSG/bsg.h warnings. I'm trying to address a
-slightly different problem in the PowerPC code only.
+comes when smp_call_function_map() has been called with irqs disabled,
+which is illegal. However, there is a special case, the panic() codepath,
+when we do not want to warn about this -- warning at that time is pointless
+anyway, and only serves to scroll away the *real* cause of the panic and
+distracts from the real bug.
 
+* So let's extract the WARN_ON() from smp_call_function_map() into all its
+  callers -- smp_call_function() and smp_call_function_single()
 
-Cheers,
-Emil.
+* Also, introduce another caller of smp_call_function_map(), namely
+  __smp_call_function() (and make smp_call_function() a wrapper over this)
+  which does *not* warn about disabled irqs
 
+* Use this __smp_call_function() from the panic codepath's smp_send_stop()
 
-> -----Original Message-----
-> From: dhowells@redhat.com [mailto:dhowells@redhat.com]=20
-> Sent: Monday, September 17, 2007 5:35 PM
-> To: Medve Emilian-EMMEDVE1
-> Cc: dhowells@redhat.com; paulus@samba.org; Gala Kumar-B11780;=20
-> linuxppc-dev@ozlabs.org; bzolnier@gmail.com; linux-ide@vger.kernel.org
-> Subject: Re: [PATCH] [POWERPC] Fix build errors when BLOCK=3Dn
->=20
->=20
-> Try the attached.
->=20
-> David
-> ---
-> [PATCH] VFS: Make BSG declarations dependent on CONFIG_BLOCK
->=20
-> From: David Howells <dhowells@redhat.com>
->=20
-> Make BSG function declarations dependent on CONFIG_BLOCK as=20
-> they are not
-> compilable if the block layer is compiled out.
->=20
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
->=20
->  include/linux/bsg.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->=20
-> diff --git a/include/linux/bsg.h b/include/linux/bsg.h
-> index 60e377b..28f5d44 100644
-> --- a/include/linux/bsg.h
-> +++ b/include/linux/bsg.h
-> @@ -52,6 +52,7 @@ struct sg_io_v4 {
->  };
-> =20
->  #ifdef __KERNEL__
-> +#ifdef CONFIG_BLOCK
-> =20
->  #if defined(CONFIG_BLK_DEV_BSG)
->  struct bsg_class_device {
-> @@ -73,6 +74,7 @@ static inline void=20
-> bsg_unregister_queue(struct request_queue *rq)
->  }
->  #endif
-> =20
-> +#endif /* CONFIG_BLOCK */
->  #endif /* __KERNEL__ */
-> =20
->  #endif
+We also end having to move code of smp_send_stop() below the definition
+of __smp_call_function().
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+
+---
+
+Untested (not even compile-tested) patch.
+Could someone point me to ppc32/64 cross-compilers for i386?
+
+ arch/powerpc/kernel/smp.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 1ea4316..b24dcba 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -152,11 +152,6 @@ static void stop_this_cpu(void *dummy)
+ 		;
+ }
+ 
+-void smp_send_stop(void)
+-{
+-	smp_call_function(stop_this_cpu, NULL, 1, 0);
+-}
+-
+ /*
+  * Structure and data for smp_call_function(). This is designed to minimise
+  * static memory requirements. It also looks cleaner.
+@@ -198,9 +193,6 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+ 	int cpu;
+ 	u64 timeout;
+ 
+-	/* Can deadlock when called with interrupts disabled */
+-	WARN_ON(irqs_disabled());
+-
+ 	if (unlikely(smp_ops == NULL))
+ 		return ret;
+ 
+@@ -270,10 +262,19 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
+ 	return ret;
+ }
+ 
++static int __smp_call_function(void (*func)(void *info), void *info,
++			       int nonatomic, int wait)
++{
++	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
++}
++
+ int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+ 			int wait)
+ {
+-	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
++	return __smp_call_function(func, info, nonatomic, wait);
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
+@@ -283,6 +284,9 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
+ 	cpumask_t map = CPU_MASK_NONE;
+ 	int ret = 0;
+ 
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+@@ -299,6 +303,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
++void smp_send_stop(void)
++{
++	__smp_call_function(stop_this_cpu, NULL, 1, 0);
++}
++
+ void smp_call_function_interrupt(void)
+ {
+ 	void (*func) (void *info);
