@@ -1,22 +1,21 @@
-Return-Path: <domen@coderock.org>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id B4228DDED7
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A218EDDE36
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 06:21:42 +1000 (EST)
-Date: Mon, 17 Sep 2007 22:21:40 +0200
-From: Domen Puncer <domen@coderock.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] phy: export phy_mii_ioctl
-Message-ID: <20070917202140.GB2642@nd47.coderock.org>
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-Mime-Version: 1.0
+	Tue, 18 Sep 2007 07:48:46 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IXOSP-0001Kb-Ri
+	for linuxppc-embedded@ozlabs.org; Mon, 17 Sep 2007 14:48:41 -0700
+Message-ID: <12745876.post@talk.nabble.com>
+Date: Mon, 17 Sep 2007 14:48:41 -0700 (PDT)
+From: Junqiang Hu <jqhu936@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Ethernet adapter not found in Xilinx ppc, with linux 2.6.22
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917095334.GA4546@powerlinux.fr>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,46 +26,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Export phy_mii_ioctl, so network drivers can use it when built
-as modules too.
-
-Signed-off-by: Domen Puncer <domen@coderock.org>
-
----
-On 17/09/07 11:53 +0200, Sven Luther wrote:
-> On Sat, Sep 15, 2007 at 02:14:44PM +0200, Domen Puncer wrote:
-> > Updated and split version at:
-> > http://coderock.org/tmp/fec-v3rc1/
-> > 
-> > I'll repost to lists once I run-test them.
-> 
-> When applying those patches, the build did die with :
-> 
-> 
->   ERROR: "phy_mii_ioctl" [drivers/net/fec_mpc52xx/fec_mpc52xx.ko] undefined!
-> 
-> Apparently, phy_mii_ioctl is not an exported symbol.
-> 
-> Domen, did you maybe forget a little snipplet when you cut the patches
-> in different pieces ? Or did i mess up applying them ?
-> 
-> Friendly,
-> 
-> Sven Luther
 
 
- drivers/net/phy/phy.c |    1 +
- 1 files changed, 1 insertion(+)
+After several days of struggling I'm now able to boot the linux 2.6.22 and
+run the busybox-1.7.1 root system.  Yet I could not find the Ethernet
+adapter using Xilinx GMAC core.  Pretty sure that I've chosen the 10/100
+Ethernet drivers.  Should I use the Xilinx driver xemac, or other drivers,
+or any other way to apply a patch?
 
-Index: linux.git/drivers/net/phy/phy.c
-===================================================================
---- linux.git.orig/drivers/net/phy/phy.c
-+++ linux.git/drivers/net/phy/phy.c
-@@ -409,6 +409,7 @@ int phy_mii_ioctl(struct phy_device *phy
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(phy_mii_ioctl);
- 
- /**
-  * phy_start_aneg - start auto-negotiation for this PHY device
+Thanks~
+.J
+-- 
+View this message in context: http://www.nabble.com/Ethernet-adapter-not-found-in-Xilinx-ppc%2C-with-linux-2.6.22-tf4470255.html#a12745876
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
