@@ -1,21 +1,22 @@
-Return-Path: <jeff@mock.com>
-Received: from mail.mock.com (gw.mock.com [209.157.146.194])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 486B1DDE08
+Return-Path: <domen.puncer@telargo.com>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id F2D2DDDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Sep 2007 05:09:58 +1000 (EST)
-Message-ID: <46ED78F8.70506@mock.com>
-Date: Sun, 16 Sep 2007 11:42:00 -0700
-From: Jeff Mock <jeff@mock.com>
-MIME-Version: 1.0
+	Mon, 17 Sep 2007 15:33:19 +1000 (EST)
+Date: Mon, 17 Sep 2007 07:33:14 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
 To: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Domen's MPC5200 FEC cleanup patch.
-References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>	<20070915122218.GB19857@nd47.coderock.org>	<9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>	<9e4733910709161000i64622520i77caa00e56abc7a8@mail.gmail.com>	<9e4733910709161005u4f400ab7wb1bf55dac1b45193@mail.gmail.com>	<9e4733910709161100i456c176ay664d89ac638c9958@mail.gmail.com>
-	<9e4733910709161125u15dcd02cj300c0e3a7fda4c0a@mail.gmail.com>
-In-Reply-To: <9e4733910709161125u15dcd02cj300c0e3a7fda4c0a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Domen Puncer <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
+Message-ID: <20070917053314.GA19538@nd47.coderock.org>
+References: <9e4733910709142038y1bd88cd5s7c9bb21a668db9f6@mail.gmail.com>
+	<9e4733910709142128l7a264a05ve68f59aee92b40e3@mail.gmail.com>
+	<20070915122218.GB19857@nd47.coderock.org>
+	<9e4733910709150855k6ba6dc8fye9762817566208b4@mail.gmail.com>
+	<9e4733910709161205k15106ba1sd2f0597f2601f222@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9e4733910709161205k15106ba1sd2f0597f2601f222@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +27,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 16/09/07 15:05 -0400, Jon Smirl wrote:
+> This adjustment to the error counting is in the Efika patches and not
+> in yours, should it be in yours too?
+
+I know about this patch.
+
+Error counting is reworked in newer anyway (mixing rmon and ieee
+counters didn't look very nice to me).
 
 
-Jon Smirl wrote:
-> On 9/16/07, Jon Smirl <jonsmirl@gmail.com> wrote:
->> Another problem...
->>
->> Ifconfig eth0 down
->>
->> hangs the system.
->> I'll try debugging it.
+	Domen
+
 > 
-> The hang is something to do with lockd in NFS, it doesn't appear to
-> have anything to do with fec. I think I need to build more of NFS into
-> my kernel.
+> --- a/drivers/net/fec_mpc52xx/fec.c 2007-05-30 16:04:50.000000000 +0200
+> +++ b/drivers/net/fec_mpc52xx/fec.c 2007-05-30 16:09:02.000000000 +0200
+> @@ -411,7 +411,9 @@
 > 
-
-I think the NFS hang has something to do with not having a copy of 
-portmap running.  I've had this happen with other embedded systems, and 
-can usually work around it by using the "-o nolock" option when doing 
-the NFS mount.
-
-jeff
+>  	stats->rx_bytes = in_be32(&fec->rmon_r_octets);
+>  	stats->rx_packets = in_be32(&fec->rmon_r_packets);
+> -	stats->rx_errors = stats->rx_packets - in_be32(&fec->ieee_r_frame_ok);
+> +	stats->rx_errors = stats->rx_packets - (
+> +			in_be32(&fec->ieee_r_frame_ok) +
+> +			in_be32(&fec->rmon_r_mc_pkt));
+>  	stats->tx_bytes = in_be32(&fec->rmon_t_octets);
+>  	stats->tx_packets = in_be32(&fec->rmon_t_packets);
+>  	stats->tx_errors = stats->tx_packets - (
+> 
+> -- 
+> Jon Smirl
+> jonsmirl@gmail.com
