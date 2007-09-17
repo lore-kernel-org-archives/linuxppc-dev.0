@@ -1,32 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 591F0DDDF8
+Return-Path: <domen@coderock.org>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id B4228DDED7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Sep 2007 21:54:02 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8HBrwc6007171
-	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Sep 2007 07:53:58 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8HBrwuP296780
-	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Sep 2007 05:53:58 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8HBrwDk010337
-	for <linuxppc-embedded@ozlabs.org>; Mon, 17 Sep 2007 05:53:58 -0600
-Date: Mon, 17 Sep 2007 06:53:56 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: Device tree compiler
-Message-ID: <20070917065356.430e472a@weaponx.rchland.ibm.com>
-In-Reply-To: <200709171330.37642.laurentp@cse-semaphore.com>
-References: <200709171330.37642.laurentp@cse-semaphore.com>
+	Tue, 18 Sep 2007 06:21:42 +1000 (EST)
+Date: Mon, 17 Sep 2007 22:21:40 +0200
+From: Domen Puncer <domen@coderock.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: [PATCH] phy: export phy_mii_ioctl
+Message-ID: <20070917202140.GB2642@nd47.coderock.org>
+References: <20070810095153.GC13994@moe.telargo.com>
+	<20070902074143.GB2642@nd47.coderock.org>
+	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
+	<20070915121444.GA19857@nd47.coderock.org>
+	<20070917095334.GA4546@powerlinux.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070917095334.GA4546@powerlinux.fr>
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,23 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Sep 2007 13:30:37 +0200
-Laurent Pinchart <laurentp@cse-semaphore.com> wrote:
+Export phy_mii_ioctl, so network drivers can use it when built
+as modules too.
 
-> Hi everybody,
+Signed-off-by: Domen Puncer <domen@coderock.org>
+
+---
+On 17/09/07 11:53 +0200, Sven Luther wrote:
+> On Sat, Sep 15, 2007 at 02:14:44PM +0200, Domen Puncer wrote:
+> > Updated and split version at:
+> > http://coderock.org/tmp/fec-v3rc1/
+> > 
+> > I'll repost to lists once I run-test them.
 > 
-> I'm trying to port a MPC8248-based board from ppc to powerpc.
+> When applying those patches, the build did die with :
 > 
-> While looking for example DTS files I found out that the Linux kernel sources 
-> include a few of them in arch/powerpc/boot/dts. However, they don't compile 
-> with the latest device-tree compiler available at 
-> git://ozlabs.org/srv/projects/dtc/dtc.git.
+> 
+>   ERROR: "phy_mii_ioctl" [drivers/net/fec_mpc52xx/fec_mpc52xx.ko] undefined!
+> 
+> Apparently, phy_mii_ioctl is not an exported symbol.
+> 
+> Domen, did you maybe forget a little snipplet when you cut the patches
+> in different pieces ? Or did i mess up applying them ?
+> 
+> Friendly,
+> 
+> Sven Luther
 
-Because that is ancient.  Use the one from:
 
-git://www.jdl.com/software/dtc.git
+ drivers/net/phy/phy.c |    1 +
+ 1 files changed, 1 insertion(+)
 
-Someone should really fix up the ozlabs page to stop pointing at
-outdated versions of DTC.
-
-josh
+Index: linux.git/drivers/net/phy/phy.c
+===================================================================
+--- linux.git.orig/drivers/net/phy/phy.c
++++ linux.git/drivers/net/phy/phy.c
+@@ -409,6 +409,7 @@ int phy_mii_ioctl(struct phy_device *phy
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(phy_mii_ioctl);
+ 
+ /**
+  * phy_start_aneg - start auto-negotiation for this PHY device
