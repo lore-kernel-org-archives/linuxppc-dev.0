@@ -1,15 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0F71DDDDFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 14:41:46 +1000 (EST)
-Date: Mon, 17 Sep 2007 14:41:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove cmd_line from head*.S
-Message-Id: <20070917144138.3e0a31d7.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <SRS0=a+gK=ON=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 77E63DDDFF
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 15:33:39 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] i2c: devtree-aware iic support for PPC4xx
+Date: Mon, 17 Sep 2007 07:34:08 +0200
+References: <200709161352.03459.sr@denx.de>
+	<20070916185330.GA32314@gate.ebshome.net>
+In-Reply-To: <20070916185330.GA32314@gate.ebshome.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709170734.09079.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,147 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It is just a C char array, so declare it thusly.
+On Sunday 16 September 2007, Eugene Surovegin wrote:
+> Hmm, I just noticed that you basically added a copy of existing
+> driver with small changes to support OF while keeping OCP one.
+>
+> Why not just add OF support to the existing code (under some ifdef),
+> and then remove OCP support as soon as ppc -> powerpc transition is
+> finished? Why have two almost identical code in the tree?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/head_32.S        |    8 --------
- arch/powerpc/kernel/head_40x.S       |    7 -------
- arch/powerpc/kernel/head_44x.S       |    8 --------
- arch/powerpc/kernel/head_64.S        |    8 --------
- arch/powerpc/kernel/head_8xx.S       |    8 --------
- arch/powerpc/kernel/head_fsl_booke.S |    8 --------
- arch/powerpc/kernel/setup-common.c   |    2 ++
- 7 files changed, 2 insertions(+), 47 deletions(-)
+My understanding was, that adding many #ifdef's into the code was not the 
+preferred way. I could of course change this patch to not add an additional 
+driver but extend the existing driver with a bunch of #ifdef's to support 
+both versions.
 
-This version has the definition in setup-common.c.
+This approach of multiple drivers seems to be common in the kernel right now:
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+drivers/mtd/maps/physmap.c
+drivers/mtd/maps/physmap_of.c
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index 0e3df1f..a2e4df0 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -1300,14 +1300,6 @@ empty_zero_page:
- swapper_pg_dir:
- 	.space	4096
- 
--/*
-- * This space gets a copy of optional info passed to us by the bootstrap
-- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	512
--
- 	.globl intercept_table
- intercept_table:
- 	.long 0, 0, i0x200, i0x300, i0x400, 0, i0x600, i0x700
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index a8e0457..8a69eec 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -1006,13 +1006,6 @@ critical_stack_top:
- 	.globl	exception_stack_top
- exception_stack_top:
- 
--/* This space gets a copy of optional info passed to us by the bootstrap
-- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	512
--
- /* Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-  */
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index e26d26e..e405c59 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -744,14 +744,6 @@ exception_stack_bottom:
- exception_stack_top:
- 
- /*
-- * This space gets a copy of optional info passed to us by the bootstrap
-- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	512
--
--/*
-  * Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-  */
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index cec5908..f4ae82e 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -1540,11 +1540,3 @@ empty_zero_page:
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
- 	.space	PAGE_SIZE
--
--/*
-- * This space gets a copy of optional info passed to us by the bootstrap
-- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	COMMAND_LINE_SIZE
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 901be47..22e1a3c 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -835,14 +835,6 @@ empty_zero_page:
- swapper_pg_dir:
- 	.space	4096
- 
--/*
-- * This space gets a copy of optional info passed to us by the bootstrap
-- * Used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	512
--
- /* Room for two PTE table poiners, usually the kernel and current user
-  * pointer to their respective root page table (pgdir).
-  */
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 1f155d3..5f47adb 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1050,14 +1050,6 @@ exception_stack_bottom:
- exception_stack_top:
- 
- /*
-- * This space gets a copy of optional info passed to us by the bootstrap
-- * which is used to pass parameters into the kernel like root=/dev/sda1, etc.
-- */
--	.globl	cmd_line
--cmd_line:
--	.space	512
--
--/*
-  * Room for two PTE pointers, usually the kernel and current user pointers
-  * to their respective root page table.
-  */
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 50ef38c..36c90ba 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -76,6 +76,8 @@ EXPORT_SYMBOL(machine_id);
- 
- unsigned long klimit = (unsigned long) _end;
- 
-+char cmd_line[COMMAND_LINE_SIZE];
-+
- /*
-  * This still seems to be needed... -- paulus
-  */ 
--- 
-1.5.3.1
+or
+
+drivers/usb/host/ohci-ppc-soc.c
+drivers/usb/host/ohci-ppc-of.c
+
+Any other opinions on this? How should this be handled to get accepted 
+upstream? Two different drivers with removing the "old" one later when 
+arch/ppc is gone, or one driver which supports both versions and removing the 
+ocp support in this driver later?
+
+> I also personally don't like this _iic -> _of name change (you
+> removed peripheral name and added something which has nothing to do
+> with iic, I never heard of OF peripheral in 4xx chips). Whether you
+> use OCP or OF to pass a little information is quite irrelevant to the
+> iic driver operation.
+
+The "old" name "i2c-ibm_iic" is kind of redundant. Nearly all bus drivers are 
+named "i2c-platform". Perhaps a better name would be "i2c-ppc4xx" then. 
+This "of" name was borrowed from already existing device-tree aware drivers 
+like drivers/mtd/maps/physmap_of.c or drivers/usb/host/ohci-ppc-of.c.
+
+> If you insist on this approach, please add yourself as a maintainer of
+> this code, because I'm not going to support two identical copies of my
+> code in the kernel tree.
+
+I "insist" in nothing. I'm just trying to get this device-tree aware I2C 
+driver support upstream.
+
+Best regards,
+Stefan
