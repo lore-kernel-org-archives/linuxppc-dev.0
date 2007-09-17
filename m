@@ -1,25 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EDF8DDDDF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 16:40:08 +1000 (EST)
-Date: Mon, 17 Sep 2007 16:39:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: travis@sgi.com
-Subject: Re: [PATCH 09/10] ppc64: Convert cpu_sibling_map to a per_cpu data
-	array (v3)
-Message-Id: <20070917163954.1c3b91fd.sfr@canb.auug.org.au>
-In-Reply-To: <20070917162831.b2a9d675.sfr@canb.auug.org.au>
-References: <20070912015644.927677070@sgi.com>
-	<20070912015647.486500682@sgi.com>
-	<20070917162831.b2a9d675.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh"
-Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Lameter <clameter@sgi.com>
+Return-Path: <htejun@gmail.com>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.231])
+	by ozlabs.org (Postfix) with ESMTP id 415A8DDDFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 18:27:08 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id e11so1673169qbe
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 01:27:06 -0700 (PDT)
+Message-ID: <46EE0F14.8070008@gmail.com>
+Date: Mon, 17 Sep 2007 07:22:28 +0200
+From: Tejun Heo <htejun@gmail.com>
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+Subject: Re: SYSFS: need a noncaching read
+References: <1189503798.6674.46.camel@Zeus.EmbLux>
+	<20070912053207.GH23573@pengutronix.de>
+	<20070912100123.GA23182@kroah.com>
+In-Reply-To: <20070912100123.GA23182@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Heiko Schocher <hs@denx.de>,
+	linux-kernel@vger.kernel.org, Detlev Zundel <dzu@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Greg KH wrote:
+> On Wed, Sep 12, 2007 at 07:32:07AM +0200, Robert Schwebel wrote:
+>> On Tue, Sep 11, 2007 at 11:43:17AM +0200, Heiko Schocher wrote:
+>>> I have developed a device driver and use the sysFS to export some
+>>> registers to userspace.
+>> Uuuh, uggly. Don't do that. Device drivers are there to abstract things,
+>> not to play around with registers from userspace.
+>>
+>>> I opened the sysFS File for one register and did some reads from this
+>>> File, but I alwas becoming the same value from the register, whats not
+>>> OK, because they are changing. So I found out that the sysFS caches
+>>> the reads ... :-(
+>> Yes, it does. What you can do is close()ing the file handle between
+>> accesses, which makes it work but is slow.
+> 
+> Do an lseek back to 0 and then re-read, you will get called in your
+> driver again.
 
-On Mon, 17 Sep 2007 16:28:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> 	the topology (on my POWERPC5+ box) is not correct:
->=20
-> cpu0/topology/thread_siblings:0000000f
-> cpu1/topology/thread_siblings:0000000f
-> cpu2/topology/thread_siblings:0000000f
-> cpu3/topology/thread_siblings:0000000f
->=20
-> it used to be:
->=20
-> cpu0/topology/thread_siblings:00000003
-> cpu1/topology/thread_siblings:00000003
-> cpu2/topology/thread_siblings:0000000c
-> cpu3/topology/thread_siblings:0000000c
+There should be an intervening sysfs_notify() call from kernel side to
+make sysfs re-populate its cache on read again.  sysfs bin files buffer
+the result but don't cache the result but this again doesn't really fit
+the usage case.
 
-This would be because we are setting up the cpu_sibling map before we
-call setup_per_cpu_areas().
+Thanks.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG7iFATgG2atn1QN8RAnoiAJ4p0Hk26M2K13DgUt0wVOd2o5fJAACfQD5+
-XWiCERDNRgIjs6BvH/3Ffcs=
-=wQi8
------END PGP SIGNATURE-----
-
---Signature=_Mon__17_Sep_2007_16_39_54_+1000_8XGFp5gdvQyJPmgh--
+-- 
+tejun
