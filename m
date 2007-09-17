@@ -1,22 +1,16 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 44206DDDFE
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 21:06:58 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so806579uge
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 04:06:57 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] Remove unused variabls from
-	drivers/ide/ppc/pmac.c
-Date: Mon, 17 Sep 2007 12:16:07 +0200
-References: <20070917140644.f62abe1e.sfr@canb.auug.org.au>
-In-Reply-To: <20070917140644.f62abe1e.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709171216.08058.bzolnier@gmail.com>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	linux-ide@vger.kernel.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id ED75DDDDF9
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 22:27:53 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <1189802687.20625.74.camel@basalt>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <982faf82bf1dcc29bcc897422114b6c0@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] fix xmon input on 440
+Date: Mon, 17 Sep 2007 07:24:02 -0500
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 17 September 2007, Stephen Rothwell wrote:
-> Removes these warnings:
-> 
-> /home/sfr/kernels/linus/drivers/ide/ppc/pmac.c: In function 'pmac_ide_dma_check':
-> /home/sfr/kernels/linus/drivers/ide/ppc/pmac.c:1807: warning: unused variable 'map'
-> /home/sfr/kernels/linus/drivers/ide/ppc/pmac.c:1805: warning: unused variable 'pmif'
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On Sat Sep 15 06:44:47 EST 2007, Hollis Blanchard wrote:
 
-applied
+> Implement udbg_getc() for 440, which fixes xmon input.
+> Signed-off-by: Hollis Blanchard <hollisb at us.ibm.com>
+
+>         udbg_putc = udbg_44x_as1_putc;
+> +       udbg_getc = udbg_44x_as1_getc;
+
+How about adding udbg_getc_poll as well?
+
+While there are no in-tree users, we can use it for console input later.
+
+milton
