@@ -1,15 +1,36 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2ACFDDD0A
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 14:08:13 +1000 (EST)
-Date: Mon, 17 Sep 2007 14:08:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix section mismatch in pci code
-Message-Id: <20070917140806.b12ae5e9.sfr@canb.auug.org.au>
+Return-Path: <hollisb@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6F78CDDDF5
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2007 14:15:43 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l8H37oAr013572
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 23:07:50 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8H4FeRD477424
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 22:15:40 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8H4Fd8N024024
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Sep 2007 22:15:40 -0600
+Subject: Re: [PATCH] fix xmon input on 440
+From: Hollis Blanchard <hollisb@us.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070917033924.GA24914@lixom.net>
+References: <1189802687.20625.74.camel@basalt>
+	<20070917025223.GG32725@localhost.localdomain>
+	<1189999598.17593.18.camel@localhost.localdomain>
+	<20070917033924.GA24914@lixom.net>
+Content-Type: text/plain
+Date: Sun, 16 Sep 2007 23:15:21 -0500
+Message-Id: <1190002521.16747.1.camel@basalt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, David Gibson <dwg@au1.ibm.com>
+Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,168 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Create a helper function (alloc_maybe_bootmem) that is marked __init_refok
-to limit the chances of mistakenly refferring to other __init routines.
+On Sun, 2007-09-16 at 22:39 -0500, Olof Johansson wrote:
+> On Sun, Sep 16, 2007 at 10:26:37PM -0500, Josh Boyer wrote:
+> > On Mon, 2007-09-17 at 12:52 +1000, David Gibson wrote:
+> > > On Fri, Sep 14, 2007 at 03:44:47PM -0500, Hollis Blanchard wrote:
+> > > > Implement udbg_getc() for 440, which fixes xmon input.
+> > > > Signed-off-by: Hollis Blanchard <hollisb@us.ibm.com>
+> > > Acked-by: David Gibson <david@gibson.dropbear.id.au>
+> > > 
+> > 
+> > I fixed up the whitespace issues and applied it to my tree.  Oh, and
+> > comments don't need semi-colons ;)
+> 
+> Well, there's a big difference between:
+> 
+> 	while (foo)
+> 		/* moof */;
+> 	return bar;
+> 
+> and:
+> 	while (foo)
+> 		/* moof */
+> 	return bar;
 
-WARNING: vmlinux.o(.text+0x2a9c4): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.update_dn_pci_info' and '.pci_dn_reconfig_notifier')
-WARNING: vmlinux.o(.text+0x36430): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.mpic_msi_init_allocator' and '.find_ht_magic_addr')
-WARNING: vmlinux.o(.text+0x5e804): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-WARNING: vmlinux.o(.text+0x5e8e8): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-WARNING: vmlinux.o(.text+0x5e968): Section mismatch: reference to .init.text:.__alloc_bootmem (between '.celleb_setup_phb' and '.celleb_fake_pci_write_config')
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/pci_dn.c        |    7 +------
- arch/powerpc/lib/Makefile           |    2 +-
- arch/powerpc/lib/alloc.c            |   14 ++++++++++++++
- arch/powerpc/platforms/celleb/pci.c |   19 +++++--------------
- arch/powerpc/sysdev/mpic_msi.c      |    6 +-----
- include/asm-powerpc/system.h        |    2 ++
- 6 files changed, 24 insertions(+), 26 deletions(-)
- create mode 100644 arch/powerpc/lib/alloc.c
+Right, so this commit is broken:
+http://git.infradead.org/?p=users/jwboyer/powerpc.git;a=commitdiff;h=81ec428065c01e37fb143ad31dc04fea27fddcac
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index d7d36df..b483903 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -23,8 +23,6 @@
- #include <linux/pci.h>
- #include <linux/string.h>
- #include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/bootmem.h>
- 
- #include <asm/io.h>
- #include <asm/prom.h>
-@@ -45,10 +43,7 @@ static void * __devinit update_dn_pci_info(struct device_node *dn, void *data)
- 	const u32 *regs;
- 	struct pci_dn *pdn;
- 
--	if (mem_init_done)
--		pdn = kmalloc(sizeof(*pdn), GFP_KERNEL);
--	else
--		pdn = alloc_bootmem(sizeof(*pdn));
-+	pdn = alloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
- 	if (pdn == NULL)
- 		return NULL;
- 	memset(pdn, 0, sizeof(*pdn));
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 0a486d4..23bbb1e 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -7,7 +7,7 @@ EXTRA_CFLAGS		+= -mno-minimal-toc
- endif
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
--obj-y			:= string.o
-+obj-y			:= string.o alloc.o
- obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
- endif
- 
-diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-new file mode 100644
-index 0000000..e58c805
---- /dev/null
-+++ b/arch/powerpc/lib/alloc.c
-@@ -0,0 +1,14 @@
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/bootmem.h>
-+
-+#include <asm/system.h>
-+
-+void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
-+{
-+	if (mem_init_done)
-+		return kmalloc(size, mask);
-+	else
-+		return alloc_bootmem(size);
-+}
-diff --git a/arch/powerpc/platforms/celleb/pci.c b/arch/powerpc/platforms/celleb/pci.c
-index 11336b4..1348b23 100644
---- a/arch/powerpc/platforms/celleb/pci.c
-+++ b/arch/powerpc/platforms/celleb/pci.c
-@@ -327,10 +327,7 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
- 
- 	size = 256;
- 	config = &private->fake_config[devno][fn];
--	if (mem_init_done)
--		*config = kzalloc(size, GFP_KERNEL);
--	else
--		*config = alloc_bootmem(size);
-+	*config = alloc_maybe_bootmem(size, GFP_KERNEL);
- 	if (*config == NULL) {
- 		printk(KERN_ERR "PCI: "
- 		       "not enough memory for fake configuration space\n");
-@@ -341,10 +338,7 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
- 
- 	size = sizeof(struct celleb_pci_resource);
- 	res = &private->res[devno][fn];
--	if (mem_init_done)
--		*res = kzalloc(size, GFP_KERNEL);
--	else
--		*res = alloc_bootmem(size);
-+	*res = alloc_maybe_bootmem(size, GFP_KERNEL);
- 	if (*res == NULL) {
- 		printk(KERN_ERR
- 		       "PCI: not enough memory for resource data space\n");
-@@ -436,12 +430,9 @@ static int __init phb_set_bus_ranges(struct device_node *dev,
- 
- static void __init celleb_alloc_private_mem(struct pci_controller *hose)
- {
--	if (mem_init_done)
--		hose->private_data =
--			kzalloc(sizeof(struct celleb_pci_private), GFP_KERNEL);
--	else
--		hose->private_data =
--			alloc_bootmem(sizeof(struct celleb_pci_private));
-+	hose->private_data =
-+		alloc_maybe_bootmem(sizeof(struct celleb_pci_private),
-+			GFP_KERNEL);
- }
- 
- int __init celleb_setup_phb(struct pci_controller *phb)
-diff --git a/arch/powerpc/sysdev/mpic_msi.c b/arch/powerpc/sysdev/mpic_msi.c
-index 9ca4d8f..d272a52 100644
---- a/arch/powerpc/sysdev/mpic_msi.c
-+++ b/arch/powerpc/sysdev/mpic_msi.c
-@@ -9,7 +9,6 @@
-  */
- 
- #include <linux/irq.h>
--#include <linux/bootmem.h>
- #include <linux/bitmap.h>
- #include <linux/msi.h>
- #include <asm/mpic.h>
-@@ -152,10 +151,7 @@ int mpic_msi_init_allocator(struct mpic *mpic)
- 	size = BITS_TO_LONGS(mpic->irq_count) * sizeof(long);
- 	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
- 
--	if (mem_init_done)
--		mpic->hwirq_bitmap = kmalloc(size, GFP_KERNEL);
--	else
--		mpic->hwirq_bitmap = alloc_bootmem(size);
-+	mpic->hwirq_bitmap = alloc_maybe_bootmem(size, GFP_KERNEL);
- 
- 	if (!mpic->hwirq_bitmap) {
- 		pr_debug("mpic: ENOMEM allocating allocator bitmap!\n");
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index 41520b7..f7879fc 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -189,6 +189,8 @@ extern int mem_init_done;	/* set on boot once kmalloc can be called */
- extern unsigned long memory_limit;
- extern unsigned long klimit;
- 
-+extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
-+
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
- 
- /*
--- 
-1.5.3.1
+Hollis Blanchard
+IBM Linux Technology Center
