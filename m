@@ -1,17 +1,12 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9A329DDF97
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 01:02:33 +1000 (EST)
-Message-ID: <46EFE849.7080508@ru.mvista.com>
-Date: Tue, 18 Sep 2007 19:01:29 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC] [PATCH] PowerPC: Add 64-bit phys addr support to 32-bit pci.
-References: <20070918144426.GA22102@ru.mvista.com>
-	<2E339F78-F42B-4FCE-A97E-FFE9AE4C44F1@kernel.crashing.org>
-In-Reply-To: <2E339F78-F42B-4FCE-A97E-FFE9AE4C44F1@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Add basic testcases for dtc 
+In-Reply-To: Your message of "Tue, 18 Sep 2007 10:33:40 +1000."
+	<20070918003340.GA30766@localhost.localdomain>
+References: <20070918003340.GA30766@localhost.localdomain> 
+Date: Tue, 18 Sep 2007 10:02:37 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IXeaz-0000lF-HQ@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,30 +17,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+So, like, the other day David Gibson mumbled:
+> This patch adds a handful of simple testcases for dtc.  It adds a dts
+> file which should generate the same sample tree as is used for the
+> libfdt testcases, and tests invoking dtc on this dts, plus the
+> standard batch of libfdt cases on the resulting dtb, which effectively
+> checks that the dtb is correct.
 > 
-> On Sep 18, 2007, at 9:44 AM, Valentine Barshak wrote:
+> Because the test framework assumes each testcase is an executable with
+> the right output conventions, we use a little shell script, dtc.sh, as
+> a wrapper around dtc itself.  It simply invokes dtc and returns a PASS
+> or FAIL depending on whether dtc returned an error.
 > 
->> Add 64-bit physical address support to PCI.
+> It's not much, but it's a start.
 > 
-> Can you expand on your commit message.  for example why do this? is it 
-> address a bug fix, etc..
-> 
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->> ---
->>  arch/powerpc/kernel/iomap.c  |    4 +--
->>  arch/powerpc/kernel/pci_32.c |   56 
->> +++++++++++++++++++++++++++++--------------
->>  2 files changed, 41 insertions(+), 19 deletions(-)
-> 
-> - k
-> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Currently 32-bit pci code doesn't support 64-bit physical addresses.
-We have to add 64-bit addr support in order to bring-up pci on PowerPC 
-440. Actually, this refers to the conversation started here:
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042267.html
-Thanks,
-Valentine.
+Applied.
+
+> NB: Jon, you won't be able to simply git-applymbox this and have it
+> work.  You'll need to manually add execute permission to tests/dtc.sh
+> before git commiting it, since I can't encode the permissions in a
+> patch.  Sorry for the inconvenience, but it didn't really seem worth
+> setting up my own git to pull from just for that.
+
+No problem.  Too bad you can't just use git, though... :-)
+
+jdl
