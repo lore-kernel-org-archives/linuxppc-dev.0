@@ -1,14 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Sep 2007 16:13:05 +1000
+Date: Tue, 18 Sep 2007 16:48:12 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 02/28] Introduce new CPM device bindings.
-Message-ID: <20070918061305.GF30766@localhost.localdomain>
+Subject: Re: [PATCH 24/28] mpc82xx: Remove a bunch of cruft that duplicates
+	generic functionality.
+Message-ID: <20070918064812.GG30766@localhost.localdomain>
 References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165730.GB6563@loki.buserror.net>
+	<20070917165816.GX6563@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917165730.GB6563@loki.buserror.net>
+In-Reply-To: <20070917165816.GX6563@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,26 +20,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 11:57:30AM -0500, Scott Wood wrote:
-> This introduces a new device binding for the CPM and other devices on
-> these boards.  Some of the changes include:
-> 
-> 1. Proper namespace scoping for Freescale compatibles and properties.
-> 
-> 2. Use compatible rather than things like device_type and model
-> to determine which particular variant of a device is present.
-> 
-> 3. Give the drivers the relevant CPM command word directly, rather than
-> requiring it to have a lookup table based on device-id, SCC v. SMC, and
-> CPM version.
-> 
-> 4. Specify the CPCR and the usable DPRAM region in the CPM's reg property.
-> 
-> Boards that do not require the legacy bindings should select
-> CONFIG_PPC_CPM_NEW_BINDING to enable the of_platform CPM devices. Once
-> all existing boards are converted and tested, the config option can
-> become default y to prevent new boards from using the old model.  Once
-> arch/ppc is gone, the config option can be removed altogether.
+On Mon, Sep 17, 2007 at 11:58:16AM -0500, Scott Wood wrote:
+> m82xx_calibrate_decr(), mpc82xx_ads_show_cpuinfo(), and mpc82xx_halt() do
+> anything useful beyond what the generic code does.
 > 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 
