@@ -1,27 +1,16 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 9D0F1DDE39
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s41.bay0.hotmail.com (bay0-omc3-s41.bay0.hotmail.com
+	[65.54.246.241]) by ozlabs.org (Postfix) with ESMTP id 94921DDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 08:08:29 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2269619wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Sep 2007 15:08:28 -0700 (PDT)
-Message-ID: <9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
-Date: Mon, 17 Sep 2007 18:08:27 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Domen Puncer" <domen@coderock.org>
-Subject: Re: [PATCH] phy: export phy_mii_ioctl
-In-Reply-To: <20070917202140.GB2642@nd47.coderock.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-	<20070917202140.GB2642@nd47.coderock.org>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-	linuxppc-embedded@ozlabs.org
+	Tue, 18 Sep 2007 17:39:48 +1000 (EST)
+Message-ID: <BAY138-F271854679106F05A7C7117B2B80@phx.gbl>
+In-Reply-To: <12745876.post@talk.nabble.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: jqhu936@yahoo.com, linuxppc-embedded@ozlabs.org
+Subject: RE: Ethernet adapter not found in Xilinx ppc, with linux 2.6.22
+Date: Tue, 18 Sep 2007 07:39:42 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,104 +21,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/17/07, Domen Puncer <domen@coderock.org> wrote:
-> Export phy_mii_ioctl, so network drivers can use it when built
-> as modules too.
-
-Domen, do you want to collect all of these changes for MPC5200 FEC in
-to a single patch series? The code is getting scattered around, I'll
-check it over to make sure it is all working. I have these patches
-applied individually and they all work.
-
-It builds on this series:
-[PATCH 0/7] MPC52xx Bestcomm submission for 2.6.24
-
-If you can put this together is a clean series, I should be able to
-layer support for the Phytec pcm030 on top of it.
-
-It would be these three combined...
-
-http://coderock.org/tmp/fec-v3rc1/
-
-diff --git a/drivers/net/fec_mpc52xx/fec.c b/drivers/net/fec_mpc52xx/fec.c
-index 922e9a8..c4442e0 100644
---- a/drivers/net/fec_mpc52xx/fec.c
-+++ b/drivers/net/fec_mpc52xx/fec.c
-@@ -1087,11 +1087,13 @@ static struct of_platform_driver mpc52xx_fec_driver = {
- /* ======================================================================== */
- /* Module                                                                   */
- /* ======================================================================== */
-+extern int fec_mdio_init(void);
-+void fec_mdio_exit(void);
-
- static int __init
- mpc52xx_fec_init(void)
- {
--#ifdef FEC_MPC52xx_MDIO
-+#ifdef CONFIG_FEC_MPC52xx_MDIO
-       int ret;
-       ret = fec_mdio_init();
-       if (ret) {
-@@ -1106,7 +1108,7 @@ static void __exit
- mpc52xx_fec_exit(void)
- {
-       of_unregister_platform_driver(&mpc52xx_fec_driver);
--#ifdef FEC_MPC52xx_MDIO
-+#ifdef CONFIG_FEC_MPC52xx_MDIO
-       fec_mdio_exit();
- #endif
- }
-
-
+Hi,
 >
-> Signed-off-by: Domen Puncer <domen@coderock.org>
->
-> ---
-> On 17/09/07 11:53 +0200, Sven Luther wrote:
-> > On Sat, Sep 15, 2007 at 02:14:44PM +0200, Domen Puncer wrote:
-> > > Updated and split version at:
-> > > http://coderock.org/tmp/fec-v3rc1/
-> > >
-> > > I'll repost to lists once I run-test them.
-> >
-> > When applying those patches, the build did die with :
-> >
-> >
-> >   ERROR: "phy_mii_ioctl" [drivers/net/fec_mpc52xx/fec_mpc52xx.ko] undefined!
-> >
-> > Apparently, phy_mii_ioctl is not an exported symbol.
-> >
-> > Domen, did you maybe forget a little snipplet when you cut the patches
-> > in different pieces ? Or did i mess up applying them ?
-> >
-> > Friendly,
-> >
-> > Sven Luther
->
->
->  drivers/net/phy/phy.c |    1 +
->  1 files changed, 1 insertion(+)
->
-> Index: linux.git/drivers/net/phy/phy.c
-> ===================================================================
-> --- linux.git.orig/drivers/net/phy/phy.c
-> +++ linux.git/drivers/net/phy/phy.c
-> @@ -409,6 +409,7 @@ int phy_mii_ioctl(struct phy_device *phy
->
->         return 0;
->  }
-> +EXPORT_SYMBOL(phy_mii_ioctl);
->
->  /**
->   * phy_start_aneg - start auto-negotiation for this PHY device
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+>After several days of struggling I'm now able to boot the linux 2.6.22 and
+>run the busybox-1.7.1 root system.  Yet I could not find the Ethernet
+>adapter using Xilinx GMAC core.  Pretty sure that I've chosen the 10/100
+>Ethernet drivers.  Should I use the Xilinx driver xemac, or other drivers,
+>or any other way to apply a patch?
 
+If you are using gigabit ethernet, you must have the corresponding driver 
+(gigabit or tri-state) instead of 10/100 one included. 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+BR
+Ming
+
+_________________________________________________________________
+√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
