@@ -1,15 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Sep 2007 16:11:41 +1000
+Date: Tue, 18 Sep 2007 16:13:05 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 01/28] CPM: Change from fsl,
-	brg-frequency to brg/clock-frequency
-Message-ID: <20070918061141.GE30766@localhost.localdomain>
+Subject: Re: [PATCH 02/28] Introduce new CPM device bindings.
+Message-ID: <20070918061305.GF30766@localhost.localdomain>
 References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165728.GA6563@loki.buserror.net>
+	<20070917165730.GB6563@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917165728.GA6563@loki.buserror.net>
+In-Reply-To: <20070917165730.GB6563@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,63 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 11:57:28AM -0500, Scott Wood wrote:
-> As suggested by David Gibson, now that we have a separate node
-> for the baud rate generators, it's better to use the standard
-> clock-frequency property than a cpm-node-level fsl,brg-frequency
-> property.
+On Mon, Sep 17, 2007 at 11:57:30AM -0500, Scott Wood wrote:
+> This introduces a new device binding for the CPM and other devices on
+> these boards.  Some of the changes include:
 > 
-> This patch updates existing places where fsl,brg-frequency is
-> used.
+> 1. Proper namespace scoping for Freescale compatibles and properties.
+> 
+> 2. Use compatible rather than things like device_type and model
+> to determine which particular variant of a device is present.
+> 
+> 3. Give the drivers the relevant CPM command word directly, rather than
+> requiring it to have a lookup table based on device-id, SCC v. SMC, and
+> CPM version.
+> 
+> 4. Specify the CPCR and the usable DPRAM region in the CPM's reg property.
+> 
+> Boards that do not require the legacy bindings should select
+> CONFIG_PPC_CPM_NEW_BINDING to enable the of_platform CPM devices. Once
+> all existing boards are converted and tested, the config option can
+> become default y to prevent new boards from using the old model.  Once
+> arch/ppc is gone, the config option can be removed altogether.
 > 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-[snip]
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index d028e8d..3052366 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -73,22 +73,26 @@ static u32 brgfreq = -1;
->  u32 get_brgfreq(void)
->  {
->  	struct device_node *node;
-> +	const unsigned int *prop;
-> +	int size;
->  
->  	if (brgfreq != -1)
->  		return brgfreq;
->  
-> -	node = of_find_compatible_node(NULL, NULL, "fsl,cpm1");
-> -	if (!node)
-> -		node = of_find_compatible_node(NULL, NULL, "fsl,cpm2");
-> -	if (!node)
-> -		node = of_find_node_by_type(NULL, "cpm");
-> +	node = of_find_compatible_node(NULL, NULL, "fsl,cpm-brg");
->  	if (node) {
-> -		int size;
-> -		const unsigned int *prop;
-> +		prop = of_get_property(node, "clock-frequency", &size);
-> +		if (prop && size == 4)
-> +			brgfreq = *prop;
->  
-> -		prop = of_get_property(node, "fsl,brg-frequency", &size);
-> -		if (!prop)
-> -			prop = of_get_property(node, "brg-frequency", &size);
-> +		of_node_put(node);
-> +		return brgfreq;
-> +	}
-> +
-> +	/* Legacy device binding -- will go away when no users are left. */
-> +	node = of_find_node_by_type(NULL, "cpm");
-> +	if (node) {
-> +		prop = of_get_property(node, "brg-frequency", &size);
-
-Shouldn't you check for "fsl,brg-frequency" here, in case of old
-device trees?
-
->  		if (prop && size == 4)
->  			brgfreq = *prop;
->  
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
