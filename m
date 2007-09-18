@@ -1,20 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 110B2DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 23:21:50 +1000 (EST)
-Date: Tue, 18 Sep 2007 23:21:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 18/28] 8xx: mpc885ads cleanup
-Message-Id: <20070918232135.bc079b20.sfr@canb.auug.org.au>
-In-Reply-To: <20070917165805.GR6563@loki.buserror.net>
-References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165805.GR6563@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__18_Sep_2007_23_21_35_+1000_n=dZjcg_UY9Tb+PU"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9F44DDE38
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 00:02:06 +1000 (EST)
+In-Reply-To: <989B956029373F45A0B8AF029708189001763D1E@zch01exm26.fsl.freescale.net>
+References: <20070912112456.GA15556@localhost.localdomain><20070913152333.GA2381@localhost.localdomain>
+	<C844988E-F6B9-44B9-AB78-C44E19A2E605@kernel.crashing.org>
+	<989B956029373F45A0B8AF029708189001763D1E@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E0E78DB4-3A30-4D2D-83EE-B63D6C3A1D53@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ucc_geth: fix compilation
+Date: Tue, 18 Sep 2007 09:04:04 -0500
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jeff Garzik <jeff@garzik.org>,
+	netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__18_Sep_2007_23_21_35_+1000_n=dZjcg_UY9Tb+PU
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, 17 Sep 2007 11:58:05 -0500 Scott Wood <scottwood@freescale.com> wro=
-te:
+On Sep 18, 2007, at 3:56 AM, Li Yang-r58472 wrote:
+
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org
+>> [mailto:linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org]
+>> On Behalf Of Kumar Gala
+>> Sent: Friday, September 14, 2007 10:08 PM
+>> To: Jeff Garzik
+>> Cc: linuxppc-dev@ozlabs.org list; netdev
+>> Subject: Re: [PATCH] ucc_geth: fix compilation
+>>
+>>
+>> On Sep 13, 2007, at 10:23 AM, Anton Vorontsov wrote:
+>>
+>>> Currently qe_bd_t is used in the macro call --
+>> dma_unmap_single, which
+>>> is a no-op on PPC32, thus error is hidden today. Starting
+>> with 2.6.24,
+>>> macro will be replaced by the empty static function, and
+>> erroneous use
+>>> of qe_bd_t will trigger compilation error.
+>>>
+>>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>>> ---
+>>
+>> Jeff, I'm going to pick this up via the powerpc.git tree
+>> since its currently only broken in our for-2.6.24 branch
+>> (because of other changes in there).  Any issues?
 >
-> +++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
->  #include <asm/fs_pd.h>
-> -#include <asm/prom.h>
-> +#include <asm/of_platform.h>
+> Kumar,
+>
+> Kim Phillips has posted the same patch to netdev list before Anton.
+> Therefore, I do prefer to use his.  Thanks
 
-linux/of_platform.h
+No problem.  Jeff seems to have picked up some version of the fix.
 
-Sorry if I am getting boring.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__18_Sep_2007_23_21_35_+1000_n=dZjcg_UY9Tb+PU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG79DlTgG2atn1QN8RAtLrAJ9K3HCBOmCn9/NB9ST5fdonhFX1GQCdEEsI
-f0K7Y/hZNKBiiCWFHciI6jQ=
-=BMu9
------END PGP SIGNATURE-----
-
---Signature=_Tue__18_Sep_2007_23_21_35_+1000_n=dZjcg_UY9Tb+PU--
+- k
