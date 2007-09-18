@@ -1,19 +1,18 @@
-Return-Path: <mike.koss@ngc.com>
-Received: from xmrt0101.northgrum.com (xmrt0101.northgrum.com [208.20.220.55])
-	by ozlabs.org (Postfix) with ESMTP id 486C8DDE1C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 19618DDEF1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 08:38:32 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Xilinx FX60
-Date: Tue, 18 Sep 2007 18:13:11 -0400
-Message-ID: <E57AD4B83B37CA45A2BA1F0C5E4CD2EE02C92F0A@XMBVAD02.northgrum.com>
-In-Reply-To: <1190150070.7268.34.camel@PisteOff>
-References: <1190149090.7268.29.camel@PisteOff><fa686aa40709181402s633b6946k685a0bffe8bb7c10@mail.gmail.com>
-	<1190150070.7268.34.camel@PisteOff>
-From: "Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-To: "Robert Woodworth" <rwoodworth@securics.com>
+	Wed, 19 Sep 2007 08:39:00 +1000 (EST)
+To: "Leopold Stotch" <l.butterz@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: PSC in UART mode on TQM5200S
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 18 Sep 2007 14:13:28 +0400."
+	<53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
+Date: Wed, 19 Sep 2007 00:38:57 +0200
+Sender: wd@denx.de
+Message-Id: <20070918223857.11329247FE@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,37 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Rob,
+In message <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com> you wrote:
+>
+> So changed $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
+> the following way:
 
-I have working image for that board that uses the MPMC2 that I've
-successfully loaded our version of linux on. It uses a hacked-together
-ll_temac driver. We did a lot of integration on that board before
-finally moving to the ML410 because of not being able to get the SoDIMM
-port to work.
+Well, you have to unserstand *exactly* what the CPU and the board are
+doing - the MPC5200 has multiplexed pins, and if you select one
+function you lose a few others, so you must carefully check for
+conflicts. Probably you will have to disable some other functions.
+Also you have to usnerstand what the board is designed like - some
+ports have specific and reserved functions.
 
--- Mike=20
+Finally, there are such things like wrong baud rate on a serial port
+which may make you think it's not working while you are just using bad
+user mode settings.
 
------Original Message-----
-From: Robert Woodworth [mailto:rwoodworth@securics.com]=20
-Sent: Tuesday, September 18, 2007 5:15 PM
-To: Grant Likely
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Xilinx FX60
+> Is it possible to reconfigure all PSC's as UART's ?
 
-On Tue, 2007-09-18 at 15:02 -0600, Grant Likely wrote:
-> >
-> > The only difference is that the FX60 board only has 32MB DDR, I have
+Yes, it is. But you have to know what you are doing.
 
-> > made sure that the correct memory size is in the kernel.
->=20
-> How are you booting your kernel?  .ace? u-boot? load via debugger?
 
-load via debugger (Xilinx xmd)
+Best regards,
 
-FYI: the board I'm using is the
-TB-4V-FX60
-http://www.hitechglobal.com/TED/V4PowerPC.htm
+Wolfgang Denk
 
-> Cheers,
-> g.
->=20
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+All a hacker needs is a tight PUSHJ, a loose pair of UUOs, and a warm
+place to shift.
