@@ -1,20 +1,25 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 688B7DDE3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 04:18:24 +1000 (EST)
-Date: Tue, 18 Sep 2007 22:18:11 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [RFC] [PATCH] PowerPC: Add 64-bit phys addr support to 32-bit pci.
-Message-ID: <20070918221811.57b92c18@localhost.localdomain>
-In-Reply-To: <20070918160754.GA22698@ru.mvista.com>
-References: <DF9456FB-459D-4800-B994-D9B198096069@kernel.crashing.org>
-	<20070918160754.GA22698@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 91896DDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 05:13:20 +1000 (EST)
+Date: Tue, 18 Sep 2007 12:16:30 -0700
+From: Greg KH <greg@kroah.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc6-mm1
+Message-ID: <20070918191630.GB11083@kroah.com>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<46EF96CC.1080807@linux.vnet.ibm.com>
+	<20070918093444.GB973@shadowen.org>
+	<1190109772.6403.79.camel@localhost.localdomain>
+	<46EFBF9E.6060208@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46EFBF9E.6060208@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Valentine,
+On Tue, Sep 18, 2007 at 05:37:58PM +0530, Kamalesh Babulal wrote:
+> Benjamin Herrenschmidt wrote:
+>> On Tue, 2007-09-18 at 10:34 +0100, Andy Whitcroft wrote:
+>>   
+>>> On Tue, Sep 18, 2007 at 02:43:48PM +0530, Kamalesh Babulal wrote:
+>>>     
+>>>> Andrew Morton wrote:
+>>>>       
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
+>>>>>
+>>>>> 2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
+>>>>>
+>>>>>          
+>>>> <snip>
+>>>>
+>>>> Hi Andrew,
+>>>>
+>>>> The 2.6.23-rc6-mm1build fails at
+>>>>
+>>>>  CC      drivers/pci/hotplug/rpadlpar_core.o
+>>>>  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
+>>>> drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `name' 
+>>>> specified in initializer
+>>>> drivers/pci/hotplug/rpadlpar_sysfs.c: In function `dlpar_sysfs_init':
+>>>> drivers/pci/hotplug/rpadlpar_sysfs.c:142: error: structure has no member 
+>>>> named `name'
+>>>> make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
+>>>> make[2]: *** [drivers/pci/hotplug] Error 2
+>>>> make[1]: *** [drivers/pci] Error 2
+>>>> make: *** [drivers] Error 2
+>>>>       
+>>> This seems to be occuring across a number of the powerpc systems we test
+>>> with.  That driver is a power dynamic lpar IO partitioning driver.
+>>>
+>>> Relevant Cc: added.
+>>>     
+>>
+>> That's because somebody is breaking sysfs/kobject interfaces without
+>> fixing all users :-) (Fair enough... it's just that we need to make sure
+>> whoever takes care of that driver nowadays is aware of the breakage).
+>>
+>> Ben.
+>>   
+> Hi Andrew,
+>
+> Using the kobject_set_name function to set the kobject k_name.
 
-On Tue, 18 Sep 2007 20:07:54 +0400
-Valentine Barshak wrote:
+Close, you should also use the kobject_name() function when referencing
+it.
 
-> Currently pci_32 doesn't support 64-bit physical addresses, while
-> PowerPC440 platform has PCI space typically mapped above 4GB range.
-> The patch adds 64-bit physical address support to 32-bit PCI code
-> in order to bring-up PCI on 44x platform.
-> 
-The approach looks interesting, and resource_size_t<>ulong apparently makes sense,
-but I would strongly disagree we need to add more nuts and bolts into ranges parse func:
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+I'll fix this up in the patch, thanks.
 
-[...]
->  void __init
->  pci_process_bridge_OF_ranges(struct pci_controller *hose,
->  			   struct device_node *dev, int primary)
->  {
->  	static unsigned int static_lc_ranges[256] __initdata;
->  	const unsigned int *dt_ranges;
-> -	unsigned int *lc_ranges, *ranges, *prev, size;
-> +	unsigned int *lc_ranges, *ranges, *prev;
->  	int rlen = 0, orig_rlen;
->  	int memno = 0;
->  	struct resource *res;
-> +	u32 prev_pci_space, pci_space;
-> +	u64 prev_pci_addr, pci_addr;
-> +	u64 prev_size, size;
-> +	phys_addr_t cpu_phys_addr;
-> +	
->  	int np, na = of_n_addr_cells(dev);
->  	np = na + 5;
->  
-> @@ -879,11 +891,18 @@
->  	prev = NULL;
->  	while ((rlen -= np * sizeof(unsigned int)) >= 0) {
->  		if (prev) {
-> -			if (prev[0] == ranges[0] && prev[1] == ranges[1] &&
-> -				(prev[2] + prev[na+4]) == ranges[2] &&
-> -				(prev[na+2] + prev[na+4]) == ranges[na+2]) {
-> -				prev[na+4] += ranges[na+4];
-> +			prev_pci_space = prev[0];
-> +			prev_pci_addr = pci_get_range64(&prev[1]);
-> +			prev_size = pci_get_range64(&prev[na+3]);
-> +			pci_space = ranges[0];
-> +			pci_addr = pci_get_range64(&ranges[1]);
-> +			if ((prev_pci_space == pci_space) && 
-> +			    ((prev_pci_addr + prev_size) == pci_addr)) {
-> +				size = pci_get_range64(&ranges[na+3]);
-> +				prev_size += size;
->  				ranges[0] = 0;
-> +				prev[na+3] = (u32)((prev_size >> 32) & 0xffffffff);
-> +				prev[na+4] = (u32)(prev_size & 0xffffffff);
->  				ranges += np;
->  				continue;
+Oh, and sorry for breaking this, I could only test all of the modules
+build on x86 due to traveling while creating this patch.  I need to set
+up some cross-compilers on my laptop to fix this issue :(
 
-I do think that ranges hacking (even on a copy) to cope with contiguous ranges is not a good deed. And nobody would object the upper looks horrible from the maintenance POV.
->  			}
-> @@ -904,21 +923,22 @@
->  	rlen = orig_rlen;
->  	while (ranges && (rlen -= np * sizeof(unsigned int)) >= 0) {
->  		res = NULL;
-> -		size = ranges[na+4];
-> -		switch ((ranges[0] >> 24) & 0x3) {
-> +		size = pci_get_range64(&ranges[na+3]);
+thanks,
 
-This is not correct - it should depend on #ac of the parent node.
-But I'll stop right here - there is no deep mutual difference between 32 & 64 bit so that to keep 2 similar implementations, none of which (esp 32bit) really comply the spec. It should work the same way, and, if there are differences, they should be handled
-explicitly, and, of course, reconsidered if they make sense (like isa_io_base, absense of io_size in ppc32 and so on)
-
-I am *not* telling here that my implementation is the only true way around. But we need to improve and make code cleaner rather then just extend existing error-prone approach.
-
--- 
-Sincerely, Vitaly
+greg k-h
