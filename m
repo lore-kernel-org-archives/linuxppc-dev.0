@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1B50EDDDCA
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 20:04:07 +1000 (EST)
-Subject: Re: 2.6.23-rc6-mm1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20070918093444.GB973@shadowen.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<46EF96CC.1080807@linux.vnet.ibm.com>
-	<20070918093444.GB973@shadowen.org>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 20:02:51 +1000
-Message-Id: <1190109772.6403.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 85F8CDDDFB
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:04:55 +1000 (EST)
+Message-ID: <46EFBEA6.4050406@ru.mvista.com>
+Date: Tue, 18 Sep 2007 16:03:50 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64
+	bit	pci_process_bridge_OF_ranges() instances
+References: <20070911224952.9838.46644.stgit@localhost.localdomain>
+In-Reply-To: <20070911224952.9838.46644.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-09-18 at 10:34 +0100, Andy Whitcroft wrote:
-> On Tue, Sep 18, 2007 at 02:43:48PM +0530, Kamalesh Babulal wrote:
-> > Andrew Morton wrote:
-> > >ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc6/2.6.23-rc6-mm1/
-> > >
-> > >2.6.23-rc6-mm1 is a 29MB diff against 2.6.23-rc6.
-> > >
-> > >  
-> > <snip>
-> > 
-> > Hi Andrew,
-> > 
-> > The 2.6.23-rc6-mm1build fails at
-> > 
-> >  CC      drivers/pci/hotplug/rpadlpar_core.o
-> >  CC      drivers/pci/hotplug/rpadlpar_sysfs.o
-> > drivers/pci/hotplug/rpadlpar_sysfs.c:132: error: unknown field `name' 
-> > specified in initializer
-> > drivers/pci/hotplug/rpadlpar_sysfs.c: In function `dlpar_sysfs_init':
-> > drivers/pci/hotplug/rpadlpar_sysfs.c:142: error: structure has no member 
-> > named `name'
-> > make[3]: *** [drivers/pci/hotplug/rpadlpar_sysfs.o] Error 1
-> > make[2]: *** [drivers/pci/hotplug] Error 2
-> > make[1]: *** [drivers/pci] Error 2
-> > make: *** [drivers] Error 2
-> 
-> This seems to be occuring across a number of the powerpc systems we test
-> with.  That driver is a power dynamic lpar IO partitioning driver.
-> 
-> Relevant Cc: added.
+Vitaly Bordug wrote:
+> +
+> +			hose->io_base_phys = cpu_phys_addr - pci_addr;
 
-That's because somebody is breaking sysfs/kobject interfaces without
-fixing all users :-) (Fair enough... it's just that we need to make sure
-whoever takes care of that driver nowadays is aware of the breakage).
+This is not gonna work on 32-bit platform (unless pci_addr == 0).
+Should be
+hose->io_base_phys = cpu_phys_addr;
+The other way we should adjust io size like we do on 64-bit and rewrite 
+resource fixup functions.
 
-Ben.
+> +			/* handle from 0 to top of I/O window */
+> +#ifdef CONFIG_PPC64
+> +			hose->pci_io_size = pci_addr + size;
+> +#endif
+> +			hose->io_base_virt = ioremap(hose->io_base_phys, size);
+
+Do we need to ioremap on 64-bit? I think 64-bit uses different approach 
+in handling io space.
+
+> +#ifdef CONFIG_PPC32
+> +			if (prim)
+> +				isa_io_base = (unsigned long)hose->io_base_virt;
+> +#endif
+
+What's exactly the point of merging this single function?
+If this was intended to add 64-bit physical address support to 32-bit 
+platforms (like ppc440), then it does not seem sufficient to make pci 
+stuff work right.
+What about the 32-bit pcibios_fixup_resources(), 
+pcibios_resource_to_bus(), pcibios_bus_to_resource() stuff?
+There's still no 64-bit support. You'll get
+"PCI Cannot allocate resource region" attempting to initialize resources 
+at PCI start-up.
+Thanks,
+Valentine.
