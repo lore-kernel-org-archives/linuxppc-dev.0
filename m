@@ -1,19 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 18 Sep 2007 15:39:45 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] usb: add device-tree-aware ehci driver
-Message-ID: <20070918053945.GC30766@localhost.localdomain>
-References: <20070917125039.GA29525@ru.mvista.com>
-	<20070917125543.GA29584@ru.mvista.com>
-	<20070917232809.1221acd9.sfr@canb.auug.org.au>
-	<46EEC4AB.2030707@ru.mvista.com>
-	<20070918142606.06477b04.sfr@canb.auug.org.au>
+Return-Path: <tnt@blacksnow.net>
+Received: from leia.blacksnow.net (leia.blacksnow.net [213.251.174.139])
+	by ozlabs.org (Postfix) with ESMTP id 98264DDDF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 15:40:41 +1000 (EST)
+Message-ID: <58950.87.65.18.190.1190089793.squirrel@www.opensources.be>
+In-Reply-To: <9e4733910709171915neced927yaf014a08ce21aa66@mail.gmail.com>
+References: <11899400103383-git-send-email-tnt@246tNt.com>
+	<9e4733910709171915neced927yaf014a08ce21aa66@mail.gmail.com>
+Date: Tue, 18 Sep 2007 06:29:53 +0200 (CEST)
+Subject: Re: [PATCH 0/7] MPC52xx Bestcomm submission for 2.6.24
+From: tnt@blacksnow.net
+To: "Jon Smirl" <jonsmirl@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
-In-Reply-To: <20070918142606.06477b04.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain;charset=iso-8859-1
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> On 9/16/07, Sylvain Munaut <tnt@246tnt.com> wrote:
+>> Hello Paul, Hi everyone,
+>>
+>> This series of patch is mainly the bestcomm support for
+>> the mpc5200. It was posted a while ago and received some
+>> comments. Theses are all addressed here (afaik).
+>
+> Does this series supersede these pacthes out of your older series?
 
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes.
+Those are the patches I wrote to fix the comments received last time.
+They are now merged inside the main patches.
 
-On Tue, Sep 18, 2007 at 02:26:06PM +1000, Stephen Rothwell wrote:
-> On Mon, 17 Sep 2007 22:17:15 +0400 Valentine Barshak <vbarshak@ru.mvista.=
-com> wrote:
-> >
-> > Looks like we'll need a patch that replaces asm/prom.h and=20
-> > asm/of_platform.h with linux/of.h and linux/of_platform.h
-> > in other drivers.
->=20
-> Yeah, but at the moment I am just stopping the infection spreading
-> :-)
+Apparently I forgot to fix some other comments so I'll have to do
+that and repost again.
 
-Patching the existing instances would probably help with that, since
-it would mean less bad examples for people to copy.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Sylvain
 
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG72ShaILKxv3ab8YRAh7LAJ9CCh+3IYTyL0lZx7MJNMbCmi9olQCggP+P
-+JMQRdEECpGKJXVRGbwonJA=
-=Rcxf
------END PGP SIGNATURE-----
-
---d6Gm4EdcadzBjdND--
+>
+> 0010-powerpc-In-rheap.c-move-the-EXPORT_SYMBOL-and-use.patch
+> 0011-powerpc-BestComm-move-the-EXPORT_SYMBOL-and-use-th.patch
+> 0012-powerpc-BestComm-ATA-task-move-the-EXPORT_SYMBOL-a.patch
+> 0013-powerpc-BestComm-FEC-task-move-the-EXPORT_SYMBOL-a.patch
+> 0014-powerpc-BestComm-GenBD-task-move-the-EXPORT_SYMBOL.patch
+> 0015-powerpc-BestComm-Replace-global-variable-bcom-by-b.patch
+> 0016-powerpc-Make-the-BestComm-driver-a-standard-of_plat.patch
+> 0017-powerpc-Fix-typo-in-BestComm-ATA-task-support-code.patch
+> 0018-powerpc-BestComm-ATA-task-microcode-insert-copyri.patch
+> 0019-powerpc-BestComm-FEC-task-microcode-insert-copyri.patch
+> 0020-powerpc-BestComm-GenBD-task-microcode-insert-copy.patch
+> 0021-powerpc-Fix-errors-in-bcom-bcom_eng-renaming.patch
+>
+>
+>
+> --
+> Jon Smirl
+> jonsmirl@gmail.com
+>
+>
