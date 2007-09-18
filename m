@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7E317DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 14:26:45 +1000 (EST)
-Subject: Re: [PATCH] [POWERPC] Support setting affinity for U3/U4 MSI sources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070917201229.GA17302@lixom.net>
-References: <20070917201229.GA17302@lixom.net>
-Content-Type: text/plain
-Date: Tue, 18 Sep 2007 14:26:37 +1000
-Message-Id: <1190089597.6403.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 18 Sep 2007 15:39:45 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/3] usb: add device-tree-aware ehci driver
+Message-ID: <20070918053945.GC30766@localhost.localdomain>
+References: <20070917125039.GA29525@ru.mvista.com>
+	<20070917125543.GA29584@ru.mvista.com>
+	<20070917232809.1221acd9.sfr@canb.auug.org.au>
+	<46EEC4AB.2030707@ru.mvista.com>
+	<20070918142606.06477b04.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+In-Reply-To: <20070918142606.06477b04.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-09-17 at 15:12 -0500, Olof Johansson wrote:
-> Hook up affinity-setting for U3/U4 MSI interrupt sources.
-> 
-> Tested on Quad G5 with myri10ge.
-> 
-> 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 8de29f2..22600fd 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -768,7 +768,7 @@ static void mpic_end_ipi(unsigned int irq)
->  
->  #endif /* CONFIG_SMP */
->  
-> -static void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
-> +void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
->  {
->  	struct mpic *mpic = mpic_from_irq(irq);
->  	unsigned int src = mpic_irq_to_hw(irq);
-> diff --git a/arch/powerpc/sysdev/mpic.h b/arch/powerpc/sysdev/mpic.h
-> index 3a1c3d2..1cb6bd8 100644
-> --- a/arch/powerpc/sysdev/mpic.h
-> +++ b/arch/powerpc/sysdev/mpic.h
-> @@ -34,5 +34,6 @@ extern int mpic_set_irq_type(unsigned int virq, unsigned int flow_type);
->  extern void mpic_end_irq(unsigned int irq);
->  extern void mpic_mask_irq(unsigned int irq);
->  extern void mpic_unmask_irq(unsigned int irq);
-> +extern void mpic_set_affinity(unsigned int irq, cpumask_t cpumask);
->  
->  #endif /* _POWERPC_SYSDEV_MPIC_H */
-> diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
-> index 305b864..0fc4e96 100644
-> --- a/arch/powerpc/sysdev/mpic_u3msi.c
-> +++ b/arch/powerpc/sysdev/mpic_u3msi.c
-> @@ -40,6 +40,7 @@ static struct irq_chip mpic_u3msi_chip = {
->  	.unmask		= mpic_u3msi_unmask_irq,
->  	.eoi		= mpic_end_irq,
->  	.set_type	= mpic_set_irq_type,
-> +	.set_affinity	= mpic_set_affinity,
->  	.typename	= "MPIC-U3MSI",
->  };
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+On Tue, Sep 18, 2007 at 02:26:06PM +1000, Stephen Rothwell wrote:
+> On Mon, 17 Sep 2007 22:17:15 +0400 Valentine Barshak <vbarshak@ru.mvista.=
+com> wrote:
+> >
+> > Looks like we'll need a patch that replaces asm/prom.h and=20
+> > asm/of_platform.h with linux/of.h and linux/of_platform.h
+> > in other drivers.
+>=20
+> Yeah, but at the moment I am just stopping the infection spreading
+> :-)
+
+Patching the existing instances would probably help with that, since
+it would mean less bad examples for people to copy.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG72ShaILKxv3ab8YRAh7LAJ9CCh+3IYTyL0lZx7MJNMbCmi9olQCggP+P
++JMQRdEECpGKJXVRGbwonJA=
+=Rcxf
+-----END PGP SIGNATURE-----
+
+--d6Gm4EdcadzBjdND--
