@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D69A7DDDFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:05:21 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 33DCF8810
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:05:20 +0500 (SAMST)
-Date: Tue, 18 Sep 2007 16:07:52 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 47DC8DDE10
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:08:53 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IXbsm-0004kX-1G
+	for linuxppc-dev@ozlabs.org; Tue, 18 Sep 2007 05:08:48 -0700
+Message-ID: <12755615.post@talk.nabble.com>
+Date: Tue, 18 Sep 2007 05:08:48 -0700 (PDT)
+From: Nethra <nethra_gmit@yahoo.co.in>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC][RFC] mpc8xx: fix build with CONFIG_MODULES=y
-Message-ID: <20070918120752.GA4859@localhost.localdomain>
+Subject: multicasting in MPC8272ADS
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-It seems there is no __res in the arch/powerpc. How it was used in
-the new tree, can we now safely remove it? At least kernel builds
-with that patch.
+hi,
 
-Thanks,
+I have written a multicast test application in which there is a multicast
+sender and receiver.
+The multicast sender sends multicast packets on a specified interface and
+the multicast 
+receiver receives multicast packets. I have tested this application on my
+network with
+ x86 machines. But when I run a multicast receiver (which has been cross
+compiled for 
+MPC8272ADS) on my MPC board, it is unable to receive multicast packets (the
+recvfrom 
+call is waiting for ever for packets to arrive). The MPC board is able to
+send multicast
+packets to without any problems. The /proc/net/dev_mcast shows the
+appropriate 
+entries for the multicast address being enabled for the interface of
+interest(esentially 
+group joining appear to work).
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/kernel/ppc_ksyms.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+My configuration is a MPC8272ADS board rp_filter =0 for all interfaces (ie
+no source 
+filtering).I am wondering where the problem could be, configurations or the
+ethernet 
+driver itself? Are there some known issues ?
 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 430c502..b4163c3 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -180,9 +180,6 @@ EXPORT_SYMBOL(cacheable_memcpy);
- EXPORT_SYMBOL(cpm_install_handler);
- EXPORT_SYMBOL(cpm_free_handler);
- #endif /* CONFIG_8xx */
--#if defined(CONFIG_8xx)
--EXPORT_SYMBOL(__res);
--#endif
- 
- #ifdef CONFIG_PPC32
- EXPORT_SYMBOL(next_mmu_context);
+By the way with loopback enabled the reception of packets works
+in case the sender and receiver are on the same machine 
+
+waiting for ur comments..
+
+thnks
+
 -- 
-1.5.0.6
+View this message in context: http://www.nabble.com/multicasting-in-MPC8272ADS-tf4473829.html#a12755615
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
