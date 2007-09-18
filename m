@@ -1,15 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910709171915neced927yaf014a08ce21aa66@mail.gmail.com>
-Date: Mon, 17 Sep 2007 22:15:36 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Sylvain Munaut" <tnt@246tnt.com>
-Subject: Re: [PATCH 0/7] MPC52xx Bestcomm submission for 2.6.24
-In-Reply-To: <11899400103383-git-send-email-tnt@246tNt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <11899400103383-git-send-email-tnt@246tNt.com>
-Cc: Grant Likely <glikely@gmail.com>, Paul Mackerras <paulus@samba.org>,
-	PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 160B2DDDCA
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 14:19:49 +1000 (EST)
+Date: Tue, 18 Sep 2007 14:19:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 09/28] cpm_uart: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Message-Id: <20070918141931.ee234750.sfr@canb.auug.org.au>
+In-Reply-To: <20070917165738.GI6563@loki.buserror.net>
+References: <20070917165643.GA6545@loki.buserror.net>
+	<20070917165738.GI6563@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__18_Sep_2007_14_19_31_+1000_65_uC6oman+EwgAh"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/16/07, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Hello Paul, Hi everyone,
+--Signature=_Tue__18_Sep_2007_14_19_31_+1000_65_uC6oman+EwgAh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 17 Sep 2007 11:57:38 -0500 Scott Wood <scottwood@freescale.com> wro=
+te:
 >
-> This series of patch is mainly the bestcomm support for
-> the mpc5200. It was posted a while ago and received some
-> comments. Theses are all addressed here (afaik).
+> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+> @@ -10,7 +10,7 @@
+> +
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_platform.h>
 
-Does this series supersede these pacthes out of your older series?
+linux/of_platform.h
 
-0010-powerpc-In-rheap.c-move-the-EXPORT_SYMBOL-and-use.patch
-0011-powerpc-BestComm-move-the-EXPORT_SYMBOL-and-use-th.patch
-0012-powerpc-BestComm-ATA-task-move-the-EXPORT_SYMBOL-a.patch
-0013-powerpc-BestComm-FEC-task-move-the-EXPORT_SYMBOL-a.patch
-0014-powerpc-BestComm-GenBD-task-move-the-EXPORT_SYMBOL.patch
-0015-powerpc-BestComm-Replace-global-variable-bcom-by-b.patch
-0016-powerpc-Make-the-BestComm-driver-a-standard-of_plat.patch
-0017-powerpc-Fix-typo-in-BestComm-ATA-task-support-code.patch
-0018-powerpc-BestComm-ATA-task-microcode-insert-copyri.patch
-0019-powerpc-BestComm-FEC-task-microcode-insert-copyri.patch
-0020-powerpc-BestComm-GenBD-task-microcode-insert-copy.patch
-0021-powerpc-Fix-errors-in-bcom-bcom_eng-renaming.patch
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__18_Sep_2007_14_19_31_+1000_65_uC6oman+EwgAh
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+iD8DBQFG71HbTgG2atn1QN8RAh2PAJ0VPkYmj5jwcSpcgtPaAMjJ5bAfXgCfQyEe
+JOCW1AnDHrtxMdFadvfEcrc=
+=ySpA
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__18_Sep_2007_14_19_31_+1000_65_uC6oman+EwgAh--
