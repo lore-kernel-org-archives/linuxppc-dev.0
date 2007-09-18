@@ -1,28 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.224])
-	by ozlabs.org (Postfix) with ESMTP id E6ED5DDDFC
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (dns2.securics.com [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id 9A70FDDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 05:29:11 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so888974wri
+	Wed, 19 Sep 2007 06:58:14 +1000 (EST)
+Received: from [192.168.0.38] (unknown [192.168.0.38])
+	(using TLSv1 with cipher RC4-MD5 (128/128 bits))
+	(No client certificate requested)
+	by securics.com (Postfix) with ESMTP id EA4ACB8C0B9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 12:29:10 -0700 (PDT)
-Message-ID: <9e4733910709181229m4afe7ecr56e2411f52a84232@mail.gmail.com>
-Date: Tue, 18 Sep 2007 15:29:09 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Domen Puncer" <domen@coderock.org>
-Subject: Re: [PATCH] phy: export phy_mii_ioctl
-In-Reply-To: <20070918151622.GD32628@nd47.coderock.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-	<20070917202140.GB2642@nd47.coderock.org>
-	<9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
-	<20070918151622.GD32628@nd47.coderock.org>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Tue, 18 Sep 2007 14:58:10 -0600 (MDT)
+Subject: Xilinx FX60
+From: Robert Woodworth <rwoodworth@securics.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 18 Sep 2007 14:58:10 -0600
+Message-Id: <1190149090.7268.29.camel@PisteOff>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,28 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/18/07, Domen Puncer <domen@coderock.org> wrote:
-> More testing and getting it to work properly on Phytec pcm030 would
-> be great.
-
-Do we want to do anything about this?
-
-[    1.569657] net eth0: attached phy 0 to driver Generic PHY
-[    2.576013] Sending DHCP requests .<6>PHY: f0003000:00 - Link is Up
-- 100/Full
-[    4.612000] ., OK
-[    6.764005] IP-Config: Got DHCP answer from 192.168.1.200, my
-address is 192.168.1.5
-
-What is happening is the printk for "<6>PHY: f0003000:00 - Link is Up
-- 100/Full" is done in an interrupt and it comes in the middle of the
-kernel doing DHCP and printing ... without a CR.
-
-Two possible solutions, get rid of the link-up message or wait in in
-the initial driver load until the link is up. Or we could leave it the
-way it is, but some people may report this as a bug.
+I'm back trying to get the kernel on my Xilinx FX60 without success. 
+Now I have more information:
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Using the Xilinx GDB, I'm getting either a "Bad Page fault exception" or
+a kernel "oops"
+
+
+The text in the _log_buf is as follows: 
+(this happens before serial console init)
+
+Data machine check in kernel mode..
+Oops: machine check, sig: 7 [#1].
+<register dump>
+
+
+
+Any Ideas what would cause this?  Memory problem?  
+I've run several different embedded memory test programs on the PPC and
+they all pass fine.
+
+I've synthesized my FX60 with the exact same memory map as my FX12 on
+the ML403 and used the same kernel config.  ML403 works great.
+
+
+The only difference is that the FX60 board only has 32MB DDR, I have
+made sure that the correct memory size is in the kernel.
+
+
+
+??
+RJW
