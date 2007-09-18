@@ -1,13 +1,13 @@
 Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
-	by ozlabs.org (Postfix) with ESMTP id A20A8DDE28
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.224])
+	by ozlabs.org (Postfix) with ESMTP id E6ED5DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 05:17:38 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1534647rvf
+	Wed, 19 Sep 2007 05:29:11 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so888974wri
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 12:17:37 -0700 (PDT)
-Message-ID: <9e4733910709181217v417438s85bb9e6b4ad4b475@mail.gmail.com>
-Date: Tue, 18 Sep 2007 15:17:37 -0400
+	Tue, 18 Sep 2007 12:29:10 -0700 (PDT)
+Message-ID: <9e4733910709181229m4afe7ecr56e2411f52a84232@mail.gmail.com>
+Date: Tue, 18 Sep 2007 15:29:09 -0400
 From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Domen Puncer" <domen@coderock.org>
 Subject: Re: [PATCH] phy: export phy_mii_ioctl
@@ -37,34 +37,22 @@ On 9/18/07, Domen Puncer <domen@coderock.org> wrote:
 > More testing and getting it to work properly on Phytec pcm030 would
 > be great.
 
-I compiled it as a module:
-  CC [M]  drivers/net/fec_mpc52xx/fec.o
-drivers/net/fec_mpc52xx/fec.c:613: warning: 'mpc52xx_fec_mac_setup'
-defined but not used
+Do we want to do anything about this?
 
-This code needs to be enclosed in "#ifndef MODULE". But why aren't you
-using module_param() to make a string parameter and then copy it into
-mpc52xx_fec_mac_addr[] if the parameter is not null?
+[    1.569657] net eth0: attached phy 0 to driver Generic PHY
+[    2.576013] Sending DHCP requests .<6>PHY: f0003000:00 - Link is Up
+- 100/Full
+[    4.612000] ., OK
+[    6.764005] IP-Config: Got DHCP answer from 192.168.1.200, my
+address is 192.168.1.5
 
-If it is a module param you need to use
-fec_mpc52xx_phy.mpc52xx-mac="xxxx" instead of just mpc52xx-mac. The
-way it is not you can't use mpc52xx-mac when built as a module.
+What is happening is the printk for "<6>PHY: f0003000:00 - Link is Up
+- 100/Full" is done in an interrupt and it comes in the middle of the
+kernel doing DHCP and printing ... without a CR.
 
-static int __init mpc52xx_fec_mac_setup(char *mac_address)
-{
-        int i;
-        u64 val64;
-
-        val64 = simple_strtoull(mac_address, NULL, 16);
-
-        for (i = 0; i < 6; i++)
-                mpc52xx_fec_mac_addr[5-i] = val64 >> (i*8);
-
-        return 0;
-}
-
-__setup("mpc52xx-mac=", mpc52xx_fec_mac_setup);
-
+Two possible solutions, get rid of the link-up message or wait in in
+the initial driver load until the link is up. Or we could leave it the
+way it is, but some people may report this as a bug.
 
 
 -- 
