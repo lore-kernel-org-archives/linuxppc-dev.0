@@ -1,18 +1,18 @@
-Return-Path: <artunmurat@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 752C5DDDF3
+Return-Path: <Shengping.Liu@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 0526EDDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 23:02:29 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so1521386nfd
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 06:02:28 -0700 (PDT)
-Message-ID: <4e5a3720709180602g20ccc060hbf7f091839a18c99@mail.gmail.com>
-Date: Tue, 18 Sep 2007 16:02:27 +0300
-From: "Murat Artun" <artunmurat@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: cross compiling a library with ELDK
+	Tue, 18 Sep 2007 23:23:41 +1000 (EST)
+Message-ID: <46EF93D8.6050201@windriver.com>
+Date: Tue, 18 Sep 2007 17:01:12 +0800
+From: Andrew Liu <shengping.liu@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mustafa Cayir <mustafa.cayir@bte.mam.gov.tr>
+Subject: Re: Problem booting linux with device tree table
+References: <7B9A8FF57DBB524190E98CABF6E56F070B9298@itri.bte.mam.gov.tr>
+In-Reply-To: <7B9A8FF57DBB524190E98CABF6E56F070B9298@itri.bte.mam.gov.tr>
+Content-Type: multipart/mixed; boundary="------------060604090100030400030904"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +23,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+This is a multi-part message in MIME format.
+--------------060604090100030400030904
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I want to cross compile a free software library with ELDK 3.1.1 for
-powerpc. I have ELDK installed under directory /opt and my system and
-PATH is set properly. I have a few points to be clarified:
+Latest U-boot need a chosen node in your DTS  file, So u need to add a
+chosen node in your DTS file.
 
-- GCC toolchain components for cross compiling have "ppc_8xx-" prefix
-in their names. In addition, I learned from trial and error that by
-setting --host=CROSS_ENV results generation of a Makefile with
-compilation tools to be prefixed with CROSS_ENV. So I set
---host=ppc_8xx but I received below error from configure script:
+Take mpc8272ads for example: in its DTS, has the following:
 
-checking host system type... Invalid configuration `ppc_8xx': machine
-`ppc_8xx' not recognized
-configure: error: /bin/sh scripts/config.sub ppc_8xx failed
+        chosen {
+                name = "chosen";
+                linux,platform = <0>;
+                interrupt-controller = <&Cpm_pic>;
+        };
 
-I have checked config.sub file and could not find ppc_8xx as a machine
-type. I have added it myself properly and executed configure script
-and generated a Makefile with all ppc_8xx prefixed GCC toolchain
-components (g++, ar, ranlib etc.). Considering that I have edited
-config.sub file, is this the true way of cross compilation? Or, if
-not, what is the way of specifying machine type for ELDK cross
-compilation and making the configure script to generate a Makefile
-with ppc_8xx prefixed GCC toolchain components.
 
-- For a cross compilation with ELDK how can we be sure that config.h
-file for a software packet is generated properly? I mean, how can we
-be sure that ELDK components is checked instead of our host linux
-system for generating a config.h file by the configure script?
+BRs,
+Andrew
+Mustafa Cayir wrote:
+>
+> Hi all,
+>
+> I am trying to boot TQM5200 with linux 2.6 kernel. i am using latest
+> version of linux and u-boot from denx. And compiled with ELDK4.1
+>
+> i use dtc compiler with following command:
+> dtc -O dtb -o tqm5200.dtb -b 0 tqm5200.dts
+>
+> Booting process gives following error and reset the board.
+>
+> WARNING: could not create /chosen FDT_ERR_NOSPACE.
+> ERROR: /chosen node create failed - must RESET the board to recover.
+>
+> Regards.
+>
+>
+>
+> Using FEC ETHERNET device
+> TFTP from server 10.18.2.83; our IP address is 10.18.5.44
+> Filename 'uImage'.
+> Load address: 0x200000
+> Loading: #################################################################
+>          ####################################
+> done
+> Bytes transferred = 1473038 (167a0e hex)
+> Using FEC ETHERNET device
+> TFTP from server 10.18.2.83; our IP address is 10.18.5.44
+> Filename 'tqm5200.dtb'.
+> Load address: 0x400000
+> Loading: #
+> done
+> Bytes transferred = 3816 (ee8 hex)
+> ## Booting image at 00200000 ...
+>    Image Name:   Linux-2.6.23-rc6-gf695e369
+>    Created:      2007-09-19   1:31:43 UTC
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    1472974 Bytes =  1.4 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+>    Booting using the fdt at 0x400000
+> WARNING: could not create /chosen FDT_ERR_NOSPACE.
+> ERROR: /chosen node create failed - must RESET the board to recover.
+>
+>
+>
+>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-Thanks in advice...
--- 
-M u r at  A r t u n, MSc.
-   Design Engineer
+--------------060604090100030400030904
+Content-Type: text/x-vcard; charset=utf-8;
+ name="shengping.liu.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="shengping.liu.vcf"
 
-"be conservative in what you do, be liberal in what you accept from others"
+begin:vcard
+fn:Andrew Liu
+n:;Andrew Liu
+org:China Development Center;Engineering
+adr:;;Wangjing Zhonghuan Nanlu No.9 Wangjing Plaza Tower B 15F Chaoyang District Beijing China;Beijing;;100102;China
+email;internet:shengping.liu@windriver.com
+tel;work:86-10-8477-8639
+tel;fax:86-10-6479-0367
+tel;cell:86-13717751687
+url:http://twiki.wrs.com/do/view/Main/AndrewLiu
+version:2.1
+end:vcard
+
+
+--------------060604090100030400030904--
