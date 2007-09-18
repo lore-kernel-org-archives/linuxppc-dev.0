@@ -1,17 +1,21 @@
-Return-Path: <Shengping.Liu@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 0526EDDE20
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
+	by ozlabs.org (Postfix) with ESMTP id 3701CDDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 23:23:41 +1000 (EST)
-Message-ID: <46EF93D8.6050201@windriver.com>
-Date: Tue, 18 Sep 2007 17:01:12 +0800
-From: Andrew Liu <shengping.liu@windriver.com>
+	Wed, 19 Sep 2007 00:01:22 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1459599rvf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 18 Sep 2007 07:01:21 -0700 (PDT)
+Message-ID: <fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
+Date: Tue, 18 Sep 2007 08:01:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Leopold Stotch" <l.butterz@gmail.com>
+Subject: Re: PSC in UART mode on TQM5200S
+In-Reply-To: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
 MIME-Version: 1.0
-To: Mustafa Cayir <mustafa.cayir@bte.mam.gov.tr>
-Subject: Re: Problem booting linux with device tree table
-References: <7B9A8FF57DBB524190E98CABF6E56F070B9298@itri.bte.mam.gov.tr>
-In-Reply-To: <7B9A8FF57DBB524190E98CABF6E56F070B9298@itri.bte.mam.gov.tr>
-Content-Type: multipart/mixed; boundary="------------060604090100030400030904"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,101 +27,87 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060604090100030400030904
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On 9/18/07, Leopold Stotch <l.butterz@gmail.com> wrote:
+> Hello, everyone !
+>
+> I have TQM5200S module and development board.
+> It runs factory UBoot and latest DENX's linuxppc_2_4_devel kernel.
+> I want to configure all TQM5200S's onboard PSC's as UART's.
+>  TQM5200S's onboard PSC's are connected to custom board
+>  that makes all electrical things as my hardware engineer says...
+> So changed
+> $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
+> the following way:
+>
+> #ifdef CONFIG_PS2MULT
+> #define RS_TABLE_SIZE  4
+> #else
+> #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
+> #define RS_TABLE_SIZE  2
+> #elif defined(CONFIG_CAM5200)
+> #define RS_TABLE_SIZE  6
+> #else
+> #define RS_TABLE_SIZE  3
+> #endif
+> #endif
+>
+> changed to
+>
+> #ifdef CONFIG_PS2MULT
+> #define RS_TABLE_SIZE  4
+> #else
+> #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
+> #define RS_TABLE_SIZE  2
+> #elif defined(CONFIG_CAM5200)
+> #define RS_TABLE_SIZE  6
+> #else
+> #define RS_TABLE_SIZE  6
+> #endif
+> #endif
+>
+> and
+>
+> #else /* default */
+> #define SERIAL_PORT_DFNS    \
+>     STD_PSC_OP(1)        \
+>     STD_PSC_OP(2)        \
+>     STD_PSC_OP(3)
+> #endif
+>
+> changed to
+>
+> #else /* default */
+> #define SERIAL_PORT_DFNS    \
+>     STD_PSC_OP(1)        \
+>     STD_PSC_OP(2)        \
+>     STD_PSC_OP(3)        \
+>     STD_PSC_OP(4)        \
+>     STD_PSC_OP(5)        \
+>     STD_PSC_OP(6)
+> #endif
+>
+> After rebuilding the kernel, dmesg says:
+>
+> ...
+> ttyS0 on PSC1
+> ttyS1 on PSC2
+> ttyS2 on PSC3
+> ttyS3 on PSC4
+> ttyS4 on PSC5
+> ttyS5 on PSC6
+> ...
+>
+> But when i do "echo 1 > /dev/ttyS4" i receive nothing at the other end.
 
-Latest U-boot need a chosen node in your DTS  file, So u need to add a
-chosen node in your DTS file.
+Have you made the appropriate changes to the port_config register?
 
-Take mpc8272ads for example: in its DTS, has the following:
-
-        chosen {
-                name = "chosen";
-                linux,platform = <0>;
-                interrupt-controller = <&Cpm_pic>;
-        };
-
-
-BRs,
-Andrew
-Mustafa Cayir wrote:
->
-> Hi all,
->
-> I am trying to boot TQM5200 with linux 2.6 kernel. i am using latest
-> version of linux and u-boot from denx. And compiled with ELDK4.1
->
-> i use dtc compiler with following command:
-> dtc -O dtb -o tqm5200.dtb -b 0 tqm5200.dts
->
-> Booting process gives following error and reset the board.
->
-> WARNING: could not create /chosen FDT_ERR_NOSPACE.
-> ERROR: /chosen node create failed - must RESET the board to recover.
->
-> Regards.
->
->
->
-> Using FEC ETHERNET device
-> TFTP from server 10.18.2.83; our IP address is 10.18.5.44
-> Filename 'uImage'.
-> Load address: 0x200000
-> Loading: #################################################################
->          ####################################
-> done
-> Bytes transferred = 1473038 (167a0e hex)
-> Using FEC ETHERNET device
-> TFTP from server 10.18.2.83; our IP address is 10.18.5.44
-> Filename 'tqm5200.dtb'.
-> Load address: 0x400000
-> Loading: #
-> done
-> Bytes transferred = 3816 (ee8 hex)
-> ## Booting image at 00200000 ...
->    Image Name:   Linux-2.6.23-rc6-gf695e369
->    Created:      2007-09-19   1:31:43 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1472974 Bytes =  1.4 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
->    Booting using the fdt at 0x400000
-> WARNING: could not create /chosen FDT_ERR_NOSPACE.
-> ERROR: /chosen node create failed - must RESET the board to recover.
->
->
->
->
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
---------------060604090100030400030904
-Content-Type: text/x-vcard; charset=utf-8;
- name="shengping.liu.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="shengping.liu.vcf"
-
-begin:vcard
-fn:Andrew Liu
-n:;Andrew Liu
-org:China Development Center;Engineering
-adr:;;Wangjing Zhonghuan Nanlu No.9 Wangjing Plaza Tower B 15F Chaoyang District Beijing China;Beijing;;100102;China
-email;internet:shengping.liu@windriver.com
-tel;work:86-10-8477-8639
-tel;fax:86-10-6479-0367
-tel;cell:86-13717751687
-url:http://twiki.wrs.com/do/view/Main/AndrewLiu
-version:2.1
-end:vcard
+Cheers,
+g.
 
 
---------------060604090100030400030904--
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
