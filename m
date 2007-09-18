@@ -1,17 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AC0CADDE16
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:25:24 +1000 (EST)
-Date: Tue, 18 Sep 2007 17:25:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH 2/2] [POWERPC] fwnmi is only used on pSeries
-Message-Id: <20070918172512.6aa5af03.sfr@canb.auug.org.au>
-In-Reply-To: <20070918172259.dc4172b0.sfr@canb.auug.org.au>
-References: <20070918172259.dc4172b0.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 45E95DDDF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 18:56:28 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l8I8uLa5025247
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 01:56:22 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l8I8uKFx028253
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 03:56:20 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] ucc_geth: fix compilation
+Date: Tue, 18 Sep 2007 16:56:18 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001763D1E@zch01exm26.fsl.freescale.net>
+In-Reply-To: <C844988E-F6B9-44B9-AB78-C44E19A2E605@kernel.crashing.org>
+References: <20070912112456.GA15556@localhost.localdomain><20070913152333.GA2381@localhost.localdomain>
+	<C844988E-F6B9-44B9-AB78-C44E19A2E605@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, "Jeff Garzik" <jeff@garzik.org>
+Cc: linuxppc-dev@ozlabs.org, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,81 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This saves 4k on non pSeries builds (except for iSeries where it saves
-almost 4k).
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of Kumar Gala
+> Sent: Friday, September 14, 2007 10:08 PM
+> To: Jeff Garzik
+> Cc: linuxppc-dev@ozlabs.org list; netdev
+> Subject: Re: [PATCH] ucc_geth: fix compilation
+>=20
+>=20
+> On Sep 13, 2007, at 10:23 AM, Anton Vorontsov wrote:
+>=20
+> > Currently qe_bd_t is used in the macro call --=20
+> dma_unmap_single, which=20
+> > is a no-op on PPC32, thus error is hidden today. Starting=20
+> with 2.6.24,=20
+> > macro will be replaced by the empty static function, and=20
+> erroneous use=20
+> > of qe_bd_t will trigger compilation error.
+> >
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+>=20
+> Jeff, I'm going to pick this up via the powerpc.git tree=20
+> since its currently only broken in our for-2.6.24 branch=20
+> (because of other changes in there).  Any issues?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/crash_dump.c |    2 ++
- arch/powerpc/kernel/head_64.S    |    7 +++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+Kumar,
 
-Boot tested on iSeries and POWER5+.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Kim Phillips has posted the same patch to netdev list before Anton.
+Therefore, I do prefer to use his.  Thanks
 
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index ffa91d6..29ff77c 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -54,8 +54,10 @@ void __init setup_kdump_trampoline(void)
- 		create_trampoline(i);
- 	}
- 
-+#ifdef CONFIG_PPC_PSERIES
- 	create_trampoline(__pa(system_reset_fwnmi) - PHYSICAL_START);
- 	create_trampoline(__pa(machine_check_fwnmi) - PHYSICAL_START);
-+#endif /* CONFIG_PPC_PSERIES */
- 
- 	DBG(" <- setup_kdump_trampoline()\n");
- }
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 384cc75..22ac245 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -341,6 +341,7 @@ slb_miss_user_pseries:
- 	b	.				/* prevent spec. execution */
- #endif /* __DISABLED__ */
- 
-+#ifdef CONFIG_PPC_PSERIES
- /*
-  * Vectors for the FWNMI option.  Share common code.
-  */
-@@ -358,6 +359,8 @@ machine_check_fwnmi:
- 	mtspr	SPRN_SPRG1,r13		/* save r13 */
- 	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXMC, machine_check_common)
- 
-+#endif /* CONFIG_PPC_PSERIES */
-+
- /*** Common interrupt handlers ***/
- 
- 	STD_EXCEPTION_COMMON(0x100, system_reset, .system_reset_exception)
-@@ -1012,6 +1015,7 @@ _GLOBAL(do_stab_bolted)
- initial_stab:
- 	.space	4096
- 
-+#ifdef CONFIG_PPC_PSERIES
- /*
-  * Data area reserved for FWNMI option.
-  * This address (0x7000) is fixed by the RPA.
-@@ -1019,6 +1023,7 @@ initial_stab:
- 	.= 0x7000
- 	.globl fwnmi_data_area
- fwnmi_data_area:
-+#endif /* CONFIG_PPC_PSERIES */
- 
- 	/* iSeries does not use the FWNMI stuff, so it is safe to put
- 	 * this here, even if we later allow kernels that will boot on
-@@ -1043,7 +1048,9 @@ xLparMap:
- 
- #endif /* CONFIG_PPC_ISERIES */
- 
-+#ifdef CONFIG_PPC_PSERIES
-         . = 0x8000
-+#endif /* CONFIG_PPC_PSERIES */
- 
- /*
-  * On pSeries and most other platforms, secondary processors spin
--- 
-1.5.3.1
+- Leo
