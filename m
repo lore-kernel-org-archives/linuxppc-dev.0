@@ -1,25 +1,19 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2AB34DDE3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 01:23:12 +1000 (EST)
-Date: Tue, 18 Sep 2007 10:23:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 16/28] 8xx: Don't call non-existent Soft_emulate_8xx from
-	SoftwareEmulation.
-Message-ID: <20070918152302.GB788@ld0162-tx32.am.freescale.net>
-References: <20070917165746.GP6563@loki.buserror.net>
-	<58472170-34D3-43F4-A816-87AF0020A086@kernel.crashing.org>
-	<20070918151147.GB736@ld0162-tx32.am.freescale.net>
-	<027F3363-3154-4A16-A251-C56D8DC339A1@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <027F3363-3154-4A16-A251-C56D8DC339A1@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7DE5DDDECE
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 02:05:40 +1000 (EST)
+To: Jeff Garzik <jeff@garzik.org>
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH 1/2] [FS_ENET] TX stuff should use fep->tx_lock,
+	instead of fep->lock.
+Date: Tue, 18 Sep 2007 20:05:27 +0400
+Message-ID: <20070918160527.13525.80935.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 10:19:05AM -0500, Kumar Gala wrote:
-> Mainly that 8xx has been doing this for a vast number of years and I  
-> see no reason to stop doing it at this point.
-> 
-> While I can see that it might be misleading, clearly 8xx linux users  
-> haven't had issues with it.
 
-Or they haven't said anything. :-P
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-How about a three-way choice of full emulation, minimal emulation, and no
-emulation?
+---
 
--Scott
+ drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index a4a2a0e..927cd9e 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -348,7 +348,7 @@ static void fs_enet_tx(struct net_device *dev)
+ 	int dirtyidx, do_wake, do_restart;
+ 	u16 sc;
+ 
+-	spin_lock(&fep->lock);
++	spin_lock(&fep->tx_lock);
+ 	bdp = fep->dirty_tx;
+ 
+ 	do_wake = do_restart = 0;
+@@ -428,7 +428,7 @@ static void fs_enet_tx(struct net_device *dev)
+ 	if (do_restart)
+ 		(*fep->ops->tx_restart)(dev);
+ 
+-	spin_unlock(&fep->lock);
++	spin_unlock(&fep->tx_lock);
+ 
+ 	if (do_wake)
+ 		netif_wake_queue(dev);
+@@ -826,7 +826,9 @@ static int fs_enet_close(struct net_device *dev)
+ 	phy_stop(fep->phydev);
+ 
+ 	spin_lock_irqsave(&fep->lock, flags);
++	spin_lock(&fep->tx_lock);
+ 	(*fep->ops->stop)(dev);
++	spin_unlock(&fep->tx_lock);
+ 	spin_unlock_irqrestore(&fep->lock, flags);
+ 
+ 	/* release any irqs */
