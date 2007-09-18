@@ -1,23 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5802DDDE37
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 00:22:02 +1000 (EST)
-Date: Tue, 18 Sep 2007 09:21:50 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 01/28] CPM: Change from fsl,
-	brg-frequency to brg/clock-frequency
-Message-ID: <20070918142150.GA441@ld0162-tx32.am.freescale.net>
-References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165728.GA6563@loki.buserror.net>
-	<20070918061141.GE30766@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070918061141.GE30766@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8A99DDDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 00:23:11 +1000 (EST)
+In-Reply-To: <20070918122925.GA17481@localhost.localdomain>
+References: <20070918120752.GA4859@localhost.localdomain>
+	<20070918122925.GA17481@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4F1F43EE-214F-4EB0-82CF-9EC04830ECC6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC][RFC] sysdev/commproc.c: fix build caused by
+	undefined symbols
+Date: Tue, 18 Sep 2007 09:26:18 -0500
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 04:11:41PM +1000, David Gibson wrote:
-> > +	/* Legacy device binding -- will go away when no users are left. */
-> > +	node = of_find_node_by_type(NULL, "cpm");
-> > +	if (node) {
-> > +		prop = of_get_property(node, "brg-frequency", &size);
-> 
-> Shouldn't you check for "fsl,brg-frequency" here, in case of old
-> device trees?
 
-What old device trees?  fsl,brg-frequency has never hit mainline; it's
-only been in Kumar's tree for a week or so.
+On Sep 18, 2007, at 7:29 AM, Anton Vorontsov wrote:
 
--Scott
+> cpm_install_handler and cpm_free_handler neither used nor defined
+> for arch/powerpc.
+>
+> This causes MPC8xx build failure, patch used to fix that.
+
+can you add the __res fix, and EXPORT() and do these three as one  
+patch and improve the commit message. I'm guessing this all shows up  
+when we try to build with CONFIG_MODULES=y.  Put the actual compile  
+failures in the commit message.
+
+- k
