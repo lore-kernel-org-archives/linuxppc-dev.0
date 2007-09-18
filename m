@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE541DDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 07:04:06 +1000 (EST)
-Date: Tue, 18 Sep 2007 16:03:26 -0500
+	by ozlabs.org (Postfix) with ESMTP id 73772DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 07:13:42 +1000 (EST)
+Date: Tue, 18 Sep 2007 16:12:58 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org
-Subject: [PATCH 16/28] 8xx: Move softemu8xx.c from arch/ppc
-Message-ID: <20070918210326.GC19607@loki.buserror.net>
+Subject: [PATCH 18/28] 8xx: mpc885ads cleanup
+Message-ID: <20070918211258.GD19607@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -23,299 +23,1432 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, Soft_emulate_8xx was called with no implementation, resulting in
-build failures whenever building 8xx without math emulation.  The
-implementation is copied from arch/ppc to resolve this issue.
+It now uses the new CPM binding and the generic pin/clock functions, and
+has assorted fixes and cleanup.
 
-However, this sort of minimal emulation is not a very good idea other than
-for compatibility with existing userspaces, as it's less efficient than
-soft-float and can mislead users into believing they have soft-float.  Thus,
-it is made a configurable option, off by default.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-This replaces the old 16/28 "Don't call non-existent Soft_emulate_8xx from
-SoftwareEmulation".
+Resent with asm/of_platform.h -> linux/of_platform.h.
 
- arch/powerpc/Kconfig             |   11 ++
- arch/powerpc/kernel/Makefile     |    2 +
- arch/powerpc/kernel/softemu8xx.c |  202 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/traps.c      |    6 +-
- 4 files changed, 220 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/kernel/softemu8xx.c
+ arch/powerpc/boot/dts/mpc885ads.dts          |  195 +++++++-----
+ arch/powerpc/configs/mpc885_ads_defconfig    |  297 +++++++++--------
+ arch/powerpc/platforms/8xx/Kconfig           |    1 +
+ arch/powerpc/platforms/8xx/mpc885ads.h       |   38 ---
+ arch/powerpc/platforms/8xx/mpc885ads_setup.c |  450 +++++++++-----------------
+ 5 files changed, 423 insertions(+), 558 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 2622f04..0c0329e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -180,6 +180,17 @@ config MATH_EMULATION
- 	  unit, which will allow programs that use floating-point
- 	  instructions to run.
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index e9aa9d0..cbcd16f 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -2,6 +2,7 @@
+  * MPC885 ADS Device Tree Source
+  *
+  * Copyright 2006 MontaVista Software, Inc.
++ * Copyright 2007 Freescale Semiconductor, Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -12,7 +13,7 @@
  
-+config 8XX_MINIMAL_FPEMU
-+	bool "Minimal math emulation for 8xx"
-+	depends on 8xx && !MATH_EMULATION
-+	help
-+	  Older arch/ppc kernels still emulated a few floating point
-+	  instructions such as load and store, even when full math
-+	  emulation is disabled.  Say "Y" here if you want to preserve
-+	  this behavior.
-+
-+	  It is recommended that you build a soft-float userspace instead.
-+
- config IOMMU_VMERGE
- 	bool "Enable IOMMU virtual merging"
- 	depends on PPC64
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 967afc5..0d7b68b 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -76,6 +76,8 @@ obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
- obj-$(CONFIG_AUDIT)		+= audit.o
- obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ / {
+ 	model = "MPC885ADS";
+-	compatible = "mpc8xx";
++	compatible = "fsl,mpc885ads";
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
  
-+obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+@@ -23,156 +24,188 @@
+ 		PowerPC,885@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			d-cache-line-size = <20>;	// 32 bytes
+-			i-cache-line-size = <20>;	// 32 bytes
+-			d-cache-size = <2000>;		// L1, 8K
+-			i-cache-size = <2000>;		// L1, 8K
++			d-cache-line-size = <d#16>;
++			i-cache-line-size = <d#16>;
++			d-cache-size = <d#8192>;
++			i-cache-size = <d#8192>;
+ 			timebase-frequency = <0>;
+ 			bus-frequency = <0>;
+ 			clock-frequency = <0>;
+ 			interrupts = <f 2>;	// decrementer interrupt
+-			interrupt-parent = <&Mpc8xx_pic>;
++			interrupt-parent = <&PIC>;
+ 		};
+ 	};
+ 
+ 	memory {
+ 		device_type = "memory";
+-		reg = <00000000 800000>;
++		reg = <0 0>;
+ 	};
+ 
+-	soc885@ff000000 {
++	localbus@ff000100 {
++		compatible = "fsl,mpc885-localbus", "fsl,pq1-localbus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		reg = <ff000100 40>;
 +
- ifneq ($(CONFIG_PPC_INDIRECT_IO),y)
- obj-y				+= iomap.o
- endif
-diff --git a/arch/powerpc/kernel/softemu8xx.c b/arch/powerpc/kernel/softemu8xx.c
-new file mode 100644
-index 0000000..67d6f68
---- /dev/null
-+++ b/arch/powerpc/kernel/softemu8xx.c
-@@ -0,0 +1,202 @@
++		ranges = <
++			0 0 fe000000 00800000
++			1 0 ff080000 00008000
++			5 0 ff0a0000 00008000
++		>;
++
++		flash@0,0 {
++			compatible = "jedec-flash";
++			reg = <0 0 800000>;
++			bank-width = <4>;
++			device-width = <1>;
++		};
++
++		board-control@1,0 {
++			reg = <1 0 20 5 300 4>;
++			compatible = "fsl,mpc885ads-bcsr";
++		};
++	};
++
++	soc@ff000000 {
++		compatible = "fsl,mpc885", "fsl,pq1-soc";
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+ 		device_type = "soc";
+-		ranges = <0 ff000000 00100000>;
+-		reg = <ff000000 00000200>;
++		ranges = <0 ff000000 00004000>;
+ 		bus-frequency = <0>;
+-		mdio@e80 {
+-			device_type = "mdio";
+-			compatible = "fs_enet";
+-			reg = <e80 8>;
++
++		// Temporary -- will go away once kernel uses ranges for get_immrbase().
++		reg = <ff000000 4000>;
++
++		mdio@e00 {
++			compatible = "fsl,mpc885-fec-mdio", "fsl,pq1-fec-mdio";
++			reg = <e00 188>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+-			Phy0: ethernet-phy@0 {
++
++			PHY0: ethernet-phy@0 {
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+ 			};
+-			Phy1: ethernet-phy@1 {
++
++			PHY1: ethernet-phy@1 {
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+ 			};
+-			Phy2: ethernet-phy@2 {
++
++			PHY2: ethernet-phy@2 {
+ 				reg = <2>;
+ 				device_type = "ethernet-phy";
+ 			};
+ 		};
+ 
+-		fec@e00 {
++		ethernet@e00 {
+ 			device_type = "network";
+-			compatible = "fs_enet";
+-			model = "FEC";
+-			device-id = <1>;
++			compatible = "fsl,mpc885-fec-enet",
++			             "fsl,pq1-fec-enet";
+ 			reg = <e00 188>;
+-			mac-address = [ 00 00 0C 00 01 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <3 1>;
+-			interrupt-parent = <&Mpc8xx_pic>;
+-			phy-handle = <&Phy1>;
++			interrupt-parent = <&PIC>;
++			phy-handle = <&PHY0>;
++			linux,network-index = <0>;
+ 		};
+ 
+-		fec@1e00 {
++		ethernet@1e00 {
+ 			device_type = "network";
+-			compatible = "fs_enet";
+-			model = "FEC";
+-			device-id = <2>;
++			compatible = "fsl,mpc885-fec-enet",
++			             "fsl,pq1-fec-enet";
+ 			reg = <1e00 188>;
+-			mac-address = [ 00 00 0C 00 02 FD ];
++			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <7 1>;
+-			interrupt-parent = <&Mpc8xx_pic>;
+-			phy-handle = <&Phy2>;
++			interrupt-parent = <&PIC>;
++			phy-handle = <&PHY1>;
++			linux,network-index = <1>;
+ 		};
+ 
+-		Mpc8xx_pic: pic@ff000000 {
++		PIC: interrupt-controller@0 {
+ 			interrupt-controller;
+-			#address-cells = <0>;
+ 			#interrupt-cells = <2>;
+ 			reg = <0 24>;
+-			device_type = "mpc8xx-pic";
+-			compatible = "CPM";
++			compatible = "fsl,mpc885-pic", "fsl,pq1-pic";
+ 		};
+ 
+-		pcmcia@0080 {
++		pcmcia@80 {
+ 			#address-cells = <3>;
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+ 			compatible = "fsl,pq-pcmcia";
+ 			device_type = "pcmcia";
+ 			reg = <80 80>;
+-			interrupt-parent = <&Mpc8xx_pic>;
++			interrupt-parent = <&PIC>;
+ 			interrupts = <d 1>;
+ 		};
+ 
+-		cpm@ff000000 {
++		cpm@9c0 {
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+-			device_type = "cpm";
+-			model = "CPM";
+-			ranges = <0 0 4000>;
+-			reg = <860 f0>;
++			compatible = "fsl,mpc885-cpm", "fsl,cpm1";
+ 			command-proc = <9c0>;
+-			brg-frequency = <0>;
+-			interrupts = <0 2>;	// cpm error interrupt
+-			interrupt-parent = <&Cpm_pic>;
++			interrupts = <0>;	// cpm error interrupt
++			interrupt-parent = <&CPM_PIC>;
++			reg = <9c0 40 2000 1c00>;
++			ranges;
+ 
+-			Cpm_pic: pic@930 {
++			brg@9f0 {
++				compatible = "fsl,mpc885-brg",
++				             "fsl,cpm1-brg",
++				             "fsl,cpm-brg";
++				reg = <9f0 10>;
++			};
++
++			CPM_PIC: interrupt-controller@930 {
+ 				interrupt-controller;
+-				#address-cells = <0>;
+-				#interrupt-cells = <2>;
++				#interrupt-cells = <1>;
+ 				interrupts = <5 2 0 2>;
+-				interrupt-parent = <&Mpc8xx_pic>;
++				interrupt-parent = <&PIC>;
+ 				reg = <930 20>;
+-				device_type = "cpm-pic";
+-				compatible = "CPM";
++				compatible = "fsl,mpc885-cpm-pic",
++				             "fsl,cpm1-pic";
+ 			};
+ 
+-			smc@a80 {
++			serial@a80 {
+ 				device_type = "serial";
+-				compatible = "cpm_uart";
+-				model = "SMC";
+-				device-id = <1>;
++				compatible = "fsl,mpc885-smc-uart",
++				             "fsl,cpm1-smc-uart";
+ 				reg = <a80 10 3e80 40>;
+-				clock-setup = <00ffffff 0>;
+-				rx-clock = <1>;
+-				tx-clock = <1>;
+-				current-speed = <0>;
+-				interrupts = <4 3>;
+-				interrupt-parent = <&Cpm_pic>;
++				interrupts = <4>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-brg = <1>;
++				fsl,cpm-command = <0090>;
+ 			};
+ 
+-			smc@a90 {
++			serial@a90 {
+ 				device_type = "serial";
+-				compatible = "cpm_uart";
+-				model = "SMC";
+-				device-id = <2>;
+-				reg = <a90 20 3f80 40>;
+-				clock-setup = <ff00ffff 90000>;
+-				rx-clock = <2>;
+-				tx-clock = <2>;
+-				current-speed = <0>;
+-				interrupts = <3 3>;
+-				interrupt-parent = <&Cpm_pic>;
++				compatible = "fsl,mpc885-smc-uart",
++				             "fsl,cpm1-smc-uart";
++				reg = <a90 10 3f80 40>;
++				interrupts = <3>;
++				interrupt-parent = <&CPM_PIC>;
++				fsl,cpm-brg = <2>;
++				fsl,cpm-command = <00d0>;
+ 			};
+ 
+-			scc@a40 {
++			ethernet@a40 {
+ 				device_type = "network";
+-				compatible = "fs_enet";
+-				model = "SCC";
+-				device-id = <3>;
+-				reg = <a40 18 3e00 80>;
+-				mac-address = [ 00 00 0C 00 03 FD ];
+-				interrupts = <1c 3>;
+-				interrupt-parent = <&Cpm_pic>;
+-				phy-handle = <&Phy2>;
++				compatible = "fsl,mpc885-scc-enet",
++				             "fsl,cpm1-scc-enet";
++				reg = <a40 18 3e00 100>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++				interrupts = <1c>;
++				interrupt-parent = <&CPM_PIC>;
++				phy-handle = <&PHY2>;
++				fsl,cpm-command = <0080>;
++				linux,network-index = <2>;
+ 			};
+ 		};
+ 	};
++
++	chosen {
++		linux,stdout-path = "/soc/cpm/serial@a80";
++	};
+ };
+diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
+index d27e1f8..482d99d 100644
+--- a/arch/powerpc/configs/mpc885_ads_defconfig
++++ b/arch/powerpc/configs/mpc885_ads_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.23-rc4
+-# Tue Aug 28 21:24:45 2007
++# Linux kernel version: 2.6.23-rc3
++# Mon Aug 27 15:23:16 2007
+ #
+ # CONFIG_PPC64 is not set
+ 
+@@ -38,6 +38,7 @@ CONFIG_OF=y
+ # CONFIG_PPC_UDBG_16550 is not set
+ # CONFIG_GENERIC_TBSYNC is not set
+ CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
+ # CONFIG_DEFAULT_UIMAGE is not set
+ # CONFIG_PPC_DCR_NATIVE is not set
+ # CONFIG_PPC_DCR_MMIO is not set
+@@ -69,24 +70,25 @@ CONFIG_SYSCTL=y
+ CONFIG_EMBEDDED=y
+ # CONFIG_SYSCTL_SYSCALL is not set
+ CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
+ # CONFIG_KALLSYMS_EXTRA_PASS is not set
+-# CONFIG_HOTPLUG is not set
++CONFIG_HOTPLUG=y
+ CONFIG_PRINTK=y
+-# CONFIG_BUG is not set
+-CONFIG_ELF_CORE=y
++CONFIG_BUG=y
++# CONFIG_ELF_CORE is not set
+ # CONFIG_BASE_FULL is not set
+-CONFIG_FUTEX=y
++# CONFIG_FUTEX is not set
+ CONFIG_ANON_INODES=y
+-# CONFIG_EPOLL is not set
++CONFIG_EPOLL=y
+ CONFIG_SIGNALFD=y
+ CONFIG_TIMERFD=y
+ CONFIG_EVENTFD=y
+ CONFIG_SHMEM=y
+ # CONFIG_VM_EVENT_COUNTERS is not set
+-CONFIG_SLAB=y
+-# CONFIG_SLUB is not set
++CONFIG_SLUB_DEBUG=y
++# CONFIG_SLAB is not set
++CONFIG_SLUB=y
+ # CONFIG_SLOB is not set
+-CONFIG_RT_MUTEXES=y
+ # CONFIG_TINY_SHMEM is not set
+ CONFIG_BASE_SMALL=1
+ # CONFIG_MODULES is not set
+@@ -100,14 +102,14 @@ CONFIG_BLOCK=y
+ # IO Schedulers
+ #
+ CONFIG_IOSCHED_NOOP=y
+-CONFIG_IOSCHED_AS=y
++# CONFIG_IOSCHED_AS is not set
+ CONFIG_IOSCHED_DEADLINE=y
+-CONFIG_IOSCHED_CFQ=y
+-CONFIG_DEFAULT_AS=y
+-# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_IOSCHED_CFQ is not set
++# CONFIG_DEFAULT_AS is not set
++CONFIG_DEFAULT_DEADLINE=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+-CONFIG_DEFAULT_IOSCHED="anticipatory"
++CONFIG_DEFAULT_IOSCHED="deadline"
+ 
+ #
+ # Platform support
+@@ -120,6 +122,7 @@ CONFIG_CPM1=y
+ # CONFIG_MPC8XXFADS is not set
+ # CONFIG_MPC86XADS is not set
+ CONFIG_MPC885ADS=y
++# CONFIG_PPC_EP88XC is not set
+ 
+ #
+ # Freescale Ethernet driver platform-specific options
+@@ -137,6 +140,7 @@ CONFIG_MPC8xx_SECOND_ETH_FEC2=y
+ #
+ CONFIG_8xx_COPYBACK=y
+ # CONFIG_8xx_CPU6 is not set
++CONFIG_8xx_CPU15=y
+ CONFIG_NO_UCODE_PATCH=y
+ # CONFIG_USB_SOF_UCODE_PATCH is not set
+ # CONFIG_I2C_SPI_UCODE_PATCH is not set
+@@ -153,23 +157,23 @@ CONFIG_NO_UCODE_PATCH=y
+ # CONFIG_GENERIC_IOMAP is not set
+ # CONFIG_CPU_FREQ is not set
+ # CONFIG_CPM2 is not set
+-# CONFIG_FSL_ULI1575 is not set
++CONFIG_PPC_CPM_NEW_BINDING=y
+ 
+ #
+ # Kernel options
+ #
+ # CONFIG_HIGHMEM is not set
+-# CONFIG_HZ_100 is not set
++CONFIG_HZ_100=y
+ # CONFIG_HZ_250 is not set
+ # CONFIG_HZ_300 is not set
+-CONFIG_HZ_1000=y
+-CONFIG_HZ=1000
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=100
+ CONFIG_PREEMPT_NONE=y
+ # CONFIG_PREEMPT_VOLUNTARY is not set
+ # CONFIG_PREEMPT is not set
+ CONFIG_BINFMT_ELF=y
+ # CONFIG_BINFMT_MISC is not set
+-CONFIG_MATH_EMULATION=y
++# CONFIG_MATH_EMULATION is not set
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+ CONFIG_ARCH_POPULATES_NODE_MAP=y
+@@ -185,11 +189,12 @@ CONFIG_SPLIT_PTLOCK_CPUS=4
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_VIRT_TO_BUS=y
+-# CONFIG_PROC_DEVICETREE is not set
++CONFIG_PROC_DEVICETREE=y
+ # CONFIG_CMDLINE_BOOL is not set
+ # CONFIG_PM is not set
+ # CONFIG_SECCOMP is not set
+-# CONFIG_WANT_DEVICE_TREE is not set
++CONFIG_WANT_DEVICE_TREE=y
++CONFIG_DEVICE_TREE="mpc885ads.dts"
+ CONFIG_ISA_DMA_API=y
+ 
+ #
+@@ -206,6 +211,7 @@ CONFIG_FSL_SOC=y
+ #
+ # PCCARD (PCMCIA/CardBus) support
+ #
++# CONFIG_PCCARD is not set
+ 
+ #
+ # Advanced setup
+@@ -234,10 +240,6 @@ CONFIG_NET=y
+ CONFIG_PACKET=y
+ # CONFIG_PACKET_MMAP is not set
+ CONFIG_UNIX=y
+-CONFIG_XFRM=y
+-# CONFIG_XFRM_USER is not set
+-# CONFIG_XFRM_SUB_POLICY is not set
+-# CONFIG_XFRM_MIGRATE is not set
+ # CONFIG_NET_KEY is not set
+ CONFIG_INET=y
+ CONFIG_IP_MULTICAST=y
+@@ -257,9 +259,9 @@ CONFIG_SYN_COOKIES=y
+ # CONFIG_INET_IPCOMP is not set
+ # CONFIG_INET_XFRM_TUNNEL is not set
+ # CONFIG_INET_TUNNEL is not set
+-CONFIG_INET_XFRM_MODE_TRANSPORT=y
+-CONFIG_INET_XFRM_MODE_TUNNEL=y
+-CONFIG_INET_XFRM_MODE_BEET=y
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
+ CONFIG_INET_DIAG=y
+ CONFIG_INET_TCP_DIAG=y
+ # CONFIG_TCP_CONG_ADVANCED is not set
+@@ -319,22 +321,91 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
+ #
+ CONFIG_STANDALONE=y
+ CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
+ # CONFIG_SYS_HYPERVISOR is not set
+ # CONFIG_CONNECTOR is not set
+-# CONFIG_MTD is not set
++CONFIG_MTD=y
++# CONFIG_MTD_DEBUG is not set
++# CONFIG_MTD_CONCAT is not set
++# CONFIG_MTD_PARTITIONS is not set
++
++#
++# User Modules And Translation Layers
++#
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++# CONFIG_FTL is not set
++# CONFIG_NFTL is not set
++# CONFIG_INFTL is not set
++# CONFIG_RFD_FTL is not set
++# CONFIG_SSFDC is not set
++
++#
++# RAM/ROM/Flash chip drivers
++#
++# CONFIG_MTD_CFI is not set
++CONFIG_MTD_JEDECPROBE=y
++CONFIG_MTD_GEN_PROBE=y
++CONFIG_MTD_CFI_ADV_OPTIONS=y
++CONFIG_MTD_CFI_NOSWAP=y
++# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
++# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
++CONFIG_MTD_CFI_GEOMETRY=y
++# CONFIG_MTD_MAP_BANK_WIDTH_1 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_2 is not set
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
++# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
++# CONFIG_MTD_CFI_I1 is not set
++# CONFIG_MTD_CFI_I2 is not set
++CONFIG_MTD_CFI_I4=y
++# CONFIG_MTD_CFI_I8 is not set
++# CONFIG_MTD_OTP is not set
++# CONFIG_MTD_CFI_INTELEXT is not set
++CONFIG_MTD_CFI_AMDSTD=y
++# CONFIG_MTD_CFI_STAA is not set
++CONFIG_MTD_CFI_UTIL=y
++# CONFIG_MTD_RAM is not set
++# CONFIG_MTD_ROM is not set
++# CONFIG_MTD_ABSENT is not set
++
++#
++# Mapping drivers for chip access
++#
++# CONFIG_MTD_COMPLEX_MAPPINGS is not set
++# CONFIG_MTD_PHYSMAP is not set
++CONFIG_MTD_PHYSMAP_OF=y
++# CONFIG_MTD_PLATRAM is not set
++
++#
++# Self-contained MTD device drivers
++#
++# CONFIG_MTD_SLRAM is not set
++# CONFIG_MTD_PHRAM is not set
++# CONFIG_MTD_MTDRAM is not set
++# CONFIG_MTD_BLOCK2MTD is not set
++
++#
++# Disk-On-Chip Device Drivers
++#
++# CONFIG_MTD_DOC2000 is not set
++# CONFIG_MTD_DOC2001 is not set
++# CONFIG_MTD_DOC2001PLUS is not set
++# CONFIG_MTD_NAND is not set
++# CONFIG_MTD_ONENAND is not set
++
++#
++# UBI - Unsorted block images
++#
++# CONFIG_MTD_UBI is not set
+ CONFIG_OF_DEVICE=y
+ # CONFIG_PARPORT is not set
+-CONFIG_BLK_DEV=y
+-# CONFIG_BLK_DEV_FD is not set
+-# CONFIG_BLK_DEV_COW_COMMON is not set
+-CONFIG_BLK_DEV_LOOP=y
+-# CONFIG_BLK_DEV_CRYPTOLOOP is not set
+-# CONFIG_BLK_DEV_NBD is not set
+-# CONFIG_BLK_DEV_RAM is not set
+-# CONFIG_CDROM_PKTCDVD is not set
+-# CONFIG_ATA_OVER_ETH is not set
+-CONFIG_MISC_DEVICES=y
+-# CONFIG_EEPROM_93CX6 is not set
++# CONFIG_BLK_DEV is not set
++# CONFIG_MISC_DEVICES is not set
+ # CONFIG_IDE is not set
+ 
+ #
+@@ -368,16 +439,15 @@ CONFIG_DAVICOM_PHY=y
+ # CONFIG_SMSC_PHY is not set
+ # CONFIG_BROADCOM_PHY is not set
+ # CONFIG_ICPLUS_PHY is not set
+-CONFIG_FIXED_PHY=y
+-CONFIG_FIXED_MII_10_FDX=y
+-# CONFIG_FIXED_MII_100_FDX is not set
++# CONFIG_FIXED_PHY is not set
++# CONFIG_MDIO_BITBANG is not set
+ CONFIG_NET_ETHERNET=y
+ CONFIG_MII=y
+ CONFIG_FS_ENET=y
+-CONFIG_FS_ENET_HAS_SCC=y
++# CONFIG_FS_ENET_HAS_SCC is not set
+ CONFIG_FS_ENET_HAS_FEC=y
+-CONFIG_NETDEV_1000=y
+-CONFIG_NETDEV_10000=y
++# CONFIG_NETDEV_1000 is not set
++# CONFIG_NETDEV_10000 is not set
+ 
+ #
+ # Wireless LAN
+@@ -397,55 +467,12 @@ CONFIG_NETDEV_10000=y
+ #
+ # Input device support
+ #
+-CONFIG_INPUT=y
+-# CONFIG_INPUT_FF_MEMLESS is not set
+-# CONFIG_INPUT_POLLDEV is not set
+-
+-#
+-# Userland interfaces
+-#
+-CONFIG_INPUT_MOUSEDEV=y
+-CONFIG_INPUT_MOUSEDEV_PSAUX=y
+-CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+-CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+-# CONFIG_INPUT_JOYDEV is not set
+-# CONFIG_INPUT_TSDEV is not set
+-# CONFIG_INPUT_EVDEV is not set
+-# CONFIG_INPUT_EVBUG is not set
+-
+-#
+-# Input Device Drivers
+-#
+-CONFIG_INPUT_KEYBOARD=y
+-CONFIG_KEYBOARD_ATKBD=y
+-# CONFIG_KEYBOARD_SUNKBD is not set
+-# CONFIG_KEYBOARD_LKKBD is not set
+-# CONFIG_KEYBOARD_XTKBD is not set
+-# CONFIG_KEYBOARD_NEWTON is not set
+-# CONFIG_KEYBOARD_STOWAWAY is not set
+-CONFIG_INPUT_MOUSE=y
+-CONFIG_MOUSE_PS2=y
+-CONFIG_MOUSE_PS2_ALPS=y
+-CONFIG_MOUSE_PS2_LOGIPS2PP=y
+-CONFIG_MOUSE_PS2_SYNAPTICS=y
+-CONFIG_MOUSE_PS2_LIFEBOOK=y
+-CONFIG_MOUSE_PS2_TRACKPOINT=y
+-# CONFIG_MOUSE_PS2_TOUCHKIT is not set
+-# CONFIG_MOUSE_SERIAL is not set
+-# CONFIG_MOUSE_VSXXXAA is not set
+-# CONFIG_INPUT_JOYSTICK is not set
+-# CONFIG_INPUT_TABLET is not set
+-# CONFIG_INPUT_TOUCHSCREEN is not set
+-# CONFIG_INPUT_MISC is not set
++# CONFIG_INPUT is not set
+ 
+ #
+ # Hardware I/O ports
+ #
+-CONFIG_SERIO=y
+-CONFIG_SERIO_I8042=y
+-CONFIG_SERIO_SERPORT=y
+-CONFIG_SERIO_LIBPS2=y
+-# CONFIG_SERIO_RAW is not set
++# CONFIG_SERIO is not set
+ # CONFIG_GAMEPORT is not set
+ 
+ #
+@@ -493,20 +520,7 @@ CONFIG_GEN_RTC=y
+ # CONFIG_SPI_MASTER is not set
+ # CONFIG_W1 is not set
+ # CONFIG_POWER_SUPPLY is not set
+-CONFIG_HWMON=y
+-# CONFIG_HWMON_VID is not set
+-# CONFIG_SENSORS_ABITUGURU is not set
+-# CONFIG_SENSORS_ABITUGURU3 is not set
+-# CONFIG_SENSORS_F71805F is not set
+-# CONFIG_SENSORS_IT87 is not set
+-# CONFIG_SENSORS_PC87360 is not set
+-# CONFIG_SENSORS_PC87427 is not set
+-# CONFIG_SENSORS_SMSC47M1 is not set
+-# CONFIG_SENSORS_SMSC47B397 is not set
+-# CONFIG_SENSORS_VT1211 is not set
+-# CONFIG_SENSORS_W83627HF is not set
+-# CONFIG_SENSORS_W83627EHF is not set
+-# CONFIG_HWMON_DEBUG_CHIP is not set
++# CONFIG_HWMON is not set
+ 
+ #
+ # Multifunction device drivers
+@@ -530,7 +544,7 @@ CONFIG_DAB=y
+ #
+ # CONFIG_DISPLAY_SUPPORT is not set
+ # CONFIG_VGASTATE is not set
+-CONFIG_VIDEO_OUTPUT_CONTROL=y
++# CONFIG_VIDEO_OUTPUT_CONTROL is not set
+ # CONFIG_FB is not set
+ # CONFIG_FB_IBM_GXT4500 is not set
+ 
+@@ -538,22 +552,7 @@ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ # Sound
+ #
+ # CONFIG_SOUND is not set
+-CONFIG_HID_SUPPORT=y
+-CONFIG_HID=y
+-# CONFIG_HID_DEBUG is not set
+-CONFIG_USB_SUPPORT=y
+-# CONFIG_USB_ARCH_HAS_HCD is not set
+-# CONFIG_USB_ARCH_HAS_OHCI is not set
+-# CONFIG_USB_ARCH_HAS_EHCI is not set
+-
+-#
+-# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+-#
+-
+-#
+-# USB Gadget Support
+-#
+-# CONFIG_USB_GADGET is not set
++# CONFIG_USB_SUPPORT is not set
+ # CONFIG_MMC is not set
+ # CONFIG_NEW_LEDS is not set
+ # CONFIG_EDAC is not set
+@@ -580,19 +579,9 @@ CONFIG_USB_SUPPORT=y
+ #
+ # File systems
+ #
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT2_FS_XATTR=y
+-# CONFIG_EXT2_FS_POSIX_ACL is not set
+-# CONFIG_EXT2_FS_SECURITY is not set
+-# CONFIG_EXT2_FS_XIP is not set
+-CONFIG_EXT3_FS=y
+-CONFIG_EXT3_FS_XATTR=y
+-# CONFIG_EXT3_FS_POSIX_ACL is not set
+-# CONFIG_EXT3_FS_SECURITY is not set
++# CONFIG_EXT2_FS is not set
++# CONFIG_EXT3_FS is not set
+ # CONFIG_EXT4DEV_FS is not set
+-CONFIG_JBD=y
+-# CONFIG_JBD_DEBUG is not set
+-CONFIG_FS_MBCACHE=y
+ # CONFIG_REISERFS_FS is not set
+ # CONFIG_JFS_FS is not set
+ # CONFIG_FS_POSIX_ACL is not set
+@@ -601,10 +590,9 @@ CONFIG_FS_MBCACHE=y
+ # CONFIG_OCFS2_FS is not set
+ # CONFIG_MINIX_FS is not set
+ # CONFIG_ROMFS_FS is not set
+-CONFIG_INOTIFY=y
+-CONFIG_INOTIFY_USER=y
++# CONFIG_INOTIFY is not set
+ # CONFIG_QUOTA is not set
+-CONFIG_DNOTIFY=y
++# CONFIG_DNOTIFY is not set
+ # CONFIG_AUTOFS_FS is not set
+ # CONFIG_AUTOFS4_FS is not set
+ # CONFIG_FUSE_FS is not set
+@@ -645,6 +633,7 @@ CONFIG_RAMFS=y
+ # CONFIG_BEFS_FS is not set
+ # CONFIG_BFS_FS is not set
+ # CONFIG_EFS_FS is not set
++# CONFIG_JFFS2_FS is not set
+ CONFIG_CRAMFS=y
+ # CONFIG_VXFS_FS is not set
+ # CONFIG_HPFS_FS is not set
+@@ -711,15 +700,13 @@ CONFIG_MSDOS_PARTITION=y
+ #
+ # Library routines
+ #
+-CONFIG_BITREVERSE=y
+-CONFIG_CRC_CCITT=y
++# CONFIG_CRC_CCITT is not set
+ # CONFIG_CRC16 is not set
+ # CONFIG_CRC_ITU_T is not set
+-CONFIG_CRC32=y
++# CONFIG_CRC32 is not set
+ # CONFIG_CRC7 is not set
+ # CONFIG_LIBCRC32C is not set
+ CONFIG_ZLIB_INFLATE=y
+-CONFIG_PLIST=y
+ CONFIG_HAS_IOMEM=y
+ CONFIG_HAS_IOPORT=y
+ CONFIG_HAS_DMA=y
+@@ -734,11 +721,33 @@ CONFIG_HAS_DMA=y
+ #
+ # CONFIG_PRINTK_TIME is not set
+ CONFIG_ENABLE_MUST_CHECK=y
+-# CONFIG_MAGIC_SYSRQ is not set
++CONFIG_MAGIC_SYSRQ=y
+ # CONFIG_UNUSED_SYMBOLS is not set
+ # CONFIG_DEBUG_FS is not set
+ # CONFIG_HEADERS_CHECK is not set
+-# CONFIG_DEBUG_KERNEL is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++CONFIG_DETECT_SOFTLOCKUP=y
++CONFIG_SCHED_DEBUG=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_SLUB_DEBUG_ON is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_BUGVERBOSE=y
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_LIST is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_FAULT_INJECTION is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_DEBUG_PAGEALLOC is not set
++# CONFIG_DEBUGGER is not set
++# CONFIG_BDI_SWITCH is not set
+ # CONFIG_PPC_EARLY_DEBUG is not set
+ 
+ #
+diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
+index 322b155..0d4ff0a 100644
+--- a/arch/powerpc/platforms/8xx/Kconfig
++++ b/arch/powerpc/platforms/8xx/Kconfig
+@@ -26,6 +26,7 @@ config MPC86XADS
+ config MPC885ADS
+ 	bool "MPC885ADS"
+ 	select CPM1
++	select PPC_CPM_NEW_BINDING
+ 	help
+ 	  Freescale Semiconductor MPC885 Application Development System (ADS).
+ 	  Also known as DUET.
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads.h b/arch/powerpc/platforms/8xx/mpc885ads.h
+index a21e528..a507666 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads.h
++++ b/arch/powerpc/platforms/8xx/mpc885ads.h
+@@ -17,25 +17,10 @@
+ 
+ #include <sysdev/fsl_soc.h>
+ 
+-/* U-Boot maps BCSR to 0xff080000 */
+-#define BCSR_ADDR		((uint)0xff080000)
+-#define BCSR_SIZE		((uint)32)
+-#define BCSR0			((uint)(BCSR_ADDR + 0x00))
+-#define BCSR1			((uint)(BCSR_ADDR + 0x04))
+-#define BCSR2			((uint)(BCSR_ADDR + 0x08))
+-#define BCSR3			((uint)(BCSR_ADDR + 0x0c))
+-#define BCSR4			((uint)(BCSR_ADDR + 0x10))
+-
+-#define CFG_PHYDEV_ADDR		((uint)0xff0a0000)
+-#define BCSR5			((uint)(CFG_PHYDEV_ADDR + 0x300))
+-
+ #define MPC8xx_CPM_OFFSET	(0x9c0)
+ #define CPM_MAP_ADDR		(get_immrbase() + MPC8xx_CPM_OFFSET)
+ #define CPM_IRQ_OFFSET		16     // for compability with cpm_uart driver
+ 
+-#define PCMCIA_MEM_ADDR		((uint)0xff020000)
+-#define PCMCIA_MEM_SIZE		((uint)(64 * 1024))
+-
+ /* Bits of interest in the BCSRs.
+  */
+ #define BCSR1_ETHEN		((uint)0x20000000)
+@@ -64,28 +49,5 @@
+ #define BCSR5_MII1_EN		0x02
+ #define BCSR5_MII1_RST		0x01
+ 
+-/* Interrupt level assignments */
+-#define PHY_INTERRUPT	SIU_IRQ7	/* PHY link change interrupt */
+-#define SIU_INT_FEC1	SIU_LEVEL1	/* FEC1 interrupt */
+-#define SIU_INT_FEC2	SIU_LEVEL3	/* FEC2 interrupt */
+-#define FEC_INTERRUPT	SIU_INT_FEC1	/* FEC interrupt */
+-
+-/* We don't use the 8259 */
+-#define NR_8259_INTS	0
+-
+-/* CPM Ethernet through SCC3 */
+-#define PA_ENET_RXD	((ushort)0x0040)
+-#define PA_ENET_TXD	((ushort)0x0080)
+-#define PE_ENET_TCLK	((uint)0x00004000)
+-#define PE_ENET_RCLK	((uint)0x00008000)
+-#define PE_ENET_TENA	((uint)0x00000010)
+-#define PC_ENET_CLSN	((ushort)0x0400)
+-#define PC_ENET_RENA	((ushort)0x0800)
+-
+-/* Control bits in the SICR to route TCLK (CLK5) and RCLK (CLK6) to
+- * SCC3.  Also, make sure GR3 (bit 8) and SC3 (bit 9) are zero */
+-#define SICR_ENET_MASK	((uint)0x00ff0000)
+-#define SICR_ENET_CLKRT	((uint)0x002c0000)
+-
+ #endif /* __ASM_MPC885ADS_H__ */
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+index bb54268..2cf1b6a 100644
+--- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
++++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
+@@ -1,11 +1,13 @@
+-/*arch/powerpc/platforms/8xx/mpc885ads_setup.c
+- *
 +/*
-+ * Software emulation of some PPC instructions for the 8xx core.
+  * Platform setup for the Freescale mpc885ads board
+  *
+  * Vitaly Bordug <vbordug@ru.mvista.com>
+  *
+  * Copyright 2005 MontaVista Software Inc.
+  *
++ * Heavily modified by Scott Wood <scottwood@freescale.com>
++ * Copyright 2007 Freescale Semiconductor, Inc.
 + *
-+ * Copyright (C) 1998 Dan Malek (dmalek@jlc.net)
-+ *
-+ * Software floating emuation for the MPC8xx processor.  I did this mostly
-+ * because it was easier than trying to get the libraries compiled for
-+ * software floating point.  The goal is still to get the libraries done,
-+ * but I lost patience and needed some hacks to at least get init and
-+ * shells running.  The first problem is the setjmp/longjmp that save
-+ * and restore the floating point registers.
-+ *
-+ * For this emulation, our working registers are found on the register
-+ * save area.
-+ */
+  * This file is licensed under the terms of the GNU General Public License
+  * version 2. This program is licensed "as is" without any warranty of any
+  * kind, whether express or implied.
+@@ -18,12 +20,12 @@
+ #include <linux/ioport.h>
+ #include <linux/device.h>
+ #include <linux/delay.h>
+-#include <linux/root_dev.h>
+ 
+ #include <linux/fs_enet_pd.h>
+ #include <linux/fs_uart_pd.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/mii.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/delay.h>
+ #include <asm/io.h>
+@@ -36,32 +38,24 @@
+ #include <asm/8xx_immap.h>
+ #include <asm/commproc.h>
+ #include <asm/fs_pd.h>
+-#include <asm/prom.h>
++#include <asm/udbg.h>
+ 
+-static void init_smc1_uart_ioports(struct fs_uart_platform_info *fpi);
+-static void init_smc2_uart_ioports(struct fs_uart_platform_info *fpi);
+-static void init_scc3_ioports(struct fs_platform_info *ptr);
++#include <sysdev/commproc.h>
 +
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/stddef.h>
-+#include <linux/unistd.h>
-+#include <linux/ptrace.h>
-+#include <linux/slab.h>
-+#include <linux/user.h>
-+#include <linux/a.out.h>
-+#include <linux/interrupt.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/uaccess.h>
-+#include <asm/system.h>
-+#include <asm/io.h>
-+
-+/* Eventually we may need a look-up table, but this works for now.
-+*/
-+#define LFS	48
-+#define LFD	50
-+#define LFDU	51
-+#define STFD	54
-+#define STFDU	55
-+#define FMR	63
-+
-+void print_8xx_pte(struct mm_struct *mm, unsigned long addr)
-+{
-+	pgd_t *pgd;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+
-+	printk(" pte @ 0x%8lx: ", addr);
-+	pgd = pgd_offset(mm, addr & PAGE_MASK);
-+	if (pgd) {
-+		pmd = pmd_offset(pud_offset(pgd, addr & PAGE_MASK),
-+		                 addr & PAGE_MASK);
-+		if (pmd && pmd_present(*pmd)) {
-+			pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
-+			if (pte) {
-+				printk(" (0x%08lx)->(0x%08lx)->0x%08lx\n",
-+				        (long)pgd, (long)pte, (long)pte_val(*pte));
-+#define pp ((long)pte_val(*pte))
-+				printk(" RPN: %05lx PP: %lx SPS: %lx SH: %lx "
-+				       "CI: %lx v: %lx\n",
-+				       pp>>12,    /* rpn */
-+				       (pp>>10)&3, /* pp */
-+				       (pp>>3)&1, /* small */
-+				       (pp>>2)&1, /* shared */
-+				       (pp>>1)&1, /* cache inhibit */
-+				       pp&1       /* valid */
-+				       );
-+#undef pp
-+			}
-+			else {
-+				printk("no pte\n");
-+			}
-+		}
-+		else {
-+			printk("no pmd\n");
-+		}
-+	}
-+	else {
-+		printk("no pgd\n");
-+	}
-+}
-+
-+int get_8xx_pte(struct mm_struct *mm, unsigned long addr)
-+{
-+	pgd_t *pgd;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int retval = 0;
-+
-+	pgd = pgd_offset(mm, addr & PAGE_MASK);
-+	if (pgd) {
-+		pmd = pmd_offset(pud_offset(pgd, addr & PAGE_MASK),
-+		                 addr & PAGE_MASK);
-+		if (pmd && pmd_present(*pmd)) {
-+			pte = pte_offset_kernel(pmd, addr & PAGE_MASK);
-+			if (pte) {
-+				retval = (int)pte_val(*pte);
-+			}
-+		}
-+	}
-+	return retval;
-+}
-+
-+/*
-+ * We return 0 on success, 1 on unimplemented instruction, and EFAULT
-+ * if a load/store faulted.
-+ */
-+int Soft_emulate_8xx(struct pt_regs *regs)
-+{
-+	u32 inst, instword;
-+	u32 flreg, idxreg, disp;
-+	int retval;
-+	s16 sdisp;
-+	u32 *ea, *ip;
-+
-+	retval = 0;
-+
-+	instword = *((u32 *)regs->nip);
-+	inst = instword >> 26;
-+
-+	flreg = (instword >> 21) & 0x1f;
-+	idxreg = (instword >> 16) & 0x1f;
-+	disp = instword & 0xffff;
-+
-+	ea = (u32 *)(regs->gpr[idxreg] + disp);
-+	ip = (u32 *)&current->thread.fpr[flreg];
-+
-+	switch ( inst )
-+	{
-+	case LFD:
-+		/* this is a 16 bit quantity that is sign extended
-+		 * so use a signed short here -- Cort
-+		 */
-+		sdisp = (instword & 0xffff);
-+		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
-+		if (copy_from_user(ip, ea, sizeof(double)))
-+			retval = -EFAULT;
-+		break;
-+
-+	case LFDU:
-+		if (copy_from_user(ip, ea, sizeof(double)))
-+			retval = -EFAULT;
-+		else
-+			regs->gpr[idxreg] = (u32)ea;
-+		break;
-+	case LFS:
-+		sdisp = (instword & 0xffff);
-+		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
-+		if (copy_from_user(ip, ea, sizeof(float)))
-+			retval = -EFAULT;
-+		break;
-+	case STFD:
-+		/* this is a 16 bit quantity that is sign extended
-+		 * so use a signed short here -- Cort
-+		 */
-+		sdisp = (instword & 0xffff);
-+		ea = (u32 *)(regs->gpr[idxreg] + sdisp);
-+		if (copy_to_user(ea, ip, sizeof(double)))
-+			retval = -EFAULT;
-+		break;
-+
-+	case STFDU:
-+		if (copy_to_user(ea, ip, sizeof(double)))
-+			retval = -EFAULT;
-+		else
-+			regs->gpr[idxreg] = (u32)ea;
-+		break;
-+	case FMR:
-+		/* assume this is a fp move -- Cort */
-+		memcpy(ip, &current->thread.fpr[(instword>>11)&0x1f],
-+		       sizeof(double));
-+		break;
-+	default:
-+		retval = 1;
-+		printk("Bad emulation %s/%d\n"
-+		       " NIP: %08lx instruction: %08x opcode: %x "
-+		       "A: %x B: %x C: %x code: %x rc: %x\n",
-+		       current->comm,current->pid,
-+		       regs->nip,
-+		       instword,inst,
-+		       (instword>>16)&0x1f,
-+		       (instword>>11)&0x1f,
-+		       (instword>>6)&0x1f,
-+		       (instword>>1)&0x3ff,
-+		       instword&1);
-+		{
-+			int pa;
-+			print_8xx_pte(current->mm,regs->nip);
-+			pa = get_8xx_pte(current->mm,regs->nip) & PAGE_MASK;
-+			pa |= (regs->nip & ~PAGE_MASK);
-+			pa = (unsigned long)__va(pa);
-+			printk("Kernel VA for NIP %x ", pa);
-+			print_8xx_pte(current->mm,pa);
-+		}
-+	}
-+
-+	if (retval == 0)
-+		regs->nip += 4;
-+
-+	return retval;
-+}
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ccfc99d..81859ae 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -898,7 +898,9 @@ void SoftwareEmulation(struct pt_regs *regs)
++static u32 __iomem *bcsr, *bcsr5;
+ 
+ #ifdef CONFIG_PCMCIA_M8XX
+ static void pcmcia_hw_setup(int slot, int enable)
  {
- 	extern int do_mathemu(struct pt_regs *);
- 	extern int Soft_emulate_8xx(struct pt_regs *);
-+#if defined(CONFIG_MATH_EMULATION) || defined(CONFIG_8XX_MINIMAL_FPEMU)
- 	int errcode;
+-	unsigned *bcsr_io;
+-
+-	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
+ 	if (enable)
+-		clrbits32(bcsr_io, BCSR1_PCCEN);
++		clrbits32(&bcsr[1], BCSR1_PCCEN);
+ 	else
+-		setbits32(bcsr_io, BCSR1_PCCEN);
+-
+-	iounmap(bcsr_io);
++		setbits32(&bcsr[1], BCSR1_PCCEN);
+ }
+ 
+ static int pcmcia_set_voltage(int slot, int vcc, int vpp)
+ {
+ 	u32 reg = 0;
+-	unsigned *bcsr_io;
+-
+-	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
+ 
+ 	switch (vcc) {
+ 	case 0:
+@@ -96,330 +90,196 @@ static int pcmcia_set_voltage(int slot, int vcc, int vpp)
+ 	}
+ 
+ 	/* first, turn off all power */
+-	clrbits32(bcsr_io, 0x00610000);
++	clrbits32(&bcsr[1], 0x00610000);
+ 
+ 	/* enable new powersettings */
+-	setbits32(bcsr_io, reg);
++	setbits32(&bcsr[1], reg);
+ 
+-	iounmap(bcsr_io);
+ 	return 0;
+ }
+ #endif
+ 
+-void __init mpc885ads_board_setup(void)
+-{
+-	cpm8xx_t *cp;
+-	unsigned int *bcsr_io;
+-	u8 tmpval8;
+-
+-#ifdef CONFIG_FS_ENET
+-	iop8xx_t *io_port;
+-#endif
++struct cpm_pin {
++	int port, pin, flags;
++};
+ 
+-	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
+-	cp = (cpm8xx_t *) immr_map(im_cpm);
++static struct cpm_pin mpc885ads_pins[] = {
++	/* SMC1 */
++	{CPM_PORTB, 24, CPM_PIN_INPUT}, /* RX */
++	{CPM_PORTB, 25, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
+ 
+-	if (bcsr_io == NULL) {
+-		printk(KERN_CRIT "Could not remap BCSR\n");
+-		return;
+-	}
+-#ifdef CONFIG_SERIAL_CPM_SMC1
+-	clrbits32(bcsr_io, BCSR1_RS232EN_1);
+-	clrbits32(&cp->cp_simode, 0xe0000000 >> 17);	/* brg1 */
+-	tmpval8 = in_8(&(cp->cp_smc[0].smc_smcm)) | (SMCM_RX | SMCM_TX);
+-	out_8(&(cp->cp_smc[0].smc_smcm), tmpval8);
+-	clrbits16(&cp->cp_smc[0].smc_smcmr, SMCMR_REN | SMCMR_TEN);	/* brg1 */
+-#else
+-	setbits32(bcsr_io, BCSR1_RS232EN_1);
+-	out_be16(&cp->cp_smc[0].smc_smcmr, 0);
+-	out_8(&cp->cp_smc[0].smc_smce, 0);
++	/* SMC2 */
++#ifndef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	{CPM_PORTE, 21, CPM_PIN_INPUT}, /* RX */
++	{CPM_PORTE, 20, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TX */
+ #endif
+ 
+-#ifdef CONFIG_SERIAL_CPM_SMC2
+-	clrbits32(bcsr_io, BCSR1_RS232EN_2);
+-	clrbits32(&cp->cp_simode, 0xe0000000 >> 1);
+-	setbits32(&cp->cp_simode, 0x20000000 >> 1);	/* brg2 */
+-	tmpval8 = in_8(&(cp->cp_smc[1].smc_smcm)) | (SMCM_RX | SMCM_TX);
+-	out_8(&(cp->cp_smc[1].smc_smcm), tmpval8);
+-	clrbits16(&cp->cp_smc[1].smc_smcmr, SMCMR_REN | SMCMR_TEN);
+-
+-	init_smc2_uart_ioports(0);
+-#else
+-	setbits32(bcsr_io, BCSR1_RS232EN_2);
+-	out_be16(&cp->cp_smc[1].smc_smcmr, 0);
+-	out_8(&cp->cp_smc[1].smc_smce, 0);
+-#endif
+-	immr_unmap(cp);
+-	iounmap(bcsr_io);
+-
+-#ifdef CONFIG_FS_ENET
+-	/* use MDC for MII (common) */
+-	io_port = (iop8xx_t *) immr_map(im_ioport);
+-	setbits16(&io_port->iop_pdpar, 0x0080);
+-	clrbits16(&io_port->iop_pddir, 0x0080);
+-
+-	bcsr_io = ioremap(BCSR5, sizeof(unsigned long));
+-	clrbits32(bcsr_io, BCSR5_MII1_EN);
+-	clrbits32(bcsr_io, BCSR5_MII1_RST);
+-#ifndef CONFIG_FC_ENET_HAS_SCC
+-	clrbits32(bcsr_io, BCSR5_MII2_EN);
+-	clrbits32(bcsr_io, BCSR5_MII2_RST);
+-
++	/* SCC3 */
++	{CPM_PORTA, 9, CPM_PIN_INPUT}, /* RX */
++	{CPM_PORTA, 8, CPM_PIN_INPUT}, /* TX */
++	{CPM_PORTC, 4, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_GPIO}, /* RENA */
++	{CPM_PORTC, 5, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_GPIO}, /* CLSN */
++	{CPM_PORTE, 27, CPM_PIN_INPUT | CPM_PIN_SECONDARY}, /* TENA */
++	{CPM_PORTE, 17, CPM_PIN_INPUT}, /* CLK5 */
++	{CPM_PORTE, 16, CPM_PIN_INPUT}, /* CLK6 */
++
++	/* MII1 */
++	{CPM_PORTA, 0, CPM_PIN_INPUT},
++	{CPM_PORTA, 1, CPM_PIN_INPUT},
++	{CPM_PORTA, 2, CPM_PIN_INPUT},
++	{CPM_PORTA, 3, CPM_PIN_INPUT},
++	{CPM_PORTA, 4, CPM_PIN_OUTPUT},
++	{CPM_PORTA, 10, CPM_PIN_OUTPUT},
++	{CPM_PORTA, 11, CPM_PIN_OUTPUT},
++	{CPM_PORTB, 19, CPM_PIN_INPUT},
++	{CPM_PORTB, 31, CPM_PIN_INPUT},
++	{CPM_PORTC, 12, CPM_PIN_INPUT},
++	{CPM_PORTC, 13, CPM_PIN_INPUT},
++	{CPM_PORTE, 30, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 31, CPM_PIN_OUTPUT},
++
++	/* MII2 */
++#ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	{CPM_PORTE, 14, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 15, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 16, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 17, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 18, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 19, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 20, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
++	{CPM_PORTE, 21, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 22, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 23, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 24, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 25, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 26, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 27, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
++	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
+ #endif
+-	iounmap(bcsr_io);
+-	immr_unmap(io_port);
++};
+ 
+-#endif
+-
+-#ifdef CONFIG_PCMCIA_M8XX
+-	/*Set up board specific hook-ups */
+-	m8xx_pcmcia_ops.hw_ctrl = pcmcia_hw_setup;
+-	m8xx_pcmcia_ops.voltage_set = pcmcia_set_voltage;
+-#endif
+-}
+-
+-static void init_fec1_ioports(struct fs_platform_info *ptr)
++static void __init init_ioports(void)
+ {
+-	cpm8xx_t *cp = (cpm8xx_t *) immr_map(im_cpm);
+-	iop8xx_t *io_port = (iop8xx_t *) immr_map(im_ioport);
+-
+-	/* configure FEC1 pins  */
+-	setbits16(&io_port->iop_papar, 0xf830);
+-	setbits16(&io_port->iop_padir, 0x0830);
+-	clrbits16(&io_port->iop_padir, 0xf000);
+-
+-	setbits32(&cp->cp_pbpar, 0x00001001);
+-	clrbits32(&cp->cp_pbdir, 0x00001001);
++	int i;
+ 
+-	setbits16(&io_port->iop_pcpar, 0x000c);
+-	clrbits16(&io_port->iop_pcdir, 0x000c);
++	for (i = 0; i < ARRAY_SIZE(mpc885ads_pins); i++) {
++		struct cpm_pin *pin = &mpc885ads_pins[i];
++		cpm1_set_pin(pin->port, pin->pin, pin->flags);
++	}
+ 
+-	setbits32(&cp->cp_pepar, 0x00000003);
+-	setbits32(&cp->cp_pedir, 0x00000003);
+-	clrbits32(&cp->cp_peso, 0x00000003);
+-	clrbits32(&cp->cp_cptr, 0x00000100);
++	cpm1_clk_setup(CPM_CLK_SMC1, CPM_BRG1, CPM_CLK_RTX);
++	cpm1_clk_setup(CPM_CLK_SMC2, CPM_BRG2, CPM_CLK_RTX);
++	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK5, CPM_CLK_TX);
++	cpm1_clk_setup(CPM_CLK_SCC3, CPM_CLK6, CPM_CLK_RX);
+ 
+-	immr_unmap(io_port);
+-	immr_unmap(cp);
++	/* Set FEC1 and FEC2 to MII mode */
++	clrbits32(&mpc8xx_immr->im_cpm.cp_cptr, 0x00000180);
+ }
+ 
+-static void init_fec2_ioports(struct fs_platform_info *ptr)
++static void __init mpc885ads_setup_arch(void)
+ {
+-	cpm8xx_t *cp = (cpm8xx_t *) immr_map(im_cpm);
+-	iop8xx_t *io_port = (iop8xx_t *) immr_map(im_ioport);
+-
+-	/* configure FEC2 pins */
+-	setbits32(&cp->cp_pepar, 0x0003fffc);
+-	setbits32(&cp->cp_pedir, 0x0003fffc);
+-	clrbits32(&cp->cp_peso, 0x000087fc);
+-	setbits32(&cp->cp_peso, 0x00037800);
+-	clrbits32(&cp->cp_cptr, 0x00000080);
+-
+-	immr_unmap(io_port);
+-	immr_unmap(cp);
+-}
++	struct device_node *np;
+ 
+-void init_fec_ioports(struct fs_platform_info *fpi)
+-{
+-	int fec_no = fs_get_fec_index(fpi->fs_no);
++	cpm_reset();
++	init_ioports();
+ 
+-	switch (fec_no) {
+-	case 0:
+-		init_fec1_ioports(fpi);
+-		break;
+-	case 1:
+-		init_fec2_ioports(fpi);
+-		break;
+-	default:
+-		printk(KERN_ERR "init_fec_ioports: invalid FEC number\n");
++	np = of_find_compatible_node(NULL, NULL, "fsl,mpc885ads-bcsr");
++	if (!np) {
++		printk(KERN_CRIT "Could not find fsl,mpc885ads-bcsr node\n");
+ 		return;
+ 	}
+-}
+ 
+-static void init_scc3_ioports(struct fs_platform_info *fpi)
+-{
+-	unsigned *bcsr_io;
+-	iop8xx_t *io_port;
+-	cpm8xx_t *cp;
++	bcsr = of_iomap(np, 0);
++	bcsr5 = of_iomap(np, 1);
++	of_node_put(np);
+ 
+-	bcsr_io = ioremap(BCSR_ADDR, BCSR_SIZE);
+-	io_port = (iop8xx_t *) immr_map(im_ioport);
+-	cp = (cpm8xx_t *) immr_map(im_cpm);
+-
+-	if (bcsr_io == NULL) {
++	if (!bcsr || !bcsr5) {
+ 		printk(KERN_CRIT "Could not remap BCSR\n");
+ 		return;
+ 	}
+ 
+-	/* Enable the PHY.
+-	 */
+-	clrbits32(bcsr_io + 4, BCSR4_ETH10_RST);
+-	udelay(1000);
+-	setbits32(bcsr_io + 4, BCSR4_ETH10_RST);
+-	/* Configure port A pins for Txd and Rxd.
+-	 */
+-	setbits16(&io_port->iop_papar, PA_ENET_RXD | PA_ENET_TXD);
+-	clrbits16(&io_port->iop_padir, PA_ENET_RXD | PA_ENET_TXD);
++	clrbits32(&bcsr[1], BCSR1_RS232EN_1);
++#ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	setbits32(&bcsr[1], BCSR1_RS232EN_2);
++#else
++	clrbits32(&bcsr[1], BCSR1_RS232EN_2);
 +#endif
  
- 	CHECK_FULL_REGS(regs);
+-	/* Configure port C pins to enable CLSN and RENA.
+-	 */
+-	clrbits16(&io_port->iop_pcpar, PC_ENET_CLSN | PC_ENET_RENA);
+-	clrbits16(&io_port->iop_pcdir, PC_ENET_CLSN | PC_ENET_RENA);
+-	setbits16(&io_port->iop_pcso, PC_ENET_CLSN | PC_ENET_RENA);
++	clrbits32(bcsr5, BCSR5_MII1_EN);
++	setbits32(bcsr5, BCSR5_MII1_RST);
++	udelay(1000);
++	clrbits32(bcsr5, BCSR5_MII1_RST);
  
-@@ -928,7 +930,7 @@ void SoftwareEmulation(struct pt_regs *regs)
- 		return;
- 	}
- 
--#else
-+#elif defined(CONFIG_8XX_MINIMAL_FPEMU)
- 	errcode = Soft_emulate_8xx(regs);
- 	switch (errcode) {
- 	case 0:
-@@ -941,6 +943,8 @@ void SoftwareEmulation(struct pt_regs *regs)
- 		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
- 		return;
- 	}
+-	/* Configure port E for TCLK and RCLK.
+-	 */
+-	setbits32(&cp->cp_pepar, PE_ENET_TCLK | PE_ENET_RCLK);
+-	clrbits32(&cp->cp_pepar, PE_ENET_TENA);
+-	clrbits32(&cp->cp_pedir, PE_ENET_TCLK | PE_ENET_RCLK | PE_ENET_TENA);
+-	clrbits32(&cp->cp_peso, PE_ENET_TCLK | PE_ENET_RCLK);
+-	setbits32(&cp->cp_peso, PE_ENET_TENA);
+-
+-	/* Configure Serial Interface clock routing.
+-	 * First, clear all SCC bits to zero, then set the ones we want.
+-	 */
+-	clrbits32(&cp->cp_sicr, SICR_ENET_MASK);
+-	setbits32(&cp->cp_sicr, SICR_ENET_CLKRT);
++#ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	clrbits32(bcsr5, BCSR5_MII2_EN);
++	setbits32(bcsr5, BCSR5_MII2_RST);
++	udelay(1000);
++	clrbits32(bcsr5, BCSR5_MII2_RST);
 +#else
-+	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
- #endif
++	setbits32(bcsr5, BCSR5_MII2_EN);
++#endif
+ 
+-	/* Disable Rx and Tx. SMC1 sshould be stopped if SCC3 eternet are used.
+-	 */
+-	clrbits16(&cp->cp_smc[0].smc_smcmr, SMCMR_REN | SMCMR_TEN);
+-	/* On the MPC885ADS SCC ethernet PHY is initialized in the full duplex mode
+-	 * by H/W setting after reset. SCC ethernet controller support only half duplex.
+-	 * This discrepancy of modes causes a lot of carrier lost errors.
+-	 */
++#ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
++	clrbits32(&bcsr[4], BCSR4_ETH10_RST);
++	udelay(1000);
++	setbits32(&bcsr[4], BCSR4_ETH10_RST);
+ 
+-	/* In the original SCC enet driver the following code is placed at
+-	   the end of the initialization */
+-	setbits32(&cp->cp_pepar, PE_ENET_TENA);
+-	clrbits32(&cp->cp_pedir, PE_ENET_TENA);
+-	setbits32(&cp->cp_peso, PE_ENET_TENA);
++	setbits32(&bcsr[1], BCSR1_ETHEN);
+ 
+-	setbits32(bcsr_io + 4, BCSR1_ETHEN);
+-	iounmap(bcsr_io);
+-	immr_unmap(io_port);
+-	immr_unmap(cp);
+-}
++	np = of_find_node_by_path("/soc@ff000000/cpm@9c0/serial@a80");
++#else
++	np = of_find_node_by_path("/soc@ff000000/cpm@9c0/ethernet@a40");
++#endif
+ 
+-void init_scc_ioports(struct fs_platform_info *fpi)
+-{
+-	int scc_no = fs_get_scc_index(fpi->fs_no);
++	/* The SCC3 enet registers overlap the SMC1 registers, so
++	 * one of the two must be removed from the device tree.
++	 */
+ 
+-	switch (scc_no) {
+-	case 2:
+-		init_scc3_ioports(fpi);
+-		break;
+-	default:
+-		printk(KERN_ERR "init_scc_ioports: invalid SCC number\n");
+-		return;
++	if (np) {
++		of_detach_node(np);
++		of_node_put(np);
+ 	}
+-}
+-
+-static void init_smc1_uart_ioports(struct fs_uart_platform_info *ptr)
+-{
+-	unsigned *bcsr_io;
+-	cpm8xx_t *cp;
+-
+-	cp = (cpm8xx_t *) immr_map(im_cpm);
+-	setbits32(&cp->cp_pepar, 0x000000c0);
+-	clrbits32(&cp->cp_pedir, 0x000000c0);
+-	clrbits32(&cp->cp_peso, 0x00000040);
+-	setbits32(&cp->cp_peso, 0x00000080);
+-	immr_unmap(cp);
+-
+-	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
+ 
+-	if (bcsr_io == NULL) {
+-		printk(KERN_CRIT "Could not remap BCSR1\n");
+-		return;
+-	}
+-	clrbits32(bcsr_io, BCSR1_RS232EN_1);
+-	iounmap(bcsr_io);
++#ifdef CONFIG_PCMCIA_M8XX
++	/* Set up board specific hook-ups.*/
++	m8xx_pcmcia_ops.hw_ctrl = pcmcia_hw_setup;
++	m8xx_pcmcia_ops.voltage_set = pcmcia_set_voltage;
++#endif
  }
- #endif /* CONFIG_8xx */
+ 
+-static void init_smc2_uart_ioports(struct fs_uart_platform_info *fpi)
++static int __init mpc885ads_probe(void)
+ {
+-	unsigned *bcsr_io;
+-	cpm8xx_t *cp;
+-
+-	cp = (cpm8xx_t *) immr_map(im_cpm);
+-	setbits32(&cp->cp_pepar, 0x00000c00);
+-	clrbits32(&cp->cp_pedir, 0x00000c00);
+-	clrbits32(&cp->cp_peso, 0x00000400);
+-	setbits32(&cp->cp_peso, 0x00000800);
+-	immr_unmap(cp);
+-
+-	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
+-
+-	if (bcsr_io == NULL) {
+-		printk(KERN_CRIT "Could not remap BCSR1\n");
+-		return;
+-	}
+-	clrbits32(bcsr_io, BCSR1_RS232EN_2);
+-	iounmap(bcsr_io);
++	unsigned long root = of_get_flat_dt_root();
++	return of_flat_dt_is_compatible(root, "fsl,mpc885ads");
+ }
+ 
+-void init_smc_ioports(struct fs_uart_platform_info *data)
+-{
+-	int smc_no = fs_uart_id_fsid2smc(data->fs_no);
++static struct of_device_id __initdata of_bus_ids[] = {
++	{ .name = "soc", },
++	{ .name = "cpm", },
++	{ .name = "localbus", },
++	{},
++};
+ 
+-	switch (smc_no) {
+-	case 0:
+-		init_smc1_uart_ioports(data);
+-		data->brg = data->clk_rx;
+-		break;
+-	case 1:
+-		init_smc2_uart_ioports(data);
+-		data->brg = data->clk_rx;
+-		break;
+-	default:
+-		printk(KERN_ERR "init_scc_ioports: invalid SCC number\n");
+-		return;
+-	}
+-}
+-
+-int platform_device_skip(const char *model, int id)
++static int __init declare_of_platform_devices(void)
+ {
+-#ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
+-	const char *dev = "FEC";
+-	int n = 2;
+-#else
+-	const char *dev = "SCC";
+-	int n = 3;
+-#endif
+-
+-	if (!strcmp(model, dev) && n == id)
+-		return 1;
++	/* Publish the QE devices */
++	if (machine_is(mpc885_ads))
++		of_platform_bus_probe(NULL, of_bus_ids, NULL);
+ 
+ 	return 0;
+ }
+-
+-static void __init mpc885ads_setup_arch(void)
+-{
+-	cpm_reset();
+-
+-	mpc885ads_board_setup();
+-
+-	ROOT_DEV = Root_NFS;
+-}
+-
+-static int __init mpc885ads_probe(void)
+-{
+-	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
+-					  "model", NULL);
+-	if (model == NULL)
+-		return 0;
+-	if (strcmp(model, "MPC885ADS"))
+-		return 0;
+-
+-	return 1;
+-}
+-
+-define_machine(mpc885_ads)
+-{
+-.name = "MPC885 ADS",.probe = mpc885ads_probe,.setup_arch =
+-	    mpc885ads_setup_arch,.init_IRQ =
+-	    m8xx_pic_init,.get_irq =
+-	    mpc8xx_get_irq,.restart = mpc8xx_restart,.calibrate_decr =
+-	    mpc8xx_calibrate_decr,.set_rtc_time =
+-	    mpc8xx_set_rtc_time,.get_rtc_time = mpc8xx_get_rtc_time,};
++device_initcall(declare_of_platform_devices);
++
++define_machine(mpc885_ads) {
++	.name			= "Freescale MPC885 ADS",
++	.probe			= mpc885ads_probe,
++	.setup_arch		= mpc885ads_setup_arch,
++	.init_IRQ		= m8xx_pic_init,
++	.get_irq		= mpc8xx_get_irq,
++	.restart		= mpc8xx_restart,
++	.calibrate_decr		= mpc8xx_calibrate_decr,
++	.set_rtc_time		= mpc8xx_set_rtc_time,
++	.get_rtc_time		= mpc8xx_get_rtc_time,
++	.progress		= udbg_progress,
++};
 -- 
 1.5.3.1
