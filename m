@@ -1,18 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
+Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 85F8CDDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:04:55 +1000 (EST)
-Message-ID: <46EFBEA6.4050406@ru.mvista.com>
-Date: Tue, 18 Sep 2007 16:03:50 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id D69A7DDDFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:05:21 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 33DCF8810
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:05:20 +0500 (SAMST)
+Date: Tue, 18 Sep 2007 16:07:52 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC][RFC] mpc8xx: fix build with CONFIG_MODULES=y
+Message-ID: <20070918120752.GA4859@localhost.localdomain>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64
-	bit	pci_process_bridge_OF_ranges() instances
-References: <20070911224952.9838.46644.stgit@localhost.localdomain>
-In-Reply-To: <20070911224952.9838.46644.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug wrote:
-> +
-> +			hose->io_base_phys = cpu_phys_addr - pci_addr;
+Hi all,
 
-This is not gonna work on 32-bit platform (unless pci_addr == 0).
-Should be
-hose->io_base_phys = cpu_phys_addr;
-The other way we should adjust io size like we do on 64-bit and rewrite 
-resource fixup functions.
+It seems there is no __res in the arch/powerpc. How it was used in
+the new tree, can we now safely remove it? At least kernel builds
+with that patch.
 
-> +			/* handle from 0 to top of I/O window */
-> +#ifdef CONFIG_PPC64
-> +			hose->pci_io_size = pci_addr + size;
-> +#endif
-> +			hose->io_base_virt = ioremap(hose->io_base_phys, size);
-
-Do we need to ioremap on 64-bit? I think 64-bit uses different approach 
-in handling io space.
-
-> +#ifdef CONFIG_PPC32
-> +			if (prim)
-> +				isa_io_base = (unsigned long)hose->io_base_virt;
-> +#endif
-
-What's exactly the point of merging this single function?
-If this was intended to add 64-bit physical address support to 32-bit 
-platforms (like ppc440), then it does not seem sufficient to make pci 
-stuff work right.
-What about the 32-bit pcibios_fixup_resources(), 
-pcibios_resource_to_bus(), pcibios_bus_to_resource() stuff?
-There's still no 64-bit support. You'll get
-"PCI Cannot allocate resource region" attempting to initialize resources 
-at PCI start-up.
 Thanks,
-Valentine.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 430c502..b4163c3 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -180,9 +180,6 @@ EXPORT_SYMBOL(cacheable_memcpy);
+ EXPORT_SYMBOL(cpm_install_handler);
+ EXPORT_SYMBOL(cpm_free_handler);
+ #endif /* CONFIG_8xx */
+-#if defined(CONFIG_8xx)
+-EXPORT_SYMBOL(__res);
+-#endif
+ 
+ #ifdef CONFIG_PPC32
+ EXPORT_SYMBOL(next_mmu_context);
+-- 
+1.5.0.6
