@@ -1,20 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 47DC8DDE10
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:08:53 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IXbsm-0004kX-1G
-	for linuxppc-dev@ozlabs.org; Tue, 18 Sep 2007 05:08:48 -0700
-Message-ID: <12755615.post@talk.nabble.com>
-Date: Tue, 18 Sep 2007 05:08:48 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id B3300DDE06
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 22:26:54 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id 593EF8810
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:26:53 +0500 (SAMST)
+Date: Tue, 18 Sep 2007 16:29:25 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: multicasting in MPC8272ADS
+Subject: [PATCH] [POWERPC][RFC] sysdev/commproc.c: fix build caused by
+	undefined symbols
+Message-ID: <20070918122925.GA17481@localhost.localdomain>
+References: <20070918120752.GA4859@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20070918120752.GA4859@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+cpm_install_handler and cpm_free_handler neither used nor defined
+for arch/powerpc.
 
-hi,
+This causes MPC8xx build failure, patch used to fix that.
 
-I have written a multicast test application in which there is a multicast
-sender and receiver.
-The multicast sender sends multicast packets on a specified interface and
-the multicast 
-receiver receives multicast packets. I have tested this application on my
-network with
- x86 machines. But when I run a multicast receiver (which has been cross
-compiled for 
-MPC8272ADS) on my MPC board, it is unable to receive multicast packets (the
-recvfrom 
-call is waiting for ever for packets to arrive). The MPC board is able to
-send multicast
-packets to without any problems. The /proc/net/dev_mcast shows the
-appropriate 
-entries for the multicast address being enabled for the interface of
-interest(esentially 
-group joining appear to work).
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    5 -----
+ include/asm-powerpc/commproc.h  |    3 ---
+ 2 files changed, 0 insertions(+), 8 deletions(-)
 
-My configuration is a MPC8272ADS board rp_filter =0 for all interfaces (ie
-no source 
-filtering).I am wondering where the problem could be, configurations or the
-ethernet 
-driver itself? Are there some known issues ?
-
-By the way with loopback enabled the reception of packets works
-in case the sender and receiver are on the same machine 
-
-waiting for ur comments..
-
-thnks
-
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index b4163c3..4d28774 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -176,11 +176,6 @@ EXPORT_SYMBOL(console_drivers);
+ EXPORT_SYMBOL(cacheable_memcpy);
+ #endif
+ 
+-#ifdef  CONFIG_8xx
+-EXPORT_SYMBOL(cpm_install_handler);
+-EXPORT_SYMBOL(cpm_free_handler);
+-#endif /* CONFIG_8xx */
+-
+ #ifdef CONFIG_PPC32
+ EXPORT_SYMBOL(next_mmu_context);
+ EXPORT_SYMBOL(set_context);
+diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
+index 3972487..0d92012 100644
+--- a/include/asm-powerpc/commproc.h
++++ b/include/asm-powerpc/commproc.h
+@@ -686,7 +686,4 @@ typedef struct risc_timer_pram {
+ #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
+ #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
+ 
+-extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
+-extern void cpm_free_handler(int vec);
+-
+ #endif /* __CPM_8XX__ */
 -- 
-View this message in context: http://www.nabble.com/multicasting-in-MPC8272ADS-tf4473829.html#a12755615
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+1.5.0.6
