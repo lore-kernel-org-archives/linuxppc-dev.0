@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BD101DDE16
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:25:23 +1000 (EST)
-Date: Tue, 18 Sep 2007 17:22:59 +1000
+	by ozlabs.org (Postfix) with ESMTP id AC0CADDE16
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2007 17:25:24 +1000 (EST)
+Date: Tue, 18 Sep 2007 17:25:12 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 1/2] [POWERPC] Size swapper_pg_dir correctly
-Message-Id: <20070918172259.dc4172b0.sfr@canb.auug.org.au>
+Subject: [PATCH 2/2] [POWERPC] fwnmi is only used on pSeries
+Message-Id: <20070918172512.6aa5af03.sfr@canb.auug.org.au>
+In-Reply-To: <20070918172259.dc4172b0.sfr@canb.auug.org.au>
+References: <20070918172259.dc4172b0.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,80 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson pointed out that swapper_pg_dir actually need to be
-PGD_TABLE_SIZE bytes long not PAGE_SIZE.  This actually saves 64k in
-the bss for a kernel ppc64_defconfig built with CONFIG_PPC_64K_PAGES.
+This saves 4k on non pSeries builds (except for iSeries where it saves
+almost 4k).
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/asm-offsets.c |    4 ++++
- arch/powerpc/kernel/head_64.S     |    2 +-
- include/asm-powerpc/pgtable-4k.h  |    2 ++
- include/asm-powerpc/pgtable-64k.h |    2 ++
- 4 files changed, 9 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/crash_dump.c |    2 ++
+ arch/powerpc/kernel/head_64.S    |    7 +++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
-Boot tested on a POWER5+ with 4K and 64K pages.
-
+Boot tested on iSeries and POWER5+.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index a408053..0ae5d57 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -320,5 +320,9 @@ int main(void)
- 	DEFINE(VMALLOC_START_ESID, GET_ESID(VMALLOC_START));
- 	DEFINE(VMALLOC_START_VSID, KERNEL_VSID(VMALLOC_START));
- #endif
-+
-+#ifdef CONFIG_PPC64
-+	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
-+#endif
- 	return 0;
+diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
+index ffa91d6..29ff77c 100644
+--- a/arch/powerpc/kernel/crash_dump.c
++++ b/arch/powerpc/kernel/crash_dump.c
+@@ -54,8 +54,10 @@ void __init setup_kdump_trampoline(void)
+ 		create_trampoline(i);
+ 	}
+ 
++#ifdef CONFIG_PPC_PSERIES
+ 	create_trampoline(__pa(system_reset_fwnmi) - PHYSICAL_START);
+ 	create_trampoline(__pa(machine_check_fwnmi) - PHYSICAL_START);
++#endif /* CONFIG_PPC_PSERIES */
+ 
+ 	DBG(" <- setup_kdump_trampoline()\n");
  }
 diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index f4ae82e..384cc75 100644
+index 384cc75..22ac245 100644
 --- a/arch/powerpc/kernel/head_64.S
 +++ b/arch/powerpc/kernel/head_64.S
-@@ -1539,4 +1539,4 @@ empty_zero_page:
+@@ -341,6 +341,7 @@ slb_miss_user_pseries:
+ 	b	.				/* prevent spec. execution */
+ #endif /* __DISABLED__ */
  
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	PAGE_SIZE
-+	.space	PGD_TABLE_SIZE
-diff --git a/include/asm-powerpc/pgtable-4k.h b/include/asm-powerpc/pgtable-4k.h
-index add5481..818e2ab 100644
---- a/include/asm-powerpc/pgtable-4k.h
-+++ b/include/asm-powerpc/pgtable-4k.h
-@@ -10,10 +10,12 @@
- #define PUD_INDEX_SIZE  7
- #define PGD_INDEX_SIZE  9
++#ifdef CONFIG_PPC_PSERIES
+ /*
+  * Vectors for the FWNMI option.  Share common code.
+  */
+@@ -358,6 +359,8 @@ machine_check_fwnmi:
+ 	mtspr	SPRN_SPRG1,r13		/* save r13 */
+ 	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXMC, machine_check_common)
  
-+#ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_INDEX_SIZE)
- #define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
- #define PUD_TABLE_SIZE	(sizeof(pud_t) << PUD_INDEX_SIZE)
- #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
-+#endif	/* __ASSEMBLY__ */
++#endif /* CONFIG_PPC_PSERIES */
++
+ /*** Common interrupt handlers ***/
  
- #define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
- #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
-diff --git a/include/asm-powerpc/pgtable-64k.h b/include/asm-powerpc/pgtable-64k.h
-index 33ae901..bd54b77 100644
---- a/include/asm-powerpc/pgtable-64k.h
-+++ b/include/asm-powerpc/pgtable-64k.h
-@@ -9,9 +9,11 @@
- #define PUD_INDEX_SIZE	0
- #define PGD_INDEX_SIZE  4
+ 	STD_EXCEPTION_COMMON(0x100, system_reset, .system_reset_exception)
+@@ -1012,6 +1015,7 @@ _GLOBAL(do_stab_bolted)
+ initial_stab:
+ 	.space	4096
  
-+#ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
- #define PMD_TABLE_SIZE	(sizeof(pmd_t) << PMD_INDEX_SIZE)
- #define PGD_TABLE_SIZE	(sizeof(pgd_t) << PGD_INDEX_SIZE)
-+#endif	/* __ASSEMBLY__ */
++#ifdef CONFIG_PPC_PSERIES
+ /*
+  * Data area reserved for FWNMI option.
+  * This address (0x7000) is fixed by the RPA.
+@@ -1019,6 +1023,7 @@ initial_stab:
+ 	.= 0x7000
+ 	.globl fwnmi_data_area
+ fwnmi_data_area:
++#endif /* CONFIG_PPC_PSERIES */
  
- #define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
- #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
+ 	/* iSeries does not use the FWNMI stuff, so it is safe to put
+ 	 * this here, even if we later allow kernels that will boot on
+@@ -1043,7 +1048,9 @@ xLparMap:
+ 
+ #endif /* CONFIG_PPC_ISERIES */
+ 
++#ifdef CONFIG_PPC_PSERIES
+         . = 0x8000
++#endif /* CONFIG_PPC_PSERIES */
+ 
+ /*
+  * On pSeries and most other platforms, secondary processors spin
 -- 
 1.5.3.1
