@@ -1,18 +1,30 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id A4025DDEC5
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id C5C7CDDEF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 03:31:25 +1000 (EST)
-Message-ID: <46F15CE9.8030300@qstreams.com>
-Date: Wed, 19 Sep 2007 13:31:21 -0400
-From: Ben Warren <bwarren@qstreams.com>
+	Thu, 20 Sep 2007 04:44:57 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so235650rvf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Sep 2007 11:44:56 -0700 (PDT)
+Message-ID: <9e4733910709191144l6ddb66eaq84f3d1488bcf1443@mail.gmail.com>
+Date: Wed, 19 Sep 2007 14:44:56 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Domen Puncer" <domen@coderock.org>
+Subject: Re: [PATCH] phy: export phy_mii_ioctl
+In-Reply-To: <20070919115621.GI32628@nd47.coderock.org>
 MIME-Version: 1.0
-To: Manil Gaouar <mgaouar@solacom.com>
-Subject: Re: U-Boot problems with MPC8272ADS
-References: <9A1468054ED2FD40907CC3B2C1871D400106CC89@hermes.versatel.com>
-In-Reply-To: <9A1468054ED2FD40907CC3B2C1871D400106CC89@hermes.versatel.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070810095153.GC13994@moe.telargo.com>
+	<20070902074143.GB2642@nd47.coderock.org>
+	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
+	<20070915121444.GA19857@nd47.coderock.org>
+	<20070917095334.GA4546@powerlinux.fr>
+	<20070917202140.GB2642@nd47.coderock.org>
+	<9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
+	<20070918151622.GD32628@nd47.coderock.org>
+	<9e4733910709181217v417438s85bb9e6b4ad4b475@mail.gmail.com>
+	<20070919115621.GI32628@nd47.coderock.org>
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +35,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Manil Gaouar wrote:
-> Hi all,
->
-> I have been trying many things to solve this problem, I found using a
-> JTAG that U-Boot is running from flash so my JP9 jumper should stay in
-> BCSR.
->
->   
-This is off-topic here. Please re-post to the U-boot mailing list, and 
-try to be more concise:
-mailto:u-boot-users@lists.sourceforge.net
+On 9/19/07, Domen Puncer <domen@coderock.org> wrote:
+> Patch at the end.
+> When compiled as module use "modprobe fec_mpc52xx mac=foo",
+> when built-in add to boot line: "fec_mpc52xx.mac=foo"
 
-regards,
-Ben
+This patch series is working for me now.
+
+This needs a cleanup too, but it is unrelated....
+
+  CC      drivers/serial/mpc52xx_uart.o
+drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_console_setup':
+drivers/serial/mpc52xx_uart.c:760: warning: format '%lx' expects type
+'long unsigned int', but argument 2 has type 'resource_size_t'
+drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_uart_of_probe':
+drivers/serial/mpc52xx_uart.c:978: warning: format '%lx' expects type
+'long unsigned int', but argument 3 has type 'resource_size_t'
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
