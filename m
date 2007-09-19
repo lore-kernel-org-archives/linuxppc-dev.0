@@ -1,31 +1,32 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id DEB2FDDE49
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D2402DDE99
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 23:56:50 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so256946wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 06:56:50 -0700 (PDT)
-Message-ID: <9e4733910709190656w3e979191mcd0d0776d46283cf@mail.gmail.com>
-Date: Wed, 19 Sep 2007 09:56:49 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Pedro Luis D. L." <carcadiz@hotmail.com>
-Subject: Re: [PATCH] phy: export phy_mii_ioctl
-In-Reply-To: <BLU106-W49D16A32DDFE2611E15371CAB90@phx.gbl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-	<20070917202140.GB2642@nd47.coderock.org>
-	<9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
-	<20070918151622.GD32628@nd47.coderock.org>
-	<9e4733910709181229m4afe7ecr56e2411f52a84232@mail.gmail.com>
-	<BLU106-W49D16A32DDFE2611E15371CAB90@phx.gbl>
-Cc: netdev@vger.kernel.org, Domen Puncer <domen@coderock.org>,
-	linuxppc-embedded@ozlabs.org
+	Thu, 20 Sep 2007 00:08:48 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8JE8j2t009485
+	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Sep 2007 10:08:45 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8JE6EFh432112
+	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Sep 2007 08:08:44 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8JE2A4T031128
+	for <linuxppc-embedded@ozlabs.org>; Wed, 19 Sep 2007 08:02:10 -0600
+Date: Wed, 19 Sep 2007 09:02:08 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "- Reyneke" <reynekejunk@hotmail.com>
+Subject: Re: Eth1 init and link status
+Message-ID: <20070919090208.17b4a90b@weaponx.rchland.ibm.com>
+In-Reply-To: <BAY101-F3306F36C70FAA4D450C466BEB90@phx.gbl>
+References: <BAY101-F3306F36C70FAA4D450C466BEB90@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,34 +37,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/19/07, Pedro Luis D. L. <carcadiz@hotmail.com> wrote:
->
-> Hello Jon,
-> I=B4m also working with a Phytec pcm030, but I can=B4t get it booted...
-> Which kernel are you using?
-> I tried to apply the 7 bestcomm patches from Sylvain and patch over these=
- with this new ones that Domen released.
-> The base kernel I=B4m using is 2.6.22.6 from kernel.org.
-> Although I used the patch that creates pcm030.c in arch/platforms/52xx/ a=
-nd compiled using this file, it gets halted at booting time.
->
-> Bytes transferred =3D 5091 (13e3 hex)
-> ## Booting image at 00500000 ...
->    Image Name:   Linux-2.6.22.6
->    Created:      2007-09-19   8:53:02 UTC
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1196911 Bytes =3D  1.1 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
->    Booting using flat device tree at 0x400000
->
-> (No more output and boot is halted)
+On Wed, 19 Sep 2007 13:54:35 +0000
+"- Reyneke" <reynekejunk@hotmail.com> wrote:
 
-The root name of your device tree needs to match the name in  pcm030.c
-pcm030_probe(void). If they don't match this happens.
+> HI,
+> 
+> We've run into a bit of an odd problem and we are not sure where to go and 
+> look for the cause.
+> 
+> We have some 440EPx based hardware with two GIG-Ethernet ports using RGMII 
+> and 2x ET1011C PHY's. Problem is that eth1 will only initialise correctly 
+> (i.e. receive and transmit) if eth0 has a link. Eth0 always work OK, 
+> regardless of eth1 status. Eth1 will work OK if eth0 has a link (i.e. 
+> initialised) at time of setup. Once initialised, eth0 status is irrelevant. 
+> All this is during Linux boot process.
+> 
+> Any ideas?
+> 
+> We can access PHY registers via u-boot (mii commands). Same 1Gig link speed 
+> is used on both ports. Linux kernel is 2.6.19.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Where did you get your kernel from?  2.6.19 doesn't have any 440EPx
+support in it.  Maybe you should ask your vendor.
+
+josh
