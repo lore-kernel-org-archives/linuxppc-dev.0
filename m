@@ -1,22 +1,15 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9C5B6DDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:28:43 +1000 (EST)
-Date: Wed, 19 Sep 2007 00:28:34 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 13/28] 8xx: Infrastructure code cleanup.
-Message-ID: <20070919052834.GA5801@ld0162-tx32.am.freescale.net>
-References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165742.GM6563@loki.buserror.net>
-	<20070919042533.GB30212@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070919042533.GB30212@localhost.localdomain>
+Message-ID: <18160.43591.441863.931220@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Sep 2007 14:49:11 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Subject: Re: [PATCH] [POWERPC] Fix build errors when BLOCK=n
+In-Reply-To: <11900663131073-git-send-email-Emilian.Medve@Freescale.com>
+References: <11900663131073-git-send-email-Emilian.Medve@Freescale.com>
+Cc: linuxppc-dev@ozlabs.org, kumar.gala@Freescale.com, bzolnier@gmail.com,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2007 at 02:25:33PM +1000, David Gibson wrote:
-> On Mon, Sep 17, 2007 at 11:57:42AM -0500, Scott Wood wrote:
-> > 1. Keep a global mpc8xx_immr mapping, rather than constantly
-> > creating temporary mappings.
-> 
-> Nice, but again, it seems a bit pointless to leave in all the
-> immr_map() / immr_unmap() pairs now that they do basically nothing.
+Emil Medve writes:
 
-One step at a time. :-)
+> The fix tries to use the smallest scope CONFIG_* symbols that will fix the build
+> problem. In this case <linux/ide.h> needs to be included only if IDE=y or
+> IDE=m were selected. Also, ppc_ide_md is needed only if BLK_DEV_IDE=y or
+> BLK_DEV_IDE=m
 
-Once arch/ppc is gone, I'd like to do some heavier cleanup of the CPM
-stuff, including merging with QE.  For now, I want to touch code that's
-shared between the architectures as little as possible.
+It would be nicer to remove the ppc_ide_md stuff from ppc_ksyms.c
+altogether and just put the EXPORT_SYMBOL in setup_32.c.
 
--Scott
+Paul.
