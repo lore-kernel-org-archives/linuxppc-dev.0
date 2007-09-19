@@ -1,20 +1,25 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9A7FADDE29
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 00:20:02 +1000 (EST)
-Date: Wed, 19 Sep 2007 09:19:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-Subject: Re: cuImage generation
-Message-ID: <20070919141953.GB8023@ld0162-tx32.am.freescale.net>
-References: <20070919072831.322800@gmx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070919072831.322800@gmx.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
+	by ozlabs.org (Postfix) with ESMTP id DD55FDDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 00:31:42 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so179156rvf
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 07:31:41 -0700 (PDT)
+Message-ID: <fa686aa40709190731y3aca963bx1e148ba5b94f0094@mail.gmail.com>
+Date: Wed, 19 Sep 2007 08:31:40 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "S. Fricke" <silvio.fricke@gmail.com>
+Subject: Re: [NEWBIE] Interrupt-problem mpc5200
+In-Reply-To: <20070919071643.GE5682@sfrouter>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070906133050.GE11807@sfrouter> <20070911124154.GI11807@sfrouter>
+	<fa686aa40709110719j26a5bf30uc075253c6d1a6d97@mail.gmail.com>
+	<20070911182811.GA3582@sfrouter>
+	<fa686aa40709111205n5d9f9654m6f2b96d468dfd017@mail.gmail.com>
+	<20070912183038.GA5682@sfrouter>
+	<fa686aa40709121229h6bb2902etffcd197e2e5af722@mail.gmail.com>
+	<20070919071643.GE5682@sfrouter>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,13 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2007 at 09:28:31AM +0200, Gerhard Pircher wrote:
-> I tried to compile a 2.6.23-rc6 kernel yesterday, but wasn't able to get a
-> cuImage.<platform) out of it (only the uImage file was generated). My
-> platform config defines DEFAULT_UIMAGE and WANT_DEVICE_TREE. Do I need to
-> generate it manually or is there a makefile where I have to specify it?
-> Naturally I added my cuboot wrapper code to the arch/powerpc/boot/Makefile.
+On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
+> OK, my dts is now:
+>
+>     / {
+>         /* ... */
+>         soc5200@f0000000 {
+>             /* ... */
+>             intpin@0 {
+>                 interrupt-parent = <500>;
+>                 interrupts = <1 2 2>;
+>             };
+>             /* ... */
+>         };
+>         /* ... */
+>     };
 
-Did you specify a device tree to use in CONFIG_DEVICE_TREE?
+Note: your intpin node does not (and probably should not) need to be a
+child of the soc node.
 
--Scott
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
