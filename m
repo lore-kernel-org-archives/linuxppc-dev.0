@@ -1,19 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.186])
-	by ozlabs.org (Postfix) with ESMTP id C99ACDDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 01:09:04 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so187870rvf
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 08:09:03 -0700 (PDT)
-Message-ID: <fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
-Date: Wed, 19 Sep 2007 09:09:03 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "S. Fricke" <silvio.fricke@gmail.com>
-Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
-In-Reply-To: <20070919115952.GF5682@sfrouter>
+Return-Path: <jacmet@gmail.com>
+Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.228])
+	by ozlabs.org (Postfix) with ESMTP id E7303DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 01:20:26 +1000 (EST)
+Received: by hu-out-0506.google.com with SMTP id 24so83885hud
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 08:20:24 -0700 (PDT)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: cuImage generation
+References: <20070919072831.322800@gmx.net>
+	<20070919141953.GB8023@ld0162-tx32.am.freescale.net>
+	<87ps0elnad.fsf@macbook.be.48ers.dk>
+	<20070919150134.GA8249@ld0162-tx32.am.freescale.net>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 19 Sep 2007 17:20:23 +0200
+In-Reply-To: <20070919150134.GA8249@ld0162-tx32.am.freescale.net> (Scott
+	Wood's message of "Wed\, 19 Sep 2007 10\:01\:34 -0500")
+Message-ID: <87lkb2lm14.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070919115952.GF5682@sfrouter>
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,38 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
-> Hi,
->
-> how can i configure an "ext interrupt" to high-level? I want a interruption on
-> IRQ2, but I checked with an oscilloscope that the pin has a low state and I
-> needs a high state.
->
-> I have tried, after I got the irq (with irq_of_parse_and_map), set it with
->
->     set_irq_type(irq, IRQ_TYPE_LEVEL_HIGH);
->
-> But I think it is a system-configuration (irq_desc) and no
-> device-configuration.
+>>>>> "Scott" == Scott Wood <scottwood@freescale.com> writes:
 
-You shouldn't need to do this.  You set your sense level in the device tree.
+ Scott> On Wed, Sep 19, 2007 at 04:53:14PM +0200, Peter Korsgaard wrote:
+ >> How is it supposed to work now cuImage no longer is in BOOT_TARGETS?
+ >> What make target are you supposed to work. It works if I add
+ >> cuImage.83xx to BOOT_TARGETS and call make cuImage.83xx, but that can
+ >> hardly be the correct way?
 
->From your previous email, your device node looks like this:
->             intpin@0 {
->                 interrupt-parent = <500>;
->                 interrupts = <1 2 2>;
->             };
+ Scott> Ah, OK -- you need to type make zImage, not make uImage.
 
-Which is IRQ2, EDGE_FALLING.
-
-If you change your interrupts property to <1 2 0>, then your sense is
-set to LEVEL_HIGH.  (Seriously, you need to read the interrupts
-section of Documentation/powerpc/mpc52xx-device-tree-bindings.txt.)
-
-g.
+Ahh, I got fooled by the platform selecting DEFAULT_UIMAGE - Thanks!
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Bye, Peter Korsgaard
