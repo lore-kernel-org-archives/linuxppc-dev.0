@@ -1,14 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Sep 2007 13:15:10 +1000
+Date: Wed, 19 Sep 2007 13:16:04 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 06/28] bootwrapper: Add PlanetCore firmware support.
-Message-ID: <20070919031510.GH23646@localhost.localdomain>
+Subject: Re: [PATCH 07/28] bootwrapper: Add fsl_get_immr() and 8xx/pq2 clock
+	functions.
+Message-ID: <20070919031604.GI23646@localhost.localdomain>
 References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165735.GF6563@loki.buserror.net>
+	<20070917165736.GG6563@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917165735.GF6563@loki.buserror.net>
+In-Reply-To: <20070917165736.GG6563@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,47 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 11:57:35AM -0500, Scott Wood wrote:
-> This is a library that board code can use to extract information from the
-> PlanetCore configuration keys.  PlanetCore is used on various boards from
-> Embedded Planet.
+On Mon, Sep 17, 2007 at 11:57:36AM -0500, Scott Wood wrote:
+> fsl_get_immr() uses /soc/ranges to determine the immr.
+> 
+> mpc885_get_clock() transforms a crystal frequency into a system frequency
+> according to the PLL register settings.
+> 
+> pq2_get_clocks() does the same as the above for the PowerQUICC II,
+> except that it produces several different clocks.
+> 
+> The mpc8xx/pq2 set_clocks() functions modify common properties in
+> the device tree based on the given clock data.
+> 
+> The mpc885/pq2 fixup_clocks() functions call get_clocks(), and
+> pass the results to set_clocks().
 > 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-[snip]
-> +void planetcore_set_mac_addrs(const char *table)
-> +{
-> +	char addr[4][6];
-> +	u64 int_addr;
-> +	u32 i;
-> +	int j;
-> +	void *node;
-> +
-> +	if (!planetcore_get_hex(table, PLANETCORE_KEY_MAC_ADDR, &int_addr))
-> +		return;
-> +
-> +	for (i = 0; i < 4; i++) {
-> +		u64 this_dev_addr = int_addr | mac_table[i];
-> +
-> +		for (j = 5; j >= 0; j--) {
-> +			addr[i][j] = this_dev_addr & 0xff;
-> +			this_dev_addr >>= 8;
-> +		}
-> +
-> +		node = find_node_by_prop_value(NULL, "linux,network-index",
-> +		                               (void *)&i, 4);
-> +		if (node) {
-> +			printf("ENET%u: local-mac-address <-"
-> +			       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", i,
-> +			       addr[i][0], addr[i][1], addr[i][2],
-> +			       addr[i][3], addr[i][4], addr[i][5]);
-> +
-> +			setprop(node, "local-mac-address", addr[i], 6);
-
-Hrm.  When I said to extract the logic of fixup_mac_addrs(), I meant
-to create a new one-address version of the function in devtree.c then
-use it both here and in the fixup_mac_addrs() function.  Rather than
-duplicating it inline here.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
