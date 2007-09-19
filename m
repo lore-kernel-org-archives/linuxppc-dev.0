@@ -1,11 +1,21 @@
-Return-Path: <emmedve1@emmedve1-12.am.freescale.net>
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: paulus@samba.org, kumar.gala@Freescale.com, linuxppc-dev@ozlabs.org,
-	linuxppc-embedded@ozlabs.org, bzolnier@gmail.com, linux-ide@vger.kernel.org
-Subject: [PATCH v2] [POWERPC] Fix build errors when BLOCK=n
-Date: Wed, 19 Sep 2007 13:39:32 -0500
-Message-Id: <1190227172-593-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
+	by ozlabs.org (Postfix) with ESMTP id 2AD37DDEA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 05:01:55 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so237741nzh
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 12:01:54 -0700 (PDT)
+Date: Wed, 19 Sep 2007 21:01:46 +0200
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
+Message-ID: <20070919190146.GI5682@sfrouter>
+References: <20070919115952.GF5682@sfrouter>
+	<fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="HcccYpVZDxQ8hzPO"
+In-Reply-To: <fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,108 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These are the symptom error messages:
 
-  CC      arch/powerpc/kernel/setup_32.o
-In file included from include/linux/blkdev.h:17,
-                 from include/linux/ide.h:13,
-                 from arch/powerpc/kernel/setup_32.c:13:
-include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
-include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
-In file included from arch/powerpc/kernel/setup_32.c:13:
-include/linux/ide.h:857: error: field 'wrq' has incomplete type
+--HcccYpVZDxQ8hzPO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  CC      arch/powerpc/kernel/ppc_ksyms.o
-In file included from include/linux/blkdev.h:17,
-                 from include/linux/ide.h:13,
-                 from arch/powerpc/kernel/ppc_ksyms.c:15:
-include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
-include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
-In file included from arch/powerpc/kernel/ppc_ksyms.c:15:
-include/linux/ide.h:857: error: field 'wrq' has incomplete type
+Hello,
 
-The fix tries to use the smallest scope CONFIG_* symbols that will fix the build
-problem. In this case <linux/ide.h> needs to be included only if IDE=y or
-IDE=m were selected. Also, ppc_ide_md is needed only if BLK_DEV_IDE=y or
-BLK_DEV_IDE=m
+> On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
+> > Hi,
+> >
+> > how can i configure an "ext interrupt" to high-level? I want a interrup=
+tion on
+> > IRQ2, but I checked with an oscilloscope that the pin has a low state a=
+nd I
+> > needs a high state.
+> >
+> > I have tried, after I got the irq (with irq_of_parse_and_map), set it w=
+ith
+> >
+> >     set_irq_type(irq, IRQ_TYPE_LEVEL_HIGH);
+> >
+> > But I think it is a system-configuration (irq_desc) and no
+> > device-configuration.
+>=20
+> You shouldn't need to do this.  You set your sense level in the device tr=
+ee.
+>=20
+> From your previous email, your device node looks like this:
+> >             intpin@0 {
+> >                 interrupt-parent =3D <500>;
+> >                 interrupts =3D <1 2 2>;
+> >             };
+>=20
+> Which is IRQ2, EDGE_FALLING.
+>=20
+> If you change your interrupts property to <1 2 0>, then your sense is
+> set to LEVEL_HIGH.  (Seriously, you need to read the interrupts
+> section of Documentation/powerpc/mpc52xx-device-tree-bindings.txt.)
 
-Moved the EXPORT_SYMBOL(ppc_ide_md) from ppc_ksysms.c next to its declaration
-in setup_32.c
+I have read it! But another driver on Boot-time pulled my interrupt to low,=
+ I
+can't do anything except for looking at the oscilloscope
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+I'm going to disable all unneeded drivers tomorrow morning.
 
-I tested that the code builds with this patch in various combinations of
-configuration options: all the combinations involving BLOCK, IDE and BLK_DEV_IDE
- 
-A patch for the warnings above has been already commited here: http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=49892223f7d3a2333ef9e6cbdd526676e1fc517a
+TIA:
+Silvio Fricke
 
-This a patch against Paul's tree (75cdff9242c4e048cb830d359920719d29b9ee7c)
+--=20
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)
+   Linux-Entwicklung
+----------------------------------------------------------------------------
 
-powerpc> scripts/checkpatch.pl 0001-POWERPC-Fix-build-errors-when-BLOCK-n.patch
-Your patch has no obvious style problems and is ready for submission.
 
- arch/powerpc/kernel/ppc_ksyms.c |    7 +++----
- arch/powerpc/kernel/setup_32.c  |    5 +++++
- 2 files changed, 8 insertions(+), 4 deletions(-)
+--HcccYpVZDxQ8hzPO
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index 430c502..f00cba3 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -12,12 +12,15 @@
- #include <linux/irq.h>
- #include <linux/pci.h>
- #include <linux/delay.h>
-+#if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE)
- #include <linux/ide.h>
-+#endif
- #include <linux/bitops.h>
- 
- #include <asm/page.h>
- #include <asm/semaphore.h>
- #include <asm/processor.h>
-+#include <asm/cacheflush.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include <asm/atomic.h>
-@@ -95,10 +98,6 @@ EXPORT_SYMBOL(__strnlen_user);
- EXPORT_SYMBOL(copy_4K_page);
- #endif
- 
--#if defined(CONFIG_PPC32) && (defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE))
--EXPORT_SYMBOL(ppc_ide_md);
--#endif
--
- #if defined(CONFIG_PCI) && defined(CONFIG_PPC32)
- EXPORT_SYMBOL(isa_io_base);
- EXPORT_SYMBOL(isa_mem_base);
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index a288a5f..7474502 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -10,7 +10,9 @@
- #include <linux/reboot.h>
- #include <linux/delay.h>
- #include <linux/initrd.h>
-+#if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE)
- #include <linux/ide.h>
-+#endif
- #include <linux/tty.h>
- #include <linux/bootmem.h>
- #include <linux/seq_file.h>
-@@ -49,7 +51,10 @@
- 
- extern void bootx_init(unsigned long r4, unsigned long phys);
- 
-+#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
- struct ide_machdep_calls ppc_ide_md;
-+EXPORT_SYMBOL(ppc_ide_md);
-+#endif
- 
- int boot_cpuid;
- EXPORT_SYMBOL_GPL(boot_cpuid);
--- 
-1.5.3.GIT
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8XIa8WEBxatmn40RAk00AJ9U+PSxGr0umGkQOWyfbaYwwbEj/wCgtnF8
+K7UQHcJCySN0Ah80548z3o0=
+=SS+/
+-----END PGP SIGNATURE-----
+
+--HcccYpVZDxQ8hzPO--
