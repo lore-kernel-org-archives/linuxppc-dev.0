@@ -1,23 +1,23 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 385A7DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 09:21:58 +1000 (EST)
-Date: Tue, 18 Sep 2007 09:55:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: [PATCH 23/28] mpc82xx: Define CPU_FTR_NEED_COHERENT
-Message-ID: <20070918145503.GG441@ld0162-tx32.am.freescale.net>
-References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165815.GW6563@loki.buserror.net>
-	<DCEAAC0833DD314AB0B58112AD99B93B0360A803@ismail.innsys.innovsys.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3208DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 10:09:49 +1000 (EST)
+Date: Wed, 19 Sep 2007 04:09:40 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] [RFC][POWERPC] Merge 32 and 64 bit
+	pci_process_bridge_OF_ranges() instances
+Message-ID: <20070919040940.557ad12f@localhost.localdomain>
+In-Reply-To: <46EFE300.1090108@ru.mvista.com>
+References: <20070911224952.9838.46644.stgit@localhost.localdomain>
+	<46EFBEA6.4050406@ru.mvista.com>
+	<20070918182704.640c677f@localhost.localdomain>
+	<46EFE300.1090108@ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0360A803@ismail.innsys.innovsys.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 09:34:31AM -0500, Rune Torgersen wrote:
-> > -----Original Message-----
-> > From: Scott Wood
-> > Sent: Monday, September 17, 2007 11:58 AM
-> > 
-> > The 8272 (and presumably other PCI PQ2 chips) appear to have the
-> > same issue as the 83xx regarding PCI streaming DMA.
-> > 
-> 
-> Can you explain what this isssue is? We're using a 8280 and have had
-> some PCI busmaster DMA problems, and wonder if it is related.
+Hello Valentine,
 
-I'm not sure of the details, just that I get corrupted PCI DMA if I don't
-set it.
+On Tue, 18 Sep 2007 18:38:56 +0400
+Valentine Barshak wrote:
 
-BTW, if the problems you're seeing include lockups when using PCI DMA,
-check out the end of the PCI initialization in
-arch/powerpc/boot/cuboot-pq2.c; it requires certain non-default arbiter
-settings.
+> Well, thanks for the invitation :)
+> I've been trying to work on the pci support here too. But I've used a 
+> bit different approach. I tried to add 64-bit phys addr support to 
+> pci_32.c. The patch seems to work on Sequoia. Actually, I thought 
+> merging was too risky at this point and might cause more problems 
+> breaking both 64 and 32-bit pci support.
 
--Scott
+In order not to break, we just need same functionality and it is not that complex.
+I began with the upper approach as well, but that seems more like a workaround, than a step forward.
+
+-- 
+Sincerely, Vitaly
