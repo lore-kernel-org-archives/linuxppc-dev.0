@@ -1,20 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 341CFDDEBD
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 02:56:10 +1000 (EST)
-Message-ID: <46F15466.6000803@ru.mvista.com>
-Date: Wed, 19 Sep 2007 20:55:02 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <mel@skynet.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 48765DDF0A
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 03:01:46 +1000 (EST)
+Date: Wed, 19 Sep 2007 17:29:32 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: 2.6.23-rc6-mm1: kgdb support on ppc64 utterly broken
+Message-ID: <20070919162932.GH14817@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070918174408.GC1804@skynet.ie>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] usb: ehci-ppc-of dts bindings.
-References: <20070917130005.GA29654@ru.mvista.com>
-	<19e5f15308dfb8e60e2e49379666d00a@kernel.crashing.org>
-	<46F1299A.1000508@ru.mvista.com>
-	<d0e5786123822b4d178932d9048f6a22@kernel.crashing.org>
-In-Reply-To: <d0e5786123822b4d178932d9048f6a22@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20070918174408.GC1804@skynet.ie>
+From: mel@skynet.ie (Mel Gorman)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,80 +25,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>> +  Required properties:
->>>> +  - device_type : should be "usb".
->>> No device_type please.  The published USB binding doesn't define
->>> one on purpose.
->>
->> Could you please, explain why?
->> Sorry, I don't think I get the concept of device description here.
+On (18/09/07 18:44), Mel Gorman didst pronounce:
+> Hi Andrew,
 > 
-> "device_type" is meant to be used only by OF for determining the OF
-> programming model for a device.  No such thing has been defined for
-> USB busses, so the USB binding does not define a "device_type" either.
-> 
-> Nothing in a flat device tree should ever define a device_type, except
-> perhaps for compatibility with legacy kernel code.
-> 
->>>> +  - compatible : should be "ehci".
->>> Just "ehci" isn't enough -- compare to OHCI, which is the name for
->>> a kind of USB host controller as well as for a kind of Firewire
->>> host controller.
->>
->> Actually, I though device type="usb" + compatible="ehci" would be enough.
-> 
-> "compatible" values are their own namespace, you should in principle
-> be able to find a driver for a device with them without having to look
-> at other properties.
-> 
->>> Maybe "usb-ehci" is best -- can anyone think of a better name?
->>
->> Again, why not type="usb", compatible="ehci"?
-> 
-> Because an OF client (i.e., the Linux kernel) is not supposed to use
-> "device_type" at all for its own driver matching.
-> 
->>>> +  - interrupts : <a b> where a is the interrupt number and b is a
->>>> +    field that represents an encoding of the sense and level
->>>> +    information for the interrupt.
->>> This is incorrect; not all interrupt domains use two cells, and
->>> not all that do have this meaning for those cells.
->>
->> Well, this was just copied from other descriptions in 
->> Documentation/powerpc/booting-without-of.txt
->> Do we need to fix them all?
-> 
-> Sounds like it, yes.
-> 
->>>> +  If device registers are implemented in big endian mode, the device
->>>> +  node should have "big-endian" property.
->>>> +  If controller implementation operates with big endian descriptors,
->>>> +  compatible should also have "ehci-be-desc"
->>> Ah, I understand what this is about, finally.
->>> Don't put this in "compatible"; instead, do a "big-endian-descriptors"
->>> property similar to the "big-endian" property.  That last one should
->>> maybe be "big-endian-registers" here then, to avoid confusion.
->>> Or make "big-endian" mean both big-endian registers *and* big-endian
->>> descriptors.
->>
->> But doesn't "big-endian" property actually mean "big-endian-registers"?
->> Do we have to overload property meaning in this case?
-> 
-> It doesn't *have* a standard meaning, it is defined per device binding
-> that uses it.  Just make it mean whatever is most logical for this
-> device.
-> 
->>> I have no opinion which is best; it depends on what configurations
->>> actually exist, and how popular those are.
-> 
-> 
-> Segher
+> IA64 failed to build in kgdb with the messages
 > 
 
-OK, thanks a lot for the explanations.
-I'll modify the code.
-I think may be usb-ohci compatible values should be made properties as well,
-so that both drivers follow the same rules.
-Thanks,
-Valentine.
+ppc64 kgdb support is also broken but in a much more fundamental manner.
+allmodconfig shows up
+
+In file included from include/linux/kgdb.h:22,
+                 from arch/powerpc/kernel/legacy_serial.c:15:
+include/asm/kgdb.h:34: error: 'debugger' redeclared as different kind of symbol
+include/asm/system.h:85: error: previous definition of 'debugger' was here
+include/asm/kgdb.h:35: error: 'debugger_bpt' redeclared as different kind of symbol
+include/asm/system.h:87: error: previous definition of 'debugger_bpt' was here
+include/asm/kgdb.h:36: error: 'debugger_sstep' redeclared as different kind of symbol
+include/asm/system.h:88: error: previous definition of 'debugger_sstep' was here
+include/asm/kgdb.h:37: error: 'debugger_iabr_match' redeclared as different kind of symbol
+include/asm/system.h:89: error: previous definition of 'debugger_iabr_match' was here
+include/asm/kgdb.h:38: error: 'debugger_dabr_match' redeclared as different kind of symbol
+include/asm/system.h:90: error: previous definition of 'debugger_dabr_match' was here
+include/asm/kgdb.h:39: error: 'debugger_fault_handler' redeclared as different kind of symbol
+include/asm/system.h:91: error: previous definition of 'debugger_fault_handler' was here
+In file included from arch/powerpc/kernel/legacy_serial.c:15:
+include/linux/kgdb.h:69: error: `BREAK_INSTR_SIZE' undeclared here (not in a function)
+make[1]: *** [arch/powerpc/kernel/legacy_serial.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
+
+I cleared the redeclarations up and put in some defines but there is
+much more fundamental breakage like
+
+kernel/kgdb.c:122: error: `BUFMAX' undeclared here (not in a function)
+kernel/kgdb.c:128: error: `NUMCRITREGBYTES' undeclared here (not in a function)
+kernel/kgdb.c: In function `write_mem_msg':
+kernel/kgdb.c:554: error: `CACHE_FLUSH_IS_SAFE' undeclared (first use in this function)
+kernel/kgdb.c:554: error: (Each undeclared identifier is reported only once
+kernel/kgdb.c:554: error: for each function it appears in.)
+kernel/kgdb.c: In function `getthread':
+kernel/kgdb.c:615: error: implicit declaration of function `kgdb_get_shadow_thread'
+kernel/kgdb.c:616: warning: return makes pointer from integer without a cast
+kernel/kgdb.c: In function `kgdb_activate_sw_breakpoints':
+kernel/kgdb.c:719: error: `CACHE_FLUSH_IS_SAFE' undeclared (first use in this function)
+kernel/kgdb.c: In function `kgdb_deactivate_sw_breakpoints':
+kernel/kgdb.c:784: error: `CACHE_FLUSH_IS_SAFE' undeclared (first use in this function)
+kernel/kgdb.c: In function `kgdb_handle_exception':
+kernel/kgdb.c:956: error: implicit declaration of function `kgdb_skipexception'
+kernel/kgdb.c:1036: error: implicit declaration of function `kgdb_disable_hw_debug'
+kernel/kgdb.c:1072: error: implicit declaration of function `kgdb_post_master_code'
+kernel/kgdb.c:1153: error: implicit declaration of function `kgdb_shadow_regs'
+kernel/kgdb.c:1156: warning: assignment makes pointer from integer without a cast
+kernel/kgdb.c:1333: error: implicit declaration of function `kgdb_shadowinfo'
+kernel/kgdb.c: In function `breakpoint':
+kernel/kgdb.c:1891: error: implicit declaration of function `BREAKPOINT'
+kernel/kgdb.c: At top level:
+kernel/kgdb.c:122: error: storage size of `remcom_in_buffer' isn't known
+kernel/kgdb.c:123: error: storage size of `remcom_out_buffer' isn't known
+kernel/kgdb.c:129: error: storage size of `kgdb_fault_jmp_regs' isn't known
+kernel/kgdb.c:853: error: storage size of `gdbmsgbuf' isn't known
+kernel/kgdb.c:122: warning: 'remcom_in_buffer' defined but not used
+kernel/kgdb.c:123: warning: 'remcom_out_buffer' defined but not used
+kernel/kgdb.c:853: warning: 'gdbmsgbuf' defined but not used
+make[1]: *** [kernel/kgdb.o] Error 1
+make: *** [kernel] Error 2
+
+Even with the defines fixed up, I don't know what to do about
+kgdb_skipexception() and friends because frankly I don't know what I'm
+doing with kgdb. linuxppc-dev added to cc list this time in case they have
+something useful.
+
+The best I was able to come up with as a candidate fix was to disable
+kgdb on ppc64 altogether. This is a cop-out, not a fix, sorry.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ Kconfig.kgdb |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-020_fix_acpi/lib/Kconfig.kgdb linux-2.6.23-rc6-mm1-025_fix_ppc64_kgdb/lib/Kconfig.kgdb
+--- linux-2.6.23-rc6-mm1-020_fix_acpi/lib/Kconfig.kgdb	2007-09-18 11:29:30.000000000 +0100
++++ linux-2.6.23-rc6-mm1-025_fix_ppc64_kgdb/lib/Kconfig.kgdb	2007-09-19 15:54:23.000000000 +0100
+@@ -14,7 +14,7 @@ config KGDB
+ 	bool "KGDB: kernel debugging with remote gdb"
+ 	select WANT_EXTRA_DEBUG_INFORMATION
+ 	select KGDB_ARCH_HAS_SHADOW_INFO if X86_64
+-	depends on DEBUG_KERNEL && (ARM || X86 || MIPS || (SUPERH && !SUPERH64) || IA64 || PPC)
++	depends on DEBUG_KERNEL && (ARM || X86 || MIPS || (SUPERH && !SUPERH64) || IA64)
+ 	help
+ 	  If you say Y here, it will be possible to remotely debug the
+ 	  kernel using gdb.  Documentation of kernel debugger is available
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
