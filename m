@@ -1,30 +1,23 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id C5C7CDDEF5
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7B2DDDDFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 04:44:57 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so235650rvf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 11:44:56 -0700 (PDT)
-Message-ID: <9e4733910709191144l6ddb66eaq84f3d1488bcf1443@mail.gmail.com>
-Date: Wed, 19 Sep 2007 14:44:56 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Domen Puncer" <domen@coderock.org>
-Subject: Re: [PATCH] phy: export phy_mii_ioctl
-In-Reply-To: <20070919115621.GI32628@nd47.coderock.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-	<20070917202140.GB2642@nd47.coderock.org>
-	<9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
-	<20070918151622.GD32628@nd47.coderock.org>
-	<9e4733910709181217v417438s85bb9e6b4ad4b475@mail.gmail.com>
-	<20070919115621.GI32628@nd47.coderock.org>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Thu, 20 Sep 2007 05:06:08 +1000 (EST)
+Subject: Re: Problem booting linux with device tree table
+From: Jon Loeliger <jdl@freescale.com>
+To: Bartlomiej Sieka <tur@semihalf.com>
+In-Reply-To: <46EF8715.4030707@semihalf.com>
+References: <7B9A8FF57DBB524190E98CABF6E56F070B9298@itri.bte.mam.gov.tr>
+	<46EF8715.4030707@semihalf.com>
+Content-Type: text/plain
+Message-Id: <1190228750.24204.6.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 19 Sep 2007 14:05:50 -0500
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,25 +28,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/19/07, Domen Puncer <domen@coderock.org> wrote:
-> Patch at the end.
-> When compiled as module use "modprobe fec_mpc52xx mac=foo",
-> when built-in add to boot line: "fec_mpc52xx.mac=foo"
+On Tue, 2007-09-18 at 03:06, Bartlomiej Sieka wrote:
 
-This patch series is working for me now.
+> The following switches to dtc taken from
+> http://www.denx.de/wiki/UBoot/UBootFdtInfo work for me:
+> 
+> dtc -b 0 -V 17 -R 4 -S 0x3000 -I dts -O dtb -f tqm5200.dts > tqm5200.dtb
 
-This needs a cleanup too, but it is unrelated....
+-V 17 is the current default, btw.
 
-  CC      drivers/serial/mpc52xx_uart.o
-drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_console_setup':
-drivers/serial/mpc52xx_uart.c:760: warning: format '%lx' expects type
-'long unsigned int', but argument 2 has type 'resource_size_t'
-drivers/serial/mpc52xx_uart.c: In function 'mpc52xx_uart_of_probe':
-drivers/serial/mpc52xx_uart.c:978: warning: format '%lx' expects type
-'long unsigned int', but argument 3 has type 'resource_size_t'
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+jdl
