@@ -1,15 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Sep 2007 13:16:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 08/28] bootwrapper: Use fsl_get_immr() in cuboot-pq2.c.
-Message-ID: <20070919031631.GJ23646@localhost.localdomain>
-References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165737.GH6563@loki.buserror.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917165737.GH6563@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <18160.39896.132391.625791@cargo.ozlabs.ibm.com>
+Date: Wed, 19 Sep 2007 13:47:36 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+In-Reply-To: <20070806065857.GN4529@moe.telargo.com>
+References: <20070711093113.GE4375@moe.telargo.com>
+	<20070711093220.GF4375@moe.telargo.com>
+	<20070806065857.GN4529@moe.telargo.com>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 11:57:37AM -0500, Scott Wood wrote:
+Domen Puncer writes:
 
-Needs a commit comment
+> Paul, what do you say about this?
+> Sylvain suggested it could also be integrated with define_machine
+> interface.
 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+As it stands, your patch adds the clk_* functions on all platforms.
+What platforms would actually want to use them?
 
-
-> ---
->  arch/powerpc/boot/cuboot-pq2.c |   10 ++++------
->  1 files changed, 4 insertions(+), 6 deletions(-)
-> 
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
