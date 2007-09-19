@@ -1,18 +1,24 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 4507DDDE40
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 16:53:30 +1000 (EST)
-Date: Wed, 19 Sep 2007 16:53:29 +1000
-To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/5] Implement {read,update}_persistent_clock.
-Message-ID: <20070919065329.GU9814@bakeyournoodle.com>
-References: <1190184586.867449.381310088392.qpush@thor>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1190184586.867449.381310088392.qpush@thor>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7400EDDE2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 16:56:42 +1000 (EST)
+Date: Wed, 19 Sep 2007 16:56:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: travis@sgi.com
+Subject: Re: [PATCH 1/1] ppc64: Convert cpu_sibling_map to a per_cpu data
+	array ppc64 v2
+Message-Id: <20070919165623.8a59f4dd.sfr@canb.auug.org.au>
+In-Reply-To: <20070917183507.506104000@sgi.com>
+References: <20070917183507.332345000@sgi.com>
+	<20070917183507.506104000@sgi.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd"
+Cc: linux-mm@kvack.org, Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2007 at 04:49:46PM +1000, Tony Breeds wrote:
-> With these functions implemented we cooperate better with the generic
-> timekeeping code.  This obsoletes the need for the timer sysdev as a bonus.
+--Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I should have added that this patch series applies on top of Benh's 601
-fixes.
+Hi Mike,
 
-Yours Tony
+On Mon, 17 Sep 2007 11:35:08 -0700 travis@sgi.com wrote:
+>
+> v2:=20
+>=20
+> This patch applies after:
+>=20
+> 	convert-cpu_sibling_map-to-a-per_cpu-data-array-ppc64.patch
+>=20
+> and should fix the "reference cpu_sibling_map before setup_per_cpu_areas()
+> has been called" problem.  In addtion, the cpu_sibiling_map macro has been
+> removed [this was missed in my original submission.]
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+This one make it work, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG8MggTgG2atn1QN8RAg/qAJ4+XjXxXxwprLwXZuKNOD0jdLARgACdG056
+Ai/YzTQTgEZk3/c/IlVva5w=
+=vBAz
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__19_Sep_2007_16_56_23_+1000_I.2xQApTY_b1iczd--
