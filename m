@@ -1,13 +1,13 @@
 Return-Path: <carcadiz@hotmail.com>
-Received: from bay0-omc2-s6.bay0.hotmail.com (bay0-omc2-s6.bay0.hotmail.com
-	[65.54.246.142]) by ozlabs.org (Postfix) with ESMTP id 975A5DDD0D
+Received: from bay0-omc2-s16.bay0.hotmail.com (bay0-omc2-s16.bay0.hotmail.com
+	[65.54.246.152]) by ozlabs.org (Postfix) with ESMTP id 3DF60DE059
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 18:54:15 +1000 (EST)
-Message-ID: <BLU106-W49D16A32DDFE2611E15371CAB90@phx.gbl>
+	Wed, 19 Sep 2007 18:54:42 +1000 (EST)
+Message-ID: <BLU106-W335FC371C9CDF56DA33F54CAB90@phx.gbl>
 From: "Pedro Luis D. L." <carcadiz@hotmail.com>
 To: Jon Smirl <jonsmirl@gmail.com>, Domen Puncer <domen@coderock.org>
 Subject: RE: [PATCH] phy: export phy_mii_ioctl
-Date: Wed, 19 Sep 2007 10:54:13 +0200
+Date: Wed, 19 Sep 2007 10:54:39 +0200
 In-Reply-To: <9e4733910709181229m4afe7ecr56e2411f52a84232@mail.gmail.com>
 References: <20070810095153.GC13994@moe.telargo.com>
 	<20070902074143.GB2642@nd47.coderock.org>
