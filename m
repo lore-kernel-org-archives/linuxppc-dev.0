@@ -1,21 +1,21 @@
 Return-Path: <l.butterz@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 1B4BBDDDF3
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
+	by ozlabs.org (Postfix) with ESMTP id 56D1ADDE1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 17:04:13 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so283506pyi
+	Wed, 19 Sep 2007 17:40:08 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so305588pyi
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 00:04:13 -0700 (PDT)
-Message-ID: <53b5d6e90709190004o5a84a7d1ve9eece397511ce5a@mail.gmail.com>
-Date: Wed, 19 Sep 2007 11:04:12 +0400
+	Wed, 19 Sep 2007 00:40:07 -0700 (PDT)
+Message-ID: <53b5d6e90709190040p16571ab9x7fce2c527810de37@mail.gmail.com>
+Date: Wed, 19 Sep 2007 11:40:07 +0400
 From: "Leopold Stotch" <l.butterz@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Wolfgang Denk" <wd@denx.de>
 Subject: Re: PSC in UART mode on TQM5200S
-In-Reply-To: <fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
+In-Reply-To: <20070918223857.11329247FE@gemini.denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
-	<fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
+	<20070918223857.11329247FE@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,101 +27,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you for the answer, Grant !
-I knew nothing about port_config register before your answer :-(
-I haven't changed any processor registers yet
-because i'm still searching where i can do this.
-Can you tell me, is it UBoot specific or kernel specific or both ?
-And i already know about MPC5200's device tree in 2.6.x kernel but not
-in 2.4.x...
+Thank you for the answer, Wolfgang !
+Yes, we made a custom board which implements UART's
+instead of USB, keyboard, mouse and others...
+I checked the baudrate and i think it's ok.
+Can you tell me, please, is there any HOWTO about MPC5200's
+PSC's reconfiguration or something for newbies ?
 
-On 9/18/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 9/18/07, Leopold Stotch <l.butterz@gmail.com> wrote:
-> > Hello, everyone !
+
+On 9/19/07, Wolfgang Denk <wd@denx.de> wrote:
+> In message <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com> you wrote:
 > >
-> > I have TQM5200S module and development board.
-> > It runs factory UBoot and latest DENX's linuxppc_2_4_devel kernel.
-> > I want to configure all TQM5200S's onboard PSC's as UART's.
-> >  TQM5200S's onboard PSC's are connected to custom board
-> >  that makes all electrical things as my hardware engineer says...
-> > So changed
-> > $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
+> > So changed $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
 > > the following way:
-> >
-> > #ifdef CONFIG_PS2MULT
-> > #define RS_TABLE_SIZE  4
-> > #else
-> > #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
-> > #define RS_TABLE_SIZE  2
-> > #elif defined(CONFIG_CAM5200)
-> > #define RS_TABLE_SIZE  6
-> > #else
-> > #define RS_TABLE_SIZE  3
-> > #endif
-> > #endif
-> >
-> > changed to
-> >
-> > #ifdef CONFIG_PS2MULT
-> > #define RS_TABLE_SIZE  4
-> > #else
-> > #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
-> > #define RS_TABLE_SIZE  2
-> > #elif defined(CONFIG_CAM5200)
-> > #define RS_TABLE_SIZE  6
-> > #else
-> > #define RS_TABLE_SIZE  6
-> > #endif
-> > #endif
-> >
-> > and
-> >
-> > #else /* default */
-> > #define SERIAL_PORT_DFNS    \
-> >     STD_PSC_OP(1)        \
-> >     STD_PSC_OP(2)        \
-> >     STD_PSC_OP(3)
-> > #endif
-> >
-> > changed to
-> >
-> > #else /* default */
-> > #define SERIAL_PORT_DFNS    \
-> >     STD_PSC_OP(1)        \
-> >     STD_PSC_OP(2)        \
-> >     STD_PSC_OP(3)        \
-> >     STD_PSC_OP(4)        \
-> >     STD_PSC_OP(5)        \
-> >     STD_PSC_OP(6)
-> > #endif
-> >
-> > After rebuilding the kernel, dmesg says:
-> >
-> > ...
-> > ttyS0 on PSC1
-> > ttyS1 on PSC2
-> > ttyS2 on PSC3
-> > ttyS3 on PSC4
-> > ttyS4 on PSC5
-> > ttyS5 on PSC6
-> > ...
-> >
-> > But when i do "echo 1 > /dev/ttyS4" i receive nothing at the other end.
 >
-> Have you made the appropriate changes to the port_config register?
+> Well, you have to unserstand *exactly* what the CPU and the board are
+> doing - the MPC5200 has multiplexed pins, and if you select one
+> function you lose a few others, so you must carefully check for
+> conflicts. Probably you will have to disable some other functions.
+> Also you have to usnerstand what the board is designed like - some
+> ports have specific and reserved functions.
 >
-> Cheers,
-> g.
+> Finally, there are such things like wrong baud rate on a serial port
+> which may make you think it's not working while you are just using bad
+> user mode settings.
+>
+> > Is it possible to reconfigure all PSC's as UART's ?
+>
+> Yes, it is. But you have to know what you are doing.
 >
 >
+> Best regards,
+>
+> Wolfgang Denk
 >
 > --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
+> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> All a hacker needs is a tight PUSHJ, a loose pair of UUOs, and a warm
+> place to shift.
 >
-
 
 
 -- 
