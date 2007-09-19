@@ -1,21 +1,32 @@
-Return-Path: <silvio.fricke@googlemail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
-	by ozlabs.org (Postfix) with ESMTP id 2AD37DDEA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 05:01:55 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so237741nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 12:01:54 -0700 (PDT)
-Date: Wed, 19 Sep 2007 21:01:46 +0200
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
-Message-ID: <20070919190146.GI5682@sfrouter>
-References: <20070919115952.GF5682@sfrouter>
-	<fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HcccYpVZDxQ8hzPO"
-In-Reply-To: <fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
-From: "S. Fricke" <silvio.fricke@googlemail.com>
-Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A8A09DDEE8
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 05:13:04 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8JJD0UO027546
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:13:00 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8JJCxG6477736
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 13:13:00 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8JJCwZc022426
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 13:12:59 -0600
+Date: Wed, 19 Sep 2007 14:12:49 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: Sequoia kernel crash workaround.
+Message-ID: <20070919141249.61e6dc81@weaponx.rchland.ibm.com>
+In-Reply-To: <46F16CC9.3010003@ru.mvista.com>
+References: <46F16CC9.3010003@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 19 Sep 2007 22:39:05 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
---HcccYpVZDxQ8hzPO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I've observed kernel crashes on Sequoia board several times.
+> Kernel often crashes with high network/memory loads.
+> This is due to 440EPx h/w issue.
+> 
+> According to the errata:
+> CHIP_8: Incorrect Write to DDR SDRAM.
+> Category: 3
+> Overview:
+> The write address can be corrupted during writes to DDR SDRAM when write 
+> pipelining is enabled on PLB0. The probability of encountering the 
+> problem increases with the amount of back-pressure applied by the SDRAM.
+> Impact: Data can be written to the wrong address in SDRAM.
+> Workaround:
+> Disable write pipelining to DDR SDRAM by setting PLB4A0_ACR[WRP] = 0. 
+> Only primary write transfers are broadcast and the write address 
+> corruption is avoided.
 
-Hello,
+Ew.  That sounds nasty.
 
-> On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
-> > Hi,
-> >
-> > how can i configure an "ext interrupt" to high-level? I want a interrup=
-tion on
-> > IRQ2, but I checked with an oscilloscope that the pin has a low state a=
-nd I
-> > needs a high state.
-> >
-> > I have tried, after I got the irq (with irq_of_parse_and_map), set it w=
-ith
-> >
-> >     set_irq_type(irq, IRQ_TYPE_LEVEL_HIGH);
-> >
-> > But I think it is a system-configuration (irq_desc) and no
-> > device-configuration.
->=20
-> You shouldn't need to do this.  You set your sense level in the device tr=
-ee.
->=20
-> From your previous email, your device node looks like this:
-> >             intpin@0 {
-> >                 interrupt-parent =3D <500>;
-> >                 interrupts =3D <1 2 2>;
-> >             };
->=20
-> Which is IRQ2, EDGE_FALLING.
->=20
-> If you change your interrupts property to <1 2 0>, then your sense is
-> set to LEVEL_HIGH.  (Seriously, you need to read the interrupts
-> section of Documentation/powerpc/mpc52xx-device-tree-bindings.txt.)
+> Disabling write pipelining really helps.
+> Josh, David, what is the right place to put this workaround to?
+> 
+> Is it OK to do mtdcr(PLB4A0_ACR, mfdcr(PLB4A0_ACR) & ~PLB4_WRP); in
+> arch/powerpc/boot/cuboot-sequoia.c:sequoia_fixups()?
+> or
+> should this be done in
+> arch/powerpc/platforms/44x/sequoia.c:sequoia_setup_arch() 
+> with dcr_map, dcr_read/write stuff?
 
-I have read it! But another driver on Boot-time pulled my interrupt to low,=
- I
-can't do anything except for looking at the oscilloscope
+Hm, do you happen to know if AMCC is going to release a newer revision
+of 440EPx with that fixed?  If so, we should probably do it
+conditionally based off of PVR.
 
-I'm going to disable all unneeded drivers tomorrow morning.
+As for where to do it, I'd rather it be in sequoia_setup_arch() than
+the bootwrapper.  Eventually bootloaders like U-Boot will take a raw
+vmlinux so the wrapper won't even be there anymore.
 
-TIA:
-Silvio Fricke
+I don't see any reason to use the dcr_map stuff either.  Just check the
+PVR, check if the PLB is already set up correctly, and if not set it
+with the regular mfdcr/mtdcr functions.  And a comment about why that's
+being done would be good.
 
---=20
--- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
-   Diplom-Informatiker (FH)
-   Linux-Entwicklung
-----------------------------------------------------------------------------
+That's my $0.02 anyway.
 
-
---HcccYpVZDxQ8hzPO
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFG8XIa8WEBxatmn40RAk00AJ9U+PSxGr0umGkQOWyfbaYwwbEj/wCgtnF8
-K7UQHcJCySN0Ah80548z3o0=
-=SS+/
------END PGP SIGNATURE-----
-
---HcccYpVZDxQ8hzPO--
+josh
