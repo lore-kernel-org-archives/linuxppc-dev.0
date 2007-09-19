@@ -1,15 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Sep 2007 13:11:43 +1000
+Date: Wed, 19 Sep 2007 13:10:07 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/28] bootwrapper: Support all-in-one PCI nodes in
-	cuboot-pq2.
-Message-ID: <20070919031143.GG23646@localhost.localdomain>
+Subject: Re: [PATCH 04/28] Add early debug console for CPM serial ports.
+Message-ID: <20070919031007.GF23646@localhost.localdomain>
 References: <20070917165643.GA6545@loki.buserror.net>
-	<20070917165734.GE6563@loki.buserror.net>
+	<20070917165733.GD6563@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070917165734.GE6563@loki.buserror.net>
+In-Reply-To: <20070917165733.GD6563@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,15 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17, 2007 at 11:57:34AM -0500, Scott Wood wrote:
-> Consensus was reached to put PCI nodes at the root of the tree (and not
-> under /soc), but the phandle to a control node was rejected in favor of
-> simply not worrying about /pci/reg overlapping /soc/ranges.
+On Mon, Sep 17, 2007 at 11:57:33AM -0500, Scott Wood wrote:
+> This code assumes that the ports have been previously set up, with
+> buffers in DPRAM.
 > 
-> This updates cuboot-82xx to not look for the phandle.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-I preferred the split-node method, but as you say, this consensus has
-been reached for now.
+Looks sane as far as I can see.
 
 Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
