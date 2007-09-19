@@ -1,17 +1,22 @@
-Return-Path: <swarthou@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A178DDE24
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:10:03 +1000 (EST)
-From: Ed Swarthout <Ed.Swarthout@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 9C5B6DDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:28:43 +1000 (EST)
+Date: Wed, 19 Sep 2007 00:28:34 -0500
+From: Scott Wood <scottwood@freescale.com>
 To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc mm init_32 gdb regions
-Date: Wed, 19 Sep 2007 00:09:36 -0500
-Message-Id: <11901785761816-git-send-email-Ed.Swarthout@freescale.com>
-Cc: Ed Swarthout <Ed.Swarthout@freescale.com>
+Subject: Re: [PATCH 13/28] 8xx: Infrastructure code cleanup.
+Message-ID: <20070919052834.GA5801@ld0162-tx32.am.freescale.net>
+References: <20070917165643.GA6545@loki.buserror.net>
+	<20070917165742.GM6563@loki.buserror.net>
+	<20070919042533.GB30212@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070919042533.GB30212@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add memory regions to the kcore list for 32-bit machines.
-Since the entries are only 32-bit, keep under 4G.
+On Wed, Sep 19, 2007 at 02:25:33PM +1000, David Gibson wrote:
+> On Mon, Sep 17, 2007 at 11:57:42AM -0500, Scott Wood wrote:
+> > 1. Keep a global mpc8xx_immr mapping, rather than constantly
+> > creating temporary mappings.
+> 
+> Nice, but again, it seems a bit pointless to leave in all the
+> immr_map() / immr_unmap() pairs now that they do basically nothing.
 
-Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
----
+One step at a time. :-)
 
-Adapted from init_64.c
+Once arch/ppc is gone, I'd like to do some heavier cleanup of the CPM
+stuff, including merging with QE.  For now, I want to touch code that's
+shared between the architectures as little as possible.
 
- arch/powerpc/mm/init_32.c |   34 ++++++++++++++++++++++++++++++++++
- 1 files changed, 34 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index d65995a..d804c65 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -255,3 +255,37 @@ void free_initrd_mem(unsigned long start, unsigned long end)
- 	}
- }
- #endif
-+
-+static struct kcore_list kcore_vmem;
-+
-+static int __init setup_kcore(void)
-+{
-+	int i;
-+
-+	for (i=0; i < lmb.memory.cnt; i++) {
-+		unsigned long base, size;
-+		struct kcore_list *kcore_mem;
-+
-+		base = lmb.memory.region[i].base;
-+		size = lmb.memory.region[i].size;
-+
-+		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
-+		if (!kcore_mem)
-+			panic("%s: kmalloc failed\n", __FUNCTION__);
-+
-+		/* must stay under 32 bits */
-+		if ( 0xfffffffful - (unsigned long)__va(base) < size) {
-+			size = 0xfffffffful - (unsigned long)(__va(base));
-+			printk(KERN_DEBUG "setup_kcore: restrict size=%lx\n",
-+						size);
-+		}
-+
-+		kclist_add(kcore_mem, __va(base), size);
-+	}
-+
-+	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-+		VMALLOC_END-VMALLOC_START);
-+
-+	return 0;
-+}
-+module_init(setup_kcore);
--- 
-1.5.3.rc6.63.gf7c18
+-Scott
