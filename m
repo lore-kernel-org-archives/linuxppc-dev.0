@@ -1,18 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8514DDEC6
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:28:20 +1000 (EST)
-In-Reply-To: <11901785761816-git-send-email-Ed.Swarthout@freescale.com>
-References: <11901785761816-git-send-email-Ed.Swarthout@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE49FC96-0FEF-4EEA-BCAA-C5C4585F4491@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc mm init_32 gdb regions
-Date: Wed, 19 Sep 2007 15:31:23 -0500
-To: Ed Swarthout <Ed.Swarthout@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 20 Sep 2007 09:40:16 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "S. Fricke" <silvio.fricke@gmail.com>
+Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
+Message-ID: <20070919234016.GA14404@localhost.localdomain>
+References: <20070919115952.GF5682@sfrouter>
+	<fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
+	<20070919190146.GI5682@sfrouter>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
+In-Reply-To: <20070919190146.GI5682@sfrouter>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,64 +22,83 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 19, 2007, at 12:09 AM, Ed Swarthout wrote:
+--pf9I7BMVVzbSWLtt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Add memory regions to the kcore list for 32-bit machines.
-> Since the entries are only 32-bit, keep under 4G.
->
-> Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
-> ---
->
-> Adapted from init_64.c
->
->  arch/powerpc/mm/init_32.c |   34 ++++++++++++++++++++++++++++++++++
->  1 files changed, 34 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-> index d65995a..d804c65 100644
-> --- a/arch/powerpc/mm/init_32.c
-> +++ b/arch/powerpc/mm/init_32.c
-> @@ -255,3 +255,37 @@ void free_initrd_mem(unsigned long start,  
-> unsigned long end)
->  	}
->  }
->  #endif
-> +
+On Wed, Sep 19, 2007 at 09:01:46PM +0200, S. Fricke wrote:
+> Hello,
+>=20
+> > On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
+> > > Hi,
+> > >
+> > > how can i configure an "ext interrupt" to high-level? I want a interr=
+uption on
+> > > IRQ2, but I checked with an oscilloscope that the pin has a low state=
+ and I
+> > > needs a high state.
+> > >
+> > > I have tried, after I got the irq (with irq_of_parse_and_map), set it=
+ with
+> > >
+> > >     set_irq_type(irq, IRQ_TYPE_LEVEL_HIGH);
+> > >
+> > > But I think it is a system-configuration (irq_desc) and no
+> > > device-configuration.
+> >=20
+> > You shouldn't need to do this.  You set your sense level in the device =
+tree.
+> >=20
+> > From your previous email, your device node looks like this:
+> > >             intpin@0 {
+> > >                 interrupt-parent =3D <500>;
+> > >                 interrupts =3D <1 2 2>;
+> > >             };
+> >=20
+> > Which is IRQ2, EDGE_FALLING.
+> >=20
+> > If you change your interrupts property to <1 2 0>, then your sense is
+> > set to LEVEL_HIGH.  (Seriously, you need to read the interrupts
+> > section of Documentation/powerpc/mpc52xx-device-tree-bindings.txt.)
+>=20
+> I have read it! But another driver on Boot-time pulled my interrupt
 
-should this be #ifdef CONFIG_PROC_KCORE protected?
+Erm.. if the interrupt is shared with something else which expects a
+different trigger/polarity, you're kind of stuffed....
 
-> +static struct kcore_list kcore_vmem;
-> +
-> +static int __init setup_kcore(void)
-> +{
-> +	int i;
-> +
-> +	for (i=0; i < lmb.memory.cnt; i++) {
-> +		unsigned long base, size;
-> +		struct kcore_list *kcore_mem;
-> +
-> +		base = lmb.memory.region[i].base;
-> +		size = lmb.memory.region[i].size;
-> +
-> +		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
-> +		if (!kcore_mem)
-> +			panic("%s: kmalloc failed\n", __FUNCTION__);
-> +
-> +		/* must stay under 32 bits */
-> +		if ( 0xfffffffful - (unsigned long)__va(base) < size) {
-> +			size = 0xfffffffful - (unsigned long)(__va(base));
-> +			printk(KERN_DEBUG "setup_kcore: restrict size=%lx\n",
-> +						size);
-> +		}
-> +
-> +		kclist_add(kcore_mem, __va(base), size);
-> +	}
-> +
-> +	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> +		VMALLOC_END-VMALLOC_START);
-> +
-> +	return 0;
-> +}
-> +module_init(setup_kcore);
-> -- 
-> 1.5.3.rc6.63.gf7c18
+> to low, I can't do anything except for looking at the oscilloscope
+>=20
+> I'm going to disable all unneeded drivers tomorrow morning.
+>=20
+> TIA:
+> Silvio Fricke
+>=20
+
+
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--pf9I7BMVVzbSWLtt
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG8bNgaILKxv3ab8YRAsN3AJwIUiwbDq6NQt+Wc/8MDAhEP+mwuwCeOY+s
+0qA8+r5W7yUggJAcvJSTUiw=
+=bmDo
+-----END PGP SIGNATURE-----
+
+--pf9I7BMVVzbSWLtt--
