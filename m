@@ -1,17 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 20 Sep 2007 09:40:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "S. Fricke" <silvio.fricke@gmail.com>
-Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
-Message-ID: <20070919234016.GA14404@localhost.localdomain>
-References: <20070919115952.GF5682@sfrouter>
-	<fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
-	<20070919190146.GI5682@sfrouter>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id 0FC57DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 09:51:27 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so427934wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 16:51:26 -0700 (PDT)
+Message-ID: <fa686aa40709191651hcdcf8fi717b936d74c7129f@mail.gmail.com>
+Date: Wed, 19 Sep 2007 17:51:26 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: Patches for 2.6.24
+In-Reply-To: <fa686aa40709120902q28d4d8bcr93020005dcf4f6f7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="pf9I7BMVVzbSWLtt"
-In-Reply-To: <20070919190146.GI5682@sfrouter>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40709120848x4720554jc46c8cd9ae3f355@mail.gmail.com>
+	<B658701C-576E-459B-9FF4-BF43B429FCBB@kernel.crashing.org>
+	<fa686aa40709120902q28d4d8bcr93020005dcf4f6f7@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,84 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul,
 
---pf9I7BMVVzbSWLtt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here are the links to the patches I need pulled.
 
-On Wed, Sep 19, 2007 at 09:01:46PM +0200, S. Fricke wrote:
-> Hello,
->=20
-> > On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
-> > > Hi,
-> > >
-> > > how can i configure an "ext interrupt" to high-level? I want a interr=
-uption on
-> > > IRQ2, but I checked with an oscilloscope that the pin has a low state=
- and I
-> > > needs a high state.
-> > >
-> > > I have tried, after I got the irq (with irq_of_parse_and_map), set it=
- with
-> > >
-> > >     set_irq_type(irq, IRQ_TYPE_LEVEL_HIGH);
-> > >
-> > > But I think it is a system-configuration (irq_desc) and no
-> > > device-configuration.
-> >=20
-> > You shouldn't need to do this.  You set your sense level in the device =
-tree.
-> >=20
-> > From your previous email, your device node looks like this:
-> > >             intpin@0 {
-> > >                 interrupt-parent =3D <500>;
-> > >                 interrupts =3D <1 2 2>;
-> > >             };
-> >=20
-> > Which is IRQ2, EDGE_FALLING.
-> >=20
-> > If you change your interrupts property to <1 2 0>, then your sense is
-> > set to LEVEL_HIGH.  (Seriously, you need to read the interrupts
-> > section of Documentation/powerpc/mpc52xx-device-tree-bindings.txt.)
->=20
-> I have read it! But another driver on Boot-time pulled my interrupt
+Cheers,
+g.
 
-Erm.. if the interrupt is shared with something else which expects a
-different trigger/polarity, you're kind of stuffed....
-
-> to low, I can't do anything except for looking at the oscilloscope
->=20
-> I'm going to disable all unneeded drivers tomorrow morning.
->=20
-> TIA:
-> Silvio Fricke
->=20
+On 9/12/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 9/12/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> > On Sep 12, 2007, at 10:48 AM, Grant Likely wrote:
+> > > http://patchwork.ozlabs.org/linuxppc/patch?id=13235
+> > > http://patchwork.ozlabs.org/linuxppc/patch?id=13249
+> >
+> > bootwrapper patches should be ack'd by david gibson and picked up by
+> > paul at this point.
+>
+> Okay, David has already acked these.  Paulus, can you please pick them up?
 
 
-
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---pf9I7BMVVzbSWLtt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFG8bNgaILKxv3ab8YRAsN3AJwIUiwbDq6NQt+Wc/8MDAhEP+mwuwCeOY+s
-0qA8+r5W7yUggJAcvJSTUiw=
-=bmDo
------END PGP SIGNATURE-----
-
---pf9I7BMVVzbSWLtt--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
