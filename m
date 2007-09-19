@@ -1,26 +1,15 @@
-Return-Path: <domen@coderock.org>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id BFEA9DDE1B
+Return-Path: <reynekejunk@hotmail.com>
+Received: from bay0-omc1-s34.bay0.hotmail.com (bay0-omc1-s34.bay0.hotmail.com
+	[65.54.246.106]) by ozlabs.org (Postfix) with ESMTP id 86392DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 21:56:23 +1000 (EST)
-Date: Wed, 19 Sep 2007 13:56:21 +0200
-From: Domen Puncer <domen@coderock.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] phy: export phy_mii_ioctl
-Message-ID: <20070919115621.GI32628@nd47.coderock.org>
-References: <20070810095153.GC13994@moe.telargo.com>
-	<20070902074143.GB2642@nd47.coderock.org>
-	<fa686aa40709030857j6c36c87ek60215f812864ee0f@mail.gmail.com>
-	<20070915121444.GA19857@nd47.coderock.org>
-	<20070917095334.GA4546@powerlinux.fr>
-	<20070917202140.GB2642@nd47.coderock.org>
-	<9e4733910709171508s76c842c8hca236249617cbb44@mail.gmail.com>
-	<20070918151622.GD32628@nd47.coderock.org>
-	<9e4733910709181217v417438s85bb9e6b4ad4b475@mail.gmail.com>
+	Wed, 19 Sep 2007 23:54:40 +1000 (EST)
+Message-ID: <BAY101-F3306F36C70FAA4D450C466BEB90@phx.gbl>
+From: "- Reyneke" <reynekejunk@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Eth1 init and link status
+Date: Wed, 19 Sep 2007 13:54:35 +0000
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9e4733910709181217v417438s85bb9e6b4ad4b475@mail.gmail.com>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,74 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 18/09/07 15:17 -0400, Jon Smirl wrote:
-> On 9/18/07, Domen Puncer <domen@coderock.org> wrote:
-> > More testing and getting it to work properly on Phytec pcm030 would
-> > be great.
-> 
-> I compiled it as a module:
->   CC [M]  drivers/net/fec_mpc52xx/fec.o
-> drivers/net/fec_mpc52xx/fec.c:613: warning: 'mpc52xx_fec_mac_setup'
-> defined but not used
-> 
-> This code needs to be enclosed in "#ifndef MODULE". But why aren't you
-> using module_param() to make a string parameter and then copy it into
-> mpc52xx_fec_mac_addr[] if the parameter is not null?
+HI,
 
-Right,
+We've run into a bit of an odd problem and we are not sure where to go and 
+look for the cause.
 
-Patch at the end.
-When compiled as module use "modprobe fec_mpc52xx mac=foo",
-when built-in add to boot line: "fec_mpc52xx.mac=foo"
+We have some 440EPx based hardware with two GIG-Ethernet ports using RGMII 
+and 2x ET1011C PHY's. Problem is that eth1 will only initialise correctly 
+(i.e. receive and transmit) if eth0 has a link. Eth0 always work OK, 
+regardless of eth1 status. Eth1 will work OK if eth0 has a link (i.e. 
+initialised) at time of setup. Once initialised, eth0 status is irrelevant. 
+All this is during Linux boot process.
 
+Any ideas?
 
-As for link-up-printk in the middle of DHCP requests...
-is it really that big of a problem?
+We can access PHY registers via u-boot (mii commands). Same 1Gig link speed 
+is used on both ports. Linux kernel is 2.6.19.
 
-This sort of things happen when printk doesn't have the whole
-line... getting rid of link-up message would just hide it (it can show
-ie. when an usb device is bound to scsi layer).
+Regards
+   Jan Reyneke
 
-
-	Domen
-
----
- drivers/net/fec_mpc52xx/fec.c |   18 ++----------------
- 1 files changed, 2 insertions(+), 16 deletions(-)
-
-Index: linux.git/drivers/net/fec_mpc52xx/fec.c
-===================================================================
---- linux.git.orig/drivers/net/fec_mpc52xx/fec.c
-+++ linux.git/drivers/net/fec_mpc52xx/fec.c
-@@ -53,6 +53,8 @@ static void fec_start(struct net_device 
- static void fec_reset(struct net_device *dev);
- 
- static u8 mpc52xx_fec_mac_addr[6];
-+module_param_array_named(mac, mpc52xx_fec_mac_addr, byte, NULL, 0);
-+MODULE_PARM_DESC(mac, "six hex digits, ie. 0x1,0x2,0xc0,0x01,0xba,0xbe");
- 
- static void fec_tx_timeout(struct net_device *dev)
- {
-@@ -609,22 +611,6 @@ static void fec_set_multicast_list(struc
- 	}
- }
- 
--static int __init mpc52xx_fec_mac_setup(char *mac_address)
--{
--	int i;
--	u64 val64;
--
--	val64 = simple_strtoull(mac_address, NULL, 16);
--
--	for (i = 0; i < 6; i++)
--		mpc52xx_fec_mac_addr[5-i] = val64 >> (i*8);
--
--	return 0;
--}
--
--__setup("mpc52xx-mac=",mpc52xx_fec_mac_setup);
--
--
- /**
-  * fec_hw_init
-  * @dev: network device
+_________________________________________________________________
+Can you see your house from the sky? Try Live Search Maps 
+http://maps.live.com
