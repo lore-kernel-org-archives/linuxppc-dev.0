@@ -1,21 +1,19 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 51141DDE2F
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:43:44 +1000 (EST)
-Date: Wed, 19 Sep 2007 07:11:57 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
-Message-ID: <20070919051157.GH32628@nd47.coderock.org>
-References: <20070711093113.GE4375@moe.telargo.com>
-	<20070711093220.GF4375@moe.telargo.com>
-	<20070806065857.GN4529@moe.telargo.com>
-	<18160.39896.132391.625791@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18160.39896.132391.625791@cargo.ozlabs.ibm.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <eha@doredevelopment.dk>
+Received: from bq8.dotserv.com (bq8.dotserv.com [193.201.35.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A1223DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 17:05:21 +1000 (EST)
+Received: from bq8.dotserv.com (localhost [127.0.0.1])
+	by bq8.dotserv.com (8.13.1/8.13.1) with ESMTP id l8J75Ght027063
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 09:05:16 +0200
+To: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Where did the =?UTF-8?Q?fs=5Fenet=20patches=20go=3F?=
+MIME-Version: 1.0
+Date: Wed, 19 Sep 2007 09:05:16 +0200
+From: Esben Haabendal <eha@doredevelopment.dk>
+Message-ID: <fe1de3834843c215554ca03da0bc7eb3@127.0.0.1>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 19/09/07 13:47 +1000, Paul Mackerras wrote:
-> Domen Puncer writes:
-> 
-> > Paul, what do you say about this?
-> > Sylvain suggested it could also be integrated with define_machine
-> > interface.
-> 
-> As it stands, your patch adds the clk_* functions on all platforms.
-> What platforms would actually want to use them?
 
-52xx
-Reason for adding it to all was that EXPORT_SYMBOL's would clash if
-one were to add clk support for another platform.
+Hi
 
+Where did the patches containing the reworked fs_enet drivers and the generic bitbanged MDIO library go?
+I am talking about these 8 patches: http://www.mail-archive.com/linuxppc-dev@ozlabs.org/msg03184.html
 
-	Domen
+They seem to have been removed from http://patchwork.ozlabs.org/linuxppc/ ...
 
-> 
-> Paul.
+AFAICS, they have not been merged in neither galak or paulus git.
+
+It works nicely here at my mpc8270 target btw. :-)
+
+-- 
+Esben Haabendal
+Embedded Software Consultant
+Doré Development ApS
