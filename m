@@ -1,15 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Sep 2007 12:48:28 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: dtc: Add basic testcases for dtc
-Message-ID: <20070919024828.GD23646@localhost.localdomain>
-References: <20070918003340.GA30766@localhost.localdomain>
-	<E1IXeaz-0000lF-HQ@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IXeaz-0000lF-HQ@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD85CDDE18
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 13:01:16 +1000 (EST)
+Subject: Re: [PATCH] atyfb: force 29MHz xtal on G3 PowerBooks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20070825091358.GA12235@aepfle.de>
+References: <20070825091358.GA12235@aepfle.de>
+Content-Type: text/plain
+Date: Wed, 19 Sep 2007 13:01:06 +1000
+Message-Id: <1190170866.6403.133.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 10:02:37AM -0500, Jon Loeliger wrote:
-> So, like, the other day David Gibson mumbled:
-> > This patch adds a handful of simple testcases for dtc.  It adds a dts
-> > file which should generate the same sample tree as is used for the
-> > libfdt testcases, and tests invoking dtc on this dts, plus the
-> > standard batch of libfdt cases on the resulting dtb, which effectively
-> > checks that the dtb is correct.
-> > 
-> > Because the test framework assumes each testcase is an executable with
-> > the right output conventions, we use a little shell script, dtc.sh, as
-> > a wrapper around dtc itself.  It simply invokes dtc and returns a PASS
-> > or FAIL depending on whether dtc returned an error.
-> > 
-> > It's not much, but it's a start.
-> > 
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> 
-> 
-> Applied.
-> 
-> > NB: Jon, you won't be able to simply git-applymbox this and have it
-> > work.  You'll need to manually add execute permission to tests/dtc.sh
-> > before git commiting it, since I can't encode the permissions in a
-> > patch.  Sorry for the inconvenience, but it didn't really seem worth
-> > setting up my own git to pull from just for that.
-> 
-> No problem.  Too bad you can't just use git, though... :-)
+On Sat, 2007-08-25 at 11:13 +0200, Olaf Hering wrote:
+> The atyfb does not work on my 233MHz PowerBook with Mach64 LP, when the
+> kernel is booted from firmware. aty_ld_pll_ct() returns 0x22 and xtal
+> remains at 14.31818. When booted from MacOS, aty_ld_pll_ct() returns 0x3c
+> and xtal is changed to 29.498928.
+> Google indicates that all 4 PowerBook models need the higher value.
 
-Hrm.  Perhaps I should.  I've been working with patches, because it
-matches how I operate with the kernel, but I guess there would be some
-advantages to running my own dtc git branch.
+Seems to break it on my wallstreet first gen (M64 LG)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+So NAK for now until we find out a better way.
+
+Ben.
+
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -2411,7 +2411,7 @@ static int __devinit aty_init(struct fb_
+>  				diff1 = -diff1;
+>  			if (diff2 < 0)
+>  				diff2 = -diff2;
+> -			if (diff2 < diff1) {
+> +			if (diff2 < diff1 || (M64_HAS(G3_PB_1024x768))) {
+>  				par->ref_clk_per = 1000000000000ULL / 29498928;
+>  				xtal = "29.498928";
+>  			}
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
