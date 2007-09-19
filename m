@@ -1,32 +1,19 @@
-Return-Path: <Hesam.Kohanteb@Sun.COM>
-Received: from sca-es-mail-2.sun.com (sca-es-mail-2.Sun.COM [192.18.43.133])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CDE2FDDE21
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id D489DDDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 09:45:27 +1000 (EST)
-Received: from fe-sfbay-10.sun.com ([192.18.43.129])
-	by sca-es-mail-2.sun.com (8.13.7+Sun/8.12.9) with ESMTP id
-	l8INjN46007517 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Sep 2007 16:45:24 -0700 (PDT)
-Received: from conversion-daemon.fe-sfbay-10.sun.com by fe-sfbay-10.sun.com
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	id <0JOL00C018N6P700@fe-sfbay-10.sun.com>
-	(original mail from Hesam.Kohanteb@Sun.COM) for
-	linuxppc-embedded@ozlabs.org; Tue, 18 Sep 2007 16:45:23 -0700 (PDT)
-Received: from [129.145.155.189] by fe-sfbay-10.sun.com
-	(Sun Java System Messaging Server 6.2-8.04 (built Feb 28 2007))
-	with ESMTPSA id <0JOL00CBK8NN5700@fe-sfbay-10.sun.com> for
-	linuxppc-embedded@ozlabs.org; Tue, 18 Sep 2007 16:45:23 -0700 (PDT)
-Date: Tue, 18 Sep 2007 16:45:23 -0700
-From: Hesam Kohanteb <Hesam.Kohanteb@Sun.COM>
-Subject: Linux based MPC855 SPI driver
-Sender: Hesam.Kohanteb@Sun.COM
-To: linuxppc-embedded@ozlabs.org
-Message-id: <46F06313.8080007@Sun.COM>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Reply-To: Hesam.Kohanteb@Sun.COM
+	Wed, 19 Sep 2007 14:56:26 +1000 (EST)
+Date: Wed, 19 Sep 2007 06:56:25 +0200
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Jtag under Linux on MPC875
+Message-ID: <20070919045625.GA24471@powerlinux.fr>
+References: <f8f856500709180204r165d7b9dp4a8805dbfbe84d45@mail.gmail.com>
+	<20070918144905.GF441@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070918144905.GF441@ld0162-tx32.am.freescale.net>
+From: Sven Luther <sven@powerlinux.fr>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,15 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I urgently need to implement a Linux based SPI driver for MPC855.  Can 
-please point me to one if exists or to a similar one MPC823.
+On Tue, Sep 18, 2007 at 09:49:05AM -0500, Scott Wood wrote:
+> On Tue, Sep 18, 2007 at 11:04:27AM +0200, fabien wrote:
+> > I'm new in embedded system and i need some informations ...
+> > Which tool could i use to connect my board througt the JTAG connector ?
+> > My board is a custom board with a MPC875, and flash is S29GL032M. The probe
+> > that can i use is
+> > a PowerPC BDM windriver Probe 2.
+> > I'm looking for a tool running on linux.
+> 
+> The Abatron BDI2000 works well with Linux.
 
-Regards. --Hesam
+Indeed, but i was not able to put my MPC875 board in halt state once linux
+started running. I hear Vitaly has had similar problems too.
 
--- 
-Hesam Yehuda Kohanteb
-(Netra Systems & Networking), 
-M/S USCA12-216  4120 Network Circle
-Santa Clara, CA  95054
-(W) 408-276-7329 X17329, Fax 408-276-4552
+Wolfgang said it worked though, so this may be due to a hardware quirk
+or some misconfiguration or something. I am not really a bdi config file
+expert myself.
+
+Friendly,
+
+Sven Luther
