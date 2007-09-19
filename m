@@ -1,19 +1,26 @@
-Return-Path: <sam@ravnborg.org>
-Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
-	by ozlabs.org (Postfix) with ESMTP id A454CDDE1A
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 03:42:41 +1000 (EST)
-Date: Wed, 19 Sep 2007 19:44:03 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.23-rc6-mm1 -- powerpc link failure
-Message-ID: <20070919174403.GC3115@uranus.ravnborg.org>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070919092848.GG973@shadowen.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070919092848.GG973@shadowen.org>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D6BBFDDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 04:29:34 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l8JITTeI009737
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 11:29:30 -0700 (MST)
+Message-ID: <46F16A6A.8030802@freescale.com>
+Date: Wed, 19 Sep 2007 13:28:58 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] qe: miscellaneous code improvements and fixes to the
+	QE	library
+References: <11902199121734-git-send-email-timur@freescale.com>
+In-Reply-To: <11902199121734-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2007 at 10:28:48AM +0100, Andy Whitcroft wrote:
-> I am seeing this strange link error from a PowerMac G5 (powerpc):
-> 
->   [...]
->     KSYM    .tmp_kallsyms2.S
->     AS      .tmp_kallsyms2.o
->     LD      vmlinux.o
->   ld: dynreloc miscount for fs/built-in.o, section .opd
->   ld: can not edit opd Bad value
->   make: *** [vmlinux.o] Error 1
+Timur Tabi wrote:
+> -void qe_setbrg(u32 brg, u32 rate)
+> +void qe_setbrg(unsigned int brg, unsigned int rate, unsigned int multiplier)
+>  {
+>  	volatile u32 *bp;
 
-We have had this issue before.
-Try to see:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=045e72acf16054c4ed2760e9a8edb19a08053af1
+While you're at it, this should be __be32 __iomem *, no volatile.
 
-Here it was caused by a weak declaration that was superflous.
+> +/* Configure the UCC to either Slow or Fast.
+> + *
+> + * A given UCC can be figured to support either "slow" devices (e.g. UART)
+> + * or "fast" devices (e.g. Ethernet).
+> + *
+> + * 'ucc_num' is the UCC number, from 0 - 7.
+> + *
+> + * This function also sets the UCC_GUEMR_SET_RESERVED3 bit because that bit
+> + * must always be set to 1.
+> + */
+> +int ucc_set_type(unsigned int ucc_num, enum ucc_speed_type speed)
+>  {
+> -	u8 guemr = 0;
+> +	u8 __iomem *p_guemr;
 
-I expect the workaround to be equally simple this time - or I hope so.
+We don't do Hungarian notation in Linux. :-)
+What's wrong with just "u8 __iomem *guemr"?
 
-	Sam
+-Scott
