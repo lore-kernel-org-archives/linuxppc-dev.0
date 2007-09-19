@@ -2,13 +2,14 @@ Return-Path: <apw@shadowen.org>
 Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFCF2DDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 19:29:08 +1000 (EST)
-Date: Wed, 19 Sep 2007 10:28:48 +0100
+	by ozlabs.org (Postfix) with ESMTP id 8DAB9DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 19:36:28 +1000 (EST)
+Date: Wed, 19 Sep 2007 10:36:14 +0100
 From: Andy Whitcroft <apw@shadowen.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.23-rc6-mm1 -- powerpc link failure
-Message-ID: <20070919092848.GG973@shadowen.org>
+Subject: 2.6.23-rc6-mm1 -- powerpc pSeries_log_error panic in
+	rtas_call/early_enable_eeh
+Message-ID: <20070919093614.GH973@shadowen.org>
 References: <20070918011841.2381bd93.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,33 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am seeing this strange link error from a PowerMac G5 (powerpc):
+Seeing the following panic booting an old powerpc LPAR:
 
-  [...]
-    KSYM    .tmp_kallsyms2.S
-    AS      .tmp_kallsyms2.o
-    LD      vmlinux.o
-  ld: dynreloc miscount for fs/built-in.o, section .opd
-  ld: can not edit opd Bad value
-  make: *** [vmlinux.o] Error 1
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc000000000047b48
+cpu 0x0: Vector: 300 (Data Access) at [c0000000006a3750]
+    pc: c000000000047b48: .pSeries_log_error+0x364/0x420
+    lr: c000000000047acc: .pSeries_log_error+0x2e8/0x420
+    sp: c0000000006a39d0
+   msr: 8000000000001032
+   dar: 0
+ dsisr: 42000000
+  current = 0xc0000000005acab0
+  paca    = 0xc0000000005ad700
+    pid   = 0, comm = swapper
+enter ? for help
+[c0000000006a3af0] c000000000021164 .rtas_call+0x200/0x250
+[c0000000006a3ba0] c000000000049d50 .early_enable_eeh+0x168/0x360
+[c0000000006a3c70] c00000000002f674 .traverse_pci_devices+0x8c/0x138
+[c0000000006a3d10] c000000000560ce8 .eeh_init+0x1a8/0x200
+[c0000000006a3db0] c00000000055fb70 .pSeries_setup_arch+0x128/0x234
+[c0000000006a3e40] c00000000054f830 .setup_arch+0x214/0x24c
+[c0000000006a3ee0] c000000000546a38 .start_kernel+0xd4/0x3e4
+[c0000000006a3f90] c00000000045adc4 .start_here_common+0x54/0x58
+0:mon>
 
-Compiler version below.
+This machine is:
 
-root@elm3b19:~# gcc -v
-Using built-in specs.
-Target: powerpc-linux-gnu
-Configured with: ../src/configure -v
---enable-languages=c,c++,java,f95,objc,ada,treelang --prefix=/usr
---enable-shared --with-system-zlib --libexecdir=/usr/lib
---without-included-gettext --enable-threads=posix --enable-nls
---program-suffix=-4.0 --enable-__cxa_atexit --enable-clocale=gnu
---enable-libstdcxx-debug --enable-java-awt=gtk-default
---enable-gtk-cairo
---with-java-home=/usr/lib/jvm/java-1.4.2-gcj-4.0-1.4.2.0/jre
---enable-mpfr --disable-softfloat
---enable-targets=powerpc-linux,powerpc64-linux --with-cpu=default32
---disable-werror --enable-checking=release powerpc-linux-gnu
-Thread model: posix
-gcc version 4.0.3 (Ubuntu 4.0.3-1ubuntu5)
+# cat /proc/cpuinfo
+processor       : 0
+cpu             : POWER4+ (gq)
+clock           : 1703.965296MHz
+revision        : 19.0
+
+[...]
+machine         : CHRP IBM,7040-681
 
 -apw
