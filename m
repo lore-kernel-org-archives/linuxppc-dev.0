@@ -1,21 +1,21 @@
-Return-Path: <l.butterz@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 56D1ADDE1C
+Return-Path: <artunmurat@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id F1768DDE39
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 17:40:08 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so305588pyi
+	Wed, 19 Sep 2007 18:28:54 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so122502nfd
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 00:40:07 -0700 (PDT)
-Message-ID: <53b5d6e90709190040p16571ab9x7fce2c527810de37@mail.gmail.com>
-Date: Wed, 19 Sep 2007 11:40:07 +0400
-From: "Leopold Stotch" <l.butterz@gmail.com>
+	Wed, 19 Sep 2007 01:28:53 -0700 (PDT)
+Message-ID: <4e5a3720709190128o7bfa3ef0rb5d9d4ccd0bfd9a4@mail.gmail.com>
+Date: Wed, 19 Sep 2007 11:28:52 +0300
+From: "Murat Artun" <artunmurat@gmail.com>
 To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: PSC in UART mode on TQM5200S
-In-Reply-To: <20070918223857.11329247FE@gemini.denx.de>
+Subject: Re: cross compiling a library with ELDK
+In-Reply-To: <20070918224126.48196247FE@gemini.denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
-	<20070918223857.11329247FE@gemini.denx.de>
+References: <4e5a3720709180602g20ccc060hbf7f091839a18c99@mail.gmail.com>
+	<20070918224126.48196247FE@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,35 +27,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you for the answer, Wolfgang !
-Yes, we made a custom board which implements UART's
-instead of USB, keyboard, mouse and others...
-I checked the baudrate and i think it's ok.
-Can you tell me, please, is there any HOWTO about MPC5200's
-PSC's reconfiguration or something for newbies ?
+Wolfgang,
 
+Thanks for your response...
+
+I confess I did not read the whole documentation from scratch, but I
+have browsed many sections especially related with my issue. I should
+say it is always said in documentation that setting $CROSS_COMPILE
+environment variable is necessary, but that did not work for me.
+
+Specifically, I am trying to cross compile osip library with EDLK (not
+an ELDK component). When I execute the configure script I want the
+config.h to be generated to reflect the target system. As from your
+last response I understand that I always need to make sure by checking
+config.h file myself.
+
+After I have posted this problem I found the below thread:
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2003-July/011785.html
+
+Following the same, I have achieved generation of config.h by checking
+ELDK components and GNU cross tools to be prefixed with ppc_8xx.
+
+Although I was not able to build shared libraries with the generated
+makefile, building static libraries was OK. But it seems as if it is
+somehow difficult to cross build a SW component that is not a part of
+ELDK, and this is harder than "Rebuilding ELDK Components" which is
+specified to be so straightforward in the documentation.
+
+Thanks and regards...
 
 On 9/19/07, Wolfgang Denk <wd@denx.de> wrote:
-> In message <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com> you wrote:
+> In message <4e5a3720709180602g20ccc060hbf7f091839a18c99@mail.gmail.com> you wrote:
 > >
-> > So changed $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
-> > the following way:
+> > I want to cross compile a free software library with ELDK 3.1.1 for
+> > powerpc. I have ELDK installed under directory /opt and my system and
+> > PATH is set properly. I have a few points to be clarified:
 >
-> Well, you have to unserstand *exactly* what the CPU and the board are
-> doing - the MPC5200 has multiplexed pins, and if you select one
-> function you lose a few others, so you must carefully check for
-> conflicts. Probably you will have to disable some other functions.
-> Also you have to usnerstand what the board is designed like - some
-> ports have specific and reserved functions.
+> May I recommend that, as a first step, you read the documentation?
 >
-> Finally, there are such things like wrong baud rate on a serial port
-> which may make you think it's not working while you are just using bad
-> user mode settings.
+> > - For a cross compilation with ELDK how can we be sure that config.h
+> > file for a software packet is generated properly? I mean, how can we
 >
-> > Is it possible to reconfigure all PSC's as UART's ?
+> You cannot be sure. You will always have to check.
 >
-> Yes, it is. But you have to know what you are doing.
+> > be sure that ELDK components is checked instead of our host linux
+> > system for generating a config.h file by the configure script?
 >
+> RTFM. See especially the two bullets at
+> http://www.denx.de/wiki/view/DULG/ELDKRebuildingComponents#Section_3.7.2.
 >
 > Best regards,
 >
@@ -65,11 +85,13 @@ On 9/19/07, Wolfgang Denk <wd@denx.de> wrote:
 > DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 > HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 > Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> All a hacker needs is a tight PUSHJ, a loose pair of UUOs, and a warm
-> place to shift.
+> Wisdom is one of the few things that looks bigger the further away it
+> is.                               - Terry Pratchett, _Witches Abroad_
 >
 
 
 -- 
-Best regards,
-Leopold Stotch
+M u r at  A r t u n, MSc.
+   Design Engineer
+
+"be conservative in what you do, be liberal in what you accept from others"
