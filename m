@@ -1,34 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E0F6BDDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:08:28 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l8JJ0SBo027072
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 15:00:28 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8JK8ME7423346
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 14:08:22 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8JK8LtZ004468
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 14:08:22 -0600
-Date: Wed, 19 Sep 2007 15:08:18 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: Sequoia kernel crash workaround.
-Message-ID: <20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
-In-Reply-To: <20070919193024.GA28163@lixom.net>
-References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
-	<20070919193024.GA28163@lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Josh Boyer <jwboyer@gmail.com>,
-	Stefan Roese <sr@denx.de>, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 534B9DDEBB
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:08:29 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so337943uge
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 13:08:27 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Emil Medve <Emilian.Medve@freescale.com>
+Subject: Re: [PATCH v2] [POWERPC] Fix build errors when BLOCK=n
+Date: Wed, 19 Sep 2007 22:00:56 +0200
+References: <1190227172-593-1-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1190227172-593-1-git-send-email-Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200709192200.56605.bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	kumar.gala@freescale.com, paulus@samba.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 19 Sep 2007 14:30:24 -0500
-Olof Johansson <olof@lixom.net> wrote:
-
-> On Wed, Sep 19, 2007 at 09:19:47PM +0200, Stefan Roese wrote:
-> > Hi Valentine,
-> > 
-> > On Wednesday 19 September 2007, Valentine Barshak wrote:
-> > > Disabling write pipelining really helps.
-> > > Josh, David, what is the right place to put this workaround to?
-> > >
-> > > Is it OK to do mtdcr(PLB4A0_ACR, mfdcr(PLB4A0_ACR) & ~PLB4_WRP); in
-> > > arch/powerpc/boot/cuboot-sequoia.c:sequoia_fixups()?
-> > > or
-> > > should this be done in
-> > > arch/powerpc/platforms/44x/sequoia.c:sequoia_setup_arch()
-> > > with dcr_map, dcr_read/write stuff?
-> > 
-> > I vote for putting it into sequoia.c, since it's very likely to happen that 
-> > Sequoia will at one point be booted without the bootwrapper. Or perhaps it 
-> > should go into some common code checking the PVR and disabling it when this 
-> > 440EPx/GRx is detected, since all those boards are affected.
+On Wednesday 19 September 2007, Emil Medve wrote:
+> These are the symptom error messages:
 > 
-> This is what we have setup_cpu functions in the cpu table for. Please
-> put it there instead of in board code.
+>   CC      arch/powerpc/kernel/setup_32.o
+> In file included from include/linux/blkdev.h:17,
+>                  from include/linux/ide.h:13,
+>                  from arch/powerpc/kernel/setup_32.c:13:
+> include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
+> include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
+> include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
+> In file included from arch/powerpc/kernel/setup_32.c:13:
+> include/linux/ide.h:857: error: field 'wrq' has incomplete type
+> 
+>   CC      arch/powerpc/kernel/ppc_ksyms.o
+> In file included from include/linux/blkdev.h:17,
+>                  from include/linux/ide.h:13,
+>                  from arch/powerpc/kernel/ppc_ksyms.c:15:
+> include/linux/bsg.h:67: warning: 'struct request_queue' declared inside parameter list
+> include/linux/bsg.h:67: warning: its scope is only this definition or declaration, which is probably not what you want
+> include/linux/bsg.h:71: warning: 'struct request_queue' declared inside parameter list
+> In file included from arch/powerpc/kernel/ppc_ksyms.c:15:
+> include/linux/ide.h:857: error: field 'wrq' has incomplete type
+> 
+> The fix tries to use the smallest scope CONFIG_* symbols that will fix the build
+> problem. In this case <linux/ide.h> needs to be included only if IDE=y or
+> IDE=m were selected. Also, ppc_ide_md is needed only if BLK_DEV_IDE=y or
+> BLK_DEV_IDE=m
+> 
+> Moved the EXPORT_SYMBOL(ppc_ide_md) from ppc_ksysms.c next to its declaration
+> in setup_32.c
+> 
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 
-Yes, agreed.
+looks OK for me
 
-josh
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
