@@ -1,23 +1,29 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
+Return-Path: <satyam@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 81788DDE16
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 23:24:05 +1000 (EST)
-Date: Wed, 19 Sep 2007 14:53:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: CONFIG_BLK_DEV_BSG=n
-Message-ID: <20070919125318.GE25592@kernel.dk>
-References: <1189800008.3343.21.camel@localhost.localdomain>
-	<598D5675D34BE349929AF5EDE9B03E27015558EA@az33exm24.fsl.freescale.net>
-	<19650.1190040390@redhat.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6443DDDDDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 23:42:28 +1000 (EST)
+Date: Wed, 19 Sep 2007 19:15:00 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+Subject: Re: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from
+	panic codepath
+In-Reply-To: <20070917204625.64b97392@vader.jdub.homelinux.org>
+Message-ID: <alpine.LFD.0.999.0709191844360.7697@enigma.security.iitk.ac.in>
+References: <46EA5CEB.7020104@linux.vnet.ibm.com>
+	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
+	<alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
+	<20070917183749.fd690505.randy.dunlap@oracle.com>
+	<20070917204625.64b97392@vader.jdub.homelinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <19650.1190040390@redhat.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>, akpm@osdl.org,
-	linux-scsi@vger.kernel.org, Gala Kumar-B11780 <kumar.gala@freescale.com>,
-	fujita.tomonori@lab.ntt.co.jp, linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Mailing List <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Linux@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 17 2007, David Howells wrote:
-> 
-> James Bottomley <James.Bottomley@SteelEye.com> wrote:
-> 
-> > > Which solution would you be more comfortable with?
-> > 
-> > The one which is currently in -mm is this one:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=49892223f7d3a2333ef9e6cbdd526676e1fc517a
-> 
-> In my opinion, this is the wrong fix.  There shouldn't be anything in
-> the kernel using stuff from bsg.h if CONFIG_BLOCK=n, so there should
-> be an error if anything tries to.  The correct fix is to exclude the
-> non-userspace-visible contents of bsg.h with #ifdef CONFIG_BLOCK, not
-> to declare things that we've tried to make sure specifically aren't
-> declared.
 
-I agree, I'll pass your fix on.
 
--- 
-Jens Axboe
+> On Mon, 17 Sep 2007 18:37:49 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > On Tue, 18 Sep 2007 05:13:40 +0530 (IST) Satyam Sharma wrote:
+> > 
+> > > Untested (not even compile-tested) patch.
+> > > Could someone point me to ppc32/64 cross-compilers for i386?
+> > 
+> > OSDL had some, but those are gone now.
+> > I downloaded all of them and still use them, although it would
+> > be good to have some more recent versions of them.
+> > 
+> > I put the power* compiler tarballs here:
+> > 
+> > http://userweb.kernel.org/~rdunlap/cross-compilers/
+
+Thanks -- BTW I made some simple changes to the tree structure in there
+and added a few distcc [*] related scriptlets. The resulting tar ball:
+
+http://www.cse.iitk.ac.in/users/ssatyam/powerpc64-unknown-linux-gnu.tar.bz2
+
+can be made to work with Andrew's nice "xb" script with the following
+trivial patch:
+
+
+--- cross-compilers/read-me.txt~powerpc64	2007-09-19 14:39:01.000000000 +0530
++++ cross-compilers/read-me.txt	2007-09-19 14:44:29.000000000 +0530
+@@ -3,7 +3,7 @@ i386 cross-compilation binaries for seve
+ on RH FC5 and RH FC6 i386 and x86_64.
+ 
+ - untar the tarball in /
+-- setenv ARCH sparc64 (or alpha, arm, i386, ia64, m68k, mips, s390, sparc)
++- setenv ARCH sparc64 (or alpha, arm, i386, ia64, m68k, mips, powerpc64, s390, sh4, sparc, x86_64)
+ - xb mrproper
+ - xb allmodconfig
+ - xb
+--- cross-compilers/xb~powerpc64	2007-09-19 14:40:09.000000000 +0530
++++ cross-compilers/xb	2007-09-19 14:52:46.000000000 +0530
+@@ -31,6 +31,7 @@ I=vmlinux
+ [ $ARCH = m68k ] &&	CT=gcc-4.1.0-glibc-2.3.6
+ [ $ARCH = mips ] &&	CT=gcc-3.4.5-glibc-2.3.6
+ [ $ARCH = powerpc ] &&	CT=gcc-4.1.0-glibc-2.3.6 && XARCH=powerpc-405-linux-gnu
++[ $ARCH = powerpc64 ] &&	CT=gcc-3.4.0-glibc-2.3.2 && export ARCH=powerpc
+ [ $ARCH = s390 ] &&	CT=gcc-4.1.0-glibc-2.3.6
+ [ $ARCH = sh ] &&	CT=gcc-3.4.5-glibc-2.3.6 && XARCH=sh4-unknown-linux-gnu
+ [ $ARCH = sparc ] &&	CT=gcc-4.1.0-glibc-2.3.6
+
+
+On Mon, 17 Sep 2007, Josh Boyer wrote:
+> 
+> Crosstool is widely used.  It'll build several combinations of
+> gcc/binutils/glibc for you.  
+> 
+> http://www.kegel.com/crosstool/
+
+In fact, it turns out OSDL's cross-compiler toolchains were built with
+crosstool itself. Should also add that those OSDL compilers are too old
+(gcc version 3.4.x-3.5.x mostly -- my build was totally spammed with those
+"+m" in asm constraints related warnings), so I'll try and build a few
+more recent ones (at least for the more popular platforms) over the
+weekend too.
+
+
+Satyam
+
+
+[*] But I'm a bit skeptical if the distcc stuff in "xb" works as intended.
+    Has anybody used that successfully? Will test it over the weekend ...
