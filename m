@@ -1,17 +1,21 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id 2C153DDE2B
+Return-Path: <l.butterz@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 1B4BBDDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 14:57:53 +1000 (EST)
-Date: Wed, 19 Sep 2007 06:57:51 +0200
-To: Hesam Kohanteb <Hesam.Kohanteb@Sun.COM>
-Subject: Re: Linux based MPC855 SPI driver
-Message-ID: <20070919045751.GB24471@powerlinux.fr>
-References: <46F06313.8080007@Sun.COM>
+	Wed, 19 Sep 2007 17:04:13 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so283506pyi
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Sep 2007 00:04:13 -0700 (PDT)
+Message-ID: <53b5d6e90709190004o5a84a7d1ve9eece397511ce5a@mail.gmail.com>
+Date: Wed, 19 Sep 2007 11:04:12 +0400
+From: "Leopold Stotch" <l.butterz@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: PSC in UART mode on TQM5200S
+In-Reply-To: <fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46F06313.8080007@Sun.COM>
-From: Sven Luther <sven@powerlinux.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
+	<fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,14 +27,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 04:45:23PM -0700, Hesam Kohanteb wrote:
-> Hi,
-> I urgently need to implement a Linux based SPI driver for MPC855.  Can 
-> please point me to one if exists or to a similar one MPC823.
+Thank you for the answer, Grant !
+I knew nothing about port_config register before your answer :-(
+I haven't changed any processor registers yet
+because i'm still searching where i can do this.
+Can you tell me, is it UBoot specific or kernel specific or both ?
+And i already know about MPC5200's device tree in 2.6.x kernel but not
+in 2.4.x...
 
-I wrote something for the MPC875, need some cleanup, but i could send it
-to you if you are interested. Please ask me personally.
+On 9/18/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 9/18/07, Leopold Stotch <l.butterz@gmail.com> wrote:
+> > Hello, everyone !
+> >
+> > I have TQM5200S module and development board.
+> > It runs factory UBoot and latest DENX's linuxppc_2_4_devel kernel.
+> > I want to configure all TQM5200S's onboard PSC's as UART's.
+> >  TQM5200S's onboard PSC's are connected to custom board
+> >  that makes all electrical things as my hardware engineer says...
+> > So changed
+> > $HOME/linuxppc_2_4_devel/arch/ppc/platforms/tqm5200.h
+> > the following way:
+> >
+> > #ifdef CONFIG_PS2MULT
+> > #define RS_TABLE_SIZE  4
+> > #else
+> > #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
+> > #define RS_TABLE_SIZE  2
+> > #elif defined(CONFIG_CAM5200)
+> > #define RS_TABLE_SIZE  6
+> > #else
+> > #define RS_TABLE_SIZE  3
+> > #endif
+> > #endif
+> >
+> > changed to
+> >
+> > #ifdef CONFIG_PS2MULT
+> > #define RS_TABLE_SIZE  4
+> > #else
+> > #if defined(CONFIG_SPI_EVAL) || defined(CONFIG_TB5200)
+> > #define RS_TABLE_SIZE  2
+> > #elif defined(CONFIG_CAM5200)
+> > #define RS_TABLE_SIZE  6
+> > #else
+> > #define RS_TABLE_SIZE  6
+> > #endif
+> > #endif
+> >
+> > and
+> >
+> > #else /* default */
+> > #define SERIAL_PORT_DFNS    \
+> >     STD_PSC_OP(1)        \
+> >     STD_PSC_OP(2)        \
+> >     STD_PSC_OP(3)
+> > #endif
+> >
+> > changed to
+> >
+> > #else /* default */
+> > #define SERIAL_PORT_DFNS    \
+> >     STD_PSC_OP(1)        \
+> >     STD_PSC_OP(2)        \
+> >     STD_PSC_OP(3)        \
+> >     STD_PSC_OP(4)        \
+> >     STD_PSC_OP(5)        \
+> >     STD_PSC_OP(6)
+> > #endif
+> >
+> > After rebuilding the kernel, dmesg says:
+> >
+> > ...
+> > ttyS0 on PSC1
+> > ttyS1 on PSC2
+> > ttyS2 on PSC3
+> > ttyS3 on PSC4
+> > ttyS4 on PSC5
+> > ttyS5 on PSC6
+> > ...
+> >
+> > But when i do "echo 1 > /dev/ttyS4" i receive nothing at the other end.
+>
+> Have you made the appropriate changes to the port_config register?
+>
+> Cheers,
+> g.
+>
+>
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>
 
-Friendly,
 
-Sven Luther
+
+-- 
+Best regards,
+Leopold Stotch
