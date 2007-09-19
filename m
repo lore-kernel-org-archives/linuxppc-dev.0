@@ -1,25 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
-	by ozlabs.org (Postfix) with ESMTP id DD55FDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 00:31:42 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so179156rvf
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 07:31:41 -0700 (PDT)
-Message-ID: <fa686aa40709190731y3aca963bx1e148ba5b94f0094@mail.gmail.com>
-Date: Wed, 19 Sep 2007 08:31:40 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "S. Fricke" <silvio.fricke@gmail.com>
-Subject: Re: [NEWBIE] Interrupt-problem mpc5200
-In-Reply-To: <20070919071643.GE5682@sfrouter>
+Return-Path: <jacmet@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 5482FDDE1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 00:53:18 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so282587uge
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 07:53:17 -0700 (PDT)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: cuImage generation
+References: <20070919072831.322800@gmx.net>
+	<20070919141953.GB8023@ld0162-tx32.am.freescale.net>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 19 Sep 2007 16:53:14 +0200
+In-Reply-To: <20070919141953.GB8023@ld0162-tx32.am.freescale.net> (Scott
+	Wood's message of "Wed\, 19 Sep 2007 09\:19\:53 -0500")
+Message-ID: <87ps0elnad.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070906133050.GE11807@sfrouter> <20070911124154.GI11807@sfrouter>
-	<fa686aa40709110719j26a5bf30uc075253c6d1a6d97@mail.gmail.com>
-	<20070911182811.GA3582@sfrouter>
-	<fa686aa40709111205n5d9f9654m6f2b96d468dfd017@mail.gmail.com>
-	<20070912183038.GA5682@sfrouter>
-	<fa686aa40709121229h6bb2902etffcd197e2e5af722@mail.gmail.com>
-	<20070919071643.GE5682@sfrouter>
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,30 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/19/07, S. Fricke <silvio.fricke@googlemail.com> wrote:
-> OK, my dts is now:
->
->     / {
->         /* ... */
->         soc5200@f0000000 {
->             /* ... */
->             intpin@0 {
->                 interrupt-parent = <500>;
->                 interrupts = <1 2 2>;
->             };
->             /* ... */
->         };
->         /* ... */
->     };
+>>>>> "Scott" == Scott Wood <scottwood@freescale.com> writes:
 
-Note: your intpin node does not (and probably should not) need to be a
-child of the soc node.
+ Scott> On Wed, Sep 19, 2007 at 09:28:31AM +0200, Gerhard Pircher wrote:
+ >> I tried to compile a 2.6.23-rc6 kernel yesterday, but wasn't able to get a
+ >> cuImage.<platform) out of it (only the uImage file was generated). My
+ >> platform config defines DEFAULT_UIMAGE and WANT_DEVICE_TREE. Do I need to
+ >> generate it manually or is there a makefile where I have to specify it?
+ >> Naturally I added my cuboot wrapper code to the arch/powerpc/boot/Makefile.
 
-Cheers,
-g.
+I have the same problem here..
+
+ Scott> Did you specify a device tree to use in CONFIG_DEVICE_TREE?
+
+Yes.
+
+% grep TREE .config
+CONFIG_PROC_DEVICETREE=y
+CONFIG_WANT_DEVICE_TREE=y
+CONFIG_DEVICE_TREE="mpc8349emitx.dts"
+
+How is it supposed to work now cuImage no longer is in BOOT_TARGETS?
+What make target are you supposed to work. It works if I add
+cuImage.83xx to BOOT_TARGETS and call make cuImage.83xx, but that can
+hardly be the correct way?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Bye, Peter Korsgaard
