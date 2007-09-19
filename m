@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 19 Sep 2007 11:05:26 +1000
+Date: Wed, 19 Sep 2007 12:48:28 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 2/2] PowerPC: Fix Sequoia MAL0 and EMAC dts entries.
-Message-ID: <20070919010526.GA23646@localhost.localdomain>
-References: <20070918172510.GA30944@ru.mvista.com>
-	<20070918172913.GA31098@ru.mvista.com>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: dtc: Add basic testcases for dtc
+Message-ID: <20070919024828.GD23646@localhost.localdomain>
+References: <20070918003340.GA30766@localhost.localdomain>
+	<E1IXeaz-0000lF-HQ@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070918172913.GA31098@ru.mvista.com>
+In-Reply-To: <E1IXeaz-0000lF-HQ@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,16 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2007 at 09:29:13PM +0400, Valentine Barshak wrote:
-> According to PowerPC 440EPx documentation,
-> MAL0 is comprised of four channels (two transmit and two receive).
-> Each channel is dedicated to one of two EMAC cores.
-> This patch fixes Sequoia DTS MAL0 entry and EMAC entries,
-> assigning correct channel numbers to EMACs.
+On Tue, Sep 18, 2007 at 10:02:37AM -0500, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > This patch adds a handful of simple testcases for dtc.  It adds a dts
+> > file which should generate the same sample tree as is used for the
+> > libfdt testcases, and tests invoking dtc on this dts, plus the
+> > standard batch of libfdt cases on the resulting dtb, which effectively
+> > checks that the dtb is correct.
+> > 
+> > Because the test framework assumes each testcase is an executable with
+> > the right output conventions, we use a little shell script, dtc.sh, as
+> > a wrapper around dtc itself.  It simply invokes dtc and returns a PASS
+> > or FAIL depending on whether dtc returned an error.
+> > 
+> > It's not much, but it's a start.
+> > 
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> 
+> 
+> Applied.
+> 
+> > NB: Jon, you won't be able to simply git-applymbox this and have it
+> > work.  You'll need to manually add execute permission to tests/dtc.sh
+> > before git commiting it, since I can't encode the permissions in a
+> > patch.  Sorry for the inconvenience, but it didn't really seem worth
+> > setting up my own git to pull from just for that.
+> 
+> No problem.  Too bad you can't just use git, though... :-)
 
-Hrm.. did they change the EMAC in 440EPx to only use one MAL
-tx-channel?  All the older ones could use two (for no readily apparent
-reason, IMO).
+Hrm.  Perhaps I should.  I've been working with patches, because it
+matches how I operate with the kernel, but I guess there would be some
+advantages to running my own dtc git branch.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
