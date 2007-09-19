@@ -1,24 +1,26 @@
-Return-Path: <l.butterz@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id 0C1C5DDE1E
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D9EE8DDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 00:50:09 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so553661pyi
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Sep 2007 07:50:07 -0700 (PDT)
-Message-ID: <53b5d6e90709190750tfa894a5jfec4725d13dc433@mail.gmail.com>
-Date: Wed, 19 Sep 2007 18:50:07 +0400
-From: "Leopold Stotch" <l.butterz@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: PSC in UART mode on TQM5200S
-In-Reply-To: <fa686aa40709190733ufd38f1fx7771bd0e98376081@mail.gmail.com>
+	Thu, 20 Sep 2007 00:51:57 +1000 (EST)
+Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <jbe@pengutronix.de>) id 1IY0u5-0001pY-4W
+	for linuxppc-embedded@ozlabs.org; Wed, 19 Sep 2007 16:51:52 +0200
+From: Juergen Beisert <jbe@pengutronix.de>
+To: linuxppc-embedded@ozlabs.org
+Date: Wed, 19 Sep 2007 16:51:47 +0200
+References: <20070810095153.GC13994@moe.telargo.com>
+	<200709191238.00183.jbe@pengutronix.de>
+	<BLU106-W94EC8F5D652CCD450801ACAB90@phx.gbl>
+In-Reply-To: <BLU106-W94EC8F5D652CCD450801ACAB90@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <53b5d6e90709180313n7ef053ddqfb771f44d9bd44ef@mail.gmail.com>
-	<fa686aa40709180701w17273a11wda8c9ece79aad483@mail.gmail.com>
-	<53b5d6e90709182355y17fd5965u5f212be74068442e@mail.gmail.com>
-	<fa686aa40709190733ufd38f1fx7771bd0e98376081@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709191651.47768.jbe@pengutronix.de>
+Subject: Re: [PATCH] phy: export phy_mii_ioctl
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,35 +31,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks, i'll try the both ways.
-I'm still afraid of killing factory UBoot without
-BDI2000 or working X30 jumper :-)
+Pedro,
 
-On 9/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 9/19/07, Leopold Stotch <l.butterz@gmail.com> wrote:
-> > Thank you for the answer, Grant !
-> > I knew nothing about port_config register before your answer :-(
-> > I haven't changed any processor registers yet
-> > because i'm still searching where i can do this.
-> > Can you tell me, is it UBoot specific or kernel specific or both ?
-> > And i already know about MPC5200's device tree in 2.6.x kernel but not in
-> > 2.4.x...
->
-> It is best to do it in u-boot; but if you cannot (or don't want to)
-> change your u-boot image, then you can fix up the port_config value
-> during early kernel boot.
->
-> Cheers,
-> g.
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
+On Wednesday 19 September 2007 13:38, Pedro Luis D. L. wrote:
+> I=B4m using an specific pcm030.dts oftree that works for the 2.6.20 kerne=
+l.
+> I=B4m not quite familiar with the oftree stuff, but I thought it should w=
+ork
+> also for the 2.6.22.6. Is there any other dts file? Where can I find it?
 
+dts patch sent offline.
 
--- 
-Best regards,
-Leopold Stotch
+Juergen
+=2D-=20
+Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
+=A0Pengutronix - Linux Solutions for Science and Industry
+=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
+=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
+   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
