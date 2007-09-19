@@ -1,26 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D6BBFDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 04:29:34 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l8JITTeI009737
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Sep 2007 11:29:30 -0700 (MST)
-Message-ID: <46F16A6A.8030802@freescale.com>
-Date: Wed, 19 Sep 2007 13:28:58 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 499E4DDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 04:40:10 +1000 (EST)
+Message-ID: <46F16CC9.3010003@ru.mvista.com>
+Date: Wed, 19 Sep 2007 22:39:05 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] qe: miscellaneous code improvements and fixes to the
-	QE	library
-References: <11902199121734-git-send-email-timur@freescale.com>
-In-Reply-To: <11902199121734-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Sequoia kernel crash workaround.
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,30 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> -void qe_setbrg(u32 brg, u32 rate)
-> +void qe_setbrg(unsigned int brg, unsigned int rate, unsigned int multiplier)
->  {
->  	volatile u32 *bp;
+I've observed kernel crashes on Sequoia board several times.
+Kernel often crashes with high network/memory loads.
+This is due to 440EPx h/w issue.
 
-While you're at it, this should be __be32 __iomem *, no volatile.
+According to the errata:
+CHIP_8: Incorrect Write to DDR SDRAM.
+Category: 3
+Overview:
+The write address can be corrupted during writes to DDR SDRAM when write 
+pipelining is enabled on PLB0. The probability of encountering the 
+problem increases with the amount of back-pressure applied by the SDRAM.
+Impact: Data can be written to the wrong address in SDRAM.
+Workaround:
+Disable write pipelining to DDR SDRAM by setting PLB4A0_ACR[WRP] = 0. 
+Only primary write transfers are broadcast and the write address 
+corruption is avoided.
 
-> +/* Configure the UCC to either Slow or Fast.
-> + *
-> + * A given UCC can be figured to support either "slow" devices (e.g. UART)
-> + * or "fast" devices (e.g. Ethernet).
-> + *
-> + * 'ucc_num' is the UCC number, from 0 - 7.
-> + *
-> + * This function also sets the UCC_GUEMR_SET_RESERVED3 bit because that bit
-> + * must always be set to 1.
-> + */
-> +int ucc_set_type(unsigned int ucc_num, enum ucc_speed_type speed)
->  {
-> -	u8 guemr = 0;
-> +	u8 __iomem *p_guemr;
+Disabling write pipelining really helps.
+Josh, David, what is the right place to put this workaround to?
 
-We don't do Hungarian notation in Linux. :-)
-What's wrong with just "u8 __iomem *guemr"?
+Is it OK to do mtdcr(PLB4A0_ACR, mfdcr(PLB4A0_ACR) & ~PLB4_WRP); in
+arch/powerpc/boot/cuboot-sequoia.c:sequoia_fixups()?
+or
+should this be done in
+arch/powerpc/platforms/44x/sequoia.c:sequoia_setup_arch()
+with dcr_map, dcr_read/write stuff?
 
--Scott
+Thanks,
+Valentine.
