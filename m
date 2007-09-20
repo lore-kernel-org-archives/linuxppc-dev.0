@@ -1,21 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD554DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 14:18:29 +1000 (EST)
-Message-ID: <46F1F490.2040605@garzik.org>
-Date: Thu, 20 Sep 2007 00:18:24 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [FS_ENET] TX stuff should use fep->tx_lock,	instead
-	of fep->lock.
-References: <20070918160527.13525.80935.stgit@localhost.localdomain>
-In-Reply-To: <20070918160527.13525.80935.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18162.1.982956.610996@cargo.ozlabs.ibm.com>
+Date: Thu, 20 Sep 2007 15:07:13 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH 1/3] powerpc clk.h interface for platforms
+In-Reply-To: <20070919051157.GH32628@nd47.coderock.org>
+References: <20070711093113.GE4375@moe.telargo.com>
+	<20070711093220.GF4375@moe.telargo.com>
+	<20070806065857.GN4529@moe.telargo.com>
+	<18160.39896.132391.625791@cargo.ozlabs.ibm.com>
+	<20070919051157.GH32628@nd47.coderock.org>
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug wrote:
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> ---
-> 
->  drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
+Domen Puncer writes:
 
-applied 1-2, after hand-editing the subject line to remove brackets from 
-around "[FS_ENET]"
+> 52xx
+> Reason for adding it to all was that EXPORT_SYMBOL's would clash if
+> one were to add clk support for another platform.
 
-everything within [ and ] is removed, before copying to changelog, so 
-please be careful
+What I meant was, why aren't you using a config symbol so that we
+don't build it on platforms that don't need any "clk" support at all?
 
-See http://linux.yyz.us/patch-format.html for more info.
-
-	Jeff
+Paul.
