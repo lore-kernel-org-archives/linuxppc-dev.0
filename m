@@ -1,23 +1,19 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58B27DDF26
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 07:40:52 +1000 (EST)
-In-Reply-To: <46F2E667.80806@freescale.com>
-References: <11903212461510-git-send-email-timur@freescale.com>
-	<46F2E667.80806@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1B416F39-B014-4D66-B852-1493BCA9D5F9@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH v3] qe: miscellaneous code improvements and fixes to the
-	QE library
-Date: Thu, 20 Sep 2007 16:44:03 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6E6F4DDF39
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 07:42:29 +1000 (EST)
+Date: Fri, 21 Sep 2007 01:39:30 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: 4xx git tree moved
+Message-ID: <20070921013930.409a9f8b@localhost.localdomain>
+In-Reply-To: <20070920074236.5574cb29@weaponx.rchland.ibm.com>
+References: <20070920074236.5574cb29@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello Josh,
 
-On Sep 20, 2007, at 4:30 PM, Timur Tabi wrote:
+On Thu, 20 Sep 2007 07:42:36 -0500
+Josh Boyer wrote:
 
-> Timur Tabi wrote:
->> This patch makes numerous miscellaneous code improvements to the  
->> QE library.
->
-> Paul and Kumar,
->
-> Unless there are any other suggestions for improvements, this is  
-> the version I'd like applied.  Thanks.
+> For those interested in 4xx, I've moved my git tree to kernel.org.  You
+> can find it here:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc.git
+> 
+Can you call it something like 4xx-powerpc.git, or powerpc-4xx.git? Number of powerpc.git stuff tend to grow :)
 
-Ok, I'll take a look and see if I've got any comments.
 
-- k
+-- 
+Sincerely, Vitaly
