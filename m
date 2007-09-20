@@ -1,15 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18161.50630.769910.207866@cargo.ozlabs.ibm.com>
-Date: Thu, 20 Sep 2007 10:58:46 +1000
+Message-ID: <18161.50240.599267.768383@cargo.ozlabs.ibm.com>
+Date: Thu, 20 Sep 2007 10:52:16 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: Re: [PATCH v2] [POWERPC] Fix build errors when BLOCK=n
-In-Reply-To: <1190227172-593-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1190227172-593-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	kumar.gala@Freescale.com, bzolnier@gmail.com, linuxppc-embedded@ozlabs.org
+To: Daniel Walker <dwalker@mvista.com>
+Subject: Re: [PATCH 2/5] Implement generic time of day clocksource for
+	powerpc machines.
+In-Reply-To: <1190216594.11899.3.camel@imap.mvista.com>
+References: <20070919064947.4B5A1399910@thor>
+	<1190216594.11899.3.camel@imap.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	johnstul@us.ibm.com, Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Emil Medve writes:
+Daniel Walker writes:
 
-> --- a/arch/powerpc/kernel/ppc_ksyms.c
-> +++ b/arch/powerpc/kernel/ppc_ksyms.c
-> @@ -12,12 +12,15 @@
->  #include <linux/irq.h>
->  #include <linux/pci.h>
->  #include <linux/delay.h>
-> +#if defined(CONFIG_IDE) || defined(CONFIG_IDE_MODULE)
->  #include <linux/ide.h>
-> +#endif
+> If you switch to the rtc do the shift and mult need to change?
 
-Why are we still including linux/ide.h at all here?
+You can't switch; any given CPU chip will have either the RTC or the
+timebase but not both.
 
->  #include <linux/bitops.h>
->  
->  #include <asm/page.h>
->  #include <asm/semaphore.h>
->  #include <asm/processor.h>
-> +#include <asm/cacheflush.h>
+> > +       /* XXX this assumes clock->shift == 22 */
+> > +       /* 4611686018 ~= 2^(20+64-22) / 1e9 */
+> > +       t2x = (u64) clock->mult * 4611686018ULL;
+> 
+> It might make the code more readable if you put that constant into a
+> macro that gives it a name.
 
-What's the point of adding this?
+The comment already gives more information than some arbitrary name
+would.
 
 Paul.
