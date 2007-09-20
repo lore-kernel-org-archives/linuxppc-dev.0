@@ -1,20 +1,14 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 0F134DDFD5
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 04:47:25 +1000 (EST)
-Message-ID: <46F2BFFA.1060203@ru.mvista.com>
-Date: Thu, 20 Sep 2007 22:46:18 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] PowerPC: Fix Sequoia MAL0 and EMAC dts entries.
-References: <20070918172510.GA30944@ru.mvista.com>
-	<20070918172913.GA31098@ru.mvista.com>
-	<20070919010526.GA23646@localhost.localdomain>
-	<46F10478.1080506@ru.mvista.com>
-In-Reply-To: <46F10478.1080506@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070920175558.GA3191@ru.mvista.com>
+References: <20070920175558.GA3191@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3C1A509F-D243-4465-BDB1-25B6437CA04F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: add setup_cpu for 44x for processor-specific init
+Date: Thu, 20 Sep 2007 13:54:00 -0500
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, miltonm@bga.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
-> David Gibson wrote:
->> On Tue, Sep 18, 2007 at 09:29:13PM +0400, Valentine Barshak wrote:
->>> According to PowerPC 440EPx documentation,
->>> MAL0 is comprised of four channels (two transmit and two receive).
->>> Each channel is dedicated to one of two EMAC cores.
->>> This patch fixes Sequoia DTS MAL0 entry and EMAC entries,
->>> assigning correct channel numbers to EMACs.
->>
->> Hrm.. did they change the EMAC in 440EPx to only use one MAL
->> tx-channel?  All the older ones could use two (for no readily apparent
->> reason, IMO).
->>
-> Yes, they did.
-> Just 1 tx and 1 rx-channel per EMAC. Just 2 bits to select channels, 
-> while all other bits in MAL registers are reserved.
-> I'm not sure why they did it (possible bus bandwidth problems), but it's 
-> impossible to set more than 1 rx/tx channel for each EMAC in 440EPx.
 
-Josh, David, is this patch OK?
+> diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/ 
+> arch/powerpc/kernel/cputable.c
+> --- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-09-20  
+> 19:30:47.000000000 +0400
+> +++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-09-20  
+> 21:27:35.000000000 +0400
+
+[snip]
+
+> @@ -1318,18 +1327,14 @@
+>
+>  	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++)
+>  		if ((pvr & s->pvr_mask) == s->pvr_value) {
+> +			cpu_setup_t setup_func  = PTRRELOC(s->cpu_setup);
+> +
+>  			*cur = cpu_specs + i;
+> -#ifdef CONFIG_PPC64
+> -			/* ppc64 expects identify_cpu to also call setup_cpu
+> -			 * for that processor. I will consolidate that at a
+> -			 * later time, for now, just use our friend #ifdef.
+> -			 * we also don't need to PTRRELOC the function pointer
+> -			 * on ppc64 as we are running at 0 in real mode.
+> +			/* ppc expects identify_cpu to also call setup_cpu
+> +			 * for that processor.
+>  			 */
+> -			if (s->cpu_setup) {
+> -				s->cpu_setup(offset, s);
+> -			}
+> -#endif /* CONFIG_PPC64 */
+> +			if (setup_func)
+> +				setup_func(offset, s);
+>  			return s;
+>  		}
+
+This should just be something like:
+
+#if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
+	if (s->cpu_setup)
+...
+#endif
+
+we know reloc_offset is always 0 in book-e, plus fixup the comment.
+
+- k
