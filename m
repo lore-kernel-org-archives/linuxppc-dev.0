@@ -1,15 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F3C9CDDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:36:53 +1000 (EST)
-Date: Thu, 20 Sep 2007 18:08:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Create and use CONFIG_WORD_SIZE
-Message-Id: <20070920180825.39aca4d7.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id D0539DDE1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:37:52 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so421005nfd
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 01:37:50 -0700 (PDT)
+Date: Thu, 20 Sep 2007 10:37:46 +0200
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Configuration-Problem ext-interrupt on mpc52xx
+Message-ID: <20070920083746.GL5682@sfrouter>
+References: <20070919115952.GF5682@sfrouter>
+	<fa686aa40709190809v284618d4r65674a1409ab0b57@mail.gmail.com>
+	<20070919190146.GI5682@sfrouter>
+	<20070919234016.GA14404@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yklP1rR72f9kjNtc"
+In-Reply-To: <20070919234016.GA14404@localhost.localdomain>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,218 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus made this suggestion for the x86 merge and this starts the process
-for powerpc. We assume that CONFIG_PPC64 implies CONFIG_PPC_MERGE and
-CONFIG_PPC_STD_MMU_32 implies CONFIG_PPC_STD_MMU.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Kconfig         |    5 +++++
- arch/powerpc/Makefile        |   15 ++++++---------
- arch/powerpc/kernel/Makefile |   30 +++++++++++++-----------------
- arch/powerpc/lib/Makefile    |    7 ++++---
- arch/powerpc/mm/Makefile     |   13 ++++++++-----
- arch/ppc/Kconfig             |    4 ++++
- 6 files changed, 40 insertions(+), 34 deletions(-)
+--yklP1rR72f9kjNtc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Built for ARCH=powerpc all defconfigs and ARCH=ppc all defconfigs (most
-of which failed for (I am pretty sure) reasons unrelated to this patch).
+Hello,
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+> > I have read it! But another driver on Boot-time pulled my interrupt
+>=20
+> Erm.. if the interrupt is shared with something else which expects a
+> different trigger/polarity, you're kind of stuffed....
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 66a3295..de886ec 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -14,6 +14,11 @@ config 64BIT
- 	bool
- 	default y if PPC64
- 
-+config WORD_SIZE
-+	int
-+	default 64 if PPC64
-+	default 32 if !PPC64
-+
- config PPC_MERGE
- 	def_bool y
- 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6015a92..9de1833 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -39,7 +39,6 @@ KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
- 
- ifeq ($(CONFIG_PPC64),y)
- OLDARCH	:= ppc64
--SZ	:= 64
- 
- new_nm := $(shell if $(NM) --help 2>&1 | grep -- '--synthetic' > /dev/null; then echo y; else echo n; fi)
- 
-@@ -49,16 +48,15 @@ endif
- 
- else
- OLDARCH	:= ppc
--SZ	:= 32
- endif
- 
- UTS_MACHINE := $(OLDARCH)
- 
- ifeq ($(HAS_BIARCH),y)
--override AS	+= -a$(SZ)
--override LD	+= -m elf$(SZ)ppc
--override CC	+= -m$(SZ)
--override AR	:= GNUTARGET=elf$(SZ)-powerpc $(AR)
-+override AS	+= -a$(CONFIG_WORD_SIZE)
-+override LD	+= -m elf$(CONFIG_WORD_SIZE)ppc
-+override CC	+= -m$(CONFIG_WORD_SIZE)
-+override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
- endif
- 
- LDFLAGS_vmlinux	:= -Bstatic
-@@ -72,7 +70,7 @@ AFLAGS		+= $(AFLAGS-y)
- CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
- CPP		= $(CC) -E $(CFLAGS)
- 
--CHECKFLAGS	+= -m$(SZ) -D__powerpc__ -D__powerpc$(SZ)__
-+CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
- 
- ifeq ($(CONFIG_PPC64),y)
- GCC_BROKEN_VEC	:= $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
-@@ -116,8 +114,7 @@ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
- AFLAGS += $(cpu-as-y)
- CFLAGS += $(cpu-as-y)
- 
--head-y				:= arch/powerpc/kernel/head_32.o
--head-$(CONFIG_PPC64)		:= arch/powerpc/kernel/head_64.o
-+head-y				:= arch/powerpc/kernel/head_$(CONFIG_WORD_SIZE).o
- head-$(CONFIG_8xx)		:= arch/powerpc/kernel/head_8xx.o
- head-$(CONFIG_40x)		:= arch/powerpc/kernel/head_40x.o
- head-$(CONFIG_44x)		:= arch/powerpc/kernel/head_44x.o
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 967afc5..ef3633f 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -37,10 +37,10 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
--obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
--obj32-$(CONFIG_HIBERNATION) += swsusp_32.o
--obj64-$(CONFIG_HIBERNATION) += swsusp_64.o swsusp_asm64.o
--obj32-$(CONFIG_MODULES)		+= module_32.o
-+obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
-+				   swsusp_$(CONFIG_WORD_SIZE).o
-+obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
-+obj-$(CONFIG_MODULES)		+= module_$(CONFIG_WORD_SIZE).o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- 
-@@ -53,9 +53,10 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
- 
- obj-y				+= time.o prom.o traps.o setup-common.o \
--				   udbg.o misc.o io.o
--obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
--obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
-+				   udbg.o misc.o io.o \
-+				   misc_$(CONFIG_WORD_SIZE).o
-+obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
-+obj-$(CONFIG_PPC64)		+= dma_64.o iommu.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
-@@ -63,16 +64,12 @@ obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
- 
--module-$(CONFIG_PPC64)		+= module_64.o
--obj-$(CONFIG_MODULES)		+= $(module-y)
--
--pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o isa-bridge.o
--pci32-$(CONFIG_PPC32)		:= pci_32.o
--obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y) pci-common.o
-+pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
-+obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
-+				   pci-common.o
- obj-$(CONFIG_PCI_MSI)		+= msi.o
--kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
--kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
--obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
-+obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o \
-+				   machine_kexec_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_AUDIT)		+= audit.o
- obj64-$(CONFIG_AUDIT)		+= compat_audit.o
- 
-@@ -86,7 +83,6 @@ smpobj-$(CONFIG_SMP)		+= smp.o
- 
- endif
- 
--obj-$(CONFIG_PPC32)		+= $(obj32-y)
- obj-$(CONFIG_PPC64)		+= $(obj64-y)
- 
- extra-$(CONFIG_PPC_FPU)		+= fpu.o
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 23bbb1e..65d492e 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -7,11 +7,12 @@ EXTRA_CFLAGS		+= -mno-minimal-toc
- endif
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
--obj-y			:= string.o alloc.o
--obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
-+obj-y			:= string.o alloc.o \
-+			   checksum_$(CONFIG_WORD_SIZE).o
-+obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
- endif
- 
--obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
-+obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o
- obj-$(CONFIG_QUICC_ENGINE) += rheap.o
- obj-$(CONFIG_XMON)	+= sstep.o
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index bf20fa6..20629ae 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -6,13 +6,16 @@ ifeq ($(CONFIG_PPC64),y)
- EXTRA_CFLAGS	+= -mno-minimal-toc
- endif
- 
--obj-y				:= fault.o mem.o lmb.o
--obj-$(CONFIG_PPC32)		+= init_32.o pgtable_32.o mmu_context_32.o
-+obj-y				:= fault.o mem.o lmb.o \
-+				   init_$(CONFIG_WORD_SIZE).o \
-+				   pgtable_$(CONFIG_WORD_SIZE).o \
-+				   mmu_context_$(CONFIG_WORD_SIZE).o
- hash-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
--obj-$(CONFIG_PPC64)		+= init_64.o pgtable_64.o mmu_context_64.o \
--				   hash_utils_64.o hash_low_64.o tlb_64.o \
-+obj-$(CONFIG_PPC64)		+= hash_utils_64.o \
- 				   slb_low.o slb.o stab.o mmap.o $(hash-y)
--obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o tlb_32.o
-+obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
-+obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
-+				   tlb_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_40x)		+= 40x_mmu.o
- obj-$(CONFIG_44x)		+= 44x_mmu.o
- obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-index c1b34eb..c2087f6 100644
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -4,6 +4,10 @@
- 
- mainmenu "Linux/PowerPC Kernel Configuration"
- 
-+config WORD_SIZE
-+	int
-+	default 32
-+
- config MMU
- 	bool
- 	default y
--- 
-1.5.3.1
+YEEeess! An incomplete documentation is suboptimal! In german, we would
+say: "[...] Das es die Sau krausst [...]"
+
+I have now used an another Interrupt and it works.
+
+Mit freundlichen Gruessen
+Silvio Fricke
+
+--=20
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)                   TEL:       (+49)8330-911278
+   Linux-Entwicklung                       JABBER:      fricke@jabber.org
+-- Steinbacher Strasse 18, D-87764 Legau -----------------------------------
+
+
+--yklP1rR72f9kjNtc
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFG8jFa8WEBxatmn40RAk9KAJ9edfmndtdAjMrCBWJp9FIW4nfQjACguQ/5
+Z+yRE+9Y7JL8R4ulgVO7wLw=
+=TSsS
+-----END PGP SIGNATURE-----
+
+--yklP1rR72f9kjNtc--
