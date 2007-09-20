@@ -1,18 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 83B35DDE1B
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 096E5DDE1F
 	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 20:43:16 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so411518uge
+Received: by ug-out-1314.google.com with SMTP id q7so411520uge
 	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 03:43:14 -0700 (PDT)
-Message-Id: <20070920104313.217207466@sunsite.dk>
+Message-Id: <20070920104312.898504549@sunsite.dk>
 References: <20070920104211.896143373@sunsite.dk>
-Date: Thu, 20 Sep 2007 12:42:14 +0200
+Date: Thu, 20 Sep 2007 12:42:12 +0200
 From: Peter Korsgaard <jacmet@sunsite.dk>
 To: linuxppc-dev@ozlabs.org,
  galak@kernel.crashing.org
-Subject: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
+Subject: [patch 1/3] fsl_soc: Fix trivial printk typo.
 Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: Timur Tabi <timur@freescale.com>
+Cc: "G. Liakhovetski" <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add ds1339 I2C RTC chip as child of 2nd I2C controller.
+Fix a trivial printk typo in fsl_soc.
 
-Cc: Timur Tabi <timur@freescale.com>
+Cc: G. Liakhovetski <g.liakhovetski@gmx.de>
 Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 ---
- arch/powerpc/boot/dts/mpc8349emitx.dts |    7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/sysdev/fsl_soc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/powerpc/boot/dts/mpc8349emitx.dts
+Index: linux/arch/powerpc/sysdev/fsl_soc.c
 ===================================================================
---- linux.orig/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ linux/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -68,6 +68,13 @@
- 			interrupts = <f 8>;
- 			interrupt-parent = < &ipic >;
- 			dfsrr;
-+
-+			rtc@68 {
-+				device_type = "rtc";
-+				compatible = "dallas,ds1339";
-+				reg = <68 4>;
-+			};
-+
- 		};
+--- linux.orig/arch/powerpc/sysdev/fsl_soc.c
++++ linux/arch/powerpc/sysdev/fsl_soc.c
+@@ -346,7 +346,7 @@
  
- 		spi@7000 {
+ 		addr = of_get_property(node, "reg", &len);
+ 		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
+-			printk(KERN_WARNING "fsl_ioc.c: invalid i2c device entry\n");
++			printk(KERN_WARNING "fsl_soc.c: invalid i2c device entry\n");
+ 			continue;
+ 		}
+ 
 
 -- 
 Bye, Peter Korsgaard
