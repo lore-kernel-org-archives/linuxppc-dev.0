@@ -1,18 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay012.isp.belgacom.be (mailrelay012.isp.belgacom.be
-	[195.238.6.179]) by ozlabs.org (Postfix) with ESMTP id 8CE51DDE07
+Return-Path: <Shengping.Liu@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 83CB6DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 18:54:09 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: 8270 & Watchdog - early start
-Date: Thu, 20 Sep 2007 10:54:04 +0200
-References: <AEA1A32F001C6B4F98614B5B80D7647D02D73DEB@esealmw115.eemea.ericsson.se>
-In-Reply-To: <AEA1A32F001C6B4F98614B5B80D7647D02D73DEB@esealmw115.eemea.ericsson.se>
+	Thu, 20 Sep 2007 19:15:16 +1000 (EST)
+Received: from ALA-MAIL03.corp.ad.wrs.com (ala-mail03 [147.11.57.144])
+	by mail.wrs.com (8.13.6/8.13.6) with ESMTP id l8K9FEEX028609
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 20 Sep 2007 02:15:15 -0700 (PDT)
+Message-ID: <46F238BB.4040007@windriver.com>
+Date: Thu, 20 Sep 2007 17:09:15 +0800
+From: Andrew Liu <shengping.liu@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200709201054.04249.laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: The  ds1337 chip on fsl_mp8313E RDB REVA 3 doesn't  work properly
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,55 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matias,
+Hello All,
+The same u-boot/kernel/rootfs on fsl_mp8313E RDB REVA 2, DS1337  RTC
+chip can work,
+but on sl_mp8313E RDB REVA 3, it doesn't work, its time don't change.
 
-On Thursday 20 September 2007 10:19, Matias Sundman wrote:
-> Hi,
-> I have a custom MPC8270 board running Linux and u-boot.
-> Now, I enabled the watchdog on the 8270 and need to kick it regularly by
-> writing ;
->
-> 0x556c
-> 0xaa39
->
-> To the internal register @ 0x0x1000e.
->
-> When I am coming out from head.S to start_kernel I was thinking of
-> kicking it a couple times "manually" before a timer interrupt is inserted
-> which will take care of it until a "superdaemon" is taking over.
->
-> I tried to serve the register as follows;
->
-> *((volatile unsigned int*)(0xf001000e))=3D0x556c;
-> *((volatile unsigned int*)(0xf001000e))=3D0xaa39;
->
-> But it does not take effect. I thought that since u-boot had set up the
-> IMMR to 0xf000'0000 I could directly write to the register as above.
->
-> Any clues why this does not work?
+This RTC chip  specific bad behavior on sl_mp8313E RDB REVA 3  as follows:
+(1) On U-Boot (from Freescale), run command:
+=> i2c md 0x68 0x0
+0000: 32 33 10 04 20 89 08 84 00 20 53 00 42 16 18 80    23.. .... S.B...
+after a while
+=> i2c md 0x68 0x0
+0000: 32 33 10 04 20 89 08 84 00 20 53 00 42 16 18 80    23.. .... S.B...
 
-The Software Service Register (SWSR) is 16-bit wide. Unsigned int on the 82=
-70=20
-is 32-bit wide.
+The first value(second value) is unchanged always, but on  fsl_mp8313E
+RDB REVA 2, it changes.
+meanwhile, we can change this value through i2c nm 0x68  0xX on 
+fsl_mp8313E RDB REVA 3.
 
-You must not reference physical addresses directly after the MMU has been=20
-turned on. Use ioremap/iounmap to map/unmaap the CPM registers. If you're=20
-using ARCH=3Dppc, you can also use the global CPM mapping cpm2_immr.
+SO the core of this problem is the time always keeps same.
 
-Use the out_* macros/functions to write to I/O space.
+(2) during Linux kernel bootup, we can see:
+ oing write 0 bytes to 0x68 - 1 of 1 messages
+i2c_adapter i2c-0: master_xfer[0] W, addr=0x68, len=1
+i2c_adapter i2c-0: master_xfer[1] R, addr=0x68, len=8
+Doing write 1 bytes to 0x68 - 1 of 2 messages
+Doing read 8 bytes to 0x68 - 2 of 2 messages
+i2c_adapter i2c-0: client [ds1307] registered with bus id 0-0068
+ds1307 0-0068: rtc intf: sysfs
+ds1307 0-0068: rtc intf: proc
+ds1307 0-0068: rtc intf: dev (254:0)
+ds1307 0-0068: rtc core: registered ds1307 as rtc0
+i2c_adapter i2c-1: found normal entry for adapter 1, addr 0x68
+i2c_adapter i2c-1: master_xfer[0] W, addr=0x68, len=0
+Doing write 0 bytes to 0x68 - 1 of 1 messages
+I2C: No RXAK
+..............................
+i2c_adapter i2c-0: master_xfer[0] W, addr=0x68, len=1
+i2c_adapter i2c-0: master_xfer[1] R, addr=0x68, len=7
+Doing write 1 bytes to 0x68 - 1 of 2 messages
+Doing read 7 bytes to 0x68 - 2 of 2 messages
+ds1307 0-0068: read: 32 33 10 04 20 89 08
+ds1307 0-0068: read secs=32, mins=33, hours=10, mday=20, mon=8,
+year=108, wday=3
+ds1307 0-0068: setting the system clock to 2008-09-20 10:33:32 (1221906812)
 
-out_be16(&cpm2_immr->im_siu_conf.siu_82xx.sc_swsr, 0x556c);
-out_be16(&cpm2_immr->im_siu_conf.siu_82xx.sc_swsr, 0xaa39);
+it indicates can  read and write RTC chip through I2C. but after system
+boot up,  we can see the time always same.
 
-Best regards,
+After  adjusting these configurations on  U-Boot environment according
+to fsl_mp8313E RDB REVA 2, it still doesn't work.
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=C3=A9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+Who can give me some advice or suggestion ?  currently I doubt this
+hardware, but  what a shame I have only one fsl_mp8313E RDB REVA 3 board,
+can't  do comparison experiment.
+ 
+Thanks in advance.
+Andrew Liu
