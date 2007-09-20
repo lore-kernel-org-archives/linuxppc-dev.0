@@ -1,21 +1,15 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from the-village.bc.nu (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0C736DDE20
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:02:23 +1000 (EST)
-Date: Thu, 20 Sep 2007 15:09:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: mel@skynet.ie (Mel Gorman)
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
-Message-ID: <20070920150925.0caf3aef@the-village.bc.nu>
-In-Reply-To: <20070920131315.GE24105@skynet.ie>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070920131315.GE24105@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, jeff@garzik.org, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <200709201252.32997.jk@ozlabs.org>
+References: <18161.53259.540174.870980@cargo.ozlabs.ibm.com>
+	<200709201252.32997.jk@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B801447E-95BF-4433-BB68-738F0E0B1EE0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Patches added to powerpc.git for-2.6.24 branch
+Date: Thu, 20 Sep 2007 10:13:43 -0500
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 20 Sep 2007 14:13:15 +0100
-mel@skynet.ie (Mel Gorman) wrote:
 
-> PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
-> doesn't show up on other arches because this driver is specific to the
-> architecture.
-> 
-> drivers/ata/pata_scc.c: In function `scc_bmdma_status'
+On Sep 19, 2007, at 9:52 PM, Jeremy Kerr wrote:
 
-Its not been updated to match the libata core changes. Try something like
-this. Whoever is maintaining it should also remove the prereset cable handling
-code and use the proper cable detect method.
+>
+> A couple more, if these are acceptable:
+>
+> [PATCH 1/2] cell: don't cast the result of of_get_property()
+> [PATCH 2/2] fsl/embedded6xx: don't cast the result of of_get_property
 
+I've picked up the fsl/embedded6xx.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+I'll leave cell to arnd or paul.
 
-diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c
---- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-18 15:32:51.000000000 +0100
-+++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-20 14:23:32.879807760 +0100
-@@ -731,7 +731,7 @@
- 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
- 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
- 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
--	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
-+	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
- 	static int retry = 0;
- 
- 	/* return if IOS_SS is cleared */
-@@ -860,10 +860,10 @@
-  *	@deadline: deadline jiffies for the operation
-  */
- 
--static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
-+static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
- {
--	ap->cbl = ATA_CBL_PATA80;
--	return ata_std_prereset(ap, deadline);
-+	link->ap->cbl = ATA_CBL_PATA80;
-+	return ata_std_prereset(link, deadline);
- }
- 
- /**
-@@ -874,8 +874,9 @@
-  *	Note: Original code is ata_std_postreset().
-  */
- 
--static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
-+static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
- {
-+	struct ata_port *ap = link->ap;
- 	DPRINTK("ENTER\n");
- 
- 	/* is double-select really necessary? */
+- k
