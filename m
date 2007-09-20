@@ -1,20 +1,19 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay011.isp.belgacom.be (mailrelay011.isp.belgacom.be
-	[195.238.6.178]) by ozlabs.org (Postfix) with ESMTP id ABE2CDDDF5
+Return-Path: <samppa@sundmangroup.com>
+Received: from proxy3.bredband.net (proxy3.bredband.net [195.54.101.73])
+	by ozlabs.org (Postfix) with ESMTP id 2F049DDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 21:44:43 +1000 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: samppa@sundmangroup.com
-Subject: Re: 8270 & Watchdog - early start - II
-Date: Thu, 20 Sep 2007 13:44:40 +0200
+	Thu, 20 Sep 2007 21:48:01 +1000 (EST)
+Message-ID: <14733.194.237.142.6.1190286678.squirrel@www.sundmangroup.com>
+In-Reply-To: <200709201322.08359.laurentp@cse-semaphore.com>
 References: <AEA1A32F001C6B4F98614B5B80D7647D02D73DEB@esealmw115.eemea.ericsson.se>
+	<AEA1A32F001C6B4F98614B5B80D7647D02D73F76@esealmw115.eemea.ericsson.se>
 	<200709201322.08359.laurentp@cse-semaphore.com>
-	<14733.194.237.142.6.1190286678.squirrel@www.sundmangroup.com>
-In-Reply-To: <14733.194.237.142.6.1190286678.squirrel@www.sundmangroup.com>
+Date: Thu, 20 Sep 2007 13:11:18 +0200 (CEST)
+Subject: Re: 8270 & Watchdog - early start - II
+From: samppa@sundmangroup.com
+To: "Laurent Pinchart" <laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709201344.40653.laurentp@cse-semaphore.com>
+Content-Type: text/plain;charset=iso-8859-1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,26 +25,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 20 September 2007 13:11, samppa@sundmangroup.com wrote:
-> > You still shouldn't use direct access with MMU enabled. Use the global
-> > CPM mapping and the I/O access macros.
+>>> You still shouldn't use direct access with MMU enabled. Use the global
+CPM
+> mapping and the I/O access macros.
+
+I understand, but I need to kick on the WDT before "cpm2_immr"
+is initialized dur to timing constraints.
+
+Cheers // Matias
+
+
+
+> On Thursday 20 September 2007 12:06, Matias Sundman wrote:
+>> Hi Guys,
+>> The Software Service Register (SWSR) is 16-bit wide which Laurent
+>> Pinchart [laurentp@cse-semaphore.com] so nicely pointed out for me.
+>> So it actually works with;
+>> *((volatile unsigned short*)(0xf001000e))=0x556c;
+>> *((volatile unsigned short*)(0xf001000e))=0xaa39;
 >
-> I understand, but I need to kick on the WDT before "cpm2_immr"
-> is initialized dur to timing constraints.
-
-You can then probably get away with the BAT mapping. However you should sti=
-ll=20
-use the I/O access macro out_be16.
-
-Best regards,
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+> You still shouldn't use direct access with MMU enabled. Use the global CPM
+> mapping and the I/O access macros.
+>
+> out_be16(&cpm2_immr->im_siu_conf.siu_82xx.sc_swsr, 0x556c);
+> out_be16(&cpm2_immr->im_siu_conf.siu_82xx.sc_swsr, 0xaa39);
+>
+> Best regards,
+>
+> --
+> Laurent Pinchart
+> CSE Semaphore Belgium
+>
+> Chaussée de Bruxelles, 732A
+> B-1410 Waterloo
+> Belgium
+>
+> T +32 (2) 387 42 59
+> F +32 (2) 387 42 75
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
