@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 82E2ADDF92
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 04:44:51 +1000 (EST)
-Message-ID: <46F2BF80.5030502@freescale.com>
-Date: Thu, 20 Sep 2007 13:44:16 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 0F134DDFD5
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 04:47:25 +1000 (EST)
+Message-ID: <46F2BFFA.1060203@ru.mvista.com>
+Date: Thu, 20 Sep 2007 22:46:18 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] [POWERPC] Fix QEIC->MPIC cascading
-References: <20070920130244.GA18043@localhost.localdomain>	<46F2A7CC.1040106@freescale.com>	<20070920174159.GA10765@localhost.localdomain>
-	<46F2B8FD.7040501@freescale.com>
-In-Reply-To: <46F2B8FD.7040501@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/2] PowerPC: Fix Sequoia MAL0 and EMAC dts entries.
+References: <20070918172510.GA30944@ru.mvista.com>
+	<20070918172913.GA31098@ru.mvista.com>
+	<20070919010526.GA23646@localhost.localdomain>
+	<46F10478.1080506@ru.mvista.com>
+In-Reply-To: <46F10478.1080506@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Anton Vorontsov wrote:
-> 
->> I don't know (didn't look) why this works for 83xx w/o ack()...
->> maybe IPIC don't need this. Or maybe there is a bug hiding.
-> 
-> Scott W told me that me that the IPIC doesn't have the concept of EOI ack.  It 
-> just has IRQ masks.
+Valentine Barshak wrote:
+> David Gibson wrote:
+>> On Tue, Sep 18, 2007 at 09:29:13PM +0400, Valentine Barshak wrote:
+>>> According to PowerPC 440EPx documentation,
+>>> MAL0 is comprised of four channels (two transmit and two receive).
+>>> Each channel is dedicated to one of two EMAC cores.
+>>> This patch fixes Sequoia DTS MAL0 entry and EMAC entries,
+>>> assigning correct channel numbers to EMACs.
+>>
+>> Hrm.. did they change the EMAC in 440EPx to only use one MAL
+>> tx-channel?  All the older ones could use two (for no readily apparent
+>> reason, IMO).
+>>
+> Yes, they did.
+> Just 1 tx and 1 rx-channel per EMAC. Just 2 bits to select channels, 
+> while all other bits in MAL registers are reserved.
+> I'm not sure why they did it (possible bus bandwidth problems), but it's 
+> impossible to set more than 1 rx/tx channel for each EMAC in 440EPx.
 
-And the IRQ will be masked at the QEIC while being processed.  Doing it 
-this way allows another QE interrupt to come through while the first is 
-being serviced.
-
-It might make sense on MPIC to ack after masking at the QEIC, for this 
-reason.
-
--Scott
+Josh, David, is this patch OK?
