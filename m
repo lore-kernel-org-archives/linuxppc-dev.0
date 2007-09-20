@@ -1,18 +1,32 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9C674DDFD8
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 04:56:57 +1000 (EST)
-Message-ID: <46F2C23A.40001@ru.mvista.com>
-Date: Thu, 20 Sep 2007 22:55:54 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] PowerPC: Fix Sequoia MAL0 and EMAC dts entries.
-References: <20070918172510.GA30944@ru.mvista.com>	<20070918172913.GA31098@ru.mvista.com>	<20070919010526.GA23646@localhost.localdomain>	<46F10478.1080506@ru.mvista.com>	<46F2BFFA.1060203@ru.mvista.com>
-	<20070920135153.588cfd61@weaponx.rchland.ibm.com>
-In-Reply-To: <20070920135153.588cfd61@weaponx.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F389ADDFDF
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 05:03:50 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l8KJ3j5Y022310
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 12:03:45 -0700 (MST)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l8KJ3i6l029872
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 14:03:45 -0500 (CDT)
+Subject: Re: [PATCH] [POWERPC] Fix QEIC->MPIC cascading
+From: Haiying Wang <Haiying.Wang@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <46F2B8FD.7040501@freescale.com>
+References: <20070920130244.GA18043@localhost.localdomain>
+	<46F2A7CC.1040106@freescale.com>
+	<20070920174159.GA10765@localhost.localdomain>
+	<46F2B8FD.7040501@freescale.com>
+Content-Type: text/plain
+Date: Thu, 20 Sep 2007 15:03:43 -0400
+Message-Id: <1190315023.14673.9.camel@udp097531uds.am.freescale.net>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Thu, 20 Sep 2007 22:46:18 +0400
-> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+On Thu, 2007-09-20 at 13:16 -0500, Timur Tabi wrote:
+> Anton Vorontsov wrote:
 > 
->> Valentine Barshak wrote:
->>> David Gibson wrote:
->>>> On Tue, Sep 18, 2007 at 09:29:13PM +0400, Valentine Barshak wrote:
->>>>> According to PowerPC 440EPx documentation,
->>>>> MAL0 is comprised of four channels (two transmit and two receive).
->>>>> Each channel is dedicated to one of two EMAC cores.
->>>>> This patch fixes Sequoia DTS MAL0 entry and EMAC entries,
->>>>> assigning correct channel numbers to EMACs.
->>>> Hrm.. did they change the EMAC in 440EPx to only use one MAL
->>>> tx-channel?  All the older ones could use two (for no readily apparent
->>>> reason, IMO).
->>>>
->>> Yes, they did.
->>> Just 1 tx and 1 rx-channel per EMAC. Just 2 bits to select channels, 
->>> while all other bits in MAL registers are reserved.
->>> I'm not sure why they did it (possible bus bandwidth problems), but it's 
->>> impossible to set more than 1 rx/tx channel for each EMAC in 440EPx.
->> Josh, David, is this patch OK?
+> > I don't know (didn't look) why this works for 83xx w/o ack()...
+> > maybe IPIC don't need this. Or maybe there is a bug hiding.
 > 
-> Yeah.  I applied it to my tree and asked Paul to pull.  Same for the
-> Bamboo one.
-> 
-> josh
-OK thanks :)
+> Scott W told me that me that the IPIC doesn't have the concept of EOI ack.  It 
+> just has IRQ masks.
+
+That's true for IPIC, but MPIC has the concept of EOI ack - "An
+interrupt is considered in-service from the time its vector is read
+(through an IACK cycle) until the end of interrupt (EOI) register is
+written. generating what the PIC considers an EOI signal."
+
+On MPC8568, QEIC is a interrupt source of MPIC, so it must send a EOI
+signal after the interrupt is served. otherwise, the QEIC interrupt is
+always in-service.
+
+Haiying
