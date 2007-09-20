@@ -1,32 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4F273DDE2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 08:43:20 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8KMhGoO016171
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:43:16 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8KMhGgD385364
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 16:43:16 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8KMhGfj021478
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 16:43:16 -0600
-Subject: Re: 4xx git tree moved
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-In-Reply-To: <20070921013930.409a9f8b@localhost.localdomain>
-References: <20070920074236.5574cb29@weaponx.rchland.ibm.com>
-	<20070921013930.409a9f8b@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 19 Sep 2007 22:28:07 -0500
-Message-Id: <1190258887.15845.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 8D578DDE06
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 09:46:54 +1000 (EST)
+Date: Fri, 21 Sep 2007 09:46:53 +1000
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 2/5] Implement generic time of day clocksource for powerpc
+	machines.
+Message-ID: <20070920234653.GW9814@bakeyournoodle.com>
+References: <20070919064947.4B5A1399910@thor>
+	<1190216594.11899.3.camel@imap.mvista.com>
+	<18161.50240.599267.768383@cargo.ozlabs.ibm.com>
+	<1190306110.14264.7.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1190306110.14264.7.camel@localhost>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Paul Mackerras <paulus@samba.org>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,20 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-09-21 at 01:39 +0400, Vitaly Bordug wrote:
-> Hello Josh,
+On Thu, Sep 20, 2007 at 09:35:10AM -0700, john stultz wrote:
+ 
+> I think what Daniel is pointing out is that the clocksource read
+> function isn't the place for the __USE_RTC() conditional. 
 > 
-> On Thu, 20 Sep 2007 07:42:36 -0500
-> Josh Boyer wrote:
-> 
-> > For those interested in 4xx, I've moved my git tree to kernel.org.  You
-> > can find it here:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc.git
-> > 
-> Can you call it something like 4xx-powerpc.git, or powerpc-4xx.git? Number of powerpc.git stuff tend to grow :)
+> It would likely be better instead of the timebase clocksource managing
+> multiple type of hardware (timebase and RTC), to have a separate simple
+> RTC clocksource, and then conditionally register one or the other at
+> init time.
 
-Sure.  powerpc-4xx.git would be fine.  After Paul does my latest pull
-request I'll rename it.
+I'll create a seperate clocksource for the RTC case and use that as
+appropriate.  I'll resend the patch series after I've booted it :)
 
-josh
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
