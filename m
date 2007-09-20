@@ -1,17 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 9E010DDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 23:00:26 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id A297D8810
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:00:23 +0500 (SAMST)
-Date: Thu, 20 Sep 2007 17:02:44 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Fix QEIC->MPIC cascading
-Message-ID: <20070920130244.GA18043@localhost.localdomain>
+Return-Path: <mel@skynet.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EBC8DDDE30
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 23:13:22 +1000 (EST)
+Date: Thu, 20 Sep 2007 14:13:15 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+Message-ID: <20070920131315.GE24105@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20070918011841.2381bd93.akpm@linux-foundation.org>
+From: mel@skynet.ie (Mel Gorman)
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, jeff@garzik.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-set_irq_chained_handler overwrites MPIC's handle_irq function
-(handle_fasteoi_irq) thus MPIC never gets eoi event from the
-cascaded IRQ. This situation hangs MPIC on MPC8568E.
+PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+doesn't show up on other arches because this driver is specific to the
+architecture.
 
-Patch adds flow level "end" handler to the MPIC, and QEIC calls
-it when QEIC's interrupt processing finished.
+drivers/ata/pata_scc.c: In function `scc_bmdma_status':
+drivers/ata/pata_scc.c:734: error: structure has no member named `active_tag'
+drivers/ata/pata_scc.c: In function `scc_pata_prereset':
+drivers/ata/pata_scc.c:866: warning: passing arg 1 of `ata_std_prereset' from incompatible pointer type
+drivers/ata/pata_scc.c: In function `scc_error_handler':
+drivers/ata/pata_scc.c:908: warning: passing arg 2 of `ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 3 of `ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 5 of `ata_bmdma_drive_eh' from incompatible pointer type
+make[2]: *** [drivers/ata/pata_scc.o] Error 1
+make[1]: *** [drivers/ata] Error 2
+make: *** [drivers] Error 2
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/sysdev/mpic.c         |    3 +++
- arch/powerpc/sysdev/qe_lib/qe_ic.c |    6 ++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+The problem seems to be in git-libata-all.patch but based on similar
+changes in this patch, the following patch should be the fix. 
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 8de29f2..bee2d5b 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -846,6 +846,7 @@ static struct irq_chip mpic_irq_chip = {
- 	.mask		= mpic_mask_irq,
- 	.unmask		= mpic_unmask_irq,
- 	.eoi		= mpic_end_irq,
-+	.end		= mpic_end_irq,
- 	.set_type	= mpic_set_irq_type,
- };
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ drivers/ata/pata_scc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc6-mm1-025_fix_ppc64_kgdb/drivers/ata/pata_scc.c linux-2.6.23-rc6-mm1-030_fix_ppc64_sata/drivers/ata/pata_scc.c
+--- linux-2.6.23-rc6-mm1-025_fix_ppc64_kgdb/drivers/ata/pata_scc.c	2007-09-18 11:29:26.000000000 +0100
++++ linux-2.6.23-rc6-mm1-030_fix_ppc64_sata/drivers/ata/pata_scc.c	2007-09-20 11:51:01.000000000 +0100
+@@ -731,7 +731,7 @@ static u8 scc_bmdma_status (struct ata_p
+ 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+ 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+ 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+-	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
++	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+ 	static int retry = 0;
  
-@@ -854,6 +855,7 @@ static struct irq_chip mpic_ipi_chip = {
- 	.mask		= mpic_mask_ipi,
- 	.unmask		= mpic_unmask_ipi,
- 	.eoi		= mpic_end_ipi,
-+	.end		= mpic_end_ipi,
- };
- #endif /* CONFIG_SMP */
- 
-@@ -864,6 +866,7 @@ static struct irq_chip mpic_irq_ht_chip = {
- 	.mask		= mpic_mask_irq,
- 	.unmask		= mpic_unmask_ht_irq,
- 	.eoi		= mpic_end_ht_irq,
-+	.end		= mpic_end_ht_irq,
- 	.set_type	= mpic_set_irq_type,
- };
- #endif /* CONFIG_MPIC_U3_HT_IRQS */
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 55e6f39..8e743e0 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -328,6 +328,9 @@ void qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc)
- 
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
-+
-+	if (desc->chip->end)
-+		desc->chip->end(irq);
- }
- 
- void qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
-@@ -337,6 +340,9 @@ void qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
- 
- 	if (cascade_irq != NO_IRQ)
- 		generic_handle_irq(cascade_irq);
-+
-+	if (desc->chip->end)
-+		desc->chip->end(irq);
- }
- 
- void __init qe_ic_init(struct device_node *node, unsigned int flags)
+ 	/* return if IOS_SS is cleared */
 -- 
-1.5.0.6
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
