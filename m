@@ -1,16 +1,16 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2D389DDFB6
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 08:01:53 +1000 (EST)
-Date: Thu, 20 Sep 2007 17:01:19 -0500
+	by ozlabs.org (Postfix) with ESMTP id A03CDDDFDA
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 08:01:55 +1000 (EST)
+Date: Thu, 20 Sep 2007 17:01:20 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: jgarzik@pobox.com
-Subject: [PATCH 4/9] fs_enet: mac-fcc: Eliminate __fcc-* macros.
-Message-ID: <20070920220119.GD28784@loki.buserror.net>
+Subject: [PATCH 5/9] fs_enet: Align receive buffers.
+Message-ID: <20070920220120.GE28784@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070920220043.GA28769@loki.buserror.net>
@@ -24,72 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These macros accomplish nothing other than defeating type checking.
-
-This patch also fixes one instance of the wrong register size being
-used that was revealed by enabling type checking.
+At least some hardware driven by this driver needs receive buffers
+to be aligned on a 16-byte boundary.  This usually happens by chance,
+but it breaks if slab debugging is enabled.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/net/fs_enet/mac-fcc.c |   25 ++++++++-----------------
- 1 files changed, 8 insertions(+), 17 deletions(-)
+ drivers/net/fs_enet/fs_enet-main.c |   21 +++++++++++++++++++--
+ drivers/net/fs_enet/fs_enet.h      |    3 ++-
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-index ad3c5fa..8b30361 100644
---- a/drivers/net/fs_enet/mac-fcc.c
-+++ b/drivers/net/fs_enet/mac-fcc.c
-@@ -48,28 +48,19 @@
- 
- /* FCC access macros */
- 
--#define __fcc_out32(addr, x)	out_be32((unsigned *)addr, x)
--#define __fcc_out16(addr, x)	out_be16((unsigned short *)addr, x)
--#define __fcc_out8(addr, x)	out_8((unsigned char *)addr, x)
--#define __fcc_in32(addr)	in_be32((unsigned *)addr)
--#define __fcc_in16(addr)	in_be16((unsigned short *)addr)
--#define __fcc_in8(addr)		in_8((unsigned char *)addr)
--
--/* parameter space */
--
- /* write, read, set bits, clear bits */
--#define W32(_p, _m, _v)	__fcc_out32(&(_p)->_m, (_v))
--#define R32(_p, _m)	__fcc_in32(&(_p)->_m)
-+#define W32(_p, _m, _v)	out_be32(&(_p)->_m, (_v))
-+#define R32(_p, _m)	in_be32(&(_p)->_m)
- #define S32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) | (_v))
- #define C32(_p, _m, _v)	W32(_p, _m, R32(_p, _m) & ~(_v))
- 
--#define W16(_p, _m, _v)	__fcc_out16(&(_p)->_m, (_v))
--#define R16(_p, _m)	__fcc_in16(&(_p)->_m)
-+#define W16(_p, _m, _v)	out_be16(&(_p)->_m, (_v))
-+#define R16(_p, _m)	in_be16(&(_p)->_m)
- #define S16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) | (_v))
- #define C16(_p, _m, _v)	W16(_p, _m, R16(_p, _m) & ~(_v))
- 
--#define W8(_p, _m, _v)	__fcc_out8(&(_p)->_m, (_v))
--#define R8(_p, _m)	__fcc_in8(&(_p)->_m)
-+#define W8(_p, _m, _v)	out_8(&(_p)->_m, (_v))
-+#define R8(_p, _m)	in_8(&(_p)->_m)
- #define S8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) | (_v))
- #define C8(_p, _m, _v)	W8(_p, _m, R8(_p, _m) & ~(_v))
- 
-@@ -290,7 +281,7 @@ static void restart(struct net_device *dev)
- 
- 	/* clear everything (slow & steady does it) */
- 	for (i = 0; i < sizeof(*ep); i++)
--		__fcc_out8((char *)ep + i, 0);
-+		out_8((char *)ep + i, 0);
- 
- 	/* get physical address */
- 	rx_bd_base_phys = fep->ring_mem_addr;
-@@ -495,7 +486,7 @@ static void tx_kickstart(struct net_device *dev)
- 	struct fs_enet_private *fep = netdev_priv(dev);
- 	fcc_t *fccp = fep->fcc.fccp;
- 
--	S32(fccp, fcc_ftodr, 0x80);
-+	S16(fccp, fcc_ftodr, 0x8000);
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index da79a45..a4b76cd 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -69,6 +69,14 @@ static void fs_set_multicast_list(struct net_device *dev)
+ 	(*fep->ops->set_multicast_list)(dev);
  }
  
- static u32 get_int_events(struct net_device *dev)
++static void skb_align(struct sk_buff *skb, int align)
++{
++	int off = ((unsigned long)skb->data) & (align - 1);
++
++	if (off)
++		skb_reserve(skb, align - off);
++}
++
+ /* NAPI receive function */
+ static int fs_enet_rx_napi(struct net_device *dev, int *budget)
+ {
+@@ -166,9 +174,13 @@ static int fs_enet_rx_napi(struct net_device *dev, int *budget)
+ 					skb = skbn;
+ 					skbn = skbt;
+ 				}
+-			} else
++			} else {
+ 				skbn = dev_alloc_skb(ENET_RX_FRSIZE);
+ 
++				if (skbn)
++					skb_align(skbn, ENET_RX_ALIGN);
++			}
++
+ 			if (skbn != NULL) {
+ 				skb_put(skb, pkt_len);	/* Make room */
+ 				skb->protocol = eth_type_trans(skb, dev);
+@@ -300,9 +312,13 @@ static int fs_enet_rx_non_napi(struct net_device *dev)
+ 					skb = skbn;
+ 					skbn = skbt;
+ 				}
+-			} else
++			} else {
+ 				skbn = dev_alloc_skb(ENET_RX_FRSIZE);
+ 
++				if (skbn)
++					skb_align(skbn, ENET_RX_ALIGN);
++			}
++
+ 			if (skbn != NULL) {
+ 				skb_put(skb, pkt_len);	/* Make room */
+ 				skb->protocol = eth_type_trans(skb, dev);
+@@ -512,6 +528,7 @@ void fs_init_bds(struct net_device *dev)
+ 			       dev->name);
+ 			break;
+ 		}
++		skb_align(skb, ENET_RX_ALIGN);
+ 		fep->rx_skbuff[i] = skb;
+ 		CBDW_BUFADDR(bdp,
+ 			dma_map_single(fep->dev, skb->data,
+diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+index 72a61e9..f8c7ee8 100644
+--- a/drivers/net/fs_enet/fs_enet.h
++++ b/drivers/net/fs_enet/fs_enet.h
+@@ -82,7 +82,8 @@ struct phy_info {
+ /* Must be a multiple of 32 (to cover both FEC & FCC) */
+ #define PKT_MAXBLR_SIZE		((PKT_MAXBUF_SIZE + 31) & ~31)
+ /* This is needed so that invalidate_xxx wont invalidate too much */
+-#define ENET_RX_FRSIZE		L1_CACHE_ALIGN(PKT_MAXBUF_SIZE)
++#define ENET_RX_ALIGN  16
++#define ENET_RX_FRSIZE L1_CACHE_ALIGN(PKT_MAXBUF_SIZE + ENET_RX_ALIGN - 1)
+ 
+ struct fs_enet_mii_bus {
+ 	struct list_head list;
 -- 
 1.5.3.1
