@@ -1,17 +1,21 @@
-Return-Path: <bwalle@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5E305DDF1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 03:18:51 +1000 (EST)
-Message-Id: <20070920171846.904880000@stravinsky.suse.de>
-References: <20070920171845.774383000@stravinsky.suse.de>
-Date: Thu, 20 Sep 2007 19:18:50 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: kexec@lists.infradead.org, akpm@linux-foundation.org
-Subject: [patch 5/7] Use extended crashkernel command line on ppc64
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5B963DDF92
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 03:22:52 +1000 (EST)
+Date: Thu, 20 Sep 2007 12:25:06 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: Sequoia kernel crash workaround.
+Message-ID: <20070920172506.GA16354@lixom.net>
+References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
+	<20070919193024.GA28163@lixom.net>
+	<20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
+	<46F2A640.1000802@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46F2A640.1000802@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Josh Boyer <jwboyer@gmail.com>,
+	Stefan Roese <sr@denx.de>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,97 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adapts the ppc64 code to use the generic parse_crashkernel()
-function introduced in the generic patch of that series.
+On Thu, Sep 20, 2007 at 08:56:32PM +0400, Valentine Barshak wrote:
+>
+> I was thinking about it. Looks like it's the best place, but the code that 
+> actually calls setup_cpu is under ifdef CONFIG_PPC64, while lots of 
+> cpu_setup functions are defined for ppc32 processors.
+> Is it OK to remove this ifdef, or should I do CONFIG_PPC64 || CONFIG_44x?
+
+Sounds like something that went wrong at the merge of ppc and ppc64.
+
+Take out the ifdef, even if there's fallout we should deal with it
+instead of adding more complex ifdefs.
 
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
-
----
- arch/powerpc/kernel/machine_kexec.c |   52 ++++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
-
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -61,45 +61,39 @@ NORET_TYPE void machine_kexec(struct kim
- 	for(;;);
- }
- 
--static int __init early_parse_crashk(char *p)
-+void __init reserve_crashkernel(void)
- {
--	unsigned long size;
--
--	if (!p)
--		return 1;
--
--	size = memparse(p, &p);
-+	unsigned long long crash_size = 0, crash_base;
-+	int ret;
- 
--	if (*p == '@')
--		crashk_res.start = memparse(p + 1, &p);
--	else
--		crashk_res.start = KDUMP_KERNELBASE;
--
--	crashk_res.end = crashk_res.start + size - 1;
--
--	return 0;
--}
--early_param("crashkernel", early_parse_crashk);
-+	/* this is necessary because of lmb_phys_mem_size() */
-+	lmb_analyze();
- 
--void __init reserve_crashkernel(void)
--{
--	unsigned long size;
-+	/* use common parsing */
-+	ret = parse_crashkernel(boot_command_line, lmb_phys_mem_size(),
-+			&crash_size, &crash_base);
-+	if (ret == 0 && crash_size > 0) {
-+		if (crash_base == 0)
-+			crash_base = KDUMP_KERNELBASE;
-+		crashk_res.start = crash_base;
-+	} else {
-+		/* handle the device tree */
-+		crash_size = crashk_res.end - crashk_res.start + 1;
-+	}
- 
--	if (crashk_res.start == 0)
-+	if (crash_size == 0)
- 		return;
- 
- 	/* We might have got these values via the command line or the
- 	 * device tree, either way sanitise them now. */
- 
--	size = crashk_res.end - crashk_res.start + 1;
--
- 	if (crashk_res.start != KDUMP_KERNELBASE)
- 		printk("Crash kernel location must be 0x%x\n",
- 				KDUMP_KERNELBASE);
- 
- 	crashk_res.start = KDUMP_KERNELBASE;
--	size = PAGE_ALIGN(size);
--	crashk_res.end = crashk_res.start + size - 1;
-+	crash_size = PAGE_ALIGN(crash_size);
-+	crashk_res.end = crashk_res.start + crash_size - 1;
- 
- 	/* Crash kernel trumps memory limit */
- 	if (memory_limit && memory_limit <= crashk_res.end) {
-@@ -108,7 +102,13 @@ void __init reserve_crashkernel(void)
- 				memory_limit);
- 	}
- 
--	lmb_reserve(crashk_res.start, size);
-+	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
-+			"for crashkernel (System RAM: %ldMB)\n",
-+			(unsigned long)(crash_size >> 20),
-+			(unsigned long)(crashk_res.start >> 20),
-+			(unsigned long)(lmb_phys_mem_size() >> 20));
-+
-+	lmb_reserve(crashk_res.start, crash_size);
- }
- 
- int overlaps_crashkernel(unsigned long start, unsigned long size)
-
--- 
+-Olof
