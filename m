@@ -1,23 +1,21 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 864EEDDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:00:25 +1000 (EST)
-Date: Thu, 20 Sep 2007 16:00:11 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3 v2] powerpc clk.h interface for platforms
-Message-ID: <20070920140011.GK32628@nd47.coderock.org>
-References: <20070711093113.GE4375@moe.telargo.com>
-	<20070711093220.GF4375@moe.telargo.com>
-	<20070806065857.GN4529@moe.telargo.com>
-	<18160.39896.132391.625791@cargo.ozlabs.ibm.com>
-	<20070919051157.GH32628@nd47.coderock.org>
-	<18162.1.982956.610996@cargo.ozlabs.ibm.com>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C736DDE20
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:02:23 +1000 (EST)
+Date: Thu, 20 Sep 2007 15:09:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: mel@skynet.ie (Mel Gorman)
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+Message-ID: <20070920150925.0caf3aef@the-village.bc.nu>
+In-Reply-To: <20070920131315.GE24105@skynet.ie>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070920131315.GE24105@skynet.ie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18162.1.982956.610996@cargo.ozlabs.ibm.com>
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Sylvain Munaut <tnt@246tNt.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-ide@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, jeff@garzik.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,180 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-clk interface for arch/powerpc, platforms should fill
-clk_functions.
+On Thu, 20 Sep 2007 14:13:15 +0100
+mel@skynet.ie (Mel Gorman) wrote:
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-
----
-On 20/09/07 15:07 +1000, Paul Mackerras wrote:
-> Domen Puncer writes:
+> PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+> doesn't show up on other arches because this driver is specific to the
+> architecture.
 > 
-> > 52xx
-> > Reason for adding it to all was that EXPORT_SYMBOL's would clash if
-> > one were to add clk support for another platform.
-> 
-> What I meant was, why aren't you using a config symbol so that we
-> don't build it on platforms that don't need any "clk" support at all?
+> drivers/ata/pata_scc.c: In function `scc_bmdma_status'
 
-Right, doh!
-
-> 
-> Paul.
+Its not been updated to match the libata core changes. Try something like
+this. Whoever is maintaining it should also remove the prereset cable handling
+code and use the proper cable detect method.
 
 
- arch/powerpc/Kconfig                |    4 +
- arch/powerpc/kernel/Makefile        |    1 
- arch/powerpc/kernel/clock.c         |   82 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/52xx/Kconfig |    1 
- include/asm-powerpc/clk_interface.h |   20 ++++++++
- 5 files changed, 108 insertions(+)
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Index: linux.git/arch/powerpc/kernel/clock.c
-===================================================================
---- /dev/null
-+++ linux.git/arch/powerpc/kernel/clock.c
-@@ -0,0 +1,82 @@
-+/*
-+ * Dummy clk implementations for powerpc.
-+ * These need to be overridden in platform code.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/err.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <asm/clk_interface.h>
-+
-+struct clk_interface clk_functions;
-+
-+struct clk *clk_get(struct device *dev, const char *id)
-+{
-+	if (clk_functions.clk_get)
-+		return clk_functions.clk_get(dev, id);
-+	return ERR_PTR(-ENOSYS);
-+}
-+EXPORT_SYMBOL(clk_get);
-+
-+void clk_put(struct clk *clk)
-+{
-+	if (clk_functions.clk_put)
-+		clk_functions.clk_put(clk);
-+}
-+EXPORT_SYMBOL(clk_put);
-+
-+int clk_enable(struct clk *clk)
-+{
-+	if (clk_functions.clk_enable)
-+		return clk_functions.clk_enable(clk);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_enable);
-+
-+void clk_disable(struct clk *clk)
-+{
-+	if (clk_functions.clk_disable)
-+		clk_functions.clk_disable(clk);
-+}
-+EXPORT_SYMBOL(clk_disable);
-+
-+unsigned long clk_get_rate(struct clk *clk)
-+{
-+	if (clk_functions.clk_get_rate)
-+		return clk_functions.clk_get_rate(clk);
-+	return 0;
-+}
-+EXPORT_SYMBOL(clk_get_rate);
-+
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (clk_functions.clk_round_rate)
-+		return clk_functions.clk_round_rate(clk, rate);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_round_rate);
-+
-+int clk_set_rate(struct clk *clk, unsigned long rate)
-+{
-+	if (clk_functions.clk_set_rate)
-+		return clk_functions.clk_set_rate(clk, rate);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_set_rate);
-+
-+struct clk *clk_get_parent(struct clk *clk)
-+{
-+	if (clk_functions.clk_get_parent)
-+		return clk_functions.clk_get_parent(clk);
-+	return ERR_PTR(-ENOSYS);
-+}
-+EXPORT_SYMBOL(clk_get_parent);
-+
-+int clk_set_parent(struct clk *clk, struct clk *parent)
-+{
-+	if (clk_functions.clk_set_parent)
-+		return clk_functions.clk_set_parent(clk, parent);
-+	return -ENOSYS;
-+}
-+EXPORT_SYMBOL(clk_set_parent);
-Index: linux.git/include/asm-powerpc/clk_interface.h
-===================================================================
---- /dev/null
-+++ linux.git/include/asm-powerpc/clk_interface.h
-@@ -0,0 +1,20 @@
-+#ifndef __ASM_POWERPC_CLK_INTERFACE_H
-+#define __ASM_POWERPC_CLK_INTERFACE_H
-+
-+#include <linux/clk.h>
-+
-+struct clk_interface {
-+	struct clk*	(*clk_get)	(struct device *dev, const char *id);
-+	int		(*clk_enable)	(struct clk *clk);
-+	void		(*clk_disable)	(struct clk *clk);
-+	unsigned long	(*clk_get_rate)	(struct clk *clk);
-+	void		(*clk_put)	(struct clk *clk);
-+	long		(*clk_round_rate) (struct clk *clk, unsigned long rate);
-+	int 		(*clk_set_rate)	(struct clk *clk, unsigned long rate);
-+	int		(*clk_set_parent) (struct clk *clk, struct clk *parent);
-+	struct clk*	(*clk_get_parent) (struct clk *clk);
-+};
-+
-+extern struct clk_interface clk_functions;
-+
-+#endif /* __ASM_POWERPC_CLK_INTERFACE_H */
-Index: linux.git/arch/powerpc/kernel/Makefile
-===================================================================
---- linux.git.orig/arch/powerpc/kernel/Makefile
-+++ linux.git/arch/powerpc/kernel/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_PPC64)		+= vdso64/
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
- obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
- obj-$(CONFIG_PPC_OF)		+= of_device.o of_platform.o prom_parse.o
-+obj-$(CONFIG_PPC_CLOCK)		+= clock.o
- procfs-$(CONFIG_PPC64)		:= proc_ppc64.o
- obj-$(CONFIG_PROC_FS)		+= $(procfs-y)
- rtaspci-$(CONFIG_PPC64)-$(CONFIG_PCI)	:= rtas_pci.o
-Index: linux.git/arch/powerpc/Kconfig
-===================================================================
---- linux.git.orig/arch/powerpc/Kconfig
-+++ linux.git/arch/powerpc/Kconfig
-@@ -664,3 +664,7 @@ config KEYS_COMPAT
- 	default y
+diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c
+--- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-18 15:32:51.000000000 +0100
++++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c	2007-09-20 14:23:32.879807760 +0100
+@@ -731,7 +731,7 @@
+ 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+ 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+ 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+-	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
++	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+ 	static int retry = 0;
  
- source "crypto/Kconfig"
-+
-+config PPC_CLOCK
-+	bool
-+	default n
-Index: linux.git/arch/powerpc/platforms/52xx/Kconfig
-===================================================================
---- linux.git.orig/arch/powerpc/platforms/52xx/Kconfig
-+++ linux.git/arch/powerpc/platforms/52xx/Kconfig
-@@ -1,6 +1,7 @@
- config PPC_MPC52xx
- 	bool
- 	select FSL_SOC
-+	select PPC_CLOCK
- 	default n
+ 	/* return if IOS_SS is cleared */
+@@ -860,10 +860,10 @@
+  *	@deadline: deadline jiffies for the operation
+  */
  
- config PPC_MPC5200
+-static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
++static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+ {
+-	ap->cbl = ATA_CBL_PATA80;
+-	return ata_std_prereset(ap, deadline);
++	link->ap->cbl = ATA_CBL_PATA80;
++	return ata_std_prereset(link, deadline);
+ }
+ 
+ /**
+@@ -874,8 +874,9 @@
+  *	Note: Original code is ata_std_postreset().
+  */
+ 
+-static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
++static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
+ {
++	struct ata_port *ap = link->ap;
+ 	DPRINTK("ENTER\n");
+ 
+ 	/* is double-select really necessary? */
