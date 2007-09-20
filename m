@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
+Message-Id: <19ac8b97e98274582fe5bde914883c3585f20082.1190270165.git.michael@ellerman.id.au>
 In-Reply-To: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
 References: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/4] Simplify rtas_change_msi() error semantics
-Date: Thu, 20 Sep 2007 16:36:50 +1000 (EST)
+Subject: [PATCH 4/4] Inline u3msi_compose_msi_msg()
+Date: Thu, 20 Sep 2007 16:36:51 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,68 +15,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently rtas_change_msi() returns either the error code from RTAS, or if
-the RTAS call succeeded the number of irqs that were configured by RTAS.
-This makes checking the return value more complicated than it needs to be.
-
-Instead, have rtas_change_msi() check that the number of irqs configured by
-RTAS is equal to what we requested - and return an error otherwise. This makes
-the return semantics match the usual 0 for success, something else for error.
+In the MPIC U3 MSI code, we call u3msi_compose_msi_msg() once for each MSI.
+This is overkill, as the address is per pci device, not per MSI. So setup
+the address once, and just set the data per MSI.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/msi.c |   18 +++++++++++-------
- 1 files changed, 11 insertions(+), 7 deletions(-)
+ arch/powerpc/sysdev/mpic_u3msi.c |   24 +++++++++---------------
+ 1 files changed, 9 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 9c3bcfe..2793a1b 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -70,11 +70,15 @@ static int rtas_change_msi(struct pci_dn *pdn, u32 func, u32 num_irqs)
- 		seq_num = rtas_ret[1];
- 	} while (rtas_busy_delay(rc));
- 
--	if (rc == 0) /* Success */
--		rc = rtas_ret[0];
-+	/*
-+	 * If the RTAS call succeeded, check the number of irqs is actually
-+	 * what we asked for. If not, return an error.
-+	 */
-+	if (rc == 0 && rtas_ret[0] != num_irqs)
-+		rc = -ENOSPC;
- 
--	pr_debug("rtas_msi: ibm,change_msi(func=%d,num=%d) = (%d)\n",
--		 func, num_irqs, rc);
-+	pr_debug("rtas_msi: ibm,change_msi(func=%d,num=%d), got %d rc = %d\n",
-+		 func, num_irqs, rtas_ret[0], rc);
- 
- 	return rc;
- }
-@@ -87,7 +91,7 @@ static void rtas_disable_msi(struct pci_dev *pdev)
- 	if (!pdn)
- 		return;
- 
--	if (rtas_change_msi(pdn, RTAS_CHANGE_FN, 0) != 0)
-+	if (rtas_change_msi(pdn, RTAS_CHANGE_FN, 0))
- 		pr_debug("rtas_msi: Setting MSIs to 0 failed!\n");
+diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
+index 4e50d1c..027fe01 100644
+--- a/arch/powerpc/sysdev/mpic_u3msi.c
++++ b/arch/powerpc/sysdev/mpic_u3msi.c
+@@ -107,26 +107,17 @@ static void u3msi_teardown_msi_irqs(struct pci_dev *pdev)
+ 	return;
  }
  
-@@ -180,14 +184,14 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 	if (type == PCI_CAP_ID_MSI) {
- 		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
+-static void u3msi_compose_msi_msg(struct pci_dev *pdev, int virq,
+-				  struct msi_msg *msg)
+-{
+-	u64 addr;
+-
+-	addr = find_ht_magic_addr(pdev);
+-	msg->address_lo = addr & 0xFFFFFFFF;
+-	msg->address_hi = addr >> 32;
+-	msg->data = virq_to_hw(virq);
+-
+-	pr_debug("u3msi: allocated virq 0x%x (hw 0x%lx) at address 0x%lx\n",
+-		 virq, virq_to_hw(virq), addr);
+-}
+-
+ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
+ 	irq_hw_number_t hwirq;
+ 	unsigned int virq;
+ 	struct msi_desc *entry;
+ 	struct msi_msg msg;
++	u64 addr;
++
++	addr = find_ht_magic_addr(pdev);
++	msg.address_lo = addr & 0xFFFFFFFF;
++	msg.address_hi = addr >> 32;
  
--		if (rc != nvec) {
-+		if (rc) {
- 			pr_debug("rtas_msi: trying the old firmware call.\n");
- 			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
- 		}
- 	} else
- 		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		hwirq = mpic_msi_alloc_hwirqs(msi_mpic, 1);
+@@ -146,7 +137,10 @@ static int u3msi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 		set_irq_chip(virq, &mpic_u3msi_chip);
+ 		set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
  
--	if (rc != nvec) {
-+	if (rc) {
- 		pr_debug("rtas_msi: rtas_change_msi() failed\n");
- 		return rc;
- 	}
+-		u3msi_compose_msi_msg(pdev, virq, &msg);
++		pr_debug("u3msi: allocated virq 0x%x (hw 0x%lx) addr 0x%lx\n",
++			  virq, hwirq, addr);
++
++		msg.data = hwirq;
+ 		write_msi_msg(virq, &msg);
+ 
+ 		hwirq++;
 -- 
 1.5.1.3.g7a33b
