@@ -1,36 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 411E4DDF01
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 03:29:30 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l8KGLPgA014979
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 12:21:25 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8KHTMmP491592
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 11:29:22 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8KHTL7X017842
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 11:29:22 -0600
-Date: Thu, 20 Sep 2007 12:29:19 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Olof Johansson <olof@lixom.net>, benh@kernel.crashing.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F210EDDFDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 03:38:31 +1000 (EST)
+Date: Thu, 20 Sep 2007 12:32:56 -0500 (CDT)
+Message-Id: <200709201732.l8KHWuGA035995@sullivan.realtime.net>
+From: Milton Miller <miltonm@bga.com>
+Sender: Milton Miller <miltonm@realtime.net>
 Subject: Re: Sequoia kernel crash workaround.
-Message-ID: <20070920122919.32dd8061@weaponx.rchland.ibm.com>
-In-Reply-To: <20070920172506.GA16354@lixom.net>
-References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
-	<20070919193024.GA28163@lixom.net>
-	<20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
-	<46F2A640.1000802@ru.mvista.com> <20070920172506.GA16354@lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Josh Boyer <jwboyer@gmail.com>,
-	Stefan Roese <sr@denx.de>, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <46F2A640.1000802@ru.mvista.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,25 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 20 Sep 2007 12:25:06 -0500
-Olof Johansson <olof@lixom.net> wrote:
-
-> On Thu, Sep 20, 2007 at 08:56:32PM +0400, Valentine Barshak wrote:
-> >
-> > I was thinking about it. Looks like it's the best place, but the code that 
-> > actually calls setup_cpu is under ifdef CONFIG_PPC64, while lots of 
-> > cpu_setup functions are defined for ppc32 processors.
-> > Is it OK to remove this ifdef, or should I do CONFIG_PPC64 || CONFIG_44x?
+On Fri Sep 21 02:56:32 EST 2007, Valentine Barshak wrote:
+> Josh Boyer wrote:
+>> On Wed, 19 Sep 2007 14:30:24 -0500
+>> Olof Johansson <olof at lixom.net> wrote:
+>> 
+>>> On Wed, Sep 19, 2007 at 09:19:47PM +0200, Stefan Roese wrote:
+>>>> Hi Valentine,
+>>>>
+>>>> On Wednesday 19 September 2007, Valentine Barshak wrote:
+>>>>> Disabling write pipelining really helps.
+>>>>> Josh, David, what is the right place to put this workaround to?
+>>>>>
+>>>>> Is it OK to do mtdcr(PLB4A0_ACR, mfdcr(PLB4A0_ACR) & ~PLB4_WRP); in
+>>>>> arch/powerpc/boot/cuboot-sequoia.c:sequoia_fixups()?
+>>>>> or
+>>>>> should this be done in
+>>>>> arch/powerpc/platforms/44x/sequoia.c:sequoia_setup_arch()
+>>>>> with dcr_map, dcr_read/write stuff?
+>>>> I vote for putting it into sequoia.c, since it's very likely to happen that 
+>>>> Sequoia will at one point be booted without the bootwrapper. Or perhaps it 
+>>>> should go into some common code checking the PVR and disabling it when this 
+>>>> 440EPx/GRx is detected, since all those boards are affected.
+>>> This is what we have setup_cpu functions in the cpu table for. Please
+>>> put it there instead of in board code.
+>> 
+>> Yes, agreed.
 > 
-> Sounds like something that went wrong at the merge of ppc and ppc64.
-> 
-> Take out the ifdef, even if there's fallout we should deal with it
-> instead of adding more complex ifdefs.
+> I was thinking about it. Looks like it's the best place, but the code 
+> that actually calls setup_cpu is under ifdef CONFIG_PPC64, while lots of 
+> cpu_setup functions are defined for ppc32 processors.
+> Is it OK to remove this ifdef, or should I do CONFIG_PPC64 || CONFIG_44x?
 
-Yeah.  Looks like BenH did this in commit:
+head_32.S calls call_setup_cpu in misc_32.S to call the cpu setup functon.
 
-42c4aaadb737e0e672b3fb86b2c41ff59f0fb8bc
+Note that these functions are called before the kernel is copied down to
+0, so on ppc32 you will need the PTRRELOC type stuff.  Also the callsite
+implies that the cpu number is available in r24, which may or may not be
+true when called from C.
 
-Ben, any reason you ifdef'd it for ppc64?
+Its probably easier to just call call_setup_cpu in the other 32 bit 
+head_xxx files.
 
-josh
+milton
