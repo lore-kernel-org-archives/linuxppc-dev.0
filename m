@@ -1,32 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC75DDDE30
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 22:42:40 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8KCgcMC022076
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 08:42:38 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8KCgbaQ487742
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:42:37 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8KCgbx4027274
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:42:37 -0600
-Received: from weaponx.rchland.ibm.com (weaponx.rchland.ibm.com [9.10.86.71])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l8KCgbit027246
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 06:42:37 -0600
-Date: Thu, 20 Sep 2007 07:42:36 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9E010DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 23:00:26 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id A297D8810
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:00:23 +0500 (SAMST)
+Date: Thu, 20 Sep 2007 17:02:44 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: 4xx git tree moved
-Message-ID: <20070920074236.5574cb29@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: [PATCH] [POWERPC] Fix QEIC->MPIC cascading
+Message-ID: <20070920130244.GA18043@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,9 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For those interested in 4xx, I've moved my git tree to kernel.org.  You
-can find it here:
+set_irq_chained_handler overwrites MPIC's handle_irq function
+(handle_fasteoi_irq) thus MPIC never gets eoi event from the
+cascaded IRQ. This situation hangs MPIC on MPC8568E.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc.git
+Patch adds flow level "end" handler to the MPIC, and QEIC calls
+it when QEIC's interrupt processing finished.
 
-josh
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/sysdev/mpic.c         |    3 +++
+ arch/powerpc/sysdev/qe_lib/qe_ic.c |    6 ++++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 8de29f2..bee2d5b 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -846,6 +846,7 @@ static struct irq_chip mpic_irq_chip = {
+ 	.mask		= mpic_mask_irq,
+ 	.unmask		= mpic_unmask_irq,
+ 	.eoi		= mpic_end_irq,
++	.end		= mpic_end_irq,
+ 	.set_type	= mpic_set_irq_type,
+ };
+ 
+@@ -854,6 +855,7 @@ static struct irq_chip mpic_ipi_chip = {
+ 	.mask		= mpic_mask_ipi,
+ 	.unmask		= mpic_unmask_ipi,
+ 	.eoi		= mpic_end_ipi,
++	.end		= mpic_end_ipi,
+ };
+ #endif /* CONFIG_SMP */
+ 
+@@ -864,6 +866,7 @@ static struct irq_chip mpic_irq_ht_chip = {
+ 	.mask		= mpic_mask_irq,
+ 	.unmask		= mpic_unmask_ht_irq,
+ 	.eoi		= mpic_end_ht_irq,
++	.end		= mpic_end_ht_irq,
+ 	.set_type	= mpic_set_irq_type,
+ };
+ #endif /* CONFIG_MPIC_U3_HT_IRQS */
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+index 55e6f39..8e743e0 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -328,6 +328,9 @@ void qe_ic_cascade_low(unsigned int irq, struct irq_desc *desc)
+ 
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
++
++	if (desc->chip->end)
++		desc->chip->end(irq);
+ }
+ 
+ void qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
+@@ -337,6 +340,9 @@ void qe_ic_cascade_high(unsigned int irq, struct irq_desc *desc)
+ 
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
++
++	if (desc->chip->end)
++		desc->chip->end(irq);
+ }
+ 
+ void __init qe_ic_init(struct device_node *node, unsigned int flags)
+-- 
+1.5.0.6
