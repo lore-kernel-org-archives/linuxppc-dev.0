@@ -1,21 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.234])
-	by ozlabs.org (Postfix) with ESMTP id 8F25ADDE06
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 73AA2DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Sep 2007 02:21:32 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so476544nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Sep 2007 09:21:31 -0700 (PDT)
-Message-ID: <9e4733910709200921u3ffd6a37pe0ef268a2a171973@mail.gmail.com>
-Date: Thu, 20 Sep 2007 12:21:30 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: Printing device tree on running system
-In-Reply-To: <20070920160804.GA15796@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910709200855p5a1cdf18v1848a31c7935ca5e@mail.gmail.com>
-	<20070920160804.GA15796@ld0162-tx32.am.freescale.net>
+	Fri, 21 Sep 2007 03:19:28 +1000 (EST)
+Date: Thu, 20 Sep 2007 12:19:12 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Andrew Liu <shengping.liu@windriver.com>
+Subject: Re: The  ds1337 chip on fsl_mp8313E RDB REVA 3 doesn't  work properly
+Message-Id: <20070920121912.672c7ed2.kim.phillips@freescale.com>
+In-Reply-To: <46F238BB.4040007@windriver.com>
+References: <46F238BB.4040007@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,32 +27,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/20/07, Scott Wood <scottwood@freescale.com> wrote:
-> On Thu, Sep 20, 2007 at 11:55:10AM -0400, Jon Smirl wrote:
-> > Is there a command for printing the device tree on a running system? I
-> > want to see what changes the various device drivers made to the DTC I
-> > started with.
->
-> It's exported in /proc/device-tree, if support is built into the kernel.
+On Thu, 20 Sep 2007 17:09:15 +0800
+Andrew Liu <shengping.liu@windriver.com> wrote:
 
-That worked, didn't know the option existed.
+> Hello All,
+> The same u-boot/kernel/rootfs on fsl_mp8313E RDB REVA 2, DS1337  RTC
+> chip can work,
+> but on sl_mp8313E RDB REVA 3, it doesn't work, its time don't change.
+> 
+> This RTC chip  specific bad behavior on sl_mp8313E RDB REVA 3  as follows:
+> (1) On U-Boot (from Freescale), run command:
+> => i2c md 0x68 0x0
+> 0000: 32 33 10 04 20 89 08 84 00 20 53 00 42 16 18 80    23.. .... S.B...
 
->
-> It might be interesting to make dtc support turning that into a dts...
+looks like your oscillator is turned off (80 in status reg).
 
-That would be useful, you could do a diff and see how the tree was altered.
+There are many reasons this can happen - google for 'dallas 1337 rtc'
+for the chip's documentation to help you diagnose.
 
-The case I just looked at was old code manually building entries for
-i2c devices in the tree, but with an updated dts the devices are
-already in the tree which explains the error I got about conflicting
-device nodes.
-
-
->
-> -Scott
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Kim
