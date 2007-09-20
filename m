@@ -1,34 +1,15 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 717E1DDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:26:11 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8K8PdEO020089
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:25:39 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8K8Pebi3723352
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:25:40 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8K8OAbB006048
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:24:10 +1000
-Message-ID: <46F22E60.2090403@linux.vnet.ibm.com>
-Date: Thu, 20 Sep 2007 13:55:04 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-Subject: Re: [PATCH] powerpc: Avoid pointless WARN_ON(irqs_disabled()) from
-	panic codepath
-References: <46EA5CEB.7020104@linux.vnet.ibm.com>
-	<a781481a0709140337u2c26f770h2af6d457bc39f280@mail.gmail.com>
-	<alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0709180511070.8863@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id F3C9CDDE1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 18:36:53 +1000 (EST)
+Date: Thu, 20 Sep 2007 18:08:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Create and use CONFIG_WORD_SIZE
+Message-Id: <20070920180825.39aca4d7.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,115 +19,218 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Satyam Sharma wrote:
->> ------------[ cut here ]------------
->> Badness at arch/powerpc/kernel/smp.c:202
->>     
->
-> comes when smp_call_function_map() has been called with irqs disabled,
-> which is illegal. However, there is a special case, the panic() codepath,
-> when we do not want to warn about this -- warning at that time is pointless
-> anyway, and only serves to scroll away the *real* cause of the panic and
-> distracts from the real bug.
->
-> * So let's extract the WARN_ON() from smp_call_function_map() into all its
->   callers -- smp_call_function() and smp_call_function_single()
->
-> * Also, introduce another caller of smp_call_function_map(), namely
->   __smp_call_function() (and make smp_call_function() a wrapper over this)
->   which does *not* warn about disabled irqs
->
-> * Use this __smp_call_function() from the panic codepath's smp_send_stop()
->
-> We also end having to move code of smp_send_stop() below the definition
-> of __smp_call_function().
->
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
->
-> ---
->
-> Untested (not even compile-tested) patch.
-> Could someone point me to ppc32/64 cross-compilers for i386?
->
->  arch/powerpc/kernel/smp.c |   27 ++++++++++++++++++---------
->  1 files changed, 18 insertions(+), 9 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 1ea4316..b24dcba 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -152,11 +152,6 @@ static void stop_this_cpu(void *dummy)
->  		;
->  }
->
-> -void smp_send_stop(void)
-> -{
-> -	smp_call_function(stop_this_cpu, NULL, 1, 0);
-> -}
-> -
->  /*
->   * Structure and data for smp_call_function(). This is designed to minimise
->   * static memory requirements. It also looks cleaner.
-> @@ -198,9 +193,6 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
->  	int cpu;
->  	u64 timeout;
->
-> -	/* Can deadlock when called with interrupts disabled */
-> -	WARN_ON(irqs_disabled());
-> -
->  	if (unlikely(smp_ops == NULL))
->  		return ret;
->
-> @@ -270,10 +262,19 @@ int smp_call_function_map(void (*func) (void *info), void *info, int nonatomic,
->  	return ret;
->  }
->
-> +static int __smp_call_function(void (*func)(void *info), void *info,
-> +			       int nonatomic, int wait)
-> +{
-> +	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
-> +}
-> +
->  int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
->  			int wait)
->  {
-> -	return smp_call_function_map(func,info,nonatomic,wait,cpu_online_map);
-> +	/* Can deadlock when called with interrupts disabled */
-> +	WARN_ON(irqs_disabled());
-> +
-> +	return __smp_call_function(func, info, nonatomic, wait);
->  }
->  EXPORT_SYMBOL(smp_call_function);
->
-> @@ -283,6 +284,9 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
->  	cpumask_t map = CPU_MASK_NONE;
->  	int ret = 0;
->
-> +	/* Can deadlock when called with interrupts disabled */
-> +	WARN_ON(irqs_disabled());
-> +
->  	if (!cpu_online(cpu))
->  		return -EINVAL;
->
-> @@ -299,6 +303,11 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int
->  }
->  EXPORT_SYMBOL(smp_call_function_single);
->
-> +void smp_send_stop(void)
-> +{
-> +	__smp_call_function(stop_this_cpu, NULL, 1, 0);
-> +}
-> +
->  void smp_call_function_interrupt(void)
->  {
->  	void (*func) (void *info);
->   
-Hi,
+Linus made this suggestion for the x86 merge and this starts the process
+for powerpc. We assume that CONFIG_PPC64 implies CONFIG_PPC_MERGE and
+CONFIG_PPC_STD_MMU_32 implies CONFIG_PPC_STD_MMU.
 
-This patch solves the badness oops we get on the powerpc.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/Kconfig         |    5 +++++
+ arch/powerpc/Makefile        |   15 ++++++---------
+ arch/powerpc/kernel/Makefile |   30 +++++++++++++-----------------
+ arch/powerpc/lib/Makefile    |    7 ++++---
+ arch/powerpc/mm/Makefile     |   13 ++++++++-----
+ arch/ppc/Kconfig             |    4 ++++
+ 6 files changed, 40 insertions(+), 34 deletions(-)
+
+Built for ARCH=powerpc all defconfigs and ARCH=ppc all defconfigs (most
+of which failed for (I am pretty sure) reasons unrelated to this patch).
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 66a3295..de886ec 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -14,6 +14,11 @@ config 64BIT
+ 	bool
+ 	default y if PPC64
+ 
++config WORD_SIZE
++	int
++	default 64 if PPC64
++	default 32 if !PPC64
++
+ config PPC_MERGE
+ 	def_bool y
+ 
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 6015a92..9de1833 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -39,7 +39,6 @@ KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ OLDARCH	:= ppc64
+-SZ	:= 64
+ 
+ new_nm := $(shell if $(NM) --help 2>&1 | grep -- '--synthetic' > /dev/null; then echo y; else echo n; fi)
+ 
+@@ -49,16 +48,15 @@ endif
+ 
+ else
+ OLDARCH	:= ppc
+-SZ	:= 32
+ endif
+ 
+ UTS_MACHINE := $(OLDARCH)
+ 
+ ifeq ($(HAS_BIARCH),y)
+-override AS	+= -a$(SZ)
+-override LD	+= -m elf$(SZ)ppc
+-override CC	+= -m$(SZ)
+-override AR	:= GNUTARGET=elf$(SZ)-powerpc $(AR)
++override AS	+= -a$(CONFIG_WORD_SIZE)
++override LD	+= -m elf$(CONFIG_WORD_SIZE)ppc
++override CC	+= -m$(CONFIG_WORD_SIZE)
++override AR	:= GNUTARGET=elf$(CONFIG_WORD_SIZE)-powerpc $(AR)
+ endif
+ 
+ LDFLAGS_vmlinux	:= -Bstatic
+@@ -72,7 +70,7 @@ AFLAGS		+= $(AFLAGS-y)
+ CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
+ CPP		= $(CC) -E $(CFLAGS)
+ 
+-CHECKFLAGS	+= -m$(SZ) -D__powerpc__ -D__powerpc$(SZ)__
++CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ GCC_BROKEN_VEC	:= $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
+@@ -116,8 +114,7 @@ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+ AFLAGS += $(cpu-as-y)
+ CFLAGS += $(cpu-as-y)
+ 
+-head-y				:= arch/powerpc/kernel/head_32.o
+-head-$(CONFIG_PPC64)		:= arch/powerpc/kernel/head_64.o
++head-y				:= arch/powerpc/kernel/head_$(CONFIG_WORD_SIZE).o
+ head-$(CONFIG_8xx)		:= arch/powerpc/kernel/head_8xx.o
+ head-$(CONFIG_40x)		:= arch/powerpc/kernel/head_40x.o
+ head-$(CONFIG_44x)		:= arch/powerpc/kernel/head_44x.o
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 967afc5..ef3633f 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -37,10 +37,10 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsync.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+-obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
+-obj32-$(CONFIG_HIBERNATION) += swsusp_32.o
+-obj64-$(CONFIG_HIBERNATION) += swsusp_64.o swsusp_asm64.o
+-obj32-$(CONFIG_MODULES)		+= module_32.o
++obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o \
++				   swsusp_$(CONFIG_WORD_SIZE).o
++obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
++obj-$(CONFIG_MODULES)		+= module_$(CONFIG_WORD_SIZE).o
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ 
+@@ -53,9 +53,10 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
+ extra-y				+= vmlinux.lds
+ 
+ obj-y				+= time.o prom.o traps.o setup-common.o \
+-				   udbg.o misc.o io.o
+-obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
+-obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
++				   udbg.o misc.o io.o \
++				   misc_$(CONFIG_WORD_SIZE).o
++obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
++obj-$(CONFIG_PPC64)		+= dma_64.o iommu.o
+ obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+@@ -63,16 +64,12 @@ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
+ 
+-module-$(CONFIG_PPC64)		+= module_64.o
+-obj-$(CONFIG_MODULES)		+= $(module-y)
+-
+-pci64-$(CONFIG_PPC64)		+= pci_64.o pci_dn.o isa-bridge.o
+-pci32-$(CONFIG_PPC32)		:= pci_32.o
+-obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y) pci-common.o
++pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
++obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
++				   pci-common.o
+ obj-$(CONFIG_PCI_MSI)		+= msi.o
+-kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
+-kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
+-obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
++obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o \
++				   machine_kexec_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_AUDIT)		+= audit.o
+ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ 
+@@ -86,7 +83,6 @@ smpobj-$(CONFIG_SMP)		+= smp.o
+ 
+ endif
+ 
+-obj-$(CONFIG_PPC32)		+= $(obj32-y)
+ obj-$(CONFIG_PPC64)		+= $(obj64-y)
+ 
+ extra-$(CONFIG_PPC_FPU)		+= fpu.o
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 23bbb1e..65d492e 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -7,11 +7,12 @@ EXTRA_CFLAGS		+= -mno-minimal-toc
+ endif
+ 
+ ifeq ($(CONFIG_PPC_MERGE),y)
+-obj-y			:= string.o alloc.o
+-obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
++obj-y			:= string.o alloc.o \
++			   checksum_$(CONFIG_WORD_SIZE).o
++obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
+ endif
+ 
+-obj-$(CONFIG_PPC64)	+= checksum_64.o copypage_64.o copyuser_64.o \
++obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   memcpy_64.o usercopy_64.o mem_64.o string.o
+ obj-$(CONFIG_QUICC_ENGINE) += rheap.o
+ obj-$(CONFIG_XMON)	+= sstep.o
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index bf20fa6..20629ae 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -6,13 +6,16 @@ ifeq ($(CONFIG_PPC64),y)
+ EXTRA_CFLAGS	+= -mno-minimal-toc
+ endif
+ 
+-obj-y				:= fault.o mem.o lmb.o
+-obj-$(CONFIG_PPC32)		+= init_32.o pgtable_32.o mmu_context_32.o
++obj-y				:= fault.o mem.o lmb.o \
++				   init_$(CONFIG_WORD_SIZE).o \
++				   pgtable_$(CONFIG_WORD_SIZE).o \
++				   mmu_context_$(CONFIG_WORD_SIZE).o
+ hash-$(CONFIG_PPC_NATIVE)	:= hash_native_64.o
+-obj-$(CONFIG_PPC64)		+= init_64.o pgtable_64.o mmu_context_64.o \
+-				   hash_utils_64.o hash_low_64.o tlb_64.o \
++obj-$(CONFIG_PPC64)		+= hash_utils_64.o \
+ 				   slb_low.o slb.o stab.o mmap.o $(hash-y)
+-obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o hash_low_32.o tlb_32.o
++obj-$(CONFIG_PPC_STD_MMU_32)	+= ppc_mmu_32.o
++obj-$(CONFIG_PPC_STD_MMU)	+= hash_low_$(CONFIG_WORD_SIZE).o \
++				   tlb_$(CONFIG_WORD_SIZE).o
+ obj-$(CONFIG_40x)		+= 40x_mmu.o
+ obj-$(CONFIG_44x)		+= 44x_mmu.o
+ obj-$(CONFIG_FSL_BOOKE)		+= fsl_booke_mmu.o
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index c1b34eb..c2087f6 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -4,6 +4,10 @@
+ 
+ mainmenu "Linux/PowerPC Kernel Configuration"
+ 
++config WORD_SIZE
++	int
++	default 32
++
+ config MMU
+ 	bool
+ 	default y
+-- 
+1.5.3.1
