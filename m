@@ -1,25 +1,24 @@
-Return-Path: <kamalesh.babulal@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id F092FDDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 01:49:16 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so527161nfd
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Sep 2007 08:49:15 -0700 (PDT)
-Message-ID: <f86d6cc00709200849g8c7e7d6y10614be2f93b5379@mail.gmail.com>
-Date: Thu, 20 Sep 2007 21:19:14 +0530
-From: "Kamalesh Babulal" <kamalesh.babulal@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
-In-Reply-To: <46F2957F.60707@linux.vnet.ibm.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id 3AE52DDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 02:29:22 +1000 (EST)
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH 3/3] IB/ehca: Make sure user pages are from hugetlb before
+	using MR large pages
+References: <200709131814.13937.fenkes@de.ibm.com>
+	<200709131816.21162.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 20 Sep 2007 09:29:12 -0700
+In-Reply-To: <200709131816.21162.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Thu, 13 Sep 2007 18:16:20 +0200")
+Message-ID: <ada6425gv1j.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_4062_5569712.1190303354903"
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070920131315.GE24105@skynet.ie>
-	<20070920150925.0caf3aef@the-village.bc.nu>
-	<46F2957F.60707@linux.vnet.ibm.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Mel Gorman <mel@skynet.ie>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,195 +28,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_4062_5569712.1190303354903
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 9/20/07, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->
-> Alan Cox wrote:
-> > On Thu, 20 Sep 2007 14:13:15 +0100
-> > mel@skynet.ie (Mel Gorman) wrote:
-> >
-> >
-> >> PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c .
-> It
-> >> doesn't show up on other arches because this driver is specific to the
-> >> architecture.
-> >>
-> >> drivers/ata/pata_scc.c: In function `scc_bmdma_status'
-> >>
-> >
-> > Its not been updated to match the libata core changes. Try something
-> like
-> > this. Whoever is maintaining it should also remove the prereset cable
-> handling
-> > code and use the proper cable detect method.
-> >
-> >
-> > Signed-off-by: Alan Cox <alan@redhat.com>
-> >
-> > diff -u --exclude-from /usr/src/exclude --new-file --recursive
-> linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1
-> /drivers/ata/pata_scc.c
-> > --- linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c        2007-09-18
-> 15:32:51.000000000 +0100
-> > +++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c        2007-09-20 14:23:
-> 32.879807760 +0100
-> > @@ -731,7 +731,7 @@
-> >       void __iomem *mmio = ap->ioaddr.bmdma_addr;
-> >       u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
-> >       u32 int_status = in_be32(mmio + SCC_DMA_INTST);
-> > -     struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
-> > +     struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->
-> link.active_tag);
-> >       static int retry = 0;
-> >
-> >       /* return if IOS_SS is cleared */
-> > @@ -860,10 +860,10 @@
-> >   *   @deadline: deadline jiffies for the operation
-> >   */
-> >
-> > -static int scc_pata_prereset(struct ata_port *ap, unsigned long
-> deadline)
-> > +static int scc_pata_prereset(struct ata_link *link, unsigned long
-> deadline)
-> >  {
-> > -     ap->cbl = ATA_CBL_PATA80;
-> > -     return ata_std_prereset(ap, deadline);
-> > +     link->ap->cbl = ATA_CBL_PATA80;
-> > +     return ata_std_prereset(link, deadline);
-> >  }
-> >
-> >  /**
-> > @@ -874,8 +874,9 @@
-> >   *   Note: Original code is ata_std_postreset().
-> >   */
-> >
-> > -static void scc_std_postreset (struct ata_port *ap, unsigned int
-> *classes)
-> > +static void scc_std_postreset (struct ata_link *link, unsigned int
-> *classes)
-> >  {
-> >
-> > -     ap->cbl = ATA_CBL_PATA80;
-> > -     return ata_std_prereset(ap, deadline);
-> > +     link->ap->cbl = ATA_CBL_PATA80;
-> > +     return ata_std_prereset(link, deadline);
-> >  }
-> >
-> >  /**
-> > @@ -874,8 +874,9 @@
-> >   *   Note: Original code is ata_std_postreset().
-> >   */
-> >
-> > +     struct ata_port *ap = link->ap;
-> >       DPRINTK("ENTER\n");
-> >
-> >       /* is double-select really necessary? */
-> >
-> >
-> Hi,
->
-> This patch solves the build failure, but with following warnings
-> <snip>
-
-
-sorry, have to fix the mail client, resending the build failure.
-
-Hi,
-
-This patch solves the build failure, but with following warnings
-CC drivers/ata/pata_scc.o
-drivers/ata/pata_scc.c: In function 'scc_error_handler':
-drivers/ata/pata_scc.c:909: warning: passing argument 3 of
-'ata_bmdma_drive_eh' from incompatible pointer type
-
-and after that the build fails with
-
-CC [M] drivers/net/spider_net.o
-drivers/net/spider_net.c: In function 'spider_net_release_tx_chain':
-drivers/net/spider_net.c:818: error: 'dev' undeclared (first use in this
-function)
-drivers/net/spider_net.c:818: error: (Each undeclared identifier is reported
-only once
-drivers/net/spider_net.c:818: error: for each function it appears in.)
-drivers/net/spider_net.c: In function 'spider_net_xmit':
-drivers/net/spider_net.c:922: error: 'dev' undeclared (first use in this
-function)
-drivers/net/spider_net.c: In function 'spider_net_pass_skb_up':
-drivers/net/spider_net.c:1018: error: 'dev' undeclared (first use in this
-function)
-drivers/net/spider_net.c: In function 'spider_net_decode_one_descr':
-drivers/net/spider_net.c:1215: error: 'dev' undeclared (first use in this
-function)
-make[2]: *** [drivers/net/spider_net.o] Error 1
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
-
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
-
-------=_Part_4062_5569712.1190303354903
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On 9/20/07, <b class="gmail_sendername">Kamalesh Babulal</b> &lt;<a href="mailto:kamalesh@linux.vnet.ibm.com">kamalesh@linux.vnet.ibm.com</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Alan Cox wrote:<br>&gt; On Thu, 20 Sep 2007 14:13:15 +0100<br>&gt; <a href="mailto:mel@skynet.ie">mel@skynet.ie</a> (Mel Gorman) wrote:<br>&gt;<br>&gt;<br>&gt;&gt; PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
-<br>&gt;&gt; doesn&#39;t show up on other arches because this driver is specific to the<br>&gt;&gt; architecture.<br>&gt;&gt;<br>&gt;&gt; drivers/ata/pata_scc.c: In function `scc_bmdma_status&#39;<br>&gt;&gt;<br>&gt;<br>&gt; Its not been updated to match the libata core changes. Try something like
-<br>&gt; this. Whoever is maintaining it should also remove the prereset cable handling<br>&gt; code and use the proper cable detect method.<br>&gt;<br>&gt;<br>&gt; Signed-off-by: Alan Cox &lt;<a href="mailto:alan@redhat.com">
-alan@redhat.com</a>&gt;<br>&gt;<br>&gt; diff -u --exclude-from /usr/src/exclude --new-file --recursive linux.vanilla-2.6.23rc6-mm1/drivers/ata/pata_scc.c linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c<br>&gt; --- linux.vanilla-2.6.23rc6-mm1
-/drivers/ata/pata_scc.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2007-09-18 15:32:51.000000000 +0100<br>&gt; +++ linux-2.6.23rc6-mm1/drivers/ata/pata_scc.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2007-09-20 14:23:32.879807760 +0100<br>&gt; @@ -731,7 +731,7 @@<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; void __iomem *mmio = ap-&gt;
-ioaddr.bmdma_addr;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; u32 int_status = in_be32(mmio + SCC_DMA_INTST);<br>&gt; -&nbsp;&nbsp;&nbsp;&nbsp; struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap-&gt;active_tag);
-<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap-&gt;link.active_tag);<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; static int retry = 0;<br>&gt;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* return if IOS_SS is cleared */<br>&gt; @@ -860,10 +860,10 @@<br>&gt;&nbsp;&nbsp; *&nbsp;&nbsp; @deadline: deadline jiffies for the operation
-<br>&gt;&nbsp;&nbsp; */<br>&gt;<br>&gt; -static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)<br>&gt; +static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)<br>&gt;&nbsp;&nbsp;{<br>&gt; -&nbsp;&nbsp;&nbsp;&nbsp; ap-&gt;cbl = ATA_CBL_PATA80;
-<br>&gt; -&nbsp;&nbsp;&nbsp;&nbsp; return ata_std_prereset(ap, deadline);<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; link-&gt;ap-&gt;cbl = ATA_CBL_PATA80;<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; return ata_std_prereset(link, deadline);<br>&gt;&nbsp;&nbsp;}<br>&gt;<br>&gt;&nbsp;&nbsp;/**<br>&gt; @@ -874,8 +874,9 @@<br>
-&gt;&nbsp;&nbsp; *&nbsp;&nbsp; Note: Original code is ata_std_postreset().<br>&gt;&nbsp;&nbsp; */<br>&gt;<br>&gt; -static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)<br>&gt; +static void scc_std_postreset (struct ata_link *link, unsigned int *classes)
-<br>&gt;&nbsp;&nbsp;{<br>&gt;<br>&gt; -&nbsp;&nbsp;&nbsp;&nbsp; ap-&gt;cbl = ATA_CBL_PATA80;<br>&gt; -&nbsp;&nbsp;&nbsp;&nbsp; return ata_std_prereset(ap, deadline);<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; link-&gt;ap-&gt;cbl = ATA_CBL_PATA80;<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; return ata_std_prereset(link, deadline);
-<br>&gt;&nbsp;&nbsp;}<br>&gt;<br>&gt;&nbsp;&nbsp;/**<br>&gt; @@ -874,8 +874,9 @@<br>&gt;&nbsp;&nbsp; *&nbsp;&nbsp; Note: Original code is ata_std_postreset().<br>&gt;&nbsp;&nbsp; */<br>&gt;<br>&gt; +&nbsp;&nbsp;&nbsp;&nbsp; struct ata_port *ap = link-&gt;ap;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DPRINTK(&quot;ENTER\n&quot;);
-<br>&gt;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* is double-select really necessary? */<br>&gt;<br>&gt;<br>Hi,<br><br>This patch solves the build failure, but with following warnings<br>&lt;snip&gt;</blockquote><div><br>sorry, have to fix the mail client, resending the build failure. 
-<br></div><br></div>Hi,
-<br>
-<br>This patch solves the build failure, but with following warnings
-<br>CC drivers/ata/pata_scc.o
-<br>drivers/ata/pata_scc.c: In function 'scc_error_handler':
-<br>drivers/ata/pata_scc.c:909: warning: passing argument 3 of 
-'ata_bmdma_drive_eh' from incompatible pointer type
-<br>
-<br>and after that the build fails with
-<br>
-<br>CC [M] drivers/net/spider_net.o
-<br>drivers/net/spider_net.c: In function 'spider_net_release_tx_chain':
-<br>drivers/net/spider_net.c:818: error: 'dev' undeclared (first use in this 
-function)
-<br>drivers/net/spider_net.c:818: error: (Each undeclared identifier is 
-reported only once
-<br>drivers/net/spider_net.c:818: error: for each function it appears in.)
-<br>drivers/net/spider_net.c: In function 'spider_net_xmit':
-<br>drivers/net/spider_net.c:922: error: 'dev' undeclared (first use in this 
-function)
-<br>drivers/net/spider_net.c: In function 'spider_net_pass_skb_up':
-<br>drivers/net/spider_net.c:1018: error: 'dev' undeclared (first use in 
-this function)
-<br>drivers/net/spider_net.c: In function 'spider_net_decode_one_descr':
-<br>drivers/net/spider_net.c:1215: error: 'dev' undeclared (first use in 
-this function)
-<br>make[2]: *** [drivers/net/spider_net.o] Error 1
-<br>make[1]: *** [drivers/net] Error 2
-<br>make: *** [drivers] Error 2
-<br>
-<br>
-<br><span class="moz-txt-tag">--&nbsp;<br></span>Thanks &amp; Regards,
-<br>Kamalesh Babulal,
-<br>Linux Technology Center,
-<br>IBM, ISTL.
-<br>
-<br>
-
-------=_Part_4062_5569712.1190303354903--
+thanks, applied this and the umem patch...
