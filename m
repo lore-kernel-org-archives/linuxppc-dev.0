@@ -1,15 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F00D4DDE2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:08:25 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:08:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Prepare to remove of_platform_driver name
-Message-Id: <20070921180817.03418ee4.sfr@canb.auug.org.au>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 978B8DDDF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:30:11 +1000 (EST)
+Date: Fri, 21 Sep 2007 10:29:52 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 09/11] [POWERPC] iSeries: move detection of virtual tapes
+Message-ID: <20070921082952.GA5607@lst.de>
+References: <20070921135533.461eecdf.sfr@canb.auug.org.au>
+	<20070921142928.64451ad8.sfr@canb.auug.org.au>
+	<20070921143102.eb30d770.sfr@canb.auug.org.au>
+	<20070921143205.64271521.sfr@canb.auug.org.au>
+	<20070921143337.0e4a2f0a.sfr@canb.auug.org.au>
+	<20070921143446.ad55d494.sfr@canb.auug.org.au>
+	<20070921143540.75f3becf.sfr@canb.auug.org.au>
+	<20070921143647.7ceebabc.sfr@canb.auug.org.au>
+	<20070921143750.4114b0b5.sfr@canb.auug.org.au>
+	<20070921143841.37ad2a2f.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070921143841.37ad2a2f.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,67 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The name field of of_platform_driver is just copied into the
-included device_driver.  By not overriding an already initialised
-device_driver name, we can convert the drivers over time to stop using
-the of_platform_driver name.
+> +#if defined(CONFIG_VIOTAPE) || defined(CONFIG_VIOTAPE_MODULE)
+> +/* Handle interrupt events for tape */
+> +static void __init handle_tape_event(struct HvLpEvent *event)
+> +{
+> +	struct vio_waitevent *we;
+> +	struct viotapelpevent *tevent = (struct viotapelpevent *)event;
 
-Also we were not copying the owner field from of_platform_driver, so do
-the same with it.
+I think we should generate these device tree entires unconditionally.
+They're just a conversion of what the iseries firmware/hypervisor
+provides and not dependent on a specific driver.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/of_platform.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index f70e787..eca8ccc 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -19,11 +19,11 @@
- #include <linux/mod_devicetable.h>
- #include <linux/slab.h>
- #include <linux/pci.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/errno.h>
- #include <asm/dcr.h>
--#include <asm/of_device.h>
--#include <asm/of_platform.h>
- #include <asm/topology.h>
- #include <asm/pci-bridge.h>
- #include <asm/ppc-pci.h>
-@@ -70,7 +70,10 @@ postcore_initcall(of_bus_driver_init);
- int of_register_platform_driver(struct of_platform_driver *drv)
- {
- 	/* initialize common driver fields */
--	drv->driver.name = drv->name;
-+	if (!drv->driver.name)
-+		drv->driver.name = drv->name;
-+	if (!drv->driver.owner)
-+		drv->driver.owner = drv->owner;
- 	drv->driver.bus = &of_platform_bus_type;
- 
- 	/* register with core */
-@@ -385,9 +388,11 @@ static struct of_device_id of_pci_phb_ids[] = {
- };
- 
- static struct of_platform_driver of_pci_phb_driver = {
--       .name = "of-pci",
--       .match_table = of_pci_phb_ids,
--       .probe = of_pci_phb_probe,
-+	.match_table = of_pci_phb_ids,
-+	.probe = of_pci_phb_probe,
-+	.driver = {
-+		.name = "of-pci",
-+	},
- };
- 
- static __init int of_pci_phb_init(void)
--- 
-1.5.3.2
+(dito for the other patches with the same scheme)
