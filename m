@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 12005DECE7
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:06:21 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:06:04 -0500 (CDT)
-Subject: [PATCH 11/15] bootwrapper: allow vmlinuz to be an external payload
+	by ozlabs.org (Postfix) with ESMTP id 4FCFADE4BB
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:06:35 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:06:23 -0500 (CDT)
+Subject: [PATCH 12/15] bootwrapper: kexec extract vmlinux from initramfs
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-8-11.miltonm@bga.com>
+Message-Id: <boot-8-12.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -22,78 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Allow the boot wrapper to obtain the vmlinux elf from an external
-platform supplied location instead of embedding it at link time.
+Teach the kexec platform to find the vmlinux from the initramfs.
 
-When used with the cpio library, the kernel can be stored as a file in
-the initramfs, allowing the same (compressed) copy of the vmlinux elf
-to be used for both the kernel to execute and any user space tools such
-as kexec (for reboot), crash dump, or oprofile.
-
-Another use would be to uncompress directly from a memory mapped
-region such as a flash partition.
+The implementation searches the initramfs for a path specified
+by the property linux,kernel-path in chosen.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-vs 12178, just fuzz.
+vs 12179
+change property from boot-file to linux,kernel-path
+context diffs
 
-The source and source len variables are passed to the routine
-only to allow them to be printed later.
-
-The gunzip_state is passed to allow a platform to find the
-elf stream in an arbitrary container (cpio, ar, etc) without
-decompressing leading data twice.
-
-I also used this hook for qemu, where the "rom" contains the 
-wrapper code and device tree blob, but the kernel is loaded
-into ram via the -kernel flag (allowing a raw vmlinux elf).
-
-Index: kernel/arch/powerpc/boot/main.c
+Index: kernel/arch/powerpc/boot/kexec.c
 ===================================================================
---- kernel.orig/arch/powerpc/boot/main.c	2007-09-20 17:00:15.000000000 -0500
-+++ kernel/arch/powerpc/boot/main.c	2007-09-20 17:49:10.000000000 -0500
-@@ -37,10 +37,19 @@ static struct addr_range prep_kernel(voi
- 	struct elf_info ei;
- 	int len;
+--- kernel.orig/arch/powerpc/boot/kexec.c	2007-09-20 17:49:08.000000000 -0500
++++ kernel/arch/powerpc/boot/kexec.c	2007-09-20 17:49:13.000000000 -0500
+@@ -23,6 +23,8 @@
+ #include "flatdevtree.h"
+ #include "page.h"
+ #include "types.h"
++#include "cpio.h"
++#include "stat.h"
  
--	/* gunzip the ELF header of the kernel */
--	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
--	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
-+	/* Initialze zlib.  Any attached kernel overrides find_vmlinuz */
-+	if (vmlinuz_size)
-+		gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
-+	else
-+		if (platform_ops.find_vmlinuz)
-+			platform_ops.find_vmlinuz(&gzstate, &vmlinuz_addr,
-+					&vmlinuz_size);
-+		else
-+			fatal("Can't find a kernel to boot: no attached "
-+				"vmlinuz and no find_vmlinuz method\n\r");
+ extern char _start[];
+ extern char _end[];
+@@ -41,6 +43,51 @@ static void find_console_from_tree(void)
+ 	}
+ }
  
-+	/* gunzip and parse the ELF header of the kernel */
-+	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
- 	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei))
- 		fatal("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
- 
-Index: kernel/arch/powerpc/boot/ops.h
-===================================================================
---- kernel.orig/arch/powerpc/boot/ops.h	2007-09-20 17:49:08.000000000 -0500
-+++ kernel/arch/powerpc/boot/ops.h	2007-09-20 17:49:10.000000000 -0500
-@@ -24,6 +24,8 @@ typedef void (*kernel_entry_t)(unsigned 
- 
- struct boot_param_header;
- 
-+struct gunzip_state;
++void find_vmlinux_in_initramfs(struct gunzip_state *state,
++		void **srcp, unsigned long *lenp)
++{
++	void *devp;
++	int rc;
++	char path[MAX_PATH];
 +
- /* Platform specific operations */
- struct platform_ops {
- 	void	(*fixups)(void);
-@@ -33,6 +35,8 @@ struct platform_ops {
- 	void *	(*realloc)(void *ptr, unsigned long size);
- 	void	(*exit)(void);
- 	void *	(*vmlinux_alloc)(unsigned long size);
-+ 	void	(*find_vmlinuz)(struct gunzip_state *, void **srcp,
-+ 			unsigned long *lenp);
- };
- extern struct platform_ops platform_ops;
++	if (!loader_info.initrd_size)
++		dt_find_initrd();
++	if (!loader_info.initrd_size)
++		fatal("find_vmlinux: no initramfs");
++	devp = finddevice("/chosen");
++	if (!devp)
++		fatal("find_vmlinux: no /chosen to find vmlinux");
++	rc = getprop(devp, "linux,kernel-path", path, sizeof(path));
++	if (rc < 0)
++		fatal("find_vmlinux: no linux,kernel-path property in /chosen")
++	else if (rc == 0 || rc > MAX_PATH)
++		fatal("linux,kernel-path too long in /chosen")
++
++	rc = find_in_initramfs(path, (void *)loader_info.initrd_addr,
++			loader_info.initrd_size, state);
++	if (!rc)
++		fatal("find_vmlinux: couldn't find linux,kernel-path %s"
++				" in initramfs", path);
++
++	rc = get_cpio_file_mode();
++	if (!S_ISREG(rc))
++		fatal("find_vmlinux: linux,kernel-path %s is not"
++				" a regular file", path)
++
++	get_cpio_info(srcp, &rc);
++	*lenp = get_cpio_file_size();
++}
++
++void cpio_error(char *msg)
++{
++	void *srcp;
++	int read;
++
++	get_cpio_info(&srcp, &read);
++
++	fatal("cpio_error at %p + 0x%x(%d): %s", srcp, read, read, msg);
++}
++
+ /**
+  * setup_initial_heap - setup a small heap in the bss
+  * Using a preallocated heap, setup for scanning the device tree.
+@@ -119,6 +166,7 @@ void kexec_platform_init(struct boot_par
+ 	/* now that we have a malloc region, start over from the flat tree */
+ 	init_flat_tree(dt_blob);
  
++	platform_ops.find_vmlinuz = find_vmlinux_in_initramfs;
+ 	platform_ops.vmlinux_alloc = kexec_vmlinux_alloc;
+ 	platform_ops.fixups = kexec_fixups;
+ 	finalize_chain = dt_ops.finalize;
