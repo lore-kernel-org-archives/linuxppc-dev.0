@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D004CDE086
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:04:14 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:03:59 -0500 (CDT)
-Subject: [PATCH 4/15] bootwrapper: smp support code
+	by ozlabs.org (Postfix) with ESMTP id 93243DE4B7
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:04:35 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:04:18 -0500 (CDT)
+Subject: [PATCH 5/15] bootwrapper: occuppied memory ranges
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-8-04.miltonm@bga.com>
+Message-Id: <boot-8-05.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -22,31 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add a set of library routines to manage gross memory allocations.
 
-Support code to move cpus around, both a spin loop and c code to
-move the cpus before uncompressing and copying the kernel to 0.
+This code uses an array in bss to store upto 32 entrys with merging
+representing a range of memory below rma_end (aka end of real mode
+memory at 0).
 
-The low level code is designed to be included in a crt0 or other
-assembly file because it may need to be at a fixed location or there
-may be other entry point requirements.
-
-Note: this code works with kernel head_64.S.   head_6xx.S needs the
-0x60 entry point (it currently mentions something at address 0xC0; but
-the similar code is at 0xC4); the other heads don't appear to support
-SMP.
+To use this code, a platform would set rma_end (find_rma_end), mark
+memory ranges occupied (add_known_ranges et al), initialize malloc in
+the spaces between (ranges_init_malloc), and optionally use the supplied
+vmlinux_alloc may be used.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-vs 12171
-get barrier from io.h instead of adding to reg.h
+vs 12172
+rename rmo_end to rma_end (real mode area, as used in papr)
+removed section labels (now in ops.h)
 rediff ops.h, Makefile
+moved find_rma_end here (from kexec.c in a later patch)
+find_rma_end searches by node type for "memory", checks that
+	the parent is the root node, then looks for a reg property
+	with the first address/size pair starting at 0.
 
-
-Index: kernel/arch/powerpc/boot/marshal_low.S
+Index: kernel/arch/powerpc/boot/memranges.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/marshal_low.S	2007-09-17 22:13:14.000000000 -0500
-@@ -0,0 +1,103 @@
++++ kernel/arch/powerpc/boot/memranges.c	2007-09-20 17:51:42.000000000 -0500
+@@ -0,0 +1,299 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -62,424 +64,329 @@ Index: kernel/arch/powerpc/boot/marshal_low.S
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 + *
-+ * Copyright 2007 IBM Corporation.
-+ *
-+ * Authors: Milton Miller <miltonm@bga.com>
-+ *
-+ */
-+
-+#include "ppc_asm.h"
-+
-+	.text
-+	/*
-+	 * This code is designed to be a kexec entry point block.
-+	 * That is, it has both code for the master cpu that begins
-+	 * at offset 0 as linked into the image, and a sequence of
-+	 * 0x100 bytes that, when copied to address 0, forms the
-+	 * wait loop for slave cpus.  Each slave should have its
-+	 * unique hardware cpu identifier in r3 before entering
-+	 * this code.
-+	 */
-+	.globl	master
-+master: b	_zimage_start_plat
-+
-+	.global slave_wait
-+slave_wait:
-+	/* r3 cpu id, r4 slaves_wait, r5 cpu bit, r6 cpu mask word offset */
-+
-+	/* set our bit in the slaves mask  */
-+98:	lwarx	r7,r4,r6
-+	or	r8,r7,r5
-+	stwcx.	r8,r4,r6
-+	bne	98b
-+
-+	and.	r8,r7,r5
-+	bnel-	err_slave
-+
-+99:	lwz	r7,gohere-slave_wait(r4)
-+	cmpwi	0,r7,0
-+	beq	99b
-+	mtctr	r7
-+	mr	r4,r7
-+	bctr
-+
-+
-+	.global gohere
-+gohere:	.long	0			/* when set the slave moves */
-+
-+
-+err_slave:
-+	stw	r5,slave_error-slave_wait(4)	/* no locking */
-+	blr
-+
-+	.globl	slave_error		/* set when slave detects error */
-+slave_error:
-+	.long	0
-+
-+	/*
-+	 * The slaves may be in 32 or 64 bit mode, we don't care
-+	 * r3 is the slave cpu number, matching the device tree.
-+	 */
-+	.org	master+0x60
-+	.globl	slave
-+slave:	bl	1f
-+1:	mflr	r4
-+	addi	r4,r4,slave_wait-1b	/* code assumes r4=slave_wait */
-+	li	r5,1
-+	rlwnm	r5,r5,r3,0,31		/* bit within word */
-+	rlwinm	r6,r3,32-5+2,4,29	/* word in array */
-+	addi	r6,r6,slaves-slave_wait	/* relative to r4, slave_wait */
-+	b	slave_wait
-+
-+	.org	master+0x80	/* put locked bitmask data in another line */
-+	.global	slaves
-+slaves:
-+
-+	.globl slaves_end;
-+slaves_end = 0f
-+
-+#if 0
-+	/* today, the 32 bit kernel starts slaves at 0xc0
-+	 * but this limits us to cpu to 512 vs 1024
-+	 */
-+	.org	master+0xc0
-+0:	b	slave
-+#endif
-+
-+
-+	.org	master+0x100		/* we must fit in 0x100 bytes */
-+0:
-+
-Index: kernel/arch/powerpc/boot/marshal.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/marshal.c	2007-09-17 22:13:14.000000000 -0500
-@@ -0,0 +1,276 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright (C) 2007 IBM Corporation.
++ * Copyright IBM Corporation 2007
 + *
 + * Authors: Milton Miller <miltonm@bga.com>
 + */
 +
 +#include "ops.h"
 +#include "stdio.h"
-+#include "reg.h"
-+#include "io.h"
++#include "flatdevtree.h"
++#include "page.h"
++#include "types.h"
 +
-+extern unsigned int gohere[], master[], slave_wait[], slaves[], slaves_end[];
-+extern unsigned int slave_error[1];
++void *rma_end;
 +
-+static unsigned int slaves_run_here[SMP_SLAVE_SIZE / sizeof(unsigned int)];
-+static unsigned int *slaves_were_here = master;
-+static unsigned int *slaves_goto_here = master;
-+
-+/**
-+ * check_slave_errors - check if the slaves have set the error flag.
-+ * @slaves_here ... the location that the slaves should be spinning.
-+ */
-+static void check_slave_errors(unsigned int *slaves_here)
-+{
-+	unsigned int *error = slave_error - master + slaves_here;
-+
-+	if (*error) {
-+		printf("WARNING: error detected by one or more slave cpus!!\n\r"
-+		"WARNING: This probably means you have duplicate cpu ids\n\r");
-+		/* exit() */
-+	}
-+}
++static struct {
++	void *start, *end;
++} ranges[32];
++static int num_ranges;
 +
 +/**
-+ * wait_slaves_moved - wait for the slaves to catch up
-+ *
-+ * Wait until all slaves that checked in the previous location have
-+ * checked into the current location.  Seperate so we can do other
-+ * work while we wait for them to catch up.
++ * find_rma_end - find end of Real Mode Area
++ * Query the device tree to find the node of type memory that contains a
++ * reg starting with address 0, and update rma_end to point to the end
++ * of that region.   On PAPR systems, only this RMA region is accessable
++ * in real mode.
 + */
-+void wait_slaves_moved(void)
++void find_rma_end(void)
 +{
-+	int offset = slaves - master;
-+	int len = sizeof(slaves_end[0]) * (slaves_end - slaves);
-+	int printed = 0;
-+	unsigned int *to = slaves_goto_here;
-+	unsigned int *from = slaves_were_here;
++	unsigned int na, ns, reg[4], *rp; char path[MAX_PATH_LEN];
++	void *devp, *root; int rc;
 +
-+	from += offset;
-+	to += offset;
++	path[0] = '\0';
++	root = finddevice("/");
++	if (!root)
++		fatal("Ack, can't get device-tree root");
++	rc = getprop(root, "#address-cells", &na, sizeof(na));
++	if (rc != sizeof(na))
++		fatal("Ack, no #address-cells in root");
++	rc = getprop(root, "#size-cells", &ns, sizeof(ns));
++	if (rc != sizeof(ns))
++		fatal("Ack, no #size-cells in root");
++	if (!na || !ns || na < 1 || na > 2 || ns < 1 || ns > 2)
++		fatal("find_rma_end: / #addr-cells or #size-cells unsupported");
 +
-+	if (from == to)
-+		return;
-+
-+	while (memcmp(from, to, len)) {
-+		if (!printed) {
-+			printf("waiting for slave cpus to move...");
-+			printed = 1;
-+			HMT_LOW;
-+			barrier();
++	devp = NULL;
++	while ((devp = find_node_by_devtype(devp, "memory"))) {
++		if (root != get_parent(devp)) {
++			printf("Ignoring memory node %s"
++				" --- not a child of root\n\r",
++				get_path(devp, path, sizeof(path)));
++			continue;
 +		}
-+		/* check from is superset of to */
-+	}
-+	if (printed) {
-+		HMT_MEDIUM;
-+		printf("done.\n\r");
-+	}
++		rc = getprop(devp, "reg", reg, sizeof(reg));
++		if (rc < (na + ns) * sizeof(int)) {
++			printf("No valid reg property in memory node %s\n\r",
++				get_path(devp, path, sizeof(path)));
++			continue;
++		}
++		/* find the node where the first reg entry starts at 0 */
++		rp = &reg[0];
++		if (*rp++)
++			continue;
++		if (na > 1 && *rp++)
++			continue;
 +
-+	slaves_were_here = slaves_goto_here;
-+}
++		/* if >4G, limit it */
++		if (ns > 1 && *rp++) {
++			rma_end = (void *)0xFFFFFFFF;
++			return;
++		}
 +
-+/**
-+ * move_slaves_here - move slaves to a specified address.
-+ * @addr: location of %SMP_SLAVE_SIZE buffer to place code and spin
-+ *
-+ * Tell slaves to go from their current location to a buffer @addr
-+ * of %SMP_SLAVE_SIZE bytes somewhere in memory.
-+ */
-+void move_slaves_here(void *addr)
-+{
-+	unsigned int *move_slaves_here = addr;
-+	unsigned int *tell_them = gohere - master + slaves_goto_here;
-+	unsigned int *goto_here = slave_wait - master + move_slaves_here;
-+	unsigned int *wait_here = gohere - master + move_slaves_here;
-+
-+	if (move_slaves_here == slaves_goto_here)
-+		return;				/* already there */
-+
-+	wait_slaves_moved();			/* one move at a time */
-+
-+	printf("moving slave cpus from %p to %p\n\r", slaves_goto_here,
-+		move_slaves_here);
-+
-+	memcpy(move_slaves_here, master, SMP_SLAVE_SIZE);
-+	memset(move_slaves_here + (slaves - master), 0,
-+		(slaves_end - slaves) * sizeof(slaves_end[0]));
-+	*wait_here = 0;
-+
-+	flush_cache(move_slaves_here, SMP_SLAVE_SIZE);
-+
-+	check_slave_errors(slaves_were_here);
-+
-+	*tell_them = (unsigned int)goto_here;
-+	slaves_goto_here = move_slaves_here;
-+}
-+
-+/**
-+ * move_slaves_up - move slaves from somewhere low to our bss.
-+ * Call before decompressing the kernel to address 0.
-+ */
-+void move_slaves_up(void)
-+{
-+	move_slaves_here(slaves_run_here);
-+}
-+
-+/**
-+ * slaves_are_low - Assert that the slaves are spinning at 0, and move them
-+ * Assert that the slaves are running in a copy of the marshall code
-+ * that was copied to address 0.  Ask them to go up to our bss, as we
-+ * know we have to move them away from 0.
-+ */
-+void slaves_are_low(void)
-+{
-+	slaves_goto_here = slaves_were_here = (void *)0;
-+	move_slaves_up();
-+}
-+
-+/**
-+ * wait_slave_checkout - wait for slaves to execute checkout store.
-+ * @checkout - slave checkout flag array
-+ *
-+ * Wait for every slave who checked in at slaves_were_here to
-+ * perform the stb to @checkout before the branch to self spin loop.
-+ */
-+static void wait_slave_checkout(char *checkout)
-+{
-+	unsigned int *end = slaves_end - master + slaves_were_here;
-+	unsigned int *from = slaves - master + slaves_were_here;;
-+	unsigned int bit;
-+	int i, ncpus = 0;
-+	char *waiting = "waiting on slaves to go to kernel...";
-+
-+	for (i=0; from < end; from++)
-+		for (bit = 1; bit; i++, bit <<= 1)
-+			if (*from & bit) {
-+				ncpus++;
-+				while (!checkout[i]) {
-+					if (waiting) {
-+						printf(waiting);
-+						waiting = NULL;
-+					}
-+					HMT_LOW;
-+					barrier();
-+				}
-+			}
-+
-+	if (waiting == NULL)
-+		printf("done.\n\r");
-+
-+	printf("moved %d slaves to the kernel.\n\r", ncpus);
-+}
-+
-+/* The slave checkin code ... used by checkout_slaves_to_kernel below */
-+extern unsigned int slave_checkout_begin[], slave_checkout_spin[];
-+asm ("\
-+	.globl	slave_checkout_begin 	;\
-+	.globl	slave_checkout_spin	;\
-+slave_checkout_begin:			;\
-+	lwz	7,0(0)			;\
-+	li	8,1			;\
-+	stbx	8,7,3			;\
-+slave_checkout_spin:			;\
-+	b	$			;\
-+");
-+
-+
-+/**
-+ * checkout_slaves_to_kernel - send SMP slaves to the kernel
-+ * @tell_them - the expected marshalling buffer for the slaves
-+ *
-+ * Actively move slaves spinning on @tell_them to 0x60.  Since we
-+ * don't know what code is there, replace it with our one code that
-+ * ends with a byte store and branch to self, with the branch at 0x60.
-+ * After the stores complete, we can restore the rest of the line,
-+ * flush, then restore the remaining line.
-+ */
-+static void checkout_slaves_to_kernel(unsigned int *tell_them)
-+{
-+	int to, spin;
-+	unsigned int *from, *low, save[SMP_SLAVE_SIZE/sizeof(unsigned int)];
-+	char *checkout;
-+
-+	checkout = malloc(1024);
-+	if (checkout == NULL)
-+		fatal("can't malloc slave checkout buffer");
-+	memset(checkout, 0, 1024);
-+
-+	low = (unsigned int *)0;
-+	memcpy(save, low, SMP_SLAVE_SIZE);
-+
-+	to = spin = 0x60 / sizeof(int);
-+
-+	to++;
-+	from = slave_checkout_spin;
-+	while (from >= slave_checkout_begin)
-+		low[--to] = *from--;
-+
-+	low[0] = (unsigned int)checkout;
-+	flush_cache(low, SMP_SLAVE_SIZE);
-+
-+	*tell_them = (unsigned int)(low + to);
-+
-+	wait_slave_checkout(checkout);
-+
-+	/* at this point, all have completed the store at %0x5c and are at
-+	 * the branch to self at %0x60.   Restore the rest of the vector,
-+	 * flush cache, then do the final store replacing the spin and
-+	 * flush again.
-+	 */
-+	low[0] = save[0];
-+	for (;to < spin; to++)
-+		low[to] = save[to];
-+	flush_cache(low, SMP_SLAVE_SIZE);
-+	low[to] = save[to];
-+	flush_cache(low, SMP_SLAVE_SIZE);
-+
-+}
-+
-+/**
-+ * send_slaves_to_kernel - send SMP slaves to the kernel
-+ * @vmlinux_addr: address vmlinux was decompressed to (where to get slave loop)
-+ *
-+ * Send slaves currently running in the marshalling system to the slave code
-+ * in the next kernel which has been uncompressed at address @vmlinux_addr.
-+ * Copies the first %SMP_SLAVE_SIZE bytes of the image to address %0 and
-+ * then tells the slaves to go to %0x60.
-+ */
-+void send_slaves_to_kernel(void *vmlinux_addr)
-+{
-+	unsigned int *tell_them = gohere - master + slaves_goto_here;
-+
-+	if ((unsigned long)slaves_goto_here < SMP_SLAVE_SIZE) {
-+		if ((unsigned long)vmlinux_addr < SMP_SLAVE_SIZE)
-+			fatal("ERROR: slaves were not marshaled before "
-+					"decompressing the kernel to 0!\n");
-+		move_slaves_up();
-+		send_slaves_to_kernel(vmlinux_addr);
++		/* other wise use its size */
++		rma_end = (void *)*rp;
 +		return;
 +	}
-+
-+	wait_slaves_moved();
-+
-+	if (vmlinux_addr) {
-+		memcpy((void *)0, vmlinux_addr, SMP_SLAVE_SIZE);
-+		flush_cache((void *)0, SMP_SLAVE_SIZE);
-+	} else {
-+		printf("kernel was decompressed to 0\n\r");
-+	}
-+	check_slave_errors(slaves_goto_here);
-+
-+	checkout_slaves_to_kernel(tell_them);
++	fatal("find_rma_end: didn't find memory at 0\n\r");
 +}
-Index: kernel/arch/powerpc/boot/Makefile
-===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2007-09-17 22:12:41.000000000 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2007-09-17 22:13:14.000000000 -0500
-@@ -42,6 +42,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
- 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
- 
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
-+		marshal.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
- 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
-Index: kernel/arch/powerpc/boot/reg.h
-===================================================================
---- kernel.orig/arch/powerpc/boot/reg.h	2007-09-17 22:12:41.000000000 -0500
-+++ kernel/arch/powerpc/boot/reg.h	2007-09-17 22:13:14.000000000 -0500
-@@ -19,4 +19,8 @@ static inline u32 mfpvr(void)
- register void *__stack_pointer asm("r1");
- #define get_sp()	(__stack_pointer)
- 
-+#define HMT_MEDIUM	asm volatile("or 2,2,2")
-+#define HMT_LOW		asm volatile("or 1,1,1")
 +
++/**
++ * add_occupied_range - mark a range as occupied
++ * @start: start of range pointer
++ * @end: end of range pointer
++ *
++ * Mark the range from @start to @end as occupied.
++ * Ignore anything above rma_end.
++ */
++void add_occupied_range(void *start, void *end)
++{
++	int i, j;
 +
- #endif	/* _PPC_BOOT_REG_H */
++	if (start == end)
++		return;
++	if (start > rma_end)
++		return;
++	if (end > rma_end)
++		end = rma_end;
++	if (start > end)
++		fatal("%s: BUG: start %p > end %p\n\r", __FUNCTION__,
++				start, end);
++
++	printf("add %p %p: ", start, end);
++
++	for (i=0; i < num_ranges; i++)
++		if (start <= ranges[i].end)
++			break;
++
++	/* extend and merge any overlapping ranges */
++	if (i < num_ranges && end >= ranges[i].start) {
++		ranges[i].start = min(start, ranges[i].start);
++		for (j=i; j < num_ranges; j++)
++			if (end >= ranges[j].start)
++				end = max(end, ranges[j].end);
++			else
++				break;
++		ranges[i].end = end;
++
++		if (j == i + 1) {
++			printf("extending range %d to %p %p\n\r", i,
++				ranges[i].start, ranges[i].end);
++		} else {
++			printf("merged ranges %d to %d now %p %p\n\r", i, j,
++				ranges[i].start, ranges[i].end);
++
++			++i;
++			memmove(&ranges[i], &ranges[j],
++				(num_ranges - j) * sizeof(ranges[0]));
++			num_ranges -= j-i;
++		}
++	} else {
++		/* insert a new range */
++		if (num_ranges >= ARRAY_SIZE(ranges) - 1)
++			fatal("Too many memory ranges to track\n");
++
++		printf("inserting range %d between %p and %p\n\r",
++				i, i ? ranges[i-1].end : 0,
++				i == num_ranges ? rma_end : ranges[i].start);
++
++		memmove(&ranges[i+1], &ranges[i],
++				(num_ranges - i) * sizeof(ranges[0]));
++		num_ranges++;
++
++		ranges[i].start = start;
++		ranges[i].end = end;
++	}
++}
++
++/**
++ * add_occupied_range_ulong - mark a range as occupied
++ * @start: start of block to occupy
++ * @end: start of block to occupy
++ *
++ * Call add_occupied_range() after casting to ulong @start and @end to
++ * void * pointers.
++ */
++void add_occupied_range_ulong(unsigned long start, unsigned long end)
++{
++	add_occupied_range((void *)start, (void *)end);
++}
++
++/**
++ * add_known_ranges - occupy some known regions
++ * @dt_blob: a flattend device tree to occupy, or NULL to skip
++ *
++ * call add_occupied_range() for the wrapper, loader supplied initrd,
++ * and, if not %NULL, the device tree blob @dt_blob and any reserved
++ * memory ranges therein.
++ */
++void add_known_ranges(struct boot_param_header *dt_blob)
++{
++	unsigned long long rstart, rlen, rend, *rsrv;
++
++	add_occupied_range(_start, _end);
++
++	add_occupied_range_ulong(loader_info.initrd_addr,
++		loader_info.initrd_addr + loader_info.initrd_size);
++
++	if (dt_blob == NULL)
++		return;
++
++	add_occupied_range(dt_blob, (void *)dt_blob + dt_blob->totalsize);
++
++	/* only support 8-byte reserve map.  Only care about < 4G */
++	rsrv = (void *)dt_blob + dt_blob->off_mem_rsvmap;
++	do {
++		rstart = *rsrv++;
++		rlen = *rsrv++;
++		rend = rstart + rlen;
++
++		if (rlen && rstart < UINT_MAX) {
++			if (rend < UINT_MAX)
++				add_occupied_range_ulong(rstart, rend);
++			else
++				add_occupied_range_ulong(rstart, UINT_MAX);
++		}
++	} while (rlen);
++}
++
++/**
++ * ranges_init_malloc - initialize malloc heap in a free memory range.
++ *
++ * Call simple_alloc_init using the largest gap between occupied ranges.
++ * Does not consider before the first or after the last range.
++ */
++void ranges_init_malloc(void)
++{
++	int i;
++	unsigned long size = 0;
++	void *heap_start, *heap_end;
++
++	/*
++	 * Allow the beginning for the kernel and the end for
++	 * other things the platform might want to have reserved.
++	 */
++
++	heap_start = NULL;		/* avoid gcc warning */
++	for (i=1; i < num_ranges; i++) {
++		unsigned long newsize;
++
++		newsize = ranges[i].start - ranges[i-1].end;
++		if (newsize > size) {
++			size = newsize;
++			heap_start = ranges[i-1].end;
++		}
++	}
++
++	if (size < 4 * 1024 * 1024)
++		fatal("Can't find a sutiable gap (largest 0x%lx)", size);
++
++	printf("putting heap between %p and %p size 0x%lx\n\r", heap_start,
++			heap_start + size, size);
++	heap_end = simple_alloc_init(heap_start, size * 7 / 8,
++			PAGE_SIZE, /* max num alloc */ 4096);
++	if (heap_end > (heap_start + size))
++		fatal("heap alloc overflowed gap (%p)\n\r", heap_end);
++
++	add_occupied_range(heap_start, heap_end);
++}
++
++/**
++ * ranges_vmlinux_alloc - an optonal kernel allocator.
++ * @size: the image size of the kernel
++ *
++ * Searches for a location to put the kernel, then reserve that range
++ * and the area to which the kernel will relocate itself.   First try
++ * address %0.  If that is blocked by a previos call to add_occupied_range(),
++ * try malloc().  If that also fails search for free space between the
++ * occupied ranges or between the last range and rma_end.
++ */
++void *ranges_vmlinux_alloc(unsigned long size)
++{
++	void *addr;
++	int i;
++
++	/* Assume _start to _end is occupied */
++	addr = (void *)0;
++	if (addr + size < ranges[0].start)
++		goto occupy;
++
++	addr = malloc(size);
++	if (addr)
++		goto out;
++
++	for (i=1; i < num_ranges; i++) {
++		if (size < ranges[i].start - ranges[i-1].end)
++			goto occupy_range;
++	}
++	if (size < rma_end - ranges[i-1].end)
++		goto occupy_range;
++
++	fatal("Unable to find a 0x%lx byte gap for the kernel\n", size);
++
++occupy_range:
++	addr = ranges[i-1].end;
++occupy:
++	add_occupied_range(addr, addr + size);
++out:
++	/*
++	 * Assume the kernel will decompress to 0, but don't implicity
++	 * create a new gap below the current first range.
++	 */
++	if ((unsigned long)ranges[0].end < size)
++		add_occupied_range_ulong(0, size);
++
++	return addr;
++}
 Index: kernel/arch/powerpc/boot/ops.h
 ===================================================================
---- kernel.orig/arch/powerpc/boot/ops.h	2007-09-17 22:12:51.000000000 -0500
-+++ kernel/arch/powerpc/boot/ops.h	2007-09-17 22:13:14.000000000 -0500
-@@ -18,6 +18,7 @@
- #define	COMMAND_LINE_SIZE	512
- #define	MAX_PATH_LEN		256
- #define	MAX_PROP_LEN		256 /* What should this be? */
-+#define	SMP_SLAVE_SIZE		256 /* Size of SMP slave block, kexec/kernel */
+--- kernel.orig/arch/powerpc/boot/ops.h	2007-09-17 22:13:14.000000000 -0500
++++ kernel/arch/powerpc/boot/ops.h	2007-09-20 17:51:18.000000000 -0500
+@@ -22,6 +22,8 @@
  
  typedef void (*kernel_entry_t)(unsigned long r3, unsigned long r4, void *r5);
  
-@@ -86,7 +87,13 @@ int mpsc_console_init(void *devp, struct
- int cpm_console_init(void *devp, struct serial_console_data *scdp);
- void *simple_alloc_init(char *base, unsigned long heap_size,
- 			unsigned long granularity, unsigned long max_allocs);
--extern void flush_cache(void *, unsigned long);
-+void flush_cache(void *, unsigned long);
-+void move_slaves_up(void);
-+void move_slaves_here(void *where);
-+void send_slaves_to_kernel(void *vmlinux_addr);
-+void slaves_are_low(void);
-+void wait_slaves_moved(void);
++struct boot_param_header;
 +
- int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
- int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
+ /* Platform specific operations */
+ struct platform_ops {
+ 	void	(*fixups)(void);
+@@ -99,6 +101,15 @@ int dt_xlate_addr(void *node, u32 *buf, 
  int dt_is_compatible(void *node, const char *compat);
+ void dt_get_reg_format(void *node, u32 *naddr, u32 *nsize);
+ 
++/* memory ranges */
++extern void *rma_end;
++void add_occupied_range(void *start, void *end);
++void add_occupied_range_ulong(unsigned long start, unsigned long end);
++void add_known_ranges(struct boot_param_header *dt_blob);
++void find_rma_end(void);
++void ranges_init_malloc(void);
++void *ranges_vmlinux_alloc(unsigned long size);
++
+ static inline void *finddevice(const char *name)
+ {
+ 	return (dt_ops.finddevice) ? dt_ops.finddevice(name) : NULL;
+Index: kernel/arch/powerpc/boot/Makefile
+===================================================================
+--- kernel.orig/arch/powerpc/boot/Makefile	2007-09-17 22:13:14.000000000 -0500
++++ kernel/arch/powerpc/boot/Makefile	2007-09-20 17:51:18.000000000 -0500
+@@ -42,7 +42,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+ 	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
+ 
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+-		marshal.c \
++		marshal.c memranges.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
