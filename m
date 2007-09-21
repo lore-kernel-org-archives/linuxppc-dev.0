@@ -2,20 +2,20 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 28520DDE3C
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 00:48:02 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 606BADDE05
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 00:51:16 +1000 (EST)
 Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l8LEkvt0004294
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:46:57 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l8LEo9gw004332
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:50:09 +0400
 Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l8LEkvaX004291
-	for linuxppc-dev@ozlabs.org; Fri, 21 Sep 2007 18:46:57 +0400
-Date: Fri, 21 Sep 2007 18:46:57 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l8LEo9A6004329
+	for linuxppc-dev@ozlabs.org; Fri, 21 Sep 2007 18:50:09 +0400
+Date: Fri, 21 Sep 2007 18:50:09 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] PowerPC: Move 440EP(x) FPU setup from head_44x to
-	cpu_setup_4xx
-Message-ID: <20070921144657.GA4268@ru.mvista.com>
+Subject: [PATCH 3/3] PowerPC: 440EPx/GRx incorrect write to DDR SDRAM errata
+	workaround
+Message-ID: <20070921145009.GA4298@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070921144149.GA4150@ru.mvista.com>
@@ -28,93 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PowerPC 440EP(x) FPU init is currently done in head_44x
-under ifdefs. Since we should support more then one board
-in the same kernel, we move FPU initialization code from head_44x
-to cpu_setup_44x and add cpu_setup callbacks for 440EP(x).
+Add a workaround for PowerPC 440EPx/GRx incorrect write to 
+DDR SDRAM errata. Data can be written to wrong address 
+in SDRAM when write pipelining enabled on plb0. We disable
+it in the cpu_setup for these processors at early init.
 
 Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
- arch/powerpc/kernel/cpu_setup_44x.S |   14 ++++++++++++++
- arch/powerpc/kernel/cputable.c      |    6 ++++++
- arch/powerpc/kernel/head_44x.S      |   10 ----------
- 3 files changed, 20 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/cpu_setup_44x.S |   25 ++++++++++++++++++++++++-
+ arch/powerpc/kernel/cputable.c      |    3 +++
+ 2 files changed, 27 insertions(+), 1 deletion(-)
 
 diff -ruN linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S
---- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 16:18:35.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 16:17:03.000000000 +0400
-@@ -17,3 +17,17 @@
- #include <asm/cputable.h>
- #include <asm/ppc_asm.h>
- 
-+_GLOBAL(__setup_cpu_440ep)
-+	b	__init_fpu_44x
-+_GLOBAL(__setup_cpu_440epx)
-+	b	__init_fpu_44x
+--- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 15:31:14.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 16:07:12.000000000 +0400
+@@ -20,7 +20,14 @@
+ _GLOBAL(__setup_cpu_440ep)
+ 	b	__init_fpu_44x
+ _GLOBAL(__setup_cpu_440epx)
+-	b	__init_fpu_44x
++	mflr	r4
++	bl	__init_fpu_44x
++	bl	__plb_disable_wrp
++	mtlr	r4
++	blr
++_GLOBAL(__setup_cpu_440grx)
++	b	__plb_disable_wrp
 +
-+/* enable APU between CPU and FPU */
-+_GLOBAL(__init_fpu_44x)
-+	mfspr	r3,SPRN_CCR0
-+	/* Clear DAPUIB flag in CCR0 */
-+	rlwinm	r3,r3,0,12,10
-+	mtspr	SPRN_CCR0,r3
+ 
+ /* enable APU between CPU and FPU */
+ _GLOBAL(__init_fpu_44x)
+@@ -31,3 +38,19 @@
+ 	isync
+ 	blr
+ 
++/*
++ * Workaround for the incorrect write to DDR SDRAM errata.
++ * The write address can be corrupted during writes to
++ * DDR SDRAM when write pipelining is enabled on PLB0.
++ * Disable write pipelining here.
++ */
++#define DCRN_PLB4A0_ACR	0x81
++
++_GLOBAL(__plb_disable_wrp)
++	mfdcr	r3,DCRN_PLB4A0_ACR
++	/* clear WRP bit in PLB4A0_ACR */
++	rlwinm	r3,r3,0,8,6
++	mtdcr	DCRN_PLB4A0_ACR,r3
 +	isync
 +	blr
 +
 diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/arch/powerpc/kernel/cputable.c
---- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-09-21 16:18:22.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-09-21 16:17:05.000000000 +0400
-@@ -31,6 +31,8 @@
-  * and ppc64
-  */
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-09-21 15:55:23.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-09-21 16:08:23.000000000 +0400
+@@ -33,6 +33,7 @@
  #ifdef CONFIG_PPC32
-+extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
  extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
  extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
  extern void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
-@@ -1111,6 +1113,7 @@
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+@@ -1146,6 +1147,8 @@
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
  		.icache_bsize		= 32,
  		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440ep,
- 		.platform		= "ppc440",
- 	},
- 	{
-@@ -1121,6 +1124,7 @@
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440ep,
- 		.platform		= "ppc440",
- 	},
- 	{ /* 440EPX */
-@@ -1131,6 +1135,8 @@
- 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440epx,
++		.cpu_setup		= __setup_cpu_440grx,
 +		.platform		= "ppc440",
  	},
- 	{ /* 440GRX */
- 		.pvr_mask		= 0xf0000ffb,
-diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6/arch/powerpc/kernel/head_44x.S
---- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-09-21 16:19:04.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/head_44x.S	2007-09-21 16:00:17.000000000 +0400
-@@ -217,16 +217,6 @@
- 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
- 	mtspr	SPRN_IVPR,r4
- 
--#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
--	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
--	mfspr	r2,SPRN_CCR0
--	lis	r3,0xffef
--	ori	r3,r3,0xffff
--	and	r2,r2,r3
--	mtspr	SPRN_CCR0,r2
--	isync
--#endif
--
- 	/*
- 	 * This is where the main kernel code starts.
- 	 */
+ 	{	/* 440GP Rev. B */
+ 		.pvr_mask		= 0xf0000fff,
