@@ -1,22 +1,19 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 392F1DDED2
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 07:35:53 +1000 (EST)
-Date: Sat, 22 Sep 2007 07:35:52 +1000
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v3 2/4] Implement generic time of day clocksource for
-	powerpc machines.
-Message-ID: <20070921213552.GD9814@bakeyournoodle.com>
-References: <1190345162.620000.305760830507.qpush@thor>
-	<20070921032603.07AF232C889@thor>
-	<20070921145212.7e8a7b89.sfr@canb.auug.org.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 13F58DDE06
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 08:12:52 +1000 (EST)
+Date: Fri, 21 Sep 2007 17:15:16 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2] pcmcia: Convert io_req_t to use kio_addr_t
+Message-ID: <20070921221516.GA7926@lixom.net>
+References: <20070905142742.GA1760@lixom.net>
+	<20070914034854.1658a9cf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070921145212.7e8a7b89.sfr@canb.auug.org.au>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070914034854.1658a9cf.akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org, hch@lst.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,363 +23,471 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Convert the io_req_t members to kio_addr_t, to allow use on machines with
+more than 16 bits worth of IO ports (i.e. secondary busses on ppc64, etc).
+    
+I've also gone through the drivers, changed the few occurrances of
+ioaddr_t to kio_addr_t where relevant, and changed format strings for
+printk() and friends.
+    
+There are still places where a kio_addr_t is casted to an int, but at
+the moment that's not causing problems. It should be cleaned up at some
+point in the future though.
+
+    
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
 
 ---
 
-Updated to create a clocksource driver specific to the 601
-Updated to address feedback from sfr
-Only compile tested.
+On Fri, Sep 14, 2007 at 03:48:54AM -0700, Andrew Morton wrote:
+> On Wed, 5 Sep 2007 09:27:43 -0500 Olof Johansson <olof@lixom.net> wrote:
+> 
+> > Convert the io_req_t members to kio_addr_t, to allow use on machines with
+> > more than 16 bits worth of IO port address space (ppc64 in this case,
+> > but it applies to others as well).
+> 
+> drivers/usb/host/sl811_cs.c: In function 'sl811_cs_config':
+> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 2 has type 'kio_addr_t'
+> drivers/usb/host/sl811_cs.c:263: warning: format '%04x' expects type 'unsigned int', but argument 3 has type 'long unsigned int'
+> 
+> That's not just a cosmetic thing - the printk can print junk and if there's
+> a %s in the control string after the %x's, printk() will crash.
+> 
+> I don't know how many instances of this are in the tree, but they'll all
+> need to be found and fixed.
 
- arch/powerpc/Kconfig       |    6 
- arch/powerpc/kernel/time.c |  255 ++++++++++++-------------------------
- 2 files changed, 91 insertions(+), 170 deletions(-)
+I think I caught them all by now.
 
-Index: working/arch/powerpc/Kconfig
-===================================================================
---- working.orig/arch/powerpc/Kconfig
-+++ working/arch/powerpc/Kconfig
-@@ -24,6 +24,12 @@ config MMU
- config GENERIC_CMOS_UPDATE
- 	def_bool y
- 
-+config GENERIC_TIME
-+	def_bool y
-+
-+config GENERIC_TIME_VSYSCALL
-+	def_bool y
-+
- config GENERIC_HARDIRQS
- 	bool
- 	default y
-Index: working/arch/powerpc/kernel/time.c
-===================================================================
---- working.orig/arch/powerpc/kernel/time.c
-+++ working/arch/powerpc/kernel/time.c
-@@ -73,9 +73,38 @@
- #include <asm/iseries/hv_call_xm.h>
- #endif
- 
-+/* powerpc clocksource/clockevent code */
-+
-+#include <linux/clocksource.h>
-+
-+static cycle_t rtc_read(void);
-+static struct clocksource clocksource_rtc = {
-+	.name         = "rtc",
-+	.rating       = 400,
-+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-+	.mask         = CLOCKSOURCE_MASK(64),
-+	.shift        = 22,
-+	.mult         = 0,	/* To be filled in */
-+	.read         = rtc_read,
-+};
-+
-+static cycle_t timebase_read(void);
-+static struct clocksource clocksource_timebase = {
-+	.name         = "timebase",
-+	.rating       = 400,
-+	.flags        = CLOCK_SOURCE_IS_CONTINUOUS,
-+	.mask         = CLOCKSOURCE_MASK(64),
-+	.shift        = 22,
-+	.mult         = 0,	/* To be filled in */
-+	.read         = timebase_read,
-+};
-+
- #ifdef CONFIG_PPC_ISERIES
- static unsigned long __initdata iSeries_recal_titan;
- static signed long __initdata iSeries_recal_tb;
-+
-+/* Forward declaration is only needed for iSereis compiles */
-+void __init clocksource_init(void);
- #endif
- 
- #define XSEC_PER_SEC (1024*1024)
-@@ -343,65 +372,6 @@ void udelay(unsigned long usecs)
- }
- EXPORT_SYMBOL(udelay);
- 
--/*
-- * This version of gettimeofday has microsecond resolution.
-- */
--static inline void __do_gettimeofday(struct timeval *tv)
--{
--	unsigned long sec, usec;
--	u64 tb_ticks, xsec;
--	struct gettimeofday_vars *temp_varp;
--	u64 temp_tb_to_xs, temp_stamp_xsec;
--
--	/*
--	 * These calculations are faster (gets rid of divides)
--	 * if done in units of 1/2^20 rather than microseconds.
--	 * The conversion to microseconds at the end is done
--	 * without a divide (and in fact, without a multiply)
--	 */
--	temp_varp = do_gtod.varp;
--
--	/* Sampling the time base must be done after loading
--	 * do_gtod.varp in order to avoid racing with update_gtod.
--	 */
--	data_barrier(temp_varp);
--	tb_ticks = get_tb() - temp_varp->tb_orig_stamp;
--	temp_tb_to_xs = temp_varp->tb_to_xs;
--	temp_stamp_xsec = temp_varp->stamp_xsec;
--	xsec = temp_stamp_xsec + mulhdu(tb_ticks, temp_tb_to_xs);
--	sec = xsec / XSEC_PER_SEC;
--	usec = (unsigned long)xsec & (XSEC_PER_SEC - 1);
--	usec = SCALE_XSEC(usec, 1000000);
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--void do_gettimeofday(struct timeval *tv)
--{
--	if (__USE_RTC()) {
--		/* do this the old way */
--		unsigned long flags, seq;
--		unsigned int sec, nsec, usec;
--
--		do {
--			seq = read_seqbegin_irqsave(&xtime_lock, flags);
--			sec = xtime.tv_sec;
--			nsec = xtime.tv_nsec + tb_ticks_since(tb_last_jiffy);
--		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--		usec = nsec / 1000;
--		while (usec >= 1000000) {
--			usec -= 1000000;
--			++sec;
--		}
--		tv->tv_sec = sec;
--		tv->tv_usec = usec;
--		return;
--	}
--	__do_gettimeofday(tv);
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
- 
- /*
-  * There are two copies of tb_to_xs and stamp_xsec so that no
-@@ -447,56 +417,6 @@ static inline void update_gtod(u64 new_t
- 	++(vdso_data->tb_update_count);
+
+Thanks,
+
+-Olof
+
+
+diff --git a/drivers/char/pcmcia/cm4000_cs.c b/drivers/char/pcmcia/cm4000_cs.c
+index 4177f6d..b4f6036 100644
+--- a/drivers/char/pcmcia/cm4000_cs.c
++++ b/drivers/char/pcmcia/cm4000_cs.c
+@@ -308,7 +308,7 @@ static unsigned int calc_baudv(unsigned char fidi)
+ 	return (wcrcf / wbrcf);
  }
  
--/*
-- * When the timebase - tb_orig_stamp gets too big, we do a manipulation
-- * between tb_orig_stamp and stamp_xsec. The goal here is to keep the
-- * difference tb - tb_orig_stamp small enough to always fit inside a
-- * 32 bits number. This is a requirement of our fast 32 bits userland
-- * implementation in the vdso. If we "miss" a call to this function
-- * (interrupt latency, CPU locked in a spinlock, ...) and we end up
-- * with a too big difference, then the vdso will fallback to calling
-- * the syscall
-- */
--static __inline__ void timer_recalc_offset(u64 cur_tb)
--{
--	unsigned long offset;
--	u64 new_stamp_xsec;
--	u64 tlen, t2x;
--	u64 tb, xsec_old, xsec_new;
--	struct gettimeofday_vars *varp;
--
--	if (__USE_RTC())
--		return;
--	tlen = current_tick_length();
--	offset = cur_tb - do_gtod.varp->tb_orig_stamp;
--	if (tlen == last_tick_len && offset < 0x80000000u)
--		return;
--	if (tlen != last_tick_len) {
--		t2x = mulhdu(tlen << TICKLEN_SHIFT, ticklen_to_xs);
--		last_tick_len = tlen;
--	} else
--		t2x = do_gtod.varp->tb_to_xs;
--	new_stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
--	do_div(new_stamp_xsec, 1000000000);
--	new_stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
--
--	++vdso_data->tb_update_count;
--	smp_mb();
--
--	/*
--	 * Make sure time doesn't go backwards for userspace gettimeofday.
--	 */
--	tb = get_tb();
--	varp = do_gtod.varp;
--	xsec_old = mulhdu(tb - varp->tb_orig_stamp, varp->tb_to_xs)
--		+ varp->stamp_xsec;
--	xsec_new = mulhdu(tb - cur_tb, t2x) + new_stamp_xsec;
--	if (xsec_new < xsec_old)
--		new_stamp_xsec += xsec_old - xsec_new;
--
--	update_gtod(cur_tb, new_stamp_xsec, t2x);
--}
--
- #ifdef CONFIG_SMP
- unsigned long profile_pc(struct pt_regs *regs)
+-static unsigned short io_read_num_rec_bytes(ioaddr_t iobase, unsigned short *s)
++static unsigned short io_read_num_rec_bytes(kio_addr_t iobase, unsigned short *s)
  {
-@@ -568,6 +488,8 @@ static int __init iSeries_tb_recal(void)
- 	iSeries_recal_titan = titan;
- 	iSeries_recal_tb = tb;
+ 	unsigned short tmp;
  
-+	/* Called here as now we know accurate values for the timebase */
-+	clocksource_init();
- 	return 0;
+@@ -426,7 +426,7 @@ static struct card_fixup card_fixups[] = {
+ static void set_cardparameter(struct cm4000_dev *dev)
+ {
+ 	int i;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 	u_int8_t stopbits = 0x02; /* ISO default */
+ 
+ 	DEBUGP(3, dev, "-> set_cardparameter\n");
+@@ -459,7 +459,7 @@ static int set_protocol(struct cm4000_dev *dev, struct ptsreq *ptsreq)
+ 	unsigned short num_bytes_read;
+ 	unsigned char pts_reply[4];
+ 	ssize_t rc;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 
+ 	rc = 0;
+ 
+@@ -610,7 +610,7 @@ exit_setprotocol:
+ 	return rc;
  }
- late_initcall(iSeries_tb_recal);
-@@ -650,7 +572,6 @@ void timer_interrupt(struct pt_regs * re
- 		if (per_cpu(last_jiffy, cpu) >= tb_next_jiffy) {
- 			tb_last_jiffy = tb_next_jiffy;
- 			do_timer(1);
--			timer_recalc_offset(tb_last_jiffy);
- 		}
- 		write_sequnlock(&xtime_lock);
+ 
+-static int io_detect_cm4000(ioaddr_t iobase, struct cm4000_dev *dev)
++static int io_detect_cm4000(kio_addr_t iobase, struct cm4000_dev *dev)
+ {
+ 
+ 	/* note: statemachine is assumed to be reset */
+@@ -671,7 +671,7 @@ static void terminate_monitor(struct cm4000_dev *dev)
+ static void monitor_card(unsigned long p)
+ {
+ 	struct cm4000_dev *dev = (struct cm4000_dev *) p;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 	unsigned short s;
+ 	struct ptsreq ptsreq;
+ 	int i, atrc;
+@@ -933,7 +933,7 @@ static ssize_t cmm_read(struct file *filp, __user char *buf, size_t count,
+ 			loff_t *ppos)
+ {
+ 	struct cm4000_dev *dev = filp->private_data;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 	ssize_t rc;
+ 	int i, j, k;
+ 
+@@ -1054,7 +1054,7 @@ static ssize_t cmm_write(struct file *filp, const char __user *buf,
+ 			 size_t count, loff_t *ppos)
+ {
+ 	struct cm4000_dev *dev = (struct cm4000_dev *) filp->private_data;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 	unsigned short s;
+ 	unsigned char tmp;
+ 	unsigned char infolen;
+@@ -1408,7 +1408,7 @@ static int cmm_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
+ 		     unsigned long arg)
+ {
+ 	struct cm4000_dev *dev = filp->private_data;
+-	ioaddr_t iobase = dev->p_dev->io.BasePort1;
++	kio_addr_t iobase = dev->p_dev->io.BasePort1;
+ 	struct pcmcia_device *link;
+ 	int size;
+ 	int rc;
+diff --git a/drivers/char/pcmcia/cm4040_cs.c b/drivers/char/pcmcia/cm4040_cs.c
+index b24a3e7..3ecfc33 100644
+--- a/drivers/char/pcmcia/cm4040_cs.c
++++ b/drivers/char/pcmcia/cm4040_cs.c
+@@ -586,7 +586,7 @@ static int reader_config(struct pcmcia_device *link, int devno)
+ 	dev->node.minor = devno;
+ 	dev->node.next = &dev->node;
+ 
+-	DEBUGP(2, dev, "device " DEVICE_NAME "%d at 0x%.4x-0x%.4x\n", devno,
++	DEBUGP(2, dev, "device " DEVICE_NAME "%d at 0x%.4lx-0x%.4lx\n", devno,
+ 	      link->io.BasePort1, link->io.BasePort1+link->io.NumPorts1);
+ 	DEBUGP(2, dev, "<- reader_config (succ)\n");
+ 
+diff --git a/drivers/char/pcmcia/synclink_cs.c b/drivers/char/pcmcia/synclink_cs.c
+index 2b88931..7be068f 100644
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -665,7 +665,7 @@ static int mgslpc_config(struct pcmcia_device *link)
+     if (link->conf.Attributes & CONF_ENABLE_IRQ)
+ 	    printk(", irq %d", link->irq.AssignedIRQ);
+     if (link->io.NumPorts1)
+-	    printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++	    printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 		   link->io.BasePort1+link->io.NumPorts1-1);
+     printk("\n");
+     return 0;
+diff --git a/drivers/isdn/hardware/avm/avm_cs.c b/drivers/isdn/hardware/avm/avm_cs.c
+index a5b941c..820853a 100644
+--- a/drivers/isdn/hardware/avm/avm_cs.c
++++ b/drivers/isdn/hardware/avm/avm_cs.c
+@@ -211,7 +211,7 @@ static int avmcs_config(struct pcmcia_device *link)
+ 		link->io.BasePort1 = cf->io.win[0].base;
+ 		link->io.NumPorts1 = cf->io.win[0].len;
+ 		link->io.NumPorts2 = 0;
+-                printk(KERN_INFO "avm_cs: testing i/o %#x-%#x\n",
++                printk(KERN_INFO "avm_cs: testing i/o %#lx-%#lx\n",
+ 			link->io.BasePort1,
+ 		        link->io.BasePort1+link->io.NumPorts1-1);
+ 		i = pcmcia_request_io(link, &link->io);
+@@ -288,7 +288,7 @@ found_port:
+         case AVM_CARDTYPE_B1: addcard = b1pcmcia_addcard_b1; break;
+     }
+     if ((i = (*addcard)(link->io.BasePort1, link->irq.AssignedIRQ)) < 0) {
+-        printk(KERN_ERR "avm_cs: failed to add AVM-%s-Controller at i/o %#x, irq %d\n",
++        printk(KERN_ERR "avm_cs: failed to add AVM-%s-Controller at i/o %#lx, irq %d\n",
+ 		dev->node.dev_name, link->io.BasePort1, link->irq.AssignedIRQ);
+ 	avmcs_release(link);
+ 	return -ENODEV;
+diff --git a/drivers/isdn/hisax/avma1_cs.c b/drivers/isdn/hisax/avma1_cs.c
+index fc6cc2c..6a75ba6 100644
+--- a/drivers/isdn/hisax/avma1_cs.c
++++ b/drivers/isdn/hisax/avma1_cs.c
+@@ -233,7 +233,7 @@ static int avma1cs_config(struct pcmcia_device *link)
+ 		link->io.BasePort1 = cf->io.win[0].base;
+ 		link->io.NumPorts1 = cf->io.win[0].len;
+ 		link->io.NumPorts2 = 0;
+-		printk(KERN_INFO "avma1_cs: testing i/o %#x-%#x\n",
++		printk(KERN_INFO "avma1_cs: testing i/o %#lx-%#lx\n",
+ 			link->io.BasePort1,
+ 			link->io.BasePort1+link->io.NumPorts1 - 1);
+ 		i = pcmcia_request_io(link, &link->io);
+@@ -285,7 +285,7 @@ found_port:
+ 	return -ENODEV;
+     }
+ 
+-    printk(KERN_NOTICE "avma1_cs: checking at i/o %#x, irq %d\n",
++    printk(KERN_NOTICE "avma1_cs: checking at i/o %#lx, irq %d\n",
+ 				link->io.BasePort1, link->irq.AssignedIRQ);
+ 
+     icard.para[0] = link->irq.AssignedIRQ;
+@@ -295,7 +295,7 @@ found_port:
+     
+     i = hisax_init_pcmcia(link, &busy, &icard);
+     if (i < 0) {
+-    	printk(KERN_ERR "avma1_cs: failed to initialize AVM A1 PCMCIA %d at i/o %#x\n", i, link->io.BasePort1);
++    	printk(KERN_ERR "avma1_cs: failed to initialize AVM A1 PCMCIA %d at i/o %#lx\n", i, link->io.BasePort1);
+ 	avma1cs_release(link);
+ 	return -ENODEV;
+     }
+diff --git a/drivers/isdn/hisax/elsa_cs.c b/drivers/isdn/hisax/elsa_cs.c
+index db7e644..6d2b338 100644
+--- a/drivers/isdn/hisax/elsa_cs.c
++++ b/drivers/isdn/hisax/elsa_cs.c
+@@ -296,10 +296,10 @@ static int elsa_cs_config(struct pcmcia_device *link)
+     if (link->conf.Attributes & CONF_ENABLE_IRQ)
+         printk(", irq %d", link->irq.AssignedIRQ);
+     if (link->io.NumPorts1)
+-        printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++        printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+                link->io.BasePort1+link->io.NumPorts1-1);
+     if (link->io.NumPorts2)
+-        printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++        printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+                link->io.BasePort2+link->io.NumPorts2-1);
+     printk("\n");
+ 
+@@ -310,7 +310,7 @@ static int elsa_cs_config(struct pcmcia_device *link)
+     
+     i = hisax_init_pcmcia(link, &(((local_info_t*)link->priv)->busy), &icard);
+     if (i < 0) {
+-    	printk(KERN_ERR "elsa_cs: failed to initialize Elsa PCMCIA %d at i/o %#x\n",
++    	printk(KERN_ERR "elsa_cs: failed to initialize Elsa PCMCIA %d at i/o %#lx\n",
+     		i, link->io.BasePort1);
+     	elsa_cs_release(link);
+     } else
+diff --git a/drivers/isdn/hisax/sedlbauer_cs.c b/drivers/isdn/hisax/sedlbauer_cs.c
+index 439cb53..fdead4c 100644
+--- a/drivers/isdn/hisax/sedlbauer_cs.c
++++ b/drivers/isdn/hisax/sedlbauer_cs.c
+@@ -381,10 +381,10 @@ static int sedlbauer_config(struct pcmcia_device *link)
+     if (link->conf.Attributes & CONF_ENABLE_IRQ)
+ 	printk(", irq %d", link->irq.AssignedIRQ);
+     if (link->io.NumPorts1)
+-	printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++	printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 	       link->io.BasePort1+link->io.NumPorts1-1);
+     if (link->io.NumPorts2)
+-	printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++	printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+ 	       link->io.BasePort2+link->io.NumPorts2-1);
+     if (link->win)
+ 	printk(", mem 0x%06lx-0x%06lx", req.Base,
+@@ -398,7 +398,7 @@ static int sedlbauer_config(struct pcmcia_device *link)
+     
+     last_ret = hisax_init_pcmcia(link, &(((local_info_t*)link->priv)->stop), &icard);
+     if (last_ret < 0) {
+-    	printk(KERN_ERR "sedlbauer_cs: failed to initialize SEDLBAUER PCMCIA %d at i/o %#x\n",
++    	printk(KERN_ERR "sedlbauer_cs: failed to initialize SEDLBAUER PCMCIA %d at i/o %#lx\n",
+     		last_ret, link->io.BasePort1);
+     	sedlbauer_release(link);
+ 	return -ENODEV;
+diff --git a/drivers/isdn/hisax/teles_cs.c b/drivers/isdn/hisax/teles_cs.c
+index ab4bd45..e492bd2 100644
+--- a/drivers/isdn/hisax/teles_cs.c
++++ b/drivers/isdn/hisax/teles_cs.c
+@@ -286,10 +286,10 @@ static int teles_cs_config(struct pcmcia_device *link)
+     if (link->conf.Attributes & CONF_ENABLE_IRQ)
+         printk(", irq %d", link->irq.AssignedIRQ);
+     if (link->io.NumPorts1)
+-        printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++        printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+                link->io.BasePort1+link->io.NumPorts1-1);
+     if (link->io.NumPorts2)
+-        printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++        printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+                link->io.BasePort2+link->io.NumPorts2-1);
+     printk("\n");
+ 
+@@ -300,7 +300,7 @@ static int teles_cs_config(struct pcmcia_device *link)
+     
+     i = hisax_init_pcmcia(link, &(((local_info_t*)link->priv)->busy), &icard);
+     if (i < 0) {
+-    	printk(KERN_ERR "teles_cs: failed to initialize Teles PCMCIA %d at i/o %#x\n",
++    	printk(KERN_ERR "teles_cs: failed to initialize Teles PCMCIA %d at i/o %#lx\n",
+     		i, link->io.BasePort1);
+     	teles_cs_release(link);
+ 	return -ENODEV;
+diff --git a/drivers/net/pcmcia/com20020_cs.c b/drivers/net/pcmcia/com20020_cs.c
+index ea9414c..f5351c0 100644
+--- a/drivers/net/pcmcia/com20020_cs.c
++++ b/drivers/net/pcmcia/com20020_cs.c
+@@ -259,7 +259,7 @@ static int com20020_config(struct pcmcia_device *link)
+ 
+     DEBUG(0, "com20020_config(0x%p)\n", link);
+ 
+-    DEBUG(1,"arcnet: baseport1 is %Xh\n", link->io.BasePort1);
++    DEBUG(1,"arcnet: baseport1 is %lXh\n", link->io.BasePort1);
+     i = !CS_SUCCESS;
+     if (!link->io.BasePort1)
+     {
+diff --git a/drivers/net/wireless/airo_cs.c b/drivers/net/wireless/airo_cs.c
+index f123553..2a3544f 100644
+--- a/drivers/net/wireless/airo_cs.c
++++ b/drivers/net/wireless/airo_cs.c
+@@ -356,10 +356,10 @@ static int airo_config(struct pcmcia_device *link)
+ 	if (link->conf.Attributes & CONF_ENABLE_IRQ)
+ 		printk(", irq %d", link->irq.AssignedIRQ);
+ 	if (link->io.NumPorts1)
+-		printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++		printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 		       link->io.BasePort1+link->io.NumPorts1-1);
+ 	if (link->io.NumPorts2)
+-		printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++		printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+ 		       link->io.BasePort2+link->io.NumPorts2-1);
+ 	if (link->win)
+ 		printk(", mem 0x%06lx-0x%06lx", req.Base,
+diff --git a/drivers/net/wireless/hostap/hostap_cs.c b/drivers/net/wireless/hostap/hostap_cs.c
+index 30e723f..93c6b0b 100644
+--- a/drivers/net/wireless/hostap/hostap_cs.c
++++ b/drivers/net/wireless/hostap/hostap_cs.c
+@@ -721,10 +721,10 @@ static int prism2_config(struct pcmcia_device *link)
+ 	if (link->conf.Attributes & CONF_ENABLE_IRQ)
+ 		printk(", irq %d", link->irq.AssignedIRQ);
+ 	if (link->io.NumPorts1)
+-		printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++		printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 		       link->io.BasePort1+link->io.NumPorts1-1);
+ 	if (link->io.NumPorts2)
+-		printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++		printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+ 		       link->io.BasePort2+link->io.NumPorts2-1);
+ 	printk("\n");
+ 
+diff --git a/drivers/net/wireless/orinoco_cs.c b/drivers/net/wireless/orinoco_cs.c
+index d1e5022..80bd2f6 100644
+--- a/drivers/net/wireless/orinoco_cs.c
++++ b/drivers/net/wireless/orinoco_cs.c
+@@ -332,7 +332,7 @@ orinoco_cs_config(struct pcmcia_device *link)
+ 
+ 	/* Finally, report what we've done */
+ 	printk(KERN_DEBUG "%s: " DRIVER_NAME " at %s, irq %d, io "
+-	       "0x%04x-0x%04x\n", dev->name, dev->dev.parent->bus_id,
++	       "0x%04lx-0x%04lx\n", dev->name, dev->dev.parent->bus_id,
+ 	       link->irq.AssignedIRQ, link->io.BasePort1,
+ 	       link->io.BasePort1 + link->io.NumPorts1 - 1);
+ 
+diff --git a/drivers/net/wireless/spectrum_cs.c b/drivers/net/wireless/spectrum_cs.c
+index af70460..b87185e 100644
+--- a/drivers/net/wireless/spectrum_cs.c
++++ b/drivers/net/wireless/spectrum_cs.c
+@@ -806,7 +806,7 @@ spectrum_cs_config(struct pcmcia_device *link)
+ 
+ 	/* Finally, report what we've done */
+ 	printk(KERN_DEBUG "%s: " DRIVER_NAME " at %s, irq %d, io "
+-	       "0x%04x-0x%04x\n", dev->name, dev->dev.parent->bus_id,
++	       "0x%04lx-0x%04lx\n", dev->name, dev->dev.parent->bus_id,
+ 	       link->irq.AssignedIRQ, link->io.BasePort1,
+ 	       link->io.BasePort1 + link->io.NumPorts1 - 1);
+ 
+diff --git a/drivers/parport/parport_cs.c b/drivers/parport/parport_cs.c
+index 802a81d..17a4cfb 100644
+--- a/drivers/parport/parport_cs.c
++++ b/drivers/parport/parport_cs.c
+@@ -203,7 +203,7 @@ static int parport_config(struct pcmcia_device *link)
+ 			      &link->dev);
+     if (p == NULL) {
+ 	printk(KERN_NOTICE "parport_cs: parport_pc_probe_port() at "
+-	       "0x%3x, irq %u failed\n", link->io.BasePort1,
++	       "0x%3lx, irq %u failed\n", link->io.BasePort1,
+ 	       link->irq.AssignedIRQ);
+ 	goto failed;
+     }
+diff --git a/drivers/pcmcia/pcmcia_resource.c b/drivers/pcmcia/pcmcia_resource.c
+index 0ce39de..585c14b 100644
+--- a/drivers/pcmcia/pcmcia_resource.c
++++ b/drivers/pcmcia/pcmcia_resource.c
+@@ -65,8 +65,8 @@ extern int ds_pc_debug;
+  * Special stuff for managing IO windows, because they are scarce
+  */
+ 
+-static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+-			  ioaddr_t num, u_int lines)
++static int alloc_io_space(struct pcmcia_socket *s, u_int attr, kio_addr_t *base,
++			  kio_addr_t num, u_int lines)
+ {
+ 	int i;
+ 	kio_addr_t try, align;
+@@ -74,14 +74,14 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+ 	align = (*base) ? (lines ? 1<<lines : 0) : 1;
+ 	if (align && (align < num)) {
+ 		if (*base) {
+-			ds_dbg(s, 0, "odd IO request: num %#x align %#lx\n",
++			ds_dbg(s, 0, "odd IO request: num %#lx align %#lx\n",
+ 			       num, align);
+ 			align = 0;
+ 		} else
+ 			while (align && (align < num)) align <<= 1;
  	}
-@@ -722,66 +643,6 @@ unsigned long long sched_clock(void)
- 	return mulhdu(get_tb() - boot_tb, tb_to_ns_scale) << tb_to_ns_shift;
- }
+ 	if (*base & ~(align-1)) {
+-		ds_dbg(s, 0, "odd IO request: base %#x align %#lx\n",
++		ds_dbg(s, 0, "odd IO request: base %#lx align %#lx\n",
+ 		       *base, align);
+ 		align = 0;
+ 	}
+@@ -132,8 +132,8 @@ static int alloc_io_space(struct pcmcia_socket *s, u_int attr, ioaddr_t *base,
+ } /* alloc_io_space */
  
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, new_sec = tv->tv_sec;
--	long wtm_nsec, new_nsec = tv->tv_nsec;
--	unsigned long flags;
--	u64 new_xsec;
--	unsigned long tb_delta;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irqsave(&xtime_lock, flags);
--
--	/*
--	 * Updating the RTC is not the job of this code. If the time is
--	 * stepped under NTP, the RTC will be updated after STA_UNSYNC
--	 * is cleared.  Tools like clock/hwclock either copy the RTC
--	 * to the system time, in which case there is no point in writing
--	 * to the RTC again, or write to the RTC but then they don't call
--	 * settimeofday to perform this operation.
--	 */
--
--	/* Make userspace gettimeofday spin until we're done. */
--	++vdso_data->tb_update_count;
--	smp_mb();
--
--	/*
--	 * Subtract off the number of nanoseconds since the
--	 * beginning of the last tick.
--	 */
--	tb_delta = tb_ticks_since(tb_last_jiffy);
--	tb_delta = mulhdu(tb_delta, do_gtod.varp->tb_to_xs); /* in xsec */
--	new_nsec -= SCALE_XSEC(tb_delta, 1000000000);
--
--	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - new_sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - new_nsec);
--
-- 	set_normalized_timespec(&xtime, new_sec, new_nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--
--	new_xsec = xtime.tv_nsec;
--	if (new_xsec != 0) {
--		new_xsec *= XSEC_PER_SEC;
--		do_div(new_xsec, NSEC_PER_SEC);
--	}
--	new_xsec += (u64)xtime.tv_sec * XSEC_PER_SEC;
--	update_gtod(tb_last_jiffy, new_xsec, do_gtod.varp->tb_to_xs);
--
--	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
--	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
--
--	write_sequnlock_irqrestore(&xtime_lock, flags);
--	clock_was_set();
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--
- static int __init get_freq(char *name, int cells, unsigned long *val)
+ 
+-static void release_io_space(struct pcmcia_socket *s, ioaddr_t base,
+-			     ioaddr_t num)
++static void release_io_space(struct pcmcia_socket *s, kio_addr_t base,
++			     kio_addr_t num)
  {
- 	struct device_node *cpu;
-@@ -873,6 +734,69 @@ unsigned long read_persistent_clock(void
- 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
- }
+ 	int i;
  
-+/* clocksource code */
-+static cycle_t rtc_read(void)
-+{
-+	return (cycle_t)get_rtc();
-+}
-+
-+static cycle_t timebase_read(void)
-+{
-+	return (cycle_t)get_tb();
-+}
-+
-+void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
-+{
-+	u64 t2x, stamp_xsec;
-+
-+	if (clock != &clocksource_timebase)
-+		return;
-+
-+	/* Make userspace gettimeofday spin until we're done. */
-+	++vdso_data->tb_update_count;
-+	smp_mb();
-+
-+	/* XXX this assumes clock->shift == 22 */
-+	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
-+	t2x = (u64) clock->mult * 4611686018ULL;
-+	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
-+	do_div(stamp_xsec, 1000000000);
-+	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
-+	update_gtod(clock->cycle_last, stamp_xsec, t2x);
-+}
-+
-+void update_vsyscall_tz(void)
-+{
-+	/* Make userspace gettimeofday spin until we're done. */
-+	++vdso_data->tb_update_count;
-+	smp_mb();
-+	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
-+	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
-+	smp_mb();
-+	++vdso_data->tb_update_count;
-+}
-+
-+void __init clocksource_init(void)
-+{
-+	struct clocksource *clock;
-+
-+	if (__USE_RTC())
-+		clock = &clocksource_rtc;
-+	else
-+		clock = &clocksource_timebase;
-+
-+	clock->mult = clocksource_hz2mult(tb_ticks_per_sec, clock->shift);
-+
-+	if (clocksource_register(clock)) {
-+		printk(KERN_ERR "clocksource: %s is already registered\n",
-+		       clock->name);
-+		return;
-+	}
-+
-+	printk(KERN_INFO "clocksource: %s mult[%x] shift[%d] registered\n",
-+	       clock->name, clock->mult, clock->shift);
-+}
-+
- /* This function is only called on the boot processor */
- void __init time_init(void)
- {
-@@ -982,6 +906,10 @@ void __init time_init(void)
+diff --git a/drivers/scsi/pcmcia/fdomain_stub.c b/drivers/scsi/pcmcia/fdomain_stub.c
+index 4b82b20..42611e6 100644
+--- a/drivers/scsi/pcmcia/fdomain_stub.c
++++ b/drivers/scsi/pcmcia/fdomain_stub.c
+@@ -160,7 +160,7 @@ static int fdomain_config(struct pcmcia_device *link)
+     release_region(link->io.BasePort1, link->io.NumPorts1);
  
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
+     /* Set configuration options for the fdomain driver */
+-    sprintf(str, "%d,%d", link->io.BasePort1, link->irq.AssignedIRQ);
++    sprintf(str, "%ld,%d", link->io.BasePort1, link->irq.AssignedIRQ);
+     fdomain_setup(str);
  
-+	/* Register the clocksource, if we're not running on iSeries */
-+	if (!firmware_has_feature(FW_FEATURE_ISERIES))
-+		clocksource_init();
-+
- 	/* Not exact, but the timer interrupt takes care of this */
- 	set_dec(tb_ticks_per_jiffy);
- }
+     host = __fdomain_16x0_detect(&fdomain_driver_template);
+diff --git a/drivers/scsi/pcmcia/nsp_cs.c b/drivers/scsi/pcmcia/nsp_cs.c
+index 445cfbb..7e9a897 100644
+--- a/drivers/scsi/pcmcia/nsp_cs.c
++++ b/drivers/scsi/pcmcia/nsp_cs.c
+@@ -1896,11 +1896,11 @@ static int nsp_cs_config(struct pcmcia_device *link)
+ 		printk(", irq %d", link->irq.AssignedIRQ);
+ 	}
+ 	if (link->io.NumPorts1) {
+-		printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++		printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 		       link->io.BasePort1+link->io.NumPorts1-1);
+ 	}
+ 	if (link->io.NumPorts2)
+-		printk(" & 0x%04x-0x%04x", link->io.BasePort2,
++		printk(" & 0x%04lx-0x%04lx", link->io.BasePort2,
+ 		       link->io.BasePort2+link->io.NumPorts2-1);
+ 	if (link->win)
+ 		printk(", mem 0x%06lx-0x%06lx", req.Base,
+diff --git a/drivers/usb/host/sl811_cs.c b/drivers/usb/host/sl811_cs.c
+index 5da63f5..062fba6 100644
+--- a/drivers/usb/host/sl811_cs.c
++++ b/drivers/usb/host/sl811_cs.c
+@@ -259,7 +259,7 @@ next_entry:
+ 	if (link->conf.Vpp)
+ 		printk(", Vpp %d.%d", link->conf.Vpp/10, link->conf.Vpp%10);
+ 	printk(", irq %d", link->irq.AssignedIRQ);
+-	printk(", io 0x%04x-0x%04x", link->io.BasePort1,
++	printk(", io 0x%04lx-0x%04lx", link->io.BasePort1,
+ 	       link->io.BasePort1+link->io.NumPorts1-1);
+ 	printk("\n");
+ 
+diff --git a/include/pcmcia/cs.h b/include/pcmcia/cs.h
+index d5838c3..657d653 100644
+--- a/include/pcmcia/cs.h
++++ b/include/pcmcia/cs.h
+@@ -147,11 +147,11 @@ typedef struct config_req_t {
+ 
+ /* For RequestIO and ReleaseIO */
+ typedef struct io_req_t {
+-    ioaddr_t	BasePort1;
+-    ioaddr_t	NumPorts1;
++    kio_addr_t	BasePort1;
++    kio_addr_t	NumPorts1;
+     u_int	Attributes1;
+-    ioaddr_t	BasePort2;
+-    ioaddr_t	NumPorts2;
++    kio_addr_t	BasePort2;
++    kio_addr_t	NumPorts2;
+     u_int	Attributes2;
+     u_int	IOAddrLines;
+ } io_req_t;
