@@ -1,22 +1,17 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from the-village.bc.nu (unknown [81.2.110.250])
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CECBEDDE0A
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 08:32:58 +1000 (EST)
-Date: Fri, 21 Sep 2007 23:39:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] pcmcia: Convert io_req_t to use kio_addr_t
-Message-ID: <20070921233936.2aeb2504@the-village.bc.nu>
-In-Reply-To: <20070921221516.GA7926@lixom.net>
-References: <20070905142742.GA1760@lixom.net>
-	<20070914034854.1658a9cf.akpm@linux-foundation.org>
-	<20070921221516.GA7926@lixom.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org, hch@lst.de
+	by ozlabs.org (Postfix) with ESMTP id C0A3DDDE16
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:03:22 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:02:51 -0500 (CDT)
+Subject: [PATCH 0/15] bootwrapper: kexec and external payloads
+Sender: <miltonm@realtime.net>
+From: Milton Miller <miltonm@bga.com>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <boot-8-00.miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 21 Sep 2007 17:15:16 -0500
-Olof Johansson <olof@lixom.net> wrote:
+The following series of 15 patches implement 
 
-> Convert the io_req_t members to kio_addr_t, to allow use on machines with
-> more than 16 bits worth of IO ports (i.e. secondary busses on ppc64, etc).
+	support for 64-bit powerpc zImage to be loaded by kexec-tools
+		the wrapper uses the same startup interface as the kernel
 
-What about the formatting and field widths ?
+	support for obtaining the kernel externally to the zImage link
+		including via searching for a path string in initramfs
 
-ulong would probably be a lot saner than kio_addr_t and yet more type
-obfuscation.
+This is the third round of posting for most of the patches, which
+have been rebased to apply to for-2.6.24, and I ask they be considered
+for inclusion therein.
 
-Otherwise looks sensible to me
+I have ordered the series to apply needed functionality to get
+usable code for similar enviornments before fleshing out the feature
+set I am using.  If desired I can reorder and rediff as requested.
+(for example, adding the smp hook could go with the smp marshalling
+support).  The last patch is only needed for the qemu pathes below.
+
+Following the series are an additonal 2 patches to provide experimental
+platform support for running under qemu with its exiting powerpc
+prep emulation.  One patch provides the support necessary to build
+the kernel, the second patch provides the wrapper changes and device
+tree to boot, including bulding a "rom" image.  Once the rom is
+built, it can start a vmlinux elf when loaded into memory by qemu.
+
+Thanks for your consideration,
+milton
