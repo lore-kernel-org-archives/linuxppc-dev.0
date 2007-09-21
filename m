@@ -1,16 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AA412DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 14:41:09 +1000 (EST)
-Date: Fri, 21 Sep 2007 14:31:02 +1000
+	by ozlabs.org (Postfix) with ESMTP id 5D0C7DDEA2
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 14:41:10 +1000 (EST)
+Date: Fri, 21 Sep 2007 14:32:05 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 02/11] [POWERPC] Simplify vio_bus_init a little for legacy
-	iSeries
-Message-Id: <20070921143102.eb30d770.sfr@canb.auug.org.au>
-In-Reply-To: <20070921142928.64451ad8.sfr@canb.auug.org.au>
+Subject: [PATCH 03/11] [POWERPC] Make vio_bus_type static
+Message-Id: <20070921143205.64271521.sfr@canb.auug.org.au>
+In-Reply-To: <20070921143102.eb30d770.sfr@canb.auug.org.au>
 References: <20070921135533.461eecdf.sfr@canb.auug.org.au>
 	<20070921142928.64451ad8.sfr@canb.auug.org.au>
+	<20070921143102.eb30d770.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -23,50 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-iSeries_vio_dev was already statically initialised and we can remove
-one set of #ifdef CONFIG_PPC_ISERIES guards.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/vio.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/vio.c |    4 +++-
+ include/asm-powerpc/vio.h |    1 -
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
 diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 54645ba..ee15c22 100644
+index ee15c22..1d7b272 100644
 --- a/arch/powerpc/kernel/vio.c
 +++ b/arch/powerpc/kernel/vio.c
-@@ -64,6 +64,12 @@ static void __init iommu_vio_init(void)
- 		printk("Virtual Bus VETH TCE table failed.\n");
- 	if (!iommu_init_table(&vio_iommu_table, -1))
- 		printk("Virtual Bus VIO TCE table failed.\n");
-+	vio_bus_device.dev.archdata.dma_ops = &dma_iommu_ops;
-+	vio_bus_device.dev.archdata.dma_data = &vio_iommu_table;
-+}
-+#else
-+static void __init iommu_vio_init(void)
-+{
+@@ -39,6 +39,8 @@
+ 
+ extern struct kset devices_subsys; /* needed for vio_find_name() */
+ 
++static struct bus_type vio_bus_type;
++
+ static struct vio_dev vio_bus_device  = { /* fake "parent" device */
+ 	.name = vio_bus_device.dev.bus_id,
+ 	.type = "",
+@@ -388,7 +390,7 @@ static int vio_hotplug(struct device *dev, char **envp, int num_envp,
+ 	return 0;
  }
- #endif
  
-@@ -282,14 +288,8 @@ static int __init vio_bus_init(void)
- 	int err;
- 	struct device_node *node_vroot;
+-struct bus_type vio_bus_type = {
++static struct bus_type vio_bus_type = {
+ 	.name = "vio",
+ 	.dev_attrs = vio_dev_attrs,
+ 	.uevent = vio_hotplug,
+diff --git a/include/asm-powerpc/vio.h b/include/asm-powerpc/vio.h
+index 3a0975e..598d111 100644
+--- a/include/asm-powerpc/vio.h
++++ b/include/asm-powerpc/vio.h
+@@ -63,7 +63,6 @@ struct vio_driver {
+ };
  
--#ifdef CONFIG_PPC_ISERIES
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
- 		iommu_vio_init();
--		vio_bus_device.dev.archdata.dma_ops = &dma_iommu_ops;
--		vio_bus_device.dev.archdata.dma_data = &vio_iommu_table;
--		iSeries_vio_dev = &vio_bus_device.dev;
--	}
--#endif /* CONFIG_PPC_ISERIES */
+ extern struct dma_mapping_ops vio_dma_ops;
+-extern struct bus_type vio_bus_type;
  
- 	err = bus_register(&vio_bus_type);
- 	if (err) {
+ extern int vio_register_driver(struct vio_driver *drv);
+ extern void vio_unregister_driver(struct vio_driver *drv);
 -- 
 1.5.3.2
