@@ -1,33 +1,18 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 150F9DDE27
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 16:38:57 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8L6csSO031011
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 02:38:54 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8L6csYx495484
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:38:54 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8L6cslV030880
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:38:54 -0600
-Subject: Re: 44x bug: funny TLB writes?
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070921054218.GA13470@localhost.localdomain>
-References: <1190345652.25483.6.camel@basalt>
-	<20070921054218.GA13470@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 01:38:34 -0500
-Message-Id: <1190356714.25483.19.camel@basalt>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 21 Sep 2007 16:43:21 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2 2/4] Implement generic time of day clocksource for
+	powerpc machines.
+Message-ID: <20070921064321.GA13740@localhost.localdomain>
+References: <20070921032603.07AF232C889@thor>
+	<1190347546.15347.27.camel@imap.mvista.com>
+	<18163.20403.967082.774118@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <18163.20403.967082.774118@cargo.ozlabs.ibm.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,34 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-09-21 at 15:42 +1000, David Gibson wrote:
-> On Thu, Sep 20, 2007 at 10:34:12PM -0500, Hollis Blanchard wrote:
-> > I seem to have come across a strange bug while doing KVM development. It
-> > seems that the final tlbwe in finish_tlb (head_44x.S) is actually
-> > leaking RPN bits into the "attribute" word.
-> > 
-> > When I set a breakpoint there and press enter on the serial console, I
-> > see r12=ef600703, which is the physical address of the UART on this chip
-> > (440EP), plus the correct permission bits at the bottom.
-> > 
-> > Am I crazy? I'm not really looking to step through that assembly right
-> > now... Clearly (current) hardware is just ignoring these errant writes,
-> > but it should be fixed.
+On Fri, Sep 21, 2007 at 02:59:31PM +1000, Paul Mackerras wrote:
+> Daniel Walker writes:
 > 
-> A quick glance at the code suggests this is indeed wrong.  Hurrah.
-> Another reason to rewrite the 44x tlb miss handling.
+> > I don't think the RTC frequency isn't the same as the timebase? Seems
+> > like the RTC only case about seconds at the lowest level. If that's the
+> > case then the jiffies clock might be better to use .. The other thing I
+> > wonder is if the __USE_RTC boards might have lower level clocks that
+> > could be used instead ..
+> 
+> It's OK, the RTC isn't what you think it is, it's a pair of
+> CPU-internal registers which count seconds and nanoseconds.  On
+> processors with the RTC, tb_ticks_per_sec is initialized to
+> 1000000000.  Trust me, this code is OK. :)
 
-Just a quick fix would be fine too... ;)
-
-I'm just glad it's not a KVM bug, because when I dumped the TLB state
-and saw bizarre values I was getting really worried.
-
-> PS.  "errant" and "error" are not cognate, even if the chip doc
-> writers think so...
-
-According to Merriam Webster, errant 2c is "c : behaving wrongly <an
-errant child>", so I'm OK with it.
+Indeed..  I'm wondering if we should do a s/rtc/ppc601rtc/ or
+something.  Otherwise people will keep making this mistake and be
+confused.
 
 -- 
-Hollis Blanchard
-IBM Linux Technology Center
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
