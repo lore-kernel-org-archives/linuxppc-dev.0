@@ -1,24 +1,14 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EAB81DDEDA
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 10:44:22 +1000 (EST)
-Date: Thu, 20 Sep 2007 19:44:06 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
-	CONFIG_PPC_CPM_NEW_BINDING is set.
-Message-ID: <20070921004406.GA19279@ld0162-tx32.am.freescale.net>
-References: <20070920220043.GA28769@loki.buserror.net>
-	<20070920220121.GF28784@loki.buserror.net>
-	<20070921100841.6904f2bc.sfr@canb.auug.org.au>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 21 Sep 2007 10:49:06 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/2] bootwrapper: Factor out dt_set_mac_address().
+Message-ID: <20070921004906.GA4124@localhost.localdomain>
+References: <20070920220615.GA28860@loki.buserror.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070921100841.6904f2bc.sfr@canb.auug.org.au>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+In-Reply-To: <20070920220615.GA28860@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +18,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2007 at 10:08:41AM +1000, Stephen Rothwell wrote:
-> On Thu, 20 Sep 2007 17:01:21 -0500 Scott Wood <scottwood@freescale.com> wrote:
-> >
-> > +++ b/drivers/net/fs_enet/fs_enet-main.c
-> > @@ -44,12 +44,18 @@
-> >  #include <asm/irq.h>
-> >  #include <asm/uaccess.h>
-> >  
-> > +#ifdef CONFIG_PPC_CPM_NEW_BINDING
-> > +#include <asm/of_platform.h>
+On Thu, Sep 20, 2007 at 05:06:15PM -0500, Scott Wood wrote:
+> This allows callers to set addresses one at a time when that would be more
+> convenient.
 > 
-> Hmm, didn't I already ask you to change this to linux/of_platform.h?
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-Grrr, I thought I'd gotten them all.
- 
--Scott
+Um... I feel bad whinging about such a tiny nit, but...
+
+> +void dt_set_mac_address(u32 index, const u8 *addr)
+
+.. I'd prefer it was called dt_fixup_mac_address() to match the other
+functions.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
