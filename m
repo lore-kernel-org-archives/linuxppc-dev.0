@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E47BADE249
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:05:21 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:05:06 -0500 (CDT)
-Subject: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
+	by ozlabs.org (Postfix) with ESMTP id B0D87DE0A8
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:05:46 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:05:30 -0500 (CDT)
+Subject: [PATCH 9/15] bootwrapper: rtas support
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-8-08.miltonm@bga.com>
+Message-Id: <boot-8-09.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -22,23 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-kexec-tools still produces a version 2 device tree, while the
-libraries in the wrapper only support version 16 and later.
+This code provides a console write that calls put-term-char.
 
-Add a routine to convert a v2 flat device tree to a v16 one inplace
-by inserting OF_DT_NOP and chomping full path.  Make space for new
-headers by moving and then chomping the OF_DT_NOPs.
+To avoid PIC relocation of the absolute rtas addresses, hide the
+actual call to rtas in assembly and declare all variables as int.
+
+An instantiated rtas will be protected by a reserved range in the
+device tree, so no explicit call to add_occupied_range is needed
+here.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
----
-vs 12175
-Rediffed Makefile, ops, kexec.c
+--- 
+vs 12176
+rtas_put_term_write now takes const char *buf
+rediff ops.h, Makefile
 
-Index: kernel/arch/powerpc/boot/flatdevtree_conv.c
+Index: kernel/arch/powerpc/boot/rtas.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/flatdevtree_conv.c	2007-09-20 17:49:04.000000000 -0500
-@@ -0,0 +1,280 @@
++++ kernel/arch/powerpc/boot/rtas.c	2007-09-21 01:43:08.000000000 -0500
+@@ -0,0 +1,146 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -54,308 +57,174 @@ Index: kernel/arch/powerpc/boot/flatdevtree_conv.c
 + * along with this program; if not, write to the Free Software
 + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 + *
-+ * Copyright IBM Corporation 2007
++ * Copyright 2007 IBM Corporation.
 + *
 + * Authors: Milton Miller <miltonm@bga.com>
-+ */
-+#include "flatdevtree.h"
-+#include "stdio.h"
-+#include "ops.h"
-+
-+#define MIN_VERSION 2
-+#define OUT_VERSION 16
-+#define OUT_COMPAT 16
-+
-+#ifdef NO_CHECK
-+static int check_v123_tree(u32 *start, u32 *limit)
-+{
-+	return 0;
-+}
-+#else
-+/**
-+ * check_v123_tree - check integrety of a version 1, 2, or 3 tree
-+ * @start: the start of the device tree struct
-+ * @limit: the end of the region for the struct
-+ * structural checks on device_tree
-+ */
-+static int check_v123_tree(u32 *start, u32 *limit)
-+{
-+	u32 len;
-+	int depth = 0;
-+	u32 *dtp = start;
-+
-+	while (dtp < limit)
-+		switch (*dtp) {
-+		case OF_DT_END:
-+			if (depth)
-+				return -1;
-+			return ++dtp - start;
-+		case OF_DT_NOP:
-+			dtp++;
-+			break;
-+		case OF_DT_END_NODE:
-+			dtp++;
-+			depth--;
-+			break;
-+		case OF_DT_BEGIN_NODE:
-+			len = strlen((char *)(++dtp));
-+			/* check path is suffix to previous? */
-+			dtp += 1 + (len / 4);
-+			depth++;
-+			break;
-+		case OF_DT_PROP:
-+			len = dtp[1];
-+			dtp += 3;
-+			if ((len >= 8) && ((long)dtp & 4))
-+				dtp++;
-+			dtp += (len + 3) / 4;
-+			break;
-+		default:
-+			return -1;
-+		}
-+	return -1;	/* no OF_DT_END */
-+}
-+#endif
-+
-+/**
-+ * nop_to_v16 - add %OF_DT_NOP to hide alignment differences
-+ * @dtp: pointer to the beginning of the struct area to modify
-+ * insert %OF_DT_NOP into the dt_struct @dtp to make it v16 from v1, 2, or 3.
-+ */
-+static int nop_to_v16(u32 *dtp)
-+{
-+	int nops = 0;
-+	char *p, *s;
-+	int len;
-+	u32 *next;
-+
-+	while (*dtp != OF_DT_END)
-+		switch (*dtp) {
-+		case OF_DT_BEGIN_NODE:
-+			/* v2 & v3 names are full path, v16+ is relative */
-+			p = (char *)(++dtp);
-+			len = strlen(p);
-+			next = dtp + 1 + len / 4;
-+
-+			for (s = p + len; *s != '/'; s--)
-+				if (s == p)
-+					fatal("name %s has no '/'", p);
-+
-+			len -= s++ - p;		/* not the slash but the nul */
-+			memmove(p, s, len);
-+			while (len % 4)
-+				p[len++] = '\0';
-+			dtp += len / 4;
-+			while (dtp != next) {
-+				*dtp++ = OF_DT_NOP;
-+				nops++;
-+			}
-+			break;
-+		case OF_DT_PROP:
-+			/* convert from align_8 to align_4 via prefixing nop */
-+			len = dtp[1];
-+			if ((len >= 8) && !((long)dtp & 4)) {
-+				memmove(dtp+1, dtp, 12);
-+				*dtp++ = OF_DT_NOP;
-+				nops++;
-+			}
-+			dtp += 3 + (len + 3)/4;
-+			break;
-+		default:
-+			fatal("%s: unrecognised tag %d at %p\n", __FUNCTION__,
-+				*dtp, dtp);
-+		case OF_DT_NOP:
-+			nops ++;
-+			/* fall through */
-+		case OF_DT_END_NODE:
-+			dtp ++;
-+			break;
-+		}
-+	return nops;
-+}
-+
-+#if MIN_VERSION < 3 || OUT_VERSION > 16
-+/**
-+ * move_nops_fwd - move nops in a v16 dt_struct to the beginning
-+ * @start - device tree starting address
-+ * @count - number of %OF_DT_NOP cells to move
-+ */
-+static void move_nops_fwd(u32 *start, int count)
-+{
-+	u32 *dtp = start;
-+	int len;
-+	while (count)
-+		switch (*dtp) {
-+		case OF_DT_NOP:
-+			memmove(start+1,start,(dtp-start) * 4);
-+			*start++ = OF_DT_NOP;
-+			dtp++;
-+			count--;
-+			break;
-+		case OF_DT_END_NODE:
-+			dtp++;
-+			break;
-+		case OF_DT_BEGIN_NODE:
-+			len = strlen((char *)(++dtp));
-+			dtp += 1 + len / 4;
-+			break;
-+		case OF_DT_PROP:
-+			len = dtp[1];
-+			dtp += 3 + (len + 3) / 4;
-+			break;
-+		case OF_DT_END:
-+			fatal("Not enough nops -- need %d more\n", count);
-+			return;
-+		default:
-+			fatal("%s: unknown tag %d at %p", __FUNCTION__, *dtp, dtp)
-+		}
-+}
-+#endif
-+
-+/**
-+ * conv_flattree_inplace upgrade the version of a boot_param_header
-+ * @tree: pointer to the device tree header to convert
 + *
-+ * Converts a v1, 2, 3 device tree (of at least MIN_VERSION)
-+ * in place to OUT_VERSION (16) format, usable by flatdevtree.c
 + */
-+void conv_flattree_inplace(struct boot_param_header *tree)
++
++#include "ops.h"
++#include "stdio.h"
++#include "flatdevtree.h"
++
++static int rtas_entry;
++static int rtas_base;
++static int rtas_size;
++
++static void find_rtas(void)
 +{
-+	u32 *dtp;
-+	u32 need = 0, nops;
-+	int slen;
++	int rc;
++	void *devp;
++	char *str;
 +
-+	if (tree->magic != OF_DT_HEADER)
-+		fatal("%s: no magic", __FUNCTION__);
++	devp = finddevice("/rtas");
++	if (! devp)
++		return;
 +
-+	if (tree->last_comp_version > 3)
-+		return;			/* don't know what to do */
++	str = "linux,rtas-entry";
++	rc = getprop(devp, str, &rtas_entry, sizeof(rtas_entry));
++	if (rc < 0)
++		return;
++	if (rc != sizeof(rtas_entry))
++		goto fail;
 +
-+	if (tree->version < MIN_VERSION) {
-+		printf("%s: Warning: can't handle version %d tree\n",
-+				__FUNCTION__, tree->version);
++	str = "rtas-size";
++	rc = getprop(devp, str, &rtas_size, sizeof(rtas_size));
++	if (rc < 0)
++		return;
++	if (rc != sizeof(rtas_size))
++		goto fail;
++
++	str = "linux,rtas-base";
++	rc = getprop(devp, str, &rtas_base, sizeof(rtas_base));
++	if (rc < 0) {
++		printf("rtas-size but no linux,rtas-base in /rtas.  "
++			"disabling wrapper rtas interface\n\r");
++		rtas_entry = 0;
 +		return;
 +	}
 +
-+	if (tree->version < 2)
-+		need++;		/* boot_cpu_id */
-+
-+	if (tree->version < 3)
-+		need++;		/* dt_string_size */
-+
-+	if (OUT_VERSION > 16)
-+		need++;		/* dt_struct_size */
-+
-+	dtp = (void *)tree + tree->off_dt_struct;
-+
-+	slen = check_v123_tree(dtp, (void *)tree + tree->totalsize);
-+	if (slen < 0)
-+		fatal("device tree check failed\n");
-+
-+	nops = nop_to_v16(dtp);
-+
-+	if (need & 1)		/* keep 8 byte alignment of mem reserve */
-+		need++;
-+
-+	if (need > nops)
-+		fatal("Didn't find enough space to add new header fields\n\r"
-+			"(needed %d found %d tree %p)", need, nops, tree);
-+
-+	/* ok now compress the dtb struct */
-+	move_nops_fwd(dtp, need);
-+	dtp += need;
-+
-+	/*
-+	 * move mem_rsvmap and dt_strings if they are before dt_struct
-+	 * onto our nops .  Adjust start addresses for the 3 sections.
-+	 */
-+	if ((tree->off_mem_rsvmap < tree->off_dt_struct) ||
-+		(tree->off_dt_strings < tree->off_dt_struct)) {
-+		int start, end;
-+		void *ptr;
-+
-+		if (tree->off_mem_rsvmap < tree->off_dt_strings)
-+			start = tree->off_mem_rsvmap;
-+		else
-+			start = tree->off_dt_strings;
-+
-+		end = tree->off_dt_struct;
-+		ptr = (void *)tree + start;
-+
-+		memmove(ptr + 4 * need, ptr, end - start);
-+
-+		if (tree->off_mem_rsvmap < tree->off_dt_struct)
-+			tree->off_mem_rsvmap += 4 * need;
-+		if (tree->off_dt_strings < tree->off_dt_struct)
-+			tree->off_dt_strings += 4 * need;
-+	}
-+	tree->off_dt_struct += 4 * need;
-+
-+	/* ok now we have space to extend the header. */
-+	if (tree->version < 2 && MIN_VERSION < 2) {
-+		tree->boot_cpuid_phys = 0;	/* default, caller can fix */
-+	}
-+
-+	/* calculate size of dt_strings_size */
-+	if (tree->version < 3 && MIN_VERSION < 3) {
-+		int end = tree->totalsize;
-+
-+		if (tree->off_dt_strings < tree->off_mem_rsvmap)
-+			end = tree->off_mem_rsvmap;
-+
-+		if ((tree->off_dt_strings < tree->off_dt_struct) &&
-+				(end > tree->off_dt_struct))
-+			end = tree->off_dt_struct;
-+
-+		tree->dt_strings_size = end - tree->off_dt_strings;
-+	}
-+
-+#if OUT_VERSION > 16
-+	tree->dt_struct_size = 4 * slen;
-+#endif
-+
-+	tree->version = OUT_VERSION;
-+	tree->last_comp_version = OUT_COMPAT;
++	if (rc != sizeof(rtas_base))
++		goto fail;
 +
 +	return;
++
++
++fail:
++	printf("Unexpected length %d of %s property in /rtas.\n\r"
++			"disabling wrapper rtas interface\n\r", rc, str);
++	rtas_entry = 0;
++	return;
 +}
++
++/*
++ * PIC relocation of function pointers happens at call time.
++ * We have an absolute out-of-image address.   So tell C they
++ * are just integers, and hide the call as an out-of-file
++ * function.
++ */
++__asm__ (
++		"	.globl call_rtas\n"
++		"	call_rtas: mtctr 5\n"
++		"	bctr\n"
++		);
++
++void call_rtas(int args[], int base, int entry);
++
++
++static int put_term_char;
++
++static void rtas_put_term_write(const char *buf, int len)
++{
++	int i, args[5];
++
++	args[0] = put_term_char;
++	args[1] = 1;	/* num inputs */
++	args[2] = 1;	/* num outputs */
++
++	for (i=0; i < len; ) {
++		args[3] = buf[i];
++		args[4] = 0;
++
++		call_rtas(args, rtas_base, rtas_entry);
++		if (args[4] == 0)		/* SUCCESS */
++			i++;
++		else if (args[4] == -1)		/* HARDWARE_ERROR */
++			break;
++		/* else retry */
++	}
++}
++
++int rtas_console_init(void)
++{
++	void *devp;
++	int rc;
++
++
++	devp = finddevice("/rtas");
++	if (!devp)
++		return -1;
++
++	if (!rtas_entry)
++		find_rtas();
++	if (!rtas_entry)
++		return -1;
++
++	rc = getprop(devp, "put-term-char", &put_term_char,
++			sizeof(put_term_char));
++	if (rc == sizeof(put_term_char))
++		console_ops.write = rtas_put_term_write;
++	else
++		put_term_char = -1;
++
++	return put_term_char == -1 ? -1 : 0;
++}
++
++/* for debug, hard code */
++void use_rtas_console(int entry, int base, int tc)
++{
++	rtas_entry = entry;
++	rtas_base = base;
++	put_term_char = tc;
++	console_ops.write = rtas_put_term_write;
++}
+Index: kernel/arch/powerpc/boot/ops.h
+===================================================================
+--- kernel.orig/arch/powerpc/boot/ops.h	2007-09-21 01:43:02.000000000 -0500
++++ kernel/arch/powerpc/boot/ops.h	2007-09-21 01:43:08.000000000 -0500
+@@ -99,6 +99,8 @@ void send_slaves_to_kernel(void *vmlinux
+ void slaves_are_low(void);
+ void wait_slaves_moved(void);
+ void kexec_platform_init(struct boot_param_header *dt_blob);
++int rtas_console_init(void);
++void use_rtas_console(int entry, int base, int tc);
+ 
+ int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
+ int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
+Index: kernel/arch/powerpc/boot/kexec.c
+===================================================================
+--- kernel.orig/arch/powerpc/boot/kexec.c	2007-09-21 01:43:02.000000000 -0500
++++ kernel/arch/powerpc/boot/kexec.c	2007-09-21 01:43:08.000000000 -0500
+@@ -33,6 +33,9 @@ static void find_console_from_tree(void)
+ {
+ 	int rc = -1;
+ 
++	rc = rtas_console_init();
++	if (!rc)
++		return;
+ 	if (rc) {
+ 		/* no console, oh well */
+ 	}
 Index: kernel/arch/powerpc/boot/Makefile
 ===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2007-09-20 17:42:24.000000000 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2007-09-20 17:49:04.000000000 -0500
+--- kernel.orig/arch/powerpc/boot/Makefile	2007-09-21 01:43:02.000000000 -0500
++++ kernel/arch/powerpc/boot/Makefile	2007-09-21 01:43:08.000000000 -0500
 @@ -42,7 +42,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
  	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
  
  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
--		marshal.c memranges.c kexec.c \
-+		flatdevtree_conv.c marshal.c memranges.c kexec.c \
+-		flatdevtree_conv.c marshal.c memranges.c kexec.c \
++		flatdevtree_conv.c marshal.c memranges.c kexec.c rtas.c \
  		ns16550.c serial.c simple_alloc.c div64.S util.S \
  		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
  		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
-Index: kernel/arch/powerpc/boot/ops.h
-===================================================================
---- kernel.orig/arch/powerpc/boot/ops.h	2007-09-20 17:42:24.000000000 -0500
-+++ kernel/arch/powerpc/boot/ops.h	2007-09-20 17:49:04.000000000 -0500
-@@ -81,7 +81,10 @@ struct loader_info {
- };
- extern struct loader_info loader_info;
- 
-+struct boot_param_header;
-+
- void start(void);
-+void conv_flattree_inplace(struct boot_param_header *tree);
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
- int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
-Index: kernel/arch/powerpc/boot/kexec.c
-===================================================================
---- kernel.orig/arch/powerpc/boot/kexec.c	2007-09-20 17:42:24.000000000 -0500
-+++ kernel/arch/powerpc/boot/kexec.c	2007-09-20 17:49:04.000000000 -0500
-@@ -99,6 +99,7 @@ void kexec_platform_init(struct boot_par
- 	move_slaves_up();
- 
- 	setup_initial_heap();
-+	conv_flattree_inplace(dt_blob);
- 	init_flat_tree(dt_blob);
- 	/*
- 	 * drivers can malloc and read the tree, but not realloc later
