@@ -1,19 +1,20 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id D12EFDDF11
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 14:41:12 +1000 (EST)
-Date: Fri, 21 Sep 2007 14:35:40 +1000
+	by ozlabs.org (Postfix) with ESMTP id B8F86DDEC8
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 14:41:13 +1000 (EST)
+Date: Fri, 21 Sep 2007 14:36:47 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 06/11] [POWERPC] Remove more iSeries specific stuff from vio.c
-Message-Id: <20070921143540.75f3becf.sfr@canb.auug.org.au>
-In-Reply-To: <20070921143446.ad55d494.sfr@canb.auug.org.au>
+Subject: [PATCH 07/11] [POWERPC] iSeries: missing newline in printk
+Message-Id: <20070921143647.7ceebabc.sfr@canb.auug.org.au>
+In-Reply-To: <20070921143540.75f3becf.sfr@canb.auug.org.au>
 References: <20070921135533.461eecdf.sfr@canb.auug.org.au>
 	<20070921142928.64451ad8.sfr@canb.auug.org.au>
 	<20070921143102.eb30d770.sfr@canb.auug.org.au>
 	<20070921143205.64271521.sfr@canb.auug.org.au>
 	<20070921143337.0e4a2f0a.sfr@canb.auug.org.au>
 	<20070921143446.ad55d494.sfr@canb.auug.org.au>
+	<20070921143540.75f3becf.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -29,174 +30,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/vio.c              |   78 ++++++++++---------------------
- arch/powerpc/platforms/iseries/iommu.c |   24 +++++++++-
- include/asm-powerpc/iseries/iommu.h    |    4 ++
- 3 files changed, 52 insertions(+), 54 deletions(-)
+ arch/powerpc/platforms/iseries/viopath.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index cf71c88..9e1ff21 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -48,61 +48,33 @@ static struct vio_dev vio_bus_device  = { /* fake "parent" device */
- 	.dev.bus = &vio_bus_type,
- };
+diff --git a/arch/powerpc/platforms/iseries/viopath.c b/arch/powerpc/platforms/iseries/viopath.c
+index 7106a05..df23331 100644
+--- a/arch/powerpc/platforms/iseries/viopath.c
++++ b/arch/powerpc/platforms/iseries/viopath.c
+@@ -594,7 +594,7 @@ int viopath_close(HvLpIndex remoteLp, int subtype, int numReq)
+ 		numOpen += viopathStatus[remoteLp].users[i];
  
--#ifdef CONFIG_PPC_ISERIES
--static struct iommu_table veth_iommu_table;
--struct iommu_table vio_iommu_table;
--
--static void __init iommu_vio_init(void)
--{
--	iommu_table_getparms_iSeries(255, 0, 0xff, &veth_iommu_table);
--	veth_iommu_table.it_size /= 2;
--	vio_iommu_table = veth_iommu_table;
--	vio_iommu_table.it_offset += veth_iommu_table.it_size;
--
--	if (!iommu_init_table(&veth_iommu_table, -1))
--		printk("Virtual Bus VETH TCE table failed.\n");
--	if (!iommu_init_table(&vio_iommu_table, -1))
--		printk("Virtual Bus VIO TCE table failed.\n");
--}
--#else
--static void __init iommu_vio_init(void)
--{
--}
--#endif
--
- static struct iommu_table *vio_build_iommu_table(struct vio_dev *dev)
- {
--#ifdef CONFIG_PPC_ISERIES
--	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
--		if (strcmp(dev->type, "network") == 0)
--			return &veth_iommu_table;
--		return &vio_iommu_table;
--	} else
--#endif
--	{
--		const unsigned char *dma_window;
--		struct iommu_table *tbl;
--		unsigned long offset, size;
--
--		dma_window = of_get_property(dev->dev.archdata.of_node,
--					  "ibm,my-dma-window", NULL);
--		if (!dma_window)
--			return NULL;
--
--		tbl = kmalloc(sizeof(*tbl), GFP_KERNEL);
--
--		of_parse_dma_window(dev->dev.archdata.of_node, dma_window,
--				    &tbl->it_index, &offset, &size);
--
--		/* TCE table size - measured in tce entries */
--		tbl->it_size = size >> IOMMU_PAGE_SHIFT;
--		/* offset for VIO should always be 0 */
--		tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
--		tbl->it_busno = 0;
--		tbl->it_type = TCE_VB;
--
--		return iommu_init_table(tbl, -1);
--	}
-+	const unsigned char *dma_window;
-+	struct iommu_table *tbl;
-+	unsigned long offset, size;
-+
-+	if (firmware_has_feature(FW_FEATURE_ISERIES))
-+		return vio_build_iommu_table_iseries(dev);
-+
-+	dma_window = of_get_property(dev->dev.archdata.of_node,
-+				  "ibm,my-dma-window", NULL);
-+	if (!dma_window)
-+		return NULL;
-+
-+	tbl = kmalloc(sizeof(*tbl), GFP_KERNEL);
-+
-+	of_parse_dma_window(dev->dev.archdata.of_node, dma_window,
-+			    &tbl->it_index, &offset, &size);
-+
-+	/* TCE table size - measured in tce entries */
-+	tbl->it_size = size >> IOMMU_PAGE_SHIFT;
-+	/* offset for VIO should always be 0 */
-+	tbl->it_offset = offset >> IOMMU_PAGE_SHIFT;
-+	tbl->it_busno = 0;
-+	tbl->it_type = TCE_VB;
-+
-+	return iommu_init_table(tbl, -1);
- }
+ 	if ((viopathStatus[remoteLp].isOpen) && (numOpen == 0)) {
+-		printk(VIOPATH_KERN_INFO "closing connection to partition %d",
++		printk(VIOPATH_KERN_INFO "closing connection to partition %d\n",
+ 				remoteLp);
  
- /**
-diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
-index 3281f10..49e9c66 100644
---- a/arch/powerpc/platforms/iseries/iommu.c
-+++ b/arch/powerpc/platforms/iseries/iommu.c
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- 
- #include <asm/iommu.h>
-+#include <asm/vio.h>
- #include <asm/tce.h>
- #include <asm/machdep.h>
- #include <asm/abs_addr.h>
-@@ -191,7 +192,8 @@ void iommu_devnode_init_iSeries(struct pci_dev *pdev, struct device_node *dn)
- }
- #endif
- 
--extern struct iommu_table vio_iommu_table;
-+static struct iommu_table veth_iommu_table;
-+static struct iommu_table vio_iommu_table;
- 
- void *iseries_hv_alloc(size_t size, dma_addr_t *dma_handle, gfp_t flag)
- {
-@@ -219,6 +221,26 @@ void iseries_hv_unmap(dma_addr_t dma_handle, size_t size,
- 	iommu_unmap_single(&vio_iommu_table, dma_handle, size, direction);
- }
- 
-+void __init iommu_vio_init(void)
-+{
-+	iommu_table_getparms_iSeries(255, 0, 0xff, &veth_iommu_table);
-+	veth_iommu_table.it_size /= 2;
-+	vio_iommu_table = veth_iommu_table;
-+	vio_iommu_table.it_offset += veth_iommu_table.it_size;
-+
-+	if (!iommu_init_table(&veth_iommu_table, -1))
-+		printk("Virtual Bus VETH TCE table failed.\n");
-+	if (!iommu_init_table(&vio_iommu_table, -1))
-+		printk("Virtual Bus VIO TCE table failed.\n");
-+}
-+
-+struct iommu_table *vio_build_iommu_table_iseries(struct vio_dev *dev)
-+{
-+	if (strcmp(dev->type, "network") == 0)
-+		return &veth_iommu_table;
-+	return &vio_iommu_table;
-+}
-+
- void iommu_init_early_iSeries(void)
- {
- 	ppc_md.tce_build = tce_build_iSeries;
-diff --git a/include/asm-powerpc/iseries/iommu.h b/include/asm-powerpc/iseries/iommu.h
-index 6e323a1..c59ee7e 100644
---- a/include/asm-powerpc/iseries/iommu.h
-+++ b/include/asm-powerpc/iseries/iommu.h
-@@ -22,6 +22,7 @@
-  */
- 
- struct pci_dev;
-+struct vio_dev;
- struct device_node;
- struct iommu_table;
- 
-@@ -34,4 +35,7 @@ extern void iommu_table_getparms_iSeries(unsigned long busno,
- 		unsigned char slotno, unsigned char virtbus,
- 		struct iommu_table *tbl);
- 
-+extern struct iommu_table *vio_build_iommu_table_iseries(struct vio_dev *dev);
-+extern void iommu_vio_init(void);
-+
- #endif /* _ASM_POWERPC_ISERIES_IOMMU_H */
+ 		HvCallEvent_closeLpEventPath(remoteLp,
 -- 
 1.5.3.2
