@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 069D4DE267
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:08:42 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:08:31 -0500 (CDT)
-Subject: [PATCH 1/2] qemu platform, v2
+	by ozlabs.org (Postfix) with ESMTP id CD4C8DF511
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:09:00 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:08:47 -0500 (CDT)
+Subject: [PATCH 2/2] qemu platform rom, v2
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <qemu-8-01.miltonm@bga.com>
+Message-Id: <qemu-8-02.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -22,1617 +22,529 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is the second rev of patches to boot a arch powerpc kernel on
+Here is the second rev of patches to boot a powerpc port kernel on
 qemu with the prep architecture.
 
-The goal is to provide an environment for use with the existing qemu
+The goal is to provide a environment for use with the existing qemu
 hardware suppplied hardware, as oposed to changing the qemu
 machine description.
 
-This patch contains only the kernel portion.  While the diff was
-generated against for-2.6.24, this first patch applies cleanly
-to 2.6.23-rc7.  With the rom image created in the next patch,
-a kernel built by this patch should boot when using qemu -kernel.
+This patch has the changes to the boot wrapper and the device tree.
+It applies to the additon of my kexec series to the for-2.6.24 branch
+as of 2007/09/21.
 
-I debated putting this in the embedded6xx tree, especially when I
-discovered that the bridge is suposedly a '105, but saw no advantage
-in the end.
+The wrapper code zBoot is packaged as ppc_rom.bin, provding a replacement
+for OpenHackware.   [OpenHackware requires the kernel boot device to
+have a partition table, even if its laoded in memory (which prep sort
+of provides).  It also only gueses the execution of boot sripts and any
+forth, and has noot seen any development in 3 years].
 
-pci config space is now working, however cirrusfb causes crashes
-and ohci times out, so at least pci memory is likely still broken.
+This rom copies its contents to ram where it then invokes the normal
+wrapper starup path, using the serial port for the console.  It proceeds
+to locate the commandline, kernel, and initrd using nvram.  It supports
+only nvram at the prep location of 0x8000074 indicating a boot from
+"memory" aka qemu -kernel or drive "m".  The loaded image can be a
+kernel or a zImage (in this mode it will ignore any attached device
+tree preferring the one supplied via r3), but the contianed kernel and
+optionally a initrd as per the normal build process will be used.
 
-ide and serial work, floppy and parallel are untested.
+Specifically, the patch requrires (1) external vmlinux hook and wrapper
+(2) check loader_info command line after fixups, and (3) obtain initrd
+from device-tree, (4) several patches committed to the for-2.6.24 branch.
 
-I added a defconfig based on chrp32; hardware options still need
-tweaking (eg isa ne2k).
+When building the rom, configure the device tree as "qemu.dts".  When
+building the vmlinux or zImage -kernel, you can use the empty string
+("") to suppress the call to dtc as the code will ignore any attached dtb.
 
+When invoking qemu, use the -L flag to specify the directory with the
+ppc_rom.bin file.
 
-Index: kernel/arch/powerpc/platforms/Kconfig
-===================================================================
---- kernel.orig/arch/powerpc/platforms/Kconfig	2007-09-19 02:32:54.000000000 -0500
-+++ kernel/arch/powerpc/platforms/Kconfig	2007-09-19 02:41:00.000000000 -0500
-@@ -47,6 +47,7 @@ source "arch/powerpc/platforms/chrp/Kcon
- source "arch/powerpc/platforms/52xx/Kconfig"
- source "arch/powerpc/platforms/powermac/Kconfig"
- source "arch/powerpc/platforms/prep/Kconfig"
-+source "arch/powerpc/platforms/qemu/Kconfig"
- source "arch/powerpc/platforms/maple/Kconfig"
- source "arch/powerpc/platforms/pasemi/Kconfig"
- source "arch/powerpc/platforms/celleb/Kconfig"
-Index: kernel/arch/powerpc/platforms/qemu/Kconfig
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/platforms/qemu/Kconfig	2007-09-20 14:12:57.000000000 -0500
-@@ -0,0 +1,10 @@
-+config PPC_QEMU
-+	bool "QEMU emulated PowerPC Reference Platform (PReP) system"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select PPC_I8259
-+	select PPC_INDIRECT_PCI
-+	select PPC_UDBG_16550
-+	select PPC_NATIVE
-+	select WANT_DEVICE_TREE
-+	default n
-+
-Index: kernel/arch/powerpc/platforms/qemu/Makefile
+Index: kernel/arch/powerpc/boot/qemu.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/platforms/qemu/Makefile	2007-09-19 02:41:00.000000000 -0500
-@@ -0,0 +1,2 @@
-+obj-y			+= setup.o
-+obj-$(CONFIG_PCI)	+= pci.o
-Index: kernel/arch/powerpc/platforms/qemu/pci.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/platforms/qemu/pci.c	2007-09-19 02:56:36.000000000 -0500
-@@ -0,0 +1,133 @@
++++ kernel/arch/powerpc/boot/qemu.c	2007-09-21 04:53:32.000000000 -0500
+@@ -0,0 +1,235 @@
 +/*
-+ * prep Port to arch/powerpc:
-+ * Copyright 2007 David Gibson, IBM Corporation.
++ * QEMU PReP-specific stuff for the zImage boot wrapper.
 + *
-+ * prep Port to qemu:
-+ * Copyright 2007 Milton Miller, IBM Corporation.
++ * Copyright (C) 2007 Milton Miller, IBM Corp. <miltonm@bga.com>
++ * Copyright (C) 2006 Paul Mackerras, IBM Corp. <paulus@samba.org>
 + *
-+ * Based on OpenHackware 0.4
-+ * Copyright (c) 2004-2005 Jocelyn Mayer
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License.
 + *
-+ * pci config based on arch/powerpc/platforms/chrp/pci.c GoldenGate code
++ * nvram format obtained from OpenHackWare 0.4
++ * Copyright (C) 2004-2005 Jocelyn Mayer (l_indien@magic.fr)
 + *
 + */
 +
-+#include <linux/init.h>
++asm(
++/*
++ * gcc 4.1.2 seems to place this first, even with the block at the end of
++ * the file.  Put it first for good measure.  If the branch ends up at the
++ * beginning of the image then it can be started like a kernel.
++ */
++"	b	_zimage_start\n"	/* gcc 4.1.2 places this first */
 +
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/udbg.h>
++/*
++ * This code will be loaded by qemu as a rom at the end of memory, and
++ * execution will start at address -4.  Since the rom is read only, we
++ * and the zImage code wants to run where loaded, we must copy it to ram.
++ *
++ * move to linked place
++ * end with a branch to this code
++ * this code will be copied with dd to the end of the rom image
++ */
 +
-+static volatile void __iomem *qemu_config_addr(struct pci_bus *bus,
-+	unsigned int devfn, int off)
-+{
-+	int dev, fn;
-+	struct pci_controller *hose = bus->sysdata;
-+
-+	if (!hose->cfg_data)
-+		return NULL;
-+
-+	if (bus->number != 0)
-+		return NULL;
-+
-+	dev = devfn >> 3;
-+	fn = devfn & 7;
-+
-+	if (dev < 11 || dev > 21)
-+		return NULL;
-+
-+	return hose->cfg_data + ((1 << dev) | (fn << 8) | off);
-+}
-+
-+int qemu_read_config(struct pci_bus *bus, unsigned int devfn, int off,
-+			   int len, u32 *val)
-+{
-+	volatile void __iomem *cfg_data = qemu_config_addr(bus, devfn, off);
-+
-+	if (cfg_data == NULL)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
++"	.globl	copy_rom_start\n"
++"copy_rom_start:\n"
++"	bl	1f\n"
++"1:	mflr	4\n"
++"	clrrwi	4,4,19\n"		/* ROM_BITS -- get beginning of rom */
++"	lis	5,_end@ha\n"
++"	addi	5,5,_end@l\n"
++"	lis	3,_start@ha\n"
++"	addi	3,3,_start@l\n"
++"	subf	5,3,5\n"
++"	addi	5,5,0x1f\n"
++"	srwi	5,5,5\n"
++"	mtctr	5\n"
++"2:	lwz	24,0(4)\n"		/* copy to linked addresss */
++"	lwz	25,4(4)\n"
++"	lwz	26,8(4)\n"
++"	lwz	27,12(4)\n"
++"	lwz	28,16(4)\n"
++"	lwz	29,20(4)\n"
++"	lwz	30,24(4)\n"
++"	lwz	31,28(4)\n"
++"	stw	24,0(3)\n"
++"	stw	25,4(3)\n"
++"	stw	26,8(3)\n"
++"	stw	27,12(3)\n"
++"	stw	28,16(3)\n"
++"	stw	29,20(3)\n"
++"	stw	30,24(3)\n"
++"	stw	31,28(3)\n"
++"	dcbf	0,3\n"
++"	sync\n"
++"	icbi	0,3\n"
++"	addi	3,3,32\n"
++"	addi	4,4,32\n"
++"	bdnz	2b\n"
++"	sync\n"
++"	isync\n"
 +
 +	/*
-+	 * Note: the caller has already checked that off is
-+	 * suitably aligned and that len is 1, 2 or 4.
++	 * Put a branch to self on a few vectors in case we get an unexpected
++	 * interrupt.  At least you can dump regs in the qemu monitor.
 +	 */
-+	switch (len) {
-+	case 1:
-+		*val =  in_8(cfg_data);
-+		break;
-+	case 2:
-+		*val = in_le16(cfg_data);
-+		break;
-+	default:
-+		*val = in_le32(cfg_data);
-+		break;
-+	}
-+	return PCIBIOS_SUCCESSFUL;
++"	lis	0,0x48000000@h\n"
++"	stw	0,0x700(0)\n"
++"	stw	0,0x300(0)\n"
++"	stw	0,0x400(0)\n"
++"	stw	0,0x900(0)\n"
++"	stw	0,0x800(0)\n"
++"	stw	0,0x200(0)\n"
++
++	/* branch to linked address */
++"	lis	0,_zimage_start@h\n"
++"	ori	0,0,_zimage_start@l\n"
++"	mtctr	0\n"
++"	li	3,0\n"
++"	bctrl\n"
++
++	/* must be last word before copy_rom_end */
++"	b	copy_rom_start\n"
++"	.globl	copy_rom_end\n"
++"copy_rom_end:\n"
++);
++
++
++#include <stddef.h>
++#include "string.h"
++#include "stdio.h"
++#include "ops.h"
++#include "page.h"
++#include "io.h"
++#include "gunzip_util.h"
++#include "flatdevtree.h"
++
++BSS_STACK(16*1024);
++
++unsigned char *nvram = (void *)0x80000074;	/* address of nvram on PReP */
++
++static void qemu_nvram_write(unsigned short addr, char data)
++{
++	out_8(nvram + 0, addr & 0xff);
++	out_8(nvram + 1, addr >> 8);
++	out_8(nvram + 3, data);
 +}
 +
-+int qemu_write_config(struct pci_bus *bus, unsigned int devfn, int off,
-+			    int len, u32 val)
++static char qemu_nvram_read(unsigned short addr)
 +{
-+	volatile void __iomem *cfg_data = qemu_config_addr(bus, devfn, off);
++	char data;
++	out_8(nvram + 0, addr & 0xff);
++	out_8(nvram + 1, addr >> 8);
++	data = in_8(nvram + 3);
 +
-+	if (cfg_data == NULL)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	/*
-+	 * Note: the caller has already checked that off is
-+	 * suitably aligned and that len is 1, 2 or 4.
-+	 */
-+	switch (len) {
-+	case 1:
-+		out_8(cfg_data, val);
-+		break;
-+	case 2:
-+		out_le16(cfg_data, val);
-+		break;
-+	default:
-+		out_le32(cfg_data, val);
-+		break;
-+	}
-+	return PCIBIOS_SUCCESSFUL;
++	return data;
 +}
 +
-+static struct pci_ops qemu_pci_ops =
++static void qemu_nvram_fetch(unsigned short addr, unsigned short len, void *p)
 +{
-+	qemu_read_config,
-+	qemu_write_config
-+};
++	char *buf = p;
++	int i;
 +
-+void __init qemu_find_bridges(void)
-+{
-+	struct device_node *phb;
-+	struct pci_controller *hose;
-+
-+	phb = of_find_node_by_type(NULL, "pci");
-+	if (!phb) {
-+		printk(KERN_ERR "PReP: Cannot find PCI bridge OF node\n");
-+		return;
-+	}
-+
-+	hose = pcibios_alloc_controller(phb);
-+	if (!hose)
-+		return;
-+
-+	pci_process_bridge_OF_ranges(hose, phb, 1);
-+
-+#define PREP_PCI_DRAM_OFFSET 	0x80000000
-+
-+	pci_dram_offset = PREP_PCI_DRAM_OFFSET;
-+	ISA_DMA_THRESHOLD = 0x00ffffff;
-+	DMA_MODE_READ = 0x44;
-+	DMA_MODE_WRITE = 0x48;
-+
-+	hose->cfg_data = ioremap(0x80800000, 1 << 22);
-+
-+	hose->ops = &qemu_pci_ops;
-+
-+	udbg_init_uart(hose->io_base_virt + 0x3f8, 0, 0);
-+	register_early_udbg_console();
-+	printk(KERN_INFO "qemu_find_bridges: config at %p\n", hose->cfg_data);
++	for (i = 0; i < len; i ++)
++		buf[i] = qemu_nvram_read(addr + i);	/* big endian */
 +}
 +
-Index: kernel/arch/powerpc/platforms/qemu/setup.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/platforms/qemu/setup.c	2007-09-19 02:41:00.000000000 -0500
-@@ -0,0 +1,178 @@
-+/*
-+ * Copyright (C) 1995  Linus Torvalds
-+ * Adapted from 'alpha' version by Gary Thomas
-+ * Modified by Cort Dougan (cort@cs.nmt.edu)
-+ *
-+ * Support for PReP (Motorola MTX/MVME)
-+ * by Troy Benjegerdes (hozer@drgw.net)
-+ *
-+ * Port to arch/powerpc:
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ *
-+ * Port to qemu:
-+ * Copyright 2007 Milton Miller, IBM Corporation.
-+ *
-+ * Some information based on OpenHackware 0.4
-+ * Copyright (c) 2004-2005 Jocelyn Mayer
-+ *
-+ */
++static char arch[17];
++static void * image_start;
++static unsigned int image_len;
 +
-+#include <linux/init.h>
-+#include <linux/seq_file.h>
-+#include <linux/initrd.h>
-+#include <linux/ide.h>
-+
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pci-bridge.h>
-+/* #include <asm/mpic.h> */
-+#include <asm/i8259.h>
-+#include <asm/time.h>
-+#include <asm/udbg.h>
-+
-+static const char *qemu_model = "(unknown)";
-+
-+extern void qemu_find_bridges(void);
-+
-+/* cpuinfo code common to all IBM PReP */
-+static void qemu_ibm_cpuinfo(struct seq_file *m)
++void qemu_find_vmlinuz(struct gunzip_state *state, void **srcp,
++	unsigned long *lenp)
 +{
-+	seq_printf(m, "machine\t\t: PReP %s\n", qemu_model);
++	*srcp = image_start;
++	*lenp = image_len;
++	gunzip_start(state, image_start, image_len);
 +}
 +
-+#define NVRAM_AS0 0x74
-+#define NVRAM_AS1 0x75
-+#define NVRAM_DAT 0x77
-+
-+static unsigned char qemu_nvram_read_val(int addr)
++/* if no device tree, read the nvram to find out about our system */
++/* based on openhackware 0.4 nvram.c get_nvram_config */
++static void qemu_fixups(void)
 +{
-+	outb(NVRAM_AS0, addr & 0xff);
-+	outb(NVRAM_AS1, (addr >> 8) & 0xff);
-+	return inb(NVRAM_DAT);
++	char buf[32];
++	int word;
++
++	printf("qemu_fixups\n\r");
++
++	qemu_nvram_fetch(0, 16, buf);
++	printf("sig: %s", buf);
++	if (strcmp(buf, "QEMU_BIOS"))
++		fatal("no qemu sig found");
++	qemu_nvram_fetch(0x10, 16, &word);
++	if (word != 2)
++		fatal("wrong qemu nvram version");
++	/* compute crc over 0-0xfc, compare to crc in 0xfc */
++	/* size at 0x14, mult 256 0x400-0x2000 */
++	qemu_nvram_fetch(0x20, 16, buf);
++	strncpy(arch, buf, sizeof(arch)-1);
++	if (strcmp(arch,"PREP"))
++		fatal("don't understand arch %s", arch);
++
++	/* XXX: put the model in the device tree */
++
++	qemu_nvram_fetch(0x30, 16, &word);
++	printf("memory: %x\n\r", word);
++	dt_fixup_memory(0, word);
++	printf("boot device %c\n\r", qemu_nvram_read(0x34));
++	qemu_nvram_fetch(0x38, 16, &word);
++	image_start = (void *)word;
++	qemu_nvram_fetch(0x3c, 16, &word);
++	image_len = word;
++	printf("kernel %p %x\n\r", image_start, image_len);
++	qemu_nvram_fetch(0x40, 16, &word);
++	loader_info.cmdline = (void *)word;
++	qemu_nvram_fetch(0x44, 16, &word);
++	loader_info.cmdline_len = word;
++	printf("cmdline %p %x\n\r", loader_info.cmdline,
++		loader_info.cmdline_len);
++	printf("cmdline is %s\n\r", loader_info.cmdline);
++	qemu_nvram_fetch(0x48, 16, &word);
++	loader_info.initrd_addr = word;
++	qemu_nvram_fetch(0x4c, 16, &word);
++	loader_info.initrd_size = word;
++	printf("initrd %lx %lx\n\r", loader_info.initrd_addr,
++		loader_info.initrd_size);
++	/* XXX: nvram image addr at 50 */
++	/* XXX: vga width, height, depth = shorts at 54, 56, 58 */
 +}
 +
-+
-+static void qemu_nvram_write_val(int addr, unsigned char val)
++/* If loaded with a device tree, then just read the tree */
++static void tree_fixups(void)
 +{
-+	outb(NVRAM_AS0, addr & 0xff);
-+	outb(NVRAM_AS1, (addr >> 8) & 0xff);
-+	outb(NVRAM_DAT, val);
++	/* get initrd from tree */
++	dt_find_initrd();
++
++	/* we must have an attached image for boot with supplied device-tree */
 +}
 +
++static void *heap_end;	/* set in platform_init */
 +
-+static void __init qemu_setup_arch(void)
++static void *qemu_vmlinux_alloc(unsigned long size)
 +{
-+	struct device_node *root;
-+	const char *model;
-+
-+	root = of_find_node_by_path("/");
-+	model = of_get_property(root, "model", NULL);
-+	of_node_put(root);
-+	if (model)
-+		qemu_model = model;
-+
-+	/* Lookup PCI host bridges */
-+	qemu_find_bridges();
-+
-+	/* Read in NVRAM data */
-+/* 	init_qemu_nvram(); */
-+}
-+
-+static void __init qemu_init_IRQ(void)
-+{
-+	struct device_node *pic = NULL;
-+	unsigned long int_ack = 0;
-+
-+	pic = of_find_node_by_type(NULL, "i8259");
-+	if (!pic) {
-+		printk(KERN_ERR "No interrupt controller found!\n");
-+		return;
-+	}
-+
-+	/* polling */
-+	i8259_init(pic, int_ack);
-+	ppc_md.get_irq = i8259_irq;
-+
-+	/* set default host */
-+	irq_set_default_host(i8259_get_host());
-+}
-+
-+#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
-+/*
-+ * IDE stuff.
-+ */
-+static int qemu_ide_default_irq(unsigned long base)
-+{
-+	switch (base) {
-+	case 0x1f0: return 13;
-+	case 0x170: return 13;
-+	case 0x1e8: return 11;
-+	case 0x168: return 10;
-+	case 0xfff0: return 14;		/* MCP(N)750 ide0 */
-+	case 0xffe0: return 15;		/* MCP(N)750 ide1 */
-+	default: return 0;
-+	}
-+}
-+
-+static unsigned long qemu_ide_default_io_base(int index)
-+{
-+	switch (index) {
-+	case 0: return 0x1f0;
-+	case 1: return 0x170;
-+	case 2: return 0x1e8;
-+	case 3: return 0x168;
-+	default:
-+		return 0;
-+	}
-+}
-+#endif
-+
-+#if 0
-+static int __init prep_request_io(void)
-+{
-+#ifdef CONFIG_NVRAM
-+	request_region(PREP_NVRAM_AS0, 0x8, "nvram");
-+#endif
-+	request_region(0x00,0x20,"dma1");
-+	request_region(0x40,0x20,"timer");
-+	request_region(0x80,0x10,"dma page reg");
-+	request_region(0xc0,0x20,"dma2");
-+
-+	return 0;
-+}
-+device_initcall(prep_request_io);
-+#endif
-+
-+
-+static int __init qemu_probe(void)
-+{
-+	if (!of_flat_dt_is_compatible(of_get_flat_dt_root(), "qemu-prep"))
++	if (size < (unsigned long)_start)
 +		return 0;
 +
-+#if defined(CONFIG_BLK_DEV_IDE) || defined(CONFIG_BLK_DEV_IDE_MODULE)
-+	ppc_ide_md.default_irq = qemu_ide_default_irq;
-+	ppc_ide_md.default_io_base = qemu_ide_default_io_base;
-+#endif
-+
-+	return 1;
++	return (void *)_ALIGN_UP((unsigned long) heap_end, 4096);
 +}
 +
-+define_machine(qemu) {
-+	.name			= "QEMU",
-+	.probe			= qemu_probe,
-+	.setup_arch		= qemu_setup_arch,
-+	.progress		= udbg_progress,
-+	.show_cpuinfo		= qemu_ibm_cpuinfo,
-+	.init_IRQ		= qemu_init_IRQ,
-+/* 	.pcibios_fixup		= qemu_pcibios_fixup, */
-+/*	.restart		= qemu_restart, */
-+/*	.power_off		= qemu_halt, */
-+/*	.halt			= qemu_halt, */
-+/* 	.time_init		= todc_time_init, */
-+/* 	.set_rtc_time		= todc_set_rtc_time, */
-+/* 	.get_rtc_time		= todc_get_rtc_time, */
-+	.calibrate_decr		= generic_calibrate_decr,
-+ 	.nvram_read_val		= qemu_nvram_read_val,
-+ 	.nvram_write_val	= qemu_nvram_write_val,
-+	.phys_mem_access_prot	= pci_phys_mem_access_prot,
-+};
-Index: kernel/arch/powerpc/platforms/Makefile
-===================================================================
---- kernel.orig/arch/powerpc/platforms/Makefile	2007-09-19 02:32:54.000000000 -0500
-+++ kernel/arch/powerpc/platforms/Makefile	2007-09-19 02:41:00.000000000 -0500
-@@ -17,6 +17,7 @@ obj-$(CONFIG_PPC_82xx)		+= 82xx/
- obj-$(CONFIG_PPC_83xx)		+= 83xx/
- obj-$(CONFIG_PPC_85xx)		+= 85xx/
- obj-$(CONFIG_PPC_86xx)		+= 86xx/
-+obj-$(CONFIG_PPC_QEMU)		+= qemu/
- obj-$(CONFIG_PPC_PSERIES)	+= pseries/
- obj-$(CONFIG_PPC_ISERIES)	+= iseries/
- obj-$(CONFIG_PPC_MAPLE)		+= maple/
-Index: kernel/arch/powerpc/configs/qemu_defconfig
++void platform_init(void *r3)
++{
++	struct boot_param_header *bph = r3;
++
++	heap_end = simple_alloc_init(_end, 4096*1024, 4096, 512);
++
++	if (bph)  {
++		ft_init(bph, bph->totalsize, 128);
++		platform_ops.fixups = tree_fixups;
++	} else {
++		ft_init(_dtb_start, _dtb_end - _dtb_start, 128);
++		platform_ops.fixups = qemu_fixups;
++		platform_ops.find_vmlinuz = qemu_find_vmlinuz;
++	}
++	platform_ops.vmlinux_alloc = qemu_vmlinux_alloc;
++
++	serial_console_init();
++}
+Index: kernel/arch/powerpc/boot/dts/qemu.dts
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/configs/qemu_defconfig	2007-09-19 02:41:00.000000000 -0500
-@@ -0,0 +1,1217 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.23-rc6
-+# Tue Sep 18 15:18:32 2007
-+#
-+# CONFIG_PPC64 is not set
-+
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+CONFIG_PPC_FPU=y
-+# CONFIG_ALTIVEC is not set
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
-+CONFIG_PPC32=y
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+CONFIG_PPC_UDBG_16550=y
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+# CONFIG_DEFAULT_UIMAGE is not set
-+# CONFIG_PPC_DCR_NATIVE is not set
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-+
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+# CONFIG_LOCALVERSION_AUTO is not set
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+CONFIG_POSIX_MQUEUE=y
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_USER_NS is not set
-+# CONFIG_AUDIT is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_LOG_BUF_SHIFT=15
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+# CONFIG_EMBEDDED is not set
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_ALL is not set
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+CONFIG_EPOLL=y
-+CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_KMOD=y
-+CONFIG_BLOCK=y
-+CONFIG_LBD=y
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
-+
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+
-+#
-+# Platform support
-+#
-+CONFIG_PPC_MULTIPLATFORM=y
-+# CONFIG_EMBEDDED6xx is not set
-+# CONFIG_PPC_82xx is not set
-+# CONFIG_PPC_83xx is not set
-+# CONFIG_PPC_86xx is not set
-+CONFIG_CLASSIC32=y
-+# CONFIG_PPC_CHRP is not set
-+# CONFIG_PPC_MPC52xx is not set
-+# CONFIG_PPC_MPC5200 is not set
-+# CONFIG_PPC_EFIKA is not set
-+# CONFIG_PPC_LITE5200 is not set
-+# CONFIG_PPC_PMAC is not set
-+CONFIG_PPC_QEMU=y
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PQ2ADS is not set
-+CONFIG_PPC_NATIVE=y
-+# CONFIG_MPIC is not set
-+# CONFIG_MPIC_WEIRD is not set
-+CONFIG_PPC_I8259=y
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
-+# CONFIG_CPM2 is not set
-+# CONFIG_FSL_ULI1575 is not set
-+
-+#
-+# Kernel options
-+#
-+CONFIG_HIGHMEM=y
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_BINFMT_ELF=y
-+CONFIG_BINFMT_MISC=y
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_RESOURCES_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_PROC_DEVICETREE=y
-+# CONFIG_CMDLINE_BOOL is not set
-+# CONFIG_PM is not set
-+CONFIG_SUSPEND_UP_POSSIBLE=y
-+CONFIG_HIBERNATION_UP_POSSIBLE=y
-+CONFIG_SECCOMP=y
-+CONFIG_WANT_DEVICE_TREE=y
-+CONFIG_DEVICE_TREE="qemu.dts"
-+CONFIG_ISA_DMA_API=y
-+
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_GENERIC_ISA_DMA=y
-+CONFIG_PPC_INDIRECT_PCI=y
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+CONFIG_PCI_SYSCALL=y
-+# CONFIG_PCIEPORTBUS is not set
-+CONFIG_ARCH_SUPPORTS_MSI=y
-+# CONFIG_PCI_MSI is not set
-+# CONFIG_PCI_DEBUG is not set
-+
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
-+# CONFIG_HOTPLUG_PCI is not set
-+
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
-+
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_BOOT_LOAD=0x00800000
-+
-+#
-+# Networking
-+#
-+CONFIG_NET=y
-+
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+# CONFIG_IP_PNP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_IP_MROUTE is not set
-+# CONFIG_ARPD is not set
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
-+# CONFIG_INET_XFRM_MODE_TUNNEL is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IP_VS is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+CONFIG_NETFILTER=y
-+# CONFIG_NETFILTER_DEBUG is not set
-+
-+#
-+# Core Netfilter Configuration
-+#
-+# CONFIG_NETFILTER_NETLINK is not set
-+CONFIG_NF_CONNTRACK_ENABLED=m
-+CONFIG_NF_CONNTRACK=m
-+# CONFIG_NF_CT_ACCT is not set
-+# CONFIG_NF_CONNTRACK_MARK is not set
-+# CONFIG_NF_CONNTRACK_EVENTS is not set
-+# CONFIG_NF_CT_PROTO_SCTP is not set
-+# CONFIG_NF_CT_PROTO_UDPLITE is not set
-+# CONFIG_NF_CONNTRACK_AMANDA is not set
-+CONFIG_NF_CONNTRACK_FTP=m
-+# CONFIG_NF_CONNTRACK_H323 is not set
-+CONFIG_NF_CONNTRACK_IRC=m
-+# CONFIG_NF_CONNTRACK_NETBIOS_NS is not set
-+# CONFIG_NF_CONNTRACK_PPTP is not set
-+# CONFIG_NF_CONNTRACK_SANE is not set
-+CONFIG_NF_CONNTRACK_SIP=m
-+CONFIG_NF_CONNTRACK_TFTP=m
-+CONFIG_NETFILTER_XTABLES=m
-+# CONFIG_NETFILTER_XT_TARGET_CLASSIFY is not set
-+# CONFIG_NETFILTER_XT_TARGET_MARK is not set
-+# CONFIG_NETFILTER_XT_TARGET_NFQUEUE is not set
-+# CONFIG_NETFILTER_XT_TARGET_NFLOG is not set
-+# CONFIG_NETFILTER_XT_TARGET_TCPMSS is not set
-+# CONFIG_NETFILTER_XT_MATCH_COMMENT is not set
-+# CONFIG_NETFILTER_XT_MATCH_CONNBYTES is not set
-+# CONFIG_NETFILTER_XT_MATCH_CONNLIMIT is not set
-+# CONFIG_NETFILTER_XT_MATCH_CONNMARK is not set
-+# CONFIG_NETFILTER_XT_MATCH_CONNTRACK is not set
-+# CONFIG_NETFILTER_XT_MATCH_DCCP is not set
-+# CONFIG_NETFILTER_XT_MATCH_DSCP is not set
-+# CONFIG_NETFILTER_XT_MATCH_ESP is not set
-+# CONFIG_NETFILTER_XT_MATCH_HELPER is not set
-+# CONFIG_NETFILTER_XT_MATCH_LENGTH is not set
-+# CONFIG_NETFILTER_XT_MATCH_LIMIT is not set
-+# CONFIG_NETFILTER_XT_MATCH_MAC is not set
-+# CONFIG_NETFILTER_XT_MATCH_MARK is not set
-+# CONFIG_NETFILTER_XT_MATCH_MULTIPORT is not set
-+# CONFIG_NETFILTER_XT_MATCH_PKTTYPE is not set
-+# CONFIG_NETFILTER_XT_MATCH_QUOTA is not set
-+# CONFIG_NETFILTER_XT_MATCH_REALM is not set
-+# CONFIG_NETFILTER_XT_MATCH_SCTP is not set
-+# CONFIG_NETFILTER_XT_MATCH_STATE is not set
-+# CONFIG_NETFILTER_XT_MATCH_STATISTIC is not set
-+# CONFIG_NETFILTER_XT_MATCH_STRING is not set
-+# CONFIG_NETFILTER_XT_MATCH_TCPMSS is not set
-+# CONFIG_NETFILTER_XT_MATCH_U32 is not set
-+# CONFIG_NETFILTER_XT_MATCH_HASHLIMIT is not set
-+
-+#
-+# IP: Netfilter Configuration
-+#
-+CONFIG_NF_CONNTRACK_IPV4=m
-+CONFIG_NF_CONNTRACK_PROC_COMPAT=y
-+# CONFIG_IP_NF_QUEUE is not set
-+CONFIG_IP_NF_IPTABLES=m
-+# CONFIG_IP_NF_MATCH_IPRANGE is not set
-+# CONFIG_IP_NF_MATCH_TOS is not set
-+# CONFIG_IP_NF_MATCH_RECENT is not set
-+# CONFIG_IP_NF_MATCH_ECN is not set
-+# CONFIG_IP_NF_MATCH_AH is not set
-+# CONFIG_IP_NF_MATCH_TTL is not set
-+# CONFIG_IP_NF_MATCH_OWNER is not set
-+# CONFIG_IP_NF_MATCH_ADDRTYPE is not set
-+CONFIG_IP_NF_FILTER=m
-+CONFIG_IP_NF_TARGET_REJECT=m
-+CONFIG_IP_NF_TARGET_LOG=m
-+# CONFIG_IP_NF_TARGET_ULOG is not set
-+CONFIG_NF_NAT=m
-+CONFIG_NF_NAT_NEEDED=y
-+CONFIG_IP_NF_TARGET_MASQUERADE=m
-+CONFIG_IP_NF_TARGET_REDIRECT=m
-+# CONFIG_IP_NF_TARGET_NETMAP is not set
-+# CONFIG_IP_NF_TARGET_SAME is not set
-+# CONFIG_NF_NAT_SNMP_BASIC is not set
-+CONFIG_NF_NAT_FTP=m
-+CONFIG_NF_NAT_IRC=m
-+CONFIG_NF_NAT_TFTP=m
-+# CONFIG_NF_NAT_AMANDA is not set
-+# CONFIG_NF_NAT_PPTP is not set
-+# CONFIG_NF_NAT_H323 is not set
-+CONFIG_NF_NAT_SIP=m
-+# CONFIG_IP_NF_MANGLE is not set
-+# CONFIG_IP_NF_RAW is not set
-+# CONFIG_IP_NF_ARPTABLES is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+
-+#
-+# QoS and/or fair queueing
-+#
-+# CONFIG_NET_SCHED is not set
-+
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
-+
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_IEEE80211 is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
-+
-+#
-+# Device Drivers
-+#
-+
-+#
-+# Generic Driver Options
-+#
-+# CONFIG_STANDALONE is not set
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+# CONFIG_MTD is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+CONFIG_BLK_DEV_FD=y
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
-+# CONFIG_BLK_DEV_UB is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=4096
-+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_PHANTOM is not set
-+# CONFIG_EEPROM_93CX6 is not set
-+# CONFIG_SGI_IOC4 is not set
-+# CONFIG_TIFM_CORE is not set
-+CONFIG_IDE=y
-+CONFIG_BLK_DEV_IDE=y
-+
-+#
-+# Please see Documentation/ide.txt for help/info on IDE drives
-+#
-+# CONFIG_BLK_DEV_IDE_SATA is not set
-+CONFIG_BLK_DEV_IDEDISK=y
-+CONFIG_IDEDISK_MULTI_MODE=y
-+CONFIG_BLK_DEV_IDECD=y
-+# CONFIG_BLK_DEV_IDETAPE is not set
-+# CONFIG_BLK_DEV_IDEFLOPPY is not set
-+# CONFIG_IDE_TASK_IOCTL is not set
-+CONFIG_IDE_PROC_FS=y
-+
-+#
-+# IDE chipset support/bugfixes
-+#
-+CONFIG_IDE_GENERIC=y
-+CONFIG_BLK_DEV_IDEPCI=y
-+CONFIG_IDEPCI_SHARE_IRQ=y
-+CONFIG_IDEPCI_PCIBUS_ORDER=y
-+# CONFIG_BLK_DEV_OFFBOARD is not set
-+CONFIG_BLK_DEV_GENERIC=y
-+# CONFIG_BLK_DEV_OPTI621 is not set
-+CONFIG_BLK_DEV_IDEDMA_PCI=y
-+# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
-+# CONFIG_IDEDMA_ONLYDISK is not set
-+# CONFIG_BLK_DEV_AEC62XX is not set
-+# CONFIG_BLK_DEV_ALI15X3 is not set
-+# CONFIG_BLK_DEV_AMD74XX is not set
-+# CONFIG_BLK_DEV_CMD64X is not set
-+# CONFIG_BLK_DEV_TRIFLEX is not set
-+# CONFIG_BLK_DEV_CY82C693 is not set
-+# CONFIG_BLK_DEV_CS5520 is not set
-+# CONFIG_BLK_DEV_CS5530 is not set
-+# CONFIG_BLK_DEV_HPT34X is not set
-+# CONFIG_BLK_DEV_HPT366 is not set
-+# CONFIG_BLK_DEV_JMICRON is not set
-+# CONFIG_BLK_DEV_SC1200 is not set
-+# CONFIG_BLK_DEV_PIIX is not set
-+# CONFIG_BLK_DEV_IT8213 is not set
-+# CONFIG_BLK_DEV_IT821X is not set
-+# CONFIG_BLK_DEV_NS87415 is not set
-+# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-+# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-+# CONFIG_BLK_DEV_SVWKS is not set
-+# CONFIG_BLK_DEV_SIIMAGE is not set
-+# CONFIG_BLK_DEV_SL82C105 is not set
-+# CONFIG_BLK_DEV_SLC90E66 is not set
-+# CONFIG_BLK_DEV_TRM290 is not set
-+# CONFIG_BLK_DEV_VIA82CXXX is not set
-+# CONFIG_BLK_DEV_TC86C001 is not set
-+# CONFIG_IDE_ARM is not set
-+CONFIG_BLK_DEV_IDEDMA=y
-+# CONFIG_IDEDMA_IVB is not set
-+# CONFIG_BLK_DEV_HD is not set
-+
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_DMA is not set
-+# CONFIG_SCSI_NETLINK is not set
-+# CONFIG_ATA is not set
-+# CONFIG_MD is not set
-+
-+#
-+# Fusion MPT device support
-+#
-+# CONFIG_FUSION is not set
-+
-+#
-+# IEEE 1394 (FireWire) support
-+#
-+# CONFIG_FIREWIRE is not set
-+# CONFIG_IEEE1394 is not set
-+# CONFIG_I2O is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_ARCNET is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=y
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
-+CONFIG_NET_PCI=y
-+CONFIG_PCNET32=y
-+# CONFIG_PCNET32_NAPI is not set
-+# CONFIG_AMD8111_ETH is not set
-+# CONFIG_ADAPTEC_STARFIRE is not set
-+# CONFIG_B44 is not set
-+# CONFIG_FORCEDETH is not set
-+# CONFIG_DGRS is not set
-+# CONFIG_EEPRO100 is not set
-+# CONFIG_E100 is not set
-+# CONFIG_FEALNX is not set
-+# CONFIG_NATSEMI is not set
-+CONFIG_NE2K_PCI=m
-+CONFIG_8139CP=y
-+CONFIG_8139TOO=y
-+# CONFIG_8139TOO_PIO is not set
-+# CONFIG_8139TOO_TUNE_TWISTER is not set
-+# CONFIG_8139TOO_8129 is not set
-+# CONFIG_8139_OLD_RX_RESET is not set
-+# CONFIG_SIS900 is not set
-+# CONFIG_EPIC100 is not set
-+# CONFIG_SUNDANCE is not set
-+# CONFIG_TLAN is not set
-+# CONFIG_VIA_RHINE is not set
-+# CONFIG_SC92031 is not set
-+# CONFIG_NETDEV_1000 is not set
-+# CONFIG_NETDEV_10000 is not set
-+# CONFIG_TR is not set
-+
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+
-+#
-+# USB Network Adapters
-+#
-+# CONFIG_USB_CATC is not set
-+# CONFIG_USB_KAWETH is not set
-+# CONFIG_USB_PEGASUS is not set
-+# CONFIG_USB_RTL8150 is not set
-+# CONFIG_USB_USBNET_MII is not set
-+# CONFIG_USB_USBNET is not set
-+# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
-+CONFIG_PPP=m
-+CONFIG_PPP_MULTILINK=y
-+CONFIG_PPP_FILTER=y
-+CONFIG_PPP_ASYNC=m
-+CONFIG_PPP_SYNC_TTY=m
-+CONFIG_PPP_DEFLATE=m
-+CONFIG_PPP_BSDCOMP=m
-+CONFIG_PPP_MPPE=m
-+CONFIG_PPPOE=m
-+# CONFIG_PPPOL2TP is not set
-+# CONFIG_SLIP is not set
-+CONFIG_SLHC=m
-+# CONFIG_SHAPER is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
-+
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+# CONFIG_INPUT_POLLDEV is not set
-+
-+#
-+# Userland interfaces
-+#
-+CONFIG_INPUT_MOUSEDEV=y
-+CONFIG_INPUT_MOUSEDEV_PSAUX=y
-+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-+# CONFIG_INPUT_JOYDEV is not set
-+CONFIG_INPUT_TSDEV=m
-+CONFIG_INPUT_TSDEV_SCREEN_X=240
-+CONFIG_INPUT_TSDEV_SCREEN_Y=320
-+CONFIG_INPUT_EVDEV=y
-+# CONFIG_INPUT_EVBUG is not set
-+
-+#
-+# Input Device Drivers
-+#
-+CONFIG_INPUT_KEYBOARD=y
-+CONFIG_KEYBOARD_ATKBD=y
-+# CONFIG_KEYBOARD_SUNKBD is not set
-+# CONFIG_KEYBOARD_LKKBD is not set
-+# CONFIG_KEYBOARD_XTKBD is not set
-+# CONFIG_KEYBOARD_NEWTON is not set
-+# CONFIG_KEYBOARD_STOWAWAY is not set
-+CONFIG_INPUT_MOUSE=y
-+CONFIG_MOUSE_PS2=y
-+CONFIG_MOUSE_PS2_ALPS=y
-+CONFIG_MOUSE_PS2_LOGIPS2PP=y
-+CONFIG_MOUSE_PS2_SYNAPTICS=y
-+CONFIG_MOUSE_PS2_LIFEBOOK=y
-+CONFIG_MOUSE_PS2_TRACKPOINT=y
-+# CONFIG_MOUSE_PS2_TOUCHKIT is not set
-+# CONFIG_MOUSE_SERIAL is not set
-+# CONFIG_MOUSE_APPLETOUCH is not set
-+# CONFIG_MOUSE_VSXXXAA is not set
-+# CONFIG_INPUT_JOYSTICK is not set
-+CONFIG_INPUT_TABLET=y
-+# CONFIG_TABLET_USB_ACECAD is not set
-+# CONFIG_TABLET_USB_AIPTEK is not set
-+# CONFIG_TABLET_USB_GTCO is not set
-+# CONFIG_TABLET_USB_KBTAB is not set
-+# CONFIG_TABLET_USB_WACOM is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+CONFIG_INPUT_MISC=y
-+# CONFIG_INPUT_ATI_REMOTE is not set
-+# CONFIG_INPUT_ATI_REMOTE2 is not set
-+# CONFIG_INPUT_KEYSPAN_REMOTE is not set
-+# CONFIG_INPUT_POWERMATE is not set
-+# CONFIG_INPUT_YEALINK is not set
-+CONFIG_INPUT_UINPUT=y
-+
-+#
-+# Hardware I/O ports
-+#
-+CONFIG_SERIO=y
-+CONFIG_SERIO_I8042=y
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_SERIO_PCIPS2 is not set
-+CONFIG_SERIO_LIBPS2=y
-+# CONFIG_SERIO_RAW is not set
-+# CONFIG_GAMEPORT is not set
-+
-+#
-+# Character devices
-+#
-+CONFIG_VT=y
-+CONFIG_VT_CONSOLE=y
-+CONFIG_HW_CONSOLE=y
-+# CONFIG_VT_HW_CONSOLE_BINDING is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
-+
-+#
-+# Serial drivers
-+#
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_PCI=y
-+CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-+# CONFIG_SERIAL_8250_EXTENDED is not set
-+
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_JSM is not set
-+# CONFIG_SERIAL_OF_PLATFORM is not set
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_WATCHDOG is not set
-+CONFIG_HW_RANDOM=m
-+CONFIG_NVRAM=y
-+CONFIG_GEN_RTC=y
-+# CONFIG_GEN_RTC_X is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
-+# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+CONFIG_DEVPORT=y
-+CONFIG_I2C=y
-+CONFIG_I2C_BOARDINFO=y
-+# CONFIG_I2C_CHARDEV is not set
-+
-+#
-+# I2C Algorithms
-+#
-+CONFIG_I2C_ALGOBIT=y
-+# CONFIG_I2C_ALGOPCF is not set
-+# CONFIG_I2C_ALGOPCA is not set
-+
-+#
-+# I2C Hardware Bus support
-+#
-+# CONFIG_I2C_ALI1535 is not set
-+# CONFIG_I2C_ALI1563 is not set
-+# CONFIG_I2C_ALI15X3 is not set
-+# CONFIG_I2C_AMD756 is not set
-+# CONFIG_I2C_AMD8111 is not set
-+# CONFIG_I2C_I801 is not set
-+# CONFIG_I2C_I810 is not set
-+# CONFIG_I2C_PIIX4 is not set
-+# CONFIG_I2C_MPC is not set
-+# CONFIG_I2C_NFORCE2 is not set
-+# CONFIG_I2C_OCORES is not set
-+# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_PROSAVAGE is not set
-+# CONFIG_I2C_SAVAGE4 is not set
-+# CONFIG_I2C_SIMTEC is not set
-+# CONFIG_I2C_SIS5595 is not set
-+# CONFIG_I2C_SIS630 is not set
-+# CONFIG_I2C_SIS96X is not set
-+# CONFIG_I2C_TAOS_EVM is not set
-+# CONFIG_I2C_STUB is not set
-+# CONFIG_I2C_TINY_USB is not set
-+# CONFIG_I2C_VIA is not set
-+# CONFIG_I2C_VIAPRO is not set
-+# CONFIG_I2C_VOODOO3 is not set
-+
-+#
-+# Miscellaneous I2C Chip support
-+#
-+# CONFIG_SENSORS_DS1337 is not set
-+# CONFIG_SENSORS_DS1374 is not set
-+# CONFIG_DS1682 is not set
-+# CONFIG_SENSORS_EEPROM is not set
-+# CONFIG_SENSORS_PCF8574 is not set
-+# CONFIG_SENSORS_PCA9539 is not set
-+# CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_SENSORS_M41T00 is not set
-+# CONFIG_SENSORS_MAX6875 is not set
-+# CONFIG_SENSORS_TSL2550 is not set
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
-+
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+# CONFIG_HWMON is not set
-+
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
-+
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+# CONFIG_DAB is not set
-+
-+#
-+# Graphics support
-+#
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Display device support
-+#
-+CONFIG_DISPLAY_SUPPORT=m
-+
-+#
-+# Display hardware drivers
-+#
-+# CONFIG_VGASTATE is not set
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
-+# CONFIG_FB is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
-+
-+#
-+# Console display driver support
-+#
-+CONFIG_VGA_CONSOLE=y
-+# CONFIG_VGACON_SOFT_SCROLLBACK is not set
-+CONFIG_DUMMY_CONSOLE=y
-+
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+CONFIG_HID_SUPPORT=y
-+CONFIG_HID=y
-+# CONFIG_HID_DEBUG is not set
-+
-+#
-+# USB Input Devices
-+#
-+CONFIG_USB_HID=y
-+# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-+# CONFIG_HID_FF is not set
-+# CONFIG_USB_HIDDEV is not set
-+CONFIG_USB_SUPPORT=y
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB_ARCH_HAS_EHCI=y
-+CONFIG_USB=y
-+# CONFIG_USB_DEBUG is not set
-+
-+#
-+# Miscellaneous USB options
-+#
-+CONFIG_USB_DEVICEFS=y
-+CONFIG_USB_DEVICE_CLASS=y
-+# CONFIG_USB_DYNAMIC_MINORS is not set
-+# CONFIG_USB_OTG is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+# CONFIG_USB_EHCI_HCD is not set
-+# CONFIG_USB_ISP116X_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+# CONFIG_USB_OHCI_HCD_PPC_OF is not set
-+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-+# CONFIG_USB_UHCI_HCD is not set
-+# CONFIG_USB_SL811_HCD is not set
-+# CONFIG_USB_R8A66597_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+
-+#
-+# may also be needed; see USB_STORAGE Help for more information
-+#
-+# CONFIG_USB_LIBUSUAL is not set
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+
-+#
-+# USB Serial Converter support
-+#
-+# CONFIG_USB_SERIAL is not set
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+# CONFIG_USB_EMI62 is not set
-+# CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_ADUTUX is not set
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_BERRY_CHARGE is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYPRESS_CY7C63 is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGET is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_FTDI_ELAN is not set
-+# CONFIG_USB_APPLEDISPLAY is not set
-+# CONFIG_USB_LD is not set
-+# CONFIG_USB_TRANCEVIBRATOR is not set
-+# CONFIG_USB_IOWARRIOR is not set
-+# CONFIG_USB_TEST is not set
-+
-+#
-+# USB DSL modem support
-+#
-+
-+#
-+# USB Gadget Support
-+#
-+# CONFIG_USB_GADGET is not set
-+# CONFIG_MMC is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_INFINIBAND is not set
-+# CONFIG_EDAC is not set
-+# CONFIG_RTC_CLASS is not set
-+
-+#
-+# DMA Engine support
-+#
-+# CONFIG_DMA_ENGINE is not set
-+
-+#
-+# DMA Clients
-+#
-+
-+#
-+# DMA Devices
-+#
-+
-+#
-+# Userspace I/O
-+#
-+# CONFIG_UIO is not set
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+# CONFIG_EXT3_FS_POSIX_ACL is not set
-+# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT4DEV_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+CONFIG_FS_MBCACHE=y
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+CONFIG_ISO9660_FS=y
-+# CONFIG_JOLIET is not set
-+# CONFIG_ZISOFS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+CONFIG_FAT_FS=m
-+CONFIG_MSDOS_FS=m
-+CONFIG_VFAT_FS=m
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_RAMFS=y
-+# CONFIG_CONFIGFS_FS is not set
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+
-+#
-+# Network File Systems
-+#
-+# CONFIG_NFS_FS is not set
-+# CONFIG_NFSD is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+CONFIG_MAC_PARTITION=y
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_BSD_DISKLABEL is not set
-+# CONFIG_MINIX_SUBPARTITION is not set
-+# CONFIG_SOLARIS_X86_PARTITION is not set
-+# CONFIG_UNIXWARE_DISKLABEL is not set
-+# CONFIG_LDM_PARTITION is not set
-+# CONFIG_SGI_PARTITION is not set
-+# CONFIG_ULTRIX_PARTITION is not set
-+# CONFIG_SUN_PARTITION is not set
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
-+
-+#
-+# Native Language Support
-+#
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+# CONFIG_NLS_CODEPAGE_437 is not set
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+CONFIG_NLS_ASCII=y
-+CONFIG_NLS_ISO8859_1=m
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
-+
-+#
-+# Distributed Lock Manager
-+#
-+# CONFIG_DLM is not set
-+# CONFIG_UCC_SLOW is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+CONFIG_CRC_CCITT=m
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=m
-+CONFIG_ZLIB_DEFLATE=m
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+
-+#
-+# Instrumentation Support
-+#
-+# CONFIG_PROFILING is not set
-+# CONFIG_KPROBES is not set
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_MAGIC_SYSRQ=y
-+# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_SCHED_DEBUG=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+CONFIG_DEBUG_MUTEXES=y
-+CONFIG_DEBUG_SPINLOCK_SLEEP=y
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_HIGHMEM is not set
-+CONFIG_DEBUG_BUGVERBOSE=y
-+# CONFIG_DEBUG_INFO is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+CONFIG_FORCED_INLINING=y
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_FAULT_INJECTION is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+CONFIG_DEBUGGER=y
-+CONFIG_XMON=y
-+CONFIG_XMON_DEFAULT=y
-+CONFIG_XMON_DISASSEMBLY=y
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_BOOTX_TEXT is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=m
-+CONFIG_CRYPTO_BLKCIPHER=m
-+CONFIG_CRYPTO_MANAGER=m
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+# CONFIG_CRYPTO_MD5 is not set
-+CONFIG_CRYPTO_SHA1=m
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+CONFIG_CRYPTO_ECB=m
-+CONFIG_CRYPTO_CBC=m
-+CONFIG_CRYPTO_PCBC=m
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+# CONFIG_CRYPTO_DES is not set
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_TEA is not set
-+CONFIG_CRYPTO_ARC4=m
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_TEST is not set
-+# CONFIG_CRYPTO_HW is not set
++++ kernel/arch/powerpc/boot/dts/qemu.dts	2007-09-21 04:53:32.000000000 -0500
+@@ -0,0 +1,132 @@
++/*
++ * QEMU PReP skeleton device tree
++ * from PReP skeleton device tree
++ * and qemu source
++ *
++ * Milton Miller
++ */
++
++/ {
++	device_type = "qemu";
++	model = "QEMU,PReP";
++	compatible = "qemu-prep";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency =<d#200000000>;
++			bus-frequency = <d#100000000>;
++			timebase-frequency = <d#100000000>;
++			i-cache-line-size = <d#32>;
++			d-cache-line-size = <d#32>;
++			d-cache-size = <0>;
++			i-cache-size = <0>;
++
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		// dummy range here, zImage wrapper will fill in the actual
++		// amount of memory from the nvram
++		reg = <00000000 01000000>;
++	};
++
++	pci@80800000 {
++		device_type = "pci";
++		compatible = "prep-pci";
++		clock-frequency = <01fca055>;
++		reg = <80800000 00400000>;	/* pci config space */
++		8259-interrupt-acknowledge = <bffffff0>;
++		#address-cells = <3>;
++		#size-cells = <2>;
++		ranges=<01000000 00000000 00000000 80000000 00000000 00800000
++			02000000 00000000 00000000 c0000000 00000000 01000000>;
++		#interrupt-cells = <1>;
++		interrupt-map-mask = <0800 0 0 0>;
++		interrupt-map = <0800 0 0 0	&PIC8259 b 3
++				 0000 0 0 0	&PIC8259 9 3>;
++
++		isa {
++			device_type = "isa";
++			#address-cells = <2>;
++			#size-cells = <1>;
++			#interrupt-cells = <2>;
++			ranges = <00000001 00000000
++				  01005800 00000000 00000000  00010000
++				  00000000 00000000
++				  02005800 00000000 00000000  01000000>;
++
++			parallel {
++				device_type = "parallel";
++				compatible = "pnpPNP,401", "pnpPNP,400";
++				reg =  <00000001 000003bc  00000008
++					00000001 000007bc  00000006>;
++				interrupts = <00000007 00000003>;
++				interrupt-parent = <&PIC8259>;
++			};
++
++			serial@3f8 {
++				device_type = "serial";
++				compatible = "pnpPNP,501", "pnpPNP,500",
++						"ns16550";
++				virtual-reg = <800003f8>;
++				clock-frequency = <001c2000>;
++				reg =  <00000001 000003f8  00000008>;
++				interrupts = <00000004 00000003>;
++				interrupt-parent = <&PIC8259>;
++			};
++			PIC8259: interrupt-controller {
++				#interrupt-cells = <2>;
++				device_type = "i8259";
++				compatible = "prep,iic";
++				interrupt-controller;
++				reg = <	00000001 00000020  00000002
++					00000001 000000a0  00000002
++					00000001 000004d0  00000002>;
++			};
++			ne2000@300 {
++				reg = <00000001 00000300 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<9 3>;
++			};
++			ne2000@320 {
++				reg = <00000001 00000320 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<a 3>;
++			};
++			ne2000@340 {
++				reg = <00000001 00000340 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<b 3>;
++			};
++			ne2000@360 {
++				reg = <00000001 00000360 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<3 3>;
++			};
++			ne2000@280 {
++				reg = <00000001 00000280 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<4 3>;
++			};
++			ne2000@380 {
++				reg = <00000001 00000380 00000020>;
++				interrupt-parent = <&PIC8259>;
++				interrupts=<5 3>;
++			};
++
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/pci/isa/serial@3f8";
++	};
++};
++
+Index: kernel/arch/powerpc/boot/wrapper
+===================================================================
+--- kernel.orig/arch/powerpc/boot/wrapper	2007-09-21 04:52:59.000000000 -0500
++++ kernel/arch/powerpc/boot/wrapper	2007-09-21 04:53:32.000000000 -0500
+@@ -310,4 +310,53 @@ ps3)
+ 
+     gzip --force -9 --stdout "$ofile.bin" > "$object/otheros.bld"
+     ;;
++qemu)
++    # this part makes the zBoot.qemu a bootrom for qemu.
++    #
++    # the qemu bootrom is 512k , located at the top of the 32 bit address
++    # space.   The fixed entrypoint is address -4.
++
++    copy_rom_start=0x`${CROSS}nm "$ofile" \
++        | grep ' copy_rom_start$'       \
++        | cut -d' ' -f1`
++    copy_rom_start=`printf "%d" $copy_rom_start`
++    copy_rom_end=0x`${CROSS}nm "$ofile" \
++        | grep ' copy_rom_end$'       \
++        | cut -d' ' -f1`
++    copy_rom_end=`printf "%d" $copy_rom_end`
++    rom_start=0x`${CROSS}nm "$ofile" \
++        | grep ' _start$'       \
++        | cut -d' ' -f1`
++
++    rom_start=`printf "%d" $rom_start`
++    rom_size=$((1<<19))
++    copy_rom_len=$(($copy_rom_end-$copy_rom_start))
++    copy_rom_dst=$(($rom_size-$copy_rom_len))
++    copy_rom_src=$(($copy_rom_start-$rom_start))
++
++    img_size=`${CROSS}size "$ofile" | tail -n1 | cut -f4`
++    if [ $img_size -gt $copy_rom_dst ]
++    then
++	echo Image "${ofile##*/}" too big to fit in rom, skipping rom build.
++    else
++	romfile="$object/ppc_rom.bin"
++	tmpfile="$object/ppc_rom.$$"
++
++	rm -f "$tmpfile"
++	${CROSS}objcopy -O binary --pad-to=$(($rom_size+$rom_start)) \
++	    --gap-fill=0xff  "$ofile" "$tmpfile"
++
++	msg=$(dd if="$tmpfile" of="$tmpfile" conv=notrunc \
++	    skip=$copy_rom_src seek=$copy_rom_dst      \
++	    count=$copy_rom_len bs=1 2>&1)
++
++	if [ $? -ne "0" ]; then
++	    echo $msg
++	    rm -f "$tmpfile"
++	    exit 2
++	fi
++
++	mv "$tmpfile" "$romfile"
++    fi
++    ;;
+ esac
+Index: kernel/arch/powerpc/boot/.gitignore
+===================================================================
+--- kernel.orig/arch/powerpc/boot/.gitignore	2007-09-21 04:51:30.000000000 -0500
++++ kernel/arch/powerpc/boot/.gitignore	2007-09-21 04:53:32.000000000 -0500
+@@ -17,6 +17,7 @@ infutil.h
+ kernel-vmlinux.strip.c
+ kernel-vmlinux.strip.gz
+ mktree
++ppc_rom.bin
+ uImage
+ cuImage.*
+ zImage
+Index: kernel/arch/powerpc/boot/Makefile
+===================================================================
+--- kernel.orig/arch/powerpc/boot/Makefile	2007-09-21 04:52:59.000000000 -0500
++++ kernel/arch/powerpc/boot/Makefile	2007-09-21 04:53:32.000000000 -0500
+@@ -48,7 +48,7 @@ src-wlib := string.S crt0.S stdio.c main
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+ 		cpm-serial.c stdlib.c
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c crt0_kexec.S \
+-		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
++		cuboot-ebony.c treeboot-ebony.c prpmc2800.c qemu.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+ 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+@@ -143,6 +143,7 @@ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
+ image-$(CONFIG_PPC_HOLLY)		+= zImage.holly
+ image-$(CONFIG_PPC_PRPMC2800)		+= zImage.prpmc2800
+ image-$(CONFIG_PPC_ISERIES)		+= zImage.iseries
++image-$(CONFIG_PPC_QEMU)		+= zImage.qemu zBoot.qemu
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ image-$(CONFIG_KEXEC)			+= $(kexec-y)
+ image-$(CONFIG_KEXEC)			+= $(patsubst zImage%,zBoot%,$(kexec-y))
+@@ -202,6 +203,9 @@ $(obj)/zImage.iseries: vmlinux
+ $(obj)/zBoot.%: $(wrapperbits) $(dts)
+ 	$(call if_changed,wrap,$*,$(dts),,,$(obj)/empty.o)
+ 
++# horrible hack to avoid overlapping calls to wrapper script clobbering dtb.
++$(obj)/zImage.qemu: $(obj)/zBoot.qemu
++
+ $(obj)/zImage.ps3: vmlinux  $(wrapper) $(wrapperbits) $(srctree)/$(src)/dts/ps3.dts
+ 	$(STRIP) -s -R .comment $< -o vmlinux.strip
+ 	$(call cmd,wrap,ps3,$(srctree)/$(src)/dts/ps3.dts,,)
+@@ -235,8 +239,8 @@ install: $(CONFIGURE) $(addprefix $(obj)
+ 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $<
+ 
+ # anything not in $(targets)
+-clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.* \
+-	otheros.bld $(kexec-)
++clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.*
++clean-files += otheros.bld ppc_rom.bin $(kexec-)
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin empty.o.bin
