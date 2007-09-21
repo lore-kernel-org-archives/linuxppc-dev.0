@@ -1,32 +1,21 @@
-Return-Path: <hollisb@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 984E1DDEB7
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 03:38:01 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8LHbv4n031470
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 13:37:57 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8LHbv0M512820
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 13:37:57 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8LHbu02001497
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 13:37:56 -0400
-Subject: Re: 44x bug: funny TLB writes?
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070921054218.GA13470@localhost.localdomain>
-References: <1190345652.25483.6.camel@basalt>
-	<20070921054218.GA13470@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 21 Sep 2007 12:37:36 -0500
-Message-Id: <1190396256.13762.3.camel@basalt>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 98537DDE26
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 04:46:52 +1000 (EST)
+Date: Fri, 21 Sep 2007 13:46:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Matt Tyrlik <tyrlik@us.ibm.com>
+Subject: Re: DTC Patch for Cygwin
+Message-ID: <20070921184639.GA23906@ld0162-tx32.am.freescale.net>
+References: <OF485FF693.8CDC7B13-ON8525735D.00541A51-8525735D.0054C8B8@us.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: Hollis Blanchard <hollisb@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF485FF693.8CDC7B13-ON8525735D.00541A51-8525735D.0054C8B8@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, dwg@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,32 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-09-21 at 15:42 +1000, David Gibson wrote:
-> On Thu, Sep 20, 2007 at 10:34:12PM -0500, Hollis Blanchard wrote:
-> > I seem to have come across a strange bug while doing KVM development. It
-> > seems that the final tlbwe in finish_tlb (head_44x.S) is actually
-> > leaking RPN bits into the "attribute" word.
-> > 
-> > When I set a breakpoint there and press enter on the serial console, I
-> > see r12=ef600703, which is the physical address of the UART on this chip
-> > (440EP), plus the correct permission bits at the bottom.
-> > 
-> > Am I crazy? I'm not really looking to step through that assembly right
-> > now... Clearly (current) hardware is just ignoring these errant writes,
-> > but it should be fixed.
+On Fri, Sep 21, 2007 at 11:26:04AM -0400, Matt Tyrlik wrote:
 > 
-> A quick glance at the code suggests this is indeed wrong.  Hurrah.
-> Another reason to rewrite the 44x tlb miss handling.
+> Changes required to compile DTC under Cygwin
+> 
+> ===================================================================
+> --- dtc-org.orig/tests/supernode_atdepth_offset.c
+> +++ dtc-org/tests/supernode_atdepth_offset.c
+> @@ -63,8 +63,11 @@ int path_prefix(const char *path, int de
+>                 return 1;
+> 
+>         p = path;
+> -       for (i = 0; i < depth; i++)
+> -               p = strchrnul(p+1, '/');
+> +       for (i = 0; i < depth; i++) {
+> +               p = strchr(p+1, '/');
+> +               if (!p)
+> +                       p = path + strlen(path);
+> +       }
+> 
+>         return p - path;
+>  }
 
-Actually it's slightly worse than I thought. Not only are we setting "0"
-bits in the TLB word, I'm also seeing mappings like this:
+Maybe we should define strchrnul under #ifndef GLIBC, similar to
+strndupa?
 
-pid      word0    word1    word2
-00000001 7fe4f210 00209000 00200349
+> Index: dtc-org/tests/testutils.c
+> ===================================================================
+> --- dtc-org.orig/tests/testutils.c
+> +++ dtc-org/tests/testutils.c
+> @@ -52,10 +52,9 @@ static void sigint_handler(int signum, s
+>  void test_init(int argc, char *argv[])
+>  {
+>         int err;
+> -       struct sigaction sa_int = {
+> -               .sa_sigaction = sigint_handler,
+> -       };
+> +       struct sigaction sa_int;
+> 
+> +       sa_int.sa_sigaction = sigint_handler,
+>         test_name = argv[0];
 
-That means WIMG=0011, which seems inappropriate for userspace mappings.
-(Oh and we're also writing to the only reserved bit in word2.)
+What version of GCC does cygwin use?  That doesn't seem like something
+that should break due to OS differences.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+-Scott
