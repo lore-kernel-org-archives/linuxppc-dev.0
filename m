@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0D87DE0A8
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:05:46 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:05:30 -0500 (CDT)
-Subject: [PATCH 9/15] bootwrapper: rtas support
+	by ozlabs.org (Postfix) with ESMTP id 79D90DEAFC
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:06:02 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:05:50 -0500 (CDT)
+Subject: [PATCH 10/15] bootwrapper: add cpio file extraction library.
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-8-09.miltonm@bga.com>
+Message-Id: <boot-8-10.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -22,26 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This code provides a console write that calls put-term-char.
-
-To avoid PIC relocation of the absolute rtas addresses, hide the
-actual call to rtas in assembly and declare all variables as int.
-
-An instantiated rtas will be protected by a reserved range in the
-device tree, so no explicit call to add_occupied_range is needed
-here.
+Add a library to search through a cpio or initramfs buffer for a
+specified path name.  No canocalization of the path is performed.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 --- 
-vs 12176
-rtas_put_term_write now takes const char *buf
-rediff ops.h, Makefile
+vs 12177
+rediff Makefile
 
-Index: kernel/arch/powerpc/boot/rtas.c
+cpio.c should be reusable by a stand alone user space applicaton.
+
+
+Index: kernel/arch/powerpc/boot/cpio.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/rtas.c	2007-09-21 01:43:08.000000000 -0500
-@@ -0,0 +1,146 @@
++++ kernel/arch/powerpc/boot/cpio.c	2007-08-22 20:51:29.000000000 -0500
+@@ -0,0 +1,306 @@
 +/*
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -63,168 +59,325 @@ Index: kernel/arch/powerpc/boot/rtas.c
 + *
 + */
 +
-+#include "ops.h"
-+#include "stdio.h"
-+#include "flatdevtree.h"
++#include "cpio.h"
++#include "string.h"
 +
-+static int rtas_entry;
-+static int rtas_base;
-+static int rtas_size;
++struct cpio_header {
++	char ino[8];
++	char mode[8];
++	char uid[8];
++	char gid[8];
++	char nlink[8];
++	char mtime[8];
++	char filesize[8];
++	char maj[8];
++	char min[8];
++	char rmaj[8];
++	char rmin[8];
++	char namesize[8];
++	char chksum[8];
++} cpio_header_buf;
 +
-+static void find_rtas(void)
++static int check_magic(char magic[6])
 +{
-+	int rc;
-+	void *devp;
-+	char *str;
-+
-+	devp = finddevice("/rtas");
-+	if (! devp)
-+		return;
-+
-+	str = "linux,rtas-entry";
-+	rc = getprop(devp, str, &rtas_entry, sizeof(rtas_entry));
-+	if (rc < 0)
-+		return;
-+	if (rc != sizeof(rtas_entry))
-+		goto fail;
-+
-+	str = "rtas-size";
-+	rc = getprop(devp, str, &rtas_size, sizeof(rtas_size));
-+	if (rc < 0)
-+		return;
-+	if (rc != sizeof(rtas_size))
-+		goto fail;
-+
-+	str = "linux,rtas-base";
-+	rc = getprop(devp, str, &rtas_base, sizeof(rtas_base));
-+	if (rc < 0) {
-+		printf("rtas-size but no linux,rtas-base in /rtas.  "
-+			"disabling wrapper rtas interface\n\r");
-+		rtas_entry = 0;
-+		return;
-+	}
-+
-+	if (rc != sizeof(rtas_base))
-+		goto fail;
-+
-+	return;
-+
-+
-+fail:
-+	printf("Unexpected length %d of %s property in /rtas.\n\r"
-+			"disabling wrapper rtas interface\n\r", rc, str);
-+	rtas_entry = 0;
-+	return;
++	return !memcmp(magic,"070701",6) || !memcmp(magic,"070702",6);
 +}
 +
-+/*
-+ * PIC relocation of function pointers happens at call time.
-+ * We have an absolute out-of-image address.   So tell C they
-+ * are just integers, and hide the call as an out-of-file
-+ * function.
++static int read_magic(struct gunzip_state *stream)
++{
++	int len;
++	char magic[6];
++
++	len = gunzip_partial(stream, magic, sizeof(magic));
++	if (len == 0)
++		return 0;
++
++	if (len == sizeof(magic) && check_magic(magic))
++		return len;
++
++
++	/* Not the right magic or short read.  We might have stumbled
++	 * onto a compressed archive immediately following an
++	 * uncompressed one, or just some NUL bytes at the end of the
++	 * archive.  Inform the higher layers by the negative length.
++	 */
++	return -len;
++}
++
++static int get_cpio_header(struct gunzip_state *stream)
++{
++	int len;
++
++	len = read_magic(stream);
++	if (len <= 0)
++		return len;
++
++	gunzip_exactly(stream, &cpio_header_buf, sizeof(cpio_header_buf));
++	len += sizeof(cpio_header_buf);
++
++	return len;
++}
++
++static unsigned int cpio_str_to_num(char hexascii[8])
++{
++	unsigned int num = 0;
++	char c;
++	int d;
++
++	for (d=0; d < 8; d++) {
++		c = hexascii[d];
++		num <<= 4;
++		if (c >= '0' && c <= '9') {
++			num += c - '0';
++		} else if (c >= 'A' && c <= 'F') {
++			num += c - 'A' + 10;
++		} else if (c >= 'a' && c <= 'f') {
++			num += c - 'a' + 10;
++		} else {
++			cpio_error("bad cpio archive header: "
++					"invalid a hex digit");
++		}
++	}
++
++	return num;
++}
++
++static char name_buf[MAX_PATH+1];
++static const char cpio_end[] = "TRAILER!!!";
++#define CPIO_END_LEN sizeof(cpio_end)
++
++/* check_next_file
++ * Look for @path in @stream.  Set @consumed to the number of bytes
++ * succesfully read and processed.  return 1 on match, 0 for discarding
++ * an unmatched file, -1 on end of archive (either detected trailer or
++ * EOF on stream), or -(1 + bytes read) for a short read or bad magic
++ * number.  (For the short or bad read, the consumed is not changed).
 + */
-+__asm__ (
-+		"	.globl call_rtas\n"
-+		"	call_rtas: mtctr 5\n"
-+		"	bctr\n"
-+		);
-+
-+void call_rtas(int args[], int base, int entry);
-+
-+
-+static int put_term_char;
-+
-+static void rtas_put_term_write(const char *buf, int len)
++static int check_next_file(char *path, int pathlen,
++		struct gunzip_state *stream, int *consumed)
 +{
-+	int i, args[5];
++	int len, total, match;
 +
-+	args[0] = put_term_char;
-+	args[1] = 1;	/* num inputs */
-+	args[2] = 1;	/* num outputs */
-+
-+	for (i=0; i < len; ) {
-+		args[3] = buf[i];
-+		args[4] = 0;
-+
-+		call_rtas(args, rtas_base, rtas_entry);
-+		if (args[4] == 0)		/* SUCCESS */
-+			i++;
-+		else if (args[4] == -1)		/* HARDWARE_ERROR */
-+			break;
-+		/* else retry */
++	if (pathlen > MAX_PATH) {
++		cpio_error("path too long to search\n");
 +	}
++	total = get_cpio_header(stream);
++	if (total <= 0)
++		return total - 1;
++
++	len = cpio_str_to_num(cpio_header_buf.namesize);
++
++	if (len == pathlen || len == CPIO_END_LEN) {
++		gunzip_exactly(stream, name_buf, len);
++		total += len;
++		match = !strcmp(name_buf, path);
++		if (!match && !cpio_str_to_num(cpio_header_buf.filesize))
++			match = -!strcmp(name_buf, cpio_end);
++	} else {
++		gunzip_discard(stream, len);
++		total += len;
++		name_buf[0] = '\0';
++		match = 0;
++	}
++
++	len = total % 4;
++	if (len) {
++		gunzip_discard(stream, 4 - len);
++		total += 4 - len;
++	}
++
++	if (!match) {
++		len = cpio_str_to_num(cpio_header_buf.filesize);
++		gunzip_discard(stream, len);
++		total += len;
++
++		len = total % 4;
++		if (len) {
++			gunzip_discard(stream, 4 - len);
++			total += 4 - len;
++		}
++	}
++
++	*consumed += total;
++	return match;
 +}
 +
-+int rtas_console_init(void)
++static char *this_buf;
++static int this_archive;
++
++/* find_in_cpio.
++ * find a pathname @path in a single cpio archive described by @stream.
++ * Return is the same as check_next_file.
++ */
++int find_in_cpio(char *path, struct gunzip_state *stream)
 +{
-+	void *devp;
-+	int rc;
++	int found;
++	int pathlen = strlen(path) + 1;
 +
++	this_archive = 0;
++	do {
++		found = check_next_file(path, pathlen, stream, &this_archive);
++	} while (found == 0);
 +
-+	devp = finddevice("/rtas");
-+	if (!devp)
-+		return -1;
-+
-+	if (!rtas_entry)
-+		find_rtas();
-+	if (!rtas_entry)
-+		return -1;
-+
-+	rc = getprop(devp, "put-term-char", &put_term_char,
-+			sizeof(put_term_char));
-+	if (rc == sizeof(put_term_char))
-+		console_ops.write = rtas_put_term_write;
-+	else
-+		put_term_char = -1;
-+
-+	return put_term_char == -1 ? -1 : 0;
++	return found;
 +}
 +
-+/* for debug, hard code */
-+void use_rtas_console(int entry, int base, int tc)
++/* find_in_initramfs
++ * Search a initramfs buffer for a given path name.  Returns 0 on
++ * not found, or 1 with @state ready to read the file.
++ *
++ * Note: this returns the first match, not the last.   The kernel
++ * decompressor  effectivly uses the last match.  This code also
++ * doesn't worry about the directories in the path existing.
++ */
++int find_in_initramfs(char *path, char *buf, int len,
++		struct gunzip_state *stream)
 +{
-+	rtas_entry = entry;
-+	rtas_base = base;
-+	put_term_char = tc;
-+	console_ops.write = rtas_put_term_write;
++	int found, total = 0;
++	int pathlen = strlen(path) + 1;
++	int *ibuf;
++
++	do {
++		/* get to word boundary, but stop if not NUL */
++		for (; total % 4 && total < len - 4; total++)
++			if (buf[total])
++				break;
++
++		if ((total % 4) == 0) {
++			/* fast forward over NUL words.  */
++			for (ibuf = (int *)&buf[total];
++					total < len - sizeof(*ibuf) && !*ibuf;
++					ibuf++)
++			total += sizeof(*ibuf);
++		}
++
++		/* check remainder of a short archive -- it must all be
++		 * zero as both gzip header and cpio header are bigger
++		 * than this.
++		 */
++		if (total >= len - 4) {
++			for (;total < len; total++) {
++				if (buf[len]) {
++					cpio_error("Junk at end of buffer");
++				}
++			}
++			break;
++		}  else if (total % 4) {
++			/*
++			 * If we are unalinged and not at the end of the buffer
++			 * we must be following a compressed archive.  Only
++			 * NUL and gzip headers are allowed.  We skipped NUL.
++			 */
++			if (!(buf[total] == 0x1b && buf[total + 1] == 0x8b))
++				cpio_error("unalinged junk in buffer");
++		}
++
++		this_buf = buf + total;
++		this_archive = 0;
++
++		gunzip_start(stream, this_buf, len - total);
++
++		do {
++			found = check_next_file(path, pathlen, stream,
++					&this_archive);
++		} while (!found);
++
++		if (found > 0)
++			return found;
++
++		if (stream->s.workspace) {
++			int discard;
++
++			if (found < -1) {
++				cpio_error("Junk in compressed archive");
++			}
++
++			/* we either found EOF or TRAILER!!!.  In the later
++			 * case we need to discard to the end of the gzip
++			 * contents.
++			 */
++			do {
++				discard =  gunzip_partial(stream, name_buf,
++					MAX_PATH);
++				this_archive += discard;
++			} while (discard);
++
++			/*
++			 * Peek at how many input bytes were consumed.
++			 * reset our consumed input.
++			 */
++			total += stream->s.total_in + 8;
++
++			/* clean up zlib */
++			discard = gunzip_finish(stream, name_buf, 0);
++		} else {
++			if (this_archive % 4) {
++				cpio_error("Archive not multiple of 4?");
++			}
++			total += this_archive;
++
++			if (!this_archive) {
++				cpio_error("junk between archives");
++			}
++			/* don't check the < -1 of found, it might be an
++			 * archive.  This will be caught by the !this_archive
++			 * check on the next loop.
++			 */
++		}
++	} while (total < len);
++
++	return 0;
 +}
-Index: kernel/arch/powerpc/boot/ops.h
++
++void get_cpio_info(void **archive_start, int *consumed)
++{
++	*archive_start = this_buf;
++	*consumed = this_archive;
++}
++
++int get_cpio_file_mode(void)
++{
++	return cpio_str_to_num(cpio_header_buf.mode);
++}
++
++int get_cpio_file_size(void)
++{
++	return cpio_str_to_num(cpio_header_buf.filesize);
++}
+Index: kernel/arch/powerpc/boot/cpio.h
 ===================================================================
---- kernel.orig/arch/powerpc/boot/ops.h	2007-09-21 01:43:02.000000000 -0500
-+++ kernel/arch/powerpc/boot/ops.h	2007-09-21 01:43:08.000000000 -0500
-@@ -99,6 +99,8 @@ void send_slaves_to_kernel(void *vmlinux
- void slaves_are_low(void);
- void wait_slaves_moved(void);
- void kexec_platform_init(struct boot_param_header *dt_blob);
-+int rtas_console_init(void);
-+void use_rtas_console(int entry, int base, int tc);
- 
- int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
- int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
-Index: kernel/arch/powerpc/boot/kexec.c
-===================================================================
---- kernel.orig/arch/powerpc/boot/kexec.c	2007-09-21 01:43:02.000000000 -0500
-+++ kernel/arch/powerpc/boot/kexec.c	2007-09-21 01:43:08.000000000 -0500
-@@ -33,6 +33,9 @@ static void find_console_from_tree(void)
- {
- 	int rc = -1;
- 
-+	rc = rtas_console_init();
-+	if (!rc)
-+		return;
- 	if (rc) {
- 		/* no console, oh well */
- 	}
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ kernel/arch/powerpc/boot/cpio.h	2007-08-22 20:51:29.000000000 -0500
+@@ -0,0 +1,12 @@
++#include "gunzip_util.h"
++
++extern int find_in_cpio(char *path, struct gunzip_state *stream);
++extern int find_in_initramfs(char *path, char *buf, int len,
++		struct gunzip_state *state);
++extern void get_cpio_info(void **archive_start, int *consumed);
++extern int get_cpio_file_size(void);
++extern int get_cpio_file_mode(void);
++
++#define MAX_PATH 256
++
++extern void cpio_error(char *msg);
 Index: kernel/arch/powerpc/boot/Makefile
 ===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2007-09-21 01:43:02.000000000 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2007-09-21 01:43:08.000000000 -0500
-@@ -42,7 +42,7 @@ $(addprefix $(obj)/,$(zlib) gunzip_util.
+--- kernel.orig/arch/powerpc/boot/Makefile	2007-08-22 20:51:06.000000000 -0500
++++ kernel/arch/powerpc/boot/Makefile	2007-08-22 20:52:46.000000000 -0500
+@@ -36,13 +36,13 @@ $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
+ 
+ zlib       := inffast.c inflate.c inftrees.c
+ zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
+-zliblinuxheader := zlib.h zconf.h zutil.h
++zliblinuxheader := zlib.h zconf.h zutil.h stat.h
+ 
+ $(addprefix $(obj)/,$(zlib) gunzip_util.o main.o): \
  	$(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
  
  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
--		flatdevtree_conv.c marshal.c memranges.c kexec.c \
-+		flatdevtree_conv.c marshal.c memranges.c kexec.c rtas.c \
+-		flatdevtree_conv.c marshal.c memranges.c kexec.c rtas.c \
++		flatdevtree_conv.c marshal.c memranges.c kexec.c rtas.c cpio.c \
  		ns16550.c serial.c simple_alloc.c div64.S util.S \
  		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
  		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
