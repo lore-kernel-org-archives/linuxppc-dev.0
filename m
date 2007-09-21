@@ -2,14 +2,14 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 182EDDDF78
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:03:49 +1000 (EST)
-Date: Fri, 21 Sep 2007 18:03:34 -0500 (CDT)
-Subject: [PATCH 2/15] boot: record header bytes in gunzip_start
+	by ozlabs.org (Postfix) with ESMTP id CF00ADE108
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 09:03:57 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:03:52 -0500 (CDT)
+Subject: [PATCH 3/15] boot: simplfy gunzip_finish
 Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <boot-8-02.miltonm@bga.com>
+Message-Id: <boot-8-03.miltonm@bga.com>
 In-Reply-To: <boot-8-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>, Rob Landley <rob@landley.net>,
 	David Gibson <david@gibson.dropbear.id.au>
@@ -23,23 +23,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Record the number of header bytes skipped in the total bytes read field.
-
-This is needed for the initramfs parsing code to find the end of the zip file.
+Call gunzip_partial to calculate the remaining length and copy the
+data to the user buffer.  This makes it shorter and reduces
+duplication.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 --- 
-Identical to 12169
+identical content to 12170, removed extra space in change log
 
 Index: kernel/arch/powerpc/boot/gunzip_util.c
 ===================================================================
---- kernel.orig/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:33:34.000000000 -0500
-+++ kernel/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:40:59.000000000 -0500
-@@ -78,6 +78,7 @@ void gunzip_start(struct gunzip_state *s
- 			fatal("inflateInit2 returned %d\n\r", r);
+--- kernel.orig/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:39:07.000000000 -0500
++++ kernel/arch/powerpc/boot/gunzip_util.c	2007-07-10 03:39:07.000000000 -0500
+@@ -194,13 +194,10 @@ int gunzip_finish(struct gunzip_state *s
+ {
+ 	int len;
+ 
++	len = gunzip_partial(state, dst, dstlen);
++
+ 	if (state->s.workspace) {
+-		len = gunzip_partial(state, dst, dstlen);
+ 		zlib_inflateEnd(&state->s);
+-	} else {
+-		/* uncompressed image */
+-		len = min(state->s.avail_in, (unsigned)dstlen);
+-		memcpy(dst, state->s.next_in, len);
  	}
  
-+	state->s.total_in = hdrlen;
- 	state->s.next_in = src + hdrlen;
- 	state->s.avail_in = srclen - hdrlen;
- }
+ 	return len;
