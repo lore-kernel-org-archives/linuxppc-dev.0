@@ -1,25 +1,28 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 8103CDDE09
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 28B0EDDE3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Sep 2007 17:00:23 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 87622220092
+	Fri, 21 Sep 2007 18:53:08 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by comm-neu.esd (Postfix) with ESMTP id 0122D108048
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Sep 2007 09:00:21 +0200 (CEST)
-Received: from [10.0.30.2] (p5497E8A0.dip.t-dialin.net [84.151.232.160])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 6C86D905AA
+	Fri, 21 Sep 2007 10:46:16 +0200 (CEST)
+Received: from comm-neu.esd ([127.0.0.1])
+	by localhost (comm [127.0.0.1]) (amavisd-new, port 10024) with LMTP
+	id 28419-03-6 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 21 Sep 2007 10:46:14 +0200 (CEST)
+Received: from debby.esd (debby.esd [10.0.0.190])
+	by comm-neu.esd (Postfix) with ESMTP id ED971108046
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Sep 2007 09:00:21 +0200 (CEST)
-Message-ID: <46F36C01.1040401@grandegger.com>
-Date: Fri, 21 Sep 2007 09:00:17 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
+	Fri, 21 Sep 2007 10:46:14 +0200 (CEST)
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: USB on MPC885 vs. MPC850/823
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: ioremap with cache on 44x
+Date: Fri, 21 Sep 2007 10:46:11 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200709211046.11253.matthias.fuchs@esd-electronics.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,14 +33,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi,
 
-I heard that the MPC885 has an improved USB hardware/firmware compared 
-to the one on the rather old MPC823 or MPC850. Is it similar to the USB 
-on the MPC8272? It would be nice, if somebody could shed some light on 
-the usability and the support of USB in Linux for the MPC885 (or similar 
-MPC8xx chips).
+I want to ioremap some memory on a PCI board with caching from a 440EPx
+CPU. Typically ioremap() ends in __ioremap() with the flags set to _PAGE_NO_CACHE.
+But even without this flag, the remapped range does not use the cache.
+Using a BDI2000 debugger I always see the corresponding TLBs with 
+caching inhibited.
 
-Thanks.
+How can I access PCI memory with caching?
 
-Wolfgang.
+Matthias
