@@ -2,19 +2,20 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7BF03DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 00:45:44 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 28520DDE3C
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 00:48:02 +1000 (EST)
 Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l8LEicQW004263
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:44:38 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l8LEkvt0004294
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:46:57 +0400
 Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l8LEicSU004260
-	for linuxppc-dev@ozlabs.org; Fri, 21 Sep 2007 18:44:38 +0400
-Date: Fri, 21 Sep 2007 18:44:38 +0400
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l8LEkvaX004291
+	for linuxppc-dev@ozlabs.org; Fri, 21 Sep 2007 18:46:57 +0400
+Date: Fri, 21 Sep 2007 18:46:57 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] PowerPC: Introduce cpu_setup functionality to 44x platform
-Message-ID: <20070921144438.GA4242@ru.mvista.com>
+Subject: [PATCH 2/3] PowerPC: Move 440EP(x) FPU setup from head_44x to
+	cpu_setup_4xx
+Message-ID: <20070921144657.GA4268@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070921144149.GA4150@ru.mvista.com>
@@ -27,78 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds cpu_setup functionality for ppc44x platform.
-Low level cpu-spefic initialization routines should be 
-placed in cpu_setup_44x.S and a callback should be
-added to cputable. The cpu_setup is invoked 
-by identify_cpu() function at early init.
+The PowerPC 440EP(x) FPU init is currently done in head_44x
+under ifdefs. Since we should support more then one board
+in the same kernel, we move FPU initialization code from head_44x
+to cpu_setup_44x and add cpu_setup callbacks for 440EP(x).
 
 Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
- arch/powerpc/kernel/Makefile        |    1 +
- arch/powerpc/kernel/cpu_setup_44x.S |   19 +++++++++++++++++++
- arch/powerpc/kernel/cputable.c      |   13 +++++++------
- 3 files changed, 27 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/cpu_setup_44x.S |   14 ++++++++++++++
+ arch/powerpc/kernel/cputable.c      |    6 ++++++
+ arch/powerpc/kernel/head_44x.S      |   10 ----------
+ 3 files changed, 20 insertions(+), 10 deletions(-)
 
 diff -ruN linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S
---- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S	1970-01-01 03:00:00.000000000 +0300
-+++ linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 17:04:20.000000000 +0400
-@@ -0,0 +1,19 @@
-+/*
-+ * This file contains low level CPU setup functions.
-+ * Valentine Barshak <vbarshak@ru.mvista.com>
-+ * MontaVista Software, Inc (c) 2007
-+ *
-+ * Based on cpu_setup_6xx code by 
-+ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ */
+--- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 16:18:35.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/cpu_setup_44x.S	2007-09-21 16:17:03.000000000 +0400
+@@ -17,3 +17,17 @@
+ #include <asm/cputable.h>
+ #include <asm/ppc_asm.h>
+ 
++_GLOBAL(__setup_cpu_440ep)
++	b	__init_fpu_44x
++_GLOBAL(__setup_cpu_440epx)
++	b	__init_fpu_44x
 +
-+#include <asm/processor.h>
-+#include <asm/cputable.h>
-+#include <asm/ppc_asm.h>
++/* enable APU between CPU and FPU */
++_GLOBAL(__init_fpu_44x)
++	mfspr	r3,SPRN_CCR0
++	/* Clear DAPUIB flag in CCR0 */
++	rlwinm	r3,r3,0,12,10
++	mtspr	SPRN_CCR0,r3
++	isync
++	blr
 +
 diff -ruN linux-2.6.orig/arch/powerpc/kernel/cputable.c linux-2.6/arch/powerpc/kernel/cputable.c
---- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-09-21 14:56:40.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-09-21 17:04:50.000000000 +0400
-@@ -1319,17 +1319,18 @@
- 	for (i = 0; i < ARRAY_SIZE(cpu_specs); i++,s++)
- 		if ((pvr & s->pvr_mask) == s->pvr_value) {
- 			*cur = cpu_specs + i;
--#ifdef CONFIG_PPC64
--			/* ppc64 expects identify_cpu to also call setup_cpu
--			 * for that processor. I will consolidate that at a
--			 * later time, for now, just use our friend #ifdef.
-+#if defined(CONFIG_PPC64) || defined(CONFIG_BOOKE)
-+			/* ppc64 and booke expect identify_cpu to also call 
-+			 * setup_cpu for that processor. I will consolidate
-+			 * that at a later time, for now, just use #ifdef.
- 			 * we also don't need to PTRRELOC the function pointer
--			 * on ppc64 as we are running at 0 in real mode.
-+			 * on ppc64 and booke as we are running at 0 in real
-+			 * mode on ppc64 and reloc_offset is always 0 on booke.
- 			 */
- 			if (s->cpu_setup) {
- 				s->cpu_setup(offset, s);
- 			}
--#endif /* CONFIG_PPC64 */
-+#endif /* CONFIG_PPC64 || CONFIG_BOOKE */
- 			return s;
- 		}
- 	BUG();
-diff -ruN linux-2.6.orig/arch/powerpc/kernel/Makefile linux-2.6/arch/powerpc/kernel/Makefile
---- linux-2.6.orig/arch/powerpc/kernel/Makefile	2007-09-21 14:56:40.000000000 +0400
-+++ linux-2.6/arch/powerpc/kernel/Makefile	2007-09-21 17:04:20.000000000 +0400
-@@ -56,6 +56,7 @@
- 				   udbg.o misc.o io.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
-+obj-$(CONFIG_44x)		+= cpu_setup_44x.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c	2007-09-21 16:18:22.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/cputable.c	2007-09-21 16:17:05.000000000 +0400
+@@ -31,6 +31,8 @@
+  * and ppc64
+  */
+ #ifdef CONFIG_PPC32
++extern void __setup_cpu_440ep(unsigned long offset, struct cpu_spec* spec);
++extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
+@@ -1111,6 +1113,7 @@
+ 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_440ep,
+ 		.platform		= "ppc440",
+ 	},
+ 	{
+@@ -1121,6 +1124,7 @@
+ 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_440ep,
+ 		.platform		= "ppc440",
+ 	},
+ 	{ /* 440EPX */
+@@ -1131,6 +1135,8 @@
+ 		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
++		.cpu_setup		= __setup_cpu_440epx,
++		.platform		= "ppc440",
+ 	},
+ 	{ /* 440GRX */
+ 		.pvr_mask		= 0xf0000ffb,
+diff -ruN linux-2.6.orig/arch/powerpc/kernel/head_44x.S linux-2.6/arch/powerpc/kernel/head_44x.S
+--- linux-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-09-21 16:19:04.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/head_44x.S	2007-09-21 16:00:17.000000000 +0400
+@@ -217,16 +217,6 @@
+ 	lis	r4,interrupt_base@h	/* IVPR only uses the high 16-bits */
+ 	mtspr	SPRN_IVPR,r4
+ 
+-#if defined(CONFIG_440EP) || defined(CONFIG_440EPX)
+-	/* Clear DAPUIB flag in CCR0 (enable APU between CPU and FPU) */
+-	mfspr	r2,SPRN_CCR0
+-	lis	r3,0xffef
+-	ori	r3,r3,0xffff
+-	and	r2,r2,r3
+-	mtspr	SPRN_CCR0,r2
+-	isync
+-#endif
+-
+ 	/*
+ 	 * This is where the main kernel code starts.
+ 	 */
