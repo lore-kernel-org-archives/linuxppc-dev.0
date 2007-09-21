@@ -1,23 +1,21 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 8D578DDE06
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 09:46:54 +1000 (EST)
-Date: Fri, 21 Sep 2007 09:46:53 +1000
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 2/5] Implement generic time of day clocksource for powerpc
-	machines.
-Message-ID: <20070920234653.GW9814@bakeyournoodle.com>
-References: <20070919064947.4B5A1399910@thor>
-	<1190216594.11899.3.camel@imap.mvista.com>
-	<18161.50240.599267.768383@cargo.ozlabs.ibm.com>
-	<1190306110.14264.7.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1190306110.14264.7.camel@localhost>
-From: tony@bakeyournoodle.com (Tony Breeds)
-Cc: Daniel Walker <dwalker@mvista.com>, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A5A1FDDE9C
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 10:08:55 +1000 (EST)
+Date: Fri, 21 Sep 2007 10:08:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 6/9] fs_enet: Be an of_platform device when
+	CONFIG_PPC_CPM_NEW_BINDING is set.
+Message-Id: <20070921100841.6904f2bc.sfr@canb.auug.org.au>
+In-Reply-To: <20070920220121.GF28784@loki.buserror.net>
+References: <20070920220043.GA28769@loki.buserror.net>
+	<20070920220121.GF28784@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__21_Sep_2007_10_08_41_+1000_qdnM2RilxVeJnVaw"
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 20, 2007 at 09:35:10AM -0700, john stultz wrote:
- 
-> I think what Daniel is pointing out is that the clocksource read
-> function isn't the place for the __USE_RTC() conditional. 
-> 
-> It would likely be better instead of the timebase clocksource managing
-> multiple type of hardware (timebase and RTC), to have a separate simple
-> RTC clocksource, and then conditionally register one or the other at
-> init time.
+--Signature=_Fri__21_Sep_2007_10_08_41_+1000_qdnM2RilxVeJnVaw
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'll create a seperate clocksource for the RTC case and use that as
-appropriate.  I'll resend the patch series after I've booted it :)
+On Thu, 20 Sep 2007 17:01:21 -0500 Scott Wood <scottwood@freescale.com> wro=
+te:
+>
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -44,12 +44,18 @@
+>  #include <asm/irq.h>
+>  #include <asm/uaccess.h>
+> =20
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_platform.h>
 
-Yours Tony
+Hmm, didn't I already ask you to change this to linux/of_platform.h?
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+> +++ b/drivers/net/fs_enet/mac-fcc.c
+> @@ -42,6 +42,10 @@
+>  #include <asm/irq.h>
+>  #include <asm/uaccess.h>
+> =20
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_device.h>
+
+And this to linux/of_device.h
+
+> +++ b/drivers/net/fs_enet/mac-fec.c
+> @@ -43,6 +43,10 @@
+>  #include <asm/commproc.h>
+>  #endif
+> =20
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_device.h>
+
+And this?
+
+> +++ b/drivers/net/fs_enet/mac-scc.c
+> @@ -43,6 +43,10 @@
+>  #include <asm/commproc.h>
+>  #endif
+> =20
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_platform.h>
+
+And this
+
+> +++ b/drivers/net/fs_enet/mii-fec.c
+> @@ -36,6 +36,10 @@
+>  #include <asm/irq.h>
+>  #include <asm/uaccess.h>
+> =20
+> +#ifdef CONFIG_PPC_CPM_NEW_BINDING
+> +#include <asm/of_platform.h>
+
+And here
+
+Sorry if I missed these last time around.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__21_Sep_2007_10_08_41_+1000_qdnM2RilxVeJnVaw
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG8wuNTgG2atn1QN8RArnKAKCA8grKB7mEO/yuRuI/Gk66ZZJ6tQCgipUD
+ocag1rXWzL6kFe+1ZzSuDJI=
+=Z3BX
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__21_Sep_2007_10_08_41_+1000_qdnM2RilxVeJnVaw--
