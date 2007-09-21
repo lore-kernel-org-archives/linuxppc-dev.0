@@ -1,23 +1,15 @@
-Return-Path: <jacmet@gmail.com>
-Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.227])
-	by ozlabs.org (Postfix) with ESMTP id C8D87DDE3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 17:35:15 +1000 (EST)
-Received: by hu-out-0506.google.com with SMTP id 24so262716hud
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 00:35:13 -0700 (PDT)
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
-References: <20070920104211.896143373@sunsite.dk>
-	<20070920104313.217207466@sunsite.dk>
-	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 21 Sep 2007 09:35:03 +0200
-In-Reply-To: <20070920133528.GC14820@ld0162-tx32.am.freescale.net> (Scott
-	Wood's message of "Thu\, 20 Sep 2007 08\:35\:28 -0500")
-Message-ID: <874pholbdk.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id F00D4DDE2B
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Sep 2007 18:08:25 +1000 (EST)
+Date: Fri, 21 Sep 2007 18:08:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Prepare to remove of_platform_driver name
+Message-Id: <20070921180817.03418ee4.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +19,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Scott" == Scott Wood <scottwood@freescale.com> writes:
+The name field of of_platform_driver is just copied into the
+included device_driver.  By not overriding an already initialised
+device_driver name, we can convert the drivers over time to stop using
+the of_platform_driver name.
 
-Hi,
+Also we were not copying the owner field from of_platform_driver, so do
+the same with it.
 
- Scott> #size-cells is zero on i2c, so it should just be reg = <68>.
-
- Scott> You'll probably need to add #address-cells and #size-cells to the
- Scott> controller node, as well.
-
-Ahh - Thanks. This should be better.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-
-[PATCH] mpc8349emitx.dts: Add ds1339 RTC
-
-Add ds1339 I2C RTC chip as child of 2nd I2C controller.
-
-Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
----
- arch/powerpc/boot/dts/mpc8349emitx.dts |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-Index: linux/arch/powerpc/boot/dts/mpc8349emitx.dts
-===================================================================
---- linux.orig/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ linux/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -62,12 +62,21 @@
- 		};
- 
- 		i2c@3100 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			device_type = "i2c";
- 			compatible = "fsl-i2c";
- 			reg = <3100 100>;
- 			interrupts = <f 8>;
- 			interrupt-parent = < &ipic >;
- 			dfsrr;
-+
-+			rtc@68 {
-+				device_type = "rtc";
-+				compatible = "dallas,ds1339";
-+				reg = <68>;
-+			};
-+
- 		};
- 
- 		spi@7000 {
+ arch/powerpc/kernel/of_platform.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
 -- 
-Bye, Peter Korsgaard
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index f70e787..eca8ccc 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -19,11 +19,11 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/slab.h>
+ #include <linux/pci.h>
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/errno.h>
+ #include <asm/dcr.h>
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/topology.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/ppc-pci.h>
+@@ -70,7 +70,10 @@ postcore_initcall(of_bus_driver_init);
+ int of_register_platform_driver(struct of_platform_driver *drv)
+ {
+ 	/* initialize common driver fields */
+-	drv->driver.name = drv->name;
++	if (!drv->driver.name)
++		drv->driver.name = drv->name;
++	if (!drv->driver.owner)
++		drv->driver.owner = drv->owner;
+ 	drv->driver.bus = &of_platform_bus_type;
+ 
+ 	/* register with core */
+@@ -385,9 +388,11 @@ static struct of_device_id of_pci_phb_ids[] = {
+ };
+ 
+ static struct of_platform_driver of_pci_phb_driver = {
+-       .name = "of-pci",
+-       .match_table = of_pci_phb_ids,
+-       .probe = of_pci_phb_probe,
++	.match_table = of_pci_phb_ids,
++	.probe = of_pci_phb_probe,
++	.driver = {
++		.name = "of-pci",
++	},
+ };
+ 
+ static __init int of_pci_phb_init(void)
+-- 
+1.5.3.2
