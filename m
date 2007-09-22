@@ -1,16 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <satyam@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0526ADDDFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 16:48:19 +1000 (EST)
+Date: Sat, 22 Sep 2007 12:20:59 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+To: Mel Gorman <mel@skynet.ie>
+Subject: Re: 2.6.23-rc6-mm1: Build failures on ppc64_defconfig
+In-Reply-To: <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0709221218250.22517@enigma.security.iitk.ac.in>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070920132512.GF24105@skynet.ie>
+	<alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18164.40462.991761.909735@cargo.ozlabs.ibm.com>
-Date: Sat, 22 Sep 2007 14:46:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [patch 04/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-In-Reply-To: <20070827155524.827591009@polymtl.ca>
-References: <20070827155234.062715780@polymtl.ca>
-	<20070827155524.827591009@polymtl.ca>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,11 +27,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mathieu Desnoyers writes:
 
-> Make sure that at least cmpxchg64_local is available on all architectures to use
-> for unsigned long long values.
+
+On Thu, 20 Sep 2007, Satyam Sharma wrote:
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> BTW ppc64_defconfig didn't quite like 2.6.23-rc6-mm1 either ...
+> IIRC I got build failures in:
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+> drivers/ata/pata_scc.c
+
+http://lkml.org/lkml/2007/9/21/557
