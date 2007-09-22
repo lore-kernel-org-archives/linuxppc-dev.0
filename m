@@ -1,31 +1,25 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
+Return-Path: <satyam@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 367D7DDE3A
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 10:20:04 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8M0K6qH012986
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 10:20:06 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8M0Nc2g212318
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 10:23:38 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8M0K33a011478
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 10:20:04 +1000
-Date: Sat, 22 Sep 2007 10:19:56 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Matt Tyrlik <tyrlik@us.ibm.com>
-Subject: Re: DTC Patch for Cygwin
-Message-ID: <20070922001956.GA28045@localhost.localdomain>
-References: <20070921184639.GA23906@ld0162-tx32.am.freescale.net>
-	<OFF6527B59.0D9695D8-ON8525735D.006AC05C-8525735D.006C3903@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 242EADDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 12:47:34 +1000 (EST)
+Date: Sat, 22 Sep 2007 08:20:09 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
+In-Reply-To: <20070920150925.0caf3aef@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.999.0709220816170.14412@enigma.security.iitk.ac.in>
+References: <20070918011841.2381bd93.akpm@linux-foundation.org>
+	<20070920131315.GE24105@skynet.ie>
+	<20070920150925.0caf3aef@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OFF6527B59.0D9695D8-ON8525735D.006AC05C-8525735D.006C3903@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Cc: jeff@garzik.org, linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	kamalesh@linux.vnet.ibm.com, linux-ide@vger.kernel.org,
+	Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,68 +29,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2007 at 03:42:04PM -0400, Matt Tyrlik wrote:
-> >Scott Wood <scottwood@freescale.com> wrote on 09/21/2007 02:46:39 PM:
-> > On Fri, Sep 21, 2007 at 11:26:04AM -0400, Matt Tyrlik wrote:
-> > >
-> > > Changes required to compile DTC under Cygwin
+Hi,
 
-A S-o-b line will be needed before this can be applied.
 
-> > >
-> > > ===================================================================
-> > > --- dtc-org.orig/tests/supernode_atdepth_offset.c
-> > > +++ dtc-org/tests/supernode_atdepth_offset.c
-> > > @@ -63,8 +63,11 @@ int path_prefix(const char *path, int de
-> > >                 return 1;
-> > >
-> > >         p = path;
-> > > -       for (i = 0; i < depth; i++)
-> > > -               p = strchrnul(p+1, '/');
-> > > +       for (i = 0; i < depth; i++) {
-> > > +               p = strchr(p+1, '/');
-> > > +               if (!p)
-> > > +                       p = path + strlen(path);
-> > > +       }
-> > >
-> > >         return p - path;
-> > >  }
-> >
-> > Maybe we should define strchrnul under #ifndef GLIBC, similar to
-> > strndupa?
-> Since this is used only in one place David Gibson suggested that the
-> change should be done in code.
+On Thu, 20 Sep 2007, Alan Cox wrote:
+> 
+> On Thu, 20 Sep 2007 14:13:15 +0100
+> mel@skynet.ie (Mel Gorman) wrote:
+> 
+> > PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
+> > doesn't show up on other arches because this driver is specific to the
+> > architecture.
+> > 
+> > drivers/ata/pata_scc.c: In function `scc_bmdma_status'
+> 
+> Its not been updated to match the libata core changes. Try something like
+> this. Whoever is maintaining it should also remove the prereset cable handling
+> code and use the proper cable detect method.
 
-Yeah, I don't actually particularly care which way we go with this one.
+It appears you forgot to fix scc_std_softreset() and one of its callsites
+in scc_bdma_stop(). A complete patch is attempted below -- please review.
 
-> > > Index: dtc-org/tests/testutils.c
-> > > ===================================================================
-> > > --- dtc-org.orig/tests/testutils.c
-> > > +++ dtc-org/tests/testutils.c
-> > > @@ -52,10 +52,9 @@ static void sigint_handler(int signum, s
-> > >  void test_init(int argc, char *argv[])
-> > >  {
-> > >         int err;
-> > > -       struct sigaction sa_int = {
-> > > -               .sa_sigaction = sigint_handler,
-> > > -       };
-> > > +       struct sigaction sa_int;
-> > >
-> > > +       sa_int.sa_sigaction = sigint_handler,
-> > >         test_name = argv[0];
-> >
-> > What version of GCC does cygwin use?  That doesn't seem like something
-> > that should break due to OS differences.
-> >
-> > -Scott
-> Currently 3.4.4. The compiler can't handle unnamed union in an
-> initializer.
 
-Or at least that's my surmise, I can't see why else it would be
-breaking.
+[PATCH -mm] pata_scc: Keep up with libata core API changes
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Little fixlets, that the build started erroring / warning about:
+
+drivers/ata/pata_scc.c: In function 'scc_bmdma_status':
+drivers/ata/pata_scc.c:734: error: structure has no member named 'active_tag'
+drivers/ata/pata_scc.c: In function 'scc_pata_prereset':
+drivers/ata/pata_scc.c:866: warning: passing arg 1 of 'ata_std_prereset' from incompatible pointer type
+drivers/ata/pata_scc.c: In function 'scc_error_handler':
+drivers/ata/pata_scc.c:908: warning: passing arg 2 of 'ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 3 of 'ata_bmdma_drive_eh' from incompatible pointer type
+drivers/ata/pata_scc.c:908: warning: passing arg 5 of 'ata_bmdma_drive_eh' from incompatible pointer type
+make[2]: *** [drivers/ata/pata_scc.o] Error 1
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Cc: Alan Cox <alan@redhat.com>
+Cc: Mel Gorman <mel@skynet.ie>
+
+---
+
+Andrew, this includes (supercedes) the previous two ones from Mel / Alan.
+
+ drivers/ata/pata_scc.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
+
+diff -ruNp a/drivers/ata/pata_scc.c b/drivers/ata/pata_scc.c
+--- a/drivers/ata/pata_scc.c	2007-09-22 06:26:37.000000000 +0530
++++ b/drivers/ata/pata_scc.c	2007-09-22 08:04:42.000000000 +0530
+@@ -594,16 +594,17 @@ static unsigned int scc_bus_softreset(st
+  *	Note: Original code is ata_std_softreset().
+  */
+ 
+-static int scc_std_softreset (struct ata_port *ap, unsigned int *classes,
+-                              unsigned long deadline)
++static int scc_std_softreset(struct ata_link *link, unsigned int *classes,
++                             unsigned long deadline)
+ {
++	struct ata_port *ap = link->ap;
+ 	unsigned int slave_possible = ap->flags & ATA_FLAG_SLAVE_POSS;
+ 	unsigned int devmask = 0, err_mask;
+ 	u8 err;
+ 
+ 	DPRINTK("ENTER\n");
+ 
+-	if (ata_link_offline(&ap->link)) {
++	if (ata_link_offline(link)) {
+ 		classes[0] = ATA_DEV_NONE;
+ 		goto out;
+ 	}
+@@ -692,7 +693,7 @@ static void scc_bmdma_stop (struct ata_q
+ 			printk(KERN_WARNING "%s: Internal Bus Error\n", DRV_NAME);
+ 			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_BMSINT);
+ 			/* TBD: SW reset */
+-			scc_std_softreset(ap, &classes, deadline);
++			scc_std_softreset(&ap->link, &classes, deadline);
+ 			continue;
+ 		}
+ 
+@@ -731,7 +732,7 @@ static u8 scc_bmdma_status (struct ata_p
+ 	void __iomem *mmio = ap->ioaddr.bmdma_addr;
+ 	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
+ 	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
+-	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
++	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
+ 	static int retry = 0;
+ 
+ 	/* return if IOS_SS is cleared */
+@@ -860,10 +861,10 @@ static void scc_bmdma_freeze (struct ata
+  *	@deadline: deadline jiffies for the operation
+  */
+ 
+-static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
++static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+ {
+-	ap->cbl = ATA_CBL_PATA80;
+-	return ata_std_prereset(ap, deadline);
++	link->ap->cbl = ATA_CBL_PATA80;
++	return ata_std_prereset(link, deadline);
+ }
+ 
+ /**
+@@ -874,8 +875,10 @@ static int scc_pata_prereset(struct ata_
+  *	Note: Original code is ata_std_postreset().
+  */
+ 
+-static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
++static void scc_std_postreset(struct ata_link *link, unsigned int *classes)
+ {
++	struct ata_port *ap = link->ap;
++
+ 	DPRINTK("ENTER\n");
+ 
+ 	/* is double-select really necessary? */
