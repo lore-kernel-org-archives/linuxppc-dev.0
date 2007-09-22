@@ -1,25 +1,24 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from toq11-srv.bellnexxia.net (toq11.bellnexxia.net
-	[209.226.175.118]) by ozlabs.org (Postfix) with ESMTP id AFCE3DDDF8
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 00:56:26 +1000 (EST)
-Received: from krystal.dyndns.org ([76.65.103.147])
-	by tomts16-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070922143541.EKXD574.tomts16-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 10:35:41 -0400
-Date: Sat, 22 Sep 2007 10:35:41 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 04/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-Message-ID: <20070922143540.GA12865@Krystal>
-References: <20070827155234.062715780@polymtl.ca>
-	<20070827155524.827591009@polymtl.ca>
-	<18164.40462.991761.909735@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id BC6DADDE00
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 01:09:18 +1000 (EST)
+Date: Sat, 22 Sep 2007 10:11:48 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH v2] pcmcia: Convert io_req_t to use kio_addr_t
+Message-ID: <20070922151148.GA19776@lixom.net>
+References: <20070905142742.GA1760@lixom.net>
+	<20070914034854.1658a9cf.akpm@linux-foundation.org>
+	<20070921221516.GA7926@lixom.net>
+	<20070921233936.2aeb2504@the-village.bc.nu>
+	<20070922062551.GE10625@parisc-linux.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18164.40462.991761.909735@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20070922062551.GE10625@parisc-linux.org>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, hch@lst.de,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Paul Mackerras (paulus@samba.org) wrote:
-> Mathieu Desnoyers writes:
-> 
-> > Make sure that at least cmpxchg64_local is available on all architectures to use
-> > for unsigned long long values.
+On Sat, Sep 22, 2007 at 12:25:51AM -0600, Matthew Wilcox wrote:
+> On Fri, Sep 21, 2007 at 11:39:36PM +0100, Alan Cox wrote:
+> > On Fri, 21 Sep 2007 17:15:16 -0500
+> > Olof Johansson <olof@lixom.net> wrote:
 > > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > Convert the io_req_t members to kio_addr_t, to allow use on machines with
+> > > more than 16 bits worth of IO ports (i.e. secondary busses on ppc64, etc).
+> > 
+> > What about the formatting and field widths ?
+> > 
+> > ulong would probably be a lot saner than kio_addr_t and yet more type
+> > obfuscation.
 > 
-> Acked-by: Paul Mackerras <paulus@samba.org>
+> I don't think anyone uses ioports > 32bit.  Certainly i386 takes an int
+> port as parameter to {in,out}[bwl] (and it really only uses 16-bits).
+> parisc uses 24 bits.  I don't know what the various ppcs do, but pci
+> bars can only be 32-bit for ioports.  So my opinion is that ioports
+> should be uint, not ulong.
 
-Thanks Paul,
+PPC would do just fine with 32-bit as well, which is what I wanted in
+the first place. I just went with the local coding standard of pcmcia
+and switched to kio_addr_t.
 
-Just make sure add-cmpxchg-local-to-generic-for-up.patch gets merged
-before this one, since it needs asm-generic/cmpxchg-local.h.
+I suppose it's a janitorial todo item but with the maintainer MIA I
+don't want to mess around with it too much, since I can't really test
+much besides the PPC stuff I have.
 
-Mathieu
+As for the formatting/padding widths: Some platforms had ioaddr_t's
+that were 32 bit already, so it was already broken on those, and the
+only drawback is missing 0-padding. It'd look a bit silly to pad to 16
+0:s anyway at the moment, so I think I'd prefer to keep it the way it is.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+-Olof
