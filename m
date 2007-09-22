@@ -1,21 +1,29 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	by ozlabs.org (Postfix) with ESMTP id A434EDDE09
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 05:34:53 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-Date: Sat, 22 Sep 2007 14:16:20 -0500
-References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
-	<20070922095546.GA14185@lst.de>
-In-Reply-To: <20070922095546.GA14185@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709221416.21580.rob@landley.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C957EDDD0A
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 09:00:54 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1IZDxr-0007Mg-T1
+	for linuxppc-dev@ozlabs.org; Sat, 22 Sep 2007 23:00:43 +0000
+Received: from user-0vvdaf6.cable.mindspring.com ([63.246.169.230])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 23:00:43 +0000
+Received: from hollisb by user-0vvdaf6.cable.mindspring.com with local (Gmexim
+	0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 23:00:43 +0000
+To: linuxppc-dev@ozlabs.org
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [PATCH 0/3] usb: ehci ppc device-tree-aware driver
+Date: Sat, 22 Sep 2007 23:00:35 +0000 (UTC)
+Message-ID: <fd46qj$s6r$1@sea.gmane.org>
+References: <20070917125039.GA29525@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@sea.gmane.org>
+Cc: linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 22 September 2007 4:55:46 am Christoph Hellwig wrote:
-> On Fri, Sep 21, 2007 at 06:08:31PM -0500, Milton Miller wrote:
-> > Here is the second rev of patches to boot a arch powerpc kernel on
-> > qemu with the prep architecture.
->
-> So if this is supposed to be prep why do you need additional kernel
-> support?  And if you really needed why isn't it under platforms/prep?
+On Mon, 17 Sep 2007 16:50:39 +0400, Valentine Barshak wrote:
 
-The device tree provided by qemu's open hackware violates some of the 
-assumptions the Linux kernel is making?  (Although things like "the cpu cache 
-size is zero" are, technically speaking, probably correct. :)
+> Some PowerPC systems have a built-in EHCI controller.
+> This is a device tree aware version of the EHCI controller driver.
+> Currently it's been tested on the PowerPC 440EPx Sequoia board.
+> Other platforms can be added later.
+> The code is based on the ehci-ppc-soc driver by Stefan Roese <sr@denx.de>.
 
-There are three different problems here:
+We're having a strange issue on our Sequoia where the network stops
+functioning when USB is active. Jerone can supply more detail...
 
-1) porting prep from arch=ppc to arch=powerpc so you can build it on an arch 
-that also supports make headers_install.
+Have you seen anything like that?
 
-2) PowerPC uses a device tree supplied by the hardware to identify the 
-available hardware, even for stuff living on PCI busses which it could 
-theoretically probe for but doesn't.
-
-3) The PPC firmware qemu comes with ("Open Hackware") sucks rocks, is hard to 
-modify, isn't quite being maintained.  As mentioned above, the device tree it 
-passes in (including "prep residual data" from which more nodes in the device 
-tree can be constructed, and here my understanding goes all fuzzy) does not 
-make for a happy Linux kernel.
-
-Proposed solutions to all this involve various combinations of creating a 
-target platform aimed directly at qemu and not pretending to be prep at all 
-(so it doesn't have to parse residual data), creating our own boot rom image 
-out of some of the wrapper code the linux kernel's already got and feeding 
-that to qemu instead of using open hackware at all, hard wiring a device tree 
-into the kernel and not looking at the one open hackware passes in...)
-
-I'd be following this more closely if compiling a device tree didn't currently 
-require an external utility (dtc or some such) that doesn't come with the 
-Linux kernel.  No other target platform I've built kernels for requires such 
-an environmental dependency.  (This is a problem both for hardwiring the 
-device tree into the kernel and for building a new boot rom from the linux 
-kernel's ppc boot wrapper that would contain such a device tree to feed to 
-the kernel.)
-
-Rob
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Hollis Blanchard
+IBM Linux Technology Center
