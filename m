@@ -1,24 +1,25 @@
-Return-Path: <satyam@infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3CD3BDDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 16:51:27 +1000 (EST)
-Date: Sat, 22 Sep 2007 12:24:18 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: 2.6.23-rc6-mm1: Build failures on ppc64_defconfig
-In-Reply-To: <alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
-Message-ID: <alpine.LFD.0.999.0709221221500.22517@enigma.security.iitk.ac.in>
-References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070920132512.GF24105@skynet.ie>
-	<alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EAF43DDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 16:54:49 +1000 (EST)
+Date: Sat, 22 Sep 2007 00:25:51 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH v2] pcmcia: Convert io_req_t to use kio_addr_t
+Message-ID: <20070922062551.GE10625@parisc-linux.org>
+References: <20070905142742.GA1760@lixom.net>
+	<20070914034854.1658a9cf.akpm@linux-foundation.org>
+	<20070921221516.GA7926@lixom.net>
+	<20070921233936.2aeb2504@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jeff@garzik.org,
-	Linux Netdev Mailing List <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070921233936.2aeb2504@the-village.bc.nu>
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	Andrew Morton <akpm@linux-foundation.org>, hch@lst.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,106 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Thu, 20 Sep 2007, Satyam Sharma wrote:
+On Fri, Sep 21, 2007 at 11:39:36PM +0100, Alan Cox wrote:
+> On Fri, 21 Sep 2007 17:15:16 -0500
+> Olof Johansson <olof@lixom.net> wrote:
 > 
-> BTW ppc64_defconfig didn't quite like 2.6.23-rc6-mm1 either ...
-> IIRC I got build failures in:
+> > Convert the io_req_t members to kio_addr_t, to allow use on machines with
+> > more than 16 bits worth of IO ports (i.e. secondary busses on ppc64, etc).
+> 
+> What about the formatting and field widths ?
+> 
+> ulong would probably be a lot saner than kio_addr_t and yet more type
+> obfuscation.
 
-> drivers/net/spider_net.c
+I don't think anyone uses ioports > 32bit.  Certainly i386 takes an int
+port as parameter to {in,out}[bwl] (and it really only uses 16-bits).
+parisc uses 24 bits.  I don't know what the various ppcs do, but pci
+bars can only be 32-bit for ioports.  So my opinion is that ioports
+should be uint, not ulong.
 
-
-[PATCH -mm] spider_net: Misc build fixes after recent netdev stats changes
-
-Unbreak the following:
-
-drivers/net/spider_net.c: In function 'spider_net_release_tx_chain':
-drivers/net/spider_net.c:818: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c:818: error: (Each undeclared identifier is reported only once
-drivers/net/spider_net.c:818: error: for each function it appears in.)
-drivers/net/spider_net.c: In function 'spider_net_xmit':
-drivers/net/spider_net.c:922: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c: In function 'spider_net_pass_skb_up':
-drivers/net/spider_net.c:1018: error: 'dev' undeclared (first use in this function)
-drivers/net/spider_net.c: In function 'spider_net_decode_one_descr':
-drivers/net/spider_net.c:1215: error: 'dev' undeclared (first use in this function)
-make[2]: *** [drivers/net/spider_net.o] Error 1
-
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
-
----
-
- drivers/net/spider_net.c |   24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
-
-diff -ruNp a/drivers/net/spider_net.c b/drivers/net/spider_net.c
---- a/drivers/net/spider_net.c	2007-09-22 06:26:39.000000000 +0530
-+++ b/drivers/net/spider_net.c	2007-09-22 12:12:23.000000000 +0530
-@@ -795,6 +795,7 @@ spider_net_set_low_watermark(struct spid
- static int
- spider_net_release_tx_chain(struct spider_net_card *card, int brutal)
- {
-+	struct net_device *dev = card->netdev;
- 	struct spider_net_descr_chain *chain = &card->tx_chain;
- 	struct spider_net_descr *descr;
- 	struct spider_net_hw_descr *hwdescr;
-@@ -919,7 +920,7 @@ spider_net_xmit(struct sk_buff *skb, str
- 	spider_net_release_tx_chain(card, 0);
- 
- 	if (spider_net_prepare_tx_descr(card, skb) != 0) {
--		dev->stats.tx_dropped++;
-+		netdev->stats.tx_dropped++;
- 		netif_stop_queue(netdev);
- 		return NETDEV_TX_BUSY;
- 	}
-@@ -979,16 +980,12 @@ static void
- spider_net_pass_skb_up(struct spider_net_descr *descr,
- 		       struct spider_net_card *card)
- {
--	struct spider_net_hw_descr *hwdescr= descr->hwdescr;
--	struct sk_buff *skb;
--	struct net_device *netdev;
--	u32 data_status, data_error;
--
--	data_status = hwdescr->data_status;
--	data_error = hwdescr->data_error;
--	netdev = card->netdev;
-+	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
-+	struct sk_buff *skb = descr->skb;
-+	struct net_device *netdev = card->netdev;
-+	u32 data_status = hwdescr->data_status;
-+	u32 data_error = hwdescr->data_error;
- 
--	skb = descr->skb;
- 	skb_put(skb, hwdescr->valid_size);
- 
- 	/* the card seems to add 2 bytes of junk in front
-@@ -1015,8 +1012,8 @@ spider_net_pass_skb_up(struct spider_net
- 	}
- 
- 	/* update netdevice statistics */
--	dev->stats.rx_packets++;
--	dev->stats.rx_bytes += skb->len;
-+	netdev->stats.rx_packets++;
-+	netdev->stats.rx_bytes += skb->len;
- 
- 	/* pass skb up to stack */
- 	netif_receive_skb(skb);
-@@ -1184,6 +1181,7 @@ static int spider_net_resync_tail_ptr(st
- static int
- spider_net_decode_one_descr(struct spider_net_card *card)
- {
-+	struct net_device *dev = card->netdev;
- 	struct spider_net_descr_chain *chain = &card->rx_chain;
- 	struct spider_net_descr *descr = chain->tail;
- 	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
-@@ -1210,7 +1208,7 @@ spider_net_decode_one_descr(struct spide
- 	     (status == SPIDER_NET_DESCR_PROTECTION_ERROR) ||
- 	     (status == SPIDER_NET_DESCR_FORCE_END) ) {
- 		if (netif_msg_rx_err(card))
--			dev_err(&card->netdev->dev,
-+			dev_err(&dev->dev,
- 			       "dropping RX descriptor with state %d\n", status);
- 		dev->stats.rx_dropped++;
- 		goto bad_desc;
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
