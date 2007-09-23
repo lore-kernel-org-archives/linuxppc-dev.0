@@ -1,25 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84180DDDD5
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 18:21:28 +1000 (EST)
-Subject: Re: Sequoia kernel crash workaround.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20070920122919.32dd8061@weaponx.rchland.ibm.com>
-References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
-	<20070919193024.GA28163@lixom.net>
-	<20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
-	<46F2A640.1000802@ru.mvista.com> <20070920172506.GA16354@lixom.net>
-	<20070920122919.32dd8061@weaponx.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sun, 23 Sep 2007 18:21:04 +1000
-Message-Id: <1190535664.3723.16.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Sun, 23 Sep 2007 23:02:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Downtime
+Message-Id: <20070923230240.cf6dfa68.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
-	Josh Boyer <jwboyer@gmail.com>, Stefan Roese <sr@denx.de>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__23_Sep_2007_23_02_40_+1000_lohFRQCxwvb=3QD_"
+Cc: ppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Sun__23_Sep_2007_23_02_40_+1000_lohFRQCxwvb=3QD_
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-09-20 at 12:29 -0500, Josh Boyer wrote:
-> On Thu, 20 Sep 2007 12:25:06 -0500
-> Olof Johansson <olof@lixom.net> wrote:
-> 
-> > On Thu, Sep 20, 2007 at 08:56:32PM +0400, Valentine Barshak wrote:
-> > >
-> > > I was thinking about it. Looks like it's the best place, but the code that 
-> > > actually calls setup_cpu is under ifdef CONFIG_PPC64, while lots of 
-> > > cpu_setup functions are defined for ppc32 processors.
-> > > Is it OK to remove this ifdef, or should I do CONFIG_PPC64 || CONFIG_44x?
-> > 
-> > Sounds like something that went wrong at the merge of ppc and ppc64.
-> > 
-> > Take out the ifdef, even if there's fallout we should deal with it
-> > instead of adding more complex ifdefs.
-> 
-> Yeah.  Looks like BenH did this in commit:
-> 
-> 42c4aaadb737e0e672b3fb86b2c41ff59f0fb8bc
-> 
-> Ben, any reason you ifdef'd it for ppc64?
+Hi all,
 
-I'll have to check on monday what's up there, but isn't setup_cpu called
-from a different place on 32 bits? There are some subtle difference with
-the way the cpu feature stuff is initialized /done between 32 and 64
-bits that we haven't fully reconciled yet. 
+Just letting you all know that ozlabs.org will be down for about 5 hours fr=
+om 1:54 am Canberra time (UTC+10) Monday morning (i.e. about 2 hours 40 min=
+utes from now) due to electrical work in our hosting data centre.
 
-Ben.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__23_Sep_2007_23_02_40_+1000_lohFRQCxwvb=3QD_
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG9mP2TgG2atn1QN8RAhBFAJ9KfSSjUsCe5uYOrdzx0Mf8xIhuagCfcXh/
+lDo+3SnP26axK3iXQqWqyoc=
+=kwot
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__23_Sep_2007_23_02_40_+1000_lohFRQCxwvb=3QD_--
