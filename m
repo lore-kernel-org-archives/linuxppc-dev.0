@@ -1,18 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (unknown [209.180.55.243])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 20513DDEA3
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6730BDDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 24 Sep 2007 06:17:42 +1000 (EST)
-Message-ID: <46F6C9DC.90008@scram.de>
-Date: Sun, 23 Sep 2007 22:17:32 +0200
-From: Jochen Friedrich <jochen@scram.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH4/4] [POWERPC] Fix cpm_uart driver
-Content-Type: multipart/mixed; boundary="------------090404010006030000030102"
-Cc: linux-kernel@vger.kernel.org
+	Mon, 24 Sep 2007 06:45:49 +1000 (EST)
+Date: Sun, 23 Sep 2007 14:44:33 -0500
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+Message-ID: <20070923144433.6cafd233@vader.jdub.homelinux.org>
+In-Reply-To: <fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
+References: <Pine.LNX.4.44.0709231519510.25165-100000@slslc02.psi.ch>
+	<fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org, Miroslaw Dach <miroslaw.dach@psi.ch>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,60 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090404010006030000030102
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sun, 23 Sep 2007 09:32:25 -0600
+"Grant Likely" <grant.likely@secretlab.ca> wrote:
 
+> On 9/23/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> > Hi Grant,
+> >
+> > Thank you very much for your advices which were very valuable for me.
+> >
+> > Recently I have followed your advice to move from kernel 2.6.21 to the
+> > higher one in order to have the possibility to boot the kernel from
+> > u-boot. I have copied across from you git tree the latest version of linux
+> > kernel 2.6.23 rc-2.
+> >
+> > It compiles successfully with some warnings like below:
+> >   MODPOST vmlinux.o
+> > WARNING: vmlinux.o(.text+0x223c): Section mismatch: reference to .init.text:early_init (between 'start_here' and 'initial_mmu')
+> > WARNING: vmlinux.o(.text+0x2254): Section mismatch: reference to .init.text:machine_init (between 'start_here' and 'initial_mmu')
+> > WARNING: vmlinux.o(.text+0x2258): Section mismatch: reference to .init.text:MMU_init (between 'start_here' and 'initial_mmu')
+> > WARNING: vmlinux.o(.text+0x22b2): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'initial_mmu')
+> > WARNING: vmlinux.o(.text+0x22b6): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'initial_mmu')
+> >    LD      vmlinux
+> 
+> Yes, I see this warning too.  I haven't had a chance to debug it.
 
-In cpm_uart_core, functions cpm_uart_init_bd and cpm_uart_init_scc
-an offset into DP RAM is calculated by substracting a physical
-memory constant from an virtual address. This patch fixes the
-problem by converting the virtual address into a physical
-first.
+This warning should be fixed in arch/powerpc.  You could probably look
+at the fix there and port it to arch/ppc.
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/serial/cpm_uart/cpm_uart_core.c |   12 ++++++++----
- 1 files changed, 8 insertions(+), 4 deletions(-)
-
---------------090404010006030000030102
-Content-Type: text/x-patch;
- name="2c5cf6868e9aa6eadea285e524d88859cc5e54fb.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="2c5cf6868e9aa6eadea285e524d88859cc5e54fb.diff"
-
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index cefde58..7f5db7c 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -752,8 +752,10 @@ static void cpm_uart_init_scc(struct uart_cpm_port *pinfo)
- 	sup = pinfo->sccup;
- 
- 	/* Store address */
--	pinfo->sccup->scc_genscc.scc_rbase = (unsigned char *)pinfo->rx_bd_base - DPRAM_BASE;
--	pinfo->sccup->scc_genscc.scc_tbase = (unsigned char *)pinfo->tx_bd_base - DPRAM_BASE;
-+	pinfo->sccup->scc_genscc.scc_rbase = 
-+		(u_char *)cpm_dpram_phys((u8 *)pinfo->rx_bd_base) - DPRAM_BASE;
-+	pinfo->sccup->scc_genscc.scc_tbase = 
-+		(u_char *)cpm_dpram_phys((u8 *)pinfo->tx_bd_base) - DPRAM_BASE;
- 
- 	/* Set up the uart parameters in the
- 	 * parameter ram.
-@@ -813,8 +815,10 @@ static void cpm_uart_init_smc(struct uart_cpm_port *pinfo)
- 	up = pinfo->smcup;
- 
- 	/* Store address */
--	pinfo->smcup->smc_rbase = (u_char *)pinfo->rx_bd_base - DPRAM_BASE;
--	pinfo->smcup->smc_tbase = (u_char *)pinfo->tx_bd_base - DPRAM_BASE;
-+	pinfo->smcup->smc_rbase = 
-+		(u_char *)cpm_dpram_phys((u8 *)pinfo->rx_bd_base) - DPRAM_BASE;
-+	pinfo->smcup->smc_tbase = 
-+		(u_char *)cpm_dpram_phys((u8 *)pinfo->tx_bd_base) - DPRAM_BASE;
- 
- /*
-  *  In case SMC1 is being relocated...
-
-
---------------090404010006030000030102--
+josh
