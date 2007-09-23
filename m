@@ -1,21 +1,15 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F1931DDE09
+Return-Path: <miroslaw.dach@psi.ch>
+Received: from MAILSEND02.psi.ch (mailsend02.psi.ch [129.129.191.54])
+	by ozlabs.org (Postfix) with ESMTP id EC9E4DDE07
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Sep 2007 03:23:04 +1000 (EST)
-Date: Fri, 21 Sep 2007 12:22:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: USB on MPC885 vs. MPC850/823
-Message-ID: <20070921172252.GA23602@ld0162-tx32.am.freescale.net>
-References: <46F36C01.1040401@grandegger.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46F36C01.1040401@grandegger.com>
+	Sun, 23 Sep 2007 23:27:55 +1000 (EST)
+Date: Sun, 23 Sep 2007 15:27:52 +0200 (CEST)
+From: Miroslaw Dach <miroslaw.dach@psi.ch>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux doesn not boot from u-boot on ML403
+Message-ID: <Pine.LNX.4.44.0709231519510.25165-100000@slslc02.psi.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,13 +21,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2007 at 09:00:17AM +0200, Wolfgang Grandegger wrote:
-> I heard that the MPC885 has an improved USB hardware/firmware compared 
-> to the one on the rather old MPC823 or MPC850. Is it similar to the USB 
-> on the MPC8272? It would be nice, if somebody could shed some light on 
-> the usability and the support of USB in Linux for the MPC885 (or similar 
-> MPC8xx chips).
+Hi Grant,
 
-I don't think there's any support in Linux for CPM USB.
+Thank you very much for your advices which were very valuable for me.
 
--Scott
+Recently I have followed your advice to move from kernel 2.6.21 to the
+higher one in order to have the possibility to boot the kernel from
+u-boot. I have copied across from you git tree the latest version of linux
+kernel 2.6.23 rc-2.
+
+It compiles successfully with some warnings like below:
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.text+0x223c): Section mismatch: reference to .init.text:early_init (between 'start_here' and 'initial_mmu')
+WARNING: vmlinux.o(.text+0x2254): Section mismatch: reference to .init.text:machine_init (between 'start_here' and 'initial_mmu')
+WARNING: vmlinux.o(.text+0x2258): Section mismatch: reference to .init.text:MMU_init (between 'start_here' and 'initial_mmu')
+WARNING: vmlinux.o(.text+0x22b2): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'initial_mmu')
+WARNING: vmlinux.o(.text+0x22b6): Section mismatch: reference to .init.text:start_kernel (between 'start_here' and 'initial_mmu')
+   LD      vmlinux
+
+
+My observation is that the linux 2.6.23 rc-2 is not that stable as 2.6.21.
+In most cases It boots successfully (ie. zImage.elf) but occasionally it
+fails during booting. It has never occurred with 2.6.21 which I also
+copied from your side.
+
+For both kernels I use the same xparamerets_ml403.h file and very similar
+.config file
+
+Do you have some idea if it is known problem with booting in 2.6.23 rc-2?  
+It of course could be something wrong with my ml403 board but I just
+wanted to get your opinion about the stability issue. Maybe it is better
+to use 2.6.22?
+
+Second question:
+
+In addition I wanted to ask you about u-boot tree which you have mentioned
+in the post on u-boot mailing list. This post was about uart lite for
+ml403 in u-boot.
+
+I was not able to find the project which you have mentioned there:
+git://git.secretlab.ca/git/u-boot.git
+
+This what interests me in particular concerning u-boot is the uart lite
+and temac interfaces from ml403.
+
+Thank you very much in advance for any hint
+
+Best Regards
+
+Mirek
