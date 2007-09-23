@@ -1,29 +1,17 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C957EDDD0A
-	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 09:00:54 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1IZDxr-0007Mg-T1
-	for linuxppc-dev@ozlabs.org; Sat, 22 Sep 2007 23:00:43 +0000
-Received: from user-0vvdaf6.cable.mindspring.com ([63.246.169.230])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 23:00:43 +0000
-Received: from hollisb by user-0vvdaf6.cable.mindspring.com with local (Gmexim
-	0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Sep 2007 23:00:43 +0000
-To: linuxppc-dev@ozlabs.org
-From: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [PATCH 0/3] usb: ehci ppc device-tree-aware driver
-Date: Sat, 22 Sep 2007 23:00:35 +0000 (UTC)
-Message-ID: <fd46qj$s6r$1@sea.gmane.org>
-References: <20070917125039.GA29525@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Sender: news <news@sea.gmane.org>
-Cc: linux-usb-devel@lists.sourceforge.net
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18165.60185.316393.213864@cargo.ozlabs.ibm.com>
+Date: Sun, 23 Sep 2007 14:27:05 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Rob Landley <rob@landley.net>
+Subject: Re: [PATCH 1/2] qemu platform, v2
+In-Reply-To: <200709221416.21580.rob@landley.net>
+References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
+	<20070922095546.GA14185@lst.de>
+	<200709221416.21580.rob@landley.net>
+Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
+	Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 17 Sep 2007 16:50:39 +0400, Valentine Barshak wrote:
+Rob Landley writes:
 
-> Some PowerPC systems have a built-in EHCI controller.
-> This is a device tree aware version of the EHCI controller driver.
-> Currently it's been tested on the PowerPC 440EPx Sequoia board.
-> Other platforms can be added later.
-> The code is based on the ehci-ppc-soc driver by Stefan Roese <sr@denx.de>.
+Just to correct a few misconceptions:
 
-We're having a strange issue on our Sequoia where the network stops
-functioning when USB is active. Jerone can supply more detail...
+> 2) PowerPC uses a device tree supplied by the hardware to identify the 
+> available hardware, even for stuff living on PCI busses which it could 
+> theoretically probe for but doesn't.
 
-Have you seen anything like that?
+The device tree doesn't have to include anything that can be probed
+for.  On some platforms (e.g. pSeries) we choose to use the device
+tree rather than probing, but on most other platforms we probe.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
+> I'd be following this more closely if compiling a device tree didn't currently 
+> require an external utility (dtc or some such) that doesn't come with the 
+> Linux kernel.  No other target platform I've built kernels for requires such 
+> an environmental dependency.
+
+No?  You haven't built kernels for other platforms that have external
+dependencies such as perl, gcc, make, binutils, etc.? :)
+
+>  (This is a problem both for hardwiring the 
+> device tree into the kernel and for building a new boot rom from the linux 
+> kernel's ppc boot wrapper that would contain such a device tree to feed to 
+> the kernel.)
+
+It's only really been a problem for ps3 so far, since the embedded
+guys don't seem to have any difficulty with installing dtc.  We are
+looking at what to do for ps3 and prep, and the answer may well
+involve bundling dtc in the kernel source (it's not too big, around
+3400 lines).
+
+Paul.
