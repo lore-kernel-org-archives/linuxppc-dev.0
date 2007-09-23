@@ -1,17 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18165.60185.316393.213864@cargo.ozlabs.ibm.com>
-Date: Sun, 23 Sep 2007 14:27:05 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Rob Landley <rob@landley.net>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-In-Reply-To: <200709221416.21580.rob@landley.net>
-References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
-	<20070922095546.GA14185@lst.de>
-	<200709221416.21580.rob@landley.net>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>,
-	Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84180DDDD5
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Sep 2007 18:21:28 +1000 (EST)
+Subject: Re: Sequoia kernel crash workaround.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070920122919.32dd8061@weaponx.rchland.ibm.com>
+References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
+	<20070919193024.GA28163@lixom.net>
+	<20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
+	<46F2A640.1000802@ru.mvista.com> <20070920172506.GA16354@lixom.net>
+	<20070920122919.32dd8061@weaponx.rchland.ibm.com>
+Content-Type: text/plain
+Date: Sun, 23 Sep 2007 18:21:04 +1000
+Message-Id: <1190535664.3723.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
+	Josh Boyer <jwboyer@gmail.com>, Stefan Roese <sr@denx.de>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rob Landley writes:
 
-Just to correct a few misconceptions:
+On Thu, 2007-09-20 at 12:29 -0500, Josh Boyer wrote:
+> On Thu, 20 Sep 2007 12:25:06 -0500
+> Olof Johansson <olof@lixom.net> wrote:
+> 
+> > On Thu, Sep 20, 2007 at 08:56:32PM +0400, Valentine Barshak wrote:
+> > >
+> > > I was thinking about it. Looks like it's the best place, but the code that 
+> > > actually calls setup_cpu is under ifdef CONFIG_PPC64, while lots of 
+> > > cpu_setup functions are defined for ppc32 processors.
+> > > Is it OK to remove this ifdef, or should I do CONFIG_PPC64 || CONFIG_44x?
+> > 
+> > Sounds like something that went wrong at the merge of ppc and ppc64.
+> > 
+> > Take out the ifdef, even if there's fallout we should deal with it
+> > instead of adding more complex ifdefs.
+> 
+> Yeah.  Looks like BenH did this in commit:
+> 
+> 42c4aaadb737e0e672b3fb86b2c41ff59f0fb8bc
+> 
+> Ben, any reason you ifdef'd it for ppc64?
 
-> 2) PowerPC uses a device tree supplied by the hardware to identify the 
-> available hardware, even for stuff living on PCI busses which it could 
-> theoretically probe for but doesn't.
+I'll have to check on monday what's up there, but isn't setup_cpu called
+from a different place on 32 bits? There are some subtle difference with
+the way the cpu feature stuff is initialized /done between 32 and 64
+bits that we haven't fully reconciled yet. 
 
-The device tree doesn't have to include anything that can be probed
-for.  On some platforms (e.g. pSeries) we choose to use the device
-tree rather than probing, but on most other platforms we probe.
-
-> I'd be following this more closely if compiling a device tree didn't currently 
-> require an external utility (dtc or some such) that doesn't come with the 
-> Linux kernel.  No other target platform I've built kernels for requires such 
-> an environmental dependency.
-
-No?  You haven't built kernels for other platforms that have external
-dependencies such as perl, gcc, make, binutils, etc.? :)
-
->  (This is a problem both for hardwiring the 
-> device tree into the kernel and for building a new boot rom from the linux 
-> kernel's ppc boot wrapper that would contain such a device tree to feed to 
-> the kernel.)
-
-It's only really been a problem for ps3 so far, since the embedded
-guys don't seem to have any difficulty with installing dtc.  We are
-looking at what to do for ps3 and prep, and the answer may well
-involve bundling dtc in the kernel source (it's not too big, around
-3400 lines).
-
-Paul.
+Ben.
