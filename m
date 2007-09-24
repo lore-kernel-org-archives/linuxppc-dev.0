@@ -2,25 +2,23 @@ Return-Path: <mel@skynet.ie>
 Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33E2BDDE00
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 21:01:32 +1000 (EST)
-Date: Mon, 24 Sep 2007 12:01:24 +0100
+	by ozlabs.org (Postfix) with ESMTP id 73BCADDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 21:12:53 +1000 (EST)
+Date: Mon, 24 Sep 2007 12:12:48 +0100
 To: Satyam Sharma <satyam@infradead.org>
-Subject: Re: 2.6.23-rc6-mm1: Build failure on ppc64 drivers/ata/pata_scc.c
-Message-ID: <20070924110124.GB3968@skynet.ie>
+Subject: Re: 2.6.23-rc6-mm1: Build failures on ppc64_defconfig
+Message-ID: <20070924111248.GC3968@skynet.ie>
 References: <20070918011841.2381bd93.akpm@linux-foundation.org>
-	<20070920131315.GE24105@skynet.ie>
-	<20070920150925.0caf3aef@the-village.bc.nu>
-	<alpine.LFD.0.999.0709220816170.14412@enigma.security.iitk.ac.in>
+	<20070920132512.GF24105@skynet.ie>
+	<alpine.LFD.0.999.0709201903180.17093@enigma.security.iitk.ac.in>
+	<alpine.LFD.0.999.0709221221500.22517@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <alpine.LFD.0.999.0709220816170.14412@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0709221221500.22517@enigma.security.iitk.ac.in>
 From: mel@skynet.ie (Mel Gorman)
-Cc: jeff@garzik.org, linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	kamalesh@linux.vnet.ibm.com, linux-ide@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jeff@garzik.org,
+	Linux Netdev Mailing List <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,126 +28,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (22/09/07 08:20), Satyam Sharma didst pronounce:
-> Hi,
+On (22/09/07 12:24), Satyam Sharma didst pronounce:
 > 
 > 
-> On Thu, 20 Sep 2007, Alan Cox wrote:
+> On Thu, 20 Sep 2007, Satyam Sharma wrote:
 > > 
-> > On Thu, 20 Sep 2007 14:13:15 +0100
-> > mel@skynet.ie (Mel Gorman) wrote:
-> > 
-> > > PPC64 building allmodconfig fails to compile drivers/ata/pata_scc.c . It
-> > > doesn't show up on other arches because this driver is specific to the
-> > > architecture.
-> > > 
-> > > drivers/ata/pata_scc.c: In function `scc_bmdma_status'
-> > 
-> > Its not been updated to match the libata core changes. Try something like
-> > this. Whoever is maintaining it should also remove the prereset cable handling
-> > code and use the proper cable detect method.
+> > BTW ppc64_defconfig didn't quite like 2.6.23-rc6-mm1 either ...
+> > IIRC I got build failures in:
 > 
-> It appears you forgot to fix scc_std_softreset() and one of its callsites
-> in scc_bdma_stop(). A complete patch is attempted below -- please review.
+> > drivers/net/spider_net.c
 > 
-
-I can confirm it builds without warnings or errors, so thanks. I'm not in
-the position to review it for correctness.
-
 > 
-> [PATCH -mm] pata_scc: Keep up with libata core API changes
+> [PATCH -mm] spider_net: Misc build fixes after recent netdev stats changes
 > 
-> Little fixlets, that the build started erroring / warning about:
+> Unbreak the following:
 > 
-> drivers/ata/pata_scc.c: In function 'scc_bmdma_status':
-> drivers/ata/pata_scc.c:734: error: structure has no member named 'active_tag'
-> drivers/ata/pata_scc.c: In function 'scc_pata_prereset':
-> drivers/ata/pata_scc.c:866: warning: passing arg 1 of 'ata_std_prereset' from incompatible pointer type
-> drivers/ata/pata_scc.c: In function 'scc_error_handler':
-> drivers/ata/pata_scc.c:908: warning: passing arg 2 of 'ata_bmdma_drive_eh' from incompatible pointer type
-> drivers/ata/pata_scc.c:908: warning: passing arg 3 of 'ata_bmdma_drive_eh' from incompatible pointer type
-> drivers/ata/pata_scc.c:908: warning: passing arg 5 of 'ata_bmdma_drive_eh' from incompatible pointer type
-> make[2]: *** [drivers/ata/pata_scc.o] Error 1
+> drivers/net/spider_net.c: In function 'spider_net_release_tx_chain':
+> drivers/net/spider_net.c:818: error: 'dev' undeclared (first use in this function)
+> drivers/net/spider_net.c:818: error: (Each undeclared identifier is reported only once
+> drivers/net/spider_net.c:818: error: for each function it appears in.)
+> drivers/net/spider_net.c: In function 'spider_net_xmit':
+> drivers/net/spider_net.c:922: error: 'dev' undeclared (first use in this function)
+> drivers/net/spider_net.c: In function 'spider_net_pass_skb_up':
+> drivers/net/spider_net.c:1018: error: 'dev' undeclared (first use in this function)
+> drivers/net/spider_net.c: In function 'spider_net_decode_one_descr':
+> drivers/net/spider_net.c:1215: error: 'dev' undeclared (first use in this function)
+> make[2]: *** [drivers/net/spider_net.o] Error 1
 > 
 > Signed-off-by: Satyam Sharma <satyam@infradead.org>
-> Cc: Alan Cox <alan@redhat.com>
-> Cc: Mel Gorman <mel@skynet.ie>
+
+I've confirmed that this patch fixes the build error in question.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
 > 
 > ---
 > 
-> Andrew, this includes (supercedes) the previous two ones from Mel / Alan.
+>  drivers/net/spider_net.c |   24 +++++++++++-------------
+>  1 file changed, 11 insertions(+), 13 deletions(-)
 > 
->  drivers/ata/pata_scc.c |   21 ++++++++++++---------
->  1 file changed, 12 insertions(+), 9 deletions(-)
-> 
-> diff -ruNp a/drivers/ata/pata_scc.c b/drivers/ata/pata_scc.c
-> --- a/drivers/ata/pata_scc.c	2007-09-22 06:26:37.000000000 +0530
-> +++ b/drivers/ata/pata_scc.c	2007-09-22 08:04:42.000000000 +0530
-> @@ -594,16 +594,17 @@ static unsigned int scc_bus_softreset(st
->   *	Note: Original code is ata_std_softreset().
->   */
->  
-> -static int scc_std_softreset (struct ata_port *ap, unsigned int *classes,
-> -                              unsigned long deadline)
-> +static int scc_std_softreset(struct ata_link *link, unsigned int *classes,
-> +                             unsigned long deadline)
+> diff -ruNp a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+> --- a/drivers/net/spider_net.c	2007-09-22 06:26:39.000000000 +0530
+> +++ b/drivers/net/spider_net.c	2007-09-22 12:12:23.000000000 +0530
+> @@ -795,6 +795,7 @@ spider_net_set_low_watermark(struct spid
+>  static int
+>  spider_net_release_tx_chain(struct spider_net_card *card, int brutal)
 >  {
-> +	struct ata_port *ap = link->ap;
->  	unsigned int slave_possible = ap->flags & ATA_FLAG_SLAVE_POSS;
->  	unsigned int devmask = 0, err_mask;
->  	u8 err;
+> +	struct net_device *dev = card->netdev;
+>  	struct spider_net_descr_chain *chain = &card->tx_chain;
+>  	struct spider_net_descr *descr;
+>  	struct spider_net_hw_descr *hwdescr;
+> @@ -919,7 +920,7 @@ spider_net_xmit(struct sk_buff *skb, str
+>  	spider_net_release_tx_chain(card, 0);
 >  
->  	DPRINTK("ENTER\n");
->  
-> -	if (ata_link_offline(&ap->link)) {
-> +	if (ata_link_offline(link)) {
->  		classes[0] = ATA_DEV_NONE;
->  		goto out;
+>  	if (spider_net_prepare_tx_descr(card, skb) != 0) {
+> -		dev->stats.tx_dropped++;
+> +		netdev->stats.tx_dropped++;
+>  		netif_stop_queue(netdev);
+>  		return NETDEV_TX_BUSY;
 >  	}
-> @@ -692,7 +693,7 @@ static void scc_bmdma_stop (struct ata_q
->  			printk(KERN_WARNING "%s: Internal Bus Error\n", DRV_NAME);
->  			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_BMSINT);
->  			/* TBD: SW reset */
-> -			scc_std_softreset(ap, &classes, deadline);
-> +			scc_std_softreset(&ap->link, &classes, deadline);
->  			continue;
->  		}
->  
-> @@ -731,7 +732,7 @@ static u8 scc_bmdma_status (struct ata_p
->  	void __iomem *mmio = ap->ioaddr.bmdma_addr;
->  	u8 host_stat = in_be32(mmio + SCC_DMA_STATUS);
->  	u32 int_status = in_be32(mmio + SCC_DMA_INTST);
-> -	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->active_tag);
-> +	struct ata_queued_cmd *qc = ata_qc_from_tag(ap, ap->link.active_tag);
->  	static int retry = 0;
->  
->  	/* return if IOS_SS is cleared */
-> @@ -860,10 +861,10 @@ static void scc_bmdma_freeze (struct ata
->   *	@deadline: deadline jiffies for the operation
->   */
->  
-> -static int scc_pata_prereset(struct ata_port *ap, unsigned long deadline)
-> +static int scc_pata_prereset(struct ata_link *link, unsigned long deadline)
+> @@ -979,16 +980,12 @@ static void
+>  spider_net_pass_skb_up(struct spider_net_descr *descr,
+>  		       struct spider_net_card *card)
 >  {
-> -	ap->cbl = ATA_CBL_PATA80;
-> -	return ata_std_prereset(ap, deadline);
-> +	link->ap->cbl = ATA_CBL_PATA80;
-> +	return ata_std_prereset(link, deadline);
->  }
+> -	struct spider_net_hw_descr *hwdescr= descr->hwdescr;
+> -	struct sk_buff *skb;
+> -	struct net_device *netdev;
+> -	u32 data_status, data_error;
+> -
+> -	data_status = hwdescr->data_status;
+> -	data_error = hwdescr->data_error;
+> -	netdev = card->netdev;
+> +	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
+> +	struct sk_buff *skb = descr->skb;
+> +	struct net_device *netdev = card->netdev;
+> +	u32 data_status = hwdescr->data_status;
+> +	u32 data_error = hwdescr->data_error;
 >  
->  /**
-> @@ -874,8 +875,10 @@ static int scc_pata_prereset(struct ata_
->   *	Note: Original code is ata_std_postreset().
->   */
+> -	skb = descr->skb;
+>  	skb_put(skb, hwdescr->valid_size);
 >  
-> -static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
-> +static void scc_std_postreset(struct ata_link *link, unsigned int *classes)
+>  	/* the card seems to add 2 bytes of junk in front
+> @@ -1015,8 +1012,8 @@ spider_net_pass_skb_up(struct spider_net
+>  	}
+>  
+>  	/* update netdevice statistics */
+> -	dev->stats.rx_packets++;
+> -	dev->stats.rx_bytes += skb->len;
+> +	netdev->stats.rx_packets++;
+> +	netdev->stats.rx_bytes += skb->len;
+>  
+>  	/* pass skb up to stack */
+>  	netif_receive_skb(skb);
+> @@ -1184,6 +1181,7 @@ static int spider_net_resync_tail_ptr(st
+>  static int
+>  spider_net_decode_one_descr(struct spider_net_card *card)
 >  {
-> +	struct ata_port *ap = link->ap;
-> +
->  	DPRINTK("ENTER\n");
->  
->  	/* is double-select really necessary? */
+> +	struct net_device *dev = card->netdev;
+>  	struct spider_net_descr_chain *chain = &card->rx_chain;
+>  	struct spider_net_descr *descr = chain->tail;
+>  	struct spider_net_hw_descr *hwdescr = descr->hwdescr;
+> @@ -1210,7 +1208,7 @@ spider_net_decode_one_descr(struct spide
+>  	     (status == SPIDER_NET_DESCR_PROTECTION_ERROR) ||
+>  	     (status == SPIDER_NET_DESCR_FORCE_END) ) {
+>  		if (netif_msg_rx_err(card))
+> -			dev_err(&card->netdev->dev,
+> +			dev_err(&dev->dev,
+>  			       "dropping RX descriptor with state %d\n", status);
+>  		dev->stats.rx_dropped++;
+>  		goto bad_desc;
 > 
 
 -- 
