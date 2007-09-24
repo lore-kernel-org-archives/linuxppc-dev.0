@@ -1,18 +1,15 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 7DD21DDE1F
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 18:02:03 +1000 (EST)
-In-Reply-To: <20070924025824.GD8058@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <boot-8-01.miltonm@bga.com>
-	<20070924025824.GD8058@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c76a222305d08e74b878c946d4181078@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/15] boot: find initrd location from device-tree
-Date: Mon, 24 Sep 2007 03:02:36 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 80A9FDDE22
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 18:14:01 +1000 (EST)
+Date: Mon, 24 Sep 2007 10:15:01 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: [PATCH] fix mace_handle_misc_intrs compilation
+Message-ID: <20070924081501.GA1797@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,224 +20,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 23, 2007, at 9:58 PM, David Gibson wrote:
+Fix compilation after incomplete struct net_device changes.
 
-> On Fri, Sep 21, 2007 at 06:03:24PM -0500, Milton Miller wrote:
->> Some platforms have a boot agent that can create or modify properties 
->> in
->> the device-tree and load images into memory.  Provide a helper to set
->> loader_info used by prep_initrd().
->>
->> Signed-off-by: Milton Miller <miltonm@bga.com>
->> Acked-by: David Gibson <david@gibson.dropbear.id.au>
->
-> Hrm, despite my earlier ack, I'm going to whinge about a few nits
-> here.
->
->> ---
->> re 12168
->> rediffed types.h, offset in ops.h
->>
->> Index: kernel/arch/powerpc/boot/ops.h
->> ===================================================================
->> --- kernel.orig/arch/powerpc/boot/ops.h	2007-09-17 22:12:47.000000000 
->> -0500
->> +++ kernel/arch/powerpc/boot/ops.h	2007-09-17 22:12:51.000000000 -0500
->> @@ -163,6 +163,7 @@ void dt_fixup_clock(const char *path, u3
->>  void __dt_fixup_mac_addresses(u32 startindex, ...);
->>  #define dt_fixup_mac_addresses(...) \
->>  	__dt_fixup_mac_addresses(0, __VA_ARGS__, NULL)
->> +void dt_find_initrd(void);
->>
->>
->>  static inline void *find_node_by_linuxphandle(const u32 linuxphandle)
->> Index: kernel/arch/powerpc/boot/types.h
->> ===================================================================
->> --- kernel.orig/arch/powerpc/boot/types.h	2007-09-17 
->> 22:12:47.000000000 -0500
->> +++ kernel/arch/powerpc/boot/types.h	2007-09-17 22:12:51.000000000 
->> -0500
->> @@ -12,6 +12,8 @@ typedef short			s16;
->>  typedef int			s32;
->>  typedef long long		s64;
->>
->> +#define UINT_MAX	0xFFFFFFFF
->
-> I actually don't like this constant - at the point you compare you
-> care, explicitly, about the value not being over 32-bits, rather than
-> whether it fits a uint, so the named constant is more misleading than
-> helpful.
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-Arguable, I don't like counting F's or zeros in C code.
+---
+ drivers/net/mace.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-It is used as the max address that the wrapper deals with, both here 
-and memranges, which happens to be 32 bits.
-
-Actually it cares about overflowing the unsigned long in loader_info, 
-not that the address fits in 32 bits.
-
-So it should be ULONG_MAX now (malloc and all the address code was 
-changed to use unsigned long instead of unsigned int since the patch 
-was written).
-
-And dt_xlate needs the same information.  Its is using a hardcoded 64 
-bit constant to provide the a simiar check.
-
-
->> +
->>  #define min(x,y) ({ \
->>  	typeof(x) _x = (x);	\
->>  	typeof(y) _y = (y);	\
->> Index: kernel/arch/powerpc/boot/devtree.c
->> ===================================================================
->> --- kernel.orig/arch/powerpc/boot/devtree.c	2007-09-17 
->> 22:12:47.000000000 -0500
->> +++ kernel/arch/powerpc/boot/devtree.c	2007-09-17 22:12:51.000000000 
->> -0500
->> @@ -1,6 +1,7 @@
->>  /*
->>   * devtree.c - convenience functions for device tree manipulation
->>   * Copyright 2007 David Gibson, IBM Corporation.
->> + * Copyright 2007 Milton Miller, IBM Corporation.
->>   * Copyright (c) 2007 Freescale Semiconductor, Inc.
->>   *
->>   * Authors: David Gibson <david@gibson.dropbear.id.au>
->> @@ -333,3 +334,68 @@ int dt_is_compatible(void *node, const c
->>
->>  	return 0;
->>  }
->> +
->> +/**
->> + * dt_find_initrd - set loader initrd location based on existing 
->> properties
->> + *
->> + * finds the linux,initrd-start and linux,initrd-end properties in
->> + * the /chosen node and sets the loader initrd fields accordingly.
->> + *
->> + * Use this if your loader sets the properties to allow other code to
->> + * relocate the tree and/or cause r3 and r4 to be set on true OF
->> + * platforms.
->
-> I am unable to make sense of the paragraph above.
-
-The phrase "relocate the tree" should be "relocate the initrd", which 
-the wrapper will do if it located below vmlinux.size.  Also, r3 and r4 
-need to be set when booting the kernel from a client interface with an 
-initrd so it can take it into consideration when choosing the location 
-to build the flat tree.
-
-How about:
-
-Filling in the loader info allows main.c to be aware of the initrd, 
-meaning prep_initrd will move the initrd if it will be overwritten when 
-the kernel is copied to its runtime location.  In addition, if you are 
-booting the kernel from a client interface instead of a flat device 
-tree, this also causes r3 and r4 to be set so the kernel can avoid 
-overwriting the initrd when creating the flat tree.
-
->
->> + */
->> +void dt_find_initrd(void)
->> +{
->> +	int rc;
->> +	unsigned long long initrd_start, initrd_end;
->> +	void *devp;
->> +	static const char start_prop[] = "linux,initrd-start";
->> +	static const char end_prop[] = "linux,initrd-end";
->
-> I think these constants are more obscuring than useful.
-
-They are useful to the extent they reduce the number of source 
-characters causing about 8 less line wraps.  Since they are used 
-multiple places, the compiler only needs to emit one copy of this byte 
-sequence.  Admitedly you made this point in a prior review.
-
->
->> +
->> +	devp = finddevice("/chosen");
->> +	if (! devp) {
->> +		return;
->> +	}
->
-> CodingStyle would not put { } here.
-
-Yea, nit.  not sure why I have the braces there, I usually follow that 
-one.  And what's that space doing after !?
-
->
->> +
->> +	rc = getprop(devp, start_prop, &initrd_start, sizeof(initrd_start));
->> +	if (rc < 0)
->> +		return;				/* not found */
->> +	/* The properties had to be 8 bytes until 2.6.22 */
->> +	if (rc == sizeof(unsigned long)) {
->> +		unsigned long tmp;
->> +		memcpy(&tmp, &initrd_start, rc);
->> +		initrd_start = tmp;
->> +	} else if (rc != sizeof(initrd_start)) {	/* now they
->> can be 4 */
->
-> Right.  8 bytes and 4 bytes, so you should be using explicit length
-> types instead of long and long long.
-
-Ok, I guess we ahve u32 and u64 in types.h now.  But there is other 
-code in the wrapper that assumes its compiled 32 bit ILP.
-
->
->> +		printf("unexpected length of %s in /chosen!\n\r", start_prop);
->> +		return;
->
-> All these printf() / return stanzas add a lot of verbosity to this
-> function.  Any way they can be consolidated a bit, maybe a single
-> error path that just prints the property values, so the user can
-> figure out what was wrong with them.
-
-On a prior review I got asked to split the reasons for ingoring the 
-values below (the > 32 bit address from end < start cases).  Admitedly 
-without all the detailed errors the justification for the string 
-varables is reduced.
-
->
->> +	}
->> +
->> +	rc = getprop(devp, end_prop, &initrd_end, sizeof(initrd_end));
->> +	if (rc < 0) {
->> +		printf("chosen has %s but no %s!\n\r", start_prop, end_prop);
->> +		return;
->> +	}
->> +	if (rc == sizeof(unsigned long)) {
->> +		unsigned long tmp;
->> +		memcpy(&tmp, &initrd_end, rc);
->> +		initrd_end = tmp;
->> +	} else if (rc != sizeof(initrd_end)) {
->> +		printf("unexpected length of %s in /chosen!\n\r", end_prop);
->> +		return;
->> +	}
->> +
->> +	/* Check for presence, ignore if (partially) loaded above 32 bits */
->> +	if (initrd_start == initrd_end) {
->> +		printf("ignoring empty device-tree supplied initrd\n");
->> +	} else if (initrd_start > initrd_end) {
->> +		printf("ignoring device-tree supplied initrd: start 0x%llx"
->> +				" > end 0x%llx \n", initrd_start, initrd_end);
->> +	} else if (initrd_end > UINT_MAX) {
->> +		printf("ignoring device-tree supplied initrd:"
->> +				" end 0x%llx > 32 bits\n", initrd_end);
->> +	} else {
->> +		loader_info.initrd_addr = initrd_start;
->> +		loader_info.initrd_size  = initrd_end - initrd_start;
->> +	}
->> +}
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>
->
-> -- 
-> David Gibson			| I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ 
-> _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
->
+--- a/drivers/net/mace.c
++++ b/drivers/net/mace.c
+@@ -633,7 +633,7 @@ static void mace_set_multicast(struct ne
+     spin_unlock_irqrestore(&mp->lock, flags);
+ }
+ 
+-static void mace_handle_misc_intrs(struct mace_data *mp, int intr)
++static void mace_handle_misc_intrs(struct mace_data *mp, int intr, struct net_device *dev)
+ {
+     volatile struct mace __iomem *mb = mp->mace;
+     static int mace_babbles, mace_jabbers;
+@@ -669,7 +669,7 @@ static irqreturn_t mace_interrupt(int ir
+     spin_lock_irqsave(&mp->lock, flags);
+     intr = in_8(&mb->ir);		/* read interrupt register */
+     in_8(&mb->xmtrc);			/* get retries */
+-    mace_handle_misc_intrs(mp, intr);
++    mace_handle_misc_intrs(mp, intr, dev);
+ 
+     i = mp->tx_empty;
+     while (in_8(&mb->pr) & XMTSV) {
+@@ -682,7 +682,7 @@ static irqreturn_t mace_interrupt(int ir
+ 	 */
+ 	intr = in_8(&mb->ir);
+ 	if (intr != 0)
+-	    mace_handle_misc_intrs(mp, intr);
++	    mace_handle_misc_intrs(mp, intr, dev);
+ 	if (mp->tx_bad_runt) {
+ 	    fs = in_8(&mb->xmtfs);
+ 	    mp->tx_bad_runt = 0;
+@@ -817,7 +817,7 @@ static void mace_tx_timeout(unsigned lon
+ 	goto out;
+ 
+     /* update various counters */
+-    mace_handle_misc_intrs(mp, in_8(&mb->ir));
++    mace_handle_misc_intrs(mp, in_8(&mb->ir), dev);
+ 
+     cp = mp->tx_cmds + NCMDS_TX * mp->tx_empty;
+ 
