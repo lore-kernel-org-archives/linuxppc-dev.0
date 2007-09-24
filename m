@@ -1,16 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 24 Sep 2007 14:00:47 +1000
+Date: Mon, 24 Sep 2007 14:03:45 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-Message-ID: <20070924040047.GK8058@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
-	<20070922095546.GA14185@lst.de>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 13/15] bootwrapper: attach an empty vmlinux
+Message-ID: <20070924040345.GL8058@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-13.miltonm@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070922095546.GA14185@lst.de>
+In-Reply-To: <boot-8-13.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Rob Landley <rob@landley.net>, Milton Miller <miltonm@bga.com>
+	Rob Landley <rob@landley.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Sep 22, 2007 at 11:55:46AM +0200, Christoph Hellwig wrote:
-> On Fri, Sep 21, 2007 at 06:08:31PM -0500, Milton Miller wrote:
-> > Here is the second rev of patches to boot a arch powerpc kernel on
-> > qemu with the prep architecture.
+On Fri, Sep 21, 2007 at 06:06:38PM -0500, Milton Miller wrote:
+> Allow the boot wrapper code to be linked without an attached vmlinux.
 > 
-> So if this is supposed to be prep why do you need additional kernel
-> support?  And if you really needed why isn't it under
-> platforms/prep?
+> Rather than invent a new syntax to invoke the wrapper, attach the
+> stripped version of empty.o, which produces the same result.
 
-Basically because PReP support doesn't work under arch/powerpc.
-Getting it working properly is something that should happen, but will
-take a while.  In the meantime, getting something that's sufficient to
-get working under just qemu's version of prep, without using the
-abominable openhackware is a quicker path to a usable arch/powerpc
-kernel under qemu.
+Aiee.  Please don't do that.  Add a new wrapper option so the vmlinux
+is optional instead.  
+
+Particularly since...
+> Index: kernel/arch/powerpc/boot/wrapper
+> ===================================================================
+> --- kernel.orig/arch/powerpc/boot/wrapper	2007-09-17 22:11:51.000000000 -0500
+> +++ kernel/arch/powerpc/boot/wrapper	2007-09-17 22:12:05.000000000 -0500
+> @@ -161,6 +161,13 @@ ps3)
+>      ;;
+>  esac
+>  
+> +if [ "$kernel" = $object/empty.o ] ; then
+> +    ext=bin
+> +    objflags="-O binary"
+> +    gzip=
+> +fi
+
+Making the vmlinux empty.o *isn't* just a matter of doing that but
+also has other side effects as above.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
