@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 24 Sep 2007 13:09:37 +1000
+Date: Mon, 24 Sep 2007 13:14:51 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 5/15] bootwrapper: occuppied memory ranges
-Message-ID: <20070924030937.GF8058@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <boot-8-05.miltonm@bga.com>
+Subject: Re: [PATCH 6/15] bootwrapper: help for 64 bit cpus
+Message-ID: <20070924031451.GG8058@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-06.miltonm@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-8-05.miltonm@bga.com>
+In-Reply-To: <boot-8-06.miltonm@bga.com>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Rob Landley <rob@landley.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,32 +19,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2007 at 06:04:18PM -0500, Milton Miller wrote:
-> Add a set of library routines to manage gross memory allocations.
+On Fri, Sep 21, 2007 at 06:04:37PM -0500, Milton Miller wrote:
+> Add code to check if the processor is in 64 or 32 bit mode using
+> only instructions from the 32 bit subset.  If the processor is in
+> 64 bit mode, switch to 32 bit mode by clearing MSR[SF].
 > 
-> This code uses an array in bss to store upto 32 entrys with merging
-> representing a range of memory below rma_end (aka end of real mode
-> memory at 0).
-> 
-> To use this code, a platform would set rma_end (find_rma_end), mark
-> memory ranges occupied (add_known_ranges et al), initialize malloc in
-> the spaces between (ranges_init_malloc), and optionally use the supplied
-> vmlinux_alloc may be used.
+> Also add a 64 bit procedure descriptor to use as a elf64 entry
+> point.
 > 
 > Signed-off-by: Milton Miller <miltonm@bga.com>
 > --- 
-> vs 12172
-> rename rmo_end to rma_end (real mode area, as used in papr)
-> removed section labels (now in ops.h)
-> rediff ops.h, Makefile
-> moved find_rma_end here (from kexec.c in a later patch)
-> find_rma_end searches by node type for "memory", checks that
-> 	the parent is the root node, then looks for a reg property
-> 	with the first address/size pair starting at 0.
+> vs 12173
+> correct comment (equal vs not-equal)
+> 
+> Index: kernel/arch/powerpc/boot/crt0.S
+> ===================================================================
+> --- kernel.orig/arch/powerpc/boot/crt0.S	2007-07-10 03:33:36.000000000 -0500
+> +++ kernel/arch/powerpc/boot/crt0.S	2007-07-10 03:39:08.000000000 -0500
+> @@ -17,11 +17,47 @@
+>  _zimage_start_opd:
+>  	.long	_zimage_start, 0, 0, 0
+>  
+> +	/* a procedure descriptor used when pretending to be elf64_powerpc */
+> +	.balign	8
+> +	.globl	_zimage_start_64
+> +_zimage_start_64:
 
-Urg.  It's an awful lot of code for the bootwrapper.  Am I right in
-understanding that the only reason to use the ranges code is for the
-ranges based malloc() and vmlinux_alloc() you get out of it?
+Hrm, I'd prefer _zimage_start_opd64 in analogy with the COFF opd entry
+above.
+
+> +	.long	0, _zimage_start	/* big endian, supported reloc ppc32 */
+> +	.long	0, 0, 0, 0, 0, 0
+> +
+> +
+>  	.weak	_zimage_start
+>  	.globl	_zimage_start
+>  _zimage_start:
+>  	.globl	_zimage_start_lib
+>  _zimage_start_lib:
+> +	/* Check if the processor is running in 32 bit mode, using
+> +	 * only 32 bit instructions which should be safe on 32 and
+> +	 * 64 bit processors.
+> +	 *
+> +	 * Subtract bottom 32 bits of MSR from full value recording
+> +	 * the result.  Since MSR[SF] is in the high word, we will
+> +	 * be equal iff in 32 bit mode (either the processor is
+> +	 * a 32 bit processor or MSR[SF] = 0).
+> +	 */
+> +	mfmsr	r0		/* grab whole msr		*/
+> +	rlwinm	r8,r0,0,0,31	/* extract bottom word		*/
+> +	subf.	r8,r8,r0	/* subtract, same?		*/
+> +	beq	0f		/* yes: we are 32 bit mode	*/
+> +
+> +	/* We are in 64-bit mode.  This program must run in 32 bit
+> +	 * mode.  Assume we are actually running somewhere in the
+> +	 * low 32 bits of the address space, so we can just turn
+> +	 * off MSR[SF] which is bit 0.
+> +	 */
+> +	.machine push
+> +	.machine "ppc64"
+> +	rldicl	r0,r0,0,1
+> +	sync
+> +	mtmsrd	r0
+> +	isync
+> +	.machine pop
+> +0:	/* We are now in 32-bit mode */
+> +
+>  	/* Work out the offset between the address we were linked at
+>  	   and the address where we're running. */
+>  	bl	1f
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
