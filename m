@@ -1,18 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 53970DDF1B
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BD4E8DDE40
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Sep 2007 03:17:00 +1000 (EST)
-Message-ID: <46F7F0BF.5040605@scram.de>
-Date: Mon, 24 Sep 2007 19:15:43 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Tue, 25 Sep 2007 04:22:31 +1000 (EST)
+Message-ID: <46F80049.2030509@freescale.com>
+Date: Mon, 24 Sep 2007 13:22:01 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH#2 4/4] [POWERPC] Fix cpm_uart driver
-Content-Type: multipart/mixed; boundary="------------090203050004050103050109"
-Cc: linux-kernel@vger.kernel.org
+To: Jochen Friedrich <jochen@scram.de>
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com>
+	<46F7EE95.1040509@scram.de>
+In-Reply-To: <46F7EE95.1040509@scram.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,42 +28,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090203050004050103050109
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Jochen Friedrich wrote:
+> Scott Wood schrieb:
+>> Jochen Friedrich wrote:
+>>>
+>>> In cpm_uart_core, functions cpm_uart_init_bd and cpm_uart_init_scc
+>>> an offset into DP RAM is calculated by substracting a physical
+>>> memory constant from an virtual address. This patch fixes the
+>>> problem by converting the virtual address into a physical
+>>> first.
+>>
+>> Huh?  DPRAM_BASE is a virtual address.  With this patch, you'd be 
+>> subtracting a virtual address from a physical address.
+> 
+> Thanks for pointing me to it. So the bug is in cpm_uart_cpm1.h assigning 
+> a physical memory to DPRAM_BASE (at least on ARC=ppc). cpm_uart_cpm2.h 
+> seems to be correct though. I'll submit a new patch for this.
 
+cpmp is a physical address on arch/ppc?
+/me looks at arch/ppc/8xx_io/commproc.c
 
-in cpm_uart_cpm1.h, DPRAM_BASE is assigned an address derived from cpmp.
-On ARC=ppc, this is a physical address with 1:1 DMA mapping which can't
-be used for arithmetric compare operations with virtual addresses
-returned by cpm_dpram_addr. This patch changes the assignment to use
-cpm_dpram_addr as well, like in cpm_uart_cpm2.h.
+Yikes.  Please don't change cpm_uart_cpm1.h, as it's correct for 
+arch/powerpc, and there are numerous other places that assume cpmp is 
+virtual (including in the very same function that assigns it a physical 
+address).
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- drivers/serial/cpm_uart/cpm_uart_cpm1.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+You could fix arch/ppc if you want, though it may be easier to wait for 
+it to die, and insist on identity maps in the meantime. :-)
 
---------------090203050004050103050109
-Content-Type: text/x-patch;
- name="e99364db4224fcfaf74389d1b59ec0637d899c17.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="e99364db4224fcfaf74389d1b59ec0637d899c17.diff"
-
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-index a99e45e..2a64778 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-@@ -37,6 +37,6 @@ static inline void cpm_set_smc_fcr(volatile smc_uart_t * up)
- 	up->smc_tfcr = SMC_EB;
- }
- 
--#define DPRAM_BASE	((unsigned char *)&cpmp->cp_dpmem[0])
-+#define DPRAM_BASE	((unsigned char *)cpm_dpram_addr(0))
- 
- #endif
-
-
---------------090203050004050103050109--
+-Scott
