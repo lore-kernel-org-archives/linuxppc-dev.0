@@ -1,32 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 05D32DDE00
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 02:56:14 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l8OFm5ov010399
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 11:48:05 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8OGuBJm490898
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 10:56:11 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8OGuAlC011812
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 10:56:10 -0600
-Date: Mon, 24 Sep 2007 11:56:08 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Manil Gaouar" <mgaouar@solacom.com>
-Subject: Re: Problems compiling Linux for MPC8272ADS
-Message-ID: <20070924115608.1625e5ec@weaponx.rchland.ibm.com>
-In-Reply-To: <9A1468054ED2FD40907CC3B2C1871D400106CC90@hermes.versatel.com>
-References: <9A1468054ED2FD40907CC3B2C1871D400106CC90@hermes.versatel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34984DDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 03:22:00 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8OHNPNv003285
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 13:23:25 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8OHLuVd657594
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 13:21:56 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8OHLuA1012812
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 13:21:56 -0400
+Date: Mon, 24 Sep 2007 12:21:49 -0500
+To: Anton Blanchard <anton@samba.org>, Andy Whitcroft <apw@shadowen.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [apw@shadowen.org: 2.6.23-rc6-mm1 -- powerpc pSeries_log_error
+	panic in rtas_call/early_enable_eeh]
+Message-ID: <20070924172149.GA5327@austin.ibm.com>
+References: <20070923161740.GA12488@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070923161740.GA12488@kryten>
+From: linas@austin.ibm.com (Linas Vepstas)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,57 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Sep 2007 12:26:24 -0400
-"Manil Gaouar" <mgaouar@solacom.com> wrote:
+I just got back from vacation.
 
-> Hi there,
-> 
-> I am trying to compile the latest Linux from the git repos: git clone
-> git://www.denx.de/git/linux-2.6-denx.git linux-2.6-denx, I checked out
-> the code a few weeks ago and was able to build my uImage no problems. I
-> did a git pull this morning and I can not compile anymore, here is the
-> error message I have:
-> 
->   BOOTCC  arch/powerpc/boot/ps3.o
->   BOOTCC  arch/powerpc/boot/treeboot-bamboo.o
->   BOOTCC  arch/powerpc/boot/cuboot-sequoia.o
->   BOOTCC  arch/powerpc/boot/treeboot-walnut.o
-> {standard input}: Assembler messages:
-> {standard input}:184: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:185: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:186: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:217: Error: Unrecognized opcode: `mtdcr'
-> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 1
-> make: *** [uImage] Error 2
-> 
-> here are the commands I am using:
-> 
-> make mrproper
-> make ARCH=powerpc CROSS_COMPILE=ppc_6xx- mpc8272_ads_defconfig
-> make ARCH=powerpc CROSS_COMPILE=ppc_6xx- uImage
-> 
-> Do you have any ideas, or I should check out the 2.6.22 stable release
-> instead and try again???
+I'll give this a whirl shortly.
 
-Apply this:
+--linas
 
-
-    [POWERPC] 4xx: Fix Walnut wrapper compile errors
-    
-    Pass the appropriate -mcpu flag to the treeboot-walnut.o object to prevent
-    some toolchains from erroring out with unknown opcodes
-    
-    Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index c1582b6..ac516a1 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -33,6 +33,7 @@ BOOTCFLAGS    += -I$(obj) -I$(srctree)/$(obj)
- 
- $(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
- $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
-+$(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
- 
- zlib       := inffast.c inflate.c inftrees.c
- zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
+On Sun, Sep 23, 2007 at 11:17:40AM -0500, Anton Blanchard wrote:
+> 
+> Hi Linas,
+> 
+> Looks like EEH could be involved :)
+> 
+> Anton
+> 
+> ----- Forwarded message from Andy Whitcroft <apw@shadowen.org> -----
+> 
+> From: Andy Whitcroft <apw@shadowen.org>
+> To: Andrew Morton <akpm@linux-foundation.org>
+> Subject: 2.6.23-rc6-mm1 -- powerpc pSeries_log_error panic in
+> 	rtas_call/early_enable_eeh
+> X-SPF-Guess: neutral
+> Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+> X-BeenThere: linuxppc-dev@ozlabs.org
+> X-Mailman-Version: 2.1.9
+> List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+> List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+> 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+> List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+> List-Post: <mailto:linuxppc-dev@ozlabs.org>
+> List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+> List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+> 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+> 
+> Seeing the following panic booting an old powerpc LPAR:
+> 
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc000000000047b48
+> cpu 0x0: Vector: 300 (Data Access) at [c0000000006a3750]
+>     pc: c000000000047b48: .pSeries_log_error+0x364/0x420
+>     lr: c000000000047acc: .pSeries_log_error+0x2e8/0x420
+>     sp: c0000000006a39d0
+>    msr: 8000000000001032
+>    dar: 0
+>  dsisr: 42000000
+>   current = 0xc0000000005acab0
+>   paca    = 0xc0000000005ad700
+>     pid   = 0, comm = swapper
+> enter ? for help
+> [c0000000006a3af0] c000000000021164 .rtas_call+0x200/0x250
+> [c0000000006a3ba0] c000000000049d50 .early_enable_eeh+0x168/0x360
+> [c0000000006a3c70] c00000000002f674 .traverse_pci_devices+0x8c/0x138
+> [c0000000006a3d10] c000000000560ce8 .eeh_init+0x1a8/0x200
+> [c0000000006a3db0] c00000000055fb70 .pSeries_setup_arch+0x128/0x234
+> [c0000000006a3e40] c00000000054f830 .setup_arch+0x214/0x24c
+> [c0000000006a3ee0] c000000000546a38 .start_kernel+0xd4/0x3e4
+> [c0000000006a3f90] c00000000045adc4 .start_here_common+0x54/0x58
+> 0:mon>
+> 
+> This machine is:
+> 
+> # cat /proc/cpuinfo
+> processor       : 0
+> cpu             : POWER4+ (gq)
+> clock           : 1703.965296MHz
+> revision        : 19.0
+> 
+> [...]
+> machine         : CHRP IBM,7040-681
+> 
+> -apw
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> ----- End forwarded message -----
