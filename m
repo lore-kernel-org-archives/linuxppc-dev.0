@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C32E7DDE1E
+Return-Path: <marcelo@kvack.org>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id C2BCBDDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 24 Sep 2007 21:53:59 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IZmVf-00059p-BU
-	for linuxppc-embedded@ozlabs.org; Mon, 24 Sep 2007 04:53:55 -0700
-Message-ID: <12858422.post@talk.nabble.com>
-Date: Mon, 24 Sep 2007 04:53:55 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
-To: linuxppc-embedded@ozlabs.org
-Subject: multicast in MPC8272ADS
-MIME-Version: 1.0
+	Mon, 24 Sep 2007 23:14:36 +1000 (EST)
+Date: Mon, 24 Sep 2007 08:43:20 -0400
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Jochen Friedrich <jochen@scram.de>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH0/4] Various bug fixes
+Message-ID: <20070924124320.GA5648@dmt>
+References: <46F6C9B0.8020200@scram.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46F6C9B0.8020200@scram.de>
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,39 +25,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-hi, 
+Paul, please apply.
 
-I have written a multicast test application in which there is a multicast
-sender and receiver. 
-The multicast sender sends multicast packets on a specified interface and
-the multicast 
-receiver receives multicast packets. I have tested this application on my
-network with 
- x86 machines. But when I run a multicast receiver (which has been cross
-compiled for 
-MPC8272ADS) on my MPC board, it is unable to receive multicast packets (the
-recvfrom 
-call is waiting for ever for packets to arrive). The MPC board is able to
-send multicast 
-packets to without any problems. The /proc/net/dev_mcast shows the
-appropriate 
-entries for the multicast address being enabled for the interface of
-interest(esentially 
-group joining appear to work). 
-
-My configuration is a MPC8272ADS board rp_filter =0 for all interfaces (ie
-no source 
-filtering).I am wondering where the problem could be, configurations or the
-ethernet 
-driver itself? Are there some known issues ? 
-
-By the way with loopback enabled the reception of packets works 
-in case the sender and receiver are on the same machine 
-
-waiting for ur comments.. 
-
-thnks 
-
--- 
-View this message in context: http://www.nabble.com/multicast-in-MPC8272ADS-tf4508713.html#a12858422
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+On Sun, Sep 23, 2007 at 10:16:48PM +0200, Jochen Friedrich wrote:
+> Here is a series fixing some bugs for 8xx powerpc CPUs.
+> 
+> 1. [POWERPC] Fix copy'n'paste typo in commproc.c
+> 2. [PPC] Fix cpm_dpram_addr returning phys mem instead of virt mem
+> 3. [PPC] Compile fix for 8xx CPM Ehernet driver
+> 4. [POWERPC] Fix cpm_uart driver
+> 
+> This series can be pulled from git://git.bocc.de/dbox2.git ppc-fixes
+> 
+> Thanks,
+> Jochen
