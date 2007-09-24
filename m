@@ -1,18 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070924050709.GM8058@localhost.localdomain>
-References: <20070920104211.896143373@sunsite.dk>
-	<20070920104313.217207466@sunsite.dk>
-	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
-	<874pholbdk.fsf@macbook.be.48ers.dk>
-	<20070924050709.GM8058@localhost.localdomain>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3D938DDEDE
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 07:41:35 +1000 (EST)
+In-Reply-To: <20070920005201.GE14404@localhost.localdomain>
+References: <20070917130005.GA29654@ru.mvista.com>
+	<19e5f15308dfb8e60e2e49379666d00a@kernel.crashing.org>
+	<46F1299A.1000508@ru.mvista.com>
+	<d0e5786123822b4d178932d9048f6a22@kernel.crashing.org>
+	<20070920005201.GE14404@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b312e03ef67dcd6cdc5f57e90da746ef@kernel.crashing.org>
+Message-Id: <9e4addbf405b35bbe59b82276755e4b8@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
-Date: Mon, 24 Sep 2007 23:11:28 +0200
+Subject: Re: [PATCH 2/3] usb: ehci-ppc-of dts bindings.
+Date: Mon, 24 Sep 2007 23:40:49 +0200
 To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,59 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  Scott> #size-cells is zero on i2c, so it should just be reg = <68>.
->>
->>  Scott> You'll probably need to add #address-cells and #size-cells to 
->> the
->>  Scott> controller node, as well.
+>> Nothing in a flat device tree should ever define a device_type, except
+>> perhaps for compatibility with legacy kernel code.
 >
-> Uh.. yes.. i2c interfaces should really always have #a and #s.
+> This is not necessarily true.  As Segher says, device_type originally
+> indicated the OF programming model for a device.  However, we've
+> extended the notion for the flat device tree to allow device_type to
+> cover "device classes" which could have certain common properties and
+> semantics.
 
-More generally, every node that defines a bus needs it (unless the
-defaults of 2 resp. 1 are correct for this bus, but even then you
-might want it because it makes things more explicit).
+Such device classes are already handled by the "generic names"
+recommended practice.
 
->>  		i2c@3100 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->>  			device_type = "i2c";
->
-> Hrm... we probably want an "i2c" device_type class, but I don't think
-> we've actually defined one, which is a problem
+Reusing device_type for a different purpose is dangerous: before you
+know it, you'll end up with a conflict, as was nicely demonstrated
+today with device_type "rtc".
 
-By defining new device_type's, or new semantics for device_type,
-you open the door to (accidentally) becoming incompatible with
-"real" OF.
+> However, in this case, a meaningful class binding must
+> already be defined: it might make sense for usb to have a defined
+> device_type, but it's not been defined so far, so for now you must
+> omit device_type (if a device_type is defined in future, it's easier
+> to add legacy hooks that will include devices which are missing the
+> relevant device_type marker than to work around devices which *do*
+> have the marker, but pre-date and don't follow the defined class
+> binding).
 
-And you don't need to: "real" OF has a mechanism for specifying
-the "generic device class" already, if you use the "generic names"
-recommended practice (and you do, for both this node and the rtc
-node): it's the generic name itself!
-
->> +			rtc@68 {
->> +				device_type = "rtc";
->> +				compatible = "dallas,ds1339";
->> +				reg = <68>;
->> +			};
->
-> I think we want to think a bit more carefully about how to do bindings
-> for RTC devices.  No "rtc" device_type is defined, but again we might
-> want to.
-
-Actually, "device_type" = "rtc" _is_ defined (in the "device support
-extensions" recommended practice), and there is no useful way a flat
-device tree can implement it (it merely defines get-time and set-time
-methods).
-
-> The fact that NVRAM+RTC chips are so common is a bit of an issue from
-> the point of view of defining a device class binding - a device can't
-> have type "rtc" and "nvram".
-
-You should match OS drivers on "compatible" only anyway.
-
-Those cases where OS drivers don't nicely 1-1 match device nodes are a
-bit of a headache; for RTC/NVRAM devices, these problems are nicely
-side-stepped by handling this from platform code.
+Nothing in the kernel should assume it can find all devices of a
+certain "class" any other way than by exhaustively matching on
+possible "compatible" values.  I'm not sure why you would want to,
+anyway: you need "compatible" to select which driver to use, already.
 
 
 Segher
