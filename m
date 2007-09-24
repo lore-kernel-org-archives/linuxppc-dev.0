@@ -1,25 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2A7A8DDE2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 00:53:00 +1000 (EST)
-Message-ID: <46F7CF2F.9070805@freescale.com>
-Date: Mon, 24 Sep 2007 09:52:31 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <mgaouar@solacom.com>
+Received: from solacom.com (unknown [209.217.64.195])
+	by ozlabs.org (Postfix) with ESMTP id D8EFCDDE2D
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 02:38:30 +1000 (EST)
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
-Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
-References: <20070920104211.896143373@sunsite.dk>
-	<20070920104313.217207466@sunsite.dk>
-	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
-	<874pholbdk.fsf@macbook.be.48ers.dk>
-	<20070924050709.GM8058@localhost.localdomain>
-In-Reply-To: <20070924050709.GM8058@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Problems compiling Linux for MPC8272ADS
+Date: Mon, 24 Sep 2007 12:26:24 -0400
+Message-ID: <9A1468054ED2FD40907CC3B2C1871D400106CC90@hermes.versatel.com>
+From: "Manil Gaouar" <mgaouar@solacom.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
->>  		i2c@3100 {
->> +			#address-cells = <1>;
->> +			#size-cells = <0>;
->>  			device_type = "i2c";
-> 
-> Hrm... we probably want an "i2c" device_type class, but I don't think
-> we've actually defined one, which is a problem
+Hi there,
 
-Right... but we need to get the kernel to stop expecting the device type 
-to be there before we yell at people for including it. :-)
+I am trying to compile the latest Linux from the git repos: git clone
+git://www.denx.de/git/linux-2.6-denx.git linux-2.6-denx, I checked out
+the code a few weeks ago and was able to build my uImage no problems. I
+did a git pull this morning and I can not compile anymore, here is the
+error message I have:
 
-> The fact that NVRAM+RTC chips are so common is a bit of an issue from
-> the point of view of defining a device class binding - a device can't
-> have type "rtc" and "nvram".
+  BOOTCC  arch/powerpc/boot/ps3.o
+  BOOTCC  arch/powerpc/boot/treeboot-bamboo.o
+  BOOTCC  arch/powerpc/boot/cuboot-sequoia.o
+  BOOTCC  arch/powerpc/boot/treeboot-walnut.o
+{standard input}: Assembler messages:
+{standard input}:184: Error: Unrecognized opcode: `mfdcr'
+{standard input}:185: Error: Unrecognized opcode: `mfdcr'
+{standard input}:186: Error: Unrecognized opcode: `mfdcr'
+{standard input}:217: Error: Unrecognized opcode: `mtdcr'
+make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 1
+make: *** [uImage] Error 2
 
-This is one of the reasons that I'd prefer to use compatible for such 
-things.
+here are the commands I am using:
 
--Scott
+make mrproper
+make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- mpc8272_ads_defconfig
+make ARCH=3Dpowerpc CROSS_COMPILE=3Dppc_6xx- uImage
+
+Do you have any ideas, or I should check out the 2.6.22 stable release
+instead and try again???
+
+Thx
