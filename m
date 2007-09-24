@@ -1,19 +1,25 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D2AD3DDE42
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 22:35:42 +1000 (EST)
-Date: Mon, 24 Sep 2007 13:35:31 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Message-ID: <20070924123531.GC30855@shadowen.org>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A7A8DDE2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 00:53:00 +1000 (EST)
+Message-ID: <46F7CF2F.9070805@freescale.com>
+Date: Mon, 24 Sep 2007 09:52:31 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Peter Korsgaard <jacmet@sunsite.dk>, Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
+References: <20070920104211.896143373@sunsite.dk>
+	<20070920104313.217207466@sunsite.dk>
+	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
+	<874pholbdk.fsf@macbook.be.48ers.dk>
+	<20070924050709.GM8058@localhost.localdomain>
+In-Reply-To: <20070924050709.GM8058@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Seeing the following from an older power LPAR, pretty sure we had
-this in the previous -mm also:
+David Gibson wrote:
+>>  		i2c@3100 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>>  			device_type = "i2c";
+> 
+> Hrm... we probably want an "i2c" device_type class, but I don't think
+> we've actually defined one, which is a problem
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc000000000047ac8
-cpu 0x0: Vector: 300 (Data Access) at [c00000000058f750]
-    pc: c000000000047ac8: .pSeries_log_error+0x364/0x420
-    lr: c000000000047a4c: .pSeries_log_error+0x2e8/0x420
-    sp: c00000000058f9d0
-   msr: 8000000000001032
-   dar: 0
- dsisr: 42000000
-  current = 0xc0000000004a9b30
-  paca    = 0xc0000000004aa700
-    pid   = 0, comm = swapper
-enter ? for help
-[c00000000058faf0] c000000000021164 .rtas_call+0x200/0x250
-[c00000000058fba0] c000000000049cd0 .early_enable_eeh+0x168/0x360
-[c00000000058fc70] c00000000002f674 .traverse_pci_devices+0x8c/0x138
-[c00000000058fd10] c000000000460ce8 .eeh_init+0x1a8/0x200
-[c00000000058fdb0] c00000000045fb70 .pSeries_setup_arch+0x128/0x234
-[c00000000058fe40] c00000000044f830 .setup_arch+0x214/0x24c
-[c00000000058fee0] c000000000446a38 .start_kernel+0xd4/0x3e4
-[c00000000058ff90] c000000000373194 .start_here_common+0x54/0x58
+Right... but we need to get the kernel to stop expecting the device type 
+to be there before we yell at people for including it. :-)
 
-This machine is a:
+> The fact that NVRAM+RTC chips are so common is a bit of an issue from
+> the point of view of defining a device class binding - a device can't
+> have type "rtc" and "nvram".
 
-processor       : 0
-cpu             : POWER4+ (gq)
-clock           : 1703.965296MHz
-revision        : 19.0
+This is one of the reasons that I'd prefer to use compatible for such 
+things.
 
-[...]
-
-timebase        : 212995662
-machine         : CHRP IBM,7040-681
-
--apw
+-Scott
