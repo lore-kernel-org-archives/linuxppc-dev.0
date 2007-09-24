@@ -1,40 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F1D10DDEB8
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 07:02:03 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8OL1vPj007278
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 17:01:57 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8OL1sVN495428
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 15:01:56 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8OL1onJ011275
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 15:01:51 -0600
-Date: Mon, 24 Sep 2007 16:01:49 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Sequoia kernel crash workaround.
-Message-ID: <20070924160149.1809de00@weaponx.rchland.ibm.com>
-In-Reply-To: <1190667350.6886.59.camel@localhost.localdomain>
-References: <46F16CC9.3010003@ru.mvista.com> <200709192119.48259.sr@denx.de>
-	<20070919193024.GA28163@lixom.net>
-	<20070919150818.3fecc1bc@weaponx.rchland.ibm.com>
-	<46F2A640.1000802@ru.mvista.com> <20070920172506.GA16354@lixom.net>
-	<20070920122919.32dd8061@weaponx.rchland.ibm.com>
-	<1190535664.3723.16.camel@localhost.localdomain>
-	<46F79305.9050300@ru.mvista.com>
-	<1190667350.6886.59.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
-	Josh Boyer <jwboyer@gmail.com>, Stefan Roese <sr@denx.de>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070924050709.GM8058@localhost.localdomain>
+References: <20070920104211.896143373@sunsite.dk>
+	<20070920104313.217207466@sunsite.dk>
+	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
+	<874pholbdk.fsf@macbook.be.48ers.dk>
+	<20070924050709.GM8058@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b312e03ef67dcd6cdc5f57e90da746ef@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
+Date: Mon, 24 Sep 2007 23:11:28 +0200
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,20 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 25 Sep 2007 06:55:50 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>>  Scott> #size-cells is zero on i2c, so it should just be reg = <68>.
+>>
+>>  Scott> You'll probably need to add #address-cells and #size-cells to 
+>> the
+>>  Scott> controller node, as well.
+>
+> Uh.. yes.. i2c interfaces should really always have #a and #s.
 
-> 
-> On Mon, 2007-09-24 at 14:35 +0400, Valentine Barshak wrote:
-> > 
-> >  From what I've seen, setup_cpu is never called for BOOKE.
-> > Currently It's called from cputable.c for PPC64 and from head_32.S for
-> > 6xx.
-> > Thanks,
-> 
-> Right. We need to fix/converge some of these but it's not totally
-> trivial.
+More generally, every node that defines a bus needs it (unless the
+defaults of 2 resp. 1 are correct for this bus, but even then you
+might want it because it makes things more explicit).
 
-Valentine has patches for adding this for BookE on the list.
+>>  		i2c@3100 {
+>> +			#address-cells = <1>;
+>> +			#size-cells = <0>;
+>>  			device_type = "i2c";
+>
+> Hrm... we probably want an "i2c" device_type class, but I don't think
+> we've actually defined one, which is a problem
 
-josh
+By defining new device_type's, or new semantics for device_type,
+you open the door to (accidentally) becoming incompatible with
+"real" OF.
+
+And you don't need to: "real" OF has a mechanism for specifying
+the "generic device class" already, if you use the "generic names"
+recommended practice (and you do, for both this node and the rtc
+node): it's the generic name itself!
+
+>> +			rtc@68 {
+>> +				device_type = "rtc";
+>> +				compatible = "dallas,ds1339";
+>> +				reg = <68>;
+>> +			};
+>
+> I think we want to think a bit more carefully about how to do bindings
+> for RTC devices.  No "rtc" device_type is defined, but again we might
+> want to.
+
+Actually, "device_type" = "rtc" _is_ defined (in the "device support
+extensions" recommended practice), and there is no useful way a flat
+device tree can implement it (it merely defines get-time and set-time
+methods).
+
+> The fact that NVRAM+RTC chips are so common is a bit of an issue from
+> the point of view of defining a device class binding - a device can't
+> have type "rtc" and "nvram".
+
+You should match OS drivers on "compatible" only anyway.
+
+Those cases where OS drivers don't nicely 1-1 match device nodes are a
+bit of a headache; for RTC/NVRAM devices, these problems are nicely
+side-stepped by handling this from platform code.
+
+
+Segher
