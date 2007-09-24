@@ -2,17 +2,16 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 51919DDEC8
+	by ozlabs.org (Postfix) with ESMTP id 941C4DDF0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Sep 2007 03:15:08 +1000 (EST)
-Message-ID: <46F7F091.7000406@scram.de>
-Date: Mon, 24 Sep 2007 19:14:57 +0200
+	Tue, 25 Sep 2007 03:16:47 +1000 (EST)
+Message-ID: <46F7F0B7.2090205@scram.de>
+Date: Mon, 24 Sep 2007 19:15:35 +0200
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH#2 2/4] [PPC] Fix cpm_dpram_addr returning phys mem instead
-	of virt mem
-Content-Type: multipart/mixed; boundary="------------080108060506090808090900"
+Subject: [PATCH#2 3/4] [PPC] Compile fix for 8xx CPM Ehernet driver
+Content-Type: multipart/mixed; boundary="------------020809090603030000000606"
 Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,43 +24,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080108060506090808090900
+--------------020809090603030000000606
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-cpm_dpram_addr returns physical memory of the DP RAM instead of
-iomapped virtual memory. As there usually is a 1:1 MMU map of
-the IMMR area, this is often not noticed. However, cpm_dpram_phys
-assumes this iomapped virtual memory and returns garbage on the
-1:1 mapped memory causing CPM1 uart console to fail.
 
-This patch fixes the problem (copied from the powerpc tree).
+Add #include <asm/cacheflush.h> for flush_dcache_range
+to make the driver compile again.
+
+  CC      arch/ppc/8xx_io/enet.o
+arch/ppc/8xx_io/enet.c: In function 'scc_enet_start_xmit':
+arch/ppc/8xx_io/enet.c:240: error: implicit declaration of function
+'flush_dcache_range'
+make[1]: *** [arch/ppc/8xx_io/enet.o] Error 1
+make: *** [arch/ppc/8xx_io] Error 2
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
- arch/ppc/8xx_io/commproc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/ppc/8xx_io/enet.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---------------080108060506090808090900
+--------------020809090603030000000606
 Content-Type: text/x-patch;
- name="e99a679ff14fb0073efd9220f5aa933e47516202.diff"
+ name="bf5c2f419c8f731109b1c39e390338dcea780e94.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
- filename="e99a679ff14fb0073efd9220f5aa933e47516202.diff"
+ filename="bf5c2f419c8f731109b1c39e390338dcea780e94.diff"
 
-diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
-index 7088428..9da880b 100644
---- a/arch/ppc/8xx_io/commproc.c
-+++ b/arch/ppc/8xx_io/commproc.c
-@@ -459,7 +459,7 @@ EXPORT_SYMBOL(cpm_dpdump);
+diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
+index 703d47e..eace3bc 100644
+--- a/arch/ppc/8xx_io/enet.c
++++ b/arch/ppc/8xx_io/enet.c
+@@ -44,6 +44,7 @@
+ #include <asm/mpc8xx.h>
+ #include <asm/uaccess.h>
+ #include <asm/commproc.h>
++#include <asm/cacheflush.h>
  
- void *cpm_dpram_addr(unsigned long offset)
- {
--	return ((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem + offset;
-+	return (void *)(dpram_vbase + offset);
- }
- EXPORT_SYMBOL(cpm_dpram_addr);
- 
+ /*
+  *				Theory of Operation
 
 
---------------080108060506090808090900--
+--------------020809090603030000000606--
