@@ -1,17 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 24 Sep 2007 15:07:09 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
-Message-ID: <20070924050709.GM8058@localhost.localdomain>
-References: <20070920104211.896143373@sunsite.dk>
-	<20070920104313.217207466@sunsite.dk>
-	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
-	<874pholbdk.fsf@macbook.be.48ers.dk>
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	by ozlabs.org (Postfix) with ESMTP id 0D0EBDDE23
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 15:50:52 +1000 (EST)
+From: Rob Landley <rob@landley.net>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/15] boot: find initrd location from device-tree
+Date: Mon, 24 Sep 2007 00:50:47 -0500
+References: <boot-8-00.miltonm@bga.com> <boot-8-01.miltonm@bga.com>
+	<20070924025824.GD8058@localhost.localdomain>
+In-Reply-To: <20070924025824.GD8058@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <874pholbdk.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709240050.47891.rob@landley.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2007 at 09:35:03AM +0200, Peter Korsgaard wrote:
-> >>>>> "Scott" == Scott Wood <scottwood@freescale.com> writes:
-> 
-> Hi,
-> 
->  Scott> #size-cells is zero on i2c, so it should just be reg = <68>.
-> 
->  Scott> You'll probably need to add #address-cells and #size-cells to the
->  Scott> controller node, as well.
+On Sunday 23 September 2007 9:58:24 pm David Gibson wrote:
+> On Fri, Sep 21, 2007 at 06:03:24PM -0500, Milton Miller wrote:
+> > Some platforms have a boot agent that can create or modify properties in
+> > the device-tree and load images into memory.  Provide a helper to set
+> > loader_info used by prep_initrd().
+> >
+> > Signed-off-by: Milton Miller <miltonm@bga.com>
+> > Acked-by: David Gibson <david@gibson.dropbear.id.au>
+>
+> Hrm, despite my earlier ack, I'm going to whinge about a few nits
+> here.
+>
+> > ---
+> > re 12168
+> > rediffed types.h, offset in ops.h
+> >
+> > Index: kernel/arch/powerpc/boot/ops.h
+> > ===================================================================
+> > --- kernel.orig/arch/powerpc/boot/ops.h	2007-09-17 22:12:47.000000000
+> > -0500 +++ kernel/arch/powerpc/boot/ops.h	2007-09-17 22:12:51.000000000
+> > -0500 @@ -163,6 +163,7 @@ void dt_fixup_clock(const char *path, u3
+> >  void __dt_fixup_mac_addresses(u32 startindex, ...);
+> >  #define dt_fixup_mac_addresses(...) \
+> >  	__dt_fixup_mac_addresses(0, __VA_ARGS__, NULL)
+> > +void dt_find_initrd(void);
+> >
+> >
+> >  static inline void *find_node_by_linuxphandle(const u32 linuxphandle)
+> > Index: kernel/arch/powerpc/boot/types.h
+> > ===================================================================
+> > --- kernel.orig/arch/powerpc/boot/types.h	2007-09-17 22:12:47.000000000
+> > -0500 +++ kernel/arch/powerpc/boot/types.h	2007-09-17 22:12:51.000000000
+> > -0500 @@ -12,6 +12,8 @@ typedef short			s16;
+> >  typedef int			s32;
+> >  typedef long long		s64;
+> >
+> > +#define UINT_MAX	0xFFFFFFFF
+>
+> I actually don't like this constant - at the point you compare you
+> care, explicitly, about the value not being over 32-bits, rather than
+> whether it fits a uint, so the named constant is more misleading than
+> helpful.
 
-Uh.. yes.. i2c interfaces should really always have #a and #s.
+Except int and uint are 32 bits on all targets, due to unix standardizing on 
+LP64:
 
-> Ahh - Thanks. This should be better.
-> ---
-> 
-> [PATCH] mpc8349emitx.dts: Add ds1339 RTC
-> 
-> Add ds1339 I2C RTC chip as child of 2nd I2C controller.
-> 
-> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
-> ---
->  arch/powerpc/boot/dts/mpc8349emitx.dts |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux/arch/powerpc/boot/dts/mpc8349emitx.dts
-> ===================================================================
-> --- linux.orig/arch/powerpc/boot/dts/mpc8349emitx.dts
-> +++ linux/arch/powerpc/boot/dts/mpc8349emitx.dts
-> @@ -62,12 +62,21 @@
->  		};
->  
->  		i2c@3100 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
->  			device_type = "i2c";
+http://www.unix.org/whitepapers/64bit.html
+http://www.unix.org/version2/whatsnew/lp64_wp.html
 
-Hrm... we probably want an "i2c" device_type class, but I don't think
-we've actually defined one, which is a problem
+> > +/**
+> > + * dt_find_initrd - set loader initrd location based on existing
+> > properties + *
+> > + * finds the linux,initrd-start and linux,initrd-end properties in
+> > + * the /chosen node and sets the loader initrd fields accordingly.
+> > + *
+> > + * Use this if your loader sets the properties to allow other code to
+> > + * relocate the tree and/or cause r3 and r4 to be set on true OF
+> > + * platforms.
+>
+> I am unable to make sense of the paragraph above.
 
->  			compatible = "fsl-i2c";
->  			reg = <3100 100>;
->  			interrupts = <f 8>;
->  			interrupt-parent = < &ipic >;
->  			dfsrr;
-> +
-> +			rtc@68 {
-> +				device_type = "rtc";
-> +				compatible = "dallas,ds1339";
-> +				reg = <68>;
-> +			};
+I think this means it finds the initrd location from the device tree (supplied 
+by your firmware or bootloader) rather than from the kernel command line the 
+way all the other platforms do.
 
-I think we want to think a bit more carefully about how to do bindings
-for RTC devices.  No "rtc" device_type is defined, but again we might
-want to.
-
-I did find one real OF binding for a different Dallas RTC (and NVRAM),
-see:
-
-http://playground.sun.com/1275/proposals/Closed/Remanded/Accepted/346-it.txt
-
-It's a little different from the example above.
-
-The fact that NVRAM+RTC chips are so common is a bit of an issue from
-the point of view of defining a device class binding - a device can't
-have type "rtc" and "nvram".
-
-> +
->  		};
->  
->  		spi@7000 {
-> 
-
+Rob
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
