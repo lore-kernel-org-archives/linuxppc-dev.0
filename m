@@ -1,23 +1,17 @@
-Return-Path: <roland@redhat.com>
-Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.77.84])
-	by ozlabs.org (Postfix) with ESMTP id DD62BDDE9A
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 10:59:47 +1000 (EST)
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 50D76DDE1A
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 11:38:40 +1000 (EST)
+Date: Mon, 24 Sep 2007 20:41:32 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Make instruction dumping work in real mode.
+Message-ID: <20070925014132.GA31979@lixom.net>
+References: <20070924190100.GB4761@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc: ptrace CHECK_FULL_REGS
-In-Reply-To: Benjamin Herrenschmidt's message of  Tuesday,
-	25 September 2007 10:33:26 +1000
-	<1190680406.12382.9.camel@localhost.localdomain>
-References: <20070924235052.5AFC24D04B7@magilla.localdomain>
-	<1190680406.12382.9.camel@localhost.localdomain>
-Message-Id: <20070925005945.02E924D04B7@magilla.localdomain>
-Date: Mon, 24 Sep 2007 17:59:44 -0700 (PDT)
-Cc: David Woodhouse <dwmw2@redhat.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070924190100.GB4761@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Yup, I think I ditched most of them.. for some reason I decided it
-> couldn't happen, but maybe I'm wrong ?
+On Mon, Sep 24, 2007 at 02:01:00PM -0500, Scott Wood wrote:
+> On non-book-E, if a faulting PC is in the first few pages, and it's not an
+> ITLB miss, it's likely executing in real mode, probably at an exception vector.
+> 
+> Rather than print a useless XXXXXXXX, it is assumed that this is the case, and
+> the address is treated as physical.  This helps when debugging corruption at
+> the beginning of memory.
 
-Well, it's a BUG_ON.  It's supposed to be for something that "can't happen".
-That's why it's a sanity check, not a wild assertion. ;-)
-
-The 2/2 patch is an example of a bug that CHECK_FULL_REGS catches.
-In the status quo, using PTRACE_PEEKUSR in a bug case crashes while using
-PTRACE_GETREGS in the same place might get bogus data.  (In the actual bug
-thus found, the data is not bogus and only the bit that FULL_REGS checks is.)
+Please use regs->msr & MSR_IR instead.
 
 
-Thanks,
-Roland
+-Olof
