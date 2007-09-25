@@ -1,20 +1,23 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F1FEDDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 15:47:42 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Ia3Gk-0007lQ-V4
-	for linuxppc-dev@ozlabs.org; Mon, 24 Sep 2007 22:47:38 -0700
-Message-ID: <12873530.post@talk.nabble.com>
-Date: Mon, 24 Sep 2007 22:47:38 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
-To: linuxppc-dev@ozlabs.org
-Subject: jffs2 file system on MPC8272ADS board
+Return-Path: <benjamin.zores@alcatel-lucent.fr>
+Received: from smail4.alcatel.fr (smail4.alcatel.fr [62.23.212.167])
+	by ozlabs.org (Postfix) with ESMTP id 43C36DDDF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 18:08:23 +1000 (EST)
+Received: from bsf.alcatel.fr (mail205.sxb.bsf.alcatel.fr [155.132.205.115])
+	by smail4.alcatel.fr (ALCANET/NETFR) with ESMTP id l8P7hcDs018925
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:39 +0200
+Received: from mail (mail-bsf-alcatel-fr.sxb.bsf.alcatel.fr [155.132.205.91])
+	by bsf.alcatel.fr (8.8.8p2+Sun/8.9.3) with ESMTP id JAA09075
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:38 +0200 (MET DST)
+Received: from [172.25.48.83] (frilld0063506 [172.25.48.83])
+	by mail (8.8.8p2+Sun/) with ESMTP id JAA09071
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:38 +0200 (MET DST)
+Message-ID: <46F8BBAD.30008@alcatel-lucent.fr>
+Date: Tue, 25 Sep 2007 09:41:33 +0200
+From: Benjamin ZORES <benjamin.zores@alcatel-lucent.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linuxppc-dev@ozlabs.org
+Subject: Linux 2.6.23-rc7 kGDB broken
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,184 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-hi everyone,
+I used to use linux-2.6-kgdb git tree from jwessel to extract kGDB 
+related patches
+but I now have seen that it has been included in -mm branch.
 
-I m using custom board similar to MPC8272ADS board...
+However, in this branch, kGDB seems to be broken at least on PowerPC
+(see http://lkml.org/lkml/2007/9/19/103).
+It seems to me that the only reason is due to a missing header file
+in include/asm-powerpc/kgdb.h
+This file used to be present in kgdb tree (see 
+http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=blob_plain;f=include/asm-powerpc/kgdb.h;hb=kgdb_2.6.22-rc6) 
+but is no longer part of the patch.
 
-1) For the first time it boots up properly in case if we overwrite any
-existing binaries using nfs mounted file system on the board, after
-rebooting it displays fallowing message...
+Is there any reason for that ?
+By opposition to what could be said in first LKML thread, adding this 
+file is enough to restore kGDB on PowerPC.
+I've tested it and it compiles (and work) just fine (and as expected).
 
-Further such events for this erase block will not be printed
-Eep. Child "null" (ino #1346) of dir ino #3 doesn't exist!
-Eep. Child "autocomm" (ino #463) of dir ino #461 doesn't exist!
-Eep. Child "calibration" (ino #464) of dir ino #461 doesn't exist!
-Eep. Child "coredsp_driver.ko" (ino #939) of dir ino #336 doesn't exist!
-Inode #1307 was a directory with children - removing those too...
-Inode #564 was a directory with children - removing those too...
-Inode #565 was a directory with children - removing those too...
-Inode #1112 was a directory with children - removing those too...
-Inode #1115 was a directory with children - removing those too...
-Inode #1118 was a directory with children - removing those too...
-Inode #1123 was a directory with children - removing those too...
+Can this file be restored ?
 
-after this board boots up properly....but it not be having overwritten files
-
-2) while booting up for the first time itself it will display the falowing
-message..
-
-modprobe: FATAL: Could not load
-/lib/modules/2.6.10_mvl401-8272ads/modules.dep: No such file or dire
-ctory
-
-but after this also board boots up properly
-
-3) when board is running properly in between it starts printing on console
-repeatedly...
-
-Header CRC failed on REF_PRISTINE node at 0x00638a6c: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x00000254)
-Header CRC failed on REF_PRISTINE node at 0x00638cc0: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x00000234)
-Header CRC failed on REF_PRISTINE node at 0x00638ef4: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4)
-Header CRC failed on REF_PRISTINE node at 0x006391b8: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4)
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0)
-Header CRC failed on REF_PRISTINE node at 0x0063972c: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002bc)
-Header CRC failed on REF_PRISTINE node at 0x006399e8: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac)
-Header CRC failed on REF_PRISTINE node at 0x00639c94: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
-Header CRC failed on REF_PRISTINE node at 0x00639f44: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac)
-Header CRC failed on REF_PRISTINE node at 0x0063a1f0: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0)
-Header CRC failed on REF_PRISTINE node at 0x0063a4b0: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
-Header CRC failed on REF_PRISTINE node at 0x0063a760: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
-Header CRC failed on REF_PRISTINE node at 0x0063aa10: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8)
-Header CRC failed on REF_PRISTINE node at 0x0063acd8: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
-Header CRC failed on REF_PRISTINE node at 0x0063af88: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4)
-Header CRC failed on REF_PRISTINE node at 0x0063b24c: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4)
-Header CRC failed on REF_PRISTINE node at 0x0063b500: Read 0xffffffff,
-calculated 0x44660075
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8)
-Header CRC failed on REF_PRISTINE node at 0x0063b7c8: Read 0xffffffff,
-calculated 0x44660075
-
-are they debug messages or warnings...?
-
-do they create more problem or can i neglet these errors..
-
-plz reply..it is too urgent 
-
-
-here is my kerenl configurations....
-#
-# Memory Technology Devices (MTD)
-#
-CONFIG_MTD=y
-# CONFIG_MTD_DEBUG is not set
-# CONFIG_MTD_CONCAT is not set
-CONFIG_MTD_PARTITIONS=y
-# CONFIG_MTD_REDBOOT_PARTS is not set
-CONFIG_MTD_CMDLINE_PARTS=y
-
-#
-# User Modules And Translation Layers
-#
-CONFIG_MTD_CHAR=y
-CONFIG_MTD_BLOCK=y
-# CONFIG_FTL is not set
-# CONFIG_NFTL is not set
-# CONFIG_INFTL is not set
-# CONFIG_RFD_FTL is not set
-
-#
-# RAM/ROM/Flash chip drivers
-#
-CONFIG_MTD_CFI=y
-CONFIG_MTD_JEDECPROBE=y
-CONFIG_MTD_GEN_PROBE=y
-CONFIG_MTD_CFI_ADV_OPTIONS=y
-CONFIG_MTD_CFI_NOSWAP=y
-# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
-# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
-CONFIG_MTD_CFI_GEOMETRY=y
-# CONFIG_MTD_MAP_BANK_WIDTH_1 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_2 is not set
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
-# CONFIG_MTD_CFI_I1 is not set
-CONFIG_MTD_CFI_I2=y
-# CONFIG_MTD_CFI_I4 is not set
-# CONFIG_MTD_CFI_I8 is not set
-# CONFIG_MTD_OTP is not set
-# CONFIG_MTD_CFI_INTELEXT is not set
-CONFIG_MTD_CFI_AMDSTD=y
-CONFIG_MTD_CFI_AMDSTD_RETRY=0
-# CONFIG_MTD_CFI_STAA is not set
-CONFIG_MTD_CFI_UTIL=y
-# CONFIG_MTD_RAM is not set
-CONFIG_MTD_ROM=y
-# CONFIG_MTD_ABSENT is not set
-# CONFIG_MTD_XIP is not set
-
-#
-# Mapping drivers for chip access
-#
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set
-CONFIG_MTD_PHYSMAP=y
-CONFIG_MTD_PHYSMAP_START=0xFC000000
-CONFIG_MTD_PHYSMAP_LEN=0x4000000CONFIG_MTD_PHYSMAP_BANKWIDTH=4
-# CONFIG_MTD_MULTI_PHYSMAP is not set
-# CONFIG_MTD_SBC8240 is not set
-CONFIG_MTD_PQ2FADS=y
-# CONFIG_MTD_PLATRAM is not set
-
-CONFIG_JFFS2_FS=y
-CONFIG_JFFS2_FS_DEBUG=0
-CONFIG_JFFS2_FS_WRITEBUFFER=y
-
- and 
-
-file system is created using fallowing command..
-
-mkfs.jffs2 -r RFS_NEW/ -e 0x20000 -o /tftpboot/jffs2_img -b
-
-do we need padding or not..?
-
-
-
-thnks in advance..
-
-Nethra
-
--- 
-View this message in context: http://www.nabble.com/jffs2-file-system-on-MPC8272ADS-board-tf4513530.html#a12873530
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Ben
