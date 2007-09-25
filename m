@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <SRS0=jHOD=OV=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id D0294DDE01
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 23:20:48 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: AMCC yosemite 440ep PCI slot doesn't work.
+Date: Tue, 25 Sep 2007 15:21:07 +0200
+References: <46F3A2C4.7000202@windriver.com> <46F86C4F.7060305@windriver.com>
+	<200709250718.51824.sr@denx.de>
+In-Reply-To: <200709250718.51824.sr@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18169.1165.5981.330400@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Sep 2007 22:52:29 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <24149ACB-D786-4415-99A8-117FAC9936E6@kernel.crashing.org>
-References: <18168.62378.472571.655865@cargo.ozlabs.ibm.com>
-	<24149ACB-D786-4415-99A8-117FAC9936E6@kernel.crashing.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>, Greg KH <gregkh@suse.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Roland McGrath <roland@redhat.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709251521.07500.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+On Tuesday 25 September 2007, Stefan Roese wrote:
+> On Tuesday 25 September 2007, Andrew Liu wrote:
+> > I have tested it on linux-2.6.19 which is from AMCC website ,  linux
+> > 2.6.21.7 which is from linux mainline and  linux-2.6.23.rc7 which is
+> > from git://www.denx.de/git/linux-2.6-denx.git
+> > Have the same problem.
+> >  I don't understand, why after enabling this PCI interrupts.  in so
+> > short time, produce 100,000 interrupt request (25:     100000  UIC0
+> > Level     eth2).
+>
+> Because the interrupt is somehow not acknowledged in the PCI device.
+>
+> I will test this on my Yosemite and let you know.
 
-> Should this also go to -stable?
+I just tested on my Yellowstone, which is nearly identical to the Yosemite. 
+And it works just fine with an Intel EEPRO/100.
 
-It turns out that it's not triggerable (as an oops) from userspace in
-2.6.22 and earlier.  Commit 1b6610d6 of Ben H's took out #ifdef
-CONFIG_PPC32 around a couple of CHECK_FULL_REGS calls, which is what
-made it triggerable on ppc64.  We have an interesting difference
-between ppc32 and ppc64 in our CHECK_FULL_REGS implementation - it's a
-BUG_ON on 64-bit but just a printk on 32-bit.  So on 32-bit someone
-could use it to spam the logs but not to actually crash the system.
+Could you test another PCI board (ethernet, IDE, USB...)? Or do you have 
+access to another Yosemite or Yellowstone board?
 
-So yes, I guess it should go to -stable once Linus takes it, but it's
-a much less serious vulnerability in 2.6.22 and earlier than I first
-thought (since it's only 32-bit, and just a user-triggerable printk).
+Best regards,
+Stefan
 
-And yes we should consolidate the CHECK_FULL_REGS implementations as a
-WARN_ON with a counter to limit how many we do.
-
-Paul.
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
