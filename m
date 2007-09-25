@@ -1,18 +1,27 @@
-Return-Path: <SRS0=jHOD=OV=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 74F20DDE09
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 15:23:43 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: AMCC yosemite 440ep PCI slot doesn't work.
-Date: Tue, 25 Sep 2007 07:18:51 +0200
-References: <46F3A2C4.7000202@windriver.com> <200709241314.18123.sr@denx.de>
-	<46F86C4F.7060305@windriver.com>
-In-Reply-To: <46F86C4F.7060305@windriver.com>
+Return-Path: <jacmet@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.187])
+	by ozlabs.org (Postfix) with ESMTP id BDA54DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 15:33:23 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so2039065fkz
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Sep 2007 22:33:21 -0700 (PDT)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
+References: <20070920104211.896143373@sunsite.dk>
+	<20070920104313.217207466@sunsite.dk>
+	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
+	<874pholbdk.fsf@macbook.be.48ers.dk>
+	<20070924050709.GM8058@localhost.localdomain>
+	<878x6wpq3t.fsf@macbook.be.48ers.dk>
+	<20070925021340.GG30338@localhost.localdomain>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 25 Sep 2007 07:33:15 +0200
+In-Reply-To: <20070925021340.GG30338@localhost.localdomain> (David Gibson's
+	message of "Tue\, 25 Sep 2007 12\:13\:40 +1000")
+Message-ID: <87myvbnwbo.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709250718.51824.sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 25 September 2007, Andrew Liu wrote:
-> I have tested it on linux-2.6.19 which is from AMCC website ,  linux
-> 2.6.21.7 which is from linux mainline and  linux-2.6.23.rc7 which is
-> from git://www.denx.de/git/linux-2.6-denx.git
-> Have the same problem.
->  I don't understand, why after enabling this PCI interrupts.  in so
-> short time, produce 100,000 interrupt request (25:     100000  UIC0
-> Level     eth2).
+>>>>> "David" == David Gibson <david@gibson.dropbear.id.au> writes:
 
-Because the interrupt is somehow not acknowledged in the PCI device.
+Hi,
 
-I will test this on my Yosemite and let you know.
+ >> The Linux driver for the chip (rtc-1307.c) doesn't expose the NVRAM
+ >> bytes either.
 
-Best regards,
-Stefan
+ David> Incidentally how are you planning on instantiating the driver?  AFAIK
+ David> all the rtc-* drivers are platform drivers rather than of_platform
+ David> drivers.  I had been thinking of an rtc helper function that would go
+ David> through the tree instantiating platform devices for any RTCs based on
+ David> a compatible -> platform device name table.
 
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+Please see patch #2 in the series:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042896.html
+
+That helper function more or less already exists in fsl_soc.c.
+
+-- 
+Bye, Peter Korsgaard
