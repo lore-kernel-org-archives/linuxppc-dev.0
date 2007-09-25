@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 25 Sep 2007 12:16:38 +1000
+Date: Tue, 25 Sep 2007 12:29:35 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Alan Bennett <alan@akb.net>
-Subject: Re: Problems compiling Linux for MPC8272ADS
-Message-ID: <20070925021638.GH30338@localhost.localdomain>
-References: <9A1468054ED2FD40907CC3B2C1871D400106CC90@hermes.versatel.com>
-	<bfa0697f0709240946i341739b3n8d5541b30bca8cb@mail.gmail.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [RFC] [PATCH] PowerPC: add more than 4MB kernel image size
+	support to bootwarapper
+Message-ID: <20070925022935.GI30338@localhost.localdomain>
+References: <20070924113627.GA30504@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <bfa0697f0709240946i341739b3n8d5541b30bca8cb@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Manil Gaouar <mgaouar@solacom.com>
+In-Reply-To: <20070924113627.GA30504@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2007 at 10:46:41AM -0600, Alan Bennett wrote:
-> I added this to my boot/Makefile near the other mcpu=440 lines.  I
-> believe there may be a fix coming?
+On Mon, Sep 24, 2007 at 03:36:27PM +0400, Valentine Barshak wrote:
+> Currently zImage is linked at the 4MB base address.
+> Some platforms (using cuboot, treeboot) need the zImage's
+> entry point and base address. They place zImage exactly
+> at the base address it's been linked to. Sometimes 4MB left
+> at the start of the memory is simply not enough to unpack zImage.
+> This could happen with initramfs enabled, since the kernel image
+> packed along with initramfs.cpio could be over 5MB in size.
+> This patch checks vmlinux image size and links zImage at
+> the base address that is equal to the unpacked image size
+> aligned to 4MB boundary. This way zImage base address is 4MB
+> only if unpacked kernel image size is less then 4MB.
 
-I believe there is.
+Good plan.  However..
 
-> $(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=440
+[snip]
+> diff -ruN linux-2.6.orig/arch/powerpc/boot/zImage.lds.S linux-2.6/arch/powerpc/boot/zImage.lds.S
+> --- linux-2.6.orig/arch/powerpc/boot/zImage.lds.S	2007-09-22 00:48:08.000000000 +0400
+> +++ linux-2.6/arch/powerpc/boot/zImage.lds.S	2007-09-22 04:03:58.000000000 +0400
+> @@ -3,7 +3,7 @@
+>  EXTERN(_zimage_start)
+>  SECTIONS
+>  {
+> -  . = (4*1024*1024);
+> +  . = ALIGN((_kend - _kstart), (4*1024*1024));
 
-It should be -mcpu=405 for Walnut, though.
+..I don't see any reason to keep the 4MB granularity.  I would just
+align the address to say a 64k boundary (64k because that's the
+granularity used in the normal ABI).
 
-> $(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
-> $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
+>    _start = .;
+>    .text      :
+>    {
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
