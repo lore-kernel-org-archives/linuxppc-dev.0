@@ -1,24 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CBD8CDDE04
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 32964DDDF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Sep 2007 18:25:30 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Ia5jT-00037o-Fw
-	for linuxppc-embedded@ozlabs.org; Tue, 25 Sep 2007 01:25:27 -0700
-Message-ID: <12875133.post@talk.nabble.com>
-Date: Tue, 25 Sep 2007 01:25:27 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux doesn not boot from u-boot on ML403
-In-Reply-To: <fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
+	Tue, 25 Sep 2007 22:09:37 +1000 (EST)
+Message-ID: <46F8FA5F.3050907@scram.de>
+Date: Tue, 25 Sep 2007 14:09:03 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <Pine.LNX.4.44.0709231519510.25165-100000@slslc02.psi.ch>
-	<fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
+References: <46F6C9DC.90008@scram.de> <46F7DE85.7000401@freescale.com>
+	<46F7EE95.1040509@scram.de> <46F80049.2030509@freescale.com>
+In-Reply-To: <46F80049.2030509@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,36 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Scott,
+> Yikes.  Please don't change cpm_uart_cpm1.h, as it's correct for 
+> arch/powerpc, and there are numerous other places that assume cpmp is 
+> virtual (including in the very same function that assigns it a 
+> physical address).
 
-Hi Grant,
+I'm still not convinced cpm_uart_cpm1.h is correct:
 
-   Thank you very much for your response. actually I was wrong when saying:
+pinfo->rx_bd_base and pinfo->tx_bd_base are both initialized with an 
+address obtained by cpm_dpram_addr(). In both ppc and powerpc, this is 
+an address relative to dpram_vbase in commproc.c
 
-> My observation is that the linux 2.6.23 rc-2 is not that stable as 2.6.21.
-> In most cases It boots successfully (ie. zImage.elf) but occasionally it
-> fails during booting. It has never occurred with 2.6.21 which I also
-> copied from your side.
+In cpm_uart_core.c, the operation "pinfo->rx_bd_base - DPRAM_BASE" is 
+used to calculate the DPRAM offset. So DPRAM_BASE must be relative to 
+dpram_vbase in commproc.c as well. However, cpm_uart_cpm1.h uses cpmp in 
+commproc.c to initialize DPRAM_BASE.
 
-Both version of linux 2.6.21 and 2.6.23 run very well and always boot
-properly.
-To deal with u-boot and linux kernel I use jtag and load the software
-straight to RAM.
+On ARCH=ppc, cpmp is a physical address with 1:1 virtual mapping ("well 
+known address"). On ARC=powerpc, this is an address obtained by 
+ioremap(), however it's a different ioremap() call than dpram_vbase is 
+obtained from, so noone can guarantee
+cpmp is always the same as dpram_vbase even on ARCH=powerpc.
 
-I have difficulties to boot uImage (kernel v2.6.23) from u-boot 1.2.0. 
-uImage boots sometimes from u-boot but zImage.elf boots always (when loaded
-to RAM via jtag). 
+To me, it looks like setting DPRAM_BASE to cpm_dpram_addr(0) is the fix 
+as it makes the DPRAM offset a defined result.
 
-It seems to be that I have the general problem with u-boot which I have
-described on u-boot users forum:
-http://www.nabble.com/u-boot-init-problem-on-ml403-%28virtex-4%29-board-tf4514050.html
-
-Best Regards
-
-Mirek
-
-
-
-
--- 
-View this message in context: http://www.nabble.com/Re%3A-Linux-doesn-not-boot-from-u-boot-on-ML403-tf4504418.html#a12875133
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Thanks,
+Jochen
