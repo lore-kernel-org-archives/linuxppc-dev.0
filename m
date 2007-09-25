@@ -1,18 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 7B3FEDE0FC
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:38:21 +1000 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id A0E67DDEBD
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:47:23 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/5] ibmebus: Remove bus match/probe/remove functions
-Date: Tue, 25 Sep 2007 16:29:51 +0200
+Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on
+	of_device
+Date: Tue, 25 Sep 2007 16:39:05 +0200
 References: <200709251410.29780.fenkes@de.ibm.com>
-	<200709251411.54465.fenkes@de.ibm.com>
-In-Reply-To: <200709251411.54465.fenkes@de.ibm.com>
+	<200709251412.27896.fenkes@de.ibm.com>
+In-Reply-To: <200709251412.27896.fenkes@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709251629.52376.arnd@arndb.de>
+Message-Id: <200709251639.06414.arnd@arndb.de>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	Paul Mackerras <pmac@au1.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
 	LKML <linux-kernel@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
@@ -28,21 +29,80 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tuesday 25 September 2007, Joachim Fenkes wrote:
-> ibmebus_{,un}register_driver() are replaced by dummy functions because
-> ibmebus is temporarily unusable in this transitional state.
->=20
+> The devtree root is now searched for devices matching a built-in whitelist
+> during boot, so these devices appear on the bus from the beginning. It is
+> still possible to manually add/remove devices to/from the bus by using the
+> probe/remove sysfs interface. Also, when a device driver registers itself,
+> the devtree is matched against its matchlist.
+> 
 > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 > ---
-> =A0arch/powerpc/kernel/ibmebus.c | =A0199 ++-----------------------------=
-=2D---------
-> =A01 files changed, 6 insertions(+), 193 deletions(-)
->=20
+>  arch/powerpc/kernel/ibmebus.c |   97 ++++++++++++++++++++++++++++++++++-------
+>  1 files changed, 81 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+> index cc80f84..c506e0d 100644
+> --- a/arch/powerpc/kernel/ibmebus.c
+> +++ b/arch/powerpc/kernel/ibmebus.c
+> @@ -51,6 +51,15 @@ static struct device ibmebus_bus_device = { /* fake "parent" device */
+>  
+>  struct bus_type ibmebus_bus_type;
+>  
+> +/* These devices will automatically be added to the bus during init */
+> +static struct of_device_id builtin_matches[] = {
+> +	{ .name = "lhca" },
+> +	{ .compatible = "IBM,lhca" },
+> +	{ .name = "lhea" },
+> +	{ .compatible = "IBM,lhea" },
+> +	{},
+> +};
+> +
 
-Great diffstat!
+Hmm, do you have devices that only have the matching name property
+but not the compatible property? If not, I'd suggest only looking
+for compatible, so you have less chance of false positives.
 
-The description makes it sound like a git-bisect would get broken
-by this patch, which should never happen. If the patch indeed
-ends up with a broken kernel, it would be better to merge it with
-the later patch that fixes the code again.
+> +static int ibmebus_create_device(struct device_node *dn)
+> +{
+> +	struct of_device *dev;
+> +	int ret;
+> +
+> +	dev = of_device_alloc(dn, NULL, &ibmebus_bus_device);
+> +	if (!dev)
+> +		return -ENOMEM;
+> +
+> +	dev->dev.bus = &ibmebus_bus_type;
+> +	dev->dev.archdata.dma_ops = &ibmebus_dma_ops;
+> +
+> +	ret = of_device_register(dev);
+> +	if (ret) {
+> +		of_device_free(dev);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
 
-	Arnd <><
+nice!
+
+> @@ -219,9 +276,9 @@ static ssize_t ibmebus_store_probe(struct bus_type *bus,
+>  	}
+>  
+>  	if ((dn = of_find_node_by_path(path))) {
+> -/*		dev = ibmebus_register_device_node(dn); */
+> +		rc = ibmebus_create_device(dn);
+>  		of_node_put(dn);
+> -		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
+> +		rc = rc ? rc : count;
+
+the last line looks a bit silly. Maybe instead do
+
+		rc = ibmebus_create_device(dn);
+  		of_node_put(dn);
+	}
+
+	kfree(path);
+	if (rc)
+		return rc;
+	return count;
+}
