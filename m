@@ -1,18 +1,22 @@
-Return-Path: <roland@redhat.com>
-Received: from rwcrmhc14.comcast.net (rwcrmhc14.comcast.net [204.127.192.84])
-	by ozlabs.org (Postfix) with ESMTP id C5726DDEC9
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 10:00:27 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc: FULL_REGS on exec
-Message-Id: <20070924235244.2F3BB4D04B7@magilla.localdomain>
-Date: Mon, 24 Sep 2007 16:52:44 -0700 (PDT)
-Cc: David Woodhouse <dwmw2@redhat.com>,
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 72879DDE00
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 10:33:37 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc: ptrace CHECK_FULL_REGS
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <20070924235052.5AFC24D04B7@magilla.localdomain>
+References: <20070924235052.5AFC24D04B7@magilla.localdomain>
+Content-Type: text/plain
+Date: Tue, 25 Sep 2007 10:33:26 +1000
+Message-Id: <1190680406.12382.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: David Woodhouse <dwmw2@redhat.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +27,130 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-When PTRACE_O_TRACEEXEC is used, a ptrace call to fetch the registers at
-the PTRACE_EVENT_EXEC stop (PTRACE_PEEKUSR) will oops in CHECK_FULL_REGS.
-With recent versions, "gdb --args /bin/sh -c 'exec /bin/true'" and "run" at
-the (gdb) prompt is sufficient to produce this.  I also have written an
-isolated test case, see https://bugzilla.redhat.com/show_bug.cgi?id=301791#c15.
+On Mon, 2007-09-24 at 16:50 -0700, Roland McGrath wrote:
+> This restores the CHECK_FULL_REGS sanity check to every place that can
+> access the nonvolatile GPRs for ptrace.  This is already done for
+> native-bitwidth PTRACE_PEEKUSR, but was omitted for many other cases
+> (32-bit ptrace, PTRACE_GETREGS, etc.); I think there may have been more
+> uniform checks before that were lost in the recent cleanup of GETREGS et al.
 
-This change fixes the problem by clearing the low bit of pt_regs.trap in
-start_thread so that FULL_REGS is true again.  This is correct since all of
-the GPRs that "full" refers to are cleared in start_thread.
+Yup, I think I ditched most of them.. for some reason I decided it
+couldn't happen, but maybe I'm wrong ?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/process.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e477c9d..fd799d2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -605,6 +605,13 @@ void start_thread(struct pt_regs *regs, unsigned long start, unsigned long sp)
- 	regs->ccr = 0;
- 	regs->gpr[1] = sp;
- 
-+	/*
-+	 * We have just cleared all the nonvolatile GPRs, so make
-+	 * FULL_REGS(regs) return true.  This is necessary to allow
-+	 * ptrace to examine the thread immediately after exec.
-+	 */
-+	regs->trap &= ~1UL;
-+
- #ifdef CONFIG_PPC32
- 	regs->mq = 0;
- 	regs->nip = start;
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> ---
+>  arch/powerpc/kernel/ptrace.c   |    4 ++++
+>  arch/powerpc/kernel/ptrace32.c |    8 ++++++++
+>  2 files changed, 12 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index 8a177bd..40d34b3 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -331,6 +331,7 @@ static long arch_ptrace_old(struct task_struct *child, long request, long addr,
+>  		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+>  		unsigned long __user *tmp = (unsigned long __user *)addr;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		for (i = 0; i < 32; i++) {
+>  			ret = put_user(*reg, tmp);
+>  			if (ret)
+> @@ -346,6 +347,7 @@ static long arch_ptrace_old(struct task_struct *child, long request, long addr,
+>  		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+>  		unsigned long __user *tmp = (unsigned long __user *)addr;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		for (i = 0; i < 32; i++) {
+>  			ret = get_user(*reg, tmp);
+>  			if (ret)
+> @@ -517,6 +519,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+>  			ret = -EIO;
+>  			break;
+>  		}
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		ret = 0;
+>  		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+>  			ret |= __put_user(ptrace_get_reg(child, ui),
+> @@ -537,6 +540,7 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
+>  			ret = -EIO;
+>  			break;
+>  		}
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		ret = 0;
+>  		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+>  			ret = __get_user(tmp, (unsigned long __user *) data);
+> diff --git a/arch/powerpc/kernel/ptrace32.c b/arch/powerpc/kernel/ptrace32.c
+> index 9e6baea..6b86960 100644
+> --- a/arch/powerpc/kernel/ptrace32.c
+> +++ b/arch/powerpc/kernel/ptrace32.c
+> @@ -53,6 +53,7 @@ static long compat_ptrace_old(struct task_struct *child, long request,
+>  		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+>  		unsigned int __user *tmp = (unsigned int __user *)addr;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		for (i = 0; i < 32; i++) {
+>  			ret = put_user(*reg, tmp);
+>  			if (ret)
+> @@ -68,6 +69,7 @@ static long compat_ptrace_old(struct task_struct *child, long request,
+>  		unsigned long *reg = &((unsigned long *)child->thread.regs)[0];
+>  		unsigned int __user *tmp = (unsigned int __user *)addr;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		for (i = 0; i < 32; i++) {
+>  			ret = get_user(*reg, tmp);
+>  			if (ret)
+> @@ -164,6 +166,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  		if ((addr & 3) || (index > PT_FPSCR32))
+>  			break;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		if (index < PT_FPR0) {
+>  			tmp = ptrace_get_reg(child, index);
+>  		} else {
+> @@ -210,6 +213,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  		if ((addr & 3) || numReg > PT_FPSCR)
+>  			break;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		if (numReg >= PT_FPR0) {
+>  			flush_fp_to_thread(child);
+>  			tmp = ((unsigned long int *)child->thread.fpr)[numReg - PT_FPR0];
+> @@ -270,6 +274,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  		if ((addr & 3) || (index > PT_FPSCR32))
+>  			break;
+>  
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		if (index < PT_FPR0) {
+>  			ret = ptrace_put_reg(child, index, data);
+>  		} else {
+> @@ -307,6 +312,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  		 */
+>  		if ((addr & 3) || (numReg > PT_FPSCR))
+>  			break;
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		if (numReg < PT_FPR0) {
+>  			unsigned long freg = ptrace_get_reg(child, numReg);
+>  			if (index % 2)
+> @@ -342,6 +348,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  			ret = -EIO;
+>  			break;
+>  		}
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		ret = 0;
+>  		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+>  			ret |= __put_user(ptrace_get_reg(child, ui),
+> @@ -359,6 +366,7 @@ long compat_sys_ptrace(int request, int pid, unsigned long addr,
+>  			ret = -EIO;
+>  			break;
+>  		}
+> +		CHECK_FULL_REGS(child->thread.regs);
+>  		ret = 0;
+>  		for (ui = 0; ui < PT_REGS_COUNT; ui ++) {
+>  			ret = __get_user(tmp, (unsigned int __user *) data);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
