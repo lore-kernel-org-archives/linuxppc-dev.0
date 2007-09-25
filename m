@@ -1,21 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 25 Sep 2007 15:47:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
-Message-ID: <20070925054716.GE2525@localhost.localdomain>
-References: <20070920104211.896143373@sunsite.dk>
-	<20070920104313.217207466@sunsite.dk>
-	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
-	<874pholbdk.fsf@macbook.be.48ers.dk>
-	<20070924050709.GM8058@localhost.localdomain>
-	<878x6wpq3t.fsf@macbook.be.48ers.dk>
-	<20070925021340.GG30338@localhost.localdomain>
-	<87myvbnwbo.fsf@macbook.be.48ers.dk>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1F1FEDDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 15:47:42 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Ia3Gk-0007lQ-V4
+	for linuxppc-dev@ozlabs.org; Mon, 24 Sep 2007 22:47:38 -0700
+Message-ID: <12873530.post@talk.nabble.com>
+Date: Mon, 24 Sep 2007 22:47:38 -0700 (PDT)
+From: Nethra <nethra_gmit@yahoo.co.in>
+To: linuxppc-dev@ozlabs.org
+Subject: jffs2 file system on MPC8272ADS board
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87myvbnwbo.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,184 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 25, 2007 at 07:33:15AM +0200, Peter Korsgaard wrote:
-> >>>>> "David" == David Gibson <david@gibson.dropbear.id.au> writes:
-> 
-> Hi,
-> 
->  >> The Linux driver for the chip (rtc-1307.c) doesn't expose the NVRAM
->  >> bytes either.
-> 
->  David> Incidentally how are you planning on instantiating the driver?  AFAIK
->  David> all the rtc-* drivers are platform drivers rather than of_platform
->  David> drivers.  I had been thinking of an rtc helper function that would go
->  David> through the tree instantiating platform devices for any RTCs based on
->  David> a compatible -> platform device name table.
-> 
-> Please see patch #2 in the series:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042896.html
-> 
-> That helper function more or less already exists in fsl_soc.c.
 
-Ah, I see.  Well... it exists for i2c devices (possibly including
-RTCs).  Whereas I was thinking of a version for RTCs (possibly
-including i2c devices).  Actually that won't quite work - looks like
-the i2c RTC class drivers are probed differently from the RTC drivers
-I was looking at which are pure platform devices.
+hi everyone,
+
+I m using custom board similar to MPC8272ADS board...
+
+1) For the first time it boots up properly in case if we overwrite any
+existing binaries using nfs mounted file system on the board, after
+rebooting it displays fallowing message...
+
+Further such events for this erase block will not be printed
+Eep. Child "null" (ino #1346) of dir ino #3 doesn't exist!
+Eep. Child "autocomm" (ino #463) of dir ino #461 doesn't exist!
+Eep. Child "calibration" (ino #464) of dir ino #461 doesn't exist!
+Eep. Child "coredsp_driver.ko" (ino #939) of dir ino #336 doesn't exist!
+Inode #1307 was a directory with children - removing those too...
+Inode #564 was a directory with children - removing those too...
+Inode #565 was a directory with children - removing those too...
+Inode #1112 was a directory with children - removing those too...
+Inode #1115 was a directory with children - removing those too...
+Inode #1118 was a directory with children - removing those too...
+Inode #1123 was a directory with children - removing those too...
+
+after this board boots up properly....but it not be having overwritten files
+
+2) while booting up for the first time itself it will display the falowing
+message..
+
+modprobe: FATAL: Could not load
+/lib/modules/2.6.10_mvl401-8272ads/modules.dep: No such file or dire
+ctory
+
+but after this also board boots up properly
+
+3) when board is running properly in between it starts printing on console
+repeatedly...
+
+Header CRC failed on REF_PRISTINE node at 0x00638a6c: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x00000254)
+Header CRC failed on REF_PRISTINE node at 0x00638cc0: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x00000234)
+Header CRC failed on REF_PRISTINE node at 0x00638ef4: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4)
+Header CRC failed on REF_PRISTINE node at 0x006391b8: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4)
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0)
+Header CRC failed on REF_PRISTINE node at 0x0063972c: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002bc)
+Header CRC failed on REF_PRISTINE node at 0x006399e8: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac)
+Header CRC failed on REF_PRISTINE node at 0x00639c94: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
+Header CRC failed on REF_PRISTINE node at 0x00639f44: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac)
+Header CRC failed on REF_PRISTINE node at 0x0063a1f0: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0)
+Header CRC failed on REF_PRISTINE node at 0x0063a4b0: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
+Header CRC failed on REF_PRISTINE node at 0x0063a760: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
+Header CRC failed on REF_PRISTINE node at 0x0063aa10: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8)
+Header CRC failed on REF_PRISTINE node at 0x0063acd8: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0)
+Header CRC failed on REF_PRISTINE node at 0x0063af88: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4)
+Header CRC failed on REF_PRISTINE node at 0x0063b24c: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4)
+Header CRC failed on REF_PRISTINE node at 0x0063b500: Read 0xffffffff,
+calculated 0x44660075
+Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8)
+Header CRC failed on REF_PRISTINE node at 0x0063b7c8: Read 0xffffffff,
+calculated 0x44660075
+
+are they debug messages or warnings...?
+
+do they create more problem or can i neglet these errors..
+
+plz reply..it is too urgent 
+
+
+here is my kerenl configurations....
+#
+# Memory Technology Devices (MTD)
+#
+CONFIG_MTD=y
+# CONFIG_MTD_DEBUG is not set
+# CONFIG_MTD_CONCAT is not set
+CONFIG_MTD_PARTITIONS=y
+# CONFIG_MTD_REDBOOT_PARTS is not set
+CONFIG_MTD_CMDLINE_PARTS=y
+
+#
+# User Modules And Translation Layers
+#
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_BLOCK=y
+# CONFIG_FTL is not set
+# CONFIG_NFTL is not set
+# CONFIG_INFTL is not set
+# CONFIG_RFD_FTL is not set
+
+#
+# RAM/ROM/Flash chip drivers
+#
+CONFIG_MTD_CFI=y
+CONFIG_MTD_JEDECPROBE=y
+CONFIG_MTD_GEN_PROBE=y
+CONFIG_MTD_CFI_ADV_OPTIONS=y
+CONFIG_MTD_CFI_NOSWAP=y
+# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set
+# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set
+CONFIG_MTD_CFI_GEOMETRY=y
+# CONFIG_MTD_MAP_BANK_WIDTH_1 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_2 is not set
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+# CONFIG_MTD_CFI_I1 is not set
+CONFIG_MTD_CFI_I2=y
+# CONFIG_MTD_CFI_I4 is not set
+# CONFIG_MTD_CFI_I8 is not set
+# CONFIG_MTD_OTP is not set
+# CONFIG_MTD_CFI_INTELEXT is not set
+CONFIG_MTD_CFI_AMDSTD=y
+CONFIG_MTD_CFI_AMDSTD_RETRY=0
+# CONFIG_MTD_CFI_STAA is not set
+CONFIG_MTD_CFI_UTIL=y
+# CONFIG_MTD_RAM is not set
+CONFIG_MTD_ROM=y
+# CONFIG_MTD_ABSENT is not set
+# CONFIG_MTD_XIP is not set
+
+#
+# Mapping drivers for chip access
+#
+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
+CONFIG_MTD_PHYSMAP=y
+CONFIG_MTD_PHYSMAP_START=0xFC000000
+CONFIG_MTD_PHYSMAP_LEN=0x4000000CONFIG_MTD_PHYSMAP_BANKWIDTH=4
+# CONFIG_MTD_MULTI_PHYSMAP is not set
+# CONFIG_MTD_SBC8240 is not set
+CONFIG_MTD_PQ2FADS=y
+# CONFIG_MTD_PLATRAM is not set
+
+CONFIG_JFFS2_FS=y
+CONFIG_JFFS2_FS_DEBUG=0
+CONFIG_JFFS2_FS_WRITEBUFFER=y
+
+ and 
+
+file system is created using fallowing command..
+
+mkfs.jffs2 -r RFS_NEW/ -e 0x20000 -o /tftpboot/jffs2_img -b
+
+do we need padding or not..?
+
+
+
+thnks in advance..
+
+Nethra
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+View this message in context: http://www.nabble.com/jffs2-file-system-on-MPC8272ADS-board-tf4513530.html#a12873530
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
