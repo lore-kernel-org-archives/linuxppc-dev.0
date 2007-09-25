@@ -1,32 +1,34 @@
 Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2AEFEDDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 22:11:07 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l8PCB3Bc422612
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 12:11:03 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8PCB2Dm2703466
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 13:11:02 +0100
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8PCAkBc006701
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 13:10:46 +0100
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9785CDDE9C
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 22:11:35 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8PCBSke090454
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 12:11:28 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8PCBSe12109616
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 14:11:28 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8PCBRWj000311
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 14:11:28 +0200
 From: Joachim Fenkes <fenkes@de.ibm.com>
 To: Paul Mackerras <paulus@samba.org>,
 	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/5] PowerPC: ibmebus refactoring and fixes
-Date: Tue, 25 Sep 2007 14:10:29 +0200
+Subject: [PATCH 1/5] PowerPC: Move of_device allocation into of_device.[ch]
+Date: Tue, 25 Sep 2007 14:11:27 +0200
+References: <200709251410.29780.fenkes@de.ibm.com>
+In-Reply-To: <200709251410.29780.fenkes@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709251410.29780.fenkes@de.ibm.com>
+Message-Id: <200709251411.27755.fenkes@de.ibm.com>
 Cc: Thomas Klein <tklein@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
 	Jan-Bernd Themann <themann@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
 	Christoph Raisch <raisch@de.ibm.com>,
@@ -40,48 +42,253 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patchset will merge the ibmebus and of_platform bus drivers by basing a
-lot of ibmebus functionality on of_platform code and adding the features
-specific to ibmebus on top of that.
+Extract generic of_device allocation code from of_platform_device_create()
+and move it into of_device.[ch], called of_device_alloc(). Also, there's now
+of_device_free() which puts the device node.
 
-I split the actual ibmebus rework into three patches (2/5-4/5) for easier
-readability. The kernel will compile during the intermediate states, and
-ibmebus will not crash, but not work either.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ include/asm-powerpc/of_device.h   |    4 ++
+ include/linux/of_device.h         |    5 ++
+ arch/powerpc/kernel/of_device.c   |   80 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/of_platform.c |   70 +-------------------------------
+ 4 files changed, 91 insertions(+), 68 deletions(-)
 
-As a side-effect of patch 3/5, a problem with bus_id collisions in case of
-two devices sharing the same location code is resolved -- the bus_id is now
-determined differently.
-
-[1/5] moves of_device allocation into of_device.[ch]
-[2/5] removes the old bus match/probe/remove functions
-[3/5] adds device creation and bus probing based on of_device
-[4/5] finally moves to of_device and of_platform_driver by changing
-      ibmebus.h and matching the eHCA and eHEA drivers
-[5/5] just changes a nit in ibmebus_store_probe()
-
-These patches should apply cleanly, in order, against 2.6.23-rc5 and against
-Linus' git. Please review and comment them, and queue them up for 2.6.24 if
-you think they're okay.
-
-Thanks and regards,
-  Joachim
-
- arch/powerpc/kernel/ibmebus.c             |  263 ++++++++-----------------=
-=2D---
- arch/powerpc/kernel/of_device.c           |   80 +++++++++
- arch/powerpc/kernel/of_platform.c         |   70 +--------
- drivers/infiniband/hw/ehca/ehca_classes.h |    2 +-
- drivers/infiniband/hw/ehca/ehca_eq.c      |    6 +-
- drivers/infiniband/hw/ehca/ehca_main.c    |   32 ++--
- drivers/net/ehea/ehea.h                   |    2 +-
- drivers/net/ehea/ehea_main.c              |   72 ++++----
- include/asm-powerpc/ibmebus.h             |   38 +----
- include/asm-powerpc/of_device.h           |    4 +
- include/linux/of_device.h                 |    5 +
- 11 files changed, 226 insertions(+), 348 deletions(-)
-
-=2D-=20
-Joachim Fenkes =A0-- =A0eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH =A0-- =A0Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220 =A0-- =A071032 Boeblingen =A0-- =A0Germany
-eMail: fenkes@de.ibm.com
+diff --git a/include/asm-powerpc/of_device.h b/include/asm-powerpc/of_device.h
+index ec2a8a2..9ab469d 100644
+--- a/include/asm-powerpc/of_device.h
++++ b/include/asm-powerpc/of_device.h
+@@ -17,6 +17,10 @@ struct of_device
+ 	struct device		dev;		/* Generic device interface */
+ };
+ 
++extern struct of_device *of_device_alloc(struct device_node *np,
++					 const char *bus_id,
++					 struct device *parent);
++
+ extern ssize_t of_device_get_modalias(struct of_device *ofdev,
+ 					char *str, ssize_t len);
+ extern int of_device_uevent(struct device *dev,
+diff --git a/include/linux/of_device.h b/include/linux/of_device.h
+index 91bf84b..212bffb 100644
+--- a/include/linux/of_device.h
++++ b/include/linux/of_device.h
+@@ -22,5 +22,10 @@ extern int of_device_register(struct of_device *ofdev);
+ extern void of_device_unregister(struct of_device *ofdev);
+ extern void of_release_dev(struct device *dev);
+ 
++static inline void of_device_free(struct of_device *dev)
++{
++	of_release_dev(&dev->dev);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_OF_DEVICE_H */
+diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+index 89b911e..ecb8b0e 100644
+--- a/arch/powerpc/kernel/of_device.c
++++ b/arch/powerpc/kernel/of_device.c
+@@ -7,8 +7,88 @@
+ #include <linux/slab.h>
+ 
+ #include <asm/errno.h>
++#include <asm/dcr.h>
+ #include <asm/of_device.h>
+ 
++static void of_device_make_bus_id(struct of_device *dev)
++{
++	static atomic_t bus_no_reg_magic;
++	struct device_node *node = dev->node;
++	char *name = dev->dev.bus_id;
++	const u32 *reg;
++	u64 addr;
++	int magic;
++
++	/*
++	 * If it's a DCR based device, use 'd' for native DCRs
++	 * and 'D' for MMIO DCRs.
++	 */
++#ifdef CONFIG_PPC_DCR
++	reg = of_get_property(node, "dcr-reg", NULL);
++	if (reg) {
++#ifdef CONFIG_PPC_DCR_NATIVE
++		snprintf(name, BUS_ID_SIZE, "d%x.%s",
++			 *reg, node->name);
++#else /* CONFIG_PPC_DCR_NATIVE */
++		addr = of_translate_dcr_address(node, *reg, NULL);
++		if (addr != OF_BAD_ADDR) {
++			snprintf(name, BUS_ID_SIZE,
++				 "D%llx.%s", (unsigned long long)addr,
++				 node->name);
++			return;
++		}
++#endif /* !CONFIG_PPC_DCR_NATIVE */
++	}
++#endif /* CONFIG_PPC_DCR */
++
++	/*
++	 * For MMIO, get the physical address
++	 */
++	reg = of_get_property(node, "reg", NULL);
++	if (reg) {
++		addr = of_translate_address(node, reg);
++		if (addr != OF_BAD_ADDR) {
++			snprintf(name, BUS_ID_SIZE,
++				 "%llx.%s", (unsigned long long)addr,
++				 node->name);
++			return;
++		}
++	}
++
++	/*
++	 * No BusID, use the node name and add a globally incremented
++	 * counter (and pray...)
++	 */
++	magic = atomic_add_return(1, &bus_no_reg_magic);
++	snprintf(name, BUS_ID_SIZE, "%s.%d", node->name, magic - 1);
++}
++
++struct of_device *of_device_alloc(struct device_node *np,
++				  const char *bus_id,
++				  struct device *parent)
++{
++	struct of_device *dev;
++
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	if (!dev)
++		return NULL;
++
++	dev->node = of_node_get(np);
++	dev->dev.dma_mask = &dev->dma_mask;
++	dev->dev.parent = parent;
++	dev->dev.release = of_release_dev;
++	dev->dev.archdata.of_node = np;
++	dev->dev.archdata.numa_node = of_node_to_nid(np);
++
++	if (bus_id)
++		strlcpy(dev->dev.bus_id, bus_id, BUS_ID_SIZE);
++	else
++		of_device_make_bus_id(dev);
++
++	return dev;
++}
++EXPORT_SYMBOL(of_device_alloc);
++
+ ssize_t of_device_get_modalias(struct of_device *ofdev,
+ 				char *str, ssize_t len)
+ {
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index f70e787..1d96b82 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -21,7 +21,6 @@
+ #include <linux/pci.h>
+ 
+ #include <asm/errno.h>
+-#include <asm/dcr.h>
+ #include <asm/of_device.h>
+ #include <asm/of_platform.h>
+ #include <asm/topology.h>
+@@ -53,8 +52,6 @@ static struct of_device_id of_default_bus_ids[] = {
+ 	{},
+ };
+ 
+-static atomic_t bus_no_reg_magic;
+-
+ struct bus_type of_platform_bus_type = {
+        .uevent	= of_device_uevent,
+ };
+@@ -84,89 +81,26 @@ void of_unregister_platform_driver(struct of_platform_driver *drv)
+ }
+ EXPORT_SYMBOL(of_unregister_platform_driver);
+ 
+-static void of_platform_make_bus_id(struct of_device *dev)
+-{
+-	struct device_node *node = dev->node;
+-	char *name = dev->dev.bus_id;
+-	const u32 *reg;
+-	u64 addr;
+-	int magic;
+-
+-	/*
+-	 * If it's a DCR based device, use 'd' for native DCRs
+-	 * and 'D' for MMIO DCRs.
+-	 */
+-#ifdef CONFIG_PPC_DCR
+-	reg = of_get_property(node, "dcr-reg", NULL);
+-	if (reg) {
+-#ifdef CONFIG_PPC_DCR_NATIVE
+-		snprintf(name, BUS_ID_SIZE, "d%x.%s",
+-			 *reg, node->name);
+-#else /* CONFIG_PPC_DCR_NATIVE */
+-		addr = of_translate_dcr_address(node, *reg, NULL);
+-		if (addr != OF_BAD_ADDR) {
+-			snprintf(name, BUS_ID_SIZE,
+-				 "D%llx.%s", (unsigned long long)addr,
+-				 node->name);
+-			return;
+-		}
+-#endif /* !CONFIG_PPC_DCR_NATIVE */
+-	}
+-#endif /* CONFIG_PPC_DCR */
+-
+-	/*
+-	 * For MMIO, get the physical address
+-	 */
+-	reg = of_get_property(node, "reg", NULL);
+-	if (reg) {
+-		addr = of_translate_address(node, reg);
+-		if (addr != OF_BAD_ADDR) {
+-			snprintf(name, BUS_ID_SIZE,
+-				 "%llx.%s", (unsigned long long)addr,
+-				 node->name);
+-			return;
+-		}
+-	}
+-
+-	/*
+-	 * No BusID, use the node name and add a globally incremented
+-	 * counter (and pray...)
+-	 */
+-	magic = atomic_add_return(1, &bus_no_reg_magic);
+-	snprintf(name, BUS_ID_SIZE, "%s.%d", node->name, magic - 1);
+-}
+-
+ struct of_device* of_platform_device_create(struct device_node *np,
+ 					    const char *bus_id,
+ 					    struct device *parent)
+ {
+ 	struct of_device *dev;
+ 
+-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
++	dev = of_device_alloc(np, bus_id, parent);
+ 	if (!dev)
+ 		return NULL;
+ 
+-	dev->node = of_node_get(np);
+ 	dev->dma_mask = 0xffffffffUL;
+-	dev->dev.dma_mask = &dev->dma_mask;
+-	dev->dev.parent = parent;
+ 	dev->dev.bus = &of_platform_bus_type;
+-	dev->dev.release = of_release_dev;
+-	dev->dev.archdata.of_node = np;
+-	dev->dev.archdata.numa_node = of_node_to_nid(np);
+ 
+ 	/* We do not fill the DMA ops for platform devices by default.
+ 	 * This is currently the responsibility of the platform code
+ 	 * to do such, possibly using a device notifier
+ 	 */
+ 
+-	if (bus_id)
+-		strlcpy(dev->dev.bus_id, bus_id, BUS_ID_SIZE);
+-	else
+-		of_platform_make_bus_id(dev);
+-
+ 	if (of_device_register(dev) != 0) {
+-		kfree(dev);
++		of_device_free(dev);
+ 		return NULL;
+ 	}
+ 
+-- 
+1.5.2
