@@ -1,23 +1,24 @@
-Return-Path: <benjamin.zores@alcatel-lucent.fr>
-Received: from smail4.alcatel.fr (smail4.alcatel.fr [62.23.212.167])
-	by ozlabs.org (Postfix) with ESMTP id 43C36DDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 18:08:23 +1000 (EST)
-Received: from bsf.alcatel.fr (mail205.sxb.bsf.alcatel.fr [155.132.205.115])
-	by smail4.alcatel.fr (ALCANET/NETFR) with ESMTP id l8P7hcDs018925
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:39 +0200
-Received: from mail (mail-bsf-alcatel-fr.sxb.bsf.alcatel.fr [155.132.205.91])
-	by bsf.alcatel.fr (8.8.8p2+Sun/8.9.3) with ESMTP id JAA09075
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:38 +0200 (MET DST)
-Received: from [172.25.48.83] (frilld0063506 [172.25.48.83])
-	by mail (8.8.8p2+Sun/) with ESMTP id JAA09071
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 09:43:38 +0200 (MET DST)
-Message-ID: <46F8BBAD.30008@alcatel-lucent.fr>
-Date: Tue, 25 Sep 2007 09:41:33 +0200
-From: Benjamin ZORES <benjamin.zores@alcatel-lucent.fr>
-MIME-Version: 1.0
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id 9906DDDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 21:13:24 +1000 (EST)
+Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id 3E1A5CFB31
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 16:16:39 +0530 (IST)
+Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 1B33FCFB18for
+	<linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 16:16:39 +0530 (IST)
+Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id l8PB3xB7018592for
+	<linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 16:34:00 +0530
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
 To: linuxppc-dev@ozlabs.org
-Subject: Linux 2.6.23-rc7 kGDB broken
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: MPC8560 CPM2 SCC(UART) Driver CPM_UART_CONSOLE
+Date: Tue, 25 Sep 2007 17:33:59 +0630
+Message-Id: <20070925104704.M46195@cdotd.ernet.in>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi all,
 
-I used to use linux-2.6-kgdb git tree from jwessel to extract kGDB 
-related patches
-but I now have seen that it has been included in -mm branch.
+I am writing a kernel module which is required to parse the characters received from a
+device attached to MPC8560 SCC2 (UART slave mode) on serial interface. This SCC is
+required to be configured for single-buffer, character based operation. Moreover on
+another SCC (SCC1 UART master mode) the board debug interface(console) is connected.
 
-However, in this branch, kGDB seems to be broken at least on PowerPC
-(see http://lkml.org/lkml/2007/9/19/103).
-It seems to me that the only reason is due to a missing header file
-in include/asm-powerpc/kgdb.h
-This file used to be present in kgdb tree (see 
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=blob_plain;f=include/asm-powerpc/kgdb.h;hb=kgdb_2.6.22-rc6) 
-but is no longer part of the patch.
+While trying to figure out CPM UART device driver interface available in file
+drivers/serial/cpm_uart/cpm_uart_core.c for my kernel module I found that some of the
+functions are available when CPM_UART_CONSOLE is enabled. 
 
-Is there any reason for that ?
-By opposition to what could be said in first LKML thread, adding this 
-file is enough to restore kGDB on PowerPC.
-I've tested it and it compiles (and work) just fine (and as expected).
+My doubt is regarding status of this flag for my hardware setup. Should this flag be
+enabled or not. If it is required to be enabled for supporting SCC1 then how SCC2 will
+be handled?
 
-Can this file be restored ?
+As I am a novice in this area , I shall be grateful if you please guide me in
+understanding this driver code.
 
-Ben
+with regards,
+
+Deepak Gaur
