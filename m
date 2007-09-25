@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 25 Sep 2007 11:20:53 +1000
+Date: Tue, 25 Sep 2007 11:52:13 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 15/40] bootwrapper: Factor out dt_set_mac_address().
-Message-ID: <20070925012053.GA30338@localhost.localdomain>
-References: <20070924200911.GB21347@loki.buserror.net>
+Subject: Re: [PATCH 2/2] bootwrapper: Add PlanetCore firmware support.
+Message-ID: <20070925015213.GC30338@localhost.localdomain>
+References: <20070924200949.GC21347@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070924200911.GB21347@loki.buserror.net>
+In-Reply-To: <20070924200949.GC21347@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,14 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2007 at 03:09:11PM -0500, Scott Wood wrote:
-> This allows callers to set addresses one at a time when that would be more
-> convenient.
+On Mon, Sep 24, 2007 at 03:09:49PM -0500, Scott Wood wrote:
+> This is a library that board code can use to extract information from the
+> PlanetCore configuration keys.  PlanetCore is used on various boards from
+> Embedded Planet.
 > 
 > Signed-off-by: Scott Wood <scottwood@freescale.com>
-
-Sorry I've been such a pain about this previously.
-
 Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
 -- 
