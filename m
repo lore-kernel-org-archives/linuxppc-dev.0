@@ -1,39 +1,12 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 984F9DDE16
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 22:14:01 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l8PCDdOK512600
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 12:13:39 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8PCDdhs3096816
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 13:13:39 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8PCDX6q003119
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 13:13:33 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5] ibmebus: More speaking error return code in
-	ibmebus_store_probe()
-References: <200709251410.29780.fenkes@de.ibm.com>
-In-Reply-To: <200709251410.29780.fenkes@de.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Date: Tue, 25 Sep 2007 14:13:26 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709251413.26873.fenkes@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
-	Jan-Bernd Themann <themann@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18168.62378.472571.655865@cargo.ozlabs.ibm.com>
+Date: Tue, 25 Sep 2007 21:40:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,27 +16,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- arch/powerpc/kernel/ibmebus.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Linus,
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index 379472f..8c08a98 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -270,10 +270,10 @@ static ssize_t ibmebus_store_probe(struct bus_type *bus,
- 		return -ENOMEM;
- 
- 	if (bus_find_device(&ibmebus_bus_type, NULL, path,
--			     ibmebus_match_path)) {
-+			    ibmebus_match_path)) {
- 		printk(KERN_WARNING "%s: %s has already been probed\n",
- 		       __FUNCTION__, path);
--		rc = -EINVAL;
-+		rc = -EEXIST;
- 		goto out;
- 	}
- 
--- 
-1.5.2
+Please do
+
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+to get a patch from Roland McGrath that fixes a user-triggerable oops
+on 64-bit powerpc.
+
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/process.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+commit 474f81967217f3bec2389ae913da72641f2c40e3
+Author: Roland McGrath <roland@redhat.com>
+Date:   Mon Sep 24 16:52:44 2007 -0700
+
+    [POWERPC] Ensure FULL_REGS on exec
+    
+    When PTRACE_O_TRACEEXEC is used, a ptrace call to fetch the registers at
+    the PTRACE_EVENT_EXEC stop (PTRACE_PEEKUSR) will oops in CHECK_FULL_REGS.
+    With recent versions, "gdb --args /bin/sh -c 'exec /bin/true'" and "run" at
+    the (gdb) prompt is sufficient to produce this.  I also have written an
+    isolated test case, see https://bugzilla.redhat.com/show_bug.cgi?id=301791#c15.
+    
+    This change fixes the problem by clearing the low bit of pt_regs.trap in
+    start_thread so that FULL_REGS is true again.  This is correct since all of
+    the GPRs that "full" refers to are cleared in start_thread.
+    
+    Signed-off-by: Roland McGrath <roland@redhat.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
