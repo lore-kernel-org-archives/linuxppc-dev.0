@@ -1,17 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C4D8EDDEFC
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:33:41 +1000 (EST)
-Date: Tue, 25 Sep 2007 18:35:31 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id DA285DE0A3
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:36:27 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/7] [POWERPC][SPI] spi_mpc83xx: allow use on MPC85xx
-Message-ID: <20070925143531.GG5323@localhost.localdomain>
-References: <20070925143126.GA30013@localhost.localdomain>
+Subject: Re: [PATCH 1/5] PowerPC: Move of_device allocation into of_device.[ch]
+Date: Tue, 25 Sep 2007 16:27:57 +0200
+References: <200709251410.29780.fenkes@de.ibm.com>
+	<200709251411.27755.fenkes@de.ibm.com>
+In-Reply-To: <200709251411.27755.fenkes@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20070925143126.GA30013@localhost.localdomain>
-Cc: spi-devel-general@lists.sourceforge.net
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709251627.59040.arnd@arndb.de>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	Paul Mackerras <pmac@au1.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MPC85xx's QE SPI controller is almost the same comparing to MPC83xx.
-Thus lets use that driver. Tested to work in loopback mode.
+On Tuesday 25 September 2007, Joachim Fenkes wrote:
+> Extract generic of_device allocation code from of_platform_device_create()
+> and move it into of_device.[ch], called of_device_alloc(). Also, there's =
+now
+> of_device_free() which puts the device node.
+>=20
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+> =A0include/asm-powerpc/of_device.h =A0 | =A0 =A04 ++
+> =A0include/linux/of_device.h =A0 =A0 =A0 =A0 | =A0 =A05 ++
+> =A0arch/powerpc/kernel/of_device.c =A0 | =A0 80 +++++++++++++++++++++++++=
+++++++++++++
+> =A0arch/powerpc/kernel/of_platform.c | =A0 70 +--------------------------=
+=2D----
+> =A04 files changed, 91 insertions(+), 68 deletions(-)
+>=20
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/spi/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Sorry I didn't review the patches earlier when you sent them in private.
+The patch looks good to me, especially since you did exactly what I
+suggested ;-)
 
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index b915711..14f0d0d 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -125,7 +125,7 @@ config SPI_MPC52xx_PSC
- 
- config SPI_MPC83xx
- 	tristate "Freescale MPC83xx SPI controller"
--	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
-+	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
- 	select SPI_BITBANG
- 	help
- 	  This enables using the Freescale MPC83xx SPI controller in master
--- 
-1.5.0.6
+Maybe the description should have another sentence in it about what
+the change is good for. You have that in the 0/5 mail, but that does
+not go into the changelog, so the information gets lost in the process.
+
+	Arnd <><
