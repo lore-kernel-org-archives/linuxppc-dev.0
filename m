@@ -1,24 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 6B870DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:51:02 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
-	match eHCA and eHEA drivers
-Date: Tue, 25 Sep 2007 16:42:40 +0200
-References: <200709251410.29780.fenkes@de.ibm.com>
-	<200709251412.59904.fenkes@de.ibm.com>
-In-Reply-To: <200709251412.59904.fenkes@de.ibm.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 28D47DDEAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 01:01:06 +1000 (EST)
+Date: Tue, 25 Sep 2007 19:02:55 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: [PATCH v2 7/7] [POWERPC][SPI] spi_mpc83xx: allow use on MPC85xx
+Message-ID: <20070925150255.GA5716@localhost.localdomain>
+References: <20070925143126.GA30013@localhost.localdomain>
+	<20070925143531.GG5323@localhost.localdomain>
+	<874phiol7j.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709251642.41480.arnd@arndb.de>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	Paul Mackerras <pmac@au1.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <874phiol7j.fsf@macbook.be.48ers.dk>
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,9 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 25 September 2007, Joachim Fenkes wrote:
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+On Tue, Sep 25, 2007 at 04:48:00PM +0200, Peter Korsgaard wrote:
+> >>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
+> 
+> Hi,
+>  
+>  Anton>  config SPI_MPC83xx
+>  Anton>  	tristate "Freescale MPC83xx SPI controller"
+>  Anton> -	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
+>  Anton> +	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
+>  Anton>  	select SPI_BITBANG
+>  Anton>  	help
+>  Anton>  	  This enables using the Freescale MPC83xx SPI controller in master
+> 
+> Please also update the help text.
 
-This is missing a description, but the patch looks good.
+Oops. Thanks, fixed.
 
-	Arnd <><
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH v2] [POWERPC][SPI] spi_mpc83xx: allow use on MPC85xx
+
+MPC85xx's QE SPI controller is almost the same comparing to MPC83xx.
+Thus lets use that driver. Tested to work in loopback mode.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/spi/Kconfig |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index b915711..7a7a42c 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -124,16 +124,17 @@ config SPI_MPC52xx_PSC
+ 	  Controller in master SPI mode.
+ 
+ config SPI_MPC83xx
+-	tristate "Freescale MPC83xx SPI controller"
+-	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
++	tristate "Freescale MPC83xx/MPC85xx SPI controller"
++	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
+ 	select SPI_BITBANG
+ 	help
+-	  This enables using the Freescale MPC83xx SPI controller in master
+-	  mode.
++	  This enables using the Freescale MPC83xx/MPC85xx SPI controller in
++	  master mode.
+ 
+ 	  Note, this driver uniquely supports the SPI controller on the MPC83xx
+-	  family of PowerPC processors.  The MPC83xx uses a simple set of shift
+-	  registers for data (opposed to the CPM based descriptor model).
++	  and MPC85xx family of PowerPC processors.  The MPC83xx/MPC85xx uses a
++	  simple set of shift registers for data (opposed to the CPM based
++	  descriptor model).
+ 
+ config SPI_OMAP_UWIRE
+ 	tristate "OMAP1 MicroWire"
+-- 
+1.5.0.6
