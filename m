@@ -2,20 +2,23 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1CCFCDDE19
+	by ozlabs.org (Postfix) with ESMTP id CBD8CDDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Sep 2007 16:01:58 +1000 (EST)
+	Tue, 25 Sep 2007 18:25:30 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Ia3UZ-00080W-5N
-	for linuxppc-embedded@ozlabs.org; Mon, 24 Sep 2007 23:01:55 -0700
-Message-ID: <12873633.post@talk.nabble.com>
-Date: Mon, 24 Sep 2007 23:01:55 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
+	(envelope-from <bounces@nabble.com>) id 1Ia5jT-00037o-Fw
+	for linuxppc-embedded@ozlabs.org; Tue, 25 Sep 2007 01:25:27 -0700
+Message-ID: <12875133.post@talk.nabble.com>
+Date: Tue, 25 Sep 2007 01:25:27 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
 To: linuxppc-embedded@ozlabs.org
-Subject: jffs2 file system on MPC8272ADS
+Subject: Re: Linux doesn not boot from u-boot on ML403
+In-Reply-To: <fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+References: <Pine.LNX.4.44.0709231519510.25165-100000@slslc02.psi.ch>
+	<fa686aa40709230832m1d4a083ao2e43b57cc39e088@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,186 +30,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-hi everyone, 
+Hi Grant,
 
-I m using custom board similar to MPC8272ADS board... 
+   Thank you very much for your response. actually I was wrong when saying:
 
-1) For the first time it boots up properly in case if we overwrite any
-existing binaries using nfs mounted file system on the board, after
-rebooting it displays fallowing message... 
+> My observation is that the linux 2.6.23 rc-2 is not that stable as 2.6.21.
+> In most cases It boots successfully (ie. zImage.elf) but occasionally it
+> fails during booting. It has never occurred with 2.6.21 which I also
+> copied from your side.
 
-Further such events for this erase block will not be printed 
-Eep. Child "null" (ino #1346) of dir ino #3 doesn't exist! 
-Eep. Child "autocomm" (ino #463) of dir ino #461 doesn't exist! 
-Eep. Child "calibration" (ino #464) of dir ino #461 doesn't exist! 
-Eep. Child "coredsp_driver.ko" (ino #939) of dir ino #336 doesn't exist! 
-Inode #1307 was a directory with children - removing those too... 
-Inode #564 was a directory with children - removing those too... 
-Inode #565 was a directory with children - removing those too... 
-Inode #1112 was a directory with children - removing those too... 
-Inode #1115 was a directory with children - removing those too... 
-Inode #1118 was a directory with children - removing those too... 
-Inode #1123 was a directory with children - removing those too... 
+Both version of linux 2.6.21 and 2.6.23 run very well and always boot
+properly.
+To deal with u-boot and linux kernel I use jtag and load the software
+straight to RAM.
 
-after this board boots up properly....but it not be having overwritten files 
+I have difficulties to boot uImage (kernel v2.6.23) from u-boot 1.2.0. 
+uImage boots sometimes from u-boot but zImage.elf boots always (when loaded
+to RAM via jtag). 
 
-2) while booting up for the first time itself it will display the falowing
-message.. 
+It seems to be that I have the general problem with u-boot which I have
+described on u-boot users forum:
+http://www.nabble.com/u-boot-init-problem-on-ml403-%28virtex-4%29-board-tf4514050.html
 
-modprobe: FATAL: Could not load
-/lib/modules/2.6.10_mvl401-8272ads/modules.dep: No such file or dire 
-ctory 
+Best Regards
 
-but after this also board boots up properly 
-
-3) when board is running properly in between it starts printing on console
-repeatedly... 
-
-Header CRC failed on REF_PRISTINE node at 0x00638a6c: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x00000254) 
-Header CRC failed on REF_PRISTINE node at 0x00638cc0: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x00000234) 
-Header CRC failed on REF_PRISTINE node at 0x00638ef4: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4) 
-Header CRC failed on REF_PRISTINE node at 0x006391b8: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4) 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0) 
-Header CRC failed on REF_PRISTINE node at 0x0063972c: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002bc) 
-Header CRC failed on REF_PRISTINE node at 0x006399e8: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac) 
-Header CRC failed on REF_PRISTINE node at 0x00639c94: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0) 
-Header CRC failed on REF_PRISTINE node at 0x00639f44: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002ac) 
-Header CRC failed on REF_PRISTINE node at 0x0063a1f0: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c0) 
-Header CRC failed on REF_PRISTINE node at 0x0063a4b0: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0) 
-Header CRC failed on REF_PRISTINE node at 0x0063a760: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0) 
-Header CRC failed on REF_PRISTINE node at 0x0063aa10: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8) 
-Header CRC failed on REF_PRISTINE node at 0x0063acd8: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b0) 
-Header CRC failed on REF_PRISTINE node at 0x0063af88: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c4) 
-Header CRC failed on REF_PRISTINE node at 0x0063b24c: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4) 
-Header CRC failed on REF_PRISTINE node at 0x0063b500: Read 0xffffffff,
-calculated 0x44660075 
-Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8) 
-Header CRC failed on REF_PRISTINE node at 0x0063b7c8: Read 0xffffffff,
-calculated 0x44660075 
-
-are they debug messages or warnings...? 
-
-do they create more problem or can i neglet these errors.. 
-
-plz reply..it is too urgent 
-
-
-here is my kerenl configurations.... 
-# 
-# Memory Technology Devices (MTD) 
-# 
-CONFIG_MTD=y 
-# CONFIG_MTD_DEBUG is not set 
-# CONFIG_MTD_CONCAT is not set 
-CONFIG_MTD_PARTITIONS=y 
-# CONFIG_MTD_REDBOOT_PARTS is not set 
-CONFIG_MTD_CMDLINE_PARTS=y 
-
-# 
-# User Modules And Translation Layers 
-# 
-CONFIG_MTD_CHAR=y 
-CONFIG_MTD_BLOCK=y 
-# CONFIG_FTL is not set 
-# CONFIG_NFTL is not set 
-# CONFIG_INFTL is not set 
-# CONFIG_RFD_FTL is not set 
-
-# 
-# RAM/ROM/Flash chip drivers 
-# 
-CONFIG_MTD_CFI=y 
-CONFIG_MTD_JEDECPROBE=y 
-CONFIG_MTD_GEN_PROBE=y 
-CONFIG_MTD_CFI_ADV_OPTIONS=y 
-CONFIG_MTD_CFI_NOSWAP=y 
-# CONFIG_MTD_CFI_BE_BYTE_SWAP is not set 
-# CONFIG_MTD_CFI_LE_BYTE_SWAP is not set 
-CONFIG_MTD_CFI_GEOMETRY=y 
-# CONFIG_MTD_MAP_BANK_WIDTH_1 is not set 
-# CONFIG_MTD_MAP_BANK_WIDTH_2 is not set 
-CONFIG_MTD_MAP_BANK_WIDTH_4=y 
-# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set 
-# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set 
-# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set 
-# CONFIG_MTD_CFI_I1 is not set 
-CONFIG_MTD_CFI_I2=y 
-# CONFIG_MTD_CFI_I4 is not set 
-# CONFIG_MTD_CFI_I8 is not set 
-# CONFIG_MTD_OTP is not set 
-# CONFIG_MTD_CFI_INTELEXT is not set 
-CONFIG_MTD_CFI_AMDSTD=y 
-CONFIG_MTD_CFI_AMDSTD_RETRY=0 
-# CONFIG_MTD_CFI_STAA is not set 
-CONFIG_MTD_CFI_UTIL=y 
-# CONFIG_MTD_RAM is not set 
-CONFIG_MTD_ROM=y 
-# CONFIG_MTD_ABSENT is not set 
-# CONFIG_MTD_XIP is not set 
-
-# 
-# Mapping drivers for chip access 
-# 
-# CONFIG_MTD_COMPLEX_MAPPINGS is not set 
-CONFIG_MTD_PHYSMAP=y 
-CONFIG_MTD_PHYSMAP_START=0xFC000000 
-CONFIG_MTD_PHYSMAP_LEN=0x4000000CONFIG_MTD_PHYSMAP_BANKWIDTH=4 
-# CONFIG_MTD_MULTI_PHYSMAP is not set 
-# CONFIG_MTD_SBC8240 is not set 
-CONFIG_MTD_PQ2FADS=y 
-# CONFIG_MTD_PLATRAM is not set 
-
-CONFIG_JFFS2_FS=y 
-CONFIG_JFFS2_FS_DEBUG=0 
-CONFIG_JFFS2_FS_WRITEBUFFER=y 
-
- and 
-
-file system is created using fallowing command.. 
-
-mkfs.jffs2 -r RFS_NEW/ -e 0x20000 -o /tftpboot/jffs2_img -b 
-
-do we need padding or not..? 
-
-
-
-thnks in advance.. 
-
-Nethra 
+Mirek
 
 
 
 
 -- 
-View this message in context: http://www.nabble.com/jffs2-file-system-on-MPC8272ADS-tf4513571.html#a12873633
+View this message in context: http://www.nabble.com/Re%3A-Linux-doesn-not-boot-from-u-boot-on-ML403-tf4504418.html#a12875133
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
