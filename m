@@ -1,24 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id A0E67DDEBD
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:47:23 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on
-	of_device
-Date: Tue, 25 Sep 2007 16:39:05 +0200
-References: <200709251410.29780.fenkes@de.ibm.com>
-	<200709251412.27896.fenkes@de.ibm.com>
-In-Reply-To: <200709251412.27896.fenkes@de.ibm.com>
+Return-Path: <jacmet@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 0B637DDE3E
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 00:48:04 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so1110654uge
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 07:48:03 -0700 (PDT)
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 7/7] [POWERPC][SPI] spi_mpc83xx: allow use on MPC85xx
+References: <20070925143126.GA30013@localhost.localdomain>
+	<20070925143531.GG5323@localhost.localdomain>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Tue, 25 Sep 2007 16:48:00 +0200
+In-Reply-To: <20070925143531.GG5323@localhost.localdomain> (Anton Vorontsov's
+	message of "Tue\, 25 Sep 2007 18\:35\:31 +0400")
+Message-ID: <874phiol7j.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709251639.06414.arnd@arndb.de>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	Paul Mackerras <pmac@au1.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,81 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 25 September 2007, Joachim Fenkes wrote:
-> The devtree root is now searched for devices matching a built-in whitelist
-> during boot, so these devices appear on the bus from the beginning. It is
-> still possible to manually add/remove devices to/from the bus by using the
-> probe/remove sysfs interface. Also, when a device driver registers itself,
-> the devtree is matched against its matchlist.
-> 
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-> ---
->  arch/powerpc/kernel/ibmebus.c |   97 ++++++++++++++++++++++++++++++++++-------
->  1 files changed, 81 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-> index cc80f84..c506e0d 100644
-> --- a/arch/powerpc/kernel/ibmebus.c
-> +++ b/arch/powerpc/kernel/ibmebus.c
-> @@ -51,6 +51,15 @@ static struct device ibmebus_bus_device = { /* fake "parent" device */
->  
->  struct bus_type ibmebus_bus_type;
->  
-> +/* These devices will automatically be added to the bus during init */
-> +static struct of_device_id builtin_matches[] = {
-> +	{ .name = "lhca" },
-> +	{ .compatible = "IBM,lhca" },
-> +	{ .name = "lhea" },
-> +	{ .compatible = "IBM,lhea" },
-> +	{},
-> +};
-> +
+>>>>> "Anton" == Anton Vorontsov <avorontsov@ru.mvista.com> writes:
 
-Hmm, do you have devices that only have the matching name property
-but not the compatible property? If not, I'd suggest only looking
-for compatible, so you have less chance of false positives.
+Hi,
+ 
+ Anton>  config SPI_MPC83xx
+ Anton>  	tristate "Freescale MPC83xx SPI controller"
+ Anton> -	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
+ Anton> +	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
+ Anton>  	select SPI_BITBANG
+ Anton>  	help
+ Anton>  	  This enables using the Freescale MPC83xx SPI controller in master
 
-> +static int ibmebus_create_device(struct device_node *dn)
-> +{
-> +	struct of_device *dev;
-> +	int ret;
-> +
-> +	dev = of_device_alloc(dn, NULL, &ibmebus_bus_device);
-> +	if (!dev)
-> +		return -ENOMEM;
-> +
-> +	dev->dev.bus = &ibmebus_bus_type;
-> +	dev->dev.archdata.dma_ops = &ibmebus_dma_ops;
-> +
-> +	ret = of_device_register(dev);
-> +	if (ret) {
-> +		of_device_free(dev);
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
+Please also update the help text.
 
-nice!
-
-> @@ -219,9 +276,9 @@ static ssize_t ibmebus_store_probe(struct bus_type *bus,
->  	}
->  
->  	if ((dn = of_find_node_by_path(path))) {
-> -/*		dev = ibmebus_register_device_node(dn); */
-> +		rc = ibmebus_create_device(dn);
->  		of_node_put(dn);
-> -		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
-> +		rc = rc ? rc : count;
-
-the last line looks a bit silly. Maybe instead do
-
-		rc = ibmebus_create_device(dn);
-  		of_node_put(dn);
-	}
-
-	kfree(path);
-	if (rc)
-		return rc;
-	return count;
-}
+-- 
+Bye, Peter Korsgaard
