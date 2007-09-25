@@ -1,15 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 25 Sep 2007 13:27:05 +1000
+Date: Tue, 25 Sep 2007 13:46:16 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/15] boot: find initrd location from device-tree
-Message-ID: <20070925032705.GA2525@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <boot-8-01.miltonm@bga.com>
-	<20070924025824.GD8058@localhost.localdomain>
-	<c76a222305d08e74b878c946d4181078@bga.com>
+Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
+Message-ID: <20070925034616.GB2525@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
+	<20070924033612.GI8058@localhost.localdomain>
+	<5e71423247aef068d82b84166102fd7d@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <c76a222305d08e74b878c946d4181078@bga.com>
+In-Reply-To: <5e71423247aef068d82b84166102fd7d@bga.com>
 Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,201 +20,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2007 at 03:02:36AM -0500, Milton Miller wrote:
+On Mon, Sep 24, 2007 at 01:54:32AM -0500, Milton Miller wrote:
 > 
-> On Sep 23, 2007, at 9:58 PM, David Gibson wrote:
+> On Sep 23, 2007, at 10:36 PM, David Gibson wrote:
 > 
-> > On Fri, Sep 21, 2007 at 06:03:24PM -0500, Milton Miller wrote:
-> >> Some platforms have a boot agent that can create or modify properties 
-> >> in
-> >> the device-tree and load images into memory.  Provide a helper to set
-> >> loader_info used by prep_initrd().
-> >>
-> >> Signed-off-by: Milton Miller <miltonm@bga.com>
-> >> Acked-by: David Gibson <david@gibson.dropbear.id.au>
+> > On Fri, Sep 21, 2007 at 06:05:06PM -0500, Milton Miller wrote:
+[snip]
+> >> +#define MIN_VERSION 2
+> >> +#define OUT_VERSION 16
 > >
-> > Hrm, despite my earlier ack, I'm going to whinge about a few nits
-> > here.
-> >
-> >> ---
-> >> re 12168
-> >> rediffed types.h, offset in ops.h
-> >>
-> >> Index: kernel/arch/powerpc/boot/ops.h
-> >> ===================================================================
-> >> --- kernel.orig/arch/powerpc/boot/ops.h	2007-09-17 22:12:47.000000000 
-> >> -0500
-> >> +++ kernel/arch/powerpc/boot/ops.h	2007-09-17 22:12:51.000000000 -0500
-> >> @@ -163,6 +163,7 @@ void dt_fixup_clock(const char *path, u3
-> >>  void __dt_fixup_mac_addresses(u32 startindex, ...);
-> >>  #define dt_fixup_mac_addresses(...) \
-> >>  	__dt_fixup_mac_addresses(0, __VA_ARGS__, NULL)
-> >> +void dt_find_initrd(void);
-> >>
-> >>
-> >>  static inline void *find_node_by_linuxphandle(const u32 linuxphandle)
-> >> Index: kernel/arch/powerpc/boot/types.h
-> >> ===================================================================
-> >> --- kernel.orig/arch/powerpc/boot/types.h	2007-09-17 
-> >> 22:12:47.000000000 -0500
-> >> +++ kernel/arch/powerpc/boot/types.h	2007-09-17 22:12:51.000000000 
-> >> -0500
-> >> @@ -12,6 +12,8 @@ typedef short			s16;
-> >>  typedef int			s32;
-> >>  typedef long long		s64;
-> >>
-> >> +#define UINT_MAX	0xFFFFFFFF
-> >
-> > I actually don't like this constant - at the point you compare you
-> > care, explicitly, about the value not being over 32-bits, rather than
-> > whether it fits a uint, so the named constant is more misleading than
-> > helpful.
+> > Should output version 17.  In any case, don't try to be so general -
+> > just convert v123 (all basically the same) to latest (i.e. v17)
+> > without all the #if nonsense.
 > 
-> Arguable, I don't like counting F's or zeros in C code.
+> Outputing v17 instead of 16 requires more words to be added to the 
+> header, and the library does fine with v16.
 
-So check if (addr >> 32) is non-zero.
+For now.  libfdt will want v17.  Although it will (eventually) have
+it's own v16->v17 conversion code.
 
-> It is used as the max address that the wrapper deals with, both here 
-> and memranges, which happens to be 32 bits.
+>  Actually the v1 trees has 
+> some other differences such as initrd addresses were kernel linear not 
+> real, cpus were assigned logical numbers  ... so while the structure 
+> didn't change except for the header field, the contents did.
 
-Right and the reasons for that being the value it is are not because
-it also hapeens to be the max uint *or* ulong.
+!? what's your source for this.  v2 and v3 were absolutely supposed to
+be backwards compatible with v1 which would not be the case with
+silent semantic changes such as this.
 
-> Actually it cares about overflowing the unsigned long in loader_info, 
-> not that the address fits in 32 bits.
-> 
-> So it should be ULONG_MAX now (malloc and all the address code was 
-> changed to use unsigned long instead of unsigned int since the patch 
-> was written).
-> 
-> And dt_xlate needs the same information.  Its is using a hardcoded 64 
-> bit constant to provide the a simiar check.
-> 
-> 
+>  Actually, 
+> when converting v3 to v16 some of the code issn't needed, the ifs allow 
+> the code size to be reduced.
+
+Yes, but it never will be, because the only reason we'd include this
+file is for converting old kexec-tools device trees which are v2 not
+v3.
+
+> >> +#define OUT_COMPAT 16
 > >> +
-> >>  #define min(x,y) ({ \
-> >>  	typeof(x) _x = (x);	\
-> >>  	typeof(y) _y = (y);	\
-> >> Index: kernel/arch/powerpc/boot/devtree.c
-> >> ===================================================================
-> >> --- kernel.orig/arch/powerpc/boot/devtree.c	2007-09-17 
-> >> 22:12:47.000000000 -0500
-> >> +++ kernel/arch/powerpc/boot/devtree.c	2007-09-17 22:12:51.000000000 
-> >> -0500
-> >> @@ -1,6 +1,7 @@
-> >>  /*
-> >>   * devtree.c - convenience functions for device tree manipulation
-> >>   * Copyright 2007 David Gibson, IBM Corporation.
-> >> + * Copyright 2007 Milton Miller, IBM Corporation.
-> >>   * Copyright (c) 2007 Freescale Semiconductor, Inc.
-> >>   *
-> >>   * Authors: David Gibson <david@gibson.dropbear.id.au>
-> >> @@ -333,3 +334,68 @@ int dt_is_compatible(void *node, const c
-> >>
-> >>  	return 0;
-> >>  }
-> >> +
-> >> +/**
-> >> + * dt_find_initrd - set loader initrd location based on existing 
-> >> properties
-> >> + *
-> >> + * finds the linux,initrd-start and linux,initrd-end properties in
-> >> + * the /chosen node and sets the loader initrd fields accordingly.
-> >> + *
-> >> + * Use this if your loader sets the properties to allow other code to
-> >> + * relocate the tree and/or cause r3 and r4 to be set on true OF
-> >> + * platforms.
-> >
-> > I am unable to make sense of the paragraph above.
-> 
-> The phrase "relocate the tree" should be "relocate the initrd", which 
-> the wrapper will do if it located below vmlinux.size.  Also, r3 and r4 
-> need to be set when booting the kernel from a client interface with an 
-> initrd so it can take it into consideration when choosing the location 
-> to build the flat tree.
-> 
-> How about:
-> 
-> Filling in the loader info allows main.c to be aware of the initrd, 
-> meaning prep_initrd will move the initrd if it will be overwritten when 
-> the kernel is copied to its runtime location.  In addition, if you are 
-> booting the kernel from a client interface instead of a flat device 
-> tree, this also causes r3 and r4 to be set so the kernel can avoid 
-> overwriting the initrd when creating the flat tree.
-
-Clearer, but I still don't see that it says anything useful - "finds
-the initrd from the devtree and does all the things that are supposed
-to be done with an initrd" - which is implied in the previous
-paragraph.
-
-> 
-> >
-> >> + */
-> >> +void dt_find_initrd(void)
+> >> +#ifdef NO_CHECK
+> >> +static int check_v123_tree(u32 *start, u32 *limit)
 > >> +{
-> >> +	int rc;
-> >> +	unsigned long long initrd_start, initrd_end;
-> >> +	void *devp;
-> >> +	static const char start_prop[] = "linux,initrd-start";
-> >> +	static const char end_prop[] = "linux,initrd-end";
+> >> +	return 0;
+> >> +}
+> >> +#else
+> >> +/**
+> >> + * check_v123_tree - check integrety of a version 1, 2, or 3 tree
+> >> + * @start: the start of the device tree struct
+> >> + * @limit: the end of the region for the struct
+> >> + * structural checks on device_tree
+> >> + */
+> >> +static int check_v123_tree(u32 *start, u32 *limit)
 > >
-> > I think these constants are more obscuring than useful.
+> > What is the point of this check?  If the device tree is corrupt, we're
+> > stuffed anyway, so why bother?
 > 
-> They are useful to the extent they reduce the number of source 
-> characters causing about 8 less line wraps.  Since they are used 
-> multiple places, the compiler only needs to emit one copy of this byte 
-> sequence.  Admitedly you made this point in a prior review.
+> Hence the ifdef NO_CHECK.   When developing, sometimes its nice to know 
+> if its your input or your program.  These functions are destructive to 
+> an improperlly formed tree, and in non-obvious ways.  When debugging, 
+> it's not hard to hardcode console write or read the printf string 
+> buffer with a hardware debugger to see error messages.  That said, it 
+> could be removed.
 
-The compiler is perfectly capable of folding identical string
-constants.
+Right.  Debugging code shouldn't pollute final patches.
 
-> >> +
-> >> +	devp = finddevice("/chosen");
-> >> +	if (! devp) {
-> >> +		return;
-> >> +	}
+[snip]
+> >> +#if MIN_VERSION < 3 || OUT_VERSION > 16
+> >> +/**
+> >> + * move_nops_fwd - move nops in a v16 dt_struct to the beginning
+> >> + * @start - device tree starting address
+> >> + * @count - number of %OF_DT_NOP cells to move
+> >> + */
+> >> +static void move_nops_fwd(u32 *start, int count)
 > >
-> > CodingStyle would not put { } here.
+> > What on earth is the point of this.  The NOPs are perfectly valid
+> > scattered within the tree, why go to all this trouble to shuffle them
+> > about.
 > 
-> Yea, nit.  not sure why I have the braces there, I usually follow that 
-> one.  And what's that space doing after !?
-> 
-> >
-> >> +
-> >> +	rc = getprop(devp, start_prop, &initrd_start, sizeof(initrd_start));
-> >> +	if (rc < 0)
-> >> +		return;				/* not found */
-> >> +	/* The properties had to be 8 bytes until 2.6.22 */
-> >> +	if (rc == sizeof(unsigned long)) {
-> >> +		unsigned long tmp;
-> >> +		memcpy(&tmp, &initrd_start, rc);
-> >> +		initrd_start = tmp;
-> >> +	} else if (rc != sizeof(initrd_start)) {	/* now they
-> >> can be 4 */
-> >
-> > Right.  8 bytes and 4 bytes, so you should be using explicit length
-> > types instead of long and long long.
-> 
-> Ok, I guess we ahve u32 and u64 in types.h now.  But there is other 
-> code in the wrapper that assumes its compiled 32 bit ILP.
+> And if you notice, there is a "how many to move" argument.  The point 
+> of moving them to the front of the tree is the v17 device tree header 
+> takes more space than the v3 one, and the v2 header is smaller than 
+> both v17 and v16 header.  Since I am converting the tree in place, the 
+> space has to come from somewhere.  Since we are pretty much guaranteed 
+> to get several nops, this function moves them forward so they can be 
+> overwritten.  In practice we move 1-3 NOPS from the early properties > 
+> 8 bytes and early grandchild nodes (eg /cpus/PowerPC,xxx).
 
-Yes, but that's no reason to propagate the sin.
+This is a hell of a lot of bother to go to for a few bytes.
+Allocating a big-enough buffer for any reasonable devtree in BSS and
+memmove()ing into there would be far simpler.
 
-> >> +		printf("unexpected length of %s in /chosen!\n\r", start_prop);
-> >> +		return;
+Remember this is a hack for horrid old device trees produced by
+kexec-tools.  It simply doesn't justify large amounts of code to work
+around.
+
+[snip]
+> >> +	if (tree->last_comp_version > 3)
+> >> +		return;			/* don't know what to do */
 > >
-> > All these printf() / return stanzas add a lot of verbosity to this
-> > function.  Any way they can be consolidated a bit, maybe a single
-> > error path that just prints the property values, so the user can
-> > figure out what was wrong with them.
+> > Rather, don't need to do anything.
 > 
-> On a prior review I got asked to split the reasons for ingoring the 
-> values below (the > 32 bit address from end < start cases).  Admitedly 
-> without all the detailed errors the justification for the string 
-> varables is reduced.
+> If the tree is >= 16 then we don't presently need to do anything.   If 
+> there is a theoritical v4 tree we don't know what to do.  And if output 
+> version is 17 but input is 16 we don't know what to do either, because 
+> there likely aren't nops in the tree to consume.  I suppose we could 
+> preceed it with a check for version == OUTPUT_VERSION, but then I'm 
+> sure I'd get pointless differentation :-).
 
-Hrm.  Well, I can't say I'm entirely convinced either way on this
-one.  I guess I'll think about it again once the rest is cleaned up.
+There will never be a v4.  Or anything between v3 and v16.
+
+Again this is far too general.  It's a hack to deal with kexec-tools
+old trees.  Therefore it doesn't need to deal with any general old
+tree, just the minimum to deal with trees as produced by old
+kexec-tools.
+
+[snip]
+> >> +	/*
+> >> +	 * move mem_rsvmap and dt_strings if they are before dt_struct
+> >> +	 * onto our nops .  Adjust start addresses for the 3 sections.
+> >> +	 */
+> >
+> > Hrm.  Do we really need to worry about this case.  You may be
+> > producing v2 trees in kexec-tools, but do they actually have the
+> > blocks out of order?  dtc certainly never produced them that way.
+> 
+> Out of order?  There has never been a spec as to the order of the 
+> blocks, only the implicit assumption that they follow the device tree 
+> header in a reasonably packed sequence.  booting-without-of says it 
+> must be in ram,; the offsets are unsigned 32 bit quantities.
+
+> As to the order, used, the first implemntation was the kernel which 
+> writes memreserve, strings, then struct (both the openfirmware client 
+> in prom_init and the iSeries procedural library in dt.c).  The second 
+> implentation written is a procedural based library (similar to iseries, 
+> never published, but still used internally) that starts with a 
+> pre-built header and string table, builds the dt_struct as the 
+> functions are called, and when finished copies the memreserve table and 
+> fills in the dt_size, total size, and memreserve offset.
+
+Hrm.  Yes, well, the iSeries tree is weird in a bunch of ways.
+
+> fs2dt writes memreserve, struct, then strings.  Aparently the same as 
+> dtc.  But yes, the strings can be before the struct, and the mem 
+> reserve may or may not be when the strings are before the struct.
+
+Again.  We don't need to deal with the general case here - just the
+real case of trees produced by old kexec-tools.
+
+[snip]
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
