@@ -2,23 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5B21DDE03
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:00:48 +1000 (EST)
-In-Reply-To: <20070925165845.40B0E2397FB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-References: <20070925143126.GA30013@localhost.localdomain>
-	<20070925143531.GG5323@localhost.localdomain>
-	<16E78F0E-B57B-4084-887E-5D2F9C1D0331@kernel.crashing.org>
-	<20070925151819.GA6757@localhost.localdomain>
-	<20070925165845.40B0E2397FB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	by ozlabs.org (Postfix) with ESMTP id 701FFDDDEB
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:06:58 +1000 (EST)
+In-Reply-To: <20070925201935.GA4792@loki.buserror.net>
+References: <20070925201935.GA4792@loki.buserror.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7881139C-EEF1-41DC-AB0F-115632E892B8@kernel.crashing.org>
+Message-Id: <48D32BE9-F195-4DAC-A9CC-6FA5FC52BB69@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [spi-devel-general] [PATCH 7/7] [POWERPC][SPI] spi_mpc83xx:	allow
-	use on MPC85xx
-Date: Tue, 25 Sep 2007 23:00:38 -0500
-To: David Brownell <david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] Make instruction dumping work in real mode.
+Date: Tue, 25 Sep 2007 23:06:49 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +24,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 25, 2007, at 11:58 AM, David Brownell wrote:
+On Sep 25, 2007, at 3:19 PM, Scott Wood wrote:
 
->>>> -	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
->>>> +	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
->>>
->>> Should that really be just PPC_83xx || QUICC_ENGINE?
->>
->> Well, I thought about that. By now I'm unsure if every QE
->> implementation will be compatible with further ones.
+> On non-book-E-or-4xx, exceptions execute in real mode.  If a fault  
+> happens
+> that leads to a register dump, the kernel currently prints XXXXXXXX  
+> because
+> it doesn't realize that PC is a physical address.
 >
-> How many other QE implementations exist?  Is that sort of
-> gratuitous breakage something Freescale makes a habit of?
-
-We try not to, but HW people are know to do evil things to keep us  
-software guys employed.
-
->> 	So far
->> I've tested this driver on MPC8323 and MPC8568. If we'll see
->> more and more compatible QE SPI controllers, of course we
->> may just do || QUICC_ENGINE.
->>
->> PPC_83xx || PPC_85xx
->> PPC_83xx || QUICC_ENGINE
->>
->> Today first option saves us four bytes. ;-)
+> This patch checks the state of the IMMU, and if necessary converts  
+> PC into a
+> virtual address.
 >
-> It'd be good if someone would look at the relevant docs.
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> This version uses MSR_IR rather than address heuristics, and fixes  
+> breakage
+> that somehow crept into the address adjustment in the previous patch.
 >
-> I'll wait for a PPC signoff before I forward this for
-> merge with SPI stuff...
+>  arch/powerpc/kernel/process.c |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/ 
+> process.c
+> index 57c589c..6dbde7f 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -354,6 +354,14 @@ static void show_instructions(struct pt_regs  
+> *regs)
+>  		if (!(i % 8))
+>  			printk("\n");
+>
+> +#if !defined(CONFIG_BOOKE) && !defined(CONFIG_40x)
 
-I'm still in favor of making it PPC_83xx || QUICC_ENGINE.
+40x has a real mode and can have the IMMU off.
 
-So if when we have 87xx with QUICC_ENGINE we don't have to tweak it  
-again, but its a minor thing.
-
-- k
+> +		/* If executing with the IMMU off, adjust pc rather
+> +		 * than print XXXXXXXX.
+> +		 */
+> +		if (!(regs->msr & MSR_IR))
+> +			pc = (unsigned long)phys_to_virt(pc);
+> +#endif
+> +
+>  		/* We use __get_user here *only* to avoid an OOPS on a
+>  		 * bad address because the pc *should* only be a
+>  		 * kernel address.
+> -- 
+> 1.5.3.1
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
