@@ -1,39 +1,23 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C10C8DE3B3
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 19:46:43 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8Q9kaBE074954
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 09:46:36 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l8Q9kada1667104
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 11:46:36 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l8Q9kZ3X031086
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 11:46:36 +0200
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>,
-	"LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 5/5] ibmebus: More speaking error return code in
-	ibmebus_store_probe()
-References: <200709261143.24735.fenkes@de.ibm.com>
-In-Reply-To: <200709261143.24735.fenkes@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EC064DDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 21:03:25 +1000 (EST)
+Message-ID: <46FA3CDD.2070409@genesi-usa.com>
+Date: Wed, 26 Sep 2007 12:05:01 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Date: Wed, 26 Sep 2007 11:46:34 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709261146.35466.fenkes@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
-	Jan-Bernd Themann <themann@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] add Altivec/VMX state to coredumps
+References: <46F88896.50706@au1.ibm.com>	
+	<E4CA12E1-888D-4A8B-B687-02F9D2850E1F@kernel.crashing.org>	
+	<46F94CBA.2060901@genesi-usa.com>
+	<1190758712.23457.0.camel@localhost.localdomain>
+In-Reply-To: <1190758712.23457.0.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,27 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
- arch/powerpc/kernel/ibmebus.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
-index c1e2963..0bd186c 100644
---- a/arch/powerpc/kernel/ibmebus.c
-+++ b/arch/powerpc/kernel/ibmebus.c
-@@ -268,10 +268,10 @@ static ssize_t ibmebus_store_probe(struct bus_type *bus,
- 		return -ENOMEM;
- 
- 	if (bus_find_device(&ibmebus_bus_type, NULL, path,
--			     ibmebus_match_path)) {
-+			    ibmebus_match_path)) {
- 		printk(KERN_WARNING "%s: %s has already been probed\n",
- 		       __FUNCTION__, path);
--		rc = -EINVAL;
-+		rc = -EEXIST;
- 		goto out;
- 	}
- 
+Benjamin Herrenschmidt wrote:
+> On Tue, 2007-09-25 at 19:00 +0100, Matt Sealey wrote:
+>> Kumar Gala wrote:
+>>> I'm wondering how we distinguish a core dump w/altivec state vs one  
+>>> with SPE state.
+>> Sheer number of registers saved?
+>>
+>> Why not put the PVR in core dumps that'd make it all easier..
+> 
+> PVR wouldn't be very useful...  What if you have altivec disabled ? Also
+> that would mean your gdb has to know about all new processors...
+
+Is that such a big deal? :D
+
+Hypothetically it would be impossible to determine if you were running
+on a G5 with the FPU and AltiVec turned off or an e500 core with SPE,
+given the data saved. Is that a misfeature of GDB that we even have to
+worry about this, or some noble plus point of a unified ISA? You decide :)
+
 -- 
-1.5.2
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
