@@ -2,20 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E365BDDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 13:57:06 +1000 (EST)
-In-Reply-To: <46F9B454.8010004@au1.ibm.com>
-References: <46F88896.50706@au1.ibm.com>
-	<E4CA12E1-888D-4A8B-B687-02F9D2850E1F@kernel.crashing.org>
-	<46F9B454.8010004@au1.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id A5B21DDE03
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:00:48 +1000 (EST)
+In-Reply-To: <20070925165845.40B0E2397FB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+References: <20070925143126.GA30013@localhost.localdomain>
+	<20070925143531.GG5323@localhost.localdomain>
+	<16E78F0E-B57B-4084-887E-5D2F9C1D0331@kernel.crashing.org>
+	<20070925151819.GA6757@localhost.localdomain>
+	<20070925165845.40B0E2397FB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1B211071-5D55-4DBC-A109-7A66EC17A810@kernel.crashing.org>
+Message-Id: <7881139C-EEF1-41DC-AB0F-115632E892B8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] add Altivec/VMX state to coredumps
-Date: Tue, 25 Sep 2007 22:56:58 -0500
-To: Mark Nelson <markn@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [spi-devel-general] [PATCH 7/7] [POWERPC][SPI] spi_mpc83xx:	allow
+	use on MPC85xx
+Date: Tue, 25 Sep 2007 23:00:38 -0500
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,64 +29,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sep 25, 2007, at 8:22 PM, Mark Nelson wrote:
+On Sep 25, 2007, at 11:58 AM, David Brownell wrote:
 
-> Kumar Gala wrote:
+>>>> -	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
+>>>> +	depends on SPI_MASTER && (PPC_83xx || PPC_85xx) && EXPERIMENTAL
+>>>
+>>> Should that really be just PPC_83xx || QUICC_ENGINE?
 >>
->> On Sep 24, 2007, at 11:03 PM, Mark Nelson wrote:
->>
->>> Update dump_task_altivec() (that has so far never been put to use)
->>> so that it dumps the Altivec/VMX registers (VR[0] - VR[31], VSCR
->>> and VRSAVE) in the same format as the ptrace get_vrregs() and add
->>> the appropriate glue typedefs and #defines to
->>> include/asm-powerpc/elf.h for it to work.
->>
->> Is there some way to tell if the core dump has altivec registers  
->> state
->> in it?
->>
->> I'm wondering how we distinguish a core dump w/altivec state vs  
->> one with
->> SPE state.
->>
->> - k
->>
->>
+>> Well, I thought about that. By now I'm unsure if every QE
+>> implementation will be compatible with further ones.
 >
-> If the core dump has the Altivec registers saved in there it will  
-> have a
-> note called LINUX as shown below:
->
-> $ readelf -n core
->
-> Notes at offset 0x000002b4 with length 0x000005c8:
->   Owner         Data size       Description
->   CORE          0x0000010c      NT_PRSTATUS (prstatus structure)
->   CORE          0x00000080      NT_PRPSINFO (prpsinfo structure)
->   CORE          0x000000b0      NT_AUXV (auxiliary vector)
->   CORE          0x00000108      NT_FPREGSET (floating point registers)
->   LINUX         0x00000220      NT_PRXFPREG (user_xfpregs structure)
->
-> This mirrors what occurs with the SSE registers on i386 core dumps in
-> order to keep things as similar as possible.
->
-> I can't find any place where dump_spe() is called at the moment, but I
-> suppose if it were to be hooked up in the future it could cause  
-> confusion.
-> The Altivec register state in the core file is much larger than what
-> would be dumped by the current dump_spe(), but I'm not sure if that
-> matters...
->
-> There's a patch for GDB that currently reads the contents of these  
-> vector
-> registers from the core file, but it's being held until this patch has
-> been commented on and/or approved of, so if it comes to it the note  
-> name
-> could be changed to ALTIVEC (or something similar).
+> How many other QE implementations exist?  Is that sort of
+> gratuitous breakage something Freescale makes a habit of?
 
-I think we should NOT overload NT_PRXFPREG and add proper note types  
-NT_ALTIVEC & NT_SPE for those register sets.
+We try not to, but HW people are know to do evil things to keep us  
+software guys employed.
 
-Who on the GDB side would we need to coordinate such a change with?
+>> 	So far
+>> I've tested this driver on MPC8323 and MPC8568. If we'll see
+>> more and more compatible QE SPI controllers, of course we
+>> may just do || QUICC_ENGINE.
+>>
+>> PPC_83xx || PPC_85xx
+>> PPC_83xx || QUICC_ENGINE
+>>
+>> Today first option saves us four bytes. ;-)
+>
+> It'd be good if someone would look at the relevant docs.
+>
+> I'll wait for a PPC signoff before I forward this for
+> merge with SPI stuff...
+
+I'm still in favor of making it PPC_83xx || QUICC_ENGINE.
+
+So if when we have 87xx with QUICC_ENGINE we don't have to tweak it  
+again, but its a minor thing.
 
 - k
