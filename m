@@ -1,25 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 334C1DDE20
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 23:13:38 +1000 (EST)
-Date: Wed, 26 Sep 2007 17:15:21 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 7/7] [POWERPC][SPI] spi_mpc83xx: allow use on any
-	processors with QUICC Engine
-Message-ID: <20070926131521.GA4034@localhost.localdomain>
-References: <20070925143126.GA30013@localhost.localdomain>
-	<20070925143531.GG5323@localhost.localdomain>
-	<16E78F0E-B57B-4084-887E-5D2F9C1D0331@kernel.crashing.org>
-	<20070925151819.GA6757@localhost.localdomain>
-	<20070925165845.40B0E2397FB@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<7881139C-EEF1-41DC-AB0F-115632E892B8@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <7881139C-EEF1-41DC-AB0F-115632E892B8@kernel.crashing.org>
-Cc: David Brownell <david-b@pacbell.net>,
-	spi-devel-general@lists.sourceforge.net, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C6FDDDE3E
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 23:21:45 +1000 (EST)
+In-Reply-To: <46FA3CDD.2070409@genesi-usa.com>
+References: <46F88896.50706@au1.ibm.com>	
+	<E4CA12E1-888D-4A8B-B687-02F9D2850E1F@kernel.crashing.org>	
+	<46F94CBA.2060901@genesi-usa.com>
+	<1190758712.23457.0.camel@localhost.localdomain>
+	<46FA3CDD.2070409@genesi-usa.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <997c015e13649d06e246d3d2c1369100@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] add Altivec/VMX state to coredumps
+Date: Wed, 26 Sep 2007 15:21:07 +0200
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,52 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Sep 25, 2007 at 11:00:38PM -0500, Kumar Gala wrote:
-> I'm still in favor of making it PPC_83xx || QUICC_ENGINE.
+>>> Why not put the PVR in core dumps that'd make it all easier..
+>>
+>> PVR wouldn't be very useful...  What if you have altivec disabled ? 
+>> Also
+>> that would mean your gdb has to know about all new processors...
+>
+> Is that such a big deal? :D
+>
+> Hypothetically it would be impossible to determine if you were running
+> on a G5 with the FPU and AltiVec turned off or an e500 core with SPE,
+> given the data saved.
 
-Submitting... ;-)
+And that is exactly as should be: a core dump represents the execution
+state of a user program, it has nothing to do with the machine it was
+generated on; it even is possible to restart a core dump generated on
+e.g. an e500 on a 970, as long as it doesn't use facilities (e.g., SPE)
+that the latter processor / execution environment doesn't provide.
 
-- - - -
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: [POWERPC][SPI] spi_mpc83xx: allow use on any processors with QUICC Engine
+> Is that a misfeature of GDB that we even have to
+> worry about this, or some noble plus point of a unified ISA? You 
+> decide :)
 
-Currently, all QE SPI controllers are almost the same comparing to
-MPC83xx's, thus let's use that driver for them.
+We don't have to worry about it :-)
 
-Tested to work on MPC85xx in loopback mode.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/spi/Kconfig |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index b915711..a77ede5 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -124,16 +124,17 @@ config SPI_MPC52xx_PSC
- 	  Controller in master SPI mode.
- 
- config SPI_MPC83xx
--	tristate "Freescale MPC83xx SPI controller"
--	depends on SPI_MASTER && PPC_83xx && EXPERIMENTAL
-+	tristate "Freescale MPC83xx/QUICC Engine SPI controller"
-+	depends on SPI_MASTER && (PPC_83xx || QUICC_ENGINE) && EXPERIMENTAL
- 	select SPI_BITBANG
- 	help
--	  This enables using the Freescale MPC83xx SPI controller in master
--	  mode.
-+	  This enables using the Freescale MPC83xx and QUICC Engine SPI
-+	  controllers in master mode.
- 
- 	  Note, this driver uniquely supports the SPI controller on the MPC83xx
--	  family of PowerPC processors.  The MPC83xx uses a simple set of shift
--	  registers for data (opposed to the CPM based descriptor model).
-+	  family of PowerPC processors, plus processors with QUICC Engine
-+	  technology. This driver uses a simple set of shift registers for data
-+	  (opposed to the CPM based descriptor model).
- 
- config SPI_OMAP_UWIRE
- 	tristate "OMAP1 MicroWire"
--- 
-1.5.0.6
+Segher
