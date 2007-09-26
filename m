@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20B0BDDDD8
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:26:07 +1000 (EST)
-Date: Wed, 26 Sep 2007 13:25:56 +0900 (JST)
-Message-Id: <20070926.132556.1723232353.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 3/7] Celleb: Support for Power/Reset buttons
+	by ozlabs.org (Postfix) with ESMTP id DD995DDDD8
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:37:22 +1000 (EST)
+Date: Wed, 26 Sep 2007 13:37:14 +0900 (JST)
+Message-Id: <20070926.133714.-1350502568.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 6/7] Celleb: Serial I/O update
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,147 +21,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a patch to support Power/Reset buttons on Beat on Celleb.
-
-On Beat, we have an event from Beat if Power button or Reset button
-is pressed. This patch catches the event and convert it to a signal
-to INIT process.
-
-/sbin/inittab have no entry to turn the machine power off so we have
-to detect if power button is pressed or not internally in our driver.
-This idea is taken from PS3's event handling subsystem.
+This is an update patch for Serial I/O on Celleb.
+  - Detection algorithm has been changed
 
 Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
 ---
 
-This patch is taken after "[PATCH 2/8] Move pause() and kexec_cpu_down()
-to beat.c" applied, so some lines are taken in from that patch.
-No functional dependency is incorporated.
-
-
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
 ===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
-@@ -22,16 +22,23 @@
- #include <linux/init.h>
- #include <linux/err.h>
- #include <linux/rtc.h>
-+#include <linux/interrupt.h>
-+#include <linux/irqreturn.h>
- 
- #include <asm/hvconsole.h>
- #include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
- 
- #include "beat_wrapper.h"
- #include "beat.h"
-+#include "interrupt.h"
-+
-+static int beat_pm_poweroff_flag;
- 
- void beat_restart(char *cmd)
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/scc_sio.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
+@@ -1,7 +1,7 @@
+ /*
+  * setup serial port in SCC
+  *
+- * (C) Copyright 2006 TOSHIBA CORPORATION
++ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -42,40 +42,40 @@ static struct {
+ static int __init txx9_serial_init(void)
  {
--	beat_shutdown_logical_partition(1);
-+	beat_shutdown_logical_partition(!beat_pm_poweroff_flag);
- }
+ 	extern int early_serial_txx9_setup(struct uart_port *port);
+-	struct device_node *node;
++	struct device_node *node = NULL;
+ 	int i;
+ 	struct uart_port req;
+ 	struct of_irq irq;
+ 	struct resource res;
  
- void beat_power_off(void)
-@@ -170,6 +177,96 @@ void beat_kexec_cpu_down(int crash, int 
- }
+-	node = of_find_node_by_path("/ioif1/sio");
+-	if (!node)
+-		return 0;
+-
+-	for(i = 0; i < sizeof(txx9_scc_tab)/sizeof(txx9_scc_tab[0]); i++) {
+-		if (!(txx9_serial_bitmap & (1<<i)))
+-			continue;
+-
+-		if (of_irq_map_one(node, i, &irq))
+-			continue;
+-		if (of_address_to_resource(node, txx9_scc_tab[i].index, &res))
+-			continue;
+-
+-		memset(&req, 0, sizeof(req));
+-		req.line = i;
+-		req.iotype = UPIO_MEM;
+-		req.mapbase = res.start + txx9_scc_tab[i].offset;
++	while ((node = of_find_compatible_node(node,
++				"serial", "toshiba,sio-scc")) != NULL) {
++		for (i = 0; i < ARRAY_SIZE(txx9_scc_tab); i++) {
++			if (!(txx9_serial_bitmap & (1<<i)))
++				continue;
++
++			if (of_irq_map_one(node, i, &irq))
++				continue;
++			if (of_address_to_resource(node,
++				txx9_scc_tab[i].index, &res))
++				continue;
++
++			memset(&req, 0, sizeof(req));
++			req.line = i;
++			req.iotype = UPIO_MEM;
++			req.mapbase = res.start + txx9_scc_tab[i].offset;
+ #ifdef CONFIG_SERIAL_TXX9_CONSOLE
+-		req.membase = ioremap(req.mapbase, 0x24);
++			req.membase = ioremap(req.mapbase, 0x24);
  #endif
+-		req.irq = irq_create_of_mapping(irq.controller,
+-			irq.specifier, irq.size);
+-		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
+-		req.uartclk = 83300000;
+-		early_serial_txx9_setup(&req);
++			req.irq = irq_create_of_mapping(irq.controller,
++				irq.specifier, irq.size);
++			req.flags |= UPF_IOREMAP | UPF_BUGGY_UART
++				/*HAVE_CTS_LINE*/;
++			req.uartclk = 83300000;
++			early_serial_txx9_setup(&req);
++		}
+ 	}
  
-+static irqreturn_t beat_power_event(int virq, void *arg)
-+{
-+	printk(KERN_DEBUG "Beat: power button pressed\n");
-+	beat_pm_poweroff_flag = 1;
-+	if (kill_cad_pid(SIGINT, 1)) {
-+		/* Just in case killing init process failed */
-+		beat_power_off();
-+	}
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t beat_reset_event(int virq, void *arg)
-+{
-+	printk(KERN_DEBUG "Beat: reset button pressed\n");
-+	beat_pm_poweroff_flag = 0;
-+	if (kill_cad_pid(SIGINT, 1)) {
-+		/* Just in case killing init process failed */
-+		beat_restart(NULL);
-+	}
-+	return IRQ_HANDLED;
-+}
-+
-+static struct beat_event_list {
-+	const char *typecode;
-+	irq_handler_t handler;
-+	unsigned int virq;
-+} beat_event_list[] = {
-+	{ "power", beat_power_event, 0 },
-+	{ "reset", beat_reset_event, 0 },
-+};
-+
-+static int __init beat_register_event(void)
-+{
-+	u64 path[4], data[2];
-+	int rc, i;
-+	unsigned int virq;
-+
-+	for (i = 0; i < ARRAY_SIZE(beat_event_list); i++) {
-+		struct beat_event_list *ev = &beat_event_list[i];
-+
-+		if (beat_construct_event_receive_port(data) != 0) {
-+			printk(KERN_ERR "Beat: "
-+			       "cannot construct event receive port for %s\n",
-+			       ev->typecode);
-+			return -EINVAL;
-+		}
-+
-+		virq = irq_create_mapping(NULL, data[0]);
-+		if (virq == NO_IRQ) {
-+			printk(KERN_ERR "Beat: failed to get virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return -EIO;
-+		}
-+		ev->virq = virq;
-+
-+		rc = request_irq(virq, ev->handler, IRQF_DISABLED,
-+				      ev->typecode, NULL);
-+		if (rc != 0) {
-+			printk(KERN_ERR "Beat: failed to request virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return rc;
-+		}
-+
-+		path[0] = 0x1000000065780000ul;	/* 1,ex */
-+		path[1] = 0x627574746f6e0000ul;	/* button */
-+		path[2] = 0;
-+		strncpy((char *)&path[2], ev->typecode, 8);
-+		path[3] = 0;
-+		data[1] = 0;
-+
-+		beat_create_repository_node(path, data);
-+	}
-+	return 0;
-+}
-+
-+static int __init beat_event_init(void)
-+{
-+	if (!machine_is(celleb) || !firmware_has_feature(FW_FEATURE_BEAT))
-+		return -EINVAL;
-+
-+	beat_pm_poweroff_flag = 0;
-+	return beat_register_event();
-+}
-+
-+device_initcall(beat_event_init);
-+
- EXPORT_SYMBOL(beat_get_term_char);
- EXPORT_SYMBOL(beat_put_term_char);
- EXPORT_SYMBOL(beat_halt_code);
+-	of_node_put(node);
+ 	return 0;
+ }
+ 
