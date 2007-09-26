@@ -1,21 +1,17 @@
-Return-Path: <tglx@linutronix.de>
-Received: from mail.tglx.de (www.osadl.org [213.239.205.134])
-	by ozlabs.org (Postfix) with ESMTP id 58230DDE9D
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 05:58:40 +1000 (EST)
-Subject: Re: [PATCH v2 1/4] Implement {read,update}_persistent_clock.
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <Pine.LNX.4.58.0709261543080.5123@gandalf.stny.rr.com>
-References: <1190345162.620000.305760830507.qpush@thor>
-	<Pine.LNX.4.58.0709261502590.4465@gandalf.stny.rr.com>
-	<46FAB56E.8080509@ru.mvista.com>
-	<Pine.LNX.4.58.0709261543080.5123@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Wed, 26 Sep 2007 21:58:33 +0200
-Message-Id: <1190836713.23376.41.camel@chaos>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C882DDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 06:36:41 +1000 (EST)
+To: Greg KH <greg@kroah.com>
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: [PATCH] [serial gadget] Disable endpoints on unload
+Date: Thu, 27 Sep 2007 00:36:22 +0400
+Message-ID: <20070926203622.24118.36016.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-09-26 at 15:44 -0400, Steven Rostedt wrote:
-> >     No wonder here: the -rt patch already has much of this code since around
-> > 2.6.21.  They have been submitted by me, mostly... and this patchset is
-> > against the Linus' tree.
-> 
-> That would explain it ;-)
-> 
-> I was searching the linux-rt-users mailing list for any patches, and
-> pulled in any that looked legit. These happen to in that mailing list too.
 
-I'll sort that out along with the other hrt updates.
+After Serial gadget is being unloaded, neither serial itself, nor other
+gadget stuff can be loaded subsequently.
 
-	tglx
+Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+
+---
+
+ drivers/usb/gadget/serial.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/usb/gadget/serial.c b/drivers/usb/gadget/serial.c
+index ce4d2e0..594284a 100644
+--- a/drivers/usb/gadget/serial.c
++++ b/drivers/usb/gadget/serial.c
+@@ -1487,6 +1487,12 @@ static void /* __init_or_exit */ gs_unbind(struct usb_gadget *gadget)
+ 			dev->dev_ctrl_req = NULL;
+ 		}
+ 		gs_free_ports(dev);
++		if (dev->dev_notify_ep)
++			usb_ep_disable(dev->dev_notify_ep);
++		if (dev->dev_in_ep)
++			usb_ep_disable(dev->dev_in_ep);
++		if (dev->dev_out_ep)
++			usb_ep_disable(dev->dev_out_ep);
+ 		kfree(dev);
+ 		set_gadget_data(gadget, NULL);
+ 	}
