@@ -1,19 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 701FFDDDEB
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:06:58 +1000 (EST)
-In-Reply-To: <20070925201935.GA4792@loki.buserror.net>
-References: <20070925201935.GA4792@loki.buserror.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <48D32BE9-F195-4DAC-A9CC-6FA5FC52BB69@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] Make instruction dumping work in real mode.
-Date: Tue, 25 Sep 2007 23:06:49 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 4187BDDDD8
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 14:20:47 +1000 (EST)
+Date: Wed, 26 Sep 2007 13:20:34 +0900 (JST)
+Message-Id: <20070926.132034.-1300539325.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 1/7] PowerPC64: Not to insert EA=0 entry at initializing SLB
+To: paulus@samba.org
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a workaround NOT to insert EA=0 entry at initializing SLB.
+Without this patch, you can see /sbin/init hanging at a machine
+which has less or equal than 256MB memory.
 
-On Sep 25, 2007, at 3:19 PM, Scott Wood wrote:
+Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
+---
 
-> On non-book-E-or-4xx, exceptions execute in real mode.  If a fault  
-> happens
-> that leads to a register dump, the kernel currently prints XXXXXXXX  
-> because
-> it doesn't realize that PC is a physical address.
->
-> This patch checks the state of the IMMU, and if necessary converts  
-> PC into a
-> virtual address.
->
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> This version uses MSR_IR rather than address heuristics, and fixes  
-> breakage
-> that somehow crept into the address adjustment in the previous patch.
->
->  arch/powerpc/kernel/process.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/ 
-> process.c
-> index 57c589c..6dbde7f 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -354,6 +354,14 @@ static void show_instructions(struct pt_regs  
-> *regs)
->  		if (!(i % 8))
->  			printk("\n");
->
-> +#if !defined(CONFIG_BOOKE) && !defined(CONFIG_40x)
-
-40x has a real mode and can have the IMMU off.
-
-> +		/* If executing with the IMMU off, adjust pc rather
-> +		 * than print XXXXXXXX.
-> +		 */
-> +		if (!(regs->msr & MSR_IR))
-> +			pc = (unsigned long)phys_to_virt(pc);
-> +#endif
-> +
->  		/* We use __get_user here *only* to avoid an OOPS on a
->  		 * bad address because the pc *should* only be a
->  		 * kernel address.
-> -- 
-> 1.5.3.1
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Index: linux-powerpc-git/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/kernel/setup_64.c
++++ linux-powerpc-git/arch/powerpc/kernel/setup_64.c
+@@ -195,6 +195,12 @@ void __init early_setup(unsigned long dt
+ 	get_paca()->stab_real = __pa((u64)&initial_stab);
+ 	get_paca()->stab_addr = (u64)&initial_stab;
+ 
++	/* XXX: It's a hack!
++	 * kstack must be set properly or slb_initialize() go mad to set
++	 * ESID=0 entry in bolted area of SLB.
++	 * TODO: Set correct value */
++	get_paca()->kstack = (u64)__builtin_frame_address(0);
++
+ 	/* Probe the machine type */
+ 	probe_machine();
+ 
