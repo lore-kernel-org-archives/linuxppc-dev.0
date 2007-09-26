@@ -1,14 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 06D60DDE36
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 21:51:35 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/7] Celleb: Move pause, kexec_cpu_down to beat.c
+Date: Wed, 26 Sep 2007 13:40:50 +0200
+References: <20070926.132314.-432833655.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20070926.132314.-432833655.kouish@swc.toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18170.17280.381728.905485@cargo.ozlabs.ibm.com>
-Date: Wed, 26 Sep 2007 21:33:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <18168.62378.472571.655865@cargo.ozlabs.ibm.com>
-References: <18168.62378.472571.655865@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, jk@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709261340.51450.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,63 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I wrote:
+On Wednesday 26 September 2007, Ishizaki Kou wrote:
+> This patch is an update for "Beat on Celleb"
+> =A0 - Move beat_pause(), beat_kexec_cpu_down() from setup.c to beat.c
+>=20
+> Signed-off-by: <Kou.Ishizaki@toshiba.co.jp>
 
-> Linus,
-> 
-> Please do
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> to get a patch from Roland McGrath that fixes a user-triggerable oops
-> on 64-bit powerpc.
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-I have added another commit from Jeremy Kerr fixing a mismerge that
-caused a user visible ABI regression from 2.6.22.  The diffstat and
-log below include both the patch from Roland and this new patch.
+The patch looks good, once you fix this one line:
 
-Thanks,
-Paul.
+> @@ -36,5 +36,9 @@ ssize_t beat_nvram_get_size(void);
+> =A0ssize_t beat_nvram_read(char *, size_t, loff_t *);
+> =A0ssize_t beat_nvram_write(char *, size_t, loff_t *);
+> =A0int beat_set_xdabr(unsigned long);
+> +void beat_power_save(void);
+> +#ifdef CONFIG_KEXEC
+> +void beat_kexec_cpu_down(int, int);
+> +#endif
 
- arch/powerpc/kernel/process.c            |    7 +++++++
- arch/powerpc/platforms/cell/spufs/file.c |    4 ++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+=46unction declarations in headers files should not be enclosed in #ifdef,
+it only causes unnecessary rebuilds when the configuration changes, but
+does not help.
 
-commit 603c461250b223ac42c10b8d1df653af1a361d44
-Author: Jeremy Kerr <jk@ozlabs.org>
-Date:   Wed Sep 26 10:53:45 2007 +1000
-
-    [POWERPC] spufs: fix mismerge, making context signal{1,2} files readable again
-    
-    The commit 8b6f50ef1d5cc86b278eb42bc91630fad455fb10 seems to have
-    been affected by a mismerge of a duplicate patch
-    (d054b36ffd302ec65aabec16a0c60ddd9e6b5a62) - both the
-    spufs_dir_contents and spufs_dir_nosched_contents have been given
-    write-only signal notification files.
-    
-    This change reverts the spufs_dir_contents array to use the
-    readable signal notification file implementation.
-    
-    Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-    Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit 474f81967217f3bec2389ae913da72641f2c40e3
-Author: Roland McGrath <roland@redhat.com>
-Date:   Mon Sep 24 16:52:44 2007 -0700
-
-    [POWERPC] Ensure FULL_REGS on exec
-    
-    When PTRACE_O_TRACEEXEC is used, a ptrace call to fetch the registers at
-    the PTRACE_EVENT_EXEC stop (PTRACE_PEEKUSR) will oops in CHECK_FULL_REGS.
-    With recent versions, "gdb --args /bin/sh -c 'exec /bin/true'" and "run" at
-    the (gdb) prompt is sufficient to produce this.  I also have written an
-    isolated test case, see https://bugzilla.redhat.com/show_bug.cgi?id=301791#c15.
-    
-    This change fixes the problem by clearing the low bit of pt_regs.trap in
-    start_thread so that FULL_REGS is true again.  This is correct since all of
-    the GPRs that "full" refers to are cleared in start_thread.
-    
-    Signed-off-by: Roland McGrath <roland@redhat.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+	Arnd <><
