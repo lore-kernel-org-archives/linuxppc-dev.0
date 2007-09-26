@@ -1,23 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9CAAFDDEBF
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 93FDCDDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Sep 2007 06:42:40 +1000 (EST)
-Date: Wed, 26 Sep 2007 15:41:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Rune Torgersen <runet@innovsys.com>
-Subject: Re: [PATCH4/4] [POWERPC] Fix cpm_uart driver
-Message-ID: <20070926204156.GA15217@loki.buserror.net>
-References: <46F6C9DC.90008@scram.de> <46F8101E.1050000@freescale.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B0368C44B@ismail.innsys.innovsys.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0368C44B@ismail.innsys.innovsys.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Thu, 27 Sep 2007 09:20:23 +1000 (EST)
+To: "Murat Artun" <artunmurat@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: changing the EDLK components
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 26 Sep 2007 17:25:19 +0300."
+	<4e5a3720709260725x6d2e9faemc6a6053379610df8@mail.gmail.com>
+Date: Thu, 27 Sep 2007 01:20:20 +0200
+Sender: wd@denx.de
+Message-Id: <20070926232020.AD2B12405D@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,21 +24,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2007 at 03:32:29PM -0500, Rune Torgersen wrote:
-> > From: Scott Wood
-> > Maybe that's how it was, but the current code initializes it (more or
-> > less) directly with IMAP_ADDR, which also gets fed into ioremap.
-> > 
-> > One of the two has got to be wrong.
+In message <4e5a3720709260725x6d2e9faemc6a6053379610df8@mail.gmail.com> you wrote:
 > 
-> arch/ppc maps the immr area 1:1 into kernel memory, so ioremap and
-> physical are the same.
-> See arch/ppc/syslib/m8260_setup.c, line 208 (function m8260_map_io)
+> I want to learn the way of building a GNU Automake project and adding
+> it into ELDK. This could be needed because the current version of an
+> ELDK component is old to meet the requirements or a library which is
+> not an ELDK component is to be used in our ppc system.
 
-We were talking about 8xx, not 82xx -- is it always identity mapped there?
+In  principle,  this  is  a  pretty  straightforward  procedure:  you
+download   the   source   RPM   (for   example,  from  the  Fedora  7
+distribution), and use the "rpmbuild" command on the  native  syustem
+(running  with  root  file  system  mounted  over  NFS  or on a local
+harddisk) to build the stuff. For example:
 
-If so, then why bother with the ioremap in immr_map_size() in
-arch/ppc/8xx_io/commproc.c?  And why compare the result from ioremap() with
-a raw identity-mapped address?
+$ rpmbuild --rebuild automake17-1.7.9-8.src.rpm
 
--Scott
+That's in proinciple. In  reality,  you  will  soon  learn  that  the
+package  has  a  lot  of  build  dependencies,  which are not exactly
+trivial to resolve, as some of them are circular. You can try and find
+what's really needed (and not included with the ELDK) by running
+
+$ rpmbuild --rebuild --nodeps automake17-1.7.9-8.src.rpm
+
+but this is just tof ind out how many othe rpackages youw ill need to
+build before...
+
+> As now, I need to upgrade an ELDK component. Namely, I need version
+> 0.9.8 of OpenSSL, where latest ELDK release has OpenSSL with version
+> 0.9.7f. I want to learn if it is necessary for me to follow the same
+
+You don't need a native version of automake for this, as  builing  is
+done  in  the  cross  environment,  and  we  assume you have automake
+installed on your build host.
+
+> procedure stated in documentation in section "3.7. Rebuilding ELDK
+> Components". If this is the case, could anyone point me to resources
+> about how to prepare source rpms from an Automake project to prepare
+
+I don't understand why you mention automake here. It is completely
+unrelated.
+
+> the source rpm of version 0.9.8 of OpenSSL? Of course building the new
+> version of the component and placing everything by hand is always a
+> solution, but I want to understand the clean way of doing this.
+
+The clean way is to adjust the ELDK buld system for the new  version.
+This  is  usually  a  non-trivial  job. By doing it you will start to
+admire what ELDK gives you and understand at least a bit of how  much
+effort is built into it - and you get it all completely for free...
+
+
+
+Alternatively, you can just wait for ELDK 4.2, which will include
+openssl-0.9.8b-12
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+That Microsoft, the Trabant of the operating  system  world,  may  be
+glancing  over the Berlin Wall at the Audis and BMWs and Mercedes. In
+their own universe Trabants and Ladas were mainstream too...
+                                                   -- Evan Leibovitch
