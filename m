@@ -1,11 +1,11 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20070926164030.902766000@pademelon.sonytel.be>
+Message-Id: <20070926164031.098705000@pademelon.sonytel.be>
 References: <20070926163308.772580000@pademelon.sonytel.be>
-Date: Wed, 26 Sep 2007 18:33:10 +0200
+Date: Wed, 26 Sep 2007 18:33:12 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 2/8] ps3av: eliminate PS3AV_DEBUG
+Subject: [patch 4/8] ps3av: treat DVI-D like HDMI in autodetect
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
@@ -18,218 +18,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3av: eliminate PS3AV_DEBUG
-  - Move ps3av_cmd_av_monitor_info_dump from ps3av_cmd.c to ps3av.c, as it's
-    used there only
-  - Integrate ps3av_cmd_av_hw_conf_dump() into its sole user
-  - Use pr_debug() for printing debug info
+ps3av: treat DVI-D monitors like HDMI monitors when autodetecting the best
+video mode
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   72 ++++++++++++++++++++++++++++++++++++++++----
- drivers/ps3/ps3av_cmd.c     |   66 ----------------------------------------
- include/asm-powerpc/ps3av.h |    7 ----
- 3 files changed, 67 insertions(+), 78 deletions(-)
+ drivers/ps3/ps3av.c         |   24 ++++++++----------------
+ include/asm-powerpc/ps3av.h |    1 -
+ 2 files changed, 8 insertions(+), 17 deletions(-)
 
 --- a/drivers/ps3/ps3av.c
 +++ b/drivers/ps3/ps3av.c
-@@ -656,6 +656,64 @@ static int ps3av_hdmi_get_vid(struct ps3
- 	return vid;
- }
+@@ -620,9 +620,6 @@ static int ps3av_hdmi_get_id(struct ps3a
+ 	u32 res_50, res_60;
+ 	int id;
  
-+static void ps3av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *monitor_info)
-+{
-+	const struct ps3av_info_monitor *info = &monitor_info->info;
-+	const struct ps3av_info_audio *audio = info->audio;
-+	char id[sizeof(info->monitor_id)*3+1];
-+	int i;
-+
-+	pr_debug("Monitor Info: size %u\n", monitor_info->send_hdr.size);
-+
-+	pr_debug("avport: %02x\n", info->avport);
-+	for (i = 0; i < sizeof(info->monitor_id); i++)
-+		sprintf(&id[i*3], " %02x", info->monitor_id[i]);
-+	pr_debug("monitor_id: %s\n", id);
-+	pr_debug("monitor_type: %02x\n", info->monitor_type);
-+	pr_debug("monitor_name: %.*s\n", (int)sizeof(info->monitor_name),
-+		 info->monitor_name);
-+
-+	/* resolution */
-+	pr_debug("resolution_60: bits: %08x native: %08x\n",
-+		 info->res_60.res_bits, info->res_60.native);
-+	pr_debug("resolution_50: bits: %08x native: %08x\n",
-+		 info->res_50.res_bits, info->res_50.native);
-+	pr_debug("resolution_other: bits: %08x native: %08x\n",
-+		 info->res_other.res_bits, info->res_other.native);
-+	pr_debug("resolution_vesa: bits: %08x native: %08x\n",
-+		 info->res_vesa.res_bits, info->res_vesa.native);
-+
-+	/* color space */
-+	pr_debug("color space    rgb: %02x\n", info->cs.rgb);
-+	pr_debug("color space yuv444: %02x\n", info->cs.yuv444);
-+	pr_debug("color space yuv422: %02x\n", info->cs.yuv422);
-+
-+	/* color info */
-+	pr_debug("color info   red: X %04x Y %04x\n", info->color.red_x,
-+		 info->color.red_y);
-+	pr_debug("color info green: X %04x Y %04x\n", info->color.green_x,
-+		 info->color.green_y);
-+	pr_debug("color info  blue: X %04x Y %04x\n", info->color.blue_x,
-+		 info->color.blue_y);
-+	pr_debug("color info white: X %04x Y %04x\n", info->color.white_x,
-+		 info->color.white_y);
-+	pr_debug("color info gamma:  %08x\n", info->color.gamma);
-+
-+	/* other info */
-+	pr_debug("supported_AI: %02x\n", info->supported_ai);
-+	pr_debug("speaker_info: %02x\n", info->speaker_info);
-+	pr_debug("num of audio: %02x\n", info->num_of_audio_block);
-+
-+	/* audio block */
-+	for (i = 0; i < info->num_of_audio_block; i++) {
-+		pr_debug("audio[%d] type: %02x max_ch: %02x fs: %02x sbit: "
-+			 "%02x\n",
-+			 i, audio->type, audio->max_num_of_ch, audio->fs,
-+			 audio->sbit);
-+		audio++;
-+	}
-+}
-+
- static int ps3av_auto_videomode(struct ps3av_pkt_av_get_hw_conf *av_hw_conf,
- 				int boot)
- {
-@@ -671,7 +729,7 @@ static int ps3av_auto_videomode(struct p
- 		if (res < 0)
+-	if (info->monitor_type != PS3AV_MONITOR_TYPE_HDMI)
+-		return 0;
+-
+ 	/* check native resolution */
+ 	res_50 = info->res_50.native & PS3AV_RES_MASK_50;
+ 	res_60 = info->res_60.native & PS3AV_RES_MASK_60;
+@@ -712,7 +709,7 @@ static int ps3av_auto_videomode(struct p
+ 	struct ps3av_info_monitor *info;
+ 
+ 	/* get mode id for hdmi */
+-	for (i = 0; i < av_hw_conf->num_of_hdmi; i++) {
++	for (i = 0; i < av_hw_conf->num_of_hdmi && !id; i++) {
+ 		res = ps3av_cmd_video_get_monitor_info(&monitor_info,
+ 						       PS3AV_CMD_AVPORT_HDMI_0 +
+ 						       i);
+@@ -720,24 +717,19 @@ static int ps3av_auto_videomode(struct p
  			return -1;
  
--		ps3av_cmd_av_monitor_info_dump(&monitor_info);
-+		ps3av_monitor_info_dump(&monitor_info);
+ 		ps3av_monitor_info_dump(&monitor_info);
++
  		info = &monitor_info.info;
- 		/* check DVI */
- 		if (info->monitor_type == PS3AV_MONITOR_TYPE_DVI) {
-@@ -727,23 +785,27 @@ static int ps3av_auto_videomode(struct p
- static int ps3av_get_hw_conf(struct ps3av *ps3av)
- {
- 	int i, j, k, res;
-+	const struct ps3av_pkt_av_get_hw_conf *hw_conf;
+-		/* check DVI */
+-		if (info->monitor_type == PS3AV_MONITOR_TYPE_DVI) {
++		switch (info->monitor_type) {
++		case PS3AV_MONITOR_TYPE_DVI:
+ 			dvi = PS3AV_MODE_DVI;
+-			break;
+-		}
+-		/* check HDMI */
+-		id = ps3av_hdmi_get_id(info);
+-		if (id) {
+-			/* got valid mode id */
++			/* fall through */
++		case PS3AV_MONITOR_TYPE_HDMI:
++			id = ps3av_hdmi_get_id(info);
+ 			break;
+ 		}
+ 	}
  
- 	/* get av_hw_conf */
- 	res = ps3av_cmd_av_get_hw_conf(&ps3av->av_hw_conf);
- 	if (res < 0)
- 		return -1;
- 
--	ps3av_cmd_av_hw_conf_dump(&ps3av->av_hw_conf);
-+	hw_conf = &ps3av->av_hw_conf;
-+	pr_debug("av_h_conf: num of hdmi: %u\n", hw_conf->num_of_hdmi);
-+	pr_debug("av_h_conf: num of avmulti: %u\n", hw_conf->num_of_avmulti);
-+	pr_debug("av_h_conf: num of spdif: %u\n", hw_conf->num_of_spdif);
- 
- 	for (i = 0; i < PS3AV_HEAD_MAX; i++)
- 		ps3av->head[i] = PS3AV_CMD_VIDEO_HEAD_A + i;
- 	for (i = 0; i < PS3AV_OPT_PORT_MAX; i++)
- 		ps3av->opt_port[i] = PS3AV_CMD_AVPORT_SPDIF_0 + i;
--	for (i = 0; i < ps3av->av_hw_conf.num_of_hdmi; i++)
-+	for (i = 0; i < hw_conf->num_of_hdmi; i++)
- 		ps3av->av_port[i] = PS3AV_CMD_AVPORT_HDMI_0 + i;
--	for (j = 0; j < ps3av->av_hw_conf.num_of_avmulti; j++)
-+	for (j = 0; j < hw_conf->num_of_avmulti; j++)
- 		ps3av->av_port[i + j] = PS3AV_CMD_AVPORT_AVMULTI_0 + j;
--	for (k = 0; k < ps3av->av_hw_conf.num_of_spdif; k++)
-+	for (k = 0; k < hw_conf->num_of_spdif; k++)
- 		ps3av->av_port[i + j + k] = PS3AV_CMD_AVPORT_SPDIF_0 + k;
- 
- 	/* set all audio port */
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -922,72 +922,6 @@ int ps3av_cmd_video_get_monitor_info(str
- 	return res;
- }
- 
--#ifdef PS3AV_DEBUG
--void ps3av_cmd_av_hw_conf_dump(const struct ps3av_pkt_av_get_hw_conf *hw_conf)
--{
--	printk("av_h_conf:num of hdmi:%d\n", hw_conf->num_of_hdmi);
--	printk("av_h_conf:num of avmulti:%d\n", hw_conf->num_of_avmulti);
--	printk("av_h_conf:num of spdif:%d\n", hw_conf->num_of_spdif);
--}
--
--void ps3av_cmd_av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *monitor_info)
--{
--	const struct ps3av_info_monitor *info = &monitor_info->info;
--	const struct ps3av_info_audio *audio = info->audio;
--	int i;
--
--	printk("Monitor Info: size%d\n", monitor_info->send_hdr.size);
--
--	printk("avport:%02x\n", info->avport);
--	printk("monitor_id:");
--	for (i = 0; i < 10; i++)
--		printk("%02x ", info->monitor_id[i]);
--	printk("\nmonitor_type:%02x\n", info->monitor_type);
--	printk("monitor_name:");
--	for (i = 0; i < 16; i++)
--		printk("%c", info->monitor_name[i]);
--
--	/* resolution */
--	printk("\nresolution_60: bits:%08x native:%08x\n",
--	       info->res_60.res_bits, info->res_60.native);
--	printk("resolution_50: bits:%08x native:%08x\n",
--	       info->res_50.res_bits, info->res_50.native);
--	printk("resolution_other: bits:%08x native:%08x\n",
--	       info->res_other.res_bits, info->res_other.native);
--	printk("resolution_vesa: bits:%08x native:%08x\n",
--	       info->res_vesa.res_bits, info->res_vesa.native);
--
--	/* color space */
--	printk("color space    rgb:%02x\n", info->cs.rgb);
--	printk("color space yuv444:%02x\n", info->cs.yuv444);
--	printk("color space yuv422:%02x\n", info->cs.yuv422);
--
--	/* color info */
--	printk("color info   red:X %04x Y %04x\n",
--	       info->color.red_x, info->color.red_y);
--	printk("color info green:X %04x Y %04x\n",
--	       info->color.green_x, info->color.green_y);
--	printk("color info  blue:X %04x Y %04x\n",
--	       info->color.blue_x, info->color.blue_y);
--	printk("color info white:X %04x Y %04x\n",
--	       info->color.white_x, info->color.white_y);
--	printk("color info gamma: %08x\n", info->color.gamma);
--
--	/* other info */
--	printk("supported_AI:%02x\n", info->supported_ai);
--	printk("speaker_info:%02x\n", info->speaker_info);
--	printk("num of audio:%02x\n", info->num_of_audio_block);
--
--	/* audio block */
--	for (i = 0; i < info->num_of_audio_block; i++) {
--		printk("audio[%d] type:%02x max_ch:%02x fs:%02x sbit:%02x\n",
--		       i, audio->type, audio->max_num_of_ch, audio->fs,
--		       audio->sbit);
--		audio++;
--	}
--}
--#endif /* PS3AV_DEBUG */
--
- #define PS3AV_AV_LAYOUT_0 (PS3AV_CMD_AV_LAYOUT_32 \
- 		| PS3AV_CMD_AV_LAYOUT_44 \
- 		| PS3AV_CMD_AV_LAYOUT_48)
+-	if (dvi) {
+-		/* DVI mode */
+-		id = PS3AV_DEFAULT_DVI_MODE_ID;
+-	} else if (!id) {
++	if (!id) {
+ 		/* no HDMI interface or HDMI is off */
+ 		if (ps3av->region & PS3AV_REGION_60)
+ 			id = PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60;
 --- a/include/asm-powerpc/ps3av.h
 +++ b/include/asm-powerpc/ps3av.h
-@@ -697,13 +697,6 @@ extern int ps3av_cmd_audio_mute(int, u32
- extern int ps3av_cmd_audio_active(int, u32);
- extern int ps3av_cmd_avb_param(struct ps3av_pkt_avb_param *, u32);
- extern int ps3av_cmd_av_get_hw_conf(struct ps3av_pkt_av_get_hw_conf *);
--#ifdef PS3AV_DEBUG
--extern void ps3av_cmd_av_hw_conf_dump(const struct ps3av_pkt_av_get_hw_conf *);
--extern void ps3av_cmd_av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *);
--#else
--static inline void ps3av_cmd_av_hw_conf_dump(const struct ps3av_pkt_av_get_hw_conf *hw_conf) {}
--static inline void ps3av_cmd_av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *monitor_info) {}
--#endif
- extern int ps3av_cmd_video_get_monitor_info(struct ps3av_pkt_av_get_monitor_info *,
- 					    u32);
+@@ -305,7 +305,6 @@
+ #define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60	1	/* 480i */
+ #define PS3AV_DEFAULT_HDMI_MODE_ID_REG_50	7	/* 576p */
+ #define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_50	6	/* 576i */
+-#define PS3AV_DEFAULT_DVI_MODE_ID		2	/* 480p */
  
+ #define PS3AV_REGION_60				0x01
+ #define PS3AV_REGION_50				0x02
 
 -- 
 With kind regards,
