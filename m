@@ -1,20 +1,18 @@
-Return-Path: <mikenuss@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
-	by ozlabs.org (Postfix) with ESMTP id CF4C2DDEF3
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 04:18:24 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1610205rvf
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Sep 2007 11:18:23 -0700 (PDT)
-Message-ID: <a340dd0e0709251118n108799adxb60af2afa6ac9a96@mail.gmail.com>
-Date: Tue, 25 Sep 2007 14:18:22 -0400
-From: "Mike Nuss" <mikenuss@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: Book-E watchdog driver questions
-In-Reply-To: <2A9ADFCB-2725-4156-BE66-4E55A4987E2D@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <46F93E54.5050203@gmail.com>
-	<2A9ADFCB-2725-4156-BE66-4E55A4987E2D@kernel.crashing.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 26 Sep 2007 10:44:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH 2/2] fsl/embedded6xx: don't cast the result of
+	of_get_property
+Message-Id: <20070926104419.1b92002e.sfr@canb.auug.org.au>
+In-Reply-To: <1189748800.165997.810365539433.2.gpush@pokey>
+References: <1189748800.165136.731062325870.1.gpush@pokey>
+	<1189748800.165997.810365539433.2.gpush@pokey>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__26_Sep_2007_10_44_19_+1000_0RoX4d1__iFx+l0A"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > Is there a reason that booke_wdt.c does not specify a MODULE_LICENSE?
-> >> From the copyright notice at the top it appears to be GPL. As
-> >> written,
-> > it taints the kernel.
->
-> Odd, no reason.  I'll submit a patch for that.
->
-> > Also, if I test out the driver by killing my process that's doing the
-> > pinging, I get a kernel panic:
->
-> Its been a while since i've tried this.  I'll try it out and see what
-> happens.
+--Signature=_Wed__26_Sep_2007_10_44_19_+1000_0RoX4d1__iFx+l0A
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I also found that GETBOOTSTATUS returns 0 after the reboot. Looking at
-the source code I found the comment "XXX: something is clearing TSR" -
-I take that to mean that the register is being cleared by something
-before the module tries to read it? In my case U-Boot may be clearing
-that - I can take a look.
+On Fri, 14 Sep 2007 15:46:40 +1000 Jeremy Kerr <jk@ozlabs.org> wrote:
+>
+> -	avr_clock =3D *(u32*)of_get_property(avr, "clock-frequency", &len);
+> -	phys_addr =3D ((u32*)of_get_property(avr, "reg", &len))[0];
+> +	phys_addr =3D of_get_property(avr, "reg", &len);
+> +	avr_clock_prop =3D of_get_property(avr, "clock-frequency", &len);
 
-Mike
+If you don't use the value of the len variable, then you can pass NULL to
+of_get_property.
+
+> +	if (!avr_clock || !phys_addr[0])
+
+Not *phys_addr?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__26_Sep_2007_10_44_19_+1000_0RoX4d1__iFx+l0A
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFG+atnTgG2atn1QN8RAvQKAJ9lIyrmmEjYM6kAuSQYoUibBPU2GACfeqaw
+VLzzrHf5iSliEJpoWUa7kh0=
+=+US9
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__26_Sep_2007_10_44_19_+1000_0RoX4d1__iFx+l0A--
