@@ -1,22 +1,36 @@
-Return-Path: <bwalle@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <FENKES@de.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 21911DDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 18:15:40 +1000 (EST)
-Date: Wed, 26 Sep 2007 10:15:34 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 5/7] Use extended crashkernel command line on ppc64
-Message-ID: <20070926081534.GD11385@suse.de>
-References: <20070925182257.900701776@strauss.suse.de>
-	<20070925182259.398924232@strauss.suse.de>
-	<20070925124534.b9da41a2.akpm@linux-foundation.org>
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 38B9ADDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 18:43:59 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id l8Q8hs2T112212
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 08:43:54 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l8Q8hsCP2039956
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 10:43:54 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l8Q8hr3K020369
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 10:43:53 +0200
+In-Reply-To: <200709251642.41480.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20070925124534.b9da41a2.akpm@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
+	match eHCA and eHEA drivers
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF1983365C.5CA77642-ONC1257362.002F6D8C-C1257362.002FF658@de.ibm.com>
+Date: Wed, 26 Sep 2007 10:43:52 +0200
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Thomas Q Klein <tklein@de.ibm.com>, Paul Mackerras <pmac@au1.ibm.com>,
+	Jan-Bernd Themann <themann@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +40,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Arnd Bergmann <arnd@arndb.de> wrote on 25.09.2007 16:42:40:
 
-* Andrew Morton <akpm@linux-foundation.org> [2007-09-25 21:45]:
-> On Tue, 25 Sep 2007 20:23:02 +0200 Bernhard Walle <bwalle@suse.de> wrote:
-> 
-> > This patch adapts the ppc64 code to use the generic parse_crashkernel()
-> > function introduced in the generic patch of that series.
-> 
-> I really don't like to see patches get a wholesale replacement, especially
-> when they've been looked at by a few people and have had some testing, etc.
-> It's not possible to see what changed and people need to re-review stuff
-> they've already reviewed, etc.
+> This is missing a description,
 
-Sorry, I didn't know that this is the preferred way. I just thought
-it's more clear if the patches are replaced if the patch set is
-finally pushed into Linus' tree.
+The description is "ibmebus: Move to of_device and of_platform_driver, 
+match eHCA and eHEA drivers" -- I thought that should be enough since the 
+patch is rather straightforward. I can add a more detailed description, 
+though. Revised patch will follow.
 
-> diff -puN arch/powerpc/kernel/machine_kexec.c~use-extended-crashkernel-command-line-on-ppc64-update arch/powerpc/kernel/machine_kexec.c
-> --- a/arch/powerpc/kernel/machine_kexec.c~use-extended-crashkernel-command-line-on-ppc64-update
-> +++ a/arch/powerpc/kernel/machine_kexec.c
-> @@ -63,7 +63,7 @@ NORET_TYPE void machine_kexec(struct kim
->  
->  void __init reserve_crashkernel(void)
->  {
-> -	unsigned long long crash_size = 0, crash_base;
-> +	unsigned long long crash_size, crash_base;
->  	int ret;
->  
->  	/* this is necessary because of lmb_phys_mem_size() */
-> _
-> 
-> 
-> which I suspect will now create a compiler warning.
+> but the patch looks good.
 
-No, it doesn't. I just verified this.
+Thanks =)
 
-  CHK     include/linux/compile.h
-  CC      arch/powerpc/kernel/machine_kexec.o
-  LD      arch/powerpc/kernel/built-in.o
-
-
-Thanks,
-   Bernhard
--- 
-Bernhard Walle <bwalle@suse.de>, Architecture Maintenance
-SUSE LINUX Products GmbH, Nürnberg, Germany
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
-OpenPGP: F61F 34CC 09CA FB82 C9F6  BA4B 8865 3696 DDAF 6454
+Joachim
