@@ -1,31 +1,13 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 49096DDE09
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 07:12:17 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8QLC3hh027160
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 17:12:03 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8QLC2T1172830
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 15:12:03 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8QLC2Jo006721
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Sep 2007 15:12:02 -0600
-Date: Wed, 26 Sep 2007 16:12:01 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 0/3] PowerPC: Add cpu_setup functionality to 44x platform
-Message-ID: <20070926161201.348c1176@weaponx.rchland.ibm.com>
-In-Reply-To: <20070921144149.GA4150@ru.mvista.com>
-References: <20070921144149.GA4150@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18170.60026.917774.234504@cargo.ozlabs.ibm.com>
+Date: Thu, 27 Sep 2007 09:25:46 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: really old glibc on 8xx or 403 with bleeding-edge kernel -
+	anyone care?
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,18 +17,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 21 Sep 2007 18:41:49 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+Since about May 2001, we have put two AT_IGNOREPPC entries at the
+beginning of the ELF auxiliary vector.  The reason for this is that
+glibc prior to April 2001 rounded up the address of the base of the
+aux vector to a multiple of 16.  I think we can now get rid of the
+AT_IGNOREPPC entries.
 
-> This patchset adds cpu_setup functionality to PowerPC 44x,
-> moves FPU init to cpu_setup callback and adds 440EPx/440GRx
-> incorrect write to DDR SDRAM errata workaround.
+Well, in fact what old glibc did was a little more complex than that.
+It worked out the standard aux vector base (i.e. the address of the
+word after the end of the environment pointers), and then chose either
+that or that address rounded up to a multiple of 16 bytes.  The way it
+chose was by checking the word at the rounded address - if it was more
+than 16 it used the standard base address, otherwise it used the
+rounded address.
 
-This set looks pretty good to me.  Aside from the slight oddity of
-adding an essentially empty file in the first patch.  But it makes
-things nicely bisectable and I asked for it to be done that way.
+So the way the AT_IGNOREPPC hack worked was by putting 4 words (two
+aux vector entries) at the beginning of the aux vector that all
+contained the value 22 (AT_IGNOREPPC).  That made the old glibc code
+choose the standard aux vector base address.
 
-Unless someone has objections, I'll probably pull this in soon after I
-test a bit.
+However, what comes after that is an AT_DCACHEBSIZE (19) entry and an
+AT_ICACHEBSIZE (20) entry.  Thus, as long as the data cache blocksize
+and the instruction cache blocksize are greater than 16, these two
+entries will serve just as well as the AT_IGNOREPPC entries at making
+old glibc choose the standard aux vector base address.
 
-josh
+The only CPUs that we support with cache line sizes of 16 bytes or
+less are the 8xx family and the 403 family.  So my question is, does
+anyone care about running ancient userland binaries (from 2001 or
+earlier) on 8xx or 403 with future kernels (2.6.x for x >= 24)?
+
+If not then we can remove the AT_IGNOREPPC aux vector entries.
+
+Paul.
