@@ -1,14 +1,18 @@
-Return-Path: <jwboyer@jdub.homelinux.org>
-Date: Tue, 25 Sep 2007 19:15:55 -0500
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Build failure on treeboot-walnut.c
-Message-ID: <20070925191555.5dc2f13f@Nokia-N800-26>
-In-Reply-To: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.com
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 2/2] fsl/embedded6xx: don't cast the result of
+	of_get_property
+Date: Wed, 26 Sep 2007 10:52:23 +1000
+References: <1189748800.165136.731062325870.1.gpush@pokey>
+	<1189748800.165997.810365539433.2.gpush@pokey>
+	<20070926104419.1b92002e.sfr@canb.auug.org.au>
+In-Reply-To: <20070926104419.1b92002e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-6"
+Message-Id: <200709261052.25044.jk@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 25 Sep 2007 16:46:17 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+Stephen,
 
-> Building Paul's current powerpc branch with a ppc6xx compiler causes
-> the following build failure:
-> 
->   SYSMAP  System.map
->   BOOTCC  arch/powerpc/boot/treeboot-walnut.o
-> {standard input}: Assembler messages:
-> {standard input}:184: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:185: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:186: Error: Unrecognized opcode: `mfdcr'
-> {standard input}:217: Error: Unrecognized opcode: `mtdcr'
-> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 1
-> make: *** [uImage] Error 2
-> 
-> This is using ELDK 4.1:
-> GNU assembler version 2.16.1 (powerpc-linux) using BFD version 2.16.1
-> gcc version 4.0.0 (DENX ELDK 4.1 4.0.0)
+> If you don't use the value of the len variable, then you can pass
+> NULL to of_get_property.
 
-Fixed in my tree.  I'll ask Paul to pull soon.
+Sure, but that's probably a separate patch, no ?
 
-josh
+> Not *phys_addr?
+
+That's what the existing code does. I'm guessing that it treats 
+phys_addr as an array with one entry, not a single u32.
+
+Cheers,
+
+
+Jeremy
