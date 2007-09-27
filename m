@@ -1,30 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C59EEDDE1B
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 01:34:36 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8RFYXJZ018578
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 11:34:33 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8RFYXBu674732
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 11:34:33 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8RFYWWS018572
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 11:34:32 -0400
-Date: Thu, 27 Sep 2007 10:34:27 -0500
-To: Cesar Bello <cesarcabo2904@gmail.com>
-Subject: Re: Help! Debian ppc64
-Message-ID: <20070927153427.GA7970@austin.ibm.com>
-References: <4d1254690709270657l7e3b4cdbhee90eef97b37f77@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4d1254690709270657l7e3b4cdbhee90eef97b37f77@mail.gmail.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 1B391DDE42
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 01:44:38 +1000 (EST)
+In-Reply-To: <20070927024535.GC14030@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
+	<20070924033612.GI8058@localhost.localdomain>
+	<5e71423247aef068d82b84166102fd7d@bga.com>
+	<20070925034616.GB2525@localhost.localdomain>
+	<69f1ad37eec293a4c4616d04c8400ca4@bga.com>
+	<20070927024535.GC14030@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <41180fced14196db80f261d2ac1909e0@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
+Date: Thu, 27 Sep 2007 10:44:27 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,25 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2007 at 09:57:02AM -0400, Cesar Bello wrote:
-> Hi, I'm writing from Venezuela. I have to prepair a presentation about
-> Debian on IBM pSerires Servers with Power 5+ processors. My first question
-> is what are the advantages of use Debian GNU/Linux on pSeries Servers?
 
-Advantages as compared to what?
+On Sep 26, 2007, at 9:45 PM, David Gibson wrote:
 
--- Debian on Intel? 
-   +++ powerpc has better RAS features than Intel, for example, 
-       my favorite, PCI error handling and recovery, or hotplug cpu,
-       dynamic LPAR configuration, etc. 
+> On Wed, Sep 26, 2007 at 11:19:47AM -0500, Milton Miller wrote:
+>> On Sep 24, 2007, at 10:46 PM, David Gibson wrote:
+>>> On Mon, Sep 24, 2007 at 01:54:32AM -0500, Milton Miller wrote:
+>>>> On Sep 23, 2007, at 10:36 PM, David Gibson wrote:
+>>>>> On Fri, Sep 21, 2007 at 06:05:06PM -0500, Milton Miller wrote:
+>>> [snip]
+>>>>>> +#define MIN_VERSION 2
+>>>>>> +#define OUT_VERSION 16z
 
--- SuSE/RedHat on PowerPC?
-   +++ SuSE/RedHat offer formal support, for $$$, which debian/ubuntu do not
 
--- AIX on pSeries?
-   +++ AIX has various "enterprise" features that Debian does not.
+>>>> Actually the v1 trees has
+>>>> some other differences such as initrd addresses were kernel linear  
+>>>> not
+>>>> real, cpus were assigned logical numbers  ... so while the structure
+>>>> didn't change except for the header field, the contents did.
+>>>
+>>> !? what's your source for this.  v2 and v3 were absolutely supposed  
+>>> to
+>>> be backwards compatible with v1 which would not be the case with
+>>> silent semantic changes such as this.
+>>
+>> What's your souce for saying the were supposed to be backwards
+>> compatable?  That dtc fills out the struct header so?
+>
+> Sitting next to BenH and knowing he always intended them to be so.
+>
+>> My source is my involvment when v2 was defined (they were discovered
+>> while writing my device tree generation code):
+>>
+>> The actual binary structure is compatable, just not the contents of  
+>> the
+>> properties nor how any slave cpus wait (for some trees it doesn't
+>> matter).
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools-
+>> testing.git;a=blob;f=kexec/arch/ppc64/fs2dt.c;
+>> hb=b84b87747a16f0afbef6f6802bb794a94f4961d9
+>
+> An old version of fs2dt is hardly definitive.  It could just be Plain
+> Wrong, nothing to do with the dt version.
 
-You might try talking to RedHat/SuSE product support, and also to IBM
-pSeries sales.
+Sorry, copy and paste error.  I was tring to point out this changelog  
+in 2.6.10:
 
-Linas Vepstas
+http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git; 
+a=commitdiff;h=e1b47549d1588ccea1fa5726eb430aae4e80f8ed
+
+
+>
+>> And some more changes just before that:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;
+>> a=history;f=arch/ppc64/kernel/prom_init.c;
+>> h=e570799a84cc5328e9f0fd44592cb0b828d8c13a;
+>> hb=4ae24c4e8a8f68950a7774ca1cdfe69bfe4e2ffc
+>
+> I don't know what bit you're referring to in that batch of commits.
+
+The following properties changed semantics and no heuristics are  
+employed to check for the old vs new:
+(1) tces changed from virtual to real
+(2) cpus spin on physical (hw id) not logical (0-n)
+
+Other changes in that series
+(3) 0->klimit is not a memreserve in the tree (we now allow overlapping  
+reserves, but not at the time)
+(4) rtas properties are in a different location (but both could exist)
+
+>
+>> So its mostly when the kernel generated and required v1 trees, it was
+>> ppc64 only and had these other content and handoff semantics.  If it
+>> were to get a v1 tree, it only copes for the boot cpu determination
+>> I'm not aware of any code other than the kernel that would actually
+>> generate a v1 tree (other than dtc, which always supporteed v2, and
+>> doesn't care about these differences).
+
+So trying to boot 2.6.9 (2004-10-18 cutoff) kernel from a tree for  
+2.6.10 would fail, and vice versa.  But a 2.6.10 kernel can boot a v1  
+tree with properties, memreserves, and cpu ids that it expects, getting  
+the boot-cpuid from the extra property in the tree.
+
+Is that compatible?  If you only are talking about parsing the tree it  
+is.
+
+milton
