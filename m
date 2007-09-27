@@ -1,19 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 4E345DDE03
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:41:21 +1000 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id B5A8DDDE03
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:41:22 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on
-	of_device
-Date: Thu, 27 Sep 2007 13:27:04 +0200
+Subject: Re: [PATCH 1/5] PowerPC: Move of_device allocation into of_device.[ch]
+Date: Thu, 27 Sep 2007 13:27:41 +0200
 References: <200709261143.24735.fenkes@de.ibm.com>
-	<200709261145.22278.fenkes@de.ibm.com>
-In-Reply-To: <200709261145.22278.fenkes@de.ibm.com>
+	<200709261144.14282.fenkes@de.ibm.com>
+In-Reply-To: <200709261144.14282.fenkes@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709271327.05793.arnd@arndb.de>
+Message-Id: <200709271327.42781.arnd@arndb.de>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
 	Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
@@ -29,11 +28,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wednesday 26 September 2007, Joachim Fenkes wrote:
-> The devtree root is now searched for devices matching a built-in whitelist
-> during boot, so these devices appear on the bus from the beginning. It is
-> still possible to manually add/remove devices to/from the bus by using the
-> probe/remove sysfs interface. Also, when a device driver registers itself,
-> the devtree is matched against its matchlist.
+> Extract generic of_device allocation code from of_platform_device_create()
+> and move it into of_device.[ch], called of_device_alloc(). Also, there's now
+> of_device_free() which puts the device node.
+> 
+> This way, bus drivers that build on of_platform (like ibmebus will) can
+> build upon this code instead of reinventing the wheel.
 > 
 > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 
