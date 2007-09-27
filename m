@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 9717FDDD0D
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 61407DDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Sep 2007 07:16:40 +1000 (EST)
-To: "Murat Artun" <artunmurat@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: changing the EDLK components
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Sep 2007 17:34:04 +0300."
-	<4e5a3720709270734k54016e93h68ae6606d959cee9@mail.gmail.com>
-Date: Thu, 27 Sep 2007 23:16:35 +0200
-Sender: wd@denx.de
-Message-Id: <20070927211635.1CA6E2405D@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 28 Sep 2007 07:25:13 +1000 (EST)
+Date: Thu, 27 Sep 2007 16:28:30 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Add platform support for the MPC837x RDB board
+Message-ID: <20070927212830.GA9610@lixom.net>
+References: <11909173512321-git-send-email-ljd015@freescale.com>
+	<20070927191036.GD7838@mag.az.mvista.com>
+	<C908B0B881A6B949985D6BAA0D9469B402CD36A7@az33exm20.fsl.freescale.net>
+	<20070927195351.GE7838@mag.az.mvista.com>
+	<20070927150312.4eea96fd@weaponx.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070927150312.4eea96fd@weaponx.rchland.ibm.com>
+Cc: D'Abbraccio Joe-ljd015 <Joe.D'abbraccio@freescale.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4e5a3720709270734k54016e93h68ae6606d959cee9@mail.gmail.com> you wrote:
+On Thu, Sep 27, 2007 at 03:03:12PM -0500, Josh Boyer wrote:
+> On Thu, 27 Sep 2007 12:53:51 -0700
+> "Mark A. Greer" <mgreer@mvista.com> wrote:
 > 
-> Specifically, I have followed the procedure in section "3.7.
-> Rebuilding ELDK Components". First I have installed source RPMs and
-> then rebuilt the binary target RPM. However, as I have followed the
-> compiler messages I recognized that host gcc is called instead of
-> cross gcc.
+> > On Thu, Sep 27, 2007 at 12:41:57PM -0700, D'Abbraccio Joe-ljd015 wrote:
+> > > Thanks for the advice, but I was just basing the list to post to on the
+> > > MAINTAINERS file which states that this is the one for Embedded PPC83XX.
+> > > If you still think that I should post to linuxppc-dev, let me know.
+> > 
+> > Yes, I think it would be better to repost to linuxppc-dev.
+> > 
+> > Does anyone have an objection to changing all of the:
+> > 
+> > 	"L:	linuxppc-embedded@ozlabs.org"
+> > 
+> > in MAINTAINERS to:
+> > 
+> > 	"L:	linuxppc-dev@ozlabs.org" ??
+> > 
+> > Kumar, Josh, Vitaly, et. al.?
 > 
-> Considering that my PATH was set following the advice in section "3.7.
-> Rebuilding ELDK Components" as "<ELDK_root>/usr/ppc-linux/bin"
-> directory is before "/usr/bin" what could be the problem?
+> I personally don't care either way.  I'm already subscribed to both
+> lists.
+> 
+> Makes sense to go to linuxppc-dev given the arch/powerpc migration.
 
-If you really followed that advice then please explain how the native
-gcc could be called at all because the cross compiler will always  be
-found first in the PATH?
+I thought the -embedded list was created in the first place to keep some
+of the "noise" off of -dev (i.e. "I can't get interface <foo> to work on
+my custom <embedded eval board>-lookalike board, HELP!"). If people still
+care about keeping that on a separate list, then we shouldn't change it.
 
-I recommend checking the documentation again and following it step by
-step.
+I think the relevant people probably monitor this list (maybe not quite as
+frequently) to catch things. I even caught the first PWRficient-related
+question in a timely manner the other day. :-)
 
-Best regards,
+Still, that being said, patches will clearly get better exposure on -dev,
+especially device tree crap.
 
-Wolfgang Denk
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"This is a test of the Emergency Broadcast System. If this had been an
-actual emergency, do you really think we'd stick around to tell you?"
+-Olof
