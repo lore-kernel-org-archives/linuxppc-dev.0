@@ -1,13 +1,17 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Use libfdt/fdt.h instead of flat_dt.h 
-In-Reply-To: Your message of "Wed, 26 Sep 2007 13:11:05 +1000."
-	<20070926031105.GA26512@localhost.localdomain>
-References: <20070926031105.GA26512@localhost.localdomain> 
-Date: Thu, 27 Sep 2007 08:26:14 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IatNe-0007Yv-Aw@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <cesarcabo2904@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id 7319BDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 23:57:03 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so1118234wri
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 06:57:02 -0700 (PDT)
+Message-ID: <4d1254690709270657l7e3b4cdbhee90eef97b37f77@mail.gmail.com>
+Date: Thu, 27 Sep 2007 09:57:02 -0400
+From: "Cesar Bello" <cesarcabo2904@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Help! Debian ppc64
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1459_31456147.1190901422226"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,21 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> In the dtc tree, both flat_dt.h and libfdt/fdt.h have structures and
-> constants relating to the flattened device tree format derived from
-> asm-powerpc/prom.h in the kernel.  The former is used in dtc, the
-> latter in libfdt.
-> 
-> libfdt/fdt.h is the more recent, revised version, so use that
-> throughout, removing flat_dt.h.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+------=_Part_1459_31456147.1190901422226
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Applied.
+Hi, I'm writing from Venezuela. I have to prepair a presentation about
+Debian on IBM pSerires Servers with Power 5+ processors. My first question
+is what are the advantages of use Debian GNU/Linux on pSeries Servers?
 
-As instructed, I also ignored this patch:
-    dtc: Use a custom name for lexer output
+Thanks for your help
 
-Thanks,
-jdl
+Regards
+
+Cesar B
+
+------=_Part_1459_31456147.1190901422226
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Hi, I&#39;m writing from Venezuela. I have to prepair a presentation about Debian on IBM pSerires Servers with Power 5+ processors. My first question is what are the advantages of use Debian GNU/Linux&nbsp;on pSeries Servers? 
+</div>
+<div>&nbsp;</div>
+<div>Thanks for your help</div>
+<div>&nbsp;</div>
+<div>Regards</div>
+<div>&nbsp;</div>
+<div>Cesar B</div>
+
+------=_Part_1459_31456147.1190901422226--
