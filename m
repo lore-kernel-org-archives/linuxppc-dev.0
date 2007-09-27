@@ -1,19 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings Driver patches for
-	2.6.24
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <20070926163308.772580000@pademelon.sonytel.be>
-References: <20070926163308.772580000@pademelon.sonytel.be>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-N0+l+t4O8b/6iwMWyqPZ"
-Date: Thu, 27 Sep 2007 12:31:25 +1000
-Message-Id: <1190860285.6502.6.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 27 Sep 2007 12:45:35 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
+Message-ID: <20070927024535.GC14030@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
+	<20070924033612.GI8058@localhost.localdomain>
+	<5e71423247aef068d82b84166102fd7d@bga.com>
+	<20070925034616.GB2525@localhost.localdomain>
+	<69f1ad37eec293a4c4616d04c8400ca4@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <69f1ad37eec293a4c4616d04c8400ca4@bga.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Sep 26, 2007 at 11:19:47AM -0500, Milton Miller wrote:
+> On Sep 24, 2007, at 10:46 PM, David Gibson wrote:
+> > On Mon, Sep 24, 2007 at 01:54:32AM -0500, Milton Miller wrote:
+> >> On Sep 23, 2007, at 10:36 PM, David Gibson wrote:
+> >>> On Fri, Sep 21, 2007 at 06:05:06PM -0500, Milton Miller wrote:
+> > [snip]
+> >>>> +#define MIN_VERSION 2
+> >>>> +#define OUT_VERSION 16
+> >>>
+> >>> Should output version 17.  In any case, don't try to be so general -
+> >>> just convert v123 (all basically the same) to latest (i.e. v17)
+> >>> without all the #if nonsense.
+> >>
+> >> Outputing v17 instead of 16 requires more words to be added to the
+> >> header, and the library does fine with v16.
+> >
+> > For now.  libfdt will want v17.  Although it will (eventually) have
+> > it's own v16->v17 conversion code.
+> 
+> If libfdt gets merged without supporting v16 input, then that will be a  
+> regression.  This code isn't pretending to address that.   The current  
+> flat tree code works with v16.
 
---=-N0+l+t4O8b/6iwMWyqPZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hrm, true.  Since I'm working on merging libfdt right now, I guess
+that moves up my schedule for getting the v16->v17 conversion code
+working.
 
-On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
-> 	Hi,
->=20
-> Here are some new patches for the PS3 AV Settings Driver (ps3av), which i=
-s
-> used in close collaboration with the PS3 Virtual Frame Buffer Device Driv=
-er
-> (ps3fb):
->   [1] ps3av: eliminate unneeded temporary variables
->   [2] ps3av: eliminate PS3AV_DEBUG
->   [3] ps3av: use PS3 video mode ids in autodetect code
->   [4] ps3av: treat DVI-D like HDMI in autodetect
->   [5] ps3av: add autodetection for VESA modes
->   [6] ps3av: add quirk database for broken monitors
->   [7] ps3av: remove unused ps3av_set_mode()
->   [8] ps3av: don't distinguish between `boot' and `non-boot' autodetectio=
-n
->=20
-> Please review, and queue for 2.6.24 if they're ok. Thanks!
->=20
-> Question: As several DVI-D displays advertise they support 1080i modes wh=
-ile
-> they actually don't (cfr. the quirk database), perhaps I should drop 1080=
-i
-> modes completely from the ps3av_preferred_modes[] table? Usually 720p loo=
-ks
-> better than 1080i anyway.  What do you think?
+> 
+> >>  Actually the v1 trees has
+> >> some other differences such as initrd addresses were kernel linear not
+> >> real, cpus were assigned logical numbers  ... so while the structure
+> >> didn't change except for the header field, the contents did.
+> >
+> > !? what's your source for this.  v2 and v3 were absolutely supposed to
+> > be backwards compatible with v1 which would not be the case with
+> > silent semantic changes such as this.
+> 
+> What's your souce for saying the were supposed to be backwards  
+> compatable?  That dtc fills out the struct header so?
 
-Definitely. If the autodetection fails Linux is basically unusable on
-PS3 unless you hack the kernel sources and build your own kboot and
-otheros.bld - not entirely trivial for novice users. So it's pretty
-important that it works 100%.
+Sitting next to BenH and knowing he always intended them to be so.
 
-cheers
+> My source is my involvment when v2 was defined (they were discovered  
+> while writing my device tree generation code):
+> 
+> The actual binary structure is compatable, just not the contents of the  
+> properties nor how any slave cpus wait (for some trees it doesn't  
+> matter).
+> 
+> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools- 
+> testing.git;a=blob;f=kexec/arch/ppc64/fs2dt.c; 
+> hb=b84b87747a16f0afbef6f6802bb794a94f4961d9
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+An old version of fs2dt is hardly definitive.  It could just be Plain
+Wrong, nothing to do with the dt version.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+> And some more changes just before that:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git; 
+> a=history;f=arch/ppc64/kernel/prom_init.c; 
+> h=e570799a84cc5328e9f0fd44592cb0b828d8c13a; 
+> hb=4ae24c4e8a8f68950a7774ca1cdfe69bfe4e2ffc
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+I don't know what bit you're referring to in that batch of commits.
 
---=-N0+l+t4O8b/6iwMWyqPZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> So its mostly when the kernel generated and required v1 trees, it was  
+> ppc64 only and had these other content and handoff semantics.  If it  
+> were to get a v1 tree, it only copes for the boot cpu determination    
+> I'm not aware of any code other than the kernel that would actually  
+> generate a v1 tree (other than dtc, which always supporteed v2, and  
+> doesn't care about these differences).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBG+xX9dSjSd0sB4dIRAuS9AJ0UP3FUB5kD6/2nzvMOS75Kzg33VACglrh6
-MlJA+1aOdT5hw91bAJINCKc=
-=GdXY
------END PGP SIGNATURE-----
-
---=-N0+l+t4O8b/6iwMWyqPZ--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
