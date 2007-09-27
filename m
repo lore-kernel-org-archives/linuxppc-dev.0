@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DB7DFDDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 17:53:36 +1000 (EST)
-Date: Thu, 27 Sep 2007 16:53:26 +0900 (JST)
-Message-Id: <20070927.165326.-1300536104.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 4/7] Celleb: New HTAB Guest OS Interface on Beat
+	by ozlabs.org (Postfix) with ESMTP id 5D249DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 17:56:47 +1000 (EST)
+Date: Thu, 27 Sep 2007 16:56:31 +0900 (JST)
+Message-Id: <20070927.165631.-1300533671.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 5/7] Celleb: Supports VFD on Celleb 2
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,270 +21,239 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a patch kit to work with new Guest OS Interface
-to tweak HTAB on Beat. It detects old and new Guest OS Interfaces
-automatically.
+This is a patch to support VFD on Celleb 2.
+VFD is a small LCD to show miscellaneous messages.
 
 Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/Kconfig
 ===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/setup.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
-@@ -119,7 +119,7 @@ static int __init celleb_probe(void)
- 		return 0;
- 
- 	powerpc_firmware_features |= FW_FEATURE_CELLEB_POSSIBLE;
--	hpte_init_beat();
-+	hpte_init_beat_v3();
- 	return 1;
- }
- 
-Index: linux-powerpc-git/include/asm-powerpc/mmu-hash64.h
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/Kconfig
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/Kconfig
+@@ -7,3 +7,9 @@ config PPC_CELLEB
+ 	select PPC_UDBG_BEAT
+ 	select USB_OHCI_BIG_ENDIAN_MMIO
+ 	select USB_EHCI_BIG_ENDIAN_MMIO
++	select PPC_RTAS
++
++config PPC_CELLEB2_INDICATOR
++	tristate "Support for Toshiba's Cell Reference Set 'Celleb 2's VFD"
++	default m
++	depends on PPC_CELLEB
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile
 ===================================================================
---- linux-powerpc-git.orig/include/asm-powerpc/mmu-hash64.h
-+++ linux-powerpc-git/include/asm-powerpc/mmu-hash64.h
-@@ -256,6 +256,7 @@ extern void hpte_init_native(void);
- extern void hpte_init_lpar(void);
- extern void hpte_init_iSeries(void);
- extern void hpte_init_beat(void);
-+extern void hpte_init_beat_v3(void);
- 
- extern void stabs_alloc(void);
- extern void slb_initialize(void);
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_syscall.h
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/Makefile
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_PPC_UDBG_BEAT)	+= udbg_beat.o
+ obj-$(CONFIG_SERIAL_TXX9)	+= scc_sio.o
+ obj-$(CONFIG_SPU_BASE)		+= spu_priv1.o
++obj-$(CONFIG_PPC_CELLEB2_INDICATOR)	+= indicator.o
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/indicator.c
 ===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat_syscall.h
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_syscall.h
-@@ -157,4 +157,8 @@
- #define HV_rtc_write __BEAT_ADD_VENDOR_ID(0x191, 1)
- #define HV_eeprom_read __BEAT_ADD_VENDOR_ID(0x192, 1)
- #define HV_eeprom_write __BEAT_ADD_VENDOR_ID(0x193, 1)
-+#define HV_insert_htab_entry3 __BEAT_ADD_VENDOR_ID(0x104, 1)
-+#define HV_invalidate_htab_entry3 __BEAT_ADD_VENDOR_ID(0x105, 1)
-+#define HV_update_htab_permission3 __BEAT_ADD_VENDOR_ID(0x106, 1)
-+#define HV_clear_htab3 __BEAT_ADD_VENDOR_ID(0x107, 1)
- #endif
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat_wrapper.h
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
-@@ -98,6 +98,37 @@ static inline s64 beat_write_htab_entry(
- 	return ret;
- }
- 
-+static inline s64 beat_insert_htab_entry3(u64 htab_id, u64 group,
-+	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 value_v, u64 *slot)
-+{
-+	u64 dummy[1];
-+	s64 ret;
-+
-+	ret = beat_hcall1(HV_insert_htab_entry3, dummy, htab_id, group,
-+		hpte_v, hpte_r, mask_v, value_v);
-+	*slot = dummy[0];
-+	return ret;
-+}
-+
-+static inline s64 beat_invalidate_htab_entry3(u64 htab_id, u64 group,
-+	u64 va, u64 pss)
-+{
-+	return beat_hcall_norets(HV_invalidate_htab_entry3,
-+		htab_id, group, va, pss);
-+}
-+
-+static inline s64 beat_update_htab_permission3(u64 htab_id, u64 group,
-+	u64 va, u64 pss, u64 ptel_mask, u64 ptel_value)
-+{
-+	return beat_hcall_norets(HV_update_htab_permission3,
-+		htab_id, group, va, pss, ptel_mask, ptel_value);
-+}
-+
-+static inline s64 beat_clear_htab3(u64 htab_id)
-+{
-+	return beat_hcall_norets(HV_clear_htab3, htab_id);
-+}
-+
- static inline void beat_shutdown_logical_partition(u64 code)
- {
- 	(void)beat_hcall_norets(HV_shutdown_logical_partition, code);
-@@ -217,4 +248,41 @@ static inline s64 beat_put_iopte(u64 ioa
- 		ioid, flags);
- }
- 
-+static inline s64 beat_construct_event_receive_port(u64 *port)
-+{
-+	u64 dummy[1];
-+	s64 ret;
-+
-+	ret = beat_hcall1(HV_construct_event_receive_port, dummy);
-+	*port = dummy[0];
-+	return ret;
-+}
-+
-+static inline s64 beat_destruct_event_receive_port(u64 port)
-+{
-+	s64 ret;
-+
-+	ret = beat_hcall_norets(HV_destruct_event_receive_port, port);
-+	return ret;
-+}
-+
-+static inline s64 beat_create_repository_node(u64 path[4], u64 data[2])
-+{
-+	s64 ret;
-+
-+	ret = beat_hcall_norets(HV_create_repository_node2,
-+		path[0], path[1], path[2], path[3], data[0], data[1]);
-+	return ret;
-+}
-+
-+static inline s64 beat_get_repository_node_value(u64 lpid, u64 path[4],
-+	u64 data[2])
-+{
-+	s64 ret;
-+
-+	ret = beat_hcall2(HV_get_repository_node_value2, data,
-+		lpid, path[0], path[1], path[2], path[3]);
-+	return ret;
-+}
-+
- #endif
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/htab.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
-@@ -306,3 +306,133 @@ void __init hpte_init_beat(void)
- 	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
- 	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
- }
-+
-+static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
-+				  unsigned long va, unsigned long pa,
-+				  unsigned long rflags, unsigned long vflags,
-+				  int psize)
-+{
-+	unsigned long lpar_rc;
-+	unsigned long slot;
-+	unsigned long hpte_v, hpte_r;
-+
-+	/* same as iseries */
-+	if (vflags & HPTE_V_SECONDARY)
-+		return -1;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
-+			"rflags=%lx, vflags=%lx, psize=%d)\n",
-+		hpte_group, va, pa, rflags, vflags, psize);
-+
-+	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
-+	hpte_r = hpte_encode_r(pa, psize) | rflags;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
-+
-+	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+		hpte_r &= ~_PAGE_COHERENT;
-+
-+	/* insert into not-volted entry */
-+	lpar_rc = beat_insert_htab_entry3(0, hpte_group, hpte_v, hpte_r,
-+		HPTE_V_BOLTED, 0, &slot);
-+	/*
-+	 * Since we try and ioremap PHBs we don't own, the pte insert
-+	 * will fail. However we must catch the failure in hash_page
-+	 * or we will loop forever, so return -2 in this case.
-+	 */
-+	if (unlikely(lpar_rc != 0)) {
-+		if (!(vflags & HPTE_V_BOLTED))
-+			DBG_LOW(" lpar err %lx\n", lpar_rc);
-+		return -2;
-+	}
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" -> slot: %lx\n", slot);
-+
-+	/* We have to pass down the secondary bucket bit here as well */
-+	return (slot ^ hpte_group) & 15;
-+}
-+
+--- /dev/null
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/indicator.c
+@@ -0,0 +1,202 @@
 +/*
-+ * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
-+ * the low 3 bits of flags happen to line up.  So no transform is needed.
-+ * We can probably optimize here and assume the high bits of newpp are
-+ * already zero.  For now I am paranoid.
++ * LED/VFD support for Celleb
++ *
++ * (C) Copyright 2007 TOSHIBA CORPORATION
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
-+static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
-+				    unsigned long newpp,
-+				    unsigned long va,
-+				    int psize, int local)
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/fs.h>
++#include <linux/seq_file.h>
++#include <linux/proc_fs.h>
++#include <linux/of.h>
++#include <linux/delay.h>
++#include <linux/uaccess.h>
++
++#include <asm/rtas.h>
++#include <asm/machdep.h>
++#include <asm/semaphore.h>
++
++static const u32 *display_cols;
++static u32 display_width, display_lines;
++static u32 token_display_character, token_set_indicator;
++static DECLARE_MUTEX(display_lock);
++static DECLARE_MUTEX(indicator_lock);
++
++static int celleb_display_show(struct seq_file *m, void *v)
 +{
-+	unsigned long lpar_rc;
-+	unsigned long want_v;
-+	unsigned long pss;
++	u32 i;
 +
-+	want_v = hpte_encode_v(va, psize);
-+	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
++	seq_printf(m, "--- Celleb Subdisplay ---\n");
++	seq_printf(m, "Lines: %u\n", display_lines);
++	if (display_cols)
++		for (i = 0; i < display_lines; i++)
++			seq_printf(m, "Columns(%u): %u\n", i, display_cols[i]);
++	else
++		seq_printf(m, "Columns(All): %u\n", display_width);
++	return 0;
++}
 +
-+	DBG_LOW("    update: "
-+		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-+		want_v & HPTE_V_AVPN, slot, psize, newpp);
++static ssize_t celleb_display_write(struct file *file,
++		const char __user *buf, size_t count, loff_t *ppos)
++{
++	int rc;
++	size_t i;
++	char d;
 +
-+	lpar_rc = beat_update_htab_permission3(0, slot, want_v, pss, 7, newpp);
++	rc = down_interruptible(&indicator_lock);
++	if (rc != 0)
++		return rc;
++	for (i = 0; i < count; i++) {
++		rc = get_user(d, &buf[i]);
++		if (rc != 0) {
++			up(&display_lock);
++			return rc;
++		}
++		do {
++			rc = rtas_call(token_display_character, 1, 1, NULL, d);
++		} while (rtas_busy_delay(rc));
++	}
++	up(&display_lock);
++	return i;
++}
 +
-+	if (lpar_rc == 0xfffffff7) {
-+		DBG_LOW("not found !\n");
-+		return -1;
++static int celleb_display_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, celleb_display_show, NULL);
++}
++
++static int celleb_indicator_show(struct seq_file *m, void *v)
++{
++	return 0;
++}
++
++static ssize_t celleb_indicator_write(struct file *file,
++		const char __user *buf, size_t count, loff_t *ppos)
++{
++	int rc;
++	size_t i;
++	char d;
++
++	rc = down_interruptible(&indicator_lock);
++	if (rc != 0)
++		return rc;
++	for (i = 0; i < count; i++) {
++		rc = get_user(d, &buf[i]);
++		if (rc != 0) {
++			up(&indicator_lock);
++			return rc;
++		}
++		do {
++			rc = rtas_call(token_set_indicator, 1, 1, NULL, d);
++		} while (rtas_busy_delay(rc));
++	}
++	up(&indicator_lock);
++	return i;
++}
++
++static int celleb_indicator_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, celleb_indicator_show, NULL);
++}
++
++const struct file_operations celleb_display_operations = {
++	.open		= celleb_display_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.write		= celleb_display_write,
++	.release	= single_release,
++};
++
++const struct file_operations celleb_indicator_operations = {
++	.open		= celleb_indicator_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.write		= celleb_indicator_write,
++	.release	= single_release,
++};
++
++static int __init celleb_indicator_init(void)
++{
++	struct device_node *rtas_node = NULL;
++	struct proc_dir_entry *entry;
++	const u32 *p;
++
++	if (!machine_is(celleb))
++		return -ENODEV;
++
++	rtas_node = of_find_node_by_name(NULL, "rtas");
++	if (rtas_node == NULL)
++		return -ENODEV;
++
++	display_cols = of_get_property(rtas_node,
++		"ibm,display-truncation-length", NULL);
++	if ((p = of_get_property(rtas_node,
++		"ibm,display-line-length", NULL)) != NULL)
++		display_width = *p;
++	else
++		display_width = 0;
++	if ((p = of_get_property(rtas_node,
++		"ibm,display-number-of-lines", NULL)) != NULL)
++		display_lines = *p;
++	else
++		display_lines = 0;
++
++	if ((p = of_get_property(rtas_node,
++		"display-character", NULL)) != NULL)
++		token_display_character = *p;
++	else
++		token_display_character = 0;
++
++	if ((p = of_get_property(rtas_node,
++		"set-indicator", NULL)) != NULL)
++		token_set_indicator = *p;
++	else
++		token_set_indicator = 0;
++
++	if (token_display_character != 0
++		&& display_lines != 0
++		&& (display_width != 0 || display_cols)) {
++		entry = create_proc_entry("ppc64/rtas/toshiba,display",
++			S_IRUGO|S_IWUSR, NULL);
++		if (entry)
++			entry->proc_fops = &celleb_display_operations;
 +	}
 +
-+	DBG_LOW("ok\n");
-+
-+	BUG_ON(lpar_rc != 0);
++	if (token_set_indicator != 0) {
++		entry = create_proc_entry("ppc64/rtas/toshiba,indicator",
++			S_IRUGO|S_IWUSR, NULL);
++		if (entry)
++			entry->proc_fops = &celleb_indicator_operations;
++	}
++	of_node_put(rtas_node);
 +
 +	return 0;
 +}
 +
-+static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long va,
-+					 int psize, int local)
++static void __exit celleb_indicator_exit(void)
 +{
-+	unsigned long want_v;
-+	unsigned long lpar_rc;
-+	unsigned long pss;
-+
-+	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
-+		slot, va, psize, local);
-+	want_v = hpte_encode_v(va, psize);
-+	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
-+
-+	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
-+
-+	/* E_busy can be valid output: page may be already replaced */
-+	BUG_ON(lpar_rc != 0 && lpar_rc != 0xfffffff7);
++	remove_proc_entry("ppc64/rtas/toshiba,display", NULL);
++	remove_proc_entry("ppc64/rtas/toshiba,indicator", NULL);
 +}
 +
-+static int64_t _beat_lpar_hptab_clear_v3(void)
-+{
-+	return beat_clear_htab3(0);
-+}
-+
-+static void beat_lpar_hptab_clear_v3(void)
-+{
-+	_beat_lpar_hptab_clear_v3();
-+}
-+
-+void __init hpte_init_beat_v3(void)
-+{
-+	if (_beat_lpar_hptab_clear_v3() == 0) {
-+		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate_v3;
-+		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp_v3;
-+		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
-+		ppc_md.hpte_insert	= beat_lpar_hpte_insert_v3;
-+		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
-+		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear_v3;
-+	} else {
-+		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
-+		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
-+		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
-+		ppc_md.hpte_insert	= beat_lpar_hpte_insert;
-+		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
-+		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
-+	}
-+}
++module_init(celleb_indicator_init);
++module_exit(celleb_indicator_exit);
++MODULE_AUTHOR("Toshiba Corporation");
++MODULE_DESCRIPTION("VFD/LED support for Toshiba Cell Reference Set");
++MODULE_LICENSE("GPL");
++MODULE_VERSION("1.0");
