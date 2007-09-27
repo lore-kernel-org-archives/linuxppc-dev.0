@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23B77DDE25
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 18:19:00 +1000 (EST)
-Subject: Re: [PATCH 1/7] PowerPC64: Not to insert EA=0 entry at
+	by ozlabs.org (Postfix) with ESMTP id B3B9BDDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 18:25:35 +1000 (EST)
+Subject: Re: [PATCH 7/7] Celleb: update for PCI
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: kou.ishizaki@toshiba.co.jp
-In-Reply-To: <20070927.170139.-1300534448.kouish@swc.toshiba.co.jp>
-References: <20070927.170139.-1300534448.kouish@swc.toshiba.co.jp>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200709261409.32231.arnd@arndb.de>
+References: <20070926.134050.1102532600.kouish@swc.toshiba.co.jp>
+	<200709261409.32231.arnd@arndb.de>
 Content-Type: text/plain
-Date: Thu, 27 Sep 2007 18:18:52 +1000
-Message-Id: <1190881132.6158.4.camel@pasglop>
+Date: Thu, 27 Sep 2007 18:25:27 +1000
+Message-Id: <1190881527.6158.6.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,17 +26,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2007-09-27 at 17:01 +0900, kou.ishizaki@toshiba.co.jp wrote:
-> 
-> Celleb does not set get_paca()->kstack properly (I don't know which
-> function should set it up), so we need to workaround.
+On Wed, 2007-09-26 at 14:09 +0200, Arnd Bergmann wrote:
+> Is there a way that we can make that code common? I guess there could be a
+> file in arch/powerpc/sysdev that can handle this correctly for all hardware
+> that requires this particular workaround (currently celleb and QS20, but
+> potentially more).
 
-paca->kstack is set in asm (via the PACAKSAVE macro), from either
-__secondary_start for non-boot CPUs or from start_here_common for the
-boot CPU.
+We could move it to something like sysdev/spider-pci-workarounds.c
 
-slb_flush_and_rebolt() should not be called before that happens.
-
-How do you end up with kstack set to 0 ?
+Another thing to note is that the initial implementation I did for QS20
+only does PCI, not PCIE. Maybe that's worth fixing on both.
 
 Ben.
