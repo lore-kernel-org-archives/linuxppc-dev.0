@@ -1,18 +1,24 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3DEADDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:22:27 +1000 (EST)
-Date: Thu, 27 Sep 2007 20:22:07 +0900 (JST)
-Message-Id: <20070927.202207.-1300525707.kouish@swc.toshiba.co.jp>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/7] PowerPC64: Not to insert EA=0 entry at
-In-Reply-To: <1190881132.6158.4.camel@pasglop>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 4E345DDE03
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:41:21 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/5] ibmebus: Add device creation and bus probing based on
+	of_device
+Date: Thu, 27 Sep 2007 13:27:04 +0200
+References: <200709261143.24735.fenkes@de.ibm.com>
+	<200709261145.22278.fenkes@de.ibm.com>
+In-Reply-To: <200709261145.22278.fenkes@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709271327.05793.arnd@arndb.de>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben-san,
+On Wednesday 26 September 2007, Joachim Fenkes wrote:
+> The devtree root is now searched for devices matching a built-in whitelist
+> during boot, so these devices appear on the bus from the beginning. It is
+> still possible to manually add/remove devices to/from the bus by using the
+> probe/remove sysfs interface. Also, when a device driver registers itself,
+> the devtree is matched against its matchlist.
+> 
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 
-> On Thu, 2007-09-27 at 17:01 +0900, kou.ishizaki@toshiba.co.jp wrote:
->
-> > Celleb does not set get_paca()->kstack properly (I don't know which
-> > function should set it up), so we need to workaround.
->
-> paca->kstack is set in asm (via the PACAKSAVE macro), from either
-> __secondary_start for non-boot CPUs or from start_here_common for the
-> boot CPU.
->
-> slb_flush_and_rebolt() should not be called before that happens.
->
-> How do you end up with kstack set to 0 ?
-
-I found r13 is not set before entering start_here_common for boot cpu.
-For non-boot threads, __secondary_start will set r13 properly.
-
-So the problem is to set r13 correct PACA address before entering
-start_here_common. Should it set before entering kernel or will some
-patch make sense?
-
-Best regards,
-Kou Ishizaki
+Acked-by: Arnd Bergmann <arnd@arndb.de>
