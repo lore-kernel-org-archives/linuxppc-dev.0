@@ -1,19 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AFAB6DDE18
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 04:00:26 +1000 (EST)
-Date: Thu, 27 Sep 2007 13:00:01 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH v3] Make instruction dumping work in real mode.
-Message-ID: <20070927180001.GA18185@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 88BDFDDE32
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 04:02:53 +1000 (EST)
+In-Reply-To: <20070927180001.GA18185@loki.buserror.net>
+References: <20070927180001.GA18185@loki.buserror.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2F295534-8E68-43DD-8990-BEB78E2D1710@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3] Make instruction dumping work in real mode.
+Date: Thu, 27 Sep 2007 13:02:43 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On non-book-E-or-4xx, exceptions execute in real mode.  If a fault happens
-that leads to a register dump, the kernel currently prints XXXXXXXX because
-it doesn't realize that PC is a physical address.
 
-This patch checks the state of the IMMU, and if necessary converts PC into a
-virtual address.
+On Sep 27, 2007, at 1:00 PM, Scott Wood wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-Resent with 40x->44x.
+> On non-book-E-or-4xx, exceptions execute in real mode.  If a fault  
+> happens
+> that leads to a register dump, the kernel currently prints XXXXXXXX  
+> because
+> it doesn't realize that PC is a physical address.
+>
+> This patch checks the state of the IMMU, and if necessary converts  
+> PC into a
+> virtual address.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
- arch/powerpc/kernel/process.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+44x is Book-e :)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 57c589c..6dbde7f 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -354,6 +354,14 @@ static void show_instructions(struct pt_regs *regs)
- 		if (!(i % 8))
- 			printk("\n");
- 
-+#if !defined(CONFIG_BOOKE) && !defined(CONFIG_44x)
-+		/* If executing with the IMMU off, adjust pc rather
-+		 * than print XXXXXXXX.
-+		 */
-+		if (!(regs->msr & MSR_IR))
-+			pc = (unsigned long)phys_to_virt(pc);
-+#endif
-+
- 		/* We use __get_user here *only* to avoid an OOPS on a
- 		 * bad address because the pc *should* only be a
- 		 * kernel address.
--- 
-1.5.3.1
+all you need is a ifndef CONFIG_BOOKE.
+
+- k
