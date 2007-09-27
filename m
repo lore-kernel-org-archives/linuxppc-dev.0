@@ -1,36 +1,24 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 758D2DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 09:34:43 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8RNYcTa007005
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 19:34:38 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8RNYcE5420912
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 17:34:38 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8RNYb7o020024
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 17:34:38 -0600
-Date: Thu, 27 Sep 2007 18:34:37 -0500
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
-Message-ID: <20070927233437.GF18686@austin.ibm.com>
-References: <20070420204114.GL31947@austin.ibm.com>
-	<20070420204720.GM31947@austin.ibm.com>
-	<20070926150216.GH3899@parisc-linux.org>
-	<20070927220022.GC18686@austin.ibm.com>
-	<20070927221031.GY3899@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070927221031.GY3899@parisc-linux.org>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] add Altivec/VMX state to coredumps
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1D8E59FD-E8B1-446C-ABEE-D41F5496B518@kernel.crashing.org>
+References: <46F88896.50706@au1.ibm.com>
+	<E4CA12E1-888D-4A8B-B687-02F9D2850E1F@kernel.crashing.org>
+	<46F9B454.8010004@au1.ibm.com>
+	<1B211071-5D55-4DBC-A109-7A66EC17A810@kernel.crashing.org>
+	<46F9E67C.4070209@au1.ibm.com>
+	<8FC0C4ED-3268-467C-A3EF-0336082062E1@kernel.crashing.org>
+	<1190861310.6502.10.camel@concordia>
+	<1D8E59FD-E8B1-446C-ABEE-D41F5496B518@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-4WQKfHBZlLTDCbFXccJQ"
+Date: Fri, 28 Sep 2007 09:54:34 +1000
+Message-Id: <1190937274.18773.4.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Carlos Eduardo Seo <eduseo@br.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,46 +28,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2007 at 04:10:31PM -0600, Matthew Wilcox wrote:
-> In the error handler, we wait_for_completion(io_reset_wait).
-> In sym2_io_error_detected, we init_completion(io_reset_wait).
-> Isn't it possible that we hit the error handler before we hit the
-> io_error_detected path, and thus the completion wait is lost?
-> Since the completion is already initialised in sym_attach(), I don't
-> think we need to initialise it in sym2_io_error_detected().
-> Makes sense to just delete it?
 
-Good catch. But no ... and I had to study this a bit. Bear with me:
+--=-4WQKfHBZlLTDCbFXccJQ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It is enough to call init_completion() once, and not once per use:
-it initializes spinlocks, which shouldn't be intialized twice. 
+On Thu, 2007-09-27 at 05:10 -0500, Kumar Gala wrote:
+> >>> You're probably right :)
+> >>>
+> >>> What cores have SPE at the moment? Also, perhaps more importantly,
+> >>> are there any plans to have Altivec and SPE in the same core?
+> >>
+> >> The e500 cores's from Freescale.
+> >>
+> >> No, they are pretty much mutually exclusive.
+> >>
+> >>> I've been working with Carlos Eduardo Seo (Cc'ed on this mail) on
+> >>> the GDB side of this.
+> >>
+> >>  From comments it looks like the expectation is that the combination
+> >> of note type and name which is expected to be unique.
+> >>
+> >> I'm wondering if we should handle this via
+> >> elf_coredump_extra_notes_size() & elf_coredump_extra_notes_write().
+> >> Does GDB care about the order it sees the various sections in?
+> >
+> > I don't think those callbacks will work in this case, they're only
+> > called for the primary thread that's doing the coredump, not for each
+> > thread. Perhaps there's a way to adapt it though.
+> >
+> > I think the easiest solution for now is just to make the note type a
+> > #define and create a new value for Altivec.
+>=20
+> Oh, well.  It shouldn't be too difficult to abstract vector handler =20
+> similar to how we do GPRs today to the core dump code.
 
-But, that completion might be used multiple times when there are
-multiple errors, and so, before using it a second time, one must 
-set completion->done = 0.  The INIT_COMPLETION() macro does this. 
+I'm not sure I follow, you mean elf_core_copy_regs() ?
 
-One must have completion->done = 0 before every use, as otherwise, 
-wait_for_completion() won't actually wait. And since complete_all()
-sets x->done += UINT_MAX/2, I'm pretty sure x->done won't be zero
-the next time we use it, unless we make it so.
+If so, that's basically what we've done, the problem is that as with
+elf_core_copy_regs(), although the content is abstracted and overridden
+by arch code, the note type is not. But making the vector note type
+configurable seems easy enough.
 
-So I need to find a place to safely call INIT_COMPLETION() again, 
-after the completion has been used. At the moment, I'm stumped
-as to where to do this. 
+eg:
 
----- [think ... think ... think] ----
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 4482a06..7c8a145 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1624,7 +1624,7 @@ static int elf_core_dump(long signr, struct pt_regs *=
+regs,
+ #ifdef ELF_CORE_COPY_XFPREGS
+        if (elf_core_copy_task_xfpregs(current, xfpu))
+                fill_note(notes + numnote++,
+-                         "LINUX", NT_PRXFPREG, sizeof(*xfpu), xfpu);
++                         "LINUX", ELF_CORE_XFPREGS_TYPE, sizeof(*xfpu), xf=
+pu);
+ #endif=20
+  =20
+        fs =3D get_fs();
 
-I think the race you describe above is harmless. The first time
-that sym_eh_handler() will run, it will be with SYM_EH_ABORT, 
-in it doesn't matter if we lose that, since the device is hosed
-anyway. At some later time, it will run with SYM_EH_DEVICE_RESET
-and then SYM_EH_BUS_RESET and then SYM_EH_HOST_RESET, and we won't 
-miss those, since, by now, sym2_io_error_detected() will have run.
 
-So, by my reading, I'd say that init_completion() in
-sym2_io_error_detected() has to stay (although perhaps
-it should be replaced by the INIT_COMPLETION() macro.)
-Removing it will prevent correct operation on the second 
-and subsequent errors.
+cheers
 
---Linas
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-4WQKfHBZlLTDCbFXccJQ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG/EK6dSjSd0sB4dIRAqQ+AJ9T3Zs3IuP1HSl1OvrK9qdgVf4VEACfWXHP
+rH0dZ83ceJizCkX2U4R0CrY=
+=t2TY
+-----END PGP SIGNATURE-----
+
+--=-4WQKfHBZlLTDCbFXccJQ--
