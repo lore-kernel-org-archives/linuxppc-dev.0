@@ -1,18 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 27 Sep 2007 12:45:35 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
-Message-ID: <20070927024535.GC14030@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
-	<20070924033612.GI8058@localhost.localdomain>
-	<5e71423247aef068d82b84166102fd7d@bga.com>
-	<20070925034616.GB2525@localhost.localdomain>
-	<69f1ad37eec293a4c4616d04c8400ca4@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <69f1ad37eec293a4c4616d04c8400ca4@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] add Altivec/VMX state to coredumps
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <8FC0C4ED-3268-467C-A3EF-0336082062E1@kernel.crashing.org>
+References: <46F88896.50706@au1.ibm.com>
+	<E4CA12E1-888D-4A8B-B687-02F9D2850E1F@kernel.crashing.org>
+	<46F9B454.8010004@au1.ibm.com>
+	<1B211071-5D55-4DBC-A109-7A66EC17A810@kernel.crashing.org>
+	<46F9E67C.4070209@au1.ibm.com>
+	<8FC0C4ED-3268-467C-A3EF-0336082062E1@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-33N9W05w46Pewp3/y/zS"
+Date: Thu, 27 Sep 2007 12:48:30 +1000
+Message-Id: <1190861310.6502.10.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Carlos Eduardo Seo <eduseo@br.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,80 +26,131 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Sep 26, 2007 at 11:19:47AM -0500, Milton Miller wrote:
-> On Sep 24, 2007, at 10:46 PM, David Gibson wrote:
-> > On Mon, Sep 24, 2007 at 01:54:32AM -0500, Milton Miller wrote:
-> >> On Sep 23, 2007, at 10:36 PM, David Gibson wrote:
-> >>> On Fri, Sep 21, 2007 at 06:05:06PM -0500, Milton Miller wrote:
-> > [snip]
-> >>>> +#define MIN_VERSION 2
-> >>>> +#define OUT_VERSION 16
-> >>>
-> >>> Should output version 17.  In any case, don't try to be so general -
-> >>> just convert v123 (all basically the same) to latest (i.e. v17)
-> >>> without all the #if nonsense.
+
+--=-33N9W05w46Pewp3/y/zS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2007-09-26 at 00:37 -0500, Kumar Gala wrote:
+> On Sep 25, 2007, at 11:56 PM, Mark Nelson wrote:
+>=20
+> > Kumar Gala wrote:
 > >>
-> >> Outputing v17 instead of 16 requires more words to be added to the
-> >> header, and the library does fine with v16.
+> >> On Sep 25, 2007, at 8:22 PM, Mark Nelson wrote:
+> >>
+> >>> Kumar Gala wrote:
+> >>>>
+> >>>> On Sep 24, 2007, at 11:03 PM, Mark Nelson wrote:
+> >>>>
+> >>>>> Update dump_task_altivec() (that has so far never been put to use)
+> >>>>> so that it dumps the Altivec/VMX registers (VR[0] - VR[31], VSCR
+> >>>>> and VRSAVE) in the same format as the ptrace get_vrregs() and add
+> >>>>> the appropriate glue typedefs and #defines to
+> >>>>> include/asm-powerpc/elf.h for it to work.
+> >>>>
+> >>>> Is there some way to tell if the core dump has altivec registers =20
+> >>>> state
+> >>>> in it?
+> >>>>
+> >>>> I'm wondering how we distinguish a core dump w/altivec state vs =20
+> >>>> one with
+> >>>> SPE state.
+> >>>>
+> >>>> - k
+> >>>>
+> >>>>
+> >>>
+> >>> If the core dump has the Altivec registers saved in there it will =20
+> >>> have a
+> >>> note called LINUX as shown below:
+> >>>
+> >>> $ readelf -n core
+> >>>
+> >>> Notes at offset 0x000002b4 with length 0x000005c8:
+> >>>   Owner         Data size       Description
+> >>>   CORE          0x0000010c      NT_PRSTATUS (prstatus structure)
+> >>>   CORE          0x00000080      NT_PRPSINFO (prpsinfo structure)
+> >>>   CORE          0x000000b0      NT_AUXV (auxiliary vector)
+> >>>   CORE          0x00000108      NT_FPREGSET (floating point =20
+> >>> registers)
+> >>>   LINUX         0x00000220      NT_PRXFPREG (user_xfpregs structure)
+> >>>
+> >>> This mirrors what occurs with the SSE registers on i386 core =20
+> >>> dumps in
+> >>> order to keep things as similar as possible.
+> >>>
+> >>> I can't find any place where dump_spe() is called at the moment, =20
+> >>> but I
+> >>> suppose if it were to be hooked up in the future it could cause
+> >>> confusion.
+> >>> The Altivec register state in the core file is much larger than what
+> >>> would be dumped by the current dump_spe(), but I'm not sure if that
+> >>> matters...
+> >>>
+> >>> There's a patch for GDB that currently reads the contents of =20
+> >>> these vector
+> >>> registers from the core file, but it's being held until this =20
+> >>> patch has
+> >>> been commented on and/or approved of, so if it comes to it the =20
+> >>> note name
+> >>> could be changed to ALTIVEC (or something similar).
+> >>
+> >> I think we should NOT overload NT_PRXFPREG and add proper note types
+> >> NT_ALTIVEC & NT_SPE for those register sets.
+> >>
+> >> Who on the GDB side would we need to coordinate such a change with?
+> >>
+> >> - k
+> >>
 > >
-> > For now.  libfdt will want v17.  Although it will (eventually) have
-> > it's own v16->v17 conversion code.
-> 
-> If libfdt gets merged without supporting v16 input, then that will be a  
-> regression.  This code isn't pretending to address that.   The current  
-> flat tree code works with v16.
-
-Hrm, true.  Since I'm working on merging libfdt right now, I guess
-that moves up my schedule for getting the v16->v17 conversion code
-working.
-
-> 
-> >>  Actually the v1 trees has
-> >> some other differences such as initrd addresses were kernel linear not
-> >> real, cpus were assigned logical numbers  ... so while the structure
-> >> didn't change except for the header field, the contents did.
+> > You're probably right :)
 > >
-> > !? what's your source for this.  v2 and v3 were absolutely supposed to
-> > be backwards compatible with v1 which would not be the case with
-> > silent semantic changes such as this.
-> 
-> What's your souce for saying the were supposed to be backwards  
-> compatable?  That dtc fills out the struct header so?
+> > What cores have SPE at the moment? Also, perhaps more importantly, =20
+> > are there any plans to have Altivec and SPE in the same core?
+>=20
+> The e500 cores's from Freescale.
+>=20
+> No, they are pretty much mutually exclusive.
+>=20
+> > I've been working with Carlos Eduardo Seo (Cc'ed on this mail) on =20
+> > the GDB side of this.
+>=20
+>  From comments it looks like the expectation is that the combination =20
+> of note type and name which is expected to be unique.
+>=20
+> I'm wondering if we should handle this via =20
+> elf_coredump_extra_notes_size() & elf_coredump_extra_notes_write().  =20
+> Does GDB care about the order it sees the various sections in?
 
-Sitting next to BenH and knowing he always intended them to be so.
+I don't think those callbacks will work in this case, they're only
+called for the primary thread that's doing the coredump, not for each
+thread. Perhaps there's a way to adapt it though.
 
-> My source is my involvment when v2 was defined (they were discovered  
-> while writing my device tree generation code):
-> 
-> The actual binary structure is compatable, just not the contents of the  
-> properties nor how any slave cpus wait (for some trees it doesn't  
-> matter).
-> 
-> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools- 
-> testing.git;a=blob;f=kexec/arch/ppc64/fs2dt.c; 
-> hb=b84b87747a16f0afbef6f6802bb794a94f4961d9
+I think the easiest solution for now is just to make the note type a
+#define and create a new value for Altivec.
 
-An old version of fs2dt is hardly definitive.  It could just be Plain
-Wrong, nothing to do with the dt version.
+cheers
 
-> And some more changes just before that:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git; 
-> a=history;f=arch/ppc64/kernel/prom_init.c; 
-> h=e570799a84cc5328e9f0fd44592cb0b828d8c13a; 
-> hb=4ae24c4e8a8f68950a7774ca1cdfe69bfe4e2ffc
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-I don't know what bit you're referring to in that batch of commits.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-> So its mostly when the kernel generated and required v1 trees, it was  
-> ppc64 only and had these other content and handoff semantics.  If it  
-> were to get a v1 tree, it only copes for the boot cpu determination    
-> I'm not aware of any code other than the kernel that would actually  
-> generate a v1 tree (other than dtc, which always supporteed v2, and  
-> doesn't care about these differences).
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--=-33N9W05w46Pewp3/y/zS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG+xn+dSjSd0sB4dIRAhDDAJ9quiMkgwwGByNkE97N8cU+wjgQewCdHtA+
+HA8BsWX9z80k/tP0qmRJ3a4=
+=3Bon
+-----END PGP SIGNATURE-----
+
+--=-33N9W05w46Pewp3/y/zS--
