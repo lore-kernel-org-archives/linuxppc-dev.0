@@ -2,23 +2,22 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DAC3EDDE1B
+	by ozlabs.org (Postfix) with ESMTP id 69E9FDDE18
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Sep 2007 14:52:52 +1000 (EST)
+	Thu, 27 Sep 2007 18:12:22 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IalMn-000499-VX
-	for linuxppc-embedded@ozlabs.org; Wed, 26 Sep 2007 21:52:49 -0700
-Message-ID: <12914822.post@talk.nabble.com>
-Date: Wed, 26 Sep 2007 21:52:49 -0700 (PDT)
-From: Nethra <nethra_gmit@yahoo.co.in>
+	(envelope-from <bounces@nabble.com>) id 1IaoTr-0000R6-FL
+	for linuxppc-embedded@ozlabs.org; Thu, 27 Sep 2007 01:12:19 -0700
+Message-ID: <12916782.post@talk.nabble.com>
+Date: Thu, 27 Sep 2007 01:12:19 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: jffs2 file system on MPC8272ADS
-In-Reply-To: <20070925152301.GC15739@ld0162-tx32.am.freescale.net>
+Subject: Is it safe to use these Linux function (test_bit(), set_bit(),
+	clear_bit()) in character device driver for 2.6.10 ppc kernel.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <12873633.post@talk.nabble.com>
-	<20070925152301.GC15739@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_19903_32446584.1190880739470"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,78 +28,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_19903_32446584.1190880739470
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
 
-> Header CRC failed on REF_PRISTINE node at 0x0063b24c: Read 0xffffffff,
-> calculated 0x44660075 
-> Node totlen on flash (0xffffffff) != totlen from node ref (0x000002b4) 
-> Header CRC failed on REF_PRISTINE node at 0x0063b500: Read 0xffffffff,
-> calculated 0x44660075 
-> Node totlen on flash (0xffffffff) != totlen from node ref (0x000002c8) 
-> Header CRC failed on REF_PRISTINE node at 0x0063b7c8: Read 0xffffffff,
-> calculated 0x44660075 
-> 
-> are they debug messages or warnings...? 
+Hi all
 
->>They are errors.
+I am using "test_bit(),set_bit(),clear_bit() etc" API functions provided by
+the Linux kernel. I want to know that if anybody is used it and have full
+faith in its operation then please let me know. Driver in the while loop is
+calling these API's hence i want to make sure that its operation will remain
+stable.
 
-which are all the most possible reasons for these errors ?
+I need your comments in this regard 
 
-> # CONFIG_MTD_MAP_BANK_WIDTH_1 is not set 
-> # CONFIG_MTD_MAP_BANK_WIDTH_2 is not set 
-> CONFIG_MTD_MAP_BANK_WIDTH_4=y 
-> # CONFIG_MTD_MAP_BANK_WIDTH_8 is not set 
-> # CONFIG_MTD_MAP_BANK_WIDTH_16 is not set 
-> # CONFIG_MTD_MAP_BANK_WIDTH_32 is not set 
-> # CONFIG_MTD_CFI_I1 is not set 
-> CONFIG_MTD_CFI_I2=y 
-> # CONFIG_MTD_CFI_I4 is not set 
-> # CONFIG_MTD_CFI_I8 is not set 
-[snip]
-> # 
-> # Mapping drivers for chip access 
-> # 
-> # CONFIG_MTD_COMPLEX_MAPPINGS is not set 
-> CONFIG_MTD_PHYSMAP=y 
-> CONFIG_MTD_PHYSMAP_START=0xFC000000 
-> CONFIG_MTD_PHYSMAP_LEN=0x4000000CONFIG_MTD_PHYSMAP_BANKWIDTH=4 
-> # CONFIG_MTD_MULTI_PHYSMAP is not set 
-> # CONFIG_MTD_SBC8240 is not set 
-> CONFIG_MTD_PQ2FADS=y 
-> # CONFIG_MTD_PLATRAM is not set 
-
->>Are you using a non-standard flash SIMM?  The one that comes with the
->>board (that I've seen, at least) have interleave 4, and are mapped at
->>0xfe000000.
-
- First of all this is CUSTOM board similar to MPC8272ADS.
-
-We are using flash which is different from flash that comes with the
-MPC8272ADS board.
-
-FLASH:	 S29GL256N90TF
-       	Total size is 64 MB with 2 flash interleave
-       	mapped at 0xfc000000.
-       	
->>Was it the physmap driver or the pq2fads driver that found the flash?
-       
-             Flash is cfi compatible.
-
-
->>Which kernel are you using, and are you using arch/ppc or arch/powerpc?
->> -Scott
-          
-           KERNEL: linux-2.6.10 and we r using arc/ppc 	
-
-Nethra
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
+Thank you 
+Misbah
 -- 
-View this message in context: http://www.nabble.com/jffs2-file-system-on-MPC8272ADS-tf4513571.html#a12914822
+View this message in context: http://www.nabble.com/Is-it-safe-to-use-these-Linux-function-%28test_bit%28%29%2Cset_bit%28%29%2Cclear_bit%28%29%29-in-character-device-driver-for-2.6.10-ppc-kernel.-tf4527008.html#a12916782
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+------=_Part_19903_32446584.1190880739470
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+
+Hi all
+
+I am using "test_bit(),set_bit(),clear_bit() etc" API functions provided by the Linux kernel. I want to know that if anybody is used it and have full faith in its operation then please let me know. Driver in the while loop is calling these API's hence i want to make sure that its operation will remain stable.
+
+I need your comments in this regard 
+
+Thank you 
+Misbah
+<br><hr align="left" width="300">
+View this message in context: <a href="http://www.nabble.com/Is-it-safe-to-use-these-Linux-function-%28test_bit%28%29%2Cset_bit%28%29%2Cclear_bit%28%29%29-in-character-device-driver-for-2.6.10-ppc-kernel.-tf4527008.html#a12916782">Is it safe to use these Linux function (test_bit(),set_bit(),clear_bit()) in character device driver for 2.6.10 ppc kernel.</a><br>
+Sent from the <a href="http://www.nabble.com/linuxppc-embedded-f15994.html">linuxppc-embedded mailing list archive</a> at Nabble.com.<br>
+
+------=_Part_19903_32446584.1190880739470--
