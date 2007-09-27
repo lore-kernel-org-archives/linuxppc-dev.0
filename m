@@ -1,32 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13F9FDDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 02:54:26 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8RGsDUk029628
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 12:54:13 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8RGsDat467934
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 10:54:13 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8RGsCua007377
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 10:54:13 -0600
-Date: Thu, 27 Sep 2007 11:54:12 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 5/7] Celleb: Supports VFD on Celleb 2
-Message-ID: <20070927165412.GD7970@austin.ibm.com>
-References: <20070927.165631.-1300533671.kouish@swc.toshiba.co.jp>
-	<200709271107.33696.arnd@arndb.de>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <46FBE6FD.3030605@am.sony.com>
+Date: Thu, 27 Sep 2007 10:23:09 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200709271107.33696.arnd@arndb.de>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: michael@ellerman.id.au
+Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings Driver patches for
+	2.6.24
+References: <20070926163308.772580000@pademelon.sonytel.be>
+	<1190860285.6502.6.camel@concordia>
+In-Reply-To: <1190860285.6502.6.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,30 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2007 at 11:07:33AM +0200, Arnd Bergmann wrote:
-> On Thursday 27 September 2007, Ishizaki Kou wrote:
-> > This is a patch to support VFD on Celleb 2.
-> > VFD is a small LCD to show miscellaneous messages.
-> > 
-> > Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
+Michael Ellerman wrote:
+> On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
+>> 	Hi,
+>> 
+>> Here are some new patches for the PS3 AV Settings Driver (ps3av), which is
+>> used in close collaboration with the PS3 Virtual Frame Buffer Device Driver
+>> (ps3fb):
+>>   [1] ps3av: eliminate unneeded temporary variables
+>>   [2] ps3av: eliminate PS3AV_DEBUG
+>>   [3] ps3av: use PS3 video mode ids in autodetect code
+>>   [4] ps3av: treat DVI-D like HDMI in autodetect
+>>   [5] ps3av: add autodetection for VESA modes
+>>   [6] ps3av: add quirk database for broken monitors
+>>   [7] ps3av: remove unused ps3av_set_mode()
+>>   [8] ps3av: don't distinguish between `boot' and `non-boot' autodetection
+>> 
+>> Please review, and queue for 2.6.24 if they're ok. Thanks!
+>> 
+>> Question: As several DVI-D displays advertise they support 1080i modes while
+>> they actually don't (cfr. the quirk database), perhaps I should drop 1080i
+>> modes completely from the ps3av_preferred_modes[] table? Usually 720p looks
+>> better than 1080i anyway.  What do you think?
 > 
->   My feeling is that your interface should better be
->   implemented as a character device, or be integrating into some other
->   existing message interface, if we can find one.
-> 
-> * The firmware seems to implement the generic rtas interface for
->   display-character and set-indicator, but your driver is celleb specific.
->   I'd be feel more comfortable if we could come up with a driver that also
->   works on other systems that implement the same rtas calls.
+> Definitely. If the autodetection fails Linux is basically unusable on
+> PS3 unless you hack the kernel sources and build your own kboot and
+> otheros.bld - not entirely trivial for novice users. So it's pretty
+> important that it works 100%.
 
-Yep, I think I agree. Most pseries systems have a small two-line
-LCD display.  Right now, the code that talks to it is implemented in
-rtas_progress(). It has this name because its used only for printing
-out boot progress messages. This is great for debugging hangs, but 
-its not othrewise used.
+It is not that bad.  If a bootloader is configued to use autodetection
+so that it is shown at best video mode, then it should have advertised
+key sequences to default to known video modes, with at least a 480p 'safe'
+mode.
 
-I suppose it would be nice to have a "geeric" interface to the thing, 
-and, after a quickie skim of the code, the celleb display looks similar
-enogh that this abstraction could be made.
+Second stage kerenls can be booted with a videomode appended on the
+command line, and all kboot.conf's should have a 480p 'safe' mode
+entry.
 
---linas
+-Geoff
