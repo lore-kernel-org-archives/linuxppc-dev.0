@@ -1,18 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 684CDDDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 19:21:43 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <dgaur@cdotd.ernet.in>
+Received: from sandesh.cdotd.ernet.in (sandesh.cdotd.ernet.in [196.1.105.47])
+	by ozlabs.org (Postfix) with ESMTP id 435F3DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 19:22:21 +1000 (EST)
+Received: from sandesh.cdotd.ernet.in (localhost [127.0.0.1])
+	by localhost.cdotd.ernet.in (Postfix) with ESMTP id A0568CFC71
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 14:51:52 +0530 (IST)
+Received: from mail1.cdotd.ernet.in (mail1.cdotd.ernet.in [196.1.105.196])by
+	sandesh.cdotd.ernet.in (Postfix) with ESMTP id 5BEC9CFC66for
+	<linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 14:51:52 +0530 (IST)
+Received: from cdotd.ernet.in (localhost.localdomain [127.0.0.1])by
+	mail1.cdotd.ernet.in (8.12.5/8.12.5) with ESMTP id l8R9dnB7027113for
+	<linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 15:09:49 +0530
+From: "Deepak Gaur" <dgaur@cdotd.ernet.in>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 5/7] Celleb: Supports VFD on Celleb 2
-Date: Thu, 27 Sep 2007 11:07:33 +0200
-References: <20070927.165631.-1300533671.kouish@swc.toshiba.co.jp>
-In-Reply-To: <20070927.165631.-1300533671.kouish@swc.toshiba.co.jp>
+Subject: Linux 2.6.22 Serial Core 
+Date: Thu, 27 Sep 2007 16:09:49 +0630
+Message-Id: <20070927093521.M77586@cdotd.ernet.in>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709271107.33696.arnd@arndb.de>
-Cc: paulus@samba.org
+	charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 27 September 2007, Ishizaki Kou wrote:
-> This is a patch to support VFD on Celleb 2.
-> VFD is a small LCD to show miscellaneous messages.
-> 
-> Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
+Hi all,
 
-The implementation looks fine, but I'm not sure if /proc/ppc64/rtas is the
-right way to do it. The two problems I have with this are:
+Just a small question! The serial core driver file located in drivers/serial directory
+(drivers/serial/serial_core.c) does not have module_init() and module_exit() function
+called though CONFIG_SERIAL_CORE flag is seperately defined in Kconfig and is used in
+makefile. Any idea why these functions are not called in this particular file??
 
-* /proc files are generally not a good idea for new stuff. We carry around
-  the existing /proc/ppc64/rtas files because we can't change the interface
-  for existing stuff. My feeling is that your interface should better be
-  implemented as a character device, or be integrating into some other
-  existing message interface, if we can find one.
+with regards,
 
-* The firmware seems to implement the generic rtas interface for
-  display-character and set-indicator, but your driver is celleb specific.
-  I'd be feel more comfortable if we could come up with a driver that also
-  works on other systems that implement the same rtas calls.
-
-	Arnd <><
+Deepak Gaur
