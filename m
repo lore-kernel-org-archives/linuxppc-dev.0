@@ -1,19 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 31BC5DDE07
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:45:24 +1000 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 0F74BDDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 21:46:33 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
-	match eHCA and eHEA drivers
-Date: Thu, 27 Sep 2007 13:31:01 +0200
+Subject: Re: [PATCH 2/5] ibmebus: Remove bus match/probe/remove functions
+Date: Thu, 27 Sep 2007 13:30:29 +0200
 References: <200709261143.24735.fenkes@de.ibm.com>
-	<200709261145.51926.fenkes@de.ibm.com>
-In-Reply-To: <200709261145.51926.fenkes@de.ibm.com>
+	<200709261144.57606.fenkes@de.ibm.com>
+In-Reply-To: <200709261144.57606.fenkes@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200709271331.02715.arnd@arndb.de>
+Message-Id: <200709271330.30474.arnd@arndb.de>
 Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
 	Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
 	Paul Mackerras <pmac@au1.ibm.com>, Christoph Raisch <raisch@de.ibm.com>,
@@ -29,9 +28,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Wednesday 26 September 2007, Joachim Fenkes wrote:
-> Replace struct ibmebus_dev and struct ibmebus_driver with struct of_device
-> and struct of_platform_driver, respectively. Match the external ibmebus
-> interface and drivers using it.
+> Remove old code that will be replaced by rewritten and shorter functions in
+> the next patch. Keep struct ibmebus_dev and struct ibmebus_driver for now,
+> but replace ibmebus_{,un}register_driver() by dummy functions. This way, the
+> kernel will still compile and run during the transition and git bisect will
+> be happy.
 > 
 > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 
