@@ -1,24 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EEA73DDDF8
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 08:45:16 +1000 (EST)
-Subject: Re: 2.6.23-rc8 dies somewhere during boot!?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20070927222733.201970@gmx.net>
-References: <20070927191233.201980@gmx.net>
-	<20070927192551.GK7970@austin.ibm.com> <20070927193131.201920@gmx.net>
-	<20070927205012.GN7970@austin.ibm.com> <20070927211700.201970@gmx.net>
-	<20070927213503.GA18686@austin.ibm.com> <20070927215735.201960@gmx.net>
-	<20070927222007.GE18686@austin.ibm.com> <20070927222733.201970@gmx.net>
-Content-Type: text/plain
-Date: Fri, 28 Sep 2007 08:39:43 +1000
-Message-Id: <1190932783.6158.39.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTP id F02F5DDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 08:50:11 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1Ib2BG-0008OF-3H
+	for linuxppc-dev@ozlabs.org; Thu, 27 Sep 2007 22:50:03 +0000
+Received: from p5497ea2e.dip.t-dialin.net ([84.151.234.46])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 22:50:02 +0000
+Received: from dzu by p5497ea2e.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 22:50:02 +0000
+To: linuxppc-dev@ozlabs.org
+From: Detlev Zundel <dzu@denx.de>
+Subject: Re: jffs2 file system on MPC8272ADS board
+Date: Thu, 27 Sep 2007 17:14:20 +0200
+Message-ID: <m27imc2l9v.fsf@ohwell.denx.de>
+References: <12873530.post@talk.nabble.com>
+	<20070925202257.559a78c5@ru.mvista.com>
+	<12900017.post@talk.nabble.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Nethra,
 
-On Fri, 2007-09-28 at 00:27 +0200, Gerhard Pircher wrote:
-> -------- Original-Nachricht --------
-> > Datum: Thu, 27 Sep 2007 17:20:07 -0500
-> > Von: linas@austin.ibm.com
-> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > CC: linuxppc-dev@ozlabs.org
-> > Betreff: Re: 2.6.23-rc8 dies somewhere during boot!?
-> 
-> > On Thu, Sep 27, 2007 at 11:57:35PM +0200, Gerhard Pircher wrote:
-> > 
-> > The last identifiable message I was
-> > 
-> > <7>PCI: Calling quirk...
-> > 
-> > which is from drivers/pci/quirks.c
-> > 
-> > ...CI: Found 0000:00:07.2 [1106/303...
-> > 
-> > and this is from pci_setup_device() in drivers/pci/probe.c  So I'd look
-> > to see if pci_setup_device() ever returned, and then I'd look to see
-> > what happened next.
-> Ah, I thought probing is done in the architecture's PCI code. I'll take
-> a look at pci_setup_device() function.
+> The other options I am wondering about,
+>   -c, --cleanmarker=SIZE Size of cleanmarker (default 12)
+>   -n, --no-cleanmarkers  Don't add a cleanmarker to every eraseblock
+> cleanmaker size will it help the cause?
 
-It's one of the quirks I suppose. Those are often full of x86 only
-bogoziness that hurts everybody else if you happen to hit them.
+Skimming through the thread I cannot tell whether you use NAND or NOR,
+but on NAND flash, the cleanmarkers are actually in the out-of-band
+area and thus *should not* be in the image, so for NAND we need the -n
+option.
 
-The "late" quirks are called at pci_enable_device() time.
+I don't think you should have to adjust the size, at least I never
+needed this.
 
-Ben
+Best wishes
+  Detlev
+
+-- 
+I've been examining the existing [linux]  kernel configuration system, and I
+have about concluded that the best favor we could do everybody involved with
+it is to take it out behind the barn and shoot it through the head.
+                           -- Eric S. Raymond on linux-kbuild Mar 2000
+--
+DENX Software Engineering GmbH,      MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich,  Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-40 Fax: (+49)-8142-66989-80 Email: dzu@denx.de
