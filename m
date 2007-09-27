@@ -1,18 +1,33 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <46FBE6FD.3030605@am.sony.com>
-Date: Thu, 27 Sep 2007 10:23:09 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A3A39DDDE6
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 03:57:04 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8RHv1mt023801
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:01 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8RHv0mF558950
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:00 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8RHv085018121
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:00 -0400
+Date: Thu, 27 Sep 2007 12:56:59 -0500
+To: Michael Chan <mchan@broadcom.com>,
+	linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, linuxppc-dev@ozlabs.org
+Subject: Re: tg3: PCI error recovery
+Message-ID: <20070927175659.GG7970@austin.ibm.com>
+References: <1189123415.17449.52.camel@teletran1>
+	<20070925220334.GR5327@austin.ibm.com>
+	<1190850518.25892.5.camel@dell>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings Driver patches for
-	2.6.24
-References: <20070926163308.772580000@pademelon.sonytel.be>
-	<1190860285.6502.6.camel@concordia>
-In-Reply-To: <1190860285.6502.6.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1190850518.25892.5.camel@dell>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Matt Carlson <mcarlson@broadcom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
->> 	Hi,
->> 
->> Here are some new patches for the PS3 AV Settings Driver (ps3av), which is
->> used in close collaboration with the PS3 Virtual Frame Buffer Device Driver
->> (ps3fb):
->>   [1] ps3av: eliminate unneeded temporary variables
->>   [2] ps3av: eliminate PS3AV_DEBUG
->>   [3] ps3av: use PS3 video mode ids in autodetect code
->>   [4] ps3av: treat DVI-D like HDMI in autodetect
->>   [5] ps3av: add autodetection for VESA modes
->>   [6] ps3av: add quirk database for broken monitors
->>   [7] ps3av: remove unused ps3av_set_mode()
->>   [8] ps3av: don't distinguish between `boot' and `non-boot' autodetection
->> 
->> Please review, and queue for 2.6.24 if they're ok. Thanks!
->> 
->> Question: As several DVI-D displays advertise they support 1080i modes while
->> they actually don't (cfr. the quirk database), perhaps I should drop 1080i
->> modes completely from the ps3av_preferred_modes[] table? Usually 720p looks
->> better than 1080i anyway.  What do you think?
+
+During a private conversation about how to save and restore 
+device state after a pci error is detected, and the device is reset,
+the following came up:
+
+On Wed, Sep 26, 2007 at 04:48:38PM -0700, Michael Chan wrote:
+> > 
+> > > 1b) If so, is it safe to call pci_save_state() in
+> > > tg3_io_error_detected(), or are we to assume they've been corrupted?
+> > 
+> > My conservative approach is to assume that anything and everything has
+> > been corrupted. (e.g. temporary undervoltage on the bus might scramble
+> > multiple registers)
 > 
-> Definitely. If the autodetection fails Linux is basically unusable on
-> PS3 unless you hack the kernel sources and build your own kboot and
-> otheros.bld - not entirely trivial for novice users. So it's pretty
-> important that it works 100%.
+> In that case, we should call pci_restore_msi_state() to restore the MSI
+> state, but this call is only defined if CONFIG_PM is defined.
 
-It is not that bad.  If a bootloader is configued to use autodetection
-so that it is shown at best video mode, then it should have advertised
-key sequences to default to known video modes, with at least a 480p 'safe'
-mode.
+There seem to be two choices:
+1) enable CONFIG_PM in those arches that care about recovering from PCI
+   errors. (Yuck)
 
-Second stage kerenls can be booted with a videomode appended on the
-command line, and all kboot.conf's should have a 480p 'safe' mode
-entry.
+2) remove the ifdef CONFIG_PM from around pci_restore_msi_state() in 
+   rivers/pci/msi.c
 
--Geoff
+I'd go for choice 2, but I thought I'd ask first ...
+
+--linas
