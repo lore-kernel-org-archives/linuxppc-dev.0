@@ -1,33 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A3A39DDDE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 03:57:04 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l8RHv1mt023801
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:01 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8RHv0mF558950
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:00 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8RHv085018121
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 13:57:00 -0400
-Date: Thu, 27 Sep 2007 12:56:59 -0500
-To: Michael Chan <mchan@broadcom.com>,
-	linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, linuxppc-dev@ozlabs.org
-Subject: Re: tg3: PCI error recovery
-Message-ID: <20070927175659.GG7970@austin.ibm.com>
-References: <1189123415.17449.52.camel@teletran1>
-	<20070925220334.GR5327@austin.ibm.com>
-	<1190850518.25892.5.camel@dell>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AFAB6DDE18
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 04:00:26 +1000 (EST)
+Date: Thu, 27 Sep 2007 13:00:01 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH v3] Make instruction dumping work in real mode.
+Message-ID: <20070927180001.GA18185@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1190850518.25892.5.camel@dell>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Matt Carlson <mcarlson@broadcom.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,30 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On non-book-E-or-4xx, exceptions execute in real mode.  If a fault happens
+that leads to a register dump, the kernel currently prints XXXXXXXX because
+it doesn't realize that PC is a physical address.
 
-During a private conversation about how to save and restore 
-device state after a pci error is detected, and the device is reset,
-the following came up:
+This patch checks the state of the IMMU, and if necessary converts PC into a
+virtual address.
 
-On Wed, Sep 26, 2007 at 04:48:38PM -0700, Michael Chan wrote:
-> > 
-> > > 1b) If so, is it safe to call pci_save_state() in
-> > > tg3_io_error_detected(), or are we to assume they've been corrupted?
-> > 
-> > My conservative approach is to assume that anything and everything has
-> > been corrupted. (e.g. temporary undervoltage on the bus might scramble
-> > multiple registers)
-> 
-> In that case, we should call pci_restore_msi_state() to restore the MSI
-> state, but this call is only defined if CONFIG_PM is defined.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Resent with 40x->44x.
 
-There seem to be two choices:
-1) enable CONFIG_PM in those arches that care about recovering from PCI
-   errors. (Yuck)
+ arch/powerpc/kernel/process.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-2) remove the ifdef CONFIG_PM from around pci_restore_msi_state() in 
-   rivers/pci/msi.c
-
-I'd go for choice 2, but I thought I'd ask first ...
-
---linas
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 57c589c..6dbde7f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -354,6 +354,14 @@ static void show_instructions(struct pt_regs *regs)
+ 		if (!(i % 8))
+ 			printk("\n");
+ 
++#if !defined(CONFIG_BOOKE) && !defined(CONFIG_44x)
++		/* If executing with the IMMU off, adjust pc rather
++		 * than print XXXXXXXX.
++		 */
++		if (!(regs->msr & MSR_IR))
++			pc = (unsigned long)phys_to_virt(pc);
++#endif
++
+ 		/* We use __get_user here *only* to avoid an OOPS on a
+ 		 * bad address because the pc *should* only be a
+ 		 * kernel address.
+-- 
+1.5.3.1
