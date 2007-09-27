@@ -1,25 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29CB0DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2007 12:00:40 +1000 (EST)
-Subject: Re: [PATCH v2 1/4] Implement {read,update}_persistent_clock.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <46FAB56E.8080509@ru.mvista.com>
-References: <1190345162.620000.305760830507.qpush@thor>
-	<Pine.LNX.4.58.0709261502590.4465@gandalf.stny.rr.com>
-	<46FAB56E.8080509@ru.mvista.com>
-Content-Type: text/plain
-Date: Thu, 27 Sep 2007 11:59:56 +1000
-Message-Id: <1190858397.11034.22.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings Driver patches for
+	2.6.24
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <20070926163308.772580000@pademelon.sonytel.be>
+References: <20070926163308.772580000@pademelon.sonytel.be>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-N0+l+t4O8b/6iwMWyqPZ"
+Date: Thu, 27 Sep 2007 12:31:25 +1000
+Message-Id: <1190860285.6502.6.camel@concordia>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +24,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2007-09-26 at 23:39 +0400, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Steven Rostedt wrote:
-> > Tony,
-> 
-> > I'm about to release a new -rt patch based on -rc8. This patch series
-> > blew up totally in trying to get it applied. I'm leaving it out, so after
-> > I release the next series, could you update these patches.
-> 
->     No wonder here: the -rt patch already has much of this code since around 
-> 2.6.21.  They have been submitted by me, mostly... and this patchset is 
-> against the Linus' tree.
+--=-N0+l+t4O8b/6iwMWyqPZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Proper approach is to rip off what is altready in -rt there and replace
-it with Tony patch set.
+On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
+> 	Hi,
+>=20
+> Here are some new patches for the PS3 AV Settings Driver (ps3av), which i=
+s
+> used in close collaboration with the PS3 Virtual Frame Buffer Device Driv=
+er
+> (ps3fb):
+>   [1] ps3av: eliminate unneeded temporary variables
+>   [2] ps3av: eliminate PS3AV_DEBUG
+>   [3] ps3av: use PS3 video mode ids in autodetect code
+>   [4] ps3av: treat DVI-D like HDMI in autodetect
+>   [5] ps3av: add autodetection for VESA modes
+>   [6] ps3av: add quirk database for broken monitors
+>   [7] ps3av: remove unused ps3av_set_mode()
+>   [8] ps3av: don't distinguish between `boot' and `non-boot' autodetectio=
+n
+>=20
+> Please review, and queue for 2.6.24 if they're ok. Thanks!
+>=20
+> Question: As several DVI-D displays advertise they support 1080i modes wh=
+ile
+> they actually don't (cfr. the quirk database), perhaps I should drop 1080=
+i
+> modes completely from the ps3av_preferred_modes[] table? Usually 720p loo=
+ks
+> better than 1080i anyway.  What do you think?
 
-Ben.
+Definitely. If the autodetection fails Linux is basically unusable on
+PS3 unless you hack the kernel sources and build your own kboot and
+otheros.bld - not entirely trivial for novice users. So it's pretty
+important that it works 100%.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-N0+l+t4O8b/6iwMWyqPZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBG+xX9dSjSd0sB4dIRAuS9AJ0UP3FUB5kD6/2nzvMOS75Kzg33VACglrh6
+MlJA+1aOdT5hw91bAJINCKc=
+=GdXY
+-----END PGP SIGNATURE-----
+
+--=-N0+l+t4O8b/6iwMWyqPZ--
