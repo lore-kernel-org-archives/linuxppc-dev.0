@@ -1,22 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1FAC4DDE1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 09:01:51 +1000 (EST)
-Message-ID: <46FC3645.70303@freescale.com>
-Date: Thu, 27 Sep 2007 18:01:25 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH v4] Make instruction dumping work in real mode.
-References: <20070927183855.GA18226@loki.buserror.net>
-	<1190933846.6601.1.camel@concordia>
-In-Reply-To: <1190933846.6601.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18172.15699.359375.286439@cargo.ozlabs.ibm.com>
+Date: Fri, 28 Sep 2007 09:31:31 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Subject: Re: 2.6.23-rc8 dies somewhere during boot!?
+In-Reply-To: <20070927191233.201980@gmx.net>
+References: <20070927191233.201980@gmx.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Thu, 2007-09-27 at 13:38 -0500, Scott Wood wrote:
->> On non-book-E-or-4xx, exceptions execute in real mode.  If a fault happens
->> that leads to a register dump, the kernel currently prints XXXXXXXX because
->> it doesn't realize that PC is a physical address.
->>
->> This patch checks the state of the IMMU, and if necessary converts PC into a
->> virtual address.
-> 
-> IMMU ?
+Gerhard Pircher writes:
 
-Instruction Memory Management Unit.
+> I'm working on a 2.6.23 kernel for the AmigaOne. I implemented the device
+> tree and the platform setup code, which all compiles fine. I built a
+> cuImage target, loaded it on my target machine with TFTP and booted it.
+> The kernel passes the platform setup code and then dies somewhere in the
+> driver init code (AFAICT), but before the keyboard driver is initialized
+> (thus magic sysrq key doesn't work). Can somebody help me to track down
+> this problem?
 
--Scott
+You appear to have a working 16550-style serial port which the udbg
+infrastructure sees.  Thus you should be able to use xmon, talking to
+it via the serial port.  Put "xmon" on the kernel command line and the
+kernel will drop into xmon early in the boot process (in setup_arch).
+Then, either the kernel will oops at some point and drop into xmon,
+and you can then inspect memory and registers and get a stack trace,
+or it will hang at some point.  If it hangs, you can work out where it
+hangs by putting in breakpoints at various points and seeing which
+breakpoints you get to (this might take several boots).
+
+Paul.
