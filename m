@@ -1,18 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1B74CDDF06
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:27:37 +1000 (EST)
-Date: Fri, 28 Sep 2007 15:31:04 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 06/18] [POWERPC] Fix UARTLITE reg io for little-endian
-	architectures (ie. microblaze)
-Message-ID: <20070928203104.GC23749@lixom.net>
-References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181704.18608.40317.stgit@trillian.cg.shawcable.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070928181704.18608.40317.stgit@trillian.cg.shawcable.net>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F5EADDF31
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:30:19 +1000 (EST)
+Date: Sat, 29 Sep 2007 00:30:05 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: galak@kernel.crashing.org
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+Message-ID: <20070929003005.59afc2a0@kernel.crashing.org>
+In-Reply-To: <20070928190616.GB20213@loki.buserror.net>
+References: <20070928190616.GB20213@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,53 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Sep 28, 2007 at 12:17:13PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+Kumar,
+
+Realizing this may suffer a bit from cleanest-dts flame war, but anyway I pretty much see a lot of
+sense in getting this in during next merge window. Is this possible?
+
+On Fri, 28 Sep 2007 14:06:16 -0500
+Scott Wood wrote:
+
+> The way the current CPM binding describes available multi-user (a.k.a.
+> dual-ported) RAM doesn't work well when there are multiple free regions,
+> and it doesn't work at all if the region doesn't begin at the start of
+> the muram area (as the hardware needs to be programmed with offsets into
+> this area).  The latter situation can happen with SMC UARTs on CPM2, as its
+> parameter RAM is relocatable, u-boot puts it at zero, and the kernel doesn't
+> support moving it.
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> Acked-by: John Williams <jwilliams@itee.uq.edu.au>
+> It is now described with a muram node, similar to QE.  The current CPM
+> binding is sufficiently recent (i.e. never appeared in an official release)
+> that compatibility with existing device trees is not an issue.
+> 
+> The code supporting the new binding is shared between cpm1 and cpm2, rather
+> than remain separated.  QE should be able to use this code as well, once
+> minor fixes are made to its device trees.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+
 > ---
-> 
->  arch/ppc/syslib/virtex_devices.c |    2 +-
->  drivers/serial/uartlite.c        |   32 ++++++++++++++++----------------
->  2 files changed, 17 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
-> index ace4ec0..270ad3a 100644
-> --- a/arch/ppc/syslib/virtex_devices.c
-> +++ b/arch/ppc/syslib/virtex_devices.c
-> @@ -28,7 +28,7 @@
->  	.num_resources = 2, \
->  	.resource = (struct resource[]) { \
->  		{ \
-> -			.start = XPAR_UARTLITE_##num##_BASEADDR + 3, \
-> +			.start = XPAR_UARTLITE_##num##_BASEADDR, \
->  			.end = XPAR_UARTLITE_##num##_HIGHADDR, \
->  			.flags = IORESOURCE_MEM, \
->  		}, \
-> diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-> index f5051cf..59b674a 100644
-> --- a/drivers/serial/uartlite.c
-> +++ b/drivers/serial/uartlite.c
-> @@ -61,7 +61,7 @@ static int ulite_receive(struct uart_port *port, int stat)
->  	/* stats */
->  	if (stat & ULITE_STATUS_RXVALID) {
->  		port->icount.rx++;
-> -		ch = readb(port->membase + ULITE_RX);
-> +		ch = in_be32((void*)port->membase + ULITE_RX);
+>  Documentation/powerpc/booting-without-of.txt |   40 ++++++-
+>  arch/powerpc/Kconfig.debug                   |    6 +-
+>  arch/powerpc/boot/cpm-serial.c               |   44 +++++--
+>  arch/powerpc/boot/dts/ep88xc.dts             |   13 ++-
+>  arch/powerpc/boot/dts/mpc8272ads.dts         |   11 ++
+>  arch/powerpc/boot/dts/mpc885ads.dts          |   13 ++-
+>  arch/powerpc/boot/dts/pq2fads.dts            |   13 ++-
+>  arch/powerpc/sysdev/commproc.c               |   11 ++-
+>  arch/powerpc/sysdev/cpm2_common.c            |   36 ++----
+>  arch/powerpc/sysdev/cpm_common.c             |  159 ++++++++++++++++++++++++++
+>  drivers/serial/cpm_uart/cpm_uart_cpm2.c      |    4 +-
+>  include/asm-powerpc/commproc.h               |   12 ++
+>  include/asm-powerpc/cpm.h                    |   14 +++
+>  include/asm-powerpc/cpm2.h                   |   10 ++
+>  14 files changed, 338 insertions(+), 48 deletions(-)
 
-Hmm, I see the start changed, and you're now reading/writing a full
-32-bit word instead of individual bytes. Still, looks a little fishy to
-me. Wouldn't it be more appropriate to change the ULITE_RX offset to be
-3 higher and still read/write bytes?
-
-Or are the registers defined as 32-bit ones? (I don't remember, it was
-so long since I touched uartlite myself. :-)
-
-(Same for the other functions below, but the general principle applies.)
-
-Also, I'm not sure you need to cast port->membase to void*, do you? The
-math will still be right since it's declared as char *.
-
-
--Olof
+-- 
+Sincerely, Vitaly
