@@ -1,18 +1,21 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6F5EADDF31
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:30:19 +1000 (EST)
-Date: Sat, 29 Sep 2007 00:30:05 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: galak@kernel.crashing.org
-Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
-Message-ID: <20070929003005.59afc2a0@kernel.crashing.org>
-In-Reply-To: <20070928190616.GB20213@loki.buserror.net>
-References: <20070928190616.GB20213@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 87EB8DDE9B
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:39:05 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3888195wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 13:39:04 -0700 (PDT)
+Message-ID: <fa686aa40709281339r368d0e1bsfc7fe0399a60f07e@mail.gmail.com>
+Date: Fri, 28 Sep 2007 14:39:04 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: [PATCH 02/18] Add Kconfig macros for Xilinx Virtex support
+In-Reply-To: <20070928201946.GB23749@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+	<20070928181558.18608.23527.stgit@trillian.cg.shawcable.net>
+	<20070928201946.GB23749@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,49 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar,
+On 9/28/07, Olof Johansson <olof@lixom.net> wrote:
+> On Fri, Sep 28, 2007 at 12:16:01PM -0600, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> >  arch/powerpc/platforms/40x/Kconfig |   30 +++++++++++++++++-------------
+> >  1 files changed, 17 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+> > index c3dce3b..1aae0e6 100644
+> > --- a/arch/powerpc/platforms/40x/Kconfig
+> > +++ b/arch/powerpc/platforms/40x/Kconfig
+> > @@ -61,13 +61,14 @@ config WALNUT
+> >       help
+> >         This option enables support for the IBM PPC405GP evaluation board.
+> >
+> > -#config XILINX_ML300
+> > -#    bool "Xilinx-ML300"
+> > -#    depends on 40x
+> > -#    default y
+> > -#    select VIRTEX_II_PRO
+> > -#    help
+> > -#      This option enables support for the Xilinx ML300 evaluation board.
+> > +config XILINX_VIRTEX_GENERIC_BOARD
+> > +     bool "Generic Xilinx Virtex board"
+> > +     depends on 40x
+> > +     default y
+> > +     select VIRTEX_II_PRO
+> > +     select VIRTEX_4_FX
+> > +     help
+> > +       This option enables generic support for Xilinx Virtex based boards.
+>
+> I would appreciate a bit verboser help text here, i.e. including what
+> boards are considered generic. Maybe something like "...including ML403,
+> <x>, <y>, and other 4FX/IIPro-based boards"?
 
-Realizing this may suffer a bit from cleanest-dts flame war, but anyway I pretty much see a lot of
-sense in getting this in during next merge window. Is this possible?
+Done.
 
-On Fri, 28 Sep 2007 14:06:16 -0500
-Scott Wood wrote:
+          This option enables generic support for Xilinx Virtex based boards.
 
-> The way the current CPM binding describes available multi-user (a.k.a.
-> dual-ported) RAM doesn't work well when there are multiple free regions,
-> and it doesn't work at all if the region doesn't begin at the start of
-> the muram area (as the hardware needs to be programmed with offsets into
-> this area).  The latter situation can happen with SMC UARTs on CPM2, as its
-> parameter RAM is relocatable, u-boot puts it at zero, and the kernel doesn't
-> support moving it.
-> 
-> It is now described with a muram node, similar to QE.  The current CPM
-> binding is sufficiently recent (i.e. never appeared in an official release)
-> that compatibility with existing device trees is not an issue.
-> 
-> The code supporting the new binding is shared between cpm1 and cpm2, rather
-> than remain separated.  QE should be able to use this code as well, once
-> minor fixes are made to its device trees.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
++         The generic virtex board support matches any device tree which
++         specifies 'xilinx,virtex' in its compatible field.  This includes
++         the Xilinx ML3xx and ML4xx reference designs using the powerpc
++         core.
++
++         Most Virtex designs should use this unless it needs to do some
++         special configuration at board probe time.
++
 
-> ---
->  Documentation/powerpc/booting-without-of.txt |   40 ++++++-
->  arch/powerpc/Kconfig.debug                   |    6 +-
->  arch/powerpc/boot/cpm-serial.c               |   44 +++++--
->  arch/powerpc/boot/dts/ep88xc.dts             |   13 ++-
->  arch/powerpc/boot/dts/mpc8272ads.dts         |   11 ++
->  arch/powerpc/boot/dts/mpc885ads.dts          |   13 ++-
->  arch/powerpc/boot/dts/pq2fads.dts            |   13 ++-
->  arch/powerpc/sysdev/commproc.c               |   11 ++-
->  arch/powerpc/sysdev/cpm2_common.c            |   36 ++----
->  arch/powerpc/sysdev/cpm_common.c             |  159 ++++++++++++++++++++++++++
->  drivers/serial/cpm_uart/cpm_uart_cpm2.c      |    4 +-
->  include/asm-powerpc/commproc.h               |   12 ++
->  include/asm-powerpc/cpm.h                    |   14 +++
->  include/asm-powerpc/cpm2.h                   |   10 ++
->  14 files changed, 338 insertions(+), 48 deletions(-)
+Cheers,
+g.
 
 -- 
-Sincerely, Vitaly
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
