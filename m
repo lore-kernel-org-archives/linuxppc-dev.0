@@ -1,28 +1,28 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 7B9A7DDEF7
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 04:17:00 +1000 (EST)
-Received: from pd3mr6so.prod.shaw.ca (pd3mr6so-qfe3.prod.shaw.ca [10.0.141.21])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JP300IDUC2LZO60@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 28 Sep 2007 12:15:57 -0600 (MDT)
-Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
-	by pd3mr6so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 2E7A7DDFA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 04:17:01 +1000 (EST)
+Received: from pd2mr2so.prod.shaw.ca
+	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JP300FYOC2AQ1A0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 28 Sep 2007 12:15:46 -0600 (MDT)
+Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
+	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP3005I3C2G9E00@pd3mr6so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Fri, 28 Sep 2007 12:15:55 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP300LR9C29L630@pd2mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Fri, 28 Sep 2007 12:15:46 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP300MVOC2GGPL3@l-daemon> for linuxppc-dev@ozlabs.org;
-	Fri, 28 Sep 2007 12:15:52 -0600 (MDT)
-Date: Fri, 28 Sep 2007 12:16:01 -0600
+	with ESMTP id <0JP300AJ9C28A578@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 28 Sep 2007 12:15:44 -0600 (MDT)
+Date: Fri, 28 Sep 2007 12:15:53 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 02/18] Add Kconfig macros for Xilinx Virtex support
+Subject: [PATCH 01/18] Virtex: Add uartlite bootwrapper driver
 In-reply-to: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com, jacmet@sunsite.dk
-Message-id: <20070928181558.18608.23527.stgit@trillian.cg.shawcable.net>
+Message-id: <20070928181551.18608.88418.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
@@ -40,65 +40,117 @@ From: Grant Likely <grant.likely@secretlab.ca>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/platforms/40x/Kconfig |   30 +++++++++++++++++-------------
- 1 files changed, 17 insertions(+), 13 deletions(-)
+ arch/powerpc/boot/Makefile   |    2 +
+ arch/powerpc/boot/ops.h      |    1 +
+ arch/powerpc/boot/serial.c   |    2 +
+ arch/powerpc/boot/uartlite.c |   64 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 68 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index c3dce3b..1aae0e6 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -61,13 +61,14 @@ config WALNUT
- 	help
- 	  This option enables support for the IBM PPC405GP evaluation board.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index ca469e5..ac488ab 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -51,7 +51,7 @@ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c oflib.c ofconsole.c \
+ 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
+-		cpm-serial.c stdlib.c
++		cpm-serial.c stdlib.c uartlite.c
+ src-plat := of.c cuboot-83xx.c cuboot-85xx.c holly.c \
+ 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
+ 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 703255b..4ef30e4 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -84,6 +84,7 @@ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+ int mpsc_console_init(void *devp, struct serial_console_data *scdp);
+ int cpm_console_init(void *devp, struct serial_console_data *scdp);
++int uartlite_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, unsigned long heap_size,
+ 			unsigned long granularity, unsigned long max_allocs);
+ extern void flush_cache(void *, unsigned long);
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+index d47f8e0..70f36bf 100644
+--- a/arch/powerpc/boot/serial.c
++++ b/arch/powerpc/boot/serial.c
+@@ -126,6 +126,8 @@ int serial_console_init(void)
+ 	         dt_is_compatible(devp, "fsl,cpm2-scc-uart") ||
+ 	         dt_is_compatible(devp, "fsl,cpm2-smc-uart"))
+ 		rc = cpm_console_init(devp, &serial_cd);
++	else if (dt_is_compatible(devp, "xilinx,uartlite"))
++		rc = uartlite_console_init(devp, &serial_cd);
  
--#config XILINX_ML300
--#	bool "Xilinx-ML300"
--#	depends on 40x
--#	default y
--#	select VIRTEX_II_PRO
--#	help
--#	  This option enables support for the Xilinx ML300 evaluation board.
-+config XILINX_VIRTEX_GENERIC_BOARD
-+	bool "Generic Xilinx Virtex board"
-+	depends on 40x
-+	default y
-+	select VIRTEX_II_PRO
-+	select VIRTEX_4_FX
-+	help
-+	  This option enables generic support for Xilinx Virtex based boards.
+ 	/* Add other serial console driver calls here */
  
- # 40x specific CPU modules, selected based on the board above.
- config NP405H
-@@ -91,11 +92,19 @@ config 405EP
- config 405GPR
- 	bool
- 
--config VIRTEX_II_PRO
-+config XILINX_VIRTEX
- 	bool
+diff --git a/arch/powerpc/boot/uartlite.c b/arch/powerpc/boot/uartlite.c
+new file mode 100644
+index 0000000..f4249a7
+--- /dev/null
++++ b/arch/powerpc/boot/uartlite.c
+@@ -0,0 +1,64 @@
++/*
++ * Xilinx UARTLITE bootloader driver
++ *
++ * Copyright (C) 2007 Secret Lab Technologies Ltd.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
-+config XILINX_VIRTEX_II_PRO
-+	bool
-+	select XILINX_VIRTEX
- 	select IBM405_ERR77
- 	select IBM405_ERR51
- 
-+config XILINX_VIRTEX_4_FX
-+	bool
-+	select XILINX_VIRTEX
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
 +
- config STB03xxx
- 	bool
- 	select IBM405_ERR77
-@@ -111,11 +120,6 @@ config IBM405_ERR77
- config IBM405_ERR51
- 	bool
- 
--#config XILINX_OCP
--#	bool
--#	depends on XILINX_ML300
--#	default y
--
- #config BIOS_FIXUP
- #	bool
- #	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
++static void * reg_base;
++
++static int uartlite_open(void)
++{
++	/* Clear the RX FIFO */
++	out_be32(reg_base + 0x0C, 0x2);
++	return 0;
++}
++
++static void uartlite_putc(unsigned char c)
++{
++	while ((in_be32(reg_base + 0x8) & 0x08) != 0); /* spin */
++	out_be32(reg_base + 0x4, c);
++}
++
++static unsigned char uartlite_getc(void)
++{
++	while ((in_be32(reg_base + 0x8) & 0x01) == 0); /* spin */
++	return in_be32(reg_base);
++}
++
++static u8 uartlite_tstc(void)
++{
++	return ((in_be32(reg_base + 0x8) & 0x01) != 0);
++}
++
++int uartlite_console_init(void *devp, struct serial_console_data *scdp)
++{
++	int n;
++	unsigned long reg_phys;
++
++	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
++	if (n != sizeof(reg_base)) {
++		if (!dt_xlate_reg(devp, 0, &reg_phys, NULL))
++			return -1;
++
++		reg_base = (void *)reg_phys;
++	}
++
++	scdp->open = uartlite_open;
++	scdp->putc = uartlite_putc;
++	scdp->getc = uartlite_getc;
++	scdp->tstc = uartlite_tstc;
++	scdp->close = NULL;
++	return 0;
++}
