@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 28 Sep 2007 14:52:06 +1000
+Date: Fri, 28 Sep 2007 14:57:01 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: libfdt_env.h must be included first
-Message-ID: <20070928045206.GA25743@localhost.localdomain>
+Subject: libfdt: Test rw functions on more trees
+Message-ID: <20070928045701.GB25743@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,27 +16,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-libfdt.h currently includes fdt.h, then libfdt_env.h.  This is
-incorrect, because depending on the environment into which libfdt is
-embedded, libfdt_env.h may be needed to define datatypes used in
-fdt.h.  This patch corrects the problem.
+At present, the testcases for read/write functions (setprop,
+del_property and del_node) are only invoked on the single
+asm-generated tree, not on any of the other tree images which should
+be equivalent.  The functions in question will (correctly) not work on
+the "unfinished" tree output from sw_tree1, but should work on most of
+the others.
+
+This patch extends the run_tests script to invoke the r/w testcases on
+more example trees.  The testsuite still passes clean with this
+addition.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/libfdt/libfdt.h
+Index: dtc/tests/run_tests.sh
 ===================================================================
---- dtc.orig/libfdt/libfdt.h	2007-09-27 15:23:10.000000000 +1000
-+++ dtc/libfdt/libfdt.h	2007-09-27 15:23:50.000000000 +1000
-@@ -51,8 +51,8 @@
-  *     EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
+--- dtc.orig/tests/run_tests.sh	2007-09-27 17:49:29.000000000 +1000
++++ dtc/tests/run_tests.sh	2007-09-27 17:57:00.000000000 +1000
+@@ -49,6 +49,15 @@ tree1_tests () {
+     run_test nop_node $TREE
+ }
  
--#include <fdt.h>
- #include <libfdt_env.h>
-+#include <fdt.h>
++tree1_tests_rw () {
++    TREE=$1
++
++    # Read-write tests
++    run_test setprop $TREE
++    run_test del_property $TREE
++    run_test del_node $TREE
++}
++
+ libfdt_tests () {
+     # Make sure we don't have stale blobs lying around
+     rm -f *.test.dtb
+@@ -76,11 +85,16 @@ libfdt_tests () {
+ 	tree1_tests opened.$tree
+ 	tree1_tests repacked.$tree
+     done
+-    run_test setprop test_tree1.dtb
+-    run_test del_property test_tree1.dtb
+-    run_test del_node test_tree1.dtb
++
++    for tree in test_tree1.dtb sw_tree1.test.dtb; do
++	tree1_tests_rw $tree
++	tree1_tests_rw moved.$tree
++	tree1_tests_rw shunted.$tree
++	tree1_tests_rw deshunted.$tree
++    done
+     run_test rw_tree1
+     tree1_tests rw_tree1.test.dtb
++    tree1_tests_rw rw_tree1.test.dtb
  
- #define FDT_FIRST_SUPPORTED_VERSION	0x10
- #define FDT_LAST_SUPPORTED_VERSION	0x11
+     # Tests for behaviour on various sorts of corrupted trees
+     run_test truncated_property
+@@ -92,6 +106,7 @@ dtc_tests () {
+ 
+     run_test dtc.sh -f -I dts -O dtb -o dtc_tree1.test.dtb test_tree1.dts
+     tree1_tests dtc_tree1.test.dtb
++    tree1_tests_rw dtc_tree1.test.dtb
+ }
+ 
+ while getopts "vdt:" ARG ; do
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
