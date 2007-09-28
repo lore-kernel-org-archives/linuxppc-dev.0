@@ -1,21 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.238])
-	by ozlabs.org (Postfix) with ESMTP id 97AC0DDE1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:02:54 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2051129nzh
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 13:02:53 -0700 (PDT)
-Message-ID: <fa686aa40709281302t3b36f335n8fec63b043a25a4a@mail.gmail.com>
-Date: Fri, 28 Sep 2007 14:02:52 -0600
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.182])
+	by ozlabs.org (Postfix) with ESMTP id F1B17DDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:04:06 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so702262ele
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 13:04:05 -0700 (PDT)
+Message-ID: <fa686aa40709281304p62fe5e66k99ea934a4896d876@mail.gmail.com>
+Date: Fri, 28 Sep 2007 14:04:04 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 10/18] Uartlite: improve in-code comments
-In-Reply-To: <200709282143.16815.arnd@arndb.de>
+Subject: Re: [PATCH 01/18] Virtex: Add uartlite bootwrapper driver
+In-Reply-To: <200709282145.09411.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181740.18608.67126.stgit@trillian.cg.shawcable.net>
-	<200709282143.16815.arnd@arndb.de>
+	<20070928181551.18608.88418.stgit@trillian.cg.shawcable.net>
+	<200709282145.09411.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,16 +28,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On 9/28/07, Arnd Bergmann <arnd@arndb.de> wrote:
 > On Friday 28 September 2007, Grant Likely wrote:
-> > +/* ---------------------------------------------------------------------
-> > + * Core UART driver operations
-> > + */
-> > +
+> > +static void uartlite_putc(unsigned char c)
+> > +{
+> > +while ((in_be32(reg_base + 0x8) & 0x08) != 0); /* spin */
+> > +out_be32(reg_base + 0x4, c);
+> > +}
 >
-> This is a rather unusual style of commenting. IMHO it would be better if you
-> left out the ----- line.
+> When coding a spin-loop, it's better to do a cpu_relax() between
+> each attempt.
 
-I find the horizontal breaks useful when parsing through the code.  If
-others agree with you, then I'll happily remove them.
+Is cpu_relax even implemented in the bootwrapper?
 
 g.
 
