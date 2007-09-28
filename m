@@ -1,19 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <46FD5604.3060104@am.sony.com>
-Date: Fri, 28 Sep 2007 12:29:08 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id AD8FCDDEC8
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 05:35:58 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3870785wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 12:35:57 -0700 (PDT)
+Message-ID: <fa686aa40709281235o286bf3e0qad92b893a4d63a9e@mail.gmail.com>
+Date: Fri, 28 Sep 2007 13:35:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH 02/18] Add Kconfig macros for Xilinx Virtex support
+In-Reply-To: <46FD45FA.3000205@freescale.com>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [patch 0/8] PS3 AV Settings Driver patches for
-	2.6.24
-References: <20070926163308.772580000@pademelon.sonytel.be>	
-	<1190860285.6502.6.camel@concordia> <46FBE6FD.3030605@am.sony.com>
-	<1190968833.15970.3.camel@concordia>
-In-Reply-To: <1190968833.15970.3.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, "Antonino A. Daplas" <adaplas@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+	<20070928181558.18608.23527.stgit@trillian.cg.shawcable.net>
+	<46FD45FA.3000205@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Thu, 2007-09-27 at 10:23 -0700, Geoff Levand wrote:
->> Michael Ellerman wrote:
->> > On Wed, 2007-09-26 at 18:33 +0200, Geert Uytterhoeven wrote:
->> >> Question: As several DVI-D displays advertise they support 1080i modes while
->> >> they actually don't (cfr. the quirk database), perhaps I should drop 1080i
->> >> modes completely from the ps3av_preferred_modes[] table? Usually 720p looks
->> >> better than 1080i anyway.  What do you think?
->> > 
->> > Definitely. If the autodetection fails Linux is basically unusable on
->> > PS3 unless you hack the kernel sources and build your own kboot and
->> > otheros.bld - not entirely trivial for novice users. So it's pretty
->> > important that it works 100%.
->> 
->> It is not that bad.  If a bootloader is configued to use autodetection
->> so that it is shown at best video mode, then it should have advertised
->> key sequences to default to known video modes, with at least a 480p 'safe'
->> mode.
-> 
-> Oh OK, that is a good idea. What's the "safe mode" key sequence for the
-> otheros.bld you provide on kernel.org?
+On 9/28/07, Scott Wood <scottwood@freescale.com> wrote:
+> Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> >  arch/powerpc/platforms/40x/Kconfig |   30 +++++++++++++++++-------------
+> >  1 files changed, 17 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+> > index c3dce3b..1aae0e6 100644
+> > --- a/arch/powerpc/platforms/40x/Kconfig
+> > +++ b/arch/powerpc/platforms/40x/Kconfig
+> > @@ -61,13 +61,14 @@ config WALNUT
+> >       help
+> >         This option enables support for the IBM PPC405GP evaluation board.
+> >
+> > -#config XILINX_ML300
+> > -#    bool "Xilinx-ML300"
+> > -#    depends on 40x
+> > -#    default y
+> > -#    select VIRTEX_II_PRO
+> > -#    help
+> > -#      This option enables support for the Xilinx ML300 evaluation board.
+> > +config XILINX_VIRTEX_GENERIC_BOARD
+> > +     bool "Generic Xilinx Virtex board"
+> > +     depends on 40x
+> > +     default y
+> > +     select VIRTEX_II_PRO
+> > +     select VIRTEX_4_FX
+> > +     help
+> > +       This option enables generic support for Xilinx Virtex based boards.
+>
+> I don't think we want default y here.
 
+I just followed the lead of Walnut here.  Perhaps for the embedded
+targets all of them should be 'default n'.  Josh, thoughts?
 
-I don't maintain that, and have no idea how it sets its video mode.  Did you
-have trouble with it?  I know in the past it used a fixed 480p mode. 
+g.
 
-
--Geoff
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
