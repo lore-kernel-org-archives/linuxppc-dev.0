@@ -1,20 +1,21 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AF288DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:25:13 +1000 (EST)
-Date: Sat, 29 Sep 2007 00:25:01 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
-Message-ID: <20070929002501.169f1454@kernel.crashing.org>
-In-Reply-To: <46FD5FCB.4010908@freescale.com>
-References: <20070928190616.GB20213@loki.buserror.net>
-	<20070929000621.2d332e86@kernel.crashing.org>
-	<46FD5FCB.4010908@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 1518ADDE1F
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:26:15 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3884936wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 13:26:14 -0700 (PDT)
+Message-ID: <fa686aa40709281326g2fac0bd5n1667a14ed08335dd@mail.gmail.com>
+Date: Fri, 28 Sep 2007 14:26:14 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: [PATCH 03/18] Virtex: add xilinx interrupt controller driver
+In-Reply-To: <20070928201719.GA23749@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+	<20070928181606.18608.30412.stgit@trillian.cg.shawcable.net>
+	<20070928201719.GA23749@lixom.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,48 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Scott,
+On 9/28/07, Olof Johansson <olof@lixom.net> wrote:
+> On Fri, Sep 28, 2007 at 12:16:07PM -0600, Grant Likely wrote:
+>
+> > +/*
+> > + * INTC Registers
+> > + */
+> > +#define ISR  0       /* Interrupt Status */
+> > +#define IPR  4       /* Interrupt Pending */
+> > +#define IER  8       /* Interrupt Enable */
+> > +#define IAR  12      /* Interrupt Acknowledge */
+> > +#define SIE  16      /* Set Interrupt Enable bits */
+> > +#define CIE  20      /* Clear Interrupt Enable bits */
+> > +#define IVR  24      /* Interrupt Vector */
+> > +#define MER  28      /* Master Enable */
+>
+> The defines are fairly generic, I guess you haven't ran across cases
+> where there's naming conflicts, but you might want to prefix them with
+> something more unique just in case.
 
-On Fri, 28 Sep 2007 15:10:51 -0500
-Scott Wood wrote:
+Will do
 
-> Vitaly Bordug wrote:
-> > Hello Scott,
-> > 
-> > Looks good, only one note:
-> > 
-> > On Fri, 28 Sep 2007 14:06:16 -0500
-> > Scott Wood wrote:
-> > 
-> >> +	im_dprambase = cpm2_immr->im_dprambase;
-> >> +
-> >>  	/* Attach the usable dpmem area */
-> >>  	/* XXX: This is actually crap. CPM_DATAONLY_BASE and
-> >>  	 * CPM_DATAONLY_SIZE is only a subset of the available dpram. It
-> >>  	 * varies with the processor and the microcode patches activated.
-> >>  	 * But the following should be at least safe.
-> >>  	 */
-> >> -	rh_attach_region(&cpm_dpmem_info, 0, r.end - r.start + 1);
-> >> +	rh_attach_region(&cpm_dpmem_info, CPM_MAP_ADDR + CPM_DATAONLY_BASE,
-> >> +	                 CPM_DATAONLY_SIZE);
-> >>  }
-> >>  
->  >
-> > Can we have something to address upper comment? I mean,any way to
-> > have dpram beginning and size encoded in the device tree? We seem to
-> > be adding new bus, and still pulling the information from the
-> > defines. Maybe I miss something here, but it looks a bit odd.
-> 
-> This bit is #ifndef CONFIG_PPC_CPM_NEW_BINDING (and can come out once 
-> all arch/powerpc boards are converted and tested -- I think it's just 
-> mpc866ads and CPM mpc85xx left to go).  The new code in 
-> arch/powerpc/sysdev/cpm_common.c does get it from the device tree.
-> 
-ok, sorry for the noise. If so, I'll try to test-n-fix upper two soon. Unfortunately,
-there are many 8xx in ppc, that may depend on cpm (need to check).
+>
+> > +static void xilinx_intc_ack(unsigned int virq)
+> > +{
+> > +     int irq = irq_map[virq].hwirq;
+> > +     void * regs = get_irq_chip_data(virq);
+> > +     pr_debug("ack: %d\n", irq);
+> > +     out_be32(regs + IAR, 1 << irq);
+> > +}
+>
+> I guess some of the above are open-coded instead of using virq_to_hw()
+> for performance reasons, it could be useful to have comments regarding
+> this so they aren't changed by some janitor down the road. Or, in case
+> they're not performance-critical, change them to use virq_to_hw.
 
+Or it was just that my example code from another driver wasn't using
+virq_to_hw() either.  I'll fix this.
 
-
+g.
 
 -- 
-Sincerely, Vitaly
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
