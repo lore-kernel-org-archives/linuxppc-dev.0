@@ -1,20 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.236])
-	by ozlabs.org (Postfix) with ESMTP id BFD72DDE05
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:05:18 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2051545nzh
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 13:05:17 -0700 (PDT)
-Message-ID: <fa686aa40709281305r7400341fpa606550a17681969@mail.gmail.com>
-Date: Fri, 28 Sep 2007 14:05:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 00/18] Virtex support in arch/powerpc
-In-Reply-To: <200709282146.14944.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<200709282146.14944.arnd@arndb.de>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 47054DDE38
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:06:39 +1000 (EST)
+Date: Sat, 29 Sep 2007 00:06:21 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+Message-ID: <20070929000621.2d332e86@kernel.crashing.org>
+In-Reply-To: <20070928190616.GB20213@loki.buserror.net>
+References: <20070928190616.GB20213@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,23 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/28/07, Arnd Bergmann <arnd@arndb.de> wrote:
-> Hi Grant!
->
-> On Friday 28 September 2007, Grant Likely wrote:
-> > This series adds Xilinx Virtex support to arch/powerpc. Please review
-> > and comment. It includes support for the uartlite and SystemACE devices
->
-> Very nice set of patches, I looked at all of them but couldn't find much
-> to complain about, just trivial details.
+Hello Scott,
 
-Thank you very much for the review!
+Looks good, only one note:
 
-Cheers,
-g.
+On Fri, 28 Sep 2007 14:06:16 -0500
+Scott Wood wrote:
+
+> +	im_dprambase = cpm2_immr->im_dprambase;
+> +
+>  	/* Attach the usable dpmem area */
+>  	/* XXX: This is actually crap. CPM_DATAONLY_BASE and
+>  	 * CPM_DATAONLY_SIZE is only a subset of the available dpram. It
+>  	 * varies with the processor and the microcode patches activated.
+>  	 * But the following should be at least safe.
+>  	 */
+> -	rh_attach_region(&cpm_dpmem_info, 0, r.end - r.start + 1);
+> +	rh_attach_region(&cpm_dpmem_info, CPM_MAP_ADDR + CPM_DATAONLY_BASE,
+> +	                 CPM_DATAONLY_SIZE);
+>  }
+>  
+Can we have something to address upper comment? I mean,any way to have dpram beginning and size encoded in the device tree? We seem to be adding new bus, and still pulling the information from the defines. Maybe I miss something
+here, but it looks a bit odd.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Sincerely, Vitaly
