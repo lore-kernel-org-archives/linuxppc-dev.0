@@ -1,24 +1,29 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31D86DDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 02:55:07 +1000 (EST)
-In-Reply-To: <18165.60185.316393.213864@cargo.ozlabs.ibm.com>
-References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
-	<20070922095546.GA14185@lst.de>
-	<200709221416.21580.rob@landley.net>
-	<18165.60185.316393.213864@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4d27912d86d1373ca01d43bd296e237b@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-Date: Fri, 28 Sep 2007 18:53:28 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
-	Rob Landley <rob@landley.net>, Milton Miller <miltonm@bga.com>,
-	Christoph Hellwig <hch@lst.de>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd4mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 34FBFDDE18
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 04:15:42 +1000 (EST)
+Received: from pd3mr5so.prod.shaw.ca (pd3mr5so-qfe3.prod.shaw.ca [10.0.141.12])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JP300ASOC22X1B0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 28 Sep 2007 12:15:38 -0600 (MDT)
+Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
+	by pd3mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JP3009UNC21VW10@pd3mr5so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Fri, 28 Sep 2007 12:15:38 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JP3004CMC215F40@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 28 Sep 2007 12:15:37 -0600 (MDT)
+Date: Fri, 28 Sep 2007 12:15:45 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 00/18] Virtex support in arch/powerpc
+To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com, jacmet@sunsite.dk
+Message-id: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> I'd be following this more closely if compiling a device tree didn't 
->> currently
->> require an external utility (dtc or some such) that doesn't come with 
->> the
->> Linux kernel.  No other target platform I've built kernels for 
->> requires such
->> an environmental dependency.
->
-> No?  You haven't built kernels for other platforms that have external
-> dependencies such as perl, gcc, make, binutils, etc.? :)
+This series adds Xilinx Virtex support to arch/powerpc.  Please review
+and comment.  It includes support for the uartlite and SystemACE devices
 
-Two of the supported Linux archs cannot be built with a mainline
-compiler, even!
+Cheers,
+g.
 
-And I have to install GNU sed/awk to get builds to work, too.
-
-OTOH, it would be nice if we didn't need DTC -- it itself doesn't
-build out-of-the-box on all systems, either ;-)
-
->>  (This is a problem both for hardwiring the
->> device tree into the kernel and for building a new boot rom from the 
->> linux
->> kernel's ppc boot wrapper that would contain such a device tree to 
->> feed to
->> the kernel.)
->
-> It's only really been a problem for ps3 so far, since the embedded
-> guys don't seem to have any difficulty with installing dtc.  We are
-> looking at what to do for ps3 and prep, and the answer may well
-> involve bundling dtc in the kernel source (it's not too big, around
-> 3400 lines).
-
-If only a few platforms have this problem, we could instead include
-their .dtb files in the kernel source tree.
-
-
-Segher
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
