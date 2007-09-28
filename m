@@ -1,20 +1,21 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 28 Sep 2007 12:40:52 +1000
+Date: Fri, 28 Sep 2007 12:45:53 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
-Message-ID: <20070928024052.GA18840@localhost.localdomain>
-References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
-	<20070924033612.GI8058@localhost.localdomain>
-	<5e71423247aef068d82b84166102fd7d@bga.com>
-	<20070925034616.GB2525@localhost.localdomain>
-	<69f1ad37eec293a4c4616d04c8400ca4@bga.com>
-	<20070927024535.GC14030@localhost.localdomain>
-	<41180fced14196db80f261d2ac1909e0@bga.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/3] mpc8349emitx.dts: Add ds1339 RTC
+Message-ID: <20070928024553.GB18840@localhost.localdomain>
+References: <20070920104211.896143373@sunsite.dk>
+	<20070920104313.217207466@sunsite.dk>
+	<20070920133528.GC14820@ld0162-tx32.am.freescale.net>
+	<874pholbdk.fsf@macbook.be.48ers.dk>
+	<20070924050709.GM8058@localhost.localdomain>
+	<b312e03ef67dcd6cdc5f57e90da746ef@kernel.crashing.org>
+	<20070925021144.GF30338@localhost.localdomain>
+	<9c20d018e890250443516b886317ceb9@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41180fced14196db80f261d2ac1909e0@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <9c20d018e890250443516b886317ceb9@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2007 at 10:44:27AM -0500, Milton Miller wrote:
+On Tue, Sep 25, 2007 at 10:33:58PM +0200, Segher Boessenkool wrote:
+> >>> Hrm... we probably want an "i2c" device_type class, but I don't think
+> >>> we've actually defined one, which is a problem
+> >>
+> >> By defining new device_type's, or new semantics for device_type,
+> >> you open the door to (accidentally) becoming incompatible with
+> >> "real" OF.
+> >
+> > Hrm... perhaps.  But is it a realistic danger - I'll have to think
+> > more about that.
 > 
-> On Sep 26, 2007, at 9:45 PM, David Gibson wrote:
+> It is trivial to avoid these dangers completely by not overloading
+> the meaning of "device_type".
+
+Hrm.  Perhaps.
+
+> >>> I think we want to think a bit more carefully about how to do  
+> >>> bindings
+> >>> for RTC devices.  No "rtc" device_type is defined, but again we might
+> >>> want to.
+> >>
+> >> Actually, "device_type" = "rtc" _is_ defined (in the "device support
+> >> extensions" recommended practice), and there is no useful way a flat
+> >> device tree can implement it (it merely defines get-time and set-time
+> >> methods).
+> >
+> > Ah.. right.  That changes things a bit, in that we might want to
+> > include device_type purely for similarity with real OF tree.
+> 
+> You should include the device_type only if you implement its binding,
+> and a flat device tree does not, and cannot.  (In almost all cases,
+> a flat device tree cannot implement device_type's semantics -- this
+> means that pretty much the only case where a flat tree should use
+> device_type is to have it as a workaround for bad kernel requirements).
+
+I really don't think there's an ambiguity here.  A flat-tree can
+clearly never implement runtime binding features.  This is also true
+for a flat tree derived from a real OF, and so full of device_type all
+over the place.
+
+> > Real OF has a device_type == "nvram" too, doesn't it?
+> 
+> Yes, same "device support extensions" document.
+
+Erm.. I've lost track amongst our various threads.  Which same
+document?
+
+> > AFAICT the real
+> > OF systems I have (which I think all have ISA-like CMOS RTC/NVRAM
+> > chips) the RTC is labelled as "nvram" rather than "rtc".
+> 
+> Sounds buggy.
+
+Why?
+
 [snip]
-> >> What's your souce for saying the were supposed to be backwards
-> >> compatable?  That dtc fills out the struct header so?
+> > I did find one real OF binding for a different Dallas RTC (and NVRAM),
+> > see:
 > >
-> > Sitting next to BenH and knowing he always intended them to be so.
+> > http://playground.sun.com/1275/proposals/Closed/Remanded/Accepted/346- 
+> > it.txt
 > >
-> >> My source is my involvment when v2 was defined (they were discovered
-> >> while writing my device tree generation code):
-> >>
-> >> The actual binary structure is compatable, just not the contents of  
-> >> the
-> >> properties nor how any slave cpus wait (for some trees it doesn't
-> >> matter).
-> >>
-> >> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools-
-> >> testing.git;a=blob;f=kexec/arch/ppc64/fs2dt.c;
-> >> hb=b84b87747a16f0afbef6f6802bb794a94f4961d9
-> >
-> > An old version of fs2dt is hardly definitive.  It could just be Plain
-> > Wrong, nothing to do with the dt version.
+> > It's a little different from the example above.
 > 
-> Sorry, copy and paste error.  I was tring to point out this changelog  
-> in 2.6.10:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git; 
-> a=commitdiff;h=e1b47549d1588ccea1fa5726eb430aae4e80f8ed
+> That is a binding for the nvram part only, not for the RTC.
 
-Hrm, I see, yes that seems conclusive enough.  Yuck.
-
-In which case, I think we should try to forget that v1 ever existed.
-I don't think anyone ever generated v1 trees other than kernels which
-also consumed them, and I doubt current kernels will correctly deal
-with v1 trees in this form.
-
-In any case, this is all rather beside the point.  My basic point is
-that this bootwrapper stuff should not attempt to be a general
-backwards compatibility layer for every broken early dt format that
-ever existed.  In general we should try to make sure nothing ever uses
-<v16 trees.  We want, here, to do the minimum we can get away with to
-support the specific v2 trees produced by kexec-tools, as an interim
-measure while kexec-tools itself is fixed to produce v17 trees (say,
-by replacing fs2dt with dtc plus a libfdt based post-processing
-program).
+Hrm.  So how do you suggest we do bindings for combined devices?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
