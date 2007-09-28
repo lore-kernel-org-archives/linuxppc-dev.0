@@ -1,21 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F65ADDE1A
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:11:29 +1000 (EST)
-Message-ID: <46FD5FCB.4010908@freescale.com>
-Date: Fri, 28 Sep 2007 15:10:51 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id BC5A1DDE3F
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 06:13:54 +1000 (EST)
+Date: Fri, 28 Sep 2007 15:17:19 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 03/18] Virtex: add xilinx interrupt controller driver
+Message-ID: <20070928201719.GA23749@lixom.net>
+References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+	<20070928181606.18608.30412.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
-References: <20070928190616.GB20213@loki.buserror.net>
-	<20070929000621.2d332e86@kernel.crashing.org>
-In-Reply-To: <20070929000621.2d332e86@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070928181606.18608.30412.stgit@trillian.cg.shawcable.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,36 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug wrote:
-> Hello Scott,
-> 
-> Looks good, only one note:
-> 
-> On Fri, 28 Sep 2007 14:06:16 -0500
-> Scott Wood wrote:
-> 
->> +	im_dprambase = cpm2_immr->im_dprambase;
->> +
->>  	/* Attach the usable dpmem area */
->>  	/* XXX: This is actually crap. CPM_DATAONLY_BASE and
->>  	 * CPM_DATAONLY_SIZE is only a subset of the available dpram. It
->>  	 * varies with the processor and the microcode patches activated.
->>  	 * But the following should be at least safe.
->>  	 */
->> -	rh_attach_region(&cpm_dpmem_info, 0, r.end - r.start + 1);
->> +	rh_attach_region(&cpm_dpmem_info, CPM_MAP_ADDR + CPM_DATAONLY_BASE,
->> +	                 CPM_DATAONLY_SIZE);
->>  }
->>  
- >
-> Can we have something to address upper comment? I mean,any way to
-> have dpram beginning and size encoded in the device tree? We seem to
-> be adding new bus, and still pulling the information from the
-> defines. Maybe I miss something here, but it looks a bit odd.
+On Fri, Sep 28, 2007 at 12:16:07PM -0600, Grant Likely wrote:
 
-This bit is #ifndef CONFIG_PPC_CPM_NEW_BINDING (and can come out once 
-all arch/powerpc boards are converted and tested -- I think it's just 
-mpc866ads and CPM mpc85xx left to go).  The new code in 
-arch/powerpc/sysdev/cpm_common.c does get it from the device tree.
+> +/*
+> + * INTC Registers
+> + */
+> +#define ISR	0	/* Interrupt Status */
+> +#define IPR	4	/* Interrupt Pending */
+> +#define IER	8	/* Interrupt Enable */
+> +#define IAR	12	/* Interrupt Acknowledge */
+> +#define SIE	16	/* Set Interrupt Enable bits */
+> +#define CIE	20	/* Clear Interrupt Enable bits */
+> +#define IVR	24	/* Interrupt Vector */
+> +#define MER	28	/* Master Enable */
 
--Scott
+The defines are fairly generic, I guess you haven't ran across cases
+where there's naming conflicts, but you might want to prefix them with
+something more unique just in case.
+
+> +static struct irq_host *master_irqhost;
+> +
+> +/*
+> + * IRQ Chip operations
+> + */
+> +static void xilinx_intc_mask(unsigned int virq)
+> +{
+> +	int irq = irq_map[virq].hwirq;
+> +	void * regs = get_irq_chip_data(virq);
+> +	pr_debug("mask: %d\n", irq);
+> +	out_be32(regs + CIE, 1 << irq);
+> +}
+> +
+> +static void xilinx_intc_unmask(unsigned int virq)
+> +{
+> +	int irq = irq_map[virq].hwirq;
+> +	void * regs = get_irq_chip_data(virq);
+> +	pr_debug("unmask: %d\n", irq);
+> +	out_be32(regs + SIE, 1 << irq);
+> +}
+> +
+> +static void xilinx_intc_ack(unsigned int virq)
+> +{
+> +	int irq = irq_map[virq].hwirq;
+> +	void * regs = get_irq_chip_data(virq);
+> +	pr_debug("ack: %d\n", irq);
+> +	out_be32(regs + IAR, 1 << irq);
+> +}
+
+I guess some of the above are open-coded instead of using virq_to_hw()
+for performance reasons, it could be useful to have comments regarding
+this so they aren't changed by some janitor down the road. Or, in case
+they're not performance-critical, change them to use virq_to_hw.
+
+
+-Olof
