@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id AD8FCDDEC8
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 05:35:58 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3870785wag
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 12:35:57 -0700 (PDT)
-Message-ID: <fa686aa40709281235o286bf3e0qad92b893a4d63a9e@mail.gmail.com>
-Date: Fri, 28 Sep 2007 13:35:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH 02/18] Add Kconfig macros for Xilinx Virtex support
-In-Reply-To: <46FD45FA.3000205@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id A5DA4DDE07
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 05:49:47 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 11/18] Virtex: Port UARTLITE driver to of-platform-bus
+Date: Fri, 28 Sep 2007 21:32:17 +0200
 References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181558.18608.23527.stgit@trillian.cg.shawcable.net>
-	<46FD45FA.3000205@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	<20070928181748.18608.62409.stgit@trillian.cg.shawcable.net>
+In-Reply-To: <20070928181748.18608.62409.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709282132.17919.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/28/07, Scott Wood <scottwood@freescale.com> wrote:
-> Grant Likely wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >
-> >  arch/powerpc/platforms/40x/Kconfig |   30 +++++++++++++++++-------------
-> >  1 files changed, 17 insertions(+), 13 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-> > index c3dce3b..1aae0e6 100644
-> > --- a/arch/powerpc/platforms/40x/Kconfig
-> > +++ b/arch/powerpc/platforms/40x/Kconfig
-> > @@ -61,13 +61,14 @@ config WALNUT
-> >       help
-> >         This option enables support for the IBM PPC405GP evaluation board.
-> >
-> > -#config XILINX_ML300
-> > -#    bool "Xilinx-ML300"
-> > -#    depends on 40x
-> > -#    default y
-> > -#    select VIRTEX_II_PRO
-> > -#    help
-> > -#      This option enables support for the Xilinx ML300 evaluation board.
-> > +config XILINX_VIRTEX_GENERIC_BOARD
-> > +     bool "Generic Xilinx Virtex board"
-> > +     depends on 40x
-> > +     default y
-> > +     select VIRTEX_II_PRO
-> > +     select VIRTEX_4_FX
-> > +     help
-> > +       This option enables generic support for Xilinx Virtex based boards.
->
-> I don't think we want default y here.
-
-I just followed the lead of Walnut here.  Perhaps for the embedded
-targets all of them should be 'default n'.  Josh, thoughts?
-
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+T24gRnJpZGF5IDI4IFNlcHRlbWJlciAyMDA3LCBHcmFudCBMaWtlbHkgd3JvdGU6Cj4gLaCgoKCg
+oKByZXQgPSB1YXJ0X3JlZ2lzdGVyX2RyaXZlcigmdWxpdGVfdWFydF9kcml2ZXIpOwo+IC2goKCg
+oKCgaWYgKHJldCkKPiAtoKCgoKCgoKCgoKCgoKCgcmV0dXJuIHJldDsKPiAroKCgoKCgoHByX2Rl
+YnVnKCJ1YXJ0bGl0ZTogY2FsbGluZyB1YXJ0X3JlZ2lzdGVyX2RyaXZlcigpXG4iKTsKPiAroKCg
+oKCgoGlmICgocmV0ID0gdWFydF9yZWdpc3Rlcl9kcml2ZXIoJnVsaXRlX3VhcnRfZHJpdmVyKSkg
+IT0gMCkKPiAroKCgoKCgoKCgoKCgoKCgZ290byBlcnJfdWFydDsKPiCgCj4gLaCgoKCgoKByZXQg
+PSBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoJnVsaXRlX3BsYXRmb3JtX2RyaXZlcik7Cj4gLaCg
+oKCgoKBpZiAocmV0KQo+IC2goKCgoKCgoKCgoKCgoKB1YXJ0X3VucmVnaXN0ZXJfZHJpdmVyKCZ1
+bGl0ZV91YXJ0X2RyaXZlcik7Cj4gK6CgoKCgoKBpZiAoKHJldCA9IHVsaXRlX29mX3JlZ2lzdGVy
+KCkpICE9IDApCj4gK6CgoKCgoKCgoKCgoKCgoGdvdG8gZXJyX29mOwo+IKAKPiAroKCgoKCgoHBy
+X2RlYnVnKCJ1YXJ0bGl0ZTogY2FsbGluZyBwbGF0Zm9ybV9kcml2ZXJfcmVnaXN0ZXIoKVxuIik7
+Cj4gK6CgoKCgoKBpZiAoKHJldCA9IHBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmdWxpdGVfcGxh
+dGZvcm1fZHJpdmVyKSkgIT0gMCkKPiAroKCgoKCgoKCgoKCgoKCgZ290byBlcnJfcGxhdDsKPiAr
+Cj4gK6CgoKCgoKByZXR1cm4gMDsKCkkgZG9uJ3Qgc2VlIHRoaXMgYXMgbXVjaCBvZiBhbiBpbXBy
+b3ZlbWVudC4gRG9pbmcgYW4gYXNzaWdubWVudCBpbiB0aGUKY29uZGl0aW9uIG1ha2VzIHRoZSBj
+b2RlIGxlc3MgcmVhZGFibGUgSU1ITywgc28gaXQgc2hvdWxkIHJlYWxseQpiZSB3cml0dGVuIGFz
+CgoJcmV0ID0gdHJ5X3NvbWV0aGluZygpOwoJaWYgKHJldCkKCQlnb3RvIHNvbWV0aGluZ19mYWls
+ZWQ7CgpUaGlzIGtlZXBzIHRoZSBub3JtYWwgY29kZSB0byB0aGUgbGVmdCwgYW5kIHRoZSBlcnJv
+ciBoYW5kbGluZyBpbmRlbnRlZAp0byB0aGUgcmlnaHQuCgoKCUFybmQgPD48Cg==
