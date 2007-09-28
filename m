@@ -1,18 +1,19 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id D7D92DDE23
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2007 19:53:27 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 28 Sep 2007 11:53:26 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <18172.15699.359375.286439@cargo.ozlabs.ibm.com>
-Message-ID: <20070928095326.242700@gmx.net>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 568DBDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 00:24:15 +1000 (EST)
+Message-ID: <46FD0E4D.30305@ru.mvista.com>
+Date: Fri, 28 Sep 2007 18:23:09 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-References: <20070927191233.201980@gmx.net>
-	<18172.15699.359375.286439@cargo.ozlabs.ibm.com>
-Subject: Re: 2.6.23-rc8 dies somewhere during boot!?
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+To: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] [PATCH] PowerPC: add more than 4MB kernel image size support
+	to bootwarapper
+References: <20070924113627.GA30504@ru.mvista.com>
+	<20070925022935.GI30338@localhost.localdomain>
+In-Reply-To: <20070925022935.GI30338@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Gibson wrote:
+> On Mon, Sep 24, 2007 at 03:36:27PM +0400, Valentine Barshak wrote:
+>> Currently zImage is linked at the 4MB base address.
+>> Some platforms (using cuboot, treeboot) need the zImage's
+>> entry point and base address. They place zImage exactly
+>> at the base address it's been linked to. Sometimes 4MB left
+>> at the start of the memory is simply not enough to unpack zImage.
+>> This could happen with initramfs enabled, since the kernel image
+>> packed along with initramfs.cpio could be over 5MB in size.
+>> This patch checks vmlinux image size and links zImage at
+>> the base address that is equal to the unpacked image size
+>> aligned to 4MB boundary. This way zImage base address is 4MB
+>> only if unpacked kernel image size is less then 4MB.
+> 
+> Good plan.  However..
+> 
+> [snip]
+>> diff -ruN linux-2.6.orig/arch/powerpc/boot/zImage.lds.S linux-2.6/arch/powerpc/boot/zImage.lds.S
+>> --- linux-2.6.orig/arch/powerpc/boot/zImage.lds.S	2007-09-22 00:48:08.000000000 +0400
+>> +++ linux-2.6/arch/powerpc/boot/zImage.lds.S	2007-09-22 04:03:58.000000000 +0400
+>> @@ -3,7 +3,7 @@
+>>  EXTERN(_zimage_start)
+>>  SECTIONS
+>>  {
+>> -  . = (4*1024*1024);
+>> +  . = ALIGN((_kend - _kstart), (4*1024*1024));
+> 
+> ..I don't see any reason to keep the 4MB granularity.  I would just
+> align the address to say a 64k boundary (64k because that's the
+> granularity used in the normal ABI).
 
--------- Original-Nachricht --------
-> Datum: Fri, 28 Sep 2007 09:31:31 +1000
-> Von: Paul Mackerras <paulus@samba.org>
-> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: 2.6.23-rc8 dies somewhere during boot!?
+Looking deeper at this I've found that currently u-boot thinks that 
+memory space over 8MB is not reached by Linux kernel (CFG_BOOTMAPSZ 
+defined as (8 << 20)), although all physical memory is identity mapped. 
+That's why it puts command line and board info structure as high as 
+possible within the first 8MB. This worked fine with uImage, since 
+u-boot always unpacked it to 0. Now, cuImage has to be unpacked higher 
+(we need space at the start of the memory to eventually put vmlinux 
+image there). So, if unpacked kernel image crosses 8MB boundary, it gets 
+damaged by u-boot when it prepares cmd_line and bdinfo. The possible 
+workaround for that is to always link zImage at >=8MB base or to have 
+4MB granularity like this:
 
-> You appear to have a working 16550-style serial port which the udbg
-> infrastructure sees.  Thus you should be able to use xmon, talking to
-I couldn't get udbg running yet. Maybe i didn't specify a proper kernel
-boot argument.
++  . = ALIGN((_kend - _kstart + 64*1024), (4*1024*1024));
 
-> it via the serial port.  Put "xmon" on the kernel command line and the
-> kernel will drop into xmon early in the boot process (in setup_arch).
-> Then, either the kernel will oops at some point and drop into xmon,
-> and you can then inspect memory and registers and get a stack trace,
-> or it will hang at some point.  If it hangs, you can work out where it
-> hangs by putting in breakpoints at various points and seeing which
-> breakpoints you get to (this might take several boots).
-Okay, I'll investigate it. Is there a documentation for xmon (Google
-wasn't really helpful in this case).
+Reserve at least 64K for u-boot cmd_line and bdinfo.
+Thanks,
+Valentine.
 
-Thanks!
-
-regards,
-
-Gerhard
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+> 
+>>    _start = .;
+>>    .text      :
+>>    {
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>>
+> 
