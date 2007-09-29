@@ -1,19 +1,22 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6439EDDDF8
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 15:21:11 +1000 (EST)
-Message-ID: <46FDE0C2.5010207@pobox.com>
-Date: Sat, 29 Sep 2007 01:21:06 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/9] fs_enet: Whitespace cleanup.
-References: <20070920220116.GA28784@loki.buserror.net>
-In-Reply-To: <20070920220116.GA28784@loki.buserror.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 611CCDDE02
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 16:49:30 +1000 (EST)
+Date: Sat, 29 Sep 2007 10:49:17 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+Message-ID: <20070929104917.1585737e@kernel.crashing.org>
+In-Reply-To: <08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
+References: <20070928190616.GB20213@loki.buserror.net>
+	<20070929003005.59afc2a0@kernel.crashing.org>
+	<08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  drivers/net/fs_enet/fs_enet-main.c |   85 ++++++++++++++++-------------------
->  drivers/net/fs_enet/fs_enet.h      |    4 +-
->  drivers/net/fs_enet/mac-fcc.c      |    1 -
->  drivers/net/fs_enet/mii-bitbang.c  |    3 -
->  drivers/net/fs_enet/mii-fec.c      |    1 -
->  5 files changed, 41 insertions(+), 53 deletions(-)
+Hello Kumar,
 
-ACK patches 1-2, 4-9
+On Fri, 28 Sep 2007 18:53:38 -0500
+Kumar Gala wrote:
 
-This patch doesn't apply cleanly to netdev-2.6.git#upstream (nor 
-net-2.6.24.git), so this and the rest of the patch series failed to apply.
+> 
+> On Sep 28, 2007, at 3:30 PM, Vitaly Bordug wrote:
+> 
+> > Kumar,
+> >
+> > Realizing this may suffer a bit from cleanest-dts flame war, but  
+> > anyway I pretty much see a lot of
+> > sense in getting this in during next merge window. Is this possible?
+> 
+> Probably, does QE have muram?  I can't keep these things straight.
+> 
 
-Please resend series on top of netdev-2.6.git#upstream or net-2.6.24.git.
+cpms have dpram, qe has muram. these two are the same stuff in fact. Or you are asking about have QE stuff utilize such a binding at the same pass? 
+-- 
+Sincerely, Vitaly
