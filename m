@@ -3,20 +3,20 @@ Received: from vs166246.vserver.de
 	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C609BDDDF6
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 21:09:39 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 84C9EDDE1A
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 21:26:07 +1000 (EST)
 From: Michael Buesch <mb@bu3sch.de>
-To: benh@kernel.crashing.org
+To: linuxppc-dev@ozlabs.org
 Subject: Re: Powerbook shuts down hard when hot, patch found
-Date: Sat, 29 Sep 2007 13:06:59 +0200
+Date: Sat, 29 Sep 2007 13:22:59 +0200
 References: <200709282332.52819.mb@bu3sch.de>
 	<1191020653.6158.90.camel@pasglop>
-In-Reply-To: <1191020653.6158.90.camel@pasglop>
+	<200709291306.59627.mb@bu3sch.de>
+In-Reply-To: <200709291306.59627.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200709291306.59627.mb@bu3sch.de>
-Cc: linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200709291322.59607.mb@bu3sch.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 29 September 2007 01:04:13 Benjamin Herrenschmidt wrote:
+On Saturday 29 September 2007 13:06:59 Michael Buesch wrote:
+> > This is very strange... Can you try also clearing VGA_DDC_CLK_OUT_EN and
+> > VGA_DDC_DATA_OUT_EN and the same time and see if that helps ?
 > 
-> On Fri, 2007-09-28 at 23:32 +0200, Michael Buesch wrote:
-> > Hi,
-> > 
-> > some time ago I already mailed you about this problem.
-> > I will quickly describe what's going on, again:
-> > 
-> > My powerbook boots fine when it's cold. You can work with
-> > it and you can also run it hot (compile something, etc...).
-> > But when you try to boot it while it is hot, it will
-> > automatically shutdown hard inside of the boot process.
-> > Some part of the hardware is shutting it down.
-> > This does not happen when it's getting hot _after_ boot.
-> > Only while boot when it's hot.
-> > 
-> > I bisected the problem and found out that the following patch
-> > is responsible for this. Yeah, this sounds a little bit
-> > crazy, as this patch does not seem to be related to
-> > this at all. But I confirmed it by booting kernel
-> > 4f71c5de19c27f2198105d3b26b398494d5c353b
-> > That kernel triggered the bug. Then I patch -R the patch below
-> > and it booted properly, even when hot. I also rechecked
-> > that it really was hot enough to trigger the event by
-> > immediately rebooting into a known bad kernel, that immediately
-> > shut down the pbook, as expected.
-> > So I'm pretty sure it's the patch below causing this weird
-> > behaviour. Any idea why?
-> 
-> This is very strange... Can you try also clearing VGA_DDC_CLK_OUT_EN and
-> VGA_DDC_DATA_OUT_EN and the same time and see if that helps ?
+> It still triggers the bug then.
 
-It still triggers the bug then.
+I tried something else.
+I removed the write and only added a printk with a register read
+to print the contents (DDC REG IS 0x...) . This is the result:
+
+[    0.431304] PCI: Enabling device 0000:00:10.0 (0006 -> 0007)
+[    0.626866] radeonfb (0000:00:10.0): Invalid ROM signature 303 should be 0xaa55
+[    0.626877] radeonfb: Retrieved PLL infos from Open Firmware
+[    0.626887] radeonfb: Reference=27.00 MHz (RefDiv=12) Memory=203.00 Mhz, System=392.00 MHz
+[    0.626897] radeonfb: PLL min 12000 max 35000
+[    0.627194] DDC REG IS 0x00000303
+[    0.763751] i2c-adapter i2c-2: unable to read EDID block.
+[    0.983746] i2c-adapter i2c-2: unable to read EDID block.
+[    1.203745] i2c-adapter i2c-2: unable to read EDID block.
+[    1.280001] DDC REG IS 0x00000000
+[    1.620189] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[001124fffed98036]
+[    1.670984] radeonfb: Monitor 1 type LCD found
+[    1.670992] radeonfb: EDID probed
+[    1.670997] radeonfb: Monitor 2 type no found
+[    1.671012] radeonfb: Using Firmware dividers 0x0002008e from PPLL 0
+[    1.671075] radeonfb: Dynamic Clock Power Management enabled
+[    1.712658] Console: switching to colour frame buffer device 160x53
+[    1.735555] radeonfb: Backlight initialized (radeonbl0)
+[    1.735746] radeonfb (0000:00:10.0): ATI Radeon NP 
+[    1.738776] Generic RTC Driver v1.07
+[    1.738995] Macintosh non-volatile memory driver v1.1
+...
+
+Note that the function is called twice. Is that correct?
 
 -- 
 Greetings Michael.
