@@ -1,22 +1,23 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de
-	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84C9EDDE1A
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Sep 2007 21:26:07 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Powerbook shuts down hard when hot, patch found
-Date: Sat, 29 Sep 2007 13:22:59 +0200
-References: <200709282332.52819.mb@bu3sch.de>
-	<1191020653.6158.90.camel@pasglop>
-	<200709291306.59627.mb@bu3sch.de>
-In-Reply-To: <200709291306.59627.mb@bu3sch.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200709291322.59607.mb@bu3sch.de>
+	by ozlabs.org (Postfix) with ESMTP id AEB20DDDF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 00:35:30 +1000 (EST)
+In-Reply-To: <20070929104917.1585737e@kernel.crashing.org>
+References: <20070928190616.GB20213@loki.buserror.net>
+	<20070929003005.59afc2a0@kernel.crashing.org>
+	<08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
+	<20070929104917.1585737e@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1B684498-FC47-4F01-A72E-DD27B259613A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+Date: Sat, 29 Sep 2007 09:34:33 -0500
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 29 September 2007 13:06:59 Michael Buesch wrote:
-> > This is very strange... Can you try also clearing VGA_DDC_CLK_OUT_EN and
-> > VGA_DDC_DATA_OUT_EN and the same time and see if that helps ?
-> 
-> It still triggers the bug then.
 
-I tried something else.
-I removed the write and only added a printk with a register read
-to print the contents (DDC REG IS 0x...) . This is the result:
+On Sep 29, 2007, at 1:49 AM, Vitaly Bordug wrote:
 
-[    0.431304] PCI: Enabling device 0000:00:10.0 (0006 -> 0007)
-[    0.626866] radeonfb (0000:00:10.0): Invalid ROM signature 303 should be 0xaa55
-[    0.626877] radeonfb: Retrieved PLL infos from Open Firmware
-[    0.626887] radeonfb: Reference=27.00 MHz (RefDiv=12) Memory=203.00 Mhz, System=392.00 MHz
-[    0.626897] radeonfb: PLL min 12000 max 35000
-[    0.627194] DDC REG IS 0x00000303
-[    0.763751] i2c-adapter i2c-2: unable to read EDID block.
-[    0.983746] i2c-adapter i2c-2: unable to read EDID block.
-[    1.203745] i2c-adapter i2c-2: unable to read EDID block.
-[    1.280001] DDC REG IS 0x00000000
-[    1.620189] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[001124fffed98036]
-[    1.670984] radeonfb: Monitor 1 type LCD found
-[    1.670992] radeonfb: EDID probed
-[    1.670997] radeonfb: Monitor 2 type no found
-[    1.671012] radeonfb: Using Firmware dividers 0x0002008e from PPLL 0
-[    1.671075] radeonfb: Dynamic Clock Power Management enabled
-[    1.712658] Console: switching to colour frame buffer device 160x53
-[    1.735555] radeonfb: Backlight initialized (radeonbl0)
-[    1.735746] radeonfb (0000:00:10.0): ATI Radeon NP 
-[    1.738776] Generic RTC Driver v1.07
-[    1.738995] Macintosh non-volatile memory driver v1.1
-...
+> Hello Kumar,
+>
+> On Fri, 28 Sep 2007 18:53:38 -0500
+> Kumar Gala wrote:
+>
+>>
+>> On Sep 28, 2007, at 3:30 PM, Vitaly Bordug wrote:
+>>
+>>> Kumar,
+>>>
+>>> Realizing this may suffer a bit from cleanest-dts flame war, but
+>>> anyway I pretty much see a lot of
+>>> sense in getting this in during next merge window. Is this possible?
+>>
+>> Probably, does QE have muram?  I can't keep these things straight.
+>>
+>
+> cpms have dpram, qe has muram. these two are the same stuff in  
+> fact. Or you are asking about have QE stuff utilize such a binding  
+> at the same pass?
 
-Note that the function is called twice. Is that correct?
+I was asking about both these things.
 
--- 
-Greetings Michael.
+- k
