@@ -1,28 +1,28 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 42C96DE3D8
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:42:40 +1000 (EST)
-Received: from pd4mr2so.prod.shaw.ca
-	(pd4mr2so-qfe3.prod.shaw.ca [10.0.141.213]) by l-daemon
+Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 16D62DDED1
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:43:17 +1000 (EST)
+Received: from pd2mr4so.prod.shaw.ca
+	(pd2mr4so-qfe3.prod.shaw.ca [10.0.141.107]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JP700AYVDPLGR60@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:41:45 -0600 (MDT)
-Received: from pn2ml8so.prod.shaw.ca ([10.0.121.152])
-	by pd4mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	with ESMTP id <0JP7009P9DQIID50@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:18 -0600 (MDT)
+Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
+	by pd2mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP70018ZDPKPN10@pd4mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:41:45 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP7001QCDQHFN80@pd2mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:42:18 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP700BW4DPIIOQA@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:41:42 -0600 (MDT)
-Date: Sun, 30 Sep 2007 16:41:42 -0600
+	with ESMTP id <0JP700MLADQFRP21@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:15 -0600 (MDT)
+Date: Sun, 30 Sep 2007 16:42:10 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2 2/7] Uartlite: change name of ports to ulite_ports
+Subject: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
 In-reply-to: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com, jacmet@sunsite.dk
-Message-id: <20070930224139.1871.77452.stgit@trillian.cg.shawcable.net>
+Message-id: <20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
@@ -37,60 +37,160 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Changed to match naming convention used in the rest of the module
+Add of_platform bus binding so this driver can be used with arch/powerpc
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/serial/uartlite.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/serial/uartlite.c |  101 +++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 93 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index 59b674a..ae05a67 100644
+index ed13b9f..8752fac 100644
 --- a/drivers/serial/uartlite.c
 +++ b/drivers/serial/uartlite.c
-@@ -46,7 +46,7 @@
- #define ULITE_CONTROL_IE	0x10
+@@ -1,7 +1,8 @@
+ /*
+  * uartlite.c: Serial driver for Xilinx uartlite serial controller
+  *
+- * Peter Korsgaard <jacmet@sunsite.dk>
++ * Copyright (C) 2006 Peter Korsgaard <jacmet@sunsite.dk>
++ * Copyright (C) 2007 Secret Lab Technologies Ltd.
+  *
+  * This file is licensed under the terms of the GNU General Public License
+  * version 2.  This program is licensed "as is" without any warranty of any
+@@ -17,6 +18,10 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <asm/io.h>
++#if defined(CONFIG_OF)
++#include <linux/of_device.h>
++#include <linux/of_platform.h>
++#endif
  
- 
--static struct uart_port ports[ULITE_NR_UARTS];
-+static struct uart_port ulite_ports[ULITE_NR_UARTS];
- 
- static int ulite_receive(struct uart_port *port, int stat)
- {
-@@ -329,7 +329,7 @@ static void ulite_console_putchar(struct uart_port *port, int ch)
- static void ulite_console_write(struct console *co, const char *s,
- 				unsigned int count)
- {
--	struct uart_port *port = &ports[co->index];
-+	struct uart_port *port = &ulite_ports[co->index];
- 	unsigned long flags;
- 	unsigned int ier;
- 	int locked = 1;
-@@ -366,7 +366,7 @@ static int __init ulite_console_setup(struct console *co, char *options)
- 	if (co->index < 0 || co->index >= ULITE_NR_UARTS)
- 		return -EINVAL;
- 
--	port = &ports[co->index];
-+	port = &ulite_ports[co->index];
+ #define ULITE_NAME		"ttyUL"
+ #define ULITE_MAJOR		204
+@@ -382,8 +387,10 @@ static int __init ulite_console_setup(struct console *co, char *options)
+ 	port = &ulite_ports[co->index];
  
  	/* not initialized yet? */
- 	if (!port->membase)
-@@ -420,7 +420,7 @@ static int __devinit ulite_probe(struct platform_device *pdev)
- 	if (pdev->id < 0 || pdev->id >= ULITE_NR_UARTS)
- 		return -EINVAL;
- 
--	if (ports[pdev->id].membase)
-+	if (ulite_ports[pdev->id].membase)
- 		return -EBUSY;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -431,7 +431,7 @@ static int __devinit ulite_probe(struct platform_device *pdev)
- 	if (!res2)
+-	if (!port->membase)
++	if (!port->membase) {
++		pr_debug("console on ttyUL%i not initialized\n", co->index);
  		return -ENODEV;
++	}
  
--	port = &ports[pdev->id];
-+	port = &ulite_ports[pdev->id];
+ 	if (options)
+ 		uart_parse_options(options, &baud, &parity, &bits, &flow);
+@@ -542,6 +549,72 @@ static struct platform_driver ulite_platform_driver = {
+ };
  
- 	port->fifosize	= 16;
- 	port->regshift	= 2;
+ /* ---------------------------------------------------------------------
++ * OF bus bindings
++ */
++#if defined(CONFIG_OF)
++static int __devinit
++ulite_of_probe(struct of_device *op, const struct of_device_id *match)
++{
++	struct resource res;
++	const unsigned int *id;
++	int irq, rc;
++
++	dev_dbg(&op->dev, "%s(%p, %p)\n", __FUNCTION__, op, match);
++
++	rc = of_address_to_resource(op->node, 0, &res);
++	if (rc) {
++		dev_err(&op->dev, "invalide address\n");
++		return rc;
++	}
++
++	irq = irq_of_parse_and_map(op->node, 0);
++
++	id = of_get_property(op->node, "port-number", NULL);
++
++	return ulite_assign(&op->dev, id ? *id : -1, res.start, irq);
++}
++
++static int __devexit ulite_of_remove(struct of_device *op)
++{
++	return ulite_release(&op->dev);
++}
++
++/* Match table for of_platform binding */
++static struct of_device_id __devinit ulite_of_match[] = {
++	{ .type = "serial", .compatible = "xilinx,uartlite", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, ulite_of_match);
++
++static struct of_platform_driver ulite_of_driver = {
++	.owner = THIS_MODULE,
++	.name = "uartlite",
++	.match_table = ulite_of_match,
++	.probe = ulite_of_probe,
++	.remove = __devexit_p(ulite_of_remove),
++	.driver = {
++		.name = "uartlite",
++	},
++};
++
++/* Registration helpers to keep the number of #ifdefs to a minimum */
++static inline int __init ulite_of_register(void)
++{
++	pr_debug("uartlite: calling of_register_platform_driver()\n");
++	return of_register_platform_driver(&ulite_of_driver);
++}
++
++static inline void __exit ulite_of_unregister(void)
++{
++	of_unregister_platform_driver(&ulite_of_driver);
++}
++#else /* CONFIG_OF */
++/* CONFIG_OF not enabled; do nothing helpers */
++static inline int __init ulite_of_register(void) { return 0; }
++static inline void __exit ulite_of_unregister(void) { }
++#endif /* CONFIG_OF */
++
++/* ---------------------------------------------------------------------
+  * Module setup/teardown
+  */
+ 
+@@ -549,20 +622,32 @@ int __init ulite_init(void)
+ {
+ 	int ret;
+ 
+-	ret = uart_register_driver(&ulite_uart_driver);
+-	if (ret)
+-		return ret;
++	pr_debug("uartlite: calling uart_register_driver()\n");
++	if ((ret = uart_register_driver(&ulite_uart_driver)) != 0)
++		goto err_uart;
+ 
+-	ret = platform_driver_register(&ulite_platform_driver);
+-	if (ret)
+-		uart_unregister_driver(&ulite_uart_driver);
++	if ((ret = ulite_of_register()) != 0)
++		goto err_of;
+ 
++	pr_debug("uartlite: calling platform_driver_register()\n");
++	if ((ret = platform_driver_register(&ulite_platform_driver)) != 0)
++		goto err_plat;
++
++	return 0;
++
++err_plat:
++	ulite_of_unregister();
++err_of:
++	uart_unregister_driver(&ulite_uart_driver);
++err_uart:
++	printk(KERN_ERR "registering uartlite driver failed: err=%i", ret);
+ 	return ret;
+ }
+ 
+ void __exit ulite_exit(void)
+ {
+ 	platform_driver_unregister(&ulite_platform_driver);
++	ulite_of_unregister();
+ 	uart_unregister_driver(&ulite_uart_driver);
+ }
+ 
