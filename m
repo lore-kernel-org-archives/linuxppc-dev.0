@@ -1,29 +1,28 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 6C033DDF6E
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:41:58 +1000 (EST)
-Received: from pd3mr5so.prod.shaw.ca (pd3mr5so-qfe3.prod.shaw.ca [10.0.141.12])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JP700MSHDPXCA50@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:41:57 -0600 (MDT)
-Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
-	by pd3mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id EC043DE046
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:42:05 +1000 (EST)
+Received: from pd2mr2so.prod.shaw.ca
+	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JP7000NNDQ5TK90@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:05 -0600 (MDT)
+Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
+	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP700FPKDPXFV10@pd3mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:41:58 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP7004TSDQ4CL40@pd2mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:42:05 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP700M79DPW04S2@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:41:56 -0600 (MDT)
-Date: Sun, 30 Sep 2007 16:41:56 -0600
+	with ESMTP id <0JP700JAYDQ3P3B0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:03 -0600 (MDT)
+Date: Sun, 30 Sep 2007 16:42:03 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2 4/7] Uartlite: Separate the bus binding from the
-	driver	proper
+Subject: [PATCH 2 5/7] Uartlite: Comment block tidy
 In-reply-to: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com, jacmet@sunsite.dk
-Message-id: <20070930224154.1871.58449.stgit@trillian.cg.shawcable.net>
+Message-id: <20070930224201.1871.60734.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
@@ -38,141 +37,109 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Separate the bus binding code from the driver structure allocation code in
-preparation for adding the of_platform_bus bindings needed by arch/powerpc
+Tidy the comments to split the driver into logical section; the main driver,
+the console driver, the platform bus binding, and module initialization
+and teardown.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/serial/uartlite.c |   99 ++++++++++++++++++++++++++++++---------------
- 1 files changed, 65 insertions(+), 34 deletions(-)
+ drivers/serial/uartlite.c |   43 ++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 40 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index 10e0da9..c00a627 100644
+index c00a627..ed13b9f 100644
 --- a/drivers/serial/uartlite.c
 +++ b/drivers/serial/uartlite.c
-@@ -413,59 +413,90 @@ static struct uart_driver ulite_uart_driver = {
+@@ -23,9 +23,13 @@
+ #define ULITE_MINOR		187
+ #define ULITE_NR_UARTS		4
+ 
+-/* For register details see datasheet:
+-   http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
+-*/
++/* ---------------------------------------------------------------------
++ * Register definitions
++ *
++ * For register details see datasheet:
++ * http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
++ */
++
+ #define ULITE_RX		0x00
+ #define ULITE_TX		0x04
+ #define ULITE_STATUS		0x08
+@@ -49,6 +53,10 @@
+ 
+ static struct uart_port ulite_ports[ULITE_NR_UARTS];
+ 
++/* ---------------------------------------------------------------------
++ * Core UART driver operations
++ */
++
+ static int ulite_receive(struct uart_port *port, int stat)
+ {
+ 	struct tty_struct *tty = port->info->tty;
+@@ -308,6 +316,10 @@ static struct uart_ops ulite_ops = {
+ 	.verify_port	= ulite_verify_port
+ };
+ 
++/* ---------------------------------------------------------------------
++ * Console driver operations
++ */
++
+ #ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
+ static void ulite_console_wait_tx(struct uart_port *port)
+ {
+@@ -413,6 +425,19 @@ static struct uart_driver ulite_uart_driver = {
  #endif
  };
  
--static int __devinit ulite_probe(struct platform_device *pdev)
-+static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
++/* ---------------------------------------------------------------------
++ * Port assignment functions (mapping devices to uart_port structures)
++ */
++
++/** ulite_assign: register a uartlite device with the driver
++ *
++ * @dev: pointer to device structure
++ * @id: requested id number.  Pass -1 for automatic port assignment
++ * @base: base address of uartlite registers
++ * @irq: irq number for uartlite
++ *
++ * Returns: 0 on success, <0 otherwise
++ */
+ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
  {
--	struct resource *res, *res2;
  	struct uart_port *port;
-+	int rc;
- 
--	if (pdev->id < 0 || pdev->id >= ULITE_NR_UARTS)
-+	/* if id = -1; then scan for a free id and use that */
-+	if (id < 0) {
-+		for (id = 0; id < ULITE_NR_UARTS; id++)
-+			if (ulite_ports[id].mapbase == 0)
-+				break;
-+	}
-+	if (id < 0 || id >= ULITE_NR_UARTS) {
-+		dev_err(dev, "%s%i too large\n", ULITE_NAME, id);
- 		return -EINVAL;
-+	}
- 
--	if (ulite_ports[pdev->id].membase)
-+	if (ulite_ports[id].mapbase) {
-+		dev_err(dev, "cannot assign to %s%i; it is already in use\n",
-+			ULITE_NAME, id);
- 		return -EBUSY;
-+	}
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res)
--		return -ENODEV;
-+	port = &ulite_ports[id];
- 
--	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
--	if (!res2)
--		return -ENODEV;
-+	spin_lock_init(&port->lock);
-+	port->fifosize = 16;
-+	port->regshift = 2;
-+	port->iotype = UPIO_MEM;
-+	port->iobase = 1; /* mark port in use */
-+	port->mapbase = base;
-+	port->membase = NULL;
-+	port->ops = &ulite_ops;
-+	port->irq = irq;
-+	port->flags = UPF_BOOT_AUTOCONF;
-+	port->dev = dev;
-+	port->type = PORT_UNKNOWN;
-+	port->line = id;
-+
-+	dev_set_drvdata(dev, port);
-+
-+	/* Register the port */
-+	rc = uart_add_one_port(&ulite_uart_driver, port);
-+	if (rc) {
-+		dev_err(dev, "uart_add_one_port() failed; err=%i\n", rc);
-+		port->mapbase = 0;
-+		dev_set_drvdata(dev, NULL);
-+		return rc;
-+	}
- 
--	port = &ulite_ports[pdev->id];
-+	return 0;
-+}
- 
--	port->fifosize	= 16;
--	port->regshift	= 2;
--	port->iotype	= UPIO_MEM;
--	port->iobase	= 1; /* mark port in use */
--	port->mapbase	= res->start;
--	port->membase	= NULL;
--	port->ops	= &ulite_ops;
--	port->irq	= res2->start;
--	port->flags	= UPF_BOOT_AUTOCONF;
--	port->dev	= &pdev->dev;
--	port->type	= PORT_UNKNOWN;
--	port->line	= pdev->id;
-+static int __devinit ulite_release(struct device *dev)
-+{
-+	struct uart_port *port = dev_get_drvdata(dev);
-+	int rc = 0;
- 
--	uart_add_one_port(&ulite_uart_driver, port);
--	platform_set_drvdata(pdev, port);
-+	if (port) {
-+		rc = uart_remove_one_port(&ulite_uart_driver, port);
-+		dev_set_drvdata(dev, NULL);
-+		port->mapbase = 0;
-+	}
- 
--	return 0;
-+	return rc;
+@@ -465,6 +490,10 @@ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
+ 	return 0;
  }
  
--static int ulite_remove(struct platform_device *pdev)
-+static int __devinit ulite_probe(struct platform_device *pdev)
++/** ulite_release: register a uartlite device with the driver
++ *
++ * @dev: pointer to device structure
++ */
+ static int __devinit ulite_release(struct device *dev)
  {
--	struct uart_port *port = platform_get_drvdata(pdev);
-+	struct resource *res, *res2;
- 
--	platform_set_drvdata(pdev, NULL);
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res)
-+		return -ENODEV;
- 
--	if (port)
--		uart_remove_one_port(&ulite_uart_driver, port);
-+	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (!res2)
-+		return -ENODEV;
- 
--	/* mark port as free */
--	port->membase = NULL;
-+	return ulite_assign(&pdev->dev, pdev->id, res->start, res2->start);
-+}
- 
--	return 0;
-+static int ulite_remove(struct platform_device *pdev)
-+{
-+	return ulite_release(&pdev->dev);
+ 	struct uart_port *port = dev_get_drvdata(dev);
+@@ -479,6 +508,10 @@ static int __devinit ulite_release(struct device *dev)
+ 	return rc;
  }
  
- static struct platform_driver ulite_platform_driver = {
++/* ---------------------------------------------------------------------
++ * Platform bus binding
++ */
++
+ static int __devinit ulite_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res, *res2;
+@@ -508,6 +541,10 @@ static struct platform_driver ulite_platform_driver = {
+ 		   },
+ };
+ 
++/* ---------------------------------------------------------------------
++ * Module setup/teardown
++ */
++
+ int __init ulite_init(void)
+ {
+ 	int ret;
