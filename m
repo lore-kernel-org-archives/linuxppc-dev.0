@@ -1,17 +1,19 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 1156ADDE36
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 07:16:58 +1000 (EST)
-Date: Sun, 30 Sep 2007 23:17:09 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B02CCDDE36
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 07:39:42 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 Subject: Re: [PATCH 3/7] Celleb: Support for Power/Reset buttons
-In-Reply-To: <200709261355.50310.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.60.0709302259510.10318@poirot.grange>
+Date: Sun, 30 Sep 2007 23:22:51 +0200
 References: <20070926.132556.1723232353.kouish@swc.toshiba.co.jp>
 	<200709261355.50310.arnd@arndb.de>
+	<Pine.LNX.4.60.0709302259510.10318@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0709302259510.10318@poirot.grange>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200709302322.52076.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,62 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 26 Sep 2007, Arnd Bergmann wrote:
+On Sunday 30 September 2007, you wrote:
+>=20
+> > kernel_restart() seems appropriate for that.
+>=20
+> Now a comment to this one says:
+>=20
+> =A0*=A0=A0=A0=A0=A0=A0This is not safe to call in interrupt context.
+>=20
+> and AFAIU, this is called from an interrupt. Am I missing anything or=20
+> would this be wrong to call kernel_restart() here?
 
-> On Wednesday 26 September 2007, Ishizaki Kou wrote:
-> 
-> > +static irqreturn_t beat_power_event(int virq, void *arg)
-> > +{
-> > +	printk(KERN_DEBUG "Beat: power button pressed\n");
-> > +	beat_pm_poweroff_flag = 1;
-> > +	if (kill_cad_pid(SIGINT, 1)) {
-> > +		/* Just in case killing init process failed */
-> > +		beat_power_off();
-> > +	}
-> > +	return IRQ_HANDLED;
-> > +}
-> 
-> I think this should call ctrl_alt_del() instead of doing 
-> kill_cad_pid() directly.
+It should be called through a workqueue, afaics, do avoid calling
+a sleeping notifier from an interrupt.
 
-Agree.
+> > > +static irqreturn_t beat_reset_event(int virq, void *arg)
+> > > +{
+> > > +=A0=A0=A0printk(KERN_DEBUG "Beat: reset button pressed\n");
+> > > +=A0=A0=A0beat_pm_poweroff_flag =3D 0;
+> > > +=A0=A0=A0if (kill_cad_pid(SIGINT, 1)) {
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0/* Just in case killing init proces=
+s failed */
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0beat_restart(NULL);
+> > > +=A0=A0=A0}
+> > > +=A0=A0=A0return IRQ_HANDLED;
+> > > +}
+> >=20
+> > same here, except calling kernel_halt() in the end.
+>=20
+> kernel_halt() doesn't have a similar comment, but it does call the=20
+> kernel_shutdown_prepare() too, so, seems like it should not be called fro=
+m=20
+> an interrupt either?
 
-> Also, I think you should better not call the low-level
-> beat_power_off() function, but rather a high-level function
-> that goes through the reboot notifiers first.
-> 
-> kernel_restart() seems appropriate for that.
+yes
 
-Now a comment to this one says:
+> Now, another question, is it generally good to hard-wire "reset" and=20
+> "power-off" buttons in the kernel? Isn't it better to just register them=
+=20
+> as input event sources and let userspace (power-management daemon) decide=
+=20
+> what to do with them? Like poweroff / reboot / suspend / hibernate / ...
 
- *	This is not safe to call in interrupt context.
+Tough question. I can see arguments for either way, but I guess I'd tend
+to handling it in the kernel, choosing simplicity over consistency.
 
-and AFAIU, this is called from an interrupt. Am I missing anything or 
-would this be wrong to call kernel_restart() here?
-
-> > +static irqreturn_t beat_reset_event(int virq, void *arg)
-> > +{
-> > +	printk(KERN_DEBUG "Beat: reset button pressed\n");
-> > +	beat_pm_poweroff_flag = 0;
-> > +	if (kill_cad_pid(SIGINT, 1)) {
-> > +		/* Just in case killing init process failed */
-> > +		beat_restart(NULL);
-> > +	}
-> > +	return IRQ_HANDLED;
-> > +}
-> 
-> same here, except calling kernel_halt() in the end.
-
-kernel_halt() doesn't have a similar comment, but it does call the 
-kernel_shutdown_prepare() too, so, seems like it should not be called from 
-an interrupt either?
-
-Now, another question, is it generally good to hard-wire "reset" and 
-"power-off" buttons in the kernel? Isn't it better to just register them 
-as input event sources and let userspace (power-management daemon) decide 
-what to do with them? Like poweroff / reboot / suspend / hibernate / ...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+	Arnd <><
