@@ -1,34 +1,22 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 78F93DDE05
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:16 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8U9cEWS012420
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:14 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l8U9cFcq1433786
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:15 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l8U9ZM3H020061
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:35:23 +1000
-Message-ID: <46FF6E6A.30808@linux.vnet.ibm.com>
-Date: Sun, 30 Sep 2007 15:07:46 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <mb@bu3sch.de>
+Received: from vs166246.vserver.de
+	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 34C87DDE03
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 20:17:08 +1000 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: benh@kernel.crashing.org
+Subject: Re: Powerbook shuts down hard when hot, patch found
+Date: Sun, 30 Sep 2007 12:13:36 +0200
+References: <200709282332.52819.mb@bu3sch.de> <200709300026.07219.mb@bu3sch.de>
+	<1191106145.28637.11.camel@pasglop>
+In-Reply-To: <1191106145.28637.11.camel@pasglop>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-rc8-mm2 - PowerPC link failure at
-	arch/powerpc/kernel/head_64.o
-References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
-	<46FF2199.2060202@linux.vnet.ibm.com>
-In-Reply-To: <46FF2199.2060202@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Andrew Morton <akpm@linux-foundation.org>, sam@ravnborg.org,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200709301213.36821.mb@bu3sch.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,25 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal wrote:
-> Hi Andrew,
-> 
-> The compilation with the cross compiler for the PowerPC-405 on the powerbox
-> fails at linking
-> 
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> ld: final link failed: Bad value
-> make: *** [.tmp_vmlinux1] Error 1
-> 
+On Sunday 30 September 2007 00:49:05 Benjamin Herrenschmidt wrote:
+> Well, it's possible that they have a too weak pull-up resistor on those
+> lines, and thus when asserted to 0, a significant current goes through
+> causing the whole thing to heat up. That heat added to the residual heat
+> of a hot boot becomes then enough to trigger the temperature sensor
+> threshold... just one possible explanation.
 
-Adding CC to the powerpc mailing list
+Possible, yes.
+
+> > That's why I thought about some silicon bug. Why only when it's hot? :)
+> > 
+> > > Also, the other change I made you do turns these into inputs, thus the
+> > 
+> > The _EN bits are already all cleared, as you can see in my printk dump.
+> > So clearing them has no effect, of course.
+> > So the ports are Inputs as default on boot.
+> 
+> Hrm, that's weird then, because in that case, changing the output bits
+> shouldn't have any effect, unless maybe on some chips, the EN bits are
+> flipped. I don't have anything specific about the rv350 tho.
+> 
+> Can you print which specific DDC register is doing that (it's called
+> twice right ?) and maybe do a patch preventing that write only for one
+> of them and let me know if it makes a difference.
+
+Here's the log of a working kernel.
+As you can see, I only removed the write for register 0x60 here.
+So it only crashes when I clear the bits in this register.
+(makes sense, as there's nothing to clear in the other one).
+
+[    0.453703] PCI: Enabling device 0000:00:10.0 (0006 -> 0007)
+[    0.649319] radeonfb (0000:00:10.0): Invalid ROM signature 303 should be 0xaa55
+[    0.649329] radeonfb: Retrieved PLL infos from Open Firmware
+[    0.649340] radeonfb: Reference=27.00 MHz (RefDiv=12) Memory=203.00 Mhz, System=392.00 MHz
+[    0.649350] radeonfb: PLL min 12000 max 35000
+[    0.650146] DDC REG 0x00000060 IS 0x00000303
+[    0.793754] i2c-adapter i2c-2: unable to read EDID block.
+[    1.013748] i2c-adapter i2c-2: unable to read EDID block.
+[    1.233748] i2c-adapter i2c-2: unable to read EDID block.
+[    1.310002] DDC REG 0x0000006C IS 0x00000000
+[    1.310007] WRITING
+[    1.650506] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[001124fffed98036]
+[    1.700986] radeonfb: Monitor 1 type LCD found
+[    1.700995] radeonfb: EDID probed
+[    1.701001] radeonfb: Monitor 2 type no found
+[    1.701015] radeonfb: Using Firmware dividers 0x0002008e from PPLL 0
+[    1.701130] radeonfb: Dynamic Clock Power Management enabled
+[    1.742608] Console: switching to colour frame buffer device 160x53
+[    1.765577] radeonfb: Backlight initialized (radeonbl0)
+[    1.765767] radeonfb (0000:00:10.0): ATI Radeon NP 
+[    1.776757] Generic RTC Driver v1.07
+[    1.777085] Macintosh non-volatile memory driver v1.1
+[    1.777429] Linux agpgart interface v0.102
+[    1.777739] agpgart: Detected Apple UniNorth 2 chipset
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Greetings Michael.
