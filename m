@@ -1,25 +1,15 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0CA9DDDDB
+Return-Path: <Shengping.Liu@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 0BFFFDDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Sep 2007 07:09:36 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IbN5Z-0003g0-BM
-	for linuxppc-embedded@ozlabs.org; Fri, 28 Sep 2007 14:09:33 -0700
-Message-ID: <12948521.post@talk.nabble.com>
-Date: Fri, 28 Sep 2007 14:09:33 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Flash paritioning and JFFS2
-In-Reply-To: <12937526.post@talk.nabble.com>
+	Sun, 30 Sep 2007 13:57:09 +1000 (EST)
+Message-ID: <46FF1CE5.7000705@windriver.com>
+Date: Sun, 30 Sep 2007 11:49:57 +0800
+From: Andrew Liu <shengping.liu@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <12293748.post@talk.nabble.com> <1187885337.5160.55.camel@louie>
-	<12557406.post@talk.nabble.com> <1189180542.4826.33.camel@louie>
-	<12937526.post@talk.nabble.com>
+To: jrigby@freescale.com, linuxppc-embedded@ozlabs.org
+Subject: A FEC problem  on fsl_mpc5121e_ads board.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,172 +20,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello All,
 
-I when through the jffs2 driver code and I have noticed that during the jffs2
-initialization It is a problem to access the flash memory (of my board) in
-32 bit mode. All what refers to the 32 bit access gets from Flash  only 16
-(Most significant) bits. The remaining 16 (less significant) bits are simply
-filled with 0. 
+When I boot from NFS, it  doesn't work,  so I  boot system from NOR flash.
+I found FEC hasn't produced any interrupts ( of course, I have plugged
+in cable, and make sure the cable works on other  boards, what's more, I
+can see FEC light blinks)
+when system boot up:
 
-I have noticed that there are two sets of functions which are used to access
-Flash memory:
+-sh-2.05b# cat /proc/interrupts
+           CPU0      
+ 16:          0   IPIC   Level     fs_enet-mac
+ 17:         36   IPIC   Level     i2c-mpc
+ 18:          1   IPIC   Level     i2c-mpc
+ 19:          1   IPIC   Level     i2c-mpc
+ 40:       1117   IPIC   Level     mpc512x_psc_uart
+BAD:          0
 
-#define cpu_to_je32(x) ((jint32_t){x})
-#define je32_to_cpu(x) ((x).v32)
+-sh-2.05b# ethtool eth0
+Settings for eth0:
+        Supported ports: [ TP AUI BNC MII FIBRE ]
+        Supported link modes:  
+        Supports auto-negotiation: No
+        Advertised link modes:  Not reported
+        Advertised auto-negotiation: No
+        Speed: 10Mb/s
+        Duplex: Half
+        Port: MII
+        PHYAD: 1
+        Transceiver: external
+        Auto-negotiation: on
+        Current message level: 0x00000000 (0)
+     *   Link detected: n*
 
-#define cpu_to_je16(x) ((jint16_t){x})
-#define je16_to_cpu(x) ((x).v16)
+it seems very strange that link detected is no,  I have tried the kernel
+uImage  from Freescale ISO, the thing is same to above.
+ The part  of DTS  as bellow:
+ mdio@2840 {
+                        device_type = "mdio";
+                        compatible = "fs_nocpm_enet";
+                        reg = <2840 4>;
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        phy: ethernet-phy@0 {
+                //              interrupt-parent = < &cpld_pic >;
+                //              interrupts = <b 8>;
+                                reg = <1>;
+                                device_type = "ethernet-phy";
+                        };
+                };     
 
-These functions which refer to 16 bits access are working fine in my case
-but those which refer to 32 access do not work properly. Does anybody have
-some idea how to change those functions which deal with 32 bits to  force
-them to access the Flash memory in two steps to get twice 16 bits numbers
-and at the end form 32 bits value?
+                ethernet@2800 {
+                        device_type = "network";
+                        model = "FEC";
+                        compatible = "fs_nocpm_enet";
+                        device-id = <1>;
+                        reg = <2800 800>;
+                        address = [ 00 E0 0C BC E5 40 ];
+                        local-mac-address = [ 00 E0 0C BC E5 40 ];
+                        interrupts = <4 8 >;
+                        interrupt-parent = < &ipic >;
+                        // NOTE: for 7-wire, remove phy-handle
+                        // and add seven-wire
+                         phy-handle = < &phy >;
+                        //seven-wire;
+                };     
 
-Best Regards
+when  boot from NFS, some information as belows:
 
-Mirek
+011400.serial: ttyPSC1 at MMIO 0x80011400 (irq = 40) is a MPC52xx PSC
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: module loaded
+*fs_enet.c:v1.0 (Aug 8, 2005)
+FEC MII Bus: probed
+...............................
+*Initializing XFRM netlink socket
+NET: Registered protocol family 1
+NET: Registered protocol family 17*
+IP-Config: Complete:
+      device=eth0, addr=128.224.162.57, mask=255.255.254.0,
+gw=128.224.162.1,
+     host=mpc5121e_ads, domain=, nis-domain=(none),
+     bootserver=128.224.162.142, rootserver=128.224.162.142, rootpath=
+*md: Autodetecting RAID arrays.
+md: autorun ...
+md: ... autorun DONE.*
+Looking up port of RPC 100003/2 on 128.224.162.142
+rpcbind: server 128.224.162.142 not responding, timed out
+Root-NFS: Unable to get nfsd port number from server, using default
+Looking up port of RPC 100005/1 on 128.224.162.142
+rpcbind: server 128.224.162.142 not responding, timed out
+Root-NFS: Unable to get mountd port number from server, using default
+mount: server 128.224.162.142 not responding, timed out
+Root-NFS: Server returned error -5 while mounting
 
 
+Who can give me some advice ?
+Thanks  in adance.
 
-Mirek23 wrote:
-> 
-> Dear All,
-> 
-> Finally I have sorted out few problems with linux and u-boot and I have
-> tried to come back to the jffs2 and mtd partitioning issue.
-> 
-> I am using CFI driver and I pass partitioning information from command
-> line via u-boot.
-> 
-> This part works fine:
-> 
-> Unfortunatly I have the problem when accesing the flash partitions because
-> my Avnet evaluation board is designet in such a way that the data should
-> be accessed in the mode x16 (16 bits in each goal).
-> 
-> Linux CFI driver is able to detect the x16 mode but it does not handle it
-> correctly.
-> 
-> I will give you an example:
-> 
-> My mtd1 partition contains the u-boot environment. When I print the mtd1
-> contents with (busybox) hexdump I get:
-> 
-> 00000000  eb 92 00 00 62 6f 00 00  61 72 00 00 3d 63 00 00 
-> |....bo..ar..=c..|
-> 00000010  73 6f 00 00 3d 74 00 00  55 4c 00 00 39 36 00 00 
-> |so..=t..UL..96..|
-> 00000020  20 72 00 00 74 3d 00 00  65 76 00 00 66 73 00 00  |
-> r..t=..ev..fs..|
-> 00000030  77 20 00 00 73 72 00 00  74 3d 00 00 39 2e 00 00  |w
-> ..sr..t=..9...|
-> 00000040  39 2e 00 00 34 2e 00 00  33 3a 00 00 70 74 00 00 
-> |9...4...3:..pt..|
-> 00000050  6c 64 00 00 31 2f 00 00  63 5f 00 00 78 2c 00 00 
-> |ld..1/..c_..x,..|
-> 00000060  70 20 00 00 70 3d 00 00  3a 3a 00 00 72 74 00 00  |p
-> ..p=..::..rt..|
-> 00000070  34 2d 00 00 72 65 00 00  65 74 00 00 3a 64 00 00 
-> |4-..re..et..:d..|
-> 
-> When I copy the contents of the /dev/mtd1 to the file by 2 bytes (bs=2) I
-> get correct
-> readout:
-> 
-> dd if=/dev/mtd1 of=./u-boot_Env.txt bs=2 count=128k
-> 
-> hexdump  ./u-boot_Env.txt
-> 00000000  eb 92 c9 6d 62 6f 6f 74  61 72 67 73 3d 63 6f 6e 
-> |...mbootargs=con|
-> 00000010  73 6f 6c 65 3d 74 74 79  55 4c 30 2c 39 36 30 30 
-> |sole=ttyUL0,9600|
-> 00000020  20 72 6f 6f 74 3d 2f 64  65 76 2f 6e 66 73 20 72  |
-> root=/dev/nfs r|
-> 00000030  77 20 6e 66 73 72 6f 6f  74 3d 31 32 39 2e 31 32  |w
-> nfsroot=129.12|
-> 00000040  39 2e 31 34 34 2e 31 31  33 3a 2f 6f 70 74 2f 65 
-> |9.144.113:/opt/e|
-> 00000050  6c 64 6b 34 31 2f 70 70  63 5f 34 78 78 2c 74 63 
-> |ldk41/ppc_4xx,tc|
-> 
-> The real problems begin when I want to deal with jffs2 file system.
-> 
-> I have mtd3 partition which is intended to hold jffs2 fs.
-> To create the jffs2 fs I do:
-> 
-> ./mkfs.jffs2 --pad=0xA0000 --eraseblock=0x20000 --root=/tmp/bin/mtd1/work/
-> --output=image2.jffs2
-> flash_erase /dev/mtd3
-> dd if=./image2.jffs2 of=/dev/mtd3 bs=2 count=655360
-> 
-> After that I have jffs2 fs under /dev/mtd3.
-> 
-> When I try to mount the jffs2 partition fun begins:
-> 
-> mount -t jffs2 /dev/mtdblock3 /mnt
-> 
-> [ 2828.462121] jffs2_scan_eraseblock(): Node at 0x00000000 {0x1985,
-> 0x2003, 0x00000000) has invalid CRC 0xf0600000 (calculated 0xf9d690b3)
-> [ 2828.610485] jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at
-> 0x00000008: 0xf060 instead
-> [ 2828.719326] jffs2_scan_eraseblock(): Node at 0x0000000c {0x1985,
-> 0xe001, 0x00000000) has invalid CRC 0xc3200000 (calculated 0x92fedd67)
-> [ 2828.870047] jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at
-> 0x00000014: 0xc320 instead
-> [ 2828.979854] jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at
-> 0x00000024: 0x46fc instead
-> 
-> .
-> .
-> .
-> .
-> 
-> [ 2834.858103] Further such events for this erase block will not be
-> printed
-> [ 2835.029913] Cowardly refusing to erase blocks on filesystem with no
-> valid JFFS2 nodes
-> [ 2835.124378] empty_blocks 0, bad_blocks 0, c->nr_blocks 5
-> mount: mounting /dev/mtdblock3 on /mnt failed
-> 
-> 
-> I have examined carefully the above output and what I see is that linux
-> does not properly access the flash memory:
-> 
-> I did the hexdump on the image2.jffs2 (which is placed in /dev/mtd3) and
-> compared it with the jffs2 mount messages:
-> 
-> hexdump -C image2.jffs2
-> 
-> 00000000  19 85 20 03 00 00 00 0c  f0 60 dc 98 19 85 e0 01  |..
-> ......`......|
-> 00000010  00 00 00 31 c3 20 dd 5d  00 00 00 01 00 00 00 00  |...1.
-> .]........|
-> 
-> jffs2_scan_eraseblock(): Node at 0x00000000 {0x1985, 0x2003, 0x00000000)
-> has invalid CRC 0xf0600000 (calculated 0xf9d690b3)
-> 
-> The linux mount complains about wrong CRC (invalid CRC 0xf0600000) but in
-> the memory it is
-> f0 60 dc 98 (so it means that it was read in byte by byte mode but not in
-> x16 (2 bytes)  mode).
-> 
-> Does somebody know how to fix this problem?
-> 
-> Best Regards
-> 
-> Mirek
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/Flash-paritioning-and-JFFS2-tf4317566.html#a12948521
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+BRs,
+Andrew
