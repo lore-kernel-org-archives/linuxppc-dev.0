@@ -1,28 +1,28 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id EC043DE046
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:42:05 +1000 (EST)
-Received: from pd2mr2so.prod.shaw.ca
-	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
+Received: from pd4mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 728E4DDF64
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:42:19 +1000 (EST)
+Received: from pd2mr4so.prod.shaw.ca
+	(pd2mr4so-qfe3.prod.shaw.ca [10.0.141.107]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JP7000NNDQ5TK90@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:42:05 -0600 (MDT)
+	with ESMTP id <0JP700MXLDQICW40@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:18 -0600 (MDT)
 Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
-	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	by pd2mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP7004TSDQ4CL40@pd2mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:42:05 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP7001QCDQHFN80@pd2mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:42:19 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP700JAYDQ3P3B0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:42:03 -0600 (MDT)
-Date: Sun, 30 Sep 2007 16:42:03 -0600
+	with ESMTP id <0JP700MLFDQGRP21@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:42:16 -0600 (MDT)
+Date: Sun, 30 Sep 2007 16:42:16 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2 5/7] Uartlite: Comment block tidy
+Subject: [PATCH 2 7/7] Uartlite: Let the console be initialized earlier
 In-reply-to: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com, jacmet@sunsite.dk
-Message-id: <20070930224201.1871.60734.stgit@trillian.cg.shawcable.net>
+Message-id: <20070930224215.1871.60933.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
@@ -37,109 +37,81 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Tidy the comments to split the driver into logical section; the main driver,
-the console driver, the platform bus binding, and module initialization
-and teardown.
+By configuring it earlier we get console output sooner which is helpful
+for debugging when the kernel crashes before the serial drivers are
+initialized.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/serial/uartlite.c |   43 ++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 40 insertions(+), 3 deletions(-)
+ drivers/serial/uartlite.c |   41 ++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 38 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index c00a627..ed13b9f 100644
+index 8752fac..a1891d9 100644
 --- a/drivers/serial/uartlite.c
 +++ b/drivers/serial/uartlite.c
-@@ -23,9 +23,13 @@
- #define ULITE_MINOR		187
- #define ULITE_NR_UARTS		4
+@@ -373,6 +373,31 @@ static void ulite_console_write(struct console *co, const char *s,
+ 		spin_unlock_irqrestore(&port->lock, flags);
+ }
  
--/* For register details see datasheet:
--   http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
--*/
-+/* ---------------------------------------------------------------------
-+ * Register definitions
-+ *
-+ * For register details see datasheet:
-+ * http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
-+ */
++#if defined(CONFIG_OF)
++static inline void __init ulite_console_of_find_device(int id)
++{
++	struct device_node *np;
++	struct resource res;
++	const unsigned int *of_id;
++	int rc;
 +
- #define ULITE_RX		0x00
- #define ULITE_TX		0x04
- #define ULITE_STATUS		0x08
-@@ -49,6 +53,10 @@
- 
- static struct uart_port ulite_ports[ULITE_NR_UARTS];
- 
-+/* ---------------------------------------------------------------------
-+ * Core UART driver operations
-+ */
++	for_each_compatible_node(np, NULL, "xilinx,uartlite") {
++		of_id = of_get_property(np, "port-number", NULL);
++		if ((!of_id) || (*of_id != id))
++			continue;
 +
- static int ulite_receive(struct uart_port *port, int stat)
- {
- 	struct tty_struct *tty = port->info->tty;
-@@ -308,6 +316,10 @@ static struct uart_ops ulite_ops = {
- 	.verify_port	= ulite_verify_port
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Console driver operations
-+ */
++		rc = of_address_to_resource(np, 0, &res);
++		if (rc)
++			continue;
 +
- #ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
- static void ulite_console_wait_tx(struct uart_port *port)
- {
-@@ -413,6 +425,19 @@ static struct uart_driver ulite_uart_driver = {
- #endif
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Port assignment functions (mapping devices to uart_port structures)
-+ */
++		ulite_ports[id].mapbase = res.start;
++		return;
++	}
++}
++#else /* CONFIG_OF */
++static inline void __init ulite_console_of_find_device(int id) { /* do nothing */ }
++#endif /* CONFIG_OF */
 +
-+/** ulite_assign: register a uartlite device with the driver
-+ *
-+ * @dev: pointer to device structure
-+ * @id: requested id number.  Pass -1 for automatic port assignment
-+ * @base: base address of uartlite registers
-+ * @irq: irq number for uartlite
-+ *
-+ * Returns: 0 on success, <0 otherwise
-+ */
- static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
+ static int __init ulite_console_setup(struct console *co, char *options)
  {
  	struct uart_port *port;
-@@ -465,6 +490,10 @@ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
- 	return 0;
- }
+@@ -386,10 +411,20 @@ static int __init ulite_console_setup(struct console *co, char *options)
  
-+/** ulite_release: register a uartlite device with the driver
-+ *
-+ * @dev: pointer to device structure
-+ */
- static int __devinit ulite_release(struct device *dev)
- {
- 	struct uart_port *port = dev_get_drvdata(dev);
-@@ -479,6 +508,10 @@ static int __devinit ulite_release(struct device *dev)
- 	return rc;
- }
+ 	port = &ulite_ports[co->index];
  
-+/* ---------------------------------------------------------------------
-+ * Platform bus binding
-+ */
++	/* Check if it is an OF device */
++	if (!port->mapbase)
++		ulite_console_of_find_device(co->index);
 +
- static int __devinit ulite_probe(struct platform_device *pdev)
- {
- 	struct resource *res, *res2;
-@@ -508,6 +541,10 @@ static struct platform_driver ulite_platform_driver = {
- 		   },
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Module setup/teardown
-+ */
++	/* Do we have a device now? */
++	if (!port->mapbase) {
++		pr_debug("console on ttyUL%i not present\n", co->index);
++		return -ENODEV;
++	}
 +
- int __init ulite_init(void)
- {
- 	int ret;
+ 	/* not initialized yet? */
+ 	if (!port->membase) {
+-		pr_debug("console on ttyUL%i not initialized\n", co->index);
+-		return -ENODEV;
++		if (ulite_request_port(port))
++			return -ENODEV;
+ 	}
+ 
+ 	if (options)
+@@ -461,7 +496,7 @@ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (ulite_ports[id].mapbase) {
++	if ((ulite_ports[id].mapbase) && (ulite_ports[id].mapbase != base)) {
+ 		dev_err(dev, "cannot assign to %s%i; it is already in use\n",
+ 			ULITE_NAME, id);
+ 		return -EBUSY;
