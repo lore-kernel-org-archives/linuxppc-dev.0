@@ -1,19 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
-	by ozlabs.org (Postfix) with ESMTP id 754E9DDE9F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 07:55:45 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2327486nzh
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 14:55:44 -0700 (PDT)
-Message-ID: <fa686aa40709301455g1c70be94va34a33d4f49576c@mail.gmail.com>
-Date: Sun, 30 Sep 2007 15:55:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 8687ADDE1D
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:20:08 +1000 (EST)
+Received: from pd3mr3so.prod.shaw.ca
+	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JP700K16CPJOE20@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:20:07 -0600 (MDT)
+Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
+	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JP700JMECPIO480@pd3mr3so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:20:07 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JP700261CPI8UG0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:20:06 -0600 (MDT)
+Date: Sun, 30 Sep 2007 16:20:06 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCHv2 0/4] Xilinx Virtex support for arch/powerpc
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/3] Bug fixes to Virtex support in arch/ppc
-In-Reply-To: <20070930214140.31899.55951.stgit@trillian.cg.shawcable.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070930214140.31899.55951.stgit@trillian.cg.shawcable.net>
+Message-id: <20070930221613.583.252.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/30/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Josh,
->
-> Here are some small bug fixes to arch/ppc.  They are all pretty trivial,
-> and I think they should go in for 2.6.24.  If there are no problems with
-> them, can you please merge them into your tree and ask paulus to pull
-> them?
+2nd version of Xilinx Virtex patches.  I've addressed all the comments
+that I've received so far.  This series is just the arch/powerpc support
+code.  I'll send the device driver changes in a seperate series for
+each driver.
 
-I've also pushed these changes to my git tree:
+Cheers,
+g.
 
-The following changes since commit c4d5e375470862fd741f93bf0686d7ac2f7fdce4:
-  David Gibson (1):
-        [POWERPC] Cleanups for physmap_of.c (v2)
+ arch/powerpc/boot/Makefile          |    2 +-
+ arch/powerpc/boot/ops.h             |    1 +
+ arch/powerpc/boot/serial.c          |    2 +
+ arch/powerpc/boot/uartlite.c        |   64 +++++++++++++++
+ arch/powerpc/platforms/40x/Kconfig  |   38 ++++++---
+ arch/powerpc/platforms/40x/Makefile |    1 +
+ arch/powerpc/platforms/40x/virtex.c |   50 ++++++++++++
+ arch/powerpc/sysdev/Makefile        |    1 +
+ arch/powerpc/sysdev/xilinx_intc.c   |  151 +++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/xilinx_intc.h   |   20 +++++
+ 10 files changed, 316 insertions(+), 14 deletions(-)
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.24
-
-Grant Likely (3):
-      [POWERPC] Uartlite: Flush RX fifo in bootwrapper
-      [POWERPC] XilinxFB: Move xilinxfb_platform_data to a shared header file
-      [POWERPC] Setup default eth addr in embed_config for Xilinx
-Virtex platforms
-
- arch/ppc/boot/simple/embed_config.c  |    8 ++++++++
- arch/ppc/boot/simple/misc-embedded.c |    4 +++-
- arch/ppc/boot/simple/uartlite_tty.c  |    8 ++++++++
- arch/ppc/syslib/virtex_devices.h     |    8 +-------
- drivers/video/xilinxfb.c             |    2 +-
- include/linux/xilinxfb.h             |   23 +++++++++++++++++++++++
- 6 files changed, 44 insertions(+), 9 deletions(-)
- create mode 100644 include/linux/xilinxfb.h
-
--- 
-Grant Likely, B.Sc., P.Eng.
+--
+Grant Likely, B.Sc. P.Eng.
 Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
