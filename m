@@ -1,16 +1,21 @@
-Return-Path: <keng_629@126.com>
-Received: from m5-143.126.com (m5-143.126.com [202.108.5.143])
-	by ozlabs.org (Postfix) with SMTP id 58A86DDDF6
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A62E4DDDF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Sep 2007 20:02:42 +1000 (EST)
-Date: Sun, 30 Sep 2007 17:32:49 +0800
-From: "keng_629" <keng_629@126.com>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: problem wint port linux 2.6.23 to MPC860T 
-Message-ID: <200709301732487507462@126.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon283016401130_====="
+	Sun, 30 Sep 2007 21:05:03 +1000 (EST)
+Message-ID: <46FF7A7D.6040300@genesi-usa.com>
+Date: Sun, 30 Sep 2007 11:29:17 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Efika, initrd and current kernel
+References: <9e4733910709292205p7b1cdda9m661b241908fdedab@mail.gmail.com>
+In-Reply-To: <9e4733910709292205p7b1cdda9m661b241908fdedab@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+How did you build the kernel?
 
-This is a multi-part message in MIME format.
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
---=====003_Dragon283016401130_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-recently i am working with porting the linux2.6.23 to MPC860T
-i don't have a good debugger,i use the lighter to test where my kernel is now runing.
-i find it out of control after the local_irq_enable() funciton in the asmlinkage void __init start_kernel(void) in init/main.c file.
-Can somebody give me a hand?thank you .
-
-
-
-
-keng_629
-2007-09-30
-
---=====003_Dragon283016401130_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.3157" name=GENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=Verdana><FONT size=2>recently i am working with&nbsp;porting the 
-linux2.6.23 to MPC860T</FONT></FONT></DIV>
-<DIV><FONT face=Verdana><FONT size=2>i don't have a good debugger,i use the 
-lighter to test where my kernel is now runing.</FONT></FONT></DIV>
-<DIV><FONT face=Verdana><FONT size=2>i find it out of control after the 
-local_irq_enable() funciton in the asmlinkage void __init start_kernel(void) in 
-init/main.c file.</FONT></FONT></DIV>
-<DIV><FONT face=Verdana size=2>Can somebody give me a hand?thank you 
-.</FONT></DIV>
-<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
-<DIV align=left><FONT face=Verdana size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" SIZE=2>
-</FONT></DIV>
-<DIV><FONT color=#c0c0c0><FONT face=Verdana size=2>keng_629</FONT></DIV>
-<DIV><FONT face=Verdana size=2>2007-09-30</FONT></FONT></DIV></BODY></HTML>
-
---=====003_Dragon283016401130_=====--
+Jon Smirl wrote:
+> I'm trying to boot a current kernel on the Efika like this:
+> boot hd:0 efika init=/linuxrc root=/dev/ram0 looptype=squashfs
+> loop=/squashfs.img cdroot
+> 
+> It is not finding the initrd.
+> I added some printks and start_initrd is not getting set.
+> 
+> The 2.6.19 gentoo kernel described here boots and finds the same initrd
+> http://gentoo-wiki.com/Efika
+> 
+> Something is missing in the hand off from the OF to the kernel code.
+> I'm poking around in powerpc/kernel/prom_init.c
+> looking for answers.
+> 
