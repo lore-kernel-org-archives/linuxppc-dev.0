@@ -1,18 +1,16 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id 479CCDDE17
+Return-Path: <keng_629@126.com>
+Received: from m5-143.126.com (m5-143.126.com [202.108.5.143])
+	by ozlabs.org (Postfix) with SMTP id 58A86DDDF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Sep 2007 15:06:01 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so7351431pyi
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 29 Sep 2007 22:05:59 -0700 (PDT)
-Message-ID: <9e4733910709292205p7b1cdda9m661b241908fdedab@mail.gmail.com>
-Date: Sun, 30 Sep 2007 01:05:58 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Efika, initrd and current kernel
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 30 Sep 2007 20:02:42 +1000 (EST)
+Date: Sun, 30 Sep 2007 17:32:49 +0800
+From: "keng_629" <keng_629@126.com>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: problem wint port linux 2.6.23 to MPC860T 
+Message-ID: <200709301732487507462@126.com>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====003_Dragon283016401130_====="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +21,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm trying to boot a current kernel on the Efika like this:
-boot hd:0 efika init=/linuxrc root=/dev/ram0 looptype=squashfs
-loop=/squashfs.img cdroot
 
-It is not finding the initrd.
-I added some printks and start_initrd is not getting set.
+This is a multi-part message in MIME format.
 
-The 2.6.19 gentoo kernel described here boots and finds the same initrd
-http://gentoo-wiki.com/Efika
+--=====003_Dragon283016401130_=====
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-Something is missing in the hand off from the OF to the kernel code.
-I'm poking around in powerpc/kernel/prom_init.c
-looking for answers.
+recently i am working with porting the linux2.6.23 to MPC860T
+i don't have a good debugger,i use the lighter to test where my kernel is now runing.
+i find it out of control after the local_irq_enable() funciton in the asmlinkage void __init start_kernel(void) in init/main.c file.
+Can somebody give me a hand?thank you .
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+
+
+
+keng_629
+2007-09-30
+
+--=====003_Dragon283016401130_=====
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=gb2312">
+<META content="MSHTML 6.00.2900.3157" name=GENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=Verdana><FONT size=2>recently i am working with&nbsp;porting the 
+linux2.6.23 to MPC860T</FONT></FONT></DIV>
+<DIV><FONT face=Verdana><FONT size=2>i don't have a good debugger,i use the 
+lighter to test where my kernel is now runing.</FONT></FONT></DIV>
+<DIV><FONT face=Verdana><FONT size=2>i find it out of control after the 
+local_irq_enable() funciton in the asmlinkage void __init start_kernel(void) in 
+init/main.c file.</FONT></FONT></DIV>
+<DIV><FONT face=Verdana size=2>Can somebody give me a hand?thank you 
+.</FONT></DIV>
+<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
+<DIV align=left><FONT face=Verdana size=2>
+<HR style="WIDTH: 122px; HEIGHT: 2px" SIZE=2>
+</FONT></DIV>
+<DIV><FONT color=#c0c0c0><FONT face=Verdana size=2>keng_629</FONT></DIV>
+<DIV><FONT face=Verdana size=2>2007-09-30</FONT></FONT></DIV></BODY></HTML>
+
+--=====003_Dragon283016401130_=====--
