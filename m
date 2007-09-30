@@ -1,22 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 60806DDDF8
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 08:49:18 +1000 (EST)
-Subject: Re: Powerbook shuts down hard when hot, patch found
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Buesch <mb@bu3sch.de>
-In-Reply-To: <200709300026.07219.mb@bu3sch.de>
-References: <200709282332.52819.mb@bu3sch.de>
-	<200709292353.06476.mb@bu3sch.de> <1191104393.28637.5.camel@pasglop>
-	<200709300026.07219.mb@bu3sch.de>
-Content-Type: text/plain
-Date: Sun, 30 Sep 2007 08:49:05 +1000
-Message-Id: <1191106145.28637.11.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 78F93DDE05
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:16 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id l8U9cEWS012420
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:14 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l8U9cFcq1433786
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:38:15 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l8U9ZM3H020061
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 19:35:23 +1000
+Message-ID: <46FF6E6A.30808@linux.vnet.ibm.com>
+Date: Sun, 30 Sep 2007 15:07:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-rc8-mm2 - PowerPC link failure at
+	arch/powerpc/kernel/head_64.o
+References: <20070927022220.c76a7a6e.akpm@linux-foundation.org>
+	<46FF2199.2060202@linux.vnet.ibm.com>
+In-Reply-To: <46FF2199.2060202@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Andrew Morton <akpm@linux-foundation.org>, sam@ravnborg.org,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sun, 2007-09-30 at 00:26 +0200, Michael Buesch wrote:
-> On Sunday 30 September 2007 00:19:53 Benjamin Herrenschmidt wrote:
-> > 
-> > > 
-> > > This all smells to me like a silicon bug, so I'd start searching
-> > > in the silicon erratas. But I'm not sure, of course. It's also strange
-> > > that it depends on temperature. (That's why I first expected the PMU
-> > > would cause this).
-> > > 
-> > > Thanks for your help.
-> > 
-> > Could be that we are creating a short by driving the output low, thus
-> > causing the silicon to heat up, but that's strange.
+Kamalesh Babulal wrote:
+> Hi Andrew,
 > 
-> Well. The machine needs to be hot in the first place to trigger it.
-> If it's cold it boots and runs fine even with that patch.
-> Even if I run it hot after boot it does not shutdown. It only shuts down
-> on boot when this register is written and when it's hot at this point.
-
-Well, it's possible that they have a too weak pull-up resistor on those
-lines, and thus when asserted to 0, a significant current goes through
-causing the whole thing to heat up. That heat added to the residual heat
-of a hot boot becomes then enough to trigger the temperature sensor
-threshold... just one possible explanation.
-
-> That's why I thought about some silicon bug. Why only when it's hot? :)
+> The compilation with the cross compiler for the PowerPC-405 on the powerbox
+> fails at linking
 > 
-> > Also, the other change I made you do turns these into inputs, thus the
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
+> ld: final link failed: Bad value
+> make: *** [.tmp_vmlinux1] Error 1
 > 
-> The _EN bits are already all cleared, as you can see in my printk dump.
-> So clearing them has no effect, of course.
-> So the ports are Inputs as default on boot.
 
-Hrm, that's weird then, because in that case, changing the output bits
-shouldn't have any effect, unless maybe on some chips, the EN bits are
-flipped. I don't have anything specific about the rv350 tho.
+Adding CC to the powerpc mailing list
 
-Can you print which specific DDC register is doing that (it's called
-twice right ?) and maybe do a patch preventing that write only for one
-of them and let me know if it makes a difference.
-
-> > DDL lines should be pulled up, unless ... the board doesn't have
-> > pullups.
-> 
-> Well, I can't tell you :)
-
-Heh
-
-Ben.
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
