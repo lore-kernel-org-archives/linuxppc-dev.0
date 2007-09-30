@@ -1,32 +1,30 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id A48A9DDF51
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:57:29 +1000 (EST)
-Received: from pd4mr2so.prod.shaw.ca
-	(pd4mr2so-qfe3.prod.shaw.ca [10.0.141.213]) by l-daemon
+Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 8B6A5DE254
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 08:57:45 +1000 (EST)
+Received: from pd4mr4so.prod.shaw.ca
+	(pd4mr4so-qfe3.prod.shaw.ca [10.0.141.215]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JP7005SREFSFN10@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:57:28 -0600 (MDT)
-Received: from pn2ml2so.prod.shaw.ca ([10.0.121.146])
-	by pd4mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	with ESMTP id <0JP7000DKEF3T9A0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:57:03 -0600 (MDT)
+Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
+	by pd4mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP7001NXEFMP610@pd4mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:57:29 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP700C1AEF3YK40@pd4mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 16:57:04 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP700AKXEF9Q6G0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 16:57:09 -0600 (MDT)
-Date: Sun, 30 Sep 2007 16:57:09 -0600
+	with ESMTP id <0JP700K9DEEVD3UC@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 30 Sep 2007 16:56:55 -0600 (MDT)
+Date: Sun, 30 Sep 2007 16:56:55 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2 2/6] Sysace: Use the established platform bus api
-In-reply-to: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
+Subject: [PATCH v2 0/6] SystemACE: rework and of_platform bus binding patches
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
 	axboe@kernel.dk
-Message-id: <20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
+Message-id: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,134 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+Here is a set of rework patches on the Xilinx SystemACE driver which ends
+in the addition of an of_platform bus binding.  The of_platform bus binding
+is needed to use the driver from arch/powerpc.  SystemACE is most commonly
+used in Xilinx Virtex system (ppc405).
 
-SystemACE uses the platform bus binding, but it doesn't use the
-platform bus API.  Move to using the correct API for consistency
-sake and future proofing against platform bus changes.
+Jens, I'm hoping I can get these changes in for 2.6.24.  Assuming nobody
+raises any issues, can you please merge these into your tree?
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Thanks,
+g.
 
- drivers/block/xsysace.c |   48 +++++++++++++++++++++++++++++------------------
- 1 files changed, 30 insertions(+), 18 deletions(-)
+Grant Likely (6):
+ Add Xilinx SystemACE entry to maintainers
+ Sysace: Use the established platform bus api
+ Sysace: Move structure allocation from bus binding into common code
+ Sysace: minor rework and cleanup changes
+ Sysace: Move IRQ handler registration to occur after FSM is initialized
+ Sysace: Add of_platform_bus binding
 
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 3ede0b6..b104476 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -1060,13 +1060,12 @@ static void __devexit ace_teardown(struct ace_device *ace)
-  * Platform Bus Support
-  */
- 
--static int __devinit ace_probe(struct device *device)
-+static int __devinit ace_probe(struct platform_device *dev)
- {
--	struct platform_device *dev = to_platform_device(device);
- 	struct ace_device *ace;
- 	int i;
- 
--	dev_dbg(device, "ace_probe(%p)\n", device);
-+	dev_dbg(&dev->dev, "ace_probe(%p)\n", dev);
- 
- 	/*
- 	 * Allocate the ace device structure
-@@ -1075,7 +1074,7 @@ static int __devinit ace_probe(struct device *device)
- 	if (!ace)
- 		goto err_alloc;
- 
--	ace->dev = device;
-+	ace->dev = &dev->dev;
- 	ace->id = dev->id;
- 	ace->irq = NO_IRQ;
- 
-@@ -1089,7 +1088,7 @@ static int __devinit ace_probe(struct device *device)
- 	/* FIXME: Should get bus_width from the platform_device struct */
- 	ace->bus_width = 1;
- 
--	dev_set_drvdata(&dev->dev, ace);
-+	platform_set_drvdata(dev, ace);
- 
- 	/* Call the bus-independant setup code */
- 	if (ace_setup(ace) != 0)
-@@ -1098,7 +1097,7 @@ static int __devinit ace_probe(struct device *device)
- 	return 0;
- 
-       err_setup:
--	dev_set_drvdata(&dev->dev, NULL);
-+	platform_set_drvdata(dev, NULL);
- 	kfree(ace);
-       err_alloc:
- 	printk(KERN_ERR "xsysace: could not initialize device\n");
-@@ -1108,25 +1107,27 @@ static int __devinit ace_probe(struct device *device)
- /*
-  * Platform bus remove() method
-  */
--static int __devexit ace_remove(struct device *device)
-+static int __devexit ace_remove(struct platform_device *dev)
- {
--	struct ace_device *ace = dev_get_drvdata(device);
--
--	dev_dbg(device, "ace_remove(%p)\n", device);
-+	struct ace_device *ace =  platform_get_drvdata(dev);
-+	dev_dbg(&dev->dev, "ace_remove(%p)\n", dev);
- 
- 	if (ace) {
- 		ace_teardown(ace);
-+		platform_set_drvdata(dev, NULL);
- 		kfree(ace);
- 	}
- 
- 	return 0;
- }
- 
--static struct device_driver ace_driver = {
--	.name = "xsysace",
--	.bus = &platform_bus_type,
-+static struct platform_driver ace_platform_driver = {
- 	.probe = ace_probe,
- 	.remove = __devexit_p(ace_remove),
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = "xsysace",
-+	},
- };
- 
- /* ---------------------------------------------------------------------
-@@ -1134,20 +1135,31 @@ static struct device_driver ace_driver = {
-  */
- static int __init ace_init(void)
- {
-+	int rc;
-+
- 	ace_major = register_blkdev(ace_major, "xsysace");
- 	if (ace_major <= 0) {
--		printk(KERN_WARNING "xsysace: register_blkdev() failed\n");
--		return ace_major;
-+		rc = -ENOMEM;
-+		goto err_blk;
- 	}
- 
--	pr_debug("Registering Xilinx SystemACE driver, major=%i\n", ace_major);
--	return driver_register(&ace_driver);
-+	if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
-+		goto err_plat;
-+
-+	pr_info("Xilinx SystemACE device driver, major=%i\n", ace_major);
-+	return 0;
-+
-+      err_plat:
-+	unregister_blkdev(ace_major, "xsysace");
-+      err_blk:
-+	printk(KERN_ERR "xsysace: registration failed; err=%i\n", rc);
-+	return rc;
- }
- 
- static void __exit ace_exit(void)
- {
- 	pr_debug("Unregistering Xilinx SystemACE driver\n");
--	driver_unregister(&ace_driver);
-+	platform_driver_unregister(&ace_platform_driver);
- 	unregister_blkdev(ace_major, "xsysace");
- }
- 
+ MAINTAINERS             |    7 ++
+ drivers/block/xsysace.c |  249 +++++++++++++++++++++++++++++++++++-----------
+       2 files changed, 196 insertions(+), 60 deletions(-)
+
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
