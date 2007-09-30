@@ -1,24 +1,26 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 63964DDE1C
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 623DADDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Oct 2007 00:28:40 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so4488783wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Sep 2007 07:28:39 -0700 (PDT)
-Message-ID: <9e4733910709300728p1f1a2c87vad38a2b047da54e0@mail.gmail.com>
-Date: Sun, 30 Sep 2007 10:28:39 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Sven Luther" <sven@genesi-usa.com>
-Subject: Re: Efika, initrd and current kernel
-In-Reply-To: <20070930141926.GA1431@powerlinux.fr>
+	Mon,  1 Oct 2007 00:54:31 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Ic0Bg-000573-0g
+	for linuxppc-embedded@ozlabs.org; Sun, 30 Sep 2007 07:54:28 -0700
+Message-ID: <12966462.post@talk.nabble.com>
+Date: Sun, 30 Sep 2007 07:54:28 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Is it safe to use these Linux function (test_bit(), set_bit(),
+	clear_bit()) in character device driver for 2.6.10 ppc kernel.
+In-Reply-To: <12937117.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910709292205p7b1cdda9m661b241908fdedab@mail.gmail.com>
-	<46FF7A7D.6040300@genesi-usa.com>
-	<9e4733910709300709t72078992s1bad7967c565b6e1@mail.gmail.com>
-	<20070930141926.GA1431@powerlinux.fr>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <12916782.post@talk.nabble.com> <46FBD483.6090403@freescale.com>
+	<12934517.post@talk.nabble.com> <46FC8EFE.2000108@mock.com>
+	<12937117.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,32 +31,123 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 9/30/07, Sven Luther <sven@genesi-usa.com> wrote:
-> On Sun, Sep 30, 2007 at 10:09:47AM -0400, Jon Smirl wrote:
-> > On 9/30/07, Matt Sealey <matt@genesi-usa.com> wrote:
-> > > How did you build the kernel?
-> >
-> > I attached the .config
-> > Am I supposed to have both chrp and efika selected?
->
-> I think so, yes.
-
-I have then both selected.
-
-I'm sure it is something simple about how I have my kernel configured
-wrong but I can't figure out what it is. I have BLK_INITRD turned on.
-I can trace in the initrd code and see that it is exiting because
-strat_initrd is not set. start_initrd is set in the platform specfic
-code which I haven't figured out yet.
 
 
->
-> Friendly,
->
-> Sven Luther
->
 
+Misbah khan wrote:
+> 
+> 
+> 
+> Jeff Mock-2 wrote:
+>> 
+>> 
+>> 
+>> Misbah khan wrote:
+>>> 
+>>> 
+>>> Scott Wood-2 wrote:
+>>>> Misbah khan wrote:
+>>>>> Hi all I am using "test_bit(),set_bit(),clear_bit() etc" API functions 
+>>>>> provided by the Linux kernel. I want to know that if anybody is used
+>>>>> it 
+>>>>> and have full faith in its operation then please let me know. Driver
+>>>>> in 
+>>>>> the while loop is calling these API's hence i want to make sure that
+>>>>> its 
+>>>>> operation will remain stable.
+>>>> They're used all over the place.  Is there anything about them that you 
+>>>> find suspect?
+>>>>
+>>>> -Scott
+>>>>
+>>>> I have devloped a character driver for FPGA which is memory mapped and
+>>>> using these API's to test a bit , set a bit or to clear a bit in the
+>>>> memory for eg :-
+>>>>
+>>>> /* poll till data is transfered from sdram to dpram */
+>>>> 		while((test_bit(DFR_BUSY,(UINT32 *)(\
+>>>> 			(void *)mmap_reg_ptr + DATA_STATUS_REG))==1)\
+>>>> 			&& (delay < MAX_DELAY_BUSY))
+>>>> 		{
+>>>> 			KDEBUG3(" In the Dfr delay loop \n");
+>>>> 			mdelay(DELAY);
+>>>> 			delay+=DELAY;
+>>>> 		}/* End of while(test_bit(FPGA_BUSY,(void *)register name) */
+>>>>
+>>>> 		if(delay==MAX_DELAY_BUSY)
+>>>> 		{
+>>>> 			KDEBUG1("Out of the the Dfr busy loop \n");
+>>>> 			return -1;
+>>>> 		}
+>>>>
+>>>> People working for FPGA are sure that they are not making the bit high
+>>>> where in my driver is returning -1 from the kernel space aborting it
+>>>> after
+>>>> running for few minutes or so . Please let me know that This function
+>>>> is
+>>>> stable and i should tell them that the driver is stable in its
+>>>> operation
+>>>> and they should check it from there side.
+>>>>
+>> 
+>> 
+>> I think a more more likely source of the problem is that the FPGA
+>> pointer is not cast volatile, or perhaps the FPGA is mapped cached and 
+>> the hardware doesn't always get touched when you think it does.  The bit 
+>> manipulation macros are probably fine.
+>> 
+>> jeff
+>> 
+>> FPGA is Indeed mapped non cashed here is the part of the code 
+>> 
+>> /* Physical bus memory is mapped */
+>> 	mmap_reg_ptr=(UINT32 *)ioremap_nocache(PHY_MEM_ADDR,PHY_MEM_SIZE);
+>> 
+>> And is it ok if I caste FPGA pointer volatile like this will reduce the
+>> probability of failure 
+>> 
+>> /* poll till data is transfered from sdram to dpram */
+>> 		while((test_bit(DFR_BUSY,(volatile UINT32 *)(\
+>> 			(volatile UINT32 *)mmap_reg_ptr + DATA_STATUS_REG))==1)\
+>> 			&& (delay < MAX_DELAY_BUSY))
+>> 		{
+>> 			KDEBUG3(" In the Dfr delay loop \n");
+>> 			mdelay(DELAY);
+>> 			delay+=DELAY;
+>> 		}/* End of while(test_bit(FPGA_BUSY,(void *)register name) */
+>> 
+>> 		if(delay==MAX_DELAY_BUSY)
+>> 		{
+>> 			KDEBUG1("Out of the the Dfr busy loop \n");
+>> 			return CASHEL_FAILURE;
+>> 		}
+>> __________________
+>> 
+>> is there anything else that we could do to rely fully in our code.
+>> 
+>> Misbah
+>> MAX_DELAY_BUSY corresponds to 10 ms .Driver should poll the bit for few
+>> micro second at the max and come out .
+>> 
+>> I had earlier tried with ioread32() and iowrite32() wrapper functions but
+>> the output i got  is bit swapped hence  i went for direct dereferencing
+>> the pointer .
+>> 
+>> do you think   in_be32()  could be the best approach than direct
+>> dereferencing. And about test_bit() function does it looks fine to you 
+>> 
+>> Misbah 
+>> 
+>> 
+>> _____________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>> 
+>> 
+> 
+> 
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+View this message in context: http://www.nabble.com/Is-it-safe-to-use-these-Linux-function-%28test_bit%28%29%2Cset_bit%28%29%2Cclear_bit%28%29%29-in-character-device-driver-for-2.6.10-ppc-kernel.-tf4527008.html#a12966462
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
