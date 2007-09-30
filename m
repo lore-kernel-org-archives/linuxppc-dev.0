@@ -1,31 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 9CBFDDDEBE
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 07:47:48 +1000 (EST)
-Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JP70000KB6MT970@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 15:47:10 -0600 (MDT)
-Received: from pn2ml2so.prod.shaw.ca ([10.0.121.146])
-	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JP700FGQB6M3R60@pd2mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 30 Sep 2007 15:47:11 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JP7006P6B6M4NR4@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 30 Sep 2007 15:47:10 -0600 (MDT)
-Date: Sun, 30 Sep 2007 15:47:05 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 3/3] Setup default eth addr in embed_config for Xilinx Virtex
-	platforms
-In-reply-to: <20070930214140.31899.55951.stgit@trillian.cg.shawcable.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
+	by ozlabs.org (Postfix) with ESMTP id 754E9DDE9F
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 07:55:45 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so2327486nzh
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Sep 2007 14:55:44 -0700 (PDT)
+Message-ID: <fa686aa40709301455g1c70be94va34a33d4f49576c@mail.gmail.com>
+Date: Sun, 30 Sep 2007 15:55:41 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Message-id: <20070930214705.31899.65293.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Subject: Re: [PATCH 0/3] Bug fixes to Virtex support in arch/ppc
+In-Reply-To: <20070930214140.31899.55951.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20070930214140.31899.55951.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -36,41 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On 9/30/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Josh,
+>
+> Here are some small bug fixes to arch/ppc.  They are all pretty trivial,
+> and I think they should go in for 2.6.24.  If there are no problems with
+> them, can you please merge them into your tree and ask paulus to pull
+> them?
 
-This simply adds the boilerplate default Ethernet address to embed_config
-for the Xilinx platform (bug fix).
+I've also pushed these changes to my git tree:
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+The following changes since commit c4d5e375470862fd741f93bf0686d7ac2f7fdce4:
+  David Gibson (1):
+        [POWERPC] Cleanups for physmap_of.c (v2)
 
- arch/ppc/boot/simple/embed_config.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+are available in the git repository at:
 
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
-index 840bff2..3b46792 100644
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -752,7 +752,9 @@ embed_config(bd_t ** bdp)
- 	static const unsigned long congruence_classes = 256;
- 	unsigned long addr;
- 	unsigned long dccr;
-+	uint8_t* cp;
- 	bd_t *bd;
-+	int i;
- 
- 	/*
- 	 * Invalidate the data cache if the data cache is turned off.
-@@ -778,6 +780,12 @@ embed_config(bd_t ** bdp)
- 	bd->bi_intfreq = XPAR_CORE_CLOCK_FREQ_HZ;
- 	bd->bi_busfreq = XPAR_PLB_CLOCK_FREQ_HZ;
- 	bd->bi_pci_busfreq = XPAR_PCI_0_CLOCK_FREQ_HZ;
-+
-+	/* Copy the default ethernet address */
-+	cp = (u_char *)def_enet_addr;
-+	for (i=0; i<6; i++)
-+		bd->bi_enetaddr[i] = *cp++;
-+
- 	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
- 	/* see bi_tbfreq definition in arch/ppc/platforms/4xx/xilinx_ml300.h */
- }
+  git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.24
+
+Grant Likely (3):
+      [POWERPC] Uartlite: Flush RX fifo in bootwrapper
+      [POWERPC] XilinxFB: Move xilinxfb_platform_data to a shared header file
+      [POWERPC] Setup default eth addr in embed_config for Xilinx
+Virtex platforms
+
+ arch/ppc/boot/simple/embed_config.c  |    8 ++++++++
+ arch/ppc/boot/simple/misc-embedded.c |    4 +++-
+ arch/ppc/boot/simple/uartlite_tty.c  |    8 ++++++++
+ arch/ppc/syslib/virtex_devices.h     |    8 +-------
+ drivers/video/xilinxfb.c             |    2 +-
+ include/linux/xilinxfb.h             |   23 +++++++++++++++++++++++
+ 6 files changed, 44 insertions(+), 9 deletions(-)
+ create mode 100644 include/linux/xilinxfb.h
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
