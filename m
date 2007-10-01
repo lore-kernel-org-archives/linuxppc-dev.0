@@ -1,25 +1,21 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51DFFDDE17
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id E0726DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 Oct 2007 02:20:25 +1000 (EST)
-Message-ID: <46FFCD35.3000105@genesi-usa.com>
-Date: Sun, 30 Sep 2007 17:22:13 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+	Mon,  1 Oct 2007 14:22:12 +1000 (EST)
+Date: Sun, 30 Sep 2007 23:25:59 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: Is it safe to use these Linux function (test_bit(), set_bit(),
+	clear_bit()) in character device driver for 2.6.10 ppc kernel.
+Message-ID: <20071001042559.GA32255@lixom.net>
+References: <12916782.post@talk.nabble.com> <46FBD483.6090403@freescale.com>
+	<12934517.post@talk.nabble.com> <46FC8EFE.2000108@mock.com>
+	<12937117.post@talk.nabble.com> <12966462.post@talk.nabble.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Efika, initrd and current kernel
-References: <9e4733910709292205p7b1cdda9m661b241908fdedab@mail.gmail.com>	
-	<46FF7A7D.6040300@genesi-usa.com>	
-	<9e4733910709300709t72078992s1bad7967c565b6e1@mail.gmail.com>	
-	<20070930141926.GA1431@powerlinux.fr>
-	<9e4733910709300728p1f1a2c87vad38a2b047da54e0@mail.gmail.com>
-In-Reply-To: <9e4733910709300728p1f1a2c87vad38a2b047da54e0@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Sven Luther <sven@genesi-usa.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <12966462.post@talk.nabble.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,37 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-How did you attach the initrd to the kernel?
+First, PLEASE stop quoting your own text. Do not append > in front of
+the lines you write yourself in the reply. It makes it impossible to
+tell what parts are new and what are old.
 
-Compiled in using the initramfs feature, or did you use mkvmlinuz (debian/ubuntu)
-or mkzImage (suse) or have genkernel build it (--genzimage) on Gentoo? It looks
-like you're trying to boot Gentoo from the boot line..
+On Sun, Sep 30, 2007 at 07:54:28AM -0700, Misbah khan wrote:
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+> >> FPGA is Indeed mapped non cashed here is the part of the code 
+> >> 
+> >> /* Physical bus memory is mapped */
+> >> 	mmap_reg_ptr=(UINT32 *)ioremap_nocache(PHY_MEM_ADDR,PHY_MEM_SIZE);
+> >> 
+> >> And is it ok if I caste FPGA pointer volatile like this will reduce the
+> >> probability of failure 
 
-Jon Smirl wrote:
-> On 9/30/07, Sven Luther <sven@genesi-usa.com> wrote:
->> On Sun, Sep 30, 2007 at 10:09:47AM -0400, Jon Smirl wrote:
->>> On 9/30/07, Matt Sealey <matt@genesi-usa.com> wrote:
->>>> How did you build the kernel?
->>> I attached the .config
->>> Am I supposed to have both chrp and efika selected?
->> I think so, yes.
-> 
-> I have then both selected.
-> 
-> I'm sure it is something simple about how I have my kernel configured
-> wrong but I can't figure out what it is. I have BLK_INITRD turned on.
-> I can trace in the initrd code and see that it is exiting because
-> strat_initrd is not set. start_initrd is set in the platform specfic
-> code which I haven't figured out yet.
-> 
-> 
->> Friendly,
->>
->> Sven Luther
->>
-> 
-> 
+You cannot ever use set_bit/clear_bit to uncacheable memory. Ever. It
+uses load-reserve/store-conditional, and they are not legal to use to
+uncacheable memory.
+
+Also, regular ioremap() is by default uncacheable, so it's quite adequate
+to use in this case, no need to use the _nocache version.
+
+> >> do you think   in_be32()  could be the best approach than direct
+> >> dereferencing. And about test_bit() function does it looks fine to you 
+
+You need to use in_be32() + manipulating the value + out_be32(),
+yes. Depending on the rest of your driver you might need to protect it
+with a spinlock, but that's beyond the scope of this question.
+
+
+-Olof
