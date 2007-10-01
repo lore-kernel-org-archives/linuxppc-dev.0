@@ -1,25 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id 104EADDE02
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 Oct 2007 23:17:07 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so4831388wag
-	for <linuxppc-dev@ozlabs.org>; Mon, 01 Oct 2007 06:17:06 -0700 (PDT)
-Message-ID: <fa686aa40710010617r1c28bef7u41f7da749c361bcb@mail.gmail.com>
-Date: Mon, 1 Oct 2007 07:17:06 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
-In-Reply-To: <20071001115954.GD5303@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	<20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
-	<20070930230557.GA17654@infradead.org>
-	<fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
-	<20071001115954.GD5303@kernel.dk>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1295EDDE05
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 00:13:20 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l91ECARr024043
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Oct 2007 18:12:10 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l91EC9w0024040
+	for linuxppc-dev@ozlabs.org; Mon, 1 Oct 2007 18:12:09 +0400
+Date: Mon, 1 Oct 2007 18:12:09 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC: Add RGMII support for Sequoia 440EPx
+Message-ID: <20071001141209.GA23971@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,43 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/1/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Sun, Sep 30 2007, Grant Likely wrote:
-> > On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
-> > > On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
-> > > > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
-> > > > +             goto err_plat;
-> > >
-> > >         rc = platform_driver_register(&ace_platform_driver);
-> > >         if (rc)
-> > >                  goto err_plat;
-> > >
-> > > please.
-> >
-> > Okay, will do.
-> >
-> > >
-> > > > +      err_plat:
-> > > > +     unregister_blkdev(ace_major, "xsysace");
-> > > > +      err_blk:
-> > >
-> > > labels should be indented zero or one space, but not more.
-> >
-> > scripts/Lindent does this.  Originally, I *didn't* have my labels
-> > indented.  :-)   Does Lindent need to be fixed?
->
-> Seems so, if it idents labels.
->
-> Just send a fixup patch for that, I'll add your series to the block tree
-> for 2.6.24.
+This adds RGMII support to Sequoia DTS and sets correct phy-mode
+for EMACs. According to Sequoia datasheet, both ethernet ports
+are connected to RGMII interface, while ZMII is used only for MDIO.
 
-Cool, thanks Jens.  I'll generate a patch to unindent the labels this afternoon.
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/sequoia.dts  |   14 ++++++++++++--
+ arch/powerpc/platforms/44x/Kconfig |    1 +
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+diff -ruNp linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6/arch/powerpc/boot/dts/sequoia.dts
+--- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-09-29 16:59:29.000000000 +0400
++++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-09-29 17:35:55.000000000 +0400
+@@ -241,6 +241,12 @@
+ 				reg = <ef600d00 c>;
+ 			};
+ 
++			RGMII0: emac-rgmii@ef601000 {
++				device_type = "rgmii-interface";
++				compatible = "ibm,rgmii-440epx", "ibm,rgmii";
++				reg = <ef601000 8>;
++			};
++
+ 			EMAC0: ethernet@ef600e00 {
+ 				linux,network-index = <0>;
+ 				device_type = "network";
+@@ -261,10 +267,12 @@
+ 				max-frame-size = <5dc>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+-				phy-mode = "rmii";
++				phy-mode = "rgmii";
+ 				phy-map = <00000000>;
+ 				zmii-device = <&ZMII0>;
+ 				zmii-channel = <0>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <0>;
+ 			};
+ 
+ 			EMAC1: ethernet@ef600f00 {
+@@ -287,10 +295,12 @@
+ 				max-frame-size = <5dc>;
+ 				rx-fifo-size = <1000>;
+ 				tx-fifo-size = <800>;
+-				phy-mode = "rmii";
++				phy-mode = "rgmii";
+ 				phy-map = <00000000>;
+ 				zmii-device = <&ZMII0>;
+ 				zmii-channel = <1>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <1>;
+ 			};
+ 		};
+ 	};
+diff -ruNp linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig linux-2.6/arch/powerpc/platforms/44x/Kconfig
+--- linux-2.6.orig/arch/powerpc/platforms/44x/Kconfig	2007-09-29 16:59:31.000000000 +0400
++++ linux-2.6/arch/powerpc/platforms/44x/Kconfig	2007-09-29 17:59:51.000000000 +0400
+@@ -50,6 +50,7 @@ config 440EPX
+ 	select PPC_FPU
+ # Disabled until the new EMAC Driver is merged.
+ #	select IBM_NEW_EMAC_EMAC4
++#	select IBM_NEW_EMAC_RGMII
+ #	select IBM_NEW_EMAC_ZMII
+ 
+ config 440GP
