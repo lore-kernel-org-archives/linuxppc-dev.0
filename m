@@ -1,23 +1,24 @@
-Return-Path: <jbe@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 17EAEDDE0D
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id E5686DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  2 Oct 2007 02:24:27 +1000 (EST)
-From: Juergen Beisert <jbe@pengutronix.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Mon, 1 Oct 2007 18:24:14 +0200
-References: <20070810095153.GC13994@moe.telargo.com>
-	<9e4733910709280838v5deebfdbo62b9097faed9c937@mail.gmail.com>
-	<200710011035.24068.jbe@pengutronix.de>
-In-Reply-To: <200710011035.24068.jbe@pengutronix.de>
+	Tue,  2 Oct 2007 05:27:30 +1000 (EST)
+Date: Mon, 1 Oct 2007 12:19:37 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] Add platform support for the MPC837x RDB board
+Message-ID: <20071001191937.GA5785@mag.az.mvista.com>
+References: <11909173512321-git-send-email-ljd015@freescale.com>
+	<20070927191036.GD7838@mag.az.mvista.com>
+	<C908B0B881A6B949985D6BAA0D9469B402CD36A7@az33exm20.fsl.freescale.net>
+	<20070927195351.GE7838@mag.az.mvista.com>
+	<20070927150312.4eea96fd@weaponx.rchland.ibm.com>
+	<20070927212830.GA9610@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710011824.15639.jbe@pengutronix.de>
-Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-Cc: Daniel Walker <dwalker@mvista.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070927212830.GA9610@lixom.net>
+Cc: D'Abbraccio Joe-ljd015 <Joe.D'abbraccio@freescale.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,93 +29,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 01 October 2007 10:35, Juergen Beisert wrote:
-> 2) Same target runs 2.6.23-rc8-rt1
->
-> @host$ nmap 192.168.23.226
->
-> Starting Nmap 4.20 ( http://insecure.org ) at 2007-10-01 10:15 CEST
-> Interesting ports on 192.168.23.226:
-> Not shown: 871 filtered ports, 824 closed ports
-> PORT   STATE SERVICE
-> 22/tcp open  ssh
-> 23/tcp open  telnet
->
-> Nmap finished: 1 IP address (1 host up) scanned in 14.116 seconds
->
-> Network on target dies. But can be reactivated by an "ifconfig eth0 down;
-> ifconfig eth0 up". I included some printk statements into the fec.c source
-> to see what interrupts are happen.
->
-> "r" means fec_rx_interrupt was entered, "t" means fec_tx_interrupt was
-> entered and "p" means fec_interrupt was entered. This is the output of the
-> nmap "attack" above:
->
-> rtrtrrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttrr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
-> ttr
->  at this point: fec_hard_start_xmit, stop queue
-> rrt
->  at this point: fec_tx_interrupt, wake queue
->  at this point: fec_hard_start_xmit, stop queue
-> t
->  at this point: fec_tx_interrupt, wake queue
-> tp
-> <7>net eth0: ievent: 08020000
->
-> ...at this point the network is dead.
->
-> BTW: Without rt-preempt none of the wake/stop queue events and no
-> fec_interrupt occurs. I only see a long list of "r"s and "t"s...
+On Thu, Sep 27, 2007 at 04:28:30PM -0500, Olof Johansson wrote:
+> On Thu, Sep 27, 2007 at 03:03:12PM -0500, Josh Boyer wrote:
+> > On Thu, 27 Sep 2007 12:53:51 -0700
+> > "Mark A. Greer" <mgreer@mvista.com> wrote:
+> > 
+> > > On Thu, Sep 27, 2007 at 12:41:57PM -0700, D'Abbraccio Joe-ljd015 wrote:
+> > > > Thanks for the advice, but I was just basing the list to post to on the
+> > > > MAINTAINERS file which states that this is the one for Embedded PPC83XX.
+> > > > If you still think that I should post to linuxppc-dev, let me know.
+> > > 
+> > > Yes, I think it would be better to repost to linuxppc-dev.
+> > > 
+> > > Does anyone have an objection to changing all of the:
+> > > 
+> > > 	"L:	linuxppc-embedded@ozlabs.org"
+> > > 
+> > > in MAINTAINERS to:
+> > > 
+> > > 	"L:	linuxppc-dev@ozlabs.org" ??
+> > > 
+> > > Kumar, Josh, Vitaly, et. al.?
+> > 
+> > I personally don't care either way.  I'm already subscribed to both
+> > lists.
+> > 
+> > Makes sense to go to linuxppc-dev given the arch/powerpc migration.
+> 
+> I thought the -embedded list was created in the first place to keep some
+> of the "noise" off of -dev (i.e. "I can't get interface <foo> to work on
+> my custom <embedded eval board>-lookalike board, HELP!"). If people still
+> care about keeping that on a separate list, then we shouldn't change it.
 
-We tried again with rt-preempt and increased the priority of FEC's three=20
-interrupts: And now it survives the nmap "attack". But we don't know now if=
-=20
-we only changed the behavior or fixed the bug?
+Yes, IIRC, that was the reason but now with the merge and low volume on this
+list, it makes sense to me to just get rid of -embedded.
 
-BTW: Is it possible that fec_interrupt(() doesn' handle FEC_IEVENT_RFIFO_ER=
-ROR =20
-and FEC_IEVENT_XFIFO_ERROR)) incorrectly? The lines makes more sense with t=
-he=20
-following patch (but we are not sure about authors real intention).
+> I think the relevant people probably monitor this list (maybe not quite as
+> frequently) to catch things. I even caught the first PWRficient-related
+> question in a timely manner the other day. :-)
 
-@@ -506,7 +484,7 @@ static irqreturn_t fec_interrupt(int irq
+:)
 
-        out_be32(&fec->ievent, ievent);         /* clear pending events */
+> Still, that being said, patches will clearly get better exposure on -dev,
+> especially device tree crap.
 
-=2D       if (ievent & ~(FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR)) {
-+       if (!(ievent & (FEC_IEVENT_RFIFO_ERROR | FEC_IEVENT_XFIFO_ERROR))) {
-                if (ievent & ~FEC_IEVENT_TFINT)
-                        dev_dbg(&dev->dev, "ievent: %08x\n", ievent);
-                return IRQ_HANDLED;
+Definitely.  I'll propose this on -dev and see what people say.
 
-Juergen
-
-=2D-=20
-Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
-=A0Pengutronix - Linux Solutions for Science and Industry
-=A0   Handelsregister: Amtsgericht Hildesheim, HRA 2686
-=A0 =A0 =A0    Vertretung Sued/Muenchen, Germany
-   Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
+Mark
