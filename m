@@ -1,26 +1,15 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B50EBDDE3F
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 06:12:53 +1000 (EST)
-Date: Mon, 1 Oct 2007 14:12:47 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
-Message-ID: <20071001201247.GN12049@parisc-linux.org>
-References: <20070420204114.GL31947@austin.ibm.com>
-	<20070420204720.GM31947@austin.ibm.com>
-	<20070926150216.GH3899@parisc-linux.org>
-	<20070927220022.GC18686@austin.ibm.com>
-	<20070927221031.GY3899@parisc-linux.org>
-	<20070927233437.GF18686@austin.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 65F19DDDF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 06:28:49 +1000 (EST)
+Date: Mon, 1 Oct 2007 15:32:42 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Implement logging of unhandled signals
+Message-ID: <20071001203242.GA14091@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070927233437.GF18686@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,138 +19,232 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2007 at 06:34:37PM -0500, Linas Vepstas wrote:
-> Good catch. But no ... and I had to study this a bit. Bear with me:
+Implement exception-trace sysctl + support to print when a process is
+killed due to unhandled signals just as i386 and x86_64 does.
 
-I agree with the analysis which I've now snipped.
+Just like on x86, it can be disabled by setting the sysctl variable
+debug.exception-trace, and the messages are rate limited to not create
+a DoS exposure.
 
-> I think the race you describe above is harmless. The first time
-> that sym_eh_handler() will run, it will be with SYM_EH_ABORT, 
-> in it doesn't matter if we lose that, since the device is hosed
-> anyway. At some later time, it will run with SYM_EH_DEVICE_RESET
-> and then SYM_EH_BUS_RESET and then SYM_EH_HOST_RESET, and we won't 
-> miss those, since, by now, sym2_io_error_detected() will have run.
-> 
-> So, by my reading, I'd say that init_completion() in
-> sym2_io_error_detected() has to stay (although perhaps
-> it should be replaced by the INIT_COMPLETION() macro.)
-> Removing it will prevent correct operation on the second 
-> and subsequent errors.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I think the fundamental problem is that completions aren't really
-supposed to be used like this.  Here's one attempt at using completions
-perhaps a little more the way they're supposed to be used, although now
-I've written it, I wonder if we shouldn't just use a waitqueue instead.
-
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index e8a4361..b425b89 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -602,6 +602,7 @@ static int sym_eh_handler(int op, char *opname, struct scsi_cmnd *cmd)
- 	struct sym_hcb *np = SYM_SOFTC_PTR(cmd);
- 	struct sym_ucmd *ucmd = SYM_UCMD_PTR(cmd);
- 	struct Scsi_Host *host = cmd->device->host;
-+	struct pci_dev *pdev = np->s.device;
- 	SYM_QUEHEAD *qp;
- 	int cmd_queued = 0;
- 	int sts = -1;
-@@ -616,9 +617,19 @@ static int sym_eh_handler(int op, char *opname, struct scsi_cmnd *cmd)
- 	 * point in hurrying; take a leisurely wait.
- 	 */
- #define WAIT_FOR_PCI_RECOVERY	35
--	if (pci_channel_offline(np->s.device)) {
--		int finished_reset = wait_for_completion_timeout(
--			&np->s.io_reset_wait, WAIT_FOR_PCI_RECOVERY*HZ);
-+	if (pci_channel_offline(pdev)) {
-+		struct host_data *hostdata = shost_priv(host);
-+		int finished_reset = 0;
-+		init_completion(&eh_done);
-+		spin_lock_irq(host->host_lock);
-+		if (!hostdata->io_reset)
-+			hostdata->io_reset = &eh_done;
-+		if (!pci_channel_offline(pdev))
-+			finished_reset = 1;
-+		spin_unlock_irq(host->host_lock);
-+		if (!finished_reset)
-+			finished_reset = wait_for_completion_timeout(
-+				hostdata->io_reset, WAIT_FOR_PCI_RECOVERY*HZ);
- 		if (!finished_reset)
- 			return SCSI_FAILED;
- 	}
-@@ -1396,7 +1407,6 @@ static struct Scsi_Host * __devinit sym_attach(struct scsi_host_template *tpnt,
- 	np->maxoffs	= dev->chip.offset_max;
- 	np->maxburst	= dev->chip.burst_max;
- 	np->myaddr	= dev->host_id;
--	init_completion(&np->s.io_reset_wait);
- 
- 	/*
- 	 *  Edit its name.
-@@ -1842,15 +1852,12 @@ static void __devexit sym2_remove(struct pci_dev *pdev)
- static pci_ers_result_t sym2_io_error_detected(struct pci_dev *pdev,
-                                          enum pci_channel_state state)
+Index: 2.6.23/arch/powerpc/kernel/traps.c
+===================================================================
+--- 2.6.23.orig/arch/powerpc/kernel/traps.c
++++ 2.6.23/arch/powerpc/kernel/traps.c
+@@ -172,11 +172,21 @@ int die(const char *str, struct pt_regs 
+ void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
  {
--	struct sym_hcb *np = pci_get_drvdata(pdev);
--
- 	/* If slot is permanently frozen, turn everything off */
- 	if (state == pci_channel_io_perm_failure) {
- 		sym2_remove(pdev);
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
+ 	siginfo_t info;
++	char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
++			"at %08lx nip %08lx lr %08lx code %x\n";
++	char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
++			"at %016lx nip %016lx lr %016lx code %x\n";
  
--	init_completion(&np->s.io_reset_wait);
- 	disable_irq(pdev->irq);
- 	pci_disable_device(pdev);
+ 	if (!user_mode(regs)) {
+ 		if (die("Exception in kernel mode", regs, signr))
+ 			return;
+-	}
++	} else if (show_unhandled_signals &&
++		    unhandled_signal(current, signr) &&
++		    printk_ratelimit()) {
++			printk(regs->msr & MSR_SF ? fmt64 : fmt32,
++				current->comm, current->pid, signr,
++				addr, regs->nip, regs->link, code);
++		}
  
-@@ -1912,7 +1919,7 @@ static pci_ers_result_t sym2_io_slot_reset(struct pci_dev *pdev)
- 	          sym_name(np));
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = signr;
+Index: 2.6.23/arch/powerpc/kernel/signal_64.c
+===================================================================
+--- 2.6.23.orig/arch/powerpc/kernel/signal_64.c
++++ 2.6.23/arch/powerpc/kernel/signal_64.c
+@@ -64,6 +64,11 @@ struct rt_sigframe {
+ 	char abigap[288];
+ } __attribute__ ((aligned (16)));
  
- 	if (pci_enable_device(pdev)) {
--		printk(KERN_ERR "%s: Unable to enable afer PCI reset\n",
-+		printk(KERN_ERR "%s: Unable to enable after PCI reset\n",
- 		        sym_name(np));
- 		return PCI_ERS_RESULT_DISCONNECT;
- 	}
-@@ -1953,7 +1960,14 @@ static pci_ers_result_t sym2_io_slot_reset(struct pci_dev *pdev)
- static void sym2_io_resume(struct pci_dev *pdev)
- {
- 	struct sym_hcb *np = pci_get_drvdata(pdev);
--	complete_all(&np->s.io_reset_wait);
-+	struct Scsi_Host *shost = np->s.host;
-+	struct host_data *hostdata = shost_priv(shost);
++static char fmt32[] = KERN_INFO \
++	"%s[%d]: bad frame in %s: %08lx nip %08lx lr %08lx\n";
++static char fmt64[] = KERN_INFO \
++	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
 +
-+	spin_lock_irq(shost->host_lock);
-+	if (hostdata->io_reset)
-+		complete_all(hostdata->io_reset);
-+	hostdata->io_reset = NULL;
-+	spin_unlock_irq(shost->host_lock);
- }
- 
- static void sym2_get_signalling(struct Scsi_Host *shost)
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.h b/drivers/scsi/sym53c8xx_2/sym_glue.h
-index a172cc5..b961f70 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.h
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.h
-@@ -180,9 +180,6 @@ struct sym_shcb {
- 	char		chip_name[8];
- 	struct pci_dev	*device;
- 
--	/* Waiter for clearing of frozen PCI bus */
--	struct completion io_reset_wait;
--
- 	struct Scsi_Host *host;
- 
- 	void __iomem *	ioaddr;		/* MMIO kernel io address	*/
-@@ -223,6 +220,7 @@ struct sym_device {
+ /*
+  * Set up the sigcontext for the signal frame.
   */
- struct host_data {
- 	struct sym_hcb *ncb;
-+	struct completion *io_reset;		/* PCI error handling */
+@@ -315,6 +320,11 @@ badframe:
+ 	printk("badframe in sys_rt_sigreturn, regs=%p uc=%p &uc->uc_mcontext=%p\n",
+ 	       regs, uc, &uc->uc_mcontext);
+ #endif
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(regs->msr & MSR_SF ? fmt64 : fmt32,
++			current->comm, current->pid, "rt_sigreturn",
++			uc, regs->nip, regs->link);
++
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+ }
+@@ -398,6 +408,11 @@ badframe:
+ 	printk("badframe in setup_rt_frame, regs=%p frame=%p newsp=%lx\n",
+ 	       regs, frame, newsp);
+ #endif
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(regs->msr & MSR_SF ? fmt64 : fmt32,
++			current->comm, current->pid, "setup_rt_frame",
++			frame, regs->nip, regs->link);
++
+ 	force_sigsegv(signr, current);
+ 	return 0;
+ }
+Index: 2.6.23/kernel/sysctl.c
+===================================================================
+--- 2.6.23.orig/kernel/sysctl.c
++++ 2.6.23/kernel/sysctl.c
+@@ -1221,7 +1221,7 @@ static ctl_table fs_table[] = {
  };
  
- static inline struct sym_hcb * sym_get_hcb(struct Scsi_Host *host)
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+ static ctl_table debug_table[] = {
+-#ifdef CONFIG_X86
++#if defined(CONFIG_X86) || defined(CONFIG_PPC)
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "exception-trace",
+Index: 2.6.23/arch/powerpc/kernel/signal_32.c
+===================================================================
+--- 2.6.23.orig/arch/powerpc/kernel/signal_32.c
++++ 2.6.23/arch/powerpc/kernel/signal_32.c
+@@ -705,11 +705,13 @@ int handle_rt_signal32(unsigned long sig
+ {
+ 	struct rt_sigframe __user *rt_sf;
+ 	struct mcontext __user *frame;
++	void __user *addr;
+ 	unsigned long newsp = 0;
+ 
+ 	/* Set up Signal Frame */
+ 	/* Put a Real Time Context onto stack */
+ 	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf));
++	addr = rt_sf;
+ 	if (unlikely(rt_sf == NULL))
+ 		goto badframe;
+ 
+@@ -728,6 +730,7 @@ int handle_rt_signal32(unsigned long sig
+ 
+ 	/* Save user registers on the stack */
+ 	frame = &rt_sf->uc.uc_mcontext;
++	addr = frame;
+ 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base) {
+ 		if (save_user_regs(regs, frame, 0))
+ 			goto badframe;
+@@ -742,6 +745,7 @@ int handle_rt_signal32(unsigned long sig
+ 
+ 	/* create a stack frame for the caller of the handler */
+ 	newsp = ((unsigned long)rt_sf) - (__SIGNAL_FRAMESIZE + 16);
++	addr = (void __user *)regs->gpr[1];
+ 	if (put_user(regs->gpr[1], (u32 __user *)newsp))
+ 		goto badframe;
+ 
+@@ -762,6 +766,12 @@ badframe:
+ 	printk("badframe in handle_rt_signal, regs=%p frame=%p newsp=%lx\n",
+ 	       regs, frame, newsp);
+ #endif
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(KERN_INFO "%s[%d]: bad frame in handle_rt_signal32: "
++			"%p nip %08lx lr %08lx\n",
++			current->comm, current->pid,
++			addr, regs->nip, regs->link);
++
+ 	force_sigsegv(sig, current);
+ 	return 0;
+ }
+@@ -886,6 +896,12 @@ long sys_rt_sigreturn(int r3, int r4, in
+ 	return 0;
+ 
+  bad:
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(KERN_INFO "%s[%d]: bad frame in sys_rt_sigreturn: "
++			"%p nip %08lx lr %08lx\n",
++			current->comm, current->pid,
++			rt_sf, regs->nip, regs->link);
++
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+ }
+@@ -967,6 +983,13 @@ int sys_debug_setcontext(struct ucontext
+ 	 * We kill the task with a SIGSEGV in this situation.
+ 	 */
+ 	if (do_setcontext(ctx, regs, 1)) {
++		if (show_unhandled_signals && printk_ratelimit())
++			printk(KERN_INFO "%s[%d]: bad frame in "
++				"sys_debug_setcontext: %p nip %08lx "
++				"lr %08lx\n",
++				current->comm, current->pid,
++				ctx, regs->nip, regs->link);
++
+ 		force_sig(SIGSEGV, current);
+ 		goto out;
+ 	}
+@@ -1048,6 +1071,12 @@ badframe:
+ 	printk("badframe in handle_signal, regs=%p frame=%p newsp=%lx\n",
+ 	       regs, frame, newsp);
+ #endif
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(KERN_INFO "%s[%d]: bad frame in handle_signal32: "
++			"%p nip %08lx lr %08lx\n",
++			current->comm, current->pid,
++			frame, regs->nip, regs->link);
++
+ 	force_sigsegv(sig, current);
+ 	return 0;
+ }
+@@ -1061,12 +1090,14 @@ long sys_sigreturn(int r3, int r4, int r
+ 	struct sigcontext __user *sc;
+ 	struct sigcontext sigctx;
+ 	struct mcontext __user *sr;
++	void __user *addr;
+ 	sigset_t set;
+ 
+ 	/* Always make any pending restarted system calls return -EINTR */
+ 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
+ 
+ 	sc = (struct sigcontext __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
++	addr = sc;
+ 	if (copy_from_user(&sigctx, sc, sizeof(sigctx)))
+ 		goto badframe;
+ 
+@@ -1083,6 +1114,7 @@ long sys_sigreturn(int r3, int r4, int r
+ 	restore_sigmask(&set);
+ 
+ 	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
++	addr = sr;
+ 	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
+ 	    || restore_user_regs(regs, sr, 1))
+ 		goto badframe;
+@@ -1091,6 +1123,12 @@ long sys_sigreturn(int r3, int r4, int r
+ 	return 0;
+ 
+ badframe:
++	if (show_unhandled_signals && printk_ratelimit())
++		printk(KERN_INFO "%s[%d]: bad frame in sys_sigreturn: "
++			"%p nip %08lx lr %08lx\n",
++			current->comm, current->pid,
++			addr, regs->nip, regs->link);
++
+ 	force_sig(SIGSEGV, current);
+ 	return 0;
+ }
+Index: 2.6.23/arch/powerpc/kernel/signal.c
+===================================================================
+--- 2.6.23.orig/arch/powerpc/kernel/signal.c
++++ 2.6.23/arch/powerpc/kernel/signal.c
+@@ -16,6 +16,12 @@
+ 
+ #include "signal.h"
+ 
++/* Log an error when sending an unhandled signal to a process. Controlled
++ * through debug.exception-trace sysctl.
++ */
++
++int show_unhandled_signals = 1;
++
+ /*
+  * Allocate space for the signal frame
+  */
