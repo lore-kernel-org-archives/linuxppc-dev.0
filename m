@@ -1,14 +1,22 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 8C76EDDE49
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 07:00:27 +1000 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 01 Oct 2007 23:00:25 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20071001210025.314240@gmx.net>
+Return-Path: <mb@bu3sch.de>
+Received: from vs166246.vserver.de
+	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5C9EEDDF7C
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 07:01:18 +1000 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Michel =?utf-8?q?D=C3=A4nzer?= <michel@tungstengraphics.com>
+Subject: Re: Powerbook shuts down hard when hot, patch found
+Date: Mon, 1 Oct 2007 22:58:18 +0200
+References: <200709282332.52819.mb@bu3sch.de> <200709301216.55123.mb@bu3sch.de>
+	<1191225602.28457.22.camel@thor.sulgenrain.local>
+In-Reply-To: <1191225602.28457.22.camel@thor.sulgenrain.local>
 MIME-Version: 1.0
-Subject: Problem with OF interrupt parsing code
-To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200710012258.18716.mb@bu3sch.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Monday 01 October 2007 10:00:02 Michel D=C3=A4nzer wrote:
+>=20
+> On Sun, 2007-09-30 at 12:16 +0200, Michael Buesch wrote:
+> >=20
+> > Ah, forgot to say.
+> > It does not crash immediately when the register is written. It takes ab=
+out two seconds
+> > to crash. And when the machine is colder to begin with, it takes slight=
+ly
+> > longer to trigger. That _might_ support your overheating theory.
+> >=20
+> > Though, it does not trigger when it's up and running, no matter how hot=
+ you drive it.
+>=20
+> Maybe the thermal control module prevents it from overheating. Have you
+> tried unloading it or loading it ASAP on bootup to see if that makes any
+> difference either way?
 
-I think I found an issue in the OF interrupt parsing code, although I
-have to admit that my device tree source doesn't really follow the
-specification.
+I'm not sure how that works. Can I unload the framebuffer module? I mean,
+when I unloaded it, how does the console access the display?
+Your suggestion might be less trivial to do than it sounds like. :)
+I currently have compiled the stuff into the kernel image.
 
-First some information about my target setup. I didn't specify an
-interrupt-map and interrupt-map-mask property in the pci node, because
-AFAIK there are three different AmigaOne models with different IRQ
-routing. Secondly the AmigaOne is a desktop system with 4 PCI/AGP slots,
-thus I can't specify device nodes for all possible devices. By looking at
-pci_read_irq_line() in pci_common.c it should be possible for the kernel
-to fall back to the interrupt settings in the PCI config space of every
-device.
-
-Unfortunately I couldn't capture the kernel log, because the serial
-console is not yet working, so here comes a description of what I think
-is going on.
-Well, pci_read_irq_line() starts with PCI device 00:00.0 (PCI host bridge)
-and invokes of_irq_map_pci() in prom_parse.c. It find the predefined
-device node in the device tree. Since of_irq_map_one() can't find an
-interrupt property in the device node, it returns to pci_read_irq_line()
-and setups the interrupt mapping based on the settings in the PCI config
-space. So far so good.
-The problem occurs now, if there is no device node defined for another
-PCI device. In this case, of_irq_map_pci() checks for an interrupt pin,
-searches again for the host bridge node and calls of_irq_map_raw() with
-the device node of the host bridge. The function finds the
-#interrupt-cells, #address-cells, interrupt-controller properties, but
-fails to find the interrupt-map property (because it's missing in the
-device tree). Therefore the function then tries to find a new parent,
-which leads to an endless loop (it always selects the PCI2ISA southbridge
-in the device tree).
-
-Can somebody confirm my explanation? It would help, if the kernel could
-fall back to the PCI settings in this case, too.
-
-Thanks!
-
-regards,
-
-Gerhard
--- 
-GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
-Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
+=2D-=20
+Greetings Michael.
