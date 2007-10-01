@@ -1,25 +1,20 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5EFCDDE2C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 01:05:46 +1000 (EST)
-Message-ID: <47010CC4.7000204@garzik.org>
-Date: Mon, 01 Oct 2007 11:05:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: DLPAR memory add fix
-References: <200710011633.18305.ossthema@de.ibm.com>
-	<470107D9.2040301@garzik.org>
-	<200710011654.14067.ossthema@de.ibm.com>
-In-Reply-To: <200710011654.14067.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0FF89DDE18
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 01:06:50 +1000 (EST)
+Date: Tue, 2 Oct 2007 01:06:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCHv2 4/4] Virtex: Add generic Xilinx Virtex board support
+Message-Id: <20071002010630.e78e4889.sfr@canb.auug.org.au>
+In-Reply-To: <20070930222048.583.82010.stgit@trillian.cg.shawcable.net>
+References: <20070930221613.583.252.stgit@trillian.cg.shawcable.net>
+	<20070930222048.583.82010.stgit@trillian.cg.shawcable.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__2_Oct_2007_01_06_30_+1000_cJ._=K=gVkyS260J"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> Hi,
-> 
-> On Monday 01 October 2007 16:44, Jeff Garzik wrote:
->> Jan-Bernd Themann wrote:
->>> Due to stability issues in high load situations the HW queue handling
->>> has to be changed. The HW queues are now stopped and restarted again instead
->>> of destroying and allocating new HW queues. 
->>>
->>> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
->> May I presume this is for 2.6.23?
->>
->> 	Jeff
-> 
-> no, the patch is build against 2.6.24 upstream (new NAPI interface).
+--Signature=_Tue__2_Oct_2007_01_06_30_+1000_cJ._=K=gVkyS260J
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, thanks.
+On Sun, 30 Sep 2007 16:20:52 -0600 Grant Likely <grant.likely@secretlab.ca>=
+ wrote:
+>
+> +++ b/arch/powerpc/platforms/40x/virtex.c
+> +#include <asm/of_platform.h>
 
-Since we typically have two streams, the current bug-fix stream and the 
-for-next-kernel stream, please indicate to which kernel/git tree your 
-patch applies, in the future.
+/me puts on broken record voice  :-)
+
+linux/of_platform.h, please
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__2_Oct_2007_01_06_30_+1000_cJ._=K=gVkyS260J
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHAQz8TgG2atn1QN8RAvv9AJ9tJGVpIRDzxIRhHNkQeTwHGAmlYwCfRIwt
+0R+wpGcZgYQJmYJI+m6IG/g=
+=9UJ2
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__2_Oct_2007_01_06_30_+1000_cJ._=K=gVkyS260J--
