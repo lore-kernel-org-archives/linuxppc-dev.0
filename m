@@ -1,19 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6AC45DDE2E
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 09:41:49 +1000 (EST)
-Date: Tue, 2 Oct 2007 09:41:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: Implement logging of unhandled signals
-Message-Id: <20071002094130.98cdcff6.sfr@canb.auug.org.au>
-In-Reply-To: <20071001203242.GA14091@lixom.net>
-References: <20071001203242.GA14091@lixom.net>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5F51EDDE30
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 09:59:48 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l91Nxi96001762
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Oct 2007 19:59:44 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l91NxiJ8692896
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Oct 2007 19:59:44 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l91NxiTh014139
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 Oct 2007 19:59:44 -0400
+Subject: Re: [PATCH] PowerPC: Add RGMII support for Sequoia 440EPx
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20071001141209.GA23971@ru.mvista.com>
+References: <20071001141209.GA23971@ru.mvista.com>
+Content-Type: text/plain
+Date: Mon, 01 Oct 2007 18:56:19 -0500
+Message-Id: <1191282979.10089.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__2_Oct_2007_09_41_30_+1000_CYQmXZtzEo7sMQb1"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +34,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__2_Oct_2007_09_41_30_+1000_CYQmXZtzEo7sMQb1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2007-10-01 at 18:12 +0400, Valentine Barshak wrote:
+> This adds RGMII support to Sequoia DTS and sets correct phy-mode
+> for EMACs. According to Sequoia datasheet, both ethernet ports
+> are connected to RGMII interface, while ZMII is used only for MDIO.
 
-Hi Olof,
+I'm going to hold off on this one until the new EMAC driver is in Paul's
+tree.
 
-On Mon, 1 Oct 2007 15:32:42 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> +	char fmt32[] =3D KERN_INFO "%s[%d]: unhandled signal %d " \
-> +			"at %08lx nip %08lx lr %08lx code %x\n";
-> +	char fmt64[] =3D KERN_INFO "%s[%d]: unhandled signal %d " \
-> +			"at %016lx nip %016lx lr %016lx code %x\n";
-
-const char ... ?
-
-> +static char fmt32[] =3D KERN_INFO \
-> +	"%s[%d]: bad frame in %s: %08lx nip %08lx lr %08lx\n";
-> +static char fmt64[] =3D KERN_INFO \
-> +	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
-
-again?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__2_Oct_2007_09_41_30_+1000_CYQmXZtzEo7sMQb1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHAYWvTgG2atn1QN8RAl4aAJ98acnGiLHihYK6ciF3iVNQHip6gwCeNhcd
-3deum3qZYNkOrG6xoXhbYXo=
-=nxmy
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Oct_2007_09_41_30_+1000_CYQmXZtzEo7sMQb1--
+josh
