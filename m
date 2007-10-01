@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 39F87DDE23
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 08:08:08 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AE6FDDDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 08:33:00 +1000 (EST)
+In-Reply-To: <20071001211120.156280@gmx.net>
+References: <20071001210025.314240@gmx.net> <20071001211120.156280@gmx.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d3eb2341d21ed1f9f7e71f097878731f@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Problem with OF interrupt parsing code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <47016B11.3070609@freescale.com>
-References: <20071001210025.314240@gmx.net> <470165F6.7030505@freescale.com>
-	<470168B4.7090005@freescale.com> <1191274981.6310.19.camel@pasglop>
-	<47016B11.3070609@freescale.com>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 08:07:54 +1000
-Message-Id: <1191276474.6310.21.camel@pasglop>
-Mime-Version: 1.0
+Date: Tue, 2 Oct 2007 00:33:12 +0200
+To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 		  	i8259: interrupt-controller@20 {
+> 				device_type = "interrupt-controller";
+> 				compatible = "pnpPNP,000";
+> 				interrupt-controller;
+> 				reg = <00000001 00000020 00000002
+> 				       00000001 000000a0 00000002
+> 				       00000001 000004d0 00000002>;
+> 				reserved-interrupts = <2>;
+> 			};
 
-On Mon, 2007-10-01 at 16:48 -0500, Scott Wood wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Mon, 2007-10-01 at 16:37 -0500, Scott Wood wrote:
-> >> Scott Wood wrote:
-> >> Actually, it doesn't -- it should stop when it sees the 
-> >> interrupt-controller property in the i8259 node, at which point it'll be 
-> >> trying to use the raw PCI IRQ pin number as an i8259 IRQ.  This is 
-> >> Unlikely To Work(tm).
-> > 
-> > It will work in the specific 8259 case I suppose since it gets the
-> > legacy 1:1 mapping... but it sucks :-)
-> 
-> The mapping between INTA-D and i8259 numbers isn't generally 1:1, and it 
-> looked as if it'd try using the former... though the code is 
-> sufficiently complicated that I could easily be missing something.
+This is an interrupt controller (it has an "interrupt-controller"
+property, and it has no interrupt parent (there is no "interrupt-parent"
+property, for interrupt controllers you do not follow the "normal" tree
+parent), so it is the root interrupt controller and there is no loop.
 
-If the whole of_* thing totally fails, pci_read_irq_line should pickup
-the value in the config space PCI_INTERRUPT_LINE. That will work on
-things like Pegasos and possibly on this AmigaOne but it sucks.
+It seems from your description that the Linux code is using the tree
+parent as interrupt parent even for interrupt controller nodes.  This
+is wrong behaviour.
 
-Ben.
+
+Segher
