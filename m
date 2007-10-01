@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 65BF7DDE43
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 07:39:57 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DB767DDF09
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 07:43:13 +1000 (EST)
 Subject: Re: Problem with OF interrupt parsing code
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20071001211120.156280@gmx.net>
-References: <20071001210025.314240@gmx.net>  <20071001211120.156280@gmx.net>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <470168B4.7090005@freescale.com>
+References: <20071001210025.314240@gmx.net> <470165F6.7030505@freescale.com>
+	<470168B4.7090005@freescale.com>
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 07:39:47 +1000
-Message-Id: <1191274787.6310.17.camel@pasglop>
+Date: Tue, 02 Oct 2007 07:43:01 +1000
+Message-Id: <1191274981.6310.19.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -25,37 +26,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2007-10-01 at 23:11 +0200, Gerhard Pircher wrote:
->         pci@80000000 {
->                 device_type = "pci";
->                 compatible = "mai-logic,articia-s";
->                 bus-frequency = <01fca055>;             // 33.3MHz
->                 bus-range = <0 ff>;
->                 ranges = <01000000 0 00000000 fe000000 0
-> 00c00000       // PCI I/O
->                           02000000 0 80000000 80000000 0
-> 7d000000       // PCI memory
->                           02000000 0 fd000000 fd000000 0
-> 01000000>;     // PCI alias memory
->                 8259-interrupt-acknowledge = <fef00000>;
->                 interrupt-parent = <&i8259>;
->                 #interrupt-cells = <1>;
->                 #address-cells = <3>;
->                 #size-cells = <2>;
+On Mon, 2007-10-01 at 16:37 -0500, Scott Wood wrote:
+> Scott Wood wrote:
+> >> The problem occurs now, if there is no device node defined for another
+> >> PCI device. In this case, of_irq_map_pci() checks for an interrupt pin,
+> >> searches again for the host bridge node and calls of_irq_map_raw() with
+> >> the device node of the host bridge. The function finds the
+> >> #interrupt-cells, #address-cells, interrupt-controller properties, but
+> >> fails to find the interrupt-map property (because it's missing in the
+> >> device tree). Therefore the function then tries to find a new parent,
+> >> which leads to an endless loop (it always selects the PCI2ISA southbridge
+> >> in the device tree).
+> > 
+> > That seems likely... there should probably be some loop detection.
 > 
+> Actually, it doesn't -- it should stop when it sees the 
+> interrupt-controller property in the i8259 node, at which point it'll be 
+> trying to use the raw PCI IRQ pin number as an i8259 IRQ.  This is 
+> Unlikely To Work(tm).
 
-Part of your problem is that interrupt-parent property. You shouldn't
-have such a property in a PCI host bridge. It's not technically illegal,
-but it's triggering the "loop" you've been experiencing.
-
-If you want the parsing to fail for PCI devices (to get the fallback to
-config space values), you need to make sure it does fail. 
-
-Another option is to put an empty interrupt-map in there. That will
-guarantee failure.
-
-But that's all very ugly. I don't understand why you don't setup a
-proper map either from your bootloader, zImage wrapper or even prom_init
-or platform code.
+It will work in the specific 8259 case I suppose since it gets the
+legacy 1:1 mapping... but it sucks :-)
 
 Ben.
