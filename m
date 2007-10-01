@@ -1,22 +1,26 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
-	by ozlabs.org (Postfix) with ESMTP id 57C8DDDFE0
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 01:16:20 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2537378nzh
-	for <linuxppc-dev@ozlabs.org>; Mon, 01 Oct 2007 08:16:20 -0700 (PDT)
-Message-ID: <fa686aa40710010816g6bf66498s659c1c3f78b22df1@mail.gmail.com>
-Date: Mon, 1 Oct 2007 09:16:19 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [PATCHv2 3/4] Virtex: add xilinx interrupt controller driver
-In-Reply-To: <20071002010819.6f2736be.sfr@canb.auug.org.au>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E30B7DDE09
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 02:10:28 +1000 (EST)
+Message-ID: <47011BED.8020206@freescale.com>
+Date: Mon, 01 Oct 2007 11:10:21 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070930221613.583.252.stgit@trillian.cg.shawcable.net>
-	<20070930222038.583.20385.stgit@trillian.cg.shawcable.net>
-	<20071002010819.6f2736be.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+References: <20070928190616.GB20213@loki.buserror.net>
+	<20070929003005.59afc2a0@kernel.crashing.org>
+	<08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
+	<20070929104917.1585737e@kernel.crashing.org>
+	<1B684498-FC47-4F01-A72E-DD27B259613A@kernel.crashing.org>
+In-Reply-To: <1B684498-FC47-4F01-A72E-DD27B259613A@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Timur Tabi <timur@freescale.com>,
+	PowerPC dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/1/07, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> On Sun, 30 Sep 2007 16:20:43 -0600 Grant Likely <grant.likely@secretlab.ca> wrote:
-> >
-> > diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-> > new file mode 100644
-> > index 0000000..69f05cd
-> > --- /dev/null
-> > +++ b/arch/powerpc/sysdev/xilinx_intc.c
-> > @@ -0,0 +1,151 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/irq.h>
-> > +#include <asm/io.h>
-> > +#include <asm/processor.h>
-> > +#include <asm/prom.h>
->
-> You probably want linux/of_device.h or linux/of.h instead of asm/prom.h
+Kumar Gala wrote:
+> 
+> On Sep 29, 2007, at 1:49 AM, Vitaly Bordug wrote:
+>> cpms have dpram, qe has muram. these two are the same stuff in fact. 
+>> Or you are asking about have QE stuff utilize such a binding at the 
+>> same pass?
+> 
+> I was asking about both these things.
 
-Done.
+As stated in the commit message, QE can use this; it just needs a 
+compatible entry in the data node.
 
-Thanks for the comments,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Scott
