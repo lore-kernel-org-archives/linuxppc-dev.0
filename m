@@ -1,20 +1,20 @@
 Return-Path: <jacmet@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id B09FADE048
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:58:54 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so3222189nfd
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:58:52 -0700 (PDT)
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.188])
+	by ozlabs.org (Postfix) with ESMTP id 24FF1DDF73
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 02:02:06 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so4686544fkz
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 09:02:05 -0700 (PDT)
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
-References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
-	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
-	<1191304386.6310.92.camel@pasglop>
-	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
+Subject: Re: [PATCH 11/18] Virtex: Port UARTLITE driver to of-platform-bus
+References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
+	<20070928181748.18608.62409.stgit@trillian.cg.shawcable.net>
+	<87641p34dn.fsf@macbook.be.48ers.dk>
+	<fa686aa40710020856x5faf2d82p281bb269286ba4c4@mail.gmail.com>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 02 Oct 2007 17:58:46 +0200
-In-Reply-To: <fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
-	(Grant Likely's message of "Tue\, 2 Oct 2007 08\:26\:42 -0600")
-Message-ID: <871wcd33ux.fsf@macbook.be.48ers.dk>
+Date: Tue, 02 Oct 2007 18:01:57 +0200
+In-Reply-To: <fa686aa40710020856x5faf2d82p281bb269286ba4c4@mail.gmail.com>
+	(Grant Likely's message of "Tue\, 2 Oct 2007 09\:56\:28 -0600")
+Message-ID: <87tzp91p56.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -32,36 +32,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi,
 
- Grant> static int __devinit
- Grant> ulite_of_probe(struct of_device *op, const struct of_device_id *match)
+ Grant> On 10/2/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+ >> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+ Grant> +       pr_debug("uartlite: calling platform_driver_register()\n");
+ Grant> +       if ((ret = platform_driver_register(&ulite_platform_driver)) != 0)
+ >> 
+ >> I prefer to not have assignments in the if ().
 
-This looks like uartlite code to me ;)
+ Grant> Already fixed in v3
 
- Grant> {
- Grant>         struct resource res;
- Grant>         const unsigned int *id;
- Grant>         int irq, rc;
- Grant>         dev_dbg(&op->dev, "%s(%p, %p)\n", __FUNCTION__, op, match);
- Grant>         rc = of_address_to_resource(op->node, 0, &res);
- Grant>         if (rc) {
- Grant>                 dev_err(&op->dev, "invalide address\n");
- Grant>                 return rc;
- Grant>         }
- Grant>         irq = irq_of_parse_and_map(op->node, 0);
- Grant>         id = of_get_property(op->node, "port-number", NULL);
- Grant>         return ulite_assign(&op->dev, id ? *id : -1, res.start, irq);
- Grant> }
+Ok, thanks.
 
- Grant> What advantages do you see with the constructor approach?
+ >> Are all the pr_debug necessary? It looks quite messy.
 
-One advantage is that it keeps the of stuff out of the drivers. There
-already is one bus for platform stuff in the kernel, so from a device
-driver writer POV the of stuff is just extra fluff. Imagine the ARM or
-MIPS people coming up with 2 other incompatible ways of doing this and
-you'll see the drivers bloat.
+ Grant> Maybe messy, but *very* useful.  Looks prettier in the v3 version with
+ Grant> the assignment and if() on separate lines.
 
-E.G. I use the smsc911x.c network driver on powerpc which is written
-by an ARM guy. Why should he need to care about of stuff in his driver?
+Ok, I'll take a look (sorry, I'm behind on mails..)
 
 -- 
 Bye, Peter Korsgaard
