@@ -1,24 +1,15 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound9-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 07D6CDDFC4
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 06:50:18 +1000 (EST)
-Message-ID: <4702AF03.6080206@am.sony.com>
-Date: Tue, 02 Oct 2007 13:50:11 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8DA21DDEA3
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:20:18 +1000 (EST)
+Date: Tue, 2 Oct 2007 16:24:21 -0500
+From: Olof Johansson <olof@lixom.net>
+To: jgarzik@pobox.com
+Subject: [PATCH] [0/11] pasemi_mac: Patches for 2.6.24
+Message-ID: <20071002212421.GA2282@lixom.net>
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [RFC] PPC64 Exporting memory information through /proc/iomem
-References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>	
-	<4702A5FE.5000308@am.sony.com>
-	<1191357435.6106.31.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1191357435.6106.31.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-	linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Badari Pulavarty wrote:
-> On Tue, 2007-10-02 at 13:11 -0700, Geoff Levand wrote:
->> Hi Badari,
->> 
->> Badari Pulavarty wrote:
->> > Hi Paul & Ben,
->> > 
->> > I am trying to get hotplug memory remove working on ppc64.
->> > In order to verify a given memory region, if its valid or not -
->> > current hotplug-memory patches used /proc/iomem. On IA64 and
->> > x86-64 /proc/iomem shows all memory regions. 
->> > 
->> > I am wondering, if its acceptable to do the same on ppc64 also ?
->> > Otherwise, we need to add arch-specific hooks in hotplug-remove
->> > code to be able to do this.
->> 
->> 
->> It seems the only reasonable place is in /proc/iomem, as the the 
->> generic memory hotplug routines put it in there, and if you have
->> a ppc64 system that uses add_memory() you will have mem info in
->> several places, none of which are complete.  
-> 
-> Well, this information exists in various places (lmb structures
-> in the kernel), /proc/device-tree for various users. I want to
-> find out what ppc experts think about making this available through
-> /proc/iomem also since generic memory hotplug routines expect 
-> it there.
+Hi,
+
+This series of patches go on top of the previous fixes that were sent
+out and picked up.
+
+It's a series of mostly feature-related changes, but also a couple
+of bugfixes:
+
+[1/11] pasemi_mac: basic error checking
+[2/11] pasemi_mac: fix bug in receive buffer dma mapping
+[3/11] pasemi_mac: rework ring management
+[4/11] pasemi_mac: implement sg support
+[5/11] pasemi_mac: workaround for erratum 5971
+[6/11] pasemi_mac: add local skb alignment
+[7/11] pasemi_mac: further performance tweaks
+[8/11] pasemi_mac: update todo list
+[9/11] pasemi_mac: clear out old errors on interface open
+[10/11] pasemi_mac: use buffer index pointer in clean_rx()
+[11/11] pasemi_mac: enable iommu support
 
 
-Well, I can't say I am one of those experts you seek, but for PS3 we
-already have the hotplug mem in /proc/iomem (I set it up to use
-add_memory()), so it seems reasonable to have the bootmem there too.
+Thanks,
 
--Geoff
+-Olof
