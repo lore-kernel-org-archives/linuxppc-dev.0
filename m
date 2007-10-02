@@ -1,17 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 34B14DDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:31:16 +1000 (EST)
-Date: Tue, 2 Oct 2007 00:35:12 -0500
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH v2] powerpc: Implement logging of unhandled signals
-Message-ID: <20071002053512.GA21414@lixom.net>
-References: <20071001203242.GA14091@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071001203242.GA14091@lixom.net>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 6/7] Add dcr_map_reg() helper
+From: Michael Ellerman <michael@ellerman.id.au>
+To: benh@kernel.crashing.org
+In-Reply-To: <1191302382.6310.80.camel@pasglop>
+References: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
+	<60649f36e785af905b8cb1fd12847d7630e7371a.1190009070.git.michael@ellerman.id.au>
+	<1191302382.6310.80.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-UZs7B9FeGqlgpGuLMEY2"
+Date: Tue, 02 Oct 2007 15:51:40 +1000
+Message-Id: <1191304300.6593.2.camel@concordia>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,234 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement show_unhandled_signals sysctl + support to print when a process
-is killed due to unhandled signals just as i386 and x86_64 does.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+--=-UZs7B9FeGqlgpGuLMEY2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2007-10-02 at 15:19 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-09-17 at 16:05 +1000, Michael Ellerman wrote:
+> > Add a helper routine to map dcr's based on the "dcr-reg" property of
+> > a device node.
+> >=20
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>=20
+> Wouldn't it be more consistent to call it of_map_dcr ? Or maybe find an
+> even better name, but dcr_map_reg really sucks :-)
 
----
+That would give us dcr_map(), dcr_unmap() and of_map_dcr() - which
+doesn't strike me as more consistent.
 
-Fixed the const char definitions, plus the two warnings that the change
-brought (printing a ptr as %lx without cast).
+I don't particularly like dcr_map_reg(), but I think it's at least
+obvious that it's a variant of dcr_map() and that it has something to do
+with a "reg" .. maybe even a "dcr-reg" :)
 
-Index: 2.6.23/arch/powerpc/kernel/traps.c
-===================================================================
---- 2.6.23.orig/arch/powerpc/kernel/traps.c
-+++ 2.6.23/arch/powerpc/kernel/traps.c
-@@ -172,11 +172,21 @@ int die(const char *str, struct pt_regs 
- void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
- {
- 	siginfo_t info;
-+	const char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
-+			"at %08lx nip %08lx lr %08lx code %x\n";
-+	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
-+			"at %016lx nip %016lx lr %016lx code %x\n";
- 
- 	if (!user_mode(regs)) {
- 		if (die("Exception in kernel mode", regs, signr))
- 			return;
--	}
-+	} else if (show_unhandled_signals &&
-+		    unhandled_signal(current, signr) &&
-+		    printk_ratelimit()) {
-+			printk(regs->msr & MSR_SF ? fmt64 : fmt32,
-+				current->comm, current->pid, signr,
-+				addr, regs->nip, regs->link, code);
-+		}
- 
- 	memset(&info, 0, sizeof(info));
- 	info.si_signo = signr;
-Index: 2.6.23/arch/powerpc/kernel/signal_64.c
-===================================================================
---- 2.6.23.orig/arch/powerpc/kernel/signal_64.c
-+++ 2.6.23/arch/powerpc/kernel/signal_64.c
-@@ -64,6 +64,11 @@ struct rt_sigframe {
- 	char abigap[288];
- } __attribute__ ((aligned (16)));
- 
-+static const char fmt32[] = KERN_INFO \
-+	"%s[%d]: bad frame in %s: %08lx nip %08lx lr %08lx\n";
-+static const char fmt64[] = KERN_INFO \
-+	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
-+
- /*
-  * Set up the sigcontext for the signal frame.
-  */
-@@ -315,6 +320,11 @@ badframe:
- 	printk("badframe in sys_rt_sigreturn, regs=%p uc=%p &uc->uc_mcontext=%p\n",
- 	       regs, uc, &uc->uc_mcontext);
- #endif
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(regs->msr & MSR_SF ? fmt64 : fmt32,
-+			current->comm, current->pid, "rt_sigreturn",
-+			(long)uc, regs->nip, regs->link);
-+
- 	force_sig(SIGSEGV, current);
- 	return 0;
- }
-@@ -398,6 +408,11 @@ badframe:
- 	printk("badframe in setup_rt_frame, regs=%p frame=%p newsp=%lx\n",
- 	       regs, frame, newsp);
- #endif
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(regs->msr & MSR_SF ? fmt64 : fmt32,
-+			current->comm, current->pid, "setup_rt_frame",
-+			(long)frame, regs->nip, regs->link);
-+
- 	force_sigsegv(signr, current);
- 	return 0;
- }
-Index: 2.6.23/kernel/sysctl.c
-===================================================================
---- 2.6.23.orig/kernel/sysctl.c
-+++ 2.6.23/kernel/sysctl.c
-@@ -1221,7 +1221,7 @@ static ctl_table fs_table[] = {
- };
- 
- static ctl_table debug_table[] = {
--#ifdef CONFIG_X86
-+#if defined(CONFIG_X86) || defined(CONFIG_PPC)
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "exception-trace",
-Index: 2.6.23/arch/powerpc/kernel/signal_32.c
-===================================================================
---- 2.6.23.orig/arch/powerpc/kernel/signal_32.c
-+++ 2.6.23/arch/powerpc/kernel/signal_32.c
-@@ -705,11 +705,13 @@ int handle_rt_signal32(unsigned long sig
- {
- 	struct rt_sigframe __user *rt_sf;
- 	struct mcontext __user *frame;
-+	void __user *addr;
- 	unsigned long newsp = 0;
- 
- 	/* Set up Signal Frame */
- 	/* Put a Real Time Context onto stack */
- 	rt_sf = get_sigframe(ka, regs, sizeof(*rt_sf));
-+	addr = rt_sf;
- 	if (unlikely(rt_sf == NULL))
- 		goto badframe;
- 
-@@ -728,6 +730,7 @@ int handle_rt_signal32(unsigned long sig
- 
- 	/* Save user registers on the stack */
- 	frame = &rt_sf->uc.uc_mcontext;
-+	addr = frame;
- 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base) {
- 		if (save_user_regs(regs, frame, 0))
- 			goto badframe;
-@@ -742,6 +745,7 @@ int handle_rt_signal32(unsigned long sig
- 
- 	/* create a stack frame for the caller of the handler */
- 	newsp = ((unsigned long)rt_sf) - (__SIGNAL_FRAMESIZE + 16);
-+	addr = (void __user *)regs->gpr[1];
- 	if (put_user(regs->gpr[1], (u32 __user *)newsp))
- 		goto badframe;
- 
-@@ -762,6 +766,12 @@ badframe:
- 	printk("badframe in handle_rt_signal, regs=%p frame=%p newsp=%lx\n",
- 	       regs, frame, newsp);
- #endif
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(KERN_INFO "%s[%d]: bad frame in handle_rt_signal32: "
-+			"%p nip %08lx lr %08lx\n",
-+			current->comm, current->pid,
-+			addr, regs->nip, regs->link);
-+
- 	force_sigsegv(sig, current);
- 	return 0;
- }
-@@ -886,6 +896,12 @@ long sys_rt_sigreturn(int r3, int r4, in
- 	return 0;
- 
-  bad:
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(KERN_INFO "%s[%d]: bad frame in sys_rt_sigreturn: "
-+			"%p nip %08lx lr %08lx\n",
-+			current->comm, current->pid,
-+			rt_sf, regs->nip, regs->link);
-+
- 	force_sig(SIGSEGV, current);
- 	return 0;
- }
-@@ -967,6 +983,13 @@ int sys_debug_setcontext(struct ucontext
- 	 * We kill the task with a SIGSEGV in this situation.
- 	 */
- 	if (do_setcontext(ctx, regs, 1)) {
-+		if (show_unhandled_signals && printk_ratelimit())
-+			printk(KERN_INFO "%s[%d]: bad frame in "
-+				"sys_debug_setcontext: %p nip %08lx "
-+				"lr %08lx\n",
-+				current->comm, current->pid,
-+				ctx, regs->nip, regs->link);
-+
- 		force_sig(SIGSEGV, current);
- 		goto out;
- 	}
-@@ -1048,6 +1071,12 @@ badframe:
- 	printk("badframe in handle_signal, regs=%p frame=%p newsp=%lx\n",
- 	       regs, frame, newsp);
- #endif
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(KERN_INFO "%s[%d]: bad frame in handle_signal32: "
-+			"%p nip %08lx lr %08lx\n",
-+			current->comm, current->pid,
-+			frame, regs->nip, regs->link);
-+
- 	force_sigsegv(sig, current);
- 	return 0;
- }
-@@ -1061,12 +1090,14 @@ long sys_sigreturn(int r3, int r4, int r
- 	struct sigcontext __user *sc;
- 	struct sigcontext sigctx;
- 	struct mcontext __user *sr;
-+	void __user *addr;
- 	sigset_t set;
- 
- 	/* Always make any pending restarted system calls return -EINTR */
- 	current_thread_info()->restart_block.fn = do_no_restart_syscall;
- 
- 	sc = (struct sigcontext __user *)(regs->gpr[1] + __SIGNAL_FRAMESIZE);
-+	addr = sc;
- 	if (copy_from_user(&sigctx, sc, sizeof(sigctx)))
- 		goto badframe;
- 
-@@ -1083,6 +1114,7 @@ long sys_sigreturn(int r3, int r4, int r
- 	restore_sigmask(&set);
- 
- 	sr = (struct mcontext __user *)from_user_ptr(sigctx.regs);
-+	addr = sr;
- 	if (!access_ok(VERIFY_READ, sr, sizeof(*sr))
- 	    || restore_user_regs(regs, sr, 1))
- 		goto badframe;
-@@ -1091,6 +1123,12 @@ long sys_sigreturn(int r3, int r4, int r
- 	return 0;
- 
- badframe:
-+	if (show_unhandled_signals && printk_ratelimit())
-+		printk(KERN_INFO "%s[%d]: bad frame in sys_sigreturn: "
-+			"%p nip %08lx lr %08lx\n",
-+			current->comm, current->pid,
-+			addr, regs->nip, regs->link);
-+
- 	force_sig(SIGSEGV, current);
- 	return 0;
- }
-Index: 2.6.23/arch/powerpc/kernel/signal.c
-===================================================================
---- 2.6.23.orig/arch/powerpc/kernel/signal.c
-+++ 2.6.23/arch/powerpc/kernel/signal.c
-@@ -16,6 +16,12 @@
- 
- #include "signal.h"
- 
-+/* Log an error when sending an unhandled signal to a process. Controlled
-+ * through debug.exception-trace sysctl.
-+ */
-+
-+int show_unhandled_signals = 1;
-+
- /*
-  * Allocate space for the signal frame
-  */
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-UZs7B9FeGqlgpGuLMEY2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHAdxsdSjSd0sB4dIRAkenAKDJ9v8r+vWplavX3oSbON+WQw3eCQCgk3fF
+oWirIVNHWwJvyLZl0Vd6qt8=
+=f/Et
+-----END PGP SIGNATURE-----
+
+--=-UZs7B9FeGqlgpGuLMEY2--
