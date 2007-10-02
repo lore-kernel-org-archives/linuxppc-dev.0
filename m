@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 63A23DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 13:17:00 +1000 (EST)
-Subject: Re: [PATCH] powerpc: fix pci domain detection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200709261602.06214.arnd@arndb.de>
-References: <200709261602.06214.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 13:16:49 +1000
-Message-Id: <1191295009.6310.55.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	paulus@samba.org, linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18177.47055.317473.681156@cargo.ozlabs.ibm.com>
+Date: Tue, 2 Oct 2007 13:15:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-On Wed, 2007-09-26 at 16:02 +0200, Arnd Bergmann wrote:
-> The /proc/bus/pci/* files list PCI domain numbers only for
-> devices that claim to be on a multi-domain system. The check
-> for this is broken on powerpc, because the buid value is
-> truncated to 32 bits.
-> 
-> There is at least one machine (IBM QS21) that only uses
-> the high-order bits of the buid, so the return value
-> of pci_proc_domain() ends up being always zero, which
-> makes /proc/bus/pci useless.
-> 
-> Change the logic to always return '1' for a nonzero
-> buid value.
-> 
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Please do
 
-Good catch !
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+to get a bug-fix from Anton Blanchard for 2.6.23.
 
-> 
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 291ffbc..9f63bdc 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -588,7 +588,7 @@ int pci_proc_domain(struct pci_bus *bus)
->  		return 0;
->  	else {
->  		struct pci_controller *hose = pci_bus_to_host(bus);
-> -		return hose->buid;
-> +		return hose->buid != 0;
->  	}
->  }
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Thanks,
+Paul.
+
+ arch/powerpc/platforms/pseries/xics.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+commit e48395f1753cab0fde6c03f1db833cece9ef2ba0
+Author: Anton Blanchard <anton@samba.org>
+Date:   Mon Oct 1 07:45:55 2007 +1000
+
+    [POWERPC] Fix xics set_affinity code
+    
+    On a POWER6 machine running 2.6.23-rc8 I sometimes see the following error:
+    
+    xics_set_affinity: No online cpus in the mask 00000000,00000000,00000000,00000001 for irq 20
+    
+    In a desperate attempt to get a changelog entry in 2.6.23, I took a look
+    into it.
+    
+    It turns out we are passing a real and not a virtual irq into
+    get_irq_server.  This works for the case where hwirq < NR_IRQS and we
+    set virq = hwirq.  In my case however hwirq = 590082 and we try and
+    access irq_desc[590082], slightly past the end at 512 entries.
+    
+    Lucky we ship lots of memory with our machines.
+    
+    Signed-off-by: Anton Blanchard <anton@samba.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
