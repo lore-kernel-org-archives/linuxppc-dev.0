@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 06043DDE30
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:21:25 +1000 (EST)
-Date: Tue, 02 Oct 2007 17:21:21 +0900 (JST)
-Message-Id: <20071002.172121.-1625870824.kouish@swc.toshiba.co.jp>
-Subject: [PATCH 2/5] Celleb: Support for Power/Reset buttons
+	by ozlabs.org (Postfix) with ESMTP id A4857DDEF0
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:23:52 +1000 (EST)
+Date: Tue, 02 Oct 2007 17:23:46 +0900 (JST)
+Message-Id: <20071002.172346.-345486168.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 3/5] Celleb: New HTAB Guest OS Interface on Beat
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,142 +21,271 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a patch to support Power/Reset buttons on Beat on Celleb.
-
-On Beat, we have an event from Beat if Power button or Reset button
-is pressed. This patch catches the event and convert it to a signal
-to INIT process by calling ctrl_alt_del() function.
-
-/sbin/inittab have no entry to turn the machine power off so we have
-to detect if power button is pressed or not internally in our driver.
-This idea is taken from PS3's event handling subsystem.
+This is a patch kit to work with new Guest OS Interface
+to tweak HTAB on Beat. It detects old and new Guest OS Interfaces
+automatically.
 
 Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
 
-This patch is taken after "[PATCH 1/5] Move pause() and kexec_cpu_down()
-to beat.c" applied, so some lines are taken in from that patch.
-No functional dependency is incorporated.
-
-
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
 ===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
-@@ -22,16 +22,24 @@
- #include <linux/init.h>
- #include <linux/err.h>
- #include <linux/rtc.h>
-+#include <linux/interrupt.h>
-+#include <linux/irqreturn.h>
-+#include <linux/reboot.h>
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/setup.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+@@ -119,7 +119,7 @@ static int __init celleb_probe(void)
+ 		return 0;
  
- #include <asm/hvconsole.h>
- #include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
- 
- #include "beat_wrapper.h"
- #include "beat.h"
-+#include "interrupt.h"
-+
-+static int beat_pm_poweroff_flag;
- 
- void beat_restart(char *cmd)
- {
--	beat_shutdown_logical_partition(1);
-+	beat_shutdown_logical_partition(!beat_pm_poweroff_flag);
+ 	powerpc_firmware_features |= FW_FEATURE_CELLEB_POSSIBLE;
+-	hpte_init_beat();
++	hpte_init_beat_v3();
+ 	return 1;
  }
  
- void beat_power_off(void)
-@@ -170,6 +178,90 @@ void beat_kexec_cpu_down(int crash, int 
- }
+Index: linux-powerpc-git/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-powerpc-git.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-powerpc-git/include/asm-powerpc/mmu-hash64.h
+@@ -256,6 +256,7 @@ extern void hpte_init_native(void);
+ extern void hpte_init_lpar(void);
+ extern void hpte_init_iSeries(void);
+ extern void hpte_init_beat(void);
++extern void hpte_init_beat_v3(void);
+ 
+ extern void stabs_alloc(void);
+ extern void slb_initialize(void);
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_syscall.h
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat_syscall.h
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_syscall.h
+@@ -157,4 +157,8 @@
+ #define HV_rtc_write __BEAT_ADD_VENDOR_ID(0x191, 1)
+ #define HV_eeprom_read __BEAT_ADD_VENDOR_ID(0x192, 1)
+ #define HV_eeprom_write __BEAT_ADD_VENDOR_ID(0x193, 1)
++#define HV_insert_htab_entry3 __BEAT_ADD_VENDOR_ID(0x104, 1)
++#define HV_invalidate_htab_entry3 __BEAT_ADD_VENDOR_ID(0x105, 1)
++#define HV_update_htab_permission3 __BEAT_ADD_VENDOR_ID(0x106, 1)
++#define HV_clear_htab3 __BEAT_ADD_VENDOR_ID(0x107, 1)
  #endif
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat_wrapper.h
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
+@@ -98,6 +98,37 @@ static inline s64 beat_write_htab_entry(
+ 	return ret;
+ }
  
-+static irqreturn_t beat_power_event(int virq, void *arg)
++static inline s64 beat_insert_htab_entry3(u64 htab_id, u64 group,
++	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 value_v, u64 *slot)
 +{
-+	printk(KERN_DEBUG "Beat: power button pressed\n");
-+	beat_pm_poweroff_flag = 1;
-+	ctrl_alt_del();
-+	return IRQ_HANDLED;
++	u64 dummy[1];
++	s64 ret;
++
++	ret = beat_hcall1(HV_insert_htab_entry3, dummy, htab_id, group,
++		hpte_v, hpte_r, mask_v, value_v);
++	*slot = dummy[0];
++	return ret;
 +}
 +
-+static irqreturn_t beat_reset_event(int virq, void *arg)
++static inline s64 beat_invalidate_htab_entry3(u64 htab_id, u64 group,
++	u64 va, u64 pss)
 +{
-+	printk(KERN_DEBUG "Beat: reset button pressed\n");
-+	beat_pm_poweroff_flag = 0;
-+	ctrl_alt_del();
-+	return IRQ_HANDLED;
++	return beat_hcall_norets(HV_invalidate_htab_entry3,
++		htab_id, group, va, pss);
 +}
 +
-+static struct beat_event_list {
-+	const char *typecode;
-+	irq_handler_t handler;
-+	unsigned int virq;
-+} beat_event_list[] = {
-+	{ "power", beat_power_event, 0 },
-+	{ "reset", beat_reset_event, 0 },
-+};
-+
-+static int __init beat_register_event(void)
++static inline s64 beat_update_htab_permission3(u64 htab_id, u64 group,
++	u64 va, u64 pss, u64 ptel_mask, u64 ptel_value)
 +{
-+	u64 path[4], data[2];
-+	int rc, i;
-+	unsigned int virq;
++	return beat_hcall_norets(HV_update_htab_permission3,
++		htab_id, group, va, pss, ptel_mask, ptel_value);
++}
 +
-+	for (i = 0; i < ARRAY_SIZE(beat_event_list); i++) {
-+		struct beat_event_list *ev = &beat_event_list[i];
++static inline s64 beat_clear_htab3(u64 htab_id)
++{
++	return beat_hcall_norets(HV_clear_htab3, htab_id);
++}
 +
-+		if (beat_construct_event_receive_port(data) != 0) {
-+			printk(KERN_ERR "Beat: "
-+			       "cannot construct event receive port for %s\n",
-+			       ev->typecode);
-+			return -EINVAL;
-+		}
+ static inline void beat_shutdown_logical_partition(u64 code)
+ {
+ 	(void)beat_hcall_norets(HV_shutdown_logical_partition, code);
+@@ -217,4 +248,41 @@ static inline s64 beat_put_iopte(u64 ioa
+ 		ioid, flags);
+ }
+ 
++static inline s64 beat_construct_event_receive_port(u64 *port)
++{
++	u64 dummy[1];
++	s64 ret;
 +
-+		virq = irq_create_mapping(NULL, data[0]);
-+		if (virq == NO_IRQ) {
-+			printk(KERN_ERR "Beat: failed to get virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return -EIO;
-+		}
-+		ev->virq = virq;
++	ret = beat_hcall1(HV_construct_event_receive_port, dummy);
++	*port = dummy[0];
++	return ret;
++}
 +
-+		rc = request_irq(virq, ev->handler, IRQF_DISABLED,
-+				      ev->typecode, NULL);
-+		if (rc != 0) {
-+			printk(KERN_ERR "Beat: failed to request virtual IRQ"
-+			       " for event receive port for %s\n",
-+			       ev->typecode);
-+			beat_destruct_event_receive_port(data[0]);
-+			return rc;
-+		}
++static inline s64 beat_destruct_event_receive_port(u64 port)
++{
++	s64 ret;
 +
-+		path[0] = 0x1000000065780000ul;	/* 1,ex */
-+		path[1] = 0x627574746f6e0000ul;	/* button */
-+		path[2] = 0;
-+		strncpy((char *)&path[2], ev->typecode, 8);
-+		path[3] = 0;
-+		data[1] = 0;
++	ret = beat_hcall_norets(HV_destruct_event_receive_port, port);
++	return ret;
++}
 +
-+		beat_create_repository_node(path, data);
++static inline s64 beat_create_repository_node(u64 path[4], u64 data[2])
++{
++	s64 ret;
++
++	ret = beat_hcall_norets(HV_create_repository_node2,
++		path[0], path[1], path[2], path[3], data[0], data[1]);
++	return ret;
++}
++
++static inline s64 beat_get_repository_node_value(u64 lpid, u64 path[4],
++	u64 data[2])
++{
++	s64 ret;
++
++	ret = beat_hcall2(HV_get_repository_node_value2, data,
++		lpid, path[0], path[1], path[2], path[3]);
++	return ret;
++}
++
+ #endif
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/htab.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
+@@ -306,3 +306,133 @@ void __init hpte_init_beat(void)
+ 	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
+ 	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
+ }
++
++static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
++				  unsigned long va, unsigned long pa,
++				  unsigned long rflags, unsigned long vflags,
++				  int psize)
++{
++	unsigned long lpar_rc;
++	unsigned long slot;
++	unsigned long hpte_v, hpte_r;
++
++	/* same as iseries */
++	if (vflags & HPTE_V_SECONDARY)
++		return -1;
++
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
++			"rflags=%lx, vflags=%lx, psize=%d)\n",
++		hpte_group, va, pa, rflags, vflags, psize);
++
++	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
++	hpte_r = hpte_encode_r(pa, psize) | rflags;
++
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
++
++	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
++		hpte_r &= ~_PAGE_COHERENT;
++
++	/* insert into not-volted entry */
++	lpar_rc = beat_insert_htab_entry3(0, hpte_group, hpte_v, hpte_r,
++		HPTE_V_BOLTED, 0, &slot);
++	/*
++	 * Since we try and ioremap PHBs we don't own, the pte insert
++	 * will fail. However we must catch the failure in hash_page
++	 * or we will loop forever, so return -2 in this case.
++	 */
++	if (unlikely(lpar_rc != 0)) {
++		if (!(vflags & HPTE_V_BOLTED))
++			DBG_LOW(" lpar err %lx\n", lpar_rc);
++		return -2;
 +	}
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW(" -> slot: %lx\n", slot);
++
++	/* We have to pass down the secondary bucket bit here as well */
++	return (slot ^ hpte_group) & 15;
++}
++
++/*
++ * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
++ * the low 3 bits of flags happen to line up.  So no transform is needed.
++ * We can probably optimize here and assume the high bits of newpp are
++ * already zero.  For now I am paranoid.
++ */
++static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
++				    unsigned long newpp,
++				    unsigned long va,
++				    int psize, int local)
++{
++	unsigned long lpar_rc;
++	unsigned long want_v;
++	unsigned long pss;
++
++	want_v = hpte_encode_v(va, psize);
++	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
++
++	DBG_LOW("    update: "
++		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
++		want_v & HPTE_V_AVPN, slot, psize, newpp);
++
++	lpar_rc = beat_update_htab_permission3(0, slot, want_v, pss, 7, newpp);
++
++	if (lpar_rc == 0xfffffff7) {
++		DBG_LOW("not found !\n");
++		return -1;
++	}
++
++	DBG_LOW("ok\n");
++
++	BUG_ON(lpar_rc != 0);
++
 +	return 0;
 +}
 +
-+static int __init beat_event_init(void)
++static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long va,
++					 int psize, int local)
 +{
-+	if (!firmware_has_feature(FW_FEATURE_BEAT))
-+		return -EINVAL;
++	unsigned long want_v;
++	unsigned long lpar_rc;
++	unsigned long pss;
 +
-+	beat_pm_poweroff_flag = 0;
-+	return beat_register_event();
++	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
++		slot, va, psize, local);
++	want_v = hpte_encode_v(va, psize);
++	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
++
++	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
++
++	/* E_busy can be valid output: page may be already replaced */
++	BUG_ON(lpar_rc != 0 && lpar_rc != 0xfffffff7);
 +}
 +
-+device_initcall(beat_event_init);
++static int64_t _beat_lpar_hptab_clear_v3(void)
++{
++	return beat_clear_htab3(0);
++}
 +
- EXPORT_SYMBOL(beat_get_term_char);
- EXPORT_SYMBOL(beat_put_term_char);
- EXPORT_SYMBOL(beat_halt_code);
++static void beat_lpar_hptab_clear_v3(void)
++{
++	_beat_lpar_hptab_clear_v3();
++}
++
++void __init hpte_init_beat_v3(void)
++{
++	if (_beat_lpar_hptab_clear_v3() == 0) {
++		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate_v3;
++		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp_v3;
++		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
++		ppc_md.hpte_insert	= beat_lpar_hpte_insert_v3;
++		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
++		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear_v3;
++	} else {
++		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
++		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
++		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
++		ppc_md.hpte_insert	= beat_lpar_hpte_insert;
++		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
++		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
++	}
++}
