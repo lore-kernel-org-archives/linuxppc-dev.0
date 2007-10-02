@@ -1,20 +1,23 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 0EC32DDF3A
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 21:42:13 +1000 (EST)
-Date: Tue, 2 Oct 2007 13:42:05 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: mem_init_done (was: Re: [PATCH] [POWERPC] Limit range of __init_ref_ok
-	somewhat)
-In-Reply-To: <20071002133753.662397db.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.62.0710021334360.9607@pademelon.sonytel.be>
-References: <20071002133753.662397db.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1901354232-1191325325=:9607"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D43FDDF18
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 22:02:18 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l92C17SX023047
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 16:01:07 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l92C17EO023044
+	for linuxppc-dev@ozlabs.org; Tue, 2 Oct 2007 16:01:07 +0400
+Date: Tue, 2 Oct 2007 16:01:07 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix typo in new EMAC driver.
+Message-ID: <20071002120107.GA21847@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1191283028.10089.15.camel@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,54 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Fix an obvious typo in emac_xmit_finish.
 
----584337861-1901354232-1191325325=:9607
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ drivers/net/ibm_newemac/core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-On Tue, 2 Oct 2007, Stephen Rothwell wrote:
-> +void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
-> +{
-> +	void *p;
-> +
-> +	if (mem_init_done)
-> +		p = kzalloc(size, mask);
-> +	else {
-> +		p = alloc_bootmem(size);
-> +		if (p)
-> +			memset(p, 0, size);
-> +	}
-> +	return p;
-> +}
-
-BTW, is this `mem_init_done' flag the recommended(TM) way to handle this?
-Or is it just something that always stayed under the radar of the reviewers, as
-only PPC has it (and Atari)?
-
-I remember we had something similar globally when __init was introduced,
-which was used by the frame buffer code to determine whether to draw the
-penguin logo (which is __initdata) or not. This code had to be ripped out (and
-was replaced by the FBINFO_MODULE logic), because people didn't like
-mem_init_done flags...
-
-With kind regards,
+diff -ruNp linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
+--- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2007-10-01 17:23:35.000000000 +0400
++++ linux-2.6/drivers/net/ibm_newemac/core.c	2007-10-01 17:44:57.000000000 +0400
+@@ -1232,9 +1232,9 @@ static inline int emac_xmit_finish(struc
+ 	 * instead
+ 	 */
+ 	if (emac_has_feature(dev, EMAC_FTR_EMAC4))
+-		out_be32(&p->tmr0, EMAC_TMR0_XMIT);
+-	else
+ 		out_be32(&p->tmr0, EMAC4_TMR0_XMIT);
++	else
++		out_be32(&p->tmr0, EMAC_TMR0_XMIT);
  
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1901354232-1191325325=:9607--
+ 	if (unlikely(++dev->tx_cnt == NUM_TX_BUFF)) {
+ 		netif_stop_queue(ndev);
