@@ -1,24 +1,28 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
-	by ozlabs.org (Postfix) with ESMTP id 7EED4DDF2A
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 02:23:23 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2914675nzh
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 09:23:21 -0700 (PDT)
-Message-ID: <fa686aa40710020923n7a92219ds7a5c920990bcd25e@mail.gmail.com>
-Date: Tue, 2 Oct 2007 10:23:20 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
-In-Reply-To: <47026D5C.4050308@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F024ADDF69
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 02:27:28 +1000 (EST)
+Message-ID: <470268F1.9000504@freescale.com>
+Date: Tue, 02 Oct 2007 10:51:13 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
-	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
-	<1191304386.6310.92.camel@pasglop>
-	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
-	<871wcd33ux.fsf@macbook.be.48ers.dk> <47026D5C.4050308@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
+References: <20070928190616.GB20213@loki.buserror.net>
+	<20070929003005.59afc2a0@kernel.crashing.org>
+	<08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
+	<20070929104917.1585737e@kernel.crashing.org>
+	<1B684498-FC47-4F01-A72E-DD27B259613A@kernel.crashing.org>
+	<47011BED.8020206@freescale.com>
+	<AD243886-65DE-4285-ADD3-1D4C5ABA2E3C@kernel.crashing.org>
+	<47025A72.10404@freescale.com> <47026884.4040909@freescale.com>
+In-Reply-To: <47026884.4040909@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/2/07, Scott Wood <scottwood@freescale.com> wrote:
-> It would be nice, though, to merge platform and of_platform to some
-> extent, so that things which don't need to check "special" device tree
-> properties wouldn't have to make any changes other than maybe adding an
-> extra match table entry.
+Scott Wood wrote:
 
-yes, that would be really nice.
+> I was thinking of just removing the muram code from qe_lib, and having 
+> it use the code in cpm_common.c.
 
-On that note, is it possible to modify the device tree (and of_device
-registrations) at run time?  The one feature I do really like about
-using the platform bus is that you can register/unregister devices at
-run time.
+Do we want to have the QE library include CPM code at this point?  I know we 
+want to merge some QE and CPM code, but I would rather do that in one shot 
+than piecemeal.
 
-Cheers,
-g.
+> BTW, searching the entire device tree for a node with the name 
+> "data-only", regardless of context, seems a bit insane to me.
+
+Yes, I noticed that, too.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Timur Tabi
+Linux Kernel Developer @ Freescale
