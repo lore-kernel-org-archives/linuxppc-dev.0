@@ -1,18 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
-	by ozlabs.org (Postfix) with ESMTP id 159A3DDF8D
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 04:48:10 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so4743283fkz
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 11:48:09 -0700 (PDT)
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 9AFCEDDE9D
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 04:49:20 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so2411554uge
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 11:49:18 -0700 (PDT)
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2 7/7] Uartlite: Let the console be initialized earlier
+Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
 References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
-	<20070930224215.1871.60933.stgit@trillian.cg.shawcable.net>
+	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 02 Oct 2007 20:48:00 +0200
-In-Reply-To: <20070930224215.1871.60933.stgit@trillian.cg.shawcable.net>
-	(Grant Likely's message of "Sun\, 30 Sep 2007 16\:42\:16 -0600")
-Message-ID: <878x6l1hgf.fsf@macbook.be.48ers.dk>
+Date: Tue, 02 Oct 2007 20:49:09 +0200
+In-Reply-To: <20070930224208.1871.2913.stgit@trillian.cg.shawcable.net> (Grant
+	Likely's message of "Sun\, 30 Sep 2007 16\:42\:10 -0600")
+Message-ID: <874ph91hei.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -28,10 +28,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
- Grant> From: Grant Likely <grant.likely@secretlab.ca> By configuring
- Grant> it earlier we get console output sooner which is helpful for
- Grant> debugging when the kernel crashes before the serial drivers
- Grant> are initialized.
+ Grant> From: Grant Likely <grant.likely@secretlab.ca> Add of_platform
+ Grant> bus binding so this driver can be used with arch/powerpc
 
  Grant> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
