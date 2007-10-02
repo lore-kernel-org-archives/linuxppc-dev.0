@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67DB9DDEF4
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:12:57 +1000 (EST)
-Subject: Re: [PATCH 2/7] Update mpic to use dcr_host_t.base
+	by ozlabs.org (Postfix) with ESMTP id E1359DDEF2
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:14:18 +1000 (EST)
+Subject: Re: [PATCH 3/7] Use dcr_host_t.base in ibm_emac_mal
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <59ba66469e13b37eddf4e2423ed0540cce2e1079.1190009070.git.michael@ellerman.id.au>
+In-Reply-To: <5022a72815fe6334b5255dbe1288036131c2c961.1190009070.git.michael@ellerman.id.au>
 References: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
-	<59ba66469e13b37eddf4e2423ed0540cce2e1079.1190009070.git.michael@ellerman.id.au>
+	<5022a72815fe6334b5255dbe1288036131c2c961.1190009070.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 15:12:41 +1000
-Message-Id: <1191301961.6310.68.camel@pasglop>
+Date: Tue, 02 Oct 2007 15:13:45 +1000
+Message-Id: <1191302025.6310.70.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,103 +27,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Mon, 2007-09-17 at 16:05 +1000, Michael Ellerman wrote:
-> Now that dcr_host_t contains the base address, we can use that in the mpic
-> code, rather than storing it separately.
+> This requires us to do a sort-of fake dcr_map(), so that base is set
+> properly. This will be fixed/removed when the device-tree-aware emac driver
+> is merged.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+(Have you actually tested btw ? :-)
 
 > ---
->  arch/powerpc/sysdev/mpic.c |   28 +++++++++++-----------------
->  include/asm-powerpc/mpic.h |    6 ------
->  2 files changed, 11 insertions(+), 23 deletions(-)
+>  drivers/net/ibm_emac/ibm_emac_mal.c |    5 ++++-
+>  drivers/net/ibm_emac/ibm_emac_mal.h |    5 ++---
+>  2 files changed, 6 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 8de29f2..16b1f4b 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -156,8 +156,7 @@ static inline u32 _mpic_read(enum mpic_reg_type type,
->  	switch(type) {
->  #ifdef CONFIG_PPC_DCR
->  	case mpic_access_dcr:
-> -		return dcr_read(rb->dhost,
-> -				rb->dbase + reg + rb->doff);
-> +		return dcr_read(rb->dhost, rb->dhost.base + reg);
->  #endif
->  	case mpic_access_mmio_be:
->  		return in_be32(rb->base + (reg >> 2));
-> @@ -174,8 +173,7 @@ static inline void _mpic_write(enum mpic_reg_type type,
->  	switch(type) {
->  #ifdef CONFIG_PPC_DCR
->  	case mpic_access_dcr:
-> -		return dcr_write(rb->dhost,
-> -				 rb->dbase + reg + rb->doff, value);
-> +		return dcr_write(rb->dhost, rb->dhost.base + reg, value);
->  #endif
->  	case mpic_access_mmio_be:
->  		return out_be32(rb->base + (reg >> 2), value);
-> @@ -279,9 +277,11 @@ static void _mpic_map_mmio(struct mpic *mpic, unsigned long phys_addr,
->  static void _mpic_map_dcr(struct mpic *mpic, struct mpic_reg_bank *rb,
->  			  unsigned int offset, unsigned int size)
->  {
-> -	rb->dbase = mpic->dcr_base;
-> -	rb->doff = offset;
-> -	rb->dhost = dcr_map(mpic->irqhost->of_node, rb->dbase + rb->doff, size);
-> +	const u32 *dbasep;
+> diff --git a/drivers/net/ibm_emac/ibm_emac_mal.c b/drivers/net/ibm_emac/ibm_emac_mal.c
+> index cabd984..b08da96 100644
+> --- a/drivers/net/ibm_emac/ibm_emac_mal.c
+> +++ b/drivers/net/ibm_emac/ibm_emac_mal.c
+> @@ -421,7 +421,10 @@ static int __init mal_probe(struct ocp_device *ocpdev)
+>  		       ocpdev->def->index);
+>  		return -ENOMEM;
+>  	}
+> -	mal->dcrbase = maldata->dcr_base;
 > +
-> +	dbasep = of_get_property(mpic->irqhost->of_node, "dcr-reg", NULL);
+> +	/* XXX This only works for native dcr for now */
+> +	mal->dcrhost = dcr_map(NULL, maldata->dcr_base, 0);
 > +
-> +	rb->dhost = dcr_map(mpic->irqhost->of_node, *dbasep + offset, size);
->  	BUG_ON(!DCR_MAP_OK(rb->dhost));
->  }
+>  	mal->def = ocpdev->def;
 >  
-> @@ -1075,20 +1075,14 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  	BUG_ON(paddr == 0 && node == NULL);
->  
->  	/* If no physical address passed in, check if it's dcr based */
-> -	if (paddr == 0 && of_get_property(node, "dcr-reg", NULL) != NULL)
-> -		mpic->flags |= MPIC_USES_DCR;
-> -
-> +	if (paddr == 0 && of_get_property(node, "dcr-reg", NULL) != NULL) {
->  #ifdef CONFIG_PPC_DCR
-> -	if (mpic->flags & MPIC_USES_DCR) {
-> -		const u32 *dbasep;
-> -		dbasep = of_get_property(node, "dcr-reg", NULL);
-> -		BUG_ON(dbasep == NULL);
-> -		mpic->dcr_base = *dbasep;
-> +		mpic->flags |= MPIC_USES_DCR;
->  		mpic->reg_type = mpic_access_dcr;
-> -	}
->  #else
-> -	BUG_ON (mpic->flags & MPIC_USES_DCR);
-> +		BUG();
->  #endif /* CONFIG_PPC_DCR */
-> +	}
->  
->  	/* If the MPIC is not DCR based, and no physical address was passed
->  	 * in, try to obtain one
-> diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
-> index edb4a7c..ae84dde 100644
-> --- a/include/asm-powerpc/mpic.h
-> +++ b/include/asm-powerpc/mpic.h
-> @@ -224,8 +224,6 @@ struct mpic_reg_bank {
->  	u32 __iomem	*base;
->  #ifdef CONFIG_PPC_DCR
->  	dcr_host_t	dhost;
-> -	unsigned int	dbase;
-> -	unsigned int	doff;
->  #endif /* CONFIG_PPC_DCR */
+>  	INIT_LIST_HEAD(&mal->poll_list);
+> diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
+> index 64bc338..6b1fbeb 100644
+> --- a/drivers/net/ibm_emac/ibm_emac_mal.h
+> +++ b/drivers/net/ibm_emac/ibm_emac_mal.h
+> @@ -191,7 +191,6 @@ struct mal_commac {
 >  };
 >  
-> @@ -289,10 +287,6 @@ struct mpic
->  	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
->  	struct mpic_reg_bank	isus[MPIC_MAX_ISU];
+>  struct ibm_ocp_mal {
+> -	int			dcrbase;
+>  	dcr_host_t		dcrhost;
 >  
-> -#ifdef CONFIG_PPC_DCR
-> -	unsigned int		dcr_base;
-> -#endif
-> -
->  	/* Protected sources */
->  	unsigned long		*protected;
+>  	struct list_head	poll_list;
+> @@ -209,12 +208,12 @@ struct ibm_ocp_mal {
 >  
+>  static inline u32 get_mal_dcrn(struct ibm_ocp_mal *mal, int reg)
+>  {
+> -	return dcr_read(mal->dcrhost, mal->dcrbase + reg);
+> +	return dcr_read(mal->dcrhost, mal->dcrhost.base + reg);
+>  }
+>  
+>  static inline void set_mal_dcrn(struct ibm_ocp_mal *mal, int reg, u32 val)
+>  {
+> -	dcr_write(mal->dcrhost, mal->dcrbase + reg, val);
+> +	dcr_write(mal->dcrhost, mal->dcrhost.base + reg, val);
+>  }
+>  
+>  /* Register MAL devices */
