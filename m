@@ -1,31 +1,41 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64F55DE2EB
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:40:17 +1000 (EST)
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A23EEDDEF0
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 08:00:03 +1000 (EST)
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
 	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l92LeEpP011695
-	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 17:40:14 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l92KpbvD026121
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 16:51:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l92LeDgY465164
-	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 15:40:13 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l92LeD0B008864
-	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 15:40:13 -0600
-Date: Tue, 2 Oct 2007 16:40:12 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] powerpc: another use of zalloc_maybe_bootmem()
-Message-ID: <20071002214012.GL4338@austin.ibm.com>
-References: <20071002133753.662397db.sfr@canb.auug.org.au>
+	l92M00Xi488434
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 16:00:00 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l92LxxAZ005880
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 15:59:59 -0600
+Date: Tue, 2 Oct 2007 16:59:59 -0500
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
+Message-ID: <20071002215959.GM4338@austin.ibm.com>
+References: <20070420204114.GL31947@austin.ibm.com>
+	<20070420204720.GM31947@austin.ibm.com>
+	<20070926150216.GH3899@parisc-linux.org>
+	<20070927220022.GC18686@austin.ibm.com>
+	<20070927221031.GY3899@parisc-linux.org>
+	<20070927233437.GF18686@austin.ibm.com>
+	<20071001201247.GN12049@parisc-linux.org>
+	<20071001224132.GH4338@austin.ibm.com>
+	<20071002012730.GO12049@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071002133753.662397db.sfr@canb.auug.org.au>
+In-Reply-To: <20071002012730.GO12049@parisc-linux.org>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,41 +45,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Oct 01, 2007 at 07:27:30PM -0600, Matthew Wilcox wrote:
+> 
+> Fine by me.  Do you have the ability to produce failures on a whim on
+> your platforms?  
 
-Use alloc_maybe_bootmem() which wraps the if(mem_init_done)
-malloc clause.
+Yes, although it is very platform specific -- there are actually
+transistors in the pci bridge chip, which actually short out lines,
+and so, from the point of view of the rest of the chip, it did
+actually see a "real" error. Its supposed to be a very realistic 
+test.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> I've been vaguely musing a PCI device failure patch for
+> x86, just so people can test driver failure paths.
 
-----
-On Tue, Oct 02, 2007 at 01:37:53PM +1000, Stephen Rothwell wrote:
-> This patch introduces zalloc_maybe_bootmem and uses it so that we don;t
-> have to mark a whole (largish) routine as __init_ref_ok.
+That would be good ... I've recently agreed to accept a fedex
+to test someone elses card for them, which is outside my usual
+activities.
 
-sfr missed a spot -- may as well get rid of this one too.
+There's also supposed to be some PCI-X riser card out there, 
+(never seen one) which has the ability to inject actual pci 
+errors. Its the Agilent PCI BestX card; I got the impression 
+they might not sell it anymore; dunno.
 
+One guy in the lab used to brush a grounding strap across
+the pins; this usually got a rise out of the audience.
 
- arch/powerpc/kernel/pci-common.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.23-rc8-mm1/arch/powerpc/kernel/pci-common.c
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/powerpc/kernel/pci-common.c	2007-09-26 15:02:41.000000000 -0500
-+++ linux-2.6.23-rc8-mm1/arch/powerpc/kernel/pci-common.c	2007-10-02 16:28:16.000000000 -0500
-@@ -65,14 +65,11 @@ static void __devinit pci_setup_pci_cont
- 	spin_unlock(&hose_spinlock);
- }
- 
--__init_refok struct pci_controller * pcibios_alloc_controller(struct device_node *dev)
-+struct pci_controller * pcibios_alloc_controller(struct device_node *dev)
- {
- 	struct pci_controller *phb;
- 
--	if (mem_init_done)
--		phb = kmalloc(sizeof(struct pci_controller), GFP_KERNEL);
--	else
--		phb = alloc_bootmem(sizeof (struct pci_controller));
-+	phb = alloc_maybe_bootmem(sizeof(struct pci_controller), GFP_KERNEL);
- 	if (phb == NULL)
- 		return NULL;
- 	pci_setup_pci_controller(phb);
+--linas
