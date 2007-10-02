@@ -1,18 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.185])
-	by ozlabs.org (Postfix) with ESMTP id EB619DE087
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 04:54:08 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so5018563mue
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 11:54:04 -0700 (PDT)
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id B5770DE029
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 04:54:37 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so3273399nfd
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 11:54:36 -0700 (PDT)
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 07/12] Uartlite: change name of ports to ulite_ports
+Subject: Re: [PATCH v3 11/12] Uartlite: Add of-platform-bus binding
 References: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
-	<20071002021544.9579.60044.stgit@trillian.cg.shawcable.net>
+	<20071002021604.9579.92149.stgit@trillian.cg.shawcable.net>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 02 Oct 2007 20:53:57 +0200
-In-Reply-To: <20071002021544.9579.60044.stgit@trillian.cg.shawcable.net>
-	(Grant Likely's message of "Mon\, 01 Oct 2007 20\:15\:44 -0600")
-Message-ID: <87r6kdz6t6.fsf@macbook.be.48ers.dk>
+Date: Tue, 02 Oct 2007 20:54:27 +0200
+In-Reply-To: <20071002021604.9579.92149.stgit@trillian.cg.shawcable.net>
+	(Grant Likely's message of "Mon\, 01 Oct 2007 20\:16\:04 -0600")
+Message-ID: <87myv1z6sc.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -29,7 +29,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
  Grant> From: Grant Likely <grant.likely@secretlab.ca>
- Grant> Changed to match naming convention used in the rest of the module
+ Grant> Add of_platform bus binding so this driver can be used with
+ Grant> arch/powerpc
 
  Grant> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
