@@ -1,24 +1,22 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
-	by ozlabs.org (Postfix) with ESMTP id 429EEDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 23:57:19 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so2865463nzh
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 06:57:18 -0700 (PDT)
-Message-ID: <fa686aa40710020657j1c97a23ejdd3322f5cba3bbb5@mail.gmail.com>
-Date: Tue, 2 Oct 2007 07:57:17 -0600
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id A4C3CDDF3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 00:26:44 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so5306108wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 07:26:43 -0700 (PDT)
+Message-ID: <fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
+Date: Tue, 2 Oct 2007 08:26:42 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: benh@kernel.crashing.org
-Subject: Re: [PATCH v2 5/6] Sysace: Move IRQ handler registration to occur
-	after FSM is initialized
-In-Reply-To: <1191304521.6310.94.camel@pasglop>
+Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
+In-Reply-To: <1191304386.6310.92.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	<20070930225726.2476.44211.stgit@trillian.cg.shawcable.net>
-	<1191304521.6310.94.camel@pasglop>
-Cc: axboe@kernel.dk, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
+References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
+	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
+	<1191304386.6310.92.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,36 +28,67 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On 10/1/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 >
-> On Sun, 2007-09-30 at 16:57 -0600, Grant Likely wrote:
-> >         val |= ACE_CTRL_DATABUFRDYIRQ | ACE_CTRL_ERRORIRQ;
-> >         ace_out(ace, ACE_CTRL, val);
+> On Sun, 2007-09-30 at 16:42 -0600, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
 > >
-> > +       /* Now we can hook up the irq handler */
-> > +       if (ace->irq != NO_IRQ) {
-> > +               rc = request_irq(ace->irq, ace_interrupt, 0,
-> > "systemace", ace);
-> > +               if (rc) {
-> > +                       /* Failure - fall back to polled mode */
-> > +                       dev_err(ace->dev, "request_irq failed\n");
-> > +                       ace->irq = NO_IRQ;
-> > +               }
-> > +       }
-> > +
+> > Add of_platform bus binding so this driver can be used with arch/powerpc
 >
-> I don't know the HW but from the above, it looks like you enable
-> interrupt emission on the HW before you register the handler, which is
-> wrong. You should make sure on the contrary that IRQs on the HW are
-> disabled until after you have registered a handler.
->
-> Only really a problem if you have shared interrupts but still...
+> Another option is to have a "constructor" in the platform code that
+> generates the platform device from the DT. It might even become the
+> preferred way one of these days, I'm not too sure at this stage. Anyway,
+> do what you prefer.
 
-Yeah, you're right.  Fortunately all current in-tree platforms which
-use this do not have shared interrupts, but I'd like to be correct on
-this.
+I've looked at both, and I'm not to fond of the 'constructor'
+approach.  Here are my reasons:
 
-I'll tidy this up and send a fixup patch.
+- Separate constructor code must be written for each driver anyway
+(except perhaps for very simple cases which only require 'regs' and
+'interrupts' properties).  The device tree data must then be mapped
+onto a pdata structure; which the driver immediately turns around and
+unmaps from pdata to populate it's driver state structure.  It ends up
+being a lot of indirection to follow.
+- Many (but perhaps not all) of these devices will be registered as an
+of_device anyway.  By having a constructor to generate a
+platform_device from that means each device will get probed twice;
+once by the of_platform bus and once by the platform bus.
+- Writing device drivers with multiple binding is easy and probable
+results in smaller simpler code than the two step process of using a
+constructor.
 
-Thanks,
+For example, here is my of_device binding for the systemace driver:
+
+static int __devinit
+ulite_of_probe(struct of_device *op, const struct of_device_id *match)
+{
+        struct resource res;
+        const unsigned int *id;
+        int irq, rc;
+        dev_dbg(&op->dev, "%s(%p, %p)\n", __FUNCTION__, op, match);
+        rc = of_address_to_resource(op->node, 0, &res);
+        if (rc) {
+                dev_err(&op->dev, "invalide address\n");
+                return rc;
+        }
+        irq = irq_of_parse_and_map(op->node, 0);
+        id = of_get_property(op->node, "port-number", NULL);
+        return ulite_assign(&op->dev, id ? *id : -1, res.start, irq);
+}
+
+That's 3 calls to get data out of the device tree and one call to
+setup the device.  The final 'ulite_assign()' call is called by both
+the of_device and platform_device bindings.
+
+To do the same thing with a constructor requires an additional
+allocation and registration of a platform device structure and a pdata
+structure.  Plus it requires the platform code to explicitly call a
+set of helper functions to find and create platform devices for nodes
+in the device tree.  (Unless you're thinking about leveraging the
+of_platform probe code and have the .probe hook to the 'constructor'
+bit)
+
+What advantages do you see with the constructor approach?
+
+Cheers,
 g.
 
 -- 
