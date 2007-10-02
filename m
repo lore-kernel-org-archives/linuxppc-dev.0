@@ -1,19 +1,18 @@
 Return-Path: <jacmet@gmail.com>
 Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.191])
-	by ozlabs.org (Postfix) with ESMTP id 90212DDF65
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:40:47 +1000 (EST)
-Received: by fk-out-0910.google.com with SMTP id z22so4678702fkz
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:40:45 -0700 (PDT)
+	by ozlabs.org (Postfix) with ESMTP id 387DEDDFB7
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:47:40 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so4681123fkz
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:47:39 -0700 (PDT)
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 06/18] [POWERPC] Fix UARTLITE reg io for little-endian
-	architectures (ie. microblaze)
+Subject: Re: [PATCH 11/18] Virtex: Port UARTLITE driver to of-platform-bus
 References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181704.18608.40317.stgit@trillian.cg.shawcable.net>
+	<20070928181748.18608.62409.stgit@trillian.cg.shawcable.net>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 02 Oct 2007 17:40:31 +0200
-In-Reply-To: <20070928181704.18608.40317.stgit@trillian.cg.shawcable.net>
-	(Grant Likely's message of "Fri\, 28 Sep 2007 12\:17\:13 -0600")
-Message-ID: <87abr134pc.fsf@macbook.be.48ers.dk>
+Date: Tue, 02 Oct 2007 17:47:32 +0200
+In-Reply-To: <20070928181748.18608.62409.stgit@trillian.cg.shawcable.net>
+	(Grant Likely's message of "Fri\, 28 Sep 2007 12\:17\:49 -0600")
+Message-ID: <87641p34dn.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -29,167 +28,171 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
+Hi,
+
  Grant> From: Grant Likely <grant.likely@secretlab.ca>
  Grant> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
- Grant> Acked-by: John Williams <jwilliams@itee.uq.edu.au>
-
-Huh? This seems a bit confused. Microblaze is big endian and out_be32
-is only defined in arch/p{,ower}pc.
-
-This has been discussed before. The logical registers are 8bit, but
-the OPB implementation (by virtue of it being a 32bit bus) uses
-32bit spacing between the registers.
-
-The fact is that the only portable access to non-pci registers in the
-kernel is 8 bit.
-
-The uartlite driver is ofcause primarily used to drive Xilinx
-OPB_Uartlite IP blocks, but that's not the only use - E.G. we are
-using another simple UART with the same hardware interface but sitting
-on a 16bit bus. With the current driver this works fine, but won't
-with the out_be32.
-
-For a new design wi'll use an AT91 (arm). I don't see any reason why
-we shouldn't be able to use the same UART block there.
-
  Grant> ---
 
- Grant>  arch/ppc/syslib/virtex_devices.c |    2 +-
- Grant>  drivers/serial/uartlite.c        |   32 ++++++++++++++++----------------
- Grant>  2 files changed, 17 insertions(+), 17 deletions(-)
+ Grant>  drivers/serial/uartlite.c |  101 +++++++++++++++++++++++++++++++++++++++++----
+ Grant>  1 files changed, 93 insertions(+), 8 deletions(-)
 
- Grant> diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
- Grant> index ace4ec0..270ad3a 100644
- Grant> --- a/arch/ppc/syslib/virtex_devices.c
- Grant> +++ b/arch/ppc/syslib/virtex_devices.c
- Grant> @@ -28,7 +28,7 @@
- Grant>  	.num_resources = 2, \
- Grant>  	.resource = (struct resource[]) { \
- Grant>  		{ \
- Grant> -			.start = XPAR_UARTLITE_##num##_BASEADDR + 3, \
- Grant> +			.start = XPAR_UARTLITE_##num##_BASEADDR, \
- Grant>  			.end = XPAR_UARTLITE_##num##_HIGHADDR, \
- Grant>  			.flags = IORESOURCE_MEM, \
- Grant>  		}, \
  Grant> diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
- Grant> index f5051cf..59b674a 100644
+ Grant> index ed13b9f..8f742e0 100644
  Grant> --- a/drivers/serial/uartlite.c
  Grant> +++ b/drivers/serial/uartlite.c
- Grant> @@ -61,7 +61,7 @@ static int ulite_receive(struct uart_port *port, int stat)
- Grant>  	/* stats */
- Grant>  	if (stat & ULITE_STATUS_RXVALID) {
- port-> icount.rx++;
- Grant> -		ch = readb(port->membase + ULITE_RX);
- Grant> +		ch = in_be32((void*)port->membase + ULITE_RX);
+ Grant> @@ -1,7 +1,8 @@
+ Grant>  /*
+ Grant>   * uartlite.c: Serial driver for Xilinx uartlite serial controller
+ Grant>   *
+ Grant> - * Peter Korsgaard <jacmet@sunsite.dk>
+ Grant> + * Copyright (C) 2006 Peter Korsgaard <jacmet@sunsite.dk>
+ Grant> + * Copyright (C) 2007 Secret Lab Technologies Ltd.
+ Grant>   *
+ Grant>   * This file is licensed under the terms of the GNU General Public License
+ Grant>   * version 2.  This program is licensed "as is" without any warranty of any
+ Grant> @@ -17,6 +18,10 @@
+ Grant>  #include <linux/delay.h>
+ Grant>  #include <linux/interrupt.h>
+ Grant>  #include <asm/io.h>
+ Grant> +#if defined(CONFIG_OF)
+ Grant> +#include <linux/of_device.h>
+ Grant> +#include <linux/of_platform.h>
+ Grant> +#endif
  
- Grant>  		if (stat & ULITE_STATUS_PARITY)
- port-> icount.parity++;
- Grant> @@ -106,7 +106,7 @@ static int ulite_transmit(struct uart_port *port, int stat)
- Grant>  		return 0;
+ Grant>  #define ULITE_NAME		"ttyUL"
+ Grant>  #define ULITE_MAJOR		204
+ Grant> @@ -382,8 +387,10 @@ static int __init ulite_console_setup(struct console *co, char *options)
+ Grant>  	port = &ulite_ports[co->index];
  
- Grant>  	if (port->x_char) {
- Grant> -		writeb(port->x_char, port->membase + ULITE_TX);
- Grant> +		out_be32((void*)port->membase + ULITE_TX, port->x_char);
- port-> x_char = 0;
- port-> icount.tx++;
- Grant>  		return 1;
- Grant> @@ -115,7 +115,7 @@ static int ulite_transmit(struct uart_port *port, int stat)
- Grant>  	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
- Grant>  		return 0;
+ Grant>  	/* not initialized yet? */
+ Grant> -	if (!port->membase)
+ Grant> +	if (!port->membase) {
+ Grant> +		pr_debug("console on ttyUL%i not initialized\n", co->index);
+ Grant>  		return -ENODEV;
+ Grant> +	}
+
+Unrelated change.
  
- Grant> -	writeb(xmit->buf[xmit->tail], port->membase + ULITE_TX);
- Grant> +	out_be32((void*)port->membase + ULITE_TX, xmit->buf[xmit->tail]);
- xmit-> tail = (xmit->tail + 1) & (UART_XMIT_SIZE-1);
- port-> icount.tx++;
+ Grant>  	if (options)
+ Grant>  		uart_parse_options(options, &baud, &parity, &bits, &flow);
+ Grant> @@ -542,6 +549,72 @@ static struct platform_driver ulite_platform_driver = {
+ Grant>  };
  
- Grant> @@ -132,7 +132,7 @@ static irqreturn_t ulite_isr(int irq, void *dev_id)
- Grant>  	int busy;
+ Grant>  /* ---------------------------------------------------------------------
+ Grant> + * OF bus bindings
+ Grant> + */
+ Grant> +#if defined(CONFIG_OF)
+ Grant> +static int __devinit
+ Grant> +ulite_of_probe(struct of_device *op, const struct of_device_id *match)
+ Grant> +{
+ Grant> +	struct resource res;
+ Grant> +	const unsigned int *id;
+ Grant> +	int irq, rc;
+ Grant> +
+ Grant> +	dev_dbg(&op->dev, "%s(%p, %p)\n", __FUNCTION__, op, match);
+ Grant> +
+ Grant> +	rc = of_address_to_resource(op->node, 0, &res);
+ Grant> +	if (rc) {
+ Grant> +		dev_err(&op->dev, "invalide address\n");
+ Grant> +		return rc;
+ Grant> +	}
+ Grant> +
+ Grant> +	irq = irq_of_parse_and_map(op->node, 0);
+ Grant> +
+ Grant> +	id = of_get_property(op->node, "port-number", NULL);
+ Grant> +
+ Grant> +	return ulite_assign(&op->dev, id ? *id : -1, res.start, irq);
+ Grant> +}
+ Grant> +
+ Grant> +static int ulite_of_remove(struct of_device *op)
+ Grant> +{
+ Grant> +	return ulite_release(&op->dev);
+ Grant> +}
+ Grant> +
+ Grant> +/* Match table for of_platform binding */
+ Grant> +static struct of_device_id __devinit ulite_of_match[] = {
+ Grant> +	{ .type = "serial", .compatible = "xilinx,uartlite", },
+ Grant> +	{},
+ Grant> +};
+ Grant> +MODULE_DEVICE_TABLE(of, ulite_of_match);
+ Grant> +
+ Grant> +static struct of_platform_driver ulite_of_driver = {
+ Grant> +	.owner = THIS_MODULE,
+ Grant> +	.name = "uartlite",
+ Grant> +	.match_table = ulite_of_match,
+ Grant> +	.probe = ulite_of_probe,
+ Grant> +	.remove = ulite_of_remove,
+ Grant> +	.driver = {
+ Grant> +		.name = "uartlite",
+ Grant> +	},
+ Grant> +};
+ Grant> +
+ Grant> +/* Registration helpers to keep the number of #ifdefs to a minimum */
+ Grant> +static inline int __init ulite_of_register(void)
+ Grant> +{
+ Grant> +	pr_debug("uartlite: calling of_register_platform_driver()\n");
+ Grant> +	return of_register_platform_driver(&ulite_of_driver);
+ Grant> +}
+ Grant> +
+ Grant> +static inline void __init ulite_of_unregister(void)
+ Grant> +{
+ Grant> +	of_unregister_platform_driver(&ulite_of_driver);
+ Grant> +}
+ Grant> +#else /* CONFIG_OF */
+ Grant> +/* CONFIG_OF not enabled; do nothing helpers */
+ Grant> +static inline int __init ulite_of_register(void) { return 0; }
+ Grant> +static inline void __init ulite_of_unregister(void) { }
+ Grant> +#endif /* CONFIG_OF */
+ Grant> +
+ Grant> +/* ---------------------------------------------------------------------
+ Grant>   * Module setup/teardown
+ Grant>   */
  
- Grant>  	do {
- Grant> -		int stat = readb(port->membase + ULITE_STATUS);
- Grant> +		int stat = in_be32((void*)port->membase + ULITE_STATUS);
- Grant>  		busy  = ulite_receive(port, stat);
- Grant>  		busy |= ulite_transmit(port, stat);
- Grant>  	} while (busy);
- Grant> @@ -148,7 +148,7 @@ static unsigned int ulite_tx_empty(struct uart_port *port)
- Grant>  	unsigned int ret;
- 
- Grant>  	spin_lock_irqsave(&port->lock, flags);
- Grant> -	ret = readb(port->membase + ULITE_STATUS);
- Grant> +	ret = in_be32((void*)port->membase + ULITE_STATUS);
- Grant>  	spin_unlock_irqrestore(&port->lock, flags);
- 
- Grant>  	return ret & ULITE_STATUS_TXEMPTY ? TIOCSER_TEMT : 0;
- Grant> @@ -171,7 +171,7 @@ static void ulite_stop_tx(struct uart_port *port)
- 
- Grant>  static void ulite_start_tx(struct uart_port *port)
+ Grant> @@ -549,20 +622,32 @@ int __init ulite_init(void)
  Grant>  {
- Grant> -	ulite_transmit(port, readb(port->membase + ULITE_STATUS));
- Grant> +	ulite_transmit(port, in_be32((void*)port->membase + ULITE_STATUS));
+ Grant>  	int ret;
+ 
+ Grant> -	ret = uart_register_driver(&ulite_uart_driver);
+ Grant> -	if (ret)
+ Grant> -		return ret;
+ Grant> +	pr_debug("uartlite: calling uart_register_driver()\n");
+ Grant> +	if ((ret = uart_register_driver(&ulite_uart_driver)) != 0)
+ Grant> +		goto err_uart;
+ 
+ Grant> -	ret = platform_driver_register(&ulite_platform_driver);
+ Grant> -	if (ret)
+ Grant> -		uart_unregister_driver(&ulite_uart_driver);
+ Grant> +	if ((ret = ulite_of_register()) != 0)
+ Grant> +		goto err_of;
+ 
+ Grant> +	pr_debug("uartlite: calling platform_driver_register()\n");
+ Grant> +	if ((ret = platform_driver_register(&ulite_platform_driver)) != 0)
+
+I prefer to not have assignments in the if ().
+Are all the pr_debug necessary? It looks quite messy.
+
+ Grant> +		goto err_plat;
+ Grant> +
+
+ Grant> +	return 0;
+ Grant> +
+ Grant> +err_plat:
+ Grant> +	ulite_of_unregister();
+ Grant> +err_of:
+ Grant> +	uart_unregister_driver(&ulite_uart_driver);
+ Grant> +err_uart:
+ Grant> +	printk(KERN_ERR "registering uartlite driver failed: err=%i", ret);
+ Grant>  	return ret;
  Grant>  }
  
- Grant>  static void ulite_stop_rx(struct uart_port *port)
- Grant> @@ -200,17 +200,17 @@ static int ulite_startup(struct uart_port *port)
- Grant>  	if (ret)
- Grant>  		return ret;
- 
- Grant> -	writeb(ULITE_CONTROL_RST_RX | ULITE_CONTROL_RST_TX,
- Grant> -	       port->membase + ULITE_CONTROL);
- Grant> -	writeb(ULITE_CONTROL_IE, port->membase + ULITE_CONTROL);
- Grant> +	out_be32((void*)port->membase + ULITE_CONTROL,
- Grant> +	         ULITE_CONTROL_RST_RX | ULITE_CONTROL_RST_TX);
- Grant> +	out_be32((void*)port->membase + ULITE_CONTROL, ULITE_CONTROL_IE);
- 
- Grant>  	return 0;
- Grant>  }
- 
- Grant>  static void ulite_shutdown(struct uart_port *port)
+ Grant>  void __exit ulite_exit(void)
  Grant>  {
- Grant> -	writeb(0, port->membase + ULITE_CONTROL);
- Grant> -	readb(port->membase + ULITE_CONTROL); /* dummy */
- Grant> +	out_be32((void*)port->membase + ULITE_CONTROL, 0);
- Grant> +	in_be32((void*)port->membase + ULITE_CONTROL); /* dummy */
- Grant>  	free_irq(port->irq, port);
+ Grant>  	platform_driver_unregister(&ulite_platform_driver);
+ Grant> +	ulite_of_unregister();
+ Grant>  	uart_unregister_driver(&ulite_uart_driver);
  Grant>  }
  
- Grant> @@ -314,7 +314,7 @@ static void ulite_console_wait_tx(struct uart_port *port)
- 
- Grant>  	/* wait up to 10ms for the character(s) to be sent */
- Grant>  	for (i = 0; i < 10000; i++) {
- Grant> -		if (readb(port->membase + ULITE_STATUS) & ULITE_STATUS_TXEMPTY)
- Grant> +		if (in_be32((void*)port->membase + ULITE_STATUS) & ULITE_STATUS_TXEMPTY)
- Grant>  			break;
- Grant>  		udelay(1);
- Grant>  	}
- Grant> @@ -323,7 +323,7 @@ static void ulite_console_wait_tx(struct uart_port *port)
- Grant>  static void ulite_console_putchar(struct uart_port *port, int ch)
- Grant>  {
- Grant>  	ulite_console_wait_tx(port);
- Grant> -	writeb(ch, port->membase + ULITE_TX);
- Grant> +	out_be32((void*)port->membase + ULITE_TX, ch);
- Grant>  }
- 
- Grant>  static void ulite_console_write(struct console *co, const char *s,
- Grant> @@ -340,8 +340,8 @@ static void ulite_console_write(struct console *co, const char *s,
- Grant>  		spin_lock_irqsave(&port->lock, flags);
- 
- Grant>  	/* save and disable interrupt */
- Grant> -	ier = readb(port->membase + ULITE_STATUS) & ULITE_STATUS_IE;
- Grant> -	writeb(0, port->membase + ULITE_CONTROL);
- Grant> +	ier = in_be32((void*)port->membase + ULITE_STATUS) & ULITE_STATUS_IE;
- Grant> +	out_be32((void*)port->membase + ULITE_CONTROL, 0);
- 
- Grant>  	uart_console_write(port, s, count, ulite_console_putchar);
- 
- Grant> @@ -349,7 +349,7 @@ static void ulite_console_write(struct console *co, const char *s,
- 
- Grant>  	/* restore interrupt state */
- Grant>  	if (ier)
- Grant> -		writeb(ULITE_CONTROL_IE, port->membase + ULITE_CONTROL);
- Grant> +		out_be32((void*)port->membase + ULITE_CONTROL, ULITE_CONTROL_IE);
- 
- Grant>  	if (locked)
- Grant>  		spin_unlock_irqrestore(&port->lock, flags);
 
 
 -- 
