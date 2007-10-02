@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4687DDE33
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:55:38 +1000 (EST)
-Subject: Re: [PATCH v2 5/6] Sysace: Move IRQ handler registration to occur
-	after FSM is initialized
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <20070930225726.2476.44211.stgit@trillian.cg.shawcable.net>
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	<20070930225726.2476.44211.stgit@trillian.cg.shawcable.net>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 15:55:21 +1000
-Message-Id: <1191304521.6310.94.camel@pasglop>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/4] Simplify rtas_change_msi() error semantics
+From: Michael Ellerman <michael@ellerman.id.au>
+To: benh@kernel.crashing.org
+In-Reply-To: <1191302603.6310.88.camel@pasglop>
+References: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
+	<fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
+	<1191302603.6310.88.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-npzAIAfzC4k/n5QLndwh"
+Date: Tue, 02 Oct 2007 15:58:10 +1000
+Message-Id: <1191304690.6593.8.camel@concordia>
 Mime-Version: 1.0
-Cc: axboe@kernel.dk, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +24,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Sun, 2007-09-30 at 16:57 -0600, Grant Likely wrote:
->         val |= ACE_CTRL_DATABUFRDYIRQ | ACE_CTRL_ERRORIRQ;
->         ace_out(ace, ACE_CTRL, val);
->  
-> +       /* Now we can hook up the irq handler */
-> +       if (ace->irq != NO_IRQ) {
-> +               rc = request_irq(ace->irq, ace_interrupt, 0,
-> "systemace", ace);
-> +               if (rc) {
-> +                       /* Failure - fall back to polled mode */
-> +                       dev_err(ace->dev, "request_irq failed\n");
-> +                       ace->irq = NO_IRQ;
-> +               }
-> +       }
-> +
+--=-npzAIAfzC4k/n5QLndwh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I don't know the HW but from the above, it looks like you enable
-interrupt emission on the HW before you register the handler, which is
-wrong. You should make sure on the contrary that IRQs on the HW are
-disabled until after you have registered a handler.
+On Tue, 2007-10-02 at 15:23 +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-09-20 at 16:36 +1000, Michael Ellerman wrote:
+> > Currently rtas_change_msi() returns either the error code from RTAS, or=
+ if
+> > the RTAS call succeeded the number of irqs that were configured by RTAS=
+.
+> > This makes checking the return value more complicated than it needs to =
+be.
+> >=20
+> > Instead, have rtas_change_msi() check that the number of irqs configure=
+d by
+> > RTAS is equal to what we requested - and return an error otherwise. Thi=
+s makes
+> > the return semantics match the usual 0 for success, something else for =
+error.
+> >=20
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>=20
+> Looks allright, just a question tho... what do we do if it fails ? Do we
+> try to fallback to a lower number of MSIs ? Or what ? Dead device ?
 
-Only really a problem if you have shared interrupts but still...
+That's all up to the device driver. In theory the driver could try again
+with a lower count - but that might require extra logic in the driver to
+handle shared irq handlers etc. In practice I think the current drivers
+will just fail.
 
-Ben.
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-npzAIAfzC4k/n5QLndwh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHAd3ydSjSd0sB4dIRAlB1AJ9uoBxX603+ZM80iBQNjBKuPiMKygCgqn4T
+UvXFs7rb5Y4fcYnT5cxNi1I=
+=iMe3
+-----END PGP SIGNATURE-----
+
+--=-npzAIAfzC4k/n5QLndwh--
