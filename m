@@ -1,22 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4BFD6DDE35
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 16:24:23 +1000 (EST)
-Subject: Re: [PATCH 3/4] Simplify rtas_change_msi() error semantics
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1191304690.6593.8.camel@concordia>
-References: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
-	<fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
-	<1191302603.6310.88.camel@pasglop> <1191304690.6593.8.camel@concordia>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 16:24:13 +1000
-Message-Id: <1191306253.6310.106.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7FEDBDDE43
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 16:33:33 +1000 (EST)
+Date: Tue, 2 Oct 2007 08:35:23 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
+Message-ID: <20071002063523.GM5303@kernel.dk>
+References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
+	<20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
+	<20070930230557.GA17654@infradead.org>
+	<fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
+	<20071001115954.GD5303@kernel.dk>
+	<1191304710.6310.97.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1191304710.6310.97.camel@pasglop>
+Cc: Christoph Hellwig <hch@infradead.org>, paulus@samba.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 2007-10-02 at 15:58 +1000, Michael Ellerman wrote:
-> > Looks allright, just a question tho... what do we do if it fails ?
-> Do we
-> > try to fallback to a lower number of MSIs ? Or what ? Dead device ?
+On Tue, Oct 02 2007, Benjamin Herrenschmidt wrote:
 > 
-> That's all up to the device driver. In theory the driver could try again
-> with a lower count - but that might require extra logic in the driver to
-> handle shared irq handlers etc. In practice I think the current drivers
-> will just fail.
+> On Mon, 2007-10-01 at 13:59 +0200, Jens Axboe wrote:
+> > On Sun, Sep 30 2007, Grant Likely wrote:
+> > > On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
+> > > > On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
+> > > > > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
+> > > > > +             goto err_plat;
+> > > >
+> > > >         rc = platform_driver_register(&ace_platform_driver);
+> > > >         if (rc)
+> > > >                  goto err_plat;
+> > > >
+> > > > please.
+> > > 
+> > > Okay, will do.
+> > > 
+> > > >
+> > > > > +      err_plat:
+> > > > > +     unregister_blkdev(ace_major, "xsysace");
+> > > > > +      err_blk:
+> > > >
+> > > > labels should be indented zero or one space, but not more.
+> > > 
+> > > scripts/Lindent does this.  Originally, I *didn't* have my labels
+> > > indented.  :-)   Does Lindent need to be fixed?
+> > 
+> > Seems so, if it idents labels.
+> > 
+> > Just send a fixup patch for that, I'll add your series to the block tree
+> > for 2.6.24.
+> 
+> It's actually better off living in the powerpc tree I think as it's
+> really about adding support for a new powerpc platform and somewhat
+> needs to sync with other things in there. Unless you really want the
+> whole thing in your tree :-)
 
-Question is badly phrased.. I meant something more like... what do we do
-if RTAS returns a lower count ?
+I already included it yesterday, it'll go up once 2.6.24 opens. Let me
+know if you want me to rip it out, though.
 
-That is, we end up with that device with that lower count of MSIs
-enabled, we fail at the driver level, do we still somewhat keep track ?
-Drivers might assume that means it can use LSIs no ? which may not be
-the case... Shouldn't we try to switch back to LSI mode (or does the
-RTAS interface doesnt allow it ?)
-
-Ben.
+-- 
+Jens Axboe
