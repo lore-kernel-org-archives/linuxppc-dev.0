@@ -1,18 +1,22 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3352DDEA2
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:04:51 +1000 (EST)
-Date: Tue, 02 Oct 2007 17:04:39 +0900 (JST)
-Message-Id: <20071002.170439.-1300534196.kouish@swc.toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 7/7] Celleb: update for PCI
-In-Reply-To: <200709261409.32231.arnd@arndb.de>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
+	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id EBB36DDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:11:05 +1000 (EST)
+Received: from mail.technotrade.biz (localhost [127.0.0.1])
+	by mail.technotrade.biz (Postfix) with ESMTP id 2813A3AEE
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 10:11:01 +0200 (CEST)
+Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
+	[192.168.1.47])
+	by mail.technotrade.biz (Postfix) with ESMTP id 0A9BA3A1E
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 10:11:01 +0200 (CEST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-dev@ozlabs.org
+Subject: What's the preferred way to export board information to userspace ?
+MIME-Version: 1.0
+Date: Tue, 2 Oct 2007 10:10:59 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710021011.00224.laurentp@cse-semaphore.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 26 September 2007, Ishizaki Kou wrote:
-> > This is a patch kit to support PCI bus on Celleb with new "I/O routines
-> > for PowerPC." External PCI on Celleb must do explicit synchronization
-> > with devices (Bus has no automatic synchronization feature).
-> 
-> It seems you are duplicating a lot of
-> arch/powerpc/platforms/cell/io-workarounds.c, in order to work around
-> the same problem:
+Hi everybody,
 
- (snip)
+it seems linuxppc-embedded is going away. I should have posted this here in=
+=20
+the first place, so sorry for the cross-post.
 
-> Is there a way that we can make that code common? I guess there could be a
-> file in arch/powerpc/sysdev that can handle this correctly for all hardware
-> that requires this particular workaround (currently celleb and QS20, but
-> potentially more).
+I need to export some read-only board-specific information (serial number,=
+=20
+boot mode jumper configuration, ...) that are collected from various locati=
+ons=20
+(CPLD, flash, U-Boot, ...) to userspace applications.
 
-Though I agree it's better to make code common, I hope to keep them
-separate for now. Because I'm now developing PCI Express support and
-it also uses io-workaround mechanism. I'll try to make them common in
-this work.
+Could anyone advice me on the preferred way to do that ? I can easily add a=
+=20
+quick&dirty sysfs/procfs based implementation, but I was wondering if there=
+=20
+was some kind of clean and generic way.
 
 Best regards,
-Kou Ishizaki
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
