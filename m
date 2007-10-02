@@ -1,31 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 3E450DE8F6
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 12:17:07 +1000 (EST)
-Received: from pd4mr1so.prod.shaw.ca
-	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JP900AJQIATUUF0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 01 Oct 2007 20:16:05 -0600 (MDT)
-Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
-	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JP900LABIASCE30@pd4mr1so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 01 Oct 2007 20:16:05 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JP900CJJIAMLKA0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 01 Oct 2007 20:15:58 -0600 (MDT)
-Date: Mon, 01 Oct 2007 20:15:59 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 10/12] Uartlite: Comment block tidy
-In-reply-to: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
-To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Message-id: <20071002021559.9579.41478.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-References: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 63A23DDE11
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 13:17:00 +1000 (EST)
+Subject: Re: [PATCH] powerpc: fix pci domain detection
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200709261602.06214.arnd@arndb.de>
+References: <200709261602.06214.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 13:16:49 +1000
+Message-Id: <1191295009.6310.55.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	paulus@samba.org, linux-kernel@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,111 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-Tidy the comments to split the driver into logical section; the main driver,
-the console driver, the platform bus binding, and module initialization
-and teardown.
+On Wed, 2007-09-26 at 16:02 +0200, Arnd Bergmann wrote:
+> The /proc/bus/pci/* files list PCI domain numbers only for
+> devices that claim to be on a multi-domain system. The check
+> for this is broken on powerpc, because the buid value is
+> truncated to 32 bits.
+> 
+> There is at least one machine (IBM QS21) that only uses
+> the high-order bits of the buid, so the return value
+> of pci_proc_domain() ends up being always zero, which
+> makes /proc/bus/pci useless.
+> 
+> Change the logic to always return '1' for a nonzero
+> buid value.
+> 
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Good catch !
 
- drivers/serial/uartlite.c |   43 ++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 40 insertions(+), 3 deletions(-)
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index c00a627..ed13b9f 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -23,9 +23,13 @@
- #define ULITE_MINOR		187
- #define ULITE_NR_UARTS		4
- 
--/* For register details see datasheet:
--   http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
--*/
-+/* ---------------------------------------------------------------------
-+ * Register definitions
-+ *
-+ * For register details see datasheet:
-+ * http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
-+ */
-+
- #define ULITE_RX		0x00
- #define ULITE_TX		0x04
- #define ULITE_STATUS		0x08
-@@ -49,6 +53,10 @@
- 
- static struct uart_port ulite_ports[ULITE_NR_UARTS];
- 
-+/* ---------------------------------------------------------------------
-+ * Core UART driver operations
-+ */
-+
- static int ulite_receive(struct uart_port *port, int stat)
- {
- 	struct tty_struct *tty = port->info->tty;
-@@ -308,6 +316,10 @@ static struct uart_ops ulite_ops = {
- 	.verify_port	= ulite_verify_port
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Console driver operations
-+ */
-+
- #ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
- static void ulite_console_wait_tx(struct uart_port *port)
- {
-@@ -413,6 +425,19 @@ static struct uart_driver ulite_uart_driver = {
- #endif
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Port assignment functions (mapping devices to uart_port structures)
-+ */
-+
-+/** ulite_assign: register a uartlite device with the driver
-+ *
-+ * @dev: pointer to device structure
-+ * @id: requested id number.  Pass -1 for automatic port assignment
-+ * @base: base address of uartlite registers
-+ * @irq: irq number for uartlite
-+ *
-+ * Returns: 0 on success, <0 otherwise
-+ */
- static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
- {
- 	struct uart_port *port;
-@@ -465,6 +490,10 @@ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
- 	return 0;
- }
- 
-+/** ulite_release: register a uartlite device with the driver
-+ *
-+ * @dev: pointer to device structure
-+ */
- static int __devinit ulite_release(struct device *dev)
- {
- 	struct uart_port *port = dev_get_drvdata(dev);
-@@ -479,6 +508,10 @@ static int __devinit ulite_release(struct device *dev)
- 	return rc;
- }
- 
-+/* ---------------------------------------------------------------------
-+ * Platform bus binding
-+ */
-+
- static int __devinit ulite_probe(struct platform_device *pdev)
- {
- 	struct resource *res, *res2;
-@@ -508,6 +541,10 @@ static struct platform_driver ulite_platform_driver = {
- 		   },
- };
- 
-+/* ---------------------------------------------------------------------
-+ * Module setup/teardown
-+ */
-+
- int __init ulite_init(void)
- {
- 	int ret;
+> 
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 291ffbc..9f63bdc 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -588,7 +588,7 @@ int pci_proc_domain(struct pci_bus *bus)
+>  		return 0;
+>  	else {
+>  		struct pci_controller *hose = pci_bus_to_host(bus);
+> -		return hose->buid;
+> +		return hose->buid != 0;
+>  	}
+>  }
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
