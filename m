@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A6E05DDEF8
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:22:16 +1000 (EST)
-Subject: Re: [PATCH 2/4] Simplify error logic in rtas_setup_msi_irqs()
+	by ozlabs.org (Postfix) with ESMTP id BA5B5DE299
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:23:35 +1000 (EST)
+Subject: Re: [PATCH 3/4] Simplify rtas_change_msi() error semantics
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <9a0ebd42c2e31f6a99a1028dd370f9ee36c771f3.1190270165.git.michael@ellerman.id.au>
+In-Reply-To: <fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
 References: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
-	<9a0ebd42c2e31f6a99a1028dd370f9ee36c771f3.1190270165.git.michael@ellerman.id.au>
+	<fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 15:21:59 +1000
-Message-Id: <1191302519.6310.86.camel@pasglop>
+Date: Tue, 02 Oct 2007 15:23:23 +1000
+Message-Id: <1191302603.6310.88.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,63 +27,72 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 On Thu, 2007-09-20 at 16:36 +1000, Michael Ellerman wrote:
-> rtas_setup_msi_irqs() doesn't need to call teardown() itself,
-> the generic code will do this for us as long as we return a non
-> zero value.
+> Currently rtas_change_msi() returns either the error code from RTAS, or if
+> the RTAS call succeeded the number of irqs that were configured by RTAS.
+> This makes checking the return value more complicated than it needs to be.
+> 
+> Instead, have rtas_change_msi() check that the number of irqs configured by
+> RTAS is equal to what we requested - and return an error otherwise. This makes
+> the return semantics match the usual 0 for success, something else for error.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Looks allright, just a question tho... what do we do if it fails ? Do we
+try to fallback to a lower number of MSIs ? Or what ? Dead device ?
+
+Ben.
 
 > ---
->  arch/powerpc/platforms/pseries/msi.c |   17 +++--------------
->  1 files changed, 3 insertions(+), 14 deletions(-)
+>  arch/powerpc/platforms/pseries/msi.c |   18 +++++++++++-------
+>  1 files changed, 11 insertions(+), 7 deletions(-)
 > 
 > diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-> index 6063ea2..9c3bcfe 100644
+> index 9c3bcfe..2793a1b 100644
 > --- a/arch/powerpc/platforms/pseries/msi.c
 > +++ b/arch/powerpc/platforms/pseries/msi.c
-> @@ -189,29 +189,22 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+> @@ -70,11 +70,15 @@ static int rtas_change_msi(struct pci_dn *pdn, u32 func, u32 num_irqs)
+>  		seq_num = rtas_ret[1];
+>  	} while (rtas_busy_delay(rc));
 >  
->  	if (rc != nvec) {
->  		pr_debug("rtas_msi: rtas_change_msi() failed\n");
-> -
-> -		/*
-> -		 * In case of an error it's not clear whether the device is
-> -		 * left with MSI enabled or not, so we explicitly disable.
-> -		 */
-> -		goto out_free;
-> +		return rc;
->  	}
+> -	if (rc == 0) /* Success */
+> -		rc = rtas_ret[0];
+> +	/*
+> +	 * If the RTAS call succeeded, check the number of irqs is actually
+> +	 * what we asked for. If not, return an error.
+> +	 */
+> +	if (rc == 0 && rtas_ret[0] != num_irqs)
+> +		rc = -ENOSPC;
 >  
->  	i = 0;
->  	list_for_each_entry(entry, &pdev->msi_list, list) {
->  		hwirq = rtas_query_irq_number(pdn, i);
->  		if (hwirq < 0) {
-> -			rc = hwirq;
->  			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
-> -			goto out_free;
-> +			return hwirq;
->  		}
+> -	pr_debug("rtas_msi: ibm,change_msi(func=%d,num=%d) = (%d)\n",
+> -		 func, num_irqs, rc);
+> +	pr_debug("rtas_msi: ibm,change_msi(func=%d,num=%d), got %d rc = %d\n",
+> +		 func, num_irqs, rtas_ret[0], rc);
 >  
->  		virq = irq_create_mapping(NULL, hwirq);
+>  	return rc;
+>  }
+> @@ -87,7 +91,7 @@ static void rtas_disable_msi(struct pci_dev *pdev)
+>  	if (!pdn)
+>  		return;
 >  
->  		if (virq == NO_IRQ) {
->  			pr_debug("rtas_msi: Failed mapping hwirq %d\n", hwirq);
-> -			rc = -ENOSPC;
-> -			goto out_free;
-> +			return -ENOSPC;
->  		}
->  
->  		dev_dbg(&pdev->dev, "rtas_msi: allocated virq %d\n", virq);
-> @@ -220,10 +213,6 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
->  	}
->  
->  	return 0;
-> -
-> - out_free:
-> -	rtas_teardown_msi_irqs(pdev);
-> -	return rc;
+> -	if (rtas_change_msi(pdn, RTAS_CHANGE_FN, 0) != 0)
+> +	if (rtas_change_msi(pdn, RTAS_CHANGE_FN, 0))
+>  		pr_debug("rtas_msi: Setting MSIs to 0 failed!\n");
 >  }
 >  
->  static void rtas_msi_pci_irq_fixup(struct pci_dev *pdev)
+> @@ -180,14 +184,14 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+>  	if (type == PCI_CAP_ID_MSI) {
+>  		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSI_FN, nvec);
+>  
+> -		if (rc != nvec) {
+> +		if (rc) {
+>  			pr_debug("rtas_msi: trying the old firmware call.\n");
+>  			rc = rtas_change_msi(pdn, RTAS_CHANGE_FN, nvec);
+>  		}
+>  	} else
+>  		rc = rtas_change_msi(pdn, RTAS_CHANGE_MSIX_FN, nvec);
+>  
+> -	if (rc != nvec) {
+> +	if (rc) {
+>  		pr_debug("rtas_msi: rtas_change_msi() failed\n");
+>  		return rc;
+>  	}
