@@ -2,12 +2,12 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35672DDECC
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:16:38 +1000 (EST)
-Date: Tue, 02 Oct 2007 17:16:31 +0900 (JST)
-Message-Id: <20071002.171631.-1300535306.kouish@swc.toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id ED904DDECC
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 18:18:52 +1000 (EST)
+Date: Tue, 02 Oct 2007 17:18:46 +0900 (JST)
+Message-Id: <20071002.171846.-1350507483.kouish@swc.toshiba.co.jp>
+Subject: [PATCH 1/5] Celleb: Move pause, kexec_cpu_down to beat.c
 To: paulus@samba.org
-Subject: [PATCH 0/5] Updates of "Celleb" patches for 2.6.24
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,54 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Follwing patch series is an update to support Cell Reference Set (Celleb).
-Two patches of former series are declined, two are updated, and rest 
-three still remain.
+This patch is an update for "Beat on Celleb"
+  - Move beat_pause(), beat_kexec_cpu_down() from setup.c to beat.c
 
-Declined patches are "fixing SLB initialization" and "VFD support for
-Celleb 2." I found former patch not necessary anymore, and latter seems
-under discussion to drive such device generally.
+Signed-off-by: <Kou.Ishizaki@toshiba.co.jp>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
 
-[PATCH 1/5] Celleb: Move pause, kexec_cpu_down to beat.c
-  This is quite simple patch to move two functions from "setup.c" to
-"beat.c". This patch is slightly updated to declare beat_kexec_cpu_down()
-function unconditionally.
-
-[PATCH 2/5] Celleb: Support for Power/Reset buttons
-  This is patch to add support Power/Reset buttons on Celleb. With
-this patch, Power/Reset button causes call of ctrl_alt_del() function,
-not to call machine dependent routines.
-
-  I think it is better than this to handle such buttons in consistent way,
-such as 'event', but I have to make working such buttons with existing
-Fedora's inittab. I feel we have to have acpi or like that, but currently
-we don't have such subsystem.
-
-[PATCH 3/5] Celleb: New HTAB Guest OS Interface on Beat
-  This is a patch to support new HTAB Guest OS Interface on Beat. Beat v3
-and later will provide you such interface. Beat v2 or former provide you
-older Guest OS Interface only, so this patch detects whether the new inter-
-face is available or not, and reflect it to ppc_md.
-
-  Not changed from former patch.
-
-[PATCH 4/5] Celleb: Serial I/O update
-  This patch updates scc_sio.c to support newer serial-port detection
-algorithm.
-
-  Not changed from former patch.
-
-[PATCH 5/5] Celleb: update for PCI
-  This patch incorporates PCI support for Celleb.
-  - io_workarounds.c: Kicks synchronization port whenever reading
-  MMIO registers (so-called "dummy read").
-  - Replaced "volatile void * __iommu" to "PCI_IO_ADDR" because the
-  compiler complains on volatile pointer.
-  - Setup via bus name.
-  - alloc_maybe_bootmem() has been gone.
-
-  Not changed from former patch.
-
-
-Best regards,
-Kou Ishizaki
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.h
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat.h
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.h
+@@ -36,5 +36,7 @@ ssize_t beat_nvram_get_size(void);
+ ssize_t beat_nvram_read(char *, size_t, loff_t *);
+ ssize_t beat_nvram_write(char *, size_t, loff_t *);
+ int beat_set_xdabr(unsigned long);
++void beat_power_save(void);
++void beat_kexec_cpu_down(int, int);
+ 
+ #endif /* _CELLEB_BEAT_H */
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/setup.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
+@@ -111,11 +111,6 @@ static void __init celleb_setup_arch(voi
+ #endif
+ }
+ 
+-static void beat_power_save(void)
+-{
+-	beat_pause(0);
+-}
+-
+ static int __init celleb_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -128,13 +123,6 @@ static int __init celleb_probe(void)
+ 	return 1;
+ }
+ 
+-#ifdef CONFIG_KEXEC
+-static void celleb_kexec_cpu_down(int crash, int secondary)
+-{
+-	beatic_deinit_IRQ();
+-}
+-#endif
+-
+ static struct of_device_id celleb_bus_ids[] __initdata = {
+ 	{ .type = "scc", },
+ 	{ .type = "ioif", },	/* old style */
+@@ -175,7 +163,7 @@ define_machine(celleb) {
+ 	.pci_probe_mode 	= celleb_pci_probe_mode,
+ 	.pci_setup_phb		= celleb_setup_phb,
+ #ifdef CONFIG_KEXEC
+-	.kexec_cpu_down		= celleb_kexec_cpu_down,
++	.kexec_cpu_down		= beat_kexec_cpu_down,
+ 	.machine_kexec		= default_machine_kexec,
+ 	.machine_kexec_prepare	= default_machine_kexec_prepare,
+ 	.machine_crash_shutdown	= default_machine_crash_shutdown,
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
+===================================================================
+--- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/beat.c
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat.c
+@@ -158,6 +158,18 @@ int64_t beat_put_term_char(u64 vterm, u6
+ 	return beat_put_characters_to_console(vterm, len, (u8*)db);
+ }
+ 
++void beat_power_save(void)
++{
++	beat_pause(0);
++}
++
++#ifdef CONFIG_KEXEC
++void beat_kexec_cpu_down(int crash, int secondary)
++{
++	beatic_deinit_IRQ();
++}
++#endif
++
+ EXPORT_SYMBOL(beat_get_term_char);
+ EXPORT_SYMBOL(beat_put_term_char);
+ EXPORT_SYMBOL(beat_halt_code);
