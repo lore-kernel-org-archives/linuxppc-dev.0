@@ -1,15 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 02D58DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 13:38:06 +1000 (EST)
-Date: Tue, 2 Oct 2007 13:37:53 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Limit range of __init_ref_ok somewhat
-Message-Id: <20071002133753.662397db.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 575E0DDE35
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:09:34 +1000 (EST)
+Subject: Re: [PATCH] Make sure to of_node_get() the result of
+	pci_device_to_OF_node()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <8183225ab4b14684bb0939e0c5258caaf5b8102f.1190008974.git.michael@ellerman.id.au>
+References: <8183225ab4b14684bb0939e0c5258caaf5b8102f.1190008974.git.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Tue, 02 Oct 2007 15:09:21 +1000
+Message-Id: <1191301761.6310.64.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,89 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch introduces zalloc_maybe_bootmem and uses it so that we don;t
-have to mark a whole (largish) routine as __init_ref_ok.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/irq.c    |   10 ++--------
- arch/powerpc/lib/alloc.c     |   15 +++++++++++++++
- include/asm-powerpc/system.h |    1 +
- 3 files changed, 18 insertions(+), 8 deletions(-)
+On Mon, 2007-09-17 at 16:03 +1000, Michael Ellerman wrote:
+> pci_device_to_OF_node() returns the device node attached to a PCI device,
+> but doesn't actually grab a reference - we need to do it ourselves.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 0e47c8c..151b131 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -424,7 +424,7 @@ static int default_irq_host_match(struct irq_host *h, struct device_node *np)
- 	return h->of_node != NULL && h->of_node == np;
- }
- 
--__init_refok struct irq_host *irq_alloc_host(struct device_node *of_node,
-+struct irq_host *irq_alloc_host(struct device_node *of_node,
- 				unsigned int revmap_type,
- 				unsigned int revmap_arg,
- 				struct irq_host_ops *ops,
-@@ -439,13 +439,7 @@ __init_refok struct irq_host *irq_alloc_host(struct device_node *of_node,
- 	/* Allocate structure and revmap table if using linear mapping */
- 	if (revmap_type == IRQ_HOST_MAP_LINEAR)
- 		size += revmap_arg * sizeof(unsigned int);
--	if (mem_init_done)
--		host = kzalloc(size, GFP_KERNEL);
--	else {
--		host = alloc_bootmem(size);
--		if (host)
--			memset(host, 0, size);
--	}
-+	host = zalloc_maybe_bootmem(size, GFP_KERNEL);
- 	if (host == NULL)
- 		return NULL;
- 
-diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-index e58c805..f53e09c 100644
---- a/arch/powerpc/lib/alloc.c
-+++ b/arch/powerpc/lib/alloc.c
-@@ -2,6 +2,7 @@
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/bootmem.h>
-+#include <linux/string.h>
- 
- #include <asm/system.h>
- 
-@@ -12,3 +13,17 @@ void * __init_refok alloc_maybe_bootmem(size_t size, gfp_t mask)
- 	else
- 		return alloc_bootmem(size);
- }
-+
-+void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
-+{
-+	void *p;
-+
-+	if (mem_init_done)
-+		p = kzalloc(size, mask);
-+	else {
-+		p = alloc_bootmem(size);
-+		if (p)
-+			memset(p, 0, size);
-+	}
-+	return p;
-+}
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index f7879fc..d10e99b 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -190,6 +190,7 @@ extern unsigned long memory_limit;
- extern unsigned long klimit;
- 
- extern void *alloc_maybe_bootmem(size_t size, gfp_t mask);
-+extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
- 
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
- 
--- 
-1.5.3.2
+> ---
+>  arch/powerpc/platforms/cell/axon_msi.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+> index 57a6149..2b2dfcc 100644
+> --- a/arch/powerpc/platforms/cell/axon_msi.c
+> +++ b/arch/powerpc/platforms/cell/axon_msi.c
+> @@ -119,7 +119,7 @@ static struct axon_msic *find_msi_translator(struct pci_dev *dev)
+>  	const phandle *ph;
+>  	struct axon_msic *msic = NULL;
+>  
+> -	dn = pci_device_to_OF_node(dev);
+> +	dn = of_node_get(pci_device_to_OF_node(dev));
+>  	if (!dn) {
+>  		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
+>  		return NULL;
+> @@ -176,7 +176,7 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
+>  	int len;
+>  	const u32 *prop;
+>  
+> -	dn = pci_device_to_OF_node(dev);
+> +	dn = of_node_get(pci_device_to_OF_node(dev));
+>  	if (!dn) {
+>  		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
+>  		return -ENODEV;
