@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 7ED35DDFA4
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:54:36 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5342975wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:54:35 -0700 (PDT)
-Message-ID: <fa686aa40710020854n2dd73d07h85d43373ac382bf1@mail.gmail.com>
-Date: Tue, 2 Oct 2007 09:54:34 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [PATCH 06/18] [POWERPC] Fix UARTLITE reg io for little-endian
-	architectures (ie. microblaze)
-In-Reply-To: <87abr134pc.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181704.18608.40317.stgit@trillian.cg.shawcable.net>
-	<87abr134pc.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B2BEBDE039
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:54:39 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l92FrSRe003594
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 19:53:28 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l92FrS0Y003591
+	for linuxppc-dev@ozlabs.org; Tue, 2 Oct 2007 19:53:28 +0400
+Date: Tue, 2 Oct 2007 19:53:28 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Remove unnecessary memset from physmap_of driver
+Message-ID: <20071002155328.GA3574@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/2/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> The uartlite driver is ofcause primarily used to drive Xilinx
-> OPB_Uartlite IP blocks, but that's not the only use - E.G. we are
-> using another simple UART with the same hardware interface but sitting
-> on a 16bit bus. With the current driver this works fine, but won't
-> with the out_be32.
+No need for memset to zero memory here, since we use kzalloc.
 
-Ugh.  Alright I'll revert the patch.
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ drivers/mtd/maps/physmap_of.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Cheers,
-g.
-
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index cf75a56..aeed9ea 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -232,7 +232,6 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 	info = kzalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info)
+ 		goto err_out;
+-	memset(info, 0, sizeof(*info));
+ 
+ 	dev_set_drvdata(&dev->dev, info);
+ 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+1.5.2.4
