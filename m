@@ -1,17 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id CC6A2DDFCA
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:24:15 +1000 (EST)
-Date: Tue, 2 Oct 2007 16:28:18 -0500
-From: Olof Johansson <olof@lixom.net>
-To: jgarzik@pobox.com
-Subject: [PATCH] [11/11] pasemi_mac: enable iommu support
-Message-ID: <20071002212818.GL2282@lixom.net>
-References: <20071002212421.GA2282@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071002212421.GA2282@lixom.net>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DB3A8DDF91
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:27:22 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l92LRGSd014375
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 Oct 2007 14:27:17 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] update immap_86xx.h for the 8610
+Date: Tue,  2 Oct 2007 16:27:13 -0500
+Message-Id: <11913604331348-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,205 +25,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pasemi_mac: use buffer index pointer in clean_rx()
+Update the definition of the global utilities structure (ccsr_guts) in
+immap_86xx.h and add some related macros for the Freescale 8610 SOC.
 
-Use the new features in B0 for buffer ring index on the receive side. This
-means we no longer have to search in the ring for where the buffer
-came from.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Also cleanup the RX cleaning side a little, while I was at it.
+This patch is for 2.6.24.
 
-Note: Pre-B0 hardware is no longer supported, and needs a pile of other
-workarounds that are not being submitted for mainline inclusion. So the
-fact that this breaks old hardware is not a problem at this time.
+ include/asm-powerpc/immap_86xx.h |   86 ++++++++++++++++++++++++++++++++++----
+ 1 files changed, 78 insertions(+), 8 deletions(-)
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-Index: k.org/drivers/net/pasemi_mac.c
-===================================================================
---- k.org.orig/drivers/net/pasemi_mac.c
-+++ k.org/drivers/net/pasemi_mac.c
-@@ -243,9 +243,9 @@ static int pasemi_mac_setup_rx_resources
- 			   PAS_DMA_RXINT_BASEU_SIZ(RX_RING_SIZE >> 3));
- 
- 	write_dma_reg(mac, PAS_DMA_RXINT_CFG(mac->dma_if),
--			   PAS_DMA_RXINT_CFG_DHL(3) |
--			   PAS_DMA_RXINT_CFG_L2 |
--			   PAS_DMA_RXINT_CFG_LW);
-+		      PAS_DMA_RXINT_CFG_DHL(3) | PAS_DMA_RXINT_CFG_L2 |
-+		      PAS_DMA_RXINT_CFG_LW | PAS_DMA_RXINT_CFG_RBP |
-+		      PAS_DMA_RXINT_CFG_HEN);
- 
- 	ring->next_to_fill = 0;
- 	ring->next_to_clean = 0;
-@@ -402,13 +402,12 @@ static void pasemi_mac_free_rx_resources
- static void pasemi_mac_replenish_rx_ring(struct net_device *dev, int limit)
- {
- 	struct pasemi_mac *mac = netdev_priv(dev);
--	int start = mac->rx->next_to_fill;
--	unsigned int fill, count;
-+	int fill, count;
- 
- 	if (limit <= 0)
- 		return;
- 
--	fill = start;
-+	fill = mac->rx->next_to_fill;
- 	for (count = 0; count < limit; count++) {
- 		struct pasemi_mac_buffer *info = &RX_RING_INFO(mac, fill);
- 		u64 *buff = &RX_BUFF(mac, fill);
-@@ -446,10 +445,10 @@ static void pasemi_mac_replenish_rx_ring
- 
- 	wmb();
- 
--	write_dma_reg(mac, PAS_DMA_RXCHAN_INCR(mac->dma_rxch), count);
- 	write_dma_reg(mac, PAS_DMA_RXINT_INCR(mac->dma_if), count);
- 
--	mac->rx->next_to_fill += count;
-+	mac->rx->next_to_fill = (mac->rx->next_to_fill + count) &
-+				(RX_RING_SIZE - 1);
- }
- 
- static void pasemi_mac_restart_rx_intr(struct pasemi_mac *mac)
-@@ -517,15 +516,19 @@ static int pasemi_mac_clean_rx(struct pa
- 	int count;
- 	struct pasemi_mac_buffer *info;
- 	struct sk_buff *skb;
--	unsigned int i, len;
-+	unsigned int len;
- 	u64 macrx;
- 	dma_addr_t dma;
-+	int buf_index;
-+	u64 eval;
- 
- 	spin_lock(&mac->rx->lock);
- 
- 	n = mac->rx->next_to_clean;
- 
--	for (count = limit; count; count--) {
-+	prefetch(RX_RING(mac, n));
+diff --git a/include/asm-powerpc/immap_86xx.h b/include/asm-powerpc/immap_86xx.h
+index c83d7ad..0ad4e65 100644
+--- a/include/asm-powerpc/immap_86xx.h
++++ b/include/asm-powerpc/immap_86xx.h
+@@ -38,7 +38,8 @@ struct ccsr_guts {
+ 	__be32	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
+ 	u8	res6[0x70 - 0x64];
+ 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
+-	u8	res7[0x80 - 0x74];
++	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
++	u8	res7[0x80 - 0x78];
+ 	__be32	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
+ 	u8	res8[0x90 - 0x84];
+ 	__be32	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
+@@ -48,18 +49,87 @@ struct ccsr_guts {
+ 	__be32	svr;		/* 0x.00a4 - System Version Register */
+ 	u8	res10[0xB0 - 0xA8];
+ 	__be32	rstcr;		/* 0x.00b0 - Reset Control Register */
+-	u8	res11[0xB20 - 0xB4];
+-	__be32	ddr1clkdr;	/* 0x.0b20 - DDRC1 Clock Disable Register */
+-	__be32	ddr2clkdr;	/* 0x.0b24 - DDRC2 Clock Disable Register */
+-	u8	res12[0xE00 - 0xB28];
++	u8	res11[0xC0 - 0xB4];
++	__be32	elbcvselcr;	/* 0x.00c0 - eLBC Voltage Select Ctrl Reg */
++	u8	res12[0x800 - 0xC4];
++	__be32	clkdvdr;	/* 0x.0800 - Clock Divide Register */
++	u8	res13[0x900 - 0x804];
++	__be32	ircr;		/* 0x.0900 - Infrared Control Register */
++	u8	res14[0x908 - 0x904];
++	__be32	dmacr;		/* 0x.0908 - DMA Control Register */
++	u8	res15[0x914 - 0x90C];
++	__be32	elbccr;		/* 0x.0914 - eLBC Control Register */
++	u8	res16[0xB20 - 0x918];
++	__be32	ddr1clkdr;	/* 0x.0b20 - DDR1 Clock Disable Register */
++	__be32	ddr2clkdr;	/* 0x.0b24 - DDR2 Clock Disable Register */
++	__be32	ddrclkdr;	/* 0x.0b28 - DDR Clock Disable Register */
++	u8	res17[0xE00 - 0xB2C];
+ 	__be32	clkocr;		/* 0x.0e00 - Clock Out Select Register */
+-	u8	res13[0xF04 - 0xE04];
++	u8	res18[0xE10 - 0xE04];
++	__be32	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
++	u8	res19[0xE20 - 0xE14];
++	__be32	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
++	u8	res20[0xF04 - 0xE24];
+ 	__be32	srds1cr0;	/* 0x.0f04 - SerDes1 Control Register 0 */
+ 	__be32	srds1cr1;	/* 0x.0f08 - SerDes1 Control Register 0 */
+-	u8	res14[0xF40 - 0xF0C];
++	u8	res21[0xF40 - 0xF0C];
+ 	__be32	srds2cr0;	/* 0x.0f40 - SerDes1 Control Register 0 */
+ 	__be32	srds2cr1;	/* 0x.0f44 - SerDes1 Control Register 0 */
+-};
++} __attribute__ ((packed));
 +
-+	for (count = 0; count < limit; count++) {
- 		macrx = RX_RING(mac, n);
- 
- 		if ((macrx & XCT_MACRX_E) ||
-@@ -537,21 +540,14 @@ static int pasemi_mac_clean_rx(struct pa
- 
- 		info = NULL;
- 
--		/* We have to scan for our skb since there's no way
--		 * to back-map them from the descriptor, and if we
--		 * have several receive channels then they might not
--		 * show up in the same order as they were put on the
--		 * interface ring.
--		 */
-+		BUG_ON(!(macrx & XCT_MACRX_RR_8BRES));
- 
--		dma = (RX_RING(mac, n+1) & XCT_PTR_ADDR_M);
--		for (i = mac->rx->next_to_fill;
--		     i < (mac->rx->next_to_fill + RX_RING_SIZE);
--		     i++) {
--			info = &RX_RING_INFO(mac, i);
--			if (info->dma == dma)
--				break;
--		}
-+		eval = (RX_RING(mac, n+1) & XCT_RXRES_8B_EVAL_M) >>
-+			XCT_RXRES_8B_EVAL_S;
-+		buf_index = eval-1;
++#define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
++#define CCSR_GUTS_DMACR_DEV_IR	1	/* DMA controller/channel set to IR */
 +
-+		dma = (RX_RING(mac, n+2) & XCT_PTR_ADDR_M);
-+		info = &RX_RING_INFO(mac, buf_index);
- 
- 		skb = info->skb;
- 
-@@ -600,9 +596,9 @@ static int pasemi_mac_clean_rx(struct pa
- 		/* Need to zero it out since hardware doesn't, since the
- 		 * replenish loop uses it to tell when it's done.
- 		 */
--		RX_BUFF(mac, i) = 0;
-+		RX_BUFF(mac, buf_index) = 0;
- 
--		n += 2;
-+		n += 4;
- 	}
- 
- 	if (n > RX_RING_SIZE) {
-@@ -610,8 +606,16 @@ static int pasemi_mac_clean_rx(struct pa
- 		write_iob_reg(mac, PAS_IOB_COM_PKTHDRCNT, 0);
- 		n &= (RX_RING_SIZE-1);
- 	}
++/*
++ * Set the DMACR register in the GUTS
++ *
++ * The DMACR register determines the source of initiated transfers for each
++ * channel on each DMA controller.  Rather than have a bunch of repetitive
++ * macros for the bit patterns, we just have a function that calculates
++ * them.
++ *
++ * guts: Pointer to GUTS structure
++ * co: The DMA controller (1 or 2)
++ * ch: The channel on the DMA controller (0, 1, 2, or 3)
++ * device: The device to set as the source (CCSR_GUTS_DMACR_DEV_xx)
++ */
++static inline void guts_set_dmacr(struct ccsr_guts __iomem *guts,
++	unsigned int co, unsigned int ch, unsigned int device)
++{
++	unsigned int shift = 16 + (8 * (2 - co) + 2 * (3 - ch));
 +
- 	mac->rx->next_to_clean = n;
--	pasemi_mac_replenish_rx_ring(mac->netdev, limit-count);
++	clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
++}
 +
-+	/* Increase is in number of 16-byte entries, and since each descriptor
-+	 * with an 8BRES takes up 3x8 bytes (padded to 4x8), increase with
-+	 * count*2.
-+	 */
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_INCR(mac->dma_rxch), count << 1);
++#define CCSR_GUTS_PMUXCR_LDPSEL		0x00010000
++#define CCSR_GUTS_PMUXCR_SSI1_MASK	0x0000C000	/* Bitmask for SSI1 */
++#define CCSR_GUTS_PMUXCR_SSI1_LA	0x00000000	/* Latched address */
++#define CCSR_GUTS_PMUXCR_SSI1_HI	0x00004000	/* High impedance */
++#define CCSR_GUTS_PMUXCR_SSI1_SSI	0x00008000	/* Used for SSI1 */
++#define CCSR_GUTS_PMUXCR_SSI2_MASK	0x00003000	/* Bitmask for SSI2 */
++#define CCSR_GUTS_PMUXCR_SSI2_LA	0x00000000	/* Latched address */
++#define CCSR_GUTS_PMUXCR_SSI2_HI	0x00001000	/* High impedance */
++#define CCSR_GUTS_PMUXCR_SSI2_SSI	0x00002000	/* Used for SSI2 */
++#define CCSR_GUTS_PMUXCR_LA_22_25_LA	0x00000000	/* Latched Address */
++#define CCSR_GUTS_PMUXCR_LA_22_25_HI	0x00000400	/* High impedance */
++#define CCSR_GUTS_PMUXCR_DBGDRV		0x00000200	/* Signals not driven */
++#define CCSR_GUTS_PMUXCR_DMA2_0		0x00000008
++#define CCSR_GUTS_PMUXCR_DMA2_3		0x00000004
++#define CCSR_GUTS_PMUXCR_DMA1_0		0x00000002
++#define CCSR_GUTS_PMUXCR_DMA1_3		0x00000001
 +
-+	pasemi_mac_replenish_rx_ring(mac->netdev, count);
++#define CCSR_GUTS_CLKDVDR_PXCKEN	0x80000000
++#define CCSR_GUTS_CLKDVDR_SSICKEN	0x20000000
++#define CCSR_GUTS_CLKDVDR_PXCKINV	0x10000000
++#define CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT 25
++#define CCSR_GUTS_CLKDVDR_PXCKDLY_MASK	0x06000000
++#define CCSR_GUTS_CLKDVDR_PXCKDLY(x) \
++	(((x) & 3) << CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT)
++#define CCSR_GUTS_CLKDVDR_PXCLK_SHIFT	16
++#define CCSR_GUTS_CLKDVDR_PXCLK_MASK	0x001F0000
++#define CCSR_GUTS_CLKDVDR_PXCLK(x) (((x) & 31) << CCSR_GUTS_CLKDVDR_PXCLK_SHIFT)
++#define CCSR_GUTS_CLKDVDR_SSICLK_MASK	0x000000FF
++#define CCSR_GUTS_CLKDVDR_SSICLK(x) ((x) & CCSR_GUTS_CLKDVDR_SSICLK_MASK)
  
- 	spin_unlock(&mac->rx->lock);
- 
-@@ -927,6 +931,8 @@ static int pasemi_mac_open(struct net_de
- 
- 	pasemi_mac_replenish_rx_ring(dev, RX_RING_SIZE);
- 
-+	write_dma_reg(mac, PAS_DMA_RXCHAN_INCR(mac->dma_rxch), RX_RING_SIZE>>1);
-+
- 	flags = PAS_MAC_CFG_PCFG_S1 | PAS_MAC_CFG_PCFG_PE |
- 		PAS_MAC_CFG_PCFG_PR | PAS_MAC_CFG_PCFG_CE;
- 
-Index: k.org/drivers/net/pasemi_mac.h
-===================================================================
---- k.org.orig/drivers/net/pasemi_mac.h
-+++ k.org/drivers/net/pasemi_mac.h
-@@ -206,12 +206,15 @@ enum {
- #define    PAS_DMA_RXINT_RCMDSTA_DROPS_M	0xfffe0000
- #define    PAS_DMA_RXINT_RCMDSTA_DROPS_S	17
- #define PAS_DMA_RXINT_CFG(i)		(0x204+(i)*_PAS_DMA_RXINT_STRIDE)
-+#define    PAS_DMA_RXINT_CFG_RBP	0x80000000
-+#define    PAS_DMA_RXINT_CFG_ITRR	0x40000000
- #define    PAS_DMA_RXINT_CFG_DHL_M	0x07000000
- #define    PAS_DMA_RXINT_CFG_DHL_S	24
- #define    PAS_DMA_RXINT_CFG_DHL(x)	(((x) << PAS_DMA_RXINT_CFG_DHL_S) & \
- 					 PAS_DMA_RXINT_CFG_DHL_M)
- #define    PAS_DMA_RXINT_CFG_LW		0x00200000
- #define    PAS_DMA_RXINT_CFG_L2		0x00100000
-+#define    PAS_DMA_RXINT_CFG_HEN	0x00080000
- #define    PAS_DMA_RXINT_CFG_WIF	0x00000002
- #define    PAS_DMA_RXINT_CFG_WIL	0x00000001
- 
-@@ -425,10 +428,9 @@ enum {
- /* Receive descriptor fields */
- #define	XCT_MACRX_T		0x8000000000000000ull
- #define	XCT_MACRX_ST		0x4000000000000000ull
--#define XCT_MACRX_NORES		0x0000000000000000ull
--#define XCT_MACRX_8BRES		0x1000000000000000ull
--#define XCT_MACRX_24BRES	0x2000000000000000ull
--#define XCT_MACRX_40BRES	0x3000000000000000ull
-+#define XCT_MACRX_RR_M		0x3000000000000000ull
-+#define XCT_MACRX_RR_NORES	0x0000000000000000ull
-+#define XCT_MACRX_RR_8BRES	0x1000000000000000ull
- #define XCT_MACRX_O		0x0400000000000000ull
- #define XCT_MACRX_E		0x0200000000000000ull
- #define XCT_MACRX_FF		0x0100000000000000ull
-@@ -476,6 +478,17 @@ enum {
- #define XCT_PTR_ADDR(x)		((((long)(x)) << XCT_PTR_ADDR_S) & \
- 				 XCT_PTR_ADDR_M)
- 
-+/* Receive interface 8byte result fields */
-+#define XCT_RXRES_8B_L4O_M	0xff00000000000000ull
-+#define XCT_RXRES_8B_L4O_S	56
-+#define XCT_RXRES_8B_RULE_M	0x00ffff0000000000ull
-+#define XCT_RXRES_8B_RULE_S	40
-+#define XCT_RXRES_8B_EVAL_M	0x000000ffff000000ull
-+#define XCT_RXRES_8B_EVAL_S	24
-+#define XCT_RXRES_8B_HTYPE_M	0x0000000000f00000ull
-+#define XCT_RXRES_8B_HASH_M	0x00000000000fffffull
-+#define XCT_RXRES_8B_HASH_S	0
-+
- /* Receive interface buffer fields */
- #define XCT_RXB_LEN_M		0x0ffff00000000000ull
- #define XCT_RXB_LEN_S		44
+ #endif /* __ASM_POWERPC_IMMAP_86XX_H__ */
+ #endif /* __KERNEL__ */
+-- 
+1.5.2.4
