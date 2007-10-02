@@ -1,17 +1,20 @@
-Return-Path: <eha@doredevelopment.dk>
-Received: from bq8.dotserv.com (bq8.dotserv.com [193.201.35.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CCB77DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 17:24:12 +1000 (EST)
-To: Scott Wood <scottwood@freescale.com>,
-	LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] cpm: rounding of brg clockdivider
-MIME-Version: 1.0
-Date: Tue, 2 Oct 2007 09:24:03 +0200
-From: Esben Haabendal <eha@doredevelopment.dk>
-Message-ID: <9edac4e26b9461b125012c7e025c847f@127.0.0.1>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/4] Simplify rtas_change_msi() error semantics
+From: Michael Ellerman <michael@ellerman.id.au>
+To: benh@kernel.crashing.org
+In-Reply-To: <1191306253.6310.106.camel@pasglop>
+References: <3034ec8fd939bd5cfcdb7ac65206ae2771dc9b2c.1190270165.git.michael@ellerman.id.au>
+	<fbd88f287ba9d9ca41b5c8da734afd595ae25922.1190270165.git.michael@ellerman.id.au>
+	<1191302603.6310.88.camel@pasglop> <1191304690.6593.8.camel@concordia>
+	<1191306253.6310.106.camel@pasglop>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-RrHGZ/dXoCvUHkNZwxlE"
+Date: Tue, 02 Oct 2007 17:40:25 +1000
+Message-Id: <1191310825.6593.21.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +25,71 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Do rounding of brg clockdivider instead of truncate to get more precise baudrates
+--=-RrHGZ/dXoCvUHkNZwxlE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Something similar might be needed for cpm_fastbrg...
+On Tue, 2007-10-02 at 16:24 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-10-02 at 15:58 +1000, Michael Ellerman wrote:
+> > > Looks allright, just a question tho... what do we do if it fails ?
+> > Do we
+> > > try to fallback to a lower number of MSIs ? Or what ? Dead device ?
+> >=20
+> > That's all up to the device driver. In theory the driver could try agai=
+n
+> > with a lower count - but that might require extra logic in the driver t=
+o
+> > handle shared irq handlers etc. In practice I think the current drivers
+> > will just fail.
+>=20
+> Question is badly phrased.. I meant something more like... what do we do
+> if RTAS returns a lower count ?
+>=20
+> That is, we end up with that device with that lower count of MSIs
+> enabled, we fail at the driver level, do we still somewhat keep track ?
+> Drivers might assume that means it can use LSIs no ? which may not be
+> the case... Shouldn't we try to switch back to LSI mode (or does the
+> RTAS interface doesnt allow it ?)
 
----
-commit 52d631eb8f64cef794d6aa66494e253cf268894e
-tree 956149a0eb5beb9afb280f4593615929eab7b779
-parent 300070dd6b5e71af0c6fbecd32388905dbdd3ea5
-author Esben Haabendal <eha@doredevelopment.dk> Wed, 19 Sep 2007 13:18:59 +0200
-committer Esben Haabendal <esben@esben.doredevelopment.dk> Wed, 19 Sep 2007 13:18:59 +0200
+OK I get you. So:
 
- arch/powerpc/sysdev/cpm2_common.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+rtas_setup_msi_irqs() detects that it got fewer MSIs than it asked for
+and returns an error.
 
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-index 9058da2..a2c8157 100644
---- a/arch/powerpc/sysdev/cpm2_common.c
-+++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -102,7 +102,9 @@ cpm_setbrg(uint brg, uint rate)
-                brg -= 4;
-        }
-        bp += brg;
--       out_be32(bp, (((BRG_UART_CLK / rate) - 1) << 1) | CPM_BRG_EN);
-+       /* Set the BRG clock divider to get the best match to the requested
-+        * baudrate (rounding required) */
-+       out_be32(bp, ((((((BRG_UART_CLK*2)/rate)+1)/2)-1) << 1) | CPM_BRG_EN);
- 
-        cpm2_unmap(bp);
- }
+The generic code (drivers/pci/msi.c) notices the error and calls
+msi_free_irqs().
 
+That calls back into rtas_teardown_msi_irqs() which disposes of the virq
+mappings and calls rtas_disable_msi().
 
+rtas_disable_msi() asks firmware to configure 0 MSIs on the device, that
+hopefully succeeds. AFAIK configuring 0 MSIs is as close as we can get
+to disabling MSI via RTAS.
 
+Perhaps that should also (re)enable INTX?
 
-!-------------------------------------------------------------flip-
+cheers
 
--- 
-Esben Haabendal
-Embedded Software Consultant
-Doré Development ApS
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-RrHGZ/dXoCvUHkNZwxlE
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHAfXpdSjSd0sB4dIRAqoeAKChxYF+IxNN1ZWQZpW840DXffYlFACcDQ8u
+PYRSUyVmpe6IknXEGQuRy3A=
+=Etvc
+-----END PGP SIGNATURE-----
+
+--=-RrHGZ/dXoCvUHkNZwxlE--
