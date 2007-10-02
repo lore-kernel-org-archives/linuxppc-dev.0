@@ -2,24 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8649ADDF48
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 00:43:44 +1000 (EST)
-In-Reply-To: <47011BED.8020206@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 7D471DDF55
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 00:44:14 +1000 (EST)
+In-Reply-To: <20070928190616.GB20213@loki.buserror.net>
 References: <20070928190616.GB20213@loki.buserror.net>
-	<20070929003005.59afc2a0@kernel.crashing.org>
-	<08C0C9CB-C958-4B95-81B8-D0677CBA4399@kernel.crashing.org>
-	<20070929104917.1585737e@kernel.crashing.org>
-	<1B684498-FC47-4F01-A72E-DD27B259613A@kernel.crashing.org>
-	<47011BED.8020206@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AD243886-65DE-4285-ADD3-1D4C5ABA2E3C@kernel.crashing.org>
+Message-Id: <5DEF6884-7AAF-4B2C-900B-555EDE3715E8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] cpm: Describe multi-user ram in its own device node.
-Date: Tue, 2 Oct 2007 09:43:38 -0500
+Date: Tue, 2 Oct 2007 09:43:58 -0500
 To: Scott Wood <scottwood@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>,
-	PowerPC dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +24,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 1, 2007, at 11:10 AM, Scott Wood wrote:
+On Sep 28, 2007, at 2:06 PM, Scott Wood wrote:
 
-> Kumar Gala wrote:
->> On Sep 29, 2007, at 1:49 AM, Vitaly Bordug wrote:
->>> cpms have dpram, qe has muram. these two are the same stuff in  
->>> fact. Or you are asking about have QE stuff utilize such a  
->>> binding at the same pass?
->> I was asking about both these things.
+> The way the current CPM binding describes available multi-user (a.k.a.
+> dual-ported) RAM doesn't work well when there are multiple free  
+> regions,
+> and it doesn't work at all if the region doesn't begin at the start of
+> the muram area (as the hardware needs to be programmed with offsets  
+> into
+> this area).  The latter situation can happen with SMC UARTs on  
+> CPM2, as its
+> parameter RAM is relocatable, u-boot puts it at zero, and the  
+> kernel doesn't
+> support moving it.
 >
-> As stated in the commit message, QE can use this; it just needs a  
-> compatible entry in the data node.
+> It is now described with a muram node, similar to QE.  The current CPM
+> binding is sufficiently recent (i.e. never appeared in an official  
+> release)
+> that compatibility with existing device trees is not an issue.
+>
+> The code supporting the new binding is shared between cpm1 and  
+> cpm2, rather
+> than remain separated.  QE should be able to use this code as well,  
+> once
+> minor fixes are made to its device trees.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-can some one look at that.
+applied.
 
 - k
