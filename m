@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id D2D0DDDFA1
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 05:06:48 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5417276wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 12:06:47 -0700 (PDT)
-Message-ID: <fa686aa40710021206v7ed7f788u4aeb96bc26ca4f4@mail.gmail.com>
-Date: Tue, 2 Oct 2007 13:06:47 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [PATCH v3 02/12] Virtex: Add Kconfig macros for Xilinx Virtex
-	board support
-In-Reply-To: <87ejgdz6c6.fsf@macbook.be.48ers.dk>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from mail196-dub-R.bigfish.com (mail-dub.bigfish.com
+	[213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EAB06DDF4F
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 06:31:32 +1000 (EST)
+Message-ID: <4702A5FE.5000308@am.sony.com>
+Date: Tue, 02 Oct 2007 13:11:42 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [RFC] PPC64 Exporting memory information through /proc/iomem
+References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
-	<20071002021518.9579.24264.stgit@trillian.cg.shawcable.net>
-	<87ejgdz6c6.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	linux-mm <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/2/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
->
->  Grant> +config XILINX_VIRTEX_II_PRO
->  Grant> +       bool
->  Grant> +       select XILINX_VIRTEX
->  Grant>         select IBM405_ERR77
->  Grant>         select IBM405_ERR51
->
->  Grant> +config XILINX_VIRTEX_4_FX
->  Grant> +       bool
->  Grant> +       select XILINX_VIRTEX
->  Grant> +
->
-> This seems different than under arch/ppc - The errattas were also
-> enabled for the V4FX - What is correct?
+Hi Badari,
 
-I'll need to take another look.  I made a mental point to look at it
-last week when I wrote it, but apparently I forgot.  :-(
+Badari Pulavarty wrote:
+> Hi Paul & Ben,
+> 
+> I am trying to get hotplug memory remove working on ppc64.
+> In order to verify a given memory region, if its valid or not -
+> current hotplug-memory patches used /proc/iomem. On IA64 and
+> x86-64 /proc/iomem shows all memory regions. 
+> 
+> I am wondering, if its acceptable to do the same on ppc64 also ?
+> Otherwise, we need to add arch-specific hooks in hotplug-remove
+> code to be able to do this.
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+It seems the only reasonable place is in /proc/iomem, as the the 
+generic memory hotplug routines put it in there, and if you have
+a ppc64 system that uses add_memory() you will have mem info in
+several places, none of which are complete.  
+
+
+> Index: linux-2.6.23-rc8/arch/powerpc/mm/numa.c
+> ===================================================================
+> --- linux-2.6.23-rc8.orig/arch/powerpc/mm/numa.c	2007-10-02 10:16:42.000000000 -0700
+> +++ linux-2.6.23-rc8/arch/powerpc/mm/numa.c	2007-10-02 10:17:05.000000000 -0700
+> @@ -587,6 +587,22 @@ static void __init *careful_allocation(i
+>  	return (void *)ret;
+>  }
+>  
+> +static void add_regions_iomem()
+> +{
+> +	int i;
+> +	struct resource *res;
+> +
+> +	for (i = 0; i < lmb.memory.cnt; i++) {
+> +		res = alloc_bootmem_low(sizeof(struct resource));
+> +
+> +		res->name = "System RAM";
+> +		res->start = lmb.memory.region[i].base;
+> +		res->end = res->start + lmb.memory.region[i].size - 1;
+> +		res->flags = IORESOURCE_MEM;
+> +		request_resource(&iomem_resource, res);
+> +	}
+> +}
+> +
+
+I think this duplication of the code in register_memory_resource()
+is a maintenance concern though.  I wonder if it would be better
+to somehow hook your stuff into into the existing memory hotplug
+routines.
+
+
+-Geoff
