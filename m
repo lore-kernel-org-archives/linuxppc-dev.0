@@ -1,18 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id A8A79DDF4C
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:26:26 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so2369061uge
-	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:26:24 -0700 (PDT)
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.189])
+	by ozlabs.org (Postfix) with ESMTP id 9EBE1DDF4C
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 01:27:38 +1000 (EST)
+Received: by mu-out-0910.google.com with SMTP id w1so4944103mue
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 08:27:36 -0700 (PDT)
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 05/18] Add PowerPC Xilinx Virtex entry to maintainers
+Subject: Re: [PATCH 07/18] Uartlite: change name of ports to ulite_ports
 References: <20070928181421.18608.74224.stgit@trillian.cg.shawcable.net>
-	<20070928181627.18608.29878.stgit@trillian.cg.shawcable.net>
+	<20070928181718.18608.60984.stgit@trillian.cg.shawcable.net>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Tue, 02 Oct 2007 17:26:18 +0200
-In-Reply-To: <20070928181627.18608.29878.stgit@trillian.cg.shawcable.net>
-	(Grant Likely's message of "Fri\, 28 Sep 2007 12\:16\:59 -0600")
-Message-ID: <87myv135d1.fsf@macbook.be.48ers.dk>
+Date: Tue, 02 Oct 2007 17:27:30 +0200
+In-Reply-To: <20070928181718.18608.60984.stgit@trillian.cg.shawcable.net>
+	(Grant Likely's message of "Fri\, 28 Sep 2007 12\:17\:21 -0600")
+Message-ID: <87ir5p35b1.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -28,15 +28,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-Hi,
- 
- Grant> +LINUX FOR POWERPC EMBEDDED XILINX VIRTEX
- Grant> +P:	Grant Likely
- Grant> +M:	grant.likely@secretlab.ca
- Grant> +W:	http://www.secretlab.ca/
+ Grant> From: Grant Likely <grant.likely@secretlab.ca>
+ Grant> Changed to match naming convention used in the rest of the module
 
-That page doesn't have any Xilinx info. What about 
-http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex instead?
+Ok.
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
 
 -- 
 Bye, Peter Korsgaard
