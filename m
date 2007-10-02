@@ -1,25 +1,21 @@
-Return-Path: <axboe@kernel.dk>
-Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "A common name", Issuer "A common name" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7FEDBDDE43
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 16:33:33 +1000 (EST)
-Date: Tue, 2 Oct 2007 08:35:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
-Message-ID: <20071002063523.GM5303@kernel.dk>
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	<20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
-	<20070930230557.GA17654@infradead.org>
-	<fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
-	<20071001115954.GD5303@kernel.dk>
-	<1191304710.6310.97.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1191304710.6310.97.camel@pasglop>
-Cc: Christoph Hellwig <hch@infradead.org>, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <michel@tungstengraphics.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
+	by ozlabs.org (Postfix) with ESMTP id 03267DDEF2
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 16:43:48 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so4522510fkz
+	for <linuxppc-dev@ozlabs.org>; Mon, 01 Oct 2007 23:43:47 -0700 (PDT)
+Subject: Re: Powerbook shuts down hard when hot, patch found
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Michael Buesch <mb@bu3sch.de>
+In-Reply-To: <200710012258.18716.mb@bu3sch.de>
+References: <200709282332.52819.mb@bu3sch.de> <200709301216.55123.mb@bu3sch.de>
+	<1191225602.28457.22.camel@thor.sulgenrain.local>
+	<200710012258.18716.mb@bu3sch.de>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 02 Oct 2007 08:43:41 +0200
+Message-Id: <1191307422.24879.12.camel@thor.sulgenrain.local>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 02 2007, Benjamin Herrenschmidt wrote:
-> 
-> On Mon, 2007-10-01 at 13:59 +0200, Jens Axboe wrote:
-> > On Sun, Sep 30 2007, Grant Likely wrote:
-> > > On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
-> > > > On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
-> > > > > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
-> > > > > +             goto err_plat;
-> > > >
-> > > >         rc = platform_driver_register(&ace_platform_driver);
-> > > >         if (rc)
-> > > >                  goto err_plat;
-> > > >
-> > > > please.
-> > > 
-> > > Okay, will do.
-> > > 
-> > > >
-> > > > > +      err_plat:
-> > > > > +     unregister_blkdev(ace_major, "xsysace");
-> > > > > +      err_blk:
-> > > >
-> > > > labels should be indented zero or one space, but not more.
-> > > 
-> > > scripts/Lindent does this.  Originally, I *didn't* have my labels
-> > > indented.  :-)   Does Lindent need to be fixed?
-> > 
-> > Seems so, if it idents labels.
-> > 
-> > Just send a fixup patch for that, I'll add your series to the block tree
-> > for 2.6.24.
-> 
-> It's actually better off living in the powerpc tree I think as it's
-> really about adding support for a new powerpc platform and somewhat
-> needs to sync with other things in there. Unless you really want the
-> whole thing in your tree :-)
 
-I already included it yesterday, it'll go up once 2.6.24 opens. Let me
-know if you want me to rip it out, though.
+On Mon, 2007-10-01 at 22:58 +0200, Michael Buesch wrote:
+> On Monday 01 October 2007 10:00:02 Michel Dänzer wrote:
+> > 
+> > On Sun, 2007-09-30 at 12:16 +0200, Michael Buesch wrote:
+> > > 
+> > > Ah, forgot to say.
+> > > It does not crash immediately when the register is written. It takes about two seconds
+> > > to crash. And when the machine is colder to begin with, it takes slightly
+> > > longer to trigger. That _might_ support your overheating theory.
+> > > 
+> > > Though, it does not trigger when it's up and running, no matter how hot you drive it.
+> > 
+> > Maybe the thermal control module prevents it from overheating. Have you
+> > tried unloading it or loading it ASAP on bootup to see if that makes any
+> > difference either way?
+> 
+> I'm not sure how that works. Can I unload the framebuffer module?
+
+I'm talking about the thermal control module (therm_adt746x in my case),
+not radeonfb.
+
 
 -- 
-Jens Axboe
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
