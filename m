@@ -1,28 +1,28 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 7C9A7DE818
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 12:16:56 +1000 (EST)
-Received: from pd4mr2so.prod.shaw.ca
-	(pd4mr2so-qfe3.prod.shaw.ca [10.0.141.213]) by l-daemon
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 3E450DE8F6
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 12:17:07 +1000 (EST)
+Received: from pd4mr1so.prod.shaw.ca
+	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JP900GVLIAXZGA0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 01 Oct 2007 20:16:09 -0600 (MDT)
-Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
-	by pd4mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	with ESMTP id <0JP900AJQIATUUF0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 01 Oct 2007 20:16:05 -0600 (MDT)
+Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
+	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JP900JGIIAW6R10@pd4mr2so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 01 Oct 2007 20:16:09 -0600 (MDT)
+	5 2006)) with ESMTP id <0JP900LABIASCE30@pd4mr1so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 01 Oct 2007 20:16:05 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JP900FYAIAG6DQ7@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 01 Oct 2007 20:15:52 -0600 (MDT)
-Date: Mon, 01 Oct 2007 20:15:49 -0600
+	with ESMTP id <0JP900CJJIAMLKA0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 01 Oct 2007 20:15:58 -0600 (MDT)
+Date: Mon, 01 Oct 2007 20:15:59 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 08/12] Uartlite: Add macro for uartlite device name
+Subject: [PATCH v3 10/12] Uartlite: Comment block tidy
 In-reply-to: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
 To: linuxppc-dev@ozlabs.org, jwboyer@linux.vnet.ibm.com
-Message-id: <20071002021549.9579.28267.stgit@trillian.cg.shawcable.net>
+Message-id: <20071002021559.9579.41478.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20071002021334.9579.68179.stgit@trillian.cg.shawcable.net>
@@ -37,41 +37,109 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
-Changed to make the following OF_platform bus binding patch a wee bit cleaner
+Tidy the comments to split the driver into logical section; the main driver,
+the console driver, the platform bus binding, and module initialization
+and teardown.
 
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/serial/uartlite.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/serial/uartlite.c |   43 ++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 40 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index ae05a67..10e0da9 100644
+index c00a627..ed13b9f 100644
 --- a/drivers/serial/uartlite.c
 +++ b/drivers/serial/uartlite.c
-@@ -18,6 +18,7 @@
- #include <linux/interrupt.h>
- #include <asm/io.h>
- 
-+#define ULITE_NAME		"ttyUL"
- #define ULITE_MAJOR		204
+@@ -23,9 +23,13 @@
  #define ULITE_MINOR		187
  #define ULITE_NR_UARTS		4
-@@ -381,7 +382,7 @@ static int __init ulite_console_setup(struct console *co, char *options)
- static struct uart_driver ulite_uart_driver;
  
- static struct console ulite_console = {
--	.name	= "ttyUL",
-+	.name	= ULITE_NAME,
- 	.write	= ulite_console_write,
- 	.device	= uart_console_device,
- 	.setup	= ulite_console_setup,
-@@ -403,7 +404,7 @@ console_initcall(ulite_console_init);
- static struct uart_driver ulite_uart_driver = {
- 	.owner		= THIS_MODULE,
- 	.driver_name	= "uartlite",
--	.dev_name	= "ttyUL",
-+	.dev_name	= ULITE_NAME,
- 	.major		= ULITE_MAJOR,
- 	.minor		= ULITE_MINOR,
- 	.nr		= ULITE_NR_UARTS,
+-/* For register details see datasheet:
+-   http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
+-*/
++/* ---------------------------------------------------------------------
++ * Register definitions
++ *
++ * For register details see datasheet:
++ * http://www.xilinx.com/bvdocs/ipcenter/data_sheet/opb_uartlite.pdf
++ */
++
+ #define ULITE_RX		0x00
+ #define ULITE_TX		0x04
+ #define ULITE_STATUS		0x08
+@@ -49,6 +53,10 @@
+ 
+ static struct uart_port ulite_ports[ULITE_NR_UARTS];
+ 
++/* ---------------------------------------------------------------------
++ * Core UART driver operations
++ */
++
+ static int ulite_receive(struct uart_port *port, int stat)
+ {
+ 	struct tty_struct *tty = port->info->tty;
+@@ -308,6 +316,10 @@ static struct uart_ops ulite_ops = {
+ 	.verify_port	= ulite_verify_port
+ };
+ 
++/* ---------------------------------------------------------------------
++ * Console driver operations
++ */
++
+ #ifdef CONFIG_SERIAL_UARTLITE_CONSOLE
+ static void ulite_console_wait_tx(struct uart_port *port)
+ {
+@@ -413,6 +425,19 @@ static struct uart_driver ulite_uart_driver = {
+ #endif
+ };
+ 
++/* ---------------------------------------------------------------------
++ * Port assignment functions (mapping devices to uart_port structures)
++ */
++
++/** ulite_assign: register a uartlite device with the driver
++ *
++ * @dev: pointer to device structure
++ * @id: requested id number.  Pass -1 for automatic port assignment
++ * @base: base address of uartlite registers
++ * @irq: irq number for uartlite
++ *
++ * Returns: 0 on success, <0 otherwise
++ */
+ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
+ {
+ 	struct uart_port *port;
+@@ -465,6 +490,10 @@ static int __devinit ulite_assign(struct device *dev, int id, u32 base, int irq)
+ 	return 0;
+ }
+ 
++/** ulite_release: register a uartlite device with the driver
++ *
++ * @dev: pointer to device structure
++ */
+ static int __devinit ulite_release(struct device *dev)
+ {
+ 	struct uart_port *port = dev_get_drvdata(dev);
+@@ -479,6 +508,10 @@ static int __devinit ulite_release(struct device *dev)
+ 	return rc;
+ }
+ 
++/* ---------------------------------------------------------------------
++ * Platform bus binding
++ */
++
+ static int __devinit ulite_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res, *res2;
+@@ -508,6 +541,10 @@ static struct platform_driver ulite_platform_driver = {
+ 		   },
+ };
+ 
++/* ---------------------------------------------------------------------
++ * Module setup/teardown
++ */
++
+ int __init ulite_init(void)
+ {
+ 	int ret;
