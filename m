@@ -1,12 +1,12 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id BE86ADDFE0
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:22:27 +1000 (EST)
-Date: Tue, 2 Oct 2007 16:26:30 -0500
+	by ozlabs.org (Postfix) with ESMTP id 61254DDFD1
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:22:50 +1000 (EST)
+Date: Tue, 2 Oct 2007 16:26:53 -0500
 From: Olof Johansson <olof@lixom.net>
 To: jgarzik@pobox.com
-Subject: [PATCH] [5/11] pasemi_mac: workaround for erratum 5971
-Message-ID: <20071002212630.GF2282@lixom.net>
+Subject: [PATCH] [6/11] pasemi_mac: add local skb alignment
+Message-ID: <20071002212653.GG2282@lixom.net>
 References: <20071002212421.GA2282@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -21,12 +21,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pasemi_mac: workaround for erratum 5971
+pasemi_mac: add local skb alignment
 
-Implement workarounds for erratum 5971, where L2 hints aren't considered
-properly unless the way hint is enabled on the interface. Since L2 isn't
-setup to dedicate a way to headers, we need to reset the packet count
-by hand so it won't run out of credits.
+Add local SKB alignment to pasemi_mac, since ppc64 in general has it at 0
+because of design flaws in some of the IBM server bridge chips. However,
+for PWRficient doing the unaligned copies is more expensive than doing
+unaligned DMA so make sure the data is aligned instead.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
@@ -34,52 +34,51 @@ Index: k.org/drivers/net/pasemi_mac.c
 ===================================================================
 --- k.org.orig/drivers/net/pasemi_mac.c
 +++ k.org/drivers/net/pasemi_mac.c
-@@ -239,7 +239,9 @@ static int pasemi_mac_setup_rx_resources
- 			   PAS_DMA_RXINT_BASEU_SIZ(RX_RING_SIZE >> 3));
+@@ -37,6 +37,12 @@
  
- 	write_dma_reg(mac, PAS_DMA_RXINT_CFG(mac->dma_if),
--			   PAS_DMA_RXINT_CFG_DHL(2));
-+			   PAS_DMA_RXINT_CFG_DHL(3) |
-+			   PAS_DMA_RXINT_CFG_L2 |
-+			   PAS_DMA_RXINT_CFG_LW);
+ #include "pasemi_mac.h"
  
- 	ring->next_to_fill = 0;
- 	ring->next_to_clean = 0;
-@@ -589,6 +591,11 @@ static int pasemi_mac_clean_rx(struct pa
- 		n += 2;
- 	}
++/* We have our own align, since ppc64 in general has it at 0 because
++ * of design flaws in some of the server bridge chips. However, for
++ * PWRficient doing the unaligned copies is more expensive than doing
++ * unaligned DMA, so make sure the data is aligned instead.
++ */
++#define LOCAL_SKB_ALIGN	2
  
-+	if (n > RX_RING_SIZE) {
-+		/* Errata 5971 workaround: L2 target of headers */
-+		write_iob_reg(mac, PAS_IOB_COM_PKTHDRCNT, 0);
-+		n &= (RX_RING_SIZE-1);
-+	}
- 	mac->rx->next_to_clean = n;
- 	pasemi_mac_replenish_rx_ring(mac->netdev, limit-count);
+ /* TODO list
+  *
+@@ -409,13 +415,16 @@ static void pasemi_mac_replenish_rx_ring
+ 		/* skb might still be in there for recycle on short receives */
+ 		if (info->skb)
+ 			skb = info->skb;
+-		else
++		else {
+ 			skb = dev_alloc_skb(BUF_SIZE);
++			skb_reserve(skb, LOCAL_SKB_ALIGN);
++		}
  
-Index: k.org/drivers/net/pasemi_mac.h
-===================================================================
---- k.org.orig/drivers/net/pasemi_mac.h
-+++ k.org/drivers/net/pasemi_mac.h
-@@ -210,6 +210,8 @@ enum {
- #define    PAS_DMA_RXINT_CFG_DHL_S	24
- #define    PAS_DMA_RXINT_CFG_DHL(x)	(((x) << PAS_DMA_RXINT_CFG_DHL_S) & \
- 					 PAS_DMA_RXINT_CFG_DHL_M)
-+#define    PAS_DMA_RXINT_CFG_LW		0x00200000
-+#define    PAS_DMA_RXINT_CFG_L2		0x00100000
- #define    PAS_DMA_RXINT_CFG_WIF	0x00000002
- #define    PAS_DMA_RXINT_CFG_WIL	0x00000001
+ 		if (unlikely(!skb))
+ 			break;
  
-@@ -315,6 +317,12 @@ enum {
- #define    PAS_STATUS_SOFT		0x4000000000000000ull
- #define    PAS_STATUS_INT		0x8000000000000000ull
+-		dma = pci_map_single(mac->dma_pdev, skb->data, BUF_SIZE,
++		dma = pci_map_single(mac->dma_pdev, skb->data,
++				     BUF_SIZE - LOCAL_SKB_ALIGN,
+ 				     PCI_DMA_FROMDEVICE);
  
-+#define PAS_IOB_COM_PKTHDRCNT		0x120
-+#define    PAS_IOB_COM_PKTHDRCNT_PKTHDR1_M	0x0fff0000
-+#define    PAS_IOB_COM_PKTHDRCNT_PKTHDR1_S	16
-+#define    PAS_IOB_COM_PKTHDRCNT_PKTHDR0_M	0x00000fff
-+#define    PAS_IOB_COM_PKTHDRCNT_PKTHDR0_S	0
+ 		if (unlikely(dma_mapping_error(dma))) {
+@@ -553,10 +562,12 @@ static int pasemi_mac_clean_rx(struct pa
+ 		len = (macrx & XCT_MACRX_LLEN_M) >> XCT_MACRX_LLEN_S;
+ 
+ 		if (len < 256) {
+-			struct sk_buff *new_skb =
+-			    netdev_alloc_skb(mac->netdev, len + NET_IP_ALIGN);
++			struct sk_buff *new_skb;
 +
- #define PAS_IOB_DMA_RXCH_CFG(i)		(0x1100 + (i)*4)
- #define    PAS_IOB_DMA_RXCH_CFG_CNTTH_M		0x00000fff
- #define    PAS_IOB_DMA_RXCH_CFG_CNTTH_S		0
++			new_skb = netdev_alloc_skb(mac->netdev,
++						   len + LOCAL_SKB_ALIGN);
+ 			if (new_skb) {
+-				skb_reserve(new_skb, NET_IP_ALIGN);
++				skb_reserve(new_skb, LOCAL_SKB_ALIGN);
+ 				memcpy(new_skb->data, skb->data, len);
+ 				/* save the skb in buffer_info as good */
+ 				skb = new_skb;
