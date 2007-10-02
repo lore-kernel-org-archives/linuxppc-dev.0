@@ -2,17 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 575E0DDE35
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:09:34 +1000 (EST)
-Subject: Re: [PATCH] Make sure to of_node_get() the result of
-	pci_device_to_OF_node()
+	by ozlabs.org (Postfix) with ESMTP id 6377CDDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:10:12 +1000 (EST)
+Subject: Re: [PATCH 1/7] Store the base address in dcr_host_t
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <8183225ab4b14684bb0939e0c5258caaf5b8102f.1190008974.git.michael@ellerman.id.au>
-References: <8183225ab4b14684bb0939e0c5258caaf5b8102f.1190008974.git.michael@ellerman.id.au>
+In-Reply-To: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
+References: <449a181e8169af98984bb2d61a759c23e55d19b4.1190009070.git.michael@ellerman.id.au>
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 15:09:21 +1000
-Message-Id: <1191301761.6310.64.camel@pasglop>
+Date: Tue, 02 Oct 2007 15:10:01 +1000
+Message-Id: <1191301801.6310.66.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -26,37 +25,68 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2007-09-17 at 16:03 +1000, Michael Ellerman wrote:
-> pci_device_to_OF_node() returns the device node attached to a PCI device,
-> but doesn't actually grab a reference - we need to do it ourselves.
+On Mon, 2007-09-17 at 16:05 +1000, Michael Ellerman wrote:
+> In its current form, dcr_map() doesn't remember the base address you passed
+> it, which means you need to store it somewhere else. Rather than adding the
+> base to another struct it seems simpler to store it in the dcr_host_t.
 > 
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/platforms/cell/axon_msi.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  arch/powerpc/sysdev/dcr.c        |    2 +-
+>  include/asm-powerpc/dcr-mmio.h   |    6 +++++-
+>  include/asm-powerpc/dcr-native.h |    6 ++++--
+>  3 files changed, 10 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-> index 57a6149..2b2dfcc 100644
-> --- a/arch/powerpc/platforms/cell/axon_msi.c
-> +++ b/arch/powerpc/platforms/cell/axon_msi.c
-> @@ -119,7 +119,7 @@ static struct axon_msic *find_msi_translator(struct pci_dev *dev)
->  	const phandle *ph;
->  	struct axon_msic *msic = NULL;
+> diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+> index e82d54d..ab11c0b 100644
+> --- a/arch/powerpc/sysdev/dcr.c
+> +++ b/arch/powerpc/sysdev/dcr.c
+> @@ -104,7 +104,7 @@ u64 of_translate_dcr_address(struct device_node *dev,
+>  dcr_host_t dcr_map(struct device_node *dev, unsigned int dcr_n,
+>  		   unsigned int dcr_c)
+>  {
+> -	dcr_host_t ret = { .token = NULL, .stride = 0 };
+> +	dcr_host_t ret = { .token = NULL, .stride = 0, .base = dcr_n };
+>  	u64 addr;
 >  
-> -	dn = pci_device_to_OF_node(dev);
-> +	dn = of_node_get(pci_device_to_OF_node(dev));
->  	if (!dn) {
->  		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
->  		return NULL;
-> @@ -176,7 +176,7 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
->  	int len;
->  	const u32 *prop;
+>  	pr_debug("dcr_map(%s, 0x%x, 0x%x)\n",
+> diff --git a/include/asm-powerpc/dcr-mmio.h b/include/asm-powerpc/dcr-mmio.h
+> index 5dbfca8..6b82c3b 100644
+> --- a/include/asm-powerpc/dcr-mmio.h
+> +++ b/include/asm-powerpc/dcr-mmio.h
+> @@ -23,7 +23,11 @@
 >  
-> -	dn = pci_device_to_OF_node(dev);
-> +	dn = of_node_get(pci_device_to_OF_node(dev));
->  	if (!dn) {
->  		dev_dbg(&dev->dev, "axon_msi: no pci_dn found\n");
->  		return -ENODEV;
+>  #include <asm/io.h>
+>  
+> -typedef struct { void __iomem *token; unsigned int stride; } dcr_host_t;
+> +typedef struct {
+> +	void __iomem *token;
+> +	unsigned int stride;
+> +	unsigned int base;
+> +} dcr_host_t;
+>  
+>  #define DCR_MAP_OK(host)	((host).token != NULL)
+>  
+> diff --git a/include/asm-powerpc/dcr-native.h b/include/asm-powerpc/dcr-native.h
+> index 05af081..f41058c 100644
+> --- a/include/asm-powerpc/dcr-native.h
+> +++ b/include/asm-powerpc/dcr-native.h
+> @@ -22,11 +22,13 @@
+>  #ifdef __KERNEL__
+>  #ifndef __ASSEMBLY__
+>  
+> -typedef struct {} dcr_host_t;
+> +typedef struct {
+> +	unsigned int base;
+> +} dcr_host_t;
+>  
+>  #define DCR_MAP_OK(host)	(1)
+>  
+> -#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){})
+> +#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){ .base = (dcr_n) })
+>  #define dcr_unmap(host, dcr_n, dcr_c)	do {} while (0)
+>  #define dcr_read(host, dcr_n)		mfdcr(dcr_n)
+>  #define dcr_write(host, dcr_n, value)	mtdcr(dcr_n, value)
