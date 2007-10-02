@@ -1,15 +1,11 @@
 Return-Path: <mgreer@mvista.com>
-Date: Mon, 1 Oct 2007 17:15:10 -0700
+Date: Mon, 1 Oct 2007 17:20:53 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] Get rid of linuxppc-embedded?
-Message-ID: <20071002001509.GA11277@mag.az.mvista.com>
-References: <20071001192459.GB5785@mag.az.mvista.com>
-	<fa686aa40710011359x188d2930y38cd8a6faacb0f26@mail.gmail.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Change MAINTAINER references linuxppc-embedded
+Message-ID: <20071002002053.GB11277@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710011359x188d2930y38cd8a6faacb0f26@mail.gmail.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +15,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 01, 2007 at 02:59:14PM -0600, Grant Likely wrote:
-> On 10/1/07, Mark A. Greer <mgreer@mvista.com> wrote:
-> > With the merging of the powerpc trees I'm not sure there is a clear
-> > reason why we have 2 separate powerpc lists anymore (linuxppc-dev and
-> > linuxppc-embedded).
-> >
-> > linuxppc-embedded is fairly low volume/noise but there is still the occasional
-> > patch posted there that should really be posted to linuxppc-dev.  I think
-> > it would be nice to have just one list where all eyes are focused.
-> >
-> > Is it time to get rid of linuxppc-embedded?
-> 
-> Ack Ack Ack!
-> 
-> I agree 100%
+Powerpc patches should be posted to linuxppc-dev@ozlabs.org so modify
+MAINTAINERS to no longer reference linuxppc-embedded@ozlabs.org.
 
-Okay.  Even if we keep the list around, we should update MAINTAINERS to
-only refer to -dev.  I'll post a patch in a second.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 
-Mark
+---
+ MAINTAINERS |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8f80068..06259b4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1543,7 +1543,7 @@ P:	Pantelis Antoniou
+ M:	pantelis.antoniou@gmail.com
+ P:	Vitaly Bordug
+ M:	vbordug@ru.mvista.com
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
+@@ -1551,14 +1551,14 @@ FREESCALE HIGHSPEED USB DEVICE DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	linux-usb-devel@lists.sourceforge.net
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ FREESCALE QUICC ENGINE UCC ETHERNET DRIVER
+ P:	Li Yang
+ M:	leoli@freescale.com
+ L:	netdev@vger.kernel.org
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ FILE LOCKING (flock() and fcntl()/lockf())
+@@ -2291,7 +2291,6 @@ M:	tnt@246tNt.com
+ W:	http://www.246tNt.com/mpc52xx/
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@ozlabs.org
+-L:	linuxppc-embedded@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC EMBEDDED PPC4XX
+@@ -2300,7 +2299,7 @@ M:	jwboyer@linux.vnet.ibm.com
+ P:	Matt Porter
+ M:	mporter@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ T:	git kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc.git
+ S:	Maintained
+ 
+@@ -2308,21 +2307,21 @@ LINUX FOR POWERPC BOOT CODE
+ P:	Tom Rini
+ M:	trini@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC EMBEDDED PPC8XX
+ P:	Marcelo Tosatti
+ M:	marcelo@kvack.org
+ W:	http://www.penguinppc.org/
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC EMBEDDED PPC83XX AND PPC85XX
+ P:	Kumar Gala
+ M:	galak@kernel.crashing.org
+ W:	http://www.penguinppc.org/
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ S:	Maintained
+ 
+ LINUX FOR POWERPC PA SEMI PWRFICIENT
+@@ -2978,7 +2977,7 @@ POWERPC 4xx EMAC DRIVER
+ P:	Eugene Surovegin
+ M:	ebs@ebshome.net
+ W:	http://kernel.ebshome.net/emac/
+-L:	linuxppc-embedded@ozlabs.org
++L:	linuxppc-dev@ozlabs.org
+ L:	netdev@vger.kernel.org
+ S:	Maintained
+ 
