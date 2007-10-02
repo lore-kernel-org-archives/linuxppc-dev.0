@@ -1,24 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B185FDDF17
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 15:58:55 +1000 (EST)
-Subject: Re: [PATCH v2 2/6] Sysace: Use the established platform bus api
+Subject: Re: nap/dfs on 7448
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20071001115954.GD5303@kernel.dk>
-References: <20070930225112.2476.49914.stgit@trillian.cg.shawcable.net>
-	<20070930225707.2476.24080.stgit@trillian.cg.shawcable.net>
-	<20070930230557.GA17654@infradead.org>
-	<fa686aa40709301633q32c7bd9epf07b5a78acb4380e@mail.gmail.com>
-	<20071001115954.GD5303@kernel.dk>
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+In-Reply-To: <556445368AFA1C438794ABDA8901891C0738E1E8@USA0300MS03.na.xerox.net>
+References: <556445368AFA1C438794ABDA8901891C0738E1E8@USA0300MS03.na.xerox.net>
 Content-Type: text/plain
-Date: Tue, 02 Oct 2007 15:58:30 +1000
-Message-Id: <1191304710.6310.97.camel@pasglop>
+Date: Tue, 02 Oct 2007 16:01:57 +1000
+Message-Id: <1191304917.6310.99.camel@pasglop>
 Mime-Version: 1.0
-Cc: Christoph Hellwig <hch@infradead.org>, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,40 +20,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2007-10-01 at 13:59 +0200, Jens Axboe wrote:
-> On Sun, Sep 30 2007, Grant Likely wrote:
-> > On 9/30/07, Christoph Hellwig <hch@infradead.org> wrote:
-> > > On Sun, Sep 30, 2007 at 04:57:09PM -0600, Grant Likely wrote:
-> > > > +     if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
-> > > > +             goto err_plat;
-> > >
-> > >         rc = platform_driver_register(&ace_platform_driver);
-> > >         if (rc)
-> > >                  goto err_plat;
-> > >
-> > > please.
-> > 
-> > Okay, will do.
-> > 
-> > >
-> > > > +      err_plat:
-> > > > +     unregister_blkdev(ace_major, "xsysace");
-> > > > +      err_blk:
-> > >
-> > > labels should be indented zero or one space, but not more.
-> > 
-> > scripts/Lindent does this.  Originally, I *didn't* have my labels
-> > indented.  :-)   Does Lindent need to be fixed?
+On Mon, 2007-10-01 at 17:32 -0400, Leisner, Martin wrote:
+> I asked this on linuxppc-embedded a week ago (I didn't even know this
+> list existed until last week -- another reason to get rid of
+> linuxpcc-embedded).
 > 
-> Seems so, if it idents labels.
+> Has anyone gotten NAP/DFS to reliably work on a 7448?
 > 
-> Just send a fixup patch for that, I'll add your series to the block tree
-> for 2.6.24.
+> I'm seeing strange problems with peripherals...(using a ram disk
+> works fine).
 
-It's actually better off living in the powerpc tree I think as it's
-really about adding support for a new powerpc platform and somewhat
-needs to sync with other things in there. Unless you really want the
-whole thing in your tree :-)
+Could it be that your host bridge isn't properly waking up the CPU to
+DOZE state for snooping DMA ? (It might require some delays on QACK in
+some cases, I know Apple had workarounds in those areas, maybe something
+along those lines need to be configured in the chipset).
 
-Cheers
 Ben.
