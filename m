@@ -1,20 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C02D8DDF1C
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 22:18:57 +1000 (EST)
-Date: Tue, 2 Oct 2007 16:20:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/7] [POWERPC] Fix QEIC->MPIC cascading
-Message-ID: <20071002122005.GA6425@localhost.localdomain>
-References: <20070925143126.GA30013@localhost.localdomain>
-	<20070925143429.GB5323@localhost.localdomain>
-	<1191280461.6310.37.camel@pasglop>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 0CE8BDDEFA
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 22:38:51 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Tue, 02 Oct 2007 14:38:49 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1191279244.6310.32.camel@pasglop>
+Message-ID: <20071002123849.242670@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1191280461.6310.37.camel@pasglop>
+References: <20071001210025.314240@gmx.net> <20071001211120.156280@gmx.net>	
+	<d3eb2341d21ed1f9f7e71f097878731f@kernel.crashing.org>
+	<1191279244.6310.32.camel@pasglop>
+Subject: Re: Problem with OF interrupt parsing code
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 02, 2007 at 09:14:21AM +1000, Benjamin Herrenschmidt wrote:
+
+-------- Original-Nachricht --------
+> Datum: Tue, 02 Oct 2007 07:39:47 +1000
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@ozlabs.org
+> Betreff: Re: Problem with OF interrupt parsing code
+
+> Part of your problem is that interrupt-parent property. You shouldn't
+> have such a property in a PCI host bridge. It's not technically illegal,
+> but it's triggering the "loop" you've been experiencing.
+Okay, I'll remove this one.
+
+> If you want the parsing to fail for PCI devices (to get the fallback to
+> config space values), you need to make sure it does fail. 
 > 
-> On Tue, 2007-09-25 at 18:34 +0400, Anton Vorontsov wrote:
-> > set_irq_chained_handler overwrites MPIC's handle_irq function
-> > (handle_fasteoi_irq) thus MPIC never gets eoi event from the
-> > cascaded IRQ. This situation hangs MPIC on MPC8568E.
-> > 
-> > Patch adds flow level "end" handler to the MPIC, and QEIC calls
-> > it when QEIC's interrupt processing finished.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Another option is to put an empty interrupt-map in there. That will
+> guarantee failure.
 > 
-> Not sure if I already NAKed it on the list, so if I didn't here's it :-)
-> 
-> The proper way of doing that is to have the cascade handler perform the
-> EOI call to mpic.
+> But that's all very ugly. I don't understand why you don't setup a
+> proper map either from your bootloader, zImage wrapper or even prom_init
+> or platform code.
+I know that it's ugly, but the problem is how to distinguish the boards.
+The only real difference I know of is the PCI interrupt mapping. The
+northbridges chip revision for example is always the same, but CPU type,
+amount of memory and PCI devices can appear in all possible combinations.
+The firmware doesn't tell me, which board the kernel is runnning on, so I
+would like to rely on this fall back here until I get the chance to
+update the firmware (which is beyond my control).
 
-Exactly, this is what that patch is trying to do. QEIC cascade handler is
-calling mpic's eoi() (end() actually, as it's flow level, but end == eoi.
-Is it main objection? Ok, I can get rid of it, and use chip level eoi()
-directly).
-
-> Look at how it's done for i8259 mpic cascade handlers.
-
-void pseries_8259_cascade(unsigned int irq, struct irq_desc *desc)
-{       
-        unsigned int cascade_irq = i8259_irq();
-        if (cascade_irq != NO_IRQ)
-                generic_handle_irq(cascade_irq);
-        desc->chip->eoi(irq);
-}
-...
-set_irq_chained_handler(cascade_irq, pseries_8259_cascade);
-
-Quite similar... except that it's written in the board file.
-
-> Basically, when doing a cascade nowadays, you can either just do a
-> normal request_irq() of the cascade, in which case your handler don't
-> have to care about the parent controller at all, but you get various
-> limitations and/or overhead from being a full blown interrupt handler,
-
-Though viable, but not an option.
-
-> or you can use the chained handler mechanism which is a "shortcut" but
-> implies that your cascade handler "knows" what needs to be done to the
-> parent (and thus is specific to the combination parent/child).
-
-Yup, exactly. Actually, QEIC's cascade handlers do not really know
-what needs to be done, but they're good at guessing (if (chip->eoi)).
-
-Sure, I can place board-specific QEIC handlers in the board file, but
-that will be quite big code duplication for all machines using QEIC.
-
-> Cheers,
-> Ben.
-
-Thanks,
-
+Gerhard
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
