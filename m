@@ -2,18 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C433DDF8A
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 08:03:37 +1000 (EST)
-Subject: Re: Problem with OF interrupt parsing code
+	by ozlabs.org (Postfix) with ESMTP id 414DBDDEDC
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 08:43:41 +1000 (EST)
+Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20071002123849.242670@gmx.net>
-References: <20071001210025.314240@gmx.net> <20071001211120.156280@gmx.net>
-	<d3eb2341d21ed1f9f7e71f097878731f@kernel.crashing.org>
-	<1191279244.6310.32.camel@pasglop>  <20071002123849.242670@gmx.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40710020910u3a679ea2m15b005d0ba5fb054@mail.gmail.com>
+References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
+	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
+	<1191304386.6310.92.camel@pasglop>
+	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
+	<871wcd33ux.fsf@macbook.be.48ers.dk>
+	<fa686aa40710020910u3a679ea2m15b005d0ba5fb054@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 03 Oct 2007 08:03:27 +1000
-Message-Id: <1191362607.22572.26.camel@pasglop>
+Date: Wed, 03 Oct 2007 08:43:32 +1000
+Message-Id: <1191365012.22572.33.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -27,19 +30,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-10-02 at 14:38 +0200, Gerhard Pircher wrote:
-> I know that it's ugly, but the problem is how to distinguish the
-> boards.
-> The only real difference I know of is the PCI interrupt mapping. The
-> northbridges chip revision for example is always the same, but CPU
-> type,
-> amount of memory and PCI devices can appear in all possible
-> combinations.
-> The firmware doesn't tell me, which board the kernel is runnning on,
-> so I
-> would like to rely on this fall back here until I get the chance to
-> update the firmware (which is beyond my control).
+> My opinion is that since it is driver-specific code anyway, then it
+> belongs with the driver.  Plus a driver writer for ARM doesn't need to
+> write them.  It's the powerpc or microblaze developer who will do it.
+> If the driver maintainer doesn't want the binding in the main driver
+> .c file, then the binding can easily be in an additional .c file
+> without needing to add a constructor.  (Kind of like how many USB host
+> controllers are managed)
 
-And how does the firmware know ? There must be a strap somewhere...
+The main advantage is that it keeps the OF specific code localized to a
+single function, whether that function lives in the driver or the arch
+code, it makes it self contained and easier to deal with by the driver
+author.
+
+Having multiple device types on which the driver can attach is a pain
+from a driver standpoint. It needs multiple
+probe/remove/suspend/resume/shutdown hooks etc... it's a bigger
+maintainance burden in the long run.
+
+The important thing however, with the constructor approach is to try as
+much as possible to keep the proper tree structure, and thus, try to
+find a way to instanciate the devices with proper parent/child
+relationship so that ordering for things like suspend/resume operations
+is maintained.
 
 Ben.
