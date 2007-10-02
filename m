@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B6BF7DDD0B
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 Oct 2007 10:10:52 +1000 (EST)
-Subject: Re: PowerPC: new EMAC driver typo fix
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <1191283028.10089.15.camel@localhost.localdomain>
-References: <20071001142316.GA24156@ru.mvista.com>
-	<1191283028.10089.15.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 02 Oct 2007 10:10:33 +1000
-Message-Id: <1191283833.6310.42.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
-Reply-To: benh@kernel.crashing.org
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 1 Oct 2007 17:15:10 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] Get rid of linuxppc-embedded?
+Message-ID: <20071002001509.GA11277@mag.az.mvista.com>
+References: <20071001192459.GB5785@mag.az.mvista.com>
+	<fa686aa40710011359x188d2930y38cd8a6faacb0f26@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710011359x188d2930y38cd8a6faacb0f26@mail.gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mon, 2007-10-01 at 18:57 -0500, Josh Boyer wrote:
-> On Mon, 2007-10-01 at 18:23 +0400, Valentine Barshak wrote:
-> > This looks like typo. Please, apply this patch to fix.
-> > 
-> > diff -ruNp linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
-> > --- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2007-10-01 17:23:35.000000000 +0400
-> > +++ linux-2.6/drivers/net/ibm_newemac/core.c	2007-10-01 17:44:57.000000000 +0400
-> > @@ -1232,9 +1232,9 @@ static inline int emac_xmit_finish(struc
-> >  	 * instead
-> >  	 */
-> >  	if (emac_has_feature(dev, EMAC_FTR_EMAC4))
-> > -		out_be32(&p->tmr0, EMAC_TMR0_XMIT);
-> > -	else
-> >  		out_be32(&p->tmr0, EMAC4_TMR0_XMIT);
-> > +	else
-> > +		out_be32(&p->tmr0, EMAC_TMR0_XMIT);
-> > 
-> >  	if (unlikely(++dev->tx_cnt == NUM_TX_BUFF)) {
-> >  		netif_stop_queue(ndev);
+On Mon, Oct 01, 2007 at 02:59:14PM -0600, Grant Likely wrote:
+> On 10/1/07, Mark A. Greer <mgreer@mvista.com> wrote:
+> > With the merging of the powerpc trees I'm not sure there is a clear
+> > reason why we have 2 separate powerpc lists anymore (linuxppc-dev and
+> > linuxppc-embedded).
+> >
+> > linuxppc-embedded is fairly low volume/noise but there is still the occasional
+> > patch posted there that should really be posted to linuxppc-dev.  I think
+> > it would be nice to have just one list where all eyes are focused.
+> >
+> > Is it time to get rid of linuxppc-embedded?
 > 
-> No Signed-off-by: line.
+> Ack Ack Ack!
 > 
-> The patch looks sane otherwise.  David, Ben, comments?
+> I agree 100%
 
-It does definitely look like a genuine typo so Acked by me.
+Okay.  Even if we keep the list around, we should update MAINTAINERS to
+only refer to -dev.  I'll post a patch in a second.
 
-Ben.
+Mark
