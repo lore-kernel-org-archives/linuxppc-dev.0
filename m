@@ -1,12 +1,12 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 09FE9DDFC6
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:23:55 +1000 (EST)
-Date: Tue, 2 Oct 2007 16:27:57 -0500
+	by ozlabs.org (Postfix) with ESMTP id CC6A2DDFCA
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 07:24:15 +1000 (EST)
+Date: Tue, 2 Oct 2007 16:28:18 -0500
 From: Olof Johansson <olof@lixom.net>
 To: jgarzik@pobox.com
-Subject: [PATCH] [10/11] pasemi_mac: use buffer index pointer in clean_rx()
-Message-ID: <20071002212757.GK2282@lixom.net>
+Subject: [PATCH] [11/11] pasemi_mac: enable iommu support
+Message-ID: <20071002212818.GL2282@lixom.net>
 References: <20071002212421.GA2282@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
