@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 4FD69DDE32
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:17:46 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5837427wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 11:17:45 -0700 (PDT)
-Message-ID: <fa686aa40710031117x528e5afarb059d8f1c9eb3e7f@mail.gmail.com>
-Date: Wed, 3 Oct 2007 12:17:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
-In-Reply-To: <874ph8xjz1.fsf@macbook.be.48ers.dk>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C74DDDE32
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:19:19 +1000 (EST)
+Message-ID: <4703DD22.3090805@pobox.com>
+Date: Wed, 03 Oct 2007 14:19:14 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <87lkakxky1.fsf@macbook.be.48ers.dk>
-	<fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
-	<874ph8xjz1.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH RESEND] [11/11] pasemi_mac: enable iommu support
+References: <20071002212421.GA2282@lixom.net>
+	<20071002212818.GL2282@lixom.net> <4703D5A5.1080204@pobox.com>
+	<20071003180354.GB19319@lixom.net>
+In-Reply-To: <20071003180354.GB19319@lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/3/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
->
-> Hi,
->
->  Grant> Why not just:
->
->  Grant>         np = of_find_node_by_type(NULL, "qe");
->  Grant> +       if (!np)
->  Grant> +               np = of_find_node_by_type(NULL, "soc");
->  Grant>         if (!np)
->  Grant>                 return -ENODEV;
->
-> My first iteration did it like that, but then you don't get a -ENODEV
-> if the node is missing (and you'll end up using the wrong clock) and
-> it doesn't support processors with SPI on and off QE (if that
-> exists/will ever exist).
+Olof Johansson wrote:
+> pasemi_mac: enable iommu support
+> 
+> Enable IOMMU support for pasemi_mac, but avoid using it on non-partitioned
+> systems for performance reasons.
+> 
+> The user can override this by selecting the PPC_PASEMI_IOMMU_DMA_FORCE
+> configuration option.
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Okay, but you should at least be able confine your determination of
-which sysclk value to use to one part of the function.  Otherwise, it
-looks good.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+applied
