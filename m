@@ -1,19 +1,19 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 1116ADDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 17:43:50 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 03 Oct 2007 09:43:47 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1191362607.22572.26.camel@pasglop>
-Message-ID: <20071003074347.242670@gmx.net>
-MIME-Version: 1.0
-References: <20071001210025.314240@gmx.net> <20071001211120.156280@gmx.net>	
-	<d3eb2341d21ed1f9f7e71f097878731f@kernel.crashing.org>	
-	<1191279244.6310.32.camel@pasglop>  <20071002123849.242670@gmx.net>
-	<1191362607.22572.26.camel@pasglop>
-Subject: Re: Problem with OF interrupt parsing code
-To: benh@kernel.crashing.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 983C9DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 18:12:33 +1000 (EST)
+Date: Wed, 3 Oct 2007 18:12:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Patches added to powerpc.git for-2.6.24 branch
+Message-Id: <20071003181215.e8942228.sfr@canb.auug.org.au>
+In-Reply-To: <20071003171551.7184d83b.sfr@canb.auug.org.au>
+References: <18179.13902.936820.573996@cargo.ozlabs.ibm.com>
+	<20071003171551.7184d83b.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,34 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--------- Original-Nachricht --------
-> Datum: Wed, 03 Oct 2007 08:03:27 +1000
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: Problem with OF interrupt parsing code
+On Wed, 3 Oct 2007 17:15:51 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> Would you also consider:
+>=20
+> [POWERPC] Prepare to remove of_platform_driver name
+> (http://patchwork.ozlabs.org/linuxppc/patch?id=3D13667)
 
-> 
-> On Tue, 2007-10-02 at 14:38 +0200, Gerhard Pircher wrote:
-> > I know that it's ugly, but the problem is how to distinguish the
-> > boards. The only real difference I know of is the PCI interrupt
-> > mapping. The northbridges chip revision for example is always the
-> > same, but CPU type, amount of memory and PCI devices can appear in
-> > all possible combinations. The firmware doesn't tell me, which board
-> > the kernel is runnning on, so I would like to rely on this fall back
-> > here until I get the chance to update the firmware (which is beyond
-> > my control).
-> 
-> And how does the firmware know ? There must be a strap somewhere...
-> 
-> Ben.
-Good question. I don't know. Anyway I changed the device tree based on
-your comments and now it works (at least until the kernel deadlocks
-somewhere else). :(
+Also:
 
-Gerhard
+[PATCH 07/11] [POWERPC] iSeries: missing newline in printk
+(http://patchwork.ozlabs.org/linuxppc/patch?id=3D13661)
+and
+[PATCH 10/11] [POWERPC] Clean up vio.h
+(http://patchwork.ozlabs.org/linuxppc/patch?id=3D13664)
 
--- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+don't actually interact with the rest of the series.
+
+I rebuilt {ppc64,pseries,iseries}_defconfig with just the above three
+patches on top of the current for-2.6.24 tree to be sure.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHA07kTgG2atn1QN8RAseCAJ9iqIV94E/zF6kCliPnWMmXcne9IwCfbSqQ
+bMg39S8KeJ9TZ+4cku6yNk4=
+=/Xjf
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW--
