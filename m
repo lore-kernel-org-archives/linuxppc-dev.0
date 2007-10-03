@@ -1,22 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id 5BCD7DDE2C
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:29:12 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5883852wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 13:29:11 -0700 (PDT)
-Message-ID: <fa686aa40710031329s728920eblaf1bf699a40272c8@mail.gmail.com>
-Date: Wed, 3 Oct 2007 14:29:11 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [PATCH 08/10] bootwrapper: Add a firmware-independent "raw"
-	target.
-In-Reply-To: <20070905192116.GH32113@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070905192001.GA32049@ld0162-tx32.am.freescale.net>
-	<20070905192116.GH32113@ld0162-tx32.am.freescale.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 313F3DDE1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 07:23:48 +1000 (EST)
+Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40710030739k13e05571l7063aa635a8727dc@mail.gmail.com>
+References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
+	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
+	<1191304386.6310.92.camel@pasglop>
+	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
+	<871wcd33ux.fsf@macbook.be.48ers.dk>
+	<fa686aa40710020910u3a679ea2m15b005d0ba5fb054@mail.gmail.com>
+	<1191365012.22572.33.camel@pasglop>
+	<fa686aa40710022118r170ab652mdd65c216304b3330@mail.gmail.com>
+	<1191385456.22572.45.camel@pasglop>
+	<fa686aa40710030739k13e05571l7063aa635a8727dc@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 04 Oct 2007 07:21:40 +1000
+Message-Id: <1191446500.22572.94.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/5/07, Scott Wood <scottwood@freescale.com> wrote:
-> This target produces a flat binary rather than an ELF file,
-> fixes the entry point at the beginning of the image, and takes
-> a complete device tree with no fixups needed.
->
-> The device tree must have labels on /#address-cells, the timebase
-> frequency, and the memory size.
 
-Scott,
+On Wed, 2007-10-03 at 08:39 -0600, Grant Likely wrote:
+> Right, okay.  Looking at platform_device_add(), the default parent is
+> platform_bus, but it can be overridden.  of_platform_bus devices get
+> the hierarchy of the device tree by default.  So in the platform bus
+> case, the constructor would need to explicitly set the parent device?
+> Correct?
+> 
+> Also, how do you see the constructor code getting executed?  Called
+> explicitly from the platform code, or some form of auto binding?  I
+> look at fsl_soc.c and I shudder as each constructor does a pass of the
+> whole tree looking for compatible nodes.
 
-Are you planning to address the comments on this patch and resubmit in
-time for the 2.6.24 merge window?  The raw platform is quite useful
-for Xilinx Virtex support, so I'd really like to see it get merged.
+My idea was to have some platform code at boot walk the DT and call the
+constructors on the way, passing them the parent. Constructors return a
+struct device * so it would keep track of who is where.
 
-Thanks,
-g.
+Drivers or platform code can then register constructors along with of
+match tables.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Ben.
+ 
