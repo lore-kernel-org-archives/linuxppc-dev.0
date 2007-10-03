@@ -1,15 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 7DC88DDE3F
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 7FB7BDDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 Oct 2007 05:01:43 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 3 Oct 2007 12:01:40 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] PPC 85xx failure with odd memory sizes and CONFIG_HIGHMEM
-Message-ID: <20071003190140.GA19169@xyzzy.farnsworth.org>
+	Thu,  4 Oct 2007 05:34:46 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] PPC 85xx failure with odd memory sizes and CONFIG_HIGHMEM
+Date: Wed, 3 Oct 2007 14:34:42 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0371EFE9@ismail.innsys.innovsys.com>
+In-Reply-To: <20071003190140.GA19169@xyzzy.farnsworth.org>
+References: <20071003190140.GA19169@xyzzy.farnsworth.org>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Dale Farnsworth" <dale@farnsworth.org>,
+	"Kumar Gala" <galak@kernel.crashing.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,43 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+> From: Dale Farnsworth
+>=20
+> The CONFIG_FSL_BOOKE mmu setup code fails when CONFIG_HIGHMEM=3Dy
+> and the 3 fixed TLB entries cannot exactly map the lowmem size.
+> Each TLB entry can map 4MB, 16MB, 64MB or 256MB, so the failure
+> is observed when the kernel lowmem size is not equal to the
+> sum of up to 3 of those values.
 
-The CONFIG_FSL_BOOKE mmu setup code fails when CONFIG_HIGHMEM=y
-and the 3 fixed TLB entries cannot exactly map the lowmem size.
-Each TLB entry can map 4MB, 16MB, 64MB or 256MB, so the failure
-is observed when the kernel lowmem size is not equal to the
-sum of up to 3 of those values.
+Does this mean you cannot run 1G of lowmem on a 85xx?
 
-Normally, memory is sized in nice numbers, but I observed this
-problem while testing a crash dump kernel.  The failure can
-also be observed by artificially reducing the kernel's main
-memory via the mem= kernel command line parameter.
+On 82xx I run 1G of lowmem, and when we finaly upgrade our product to a
+85xx something, Iw was planning on doing the same.
 
-This commit fixes the problem by setting __initial_memory_limit
-in adjust_total_lowmem().
-
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-
----
- arch/powerpc/mm/fsl_booke_mmu.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux-2.6.21/arch/powerpc/mm/fsl_booke_mmu.c
-===================================================================
---- linux-2.6.21.orig/arch/powerpc/mm/fsl_booke_mmu.c	2007-10-02 01:18:10.000000000 +0000
-+++ linux-2.6.21/arch/powerpc/mm/fsl_booke_mmu.c	2007-10-03 16:40:24.000000000 +0000
-@@ -60,6 +60,7 @@ unsigned int num_tlbcam_entries;
- static unsigned long __cam0, __cam1, __cam2;
- extern unsigned long total_lowmem;
- extern unsigned long __max_low_memory;
-+extern unsigned long __initial_memory_limit;
- #define MAX_LOW_MEM	CONFIG_LOWMEM_SIZE
- 
- #define NUM_TLBCAMS	(16)
-@@ -233,4 +234,5 @@ adjust_total_lowmem(void)
- 			__cam0 >> 20, __cam1 >> 20, __cam2 >> 20,
- 			(total_lowmem - __cam0 - __cam1 - __cam2) >> 20);
- 	__max_low_memory = max_low_mem = __cam0 + __cam1 + __cam2;
-+	__initial_memory_limit = __max_low_memory;
- }
+(For those interested:
+To run 1G lowmwm on 82xx (at least under arch/ppc)
+CONFIG_ADVANCED_OPTIONS=3Dy
+CONFIG_HIGHMEM_START=3D0xfe000000
+CONFIG_LOWMEM_SIZE_BOOL=3Dy
+CONFIG_LOWMEM_SIZE=3D0x40000000
+CONFIG_KERNEL_START_BOOL=3Dy
+CONFIG_KERNEL_START=3D0xa0000000
