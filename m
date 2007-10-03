@@ -1,18 +1,18 @@
 Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.185])
-	by ozlabs.org (Postfix) with ESMTP id 4A9D1DDEC4
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:00:46 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so5372341mue
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 09:00:45 -0700 (PDT)
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.190])
+	by ozlabs.org (Postfix) with ESMTP id BC42ADDEE1
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:05:00 +1000 (EST)
+Received: by mu-out-0910.google.com with SMTP id w1so5373979mue
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 09:04:58 -0700 (PDT)
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] SPI: Use fsl_spi instead of mpc83xx_spi
-References: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
-	<fa686aa40710030852q6f88002amafd33fd773833eb5@mail.gmail.com>
+Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
+References: <87lkakxky1.fsf@macbook.be.48ers.dk>
+	<fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 03 Oct 2007 18:00:37 +0200
-In-Reply-To: <fa686aa40710030852q6f88002amafd33fd773833eb5@mail.gmail.com>
-	(Grant Likely's message of "Wed\, 3 Oct 2007 09\:52\:53 -0600")
-Message-ID: <878x6kxk62.fsf@macbook.be.48ers.dk>
+Date: Wed, 03 Oct 2007 18:04:50 +0200
+In-Reply-To: <fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
+	(Grant Likely's message of "Wed\, 3 Oct 2007 09\:56\:34 -0600")
+Message-ID: <874ph8xjz1.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -30,14 +30,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi,
 
- >> -                       compatible = "mpc83xx_spi";
- >> +                       compatible = "fsl_spi";
+ Grant> Why not just:
 
- Grant> Compatible is a list property; this might be more appropriate:
+ Grant>         np = of_find_node_by_type(NULL, "qe");
+ Grant> +       if (!np)
+ Grant> +               np = of_find_node_by_type(NULL, "soc");
+ Grant>         if (!np)
+ Grant>                 return -ENODEV;
 
- Grant> compatible = "fsl,mpc8313_spi", "fsl_spi";
-
-Fine by me, I'm just following booting-without-of.txt.
+My first iteration did it like that, but then you don't get a -ENODEV
+if the node is missing (and you'll end up using the wrong clock) and
+it doesn't support processors with SPI on and off QE (if that
+exists/will ever exist).
 
 -- 
 Bye, Peter Korsgaard
