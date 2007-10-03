@@ -1,19 +1,19 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.237])
-	by ozlabs.org (Postfix) with ESMTP id B8168DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 01:53:02 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so3251415nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 08:52:59 -0700 (PDT)
-Message-ID: <fa686aa40710030852q6f88002amafd33fd773833eb5@mail.gmail.com>
-Date: Wed, 3 Oct 2007 09:52:53 -0600
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id BD3E5DDE40
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 01:56:35 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so5785660wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 08:56:34 -0700 (PDT)
+Message-ID: <fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
+Date: Wed, 3 Oct 2007 09:56:34 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [PATCH] SPI: Use fsl_spi instead of mpc83xx_spi
-In-Reply-To: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
+Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
+In-Reply-To: <87lkakxky1.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
+References: <87lkakxky1.fsf@macbook.be.48ers.dk>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,33 +25,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 10/3/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> According to booting-without-of.txt, compatible should be "fsl_spi" and
-> mode "cpu" or "qe" for the fsl SPI controllers.
+> On non-QE processors (mpc831x/mpc834x) the SPI clock is the SoC clock.
 >
 > Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 > ---
->  arch/powerpc/boot/dts/mpc8313erdb.dts    |    4 ++--
->  arch/powerpc/boot/dts/mpc8349emitx.dts   |    4 ++--
->  arch/powerpc/boot/dts/mpc8349emitxgp.dts |    4 ++--
->  arch/powerpc/boot/dts/mpc834x_mds.dts    |    4 ++--
->  4 files changed, 8 insertions(+), 8 deletions(-)
+>  arch/powerpc/sysdev/fsl_soc.c |   27 +++++++++++++++++++--------
+>  1 files changed, 19 insertions(+), 8 deletions(-)
 >
-> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> index a8eadc8..9e7eba9 100644
-> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> @@ -71,11 +71,11 @@
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index a57fe56..59e4188 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -1220,14 +1220,17 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+>  {
+>         struct device_node *np;
+>         unsigned int i;
+> -       const u32 *sysclk;
+> +       const u32 *qe_sysclk = 0, *soc_sysclk = 0;
 >
->                 spi@7000 {
->                         device_type = "spi";
-> -                       compatible = "mpc83xx_spi";
-> +                       compatible = "fsl_spi";
+>         np = of_find_node_by_type(NULL, "qe");
+> -       if (!np)
+> -               return -ENODEV;
+> +       if (np)
+> +               qe_sysclk = of_get_property(np, "bus-frequency", NULL);
+> +
+> +       np = of_find_node_by_type(NULL, "soc");
+> +       if (np)
+> +               soc_sysclk = of_get_property(np, "bus-frequency", NULL);
 
-Compatible is a list property; this might be more appropriate:
+Why not just:
 
-compatible = "fsl,mpc8313_spi", "fsl_spi";
+        np = of_find_node_by_type(NULL, "qe");
++       if (!np)
++               np = of_find_node_by_type(NULL, "soc");
+        if (!np)
+                return -ENODEV;
 
-Cheers,
+The other changes aren't needed that way.
+
 g.
 
 -- 
