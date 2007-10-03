@@ -1,23 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <20071003011909.GG9814@bakeyournoodle.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	<20070924123531.GC30855@shadowen.org>
-	<20071002232819.GN4338@austin.ibm.com>
-	<20071003002646.GD9814@bakeyournoodle.com>
-	<1191371416.8073.1.camel@concordia>
-	<20071003011909.GG9814@bakeyournoodle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-IE+h7C1I63k+QydlU76X"
-Date: Wed, 03 Oct 2007 14:09:46 +1000
-Message-Id: <1191384586.8073.6.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.232])
+	by ozlabs.org (Postfix) with ESMTP id C8240DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 14:18:11 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so3090087nzh
+	for <linuxppc-dev@ozlabs.org>; Tue, 02 Oct 2007 21:18:11 -0700 (PDT)
+Message-ID: <fa686aa40710022118r170ab652mdd65c216304b3330@mail.gmail.com>
+Date: Tue, 2 Oct 2007 22:18:09 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
+In-Reply-To: <1191365012.22572.33.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
+	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
+	<1191304386.6310.92.camel@pasglop>
+	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
+	<871wcd33ux.fsf@macbook.be.48ers.dk>
+	<fa686aa40710020910u3a679ea2m15b005d0ba5fb054@mail.gmail.com>
+	<1191365012.22572.33.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,112 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 10/2/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> > My opinion is that since it is driver-specific code anyway, then it
+> > belongs with the driver.  Plus a driver writer for ARM doesn't need to
+> > write them.  It's the powerpc or microblaze developer who will do it.
+> > If the driver maintainer doesn't want the binding in the main driver
+> > .c file, then the binding can easily be in an additional .c file
+> > without needing to add a constructor.  (Kind of like how many USB host
+> > controllers are managed)
+>
+> The main advantage is that it keeps the OF specific code localized to a
+> single function, whether that function lives in the driver or the arch
+> code, it makes it self contained and easier to deal with by the driver
+> author.
+>
+> Having multiple device types on which the driver can attach is a pain
+> from a driver standpoint. It needs multiple
+> probe/remove/suspend/resume/shutdown hooks etc... it's a bigger
+> maintainance burden in the long run.
 
---=-IE+h7C1I63k+QydlU76X
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+For many drivers, I think that is already the case.  USB OHCI is a
+prime example where there are both PCI and platform_bus bindings among
+others.  It seems to me that the bus binding effectively translates
+down to "where do I go to get the needed information".  I think it
+results in less of a maintenance burden to explicitly separate bus
+binding from device setup as opposed to adding constructor code.
 
-On Wed, 2007-10-03 at 11:19 +1000, Tony Breeds wrote:
-> On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
-> =20
-> > I realise it'll make the patch bigger, but this doesn't seem like a
-> > particularly good name for the variable anymore.
->=20
-> Sure, what about?
+> The important thing however, with the constructor approach is to try as
+> much as possible to keep the proper tree structure, and thus, try to
+> find a way to instanciate the devices with proper parent/child
+> relationship so that ordering for things like suspend/resume operations
+> is maintained.
 
-Better .. but  ..   :D
+I'm not sure I follow.  Example?
 
-> diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platfo=
-rms/pseries/rtasd.c
-> index 30925d2..73401c8 100644
-> --- a/arch/powerpc/platforms/pseries/rtasd.c
-> +++ b/arch/powerpc/platforms/pseries/rtasd.c
-> @@ -54,8 +54,9 @@ static unsigned int rtas_event_scan_rate;
->  static int full_rtas_msgs =3D 0;
-> =20
->  /* Stop logging to nvram after first fatal error */
-> -static int no_more_logging;
-> -
-> +static int logging_enabled; /* Until we initialize everything,
-> +                             * make sure we don't try logging
-> +                             * anything */
+Thanks,
+g.
 
-Until we initialise what exactly?
-
->  static int error_log_cnt;
-> =20
->  /*
-> @@ -217,7 +218,7 @@ void pSeries_log_error(char *buf, unsigned int err_ty=
-pe, int fatal)
->  	}
-> =20
->  	/* Write error to NVRAM */
-> -	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
-> +	if (logging_enabled && !(err_type & ERR_FLAG_BOOT))
->  		nvram_write_error_log(buf, len, err_type, error_log_cnt);
-> =20
->  	/*
-> @@ -229,8 +230,8 @@ void pSeries_log_error(char *buf, unsigned int err_ty=
-pe, int fatal)
->  		printk_log_rtas(buf, len);
-> =20
->  	/* Check to see if we need to or have stopped logging */
-> -	if (fatal || no_more_logging) {
-> -		no_more_logging =3D 1;
-> +	if (fatal || !logging_enabled) {
-> +		logging_enabled =3D 0;
->  		spin_unlock_irqrestore(&rtasd_log_lock, s);
->  		return;
->  	}
-
-Hmmm, this routine has 4 separate lock-dropping exit paths ..
-
-> @@ -302,7 +303,7 @@ static ssize_t rtas_log_read(struct file * file, char=
- __user * buf,
-> =20
->  	spin_lock_irqsave(&rtasd_log_lock, s);
->  	/* if it's 0, then we know we got the last one (the one in NVRAM) */
-> -	if (rtas_log_size =3D=3D 0 && !no_more_logging)
-> +	if (rtas_log_size =3D=3D 0 && logging_enabled)
->  		nvram_clear_error_log();
->  	spin_unlock_irqrestore(&rtasd_log_lock, s);
-> =20
-> @@ -414,6 +415,8 @@ static int rtasd(void *unused)
->  	memset(logdata, 0, rtas_error_log_max);
->  	rc =3D nvram_read_error_log(logdata, rtas_error_log_max,
->  	                          &err_type, &error_log_cnt);
-> +	/* We can use rtas_log_buf now */
-> +	logging_enabled =3D 1;
-> =20
->  	if (!rc) {
->  		if (err_type !=3D ERR_FLAG_ALREADY_LOGGED) {
-
-What exactly happens that allows us to do logging? I don't see any
-ordering between anything else and the setting of the flag, and AFAICT
-we're not inside a spinlock or anything here.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-IE+h7C1I63k+QydlU76X
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHAxYKdSjSd0sB4dIRAqkaAJ0cNctprskMb5oWy/KmBIofza+zYQCePtvw
-mNDfo7zbAHKRe9d4cDiPCM8=
-=FpEp
------END PGP SIGNATURE-----
-
---=-IE+h7C1I63k+QydlU76X--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
