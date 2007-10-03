@@ -1,39 +1,21 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D7F1DDE1D
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:50:43 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l93HgFPm022353
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:42:15 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l93IoanN477128
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 12:50:36 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l93IoZG6017824
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 12:50:35 -0600
-Date: Wed, 3 Oct 2007 13:50:35 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
-Message-ID: <20071003185035.GS4338@austin.ibm.com>
-References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
-	<20070924123531.GC30855@shadowen.org>
-	<20071002232819.GN4338@austin.ibm.com>
-	<20071003002646.GD9814@bakeyournoodle.com>
-	<1191371416.8073.1.camel@concordia>
-	<20071003011909.GG9814@bakeyournoodle.com>
-	<1191384586.8073.6.camel@concordia>
+Return-Path: <travis@sgi.com>
+Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
+	by ozlabs.org (Postfix) with ESMTP id 0CC1FDDE26
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 05:33:09 +1000 (EST)
+Message-ID: <4703EBE0.7080106@sgi.com>
+Date: Wed, 03 Oct 2007 12:22:08 -0700
+From: Mike Travis <travis@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1191384586.8073.6.camel@concordia>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH 08/10] ia64: Convert cpu_sibling_map to a per_cpu data
+	array (v3)
+References: <20070912015644.927677070@sgi.com>	<20070912015647.214306428@sgi.com>
+	<20070928024901.24ab6c99.pj@sgi.com>
+In-Reply-To: <20070928024901.24ab6c99.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-mm@kvack.org, ak@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+	akpm@linux-foundation.org, clameter@sgi.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,29 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 03, 2007 at 02:09:46PM +1000, Michael Ellerman wrote:
+Hi Paul,
+
+I just now found this.  I'll take a look immediately.  I tried it
+on a couple of systems but not margin. 
+
+Thanks,
+Mike
+
+Paul Jackson wrote:
+> Mike,
 > 
-> Until we initialise what exactly?
-
-Until we allocate the error log buffer. The original crash was 
-for a null-pointer deref of the unallocated buffer. I just sent 
-out a patch to fix this; its a bit simpler than the below.
-
-In that email, I remarked:
-
-Andy Whitcroft's crash was appearently due to firmware complaining
-about lost power, (actually, lost power supply redundancy!), which
-occurred very early during boot.
-
-    Type                00000040 (EPOW)
-    Status:             bypassed new
-    Residual error from previous boot.
-    EPOW Sensor Value:  00000002
-    EPOW warning due to loss of redundancy.
-    EPOW general power fault.
-
-I've no clue why firmware thought it was OK to report this
-during one of the earliest calls to RTAS; I'm still investiigating
-that.
-
---linas
+> I think there is a bug either in this ia64 patch, or in the related
+> generic arch patch: Convert cpu_sibling_map to be a per cpu variable
+> (v3).
+> 
+> It dies early in boot on me, on the SGI internal 8 processor IA64
+> system that you and I know as 'margin'.  The death is a hard hang, due
+> to a corrupt stack, due to a bogus cpu index.
+> 
+> I haven't tracked it down all the way, but have gotten this far.  If I add
+> the following patch, I get a panic on the BUG_ON if I have these two patches
+> in 2.6.23-rc8-mm1, but it boots just fine if I don't have these two patches.
+> 
+> It seems that the "cpu_sibling_map[cpu]" cpumask_t is empty (all zero
+> bits) with your two patches applied, but has some non-zero bits
+> otherwise, which leads to 'group' being NR_CPUS instead of a useful CPU
+> number.  Unfortunately, I have no idea why the "cpu_sibling_map[cpu]"
+> cpumask_t is empty -- good luck on that part.
+> 
+> The patch that catches this bug earlier is this:
+> 
+> --- 2.6.23-rc8-mm1.orig/kernel/sched.c	2007-09-28 01:42:20.144561024 -0700
+> +++ 2.6.23-rc8-mm1/kernel/sched.c	2007-09-28 02:27:14.239075497 -0700
+> @@ -5905,6 +5905,7 @@ static int cpu_to_phys_group(int cpu, co
+>  #else
+>  	group = cpu;
+>  #endif
+> +	BUG_ON(group == NR_CPUS);
+>  	if (sg)
+>  		*sg = &per_cpu(sched_group_phys, group);
+>  	return group;
+> 
+> 
