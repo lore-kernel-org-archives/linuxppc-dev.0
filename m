@@ -1,23 +1,26 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 138C3DDED1
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:00:41 +1000 (EST)
-Message-ID: <4703D8B9.5080006@freescale.com>
-Date: Wed, 03 Oct 2007 13:00:25 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id A9252DDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:05:48 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
+	match eHCA and eHEA drivers
+References: <200709261143.24735.fenkes@de.ibm.com>
+	<200709261145.51926.fenkes@de.ibm.com>
+	<18179.943.277895.633795@cargo.ozlabs.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 03 Oct 2007 11:05:44 -0700
+In-Reply-To: <18179.943.277895.633795@cargo.ozlabs.ibm.com> (Paul Mackerras's
+	message of "Wed, 3 Oct 2007 12:51:27 +1000")
+Message-ID: <adave9odqfb.fsf@cisco.com>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH v4] qe: miscellaneous code improvements and fixes to the
-	QE library
-References: <1191429299378-git-send-email-timur@freescale.com>
-	<20071003094449.702c4a90@freepuppy.rosehill>
-In-Reply-To: <20071003094449.702c4a90@freepuppy.rosehill>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Thomas Klein <tklein@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+	Jan-Bernd Themann <themann@de.ibm.com>, Joachim Fenkes <fenkes@de.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <pmac@au1.ibm.com>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Hemminger wrote:
+ > > Replace struct ibmebus_dev and struct ibmebus_driver with struct of_device
+ > > and struct of_platform_driver, respectively. Match the external ibmebus
+ > > interface and drivers using it.
+ > > 
+ > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+ > 
+ > If not, then you need to get an Acked-by and an agreement that this
+ > change can go via the powerpc.git tree from Roland Dreier and Jeff
+ > Garzik.
 
-> Separate the changes into individual patches to allow for better comment/review
-> and bisection in case of regression.
+I don't see anything objectionable in the infiniband parts of the
+patch -- I don't have any way to test the changes but it all looks
+like a straightforward conversion to a new platform API.  So:
 
-That would be too difficult.  Some of the changes are single lines, and this 
-patch has already been approved -- I just cross-posted to netdev because I 
-made a few ucc_geth changes that can't be docoupled from the powerpc changes. 
-  A series of 18 patches would just be convoluted.
+Acked-by: Roland Dreier <rolandd@cisco.com>
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+ - R.
