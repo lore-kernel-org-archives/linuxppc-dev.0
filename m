@@ -1,14 +1,14 @@
 Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.191])
-	by ozlabs.org (Postfix) with ESMTP id 73B5ADDEC8
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 01:44:00 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so5365632mue
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 08:43:58 -0700 (PDT)
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id 3AAE1DDE1D
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 01:45:07 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so3555523nfd
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 08:45:06 -0700 (PDT)
 To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fsl_spi_init: Support non-QE processors
+Subject: [PATCH] SPI: Use fsl_spi instead of mpc83xx_spi
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 03 Oct 2007 17:43:50 +0200
-Message-ID: <87lkakxky1.fsf@macbook.be.48ers.dk>
+Date: Wed, 03 Oct 2007 17:44:58 +0200
+Message-ID: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: Peter Korsgaard <jacmet@gmail.com>
@@ -21,68 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On non-QE processors (mpc831x/mpc834x) the SPI clock is the SoC clock.
+According to booting-without-of.txt, compatible should be "fsl_spi" and
+mode "cpu" or "qe" for the fsl SPI controllers.
 
 Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
 ---
- arch/powerpc/sysdev/fsl_soc.c |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
+ arch/powerpc/boot/dts/mpc8313erdb.dts    |    4 ++--
+ arch/powerpc/boot/dts/mpc8349emitx.dts   |    4 ++--
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc834x_mds.dts    |    4 ++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index a57fe56..59e4188 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -1220,14 +1220,17 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
- {
- 	struct device_node *np;
- 	unsigned int i;
--	const u32 *sysclk;
-+	const u32 *qe_sysclk = 0, *soc_sysclk = 0;
+diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
+index a8eadc8..9e7eba9 100644
+--- a/arch/powerpc/boot/dts/mpc8313erdb.dts
++++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+@@ -71,11 +71,11 @@
  
- 	np = of_find_node_by_type(NULL, "qe");
--	if (!np)
--		return -ENODEV;
-+	if (np)
-+		qe_sysclk = of_get_property(np, "bus-frequency", NULL);
-+
-+	np = of_find_node_by_type(NULL, "soc");
-+	if (np)
-+		soc_sysclk = of_get_property(np, "bus-frequency", NULL);
+ 		spi@7000 {
+ 			device_type = "spi";
+-			compatible = "mpc83xx_spi";
++			compatible = "fsl_spi";
+ 			reg = <7000 1000>;
+ 			interrupts = <10 8>;
+ 			interrupt-parent = < &ipic >;
+-			mode = <0>;
++			mode = "cpu";
+ 		};
  
--	sysclk = of_get_property(np, "bus-frequency", NULL);
--	if (!sysclk)
-+	if (!(qe_sysclk || soc_sysclk))
- 		return -ENODEV;
+ 		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index e0cb2a7..b2b3995 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -70,11 +70,11 @@
  
- 	for (np = NULL, i = 1;
-@@ -1245,16 +1248,24 @@ int __init fsl_spi_init(struct spi_board_info *board_infos,
+ 		spi@7000 {
+ 			device_type = "spi";
+-			compatible = "mpc83xx_spi";
++			compatible = "fsl_spi";
+ 			reg = <7000 1000>;
+ 			interrupts = <10 8>;
+ 			interrupt-parent = < &ipic >;
+-			mode = <0>;
++			mode = "cpu";
+ 		};
  
- 		memset(res, 0, sizeof(res));
+ 		usb@22000 {
+diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+index fa852ba..cf8c72a 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
+@@ -70,11 +70,11 @@
  
--		pdata.sysclk = *sysclk;
--
- 		prop = of_get_property(np, "reg", NULL);
- 		if (!prop)
- 			goto err;
- 		pdata.bus_num = *(u32 *)prop;
+ 		spi@7000 {
+ 			device_type = "spi";
+-			compatible = "mpc83xx_spi";
++			compatible = "fsl_spi";
+ 			reg = <7000 1000>;
+ 			interrupts = <10 8>;
+ 			interrupt-parent = < &ipic >;
+-			mode = <0>;
++			mode = "cpu";
+ 		};
  
- 		prop = of_get_property(np, "mode", NULL);
--		if (prop && !strcmp(prop, "qe"))
-+		if (prop && !strcmp(prop, "qe")) {
- 			pdata.qe_mode = 1;
-+			if (qe_sysclk)
-+				pdata.sysclk = *qe_sysclk;
-+			else
-+				goto err;
-+		} else {
-+			if (soc_sysclk)
-+				pdata.sysclk = *soc_sysclk;
-+			else
-+				goto err;
-+		}
+ 		usb@23000 {
+diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+index 1b8882e..cf7b84f 100644
+--- a/arch/powerpc/boot/dts/mpc834x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+@@ -76,11 +76,11 @@
  
- 		for (j = 0; j < num_board_infos; j++) {
- 			if (board_infos[j].bus_num == pdata.bus_num)
+ 		spi@7000 {
+ 			device_type = "spi";
+-			compatible = "mpc83xx_spi";
++			compatible = "fsl_spi";
+ 			reg = <7000 1000>;
+ 			interrupts = <10 8>;
+ 			interrupt-parent = < &ipic >;
+-			mode = <0>;
++			mode = "cpu";
+ 		};
+ 
+ 		/* phy type (ULPI or SERIAL) are only types supportted for MPH */
 -- 
 1.5.3.2
 
