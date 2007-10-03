@@ -1,21 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
-	by ozlabs.org (Postfix) with ESMTP id 33333DDE32
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:22:53 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so5839310wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 11:22:52 -0700 (PDT)
-Message-ID: <fa686aa40710031122w7a0a04aemecd492da1e4864bc@mail.gmail.com>
-Date: Wed, 3 Oct 2007 12:22:47 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Andrei Konovalov" <akonovalov@ru.mvista.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 0/6] Patch series to add of_platform binding to xilinxfb
-In-Reply-To: <4703C8A7.8070001@ru.mvista.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6A581DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:35:49 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l93IZiKq026643
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 14:35:44 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l93IZi0s428508
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 12:35:44 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l93IZhcE015357
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 12:35:44 -0600
+Date: Wed, 3 Oct 2007 13:35:43 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: fix crash in rtas during early boot.
+Message-ID: <20071003183543.GR4338@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	<4703C8A7.8070001@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/3/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
-> Hi Grant,
->
-> Grant Likely wrote:
-> > (resend due to mailer issues.  Apologies to anyone receiving this twice)
-> >
-> > This patch series reworks the Xilinx framebuffer driver and then adds
-> > an of_platform bus binding.  The of_platform bus binding is needed to use
-> > the driver in arch/powerpc platforms.
->
-> The patch series looks good (though I did no testing on my site; seems
-> the Xilinx ML* boards should not be hurt).
 
-I've tested under both arch/ppc and arch/powerpc on a custom board
-that I have here.
+RTAS messages can occur very early during boot, before the error
+message buffer has been allocated. The current code will lead to 
+a null-pointer deref. Explicitly protect against this.
 
->
-> BTW, I don't follow the linuxppc list close enough at the moment.
-> What boards are going to use of_platform bus binding?
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: Andy Whitcroft <apw@shadowen.org>
+----
 
-Any Xilinx platform (powerpc & microblaze) using the xilinx
-framebuffer (ml300, ml403, etc).
+Andy Whitcroft's crash was appearently due to firmware complaining
+about lost power, (actually, lost power supply redundancy!), which
+occurred very early during boot. 
 
-> ML40x/ML300 are not in the arch/powerpc yet, right?
+    Type                00000040 (EPOW)
+    Status:             bypassed new
+    Residual error from previous boot.
+    EPOW Sensor Value:  00000002
+    EPOW warning due to loss of redundancy.
+    EPOW general power fault.
 
-2.6.24 will have Xilinx Virtex support in arch/powerpc.  It's already
-in Josh's 4xx maintainer tree.
+I've no clue why firmware thought it was OK to report this 
+during one of the earliest calls to RTAS; I'm still investiigating 
+that.
 
-> Do I recall correct that you have a mpc5200 based one with two xilinxfb's?
+ arch/powerpc/platforms/pseries/rtasd.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Nope, I haven't seen such a beast myself.
-
-> PS
-> I don't think you need an ack from me.
-> If this is not true, let me know, and I'll ack the patch series
-
-You are the author after all.  :-)  Your ack is probably appropriate,
-if not absolutely necessary.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/rtasd.c
+===================================================================
+--- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/rtasd.c	2007-09-26 15:06:49.000000000 -0500
++++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/rtasd.c	2007-10-03 11:58:09.000000000 -0500
+@@ -235,6 +235,12 @@ void pSeries_log_error(char *buf, unsign
+ 		return;
+ 	}
+ 
++	/* During early boot, the log buffer hasn't been allocted yet. */
++	if (rtas_log_buf == NULL) {
++		spin_unlock_irqrestore(&rtasd_log_lock, s);
++		return;
++	}
++
+ 	/* call type specific method for error */
+ 	switch (err_type & ERR_TYPE_MASK) {
+ 	case ERR_TYPE_RTAS_LOG:
