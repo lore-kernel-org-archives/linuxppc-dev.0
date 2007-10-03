@@ -1,21 +1,22 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3BCADDE1A
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:16:01 +1000 (EST)
-Message-ID: <4703DC5C.2030602@pobox.com>
-Date: Wed, 03 Oct 2007 14:15:56 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 4FD69DDE32
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 04:17:46 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so5837427wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 11:17:45 -0700 (PDT)
+Message-ID: <fa686aa40710031117x528e5afarb059d8f1c9eb3e7f@mail.gmail.com>
+Date: Wed, 3 Oct 2007 12:17:44 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
+Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
+In-Reply-To: <874ph8xjz1.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] [9/11] pasemi_mac: clear out old errors on interface open
-References: <20071002212421.GA2282@lixom.net>
-	<20071002212739.GJ2282@lixom.net> <4703D568.6000000@pobox.com>
-	<20071003180210.GA19319@lixom.net>
-In-Reply-To: <20071003180210.GA19319@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <87lkakxky1.fsf@macbook.be.48ers.dk>
+	<fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
+	<874ph8xjz1.fsf@macbook.be.48ers.dk>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> On Wed, Oct 03, 2007 at 01:46:16PM -0400, Jeff Garzik wrote:
->> Olof Johansson wrote:
->>> pasemi_mac: clear out old errors on interface open
->>> Clear out any pending errors when an interface is brought up. Since the 
->>> bits
->>> are sticky, they might be from interface shutdown time after firmware has
->>> used it, etc.
->>> Signed-off-by: Olof Johansson <olof@lixom.net>
->> In general, interface-open should completely reset and initialize the 
->> hardware.  does pasemi_mac not do that?
-> 
-> There's no explicit way to reset just one interface besides disabling it
-> (which we do at close, and re-enable at open). It seems that some of
-> the error bits are sticky across disable/enable, which is why this was
-> needed. Also, they're RW1C, so writing 0 doesn't remove them (need to
-> write 1 to clear).
+On 10/3/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+>
+> Hi,
+>
+>  Grant> Why not just:
+>
+>  Grant>         np = of_find_node_by_type(NULL, "qe");
+>  Grant> +       if (!np)
+>  Grant> +               np = of_find_node_by_type(NULL, "soc");
+>  Grant>         if (!np)
+>  Grant>                 return -ENODEV;
+>
+> My first iteration did it like that, but then you don't get a -ENODEV
+> if the node is missing (and you'll end up using the wrong clock) and
+> it doesn't support processors with SPI on and off QE (if that
+> exists/will ever exist).
 
-OK just making sure, thanks.
+Okay, but you should at least be able confine your determination of
+which sysclk value to use to one part of the function.  Otherwise, it
+looks good.
 
+Cheers,
+g.
 
-> The only other dependency from firmware at this time is the setting of mac
-> addresses, something that will be taken care of once we allow override of
-> them via ethtool, since we'd need to program them from the driver then
-> no matter what. Right now we assume that firmware has programmed it.
-
-Standard procedure for this is
-
-* upon module-load, obtain the MAC address from <whatever canonical source>
-* upon interface-up, program dev->dev_addr[] into chip's RX filter (aka 
-MAC address) registers
-
-That permits the admin to override the MAC address via ifconfig. 
-(ethtool doesn't support that, but you basically had the right idea)
-
-	Jeff
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
