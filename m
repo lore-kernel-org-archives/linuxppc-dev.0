@@ -1,9 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-Message-Id: <2262db6d12c4eb44af3653ff65ecc8756dd280c4.1191387123.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Fail early in lmb_remove_region()
-Date: Wed,  3 Oct 2007 14:52:29 +1000 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 3 Oct 2007 15:29:38 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 8/15] bootwrapper: convert flatdevtree to version 16
+Message-ID: <20071003052938.GC18978@localhost.localdomain>
+References: <boot-8-00.miltonm@bga.com> <boot-8-08.miltonm@bga.com>
+	<20070924033612.GI8058@localhost.localdomain>
+	<5e71423247aef068d82b84166102fd7d@bga.com>
+	<20070925034616.GB2525@localhost.localdomain>
+	<69f1ad37eec293a4c4616d04c8400ca4@bga.com>
+	<20070927024535.GC14030@localhost.localdomain>
+	<41180fced14196db80f261d2ac1909e0@bga.com>
+	<20070928024052.GA18840@localhost.localdomain>
+	<61d44782a59ff62300416fbed26236f0@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <61d44782a59ff62300416fbed26236f0@bga.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,33 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There was a query a while back about whether lmb_remove_region() was
-correct to unconditionally decrement rgn->cnt:
-  http://ozlabs.org/pipermail/linuxppc-dev/2007-March/033261.html
+On Fri, Sep 28, 2007 at 10:16:51AM -0500, Milton Miller wrote:
+[snip]
+> Actually, there is another approach: put this converter in kexec's  
+> purgatory or even the kexec program.  It can then run conditionally  
+> under command line flags to keep compatibility with the old kernels.   
+> If and when its is decided to only support >=v16 in kexec-tools it can  
+> be removed and we don't have this interim support code in the kernel  
+> forever (I'll handle my other usage out of tree).
 
-AFAICT there is no bug at the moment because the two callers ensure that
-they only pass a value of r which is < rgn->cnt. However there's the
-potential for a bug if a caller got that wrong. So to avoid such a bug
-in future we should fail in lmb_remove_region() if the r value is out of
-range.
+Hurrah!  Well, please do that then.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/mm/lmb.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
-index 8f4d2dc..e79e055 100644
---- a/arch/powerpc/mm/lmb.c
-+++ b/arch/powerpc/mm/lmb.c
-@@ -92,6 +92,8 @@ static void __init lmb_remove_region(struct lmb_region *rgn, unsigned long r)
- {
- 	unsigned long i;
- 
-+	BUG_ON(r >= rgn->cnt);
-+
- 	for (i = r; i < rgn->cnt - 1; i++) {
- 		rgn->region[i].base = rgn->region[i + 1].base;
- 		rgn->region[i].size = rgn->region[i + 1].size;
 -- 
-1.5.1.3.g7a33b
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
