@@ -1,21 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6871ADDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 13:23:42 +1000 (EST)
-Date: Tue, 2 Oct 2007 22:27:47 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Use 1TB segments
-Message-ID: <20071003032747.GA7822@lixom.net>
-References: <18095.59959.698141.565343@cargo.ozlabs.ibm.com>
-	<1191350274.18159.279.camel@farscape.rchland.ibm.com>
-	<20071003021105.GA6553@lixom.net>
-	<18179.1934.821688.836972@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18179.1934.821688.836972@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20071003011909.GG9814@bakeyournoodle.com>
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	<20070924123531.GC30855@shadowen.org>
+	<20071002232819.GN4338@austin.ibm.com>
+	<20071003002646.GD9814@bakeyournoodle.com>
+	<1191371416.8073.1.camel@concordia>
+	<20071003011909.GG9814@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-IE+h7C1I63k+QydlU76X"
+Date: Wed, 03 Oct 2007 14:09:46 +1000
+Message-Id: <1191384586.8073.6.camel@concordia>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 03, 2007 at 01:07:58PM +1000, Paul Mackerras wrote:
-> Olof Johansson writes:
-> 
-> > > This makes the kernel use 1TB segments for all kernel mappings and for
-> > > user addresses of 1TB and above, on machines which support them
-> > > (currently POWER5+ and POWER6).
-> > 
-> > PA6T supports them as well :)
-> 
-> In the patch, we don't actually hard-code the CPU_FTR_1T_SEGMENT bit
-> in the cputable entry for any processor; instead we look in the
-> ibm,processor-segment-sizes property in the cpu node(s) in the device
-> tree. 
 
-Yep, I see that. I just wanted to clarify it for the (future) commit
-message.
+--=-IE+h7C1I63k+QydlU76X
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Do you want us to add the CPU_FTR_1T_SEGMENT bit to the
-> cputable entry for the PA6T, or will your firmware gives the
-> ibm,processor-segment-sizes property in the device tree?
+On Wed, 2007-10-03 at 11:19 +1000, Tony Breeds wrote:
+> On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
+> =20
+> > I realise it'll make the patch bigger, but this doesn't seem like a
+> > particularly good name for the variable anymore.
+>=20
+> Sure, what about?
 
-Thanks, but we've already got the properties there so it just works.
+Better .. but  ..   :D
 
-> > Wouldn't it be possible to stick with 1TB segments for the low range
-> > for 64-bit processes as well, and have them allocate their hugepages
-> > at >1TB?
-> 
-> You mean, forbid hugepages below 1TB?  That would be a user-visible
-> ABI change.  There are linker scripts for generating executables whose
-> text and/or data can go in hugepages, and I believe they put the
-> text/data below 1TB.
+> diff --git a/arch/powerpc/platforms/pseries/rtasd.c b/arch/powerpc/platfo=
+rms/pseries/rtasd.c
+> index 30925d2..73401c8 100644
+> --- a/arch/powerpc/platforms/pseries/rtasd.c
+> +++ b/arch/powerpc/platforms/pseries/rtasd.c
+> @@ -54,8 +54,9 @@ static unsigned int rtas_event_scan_rate;
+>  static int full_rtas_msgs =3D 0;
+> =20
+>  /* Stop logging to nvram after first fatal error */
+> -static int no_more_logging;
+> -
+> +static int logging_enabled; /* Until we initialize everything,
+> +                             * make sure we don't try logging
+> +                             * anything */
 
-Hm, good point. Bummer.
+Until we initialise what exactly?
 
+>  static int error_log_cnt;
+> =20
+>  /*
+> @@ -217,7 +218,7 @@ void pSeries_log_error(char *buf, unsigned int err_ty=
+pe, int fatal)
+>  	}
+> =20
+>  	/* Write error to NVRAM */
+> -	if (!no_more_logging && !(err_type & ERR_FLAG_BOOT))
+> +	if (logging_enabled && !(err_type & ERR_FLAG_BOOT))
+>  		nvram_write_error_log(buf, len, err_type, error_log_cnt);
+> =20
+>  	/*
+> @@ -229,8 +230,8 @@ void pSeries_log_error(char *buf, unsigned int err_ty=
+pe, int fatal)
+>  		printk_log_rtas(buf, len);
+> =20
+>  	/* Check to see if we need to or have stopped logging */
+> -	if (fatal || no_more_logging) {
+> -		no_more_logging =3D 1;
+> +	if (fatal || !logging_enabled) {
+> +		logging_enabled =3D 0;
+>  		spin_unlock_irqrestore(&rtasd_log_lock, s);
+>  		return;
+>  	}
 
--Olof
+Hmmm, this routine has 4 separate lock-dropping exit paths ..
+
+> @@ -302,7 +303,7 @@ static ssize_t rtas_log_read(struct file * file, char=
+ __user * buf,
+> =20
+>  	spin_lock_irqsave(&rtasd_log_lock, s);
+>  	/* if it's 0, then we know we got the last one (the one in NVRAM) */
+> -	if (rtas_log_size =3D=3D 0 && !no_more_logging)
+> +	if (rtas_log_size =3D=3D 0 && logging_enabled)
+>  		nvram_clear_error_log();
+>  	spin_unlock_irqrestore(&rtasd_log_lock, s);
+> =20
+> @@ -414,6 +415,8 @@ static int rtasd(void *unused)
+>  	memset(logdata, 0, rtas_error_log_max);
+>  	rc =3D nvram_read_error_log(logdata, rtas_error_log_max,
+>  	                          &err_type, &error_log_cnt);
+> +	/* We can use rtas_log_buf now */
+> +	logging_enabled =3D 1;
+> =20
+>  	if (!rc) {
+>  		if (err_type !=3D ERR_FLAG_ALREADY_LOGGED) {
+
+What exactly happens that allows us to do logging? I don't see any
+ordering between anything else and the setting of the flag, and AFAICT
+we're not inside a spinlock or anything here.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-IE+h7C1I63k+QydlU76X
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHAxYKdSjSd0sB4dIRAqkaAJ0cNctprskMb5oWy/KmBIofza+zYQCePtvw
+mNDfo7zbAHKRe9d4cDiPCM8=
+=FpEp
+-----END PGP SIGNATURE-----
+
+--=-IE+h7C1I63k+QydlU76X--
