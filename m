@@ -1,25 +1,25 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B022DDE40
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E45A4DE0D3
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:39 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l93K9GbF007170
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:16 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l93K9YsE023872
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:34 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K9FhU017761
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:16 -0500 (CDT)
-Subject: [PATCH 1/5] Add initial MPC8610 HPCD Device Tree Source file.
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K9XtH017814
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:33 -0500 (CDT)
+Subject: [PATCH 2/5] Add initial MPC8610 HPCD Platform files.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1191442155.21463.75.camel@ld0161-tx32>
+Message-Id: <1191442173.21463.77.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Wed, 03 Oct 2007 15:09:15 -0500
+Date: Wed, 03 Oct 2007 15:09:33 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,208 +32,285 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 From: Xianghua Xiao <x.xiao@freescale.com>
 
 Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Signed-off-by: Jason Jin <Jason.jin@freescale.com>
+Signed-off-by: Jon Loelier <jdl@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8610_hpcd.dts |  191 ++++++++++++++++++++++++++++++++
- 1 files changed, 191 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/mpc8610_hpcd.dts
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |  267 ++++++++++++++++++++++++++++
+ 1 files changed, 267 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/platforms/86xx/mpc8610_hpcd.c
 
-diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
 new file mode 100644
-index 0000000..966edf1
+index 0000000..ba73163
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
-@@ -0,0 +1,191 @@
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -0,0 +1,267 @@
 +/*
-+ * MPC8610 HPCD Device Tree Source
++ * MPC8610 HPCD board specific routines
++ *
++ * Initial author: Xianghua Xiao <x.xiao@freescale.com>
++ * Recode: Jason Jin <jason.jin@freescale.com>
++ *
++ * Rewrite the interrupt routing. remove the 8259PIC support,
++ * All the integrated device in ULI use sideband interrupt.
 + *
 + * Copyright 2007 Freescale Semiconductor Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
-+ * under the terms of the GNU General Public License Version 2 as published
-+ * by the Free Software Foundation.
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
 +
-+/ {
-+	model = "MPC8610HPCD";
-+	compatible = "fsl,MPC8610HPCD";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/mpc86xx.h>
++#include <asm/prom.h>
++#include <mm/mmu_decl.h>
++#include <asm/udbg.h>
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++#include <asm/mpic.h>
 +
-+		PowerPC,8610@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <d# 32>;	// bytes
-+			i-cache-line-size = <d# 32>;	// bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <0>;	// 33 MHz, from uboot
-+			bus-frequency = <0>;		// From uboot
-+			clock-frequency = <0>;		// From uboot
-+		};
-+	};
++#include <sysdev/fsl_pci.h>
++#include <sysdev/fsl_soc.h>
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 20000000>;	// 512M at 0x0
-+	};
++#include "mpc86xx.h"
 +
-+	soc@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "soc";
-+		ranges = <0 e0000000 00100000>;
-+		reg = <e0000000 1000>;
-+		bus-frequency = <0>;
-+
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3000 100>;
-+			interrupts = <2b 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		i2c@3100 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <3100 100>;
-+			interrupts = <2b 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
-+
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;
-+			clock-frequency = <0>;
-+			interrupts = <2a 2>;
-+			interrupt-parent = <&mpic>;
-+		};
-+
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;
-+			clock-frequency = <0>;
-+			interrupts = <1c 2>;
-+			interrupt-parent = <&mpic>;
-+		};
++#define MPC86XX_RSTCR_OFFSET	(0xe00b0)	/* Reset Control Register */
 +
 +
-+		mpic: interrupt-controller@40000 {
-+			clock-frequency = <0>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <40000 40000>;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			big-endian;
-+		};
++void __init
++mpc86xx_hpcd_init_irq(void)
++{
++	struct mpic *mpic1;
++	struct device_node *np;
++	struct resource res;
 +
-+		global-utilities@e0000 {
-+			compatible = "fsl,mpc8610-guts";
-+			reg = <e0000 1000>;
-+			fsl,has-rstcr;
-+		};
-+	};
++	/* Determine PIC address. */
++	np = of_find_node_by_type(NULL, "open-pic");
++	if (np == NULL)
++		return;
++	of_address_to_resource(np, 0, &res);
 +
-+	pci@e0008000 {
-+		compatible = "fsl,mpc8610-pci";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e0008000 1000>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 80000000 80000000 0 10000000
-+			  01000000 0 00000000 e1000000 0 00100000>;
-+		clock-frequency = <1fca055>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <18 2>;
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x11 */
-+			8800 0 0 1 &mpic 4 1
-+			8800 0 0 2 &mpic 5 1
-+			8800 0 0 3 &mpic 6 1
-+			8800 0 0 4 &mpic 7 1
++	/* Alloc mpic structure and per isu has 16 INT entries. */
++	mpic1 = mpic_alloc(np, res.start,
++			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
++			0, 256, " MPIC     ");
++	BUG_ON(mpic1 == NULL);
 +
-+			/* IDSEL 0x12 */
-+			9000 0 0 1 &mpic 5 1
-+			9000 0 0 2 &mpic 6 1
-+			9000 0 0 3 &mpic 7 1
-+			9000 0 0 4 &mpic 4 1
-+			>;
-+	};
++	mpic_init(mpic1);
 +
-+	pcie@e000a000 {
-+		compatible = "fsl,mpc8641-pcie";
-+		device_type = "pci";
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e000a000 1000>;
-+		bus-range = <1 3>;
-+		ranges = <02000000 0 a0000000 a0000000 0 10000000
-+			  01000000 0 00000000 e3000000 0 00100000>;
-+		clock-frequency = <1fca055>;
-+		interrupt-parent = <&mpic>;
-+		interrupts = <1a 2>;
-+		interrupt-map-mask = <f800 0 0 7>;
++}
 +
-+		interrupt-map = <
-+			/* IDSEL 0x1b */
-+			d800 0 0 1 &mpic 2 1
 +
-+			/* IDSEL 0x1c*/
-+			e000 0 0 1 &mpic 1 1
-+			e000 0 0 2 &mpic 1 1
-+			e000 0 0 3 &mpic 1 1
-+			e000 0 0 4 &mpic 1 1
++#ifdef CONFIG_PCI
++static void __devinit quirk_uli1575(struct pci_dev *dev)
++{
++	u32 temp32;
 +
-+			/* IDSEL 0x1f */
-+			f800 0 0 1 &mpic 3 0
-+			f800 0 0 2 &mpic 0 1
-+		>;
++	/* Disable INTx */
++	pci_read_config_dword(dev, 0x48, &temp32);
++	pci_write_config_dword(dev, 0x48, (temp32 | 1<<26));
 +
-+		pcie@0 {
-+			reg = <0 0 0 0 0>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			device_type = "pci";
-+			ranges = <02000000 0 a0000000
-+				  02000000 0 a0000000
-+				  0 10000000
-+				  01000000 0 00000000
-+				  01000000 0 00000000
-+				  0 00100000>;
-+			uli1575@0 {
-+				reg = <0 0 0 0 0>;
-+				#size-cells = <2>;
-+				#address-cells = <3>;
-+				ranges = <02000000 0 a0000000
-+					  02000000 0 a0000000
-+					  0 10000000
-+					  01000000 0 00000000
-+					  01000000 0 00000000
-+					  0 00100000>;
-+			};
-+		};
-+	};
++	/* Enable sideband interrupt */
++	pci_read_config_dword(dev, 0x90, &temp32);
++	pci_write_config_dword(dev, 0x90, (temp32 | 1<<22));
++}
++
++
++static void __devinit quirk_uli5288(struct pci_dev *dev)
++{
++	unsigned char c;
++	unsigned short temp;
++
++	/* Interrupt Disable, Needed when SATA disabled */
++	pci_read_config_word(dev, PCI_COMMAND, &temp);
++	temp |= 1<<10;
++	pci_write_config_word(dev, PCI_COMMAND, temp);
++
++	pci_read_config_byte(dev, 0x83, &c);
++	c |= 0x80;
++	pci_write_config_byte(dev, 0x83, c);
++
++	pci_write_config_byte(dev, PCI_CLASS_PROG, 0x01);
++	pci_write_config_byte(dev, PCI_CLASS_DEVICE, 0x06);
++
++	pci_read_config_byte(dev, 0x83, &c);
++	c &= 0x7f;
++	pci_write_config_byte(dev, 0x83, c);
++}
++
++
++/*
++ * Since 8259PIC was disabled on the board, the IDE device can not
++ * use the legacy IRQ, we need to let the IDE device work under
++ * native mode and use the interrupt line like other PCI devices.
++ * IRQ14 is a sideband interrupt from IDE device to CPU and we use this
++ * as the interrupt for IDE device.
++ */
++static void __devinit quirk_uli5229(struct pci_dev *dev)
++{
++	unsigned char c;
++
++	pci_read_config_byte(dev, 0x4b, &c);
++	c |= 0x10;
++	pci_write_config_byte(dev, 0x4b, c);
++}
++
++
++/*
++ * SATA interrupt pin bug fix
++ * There's a chip bug for 5288, The interrupt pin should be 2,
++ * not the read only value 1, So it use INTB#, not INTA# which
++ * actually used by the IDE device 5229.
++ * As of this bug, during the PCI initialization, 5288 read the
++ * irq of IDE device from the device tree, this function fix this
++ * bug by re-assigning a correct irq to 5288.
++ *
++ */
++static void __devinit final_uli5288(struct pci_dev *dev)
++{
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct device_node *hosenode = hose ? hose->arch_data : NULL;
++	struct of_irq oirq;
++	int virq, pin = 2;
++	u32 laddr[3];
++
++	if (!hosenode)
++		return;
++
++	laddr[0] = (hose->first_busno << 16) | (PCI_DEVFN(31, 0) << 8);
++	laddr[1] = laddr[2] = 0;
++	of_irq_map_raw(hosenode, &pin, 1, laddr, &oirq);
++	virq = irq_create_of_mapping(oirq.controller, oirq.specifier,
++				     oirq.size);
++	dev->irq = virq;
++}
++
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575, quirk_uli1575);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229, quirk_uli5229);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, 0x5288, final_uli5288);
++#endif /* CONFIG_PCI */
++
++
++static void __init
++mpc86xx_hpcd_setup_arch(void)
++{
++#ifdef CONFIG_PCI
++	struct device_node *np;
++#endif
++	if (ppc_md.progress)
++		ppc_md.progress("mpc86xx_hpcd_setup_arch()", 0);
++
++#ifdef CONFIG_PCI
++	for_each_node_by_type(np, "pci") {
++		if (of_device_is_compatible(np, "fsl,mpc8610-pci")
++		    || of_device_is_compatible(np, "fsl,mpc8641-pcie")) {
++			struct resource rsrc;
++			of_address_to_resource(np, 0, &rsrc);
++			if ((rsrc.start & 0xfffff) == 0xa000)
++				fsl_add_bridge(np, 1);
++			else
++				fsl_add_bridge(np, 0);
++		}
++        }
++#endif
++
++	printk("MPC86xx HPCD board from Freescale Semiconductor\n");
++}
++
++
++void
++mpc86xx_hpcd_show_cpuinfo(struct seq_file *m)
++{
++	struct device_node *root;
++	uint memsize = total_memory;
++	const char *model = "";
++	uint svid = mfspr(SPRN_SVR);
++
++	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
++
++	root = of_find_node_by_path("/");
++	if (root)
++		model = of_get_property(root, "model", NULL);
++	seq_printf(m, "Machine\t\t: %s\n", model);
++	of_node_put(root);
++
++	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
++	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
++}
++
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init mpc86xx_hpcd_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (of_flat_dt_is_compatible(root, "fsl,MPC8610HPCD"))
++		return 1;	/* Looks good */
++
++	return 0;
++}
++
++
++void
++mpc86xx_restart(char *cmd)
++{
++	void __iomem *rstcr;
++
++	rstcr = ioremap(get_immrbase() + MPC86XX_RSTCR_OFFSET, 0x100);
++
++	local_irq_disable();
++
++	/* Assert reset request to Reset Control Register */
++	out_be32(rstcr, 0x2);
++
++	/* not reached */
++}
++
++
++long __init
++mpc86xx_time_init(void)
++{
++	unsigned int temp;
++
++	/* Set the time base to zero */
++	mtspr(SPRN_TBWL, 0);
++	mtspr(SPRN_TBWU, 0);
++
++	temp = mfspr(SPRN_HID0);
++	temp |= HID0_TBEN;
++	mtspr(SPRN_HID0, temp);
++	asm volatile("isync");
++
++	return 0;
++}
++
++define_machine(mpc86xx_hpcd) {
++	.name			= "MPC86xx HPCD",
++	.probe			= mpc86xx_hpcd_probe,
++	.setup_arch		= mpc86xx_hpcd_setup_arch,
++	.init_IRQ		= mpc86xx_hpcd_init_irq,
++	.show_cpuinfo		= mpc86xx_hpcd_show_cpuinfo,
++	.get_irq		= mpic_get_irq,
++	.restart		= mpc86xx_restart,
++	.time_init		= mpc86xx_time_init,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
 +};
 -- 
 1.5.3
