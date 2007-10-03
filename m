@@ -1,20 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 5FB67DDF2B
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:08:49 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <085BE1E4-945F-4690-9DFC-627F242831A6@kernel.crashing.org>
-Subject: Re: [PATCH] fsl_spi devices should use mode "cpu" or "qe"
-Date: Wed, 3 Oct 2007 17:56:37 +0200
-Message-ID: <1191426997.6422.34.camel@gentoo-jocke.transmode.se>
-References: <87przwxkzf.fsf@macbook.be.48ers.dk>
-	<085BE1E4-945F-4690-9DFC-627F242831A6@kernel.crashing.org>
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+	by ozlabs.org (Postfix) with ESMTP id D2F8CDDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:25:58 +1000 (EST)
+Date: Thu, 4 Oct 2007 01:25:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [RFC] PPC64 Exporting memory information through /proc/iomem
+Message-Id: <20071004012547.42c457b7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1191425735.6106.76.camel@dyn9047017100.beaverton.ibm.com>
+References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
+	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
+	<1191366653.6106.68.camel@dyn9047017100.beaverton.ibm.com>
+	<20071003101954.52308f22.kamezawa.hiroyu@jp.fujitsu.com>
+	<1191425735.6106.76.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com, paulus@samba.org,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-10-03 at 10:51 -0500, Kumar Gala wrote:
-> On Oct 3, 2007, at 10:43 AM, Peter Korsgaard wrote:
->=20
-> > According to booting-without-of.txt, fsl_spi mode should be either
-> > "cpu" or "qe", not "cpu-qe".
-> >
-> > Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
->=20
-> I think we should update the doc instead of the code here. Thoughts?
+On Wed, 03 Oct 2007 08:35:35 -0700
+Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-Yes, "cpu-qe" means QE in CPU mode. There is a native QE mode too that
-isn't impl. in the driver yet. "qe" should be reserved for native QE
-mode.
+> On Wed, 2007-10-03 at 10:19 +0900, KAMEZAWA Hiroyuki wrote:
+> CONFIG_ARCH_HAS_VALID_MEMORY_RANGE. Then define own
+> find_next_system_ram() (rename to is_valid_memory_range()) - which
+> checks the given range is a valid memory range for memory-remove
+> or not. What do you think ?
+> 
+My concern is...
+Now, memory hot *add* makes use of resource(/proc/iomem) information for onlining
+memory.(See add_memory()->register_memory_resource() in mm/memoryhotplug.c)
+So, we'll have to consider changing it if we need.
 
- Jocke=20
+Does PPC64 memory hot add registers new memory information to arch dependent
+information list ? It seems ppc64 registers hot-added memory information from
+*probe* file and registers it by add_memory()->register_memory_resource().
+
+If you add all add/remove/walk system ram information in sane way, I have no
+objection.
+
+I like find_next_system_ram() because I used some amount of time to debug it ;)
+
+Thanks,
+-Kame
