@@ -4,22 +4,22 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8A50ADDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:11 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2B022DDE40
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:32 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l93K96hT007079
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:06 -0700 (MST)
+	l93K9GbF007170
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:16 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K95KN017739
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:05 -0500 (CDT)
-Subject: [PATCH 0/5] Add MPC8610 HPCD Base Port
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K9FhU017761
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:16 -0500 (CDT)
+Subject: [PATCH 1/5] Add initial MPC8610 HPCD Device Tree Source file.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1191442145.21463.73.camel@ld0161-tx32>
+Message-Id: <1191442155.21463.75.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Wed, 03 Oct 2007 15:09:05 -0500
+Date: Wed, 03 Oct 2007 15:09:15 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +29,211 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar and Paul,
+From: Xianghua Xiao <x.xiao@freescale.com>
 
-These five patches add the base port for the newly
-introduced MPC8610 HPCD reference board.  We would
-like to see these added to 2.6.24 if possible!
+Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts |  191 ++++++++++++++++++++++++++++++++
+ 1 files changed, 191 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8610_hpcd.dts
 
-Thanks,
-jdl
-
-
- arch/powerpc/boot/dts/mpc8610_hpcd.dts      |  191 +++++
- arch/powerpc/configs/mpc8610_hpcd_defconfig | 1023 +++++++++++++++++++++++++++
- arch/powerpc/platforms/86xx/Kconfig         |   13 +
- arch/powerpc/platforms/86xx/Makefile        |    1 +
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c  |  267 +++++++
- arch/powerpc/sysdev/fsl_pci.c               |    1 +
- include/linux/pci_ids.h                     |    1 +
- 7 files changed, 1497 insertions(+), 0 deletions(-)
+diff --git a/arch/powerpc/boot/dts/mpc8610_hpcd.dts b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+new file mode 100644
+index 0000000..966edf1
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8610_hpcd.dts
+@@ -0,0 +1,191 @@
++/*
++ * MPC8610 HPCD Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under the terms of the GNU General Public License Version 2 as published
++ * by the Free Software Foundation.
++ */
++
++
++/ {
++	model = "MPC8610HPCD";
++	compatible = "fsl,MPC8610HPCD";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,8610@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <d# 32>;	// bytes
++			i-cache-line-size = <d# 32>;	// bytes
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;	// 33 MHz, from uboot
++			bus-frequency = <0>;		// From uboot
++			clock-frequency = <0>;		// From uboot
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 20000000>;	// 512M at 0x0
++	};
++
++	soc@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 1000>;
++		bus-frequency = <0>;
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3000 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3100 100>;
++			interrupts = <2b 2>;
++			interrupt-parent = <&mpic>;
++			dfsrr;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <2a 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <1c 2>;
++			interrupt-parent = <&mpic>;
++		};
++
++
++		mpic: interrupt-controller@40000 {
++			clock-frequency = <0>;
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <40000 40000>;
++			compatible = "chrp,open-pic";
++			device_type = "open-pic";
++			big-endian;
++		};
++
++		global-utilities@e0000 {
++			compatible = "fsl,mpc8610-guts";
++			reg = <e0000 1000>;
++			fsl,has-rstcr;
++		};
++	};
++
++	pci@e0008000 {
++		compatible = "fsl,mpc8610-pci";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e0008000 1000>;
++		bus-range = <0 0>;
++		ranges = <02000000 0 80000000 80000000 0 10000000
++			  01000000 0 00000000 e1000000 0 00100000>;
++		clock-frequency = <1fca055>;
++		interrupt-parent = <&mpic>;
++		interrupts = <18 2>;
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x11 */
++			8800 0 0 1 &mpic 4 1
++			8800 0 0 2 &mpic 5 1
++			8800 0 0 3 &mpic 6 1
++			8800 0 0 4 &mpic 7 1
++
++			/* IDSEL 0x12 */
++			9000 0 0 1 &mpic 5 1
++			9000 0 0 2 &mpic 6 1
++			9000 0 0 3 &mpic 7 1
++			9000 0 0 4 &mpic 4 1
++			>;
++	};
++
++	pcie@e000a000 {
++		compatible = "fsl,mpc8641-pcie";
++		device_type = "pci";
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e000a000 1000>;
++		bus-range = <1 3>;
++		ranges = <02000000 0 a0000000 a0000000 0 10000000
++			  01000000 0 00000000 e3000000 0 00100000>;
++		clock-frequency = <1fca055>;
++		interrupt-parent = <&mpic>;
++		interrupts = <1a 2>;
++		interrupt-map-mask = <f800 0 0 7>;
++
++		interrupt-map = <
++			/* IDSEL 0x1b */
++			d800 0 0 1 &mpic 2 1
++
++			/* IDSEL 0x1c*/
++			e000 0 0 1 &mpic 1 1
++			e000 0 0 2 &mpic 1 1
++			e000 0 0 3 &mpic 1 1
++			e000 0 0 4 &mpic 1 1
++
++			/* IDSEL 0x1f */
++			f800 0 0 1 &mpic 3 0
++			f800 0 0 2 &mpic 0 1
++		>;
++
++		pcie@0 {
++			reg = <0 0 0 0 0>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			device_type = "pci";
++			ranges = <02000000 0 a0000000
++				  02000000 0 a0000000
++				  0 10000000
++				  01000000 0 00000000
++				  01000000 0 00000000
++				  0 00100000>;
++			uli1575@0 {
++				reg = <0 0 0 0 0>;
++				#size-cells = <2>;
++				#address-cells = <3>;
++				ranges = <02000000 0 a0000000
++					  02000000 0 a0000000
++					  0 10000000
++					  01000000 0 00000000
++					  01000000 0 00000000
++					  0 00100000>;
++			};
++		};
++	};
++};
+-- 
+1.5.3
