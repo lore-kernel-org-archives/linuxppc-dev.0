@@ -1,21 +1,25 @@
-Return-Path: <travis@sgi.com>
-Received: from relay.sgi.com (netops-testserver-4-out.sgi.com [192.48.171.29])
-	by ozlabs.org (Postfix) with ESMTP id 0CC1FDDE26
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 05:33:09 +1000 (EST)
-Message-ID: <4703EBE0.7080106@sgi.com>
-Date: Wed, 03 Oct 2007 12:22:08 -0700
-From: Mike Travis <travis@sgi.com>
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH 08/10] ia64: Convert cpu_sibling_map to a per_cpu data
-	array (v3)
-References: <20070912015644.927677070@sgi.com>	<20070912015647.214306428@sgi.com>
-	<20070928024901.24ab6c99.pj@sgi.com>
-In-Reply-To: <20070928024901.24ab6c99.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mm@kvack.org, ak@suse.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-	akpm@linux-foundation.org, clameter@sgi.com
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A50ADDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:11 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l93K96hT007079
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:06 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K95KN017739
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:05 -0500 (CDT)
+Subject: [PATCH 0/5] Add MPC8610 HPCD Base Port
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1191442145.21463.73.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 03 Oct 2007 15:09:05 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Kumar and Paul,
 
-I just now found this.  I'll take a look immediately.  I tried it
-on a couple of systems but not margin. 
+These five patches add the base port for the newly
+introduced MPC8610 HPCD reference board.  We would
+like to see these added to 2.6.24 if possible!
 
 Thanks,
-Mike
+jdl
 
-Paul Jackson wrote:
-> Mike,
-> 
-> I think there is a bug either in this ia64 patch, or in the related
-> generic arch patch: Convert cpu_sibling_map to be a per cpu variable
-> (v3).
-> 
-> It dies early in boot on me, on the SGI internal 8 processor IA64
-> system that you and I know as 'margin'.  The death is a hard hang, due
-> to a corrupt stack, due to a bogus cpu index.
-> 
-> I haven't tracked it down all the way, but have gotten this far.  If I add
-> the following patch, I get a panic on the BUG_ON if I have these two patches
-> in 2.6.23-rc8-mm1, but it boots just fine if I don't have these two patches.
-> 
-> It seems that the "cpu_sibling_map[cpu]" cpumask_t is empty (all zero
-> bits) with your two patches applied, but has some non-zero bits
-> otherwise, which leads to 'group' being NR_CPUS instead of a useful CPU
-> number.  Unfortunately, I have no idea why the "cpu_sibling_map[cpu]"
-> cpumask_t is empty -- good luck on that part.
-> 
-> The patch that catches this bug earlier is this:
-> 
-> --- 2.6.23-rc8-mm1.orig/kernel/sched.c	2007-09-28 01:42:20.144561024 -0700
-> +++ 2.6.23-rc8-mm1/kernel/sched.c	2007-09-28 02:27:14.239075497 -0700
-> @@ -5905,6 +5905,7 @@ static int cpu_to_phys_group(int cpu, co
->  #else
->  	group = cpu;
->  #endif
-> +	BUG_ON(group == NR_CPUS);
->  	if (sg)
->  		*sg = &per_cpu(sched_group_phys, group);
->  	return group;
-> 
-> 
+
+ arch/powerpc/boot/dts/mpc8610_hpcd.dts      |  191 +++++
+ arch/powerpc/configs/mpc8610_hpcd_defconfig | 1023 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Kconfig         |   13 +
+ arch/powerpc/platforms/86xx/Makefile        |    1 +
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c  |  267 +++++++
+ arch/powerpc/sysdev/fsl_pci.c               |    1 +
+ include/linux/pci_ids.h                     |    1 +
+ 7 files changed, 1497 insertions(+), 0 deletions(-)
