@@ -1,11 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18179.13902.936820.573996@cargo.ozlabs.ibm.com>
-Date: Wed, 3 Oct 2007 16:27:26 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Patches added to powerpc.git for-2.6.24 branch
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A5567DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 17:16:12 +1000 (EST)
+Date: Wed, 3 Oct 2007 17:15:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Patches added to powerpc.git for-2.6.24 branch
+Message-Id: <20071003171551.7184d83b.sfr@canb.auug.org.au>
+In-Reply-To: <18179.13902.936820.573996@cargo.ozlabs.ibm.com>
+References: <18179.13902.936820.573996@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__3_Oct_2007_17_15_51_+1000_NxS974y+zyQDxyCg"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,132 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adrian Bunk (1):
-      [POWERPC] Select proper defconfig for crosscompiles
+--Signature=_Wed__3_Oct_2007_17_15_51_+1000_NxS974y+zyQDxyCg
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Aristeu Rozanski (1):
-      [POWERPC] adbhid: Enable KEY_FN key reporting
+On Wed, 3 Oct 2007 16:27:26 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
+> Stephen Rothwell (5):
+>       [POWERPC] Create and use CONFIG_WORD_SIZE
+>       [POWERPC] Remove debug printk from vio_bus_init
+>       [POWERPC] Simplify vio_bus_init a little for legacy iSeries
+>       [POWERPC] Make vio_bus_type static
+>       [POWERPC] Limit range of __init_ref_ok somewhat
 
-Arnd Bergmann (3):
-      [POWERPC] add Kconfig option for optimizing for cell
-      [POWERPC] Move embedded6xx into multiplatform
-      [POWERPC] Fix pci domain detection
+Would you also consider:
 
-Benjamin Herrenschmidt (1):
-      [POWERPC] Fix platinumfb framebuffer
+[POWERPC] Prepare to remove of_platform_driver name
+(http://patchwork.ozlabs.org/linuxppc/patch?id=3D13667)
 
-Cyrill Gorcunov (6):
-      [POWERPC] Sky Cpu and Nexus: code style improvement
-      [POWERPC] Sky Cpu and Nexus: include io.h
-      [POWERPC] Sky Cpu and Nexus: check for platform_get_resource retcode
-      [POWERPC] Sky Cpu and Nexus: check for create_proc_entry ret code
-      [POWERPC] Sky Cpu: use C99 style for struct init
-      [POWERPC] Sky Cpu and Nexus: use seq_file/single_open on proc interface
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Dale Farnsworth (1):
-      [POWERPC] Add Marvell mv64x60 udbg putc/getc functions
+--Signature=_Wed__3_Oct_2007_17_15_51_+1000_NxS974y+zyQDxyCg
+Content-Type: application/pgp-signature
 
-David Woodhouse (1):
-      [POWERPC] Optionally use new device number for pmac_zilog
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Domen Puncer (1):
-      [POWERPC] clk.h interface for platforms
+iD8DBQFHA0GvTgG2atn1QN8RAsylAJ4sb7f8o791Gf2YOxbDn8YfmupnmwCgk9OU
+NpdV8VntI0W+PeaNT1ZAzfg=
+=NgGX
+-----END PGP SIGNATURE-----
 
-Ed Swarthout (1):
-      [POWERPC] Add memory regions to the kcore list for 32-bit machines
-
-Emil Medve (1):
-      [POWERPC] Fix build errors when BLOCK=n
-
-Grant Likely (2):
-      [POWERPC] mpc8349: Add linux,network-index to ethernet nodes in device tree
-      [POWERPC] mpc5200: Add cuimage support for mpc5200 boards
-
-Hugh Dickins (1):
-      [POWERPC] ppc64: support CONFIG_DEBUG_PREEMPT
-
-Ishizaki Kou (5):
-      [POWERPC] Celleb: Move pause, kexec_cpu_down to beat.c
-      [POWERPC] Celleb: Support for Power/Reset buttons
-      [POWERPC] Celleb: New HTAB Guest OS Interface on Beat
-      [POWERPC] Celleb: Serial I/O update
-      [POWERPC] Celleb: update for PCI
-
-Jeremy Kerr (1):
-      [POWERPC] cell: Don't cast the result of of_get_property()
-
-Joachim Fenkes (1):
-      [POWERPC] ibmebus: More descriptive error return code in ibmebus_store_probe()
-
-Jochen Friedrich (4):
-      [POWERPC] Fix copy'n'paste typo in commproc.c
-      [PPC] Fix cpm_dpram_addr returning phys mem instead of virt mem
-      [PPC] Compile fix for 8xx CPM Ehernet driver
-      [POWERPC] Fix cpm_uart driver
-
-Linas Vepstas (2):
-      [POWERPC] pseries: device node status can be "ok" or "okay"
-      [POWERPC] Use alloc_maybe_bootmem() in pcibios_alloc_controller
-
-Mark A. Greer (1):
-      [POWERPC] MAINTAINERS shouldn't reference linuxppc-embedded
-
-Mathieu Desnoyers (1):
-      [POWERPC] Include pagemap.h in asm/powerpc/tlb.h
-
-Meelis Roos (1):
-      [POWERPC] Fix ppc kernels after build-id addition
-
-Michael Ellerman (8):
-      [POWERPC] Make sure to of_node_get() the result of pci_device_to_OF_node()
-      [POWERPC] Simplify error logic in u3msi_setup_msi_irqs()
-      [POWERPC] Simplify error logic in rtas_setup_msi_irqs()
-      [POWERPC] Simplify rtas_change_msi() error semantics
-      [POWERPC] Inline u3msi_compose_msi_msg()
-      [POWERPC] Store the base address in dcr_host_t
-      [POWERPC] Update mpic to use dcr_host_t.base
-      [POWERPC] Update axon_msi to use dcr_host_t.base
-
-Mike Frysinger (1):
-      [POWERPC] Use __attribute__ in asm-powerpc
-
-Milton Miller (2):
-      [POWERPC] boot: Record header bytes in gunzip_start
-      [POWERPC] boot: Simplify gunzip_finish
-
-Olof Johansson (2):
-      [POWERPC] Support setting affinity for U3/U4 MSI sources
-      [POWERPC] Separate out legacy machine check exception parsers
-
-Paul Mackerras (1):
-      [POWERPC] Disable power management for arch/ppc
-
-Robert P. J. Day (1):
-      [POWERPC] Prevent direct inclusion of <asm/rwsem.h>.
-
-Roland McGrath (2):
-      [POWERPC] Add CHECK_FULL_REGS in several places in ptrace code
-      [POWERPC] powerpc vDSO: install unstripped copies on disk
-
-Satyam Sharma (1):
-      [POWERPC] Avoid pointless WARN_ON(irqs_disabled()) from panic codepath
-
-Scott Wood (3):
-      [POWERPC] bootwrapper: Factor out dt_set_mac_address()
-      [POWERPC] bootwrapper: Add PlanetCore firmware support
-      [POWERPC] Make instruction dumping work in real mode
-
-Stephen Rothwell (5):
-      [POWERPC] Create and use CONFIG_WORD_SIZE
-      [POWERPC] Remove debug printk from vio_bus_init
-      [POWERPC] Simplify vio_bus_init a little for legacy iSeries
-      [POWERPC] Make vio_bus_type static
-      [POWERPC] Limit range of __init_ref_ok somewhat
-
-Tony Breeds (6):
-      [POWERPC] Convert define_machine(mpc885_ads) to C99 initializer syntax
-      [POWERPC] Implement {read,update}_persistent_clock
-      [POWERPC] Implement generic time of day clocksource for powerpc
-      [POWERPC] Fix panic in RTAS code
-      [POWERPC] Implement clockevents driver for powerpc
-      [POWERPC] Enable tickless idle and high res timers for powerpc
+--Signature=_Wed__3_Oct_2007_17_15_51_+1000_NxS974y+zyQDxyCg--
