@@ -1,21 +1,20 @@
-Return-Path: <jacmet@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.190])
-	by ozlabs.org (Postfix) with ESMTP id BC42ADDEE1
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:05:00 +1000 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so5373979mue
-	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 09:04:58 -0700 (PDT)
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FEE8DDF2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 02:08:48 +1000 (EST)
+In-Reply-To: <fa686aa40710030857g467a8e13gcee1a19d38e31f9c@mail.gmail.com>
+References: <87przwxkzf.fsf@macbook.be.48ers.dk>
+	<085BE1E4-945F-4690-9DFC-627F242831A6@kernel.crashing.org>
+	<fa686aa40710030857g467a8e13gcee1a19d38e31f9c@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <71F6BAAD-EA02-478A-8E7C-64FC0B13E8B8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] fsl_spi devices should use mode "cpu" or "qe"
+Date: Wed, 3 Oct 2007 11:08:51 -0500
 To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
-References: <87lkakxky1.fsf@macbook.be.48ers.dk>
-	<fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 03 Oct 2007 18:04:50 +0200
-In-Reply-To: <fa686aa40710030856u74054993q2d73cf18920665f2@mail.gmail.com>
-	(Grant Likely's message of "Wed\, 3 Oct 2007 09\:56\:34 -0600")
-Message-ID: <874ph8xjz1.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,22 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-Hi,
+On Oct 3, 2007, at 10:57 AM, Grant Likely wrote:
 
- Grant> Why not just:
+> On 10/3/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+>>
+>> On Oct 3, 2007, at 10:43 AM, Peter Korsgaard wrote:
+>>
+>>> According to booting-without-of.txt, fsl_spi mode should be either
+>>> "cpu" or "qe", not "cpu-qe".
+>>>
+>>> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+>>
+>> I think we should update the doc instead of the code here. Thoughts?
+>
+> Updating the doc is more backward compatible.  :-)
 
- Grant>         np = of_find_node_by_type(NULL, "qe");
- Grant> +       if (!np)
- Grant> +               np = of_find_node_by_type(NULL, "soc");
- Grant>         if (!np)
- Grant>                 return -ENODEV;
+Peter, can you respin this as an update to booting-without-of.txt
 
-My first iteration did it like that, but then you don't get a -ENODEV
-if the node is missing (and you'll end up using the wrong clock) and
-it doesn't support processors with SPI on and off QE (if that
-exists/will ever exist).
+thanks
 
--- 
-Bye, Peter Korsgaard
+- k
