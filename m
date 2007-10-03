@@ -1,25 +1,25 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E0927DDEC5
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:09:55 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 26A4DDDF0E
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 06:10:06 +1000 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l93K9pEM007426
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:51 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l93K9w6i024075
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 13:09:58 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K9osa017848
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:50 -0500 (CDT)
-Subject: [PATCH 3/5] Treat 8610 host bridge as transparent
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l93K9vG0017852
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 Oct 2007 15:09:58 -0500 (CDT)
+Subject: [PATCH 4/5] Add initial MPC8610 HPCD Kconfig and Makefiles.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1191442190.21463.82.camel@ld0161-tx32>
+Message-Id: <1191442197.21463.84.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Wed, 03 Oct 2007 15:09:50 -0500
+Date: Wed, 03 Oct 2007 15:09:57 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jason Jin <Jason.jin@freescale.com>
+From: Xianghua Xiao <x.xiao@freescale.com>
 
+Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
 Signed-off-by: Jason Jin <Jason.jin@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_pci.c |    1 +
- include/linux/pci_ids.h       |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/86xx/Kconfig  |   13 +++++++++++++
+ arch/powerpc/platforms/86xx/Makefile |    1 +
+ 2 files changed, 14 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 34cad96..98290f4 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -259,3 +259,4 @@ DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8572E, quirk_fsl_pcie_transpare
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8572, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641, quirk_fsl_pcie_transparent);
- DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8641D, quirk_fsl_pcie_transparent);
-+DECLARE_PCI_FIXUP_EARLY(0x1957, PCI_DEVICE_ID_MPC8610, quirk_fsl_pcie_transparent);
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 545f24c..bb244a4 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2104,6 +2104,7 @@
- #define PCI_DEVICE_ID_MPC8572		0x0041
- #define PCI_DEVICE_ID_MPC8641		0x7010
- #define PCI_DEVICE_ID_MPC8641D		0x7011
-+#define PCI_DEVICE_ID_MPC8610		0x7018
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+index 685b2fb..21d1135 100644
+--- a/arch/powerpc/platforms/86xx/Kconfig
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -11,6 +11,12 @@ config MPC8641_HPCN
+ 	help
+ 	  This option enables support for the MPC8641 HPCN board.
  
- #define PCI_VENDOR_ID_PASEMI		0x1959
++config MPC8610_HPCD
++	bool "Freescale MPC8610 HPCD"
++	select DEFAULT_UIMAGE
++	help
++	  This option enables support for the MPC8610 HPCD board.
++
+ endchoice
  
+ config MPC8641
+@@ -19,3 +25,10 @@ config MPC8641
+ 	select PPC_UDBG_16550
+ 	select MPIC
+ 	default y if MPC8641_HPCN
++
++config MPC8610
++	bool
++	select FSL_PCI if PCI
++	select PPC_UDBG_16550
++	select MPIC
++	default y if MPC8610_HPCD
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index 3376c77..c967063 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -4,3 +4,4 @@
+ 
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
++obj-$(CONFIG_MPC8610_HPCD)	+= mpc8610_hpcd.o
 -- 
 1.5.3
