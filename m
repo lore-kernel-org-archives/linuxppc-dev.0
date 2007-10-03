@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 983C9DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 18:12:33 +1000 (EST)
-Date: Wed, 3 Oct 2007 18:12:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Patches added to powerpc.git for-2.6.24 branch
-Message-Id: <20071003181215.e8942228.sfr@canb.auug.org.au>
-In-Reply-To: <20071003171551.7184d83b.sfr@canb.auug.org.au>
-References: <18179.13902.936820.573996@cargo.ozlabs.ibm.com>
-	<20071003171551.7184d83b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW"
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 55917DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 23:29:30 +1000 (EST)
+Date: Wed, 3 Oct 2007 17:30:32 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v3] qe: miscellaneous code improvements and fixes to
+	the QE library
+Message-ID: <20071003133032.GA2417@localhost.localdomain>
+References: <11903212461510-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <11903212461510-git-send-email-timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Timur,
 
-On Wed, 3 Oct 2007 17:15:51 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Would you also consider:
->=20
-> [POWERPC] Prepare to remove of_platform_driver name
-> (http://patchwork.ozlabs.org/linuxppc/patch?id=3D13667)
+On Thu, Sep 20, 2007 at 03:47:26PM -0500, Timur Tabi wrote:
+> This patch makes numerous miscellaneous code improvements to the QE library.
 
-Also:
+...and also breaks MPC8568E-MDS. ;-) Board hangs just after ip-config stuff.
 
-[PATCH 07/11] [POWERPC] iSeries: missing newline in printk
-(http://patchwork.ozlabs.org/linuxppc/patch?id=3D13661)
-and
-[PATCH 10/11] [POWERPC] Clean up vio.h
-(http://patchwork.ozlabs.org/linuxppc/patch?id=3D13664)
+Commit 589ffa1c520355e37d5868 in galak/powerpc.git.
 
-don't actually interact with the rest of the series.
+Unfortunately it isn't split, thus it will take time to track faulty bit.
+But so far... maybe you have any ideas?
 
-I rebuilt {ppc64,pseries,iseries}_defconfig with just the above three
-patches on top of the current for-2.6.24 tree to be sure.
+...
+serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 42) is a 16550A
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: module loaded
+Gianfar MII Bus: probed
+eth0: Gianfar Ethernet Controller Version 1.2, 00:e0:0c:00:00:fd
+eth0: Running with NAPI enabled
+eth0: 256/256 RX/TX BD ring size
+eth1: Gianfar Ethernet Controller Version 1.2, 00:e0:0c:00:01:fd
+eth1: Running with NAPI enabled
+eth1: 256/256 RX/TX BD ring size
+UCC Ethernet Controller MII Bus: probed
+ucc_geth: QE UCC Gigabit Ethernet Controller
+ucc_geth: UCC1 at 0xe0082000 (irq = 32)
+ucc_geth: UCC2 at 0xe0083000 (irq = 33)
+PCI: Enabling device 0001:02:00.0 (0000 -> 0003)
+sky2 0001:02:00.0: v1.18 addr 0xa0000000 irq 18 Yukon-EC (0xb6) rev 1
+sky2 eth4: addr 00:00:5a:71:75:fe
+Marvell 88E1101: Registered new driver
+Marvell 88E1112: Registered new driver
+Marvell 88E1111: Registered new driver
+Marvell 88E1145: Registered new driver
+netconsole: not configured, aborting
+i2c /dev entries driver
+rtc-ds1374 0-0068: rtc core: registered rtc-ds1374 as rtc0
+TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+rtc-ds1374 0-0068: setting the system clock to 2007-01-02 22:23:42 (1167776622)
+sky2 eth4: enabling interface
+Sending DHCP requests .<6>PHY: e0024520:02 - Link is Up - 100/Full
+PHY: e0024520:03 - Link is Up - 100/Full
+PHY: e0024520:01 - Link is Up - 100/Full
+., OK
+IP-Config: Got DHCP answer from 10.0.0.2, my address is 10.0.0.99
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Thanks,
 
---Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHA07kTgG2atn1QN8RAseCAJ9iqIV94E/zF6kCliPnWMmXcne9IwCfbSqQ
-bMg39S8KeJ9TZ+4cku6yNk4=
-=/Xjf
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Oct_2007_18_12_15_+1000_O=z_T_D0DWXRqztW--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
