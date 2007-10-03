@@ -1,11 +1,9 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18179.7531.403853.920730@cargo.ozlabs.ibm.com>
-Date: Wed, 3 Oct 2007 14:41:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Use cache-inhibited large page bit from firmware
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <2262db6d12c4eb44af3653ff65ecc8756dd280c4.1191387123.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Fail early in lmb_remove_region()
+Date: Wed,  3 Oct 2007 14:52:29 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,29 +13,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Discussions with firmware architects have confirmed that the bit in
-the ibm,pa-features property that indicates support for
-cache-inhibited large (>= 64kB) page mappings does in fact mean that
-the hypervisor allows 64kB mappings to I/O devices.
+There was a query a while back about whether lmb_remove_region() was
+correct to unconditionally decrement rgn->cnt:
+  http://ozlabs.org/pipermail/linuxppc-dev/2007-March/033261.html
 
-Thus we can now enable the code that tests that bit and sets our
-CPU_FTR_CI_LARGE_PAGE feature bit.
+AFAICT there is no bug at the moment because the two callers ensure that
+they only pass a value of r which is < rgn->cnt. However there's the
+potential for a bug if a caller got that wrong. So to avoid such a bug
+in future we should fail in lmb_remove_region() if the r value is out of
+range.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
+ arch/powerpc/mm/lmb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 172dcc3..9f329a8 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -531,10 +531,7 @@ static struct ibm_pa_feature {
- 	{CPU_FTR_CTRL, 0,		0, 3, 0},
- 	{CPU_FTR_NOEXECUTE, 0,		0, 6, 0},
- 	{CPU_FTR_NODSISRALIGN, 0,	1, 1, 1},
--#if 0
--	/* put this back once we know how to test if firmware does 64k IO */
- 	{CPU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
--#endif
- 	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
- };
+diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
+index 8f4d2dc..e79e055 100644
+--- a/arch/powerpc/mm/lmb.c
++++ b/arch/powerpc/mm/lmb.c
+@@ -92,6 +92,8 @@ static void __init lmb_remove_region(struct lmb_region *rgn, unsigned long r)
+ {
+ 	unsigned long i;
  
++	BUG_ON(r >= rgn->cnt);
++
+ 	for (i = r; i < rgn->cnt - 1; i++) {
+ 		rgn->region[i].base = rgn->region[i + 1].base;
+ 		rgn->region[i].size = rgn->region[i + 1].size;
+-- 
+1.5.1.3.g7a33b
