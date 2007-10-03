@@ -1,29 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 313F3DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 07:23:48 +1000 (EST)
-Subject: Re: [PATCH 2 6/7] Uartlite: Add of-platform-bus binding
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40710030739k13e05571l7063aa635a8727dc@mail.gmail.com>
-References: <20070930224117.1871.87164.stgit@trillian.cg.shawcable.net>
-	<20070930224208.1871.2913.stgit@trillian.cg.shawcable.net>
-	<1191304386.6310.92.camel@pasglop>
-	<fa686aa40710020726s330d586p6ece70ae378f1206@mail.gmail.com>
-	<871wcd33ux.fsf@macbook.be.48ers.dk>
-	<fa686aa40710020910u3a679ea2m15b005d0ba5fb054@mail.gmail.com>
-	<1191365012.22572.33.camel@pasglop>
-	<fa686aa40710022118r170ab652mdd65c216304b3330@mail.gmail.com>
-	<1191385456.22572.45.camel@pasglop>
-	<fa686aa40710030739k13e05571l7063aa635a8727dc@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 04 Oct 2007 07:21:40 +1000
-Message-Id: <1191446500.22572.94.camel@pasglop>
+	by ozlabs.org (Postfix) with ESMTP id 903F8DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 07:26:30 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1IdBJs-0007e0-VR
+	for linuxppc-dev@ozlabs.org; Wed, 03 Oct 2007 20:59:49 +0000
+Received: from bi01p1.co.us.ibm.com ([32.97.110.142])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 20:59:48 +0000
+Received: from hollisb by bi01p1.co.us.ibm.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 03 Oct 2007 20:59:48 +0000
+To: linuxppc-dev@ozlabs.org
+From: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: Stdout console clogging => 300ms blocked
+Date: Wed, 3 Oct 2007 20:49:12 +0000 (UTC)
+Message-ID: <fe0v88$dt5$1@sea.gmane.org>
+References: <8D433CD511BE4646B47F8B31C900818ECB97AF@kndmex01.barco.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,25 +32,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 02 Oct 2007 09:41:28 +0200, Willaert, Bernard wrote:
 
-On Wed, 2007-10-03 at 08:39 -0600, Grant Likely wrote:
-> Right, okay.  Looking at platform_device_add(), the default parent is
-> platform_bus, but it can be overridden.  of_platform_bus devices get
-> the hierarchy of the device tree by default.  So in the platform bus
-> case, the constructor would need to explicitly set the parent device?
-> Correct?
+> System details:
+> Freescale MPC8347@200MHz
+> Kernel 2.6.18
 > 
-> Also, how do you see the constructor code getting executed?  Called
-> explicitly from the platform code, or some form of auto binding?  I
-> look at fsl_soc.c and I shudder as each constructor does a pass of the
-> whole tree looking for compatible nodes.
+> Problem:
+> When we log debug output via the serial console on a multithreaded
+> application, the console throughput may get clogged and then we
+> experience a >300ms deadlock.
+> 
+> Quick and dirty test program: threadtest.c:
+> //----------------------------------------------------------------------
+> -------------------------
+> #include <pthread.h>
+> #include <stdio.h>
+> #include <sys/time.h>
+> 
+> #define THREAD_DELAY 1000
+> 
+> void* thread_1(void* unused)
+> {
+> 	while (1)
+> 	{
+> 		usleep(THREAD_DELAY);
+> 		fprintf(stdout," <----- thread 1\n");
+> 	}
+> 	return NULL;
+> }
+> 
+> void* thread_2(void* unused)
+> {
+> 	static long ts_old;
+> 	long ts;
+> 	struct timeval tv;
+> 
+> 	while (1)
+> 	{
+> 		usleep(THREAD_DELAY);
+> 		fprintf(stdout," <----- thread 2\n");
+> 
+> 		gettimeofday (&tv, NULL);
+> 		ts = (tv.tv_sec * 1000L) + (tv.tv_usec / 1000L);
+> 		if ((ts - ts_old) > 100)
+> 		{
+> 			fprintf(stdout, "!!!!!!!!!!! thread2 interval
+> timeout = %d ms\n",(int)(ts - ts_old));
+> 		}
+> 		ts_old = ts;
+> 	}
+> 	return NULL;			
+> 
+> }
+> 
+> 
+> 
+> int main()
+> {
+> 	pthread_t pthread_id_1, pthread_id_2;
+> 	
+> 	pthread_create(&pthread_id_1,NULL,&thread_1,NULL);
+> 	pthread_create(&pthread_id_2,NULL,&thread_2,NULL);
+> 	while (1)
+> 	{
+> 	}
+> 	return 0;
+> 
+> }
+> 
+> //----------------------------------------------------------------------
+> -------------------------
+> 
+> Build command on our platform: 
+> powerpc-linux-uclibc-gcc threadtest.c  -lpthread -o threadtest
+> Execute: ./threadtest > /dev/console &
+> 
+> Uboot settings for the serial console:
+> consoledev=ttyS0
+> baudrate=115200
+> stdin=serial
+> stdout=serial
+> stderr=serial
+> boot_go=setenv bootargs console=$consoledev,$baudrate $args_rtc
+> $args_mtd $args_nfs $args_debug;bootm $addr_kernel $addr_root $addr_dtb
+> 
+> 
+> Expected output [snippet] on the console:
+> .... /\ ........
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+> .... /\ ........
+> 
+> Real output on the console:
+> 
+> .... /\ ........
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+> !!!!!!!!!!! thread2 interval timeout = 335 ms
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+>  <----- thread 2
+>  <----- thread 1
+> .... /\ ........ 
+> 
+> This timeout shows up around every second and has always about the same
+> value of 335 ms.
+> Can somebody reproduce this behaviour ( the console speed and/or thread
+> interval may have to be tweaked to clog the serial output) ?
+> Thank you in advance for your help.
 
-My idea was to have some platform code at boot walk the DT and call the
-constructors on the way, passing them the parent. Constructors return a
-struct device * so it would keep track of who is where.
+Could you not post HTML please? Thanks.
 
-Drivers or platform code can then register constructors along with of
-match tables.
+"Deadlock" means dead due to incorrect locking. Instead, you seem to be
+talking about a momentary pause. :)
 
-Ben.
- 
+Are you saying that the problem does not occur when you do not use
+/dev/console? What about /dev/ttyS0, or whatever your serial port device
+is?
+
+You're certain that this isn't simply a result of multitasking?
+
+-- 
+Hollis Blanchard
+IBM Linux Technology Center
