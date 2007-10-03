@@ -1,26 +1,11 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20DDADDE06
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 Oct 2007 14:27:44 +1000 (EST)
-Date: Wed, 3 Oct 2007 06:00:56 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v3 2/4] Implement generic time of day clocksource for
-	powerpc machines.
-In-Reply-To: <18178.59123.511480.956928@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LRH.0.999.0710030554550.15610@www.tglx.de>
-References: <1190345162.620000.305760830507.qpush@thor>
-	<20070921032603.07AF232C889@thor>
-	<20070921145212.7e8a7b89.sfr@canb.auug.org.au>
-	<20070921213552.GD9814@bakeyournoodle.com>
-	<18178.59123.511480.956928@cargo.ozlabs.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, John Stultz <johnstul@us.ibm.com>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18179.7531.403853.920730@cargo.ozlabs.ibm.com>
+Date: Wed, 3 Oct 2007 14:41:15 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Use cache-inhibited large page bit from firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,26 +15,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 3 Oct 2007, Paul Mackerras wrote:
+Discussions with firmware architects have confirmed that the bit in
+the ibm,pa-features property that indicates support for
+cache-inhibited large (>= 64kB) page mappings does in fact mean that
+the hypervisor allows 64kB mappings to I/O devices.
 
-> Tony Breeds writes:
-> 
-> > @@ -982,6 +906,10 @@ void __init time_init(void)
-> >  
-> >  	write_sequnlock_irqrestore(&xtime_lock, flags);
-> >  
-> > +	/* Register the clocksource, if we're not running on iSeries */
-> > +	if (!firmware_has_feature(FW_FEATURE_ISERIES))
-> > +		clocksource_init();
-> 
-> This breaks the 32-bit compile.
-> 
-> Is it possible to adjust the frequency of a clocksource after it has
-> been registered?  Or could the timebase clocksource be unregistered
-> and reregistered in iSeries_tb_recal?
+Thus we can now enable the code that tests that bit and sets our
+CPU_FTR_CI_LARGE_PAGE feature bit.
 
-There is no unregister interface right now. But we need some mechanism to 
-tell the core code that you changed it. I have a look if John does not 
-beat me.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
 
-	tglx
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 172dcc3..9f329a8 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -531,10 +531,7 @@ static struct ibm_pa_feature {
+ 	{CPU_FTR_CTRL, 0,		0, 3, 0},
+ 	{CPU_FTR_NOEXECUTE, 0,		0, 6, 0},
+ 	{CPU_FTR_NODSISRALIGN, 0,	1, 1, 1},
+-#if 0
+-	/* put this back once we know how to test if firmware does 64k IO */
+ 	{CPU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
+-#endif
+ 	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
+ };
+ 
