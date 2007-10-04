@@ -1,19 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DD890DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 14:01:43 +1000 (EST)
-Date: Thu, 4 Oct 2007 14:01:26 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH] fsl_spi_init: Support non-QE processors
-Message-Id: <20071004140126.99c0fab0.sfr@canb.auug.org.au>
-In-Reply-To: <87lkakxky1.fsf@macbook.be.48ers.dk>
-References: <87lkakxky1.fsf@macbook.be.48ers.dk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__4_Oct_2007_14_01_26_+1000_7H4mtDsBr+Z+kGNn"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Date: Wed, 03 Oct 2007 22:05:01 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Bootwrapper: Enable debug info on boot wrapper
+To: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au, paulus@ozlabs.org
+Message-id: <20071004040501.16923.68468.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__4_Oct_2007_14_01_26_+1000_7H4mtDsBr+Z+kGNn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Grant Likely <grant.likely@secretlab.ca>
 
-On Wed, 03 Oct 2007 17:43:50 +0200 Peter Korsgaard <jacmet@sunsite.dk> wrot=
-e:
->
-> @@ -1220,14 +1220,17 @@ int __init fsl_spi_init(struct spi_board_info *bo=
-ard_infos,
->  {
->  	struct device_node *np;
->  	unsigned int i;
-> -	const u32 *sysclk;
-> +	const u32 *qe_sysclk =3D 0, *soc_sysclk =3D 0;
+Add '-g' to BOOTCFLAGS if CONFIG_DEBUG_INFO is set.
 
-Please use NULL when referring to pointers.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ arch/powerpc/boot/Makefile |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
---Signature=_Thu__4_Oct_2007_14_01_26_+1000_7H4mtDsBr+Z+kGNn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHBGWaTgG2atn1QN8RAgFBAJ9iN+iN1o90jIMFW4YuFSqtvoYvQwCeMUuU
-FUoH9MvtD/RZPZZBxirqLL4=
-=81Rt
------END PGP SIGNATURE-----
-
---Signature=_Thu__4_Oct_2007_14_01_26_+1000_7H4mtDsBr+Z+kGNn--
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index cf80db3..9dfe79b 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -25,6 +25,10 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+ 
++ifdef CONFIG_DEBUG_INFO
++BOOTCFLAGS	+= -g
++endif
++
+ ifeq ($(call cc-option-yn, -fstack-protector),y)
+ BOOTCFLAGS	+= -fno-stack-protector
+ endif
