@@ -1,19 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29692DDE07
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 15:32:05 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l945W18i025506
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2007 00:32:02 -0500
-Date: Thu, 4 Oct 2007 00:31:35 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Use for_each_ matching routinues for pci PHBs
-Message-ID: <Pine.LNX.4.64.0710040030010.11519@blarg.am.freescale.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 4 Oct 2007 15:37:43 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: dtc: Refactor Makefiles (v2)
+Message-ID: <20071004053743.GI6024@localhost.localdomain>
+References: <20071003055933.GE18978@localhost.localdomain>
+	<20071004052053.GH6024@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071004052053.GH6024@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,256 +18,346 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On the Freescale embedded (83xx, 85xx, 86xx) and a few of the discrete
-bridges (mpc10x, tsi108) use the new for_each_compatible_node() or
-for_each_node_by_type() to provide more exact matching when looking for
-PHBs in the device tree.
+On Thu, Oct 04, 2007 at 03:20:53PM +1000, David Gibson wrote:
+> On Wed, Oct 03, 2007 at 03:59:33PM +1000, David Gibson wrote:
+> > This patch makes a number of Makefile cleanups and improvements:
+> > 	- We use more generic rules to invoke flex and bison, which is
+> > useful for some of the other changes.
+> > 	- We use the name dtc-lexer.lex.c for the flex output, instead
+> > of the default lex.yy.c.  That means less potential for confusion if
+> > dtc is embedded into other projects (e.g. the kernel).
+> > 	- We separate out a Makefile.dtc designed for embedding into
+> > other projects, analagous to Makefile.libfdt.
+> > 	- Makefile.libfdt is cleaned up to be more useful based on
+> > some actual trial runs of embedding libfdt in the kernel bootwrapper.
+> > 	- Versioning related rules and variables are collected into
+> > one place in the Makefile.
+> 
+> Crap.  Don't apply, this seems to break the autodependency generation
+> for libfdt.
 
-With the previous code it was possible to match on pci bridges since
-we were only matching on device_type.
+Here's a corrected version.
 
----
- arch/powerpc/platforms/83xx/mpc8313_rdb.c         |    2 +-
- arch/powerpc/platforms/83xx/mpc832x_mds.c         |    2 +-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c         |    2 +-
- arch/powerpc/platforms/83xx/mpc834x_itx.c         |    2 +-
- arch/powerpc/platforms/83xx/mpc834x_mds.c         |    2 +-
- arch/powerpc/platforms/83xx/mpc836x_mds.c         |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_ads.c         |    3 ++-
- arch/powerpc/platforms/85xx/mpc85xx_cds.c         |   18 +++++++++++-------
- arch/powerpc/platforms/85xx/mpc85xx_ds.c          |   18 +++++++++++-------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |   14 +++++++++++---
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |    3 ++-
- arch/powerpc/platforms/embedded6xx/linkstation.c  |    2 +-
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |    2 +-
- 13 files changed, 45 insertions(+), 27 deletions(-)
+dtc: Refactor Makefiles
 
-In my git tree.
+This patch makes a number of Makefile cleanups and improvements:
+	- We use more generic rules to invoke flex and bison, which is
+useful for some of the other changes.
+	- We use the name dtc-lexer.lex.c for the flex output, instead
+of the default lex.yy.c.  That means less potential for confusion if
+dtc is embedded into other projects (e.g. the kernel).
+	- We separate out a Makefile.dtc designed for embedding into
+other projects, analagous to Makefile.libfdt.
+	- Makefile.libfdt is cleaned up to be more useful based on
+some actual trial runs of embedding libfdt in the kernel bootwrapper.
+	- Versioning related rules and variables are collected into
+one place in the Makefile.
 
-diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-index 140b46f..33766b8 100644
---- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-@@ -43,7 +43,7 @@ static void __init mpc8313_rdb_setup_arch(void)
- 		ppc_md.progress("mpc8313_rdb_setup_arch()", 0);
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
- 	mpc831x_usb_cfg();
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index d494bc4..b8d8c91 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -73,7 +73,7 @@ static void __init mpc832x_sys_setup_arch(void)
- 	}
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index 24a790c..4da0698 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -93,7 +93,7 @@ static void __init mpc832x_rdb_setup_arch(void)
- 		ppc_md.progress("mpc832x_rdb_setup_arch()", 0);
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index 870fd20..aa76819 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -52,7 +52,7 @@ static void __init mpc834x_itx_setup_arch(void)
- 		ppc_md.progress("mpc834x_itx_setup_arch()", 0);
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index a9140b6..00aed7c 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -83,7 +83,7 @@ static void __init mpc834x_mds_setup_arch(void)
- 		ppc_md.progress("mpc834x_mds_setup_arch()", 0);
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index db69576..0b18a75 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -79,7 +79,7 @@ static void __init mpc836x_mds_setup_arch(void)
- 	}
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
- 		mpc83xx_add_bridge(np);
- #endif
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index c22bc1c..acb1ef9 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -204,8 +204,9 @@ static void __init mpc85xx_ads_setup_arch(void)
- #endif
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
- 		fsl_add_bridge(np, 1);
+Index: dtc/Makefile
+===================================================================
+--- dtc.orig/Makefile	2007-10-04 15:20:48.000000000 +1000
++++ dtc/Makefile	2007-10-04 15:34:02.000000000 +1000
+@@ -15,40 +15,12 @@ EXTRAVERSION =
+ LOCAL_VERSION =
+ CONFIG_LOCALVERSION =
+ 
+-DTC_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+-VERSION_FILE = version_gen.h
+-
+-CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
+-	  else if [ -x /bin/bash ]; then echo /bin/bash; \
+-	  else echo sh; fi ; fi)
+-
+-nullstring :=
+-space	:= $(nullstring) # end of line
+-
+-localver_config = $(subst $(space),, $(string) \
+-			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
+-
+-localver_cmd = $(subst $(space),, $(string) \
+-			      $(patsubst "%",%,$(LOCALVERSION)))
+-
+-localver_scm = $(shell $(CONFIG_SHELL) ./scripts/setlocalversion)
+-localver_full  = $(localver_config)$(localver_cmd)$(localver_scm)
+-
+-dtc_version = $(DTC_VERSION)$(localver_full)
+-
+-#
+-# Contents of the generated version file.
+-#
+-define filechk_version
+-	(echo "#define DTC_VERSION \"DTC $(dtc_version)\""; )
+-endef
+-
+-
+ CPPFLAGS = -I libfdt
+ CFLAGS = -Wall -g -Os
+ LDFLAGS = -Llibfdt
+ 
+ BISON = bison
++LEX = flex
+ 
+ INSTALL = /usr/bin/install
+ DESTDIR =
+@@ -77,52 +49,107 @@ endif
+ 
+ all: dtc ftdump libfdt tests
+ 
++install: all
++	@$(VECHO) INSTALL
++	$(INSTALL) -d $(DESTDIR)$(BINDIR)
++	$(INSTALL) -m 755 dtc $(DESTDIR)$(BINDIR)
++	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
++	$(INSTALL) -m 644 $(LIBFDT_LIB) $(DESTDIR)$(LIBDIR)
++	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
++	$(INSTALL) -m 644 $(LIBFDT_INCLUDES) $(DESTDIR)$(INCLUDEDIR)
 +
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- }
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 665e8df..abc85b8 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -283,14 +283,18 @@ static void __init mpc85xx_cds_setup_arch(void)
- 	}
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
--		struct resource rsrc;
--		of_address_to_resource(np, 0, &rsrc);
--		if ((rsrc.start & 0xfffff) == 0x8000)
--			fsl_add_bridge(np, 1);
--		else
--			fsl_add_bridge(np, 0);
-+	for_each_node_by_type(np, "pci") {
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-+		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
-+			struct resource rsrc;
-+			of_address_to_resource(np, 0, &rsrc);
-+			if ((rsrc.start & 0xfffff) == 0x8000)
-+				fsl_add_bridge(np, 1);
-+			else
-+				fsl_add_bridge(np, 0);
-+		}
- 	}
+ #
+-# Rules for dtc proper
++# Rules for versioning
+ #
+-DTC_PROGS = dtc ftdump
+-DTC_OBJS = dtc.o flattree.o fstree.o data.o livetree.o \
+-		srcpos.o treesource.o \
+-		dtc-parser.tab.o lex.yy.o
+-DTC_DEPFILES = $(DTC_OBJS:%.o=%.d)
+ 
+-BIN += dtc ftdump
++DTC_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
++VERSION_FILE = version_gen.h
+ 
+-dtc-parser.tab.c dtc-parser.tab.h dtc-parser.output: dtc-parser.y
+-	@$(VECHO) BISON $@
+-	@$(VECHO) ---- Expect 2 s/r and 2 r/r. ----
+-	$(BISON) -d $<
++CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
++	  else if [ -x /bin/bash ]; then echo /bin/bash; \
++	  else echo sh; fi ; fi)
 +
- 	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 4d44902..d60bb2b 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -149,14 +149,18 @@ static void __init mpc85xx_ds_setup_arch(void)
- 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
--		struct resource rsrc;
--		of_address_to_resource(np, 0, &rsrc);
--		if ((rsrc.start & 0xfffff) == primary_phb_addr)
--			fsl_add_bridge(np, 1);
--		else
--			fsl_add_bridge(np, 0);
-+	for_each_node_by_type(np, "pci") {
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-+		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
-+			struct resource rsrc;
-+			of_address_to_resource(np, 0, &rsrc);
-+			if ((rsrc.start & 0xfffff) == primary_phb_addr)
-+				fsl_add_bridge(np, 1);
-+			else
-+				fsl_add_bridge(np, 0);
-+		}
- 	}
++nullstring :=
++space	:= $(nullstring) # end of line
 +
- 	uses_fsl_uli_m1575 = 1;
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index c379286..f8b6b08 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -83,9 +83,17 @@ static void __init mpc85xx_mds_setup_arch(void)
- 	}
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
--		fsl_add_bridge(np, 1);
--	of_node_put(np);
-+	for_each_node_by_type(np, "pci") {
-+		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
-+		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
-+			struct resource rsrc;
-+			of_address_to_resource(np, 0, &rsrc);
-+			if ((rsrc.start & 0xfffff) == 0x8000)
-+				fsl_add_bridge(np, 1);
-+			else
-+				fsl_add_bridge(np, 0);
-+		}
-+	}
- #endif
-
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 3ec9d5a..6879b83 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -140,7 +140,7 @@ mpc86xx_hpcn_setup_arch(void)
- 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
-
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;) {
-+	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie") {
- 		struct resource rsrc;
- 		of_address_to_resource(np, 0, &rsrc);
- 		if ((rsrc.start & 0xfffff) == 0x8000)
-@@ -148,6 +148,7 @@ mpc86xx_hpcn_setup_arch(void)
- 		else
- 			fsl_add_bridge(np, 0);
- 	}
++localver_config = $(subst $(space),, $(string) \
++			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
 +
- 	uses_fsl_uli_m1575 = 1;
- 	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
++localver_cmd = $(subst $(space),, $(string) \
++			      $(patsubst "%",%,$(LOCALVERSION)))
++
++localver_scm = $(shell $(CONFIG_SHELL) ./scripts/setlocalversion)
++localver_full  = $(localver_config)$(localver_cmd)$(localver_scm)
++
++dtc_version = $(DTC_VERSION)$(localver_full)
++
++# Contents of the generated version file.
++define filechk_version
++	(echo "#define DTC_VERSION \"DTC $(dtc_version)\""; )
++endef
++
++define filechk
++	set -e;					\
++	echo '	CHK $@';			\
++	mkdir -p $(dir $@);			\
++	$(filechk_$(1)) < $< > $@.tmp;		\
++	if [ -r $@ ] && cmp -s $@ $@.tmp; then	\
++		rm -f $@.tmp;			\
++	else					\
++		echo '	UPD $@';		\
++		mv -f $@.tmp $@;		\
++	fi;
++endef
+ 
+ $(VERSION_FILE): Makefile FORCE
+ 	$(call filechk,version)
+ 
+-lex.yy.c: dtc-lexer.l
+-	@$(VECHO) LEX $@
+-	$(LEX) $<
++#
++# Rules for dtc proper
++#
++include Makefile.dtc
++
++BIN += dtc
++
++# This stops make from generating the lex and bison output during
++# auto-dependency computation, but throwing them away as an
++# intermediate target and building them again "for real"
++.SECONDARY: $(DTC_GEN_SRCS)
+ 
+ dtc: $(DTC_OBJS)
+ 
++ifneq ($(DEPTARGETS),)
++-include $(DTC_OBJS:%.o=%.d)
++endif
++#
++# Rules for ftdump
++#
++BIN += ftdump
++
+ ftdump:	ftdump.o
+ 
+ ifneq ($(DEPTARGETS),)
+--include $(DTC_DEPFILES)
++-include ftdump.d
+ endif
+-
+ #
+ # Rules for libfdt
+ #
+-LIBFDT_PREFIX = libfdt/
++LIBFDT_objdir = libfdt
++LIBFDT_srcdir = libfdt
+ include libfdt/Makefile.libfdt
+ 
+ .PHONY: libfdt
+ libfdt: $(LIBFDT_LIB)
+ 
++$(LIBFDT_LIB): $(addprefix libfdt/,$(LIBFDT_OBJS))
++
+ libfdt_clean:
+ 	@$(VECHO) CLEAN "(libfdt)"
+-	rm -f $(LIBFDT_CLEANFILES)
++	rm -f $(addprefix libfdt/,$(STD_CLEANFILES))
++	rm -f $(addprefix libfdt/,$(LIBFDT_CLEANFILES))
+ 
+ ifneq ($(DEPTARGETS),)
+--include $(LIBFDT_DEPFILES)
++-include $(LIBFDT_OBJS:%.o=$(LIBFDT_objdir)/%.d)
+ endif
+ 
+ #
+@@ -131,38 +158,18 @@ endif
+ TESTS_PREFIX=tests/
+ include tests/Makefile.tests
+ 
+-STD_CLEANFILES = *~ *.o *.d *.a *.i *.s core a.out
+-GEN_CLEANFILES = $(VERSION_FILE)
++#
++# Clean rules
++#
++STD_CLEANFILES = *~ *.o *.d *.a *.i *.s core a.out vgcore.* \
++	*.tab.[ch] *.lex.c *.output
+ 
+ clean: libfdt_clean tests_clean
+ 	@$(VECHO) CLEAN
+-	rm -f $(STD_CLEANFILES)
+-	rm -f $(GEN_CLEANFILES)
+-	rm -f *.tab.[ch] lex.yy.c *.output vgcore.*
++	rm -f $(STD_CLEANFILES) $(DTC_CLEANFILES)
++	rm -f $(VERSION_FILE)
+ 	rm -f $(BIN)
+ 
+-install: all
+-	@$(VECHO) INSTALL
+-	$(INSTALL) -d $(DESTDIR)$(BINDIR)
+-	$(INSTALL) -m 755 dtc $(DESTDIR)$(BINDIR)
+-	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
+-	$(INSTALL) -m 644 $(LIBFDT_LIB) $(DESTDIR)$(LIBDIR)
+-	$(INSTALL) -d $(DESTDIR)$(INCLUDEDIR)
+-	$(INSTALL) -m 644 $(LIBFDT_INCLUDES) $(DESTDIR)$(INCLUDEDIR)
+-
+-define filechk
+-	set -e;					\
+-	echo '	CHK $@';			\
+-	mkdir -p $(dir $@);			\
+-	$(filechk_$(1)) < $< > $@.tmp;		\
+-	if [ -r $@ ] && cmp -s $@ $@.tmp; then	\
+-		rm -f $@.tmp;			\
+-	else					\
+-		echo '	UPD $@';		\
+-		mv -f $@.tmp $@;		\
+-	fi;
+-endef
+-
+ #
+ # Generic compile rules
+ #
+@@ -179,6 +186,7 @@ endef
+ 	$(CC) $(CPPFLAGS) $(AFLAGS) -D__ASSEMBLY__ -o $@ -c $<
+ 
+ %.d: %.c
++	@$(VECHO) DEP $<
+ 	$(CC) $(CPPFLAGS) -MM -MG -MT "$*.o $@" $< > $@
+ 
+ %.i:	%.c
+@@ -193,4 +201,12 @@ endef
+ 	@$(VECHO) AR $@
+ 	$(AR) $(ARFLAGS) $@ $^
+ 
++%.lex.c: %.l
++	@$(VECHO) LEX $@
++	$(LEX) -o $@ $<
++
++%.tab.c %.tab.h %.output: %.y
++	@$(VECHO) BISON $@
++	$(BISON) -d $<
++
+ FORCE:
+Index: dtc/Makefile.dtc
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/Makefile.dtc	2007-10-04 15:32:28.000000000 +1000
+@@ -0,0 +1,24 @@
++# Makefile.dtc
++#
++# This is not a complete Makefile of itself.  Instead, it is designed to
++# be easily embeddable into other systems of Makefiles.
++#
++DTC_SRCS = dtc.c flattree.c fstree.c data.c livetree.c treesource.c srcpos.c
++DTC_EXTRA = dtc.h srcpos.h
++DTC_LEXFILES = dtc-lexer.l
++DTC_BISONFILES = dtc-parser.y
++
++DTC_LEX_SRCS = $(DTC_LEXFILES:%.l=%.lex.c)
++DTC_BISON_SRCS = $(DTC_BISONFILES:%.y=%.tab.c)
++DTC_BISON_INCLUDES = $(DTC_BISONFILES:%.y=%.tab.h)
++
++DTC_GEN_SRCS = $(DTC_LEX_SRCS) $(DTC_BISON_SRCS)
++DTC_GEN_ALL = $(DTC_GEN_SRCS) $(DTC_BISON_INCLUDES)
++DTC_OBJS = $(DTC_SRCS:%.c=%.o) $(DTC_GEN_SRCS:%.c=%.o)
++
++DTC_CLEANFILES = $(DTC_GEN_ALL)
++
++# We assume the containing Makefile system can do auto-dependencies for most
++# things, but we supply the dependencies on generated header files explicitly
++
++$(addprefix $(DTC_objdir)/,$(DTC_GEN_SRCS:%.c=%.o)): $(addprefix $(DTC_objdir)/,$(DTC_BISON_INCLUDES))
+Index: dtc/libfdt/Makefile.libfdt
+===================================================================
+--- dtc.orig/libfdt/Makefile.libfdt	2007-10-04 15:20:48.000000000 +1000
++++ dtc/libfdt/Makefile.libfdt	2007-10-04 15:32:28.000000000 +1000
+@@ -3,19 +3,12 @@
+ # This is not a complete Makefile of itself.  Instead, it is designed to
+ # be easily embeddable into other systems of Makefiles.
+ #
+-LIBFDT_OBJS_L = fdt.o fdt_ro.o fdt_wip.o fdt_sw.o fdt_rw.o fdt_strerror.o
+-LIBFDT_OBJS = $(LIBFDT_OBJS_L:%=$(LIBFDT_PREFIX)%)
++LIBFDT_SRCS = fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c
++LIBFDT_INCLUDES = fdt.h libfdt.h
++LIBFDT_EXTRA = libfdt_internal.h
++LIBFDT_LIB = libfdt/libfdt.a
+ 
+-LIBFDT_LIB_L = libfdt.a
+-LIBFDT_LIB = $(LIBFDT_LIB_L:%=$(LIBFDT_PREFIX)%)
++LIBFDT_OBJS = $(LIBFDT_SRCS:%.c=%.o)
+ 
+-LIBFDT_INCLUDES_L = fdt.h libfdt.h
+-LIBFDT_INCLUDES = $(LIBFDT_INCLUDES_L:%=$(LIBFDT_PREFIX)%)
++$(LIBFDT_objdir)/$(LIBFDT_LIB): $(addprefix $(LIBFDT_objdir)/,$(LIBFDT_OBJS))
+ 
+-LIBFDT_CLEANFILES_L = *~ *.o *.d *.a $(LIBFDT_LIB) \
+-	*.i *.s a.out core
+-LIBFDT_CLEANFILES = $(LIBFDT_CLEANFILES_L:%=$(LIBFDT_PREFIX)%)
+-
+-$(LIBFDT_LIB): $(LIBFDT_OBJS)
+-
+-LIBFDT_DEPFILES = $(LIBFDT_OBJS:%.o=%.d)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
-index f392374..eb5d74e 100644
---- a/arch/powerpc/platforms/embedded6xx/linkstation.c
-+++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
-@@ -91,7 +91,7 @@ static void __init linkstation_setup_arch(void)
- #endif
 
- 	/* Lookup PCI host bridges */
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "mpc10x-pci")
- 		linkstation_add_bridge(np);
-
- 	printk(KERN_INFO "BUFFALO Network Attached Storage Series\n");
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index 96737e5..a2c04b9 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -74,7 +74,7 @@ static void __init mpc7448_hpc2_setup_arch(void)
-
- 	/* setup PCI host bridge */
- #ifdef CONFIG_PCI
--	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+	for_each_compatible_node(np, "pci", "tsi108-pci")
- 		tsi108_setup_pci(np, MPC7448HPC2_PCI_CFG_PHYS, 0);
-
- 	ppc_md.pci_exclude_device = mpc7448_hpc2_exclude_device;
 -- 
-1.5.2.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
