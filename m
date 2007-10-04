@@ -2,18 +2,18 @@ Return-Path: <Bruce_Leonard@selinc.com>
 Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 14797DDE0A
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 236A1DDE19
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 Oct 2007 04:17:06 +1000 (EST)
-In-Reply-To: <Pine.LNX.4.60.0710041046040.4537@poirot.grange>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+	Fri,  5 Oct 2007 04:25:15 +1000 (EST)
+In-Reply-To: <87ve9nw2ft.fsf@macbook.be.48ers.dk>
+To: Peter Korsgaard <jacmet@sunsite.dk>
 Subject: Re: Device tree and external RTC
 MIME-Version: 1.0
-Message-ID: <OF6E4972CE.0F54E43B-ON8825736A.00637A7C-8825736A.00646F2A@selinc.com>
+Message-ID: <OFF5EAF9C9.4E27AE67-ON8825736A.0064875E-8825736A.00652EB0@selinc.com>
 From: Bruce_Leonard@selinc.com
-Date: Thu, 4 Oct 2007 11:17:00 -0700
+Date: Thu, 4 Oct 2007 11:25:10 -0700
 Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+Cc: Peter Korsgaard <jacmet@gmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote on 10/04/2007 02:29:06 
-AM:
+Peter,
 
-> > CONFIG_SENSORS_M41T00=y
+Peter Korsgaard <jacmet@gmail.com> wrote on 10/04/2007 04:21:10 AM:
+
+> >>>>> "Bruce" == Bruce Leonard <Bruce_Leonard@selinc.com> writes:
 > 
-> It shall not hurt, but do you really have this one?
-
-I turned this on because my clock is a SMT M41T00.  Not sure why it's 
-called a sensor in the .config.
- 
-> First, this might be either a userspace or a kernel problem. Do you have 
-
-> the correct device nodes? Are you using udev? Should be something like 
-
-Ultimatly it was my own stupididty that did me in.  You are absolutly 
-correct, I didn't have the right device nodes and because we're limited on 
-space we don't want to use udev.  Once I created the rtc0 device and 
-linked rtc to it, hwclock started working correctly.
-
-> > When I dump out ppc_md, all the RTC functions (i.e., get_rtc_time, 
-> > read_rtc_val, etc.) are all NULL.
 > 
-> Don't think you need those. Those are for powerpc platforms not using 
-> the generic rtc driver. 
+> You need to add #address/size-cells to the I2C node, E.G.:
+> +         #address-cells = <1>;
+> +         #size-cells = <0>;
+> 
+> 
+> You need to set compatible and reg, E.G.
+>          rtc@54 {
+>             device_type = "rtc";
+>             compatible = "stm,m41t00";
+>             reg = <54>;
+>          };
+> 
+> And it should get picked up automatically by
+> fsl_soc.c:of_find_i2c_driver().
+> 
+> Notice that you will need to use galak's git tree
 
-Right.
+Thanks for the info.  It's this sort of thing that isn't clearly 
+documented anywhere, and until I'm REALLY familiar with the kernel knowing 
+where to look is a challenge.
 
-> you need suitable entries in arch/powerpc/sysdev/fsl_soc.c in the 
-> i2c_devices array. I think, patch at 
-> http://patchwork.ozlabs.org/linuxppc/patch?id=13624 is exactly what you 
-> need. 
-
-I'll give this a try.  I'd really prefer to be using the device tree for 
-this, but I guess as long as I have it working using configuration options 
-in the kernel it doesn't really matter.  Either way I don't have to write 
-any special board support code for the kernel.
-
-Thanks for all the information and pointers.  It's been a big help!
+A follow on question though.  I've looked at the patch and it seems to be 
+just adding 6 lines to an existing array in fsl_soc.c.  However, I can't 
+seem to find any array in fsl_soc.c that contains lines that the patch 
+indicates should already be there (i.e., there's nothing in fsl_soc.c that 
+has the word "ricoh" in it which the patch indicates it should).  Is my 
+fsl_soc.c already out of date?  Will the patch apply?  I've got 2.6.22.
 
 Bruce
