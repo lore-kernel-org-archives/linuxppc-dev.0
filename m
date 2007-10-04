@@ -1,15 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0A65EDDE27
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 12:00:41 +1000 (EST)
-Date: Thu, 4 Oct 2007 12:00:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove some section mismatch warnings
-Message-Id: <20071004120028.4744b797.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 4 Oct 2007 11:54:03 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [PATCH] SPI: Use fsl_spi instead of mpc83xx_spi
+Message-ID: <20071004015403.GA4620@localhost.localdomain>
+References: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
+	<fa686aa40710030852q6f88002amafd33fd773833eb5@mail.gmail.com>
+	<878x6kxk62.fsf@macbook.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <878x6kxk62.fsf@macbook.be.48ers.dk>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,61 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From g5_defconfig:
-WARNING: vmlinux.o(.text+0x2ff5c): Section mismatch: reference to .init.text:.pmac_find_ide_boot (between '.note_bootable_part' and '.note_scsi_host')
+On Wed, Oct 03, 2007 at 06:00:37PM +0200, Peter Korsgaard wrote:
+> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+> 
+> Hi,
+> 
+>  >> -                       compatible = "mpc83xx_spi";
+>  >> +                       compatible = "fsl_spi";
+> 
+>  Grant> Compatible is a list property; this might be more appropriate:
+> 
+>  Grant> compatible = "fsl,mpc8313_spi", "fsl_spi";
+> 
+> Fine by me, I'm just following booting-without-of.txt.
 
->From holly_defconfig:
-WARNING: vmlinux.o(.text+0x164fe): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-WARNING: vmlinux.o(.text+0x16506): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-
->From linkstation_defconfig:
-WARNING: vmlinux.o(.text+0x158fe): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-WARNING: vmlinux.o(.text+0x15906): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-
->From mpc7448_hpc2_defconfig:
-WARNING: vmlinux.o(.text+0x1583e): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-WARNING: vmlinux.o(.text+0x15846): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-
->From pmac32_defconfig:
-WARNING: vmlinux.o(.text+0x154ca): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'note_scsi_host')
-WARNING: vmlinux.o(.text+0x154d2): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'note_scsi_host')
-WARNING: vmlinux.o(.text+0x1553c): Section mismatch: reference to .init.text:pmac_find_ide_boot (between 'note_bootable_part' and 'note_scsi_host')
-
->From ppc64_defconfig:
-WARNING: vmlinux.o(.text+0x3acdc): Section mismatch: reference to .init.text:.pmac_find_ide_boot (between '.note_bootable_part' and '.note_scsi_host')
-
->From prpmc2800_defconfig:
-WARNING: vmlinux.o(.text+0x1611e): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-WARNING: vmlinux.o(.text+0x16126): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/powermac/setup.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Yeah, some of the older bits of booting-without-of.txt are a bit
+crufty.  There should certainly be a specific compatible value in the
+list as well as the general "fsl_spi" one.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 7ccb923..840f5b4 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -466,8 +466,13 @@ static int pmac_late_init(void)
- 
- late_initcall(pmac_late_init);
- 
--/* can't be __init - can be called whenever a disk is first accessed */
--void note_bootable_part(dev_t dev, int part, int goodness)
-+/*
-+ * This is __init_refok because we check for "initializing" before
-+ * touching any of the __init sensitive things and "initializing"
-+ * will be false after __init time. This can't be __init because it
-+ * can be called whenever a disk is first accessed.
-+ */
-+void __init_refok note_bootable_part(dev_t dev, int part, int goodness)
- {
- 	static int found_boot = 0;
- 	char *p;
--- 
-1.5.3.3
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
