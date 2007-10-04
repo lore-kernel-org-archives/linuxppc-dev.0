@@ -1,16 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 4 Oct 2007 11:54:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH] SPI: Use fsl_spi instead of mpc83xx_spi
-Message-ID: <20071004015403.GA4620@localhost.localdomain>
-References: <87hcl8xkw5.fsf@macbook.be.48ers.dk>
-	<fa686aa40710030852q6f88002amafd33fd773833eb5@mail.gmail.com>
-	<878x6kxk62.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <878x6kxk62.fsf@macbook.be.48ers.dk>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C1B7ADDDFC
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 13:41:35 +1000 (EST)
+Date: Thu, 4 Oct 2007 13:41:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jon Loeliger <jdl@freescale.com>, Xianghua Xiao <x.xiao@freescale.com>
+Subject: Re: [PATCH 2/5] Add initial MPC8610 HPCD Platform files.
+Message-Id: <20071004134115.cc099dd1.sfr@canb.auug.org.au>
+In-Reply-To: <1191442173.21463.77.camel@ld0161-tx32>
+References: <1191442173.21463.77.camel@ld0161-tx32>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__4_Oct_2007_13_41_15_+1000_4gD.RAZUTqaDp6k6"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 03, 2007 at 06:00:37PM +0200, Peter Korsgaard wrote:
-> >>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
-> 
-> Hi,
-> 
->  >> -                       compatible = "mpc83xx_spi";
->  >> +                       compatible = "fsl_spi";
-> 
->  Grant> Compatible is a list property; this might be more appropriate:
-> 
->  Grant> compatible = "fsl,mpc8313_spi", "fsl_spi";
-> 
-> Fine by me, I'm just following booting-without-of.txt.
+--Signature=_Thu__4_Oct_2007_13_41_15_+1000_4gD.RAZUTqaDp6k6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yeah, some of the older bits of booting-without-of.txt are a bit
-crufty.  There should certainly be a specific compatible value in the
-list as well as the general "fsl_spi" one.
+On Wed, 03 Oct 2007 15:09:33 -0500 Jon Loeliger <jdl@freescale.com> wrote:
+>
+> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +
+> +#include <asm/system.h>
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/pci-bridge.h>
+> +#include <asm/mpc86xx.h>
+> +#include <asm/prom.h>
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+You should include linux/of.h as well to use the of_ accessor functions.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__4_Oct_2007_13_41_15_+1000_4gD.RAZUTqaDp6k6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHBGDgTgG2atn1QN8RAgwFAJ0RiNI6zR2wyO/zmAw7irXONHVmuwCfYWsL
+yVL6S39mWoRVsi1Cay3FyG4=
+=XRpz
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__4_Oct_2007_13_41_15_+1000_4gD.RAZUTqaDp6k6--
