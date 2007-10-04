@@ -1,21 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5866EDDDF9
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 14:35:27 +1000 (EST)
-In-Reply-To: <20071004134115.cc099dd1.sfr@canb.auug.org.au>
-References: <1191442173.21463.77.camel@ld0161-tx32>
-	<20071004134115.cc099dd1.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <44FE7AFC-1883-49A1-A781-6D966653EDF4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] Add initial MPC8610 HPCD Platform files.
-Date: Wed, 3 Oct 2007 23:35:18 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Xianghua Xiao <x.xiao@freescale.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 92C57DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 14:52:09 +1000 (EST)
+Received: from pd3mr1so.prod.shaw.ca
+	(pd3mr1so-qfe3.prod.shaw.ca [10.0.141.177]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JPD005VXESC39G0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 03 Oct 2007 22:50:36 -0600 (MDT)
+Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
+	by pd3mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JPD00EEOESC7G20@pd3mr1so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Wed, 03 Oct 2007 22:50:36 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JPD000EAESBDS20@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 03 Oct 2007 22:50:35 -0600 (MDT)
+Date: Wed, 03 Oct 2007 22:50:42 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Don't build arch/powerpc/sysdev/dcr.c for ARCH=ppc kernels
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
+Message-id: <20071004044911.30154.23109.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Grant Likely <grant.likely@secretlab.ca>
 
-On Oct 3, 2007, at 10:41 PM, Stephen Rothwell wrote:
+dcr.c is an arch/powerpc only thing.
 
-> On Wed, 03 Oct 2007 15:09:33 -0500 Jon Loeliger <jdl@freescale.com>  
-> wrote:
->>
->> +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
->> +#include <linux/stddef.h>
->> +#include <linux/kernel.h>
->> +#include <linux/pci.h>
->> +#include <linux/kdev_t.h>
->> +#include <linux/delay.h>
->> +#include <linux/seq_file.h>
->> +
->> +#include <asm/system.h>
->> +#include <asm/time.h>
->> +#include <asm/machdep.h>
->> +#include <asm/pci-bridge.h>
->> +#include <asm/mpc86xx.h>
->> +#include <asm/prom.h>
->
-> You should include linux/of.h as well to use the of_ accessor  
-> functions.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-added.
+Ben/Paulus,
 
-- k
+As far as I can tell this is correct.  Having sysdev/dcr.c in the arch/ppc
+build spits out warnings.  Grep doesn't show anything in arch/ppc that
+is using it.
+
+Cheers,
+g.
+
+ arch/powerpc/sysdev/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 592c17e..7f88d4e 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -6,7 +6,6 @@ mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o
+ obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
+ 
+ obj-$(CONFIG_PPC_MPC106)	+= grackle.o
+-obj-$(CONFIG_PPC_DCR)		+= dcr.o
+ obj-$(CONFIG_PPC_DCR_NATIVE)	+= dcr-low.o
+ obj-$(CONFIG_PPC_PMI)		+= pmi.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+@@ -31,6 +30,7 @@ endif
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+ ifeq ($(ARCH),powerpc)
++obj-$(CONFIG_PPC_DCR)		+= dcr.o
+ obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
+ obj-$(CONFIG_8xx)		+= mpc8xx_pic.o commproc.o
+ obj-$(CONFIG_UCODE_PATCH)	+= micropatch.o
