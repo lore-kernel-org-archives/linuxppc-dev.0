@@ -1,13 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: <bluesmoke-devel@lists.sourceforge.net>,
-	<linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 04 Oct 2007 15:40:44 +1000
-Subject: [PATCH 4/4] edac: Add Cell memory controller
-In-Reply-To: <1191476442.154524.519055590678.qpush@grosgo>
-Message-Id: <20071004054106.E5329DDE3C@ozlabs.org>
-Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6C8ECDDE04
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 16:06:21 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l9466GTD027642
+	for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2007 01:06:17 -0500
+Date: Thu, 4 Oct 2007 01:05:49 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] 85xx/86xx: refactor RSTCR reset code
+Message-ID: <Pine.LNX.4.64.0710040105130.8976@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,309 +23,420 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds driver for the Cell memory controller when used without a
-Hypervisor such as on the IBM Cell blades. There might still
-be some improvements to do to this such as finding if it's
-possible to properly obtain more details about the address
-of the error but it's good enough already to report CE counts
-which is our main priority at the moment.
+On the majority of 85xx & 86xx we have a register that's ability to
+assert HRESET_REQ to reset the board.  We refactored that code so it
+can be shared between both platforms into fsl_soc.c and removed all
+the duplication in each platform directory.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts     |    6 +++
+ arch/powerpc/platforms/85xx/Makefile       |    1 -
+ arch/powerpc/platforms/85xx/misc.c         |   55 ----------------------------
+ arch/powerpc/platforms/85xx/mpc85xx.h      |   17 ---------
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c  |    3 +-
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c  |    5 +--
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    5 +--
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    4 +--
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |   19 +---------
+ arch/powerpc/platforms/86xx/mpc8641_hpcn.h |   21 -----------
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   20 +----------
+ arch/powerpc/sysdev/fsl_soc.c              |   38 +++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h              |    1 +
+ 13 files changed, 53 insertions(+), 142 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/85xx/misc.c
+ delete mode 100644 arch/powerpc/platforms/85xx/mpc85xx.h
+ delete mode 100644 arch/powerpc/platforms/86xx/mpc8641_hpcn.h
 
- device_initcall(cell_publish_devices);
- drivers/edac/Kconfig     |    7 +
- drivers/edac/Makefile    |    1 
- drivers/edac/cell-edac.c |  258 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 266 insertions(+)
+Some code reduction for once :)
 
-Index: linux-work/drivers/edac/Kconfig
-===================================================================
---- linux-work.orig/drivers/edac/Kconfig	2007-10-04 15:00:11.000000000 +1000
-+++ linux-work/drivers/edac/Kconfig	2007-10-04 15:34:32.000000000 +1000
-@@ -131,5 +131,12 @@ config EDAC_PASEMI
- 	  Support for error detection and correction on PA Semi
- 	  PWRficient.
- 
-+config EDAC_CELL
-+	tristate "Cell Broadband Engine memory controller"
-+	depends on EDAC_MM_EDAC && PPC_CELL_NATIVE
-+	help
-+	  Support for error detection and correction on the
-+	  Cell Broadband Engine internal memory controller
-+	  on platform without a hypervisor
- 
- endif # EDAC
-Index: linux-work/drivers/edac/Makefile
-===================================================================
---- linux-work.orig/drivers/edac/Makefile	2007-10-04 15:00:11.000000000 +1000
-+++ linux-work/drivers/edac/Makefile	2007-10-04 15:34:32.000000000 +1000
-@@ -28,4 +28,5 @@ obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.
- obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
- obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
- obj-$(CONFIG_EDAC_PASEMI)		+= pasemi_edac.o
-+obj-$(CONFIG_EDAC_CELL)			+= cell-edac.o
- 
-Index: linux-work/drivers/edac/cell-edac.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/drivers/edac/cell-edac.c	2007-10-04 15:34:46.000000000 +1000
-@@ -0,0 +1,258 @@
-+/*
-+ * Cell MIC driver for ECC counting
-+ *
-+ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
-+ *                <benh@kernel.crashing.org>
-+ *
-+ * This file may be distributed under the terms of the
-+ * GNU General Public License.
-+ */
-+#undef DEBUG
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index f797662..3677659 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -214,6 +214,12 @@
+ 			device_type = "open-pic";
+ 			big-endian;
+ 		};
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/stop_machine.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/cell-regs.h>
++		global-utilities@e0000 {
++			compatible = "fsl,mpc8641-guts";
++			reg = <e0000 1000>;
++			fsl,has-rstcr;
++		};
+ 	};
+
+ 	pcie@f8008000 {
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 25bd9e2..5eca920 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -1,7 +1,6 @@
+ #
+ # Makefile for the PowerPC 85xx linux kernel.
+ #
+-obj-$(CONFIG_PPC_85xx)	+= misc.o
+ obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
+ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
+ obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
+diff --git a/arch/powerpc/platforms/85xx/misc.c b/arch/powerpc/platforms/85xx/misc.c
+deleted file mode 100644
+index 4fe376e..0000000
+--- a/arch/powerpc/platforms/85xx/misc.c
++++ /dev/null
+@@ -1,55 +0,0 @@
+-/*
+- * MPC85xx generic code.
+- *
+- * Maintained by Kumar Gala (see MAINTAINERS for contact information)
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-#include <linux/irq.h>
+-#include <linux/module.h>
+-#include <asm/irq.h>
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <sysdev/fsl_soc.h>
+-
+-static __be32 __iomem *rstcr;
+-
+-extern void abort(void);
+-
+-static int __init mpc85xx_rstcr(void)
+-{
+-	struct device_node *np;
+-	np = of_find_node_by_name(NULL, "global-utilities");
+-	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
+-		const u32 *prop = of_get_property(np, "reg", NULL);
+-		if (prop) {
+-			/* map reset control register
+-			 * 0xE00B0 is offset of reset control register
+-			 */
+-			rstcr = ioremap(get_immrbase() + *prop + 0xB0, 0xff);
+-			if (!rstcr)
+-				printk (KERN_EMERG "Error: reset control "
+-						"register not mapped!\n");
+-		}
+-	} else
+-		printk (KERN_INFO "rstcr compatible register does not exist!\n");
+-	if (np)
+-		of_node_put(np);
+-	return 0;
+-}
+-
+-arch_initcall(mpc85xx_rstcr);
+-
+-void mpc85xx_restart(char *cmd)
+-{
+-	local_irq_disable();
+-	if (rstcr)
+-		/* set reset control register */
+-		out_be32(rstcr, 0x2);	/* HRESET_REQ */
+-	abort();
+-}
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/platforms/85xx/mpc85xx.h
+deleted file mode 100644
+index 5b34dee..0000000
+--- a/arch/powerpc/platforms/85xx/mpc85xx.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/*
+- * arch/powerpc/platforms/85xx/mpc85xx.h
+- *
+- * MPC85xx soc definitions/function decls
+- *
+- * Maintainer: Kumar Gala <kumar.gala@freescale.com>
+- *
+- * Copyright 2005 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- */
+-
+-extern void mpc85xx_restart(char *);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index acb1ef9..378a244 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -30,7 +30,6 @@
+
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+-#include "mpc85xx.h"
+
+ #ifdef CONFIG_CPM2
+ #include <linux/fs_enet_pd.h>
+@@ -249,7 +248,7 @@ define_machine(mpc85xx_ads) {
+ 	.init_IRQ		= mpc85xx_ads_pic_init,
+ 	.show_cpuinfo		= mpc85xx_ads_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= mpc85xx_restart,
++	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index abc85b8..afe5868 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -46,7 +46,6 @@
+
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+-#include "mpc85xx.h"
+
+ static int cds_pci_slot = 2;
+ static volatile u8 *cadmus;
+@@ -96,7 +95,7 @@ static void mpc85xx_cds_restart(char *cmd)
+ 	 *  If we can't find the VIA chip (maybe the P2P bridge is disabled)
+ 	 *  or the VIA chip reset didn't work, just use the default reset.
+ 	 */
+-	mpc85xx_restart(NULL);
++	fsl_rstcr_restart(NULL);
+ }
+
+ static void __init mpc85xx_cds_pci_irq_fixup(struct pci_dev *dev)
+@@ -343,7 +342,7 @@ define_machine(mpc85xx_cds) {
+ 	.restart	= mpc85xx_cds_restart,
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #else
+-	.restart	= mpc85xx_restart,
++	.restart	= fsl_rstcr_restart,
+ #endif
+ 	.calibrate_decr = generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index d60bb2b..772e8de 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -33,7 +33,6 @@
+
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+-#include "mpc85xx.h"
+
+ #undef DEBUG
+
+@@ -211,7 +210,7 @@ define_machine(mpc8544_ds) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= mpc85xx_restart,
++	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+@@ -225,7 +224,7 @@ define_machine(mpc8572_ds) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ #endif
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= mpc85xx_restart,
++	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+ };
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index f8b6b08..00f4c3a 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -50,8 +50,6 @@
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+
+-#include "mpc85xx.h"
+-
+ #undef DEBUG
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -200,7 +198,7 @@ define_machine(mpc85xx_mds) {
+ 	.setup_arch	= mpc85xx_mds_setup_arch,
+ 	.init_IRQ	= mpc85xx_mds_pic_init,
+ 	.get_irq	= mpic_get_irq,
+-	.restart	= mpc85xx_restart,
++	.restart	= fsl_rstcr_restart,
+ 	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= udbg_progress,
+ #ifdef CONFIG_PCI
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index c794d88..6390895 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -37,8 +37,6 @@
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
+
+-#define MPC86XX_RSTCR_OFFSET	(0xe00b0)	/* Reset Control Register */
+-
+ void __init
+ mpc86xx_hpcd_init_irq(void)
+ {
+@@ -187,21 +185,6 @@ static int __init mpc86xx_hpcd_probe(void)
+ 	return 0;
+ }
+
+-void
+-mpc86xx_restart(char *cmd)
+-{
+-	void __iomem *rstcr;
+-
+-	rstcr = ioremap(get_immrbase() + MPC86XX_RSTCR_OFFSET, 0x100);
+-
+-	local_irq_disable();
+-
+-	/* Assert reset request to Reset Control Register */
+-	out_be32(rstcr, 0x2);
+-
+-	/* not reached */
+-}
+-
+ long __init
+ mpc86xx_time_init(void)
+ {
+@@ -225,7 +208,7 @@ define_machine(mpc86xx_hpcd) {
+ 	.setup_arch		= mpc86xx_hpcd_setup_arch,
+ 	.init_IRQ		= mpc86xx_hpcd_init_irq,
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= mpc86xx_restart,
++	.restart		= fsl_rstcr_restart,
+ 	.time_init		= mpc86xx_time_init,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.h b/arch/powerpc/platforms/86xx/mpc8641_hpcn.h
+deleted file mode 100644
+index 41e554c..0000000
+--- a/arch/powerpc/platforms/86xx/mpc8641_hpcn.h
++++ /dev/null
+@@ -1,21 +0,0 @@
+-/*
+- * MPC8641 HPCN board definitions
+- *
+- * Copyright 2006 Freescale Semiconductor Inc.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- *
+- * Author: Xianghua Xiao <x.xiao@freescale.com>
+- */
+-
+-#ifndef __MPC8641_HPCN_H__
+-#define __MPC8641_HPCN_H__
+-
+-#include <linux/init.h>
+-
+-#define MPC86XX_RSTCR_OFFSET	(0xe00b0)	/* Reset Control Register */
+-
+-#endif	/* __MPC8641_HPCN_H__ */
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 6879b83..32a531a 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -35,7 +35,6 @@
+ #include <sysdev/fsl_soc.h>
+
+ #include "mpc86xx.h"
+-#include "mpc8641_hpcn.h"
+
+ #undef DEBUG
+
+@@ -196,23 +195,6 @@ static int __init mpc86xx_hpcn_probe(void)
+ 	return 0;
+ }
+
+-
+-void
+-mpc86xx_restart(char *cmd)
+-{
+-	void __iomem *rstcr;
+-
+-	rstcr = ioremap(get_immrbase() + MPC86XX_RSTCR_OFFSET, 0x100);
+-
+-	local_irq_disable();
+-
+-	/* Assert reset request to Reset Control Register */
+-	out_be32(rstcr, 0x2);
+-
+-	/* not reached */
+-}
+-
+-
+ long __init
+ mpc86xx_time_init(void)
+ {
+@@ -237,7 +219,7 @@ define_machine(mpc86xx_hpcn) {
+ 	.init_IRQ		= mpc86xx_hpcn_init_irq,
+ 	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
+ 	.get_irq		= mpic_get_irq,
+-	.restart		= mpc86xx_restart,
++	.restart		= fsl_rstcr_restart,
+ 	.time_init		= mpc86xx_time_init,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index c765d7a..f16d432 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1298,3 +1298,41 @@ err:
+
+ 	return spi_register_board_info(board_infos, num_board_infos);
+ }
 +
-+#include "edac_core.h"
++#if defined(CONFIG_PPC_85xx) || defined(CONFIG_PPC_86xx)
++static __be32 __iomem *rstcr;
 +
-+struct cell_edac_priv
++static int __init setup_rstcr(void)
 +{
-+	struct cbe_mic_tm_regs __iomem	*regs;
-+	int				node;
-+	int				chanmask;
-+#ifdef DEBUG
-+	u64				prev_fir;
-+#endif
-+};
-+
-+static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
-+{
-+	struct cell_edac_priv		*priv = mci->pvt_info;
-+	struct csrow_info		*csrow = &mci->csrows[0];
-+	unsigned long			address, pfn, offset;
-+
-+	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016lx\n",
-+		priv->node, chan, ar);
-+
-+	/* Address decoding is likely a bit bogus, to dbl check */
-+	address = (ar & 0xffffffffe0000000ul) >> 29;
-+	if (priv->chanmask == 0x3)
-+		address = (address << 1) | chan;
-+	pfn = address >> PAGE_SHIFT;
-+	offset = address & ~PAGE_MASK;
-+
-+	/* TODO: Decoding of the error addresss */
-+	edac_mc_handle_ce(mci, csrow->first_page + pfn, offset,
-+			  0, 0, chan, "");
-+}
-+
-+static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
-+{
-+	struct cell_edac_priv		*priv = mci->pvt_info;
-+	struct csrow_info		*csrow = &mci->csrows[0];
-+	unsigned long			address, pfn, offset;
-+
-+	dev_dbg(mci->dev, "ECC UE err on node %d, channel %d, ar = 0x%016lx\n",
-+		priv->node, chan, ar);
-+
-+	/* Address decoding is likely a bit bogus, to dbl check */
-+	address = (ar & 0xffffffffe0000000ul) >> 29;
-+	if (priv->chanmask == 0x3)
-+		address = (address << 1) | chan;
-+	pfn = address >> PAGE_SHIFT;
-+	offset = address & ~PAGE_MASK;
-+
-+	/* TODO: Decoding of the error addresss */
-+	edac_mc_handle_ue(mci, csrow->first_page + pfn, offset, 0, "");
-+}
-+
-+static void cell_edac_check(struct mem_ctl_info *mci)
-+{
-+	struct cell_edac_priv		*priv = mci->pvt_info;
-+	u64				fir, addreg, clear = 0;
-+
-+	fir = in_be64(&priv->regs->mic_fir);
-+#ifdef DEBUG
-+	if (fir != priv->prev_fir) {
-+		dev_dbg(mci->dev, "fir change : 0x%016lx\n", fir);
-+		priv->prev_fir = fir;
-+	}
-+#endif
-+	if ((priv->chanmask & 0x1) && (fir & CBE_MIC_FIR_ECC_SINGLE_0_ERR)) {
-+		addreg = in_be64(&priv->regs->mic_df_ecc_address_0);
-+		clear |= CBE_MIC_FIR_ECC_SINGLE_0_RESET;
-+		cell_edac_count_ce(mci, 0, addreg);
-+	}
-+	if ((priv->chanmask & 0x2) && (fir & CBE_MIC_FIR_ECC_SINGLE_1_ERR)) {
-+		addreg = in_be64(&priv->regs->mic_df_ecc_address_1);
-+		clear |= CBE_MIC_FIR_ECC_SINGLE_1_RESET;
-+		cell_edac_count_ce(mci, 1, addreg);
-+	}
-+	if ((priv->chanmask & 0x1) && (fir & CBE_MIC_FIR_ECC_MULTI_0_ERR)) {
-+		addreg = in_be64(&priv->regs->mic_df_ecc_address_0);
-+		clear |= CBE_MIC_FIR_ECC_MULTI_0_RESET;
-+		cell_edac_count_ue(mci, 0, addreg);
-+	}
-+	if ((priv->chanmask & 0x2) && (fir & CBE_MIC_FIR_ECC_MULTI_1_ERR)) {
-+		addreg = in_be64(&priv->regs->mic_df_ecc_address_1);
-+		clear |= CBE_MIC_FIR_ECC_MULTI_1_RESET;
-+		cell_edac_count_ue(mci, 1, addreg);
-+	}
-+
-+	/* The procedure for clearing FIR bits is a bit ... weird */
-+	if (clear) {
-+		fir &= ~(CBE_MIC_FIR_ECC_ERR_MASK | CBE_MIC_FIR_ECC_SET_MASK);
-+		fir |= CBE_MIC_FIR_ECC_RESET_MASK;
-+		fir &= ~clear;
-+		out_be64(&priv->regs->mic_fir, fir);
-+		(void)in_be64(&priv->regs->mic_fir);
-+		mb();
-+#ifdef DEBUG
-+		fir = in_be64(&priv->regs->mic_fir);
-+		dev_dbg(mci->dev, "fir clear  : 0x%016lx\n", fir);
-+#endif
-+	}
-+}
-+
-+static void __devinit cell_edac_init_csrows(struct mem_ctl_info *mci)
-+{
-+	struct csrow_info		*csrow = &mci->csrows[0];
-+	struct cell_edac_priv		*priv = mci->pvt_info;
-+	struct device_node		*np;
-+
-+	for (np = NULL;
-+	     (np = of_find_node_by_name(np, "memory")) != NULL;) {
-+		struct resource r;
-+
-+		/* We "know" that the Cell firmware only creates one entry
-+		 * in the "memory" nodes. If that changes, this code will
-+		 * need to be adapted.
-+		 */
-+		if (of_address_to_resource(np, 0, &r))
-+			continue;
-+		if (of_node_to_nid(np) != priv->node)
-+			continue;
-+		csrow->first_page = r.start >> PAGE_SHIFT;
-+		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
-+		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
-+		csrow->mtype = MEM_XDR;
-+		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+		dev_dbg(mci->dev,
-+			"Initialized on node %d, chanmask=0x%x,"
-+			" first_page=0x%lx, nr_pages=0x%x\n",
-+			priv->node, priv->chanmask,
-+			csrow->first_page, csrow->nr_pages);
-+		break;
-+	}
-+}
-+
-+static int __devinit cell_edac_probe(struct platform_device *pdev)
-+{
-+	struct cbe_mic_tm_regs __iomem	*regs;
-+	struct mem_ctl_info		*mci;
-+	struct cell_edac_priv		*priv;
-+	u64				reg;
-+	int				rc, chanmask;
-+
-+	regs = cbe_get_cpu_mic_tm_regs(cbe_node_to_cpu(pdev->id));
-+	if (regs == NULL)
-+		return -ENODEV;
-+
-+	/* Get channel population */
-+	reg = in_be64(&regs->mic_mnt_cfg);
-+	dev_dbg(&pdev->dev, "MIC_MNT_CFG = 0x%016lx\n", reg);
-+	chanmask = 0;
-+	if (reg & CBE_MIC_MNT_CFG_CHAN_0_POP)
-+		chanmask |= 0x1;
-+	if (reg & CBE_MIC_MNT_CFG_CHAN_1_POP)
-+		chanmask |= 0x2;
-+	if (chanmask == 0) {
-+		dev_warn(&pdev->dev,
-+			 "Yuck ! No channel populated ? Aborting !\n");
-+		return -ENODEV;
-+	}
-+	dev_dbg(&pdev->dev, "Initial FIR = 0x%016lx\n",
-+		in_be64(&regs->mic_fir));
-+
-+	/* Allocate & init EDAC MC data structure */
-+	mci = edac_mc_alloc(sizeof(struct cell_edac_priv), 1,
-+			    chanmask == 3 ? 2 : 1, pdev->id);
-+	if (mci == NULL)
-+		return -ENOMEM;
-+	priv = mci->pvt_info;
-+	priv->regs = regs;
-+	priv->node = pdev->id;
-+	priv->chanmask = chanmask;
-+	mci->dev = &pdev->dev;
-+	mci->mtype_cap = MEM_FLAG_XDR;
-+	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+	mci->edac_cap = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+	mci->mod_name = "cell-edac";
-+	mci->ctl_name = "MIC";
-+	mci->dev_name = pdev->dev.bus_id;
-+	mci->edac_check = cell_edac_check;
-+	cell_edac_init_csrows(mci);
-+
-+	/* Register with EDAC core */
-+	rc = edac_mc_add_mc(mci);
-+	if (rc) {
-+		dev_err(&pdev->dev, "failed to register with EDAC core\n");
-+		edac_mc_free(mci);
-+		return rc;
-+	}
-+
++	struct device_node *np;
++	np = of_find_node_by_name(NULL, "global-utilities");
++	if ((np && of_get_property(np, "fsl,has-rstcr", NULL))) {
++		const u32 *prop = of_get_property(np, "reg", NULL);
++		if (prop) {
++			/* map reset control register
++			 * 0xE00B0 is offset of reset control register
++			 */
++			rstcr = ioremap(get_immrbase() + *prop + 0xB0, 0xff);
++			if (!rstcr)
++				printk (KERN_EMERG "Error: reset control "
++						"register not mapped!\n");
++		}
++	} else
++		printk (KERN_INFO "rstcr compatible register does not exist!\n");
++	if (np)
++		of_node_put(np);
 +	return 0;
 +}
 +
-+static int __devexit cell_edac_remove(struct platform_device *pdev)
++arch_initcall(setup_rstcr);
++
++void fsl_rstcr_restart(char *cmd)
 +{
-+	struct mem_ctl_info *mci = edac_mc_del_mc(&pdev->dev);
-+	if (mci)
-+		edac_mc_free(mci);
-+	return 0;
++	local_irq_disable();
++	if (rstcr)
++		/* set reset control register */
++		out_be32(rstcr, 0x2);	/* HRESET_REQ */
++
++	while (1) ;
 +}
-+
-+static struct platform_driver cell_edac_driver =
-+{
-+	.driver		= {
-+		.name	= "cbe-mic",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= cell_edac_probe,
-+	.remove		= cell_edac_remove,
-+};
-+
-+static int __init cell_edac_init(void)
-+{
-+	/* Sanity check registers data structure */
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_df_ecc_address_0) != 0xf8);
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_df_ecc_address_1) != 0x1b8);
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_df_config) != 0x218);
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_fir) != 0x230);
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_mnt_cfg) != 0x210);
-+	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
-+			      mic_exc) != 0x208);
-+
-+	return platform_driver_register(&cell_edac_driver);
-+}
-+
-+static void __exit cell_edac_exit(void)
-+{
-+	platform_driver_unregister(&cell_edac_driver);
-+}
-+
-+module_init(cell_edac_init);
-+module_exit(cell_edac_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
-+MODULE_DESCRIPTION("ECC counting for Cell MIC");
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 618d91d..63e7db3 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -15,5 +15,6 @@ extern int fsl_spi_init(struct spi_board_info *board_infos,
+ 			void (*activate_cs)(u8 cs, u8 polarity),
+ 			void (*deactivate_cs)(u8 cs, u8 polarity));
+
++extern void fsl_rstcr_restart(char *cmd);
+ #endif
+ #endif
+-- 
+1.5.2.4
