@@ -1,29 +1,29 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 8AAF1DDE21
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 14:13:38 +1000 (EST)
-Received: from pd4mr3so.prod.shaw.ca
-	(pd4mr3so-qfe3.prod.shaw.ca [10.0.141.214]) by l-daemon
+Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 73251DDE02
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 14:14:51 +1000 (EST)
+Received: from pd3mr3so.prod.shaw.ca
+	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
 	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JPD00IYRD24BWB0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 03 Oct 2007 22:13:16 -0600 (MDT)
-Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
-	by pd4mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	with ESMTP id <0JPD00EZ6D1Z9030@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 03 Oct 2007 22:13:11 -0600 (MDT)
+Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
+	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JPD00ER3D24XO30@pd4mr3so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Wed, 03 Oct 2007 22:13:16 -0600 (MDT)
+	5 2006)) with ESMTP id <0JPD00CDED1YPS40@pd3mr3so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Wed, 03 Oct 2007 22:13:11 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JPD008M4D23Z5S1@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 03 Oct 2007 22:13:16 -0600 (MDT)
-Date: Wed, 03 Oct 2007 22:13:23 -0600
+	with ESMTP id <0JPD00HFSD1YSZJ0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 03 Oct 2007 22:13:10 -0600 (MDT)
+Date: Wed, 03 Oct 2007 22:13:18 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 2/3] Sysace: sparse fixes
+Subject: [PATCH 1/3] Sysace: Minor coding convention fixup
 In-reply-to: <20071004041114.20868.34605.stgit@trillian.cg.shawcable.net>
 To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Message-id: <20071004041323.20868.70997.stgit@trillian.cg.shawcable.net>
+Message-id: <20071004041318.20868.51928.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20071004041114.20868.34605.stgit@trillian.cg.shawcable.net>
@@ -38,55 +38,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Grant Likely <grant.likely@secretlab.ca>
 
+Put function call and return code test on separate lines.
+
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- drivers/block/xsysace.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/block/xsysace.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index 3847464..5b73471 100644
+index 3ea172b..3847464 100644
 --- a/drivers/block/xsysace.c
 +++ b/drivers/block/xsysace.c
-@@ -195,7 +195,7 @@ struct ace_device {
+@@ -1091,7 +1091,8 @@ ace_alloc(struct device *dev, int id, unsigned long physaddr,
+ 	ace->bus_width = bus_width;
  
- 	/* Details of hardware device */
- 	unsigned long physaddr;
--	void *baseaddr;
-+	void __iomem *baseaddr;
- 	int irq;
- 	int bus_width;		/* 0 := 8 bit; 1 := 16 bit */
- 	struct ace_reg_ops *reg_ops;
-@@ -227,20 +227,20 @@ struct ace_reg_ops {
- /* 8 Bit bus width */
- static u16 ace_in_8(struct ace_device *ace, int reg)
- {
--	void *r = ace->baseaddr + reg;
-+	void __iomem *r = ace->baseaddr + reg;
- 	return in_8(r) | (in_8(r + 1) << 8);
- }
+ 	/* Call the setup code */
+-	if ((rc = ace_setup(ace)) != 0)
++	rc = ace_setup(ace);
++	if (rc)
+ 		goto err_setup;
  
- static void ace_out_8(struct ace_device *ace, int reg, u16 val)
- {
--	void *r = ace->baseaddr + reg;
-+	void __iomem *r = ace->baseaddr + reg;
- 	out_8(r, val);
- 	out_8(r + 1, val >> 8);
- }
+ 	dev_set_drvdata(dev, ace);
+@@ -1253,11 +1254,13 @@ static int __init ace_init(void)
+ 		goto err_blk;
+ 	}
  
- static void ace_datain_8(struct ace_device *ace)
- {
--	void *r = ace->baseaddr + 0x40;
-+	void __iomem *r = ace->baseaddr + 0x40;
- 	u8 *dst = ace->data_ptr;
- 	int i = ACE_FIFO_SIZE;
- 	while (i--)
-@@ -250,7 +250,7 @@ static void ace_datain_8(struct ace_device *ace)
+-	if ((rc = ace_of_register()) != 0)
++	rc = ace_of_register();
++	if (rc)
+ 		goto err_of;
  
- static void ace_dataout_8(struct ace_device *ace)
- {
--	void *r = ace->baseaddr + 0x40;
-+	void __iomem *r = ace->baseaddr + 0x40;
- 	u8 *src = ace->data_ptr;
- 	int i = ACE_FIFO_SIZE;
- 	while (i--)
+ 	pr_debug("xsysace: registering platform binding\n");
+-	if ((rc = platform_driver_register(&ace_platform_driver)) != 0)
++	rc = platform_driver_register(&ace_platform_driver);
++	if (rc)
+ 		goto err_plat;
+ 
+ 	pr_info("Xilinx SystemACE device driver, major=%i\n", ace_major);
