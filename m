@@ -1,23 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EC8FBDDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 08:42:03 +1000 (EST)
-In-Reply-To: <4703D8B9.5080006@freescale.com>
-References: <1191429299378-git-send-email-timur@freescale.com>
-	<20071003094449.702c4a90@freepuppy.rosehill>
-	<4703D8B9.5080006@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B596192A-5A72-463A-A927-312FC6FA35DA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v4] qe: miscellaneous code improvements and fixes to the
-	QE library
-Date: Wed, 3 Oct 2007 17:41:58 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org,
-	Stephen Hemminger <shemminger@linux-foundation.org>, netdev@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 0A65EDDE27
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2007 12:00:41 +1000 (EST)
+Date: Thu, 4 Oct 2007 12:00:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Remove some section mismatch warnings
+Message-Id: <20071004120028.4744b797.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +19,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>From g5_defconfig:
+WARNING: vmlinux.o(.text+0x2ff5c): Section mismatch: reference to .init.text:.pmac_find_ide_boot (between '.note_bootable_part' and '.note_scsi_host')
 
-On Oct 3, 2007, at 1:00 PM, Timur Tabi wrote:
+>From holly_defconfig:
+WARNING: vmlinux.o(.text+0x164fe): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
+WARNING: vmlinux.o(.text+0x16506): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
 
-> Stephen Hemminger wrote:
->
->> Separate the changes into individual patches to allow for better  
->> comment/review
->> and bisection in case of regression.
->
-> That would be too difficult.  Some of the changes are single lines,  
-> and this patch has already been approved -- I just cross-posted to  
-> netdev because I made a few ucc_geth changes that can't be  
-> docoupled from the powerpc changes.  A series of 18 patches would  
-> just be convoluted.
+>From linkstation_defconfig:
+WARNING: vmlinux.o(.text+0x158fe): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
+WARNING: vmlinux.o(.text+0x15906): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
 
-Normally I would agree, but at this point I'm not going to gripe too  
-much about it.
+>From mpc7448_hpc2_defconfig:
+WARNING: vmlinux.o(.text+0x1583e): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
+WARNING: vmlinux.o(.text+0x15846): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
 
-- k
+>From pmac32_defconfig:
+WARNING: vmlinux.o(.text+0x154ca): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'note_scsi_host')
+WARNING: vmlinux.o(.text+0x154d2): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'note_scsi_host')
+WARNING: vmlinux.o(.text+0x1553c): Section mismatch: reference to .init.text:pmac_find_ide_boot (between 'note_bootable_part' and 'note_scsi_host')
+
+>From ppc64_defconfig:
+WARNING: vmlinux.o(.text+0x3acdc): Section mismatch: reference to .init.text:.pmac_find_ide_boot (between '.note_bootable_part' and '.note_scsi_host')
+
+>From prpmc2800_defconfig:
+WARNING: vmlinux.o(.text+0x1611e): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
+WARNING: vmlinux.o(.text+0x16126): Section mismatch: reference to .init.data:boot_command_line (between 'note_bootable_part' and 'find_via_pmu')
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/powermac/setup.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 7ccb923..840f5b4 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -466,8 +466,13 @@ static int pmac_late_init(void)
+ 
+ late_initcall(pmac_late_init);
+ 
+-/* can't be __init - can be called whenever a disk is first accessed */
+-void note_bootable_part(dev_t dev, int part, int goodness)
++/*
++ * This is __init_refok because we check for "initializing" before
++ * touching any of the __init sensitive things and "initializing"
++ * will be false after __init time. This can't be __init because it
++ * can be called whenever a disk is first accessed.
++ */
++void __init_refok note_bootable_part(dev_t dev, int part, int goodness)
+ {
+ 	static int found_boot = 0;
+ 	char *p;
+-- 
+1.5.3.3
