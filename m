@@ -3,9 +3,9 @@ To: <bluesmoke-devel@lists.sourceforge.net>,
 	<linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Thu, 04 Oct 2007 15:40:44 +1000
-Subject: [PATCH 3/4] edac: Add Cell XDR memory definition
+Subject: [PATCH 4/4] edac: Add Cell memory controller
 In-Reply-To: <1191476442.154524.519055590678.qpush@grosgo>
-Message-Id: <20071004054105.71E73DDE07@ozlabs.org>
+Message-Id: <20071004054106.E5329DDE3C@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
 	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -17,48 +17,309 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the definitions for the Rambus XDR memory type
-used by the Cell processor. It's a pre-requisite for the followup
-Cell EDAC patch.
+Adds driver for the Cell memory controller when used without a
+Hypervisor such as on the IBM Cell blades. There might still
+be some improvements to do to this such as finding if it's
+possible to properly obtain more details about the address
+of the error but it's good enough already to report CE counts
+which is our main priority at the moment.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- drivers/edac/edac_core.h     |    2 ++
- drivers/edac/edac_mc_sysfs.c |    3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ device_initcall(cell_publish_devices);
+ drivers/edac/Kconfig     |    7 +
+ drivers/edac/Makefile    |    1 
+ drivers/edac/cell-edac.c |  258 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 266 insertions(+)
 
-Index: linux-work/drivers/edac/edac_core.h
+Index: linux-work/drivers/edac/Kconfig
 ===================================================================
---- linux-work.orig/drivers/edac/edac_core.h	2007-10-04 15:00:16.000000000 +1000
-+++ linux-work/drivers/edac/edac_core.h	2007-10-04 15:34:20.000000000 +1000
-@@ -138,6 +138,7 @@ enum mem_type {
- 	MEM_DDR2,		/* DDR2 RAM */
- 	MEM_FB_DDR2,		/* fully buffered DDR2 */
- 	MEM_RDDR2,		/* Registered DDR2 RAM */
-+	MEM_XDR,		/* Rambus XDR */
- };
+--- linux-work.orig/drivers/edac/Kconfig	2007-10-04 15:00:11.000000000 +1000
++++ linux-work/drivers/edac/Kconfig	2007-10-04 15:34:32.000000000 +1000
+@@ -131,5 +131,12 @@ config EDAC_PASEMI
+ 	  Support for error detection and correction on PA Semi
+ 	  PWRficient.
  
- #define MEM_FLAG_EMPTY		BIT(MEM_EMPTY)
-@@ -154,6 +155,7 @@ enum mem_type {
- #define MEM_FLAG_DDR2           BIT(MEM_DDR2)
- #define MEM_FLAG_FB_DDR2        BIT(MEM_FB_DDR2)
- #define MEM_FLAG_RDDR2          BIT(MEM_RDDR2)
-+#define MEM_FLAG_XDR            BIT(MEM_XDR)
++config EDAC_CELL
++	tristate "Cell Broadband Engine memory controller"
++	depends on EDAC_MM_EDAC && PPC_CELL_NATIVE
++	help
++	  Support for error detection and correction on the
++	  Cell Broadband Engine internal memory controller
++	  on platform without a hypervisor
  
- /* chipset Error Detection and Correction capabilities and mode */
- enum edac_type {
-Index: linux-work/drivers/edac/edac_mc_sysfs.c
+ endif # EDAC
+Index: linux-work/drivers/edac/Makefile
 ===================================================================
---- linux-work.orig/drivers/edac/edac_mc_sysfs.c	2007-10-04 15:00:16.000000000 +1000
-+++ linux-work/drivers/edac/edac_mc_sysfs.c	2007-10-04 15:34:26.000000000 +1000
-@@ -73,7 +73,8 @@ static const char *mem_types[] = {
- 	[MEM_RMBS] = "RMBS",
- 	[MEM_DDR2] = "Unbuffered-DDR2",
- 	[MEM_FB_DDR2] = "FullyBuffered-DDR2",
--	[MEM_RDDR2] = "Registered-DDR2"
-+	[MEM_RDDR2] = "Registered-DDR2",
-+	[MEM_XDR] = "XDR"
- };
+--- linux-work.orig/drivers/edac/Makefile	2007-10-04 15:00:11.000000000 +1000
++++ linux-work/drivers/edac/Makefile	2007-10-04 15:34:32.000000000 +1000
+@@ -28,4 +28,5 @@ obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.
+ obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
+ obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
+ obj-$(CONFIG_EDAC_PASEMI)		+= pasemi_edac.o
++obj-$(CONFIG_EDAC_CELL)			+= cell-edac.o
  
- static const char *dev_types[] = {
+Index: linux-work/drivers/edac/cell-edac.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/drivers/edac/cell-edac.c	2007-10-04 15:34:46.000000000 +1000
+@@ -0,0 +1,258 @@
++/*
++ * Cell MIC driver for ECC counting
++ *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * This file may be distributed under the terms of the
++ * GNU General Public License.
++ */
++#undef DEBUG
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/stop_machine.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/cell-regs.h>
++
++#include "edac_core.h"
++
++struct cell_edac_priv
++{
++	struct cbe_mic_tm_regs __iomem	*regs;
++	int				node;
++	int				chanmask;
++#ifdef DEBUG
++	u64				prev_fir;
++#endif
++};
++
++static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
++{
++	struct cell_edac_priv		*priv = mci->pvt_info;
++	struct csrow_info		*csrow = &mci->csrows[0];
++	unsigned long			address, pfn, offset;
++
++	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016lx\n",
++		priv->node, chan, ar);
++
++	/* Address decoding is likely a bit bogus, to dbl check */
++	address = (ar & 0xffffffffe0000000ul) >> 29;
++	if (priv->chanmask == 0x3)
++		address = (address << 1) | chan;
++	pfn = address >> PAGE_SHIFT;
++	offset = address & ~PAGE_MASK;
++
++	/* TODO: Decoding of the error addresss */
++	edac_mc_handle_ce(mci, csrow->first_page + pfn, offset,
++			  0, 0, chan, "");
++}
++
++static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
++{
++	struct cell_edac_priv		*priv = mci->pvt_info;
++	struct csrow_info		*csrow = &mci->csrows[0];
++	unsigned long			address, pfn, offset;
++
++	dev_dbg(mci->dev, "ECC UE err on node %d, channel %d, ar = 0x%016lx\n",
++		priv->node, chan, ar);
++
++	/* Address decoding is likely a bit bogus, to dbl check */
++	address = (ar & 0xffffffffe0000000ul) >> 29;
++	if (priv->chanmask == 0x3)
++		address = (address << 1) | chan;
++	pfn = address >> PAGE_SHIFT;
++	offset = address & ~PAGE_MASK;
++
++	/* TODO: Decoding of the error addresss */
++	edac_mc_handle_ue(mci, csrow->first_page + pfn, offset, 0, "");
++}
++
++static void cell_edac_check(struct mem_ctl_info *mci)
++{
++	struct cell_edac_priv		*priv = mci->pvt_info;
++	u64				fir, addreg, clear = 0;
++
++	fir = in_be64(&priv->regs->mic_fir);
++#ifdef DEBUG
++	if (fir != priv->prev_fir) {
++		dev_dbg(mci->dev, "fir change : 0x%016lx\n", fir);
++		priv->prev_fir = fir;
++	}
++#endif
++	if ((priv->chanmask & 0x1) && (fir & CBE_MIC_FIR_ECC_SINGLE_0_ERR)) {
++		addreg = in_be64(&priv->regs->mic_df_ecc_address_0);
++		clear |= CBE_MIC_FIR_ECC_SINGLE_0_RESET;
++		cell_edac_count_ce(mci, 0, addreg);
++	}
++	if ((priv->chanmask & 0x2) && (fir & CBE_MIC_FIR_ECC_SINGLE_1_ERR)) {
++		addreg = in_be64(&priv->regs->mic_df_ecc_address_1);
++		clear |= CBE_MIC_FIR_ECC_SINGLE_1_RESET;
++		cell_edac_count_ce(mci, 1, addreg);
++	}
++	if ((priv->chanmask & 0x1) && (fir & CBE_MIC_FIR_ECC_MULTI_0_ERR)) {
++		addreg = in_be64(&priv->regs->mic_df_ecc_address_0);
++		clear |= CBE_MIC_FIR_ECC_MULTI_0_RESET;
++		cell_edac_count_ue(mci, 0, addreg);
++	}
++	if ((priv->chanmask & 0x2) && (fir & CBE_MIC_FIR_ECC_MULTI_1_ERR)) {
++		addreg = in_be64(&priv->regs->mic_df_ecc_address_1);
++		clear |= CBE_MIC_FIR_ECC_MULTI_1_RESET;
++		cell_edac_count_ue(mci, 1, addreg);
++	}
++
++	/* The procedure for clearing FIR bits is a bit ... weird */
++	if (clear) {
++		fir &= ~(CBE_MIC_FIR_ECC_ERR_MASK | CBE_MIC_FIR_ECC_SET_MASK);
++		fir |= CBE_MIC_FIR_ECC_RESET_MASK;
++		fir &= ~clear;
++		out_be64(&priv->regs->mic_fir, fir);
++		(void)in_be64(&priv->regs->mic_fir);
++		mb();
++#ifdef DEBUG
++		fir = in_be64(&priv->regs->mic_fir);
++		dev_dbg(mci->dev, "fir clear  : 0x%016lx\n", fir);
++#endif
++	}
++}
++
++static void __devinit cell_edac_init_csrows(struct mem_ctl_info *mci)
++{
++	struct csrow_info		*csrow = &mci->csrows[0];
++	struct cell_edac_priv		*priv = mci->pvt_info;
++	struct device_node		*np;
++
++	for (np = NULL;
++	     (np = of_find_node_by_name(np, "memory")) != NULL;) {
++		struct resource r;
++
++		/* We "know" that the Cell firmware only creates one entry
++		 * in the "memory" nodes. If that changes, this code will
++		 * need to be adapted.
++		 */
++		if (of_address_to_resource(np, 0, &r))
++			continue;
++		if (of_node_to_nid(np) != priv->node)
++			continue;
++		csrow->first_page = r.start >> PAGE_SHIFT;
++		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
++		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
++		csrow->mtype = MEM_XDR;
++		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
++		dev_dbg(mci->dev,
++			"Initialized on node %d, chanmask=0x%x,"
++			" first_page=0x%lx, nr_pages=0x%x\n",
++			priv->node, priv->chanmask,
++			csrow->first_page, csrow->nr_pages);
++		break;
++	}
++}
++
++static int __devinit cell_edac_probe(struct platform_device *pdev)
++{
++	struct cbe_mic_tm_regs __iomem	*regs;
++	struct mem_ctl_info		*mci;
++	struct cell_edac_priv		*priv;
++	u64				reg;
++	int				rc, chanmask;
++
++	regs = cbe_get_cpu_mic_tm_regs(cbe_node_to_cpu(pdev->id));
++	if (regs == NULL)
++		return -ENODEV;
++
++	/* Get channel population */
++	reg = in_be64(&regs->mic_mnt_cfg);
++	dev_dbg(&pdev->dev, "MIC_MNT_CFG = 0x%016lx\n", reg);
++	chanmask = 0;
++	if (reg & CBE_MIC_MNT_CFG_CHAN_0_POP)
++		chanmask |= 0x1;
++	if (reg & CBE_MIC_MNT_CFG_CHAN_1_POP)
++		chanmask |= 0x2;
++	if (chanmask == 0) {
++		dev_warn(&pdev->dev,
++			 "Yuck ! No channel populated ? Aborting !\n");
++		return -ENODEV;
++	}
++	dev_dbg(&pdev->dev, "Initial FIR = 0x%016lx\n",
++		in_be64(&regs->mic_fir));
++
++	/* Allocate & init EDAC MC data structure */
++	mci = edac_mc_alloc(sizeof(struct cell_edac_priv), 1,
++			    chanmask == 3 ? 2 : 1, pdev->id);
++	if (mci == NULL)
++		return -ENOMEM;
++	priv = mci->pvt_info;
++	priv->regs = regs;
++	priv->node = pdev->id;
++	priv->chanmask = chanmask;
++	mci->dev = &pdev->dev;
++	mci->mtype_cap = MEM_FLAG_XDR;
++	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
++	mci->edac_cap = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
++	mci->mod_name = "cell-edac";
++	mci->ctl_name = "MIC";
++	mci->dev_name = pdev->dev.bus_id;
++	mci->edac_check = cell_edac_check;
++	cell_edac_init_csrows(mci);
++
++	/* Register with EDAC core */
++	rc = edac_mc_add_mc(mci);
++	if (rc) {
++		dev_err(&pdev->dev, "failed to register with EDAC core\n");
++		edac_mc_free(mci);
++		return rc;
++	}
++
++	return 0;
++}
++
++static int __devexit cell_edac_remove(struct platform_device *pdev)
++{
++	struct mem_ctl_info *mci = edac_mc_del_mc(&pdev->dev);
++	if (mci)
++		edac_mc_free(mci);
++	return 0;
++}
++
++static struct platform_driver cell_edac_driver =
++{
++	.driver		= {
++		.name	= "cbe-mic",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= cell_edac_probe,
++	.remove		= cell_edac_remove,
++};
++
++static int __init cell_edac_init(void)
++{
++	/* Sanity check registers data structure */
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_df_ecc_address_0) != 0xf8);
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_df_ecc_address_1) != 0x1b8);
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_df_config) != 0x218);
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_fir) != 0x230);
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_mnt_cfg) != 0x210);
++	BUILD_BUG_ON(offsetof(struct cbe_mic_tm_regs,
++			      mic_exc) != 0x208);
++
++	return platform_driver_register(&cell_edac_driver);
++}
++
++static void __exit cell_edac_exit(void)
++{
++	platform_driver_unregister(&cell_edac_driver);
++}
++
++module_init(cell_edac_init);
++module_exit(cell_edac_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
++MODULE_DESCRIPTION("ECC counting for Cell MIC");
