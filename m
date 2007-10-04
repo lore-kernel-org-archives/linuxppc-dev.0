@@ -1,39 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BF055DDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 04:36:54 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l94IaoN2024936
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2007 14:36:50 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l94Ian1e575950
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2007 14:36:49 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l94IadLQ013528
-	for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2007 14:36:39 -0400
-Date: Thu, 4 Oct 2007 13:36:29 -0500
-To: Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
-Message-ID: <20071004183629.GH4338@austin.ibm.com>
-References: <20070420204114.GL31947@austin.ibm.com>
-	<20070420204720.GM31947@austin.ibm.com>
-	<20070926150216.GH3899@parisc-linux.org>
-	<20070927220022.GC18686@austin.ibm.com>
-	<20070927221031.GY3899@parisc-linux.org>
-	<20070927233437.GF18686@austin.ibm.com>
-	<20071001201247.GN12049@parisc-linux.org>
-	<20071001224132.GH4338@austin.ibm.com>
-	<20071002012730.GO12049@parisc-linux.org>
+Return-Path: <alan@akb.net>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.227])
+	by ozlabs.org (Postfix) with ESMTP id DA4FFDDE32
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 04:46:30 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so252134wxd
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Oct 2007 11:46:29 -0700 (PDT)
+Message-ID: <bfa0697f0710041146y2c74b9dcy3dd413934680ab10@mail.gmail.com>
+Date: Thu, 4 Oct 2007 12:46:28 -0600
+From: "Alan Bennett" <embedded@akb.net>
+Sender: alan@akb.net
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Console handover: tty0 instead of ttyCPM0?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071002012730.GO12049@parisc-linux.org>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,24 +22,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 01, 2007 at 07:27:30PM -0600, Matthew Wilcox wrote:
-> 
-> The thing to remember is that sym2 is in transition from being a dual
-> BSD/Linux driver to being a purely Linux driver. 
+Do you know what would cause this?
 
-I was wondering about that; couldn't tell if the split in the code
-was historical, or being intentionally maintained.
+I've configured a board to console off of SMC1 (ttyCPM0) and on 1
+board it works fine, however a new revision of the board I get the
+following result and lose the console.  Both boards have "exact"
+versions of the kernel and u-boot.
 
-> > My gut instinct is to say "ack", although prudence dictates that 
-> > I should test first. Which might take a few days...
-> 
-> Fine by me.  
+   BAD: console handover: boot [udbg0] -> real [tty0]
+   GOOD: console handover: boot [udbg0] -> real [ttyCPM0]
 
-I tested the patch, it worked great. It also seemed to recover 
-much more quickly -- so quickly, in fact, that I thought something 
-had gone wrong.
 
-I reviewed it one more time, it really does look good. A formal
-submission and acked by's at earliest convenience would be good. 
+IMMRBASE is e0000000
 
---linas
+CONFIG_PPC_EARLY_DEBUG_CPM=y
+CONFIG_PPC_EARLY_DEBUG_CPM_ADDR=0xe0000888
+
+
+
+doesn't WORK:
+==========================================
+zImage starting: loaded at 0x00400000 (sp: 0x07bc19a0)
+Allocating 0x309670 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0040c000:0x00710448)...done 0x2f0ad4 bytes
+
+Linux/PowerPC load: root=/dev/nfs ip=192.168.10.45:::255.255.255.0::eth0 nfsroow
+Finalizing device tree... flat tree at 0x71e3a0
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using Embedded Planet EP8248E machine description
+Linux version 2.6.23-rc6-VTM-0007-1763 (root@fremont) (gcc version 3.4.5) #5 Th7
+console [udbg0] enabled
+setup_arch: bootmem
+ep8248_setup_arch()
+ep8248_setup_arch(), finish
+arch: exit
+Zone PFN ranges:
+  DMA             0 ->    32768
+  Normal      32768 ->    32768
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+Built 1 zonelists in Zone order.  Total pages: 32512
+Kernel command line: root=/dev/nfs ip=192.168.10.45:::255.255.255.0::eth0 nfsrow
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Console: colour dummy device 80x25
+console handover: boot [udbg0] -> real [tty0]
+
+
+BOARD THAT WORKS:
+==========================================
+zImage starting: loaded at 0x00400000 (sp: 0x07bc19a0)
+Allocating 0x309670 bytes for kernel ...
+gunzipping (0x00000000 <- 0x0040c000:0x00710448)...done 0x2f0ad4 bytes
+
+Linux/PowerPC load: console=ttyCPM0,38400n8 root=/dev/nfs ip=192.168.10.49:::25
+Finalizing device tree... flat tree at 0x71e3a0
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+Using Embedded Planet EP8248E machine description
+Linux version 2.6.23-rc6-VTM-0007-1763 (root@fremont) (gcc version 3.4.5) #5 Th7
+console [udbg0] enabled
+setup_arch: bootmem
+ep8248_setup_arch()
+ep8248_setup_arch(), finish
+arch: exit
+Zone PFN ranges:
+  DMA             0 ->    32768
+  Normal      32768 ->    32768
+Movable zone start PFN for each node
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+Built 1 zonelists in Zone order.  Total pages: 32512
+Kernel command line: console=ttyCPM0,38400n8 root=/dev/nfs ip=192.168.10.49:::2
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Console: colour dummy device 80x25Dentry cache hash table entries: 16384 (order)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 126660k/131072k available (2852k kernel code, 4264k reserved, 132k data)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+Generic PHY: Registered new driver
