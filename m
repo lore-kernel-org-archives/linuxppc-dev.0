@@ -1,19 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F773DDE98
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 08:09:21 +1000 (EST)
-In-Reply-To: <20071005174015.GA11016@localhost.localdomain>
-References: <20071005174015.GA11016@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <27C7E568-B28A-4659-803F-9D271B2E1AF6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH respin 0/7] MPC8568E-MDS related patches
-Date: Fri, 5 Oct 2007 17:09:28 -0500
-To: avorontsov@ru.mvista.com
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 030A2DDE34
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 08:17:58 +1000 (EST)
+Subject: Re: [PATCH 5/6] PowerPC 440EPx: Sequoia board support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <47068433.7060803@ru.mvista.com>
+References: <20070730151628.GA5100@ru.mvista.com>
+	<200708030844.13895.sr@denx.de> <46B31352.1060503@ru.mvista.com>
+	<200708031425.19475.sr@denx.de> <1186144536.5981.5.camel@gruick>
+	<47068433.7060803@ru.mvista.com>
+Content-Type: text/plain
+Date: Sat, 06 Oct 2007 08:17:52 +1000
+Message-Id: <1191622672.6416.0.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 5, 2007, at 12:40 PM, Anton Vorontsov wrote:
+On Fri, 2007-10-05 at 22:36 +0400, Valentine Barshak wrote:
+> Benjamin Herrenschmidt wrote:
+> >> Depends on interpretation. IIRC currently the same die is used for 440EPx and 
+> >> 440GRx. I could be wrong here though and it is just a bug in the chip. But 
+> >> anyway we should support this somehow. Could be that I missed this in the 
+> >> current 440GRx (Rainier) arch/ppc support too. I have to admit, that no 
+> >> clever solution comes to my mind right away though.
+> > 
+> > We can always come up with some kind of runtime detection, by turning on
+> > MSR:FP, issuing an fp instruction and catching the illegal instruction
+> > fault if any :-)
+> > 
+> > Ben.
+> > 
+> > 
+> 
+> Is it OK to workaround the GRX/EPX having the same PVR issue using 
+> device tree?
+> Say, check the PVR value and if we have 440EPx PVR, but 440GRX node in 
+> the device tree, fix the cputable entry and omit FPU initialization code.
 
-> Hello Kumar,
->
-> This is respin of MPC8568E-MDS patches, on top of master branch
-> as of today.
->
-> If there are no objections against SPI patch, please Ack it, thus
-> David could pick it up.
+Fixing the CPU features based on the tree is definitely legit. We do
+that on pseries. In fact, with paulus latest patch, the cputable is
+__initdata and the cur CPU features is a -copy- which makes it even more
+legitimate to whack it.
 
-I've applied patches 1-5 however I'm not able to get UCC enet working  
-on my board.  Is there something special that has to be done?  (I've  
-got the card standalone, no MDS backplane).
-
-I'm using the 1.3.0-rc2 u-boot w/o any modifications.
-
-Also, I tried a PCIe e1000 card w/the .dts that's in my tree and that  
-works w/o any issue.
-
-- k
+Ben.
