@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6606EDDE23
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 15:18:54 +1000 (EST)
-In-Reply-To: <1191535520.28239.2.camel@pasglop>
-References: <20071004130454.GA15448@localhost.localdomain>
-	<1191535520.28239.2.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E6B4F79B-254F-4273-8E49-D15BCFF6955A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH][POWERPC] QEIC: Implement pluggable handlers,
-	fix MPIC cascading
-Date: Fri, 5 Oct 2007 00:18:58 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 935ACDDE23
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 17:05:21 +1000 (EST)
+Date: Fri, 5 Oct 2007 17:05:21 +1000
+To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: Fix regression.  Make hot unlplug of CPU0 work again.
+Message-ID: <20071005070519.GQ9814@bakeyournoodle.com>
+References: <20071005035241.GO9814@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20071005035241.GO9814@bakeyournoodle.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Oct 05, 2007 at 01:52:41PM +1000, Tony Breeds wrote:
+> Early in the 2.6.23 cycle we broke the ability to offline cpu0
+> (7ccb4a662462616f6be5053e26b79580e02f1529).  This patch fixes that by
+> ensuring that the (xics)  default irq server, will not be 0 when taking
+> cpu0 offline.
+> 
+> Also catches a use of irq, when virq should be used (I think that the
+> last one).
 
-On Oct 4, 2007, at 5:05 PM, Benjamin Herrenschmidt wrote:
+Hmm testing, this on a JS21 shows that it doesn't work.  I guess I'll go
+back to the drawing board.
 
->
->> From: Anton Vorontsov <avorontsov@ru.mvista.com>
->> Subject: [PATCH] [POWERPC] QEIC: Implement pluggable handlers, fix  
->> MPIC cascading
->>
->> set_irq_chained_handler overwrites MPIC's handle_irq function
->> (handle_fasteoi_irq) thus MPIC never gets eoi event from the
->> cascaded IRQ. This situation hangs MPIC on MPC8568E.
->>
->> To solve this problem efficiently, QEIC needs pluggable handlers,
->> specific to the underlaying interrupt controller.
->>
->> Patch extends qe_ic_init() function to accept low and high interrupt
->> handlers. To avoid #ifdefs, stack of interrupt handlers specified in
->> the header file and functions are marked 'static inline', thus
->> handlers are compiled-in only if actually used (in the board file).
->> Another option would be to lookup for parent controller and
->> automatically detect handlers, but this will waste text size because
->> of never used handlers.
->>
->> qe_ic_init() also changed in regard to support multiplexed high/low
->> lines as found in MPC8568E-MDS, plus qe_ic_cascade_muxed_mpic()
->> handler implemented appropriately.
->>
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->
-> Looks allright, if it also works, then ship it :-)
->
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Yours Tony
 
-Now that this has been ack'd by Ben if you can respin the patch set  
-we can get these in for 2.6.24
-
-(I assume you are using a UCC as ethernet for test some of the QE  
-support on 8568?)
-
-- k
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
