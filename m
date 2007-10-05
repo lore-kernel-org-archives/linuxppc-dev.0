@@ -1,22 +1,18 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 57059DDDE4
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 07:03:22 +1000 (EST)
-Date: Fri, 5 Oct 2007 14:03:20 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC] [PATCH] PowerPC: add more than 4MB kernel image size
-	support to bootwarapper
-Message-ID: <20071005210320.GE6663@mag.az.mvista.com>
-References: <20070924113627.GA30504@ru.mvista.com>
-	<20070925022935.GI30338@localhost.localdomain>
-	<46FD0E4D.30305@ru.mvista.com>
-	<20071003055005.GD18978@localhost.localdomain>
-	<20071005015849.GA9862@mag.az.mvista.com>
-	<20071005173054.GA4295@loki.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071005173054.GA4295@loki.buserror.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4F773DDE98
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 08:09:21 +1000 (EST)
+In-Reply-To: <20071005174015.GA11016@localhost.localdomain>
+References: <20071005174015.GA11016@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <27C7E568-B28A-4659-803F-9D271B2E1AF6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH respin 0/7] MPC8568E-MDS related patches
+Date: Fri, 5 Oct 2007 17:09:28 -0500
+To: avorontsov@ru.mvista.com
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,65 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 05, 2007 at 12:30:54PM -0500, Scott Wood wrote:
-> On Thu, Oct 04, 2007 at 06:58:49PM -0700, Mark A. Greer wrote:
-> > Having the link address jump around depending on the size of the kernel
-> > or zImage is wrong IMHO.  It just screams "weird can't boot issues."
-> > We need a way to specify exactly where we want the zImage linked no
-> > matter what the kernel or zImage size.
-> 
-> Why?
 
-Why?  Because its only safe to download a zImage to certain "safe" locations.
-Where those "safe" locations are vary by firmware, firmware version, and
-zImage size.  This is the issue we're discussing.
+On Oct 5, 2007, at 12:40 PM, Anton Vorontsov wrote:
 
-I've already explained _why_ the link address matters WRT where its downloaded.
+> Hello Kumar,
+>
+> This is respin of MPC8568E-MDS patches, on top of master branch
+> as of today.
+>
+> If there are no objections against SPI patch, please Ack it, thus
+> David could pick it up.
 
-> The zImage is relocatable.  It doesn't matter where it's linked.
+I've applied patches 1-5 however I'm not able to get UCC enet working  
+on my board.  Is there something special that has to be done?  (I've  
+got the card standalone, no MDS backplane).
 
-We know...and a zImage running at an address it wasn't linked at is
-not the issue.
+I'm using the 1.3.0-rc2 u-boot w/o any modifications.
 
-> > Also, being able to control the link address (that is, the download
-> > address with some firmwares) is not a u-boot specific issue and we
-> > shouldn't make a u-boot specific solution.
-> 
-> How is this a u-boot specific solution?
+Also, I tried a PCIe e1000 card w/the .dts that's in my tree and that  
+works w/o any issue.
 
-Because the hoops being jumped through in the patch(es) are to make
-u-boot happy and no other firmware.
-
-> > The more general problem is that some firmwares examine the ELF header
-> > and download the zImage to address it was linked at.  Some firmwares let
-> > you override this but some don't and those are the problem ones.
-> 
-> That's not the more general problem; it's the same problem with a different
-> file format.
-
-True, I misspoke.  I'll restate it this way:
-
-The more general problem is that some firmwares will only download to
-the address the zImage is linked at.  So, we need to control what that
-link address is."
-
-> > I still like my idea best.  I haven't coded yet it so I don't have a patch
-> > but this is what I mean:
-> > 
-> > 1) add a config option (default 4MB) for the link address
-> > 2) add a parameter to the wrapper script thru which we pass the value in
-> >    the config option
-> > 3) the wrapper script changes the VMA/LMA to the address specified
-> >    (objcopy --change-addresses=<some math to get correct incr> ?).
-> 
-> I'd much rather it be automatic than require the user to guess an
-> appropriate value (and be aware in the first place that it needs to be set).
-
-Sure, automatic is nice; conjuring up the magic to make it work in all
-situations isn't.
-
-Having the link address--and therefore the download address on some
-systems--mysteriously and uncontrollably jump around based on the zImage
-size is asking for trouble.
-
-Mark
+- k
