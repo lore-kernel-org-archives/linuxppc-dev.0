@@ -1,20 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AC06EDDE01
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 10:57:46 +1000 (EST)
-In-Reply-To: <4705691A.9020509@freescale.com>
-References: <4705691A.9020509@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1A8BFD27-0CBF-48CA-999D-3BD3D2160979@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or
-	directory
-Date: Thu, 4 Oct 2007 19:57:30 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <nish.aravamudan@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.189])
+	by ozlabs.org (Postfix) with ESMTP id 47B60DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 10:01:49 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so374093fkz
+	for <linuxppc-dev@ozlabs.org>; Thu, 04 Oct 2007 17:01:48 -0700 (PDT)
+Message-ID: <29495f1d0710041701g4ed73441ie583058c78f95857@mail.gmail.com>
+Date: Thu, 4 Oct 2007 17:01:47 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Tony Breeds" <tony@bakeyournoodle.com>
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+In-Reply-To: <20071003011909.GG9814@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	<20070924123531.GC30855@shadowen.org>
+	<20071002232819.GN4338@austin.ibm.com>
+	<20071003002646.GD9814@bakeyournoodle.com>
+	<1191371416.8073.1.camel@concordia>
+	<20071003011909.GG9814@bakeyournoodle.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 4, 2007, at 5:28 PM, Timur Tabi wrote:
-
-> Kumar, this is what I get when I compile your 2.6.24 branch for the  
-> 8610:
+On 10/2/07, Tony Breeds <tony@bakeyournoodle.com> wrote:
+> On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
 >
->   CC      arch/powerpc/sysdev/fsl_soc.o
-> In file included from arch/powerpc/sysdev/fsl_soc.c:40:
-> include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or directory
-> make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
-> make: *** [arch/powerpc/sysdev] Error 2
+> > I realise it'll make the patch bigger, but this doesn't seem like a
+> > particularly good name for the variable anymore.
 >
-> Commenting out the "#include <asm/cpm.h>" in cpm2.h makes the  
-> compilation failure go away, but I don't know if that's the proper  
-> fix, since the 8610 doesn't have a CPM.
+> Sure, what about?
+>
+> Clarify when RTAS logging is enabled.
+>
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-Scott mentioned this and I've fixed it in my tree.
+For what it's worth, on a different ppc64 box, this resolves a similar
+panic for me.
 
-- k
+Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+Thanks,
+Nish
