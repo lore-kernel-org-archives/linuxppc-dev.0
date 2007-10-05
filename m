@@ -1,23 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id A0EDEDDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 13:08:08 +1000 (EST)
-Date: Thu, 4 Oct 2007 20:08:11 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [RFC] [PATCH] PowerPC: add more than 4MB kernel image size
-	support to bootwarapper
-Message-ID: <20071005030811.GA19134@mag.az.mvista.com>
-References: <20070924113627.GA30504@ru.mvista.com>
-	<20070925022935.GI30338@localhost.localdomain>
-	<46FD0E4D.30305@ru.mvista.com>
-	<20071003055005.GD18978@localhost.localdomain>
-	<20071005015849.GA9862@mag.az.mvista.com>
-	<20071005022554.GE25637@localhost.localdomain>
-	<20071005025930.GA24218@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071005025930.GA24218@mag.az.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C3CEDDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2007 13:24:30 +1000 (EST)
+In-Reply-To: <4705634A.9070800@freescale.com>
+References: <11913604331348-git-send-email-timur@freescale.com>
+	<4705634A.9070800@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7BAD52C6-A3AD-4892-9818-AA4A45B344F9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] update immap_86xx.h for the 8610
+Date: Thu, 4 Oct 2007 22:24:34 -0500
+To: Timur Tabi <timur@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,15 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 04, 2007 at 07:59:30PM -0700, Mark A. Greer wrote:
-> On Fri, Oct 05, 2007 at 12:25:54PM +1000, David Gibson wrote:
 
-> > The zImage is already hardware and
-> > firmware specific;
-> 
-> And [potentially] firmware version and zImage size specific.
+On Oct 4, 2007, at 5:03 PM, Timur Tabi wrote:
 
-I meant to add, "which is why it'll be difficult to come up with a
-heuristic that will work in all situations."
+> Kumar, can you pull this patch into your 2.6.24 tree?  It's needed  
+> for the 8610.
 
-Mark
+applied.
+
+- k
