@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 030A2DDE34
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 08:17:58 +1000 (EST)
-Subject: Re: [PATCH 5/6] PowerPC 440EPx: Sequoia board support
+	by ozlabs.org (Postfix) with ESMTP id 603F8DDE42
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 Oct 2007 18:56:59 +1000 (EST)
+Subject: [PATCH] Fix non-terminated PCI match table in PowerMac IDE
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-In-Reply-To: <47068433.7060803@ru.mvista.com>
-References: <20070730151628.GA5100@ru.mvista.com>
-	<200708030844.13895.sr@denx.de> <46B31352.1060503@ru.mvista.com>
-	<200708031425.19475.sr@denx.de> <1186144536.5981.5.camel@gruick>
-	<47068433.7060803@ru.mvista.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 06 Oct 2007 08:17:52 +1000
-Message-Id: <1191622672.6416.0.camel@pasglop>
+Date: Sat, 06 Oct 2007 18:52:27 +1000
+Message-Id: <1191660747.6540.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Cc: Bartlomiej Zolnierkiewicz <B.Zolnierkiewicz@elka.pw.edu.pl>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Heikki Lindholm <holindho@cs.helsinki.fi>,
+	Paul Mackerras <pmac@au1.ibm.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,31 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The PCI device table in the powermac IDE driver isn't properly
+terminated. Depending on how your kernel is linked and other random
+factors, you can end up with this driver matched against any other PCI
+device in your system, possibly crashing at boot.
 
-On Fri, 2007-10-05 at 22:36 +0400, Valentine Barshak wrote:
-> Benjamin Herrenschmidt wrote:
-> >> Depends on interpretation. IIRC currently the same die is used for 440EPx and 
-> >> 440GRx. I could be wrong here though and it is just a bug in the chip. But 
-> >> anyway we should support this somehow. Could be that I missed this in the 
-> >> current 440GRx (Rainier) arch/ppc support too. I have to admit, that no 
-> >> clever solution comes to my mind right away though.
-> > 
-> > We can always come up with some kind of runtime detection, by turning on
-> > MSR:FP, issuing an fp instruction and catching the illegal instruction
-> > fault if any :-)
-> > 
-> > Ben.
-> > 
-> > 
-> 
-> Is it OK to workaround the GRX/EPX having the same PVR issue using 
-> device tree?
-> Say, check the PVR value and if we have 440EPx PVR, but 440GRX node in 
-> the device tree, fix the cputable entry and omit FPU initialization code.
+Thanks to Heikki for tracking this down with me, the bug have been there
+for some time, though it rarely hurts due to luck. In this case, the
+switch from .22 to .23-rc9 is causing it to show up due to differences
+in the resulting layout of .data I suppose.
 
-Fixing the CPU features based on the tree is definitely legit. We do
-that on pseries. In fact, with paulus latest patch, the cputable is
-__initdata and the cur CPU features is a -copy- which makes it even more
-legitimate to whack it.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Ben.
+If that can still make it in .23, that would be great. I'll also get it
+in the various -stable releases.
+
+diff --git a/drivers/ide/ppc/pmac.c b/drivers/ide/ppc/pmac.c
+index f19eb6d..2fb047b 100644
+--- a/drivers/ide/ppc/pmac.c
++++ b/drivers/ide/ppc/pmac.c
+@@ -1546,6 +1546,7 @@ static struct pci_device_id pmac_ide_pci_match[] = {
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+ 	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID2_ATA,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{},
+ };
+ 
+ static struct pci_driver pmac_ide_pci_driver = {
