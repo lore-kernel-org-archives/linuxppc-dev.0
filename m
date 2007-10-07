@@ -1,18 +1,20 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E395DDED1
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:43:15 +1000 (EST)
-Date: Sun, 7 Oct 2007 07:34:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] PPC: Remove redundant reference to non-existent
-	CONFIG_BOOTIMG.
-Message-ID: <Pine.LNX.4.64.0710070731410.32762@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4777FDDE9F
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 22:21:28 +1000 (EST)
+Date: Sun, 7 Oct 2007 22:21:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [POWERPC 03/15] [POWERPC] TQM5200 board support
+Message-Id: <20071007222119.4deabccc.sfr@canb.auug.org.au>
+In-Reply-To: <4708C0DA.2040606@semihalf.com>
+References: <47075FA7.3030108@semihalf.com>
+	<4708C0DA.2040606@semihalf.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__7_Oct_2007_22_21_19_+1000_69g+arbNm5ApJqxw"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Sun__7_Oct_2007_22_21_19_+1000_69g+arbNm5ApJqxw
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+On Sun, 07 Oct 2007 13:19:54 +0200 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
+>
+> +++ b/arch/powerpc/platforms/52xx/tqm5200.c
+>
+> +#include <asm/prom.h>
 
----
+You need this for the flattened device tree stuff, so good. However ...
 
-  there is, AFAICT, no BOOTIMG Kconfig variable.  not to mention that
-there is no such include/linux/bootimg.h header file.
+> +#include <asm/of_platform.h>
 
+You should not include this file.  And you actually don't use any of the
+of_platform routines, but you do need linux/of.h for the of_find_ ...
+routines.
 
- arch/ppc/platforms/ev64360.c |    3 ---
- arch/ppc/platforms/katana.c  |    3 ---
- 2 files changed, 6 deletions(-)
+> +void tqm5200_show_cpuinfo(struct seq_file *m)
+> +{
+> +	struct device_node* np =3D of_find_all_nodes(NULL);
 
-diff --git a/arch/ppc/platforms/ev64360.c b/arch/ppc/platforms/ev64360.c
-index f8baf05..6765676 100644
---- a/arch/ppc/platforms/ev64360.c
-+++ b/arch/ppc/platforms/ev64360.c
-@@ -23,9 +23,6 @@
- #include <linux/mtd/physmap.h>
- #include <linux/mv643xx.h>
- #include <linux/platform_device.h>
--#ifdef CONFIG_BOOTIMG
--#include <linux/bootimg.h>
--#endif
- #include <asm/page.h>
- #include <asm/time.h>
- #include <asm/smp.h>
-diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
-index c289e9f..52f63e6 100644
---- a/arch/ppc/platforms/katana.c
-+++ b/arch/ppc/platforms/katana.c
-@@ -27,9 +27,6 @@
- #include <linux/mtd/physmap.h>
- #include <linux/mv643xx.h>
- #include <linux/platform_device.h>
--#ifdef CONFIG_BOOTIMG
--#include <linux/bootimg.h>
--#endif
- #include <asm/io.h>
- #include <asm/unistd.h>
- #include <asm/page.h>
+Not sure about this - if you want to find the root node, then you should
+probably do that explicitly.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-http://crashcourse.ca
-========================================================================
+--Signature=_Sun__7_Oct_2007_22_21_19_+1000_69g+arbNm5ApJqxw
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHCM9FTgG2atn1QN8RAg7/AJ9ehQMSmMoinnH8qc8HUsg4x3E3WgCeL5si
+gv3xpzGn3tNpZkq4ADXk6BU=
+=hOxT
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__7_Oct_2007_22_21_19_+1000_69g+arbNm5ApJqxw--
