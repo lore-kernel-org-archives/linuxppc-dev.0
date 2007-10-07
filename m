@@ -1,21 +1,19 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 6AB7FDDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 04:42:10 +1000 (EST)
-In-Reply-To: <796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
-References: <C2771B73-A555-4119-AC21-1441D4CC2125@freescale.com>
-	<18184.23379.478676.911097@cargo.ozlabs.ibm.com>
-	<796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: TASK_SIZE default 0x80000000 ?
-Date: Sun, 7 Oct 2007 11:35:26 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 5339FDDE37
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 06:30:06 +1000 (EST)
+To: "Grant Likely" <grant.likely@secretlab.ca>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 01/15] [POWERPC] TQM5200 DTS
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 07 Oct 2007 10:36:17 PDT."
+	<fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com>
+Date: Sun, 07 Oct 2007 22:30:03 +0200
+Sender: wd@denx.de
+Message-Id: <20071007203003.A3E03245B2@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, tech-denx@semihalf.com,
+	Detlev Zundel <dzu@denx.de>, Marian Balakowicz <m8@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com> you wrote:
+>
+> > +/ {
+> > +       model = "fsl,tqm5200";
+> 
+> "fsl," is not appropriate as the TQM5200 is not a freescale product.
+> We need a new abbreviation for tq-components.
 
-On Oct 7, 2007, at 8:02 AM, Kumar Gala wrote:
+How about
 
-> It would seem like we should set the default on 8xx & PReP to
-> 0x80000000 and not allow it to be modified
+	model = "tqc,tqm5200";
+?
 
-For as much as this has been discussed in the past,
-I don't know why the 8xx doesn't check KERNEL_BASE
-and work properly with the options.  There is no reason
-this can't work.  The history is I wrote the tlb handlers
-to test the MS bit due to a hardcoded address, not that
-the address is hardcoded because I wanted to just
-test a bit.  Unlike PReP, there is no reason to
-disallow modification, if this test was changed.
+Best regards,
 
-Thanks.
+Wolfgang Denk
 
-	-- Dan
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Behind every great man, there is a woman -- urging him on.
+	-- Harry Mudd, "I, Mudd", stardate 4513.3
