@@ -1,20 +1,21 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 0CCDEDDECE
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:29:04 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B18F5DDED8
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:30:24 +1000 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id B860F143DA
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:29:01 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id 0750C143DA
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:30:23 +0200 (CEST)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 18236-10 for <linuxppc-dev@ozlabs.org>;
-	Sun,  7 Oct 2007 13:28:59 +0200 (CEST)
-Message-ID: <4708C2F0.7010705@semihalf.com>
-Date: Sun, 07 Oct 2007 13:28:48 +0200
+	with ESMTP id 00658-02 for <linuxppc-dev@ozlabs.org>;
+	Sun,  7 Oct 2007 13:30:21 +0200 (CEST)
+Message-ID: <4708C343.30104@semihalf.com>
+Date: Sun, 07 Oct 2007 13:30:11 +0200
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/15] [POWERPC] Promess Motion-PRO board support
+Subject: [PATCH 10/15] [POWERPC] Add mpc52xx_find_and_map_path(), refactor
+	utility functions.
 References: <47075FA7.3030108@semihalf.com>
 In-Reply-To: <47075FA7.3030108@semihalf.com>
 Content-Type: text/plain; charset=ISO-8859-2
@@ -28,224 +29,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Add arch/powerpc board support for Promess Motion-PRO.
+Add helper routine mpc52xx_find_and_map_path(). Extract common code to
+mpc52xx_map_node() and refactor mpc52xx_find_and_map().
 
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-Signed-off-by: Bartlomiej Sieka <tur@semihalf.com>
+Signed-off-by: Jan Wrobel <wrr@semihalf.com>
 ---
 
- Kconfig     |    6 ++
- Makefile    |    1 
- motionpro.c |  175 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 182 insertions(+)
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |   21 +++++++++++++++++----
+ include/asm-powerpc/mpc52xx.h                |    1 +
+ 2 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index ec952e4..9cf2402 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -33,6 +33,12 @@ config PPC_LITE5200
- 	select PPC_MPC5200
- 	default n
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+index 2dd415f..b1cd7b0 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -20,14 +20,12 @@
+ #include <asm/mpc52xx.h>
  
-+config PPC_MOTIONPRO
-+	bool "Promess Motion-PRO Board"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select PPC_MPC5200
-+	default n
-+
- config PPC_TQM5200
- 	bool "TQM5200 Board"
-  	depends on PPC_MULTIPLATFORM && PPC32
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index 5b4adfb..bde1b0a 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -8,6 +8,7 @@ endif
  
- obj-$(CONFIG_PPC_EFIKA)		+= efika.o
- obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
-+obj-$(CONFIG_PPC_MOTIONPRO)	+= motionpro.o
- obj-$(CONFIG_PPC_TQM5200)	+= tqm5200.o
- obj-$(CONFIG_PPC_CM5200)	+= cm5200.o
+-void __iomem *
+-mpc52xx_find_and_map(const char *compatible)
++static void __iomem *
++mpc52xx_map_node(struct device_node *ofn)
+ {
+-	struct device_node *ofn;
+ 	const u32 *regaddr_p;
+ 	u64 regaddr64, size64;
  
-diff --git a/arch/powerpc/platforms/52xx/motionpro.c b/arch/powerpc/platforms/52xx/motionpro.c
-new file mode 100644
-index 0000000..2cf8a47
---- /dev/null
-+++ b/arch/powerpc/platforms/52xx/motionpro.c
-@@ -0,0 +1,175 @@
-+/*
-+ * Promess Motion-PRO board support
-+ *
-+ * Written by: Grant Likely <grant.likely@secretlab.ca>
-+ * Adapted for Motion-PRO by: Marian Balakowicz <m8@semihalf.com>
-+ *
-+ * Copyright (C) Secret Lab Technologies Ltd. 2006. All rights reserved.
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
-+ *
-+ * Description:
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+-	ofn = of_find_compatible_node(NULL, NULL, compatible);
+ 	if (!ofn)
+ 		return NULL;
+ 
+@@ -43,8 +41,23 @@ mpc52xx_find_and_map(const char *compatible)
+ 
+ 	return ioremap((u32)regaddr64, (u32)size64);
+ }
 +
-+#undef DEBUG
-+
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/initrd.h>
-+
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/bootinfo.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
-+#include <asm/of_platform.h>
-+
-+#include <asm/mpc52xx.h>
-+
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+
-+static void __init
-+motionpro_setup_cpu(void)
++void __iomem *
++mpc52xx_find_and_map(const char *compatible)
 +{
-+	struct mpc52xx_gpio __iomem *gpio;
-+	u32 port_config;
-+
-+	/* Map zones */
-+	gpio = mpc52xx_find_and_map("mpc5200-gpio");
-+	if (!gpio) {
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while mapping GPIO register for port config. "
-+			"Expect some abnormal behavior\n");
-+		goto error;
-+	}
-+
-+	/* Set port config */
-+	port_config = in_be32(&gpio->port_config);
-+
-+	port_config &= ~0x00800000;	/* 48Mhz internal, pin is GPIO	*/
-+
-+	port_config &= ~0x00007000;	/* USB port : Differential mode	*/
-+	port_config |=  0x00001000;	/*            USB 1 only	*/
-+
-+	port_config &= ~0x03000000;	/* ATA CS is on csb_4/5		*/
-+	port_config |=  0x01000000;
-+
-+	pr_debug("port_config: old:%x new:%x\n",
-+	         in_be32(&gpio->port_config), port_config);
-+	out_be32(&gpio->port_config, port_config);
-+
-+	/* Unmap zone */
-+error:
-+	iounmap(gpio);
++	return mpc52xx_map_node(
++		of_find_compatible_node(NULL, NULL, compatible));
 +}
 +
-+static void __init motionpro_setup_arch(void)
+ EXPORT_SYMBOL(mpc52xx_find_and_map);
+ 
++void __iomem *
++mpc52xx_find_and_map_path(const char *path)
 +{
-+	struct device_node *np;
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("motionpro_setup_arch()", 0);
-+
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		unsigned int *fp =
-+		    (int *)get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
-+	}
-+
-+	/* CPU & Port mux setup */
-+	mpc52xx_setup_cpu();	/* Generic */
-+	motionpro_setup_cpu();	/* Platorm specific */
-+
-+#ifdef CONFIG_PCI
-+	np = of_find_node_by_type(NULL, "pci");
-+	if (np) {
-+		mpc52xx_add_bridge(np);
-+		of_node_put(np);
-+	}
-+#endif
-+
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (initrd_start)
-+		/*
-+		 * We want the proper initrd behavior, i.e., launching of
-+		 * /linuxrc from the initial root file system, and not only
-+		 * mounting it as the normal root file system.
-+		 */
-+		ROOT_DEV = 0x0;
-+	else
-+#endif
-+#ifdef  CONFIG_ROOT_NFS
-+		ROOT_DEV = Root_NFS;
-+#else
-+		ROOT_DEV = Root_HDA1;
-+#endif
-+
++	return mpc52xx_map_node(of_find_node_by_path(path));
 +}
 +
-+void motionpro_show_cpuinfo(struct seq_file *m)
-+{
-+	struct device_node* np = of_find_all_nodes(NULL);
-+	const char *model = NULL;
-+
-+	if (np)
-+		model = get_property(np, "model", NULL);
-+
-+	seq_printf(m, "vendor\t\t:	Freescale Semiconductor\n");
-+	seq_printf(m, "machine\t\t:	%s\n", model ? model : "unknown");
-+
-+	of_node_put(np);
-+}
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init motionpro_probe(void)
-+{
-+	unsigned long node = of_get_flat_dt_root();
-+	const char *model = of_get_flat_dt_prop(node, "model", NULL);
-+
-+	if (!of_flat_dt_is_compatible(node, "fsl,motionpro"))
-+		return 0;
-+	pr_debug("%s board found\n", model ? model : "unknown");
-+
-+	return 1;
-+}
-+
-+define_machine(motionpro) {
-+	.name		= "motionpro",
-+	.probe		= motionpro_probe,
-+	.setup_arch	= motionpro_setup_arch,
-+	.init		= mpc52xx_declare_of_platform_devices,
-+	.init_IRQ	= mpc52xx_init_irq,
-+	.get_irq	= mpc52xx_get_irq,
-+	.show_cpuinfo	= motionpro_show_cpuinfo,
-+	.calibrate_decr	= generic_calibrate_decr,
-+};
++EXPORT_SYMBOL(mpc52xx_find_and_map_path);
+ 
+ /**
+  * 	mpc52xx_find_ipb_freq - Find the IPB bus frequency for a device
+diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
+index c4631f6..4707de6 100644
+--- a/include/asm-powerpc/mpc52xx.h
++++ b/include/asm-powerpc/mpc52xx.h
+@@ -242,6 +242,7 @@ struct mpc52xx_cdm {
+ #ifndef __ASSEMBLY__
+ 
+ extern void __iomem * mpc52xx_find_and_map(const char *);
++extern void __iomem * mpc52xx_find_and_map_path(const char *path);
+ extern unsigned int mpc52xx_find_ipb_freq(struct device_node *node);
+ extern void mpc52xx_setup_cpu(void);
+ extern void mpc52xx_declare_of_platform_devices(void);
