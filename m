@@ -1,20 +1,20 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id B0AC2DDEFE
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:27:12 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0CCDEDDECE
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:29:04 +1000 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id B5EFA143DA
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:27:10 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id B860F143DA
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:29:01 +0200 (CEST)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 18236-08 for <linuxppc-dev@ozlabs.org>;
-	Sun,  7 Oct 2007 13:27:06 +0200 (CEST)
-Message-ID: <4708C280.7050206@semihalf.com>
-Date: Sun, 07 Oct 2007 13:26:56 +0200
+	with ESMTP id 18236-10 for <linuxppc-dev@ozlabs.org>;
+	Sun,  7 Oct 2007 13:28:59 +0200 (CEST)
+Message-ID: <4708C2F0.7010705@semihalf.com>
+Date: Sun, 07 Oct 2007 13:28:48 +0200
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 08/15] [POWERPC] Promess Motion-PRO defconfig
+Subject: [PATCH 09/15] [POWERPC] Promess Motion-PRO board support
 References: <47075FA7.3030108@semihalf.com>
 In-Reply-To: <47075FA7.3030108@semihalf.com>
 Content-Type: text/plain; charset=ISO-8859-2
@@ -28,931 +28,224 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Add Motion-PRO board defconfig file.
+Add arch/powerpc board support for Promess Motion-PRO.
 
 Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+Signed-off-by: Bartlomiej Sieka <tur@semihalf.com>
 ---
 
- motionpro_defconfig |  914 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 914 insertions(+)
+ Kconfig     |    6 ++
+ Makefile    |    1 
+ motionpro.c |  175 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 182 insertions(+)
 
-diff --git a/arch/powerpc/configs/motionpro_defconfig b/arch/powerpc/configs/motionpro_defconfig
+diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
+index ec952e4..9cf2402 100644
+--- a/arch/powerpc/platforms/52xx/Kconfig
++++ b/arch/powerpc/platforms/52xx/Kconfig
+@@ -33,6 +33,12 @@ config PPC_LITE5200
+ 	select PPC_MPC5200
+ 	default n
+ 
++config PPC_MOTIONPRO
++	bool "Promess Motion-PRO Board"
++	depends on PPC_MULTIPLATFORM && PPC32
++	select PPC_MPC5200
++	default n
++
+ config PPC_TQM5200
+ 	bool "TQM5200 Board"
+  	depends on PPC_MULTIPLATFORM && PPC32
+diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
+index 5b4adfb..bde1b0a 100644
+--- a/arch/powerpc/platforms/52xx/Makefile
++++ b/arch/powerpc/platforms/52xx/Makefile
+@@ -8,6 +8,7 @@ endif
+ 
+ obj-$(CONFIG_PPC_EFIKA)		+= efika.o
+ obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
++obj-$(CONFIG_PPC_MOTIONPRO)	+= motionpro.o
+ obj-$(CONFIG_PPC_TQM5200)	+= tqm5200.o
+ obj-$(CONFIG_PPC_CM5200)	+= cm5200.o
+ 
+diff --git a/arch/powerpc/platforms/52xx/motionpro.c b/arch/powerpc/platforms/52xx/motionpro.c
 new file mode 100644
-index 0000000..fcce47e
+index 0000000..2cf8a47
 --- /dev/null
-+++ b/arch/powerpc/configs/motionpro_defconfig
-@@ -0,0 +1,914 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.23-rc9
-+# Fri Oct  5 12:54:17 2007
-+#
-+# CONFIG_PPC64 is not set
++++ b/arch/powerpc/platforms/52xx/motionpro.c
+@@ -0,0 +1,175 @@
++/*
++ * Promess Motion-PRO board support
++ *
++ * Written by: Grant Likely <grant.likely@secretlab.ca>
++ * Adapted for Motion-PRO by: Marian Balakowicz <m8@semihalf.com>
++ *
++ * Copyright (C) Secret Lab Technologies Ltd. 2006. All rights reserved.
++ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
++ *
++ * Description:
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+CONFIG_PPC_FPU=y
-+# CONFIG_ALTIVEC is not set
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
-+CONFIG_PPC32=y
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+# CONFIG_PPC_UDBG_16550 is not set
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+# CONFIG_DEFAULT_UIMAGE is not set
-+# CONFIG_PPC_DCR_NATIVE is not set
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++#undef DEBUG
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_USER_NS is not set
-+# CONFIG_AUDIT is not set
-+# CONFIG_IKCONFIG is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+# CONFIG_SYSCTL_SYSCALL is not set
-+# CONFIG_KALLSYMS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+# CONFIG_EPOLL is not set
-+CONFIG_SIGNALFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+# CONFIG_KMOD is not set
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/major.h>
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/initrd.h>
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
++#include <asm/system.h>
++#include <asm/atomic.h>
++#include <asm/time.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/ipic.h>
++#include <asm/bootinfo.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/of_platform.h>
 +
-+#
-+# Platform support
-+#
-+CONFIG_PPC_MULTIPLATFORM=y
-+# CONFIG_EMBEDDED6xx is not set
-+# CONFIG_PPC_82xx is not set
-+# CONFIG_PPC_83xx is not set
-+# CONFIG_PPC_86xx is not set
-+CONFIG_CLASSIC32=y
-+# CONFIG_PPC_CHRP is not set
-+CONFIG_PPC_MPC52xx=y
-+CONFIG_PPC_MPC5200=y
-+# CONFIG_PPC_MPC5200_BUGFIX is not set
-+# CONFIG_PPC_EFIKA is not set
-+# CONFIG_PPC_LITE5200 is not set
-+CONFIG_PPC_MOTIONPRO=y
-+# CONFIG_PPC_TQM5200 is not set
-+# CONFIG_PPC_CM5200 is not set
-+# CONFIG_PPC_PMAC is not set
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PQ2ADS is not set
-+# CONFIG_MPIC is not set
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+# CONFIG_TAU is not set
-+# CONFIG_CPM2 is not set
-+# CONFIG_FSL_ULI1575 is not set
++#include <asm/mpc52xx.h>
 +
-+#
-+# Kernel options
-+#
-+# CONFIG_HIGHMEM is not set
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_MISC is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_KEXEC is not set
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_RESOURCES_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_PROC_DEVICETREE=y
-+# CONFIG_CMDLINE_BOOL is not set
-+CONFIG_PM=y
-+# CONFIG_PM_LEGACY is not set
-+# CONFIG_PM_DEBUG is not set
-+CONFIG_PM_SLEEP=y
-+CONFIG_SUSPEND_UP_POSSIBLE=y
-+CONFIG_SUSPEND=y
-+CONFIG_HIBERNATION_UP_POSSIBLE=y
-+# CONFIG_HIBERNATION is not set
-+CONFIG_SECCOMP=y
-+# CONFIG_WANT_DEVICE_TREE is not set
-+CONFIG_ISA_DMA_API=y
++/* ************************************************************************
++ *
++ * Setup the architecture
++ *
++ */
 +
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_GENERIC_ISA_DMA=y
-+CONFIG_FSL_SOC=y
-+# CONFIG_PCI is not set
-+# CONFIG_PCI_DOMAINS is not set
-+# CONFIG_PCI_SYSCALL is not set
-+# CONFIG_ARCH_SUPPORTS_MSI is not set
++static void __init
++motionpro_setup_cpu(void)
++{
++	struct mpc52xx_gpio __iomem *gpio;
++	u32 port_config;
 +
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
++	/* Map zones */
++	gpio = mpc52xx_find_and_map("mpc5200-gpio");
++	if (!gpio) {
++		printk(KERN_ERR __FILE__ ": "
++			"Error while mapping GPIO register for port config. "
++			"Expect some abnormal behavior\n");
++		goto error;
++	}
 +
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
++	/* Set port config */
++	port_config = in_be32(&gpio->port_config);
 +
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_BOOT_LOAD=0x00800000
++	port_config &= ~0x00800000;	/* 48Mhz internal, pin is GPIO	*/
 +
-+#
-+# Networking
-+#
-+CONFIG_NET=y
++	port_config &= ~0x00007000;	/* USB port : Differential mode	*/
++	port_config |=  0x00001000;	/*            USB 1 only	*/
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+CONFIG_XFRM_USER=m
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_IP_MROUTE is not set
-+# CONFIG_ARPD is not set
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
++	port_config &= ~0x03000000;	/* ATA CS is on csb_4/5		*/
++	port_config |=  0x01000000;
 +
-+#
-+# QoS and/or fair queueing
-+#
-+# CONFIG_NET_SCHED is not set
++	pr_debug("port_config: old:%x new:%x\n",
++	         in_be32(&gpio->port_config), port_config);
++	out_be32(&gpio->port_config, port_config);
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
++	/* Unmap zone */
++error:
++	iounmap(gpio);
++}
 +
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_IEEE80211 is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++static void __init motionpro_setup_arch(void)
++{
++	struct device_node *np;
 +
-+#
-+# Device Drivers
-+#
++	if (ppc_md.progress)
++		ppc_md.progress("motionpro_setup_arch()", 0);
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+# CONFIG_MTD is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=32768
-+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_EEPROM_93CX6 is not set
-+# CONFIG_IDE is not set
++	np = of_find_node_by_type(NULL, "cpu");
++	if (np) {
++		unsigned int *fp =
++		    (int *)get_property(np, "clock-frequency", NULL);
++		if (fp != 0)
++			loops_per_jiffy = *fp / HZ;
++		else
++			loops_per_jiffy = 50000000 / HZ;
++		of_node_put(np);
++	}
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+CONFIG_SCSI=y
-+CONFIG_SCSI_DMA=y
-+CONFIG_SCSI_TGT=y
-+# CONFIG_SCSI_NETLINK is not set
-+CONFIG_SCSI_PROC_FS=y
++	/* CPU & Port mux setup */
++	mpc52xx_setup_cpu();	/* Generic */
++	motionpro_setup_cpu();	/* Platorm specific */
 +
-+#
-+# SCSI support type (disk, tape, CD-ROM)
-+#
-+CONFIG_BLK_DEV_SD=y
-+# CONFIG_CHR_DEV_ST is not set
-+# CONFIG_CHR_DEV_OSST is not set
-+# CONFIG_BLK_DEV_SR is not set
-+CONFIG_CHR_DEV_SG=y
-+# CONFIG_CHR_DEV_SCH is not set
++#ifdef CONFIG_PCI
++	np = of_find_node_by_type(NULL, "pci");
++	if (np) {
++		mpc52xx_add_bridge(np);
++		of_node_put(np);
++	}
++#endif
 +
-+#
-+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-+#
-+# CONFIG_SCSI_MULTI_LUN is not set
-+# CONFIG_SCSI_CONSTANTS is not set
-+# CONFIG_SCSI_LOGGING is not set
-+# CONFIG_SCSI_SCAN_ASYNC is not set
-+CONFIG_SCSI_WAIT_SCAN=m
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		/*
++		 * We want the proper initrd behavior, i.e., launching of
++		 * /linuxrc from the initial root file system, and not only
++		 * mounting it as the normal root file system.
++		 */
++		ROOT_DEV = 0x0;
++	else
++#endif
++#ifdef  CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++		ROOT_DEV = Root_HDA1;
++#endif
 +
-+#
-+# SCSI Transports
-+#
-+# CONFIG_SCSI_SPI_ATTRS is not set
-+# CONFIG_SCSI_FC_ATTRS is not set
-+# CONFIG_SCSI_ISCSI_ATTRS is not set
-+# CONFIG_SCSI_SAS_LIBSAS is not set
-+CONFIG_SCSI_LOWLEVEL=y
-+# CONFIG_ISCSI_TCP is not set
-+# CONFIG_SCSI_DEBUG is not set
-+CONFIG_ATA=y
-+# CONFIG_ATA_NONSTANDARD is not set
-+CONFIG_PATA_MPC52xx=y
-+CONFIG_PATA_PLATFORM=y
-+# CONFIG_MD is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+# CONFIG_PHYLIB is not set
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=y
-+CONFIG_NETDEV_1000=y
-+# CONFIG_MV643XX_ETH is not set
-+CONFIG_NETDEV_10000=y
++}
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_SHAPER is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++void motionpro_show_cpuinfo(struct seq_file *m)
++{
++	struct device_node* np = of_find_all_nodes(NULL);
++	const char *model = NULL;
 +
-+#
-+# Input device support
-+#
-+# CONFIG_INPUT is not set
++	if (np)
++		model = get_property(np, "model", NULL);
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++	seq_printf(m, "vendor\t\t:	Freescale Semiconductor\n");
++	seq_printf(m, "machine\t\t:	%s\n", model ? model : "unknown");
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
++	of_node_put(np);
++}
 +
-+#
-+# Serial drivers
-+#
-+# CONFIG_SERIAL_8250 is not set
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init motionpro_probe(void)
++{
++	unsigned long node = of_get_flat_dt_root();
++	const char *model = of_get_flat_dt_prop(node, "model", NULL);
 +
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+CONFIG_SERIAL_MPC52xx=y
-+CONFIG_SERIAL_MPC52xx_CONSOLE=y
-+CONFIG_SERIAL_MPC52xx_CONSOLE_BAUD=115200
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+# CONFIG_WATCHDOG is not set
-+# CONFIG_HW_RANDOM is not set
-+# CONFIG_NVRAM is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+CONFIG_I2C=y
-+CONFIG_I2C_BOARDINFO=y
-+CONFIG_I2C_CHARDEV=y
++	if (!of_flat_dt_is_compatible(node, "fsl,motionpro"))
++		return 0;
++	pr_debug("%s board found\n", model ? model : "unknown");
 +
-+#
-+# I2C Algorithms
-+#
-+# CONFIG_I2C_ALGOBIT is not set
-+# CONFIG_I2C_ALGOPCF is not set
-+# CONFIG_I2C_ALGOPCA is not set
++	return 1;
++}
 +
-+#
-+# I2C Hardware Bus support
-+#
-+CONFIG_I2C_MPC=y
-+# CONFIG_I2C_OCORES is not set
-+# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_SIMTEC is not set
-+# CONFIG_I2C_TAOS_EVM is not set
-+# CONFIG_I2C_STUB is not set
-+
-+#
-+# Miscellaneous I2C Chip support
-+#
-+# CONFIG_SENSORS_DS1337 is not set
-+# CONFIG_SENSORS_DS1374 is not set
-+# CONFIG_DS1682 is not set
-+CONFIG_SENSORS_EEPROM=y
-+# CONFIG_SENSORS_PCF8574 is not set
-+# CONFIG_SENSORS_PCA9539 is not set
-+# CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_SENSORS_M41T00 is not set
-+# CONFIG_SENSORS_MAX6875 is not set
-+# CONFIG_SENSORS_TSL2550 is not set
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
-+
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+CONFIG_HWMON=y
-+# CONFIG_HWMON_VID is not set
-+# CONFIG_SENSORS_ABITUGURU is not set
-+# CONFIG_SENSORS_ABITUGURU3 is not set
-+# CONFIG_SENSORS_AD7418 is not set
-+# CONFIG_SENSORS_ADM1021 is not set
-+# CONFIG_SENSORS_ADM1025 is not set
-+# CONFIG_SENSORS_ADM1026 is not set
-+# CONFIG_SENSORS_ADM1029 is not set
-+# CONFIG_SENSORS_ADM1031 is not set
-+# CONFIG_SENSORS_ADM9240 is not set
-+# CONFIG_SENSORS_ASB100 is not set
-+# CONFIG_SENSORS_ATXP1 is not set
-+# CONFIG_SENSORS_DS1621 is not set
-+# CONFIG_SENSORS_F71805F is not set
-+# CONFIG_SENSORS_FSCHER is not set
-+# CONFIG_SENSORS_FSCPOS is not set
-+# CONFIG_SENSORS_GL518SM is not set
-+# CONFIG_SENSORS_GL520SM is not set
-+# CONFIG_SENSORS_IT87 is not set
-+# CONFIG_SENSORS_LM63 is not set
-+# CONFIG_SENSORS_LM75 is not set
-+# CONFIG_SENSORS_LM77 is not set
-+# CONFIG_SENSORS_LM78 is not set
-+# CONFIG_SENSORS_LM80 is not set
-+# CONFIG_SENSORS_LM83 is not set
-+# CONFIG_SENSORS_LM85 is not set
-+# CONFIG_SENSORS_LM87 is not set
-+# CONFIG_SENSORS_LM90 is not set
-+# CONFIG_SENSORS_LM92 is not set
-+# CONFIG_SENSORS_LM93 is not set
-+# CONFIG_SENSORS_MAX1619 is not set
-+# CONFIG_SENSORS_MAX6650 is not set
-+# CONFIG_SENSORS_PC87360 is not set
-+# CONFIG_SENSORS_PC87427 is not set
-+# CONFIG_SENSORS_DME1737 is not set
-+# CONFIG_SENSORS_SMSC47M1 is not set
-+# CONFIG_SENSORS_SMSC47M192 is not set
-+# CONFIG_SENSORS_SMSC47B397 is not set
-+# CONFIG_SENSORS_THMC50 is not set
-+# CONFIG_SENSORS_VT1211 is not set
-+# CONFIG_SENSORS_W83781D is not set
-+# CONFIG_SENSORS_W83791D is not set
-+# CONFIG_SENSORS_W83792D is not set
-+# CONFIG_SENSORS_W83793 is not set
-+# CONFIG_SENSORS_W83L785TS is not set
-+# CONFIG_SENSORS_W83627HF is not set
-+# CONFIG_SENSORS_W83627EHF is not set
-+# CONFIG_HWMON_DEBUG_CHIP is not set
-+
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
-+
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+CONFIG_DAB=y
-+
-+#
-+# Graphics support
-+#
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=m
-+# CONFIG_FB is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
-+
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+CONFIG_USB_SUPPORT=y
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+# CONFIG_USB_ARCH_HAS_EHCI is not set
-+# CONFIG_USB is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+
-+#
-+# USB Gadget Support
-+#
-+# CONFIG_USB_GADGET is not set
-+# CONFIG_MMC is not set
-+CONFIG_NEW_LEDS=y
-+CONFIG_LEDS_CLASS=y
-+
-+#
-+# LED drivers
-+#
-+
-+#
-+# LED Triggers
-+#
-+CONFIG_LEDS_TRIGGERS=y
-+CONFIG_LEDS_TRIGGER_TIMER=y
-+# CONFIG_LEDS_TRIGGER_HEARTBEAT is not set
-+# CONFIG_EDAC is not set
-+# CONFIG_RTC_CLASS is not set
-+
-+#
-+# DMA Engine support
-+#
-+# CONFIG_DMA_ENGINE is not set
-+
-+#
-+# DMA Clients
-+#
-+
-+#
-+# DMA Devices
-+#
-+
-+#
-+# Userspace I/O
-+#
-+# CONFIG_UIO is not set
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+# CONFIG_EXT3_FS_POSIX_ACL is not set
-+# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT4DEV_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+CONFIG_FS_MBCACHE=y
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+CONFIG_FAT_FS=y
-+CONFIG_MSDOS_FS=y
-+CONFIG_VFAT_FS=y
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_RAMFS=y
-+# CONFIG_CONFIGFS_FS is not set
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+CONFIG_CRAMFS=y
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+
-+#
-+# Network File Systems
-+#
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+CONFIG_NFS_V4=y
-+# CONFIG_NFS_DIRECTIO is not set
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+CONFIG_SUNRPC_GSS=y
-+# CONFIG_SUNRPC_BIND34 is not set
-+CONFIG_RPCSEC_GSS_KRB5=y
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+# CONFIG_MAC_PARTITION is not set
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_BSD_DISKLABEL is not set
-+# CONFIG_MINIX_SUBPARTITION is not set
-+# CONFIG_SOLARIS_X86_PARTITION is not set
-+# CONFIG_UNIXWARE_DISKLABEL is not set
-+# CONFIG_LDM_PARTITION is not set
-+# CONFIG_SGI_PARTITION is not set
-+# CONFIG_ULTRIX_PARTITION is not set
-+# CONFIG_SUN_PARTITION is not set
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
-+
-+#
-+# Native Language Support
-+#
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+# CONFIG_NLS_ASCII is not set
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
-+
-+#
-+# Distributed Lock Manager
-+#
-+# CONFIG_DLM is not set
-+# CONFIG_UCC_SLOW is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
-+
-+#
-+# Instrumentation Support
-+#
-+# CONFIG_PROFILING is not set
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_MUST_CHECK=y
-+# CONFIG_MAGIC_SYSRQ is not set
-+# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_DETECT_SOFTLOCKUP=y
-+CONFIG_SCHED_DEBUG=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_TIMER_STATS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+CONFIG_DEBUG_INFO=y
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+CONFIG_FORCED_INLINING=y
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_FAULT_INJECTION is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+# CONFIG_DEBUG_PAGEALLOC is not set
-+# CONFIG_DEBUGGER is not set
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_BOOTX_TEXT is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=y
-+CONFIG_CRYPTO_MANAGER=y
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+CONFIG_CRYPTO_MD5=y
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+CONFIG_CRYPTO_ECB=m
-+CONFIG_CRYPTO_CBC=y
-+CONFIG_CRYPTO_PCBC=m
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+CONFIG_CRYPTO_DES=y
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_TEST is not set
-+CONFIG_CRYPTO_HW=y
++define_machine(motionpro) {
++	.name		= "motionpro",
++	.probe		= motionpro_probe,
++	.setup_arch	= motionpro_setup_arch,
++	.init		= mpc52xx_declare_of_platform_devices,
++	.init_IRQ	= mpc52xx_init_irq,
++	.get_irq	= mpc52xx_get_irq,
++	.show_cpuinfo	= motionpro_show_cpuinfo,
++	.calibrate_decr	= generic_calibrate_decr,
++};
