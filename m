@@ -1,20 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 75EE2DDEFD
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 03:36:18 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1446647wag
-	for <linuxppc-dev@ozlabs.org>; Sun, 07 Oct 2007 10:36:17 -0700 (PDT)
-Message-ID: <fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com>
-Date: Sun, 7 Oct 2007 10:36:17 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH 01/15] [POWERPC] TQM5200 DTS
-In-Reply-To: <4708BFDD.9020900@semihalf.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47075FA7.3030108@semihalf.com> <4708BFDD.9020900@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
+	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 6AB7FDDDE7
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 04:42:10 +1000 (EST)
+In-Reply-To: <796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
+References: <C2771B73-A555-4119-AC21-1441D4CC2125@freescale.com>
+	<18184.23379.478676.911097@cargo.ozlabs.ibm.com>
+	<796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: TASK_SIZE default 0x80000000 ?
+Date: Sun, 7 Oct 2007 11:35:26 -0700
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,267 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/7/07, Marian Balakowicz <m8@semihalf.com> wrote:
->
-> Add device tree source file for TQM5200 board.
->
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-> Signed-off-by: Grzegorz Bernacki <gjb@semihalf.com>
-> Signed-off-by: Martin Krause <martin.krause@tqs.de>
-> ---
->
->  tqm5200.dts |  217 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 217 insertions(+)
->
-> diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
-> new file mode 100644
-> index 0000000..e3e0ebf
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/tqm5200.dts
-> @@ -0,0 +1,217 @@
-> +/*
-> + * TQM5200 board Device Tree Source
-> + *
-> + * Copyright (C) 2007 Semihalf
-> + * Modified for TQM5200 by Marian Balakowicz <m8@semihalf.com>
-> + *
-> + * Copyright 2006-2007 Secret Lab Technologies Ltd.
-> + * Grant Likely <grant.likely@secretlab.ca>
 
-You don't really need to preserve my copyright here.  It will not
-bother me if you remove it.
+On Oct 7, 2007, at 8:02 AM, Kumar Gala wrote:
 
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/*
-> + * WARNING: Do not depend on this tree layout remaining static just yet.
-> + * The MPC5200 device tree conventions are still in flux
-> + * Keep an eye on the linuxppc-dev mailing list for more details
-> + */
-> +
-> +/ {
-> +       model = "fsl,tqm5200";
+> It would seem like we should set the default on 8xx & PReP to
+> 0x80000000 and not allow it to be modified
 
-"fsl," is not appropriate as the TQM5200 is not a freescale product.
-We need a new abbreviation for tq-components.
+For as much as this has been discussed in the past,
+I don't know why the 8xx doesn't check KERNEL_BASE
+and work properly with the options.  There is no reason
+this can't work.  The history is I wrote the tlb handlers
+to test the MS bit due to a hardcoded address, not that
+the address is hardcoded because I wanted to just
+test a bit.  Unlike PReP, there is no reason to
+disallow modification, if this test was changed.
 
-> +       compatible = "fsl,tqm5200\0generic-mpc5200";
+Thanks.
 
-Ditto
-
-> +       #address-cells = <1>;
-> +       #size-cells = <1>;
-> +
-> +       cpus {
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               PowerPC,5200@0 {
-> +                       device_type = "cpu";
-> +                       reg = <0>;
-> +                       d-cache-line-size = <20>;
-> +                       i-cache-line-size = <20>;
-> +                       d-cache-size = <4000>;          // L1, 16K
-> +                       i-cache-size = <4000>;          // L1, 16K
-> +                       timebase-frequency = <0>;       // from bootloader
-> +                       bus-frequency = <0>;            // from bootloader
-> +                       clock-frequency = <0>;          // from bootloader
-> +                       32-bit;
-> +               };
-> +       };
-> +
-> +       memory {
-> +               device_type = "memory";
-> +               reg = <00000000 04000000>;      // 64MB
-> +       };
-> +
-> +       soc5200@f0000000 {
-
-I think we're moving to the convetion of naming these nodes
-"soc@<addr>" now.  (You can drop the 5200 for the node name)
-
-> +               model = "fsl,mpc5200";
-> +               compatible = "mpc5200";
-> +               revision = "";                  // from bootloader
-> +               #interrupt-cells = <3>;
-> +               device_type = "soc";
-> +               ranges = <0 f0000000 f0010000>;
-> +               reg = <f0000000 00010000>;
-> +               bus-frequency = <0>;            // from bootloader
-> +               system-frequency = <0>;         // from bootloader
-> +
-> +               cdm@200 {
-> +                       compatible = "mpc5200b-cdm\0mpc5200-cdm";
-> +                       reg = <200 38>;
-> +               };
-> +
-> +               mpc5200_pic: pic@500 {
-> +                       // 5200 interrupts are encoded into two levels;
-> +                       interrupt-controller;
-> +                       #interrupt-cells = <3>;
-> +                       device_type = "interrupt-controller";
-> +                       compatible = "mpc5200-pic";
-> +                       reg = <500 80>;
-> +                       built-in;
-> +               };
-> +
-> +               gpt@600 {       // General Purpose Timer
-> +                       compatible = "mpc5200-gpt";
-> +                       device_type = "gpt";
-> +                       cell-index = <0>;
-> +                       reg = <600 10>;
-> +                       interrupts = <1 9 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +                       has-wdt;
-> +               };
-> +
-> +               gpio@b00 {
-> +                       compatible = "mpc5200-gpio";
-> +                       reg = <b00 40>;
-> +                       interrupts = <1 7 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               usb@1000 {
-> +                       device_type = "usb-ohci-be";
-> +                       compatible = "mpc5200-ohci\0ohci-be";
-> +                       reg = <1000 ff>;
-> +                       interrupts = <2 6 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               pci@0d00 {
-> +                       #interrupt-cells = <1>;
-> +                       #size-cells = <2>;
-> +                       #address-cells = <3>;
-> +                       device_type = "pci";
-> +                       compatible = "mpc5200-pci";
-> +                       reg = <d00 100>;
-> +                       interrupt-map-mask = <f800 0 0 7>;
-> +                       interrupt-map = <c000 0 0 1 &mpc5200_pic 0 0 3
-> +                                        c000 0 0 2 &mpc5200_pic 0 0 3
-> +                                        c000 0 0 3 &mpc5200_pic 0 0 3
-> +                                        c000 0 0 4 &mpc5200_pic 0 0 3>;
-> +                       clock-frequency = <0>; // From boot loader
-> +                       interrupts = <2 8 0 2 9 0 2 a 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +                       bus-range = <0 0>;
-> +                       ranges = <42000000 0 80000000 80000000 0 10000000
-> +                                 02000000 0 90000000 90000000 0 10000000
-> +                                 01000000 0 00000000 a0000000 0 01000000>;
-> +               };
-> +
-> +               bestcomm@1200 {
-> +                       device_type = "dma-controller";
-> +                       compatible = "mpc5200-bestcomm";
-> +                       reg = <1200 80>;
-> +                       interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-> +                                     3 4 0  3 5 0  3 6 0  3 7 0
-> +                                     3 8 0  3 9 0  3 a 0  3 b 0
-> +                                     3 c 0  3 d 0  3 e 0  3 f 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               xlb@1f00 {
-> +                       compatible = "mpc5200-xlb";
-> +                       reg = <1f00 100>;
-> +               };
-> +
-> +               serial@2000 {           // PSC1
-> +                       device_type = "serial";
-> +                       compatible = "mpc5200-psc-uart";
-> +                       port-number = <0>;  // Logical port assignment
-> +                       cell-index = <0>;
-> +                       reg = <2000 100>;
-> +                       interrupts = <2 1 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               serial@2200 {           // PSC2
-> +                       device_type = "serial";
-> +                       compatible = "mpc5200-psc-uart";
-> +                       port-number = <1>;  // Logical port assignment
-> +                       cell-index = <1>;
-> +                       reg = <2200 100>;
-> +                       interrupts = <2 2 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               serial@2400 {           // PSC3
-> +                       device_type = "serial";
-> +                       compatible = "mpc5200-psc-uart";
-> +                       port-number = <2>;  // Logical port assignment
-> +                       cell-index = <2>;
-> +                       reg = <2400 100>;
-> +                       interrupts = <2 3 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               ethernet@3000 {
-> +                       device_type = "network";
-> +                       compatible = "mpc5200-fec";
-> +                       reg = <3000 800>;
-> +                       interrupts = <2 5 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               ata@3a00 {
-> +                       device_type = "ata";
-> +                       compatible = "mpc5200b-ata\0mpc5200-ata";
-> +                       reg = <3a00 100>;
-> +                       interrupts = <2 7 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +               };
-> +
-> +               i2c@3d40 {
-> +                       device_type = "i2c";
-> +                       compatible = "mpc5200-i2c\0fsl-i2c";
-> +                       cell-index = <1>;
-> +                       reg = <3d40 40>;
-> +                       interrupts = <2 10 0>;
-> +                       interrupt-parent = <&mpc5200_pic>;
-> +                       fsl5200-clocking;
-> +               };
-> +
-> +               sram@8000 {
-> +                       device_type = "sram";
-> +                       compatible = "mpc5200-sram\0sram";
-> +                       reg = <8000 4000>;
-> +               };
-> +
-> +               flash@c000000 {
-> +                       device_type = "rom";
-> +                       compatible = "direct-mapped";
-> +                       reg = <0c000000 02000000>;
-> +                       probe-type = "CFI";
-> +                       bank-width = <4>;
-> +                       partitions = <00000000 000a0000
-> +                                     000a0000 00020000
-> +                                     000c0000 00240000
-> +                                     00300000 00200000
-> +                                     00500000 00400000
-> +                                     00900000 00800000
-> +                                     01100000 00f00000>;
-> +                       partition-names = "firmware\0dtb\0kernel\0initrd\0small-fs\0misc\0big-fs";
-> +               };
-> +       };
-> +};
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	-- Dan
