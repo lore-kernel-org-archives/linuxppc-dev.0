@@ -1,24 +1,18 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 8E72BDDEFE
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:36:44 +1000 (EST)
-Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 6B6FE143DA
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:36:42 +0200 (CEST)
-Received: from mail.semihalf.com ([127.0.0.1])
-	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 18650-02 for <linuxppc-dev@ozlabs.org>;
-	Sun,  7 Oct 2007 13:36:41 +0200 (CEST)
-Message-ID: <4708C4BE.2070303@semihalf.com>
-Date: Sun, 07 Oct 2007 13:36:30 +0200
-From: Marian Balakowicz <m8@semihalf.com>
+Return-Path: <rpjday@mindspring.com>
+Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E395DDED1
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:43:15 +1000 (EST)
+Date: Sun, 7 Oct 2007 07:34:57 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] PPC: Remove redundant reference to non-existent
+	CONFIG_BOOTIMG.
+Message-ID: <Pine.LNX.4.64.0710070731410.32762@localhost.localdomain>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 15/15] [POWERPC] Init restart/halt/power_off machine hooks
-	for Motion-PRO.
-References: <47075FA7.3030108@semihalf.com>
-In-Reply-To: <47075FA7.3030108@semihalf.com>
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,24 +23,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Initialize restart/halt/power_off machine hooks in Promess
-Motion-PRO board platform code.
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
 ---
 
- motionpro.c |    3 +++
- 1 file changed, 3 insertions(+)
+  there is, AFAICT, no BOOTIMG Kconfig variable.  not to mention that
+there is no such include/linux/bootimg.h header file.
 
-diff --git a/arch/powerpc/platforms/52xx/motionpro.c b/arch/powerpc/platforms/52xx/motionpro.c
-index c1bcfd2..c6954c2 100644
---- a/arch/powerpc/platforms/52xx/motionpro.c
-+++ b/arch/powerpc/platforms/52xx/motionpro.c
-@@ -210,4 +210,7 @@ define_machine(motionpro) {
- 	.get_irq	= mpc52xx_get_irq,
- 	.show_cpuinfo	= motionpro_show_cpuinfo,
- 	.calibrate_decr	= generic_calibrate_decr,
-+	.restart	= mpc52xx_restart,
-+	.halt		= mpc52xx_halt,
-+	.power_off	= mpc52xx_power_off,
- };
+
+ arch/ppc/platforms/ev64360.c |    3 ---
+ arch/ppc/platforms/katana.c  |    3 ---
+ 2 files changed, 6 deletions(-)
+
+diff --git a/arch/ppc/platforms/ev64360.c b/arch/ppc/platforms/ev64360.c
+index f8baf05..6765676 100644
+--- a/arch/ppc/platforms/ev64360.c
++++ b/arch/ppc/platforms/ev64360.c
+@@ -23,9 +23,6 @@
+ #include <linux/mtd/physmap.h>
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
+-#ifdef CONFIG_BOOTIMG
+-#include <linux/bootimg.h>
+-#endif
+ #include <asm/page.h>
+ #include <asm/time.h>
+ #include <asm/smp.h>
+diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
+index c289e9f..52f63e6 100644
+--- a/arch/ppc/platforms/katana.c
++++ b/arch/ppc/platforms/katana.c
+@@ -27,9 +27,6 @@
+ #include <linux/mtd/physmap.h>
+ #include <linux/mv643xx.h>
+ #include <linux/platform_device.h>
+-#ifdef CONFIG_BOOTIMG
+-#include <linux/bootimg.h>
+-#endif
+ #include <asm/io.h>
+ #include <asm/unistd.h>
+ #include <asm/page.h>
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
