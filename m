@@ -1,20 +1,20 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 145EADDEC8
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:20:09 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1576DDDECA
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 21:21:06 +1000 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 8C585143DA
-	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:20:06 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id 735D6143DA
+	for <linuxppc-dev@ozlabs.org>; Sun,  7 Oct 2007 13:21:04 +0200 (CEST)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 14326-08 for <linuxppc-dev@ozlabs.org>;
-	Sun,  7 Oct 2007 13:20:04 +0200 (CEST)
-Message-ID: <4708C0DA.2040606@semihalf.com>
-Date: Sun, 07 Oct 2007 13:19:54 +0200
+	with ESMTP id 14326-10 for <linuxppc-dev@ozlabs.org>;
+	Sun,  7 Oct 2007 13:21:02 +0200 (CEST)
+Message-ID: <4708C112.9020506@semihalf.com>
+Date: Sun, 07 Oct 2007 13:20:50 +0200
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC 03/15] [POWERPC] TQM5200 board support
+Subject: [PATCH 04/15] [POWERPC] CM5200 DTS
 References: <47075FA7.3030108@semihalf.com>
 In-Reply-To: <47075FA7.3030108@semihalf.com>
 Content-Type: text/plain; charset=ISO-8859-2
@@ -28,219 +28,302 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Add arch/powerpc board support for TQM5200.
+Add device tree source file for CM5200 board.
 
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+Signed-off-by Marian Balakowicz <m8@semihalf.com>
 Signed-off-by: Jan Wrobel <wrr@semihalf.com>
 ---
 
- Kconfig   |    5 +
- Makefile  |    1 
- tqm5200.c |  174 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 180 insertions(+)
+ cm5200.dts |  284 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 284 insertions(+)
 
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index 3ffaa06..7c828eb 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -33,4 +33,9 @@ config PPC_LITE5200
- 	select PPC_MPC5200
- 	default n
- 
-+config PPC_TQM5200
-+	bool "TQM5200 Board"
-+ 	depends on PPC_MULTIPLATFORM && PPC32
-+ 	select PPC_MPC5200
-+ 	default n
- 
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index b91e39c..4997ebf 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -8,5 +8,6 @@ endif
- 
- obj-$(CONFIG_PPC_EFIKA)		+= efika.o
- obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
-+obj-$(CONFIG_PPC_TQM5200)	+= tqm5200.o
- 
- obj-$(CONFIG_PM)		+= mpc52xx_sleep.o mpc52xx_pm.o
-diff --git a/arch/powerpc/platforms/52xx/tqm5200.c b/arch/powerpc/platforms/52xx/tqm5200.c
+diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
 new file mode 100644
-index 0000000..780b79f
+index 0000000..96d2ee4
 --- /dev/null
-+++ b/arch/powerpc/platforms/52xx/tqm5200.c
-@@ -0,0 +1,174 @@
++++ b/arch/powerpc/boot/dts/cm5200.dts
+@@ -0,0 +1,284 @@
 +/*
-+ * TQM5200 board support
++ * CM5200 board Device Tree Source
 + *
-+ * Written by: Grant Likely <grant.likely@secretlab.ca> for lite5200
-+ * Adapted for tqm5200 by: Jan Wrobel <wrr@semihalf.com>
++ * Copyright (C) 2007 Semihalf
++ * Modified for CM5200 by Jan Wrobel <wrr@semihalf.com>
 + *
-+ * Copyright (C) Secret Lab Technologies Ltd. 2006. All rights reserved.
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
++ * Copyright 2006-2007 Secret Lab Technologies Ltd.
++ * Grant Likely <grant.likely@secretlab.ca>
 + *
-+ * Description:
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
 +
-+#undef DEBUG
-+
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/initrd.h>
-+
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/bootinfo.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
-+#include <asm/of_platform.h>
-+
-+#include <asm/mpc52xx.h>
-+
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+static void __init
-+tqm5200_setup_cpu(void)
-+{
-+	struct mpc52xx_gpio __iomem *gpio;
-+	u32 port_config;
-+
-+	/* Map zones */
-+	gpio = mpc52xx_find_and_map("mpc5200-gpio");
-+	if (!gpio) {
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while mapping GPIO register for port config. "
-+			"Expect some abnormal behavior\n");
-+		goto error;
-+	}
-+
-+	/* Set port config */
-+	port_config = in_be32(&gpio->port_config);
-+
-+	port_config &= ~0x00800000;	/* 48Mhz internal, pin is GPIO	*/
-+
-+	port_config &= ~0x00007000;	/* USB port : Differential mode	*/
-+	port_config |=  0x00001000;	/*            USB 1 only	*/
-+
-+	port_config &= ~0x03000000;	/* ATA CS is on csb_4/5		*/
-+	port_config |=  0x01000000;
-+
-+	pr_debug("port_config: old:%x new:%x\n",
-+	         in_be32(&gpio->port_config), port_config);
-+	out_be32(&gpio->port_config, port_config);
-+
-+	/* Unmap zone */
-+error:
-+	iounmap(gpio);
-+}
-+
-+static void __init tqm5200_setup_arch(void)
-+{
-+	struct device_node *np;
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("tqm5200_setup_arch()", 0);
-+
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np) {
-+		unsigned int *fp =
-+		    (int *)of_get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
-+	}
-+
-+	/* CPU & Port mux setup */
-+	mpc52xx_setup_cpu();
-+	tqm5200_setup_cpu();
-+
-+#ifdef CONFIG_PCI
-+	np = of_find_node_by_type(NULL, "pci");
-+	if (np) {
-+		mpc52xx_add_bridge(np);
-+		of_node_put(np);
-+	}
-+#endif
-+
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (initrd_start)
-+		/*
-+		 * We want the proper initrd behavior, i.e., launching of
-+		 * /linuxrc from the initial root file system, and not only
-+		 * mounting it as the normal root file system.
-+		 */
-+		ROOT_DEV = 0x0;
-+	else
-+#endif
-+#ifdef  CONFIG_ROOT_NFS
-+		ROOT_DEV = Root_NFS;
-+#else
-+		ROOT_DEV = Root_HDA1;
-+#endif
-+
-+}
-+
-+void tqm5200_show_cpuinfo(struct seq_file *m)
-+{
-+	struct device_node* np = of_find_all_nodes(NULL);
-+	const char *model = NULL;
-+
-+	if (np)
-+		model = of_get_property(np, "model", NULL);
-+
-+	seq_printf(m, "vendor\t\t:	Freescale Semiconductor\n");
-+	seq_printf(m, "machine\t\t:	%s\n", model ? model : "unknown");
-+
-+	of_node_put(np);
-+}
-+
 +/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
++ * WARNING: Do not depend on this tree layout remaining static just yet.
++ * The MPC5200 device tree conventions are still in flux
++ * Keep an eye on the linuxppc-dev mailing list for more details
 + */
-+static int __init tqm5200_probe(void)
-+{
-+	unsigned long node = of_get_flat_dt_root();
-+	const char *model = of_get_flat_dt_prop(node, "model", NULL);
 +
-+	if (!of_flat_dt_is_compatible(node, "fsl,tqm5200"))
-+		return 0;
-+	pr_debug("%s board found\n", model ? model : "unknown");
++/ {
++	model = "cm5200";
++	compatible = "fsl,cm5200\0generic-mpc5200";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+	return 1;
-+}
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+define_machine(tqm5200) {
-+	.name		= "tqm5200",
-+	.probe		= tqm5200_probe,
-+	.setup_arch	= tqm5200_setup_arch,
-+	.init		= mpc52xx_declare_of_platform_devices,
-+	.init_IRQ	= mpc52xx_init_irq,
-+	.get_irq	= mpc52xx_get_irq,
-+	.show_cpuinfo	= tqm5200_show_cpuinfo,
-+	.calibrate_decr	= generic_calibrate_decr,
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <4000>;		// L1, 16K
++			i-cache-size = <4000>;		// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++			32-bit;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 04000000>;	// 64MB
++	};
++
++	soc5200@f0000000 {
++		model = "fsl,mpc5200b";
++		compatible = "mpc5200";
++		revision = "";			// from bootloader
++		#interrupt-cells = <3>;
++		device_type = "soc";
++		ranges = <0 f0000000 f0010000>;
++		reg = <f0000000 00010000>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
++
++		cdm@200 {
++			compatible = "mpc5200b-cdm\0mpc5200-cdm";
++			reg = <200 38>;
++		};
++
++		mpc5200_pic: pic@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			device_type = "interrupt-controller";
++			compatible = "mpc5200b-pic\0mpc5200-pic";
++			reg = <500 80>;
++			built-in;
++		};
++
++		gpt@600 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <0>;
++			reg = <600 10>;
++			interrupts = <1 9 0>;
++			interrupt-parent = <&mpc5200_pic>;
++			has-wdt;
++		};
++
++		gpt@610 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <1>;
++			reg = <610 10>;
++			interrupts = <1 a 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@620 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <2>;
++			reg = <620 10>;
++			interrupts = <1 b 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@630 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <3>;
++			reg = <630 10>;
++			interrupts = <1 c 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@640 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <4>;
++			reg = <640 10>;
++			interrupts = <1 d 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@650 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <5>;
++			reg = <650 10>;
++			interrupts = <1 e 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@660 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <6>;
++			reg = <660 10>;
++			interrupts = <1 f 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpt@670 {	// General Purpose Timer
++			compatible = "mpc5200b-gpt\0mpc5200-gpt";
++			device_type = "gpt";
++			cell-index = <7>;
++			reg = <670 10>;
++			interrupts = <1 10 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		rtc@800 {	// Real time clock
++			compatible = "mpc5200b-rtc\0mpc5200-rtc";
++			device_type = "rtc";
++			reg = <800 100>;
++			interrupts = <1 5 0 1 6 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpio@b00 {
++			compatible = "mpc5200b-gpio\0mpc5200-gpio";
++			reg = <b00 40>;
++			interrupts = <1 7 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpio-wkup@c00 {
++			compatible = "mpc5200b-gpio-wkup\0mpc5200-gpio-wkup";
++			reg = <c00 40>;
++			interrupts = <1 8 0 0 3 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		spi@f00 {
++			device_type = "spi";
++			compatible = "mpc5200b-spi\0mpc5200-spi";
++			reg = <f00 20>;
++			interrupts = <2 d 0 2 e 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		usb@1000 {
++			device_type = "usb-ohci-be";
++			compatible = "mpc5200b-ohci\0mpc5200-ohci\0ohci-be";
++			reg = <1000 ff>;
++			interrupts = <2 6 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		bestcomm@1200 {
++			device_type = "dma-controller";
++			compatible = "mpc5200b-bestcomm\0mpc5200-bestcomm";
++			reg = <1200 80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 a 0  3 b 0
++			              3 c 0  3 d 0  3 e 0  3 f 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		xlb@1f00 {
++			compatible = "mpc5200b-xlb\0mpc5200-xlb";
++			reg = <1f00 100>;
++		};
++
++		serial@2000 {		// PSC1
++			device_type = "serial";
++			compatible = "mpc5200b-psc-uart\0mpc5200-psc-uart";
++			port-number = <0>;  // Logical port assignment
++			cell-index = <0>;
++			reg = <2000 100>;
++			interrupts = <2 1 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		serial@2200 {		// PSC2
++			device_type = "serial";
++			compatible = "mpc5200-psc-uart";
++			port-number = <1>;  // Logical port assignment
++			cell-index = <1>;
++			reg = <2200 100>;
++			interrupts = <2 2 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		serial@2400 {		// PSC3
++			device_type = "serial";
++			compatible = "mpc5200-psc-uart";
++			port-number = <2>;  // Logical port assignment
++			cell-index = <2>;
++			reg = <2400 100>;
++			interrupts = <2 3 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		serial@2c00 {		// PSC6
++			device_type = "serial";
++			compatible = "mpc5200-psc-uart";
++			port-number = <5>;  // Logical port assignment
++			cell-index = <5>;
++			reg = <2c00 100>;
++			interrupts = <2 4 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		ethernet@3000 {
++			device_type = "network";
++			compatible = "mpc5200b-fec\0mpc5200-fec";
++			reg = <3000 800>;
++			interrupts = <2 5 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		i2c@3d40 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
++			cell-index = <1>;
++			reg = <3d40 40>;
++			interrupts = <2 10 0>;
++			interrupt-parent = <&mpc5200_pic>;
++			fsl5200-clocking;
++		};
++
++		sram@8000 {
++			device_type = "sram";
++			compatible = "mpc5200b-sram\0mpc5200-sram\0sram";
++			reg = <8000 4000>;
++		};
++
++		flash@c000000 {
++			device_type = "rom";
++			compatible = "direct-mapped";
++			reg = <0c000000 02000000>;
++			probe-type = "CFI";
++			bank-width = <2>;
++			partitions = <00000000 00060000
++				00060000 00020000
++				00080000 00020000
++				000a0000 00020000
++				000c0000 00200000
++				002c0000 01b40000
++				01e00000 00200000>;
++			partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
++		};
++	};
 +};
