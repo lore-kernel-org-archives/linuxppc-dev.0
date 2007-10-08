@@ -1,20 +1,17 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7EE8CDDE01
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 22:08:16 +1000 (EST)
-Date: Mon, 8 Oct 2007 16:08:49 +0400
+	by ozlabs.org (Postfix) with ESMTP id B1EFADDF36
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 22:16:12 +1000 (EST)
+Date: Mon, 8 Oct 2007 16:16:47 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 6/7] [POWERPC] mpc8568mds.dts: fix PCI/PCIe nodes
-Message-ID: <20071008120849.GA32540@localhost.localdomain>
+Subject: Re: [PATCH respin 0/7] MPC8568E-MDS related patches
+Message-ID: <20071008121647.GB32540@localhost.localdomain>
 References: <20071005174015.GA11016@localhost.localdomain>
-	<20071005174642.GB32145@localhost.localdomain>
-	<47067ADE.9060306@ru.mvista.com>
-	<20071005180553.GA32405@localhost.localdomain>
-	<EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+	<27C7E568-B28A-4659-803F-9D271B2E1AF6@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
-In-Reply-To: <EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+In-Reply-To: <27C7E568-B28A-4659-803F-9D271B2E1AF6@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,34 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 05, 2007 at 03:58:00PM -0500, Kumar Gala wrote:
+On Fri, Oct 05, 2007 at 05:09:28PM -0500, Kumar Gala wrote:
 >
-> On Oct 5, 2007, at 1:05 PM, Anton Vorontsov wrote:
+> On Oct 5, 2007, at 12:40 PM, Anton Vorontsov wrote:
 >
->> On Fri, Oct 05, 2007 at 09:56:46PM +0400, Sergei Shtylyov wrote:
->>> Hello.
->>>
->>> Anton Vorontsov wrote:
->>>
->>>> Commit 5bece127f0666996ca90772229e00332a34e516c tried to fix
->>>> PCI/PCIe nodes, but actually it broke them even harder. ;-)
->>>
->>>    Of course. But shouldn't those be the subnoses of the "soc" type node?
+>> Hello Kumar,
 >>
->> Nope. PCI's ranges = <>; isn't in the SOC address space.
+>> This is respin of MPC8568E-MDS patches, on top of master branch
+>> as of today.
 >>
->> Valentine Barshak posted a patch titled "[RFC] [PATCH] PowerPC: Add 64-bit
->> phys addr support to 32-bit pci" that started using of_translate_address()
->> for ranges, and of_translate_address() will not work if PCI placed in the
->> SOC node. Not sure if that patch applied or not, though.
+>> If there are no objections against SPI patch, please Ack it, thus
+>> David could pick it up.
 >
-> I'm confused, what's the actual issue with PCI that this patch addresses?
+> I've applied patches 1-5 however I'm not able to get UCC enet working on my 
+> board.
 
-Which patch? Valentine's or mine under the subject? Don't know about the
-former, but mine patch is pretty obvious: your commit
-5bece127f0666996ca90772229e00332a34e516c moved PCI nodes out of soc node,
-but you forgot to change regs = <>, thus instead of e000a000/e0008000,
-kernel used a000/8000 for accessing PCI ccsr registers.
+I wonder how you managed to boot it w/o sixth (PCI) patch in this patch set,
+for me board hanged w/o it.
+
+> Is there something special that has to be done?  (I've got the card 
+> standalone, no MDS backplane).
+
+Nothing special, from what I can remember. Though, double checking switches
+on the board might help.
+
+Also, .config and bootlog would help.
+
+> I'm using the 1.3.0-rc2 u-boot w/o any modifications.
+
+1.2.0-g60174746 here.
+
+> Also, I tried a PCIe e1000 card w/the .dts that's in my tree and that works 
+> w/o any issue.
+
+Strange enough. I'd say it's impossible with your current tree. Maybe you've
+used some stale dtb? Because dts is seriously broken as now, and I can't
+believe that it worked for you. ;-)
+
+Thanks,
 
 -- 
 Anton Vorontsov
