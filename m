@@ -1,29 +1,23 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 77C20DDF30
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 17:53:20 +1000 (EST)
-Received: from pd4mr3so.prod.shaw.ca
-	(pd4mr3so-qfe3.prod.shaw.ca [10.0.141.214]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JPL008CX1WQ0070@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 08 Oct 2007 01:53:14 -0600 (MDT)
-Received: from pn2ml8so.prod.shaw.ca ([10.0.121.152])
-	by pd4mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JPL00JRC1WQ9140@pd4mr3so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 08 Oct 2007 01:53:15 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JPL008RW1WPHUB0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 08 Oct 2007 01:53:13 -0600 (MDT)
-Date: Mon, 08 Oct 2007 01:53:13 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Device tree bindings for Xilinx devices
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0BFEFDDEE6
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 14:37:00 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IekMR-0001ST-Lg
+	for linuxppc-dev@ozlabs.org; Sun, 07 Oct 2007 21:36:55 -0700
+Message-ID: <13090379.post@talk.nabble.com>
+Date: Sun, 7 Oct 2007 21:36:55 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-dev@ozlabs.org
-Message-id: <20071008075127.9887.38702.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Subject: Re: include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or
+	directory
+In-Reply-To: <4705691A.9020509@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <4705691A.9020509@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,90 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
 
-This is a first draft, please review and comment.
 
-On a side node, I think booting-without-of.txt could get really unwieldly
-in the near future.  Perhaps the device tree bindings should be organized
-differently and separated from the functional description of device tree
-usage.  Thoughts?
 
-Cheers,
-g.
+Timur Tabi-3 wrote:
+> 
+> Kumar, this is what I get when I compile your 2.6.24 branch for the 8610:
+> 
+>    CC      arch/powerpc/sysdev/fsl_soc.o
+> In file included from arch/powerpc/sysdev/fsl_soc.c:40:
+> include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or directory
+> make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
+> make: *** [arch/powerpc/sysdev] Error 2
+> 
+> I guess the file /asm/cpm2.h is not present in the kernel source , You
+> need to go through the source and see what asm file is being provided for
+> you to access the communication processor specific register (i assume you
+> are accessing/assigning to processor register) 
+> 
+> Commenting out the "#include <asm/cpm.h>" in cpm2.h makes the compilation 
+> failure go away, but I don't know if that's the proper fix, since the 8610 
+> doesn't have a CPM.
+> 
+> Are u including #include <asm/cpm.h> or <asm/cpm2.h> ???????
+> 
+> Processor registers are memory mapped and you can access it directly by
+> including proper asm file ,and writing to the structure element of the
+> file by  using Pointer to comm processor 
+> 
+> If you could let me know what is the operation that you need to perform on
+> comm process register and which register you need to access then i could
+> be in better position to help you
+> 
+> Misbah 
+> -- 
+> Timur Tabi
+> Linux Kernel Developer @ Freescale
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
+> 
 
- Documentation/powerpc/booting-without-of.txt |   58 ++++++++++++++++++++++++++
- 1 files changed, 58 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 20e0e6c..a6d6056 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1850,6 +1850,64 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    More devices will be defined as this spec matures.
- 
-+   l) Xilinx ML300 Framebuffer
-+
-+   Simple framebuffer device from the ML300 reference design (also on the
-+   ML403 reference design as well as others).
-+
-+   Required properties:
-+    - compatible : Must include "xilinx,ml300-fb"
-+    - reg : offset and length of the framebuffer register set
-+
-+   Optional properties:
-+    - resolution : <xres yres> pixel resolution of framebuffer.  Some
-+                   implementations use a different resolution.  Default
-+                   is <d#640 d#480>
-+    - virt-resolution : <xvirt yvirt> Size of framebuffer in memory.
-+                        Default is <d#1024 d#480>.
-+    - rotate-display : rotate display 180 degrees.
-+    - display-number : Logical number of display
-+
-+   m) Xilinx SystemACE
-+
-+   The Xilinx SystemACE device is used to program FPGAs from an FPGA
-+   bitstream stored on a CF card.  It can also be used as a generic CF
-+   interface device.
-+
-+   Required properties:
-+    - compatible : Must include "xilinx,sysace"
-+    - reg : offset and length of SystemACE register set
-+
-+   Recommended properties:
-+    - interrupt-parent, interrupts : Connection of device irq signal.
-+
-+   Optional properties:
-+    - number : logical number of the SystemACE device based at 0.
-+    - 8-bit (empty) : Set this property if the SystemACE must be in 8 bit mode
-+
-+   n) Xilinx EMAC and Xilinx TEMAC
-+
-+   Xilinx Ethernet devices.  Uses common properties from other Ethernet
-+   devices with the following constraints:
-+   
-+   Required properties:
-+    - compatible : Must include one of: "xilinx,plb-temac",
-+                   "xilinx,plb-emac", "xilinx-opb-emac"
-+    - dma-mode : Must be one of "none", "simple", "sg" (sg == scatter gather)
-+
-+   o) Xilinx Uartlite
-+
-+   Xilinx uartlite devices are simple fixed speed serial ports.  Uartlite
-+   ports should be described in a node with the following properties.
-+
-+   Requred properties:
-+    - compatible : Must include "xilinx,uartlite"
-+    - reg : offset and length of uartlite register set
-+
-+    Recommended properties:
-+    - port-number : logical port number of uartlite device based at 0.
-+    - interrupt-parent, interrupts : Connection of device irq signal.
-+
- VII - Specifying interrupt information for devices
- ===================================================
- 
+-- 
+View this message in context: http://www.nabble.com/include-asm-cpm2.h%3A14%3A21%3A-error%3A-asm-cpm.h%3A-No-such-file-or-directory-tf4571911.html#a13090379
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
