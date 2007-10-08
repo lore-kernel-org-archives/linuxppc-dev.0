@@ -1,23 +1,22 @@
-Return-Path: <vitb@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F09DDDF3E
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 18:09:17 +1000 (EST)
-Date: Mon, 8 Oct 2007 12:08:48 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 6/7] [POWERPC] mpc8568mds.dts: fix PCI/PCIe nodes
-Message-ID: <20071008120848.3dde6199@kernel.crashing.org>
-In-Reply-To: <EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
-References: <20071005174015.GA11016@localhost.localdomain>
-	<20071005174642.GB32145@localhost.localdomain>
-	<47067ADE.9060306@ru.mvista.com>
-	<20071005180553.GA32405@localhost.localdomain>
-	<EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id B3548DDF43
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 18:12:07 +1000 (EST)
+Subject: Re: Where are inb/outb macros?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Misbah khan <misbah_khan@engineer.com>
+In-Reply-To: <13091078.post@talk.nabble.com>
+References: <adf480660710061347l59903ba6vf6b327db674606a9@mail.gmail.com>
+	<1191704881.6414.3.camel@pasglop> <200710070146.51140.arnd@arndb.de>
+	<13091078.post@talk.nabble.com>
+Content-Type: text/plain
+Date: Mon, 08 Oct 2007 18:11:35 +1000
+Message-Id: <1191831095.21971.45.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,51 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Kumar,
 
-On Fri, 5 Oct 2007 15:58:00 -0500
-Kumar Gala wrote:
+On Mon, 2007-10-08 at 00:09 -0700, Misbah khan wrote:
+> inb/outb could be used from the usr space on x86 class PC-computer to access
+> to io ports this is what i assume that you are trying 
+> 
+> You need to compile the program with -O option (expantion of Inline function
+> )
+> 
+> To perform io operation on ports ioprem/iopl system call must be used (To
+> get permissio to perform io operation)
+> 
+> Program must run as root 
+> 
+> on non 86 platform try using /dev/port device file in the application 
 
->=20
-> On Oct 5, 2007, at 1:05 PM, Anton Vorontsov wrote:
->=20
-> > On Fri, Oct 05, 2007 at 09:56:46PM +0400, Sergei Shtylyov wrote:
-> >> Hello.
-> >>
-> >> Anton Vorontsov wrote:
-> >>
-> >>> Commit 5bece127f0666996ca90772229e00332a34e516c tried to fix
-> >>> PCI/PCIe nodes, but actually it broke them even harder. ;-)
-> >>
-> >>    Of course. But shouldn't those be the subnoses of the "soc" =20
-> >> type node?
-> >
-> > Nope. PCI's ranges =3D <>; isn't in the SOC address space.
-> >
-> > Valentine Barshak posted a patch titled "[RFC] [PATCH] PowerPC: Add =20
-> > 64-bit
-> > phys addr support to 32-bit pci" that started using =20
-> > of_translate_address()
-> > for ranges, and of_translate_address() will not work if PCI placed =20
-> > in the
-> > SOC node. Not sure if that patch applied or not, though.
->=20
-> I'm confused, what's the actual issue with PCI that this patch =20
-> addresses?
->=20
-=46rom what I can see, move of the PCI node out of the SoC node, inspired by =
-the recent flame talk about it :)
-I guess pretty soon, we'll have "proper" ranges parsing for pci, that does =
-of_translate_address() and requires
-either tuned-up parent ranges, or residing outside of the SoC node, this is=
- the reason...
+"io ports" don't mean much on non-x86 platforms (or rather can have
+multiple meanings) which is why I'm asking what is he trying to od in
+the first place.
 
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
---=20
-Sincerely, Vitaly
+Ben.
