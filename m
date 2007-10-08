@@ -1,11 +1,12 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20071008161614.221880000@pademelon.sonytel.be>
+Message-Id: <20071008161614.322718000@pademelon.sonytel.be>
 References: <20071008161421.818458000@pademelon.sonytel.be>
-Date: Mon, 08 Oct 2007 18:14:24 +0200
+Date: Mon, 08 Oct 2007 18:14:25 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 3/9] ps3fb: Clean up includes
+Subject: [patch 4/9] ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl()
+	static
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
@@ -20,39 +21,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3fb: Clean up includes
-  
+ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static, as they're no
+(longer) used outside ps3fb.
+
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |   10 +---------
- 1 files changed, 1 insertion(+), 9 deletions(-)
+ drivers/video/ps3fb.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -22,22 +22,14 @@
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/mm.h>
--#include <linux/tty.h>
--#include <linux/slab.h>
--#include <linux/vmalloc.h>
--#include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/console.h>
- #include <linux/ioctl.h>
--#include <linux/notifier.h>
--#include <linux/reboot.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
--
--#include <asm/uaccess.h>
- #include <linux/fb.h>
- #include <linux/init.h>
--#include <asm/time.h>
-+#include <linux/uaccess.h>
+@@ -652,7 +652,7 @@ static int ps3fb_get_vblank(struct fb_vb
+ 	return 0;
+ }
  
- #include <asm/abs_addr.h>
- #include <asm/lv1call.h>
+-int ps3fb_wait_for_vsync(u32 crtc)
++static int ps3fb_wait_for_vsync(u32 crtc)
+ {
+ 	int ret;
+ 	u64 count;
+@@ -667,9 +667,7 @@ int ps3fb_wait_for_vsync(u32 crtc)
+ 	return 0;
+ }
+ 
+-EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+-
+-void ps3fb_flip_ctl(int on, void *data)
++static void ps3fb_flip_ctl(int on, void *data)
+ {
+ 	struct ps3fb_priv *priv = data;
+ 	if (on)
 
 -- 
 With kind regards,
