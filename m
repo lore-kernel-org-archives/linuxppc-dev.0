@@ -1,22 +1,31 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp120.sbc.mail.re3.yahoo.com (smtp120.sbc.mail.re3.yahoo.com
-	[66.196.96.93]) by ozlabs.org (Postfix) with SMTP id F3B93DE01B
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 05:45:07 +1000 (EST)
-Date: Mon, 08 Oct 2007 12:45:11 -0700
-From: David Brownell <david-b@pacbell.net>
-To: vbarshak@ru.mvista.com, galak@kernel.crashing.org
-Subject: Re: [linux-usb-devel] [PATCH] OHCI: add PowerPC 440EP/440EPx support
-References: <20071008142554.GA15175@ru.mvista.com>
-	<20071008150125.26C802393C7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<470A55A2.5050606@ru.mvista.com>
-	<20071008161927.84C601915AE@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-	<7363E251-62FF-4574-9FF7-8E5719012BAD@kernel.crashing.org>
-	<470A6C07.3020805@ru.mvista.com>
-In-Reply-To: <470A6C07.3020805@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-Id: <20071008194511.C14EB19715E@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd4mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 28D8EDDFDC
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 06:38:02 +1000 (EST)
+Received: from pd3mr3so.prod.shaw.ca
+	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JPM00DXS1BC0D60@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 08 Oct 2007 14:38:00 -0600 (MDT)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
+	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JPM0056N1BCVU20@pd3mr3so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 08 Oct 2007 14:38:01 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.133.150])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JPM00C4K1BBDWZ1@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 08 Oct 2007 14:37:59 -0600 (MDT)
+Date: Mon, 08 Oct 2007 14:37:59 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 2/2] Remove empty ppc_md.setup_arch hooks.
+In-reply-to: <20071008203754.12243.1712.stgit@trillian.cg.shawcable.net>
+To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+Message-id: <20071008203759.12243.17881.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20071008203754.12243.1712.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +35,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> >> However, based on one other post, I suspect at least one Freescale
-> >> part will need to declare a chip quirk for this case.
-> > 
-> > Which Freescale part do you think needs this?
->
-> I've looked at drivers/usb/host/Kconfig
-> It seems to be MPC52xx.
-> David, is that the one you mentioned?
+From: Grant Likely <grant.likely@secretlab.ca>
 
-I wasn't the one to mention it.  It was someone else in this thread.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ arch/powerpc/platforms/40x/virtex.c  |    5 -----
+ arch/powerpc/platforms/40x/walnut.c  |    5 -----
+ arch/powerpc/platforms/44x/bamboo.c  |    5 -----
+ arch/powerpc/platforms/44x/ebony.c   |    5 -----
+ arch/powerpc/platforms/44x/sequoia.c |    5 -----
+ 5 files changed, 0 insertions(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/platforms/40x/virtex.c b/arch/powerpc/platforms/40x/virtex.c
+index b52aa94..14bbc32 100644
+--- a/arch/powerpc/platforms/40x/virtex.c
++++ b/arch/powerpc/platforms/40x/virtex.c
+@@ -36,14 +36,9 @@ static int __init virtex_probe(void)
+ 	return 1;
+ }
+ 
+-static void __init virtex_setup_arch(void)
+-{
+-}
+-
+ define_machine(virtex) {
+ 	.name			= "Xilinx Virtex",
+ 	.probe			= virtex_probe,
+-	.setup_arch		= virtex_setup_arch,
+ 	.init_IRQ		= xilinx_intc_init_tree,
+ 	.get_irq		= xilinx_intc_get_irq,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/platforms/40x/walnut.c b/arch/powerpc/platforms/40x/walnut.c
+index c17fdf2..eb0c136 100644
+--- a/arch/powerpc/platforms/40x/walnut.c
++++ b/arch/powerpc/platforms/40x/walnut.c
+@@ -53,14 +53,9 @@ static int __init walnut_probe(void)
+ 	return 1;
+ }
+ 
+-static void __init walnut_setup_arch(void)
+-{
+-}
+-
+ define_machine(walnut) {
+ 	.name			= "Walnut",
+ 	.probe			= walnut_probe,
+-	.setup_arch		= walnut_setup_arch,
+ 	.progress		= udbg_progress,
+ 	.init_IRQ		= uic_init_tree,
+ 	.get_irq		= uic_get_irq,
+diff --git a/arch/powerpc/platforms/44x/bamboo.c b/arch/powerpc/platforms/44x/bamboo.c
+index 9bc45de..470e1a3 100644
+--- a/arch/powerpc/platforms/44x/bamboo.c
++++ b/arch/powerpc/platforms/44x/bamboo.c
+@@ -50,14 +50,9 @@ static int __init bamboo_probe(void)
+ 	return 1;
+ }
+ 
+-static void __init bamboo_setup_arch(void)
+-{
+-}
+-
+ define_machine(bamboo) {
+ 	.name 				= "Bamboo",
+ 	.probe 				= bamboo_probe,
+-	.setup_arch 		= bamboo_setup_arch,
+ 	.progress 			= udbg_progress,
+ 	.init_IRQ 			= uic_init_tree,
+ 	.get_irq 			= uic_get_irq,
+diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
+index 5a7fec8..40e18fc 100644
+--- a/arch/powerpc/platforms/44x/ebony.c
++++ b/arch/powerpc/platforms/44x/ebony.c
+@@ -57,14 +57,9 @@ static int __init ebony_probe(void)
+ 	return 1;
+ }
+ 
+-static void __init ebony_setup_arch(void)
+-{
+-}
+-
+ define_machine(ebony) {
+ 	.name			= "Ebony",
+ 	.probe			= ebony_probe,
+-	.setup_arch		= ebony_setup_arch,
+ 	.progress		= udbg_progress,
+ 	.init_IRQ		= uic_init_tree,
+ 	.get_irq		= uic_get_irq,
+diff --git a/arch/powerpc/platforms/44x/sequoia.c b/arch/powerpc/platforms/44x/sequoia.c
+index 7d0d9d5..30700b3 100644
+--- a/arch/powerpc/platforms/44x/sequoia.c
++++ b/arch/powerpc/platforms/44x/sequoia.c
+@@ -50,14 +50,9 @@ static int __init sequoia_probe(void)
+ 	return 1;
+ }
+ 
+-static void __init sequoia_setup_arch(void)
+-{
+-}
+-
+ define_machine(sequoia) {
+ 	.name 				= "Sequoia",
+ 	.probe 				= sequoia_probe,
+-	.setup_arch			= sequoia_setup_arch,
+ 	.progress 			= udbg_progress,
+ 	.init_IRQ 			= uic_init_tree,
+ 	.get_irq 			= uic_get_irq,
