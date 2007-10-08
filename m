@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 8 Oct 2007 11:50:22 +1000
+Date: Mon, 8 Oct 2007 11:53:17 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 04/15] [POWERPC] CM5200 DTS
-Message-ID: <20071008015021.GA12499@localhost.localdomain>
-References: <47075FA7.3030108@semihalf.com> <4708C112.9020506@semihalf.com>
+Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
+Message-ID: <20071008015316.GB12499@localhost.localdomain>
+References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4708C112.9020506@semihalf.com>
+In-Reply-To: <4708C22D.5060805@semihalf.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,31 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 07, 2007 at 01:20:50PM +0200, Marian Balakowicz wrote:
+On Sun, Oct 07, 2007 at 01:25:33PM +0200, Marian Balakowicz wrote:
 > 
-> Add device tree source file for CM5200 board.
+> Add device tree source file for Motion-PRO board.
 > 
-> Signed-off-by Marian Balakowicz <m8@semihalf.com>
-> Signed-off-by: Jan Wrobel <wrr@semihalf.com>
+> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
 > ---
 > 
->  cm5200.dts |  284 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 284 insertions(+)
+>  motionpro.dts |  334 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 334 insertions(+)
 > 
-> diff --git a/arch/powerpc/boot/dts/cm5200.dts b/arch/powerpc/boot/dts/cm5200.dts
+> diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
 > new file mode 100644
-> index 0000000..96d2ee4
+> index 0000000..4b197c8
 > --- /dev/null
-> +++ b/arch/powerpc/boot/dts/cm5200.dts
-> @@ -0,0 +1,284 @@
+> +++ b/arch/powerpc/boot/dts/motionpro.dts
+> @@ -0,0 +1,334 @@
 > +/*
-> + * CM5200 board Device Tree Source
+> + * Motion-PRO board Device Tree Source, based on Lite5200B DTS.
 > + *
 > + * Copyright (C) 2007 Semihalf
-> + * Modified for CM5200 by Jan Wrobel <wrr@semihalf.com>
+> + * Modified for CM5200 by Marian Balakowicz <m8@semihalf.com>
 > + *
 > + * Copyright 2006-2007 Secret Lab Technologies Ltd.
 > + * Grant Likely <grant.likely@secretlab.ca>
+> + *
+> + * Copyright (C) 2007 DENX Software Engineering
 > + *
 > + * This program is free software; you can redistribute  it and/or modify it
 > + * under  the terms of  the GNU General  Public License as published by the
@@ -57,69 +58,36 @@ On Sun, Oct 07, 2007 at 01:20:50PM +0200, Marian Balakowicz wrote:
 > + */
 > +
 > +/ {
-> +	model = "cm5200";
-> +	compatible = "fsl,cm5200\0generic-mpc5200";
-
-dtc now supports the syntax "fsl,cm5200", "generic-mpc5200" so you
-don't need the ugly inline \0.
-
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,5200@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-line-size = <20>;
-> +			d-cache-size = <4000>;		// L1, 16K
-> +			i-cache-size = <4000>;		// L1, 16K
-> +			timebase-frequency = <0>;	// from bootloader
-> +			bus-frequency = <0>;		// from bootloader
-> +			clock-frequency = <0>;		// from bootloader
-> +			32-bit;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <00000000 04000000>;	// 64MB
-> +	};
-> +
-> +	soc5200@f0000000 {
-> +		model = "fsl,mpc5200b";
-> +		compatible = "mpc5200";
-> +		revision = "";			// from bootloader
-> +		#interrupt-cells = <3>;
-> +		device_type = "soc";
-> +		ranges = <0 f0000000 f0010000>;
-> +		reg = <f0000000 00010000>;
-> +		bus-frequency = <0>;		// from bootloader
-> +		system-frequency = <0>;		// from bootloader
-
 [snip]
-> +		flash@c000000 {
-> +			device_type = "rom";
-> +			compatible = "direct-mapped";
-> +			reg = <0c000000 02000000>;
-> +			probe-type = "CFI";
-> +			bank-width = <2>;
-> +			partitions = <00000000 00060000
-> +				00060000 00020000
-> +				00080000 00020000
-> +				000a0000 00020000
-> +				000c0000 00200000
-> +				002c0000 01b40000
-> +				01e00000 00200000>;
-> +			partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
-> +		};
+> +	kollmorgen {
+> +		device_type = "kollmorgen";
+> +		compatible = "kollmorgen";
+> +		reg = <50000000 ffff>;
+> +		interrupts = <1 1 0>;
+> +		interrupt-parent = <&mpc5200_pic>;
+> +	};
+> +	cpld {
+> +		device_type = "cpld";
+> +		compatible = "cpld";
+> +		reg = <50010000 ffff>;
+> +	};
+> +	anybus {
+> +		device_type = "anybus";
+> +		compatible = "anybus";
+> +		reg = <50020000 ffff>;
+> +	};
+> +	pro_module_general {
+> +		device_type = "pro_module_general";
+> +		compatible = "pro_module_general";
+> +		reg = <50020000 3>;
+> +	};
+> +	pro_module_dio {
+> +		device_type = "pro_module_dio";
+> +		compatible = "pro_module_dio";
+> +		reg = <50020800 2>;
+> +	};
 
-First, this is the old flash binding, please use the new one.
-
-Second, is the flash really part of the SoC?
+Surely there must be some sort of bus controller above these devices..?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
