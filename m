@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C0BEDE009
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 05:15:23 +1000 (EST)
-Message-ID: <470A81BC.5020203@freescale.com>
-Date: Mon, 08 Oct 2007 14:15:08 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 02BE2DDFC4
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 05:29:09 +1000 (EST)
+Date: Mon, 8 Oct 2007 14:34:04 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 2/3] [POWERPC] Add AMCC Kilauea eval board support to
+	platforms/40x
+Message-ID: <20071008193404.GA10348@lixom.net>
+References: <200710081108.51625.sr@denx.de>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC][PATCH] Move TASK_SIZE to 0xc0000000 for ppc32
-References: <Pine.LNX.4.64.0710081242280.10079@blarg.am.freescale.net>
-In-Reply-To: <Pine.LNX.4.64.0710081242280.10079@blarg.am.freescale.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Pantelis Antoniou <panto@intracom.gr>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710081108.51625.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,23 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Guys,
-> 
-> Here's a cut at a patch that cleans up the TASK_SIZE issue.  We now have
-> TASK_SIZE @ 0xc0000000 for everything except PREP and use PAGE_OFFSET in
-> SW TLB handlers.  I'm assuming 8xx will get a cleanup patch from
-> PAGE_OFFSET testing (Dan :).
+Hi,
 
-I'd rather this patch exclude 8xx along with PReP for now; the 8xx TLB 
-handlers could be made to accept arbitrary task sizes, but not without 
-slightly slowing them down (not that they're currently optimal -- IIUC, 
-using the hardware tablewalk assist is expensive due to serialization on 
-mtspr, and it doesn't really do anything that rlwimi can't do).  I'm not 
-sure it's worth it -- does anyone really need more than 2GB userspace on 
-an 8xx?
+On Mon, Oct 08, 2007 at 11:08:51AM +0200, Stefan Roese wrote:
+> This patch adds basic support for the new 405EX and the AMCC eval board
+> Kilauea to arch/powerpc.
 
-At the very least, we should have the 8xx patch in place before turning 
-it on.
+[...]
 
--Scott
+> +config KILAUEA
+> +	bool "Kilauea"
+> +	depends on 40x
+> +	default y
+> +	select 405EX
+> +	help
+> +	  This option enables support for the AMCC PPC405EX evaluation board.
+> +
+>  #config REDWOOD_5
+>  #	bool "Redwood-5"
+>  #	depends on 40x
+> @@ -89,14 +97,17 @@ config 403GCX
+>  	#depends on OAK
+>  	select IBM405_ERR51
+>  
+> +config 405EP
+> +	bool
+> +
+> +config 405EX
+> +	bool
+> +
+
+Do you really need config options for 405EP/EX? I don't seem them used anywhere
+else in the code (and it's also contradictory to the whole new multiplatform way
+of looking at stuff :).
+
+I know the 405/440 is still somewhat #ifdef:ed on the cpu here and there, but since
+this doesn't add any such code I don't see a need for the config options?
+
+
+-Olof
