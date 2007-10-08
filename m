@@ -2,22 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 586B4DDF17
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 23:30:59 +1000 (EST)
-In-Reply-To: <B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
+	by ozlabs.org (Postfix) with ESMTP id 24E76DDF33
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 23:31:30 +1000 (EST)
+In-Reply-To: <1191791123.6392.0.camel@pasglop>
 References: <C2771B73-A555-4119-AC21-1441D4CC2125@freescale.com>
 	<18184.23379.478676.911097@cargo.ozlabs.ibm.com>
 	<796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
-	<B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
+	<1191791123.6392.0.camel@pasglop>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CA6DD911-5385-4198-B374-DE4BB75563FB@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <94E2E7A0-FFCA-4F08-9A9C-AA62CAE63F63@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: TASK_SIZE default 0x80000000 ?
-Date: Mon, 8 Oct 2007 08:31:04 -0500
-To: Dan Malek <dan@embeddedalley.com>
+Date: Mon, 8 Oct 2007 08:31:40 -0500
+To: benh@au1.ibm.com
 Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Herrenschmidt <benh@au1.ibm.com>,
 	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,24 +28,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 7, 2007, at 1:35 PM, Dan Malek wrote:
+On Oct 7, 2007, at 4:05 PM, Benjamin Herrenschmidt wrote:
 
 >
-> On Oct 7, 2007, at 8:02 AM, Kumar Gala wrote:
->
+>> Can you explain (a) further -- I'm assuming the BAT mapping is 1:1
+>> for that region?
+>>
+>> For (b) it looks like:
+>> * 40x, 44x, fsl-booke compare against TASK_SIZE in their software
+>> handlers.
+>> * 8xx still tests 0x80000000
+>> * 6xx (603) compares against KERNELBASE
+>>
 >> It would seem like we should set the default on 8xx & PReP to
->> 0x80000000 and not allow it to be modified
+>> 0x80000000 and not allow it to be modified since that will break the
+>> world and for everything else move it to match KERNELBASE.  Any
+>> issues with that?
 >
-> For as much as this has been discussed in the past,
-> I don't know why the 8xx doesn't check KERNEL_BASE
-> and work properly with the options.  There is no reason
-> this can't work.  The history is I wrote the tlb handlers
-> to test the MS bit due to a hardcoded address, not that
-> the address is hardcoded because I wanted to just
-> test a bit.  Unlike PReP, there is no reason to
-> disallow modification, if this test was changed.
+> The proper value is neither :-)
+>
+> It should be compared against PAGE_OFFSET.
 
-Ok, I'll work up a patch for 8xx to test against PAGE_OFFSET (as benh  
-suggested).
+I'll work up a patch to switch us to testing PAGE_OFFSET instead.
 
 - k
