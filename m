@@ -1,24 +1,11 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail172-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0618CDDF86
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 09:36:48 +1000 (EST)
-Message-ID: <470ABEF8.4030508@am.sony.com>
-Date: Mon, 08 Oct 2007 16:36:24 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Ranulf Doswell <ralf@ranulf.net>
-Subject: Re: [patch 6/6] PS3: Add os-area database routines
-References: <20071006213542.311447584@am.sony.com>	
-	<20071006213542.954029915@am.sony.com>	
-	<18a15270710080648x3b5f1135meea3d7b048a1a543@mail.gmail.com>	
-	<470A6E4E.5090009@am.sony.com>
-	<18a15270710081559m3236126r85f797718300756f@mail.gmail.com>
-In-Reply-To: <18a15270710081559m3236126r85f797718300756f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18186.50261.275896.847277@cargo.ozlabs.ibm.com>
+Date: Tue, 9 Oct 2007 09:59:17 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Prevent decrementer clockevents from firing early
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +15,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ranulf Doswell wrote:
-> On 08/10/2007, *Geoff Levand* <geoffrey.levand@am.sony.com
-> <mailto:geoffrey.levand@am.sony.com>> wrote:
-> 
->     > How do we go about claiming one of these OS_AREA_DB_OWNER_ keys? I'd
->     > very much like to use this functionality in my python-ps3 games
->     library.
-> 
->     It sounds like you should be storing your info in the file system like
->     all other applications do.
-> 
-> 
-> I'd agree that for large amounts of application specific data, the
-> filesystem is the correct approach.
-> 
-> However, in this case the only data required is a single identifier used
-> to identify one PS3 from another, and in fact this single 64-bit token
-> can be shared amongst many other applications that require the same
-> function - certainly I intend to expose it in a common way in my games
-> library's API for all users of the library.
-> 
-> In my particular case, my bootable CD image does not have any other use
-> for a filesystem on disk beyond the initrd image on the CD-ROM; this is
-> important because some PS3s may be formatted as 100% GameOS. All that is
-> needed is to write the standard kboot image to flash so that it is able
-> to bootstrap the CD image.
-> 
-> As the PS3 has flash available and you are adding a mechanism for
-> storing very small bits of data in the flash, it seems silly not to use
-> it and attempt instead to write my own incompatible database format to
-> store this in the flash memory. Your database also has the added
-> protection of not being overwritten when the loader is re-flashed, as it
-> is protected by the kernel.
-> 
-> If you agree in principle that one of these identifiers can be allocated
-> to this purpose, I'm happy to write and submit a patch that exposes the
-> get/set system ID functionality to userland, whilst internally using
-> your database. This could also allow for some of the bits to be used as
-> check bits to ensure data validity.
+On old powermacs, we sometimes set the decrementer to 1 in order to
+trigger a decrementer interrupt, which we use to handle an interrupt
+that was pending at the time when it was re-enabled.  This was causing
+the decrementer clock event device to call the event function for the
+next event early, which was causing problems when high-res timers were
+not enabled.
 
+This fixes the problem by recording the timebase value at which the
+next event should occur, and checking the current timebase against the
+recorded value in timer_interrupt.  If it isn't time for the next
+event, it just reprograms the decrementer and returns.
 
-This feature is not intended for general application use.  If the user
-wants to store data, then they should setup the system with a writable
-filesystem.
+This also subtracts 1 from the value stored into the decrementer,
+which is appropriate because the decrementer interrupts on the
+transition from 0 to -1, not when the decrementer reaches 0.
 
--Geoff
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index d20947c..1481e6f 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -118,6 +118,7 @@ static struct clock_event_device decrementer_clockevent = {
+ 
+ static DEFINE_PER_CPU(struct clock_event_device, decrementers);
+ void init_decrementer_clockevent(void);
++static DEFINE_PER_CPU(u64, decrementer_next_tb);
+ 
+ #ifdef CONFIG_PPC_ISERIES
+ static unsigned long __initdata iSeries_recal_titan;
+@@ -541,6 +542,7 @@ void timer_interrupt(struct pt_regs * regs)
+ 	struct pt_regs *old_regs;
+ 	int cpu = smp_processor_id();
+ 	struct clock_event_device *evt = &per_cpu(decrementers, cpu);
++	u64 now;
+ 
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continuue to take decrementer exceptions */
+@@ -551,6 +553,14 @@ void timer_interrupt(struct pt_regs * regs)
+ 		do_IRQ(regs);
+ #endif
+ 
++	now = get_tb();
++	if (now < per_cpu(decrementer_next_tb, cpu)) {
++		/* not time for this event yet */
++		now = per_cpu(decrementer_next_tb, cpu) - now;
++		if (now <= DECREMENTER_MAX)
++			set_dec((unsigned int)now - 1);
++		return;
++	}
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
+ 
+@@ -797,6 +807,10 @@ void __init clocksource_init(void)
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev)
+ {
++	__get_cpu_var(decrementer_next_tb) = get_tb() + evt;
++	/* The decrementer interrupts on the 0 -> -1 transition */
++	if (evt)
++		--evt;
+ 	set_dec(evt);
+ 	return 0;
+ }
