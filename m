@@ -2,20 +2,20 @@ Return-Path: <sha@pengutronix.de>
 Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
 	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3AD79DDEED
+	by ozlabs.org (Postfix) with ESMTP id A6451DDF0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 Oct 2007 18:48:27 +1000 (EST)
-Date: Mon, 8 Oct 2007 10:48:20 +0200
+	Mon,  8 Oct 2007 19:01:40 +1000 (EST)
+Date: Mon, 8 Oct 2007 11:01:35 +0200
 From: Sascha Hauer <s.hauer@pengutronix.de>
 To: Juergen Beisert <jbe@pengutronix.de>
 Subject: Re: [RFC PATCH v0.1] net driver: mpc52xx fec
-Message-ID: <20071008084820.GA11231@pengutronix.de>
+Message-ID: <20071008090135.GB11231@pengutronix.de>
 References: <20070810095153.GC13994@moe.telargo.com>
 	<9e4733910709271112y100e55e8q100336ce95acaf3f@mail.gmail.com>
 	<46FBF9B7.9010007@freescale.com>
 	<200709281112.18480.jbe@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <200709281112.18480.jbe@pengutronix.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,11 +28,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
 On Fri, Sep 28, 2007 at 11:12:17AM +0200, Juergen Beisert wrote:
-> I tried with in_atomic(). The BUG report is gone, but the problem still 
-> exists. 
 > 
 > While network stress testing: 
 > 
@@ -49,48 +45,44 @@ On Fri, Sep 28, 2007 at 11:12:17AM +0200, Juergen Beisert wrote:
 > But the serial console is still working. I'm not sure if the RT-Preempt patch 
 > *causes* this behavior or only *discover* it. Any idea?
 
-We finally solved this problem. It has nothing to do with locking
-though. The problem is that the bcom engine was not reenabled after
-resetting the fec. The following patch solves this.
+While the previous patch I sent fixed the reset path for the fec
+controller this patch makes sure the chip does not have to be resetted.
+Problem was that we ran out of receive buffers when we nmapped our
+board (nmap sends lots of small packages in a short period of time).
+By increasing the number of rx buffers this problem does not appear
+anymore.
+This patch produces a significant memory overhead to the driver of about
+340k, so we might want to have this configurable as a module parameter.
+Let me know what the preferred way is, I can update the patch
+accordingly.
+
+Sascha
 
 
-Reenable the bestcom engine after resetting the mpc52xx fec
-controller.
+Increase the number of RX packets in the fec_mpc52xx driver. This is
+necessary to no run out of rx packets when lots of small packets arrive
+in short time (for example when nmapping the board)
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
 ---
- drivers/net/fec_mpc52xx/fec.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/fec_mpc52xx/fec.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/net/fec_mpc52xx/fec.c
+Index: linux-2.6/drivers/net/fec_mpc52xx/fec.h
 ===================================================================
---- linux-2.6.orig/drivers/net/fec_mpc52xx/fec.c
-+++ linux-2.6/drivers/net/fec_mpc52xx/fec.c
-@@ -788,6 +788,9 @@ static void fec_reset(struct net_device 
+--- linux-2.6.orig/drivers/net/fec_mpc52xx/fec.h
++++ linux-2.6/drivers/net/fec_mpc52xx/fec.h
+@@ -19,7 +19,7 @@
+ /* Tunable constant */
+ /* FEC_RX_BUFFER_SIZE includes 4 bytes for CRC32 */
+ #define FEC_RX_BUFFER_SIZE	1522	/* max receive packet size */
+-#define FEC_RX_NUM_BD		64
++#define FEC_RX_NUM_BD		256
+ #define FEC_TX_NUM_BD		64
  
- 	fec_alloc_rx_buffers(priv->rx_dmatsk);
- 
-+	bcom_enable(priv->rx_dmatsk);
-+	bcom_enable(priv->tx_dmatsk);
-+
- 	fec_start(dev);
- }
- 
+ #define FEC_RESET_DELAY		50 	/* uS */
 
-
-> 
-> Juergen
-> -- 
-> Dipl.-Ing. Juergen Beisert | http://www.pengutronix.de
->  Pengutronix - Linux Solutions for Science and Industry
->     Handelsregister: Amtsgericht Hildesheim, HRA 2686
->          Vertretung Sued/Muenchen, Germany
->    Phone: +49-8766-939 228 |  Fax: +49-5121-206917-9
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 -- 
 Pengutronix - Linux Solutions for Science and Industry
 Entwicklungszentrum Nord     http://www.pengutronix.de
