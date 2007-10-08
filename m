@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B028EDDFE7
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 05:41:45 +1000 (EST)
-In-Reply-To: <fa686aa40710081203k13f921dcm4542299c0ecb401@mail.gmail.com>
-References: <20071008151254.7777.38512.stgit@trillian.cg.shawcable.net>
-	<D6497F34-ECE1-481E-B969-E7DDC60BAAFD@kernel.crashing.org>
-	<fa686aa40710081203k13f921dcm4542299c0ecb401@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <27C642CB-ACC0-4E3E-85AA-8319F56364EB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Eval boards should not need to mess with ROOT_DEV
-Date: Mon, 8 Oct 2007 14:41:54 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Return-Path: <david-b@pacbell.net>
+Received: from smtp120.sbc.mail.re3.yahoo.com (smtp120.sbc.mail.re3.yahoo.com
+	[66.196.96.93]) by ozlabs.org (Postfix) with SMTP id F3B93DE01B
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 05:45:07 +1000 (EST)
+Date: Mon, 08 Oct 2007 12:45:11 -0700
+From: David Brownell <david-b@pacbell.net>
+To: vbarshak@ru.mvista.com, galak@kernel.crashing.org
+Subject: Re: [linux-usb-devel] [PATCH] OHCI: add PowerPC 440EP/440EPx support
+References: <20071008142554.GA15175@ru.mvista.com>
+	<20071008150125.26C802393C7@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<470A55A2.5050606@ru.mvista.com>
+	<20071008161927.84C601915AE@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+	<7363E251-62FF-4574-9FF7-8E5719012BAD@kernel.crashing.org>
+	<470A6C07.3020805@ru.mvista.com>
+In-Reply-To: <470A6C07.3020805@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20071008194511.C14EB19715E@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,45 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 8, 2007, at 2:03 PM, Grant Likely wrote:
-
-> On 10/8/07, Kumar Gala <galak@kernel.crashing.org> wrote:
->>
->> On Oct 8, 2007, at 10:12 AM, Grant Likely wrote:
->>
->>> From: Grant Likely <grant.likely@secretlab.ca>
->>>
->>> I can't see a good reason for eval board platform code to mess with
->>> the
->>> ROOT_DEV value instead of using the default behaviour (so I'm  
->>> writing
->>> this patch to see if anyone will clue me in).
->>>
->>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->>> ---
->>>
->>>  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
->>>  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
->>>  arch/powerpc/platforms/82xx/mpc82xx_ads.c    |    6 ------
->>>  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
->>>  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    2 --
->>>  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
->>>  6 files changed, 0 insertions(+), 41 deletions(-)
->>
->> FYI, 82xx_ads and 885ads don't have this issue in my tree based on
->> fixes from Scott.
+> >> However, based on one other post, I suspect at least one Freescale
+> >> part will need to declare a chip quirk for this case.
+> > 
+> > Which Freescale part do you think needs this?
 >
-> So, if I respin this patch to exclude those two platforms, will you
-> merge it?  (Efika and Lite5200 only have it because they were cloned
-> from CHRP.
->
-> Powermac and pseries also do this weirdness.  Should it be removed
-> from there too?
+> I've looked at drivers/usb/host/Kconfig
+> It seems to be MPC52xx.
+> David, is that the one you mentioned?
 
-We need benh to make a comment about powermac.
-
-I think its ok to remove everywhere but we should see if he has any  
-issue.
-
-- k
+I wasn't the one to mention it.  It was someone else in this thread.
