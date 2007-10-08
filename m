@@ -1,23 +1,24 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23F97DDF30
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 22:52:39 +1000 (EST)
-Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l98CpPtt006248
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Oct 2007 16:51:25 +0400
-Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l98CpP9J006245
-	for linuxppc-dev@ozlabs.org; Mon, 8 Oct 2007 16:51:25 +0400
-Date: Mon, 8 Oct 2007 16:51:24 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC PCI: add 64-bit physical address support to
-	setup_indirect_pci.
-Message-ID: <20071008125124.GA6225@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTP id 586B4DDF17
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 23:30:59 +1000 (EST)
+In-Reply-To: <B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
+References: <C2771B73-A555-4119-AC21-1441D4CC2125@freescale.com>
+	<18184.23379.478676.911097@cargo.ozlabs.ibm.com>
+	<796C20BF-1592-4F07-B83B-5EA35CADBA01@kernel.crashing.org>
+	<B108919F-98D7-45B0-BEB0-48D345F0BE4B@embeddedalley.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CA6DD911-5385-4198-B374-DE4BB75563FB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: TASK_SIZE default 0x80000000 ?
+Date: Mon, 8 Oct 2007 08:31:04 -0500
+To: Dan Malek <dan@embeddedalley.com>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 64-bit physical address support to setup_indirect_pci().
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/sysdev/indirect_pci.c |    6 ++++--
- include/asm-powerpc/pci-bridge.h   |    3 ++-
- 2 files changed, 6 insertions(+), 3 deletions(-)
+On Oct 7, 2007, at 1:35 PM, Dan Malek wrote:
 
-diff -pruN linux-2.6.orig/arch/powerpc/sysdev/indirect_pci.c linux-2.6/arch/powerpc/sysdev/indirect_pci.c
---- linux-2.6.orig/arch/powerpc/sysdev/indirect_pci.c	2007-10-08 16:29:54.000000000 +0400
-+++ linux-2.6/arch/powerpc/sysdev/indirect_pci.c	2007-10-08 16:45:40.000000000 +0400
-@@ -149,9 +149,11 @@ static struct pci_ops indirect_pci_ops =
- };
- 
- void __init
--setup_indirect_pci(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data, u32 flags)
-+setup_indirect_pci(struct pci_controller* hose,
-+		   resource_size_t cfg_addr,
-+		   resource_size_t cfg_data, u32 flags)
- {
--	unsigned long base = cfg_addr & PAGE_MASK;
-+	resource_size_t base = cfg_addr & PAGE_MASK;
- 	void __iomem *mbase;
- 
- 	mbase = ioremap(base, PAGE_SIZE);
-diff -pruN linux-2.6.orig/include/asm-powerpc/pci-bridge.h linux-2.6/include/asm-powerpc/pci-bridge.h
---- linux-2.6.orig/include/asm-powerpc/pci-bridge.h	2007-10-08 16:30:41.000000000 +0400
-+++ linux-2.6/include/asm-powerpc/pci-bridge.h	2007-10-08 16:45:40.000000000 +0400
-@@ -98,7 +98,8 @@ extern int early_find_capability(struct 
- 				 int dev_fn, int cap);
- 
- extern void setup_indirect_pci(struct pci_controller* hose,
--			       u32 cfg_addr, u32 cfg_data, u32 flags);
-+			       resource_size_t cfg_addr,
-+			       resource_size_t cfg_data, u32 flags);
- extern void setup_grackle(struct pci_controller *hose);
- extern void __init update_bridge_resource(struct pci_dev *dev,
- 					  struct resource *res);
+>
+> On Oct 7, 2007, at 8:02 AM, Kumar Gala wrote:
+>
+>> It would seem like we should set the default on 8xx & PReP to
+>> 0x80000000 and not allow it to be modified
+>
+> For as much as this has been discussed in the past,
+> I don't know why the 8xx doesn't check KERNEL_BASE
+> and work properly with the options.  There is no reason
+> this can't work.  The history is I wrote the tlb handlers
+> to test the MS bit due to a hardcoded address, not that
+> the address is hardcoded because I wanted to just
+> test a bit.  Unlike PReP, there is no reason to
+> disallow modification, if this test was changed.
+
+Ok, I'll work up a patch for 8xx to test against PAGE_OFFSET (as benh  
+suggested).
+
+- k
