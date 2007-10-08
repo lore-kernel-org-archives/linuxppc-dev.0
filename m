@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.186])
-	by ozlabs.org (Postfix) with ESMTP id E13D7DE107
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 17:54:16 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so640756rvf
-	for <linuxppc-dev@ozlabs.org>; Mon, 08 Oct 2007 00:54:16 -0700 (PDT)
-Message-ID: <fa686aa40710080054l4099c78cxb4817c413696e569@mail.gmail.com>
-Date: Mon, 8 Oct 2007 01:54:15 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: [POWERPC 03/15] [POWERPC] TQM5200 board support
-In-Reply-To: <20071008074409.5A6BE2486E@gemini.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40710072321g3494b243w341e2b09117c3695@mail.gmail.com>
-	<20071008074409.5A6BE2486E@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, tech-denx@semihalf.com,
-	Detlev Zundel <dzu@denx.de>, Marian Balakowicz <m8@semihalf.com>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4F09DDDF3E
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 18:09:17 +1000 (EST)
+Date: Mon, 8 Oct 2007 12:08:48 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 6/7] [POWERPC] mpc8568mds.dts: fix PCI/PCIe nodes
+Message-ID: <20071008120848.3dde6199@kernel.crashing.org>
+In-Reply-To: <EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+References: <20071005174015.GA11016@localhost.localdomain>
+	<20071005174642.GB32145@localhost.localdomain>
+	<47067ADE.9060306@ru.mvista.com>
+	<20071005180553.GA32405@localhost.localdomain>
+	<EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/8/07, Wolfgang Denk <wd@denx.de> wrote:
-> In message <fa686aa40710072321g3494b243w341e2b09117c3695@mail.gmail.com> you wrote:
-> >
-> > > +       port_config &= ~0x03000000;     /* ATA CS is on csb_4/5         */
-> > > +       port_config |=  0x01000000;
-> >
-> > Are you *sure* you want this?  You should only be touching port_config
-> > if firmware fails to set it up correctly.  Don't blindly copy what was
-> > done for the lite5200.
-> >
-> > Lite5200 touches it because firmware does *not* do the right thing at
-> > the moment.
->
-> Why don't we fix it in U-Boot, then, and get rid of this in Linux?
+Hello Kumar,
 
-Mostly because I haven't gotten to it yet.  :-/
+On Fri, 5 Oct 2007 15:58:00 -0500
+Kumar Gala wrote:
 
-g.
+>=20
+> On Oct 5, 2007, at 1:05 PM, Anton Vorontsov wrote:
+>=20
+> > On Fri, Oct 05, 2007 at 09:56:46PM +0400, Sergei Shtylyov wrote:
+> >> Hello.
+> >>
+> >> Anton Vorontsov wrote:
+> >>
+> >>> Commit 5bece127f0666996ca90772229e00332a34e516c tried to fix
+> >>> PCI/PCIe nodes, but actually it broke them even harder. ;-)
+> >>
+> >>    Of course. But shouldn't those be the subnoses of the "soc" =20
+> >> type node?
+> >
+> > Nope. PCI's ranges =3D <>; isn't in the SOC address space.
+> >
+> > Valentine Barshak posted a patch titled "[RFC] [PATCH] PowerPC: Add =20
+> > 64-bit
+> > phys addr support to 32-bit pci" that started using =20
+> > of_translate_address()
+> > for ranges, and of_translate_address() will not work if PCI placed =20
+> > in the
+> > SOC node. Not sure if that patch applied or not, though.
+>=20
+> I'm confused, what's the actual issue with PCI that this patch =20
+> addresses?
+>=20
+=46rom what I can see, move of the PCI node out of the SoC node, inspired by =
+the recent flame talk about it :)
+I guess pretty soon, we'll have "proper" ranges parsing for pci, that does =
+of_translate_address() and requires
+either tuned-up parent ranges, or residing outside of the SoC node, this is=
+ the reason...
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+--=20
+Sincerely, Vitaly
