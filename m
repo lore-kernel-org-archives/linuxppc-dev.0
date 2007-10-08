@@ -1,14 +1,27 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 8 Oct 2007 11:53:17 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
-Message-ID: <20071008015316.GB12499@localhost.localdomain>
-References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
+Return-Path: <nish.aravamudan@gmail.com>
+Received: from fk-out-0910.google.com (fk-out-0910.google.com [209.85.128.187])
+	by ozlabs.org (Postfix) with ESMTP id F1576DDEC2
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 13:47:25 +1000 (EST)
+Received: by fk-out-0910.google.com with SMTP id z22so1354486fkz
+	for <linuxppc-dev@ozlabs.org>; Sun, 07 Oct 2007 20:47:24 -0700 (PDT)
+Message-ID: <29495f1d0710072047k2790d767t2da9f018d91e5b20@mail.gmail.com>
+Date: Sun, 7 Oct 2007 20:47:23 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Linas Vepstas" <linas@austin.ibm.com>
+Subject: Re: 2.6.23-rc7-mm1 -- powerpc rtas panic
+In-Reply-To: <20071005160322.GN4338@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4708C22D.5060805@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20070924021716.9bfe7dfb.akpm@linux-foundation.org>
+	<20070924123531.GC30855@shadowen.org>
+	<20071002232819.GN4338@austin.ibm.com>
+	<20071003002646.GD9814@bakeyournoodle.com>
+	<1191371416.8073.1.camel@concordia>
+	<20071003011909.GG9814@bakeyournoodle.com>
+	<29495f1d0710041701g4ed73441ie583058c78f95857@mail.gmail.com>
+	<20071005160322.GN4338@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,79 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 07, 2007 at 01:25:33PM +0200, Marian Balakowicz wrote:
-> 
-> Add device tree source file for Motion-PRO board.
-> 
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-> ---
-> 
->  motionpro.dts |  334 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 334 insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
-> new file mode 100644
-> index 0000000..4b197c8
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/motionpro.dts
-> @@ -0,0 +1,334 @@
-> +/*
-> + * Motion-PRO board Device Tree Source, based on Lite5200B DTS.
-> + *
-> + * Copyright (C) 2007 Semihalf
-> + * Modified for CM5200 by Marian Balakowicz <m8@semihalf.com>
-> + *
-> + * Copyright 2006-2007 Secret Lab Technologies Ltd.
-> + * Grant Likely <grant.likely@secretlab.ca>
-> + *
-> + * Copyright (C) 2007 DENX Software Engineering
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +/*
-> + * WARNING: Do not depend on this tree layout remaining static just yet.
-> + * The MPC5200 device tree conventions are still in flux
-> + * Keep an eye on the linuxppc-dev mailing list for more details
-> + */
-> +
-> +/ {
-[snip]
-> +	kollmorgen {
-> +		device_type = "kollmorgen";
-> +		compatible = "kollmorgen";
-> +		reg = <50000000 ffff>;
-> +		interrupts = <1 1 0>;
-> +		interrupt-parent = <&mpc5200_pic>;
-> +	};
-> +	cpld {
-> +		device_type = "cpld";
-> +		compatible = "cpld";
-> +		reg = <50010000 ffff>;
-> +	};
-> +	anybus {
-> +		device_type = "anybus";
-> +		compatible = "anybus";
-> +		reg = <50020000 ffff>;
-> +	};
-> +	pro_module_general {
-> +		device_type = "pro_module_general";
-> +		compatible = "pro_module_general";
-> +		reg = <50020000 3>;
-> +	};
-> +	pro_module_dio {
-> +		device_type = "pro_module_dio";
-> +		compatible = "pro_module_dio";
-> +		reg = <50020800 2>;
-> +	};
+On 10/5/07, Linas Vepstas <linas@austin.ibm.com> wrote:
+> On Thu, Oct 04, 2007 at 05:01:47PM -0700, Nish Aravamudan wrote:
+> > On 10/2/07, Tony Breeds <tony@bakeyournoodle.com> wrote:
+> > > On Wed, Oct 03, 2007 at 10:30:16AM +1000, Michael Ellerman wrote:
+> > >
+> > > > I realise it'll make the patch bigger, but this doesn't seem like a
+> > > > particularly good name for the variable anymore.
+> > >
+> > > Sure, what about?
+> > >
+> > > Clarify when RTAS logging is enabled.
+> > >
+> > > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> >
+> > For what it's worth, on a different ppc64 box, this resolves a similar
+> > panic for me.
+> >
+> > Tested-by: Nishanth Aravamudan <nacc@us.ibm.com>
+>
+> For the reasons explained, I'd really like to nack Tony's patch.
 
-Surely there must be some sort of bus controller above these devices..?
+I see. Can you reply in this thread with the patch you mentioned in
+your other reply? (or point me to a copy of it)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Thanks,
+Nish
