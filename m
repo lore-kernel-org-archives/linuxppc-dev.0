@@ -1,17 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A82EDDDE9
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 00:28:14 +1000 (EST)
-Date: Mon, 8 Oct 2007 18:26:58 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC 440EPx Sequoia USB OHCI DTS entry
-Message-ID: <20071008142658.GA15197@ru.mvista.com>
-Mime-Version: 1.0
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B93D5DDEE1
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 00:58:13 +1000 (EST)
+Date: Mon, 8 Oct 2007 09:58:23 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
+Message-ID: <20071008145823.GA4289@loki.buserror.net>
+References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <4708C22D.5060805@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PowerPC 440EPx Sequoia USB OHCI device tree entry.
+On Sun, Oct 07, 2007 at 01:25:33PM +0200, Marian Balakowicz wrote:
+> +		gpt@600 {	// General Purpose Timer
+> +			compatible = "mpc5200b-gpt\0mpc5200-gpt";
+> +			device_type = "gpt";
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/boot/dts/sequoia.dts |    7 +++++++
- 1 files changed, 7 insertions(+)
+"timer" would be a better node name than "gpt", and the device type should be
+left out entirely.  As others pointed out, compatible should be
+"fsl,mpc5200b-gpt", "fsl,mpc5200-gpt".
 
-diff -pruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6/arch/powerpc/boot/dts/sequoia.dts
---- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-10-08 16:29:54.000000000 +0400
-+++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-10-08 17:56:05.000000000 +0400
-@@ -122,6 +122,13 @@
- 			interrupt-map-mask = <ffffffff>;
- 		};
- 
-+		USB1: usb@e0000400 {
-+			compatible = "ohci-be";
-+			reg = <0 e0000400 60>;
-+			interrupt-parent = <&UIC0>;
-+			interrupts = <15 8>;
-+		};
-+
- 		POB0: opb {
- 		  	compatible = "ibm,opb-440epx", "ibm,opb";
- 			#address-cells = <1>;
+> +			has-wdt;
+
+fsl,has-wdt
+
+> +		rtc@800 {	// Real time clock
+> +			compatible = "mpc5200b-rtc\0mpc5200-rtc";
+> +			device_type = "rtc";
+
+This doesn't actually implement the OF rtc interface...
+
+> +		mscan@980 {
+
+What is mscan?
+
+> +			device_type = "mscan";
+
+This is not a standard device type.
+
+> +		bestcomm@1200 {
+> +			device_type = "dma-controller";
+
+dma-controller should be the node name, and device_type should be omitted.
+
+> +		ethernet@3000 {
+> +			device_type = "network";
+> +			compatible = "mpc5200b-fec\0mpc5200-fec";
+> +			reg = <3000 800>;
+> +			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
+
+Should be local-mac-address.  
+And yes, hardcoding a mac address is bad.  Don't do it. :-)
+
+> +		i2c@3d40 {
+> +			device_type = "i2c";
+> +			compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+> +			cell-index = <1>;
+
+What is cell-index?  The fsl-i2c driver doesn't use it AFAICT.
+
+> +		sram@8000 {
+> +			device_type = "sram";
+
+No device type.
+
+> +	cpld {
+> +		device_type = "cpld";
+> +		compatible = "cpld";
+> +		reg = <50010000 ffff>;
+> +	};
+
+This device is compatible with every CPLD that has ever existed?  Wow! :-)
+
+-Scott
