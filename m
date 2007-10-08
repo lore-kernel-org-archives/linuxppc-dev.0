@@ -1,25 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D67EDDFDA
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 07:24:22 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l98LOH9J026469
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Oct 2007 14:24:17 -0700 (MST)
-Received: from [10.82.17.127] ([10.82.17.127])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l98LOGUa004634
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 Oct 2007 16:24:17 -0500 (CDT)
-Message-ID: <470AA012.9080401@freescale.com>
-Date: Mon, 08 Oct 2007 16:24:34 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
+Message-ID: <470AA224.7050709@freescale.com>
+Date: Mon, 08 Oct 2007 16:33:24 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
-Subject: bootwrapper: relative finddevice()
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Build failure on treeboot-walnut.c
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+In-Reply-To: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,9 +18,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'd like to expose flatdevtree's ability to do relative path lookups in 
-ops, and I'd prefer to extend the existing finddevice method rather than 
-add a new finddevice_rel.  However, I'm not very familiar with real OF 
--- how would one go about fixing its implementation?
+Looks like the problem is back:
 
--Scott
+   BOOTCC  arch/powerpc/boot/treeboot-walnut.o
+Assembler messages:
+Error: Internal assembler error for instruction icbt
+Internal error, aborting at 
+/tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/gcc-4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/config/tc-ppc.c 
+line 1314 in ppc_setup_opcodes
+Please report this bug.
+make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
+make: *** [uImage] Error 2
+
+Question: I'm building a kernel for the 8610.  Why is treeboot-walnut.c being 
+compiled at all?
+
+Grant Likely wrote:
+> Building Paul's current powerpc branch with a ppc6xx compiler causes
+> the following build failure:
+> 
+>   SYSMAP  System.map
+>   BOOTCC  arch/powerpc/boot/treeboot-walnut.o
+> {standard input}: Assembler messages:
+> {standard input}:184: Error: Unrecognized opcode: `mfdcr'
+> {standard input}:185: Error: Unrecognized opcode: `mfdcr'
+> {standard input}:186: Error: Unrecognized opcode: `mfdcr'
+> {standard input}:217: Error: Unrecognized opcode: `mtdcr'
+> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 1
+> make: *** [uImage] Error 2
+> 
+> This is using ELDK 4.1:
+> GNU assembler version 2.16.1 (powerpc-linux) using BFD version 2.16.1
+> gcc version 4.0.0 (DENX ELDK 4.1 4.0.0)
+> 
+> Cheers,
+> g.
+> 
+
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
