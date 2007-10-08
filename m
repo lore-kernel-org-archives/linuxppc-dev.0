@@ -2,22 +2,23 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0BFEFDDEE6
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 14:37:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1A209DDEC5
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 16:05:17 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IekMR-0001ST-Lg
-	for linuxppc-dev@ozlabs.org; Sun, 07 Oct 2007 21:36:55 -0700
-Message-ID: <13090379.post@talk.nabble.com>
-Date: Sun, 7 Oct 2007 21:36:55 -0700 (PDT)
+	(envelope-from <bounces@nabble.com>) id 1Ieljt-0003Ox-0o
+	for linuxppc-dev@ozlabs.org; Sun, 07 Oct 2007 23:05:13 -0700
+Message-ID: <13091078.post@talk.nabble.com>
+Date: Sun, 7 Oct 2007 23:05:13 -0700 (PDT)
 From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or
-	directory
-In-Reply-To: <4705691A.9020509@freescale.com>
+Subject: Re: Where are inb/outb macros?
+In-Reply-To: <200710070146.51140.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <4705691A.9020509@freescale.com>
+References: <adf480660710061347l59903ba6vf6b327db674606a9@mail.gmail.com>
+	<1191704881.6414.3.camel@pasglop>
+	<200710070146.51140.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +29,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+inb/outb could be used from the usr space on x86 class PC-computer to access
+to io ports this is what i assume that you are trying 
+
+You need to compile the program with -O option (expantion of Inline function
+)
+
+To perform io operation on ports ioprem/iopl system call must be used (To
+get permissio to perform io operation)
+
+Program must run as root 
+
+on non 86 platform try using /dev/port device file in the application 
+
+misbah
 
 
-
-Timur Tabi-3 wrote:
+Arnd Bergmann wrote:
 > 
-> Kumar, this is what I get when I compile your 2.6.24 branch for the 8610:
+> On Saturday 06 October 2007, Benjamin Herrenschmidt wrote:
+>> On Sun, 2007-10-07 at 00:47 +0400, Peter Lemenkov wrote:
+>> > Hello All!
+>> > I can't compile one small software title because of lack <sys/io.h>
+>> > and inb/outb macros. What sould I do to overcome this obstacle?
+>> > 
+>> > My linux distro is Fedora 7 if it is matter.
+>> 
+>> They don't exist in user space on non-x86. You have to do things
+>> differently. What is your software trying to do ? If it's trying to
+>> access a PCI device IO space, you probably want to mmap it in sysfs and
+>> write your own accessors with appropriate memory barriers.
 > 
->    CC      arch/powerpc/sysdev/fsl_soc.o
-> In file included from arch/powerpc/sysdev/fsl_soc.c:40:
-> include/asm/cpm2.h:14:21: error: asm/cpm.h: No such file or directory
-> make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
-> make: *** [arch/powerpc/sysdev] Error 2
+> All cases where I've seen application software use <sys/io.h>, there was
+> actually a full device driver in the kernel that already exported a 
+> high-level interface to user space. If that's the case here, the
+> application
+> should use that instead of sysfs.
 > 
-> I guess the file /asm/cpm2.h is not present in the kernel source , You
-> need to go through the source and see what asm file is being provided for
-> you to access the communication processor specific register (i assume you
-> are accessing/assigning to processor register) 
-> 
-> Commenting out the "#include <asm/cpm.h>" in cpm2.h makes the compilation 
-> failure go away, but I don't know if that's the proper fix, since the 8610 
-> doesn't have a CPM.
-> 
-> Are u including #include <asm/cpm.h> or <asm/cpm2.h> ???????
-> 
-> Processor registers are memory mapped and you can access it directly by
-> including proper asm file ,and writing to the structure element of the
-> file by  using Pointer to comm processor 
-> 
-> If you could let me know what is the operation that you need to perform on
-> comm process register and which register you need to access then i could
-> be in better position to help you
-> 
-> Misbah 
-> -- 
-> Timur Tabi
-> Linux Kernel Developer @ Freescale
+> 	Arnd <><
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
@@ -72,5 +75,5 @@ Timur Tabi-3 wrote:
 > 
 
 -- 
-View this message in context: http://www.nabble.com/include-asm-cpm2.h%3A14%3A21%3A-error%3A-asm-cpm.h%3A-No-such-file-or-directory-tf4571911.html#a13090379
+View this message in context: http://www.nabble.com/Where-are-inb-outb-macros--tf4581135.html#a13091078
 Sent from the linuxppc-dev mailing list archive at Nabble.com.
