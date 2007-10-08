@@ -1,30 +1,25 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id A6952DDF70
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 06:59:02 +1000 (EST)
-Received: from pd3mr5so.prod.shaw.ca (pd3mr5so-qfe3.prod.shaw.ca [10.0.141.12])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JPM000DW2AC6G60@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 08 Oct 2007 14:59:00 -0600 (MDT)
-Received: from pn2ml5so.prod.shaw.ca ([10.0.121.149])
-	by pd3mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JPM000H82AC2T00@pd3mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 08 Oct 2007 14:59:00 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.133.150])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JPM00CYP2AB3R40@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 08 Oct 2007 14:58:59 -0600 (MDT)
-Date: Mon, 08 Oct 2007 14:58:59 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2] Only call ppc_md.setup_arch() if it is provided.
-To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
-	galak@kernel.crashing.org
-Message-id: <20071008205859.12639.82863.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id BA69DDDFF4
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 07:06:29 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1891719wag
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Oct 2007 14:06:28 -0700 (PDT)
+Message-ID: <fa686aa40710081406w4aa751ewddb6a164bc070871@mail.gmail.com>
+Date: Mon, 8 Oct 2007 15:06:27 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+	"Paul Mackerras" <paulus@samba.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Geoff Levand" <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] Eval boards should not need to mess with ROOT_DEV
+In-Reply-To: <fa686aa40710081203k13f921dcm4542299c0ecb401@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071008151254.7777.38512.stgit@trillian.cg.shawcable.net>
+	<D6497F34-ECE1-481E-B969-E7DDC60BAAFD@kernel.crashing.org>
+	<fa686aa40710081203k13f921dcm4542299c0ecb401@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,57 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On 10/8/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 10/8/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> > On Oct 8, 2007, at 10:12 AM, Grant Likely wrote:
+> >
+> > > From: Grant Likely <grant.likely@secretlab.ca>
+> > >
+> > > I can't see a good reason for eval board platform code to mess with
+> > > the
+> > > ROOT_DEV value instead of using the default behaviour (so I'm writing
+> > > this patch to see if anyone will clue me in).
+> > >
+> > > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > > ---
+> > >
+> > >  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
+> > >  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
+> > >  arch/powerpc/platforms/82xx/mpc82xx_ads.c    |    6 ------
+> > >  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
+> > >  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    2 --
+> > >  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
+> > >  6 files changed, 0 insertions(+), 41 deletions(-)
+> >
+> > FYI, 82xx_ads and 885ads don't have this issue in my tree based on
+> > fixes from Scott.
+>
+> So, if I respin this patch to exclude those two platforms, will you
+> merge it?  (Efika and Lite5200 only have it because they were cloned
+> from CHRP.
+>
+> Powermac and pseries also do this weirdness.  Should it be removed
+> from there too?
 
-This allows platforms which don't have anything to do at setup_arch time
-(like a bunch of the 4xx platforms) to eliminate an empty setup_arch hook.
+Oh, and cell does too.  Geoff, does cell support really need to do this:
+(in cell/setup.c and celleb/setup.c).
+	if (ROOT_DEV == 0) {
+		printk("No ramdisk, default root is /dev/hda2\n");
+		ROOT_DEV = Root_HDA2;
+	}
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+If not; I'll spin a patch to drop it.
 
- arch/powerpc/kernel/setup_32.c |    3 ++-
- arch/powerpc/kernel/setup_64.c |    3 ++-
- include/asm-powerpc/machdep.h  |    2 +-
- 3 files changed, 5 insertions(+), 3 deletions(-)
+Thanks,
+g.
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 7474502..cd870a8 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -290,7 +290,8 @@ void __init setup_arch(char **cmdline_p)
- 	conswitchp = &dummy_con;
- #endif
- 
--	ppc_md.setup_arch();
-+	if (ppc_md.setup_arch)
-+		ppc_md.setup_arch();
- 	if ( ppc_md.progress ) ppc_md.progress("arch: exit", 0x3eab);
- 
- 	paging_init();
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 3089eae..008ab68 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -530,7 +530,8 @@ void __init setup_arch(char **cmdline_p)
- 	conswitchp = &dummy_con;
- #endif
- 
--	ppc_md.setup_arch();
-+	if (ppc_md.setup_arch)
-+		ppc_md.setup_arch();
- 
- 	paging_init();
- 	ppc64_boot_msg(0x15, "Setup Done");
-diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
-index 71c6e7e..cc7c17f 100644
---- a/include/asm-powerpc/machdep.h
-+++ b/include/asm-powerpc/machdep.h
-@@ -99,7 +99,7 @@ struct machdep_calls {
- #endif /* CONFIG_PPC64 */
- 
- 	int		(*probe)(void);
--	void		(*setup_arch)(void);
-+	void		(*setup_arch)(void); /* Optional, may be NULL */
- 	void		(*init_early)(void);
- 	/* Optional, may be NULL. */
- 	void		(*show_cpuinfo)(struct seq_file *m);
+
+
+>
+> g.
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
