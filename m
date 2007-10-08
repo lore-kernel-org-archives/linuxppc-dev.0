@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA60ADDF37
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 23:46:23 +1000 (EST)
-In-Reply-To: <20071008121647.GB32540@localhost.localdomain>
-References: <20071005174015.GA11016@localhost.localdomain>
-	<27C7E568-B28A-4659-803F-9D271B2E1AF6@kernel.crashing.org>
-	<20071008121647.GB32540@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4230B239-DA12-46B3-8A83-EB34B75A5333@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH respin 0/7] MPC8568E-MDS related patches
-Date: Mon, 8 Oct 2007 08:46:38 -0500
-To: avorontsov@ru.mvista.com
+Return-Path: <ralferoo@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id 579D8DDF21
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 23:48:20 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1187940wxd
+	for <linuxppc-dev@ozlabs.org>; Mon, 08 Oct 2007 06:48:19 -0700 (PDT)
+Message-ID: <18a15270710080648x3b5f1135meea3d7b048a1a543@mail.gmail.com>
+Date: Mon, 8 Oct 2007 14:48:19 +0100
+From: "Ranulf Doswell" <ralf@ranulf.net>
+Sender: ralferoo@gmail.com
+To: "geoffrey.levand@am.sony.com" <geoffrey.levand@am.sony.com>
+Subject: Re: [patch 6/6] PS3: Add os-area database routines
+In-Reply-To: <20071006213542.954029915@am.sony.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1097_11495186.1191851299095"
+References: <20071006213542.311447584@am.sony.com>
+	<20071006213542.954029915@am.sony.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,53 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_1097_11495186.1191851299095
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Oct 8, 2007, at 7:16 AM, Anton Vorontsov wrote:
+On 06/10/2007, geoffrey.levand@am.sony.com <geoffrey.levand@am.sony.com>
+wrote:
+> enum os_area_db_owner {
 
-> On Fri, Oct 05, 2007 at 05:09:28PM -0500, Kumar Gala wrote:
->>
->> On Oct 5, 2007, at 12:40 PM, Anton Vorontsov wrote:
->>
->>> Hello Kumar,
->>>
->>> This is respin of MPC8568E-MDS patches, on top of master branch
->>> as of today.
->>>
->>> If there are no objections against SPI patch, please Ack it, thus
->>> David could pick it up.
->>
->> I've applied patches 1-5 however I'm not able to get UCC enet  
->> working on my
->> board.
+> 	OS_AREA_DB_OWNER_ANY = -1,
+> 	OS_AREA_DB_OWNER_NONE = 0,
+>	OS_AREA_DB_OWNER_PROTOTYPE = 1,
+>	OS_AREA_DB_OWNER_LINUX = 2,
+>	OS_AREA_DB_OWNER_PETITBOOT = 3,
+>	OS_AREA_DB_OWNER_MAX = 32,
+>};
 >
-> I wonder how you managed to boot it w/o sixth (PCI) patch in this  
-> patch set,
-> for me board hanged w/o it.
->
->> Is there something special that has to be done?  (I've got the card
->> standalone, no MDS backplane).
->
-> Nothing special, from what I can remember. Though, double checking  
-> switches
-> on the board might help.
->
-> Also, .config and bootlog would help.
->
->> I'm using the 1.3.0-rc2 u-boot w/o any modifications.
->
-> 1.2.0-g60174746 here.
->
->> Also, I tried a PCIe e1000 card w/the .dts that's in my tree and  
->> that works
->> w/o any issue.
->
-> Strange enough. I'd say it's impossible with your current tree.  
-> Maybe you've
-> used some stale dtb? Because dts is seriously broken as now, and I  
-> can't
-> believe that it worked for you. ;-)
+>enum os_area_db_key {
+>	OS_AREA_DB_KEY_ANY = -1,
+>	OS_AREA_DB_KEY_NONE = 0,
+>	OS_AREA_DB_KEY_RTC_DIFF = 1,
+>	OS_AREA_DB_KEY_VIDEO_MODE = 2,
+>	OS_AREA_DB_KEY_MAX = 8,
+>};
 
-Ignore me. Using the updated dtb makes things work.  I need to double  
-check PCIe but UCC geth appears to function now.
+How do we go about claiming one of these OS_AREA_DB_OWNER_ keys? I'd very
+much like to use this functionality in my python-ps3 games library.
 
-- k
+My requirement is to be able to persist various options such as player names
+and rankings. I had already been thinking about generating a unique token
+and storing it somewhere at the end of the flash area so that when my game
+connects to a game server, it can identify itself and be provided with all
+the previous settings. Obviously, just claiming a random area of flash isn't
+ideal, so your standardised solution would be perfect for this.
+
+I would like, therefore, to reserve a single key to hold a 64-bit sized
+token in order to identify the machine across reboots. I don't mind
+particularly whether it's private to my application or a generally available
+field, but certainly having an identifier I can rely on would be very
+useful.
+
+Cheers,
+    Ralf.
+
+------=_Part_1097_11495186.1191851299095
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div><span class="gmail_quote">On 06/10/2007, <b class="gmail_sendername"><a href="mailto:geoffrey.levand@am.sony.com">geoffrey.levand@am.sony.com</a></b> &lt;<a href="mailto:geoffrey.levand@am.sony.com">geoffrey.levand@am.sony.com
+</a>&gt; wrote:</span><div><br>&gt; enum os_area_db_owner {<br></div></div><pre>&gt; 	OS_AREA_DB_OWNER_ANY = -1,<br>&gt; 	OS_AREA_DB_OWNER_NONE = 0,<br>&gt;	OS_AREA_DB_OWNER_PROTOTYPE = 1,<br>&gt;	OS_AREA_DB_OWNER_LINUX = 2,
+<br>&gt;	OS_AREA_DB_OWNER_PETITBOOT = 3,<br>&gt;	OS_AREA_DB_OWNER_MAX = 32,<br>&gt;};<br>&gt;<br>&gt;enum os_area_db_key {<br>&gt;	OS_AREA_DB_KEY_ANY = -1,<br>&gt;	OS_AREA_DB_KEY_NONE = 0,<br>&gt;	OS_AREA_DB_KEY_RTC_DIFF = 1,
+<br>&gt;	OS_AREA_DB_KEY_VIDEO_MODE = 2,<br>&gt;	OS_AREA_DB_KEY_MAX = 8,<br>&gt;};</pre>How do we go about claiming one of these OS_AREA_DB_OWNER_ keys? I&#39;d very much like to use this functionality in my python-ps3 games library.
+<br><br>My requirement is to be able to persist various options such as player names and rankings. I had already been thinking about generating a unique token and storing it somewhere at the end of the flash area so that when my game connects to a game server, it can identify itself and be provided with all the previous settings. Obviously, just claiming a random area of flash isn&#39;t ideal, so your standardised solution would be perfect for this.
+<br><br>I would like, therefore, to reserve a single key to hold a 64-bit sized token in order to identify the machine across reboots. I don&#39;t mind particularly whether it&#39;s private to my application or a generally available field, but certainly having an identifier I can rely on would be very useful.
+<br><br>Cheers,<br>&nbsp;&nbsp;&nbsp; Ralf.<br>
+
+------=_Part_1097_11495186.1191851299095--
