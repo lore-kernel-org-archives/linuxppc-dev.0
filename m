@@ -1,12 +1,14 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20071008161421.818458000@pademelon.sonytel.be>
-Date: Mon, 08 Oct 2007 18:14:21 +0200
+Message-Id: <20071008161614.158499000@pademelon.sonytel.be>
+References: <20071008161421.818458000@pademelon.sonytel.be>
+Date: Mon, 08 Oct 2007 18:14:23 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	linux-fbdev-devel@lists.sourceforge.net
-Subject: [patch 0/9] PS3 Virtual Frame Buffer Device Driver patches for 2.6.24
+Subject: [patch 2/9] ps3fb: Do not print warnings on invalid frame numbers
 Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,22 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	Hi,
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Here are some new patches for the PS3 Virtual Frame Buffer Device Driver
-(ps3fb):
-  [1] ps3fb: Convert from printk()/DPRINTK() to dev_*()/pr_*()
-  [2] ps3fb: Do not print warnings on invalid frame numbers
-  [3] ps3fb: Clean up includes
-  [4] ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static
-  [5] ps3fb: Fix possible overlap of GPU command buffer and frame buffer
-  [6] ps3fb: Use fb_info.par properly
-  [7] ps3fb: Don't keep the borders for non-fullscreen modes in XDR memory
-  [8] ps3fb: Add virtual screen and panning support
-  [9] ps3fb: Enhance horizontal panning on firmware 1.90 and up
+ps3fb: Do not print warnings on invalid frame numbers, as this can be triggered
+from user space.
 
-Please review, and queue for 2.6.24 if they're ok. Thanks!
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -389,8 +389,8 @@ static int ps3fb_sync(struct fb_info *in
+ 	yres = ps3fb_res[i].yres;
+ 
+ 	if (frame > ps3fb.num_frames - 1) {
+-		dev_warn(info->device, "%s: invalid frame number (%u)\n",
+-			 __func__, frame);
++		dev_dbg(info->device, "%s: invalid frame number (%u)\n",
++			__func__, frame);
+ 		return -EINVAL;
+ 	}
+ 	offset = xres * yres * BPP * frame;
+
+-- 
 With kind regards,
  
 Geert Uytterhoeven
