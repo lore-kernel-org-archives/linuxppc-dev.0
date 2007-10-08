@@ -1,21 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 4E8ACDDF00
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 16:45:38 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1646964wag
-	for <linuxppc-dev@ozlabs.org>; Sun, 07 Oct 2007 23:45:33 -0700 (PDT)
-Message-ID: <fa686aa40710072345g6f7602aycda5028bdc33d286@mail.gmail.com>
-Date: Mon, 8 Oct 2007 00:45:33 -0600
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id 1EE5FDDF23
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 16:47:29 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1647589wag
+	for <linuxppc-dev@ozlabs.org>; Sun, 07 Oct 2007 23:47:23 -0700 (PDT)
+Message-ID: <fa686aa40710072347g7e084169xcd4af905ab6f2ea9@mail.gmail.com>
+Date: Mon, 8 Oct 2007 00:47:23 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 09/15] [POWERPC] Promess Motion-PRO board support
-In-Reply-To: <20071007223219.932e3f8a.sfr@canb.auug.org.au>
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH 10/15] [POWERPC] Add mpc52xx_find_and_map_path(),
+	refactor utility functions.
+In-Reply-To: <4708C343.30104@semihalf.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47075FA7.3030108@semihalf.com> <4708C2F0.7010705@semihalf.com>
-	<20071007223219.932e3f8a.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
+References: <47075FA7.3030108@semihalf.com> <4708C343.30104@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/7/07, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> On Sun, 07 Oct 2007 13:28:48 +0200 Marian Balakowicz <m8@semihalf.com> wrote:
-> >
-> > +++ b/arch/powerpc/platforms/52xx/motionpro.c
+On 10/7/07, Marian Balakowicz <m8@semihalf.com> wrote:
 >
-> Same comments again.
+> Add helper routine mpc52xx_find_and_map_path(). Extract common code to
+> mpc52xx_map_node() and refactor mpc52xx_find_and_map().
+>
+> Signed-off-by: Jan Wrobel <wrr@semihalf.com>
 
-Ditto.
+Looks good to me.
 
-g.
+Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
 
 -- 
 Grant Likely, B.Sc., P.Eng.
