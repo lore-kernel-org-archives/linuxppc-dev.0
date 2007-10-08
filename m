@@ -1,20 +1,22 @@
-Return-Path: <SRS0=9EYR=PC=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A5ACADDF14
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 22:03:32 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] [POWERPC] Add AMCC Kilauea eval board support to
-	platforms/40x
-Date: Mon, 8 Oct 2007 14:03:21 +0200
-References: <200710081108.51625.sr@denx.de>
-	<20071008214848.f6c6070d.sfr@canb.auug.org.au>
-In-Reply-To: <20071008214848.f6c6070d.sfr@canb.auug.org.au>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7EE8CDDE01
+	for <linuxppc-dev@ozlabs.org>; Mon,  8 Oct 2007 22:08:16 +1000 (EST)
+Date: Mon, 8 Oct 2007 16:08:49 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 6/7] [POWERPC] mpc8568mds.dts: fix PCI/PCIe nodes
+Message-ID: <20071008120849.GA32540@localhost.localdomain>
+References: <20071005174015.GA11016@localhost.localdomain>
+	<20071005174642.GB32145@localhost.localdomain>
+	<47067ADE.9060306@ru.mvista.com>
+	<20071005180553.GA32405@localhost.localdomain>
+	<EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710081403.21189.sr@denx.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <EB9BE8E7-6437-403F-A7F4-953B393FDF51@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 08 October 2007, Stephen Rothwell wrote:
-> > +#include <asm/of_platform.h>
+On Fri, Oct 05, 2007 at 03:58:00PM -0500, Kumar Gala wrote:
 >
-> Here I go again :-)
+> On Oct 5, 2007, at 1:05 PM, Anton Vorontsov wrote:
 >
-> linux/of_platform.h please
+>> On Fri, Oct 05, 2007 at 09:56:46PM +0400, Sergei Shtylyov wrote:
+>>> Hello.
+>>>
+>>> Anton Vorontsov wrote:
+>>>
+>>>> Commit 5bece127f0666996ca90772229e00332a34e516c tried to fix
+>>>> PCI/PCIe nodes, but actually it broke them even harder. ;-)
+>>>
+>>>    Of course. But shouldn't those be the subnoses of the "soc" type node?
+>>
+>> Nope. PCI's ranges = <>; isn't in the SOC address space.
+>>
+>> Valentine Barshak posted a patch titled "[RFC] [PATCH] PowerPC: Add 64-bit
+>> phys addr support to 32-bit pci" that started using of_translate_address()
+>> for ranges, and of_translate_address() will not work if PCI placed in the
+>> SOC node. Not sure if that patch applied or not, though.
+>
+> I'm confused, what's the actual issue with PCI that this patch addresses?
 
-Right. I was watching all your reviews lately and wanted not to make this 
-error. Didn't work out as it seems. :-)
+Which patch? Valentine's or mine under the subject? Don't know about the
+former, but mine patch is pretty obvious: your commit
+5bece127f0666996ca90772229e00332a34e516c moved PCI nodes out of soc node,
+but you forgot to change regs = <>, thus instead of e000a000/e0008000,
+kernel used a000/8000 for accessing PCI ccsr registers.
 
-I'll wait a while for further comments and send a fixed version soon.
-
-Thanks.
-
-Best regards,
-Stefan
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
