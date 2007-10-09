@@ -1,22 +1,33 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A6073DE016
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 02:48:44 +1000 (EST)
-Message-ID: <470BB0E6.4050801@freescale.com>
-Date: Tue, 09 Oct 2007 11:48:38 -0500
-From: Timur Tabi <timur@freescale.com>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 46B65DDF8E
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 03:15:51 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99HFmYG029321
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 13:15:49 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l99HFm5E381440
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 11:15:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l99HFmUv017490
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 11:15:48 -0600
+Date: Tue, 9 Oct 2007 12:15:47 -0500
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [patch v2] PS3: Add os-area database routines
+Message-ID: <20071009171547.GH4350@austin.ibm.com>
+References: <20071006213542.311447584@am.sony.com>
+	<20071006213542.954029915@am.sony.com>
+	<470AD44C.5080305@am.sony.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] qe: add function qe_clock_source
-References: <1191945199488-git-send-email-timur@freescale.com>	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>	<470BA5DF.5060206@freescale.com>	<2E830F97-ADAE-43CA-9BD3-BEBFEFBE1D5C@kernel.crashing.org>	<470BAAA2.30400@freescale.com>	<8D4AA8EB-812F-4E58-A13C-CE3BA72037F3@kernel.crashing.org>
-	<470BAFA8.1060408@freescale.com> <470BB09D.7060304@freescale.com>
-In-Reply-To: <470BB09D.7060304@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <470AD44C.5080305@am.sony.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
+On Mon, Oct 08, 2007 at 06:07:24PM -0700, Geoff Levand wrote:
+> Subject: PS3: Add os-area database routines
+> 
+> Add support for a simple tagged database in the PS3 flash rom
+> os-area.  The database allows the flash rom os-area to be shared
+> between a bootloader and installed operating systems.   The
+> application ps3-flash-util or the library libps3-utils from the
+> ps3-utils package can be used for userspace database operations.
 
-> In the absence of a BRG, the driver should just not support changing the 
-> baud rate -- it shouldn't fail to function.
+Perhaps I missed the discussion; but .. out of general curiosity,
+what is the relation between this and the ppc_md.nvram_* system?
+I note that pseries, powermac, chrp, celleb implement the nvram calls,
+but cell and ps3 do not. So clearly, whatever this is, its not 
+layered on top of nvram?
 
-Since I don't have hardware that can test external clocks, I can't guarantee 
-that any such code will work.
+FWIW, I don't quite understand the nvram system; it seems to have
+partitions; one part is an "os area", and a chuck of it is set 
+up as a file system.
 
-I'm sure there are a dozen things I could do to improve the driver as it 
-stands, but I need to draw the line somewhere.
+So I'm wondering -- wouldn't the DB os-area be "generically 
+interesting" to other ppowerpc platforms? Maybe even other arches?
+And why isn't this built on top of the nvram structure? ... etc?
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+--linas
