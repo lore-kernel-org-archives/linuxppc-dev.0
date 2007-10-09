@@ -1,22 +1,16 @@
 Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EECF2DDFFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 02:01:44 +1000 (EST)
-Message-ID: <470BA5DF.5060206@freescale.com>
-Date: Tue, 09 Oct 2007 11:01:35 -0500
+Message-ID: <470BA6ED.3020504@freescale.com>
+Date: Tue, 09 Oct 2007 11:06:05 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] qe: add function qe_clock_source
-References: <1191945199488-git-send-email-timur@freescale.com>
-	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>
-In-Reply-To: <B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Build failure on treeboot-walnut.cg
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<20071009030729.GI12499@localhost.localdomain>
+In-Reply-To: <20071009030729.GI12499@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Oct 9, 2007, at 10:53 AM, Timur Tabi wrote:
-> 
->> Add function qe_clock_source() which takes a string containing the 
->> name of a
->> QE clock source (as is typically found in device trees) and returns the
->> matching enum qe_clock value.
->>
->> Signed-off-by: Timur Tabi <timur@freescale.com>
->> ---
->>
->> This patch applies to Kumar's for-2.6.24 branch.
->>
->>  arch/powerpc/sysdev/qe_lib/qe.c |   65 
->> +++++++++++++++++++++++++++++++++++++++
->>  include/asm-powerpc/qe.h        |    3 ++
->>  2 files changed, 68 insertions(+), 0 deletions(-)
-> 
-> I'm sure its asking to much of the QE HW for BRGs or CLKs to be sequential.
+David Gibson wrote:
 
-Well, this patch doesn't really address that anomaly.  Its purpose is to help 
-get rid of stuff like this in the device tree:
+> Policy.  Compiling everything means build bugs - like this one - can
+> be found by everybody, not just those building for the specific
+> obscure platform.
 
-		ucc@2200 {
-			...
-			rx-clock = <19>;
-			tx-clock = <1a>;
+Is this a new policy?  Modules in the kernel are not built unless you want 
+them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
+targeting is built.  So I don't really understand why you claim it's normal 
+for platform-specific files to be built, regardless of the actual platform.
 
-19 and 1a are the integer equivalents of enum qe_clock.  As you can imagine, 
-that's error prone.
-
-If this patch is accepted, I got another patch that changes qe_setbrg() to 
-accept a qe_clock enum.
+And frankly, I don't like this "policy".  Build bugs for 4xx should not 
+interfere in my 83xx development.  I can't build any kernels now because of 
+this bug!
 
 -- 
 Timur Tabi
