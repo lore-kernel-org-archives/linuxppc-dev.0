@@ -1,33 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 46B65DDF8E
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 03:15:51 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99HFmYG029321
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 13:15:49 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l99HFm5E381440
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 11:15:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l99HFmUv017490
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 11:15:48 -0600
-Date: Tue, 9 Oct 2007 12:15:47 -0500
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch v2] PS3: Add os-area database routines
-Message-ID: <20071009171547.GH4350@austin.ibm.com>
-References: <20071006213542.311447584@am.sony.com>
-	<20071006213542.954029915@am.sony.com>
-	<470AD44C.5080305@am.sony.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id E1037DDF3D
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 03:39:20 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2234456wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 10:39:19 -0700 (PDT)
+Message-ID: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
+Date: Tue, 9 Oct 2007 11:39:18 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add of_platform
+	binding to xilinxfb
+In-Reply-To: <1191906242.6083.7.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <470AD44C.5080305@am.sony.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
+	<1191370502.5238.1.camel@daplas>
+	<fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
+	<1191906242.6083.7.camel@daplas>
+Cc: linuxppc <linuxppc-dev@ozlabs.org>, akonovalov@ru.mvista.com,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 08, 2007 at 06:07:24PM -0700, Geoff Levand wrote:
-> Subject: PS3: Add os-area database routines
-> 
-> Add support for a simple tagged database in the PS3 flash rom
-> os-area.  The database allows the flash rom os-area to be shared
-> between a bootloader and installed operating systems.   The
-> application ps3-flash-util or the library libps3-utils from the
-> ps3-utils package can be used for userspace database operations.
+On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
+> > BTW, what path do framebuffer patches take to get into Linus' tree?
+> > Does he pull your tree directly, or do they go through someone else's
+> > tree?
+>
+> They all go to -mm tree, unless it's a needed fix, then to Linus's.
+>
+> Tony
 
-Perhaps I missed the discussion; but .. out of general curiosity,
-what is the relation between this and the ppc_md.nvram_* system?
-I note that pseries, powermac, chrp, celleb implement the nvram calls,
-but cell and ps3 do not. So clearly, whatever this is, its not 
-layered on top of nvram?
+Ah, okay.
 
-FWIW, I don't quite understand the nvram system; it seems to have
-partitions; one part is an "os area", and a chuck of it is set 
-up as a file system.
+Since the XilinxFB is a powerpc-only device, is it okay with you if I
+get Paul Mackerras to merge them into his tree instead (that way the
+changes go in with the platform code which requires these changes)
 
-So I'm wondering -- wouldn't the DB os-area be "generically 
-interesting" to other ppowerpc platforms? Maybe even other arches?
-And why isn't this built on top of the nvram structure? ... etc?
+Paulus, is that okay by you?
 
---linas
+Thanks,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
