@@ -1,20 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id DF494DDFBB
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:38:40 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2170321wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 07:38:39 -0700 (PDT)
-Message-ID: <fa686aa40710090738s748c17cdn6fa29cc6aea433d9@mail.gmail.com>
-Date: Tue, 9 Oct 2007 08:38:38 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH 00/15] [POWERPC] TQM5200, CM5200 and Motion-PRO support
-In-Reply-To: <470B450E.4020708@semihalf.com>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 35DD0DE026
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:44:40 +1000 (EST)
+Message-ID: <470B93CC.6090400@freescale.com>
+Date: Tue, 09 Oct 2007 09:44:28 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47075FA7.3030108@semihalf.com> <470B450E.4020708@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Build failure on treeboot-walnut.c
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
+	<E83F8EDA-95EF-4116-A214-D008BA70135D@kernel.crashing.org>
+In-Reply-To: <E83F8EDA-95EF-4116-A214-D008BA70135D@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +29,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
->
-> All,
->
-> Thanks for the review, will process all the comments and resend
-> updated patches soon.
+Kumar Gala wrote:
 
-Make sure you take a look at the 6 patches I posted yesterday.  They
-will probably go in before your changes and will cause conflicts.
+> What's the actual compile line?  Want to see the flags to assembler of 
+> -Wa to the compiler.
 
-Kumar, once I respin the ROOT_DEV patch, how does it look for merging
-my patch set?
-
-Cheers,
-g.
-
->
-> Marian
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
+How do I modify the makefiles to spit out that command line?
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Timur Tabi
+Linux Kernel Developer @ Freescale
