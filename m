@@ -1,22 +1,32 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 33E96DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 08:36:21 +1000 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 5E866221BBF
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:19 +0200 (CEST)
-Received: from mail.denx.de (p54965DA0.dip.t-dialin.net [84.150.93.160])
-	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 4CA1590EC2
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:19 +0200 (CEST)
-Received: from gemini.denx.de (gemini.denx.de [10.0.0.2])
-	by mail.denx.de (Postfix) with ESMTP id 8D1DE6D00A5
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:18 +0200 (CEST)
-From: Wolfgang Denk <wd@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [PPC] Disable vDSO support for ARCH=ppc where it's not
-	implemented.
-Date: Wed, 10 Oct 2007 00:36:18 +0200
-Message-Id: <11919693783126-git-send-email-wd@denx.de>
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A78D7DDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:23:28 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99NNMdI007060
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:22 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l99NNLYF559072
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:21 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l99NNBal023666
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:11 -0400
+Date: Tue, 9 Oct 2007 18:22:49 -0500
+To: Nathan Lynch <ntl@pobox.com>
+Subject: never mind .. [was Re: Hard hang in hypervisor!?
+Message-ID: <20071009232249.GO4350@austin.ibm.com>
+References: <20071009203724.GM4350@austin.ibm.com>
+	<20071009211819.GR29559@localdomain>
+	<20071009212810.GN4350@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071009212810.GN4350@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +36,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Wolfgang Denk <wd@denx.de>
----
- arch/powerpc/kernel/vdso.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Tue, Oct 09, 2007 at 04:28:10PM -0500, Linas Vepstas wrote:
+> 
+> Perhaps I should IRC this ... 
 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 213fa31..2322ba5 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -766,7 +766,9 @@ static int __init vdso_init(void)
- 
- 	return 0;
- }
-+#ifdef CONFIG_PPC_MERGE
- arch_initcall(vdso_init);
-+#endif
- 
- int in_gate_area_no_task(unsigned long addr)
- {
--- 
-1.5.2.2
+yeah. I guess I'd forgotten how funky things can get. So never mind ... 
+
+--linas
