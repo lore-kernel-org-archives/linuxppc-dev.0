@@ -2,24 +2,24 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5C9AADDF91
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 05:14:08 +1000 (EST)
-In-Reply-To: <20071009135235.1026bb23@vader.jdub.homelinux.org>
-References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-	<470AA224.7050709@freescale.com>
-	<20071009030729.GI12499@localhost.localdomain>
-	<470BA6ED.3020504@freescale.com>
-	<20071009135235.1026bb23@vader.jdub.homelinux.org>
+	by ozlabs.org (Postfix) with ESMTP id ABEB9DDFC6
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 05:15:32 +1000 (EST)
+In-Reply-To: <470BC5CA.1010105@freescale.com>
+References: <1191945199488-git-send-email-timur@freescale.com>	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>	<470BA5DF.5060206@freescale.com>	<2E830F97-ADAE-43CA-9BD3-BEBFEFBE1D5C@kernel.crashing.org>	<470BAAA2.30400@freescale.com>	<8D4AA8EB-812F-4E58-A13C-CE3BA72037F3@kernel.crashing.org>
+	<470BAFA8.1060408@freescale.com> <470BB09D.7060304@freescale.com>
+	<470BB0E6.4050801@freescale.com>
+	<EF1344B5-5A53-4CC1-A51E-59EB9024B0C5@kernel.crashing.org>
+	<470BC484.3060702@freescale.com>
+	<91CB543F-A0F2-42A4-AA5C-6F8FC99F9EC3@kernel.crashing.org>
+	<470BC5CA.1010105@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <25EEFA45-3488-4BE1-9DE8-9037946E3F0B@kernel.crashing.org>
+Message-Id: <B2FD32B4-241E-4FCF-A18D-1E619034EC3A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Build failure on treeboot-walnut.cg
-Date: Tue, 9 Oct 2007 14:14:05 -0500
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Timur Tabi <timur@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] qe: add function qe_clock_source
+Date: Tue, 9 Oct 2007 14:15:45 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +30,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 9, 2007, at 1:52 PM, Josh Boyer wrote:
+On Oct 9, 2007, at 1:17 PM, Timur Tabi wrote:
 
-> On Tue, 09 Oct 2007 11:06:05 -0500
-> Timur Tabi <timur@freescale.com> wrote:
+> Kumar Gala wrote:
 >
->> David Gibson wrote:
->>
->>> Policy.  Compiling everything means build bugs - like this one - can
->>> be found by everybody, not just those building for the specific
->>> obscure platform.
->>
->> Is this a new policy?  Modules in the kernel are not built unless  
->> you want
->> them.  Even in arch/powerpc/platforms, only the specific platform  
->> file I'm
->> targeting is built.  So I don't really understand why you claim  
->> it's normal
->> for platform-specific files to be built, regardless of the actual  
->> platform.
->>
->> And frankly, I don't like this "policy".  Build bugs for 4xx  
->> should not
->> interfere in my 83xx development.  I can't build any kernels now  
->> because of
->> this bug!
+>> But that's a function of linux' use.  Remember decouple the device  
+>> tree from how linux does things.
 >
-> I fixed this bug.  It should be in Paul's latest tree.  You seem to be
-> having a different issue with your binutils though.
+> Ok, I just understand what your point is.  I'm proposing that we  
+> just put the name of the clock source in the device tree, and have  
+> a function which converts that into an internal representation.   
+> The clock is called "BRG3". It's not called BRG, #3 or something  
+> like that.  Same thing with the CLK sources.
 
-Just to clarify this is an issue with the particular patched binutils  
-Timur is using.
-
-I'll leave it to you guys to fight over if we should be building  
-everything or not.
+Ok.  I guess I'm not in favor of changing the device tree to address  
+this issue.  I think it would be solved if "dtc" had #define support.
 
 - k
