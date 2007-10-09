@@ -1,27 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2D6ADDE047
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:54:52 +1000 (EST)
-Message-ID: <470B9634.1000706@freescale.com>
-Date: Tue, 09 Oct 2007 09:54:44 -0500
+	by ozlabs.org (Postfix) with ESMTP id 783FFDDFD9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 01:53:30 +1000 (EST)
 From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Build failure on treeboot-walnut.c
-References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-	<470AA224.7050709@freescale.com>
-	<fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
-	<E83F8EDA-95EF-4116-A214-D008BA70135D@kernel.crashing.org>
-	<470B93CC.6090400@freescale.com>
-	<E5596C2A-8304-4158-B580-CFF9F86F814E@kernel.crashing.org>
-In-Reply-To: <E5596C2A-8304-4158-B580-CFF9F86F814E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Subject: [PATCH] qe: add function qe_clock_source
+Date: Tue,  9 Oct 2007 10:53:19 -0500
+Message-Id: <1191945199488-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +21,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Add function qe_clock_source() which takes a string containing the name of a
+QE clock source (as is typically found in device trees) and returns the
+matching enum qe_clock value.
 
-> $ make V=1
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot 
-arch/powerpc/boot/uImage powerpc-unknown-linux-gnu-gcc -m32 
--Wp,-MD,arch/powerpc/boot/.treeboot-walnut.o.d -Wall -Wundef 
--Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -Os -msoft-float -pipe 
--fomit-frame-pointer -fno-builtin -fPIC -nostdinc -isystem 
-/_TOOLS_/.dist0/gnu-gcc-4.0.2-binutils-2.16.1-glibc-2.3.6-e300c2-powerpc-unknown-linux-gnu/i686-pc-linux2.4/bin/../lib/gcc/powerpc-unknown-linux-gnu/4.0.2/include 
--Iarch/powerpc/boot -I/temp/kumar.484/arch/powerpc/boot -mcpu=405 -c -o 
-arch/powerpc/boot/treeboot-walnut.o arch/powerpc/boot/treeboot-walnut.c
-Assembler messages:
-Error: Internal assembler error for instruction icbt
-Internal error, aborting at 
-/tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/gcc-4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/config/tc-ppc.c 
-line 1314 in ppc_setup_opcodes
-Please report this bug.
-make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
-make: *** [uImage] Error 2
+This patch applies to Kumar's for-2.6.24 branch.
 
-ARCH=ppc64?  WTF?  I specifically said ARCH=powerpc on the make command line.
+ arch/powerpc/sysdev/qe_lib/qe.c |   65 +++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/qe.h        |    3 ++
+ 2 files changed, 68 insertions(+), 0 deletions(-)
 
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 3d57d38..da68534 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -199,6 +199,71 @@ void qe_setbrg(unsigned int brg, unsigned int rate, unsigned int multiplier)
+ 	out_be32(&qe_immr->brg.brgc[brg - 1], tempval);
+ }
+ 
++/* Convert a string to a QE clock source enum
++ *
++ * This function takes a string, typically from a property in the device
++ * tree, and returns the corresponding "enum qe_clock" value.
++*/
++enum qe_clock qe_clock_source(const char *source)
++{
++	/* This structure is designed so that it's 8 bytes in size */
++	static struct {
++		const char name[6];
++		u16 num;
++	} __attribute__((packed)) sources[QE_CLK_DUMMY] =
++	{
++		{"none", QE_CLK_NONE},
++		{"brg1", QE_BRG1},
++		{"brg2", QE_BRG2},
++		{"brg3", QE_BRG3},
++		{"brg4", QE_BRG4},
++		{"brg5", QE_BRG5},
++		{"brg6", QE_BRG6},
++		{"brg7", QE_BRG7},
++		{"brg8", QE_BRG8},
++		{"brg9", QE_BRG9},
++		{"brg10", QE_BRG10},
++		{"brg11", QE_BRG11},
++		{"brg12", QE_BRG12},
++		{"brg13", QE_BRG13},
++		{"brg14", QE_BRG14},
++		{"brg15", QE_BRG15},
++		{"brg16", QE_BRG16},
++		{"clk1", QE_CLK1},
++		{"clk2", QE_CLK2},
++		{"clk3", QE_CLK3},
++		{"clk4", QE_CLK4},
++		{"clk5", QE_CLK5},
++		{"clk6", QE_CLK6},
++		{"clk7", QE_CLK7},
++		{"clk8", QE_CLK8},
++		{"clk9", QE_CLK9},
++		{"clk10", QE_CLK10},
++		{"clk11", QE_CLK11},
++		{"clk12", QE_CLK12},
++		{"clk13", QE_CLK13},
++		{"clk14", QE_CLK14},
++		{"clk15", QE_CLK15},
++		{"clk16", QE_CLK16},
++		{"clk17", QE_CLK17},
++		{"clk18", QE_CLK18},
++		{"clk19", QE_CLK19},
++		{"clk20", QE_CLK20},
++		{"clk21", QE_CLK21},
++		{"clk22", QE_CLK22},
++		{"clk23", QE_CLK23},
++		{"clk24", QE_CLK24}
++	};
++	unsigned int i;
++
++	for (i = 0; i < QE_CLK_DUMMY; i++)
++		if (strcasecmp(source, sources[i].name) == 0)
++			return (enum qe_clock) sources[i].num;
++
++	return QE_CLK_DUMMY;
++}
++EXPORT_SYMBOL(qe_clock_source);
++
+ /* Initialize SNUMs (thread serial numbers) according to
+  * QE Module Control chapter, SNUM table
+  */
+diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
+index 0dabe46..d28bc85 100644
+--- a/include/asm-powerpc/qe.h
++++ b/include/asm-powerpc/qe.h
+@@ -175,6 +175,9 @@ enum qe_clock {
+ 	QE_CLK_DUMMY,
+ };
+ 
++/* Convert a string to a QE clock source enum */
++enum qe_clock qe_clock_source(const char *source);
++
+ /* QE CMXUCR Registers.
+  * There are two UCCs represented in each of the four CMXUCR registers.
+  * These values are for the UCC in the LSBs
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+1.5.2.4
