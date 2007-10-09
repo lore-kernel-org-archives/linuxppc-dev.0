@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 75F6ADDFB8
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 23:52:55 +1000 (EST)
-In-Reply-To: <20071008222503.25840.37660.stgit@trillian.cg.shawcable.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 15AA4DDF54
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:20:13 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2163793wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 07:20:12 -0700 (PDT)
+Message-ID: <fa686aa40710090720g5b39550cxa89773b0088fe26@mail.gmail.com>
+Date: Tue, 9 Oct 2007 08:20:11 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/6] Platforms shouldn't mess with ROOT_DEV
+In-Reply-To: <E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20071008222445.25840.6561.stgit@trillian.cg.shawcable.net>
 	<20071008222503.25840.37660.stgit@trillian.cg.shawcable.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Platforms shouldn't mess with ROOT_DEV
-Date: Tue, 9 Oct 2007 08:53:08 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
+	<E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,27 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 8, 2007, at 5:25 PM, Grant Likely wrote:
-
-> From: Grant Likely <grant.likely@secretlab.ca>
+On 10/9/07, Kumar Gala <galak@kernel.crashing.org> wrote:
 >
-> There is no good reason for board platform code to mess with the  
-> ROOT_DEV.
-> Remove it from all in-tree platforms except powermac
+> On Oct 8, 2007, at 5:25 PM, Grant Likely wrote:
 >
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > There is no good reason for board platform code to mess with the
+> > ROOT_DEV.
+> > Remove it from all in-tree platforms except powermac
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> >  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
+> >  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
+> >  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
+> >  arch/powerpc/platforms/cell/setup.c          |    5 -----
+> >  arch/powerpc/platforms/celleb/setup.c        |    5 -----
+> >  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
+> >  arch/powerpc/platforms/pseries/setup.c       |    5 -----
+> >  7 files changed, 0 insertions(+), 48 deletions(-)
 >
->  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
->  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
->  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
->  arch/powerpc/platforms/cell/setup.c          |    5 -----
->  arch/powerpc/platforms/celleb/setup.c        |    5 -----
->  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
->  arch/powerpc/platforms/pseries/setup.c       |    5 -----
->  7 files changed, 0 insertions(+), 48 deletions(-)
+> I'd drop mpc86xads_setup since I think Scott's rework will deal with it.
 
-I'd drop mpc86xads_setup since I think Scott's rework will deal with it.
+Okay, will do.  I wasn't sure since you hadn't explicitly mentioned it.
 
-- k
+Cheers,
+g.
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
