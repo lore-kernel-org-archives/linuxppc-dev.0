@@ -1,11 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18187.31582.236420.418530@cargo.ozlabs.ibm.com>
-Date: Tue, 9 Oct 2007 23:00:14 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org, lkml@rtr.ca, linuxppc-dev@ozlabs.org
-Subject: crash on shutdown on rs/6000 powerpc
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B6F4EDDF16
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 23:30:31 +1000 (EST)
+In-Reply-To: <fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E83F8EDA-95EF-4116-A214-D008BA70135D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Build failure on treeboot-walnut.c
+Date: Tue, 9 Oct 2007 08:30:37 -0500
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,38 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have just seen a crash at shutdown with 2.6.23-rc9 on an RS/6000
-powerpc box (POWER3, 64-bit).  It crashed immediately after printing
-"Disabling non-boot CPUs", so I tried reverting 4047727e and that
-fixed it.  It's unfortunate that that commit added the
-disable_nonboot_cpus for all architectures, when only x86[-64] needs
-it.  (At least it sounds like only x86[-64] needs it; the commit
-message seems quite x86-centric.)
 
-In case anyone on the linuxppc-dev list wants to chase this further,
-the crash looks like this:
+On Oct 8, 2007, at 11:00 PM, Grant Likely wrote:
 
-Disabling non-boot CPUs ...
-cpu 0x1: Vector: 300 (Data Access) at [c00000003f923950]
-    pc: c00000000003bf98: .xics_set_cpu_priority+0x58/0x78
-    lr: c00000000003bff4: .xics_migrate_irqs_away+0x3c/0x20c
-    sp: c00000003f923bd0
-   msr: a000000000001032
-   dar: 4
- dsisr: 42000000
-  current = 0xc0000000bfb6b060
-  paca    = 0xc00000000071c600
-    pid   = 2610, comm = kstopmachine
-enter ? for help
-[c00000003f923c40] c00000000003bff4 .xics_migrate_irqs_away+0x3c/0x20c
-[c00000003f923d00] c000000000040d54 .pseries_cpu_disable+0x98/0xb4
-[c00000003f923d80] c000000000028e4c .__cpu_disable+0x44/0x58
-[c00000003f923df0] c00000000007e204 .take_cpu_down+0x34/0x60
-[c00000003f923e70] c00000000008ba3c .do_stop+0x144/0x1e4
-[c00000003f923f00] c00000000006fd74 .kthread+0x78/0xc4
-[c00000003f923f90] c0000000000272a8 .kernel_thread+0x4c/0x68
+> On 10/8/07, Timur Tabi <timur@freescale.com> wrote:
+>> Looks like the problem is back:
+>>
+>>    BOOTCC  arch/powerpc/boot/treeboot-walnut.o
+>> Assembler messages:
+>> Error: Internal assembler error for instruction icbt
+>> Internal error, aborting at
+>> /tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/ 
+>> gcc-4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/ 
+>> config/tc-ppc.c
+>> line 1314 in ppc_setup_opcodes
+>> Please report this bug.
+>> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
+>> make: *** [uImage] Error 2
+>
+> No; this is something different.  The assember itself is failing
+> internally.  What version of binutils are you running?
+>
 
-I don't have time tonight or tomorrow to track this down further.  I'm
-taking the kids to the coast tommorow. :)
+2.61.1 if we believe his path :)
 
-Paul.
+the assembler is failing because 'icbt' has several possible  
+different instruction encodings and I'm guessing he's getting a  
+conflict set.
+
+What's the actual compile line?  Want to see the flags to assembler  
+of -Wa to the compiler.
+
+- k
