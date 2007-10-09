@@ -1,32 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C46DADDE1F
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 07:28:14 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99LSBbs001272
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 17:28:11 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l99LSACo431896
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 15:28:10 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l99LSAsE018592
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 15:28:10 -0600
-Date: Tue, 9 Oct 2007 16:28:10 -0500
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: Hard hang in hypervisor!?
-Message-ID: <20071009212810.GN4350@austin.ibm.com>
-References: <20071009203724.GM4350@austin.ibm.com>
-	<20071009211819.GR29559@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071009211819.GR29559@localdomain>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 33E96DDE17
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 08:36:21 +1000 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 5E866221BBF
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:19 +0200 (CEST)
+Received: from mail.denx.de (p54965DA0.dip.t-dialin.net [84.150.93.160])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 4CA1590EC2
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:19 +0200 (CEST)
+Received: from gemini.denx.de (gemini.denx.de [10.0.0.2])
+	by mail.denx.de (Postfix) with ESMTP id 8D1DE6D00A5
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:36:18 +0200 (CEST)
+From: Wolfgang Denk <wd@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [PPC] Disable vDSO support for ARCH=ppc where it's not
+	implemented.
+Date: Wed, 10 Oct 2007 00:36:18 +0200
+Message-Id: <11919693783126-git-send-email-wd@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 09, 2007 at 04:18:19PM -0500, Nathan Lynch wrote:
-> Linas Vepstas wrote:
-> > 
-> > I was futzing with linux-2.6.23-rc8-mm1 in a power6 lpar when,
-> > for whatever reason, a spinlock locked up. The bizarre thing 
-> > was that the rest of system locked up as well: an ssh terminal,
-> > and also an hvc console.
-> > 
-> > Breaking into the debugger showed 4 cpus, 1 of which was 
-> > deadlocked in the spinlock, and the other 3 in 
-> > .pseries_dedicated_idle_sleep
-> > 
-> > This was, ahhh, unexpected.  What's up with that? Can
-> > anyone provide any insight?
-> 
-> Sounds consistent with a task trying to double-acquire the lock, or an
-> interrupt handler attempting to acquire a lock that the current task
-> holds.  Or maybe even an uninitialized spinlock.  Do you know which
-> lock it was?
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+---
+ arch/powerpc/kernel/vdso.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Not sure .. trying to find out now. But why would that kill the
-ssh session, and the console? Sure, so maybe one cpu is spinning,
-but the other three can still take interrupts, right?  The ssh session
-should have been generating ethernet card interrupts, and the console
-should have been generating hvc interrupts.  
-
-Err ..  it was cpu 0 that was spinlocked.  Are interrupts not
-distributed?
-
-Perhaps I should IRC this ... 
-
---linas
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 213fa31..2322ba5 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -766,7 +766,9 @@ static int __init vdso_init(void)
+ 
+ 	return 0;
+ }
++#ifdef CONFIG_PPC_MERGE
+ arch_initcall(vdso_init);
++#endif
+ 
+ int in_gate_area_no_task(unsigned long addr)
+ {
+-- 
+1.5.2.2
