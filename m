@@ -1,26 +1,17 @@
-Return-Path: <adaplas@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 7D946DDF5A
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 07:06:36 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2302116wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 14:06:31 -0700 (PDT)
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add
-	of_platform binding to xilinxfb
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	<1191370502.5238.1.camel@daplas>
-	<fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
-	<1191906242.6083.7.camel@daplas>
-	<fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 10 Oct 2007 05:06:12 +0800
-Message-Id: <1191963972.5446.1.camel@daplas>
-Mime-Version: 1.0
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, akonovalov@ru.mvista.com,
-	linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id CF930DDFBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 07:18:36 +1000 (EST)
+Date: Tue, 9 Oct 2007 16:18:19 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: Hard hang in hypervisor!?
+Message-ID: <20071009211819.GR29559@localdomain>
+References: <20071009203724.GM4350@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071009203724.GM4350@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,23 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-10-09 at 11:39 -0600, Grant Likely wrote:
-> On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
-> > > BTW, what path do framebuffer patches take to get into Linus' tree?
-> > > Does he pull your tree directly, or do they go through someone else's
-> > > tree?
-> >
-> > They all go to -mm tree, unless it's a needed fix, then to Linus's.
-> >
-> > Tony
+Linas Vepstas wrote:
 > 
-> Ah, okay.
+> I was futzing with linux-2.6.23-rc8-mm1 in a power6 lpar when,
+> for whatever reason, a spinlock locked up. The bizarre thing 
+> was that the rest of system locked up as well: an ssh terminal,
+> and also an hvc console.
 > 
-> Since the XilinxFB is a powerpc-only device, is it okay with you if I
-> get Paul Mackerras to merge them into his tree instead (that way the
-> changes go in with the platform code which requires these changes)
+> Breaking into the debugger showed 4 cpus, 1 of which was 
+> deadlocked in the spinlock, and the other 3 in 
+> .pseries_dedicated_idle_sleep
+> 
+> This was, ahhh, unexpected.  What's up with that? Can
+> anyone provide any insight?
 
-Fine with me.
-
-Tony
+Sounds consistent with a task trying to double-acquire the lock, or an
+interrupt handler attempting to acquire a lock that the current task
+holds.  Or maybe even an uninitialized spinlock.  Do you know which
+lock it was?
