@@ -1,21 +1,26 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 58AC7DDF6A
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 21:39:00 +1000 (EST)
-Date: Tue, 9 Oct 2007 13:38:57 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch v2] PS3: Add os-area database routines
-In-Reply-To: <470AD44C.5080305@am.sony.com>
-Message-ID: <Pine.LNX.4.62.0710091334320.6961@pademelon.sonytel.be>
+Return-Path: <ralferoo@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.230])
+	by ozlabs.org (Postfix) with ESMTP id 2B642DDEFF
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 22:23:42 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so831724wri
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 05:23:41 -0700 (PDT)
+Message-ID: <18a15270710090523l7bf3d823r33ec9af4bcabc44d@mail.gmail.com>
+Date: Tue, 9 Oct 2007 13:23:41 +0100
+From: "Ranulf Doswell" <ralf@ranulf.net>
+Sender: ralferoo@gmail.com
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 6/6] PS3: Add os-area database routines
+In-Reply-To: <Pine.LNX.4.62.0710091135240.6961@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5020_16254858.1191932621174"
 References: <20071006213542.311447584@am.sony.com>
 	<20071006213542.954029915@am.sony.com>
-	<470AD44C.5080305@am.sony.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1761651087-1191929937=:6961"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	<18a15270710080648x3b5f1135meea3d7b048a1a543@mail.gmail.com>
+	<470A6E4E.5090009@am.sony.com>
+	<18a15270710081559m3236126r85f797718300756f@mail.gmail.com>
+	<Pine.LNX.4.62.0710091135240.6961@pademelon.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,88 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+------=_Part_5020_16254858.1191932621174
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
----584337861-1761651087-1191929937=:6961
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On 09/10/2007, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+>
+> On Mon, 8 Oct 2007, Ranulf Doswell wrote:
+> > However, in this case the only data required is a single identifier used
+> to
+> > identify one PS3 from another, and in fact this single 64-bit token can
+> be
+> > shared amongst many other applications that require the same function -
+> > certainly I intend to expose it in a common way in my games library's
+> API
+> > for all users of the library.
+>
+> MAC address?
+>
 
-On Mon, 8 Oct 2007, Geoff Levand wrote:
->   o Add a KERN_WARNING message when flash driver is not available.
+Indeed, that's perfect! That solution also just occurred to me whilst
+walking back from lunch and when I come back to check my e-mail you've
+already suggested it! Funny how I've been ignoring the most obvious answer
+for weeks!
 
-> --- a/arch/powerpc/platforms/ps3/os-area.c
-> +++ b/arch/powerpc/platforms/ps3/os-area.c
+Cheers,
+    Ralf.
 
-> +static void update_flash_db(void)
-> +{
-> +	int result;
-> +	int file;
-> +	off_t offset;
-> +	ssize_t count;
-> +	static const unsigned int buf_len = 8 * OS_AREA_SEGMENT_SIZE;
-> +	const struct os_area_header *header;
-> +	struct os_area_db* db;
-> +
-> +	/* Read in header and db from flash. */
-> +
-> +	file = sys_open("/dev/ps3flash", O_RDWR, 0);
-> +
-> +	if (file < 0) {
-> +		pr_debug("%s:%d sys_open failed\n", __func__, __LINE__);
-                ^^^^^^^^
-pr_warn?
+------=_Part_5020_16254858.1191932621174
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-If the ps3flash module is not loaded, you want to see the warning.
+On 09/10/2007, <b class="gmail_sendername">Geert Uytterhoeven</b> &lt;<a href="mailto:Geert.Uytterhoeven@sonycom.com">Geert.Uytterhoeven@sonycom.com</a>&gt; wrote:<div><span class="gmail_quote"></span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+On Mon, 8 Oct 2007, Ranulf Doswell wrote:<br>&gt; However, in this case the only data required is a single identifier used to<br>&gt; identify one PS3 from another, and in fact this single 64-bit token can be<br>&gt; shared amongst many other applications that require the same function -
+<br>&gt; certainly I intend to expose it in a common way in my games library&#39;s API<br>&gt; for all users of the library.<br><br>MAC address?<br></blockquote></div><br>Indeed, that&#39;s perfect! That solution also just occurred to me whilst walking back from lunch and when I come back to check my e-mail you&#39;ve already suggested it! Funny how I&#39;ve been ignoring the most obvious answer for weeks!
+<br><br>Cheers,<br>&nbsp;&nbsp;&nbsp; Ralf.<br>
 
-> @@ -264,6 +664,12 @@ static void os_area_queue_work_handler(s
->  		pr_debug("%s:%d of_find_node_by_path failed\n",
->  			__func__, __LINE__);
->  
-> +#if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
-> +	update_flash_db();
-> +#else
-> +	printk(KERN_WARNING "%s:%d: No flash rom driver configured.\n",
-> +		__func__, __LINE__);
-> +#endif
->  	pr_debug(" <- %s:%d\n", __func__, __LINE__);
->  }
-
-Alternatively:
-
-    #if defined(CONFIG_PS3_FLASH) || defined(CONFIG_PS3_FLASH_MODULE)
-    static int update_flash_db(void)
-    {
-	...
-	return error;
-    }
-    #else
-    static inline int update_flash_db(void)
-    {
-	return -Exxx;
-    }
-    #endif
-
-	if (update_flash_db())
-	    printk(KERN_WARNING ...);
-
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1761651087-1191929937=:6961--
+------=_Part_5020_16254858.1191932621174--
