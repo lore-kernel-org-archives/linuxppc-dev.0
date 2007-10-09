@@ -1,33 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B53FDDFB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 06:37:31 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99KbRwp002499
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 16:37:27 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l99KbOmH170010
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 14:37:25 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l99KbOo2028814
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 14:37:24 -0600
-Received: from topology.austin.ibm.com (dyn95340167.austin.ibm.com
-	[9.53.40.167])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l99KbO3o028793
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 14:37:24 -0600
-Date: Tue, 9 Oct 2007 15:37:24 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: Hard hang in hypervisor!? 
-Message-ID: <20071009203724.GM4350@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
+Return-Path: <adaplas@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 7D946DDF5A
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 07:06:36 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2302116wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 14:06:31 -0700 (PDT)
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add
+	of_platform binding to xilinxfb
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
+References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
+	<1191370502.5238.1.camel@daplas>
+	<fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
+	<1191906242.6083.7.camel@daplas>
+	<fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 10 Oct 2007 05:06:12 +0800
+Message-Id: <1191963972.5446.1.camel@daplas>
+Mime-Version: 1.0
+Cc: linuxppc <linuxppc-dev@ozlabs.org>, akonovalov@ru.mvista.com,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-10-09 at 11:39 -0600, Grant Likely wrote:
+> On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
+> > > BTW, what path do framebuffer patches take to get into Linus' tree?
+> > > Does he pull your tree directly, or do they go through someone else's
+> > > tree?
+> >
+> > They all go to -mm tree, unless it's a needed fix, then to Linus's.
+> >
+> > Tony
+> 
+> Ah, okay.
+> 
+> Since the XilinxFB is a powerpc-only device, is it okay with you if I
+> get Paul Mackerras to merge them into his tree instead (that way the
+> changes go in with the platform code which requires these changes)
 
-I was futzing with linux-2.6.23-rc8-mm1 in a power6 lpar when,
-for whatever reason, a spinlock locked up. The bizarre thing 
-was that the rest of system locked up as well: an ssh terminal,
-and also an hvc console.
+Fine with me.
 
-Breaking into the debugger showed 4 cpus, 1 of which was 
-deadlocked in the spinlock, and the other 3 in 
-.pseries_dedicated_idle_sleep
-
-This was, ahhh, unexpected.  What's up with that? Can
-anyone provide any insight?
-
-I should mention:
--- prior to the complete hard lockp, I did see 
- BUG: soft lockup - CPU#0 stuck for 11s! [ip:4473]
-go off, and I did manage to sneak in a few commands
-into the console and the ssh session. Then it locked
-up hard -- but still not completely -- exactly 
-360 seconds later, a kernel thread ran for a while, 
-producing some console output, even though the 
-keyboard and console were locked up.
-
---linas
+Tony
