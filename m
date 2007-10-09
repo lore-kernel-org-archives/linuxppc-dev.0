@@ -1,26 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 995BEDDFD4
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 04:17:54 +1000 (EST)
-Message-ID: <470BC5CA.1010105@freescale.com>
-Date: Tue, 09 Oct 2007 13:17:46 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] qe: add function qe_clock_source
-References: <1191945199488-git-send-email-timur@freescale.com>	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>	<470BA5DF.5060206@freescale.com>	<2E830F97-ADAE-43CA-9BD3-BEBFEFBE1D5C@kernel.crashing.org>	<470BAAA2.30400@freescale.com>	<8D4AA8EB-812F-4E58-A13C-CE3BA72037F3@kernel.crashing.org>
-	<470BAFA8.1060408@freescale.com> <470BB09D.7060304@freescale.com>
-	<470BB0E6.4050801@freescale.com>
-	<EF1344B5-5A53-4CC1-A51E-59EB9024B0C5@kernel.crashing.org>
-	<470BC484.3060702@freescale.com>
-	<91CB543F-A0F2-42A4-AA5C-6F8FC99F9EC3@kernel.crashing.org>
-In-Reply-To: <91CB543F-A0F2-42A4-AA5C-6F8FC99F9EC3@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@jdub.homelinux.org>
+Date: Tue, 9 Oct 2007 13:52:35 -0500
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Build failure on treeboot-walnut.cg
+Message-ID: <20071009135235.1026bb23@vader.jdub.homelinux.org>
+In-Reply-To: <470BA6ED.3020504@freescale.com>
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<20071009030729.GI12499@localhost.localdomain>
+	<470BA6ED.3020504@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.com,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Tue, 09 Oct 2007 11:06:05 -0500
+Timur Tabi <timur@freescale.com> wrote:
 
-> But that's a function of linux' use.  Remember decouple the device tree 
-> from how linux does things.
+> David Gibson wrote:
+> 
+> > Policy.  Compiling everything means build bugs - like this one - can
+> > be found by everybody, not just those building for the specific
+> > obscure platform.
+> 
+> Is this a new policy?  Modules in the kernel are not built unless you want 
+> them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
+> targeting is built.  So I don't really understand why you claim it's normal 
+> for platform-specific files to be built, regardless of the actual platform.
+> 
+> And frankly, I don't like this "policy".  Build bugs for 4xx should not 
+> interfere in my 83xx development.  I can't build any kernels now because of 
+> this bug!
 
-Ok, I just understand what your point is.  I'm proposing that we just put the 
-name of the clock source in the device tree, and have a function which 
-converts that into an internal representation.  The clock is called "BRG3". 
-It's not called BRG, #3 or something like that.  Same thing with the CLK sources.
+I fixed this bug.  It should be in Paul's latest tree.  You seem to be
+having a different issue with your binutils though.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+josh
