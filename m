@@ -1,26 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id E1037DDF3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 03:39:20 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2234456wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 10:39:19 -0700 (PDT)
-Message-ID: <fa686aa40710091039hd945eb4n7dfdba3df37a08f2@mail.gmail.com>
-Date: Tue, 9 Oct 2007 11:39:18 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/6] Patch series to add of_platform
-	binding to xilinxfb
-In-Reply-To: <1191906242.6083.7.camel@daplas>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071001155024.6114.47993.stgit@trillian.cg.shawcable.net>
-	<1191370502.5238.1.camel@daplas>
-	<fa686aa40710082143k2092e7d2l35bc3bda55bb6237@mail.gmail.com>
-	<1191906242.6083.7.camel@daplas>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, akonovalov@ru.mvista.com,
-	linux-fbdev-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 41F8ADDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 04:10:42 +1000 (EST)
+In-Reply-To: <470BB0E6.4050801@freescale.com>
+References: <1191945199488-git-send-email-timur@freescale.com>	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>	<470BA5DF.5060206@freescale.com>	<2E830F97-ADAE-43CA-9BD3-BEBFEFBE1D5C@kernel.crashing.org>	<470BAAA2.30400@freescale.com>	<8D4AA8EB-812F-4E58-A13C-CE3BA72037F3@kernel.crashing.org>
+	<470BAFA8.1060408@freescale.com> <470BB09D.7060304@freescale.com>
+	<470BB0E6.4050801@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EF1344B5-5A53-4CC1-A51E-59EB9024B0C5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] qe: add function qe_clock_source
+Date: Tue, 9 Oct 2007 13:10:53 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,29 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/8/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> On Mon, 2007-10-08 at 22:43 -0600, Grant Likely wrote:
-> > BTW, what path do framebuffer patches take to get into Linus' tree?
-> > Does he pull your tree directly, or do they go through someone else's
-> > tree?
+
+On Oct 9, 2007, at 11:48 AM, Timur Tabi wrote:
+
+> Scott Wood wrote:
 >
-> They all go to -mm tree, unless it's a needed fix, then to Linus's.
+>> In the absence of a BRG, the driver should just not support  
+>> changing the baud rate -- it shouldn't fail to function.
 >
-> Tony
+> Since I don't have hardware that can test external clocks, I can't  
+> guarantee that any such code will work.
+>
+> I'm sure there are a dozen things I could do to improve the driver  
+> as it stands, but I need to draw the line somewhere.
 
-Ah, okay.
+I guess my point is it appears the patch is related to how we  
+represent the RX/TX clock information in the device tree.
 
-Since the XilinxFB is a powerpc-only device, is it okay with you if I
-get Paul Mackerras to merge them into his tree instead (that way the
-changes go in with the platform code which requires these changes)
+I'm suggesting that we do something like:
 
-Paulus, is that okay by you?
+rx-clock-type = "brg" or "clk"
+rx-clock-id = 3
 
-Thanks,
-g.
+I don't see how this doesn't cover what you need in the device tree.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+- k
