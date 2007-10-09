@@ -1,22 +1,20 @@
 Return-Path: <glikely@secretlab.ca>
 Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 15AA4DDF54
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:20:13 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2163793wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 07:20:12 -0700 (PDT)
-Message-ID: <fa686aa40710090720g5b39550cxa89773b0088fe26@mail.gmail.com>
-Date: Tue, 9 Oct 2007 08:20:11 -0600
+	by ozlabs.org (Postfix) with ESMTP id DF494DDFBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 00:38:40 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2170321wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 09 Oct 2007 07:38:39 -0700 (PDT)
+Message-ID: <fa686aa40710090738s748c17cdn6fa29cc6aea433d9@mail.gmail.com>
+Date: Tue, 9 Oct 2007 08:38:38 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Platforms shouldn't mess with ROOT_DEV
-In-Reply-To: <E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH 00/15] [POWERPC] TQM5200, CM5200 and Motion-PRO support
+In-Reply-To: <470B450E.4020708@semihalf.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20071008222445.25840.6561.stgit@trillian.cg.shawcable.net>
-	<20071008222503.25840.37660.stgit@trillian.cg.shawcable.net>
-	<E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
+References: <47075FA7.3030108@semihalf.com> <470B450E.4020708@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/9/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+On 10/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
 >
-> On Oct 8, 2007, at 5:25 PM, Grant Likely wrote:
+> All,
 >
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > There is no good reason for board platform code to mess with the
-> > ROOT_DEV.
-> > Remove it from all in-tree platforms except powermac
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >
-> >  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
-> >  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
-> >  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
-> >  arch/powerpc/platforms/cell/setup.c          |    5 -----
-> >  arch/powerpc/platforms/celleb/setup.c        |    5 -----
-> >  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
-> >  arch/powerpc/platforms/pseries/setup.c       |    5 -----
-> >  7 files changed, 0 insertions(+), 48 deletions(-)
->
-> I'd drop mpc86xads_setup since I think Scott's rework will deal with it.
+> Thanks for the review, will process all the comments and resend
+> updated patches soon.
 
-Okay, will do.  I wasn't sure since you hadn't explicitly mentioned it.
+Make sure you take a look at the 6 patches I posted yesterday.  They
+will probably go in before your changes and will cause conflicts.
+
+Kumar, once I respin the ROOT_DEV patch, how does it look for merging
+my patch set?
 
 Cheers,
 g.
+
+>
+> Marian
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
 
 -- 
