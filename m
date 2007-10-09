@@ -1,20 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4455ADE01A
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 01:57:11 +1000 (EST)
-In-Reply-To: <fa686aa40710090738s748c17cdn6fa29cc6aea433d9@mail.gmail.com>
-References: <47075FA7.3030108@semihalf.com> <470B450E.4020708@semihalf.com>
-	<fa686aa40710090738s748c17cdn6fa29cc6aea433d9@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3C0AD3C5-70E9-4D39-90A7-82DD2AAD377D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 00/15] [POWERPC] TQM5200, CM5200 and Motion-PRO support
-Date: Tue, 9 Oct 2007 10:57:29 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EECF2DDFFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 02:01:44 +1000 (EST)
+Message-ID: <470BA5DF.5060206@freescale.com>
+Date: Tue, 09 Oct 2007 11:01:35 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] qe: add function qe_clock_source
+References: <1191945199488-git-send-email-timur@freescale.com>
+	<B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>
+In-Reply-To: <B8D11E08-7AC5-4B21-9C40-1068B29B058B@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 9, 2007, at 9:38 AM, Grant Likely wrote:
-
-> On 10/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
+Kumar Gala wrote:
+> 
+> On Oct 9, 2007, at 10:53 AM, Timur Tabi wrote:
+> 
+>> Add function qe_clock_source() which takes a string containing the 
+>> name of a
+>> QE clock source (as is typically found in device trees) and returns the
+>> matching enum qe_clock value.
 >>
->> All,
+>> Signed-off-by: Timur Tabi <timur@freescale.com>
+>> ---
 >>
->> Thanks for the review, will process all the comments and resend
->> updated patches soon.
->
-> Make sure you take a look at the 6 patches I posted yesterday.  They
-> will probably go in before your changes and will cause conflicts.
->
-> Kumar, once I respin the ROOT_DEV patch, how does it look for merging
-> my patch set?
+>> This patch applies to Kumar's for-2.6.24 branch.
+>>
+>>  arch/powerpc/sysdev/qe_lib/qe.c |   65 
+>> +++++++++++++++++++++++++++++++++++++++
+>>  include/asm-powerpc/qe.h        |    3 ++
+>>  2 files changed, 68 insertions(+), 0 deletions(-)
+> 
+> I'm sure its asking to much of the QE HW for BRGs or CLKs to be sequential.
 
-most likely, however I think the patchset should go via paul since  
-you're touching things all over arch/powerpc (52xx, 4xx, cell,  
-pseries, generic code, etc)
+Well, this patch doesn't really address that anomaly.  Its purpose is to help 
+get rid of stuff like this in the device tree:
 
-- k
+		ucc@2200 {
+			...
+			rx-clock = <19>;
+			tx-clock = <1a>;
+
+19 and 1a are the integer equivalents of enum qe_clock.  As you can imagine, 
+that's error prone.
+
+If this patch is accepted, I got another patch that changes qe_setbrg() to 
+accept a qe_clock enum.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
