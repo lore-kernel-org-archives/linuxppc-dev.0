@@ -2,21 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B6F4EDDF16
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 23:30:31 +1000 (EST)
-In-Reply-To: <fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
-References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-	<470AA224.7050709@freescale.com>
-	<fa686aa40710082100h29c1d2a8hf939ca3306562fac@mail.gmail.com>
+	by ozlabs.org (Postfix) with ESMTP id 75F6ADDFB8
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 23:52:55 +1000 (EST)
+In-Reply-To: <20071008222503.25840.37660.stgit@trillian.cg.shawcable.net>
+References: <20071008222445.25840.6561.stgit@trillian.cg.shawcable.net>
+	<20071008222503.25840.37660.stgit@trillian.cg.shawcable.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E83F8EDA-95EF-4116-A214-D008BA70135D@kernel.crashing.org>
+Message-Id: <E82FBA5B-61A0-4A0A-886B-0FCDD6AFC255@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Build failure on treeboot-walnut.c
-Date: Tue, 9 Oct 2007 08:30:37 -0500
+Subject: Re: [PATCH 3/6] Platforms shouldn't mess with ROOT_DEV
+Date: Tue, 9 Oct 2007 08:53:08 -0500
 To: Grant Likely <grant.likely@secretlab.ca>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +25,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 8, 2007, at 11:00 PM, Grant Likely wrote:
+On Oct 8, 2007, at 5:25 PM, Grant Likely wrote:
 
-> On 10/8/07, Timur Tabi <timur@freescale.com> wrote:
->> Looks like the problem is back:
->>
->>    BOOTCC  arch/powerpc/boot/treeboot-walnut.o
->> Assembler messages:
->> Error: Internal assembler error for instruction icbt
->> Internal error, aborting at
->> /tmp/crosstool/crosstool-0.42/build/powerpc-unknown-linux-gnu/ 
->> gcc-4.0.2_e300-enabled-glibc-2.3.6/binutils-2.16.1-complete/gas/ 
->> config/tc-ppc.c
->> line 1314 in ppc_setup_opcodes
->> Please report this bug.
->> make[1]: *** [arch/powerpc/boot/treeboot-walnut.o] Error 2
->> make: *** [uImage] Error 2
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> No; this is something different.  The assember itself is failing
-> internally.  What version of binutils are you running?
+> There is no good reason for board platform code to mess with the  
+> ROOT_DEV.
+> Remove it from all in-tree platforms except powermac
 >
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+>  arch/powerpc/platforms/52xx/efika.c          |    9 ---------
+>  arch/powerpc/platforms/52xx/lite5200.c       |   12 ------------
+>  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    2 --
+>  arch/powerpc/platforms/cell/setup.c          |    5 -----
+>  arch/powerpc/platforms/celleb/setup.c        |    5 -----
+>  arch/powerpc/platforms/chrp/setup.c          |   10 ----------
+>  arch/powerpc/platforms/pseries/setup.c       |    5 -----
+>  7 files changed, 0 insertions(+), 48 deletions(-)
 
-2.61.1 if we believe his path :)
-
-the assembler is failing because 'icbt' has several possible  
-different instruction encodings and I'm guessing he's getting a  
-conflict set.
-
-What's the actual compile line?  Want to see the flags to assembler  
-of -Wa to the compiler.
+I'd drop mpc86xads_setup since I think Scott's rework will deal with it.
 
 - k
