@@ -1,20 +1,23 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E9939DDFF7
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 17:53:33 +1000 (EST)
-Date: Tue, 9 Oct 2007 11:53:14 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [UNTESTED PATCH v2] 8xx: Convert mpc866ads to the new device
-	binding.
-Message-ID: <20071009115314.453275f9@kernel.crashing.org>
-In-Reply-To: <20071008224847.GA4053@loki.buserror.net>
-References: <20071008224847.GA4053@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 309ECDDFF9
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 19:08:46 +1000 (EST)
+Received: from localhost (unknown [127.0.0.1])
+	by mail.semihalf.com (Postfix) with ESMTP id 7E14914352
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 Oct 2007 11:08:43 +0200 (CEST)
+Received: from mail.semihalf.com ([127.0.0.1])
+	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 14438-07 for <linuxppc-dev@ozlabs.org>;
+	Tue,  9 Oct 2007 11:08:42 +0200 (CEST)
+Message-ID: <470B450E.4020708@semihalf.com>
+Date: Tue, 09 Oct 2007 11:08:30 +0200
+From: Marian Balakowicz <m8@semihalf.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 00/15] [POWERPC] TQM5200, CM5200 and Motion-PRO support
+References: <47075FA7.3030108@semihalf.com>
+In-Reply-To: <47075FA7.3030108@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Scott,
 
-On Mon, 8 Oct 2007 17:48:47 -0500
-Scott Wood wrote:
+All,
 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+Thanks for the review, will process all the comments and resend
+updated patches soon.
 
-ok, will give it a try shortly. 
-patch looks good after a quick glance.
-
--- 
-Sincerely, Vitaly
+Marian
