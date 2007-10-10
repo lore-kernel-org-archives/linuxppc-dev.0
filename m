@@ -1,13 +1,11 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 10 Oct 2007 16:38:57 +1000
+Date: Wed, 10 Oct 2007 17:12:12 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [RFC][POWERPC] Add arch/powerpc 4xx NDFC (NAND) support
-Message-ID: <20071010063857.GB6135@localhost.localdomain>
-References: <200710100832.13105.sr@denx.de>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Add functions to get/add/delete memory reservemap entries
+Message-ID: <20071010071212.GC6135@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200710100832.13105.sr@denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,405 +16,318 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 10, 2007 at 08:32:12AM +0200, Stefan Roese wrote:
-> This patch makes the PPC4xx NAND flash controller (NDFC) device-tree
-> friendly using OF glue code to create and insert necessary platform
-> devices. Such "constructor" approach makes NAND usable under
-> arch/powerpc yet keeping full compatibility with arch/ppc.
-> 
-> This patch also introduces a "common" (not NOR only)
-> of_parse_flash_partitions() routine in mtdpart.c that can/should be
-> used by all drivers parsing device-tree partition informations. The
-> current implementation is not compatible with the current physmap_of
-> version and needs some additional work to make it really usable from
-> both "drivers", physmap_of and ndfc_of. I'm just posting it right now
-> to get some feedback, since this stuff is already sitting here too
-> long on my disk and waiting for upstream merge.
-> 
-> Any feedback welcome. Thanks.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> 
-> ---
-> commit 721a340398e66872b9cc7e8b630fc92a7681ca04
-> tree ffbe1194146cb4fc324755f35c9062025b7ec0f6
-> parent 26f571d7c968dbd30656fc1421eeb0d9088aaad9
-> author Stefan Roese <sr@denx.de> Mon, 08 Oct 2007 16:00:49 +0200
-> committer Stefan Roese <sr@denx.de> Mon, 08 Oct 2007 16:00:49 +0200
-> 
->  arch/powerpc/boot/dts/sequoia.dts    |   32 +++++++
->  arch/powerpc/platforms/44x/Makefile  |    6 +
->  arch/powerpc/platforms/44x/ndfc_of.c |  158 ++++++++++++++++++++++++++++++++++
->  drivers/mtd/mtdpart.c                |   61 +++++++++++++
->  drivers/mtd/nand/ndfc.c              |    6 +
->  include/linux/mtd/partitions.h       |    2 
->  6 files changed, 264 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-> index 36be75b..9b15482 100644
-> --- a/arch/powerpc/boot/dts/sequoia.dts
-> +++ b/arch/powerpc/boot/dts/sequoia.dts
-> @@ -122,6 +122,38 @@
->  			interrupt-map-mask = <ffffffff>;
->  		};
->  
-> +		ndfc@1d0000000, {
-> +			device_type = "nand";
+This patch adds functions to libfdt for accessing the memory
+reservation map section of a device tree blob.  fdt_num_mem_rsv()
+retreives the number of reservation entries in a dtb, and
+fdt_get_mem_rsv() retreives a specific reservation entry.
+fdt_add_mem_rsv() adds a new entry, and fdt_del_mem_rsv() removes a
+specific numbered entry.
 
-Ditch the device_type.  There's no call for it here.
+Testcases for these new functions are also included.
 
-> +			compatible = "ibm,ndfc";
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-This should probably have a more specific value for the revision in
-addition to ibm,ndfc.
-
-> +			reg = <1 d0000000 2000>;
-> +
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			/* ndfc stuff, composed off ndfc_settings. */
-> +			/* select bank on CE[3], 4 Addr, 1 Col 3 Row 512b page */
-> +			ccr-settings = <3001000>;
-> +
-> +			chip@0 {
-> +				device_type = "nand-chip";
-
-Ditch this device_type too, it makes absolutely no sense here.  You
-probably should have a compatible, though.
-
-> +				reg = <0 1>;
-
-I don't really know how the ndfc works.  Can the reg size here ever be
-anything other than 1 sensibly?  If not, then you should set
-#size-cells=0 instead.
-
-> +				chip-nr = <1>;
-> +				chip-offset = <3>;
-> +				chip-delay = <50>;
-> +				chip-bank-settings = <80002222>;
-> +
-> +				/* normal NAND ECC stuff */
-> +				ecc-bytes = <6>;
-> +				ecc-pos = <0 1 2 3 6 7>;
-> +				/* list of tuples assumed here */
-> +				ecc-oobfree = <8 8>;
-> +
-> +				partition@0 {
-
-Ok, the partitions really are per-chip, not across the controller's
-domain as a whole?  Oh and if this is here, then the chip needs
-#address-cells and #size-cells.
-
-> +					label = "content";
-> +					reg = <0 0>;
-> +				};
-> +			};
-> +		};
-> +
->  		POB0: opb {
->  		  	compatible = "ibm,opb-440epx", "ibm,opb";
->  			#address-cells = <1>;
-> diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-> index 10ce674..d6195ee 100644
-> --- a/arch/powerpc/platforms/44x/Makefile
-> +++ b/arch/powerpc/platforms/44x/Makefile
-> @@ -1,4 +1,8 @@
->  obj-$(CONFIG_44x)	:= misc_44x.o
->  obj-$(CONFIG_EBONY)	+= ebony.o
-> -obj-$(CONFIG_BAMBOO) += bamboo.o
-> +obj-$(CONFIG_BAMBOO)	+= bamboo.o
->  obj-$(CONFIG_SEQUOIA)	+= sequoia.o
-> +
-> +ifeq ($(CONFIG_MTD_NAND_NDFC),y)
-> +obj-y			+= ndfc_of.o
-> +endif
-> diff --git a/arch/powerpc/platforms/44x/ndfc_of.c b/arch/powerpc/platforms/44x/ndfc_of.c
-> new file mode 100644
-> index 0000000..e5b41cf
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/44x/ndfc_of.c
-> @@ -0,0 +1,158 @@
-> +/*
-> + * PPC4xx NAND wrapper from device tree to platform device
-> + *
-> + * Stefan Roese <sr@denx.de>
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/stddef.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/errno.h>
-> +#include <linux/io.h>
-> +#include <linux/mtd/mtd.h>
-> +#include <linux/mtd/partitions.h>
-> +#include <linux/mtd/nand.h>
-> +#include <linux/mtd/ndfc.h>
-> +#include <linux/of.h>
-> +
-> +static struct ndfc_controller_settings ndfc_settings;
-> +static struct platform_nand_ctrl nand_ctrl = {
-> +	.priv = &ndfc_settings,
-> +};
-> +
-> +static struct ndfc_chip_settings chip_settings;
-> +static struct nand_ecclayout ecclayout;
-> +static struct mtd_partition *nand_parts;
-> +
-> +static struct platform_nand_chip nand_chip = {
-> +	.ecclayout = &ecclayout,
-> +	.priv = &chip_settings,
-> +};
-> +
-> +static struct resource r;
-> +
-> +static struct platform_device ndfc_dev = {
-> +	.name = "ndfc-nand",
-> +	.id = 0,
-> +	.num_resources = 1,
-> +	.resource = &r,
-> +	.dev = {
-> +		.platform_data = &nand_ctrl,
-> +	}
-> +};
-> +
-> +static struct platform_device nand_dev = {
-> +	.name = "ndfc-chip",
-> +	.id = 0,
-> +	.num_resources = 1,
-> +	.resource = &r,
-> +	.dev = {
-> +		.platform_data = &nand_chip,
-> +		.parent = &ndfc_dev.dev,
-> +	}
-> +};
-> +
-> +/* Until this will be settled */
-> +static inline u32 of_get_int(struct device_node *np, const char *name)
-> +{
-> +	unsigned int size;
-> +	const u32 *prop = of_get_property(np, name, &size);
-> +
-> +	if ((prop == NULL) || (size != sizeof(int))) {
-> +		printk(KERN_WARNING "%s property missing!\n", __FUNCTION__);
-> +		return 0;
-> +	}
-> +
-> +	return *prop;
-> +}
-> +
-> +static int ppc4xx_setup_nand_chip_node(struct device_node *dev)
-> +{
-> +	unsigned int what = -ENODEV;
-> +	unsigned int size, amnt;
-> +	const u32 *prop;
-> +	int i;
-> +
-> +	/* process necessary properties */
-> +	what = of_get_int(dev, "chip-nr");
-> +	nand_chip.nr_chips = what;
-> +
-> +	what = of_get_int(dev, "chip-offset");
-> +	nand_chip.chip_offset = what;
-> +
-> +	what = of_get_int(dev, "chip-delay");
-> +	nand_chip.chip_delay = what;
-> +
-> +	what = of_get_int(dev, "ecc-bytes");
-> +	ecclayout.eccbytes = what;
-> +
-> +	what = of_get_int(dev, "chip-bank-settings");
-> +	chip_settings.bank_settings = what;
-> +
-> +	prop = of_get_property(dev, "ecc-pos", &size);
-> +	for (i = 0; i < (size/sizeof(unsigned int)); i++)
-> +		ecclayout.eccpos[i] = prop[i];
-> +
-> +	prop = of_get_property(dev, "ecc-oobfree", &size);
-> +	amnt = size/sizeof(unsigned int);
-> +
-> +	for (i = 0; i < amnt; i += 2) {
-> +		nand_chip.ecclayout->oobfree[i].offset = prop[i];
-> +		nand_chip.ecclayout->oobfree[i].length = prop[i+1];
-> +	}
-> +
-> +	nand_chip.nr_partitions = of_parse_flash_partitions(dev, &nand_parts);
-> +	nand_chip.partitions = nand_parts;
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init ppc4xx_setup_nand_node(struct device_node *dev)
-> +{
-> +	struct device_node *child = NULL;
-> +	int ret = 0;
-> +
-> +	memset(&r, 0, sizeof(r));
-> +
-> +	/* generic NDFC register */
-> +	ret = of_address_to_resource(dev, 0, &r);
-> +	if (ret)
-> +		goto err;
-> +
-> +	/* Now let's create platform_data stuff based on dts entries */
-> +	ret = of_get_int(dev, "ccr-settings");
-> +
-> +	ndfc_settings.ccr_settings = ret;
-> +	ndfc_settings.ndfc_erpn = r.start & 0xf00000000ULL;
-> +
-> +	child = of_get_next_child(dev, NULL);
-> +	/* NAND platform device is sole, so assuming one child of ndfc node */
-> +	if (child != NULL)
-> +		ppc4xx_setup_nand_chip_node(child);
-> +
-> +	ndfc_dev.resource = &r;
-> +	nand_dev.resource = &r;
-> +
-> +	platform_device_register(&ndfc_dev);
-> +	platform_device_register(&nand_dev);
-> +
-> +err:
-> +	return ret;
-> +}
-> +
-> +static int ppc4xx_init_nand(void)
-> +{
-> +	struct device_node *np =
-> +		of_find_compatible_node(NULL, "nand", "ibm,ndfc");
-> +
-> +	if (np != NULL)
-> +		ppc4xx_setup_nand_node(np);
-> +
-> +	return 0;
-> +}
-> +arch_initcall(ppc4xx_init_nand);
-> diff --git a/drivers/mtd/mtdpart.c b/drivers/mtd/mtdpart.c
-> index 6174a97..cc620ee 100644
-> --- a/drivers/mtd/mtdpart.c
-> +++ b/drivers/mtd/mtdpart.c
-> @@ -21,6 +21,10 @@
->  #include <linux/mtd/partitions.h>
->  #include <linux/mtd/compatmac.h>
->  
-> +#ifdef CONFIG_PPC_MERGE
-> +#include <linux/of.h>
-> +#endif
-> +
->  /* Our partition linked list */
->  static LIST_HEAD(mtd_partitions);
->  
-> @@ -557,6 +561,63 @@ int parse_mtd_partitions(struct mtd_info *master, const char **types,
->  	return ret;
->  }
->  
-> +#ifdef CONFIG_PPC_MERGE
-> +int of_parse_flash_partitions(struct device_node *dp,
-> +			      struct mtd_partition **mparts)
-> +{
-> +	int nr_parts = 0;
-> +	int i;
-> +	struct device_node *pp;
-> +	const char *partname;
-> +	struct mtd_partition *parts;
-> +
-> +	/* First count the subnodes */
-> +	for (pp = dp->child; pp; pp = pp->sibling)
-> +		nr_parts++;
-> +
-> +	if (nr_parts) {
-> +		parts = kzalloc(nr_parts * sizeof(struct mtd_partition),
-> +				GFP_KERNEL);
-> +		if (!parts) {
-> +			printk(KERN_ERR
-> +			       "Can't allocate the flash partition data!\n");
-> +			return -ENOMEM;
-> +		}
-> +
-> +		for (pp = dp->child, i = 0 ; pp; pp = pp->sibling, i++) {
-> +			const u32 *reg;
-> +			int len;
-> +
-> +			reg = of_get_property(pp, "reg", &len);
-> +			if (!reg || (len != 2*sizeof(u32))) {
-> +				printk(KERN_ERR "Invalid 'reg' on %s\n",
-> +				       dp->full_name);
-> +				kfree(parts);
-> +				parts = NULL;
-> +				return -EINVAL;
-> +			}
-> +			parts[i].offset = reg[0];
-> +			parts[i].size = reg[1];
-> +
-> +			partname = of_get_property(pp, "label", &len);
-> +			if (!partname)
-> +				partname = of_get_property(pp, "name", &len);
-> +			parts[i].name = (char *)partname;
-> +			if (of_get_property(pp, "read-only", &len))
-> +				parts[i].mask_flags = MTD_WRITEABLE;
-> +			(*mparts) = parts;
-> +		}
-> +	} else {
-> +		printk(KERN_ERR
-> +		       "Node %s does not seem to contain partitions definition!\n",
-> +		       dp->full_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	return nr_parts;
-> +}
-> +#endif
-> +
->  EXPORT_SYMBOL_GPL(parse_mtd_partitions);
->  EXPORT_SYMBOL_GPL(register_mtd_parser);
->  EXPORT_SYMBOL_GPL(deregister_mtd_parser);
-> diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
-> index fd7a8d5..7901019 100644
-> --- a/drivers/mtd/nand/ndfc.c
-> +++ b/drivers/mtd/nand/ndfc.c
-> @@ -24,7 +24,9 @@
->  #include <linux/platform_device.h>
->  
->  #include <asm/io.h>
-> +#ifndef CONFIG_PPC_MERGE
->  #include <asm/ibm44x.h>
-> +#endif
->  
->  struct ndfc_nand_mtd {
->  	struct mtd_info			mtd;
-> @@ -230,7 +232,11 @@ static int ndfc_nand_probe(struct platform_device *pdev)
->  	struct ndfc_controller *ndfc = &ndfc_ctrl;
->  	unsigned long long phys = settings->ndfc_erpn | res->start;
->  
-> +#if !defined(CONFIG_PHYS_64BIT) || defined(CONFIG_PPC_MERGE)
-> +	ndfc->ndfcbase = ioremap((phys_addr_t)phys, res->end - res->start + 1);
-> +#else
->  	ndfc->ndfcbase = ioremap64(phys, res->end - res->start + 1);
-> +#endif
->  	if (!ndfc->ndfcbase) {
->  		printk(KERN_ERR "NDFC: ioremap failed\n");
->  		return -EIO;
-> diff --git a/include/linux/mtd/partitions.h b/include/linux/mtd/partitions.h
-> index da6b3d6..546a098 100644
-> --- a/include/linux/mtd/partitions.h
-> +++ b/include/linux/mtd/partitions.h
-> @@ -68,6 +68,8 @@ extern int register_mtd_parser(struct mtd_part_parser *parser);
->  extern int deregister_mtd_parser(struct mtd_part_parser *parser);
->  extern int parse_mtd_partitions(struct mtd_info *master, const char **types,
->  				struct mtd_partition **pparts, unsigned long origin);
-> +extern int of_parse_flash_partitions(struct device_node *node,
-> +				     struct mtd_partition **parts);
->  
->  #define put_partition_parser(p) do { module_put((p)->owner); } while(0)
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+Index: dtc/libfdt/fdt_ro.c
+===================================================================
+--- dtc.orig/libfdt/fdt_ro.c	2007-10-10 17:04:09.000000000 +1000
++++ dtc/libfdt/fdt_ro.c	2007-10-10 17:04:09.000000000 +1000
+@@ -87,6 +87,23 @@ char *fdt_string(const void *fdt, int st
+ 	return (char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
+ }
+ 
++int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
++{
++	CHECK_HEADER(fdt);
++	*address = fdt64_to_cpu(_fdt_mem_rsv(fdt, n)->address);
++	*size = fdt64_to_cpu(_fdt_mem_rsv(fdt, n)->size);
++	return 0;
++}
++
++int fdt_num_mem_rsv(const void *fdt)
++{
++	int i = 0;
++
++	while (fdt64_to_cpu(_fdt_mem_rsv(fdt, i)->size) != 0)
++		i++;
++	return i;
++}
++
+ int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
+ 			       const char *name, int namelen)
+ {
+Index: dtc/libfdt/libfdt.h
+===================================================================
+--- dtc.orig/libfdt/libfdt.h	2007-10-10 17:04:09.000000000 +1000
++++ dtc/libfdt/libfdt.h	2007-10-10 17:04:09.000000000 +1000
+@@ -112,6 +112,9 @@ int fdt_move(const void *fdt, void *buf,
+ /* Read-only functions */
+ char *fdt_string(const void *fdt, int stroffset);
+ 
++int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size);
++int fdt_num_mem_rsv(const void *fdt);
++
+ int fdt_subnode_offset_namelen(const void *fdt, int parentoffset,
+ 			       const char *name, int namelen);
+ int fdt_subnode_offset(const void *fdt, int parentoffset, const char *name);
+@@ -183,6 +186,9 @@ int fdt_finish(void *fdt);
+ int fdt_open_into(void *fdt, void *buf, int bufsize);
+ int fdt_pack(void *fdt);
+ 
++int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size);
++int fdt_del_mem_rsv(void *fdt, int n);
++
+ int fdt_setprop(void *fdt, int nodeoffset, const char *name,
+ 		const void *val, int len);
+ #define fdt_setprop_typed(fdt, nodeoffset, name, val) \
+Index: dtc/tests/trees.S
+===================================================================
+--- dtc.orig/tests/trees.S	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/trees.S	2007-10-10 17:04:09.000000000 +1000
+@@ -37,6 +37,11 @@ tree:	\
+ 	FDTQUAD(addr)		; \
+ 	FDTQUAD(len)		;
+ 
++#define EMPTY_RSVMAP(tree) \
++	.balign	8		; \
++tree##_rsvmap:			; \
++	RSVMAP_ENTRY(0, 0)
++
+ #define PROPHDR(tree, name, len) \
+ 	FDTLONG(FDT_PROP)	; \
+ 	FDTLONG(len)		; \
+@@ -70,7 +75,10 @@ tree##_##name:	\
+ 
+ 	TREE_HDR(test_tree1)
+ 
++	.balign	8
+ test_tree1_rsvmap:
++	RSVMAP_ENTRY(TEST_ADDR_1, TEST_SIZE_1)
++	RSVMAP_ENTRY(TEST_ADDR_2, TEST_SIZE_2)
+ 	RSVMAP_ENTRY(0, 0)
+ 
+ test_tree1_struct:
+@@ -103,8 +111,7 @@ test_tree1_strings:
+ test_tree1_end:
+ 
+ 	TREE_HDR(truncated_property)
+-truncated_property_rsvmap:
+-	RSVMAP_ENTRY(0, 0)
++	EMPTY_RSVMAP(truncated_property)
+ 
+ truncated_property_struct:
+ 	BEGIN_NODE("")
+Index: dtc/tests/testdata.h
+===================================================================
+--- dtc.orig/tests/testdata.h	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/testdata.h	2007-10-10 17:04:09.000000000 +1000
+@@ -9,6 +9,17 @@
+ 			 | (((x) << 8) & 0xff0000) | (((x) << 24) & 0xff000000))
+ #endif
+ 
++#ifdef __ASSEMBLY__
++#define ASM_CONST_LL(x)	(x)
++#else
++#define ASM_CONST_LL(x)	(x##ULL)
++#endif
++
++#define TEST_ADDR_1	ASM_CONST_LL(0xdeadbeef00000000)
++#define TEST_SIZE_1	ASM_CONST_LL(0x100000)
++#define TEST_ADDR_2	ASM_CONST_LL(0xabcd1234)
++#define TEST_SIZE_2	ASM_CONST_LL(0x1234)
++
+ #define TEST_VALUE_1	cell_to_fdt(0xdeadbeef)
+ #define TEST_VALUE_2	cell_to_fdt(0xabcd1234)
+ 
+Index: dtc/tests/Makefile.tests
+===================================================================
+--- dtc.orig/tests/Makefile.tests	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/Makefile.tests	2007-10-10 17:04:09.000000000 +1000
+@@ -1,4 +1,5 @@
+-LIB_TESTS_L = root_node find_property subnode_offset path_offset \
++LIB_TESTS_L = get_mem_rsv \
++	root_node find_property subnode_offset path_offset \
+ 	get_name getprop get_path supernode_atdepth_offset parent_offset \
+ 	node_offset_by_prop_value \
+ 	notfound \
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/run_tests.sh	2007-10-10 17:04:09.000000000 +1000
+@@ -31,6 +31,7 @@ tree1_tests () {
+     TREE=$1
+ 
+     # Read-only tests
++    run_test get_mem_rsv $TREE
+     run_test root_node $TREE
+     run_test find_property $TREE
+     run_test subnode_offset $TREE
+Index: dtc/tests/sw_tree1.c
+===================================================================
+--- dtc.orig/tests/sw_tree1.c	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/sw_tree1.c	2007-10-10 17:04:09.000000000 +1000
+@@ -49,7 +49,10 @@ int main(int argc, char *argv[])
+ 	fdt = xmalloc(SPACE);
+ 	CHECK(fdt_create(fdt, SPACE));
+ 
++	CHECK(fdt_add_reservemap_entry(fdt, TEST_ADDR_1, TEST_SIZE_1));
++	CHECK(fdt_add_reservemap_entry(fdt, TEST_ADDR_2, TEST_SIZE_2));
+ 	CHECK(fdt_finish_reservemap(fdt));
++
+ 	CHECK(fdt_begin_node(fdt, ""));
+ 	CHECK(fdt_property_typed(fdt, "prop-int", TEST_VALUE_1));
+ 	CHECK(fdt_property_string(fdt, "prop-str", TEST_STRING_1));
+Index: dtc/tests/test_tree1.dts
+===================================================================
+--- dtc.orig/tests/test_tree1.dts	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/test_tree1.dts	2007-10-10 17:04:09.000000000 +1000
+@@ -1,3 +1,6 @@
++/memreserve/ deadbeef00000000-deadbeef000fffff;
++/memreserve/ abcd1234 00001234;
++
+ / {
+ 	prop-int = <deadbeef>;
+ 	prop-str = "hello world";
+Index: dtc/libfdt/libfdt_internal.h
+===================================================================
+--- dtc.orig/libfdt/libfdt_internal.h	2007-10-10 17:04:09.000000000 +1000
++++ dtc/libfdt/libfdt_internal.h	2007-10-10 17:04:09.000000000 +1000
+@@ -73,6 +73,18 @@ static inline void *_fdt_offset_ptr_w(vo
+ 	return (void *)_fdt_offset_ptr(fdt, offset);
+ }
+ 
++static inline const struct fdt_reserve_entry *_fdt_mem_rsv(const void *fdt, int n)
++{
++	const struct fdt_reserve_entry *rsv_table =
++		fdt + fdt_off_mem_rsvmap(fdt);
++
++	return rsv_table + n;
++}
++static inline struct fdt_reserve_entry *_fdt_mem_rsv_w(void *fdt, int n)
++{
++	return (void *)_fdt_mem_rsv(fdt, n);
++}
++
+ #define SW_MAGIC		(~FDT_MAGIC)
+ 
+ #endif /* _LIBFDT_INTERNAL_H */
+Index: dtc/tests/tests.h
+===================================================================
+--- dtc.orig/tests/tests.h	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/tests.h	2007-10-10 17:04:09.000000000 +1000
+@@ -108,6 +108,8 @@ static inline void *xrealloc(void *p, si
+ 	return p;
+ }
+ 
++void check_mem_rsv(void *fdt, int n, uint64_t addr, uint64_t size);
++
+ void check_property(void *fdt, int nodeoffset, const char *name,
+ 		    int len, const void *val);
+ #define check_property_typed(fdt, nodeoffset, name, val) \
+Index: dtc/tests/testutils.c
+===================================================================
+--- dtc.orig/tests/testutils.c	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/testutils.c	2007-10-10 17:04:09.000000000 +1000
+@@ -69,6 +69,21 @@ void test_init(int argc, char *argv[])
+ 		       test_name, getpid());
+ }
+ 
++void check_mem_rsv(void *fdt, int n, uint64_t addr, uint64_t size)
++{
++	int err;
++	uint64_t addr_v, size_v;
++
++	err = fdt_get_mem_rsv(fdt, n, &addr_v, &size_v);
++	if (err < 0)
++		FAIL("fdt_get_mem_rsv(%d): %s", n, fdt_strerror(err));
++	if ((addr_v != addr) || (size_v != size))
++		FAIL("fdt_get_mem_rsv() returned (0x%llx,0x%llx) "
++		     "instead of (0x%llx,0x%llx)",
++		     (unsigned long long)addr_v, (unsigned long long)size_v,
++		     (unsigned long long)addr, (unsigned long long)size);
++}
++
+ void check_property(void *fdt, int nodeoffset, const char *name,
+ 		    int len, const void *val)
+ {
+Index: dtc/libfdt/fdt_rw.c
+===================================================================
+--- dtc.orig/libfdt/fdt_rw.c	2007-10-10 17:04:09.000000000 +1000
++++ dtc/libfdt/fdt_rw.c	2007-10-10 17:04:09.000000000 +1000
+@@ -101,6 +101,19 @@ static int _blob_splice(void *fdt, void 
+ 	return 0;
+ }
+ 
++static int _blob_splice_mem_rsv(void *fdt, struct fdt_reserve_entry *p,
++				int oldn, int newn)
++{
++	int delta = (newn - oldn) * sizeof(*p);
++	int err;
++	err = _blob_splice(fdt, p, oldn * sizeof(*p), newn * sizeof(*p));
++	if (err)
++		return err;
++	fdt_set_header(fdt, off_dt_struct, fdt_off_dt_struct(fdt) + delta);
++	fdt_set_header(fdt, off_dt_strings, fdt_off_dt_strings(fdt) + delta);
++	return 0;
++}
++
+ static int _blob_splice_struct(void *fdt, void *p,
+ 			       int oldlen, int newlen)
+ {
+@@ -149,6 +162,40 @@ static int _find_add_string(void *fdt, c
+ 	return (new - strtab);
+ }
+ 
++int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size)
++{
++	struct fdt_reserve_entry *re;
++	int err;
++
++	if ((err = rw_check_header(fdt)))
++		return err;
++
++	re = _fdt_mem_rsv_w(fdt, fdt_num_mem_rsv(fdt));
++	err = _blob_splice_mem_rsv(fdt, re, 0, 1);
++	if (err)
++		return err;
++
++	re->address = cpu_to_fdt64(address);
++	re->size = cpu_to_fdt64(size);
++	return 0;
++}
++
++int fdt_del_mem_rsv(void *fdt, int n)
++{
++	struct fdt_reserve_entry *re = _fdt_mem_rsv_w(fdt, n);
++	int err;
++
++	if ((err = rw_check_header(fdt)))
++		return err;
++	if (n >= fdt_num_mem_rsv(fdt))
++		return -FDT_ERR_NOTFOUND;
++
++	err = _blob_splice_mem_rsv(fdt, re, 1, 0);
++	if (err)
++		return err;
++	return 0;
++}
++
+ static int _resize_property(void *fdt, int nodeoffset, const char *name, int len,
+ 			    struct fdt_property **prop)
+ {
+Index: dtc/tests/rw_tree1.c
+===================================================================
+--- dtc.orig/tests/rw_tree1.c	2007-10-10 17:04:09.000000000 +1000
++++ dtc/tests/rw_tree1.c	2007-10-10 17:04:09.000000000 +1000
+@@ -69,6 +69,9 @@ int main(int argc, char *argv[])
+ 
+ 	CHECK(fdt_open_into(fdt, fdt, SPACE));
+ 
++	CHECK(fdt_add_mem_rsv(fdt, TEST_ADDR_1, TEST_SIZE_1));
++	CHECK(fdt_add_mem_rsv(fdt, TEST_ADDR_2, TEST_SIZE_2));
++
+ 	CHECK(fdt_setprop_typed(fdt, 0, "prop-int", TEST_VALUE_1));
+ 	CHECK(fdt_setprop_string(fdt, 0, "prop-str", TEST_STRING_1));
+ 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
