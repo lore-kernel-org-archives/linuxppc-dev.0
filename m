@@ -1,20 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.234])
-	by ozlabs.org (Postfix) with ESMTP id 222D1DDF58
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 01:40:41 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so185225nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 08:40:39 -0700 (PDT)
-Message-ID: <fa686aa40710100840i33592b91r9066f1c709736fcb@mail.gmail.com>
-Date: Wed, 10 Oct 2007 09:40:36 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	"Andrei Konovalov" <akonovalov@ru.mvista.com>
-Subject: Please pull linux-2.6-virtex.git
+Return-Path: <jschopp@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 19599DDDD8
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 01:45:30 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9AFjOLF000554
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 11:45:24 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9AFjNTZ440644
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:45:23 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9AFjN49025835
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:45:23 -0600
+Message-ID: <470CF38F.3080809@austin.ibm.com>
+Date: Wed, 10 Oct 2007 10:45:19 -0500
+From: Joel Schopp <jschopp@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: crash on shutdown on rs/6000 powerpc
+References: <18187.31582.236420.418530@cargo.ozlabs.ibm.com>
+In-Reply-To: <18187.31582.236420.418530@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: lkml@rtr.ca, torvalds@linux-foundation.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +35,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh, please pull:
 
-git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.24
+> [c00000003f923c40] c00000000003bff4 .xics_migrate_irqs_away+0x3c/0x20c
+> [c00000003f923d00] c000000000040d54 .pseries_cpu_disable+0x98/0xb4
+> [c00000003f923d80] c000000000028e4c .__cpu_disable+0x44/0x58
+> [c00000003f923df0] c00000000007e204 .take_cpu_down+0x34/0x60
+> [c00000003f923e70] c00000000008ba3c .do_stop+0x144/0x1e4
+> [c00000003f923f00] c00000000006fd74 .kthread+0x78/0xc4
+> [c00000003f923f90] c0000000000272a8 .kernel_thread+0x4c/0x68
+> 
+> I don't have time tonight or tomorrow to track this down further.  I'm
+> taking the kids to the coast tommorow. :)
 
-This tree is based on Paulus' current top-of-tree.
-
-There are some minor changes in here plus the XilinxFB migration to
-use of_platform bus.  Normally fb changes go in via the -mm tree; but
-I've confirmed with Tony that it's okay to go in via the powerpc tree
-(which probably makes sense because it depends on the port of virtex
-support to arch/powerpc).  The xilinxfb patches have also been acked
-by Andrei, the xilinxfb author.
-
-If I can get an account for patchwork; I can also take responsibility
-for updating the state of virtex patches there.
-
-The following changes since commit dcccb37e98e0444b0c6a03b303855771aa463c96:
-  Grant Likely (1):
-        [POWERPC] Lite5200: Use comma delimiter format for lists in device tree
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-virtex.git virtex-for-2.6.24
-
-Grant Likely (11):
-      [POWERPC] XilinxFB: add banner output to probe routine when
-DEBUG is defined
-      [POWERPC] XilinxFB: Replace calls to printk with dev_dbg, dev_err, etc.
-      [POWERPC] XilinxFB: rename failout labels to reflect failure
-      [POWERPC] XilinxFB: Split device setup from bus binding
-      [POWERPC] XilinxFB: cleanup platform_bus binding to use platform bus API.
-      [POWERPC] XilinxFB: add of_platform bus binding
-      [POWERPC] XilinxFB: Make missing pdata structure non-fatal
-      [POWERPC] XilinxFB: sparse fixes
-      [POWERPC] Virtex: Fix URL for Xilinx Virtex support in MAINTAINERS
-      [POWERPC] Don't build arch/powerpc/sysdev/dcr.c for ARCH=ppc kernels
-      [POWERPC] Uartlite: bootwrapper bug fix, getc loops forever
-
- MAINTAINERS                  |    2 +-
- arch/powerpc/boot/uartlite.c |    4 +-
- arch/powerpc/sysdev/Makefile |    2 +-
- drivers/video/xilinxfb.c     |  279 ++++++++++++++++++++++++++++++------------
- 4 files changed, 203 insertions(+), 84 deletions(-)
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+This looks like the problem Olof and Milton sent out patches to fix.  The 
+Power3 shouldn't be doing cpu hotplug.
