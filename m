@@ -1,24 +1,17 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E8342DDFDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 10:39:43 +1000 (EST)
-Message-ID: <470C1F43.7050608@garzik.org>
-Date: Tue, 09 Oct 2007 20:39:31 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 10 Oct 2007 12:35:15 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Build failure on treeboot-walnut.cg
+Message-ID: <20071010023515.GA32426@localhost.localdomain>
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<20071009030729.GI12499@localhost.localdomain>
+	<470BA6ED.3020504@freescale.com>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: use kernel event queue
-References: <200710081601.34067.ossthema@de.ibm.com>
-In-Reply-To: <200710081601.34067.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <470BA6ED.3020504@freescale.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> eHEA recovery and DLPAR functions are called seldomly. The eHEA workqueues
-> are replaced by the kernel event queue.
+On Tue, Oct 09, 2007 at 11:06:05AM -0500, Timur Tabi wrote:
+> David Gibson wrote:
 > 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> > Policy.  Compiling everything means build bugs - like this one - can
+> > be found by everybody, not just those building for the specific
+> > obscure platform.
 > 
-> ---
-> The patch has been built against upstream git
-> 
->  drivers/net/ehea/ehea.h      |    3 +--
->  drivers/net/ehea/ehea_main.c |   28 ++++++++--------------------
->  drivers/net/ehea/ehea_qmr.c  |    3 +--
->  3 files changed, 10 insertions(+), 24 deletions(-)
+> Is this a new policy?  Modules in the kernel are not built unless you want 
+> them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
+> targeting is built.  So I don't really understand why you claim it's normal 
+> for platform-specific files to be built, regardless of the actual
+> platform.
 
-applied
+It has been policy as long as we've had the platform+library structure
+in arch/powerpc/boot.
+
+> And frankly, I don't like this "policy".  Build bugs for 4xx should not 
+> interfere in my 83xx development.  I can't build any kernels now because of 
+> this bug!
+
+Argue with Paulus.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
