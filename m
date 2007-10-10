@@ -1,32 +1,33 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A78D7DDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:23:28 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l99NNMdI007060
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:22 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l99NNLYF559072
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:21 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l99NNBal023666
-	for <linuxppc-dev@ozlabs.org>; Tue, 9 Oct 2007 19:23:11 -0400
-Date: Tue, 9 Oct 2007 18:22:49 -0500
-To: Nathan Lynch <ntl@pobox.com>
-Subject: never mind .. [was Re: Hard hang in hypervisor!?
-Message-ID: <20071009232249.GO4350@austin.ibm.com>
-References: <20071009203724.GM4350@austin.ibm.com>
-	<20071009211819.GR29559@localdomain>
-	<20071009212810.GN4350@austin.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8D8B0DDF05
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:58:12 +1000 (EST)
+Date: Tue, 9 Oct 2007 19:03:18 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [stable] [patch 09/12] Fix SMP poweroff hangs
+Message-ID: <20071010000318.GA7875@lixom.net>
+References: <20071008180406.052382073@mini.kroah.org>
+	<20071008180633.GJ7627@kroah.com>
+	<20071009151702.GA19209@lixom.net>
+	<20071009222003.GA21228@kroah.com>
+	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
+	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071009212810.GN4350@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
+Cc: Mark Lord <mlord@pobox.com>, Theodore Ts'o <tytso@mit.edu>,
+	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+	linuxppc-dev@ozlabs.org, Greg KH <greg@kroah.com>,
+	Greg KH <gregkh@suse.de>, Justin Forbes <jmforbes@linuxtx.org>,
+	linux-kernel@vger.kernel.org, Chris Wedgwood <reviews@ml.cw.f00f.org>,
+	Domenico Andreoli <cavokz@gmail.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, stable@kernel.org,
+	Randy Dunlap <rdunlap@xenotime.net>, Michael Krufky <mkrufky@linuxtv.org>,
+	Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Chuck Wolber <chuckw@quantumlinux.com>,
+	akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,10 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 09, 2007 at 04:28:10PM -0500, Linas Vepstas wrote:
+On Tue, Oct 09, 2007 at 04:27:06PM -0700, Linus Torvalds wrote:
 > 
-> Perhaps I should IRC this ... 
+> 
+> On Wed, 10 Oct 2007, Thomas Gleixner wrote:
+> > 
+> > Wrapping it into a #ifdef CONFIG_X86 would be sufficient.
+> 
+> Well, the ppc oops seems to be a ppc bug regardless.
+> 
+> If CPU_HOTPLUG isn't defined, the thing does nothing. And if it is 
+> defined, I don't see why/how ppc can validly oops. So I think the first 
+> thing to do is to try to figure out why it oopses, not to disable it for 
+> ppc.
 
-yeah. I guess I'd forgotten how funky things can get. So never mind ... 
+The machine Paul tried on most likely has MPIC interrupt controller, and
+the oops was when the pseries_cpu_disable tried calling XICS code instead.
+It's not surprising that it failed, I don't think IBM has (traditionally)
+cared about cpu hotplug on those machines.
 
---linas
+So the PPC-side fix is to not enable cpu hotplug on mpic-based
+systems. I'll follow up with a patch, but I have no way to test it since
+I only have one POWER5 machine, no other IBM hardware. I'd appreciate
+it if someone with hardware could verify it.
+
+
+-Olof
