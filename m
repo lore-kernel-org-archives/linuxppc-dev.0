@@ -1,21 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <b04825@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0F833DDF50
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:31:58 +1000 (EST)
-Message-ID: <470D52D3.30104@freescale.com>
-Date: Wed, 10 Oct 2007 17:31:47 -0500
+	by ozlabs.org (Postfix) with ESMTP id 09526DDF38
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:37:17 +1000 (EST)
 From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 0/2] QE clock source improvements
-References: <1192054708946-git-send-email-timur@freescale.com>
-In-Reply-To: <1192054708946-git-send-email-timur@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: [PATCH 0/2] QE clock source improvements
+Date: Wed, 10 Oct 2007 17:37:06 -0500
+Message-Id: <11920558283326-git-send-email-timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +20,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry, please ignore this set.  Something got screwed up with the patches. 
-I'm going to resend.
 
-Timur Tabi wrote:
-> This patch set adds a new property to make specifying QE clock sources
-> easier, adds a function to help parse the property, updates some other
-> functions to use an enum instead of an integer, and updates the ucc_geth
-> driver to take advantage of all this.
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+(Replaces all previous versions of this patch)
 
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+This patch set adds a new property to make specifying QE clock sources
+easier, adds a function to help parse the property, updates some other
+functions to use an enum instead of an integer, and updates the ucc_geth
+driver to take advantage of all this.
