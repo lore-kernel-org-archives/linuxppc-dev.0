@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 7245BDDF91
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 18:16:22 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5036ADDF8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 17:32:01 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IfW2u-0006zF-Ld
+	for linuxppc-dev@ozlabs.org; Wed, 10 Oct 2007 00:31:56 -0700
+Message-ID: <13130850.post@talk.nabble.com>
+Date: Wed, 10 Oct 2007 00:31:56 -0700 (PDT)
+From: FabioJo <joel@fabiotec.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [linux-usb-devel] [PATCH 0/3] usb: ehci ppc device-tree-aware
-	driver
-Date: Wed, 10 Oct 2007 10:15:45 +0200
-References: <20070924192519.GA4192@ru.mvista.com>
-	<200710092327.26109.david-b@pacbell.net>
-In-Reply-To: <200710092327.26109.david-b@pacbell.net>
+Subject: MPC8548 PCI Burst issue
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710101015.46308.arnd@arndb.de>
-Cc: David Brownell <david-b@pacbell.net>, linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 10 October 2007, David Brownell wrote:
-> On Monday 24 September 2007, Valentine Barshak wrote:
-> > Some PowerPC systems have a built-in EHCI controller.
-> > This is a device tree aware version of the EHCI controller driver.
-> > Currently it's been tested on the PowerPC 440EPx Sequoia board.
-> > Other platforms can be added later.
-> > The code is based on the ehci-ppc-soc driver by Stefan Roese <sr@denx.de>.
-> 
-> Do PPC folk sign off on how this is done?
-> 
-> I don't follow all the ins/outs of the OF devtree stuff...
 
-The driver looks good to me, both the interaction with the of_platform_bus
-layer and the handling of I/O addresses. I haven't actually tried running
-it, but I'm rather confident that if it works on the Sequoia, it should
-also do the right thing on any other powerpc system that has an EHCI on
-some other (non-PCI) bus.
+I have an issue with a 8548 while I memcpy a block from DDR over a Tundra-60X
+bridge.
+I have been told by FS that the best way in my case is to use the DMA for
+DDR to PCI transfer.
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+I can't find any reference or API for this implementation. May someone
+points me on the right documentation or API.
+My board looks like a CDS.
+
+Thanks for any info.
+-- 
+View this message in context: http://www.nabble.com/MPC8548-PCI-Burst-issue-tf4599073.html#a13130850
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
