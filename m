@@ -1,15 +1,19 @@
-Return-Path: <melinda.develey70@yahoo.com>
-Received: from web63911.mail.re1.yahoo.com (web63911.mail.re1.yahoo.com
-	[69.147.97.126]) by ozlabs.org (Postfix) with SMTP id B28CEDDF84
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it
+	(host20-155-static.82-213-b.business.telecomitalia.it
+	[213.82.155.20]) by ozlabs.org (Postfix) with ESMTP id 66722DDF4C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Oct 2007 22:32:07 +1000 (EST)
-Date: Wed, 10 Oct 2007 05:25:25 -0700 (PDT)
-From: melinda develey <melinda.develey70@yahoo.com>
-Subject: Linux 'reboot' is HRESET or SRESET on MPC880?
-To: linuxppc-embedded@ozlabs.org
+	Wed, 10 Oct 2007 23:01:18 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-180837205-1192019125=:92901"
-Message-ID: <200258.92901.qm@web63911.mail.re1.yahoo.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linux 'reboot' is HRESET or SRESET on MPC880?
+Date: Wed, 10 Oct 2007 14:49:00 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8EAF3F1D@aquib01a>
+In-Reply-To: <200258.92901.qm@web63911.mail.re1.yahoo.com>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: "melinda develey" <melinda.develey70@yahoo.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,28 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-180837205-1192019125=:92901
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
 
-I need to know if the linux reboot command performs a HRESET or SRESET. I would like to preserve the direction and status of my GPIO pins and then I would like to perform an SRESET that shouldn't touch the pddat, pddir.
-   
-  Bye,
-  Antonio.
+> I need to know if the linux reboot command performs a HRESET or
+SRESET. I would like to preserve
+> the direction and status of my GPIO pins and then I would like to
+perform an SRESET that=20
+> shouldn't touch the pddat, pddir.
 
-       
----------------------------------
-Don't let your dream ride pass you by.    Make it a reality with Yahoo! Autos. 
---0-180837205-1192019125=:92901
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+The mpc8xx restart consists in clearing the ME bit in MSR register to
+cause checkstop on machine check and then accessing an invalid location.
+I don't know if this causes a SRESET or HRESET and if the GPIO will be
+preserved or not. I know that PDDAT, PDDIR and the like are preserved
+with SRESET.=20
 
-<DIV><FONT face=Arial size=2><SPAN class=030201712-10102007>I need to know if the linux reboot command performs a HRESET or SRESET. I would like to preserve the direction and status of my GPIO pins and then I would like to perform an SRESET that shouldn't touch the <STRONG>pddat, pddir</STRONG>.</SPAN></FONT></DIV>  <DIV><FONT face=Arial size=2><SPAN class=030201712-10102007></SPAN></FONT>&nbsp;</DIV>  <DIV><FONT face=Arial size=2><SPAN class=030201712-10102007>Bye,</SPAN></FONT></DIV>  <DIV><FONT face=Arial size=2><SPAN class=030201712-10102007>Antonio.</SPAN></FONT></DIV><p>&#32;
-      <hr size=1>Don't let your dream ride pass you by.  <a href="http://us.rd.yahoo.com/evt=51200/*http://autos.yahoo.com/index.html;_ylc=X3oDMTFibjNlcHF0BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDYXV0b3MtZHJlYW1jYXI-">  Make it a reality</a> with Yahoo! Autos.
+Bye.
 
 
 
- 
 
-
---0-180837205-1192019125=:92901--
+P.S: Please don't post html messages!=20
+Do you know me? I see that you greeted me in your mail.
