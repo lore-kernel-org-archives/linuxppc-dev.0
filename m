@@ -1,18 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.236])
-	by ozlabs.org (Postfix) with ESMTP id 08C26DE005
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 02:30:53 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so198393nzh
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:30:51 -0700 (PDT)
-Message-ID: <fa686aa40710100930k65cc2b4i5acc836ae9ffb194@mail.gmail.com>
-Date: Wed, 10 Oct 2007 10:30:50 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Mackerras" <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Sylvain Munaut" <tnt@246tnt.com>
-Subject: Please pull linux-2.6-mpc52xx.git
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 76C49DDF15
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 02:38:23 +1000 (EST)
+Date: Wed, 10 Oct 2007 11:43:36 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH v2] powerpc: don't enable cpu hotplug on mpic-based pseries
+Message-ID: <20071010164336.GA21507@lixom.net>
+References: <20071010003824.GA8477@lixom.net>
+	<200710101008.l9AA8hIG084068@sullivan.realtime.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710101008.l9AA8hIG084068@sullivan.realtime.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus,
+On Wed, Oct 10, 2007 at 05:08:44AM -0500, Milton Miller wrote:
+> Olof's patch searched the device-tree again, looking for an mpic.   This
+> code instead checks that we found an xics the first time by checking the
+> init function.
 
-Sylvain has asked if I would like to help with the mpc52xx
-maintainership.  If it's okay by you, here is a patch that adds me as
-co-maintainer for the mpc52xx platform along with 3 other mpc52xx
-related fixes.
+I'm glad you find the kernel so perfect that your best use of time is
+to tweak the code added in a non-critical path (performance-wise) with
+a new way of checking for hardware features (no other code in the kernel
+checks ppc_md function pointers for that purpose).
 
-Sylvain, can you please reply to this message confirming that this is
-what we talked about?
+Pseries can only have mpic or xics, so it's not like it matters if we
+check for mpic or !xics, either.
 
-Thanks,
-g.
+But hey, any color bike shed will do, and I don't care which one Paul
+chooses to merge. I will not waste more time debating this simple patch
+though. :)
 
-The following changes since commit dcccb37e98e0444b0c6a03b303855771aa463c96:
-  Grant Likely (1):
-        [POWERPC] Lite5200: Use comma delimiter format for lists in device tree
 
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.24
-
-Grant Likely (4):
-      [POWERPC] MPC52xx: Drop show_cpuinfo platform hooks from Lite5200
-      [POWERPC] MPC52xx: Trim includes on mpc5200 platform support code
-      [POWERPC] MPC5200: Don't make firmware fixups into common code
-      [POWERPC] Add co-maintainer for PowerPC MPC52xx platform
-
- MAINTAINERS                                  |    2 +
- arch/powerpc/platforms/52xx/efika.c          |   19 +-----
- arch/powerpc/platforms/52xx/lite5200.c       |   95 ++++++++++++++------------
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   38 ++++-------
- arch/powerpc/platforms/52xx/mpc52xx_pic.c    |   11 +---
- include/asm-powerpc/mpc52xx.h                |    2 +-
- 6 files changed, 68 insertions(+), 99 deletions(-)
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Olof
