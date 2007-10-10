@@ -1,17 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4A998DDFCD
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 20:27:15 +1000 (EST)
-Message-ID: <470CA8BC.2060005@ru.mvista.com>
-Date: Wed, 10 Oct 2007 14:26:04 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C0F41DDEF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 00:31:34 +1000 (EST)
+Date: Wed, 10 Oct 2007 09:31:23 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] drivers/ata: add support to Freescale 3.0Gbps SATA
+	Controller
+In-Reply-To: <1192011083-20220-1-git-send-email-leoli@freescale.com>
+Message-ID: <Pine.LNX.4.64.0710100927120.865@gate.crashing.org>
+References: <1192011083-20220-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [RFC][POWERPC] Add arch/powerpc 4xx NDFC (NAND) support
-References: <200710100832.13105.sr@denx.de>
-In-Reply-To: <200710100832.13105.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com,
+	Ashish Kalra <ashish.kalra@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stefan Roese wrote:
-> diff --git a/arch/powerpc/boot/dts/sequoia.dts b/arch/powerpc/boot/dts/sequoia.dts
-> index 36be75b..9b15482 100644
-> --- a/arch/powerpc/boot/dts/sequoia.dts
-> +++ b/arch/powerpc/boot/dts/sequoia.dts
-> @@ -122,6 +122,38 @@
->  			interrupt-map-mask = <ffffffff>;
->  		};
->  
-> +		ndfc@1d0000000, {
-> +			device_type = "nand";
-> +			compatible = "ibm,ndfc";
-> +			reg = <1 d0000000 2000>;
 
-I think this should be handled the way it's done for nor flash, since 
-ndfc is relocatable within EBC address space.
 
-Thanks,
-Valentine.
+On Wed, 10 Oct 2007, Li Yang wrote:
+
+> From: Ashish Kalra <ashish.kalra@freescale.com>
+>
+> This patch adds support for Freescale 3.0Gbps SATA Controller supporting
+> Native Command Queueing(NCQ), device hotplug, and ATAPI.  This controller
+> can be found on MPC8315 and MPC8378.
+>
+> Signed-off-by: Ashish Kalra <ashish.kalra@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  drivers/ata/Kconfig    |    9 +
+>  drivers/ata/Makefile   |    1 +
+>  drivers/ata/sata_fsl.c | 1505 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/ata/sata_fsl.h |  104 ++++
+>  4 files changed, 1619 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/ata/sata_fsl.c
+>  create mode 100644 drivers/ata/sata_fsl.h
+
+This patch shouldn't be accepted until we close on the device tree
+definition since it impacts the driver.
+
+Also CONFIG_SATA_FSL_FPGA_PCI should be removed since that was just an
+internal debug thing.
+
+- k
