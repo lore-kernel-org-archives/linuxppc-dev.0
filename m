@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <b04825@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D18F1DDFF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 06:47:36 +1000 (EST)
-Message-ID: <470D3A64.2000507@freescale.com>
-Date: Wed, 10 Oct 2007 15:47:32 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Eno 3 Compton <one@ecom.com>
-Subject: Re: irq identification has changed from 2.6.10 to 2.6.23. an
-	explanation is requested
-References: <f6c0dc290710101339t30a15881t3ffbe02324006b28@mail.gmail.com>
-In-Reply-To: <f6c0dc290710101339t30a15881t3ffbe02324006b28@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 4AFACDDED9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:12:32 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Subject: [PATCH 2/2] ucc_geth: use rx-clock-name and tx-clock-name device tree
+	properties
+Date: Wed, 10 Oct 2007 17:12:20 -0500
+Message-Id: <11920543413731-git-send-email-timur@freescale.com>
+In-Reply-To: <1192054340419-git-send-email-timur@freescale.com>
+References: <1192054340419-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,185 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Eno 3 Compton wrote:
-> I had a driver working under 2.6.10 on a mpc8248. The kernel got changed 
-> under me to 2.6.23. Now, when I call request_irq with SIU_INT_IRQ5, 
-> which is defined in asm-powerpc/irq.h, and once compiled and worked 
-> properly, I get compilation errors. The compiler can't find the symbol 
-> definition because CONFIG_PPC_MERGE  is defined. I suspect the kernel 
-> guys have migrated things to a new arrangement, which I've been unable 
-> to discern.
-> 
-> An explanation or advice on where to find information about this would 
-> be hugely appreciated.
+This patch updates the ucc_geth device driver to check the new rx-clock-name
+and tx-clock-name properties first.  If present, it uses the new function
+qe_clock_source() to obtain the clock source.  Otherwise, it checks the
+deprecated rx-clock and tx-clock properties.
 
-Ideally, you should put whatever device you're trying to drive in the 
-device tree, and use of_irq_to_resource() on the device node to find the 
-virtual IRQ number.
+The device trees for 832x, 836x, and 8568 have been updated to contain the
+new property names only.
 
-Failing that, you can call irq_find_mapping(), but you'll need to either 
-pass in the device node of the relevant interrupt controller, or call 
-irq_set_default_host() -- but really, it's better to just use the device 
-tree.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
--Scott
+This patch applies to Kumar's for-2.6.24 branch, on top of my other patch titled
+"qe: add function qe_clock_source".
+
+ arch/powerpc/boot/dts/mpc832x_mds.dts |    8 ++++----
+ arch/powerpc/boot/dts/mpc832x_rdb.dts |    8 ++++----
+ arch/powerpc/boot/dts/mpc836x_mds.dts |    8 ++++----
+ arch/powerpc/boot/dts/mpc8568mds.dts  |    8 ++++----
+ drivers/net/ucc_geth.c                |   12 +++++-------
+ 5 files changed, 21 insertions(+), 23 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index fcd333c..b57485b 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -217,8 +217,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <19>;
+-			tx-clock = <1a>;
++			rx-clock-name = "clk9";
++			tx-clock-name = "clk10";
+ 			phy-handle = < &phy3 >;
+ 			pio-handle = < &pio3 >;
+ 		};
+@@ -238,8 +238,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <17>;
+-			tx-clock = <18>;
++			rx-clock-name = "clk7";
++			tx-clock-name = "clk8";
+ 			phy-handle = < &phy4 >;
+ 			pio-handle = < &pio4 >;
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index 388c8a7..e68a08b 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -202,8 +202,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <20>;
+-			tx-clock = <13>;
++			rx-clock-name = "clk16";
++			tx-clock-name = "clk3";
+ 			phy-handle = <&phy00>;
+ 			pio-handle = <&ucc2pio>;
+ 		};
+@@ -223,8 +223,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <19>;
+-			tx-clock = <1a>;
++			rx-clock-name = "clk9";
++			tx-clock-name = "clk10";
+ 			phy-handle = <&phy04>;
+ 			pio-handle = <&ucc3pio>;
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index fbd1573..7a54072 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -245,8 +245,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <0>;
+-			tx-clock = <19>;
++			rx-clock-name = "none";
++			tx-clock-name = "clk9";
+ 			phy-handle = < &phy0 >;
+ 			phy-connection-type = "rgmii-id";
+ 			pio-handle = < &pio1 >;
+@@ -267,8 +267,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <0>;
+-			tx-clock = <14>;
++			rx-clock-name = "none";
++			tx-clock-name = "clk4";
+ 			phy-handle = < &phy1 >;
+ 			phy-connection-type = "rgmii-id";
+ 			pio-handle = < &pio2 >;
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 5439437..cf45aab 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -333,8 +333,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <0>;
+-			tx-clock = <20>;
++			rx-clock-name = "none";
++			tx-clock-name = "clk16";
+ 			pio-handle = <&pio1>;
+ 			phy-handle = <&phy0>;
+ 			phy-connection-type = "rgmii-id";
+@@ -355,8 +355,8 @@
+ 			 */
+ 			mac-address = [ 00 00 00 00 00 00 ];
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+-			rx-clock = <0>;
+-			tx-clock = <20>;
++			rx-clock-name = "none";
++			tx-clock-name = "clk16";
+ 			pio-handle = <&pio2>;
+ 			phy-handle = <&phy1>;
+ 			phy-connection-type = "rgmii-id";
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index a147d6e..9308397 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3863,7 +3863,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	sprop = of_get_property(np, "rx-clock-name", NULL);
+ 	if (sprop) {
+ 		ug_info->uf_info.rx_clock = qe_clock_source(sprop);
+-		if ((ug_info->uf_info.rx_clock < QE_CLK1) ||
++		if ((ug_info->uf_info.rx_clock < QE_CLK_NONE) ||
+ 		    (ug_info->uf_info.rx_clock > QE_CLK24)) {
+ 			printk(KERN_ERR
+ 				"ucc_geth: invalid rx-clock-name property\n");
+@@ -3873,12 +3873,12 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		prop = of_get_property(np, "rx-clock", NULL);
+ 		if (!prop) {
+ 			/* If both rx-clock-name and rx-clock are missing,
+-                           we want to tell people to use rx-clock-name. */
++			   we want to tell people to use rx-clock-name. */
+ 			printk(KERN_ERR
+ 				"ucc_geth: missing rx-clock-name property\n");
+ 			return -EINVAL;
+ 		}
+-		if ((*prop < QE_CLK1) || (*prop > QE_CLK24)) {
++		if ((*prop < QE_CLK_NONE) || (*prop > QE_CLK24)) {
+ 			printk(KERN_ERR
+ 				"ucc_geth: invalid rx-clock propperty\n");
+ 			return -EINVAL;
+@@ -3889,7 +3889,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	sprop = of_get_property(np, "tx-clock-name", NULL);
+ 	if (sprop) {
+ 		ug_info->uf_info.tx_clock = qe_clock_source(sprop);
+-		if ((ug_info->uf_info.tx_clock < QE_CLK1) ||
++		if ((ug_info->uf_info.tx_clock < QE_CLK_NONE) ||
+ 		    (ug_info->uf_info.tx_clock > QE_CLK24)) {
+ 			printk(KERN_ERR
+ 				"ucc_geth: invalid tx-clock-name property\n");
+@@ -3902,7 +3902,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 				"ucc_geth: mising tx-clock-name property\n");
+ 			return -EINVAL;
+ 		}
+-		if ((*prop < QE_CLK1) || (*prop > QE_CLK24)) {
++		if ((*prop < QE_CLK_NONE) || (*prop > QE_CLK24)) {
+ 			printk(KERN_ERR
+ 				"ucc_geth: invalid tx-clock property\n");
+ 			return -EINVAL;
+@@ -3910,8 +3910,6 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		ug_info->uf_info.tx_clock = *prop;
+ 	}
+ 
+-	prop = of_get_property(np, "tx-clock", NULL);
+-	ug_info->uf_info.tx_clock = *prop;
+ 	err = of_address_to_resource(np, 0, &res);
+ 	if (err)
+ 		return -EINVAL;
+-- 
+1.5.2.4
