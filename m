@@ -1,19 +1,17 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3EC8CDE005
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 02:25:14 +1000 (EST)
-Date: Wed, 10 Oct 2007 11:18:28 -0500 (CDT)
-Message-Id: <200710101618.l9AGISIP010663@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-To: Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: crash on shutdown on rs/6000 powerpc
-In-Reply-To: <470CF38F.3080809%40austin.ibm.com>
-References: <470CF38F.3080809%40austin.ibm.com>,
-	<18187.31582.236420.418530@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
+	by ozlabs.org (Postfix) with ESMTP id DF172DDFB2
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 02:29:50 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so214626rvf
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 09:29:50 -0700 (PDT)
+Message-ID: <5c9cd53b0710100929m61bccd08k3c1aa0e41d002fdf@mail.gmail.com>
+Date: Wed, 10 Oct 2007 12:29:49 -0400
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Marvell 88se6121 in Kernel2.4
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_24539_11292509.1192033789918"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_24539_11292509.1192033789918
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Joel Schoopp wrote:
->Paulus wrote:
->> [c00000003f923c40] c00000000003bff4 .xics_migrate_irqs_away+0x3c/0x20c
->> [c00000003f923d00] c000000000040d54 .pseries_cpu_disable+0x98/0xb4
->> [c00000003f923d80] c000000000028e4c .__cpu_disable+0x44/0x58
->> [c00000003f923df0] c00000000007e204 .take_cpu_down+0x34/0x60
->> [c00000003f923e70] c00000000008ba3c .do_stop+0x144/0x1e4
->> [c00000003f923f00] c00000000006fd74 .kthread+0x78/0xc4
->> [c00000003f923f90] c0000000000272a8 .kernel_thread+0x4c
->>
->> I don't have time tonight or tomorrow to track this down further.  I'm
->> taking the kids to the coast tommorow. :)
->>
-> This looks like the problem Olof and Milton sent out patches to fix.  The 
-> Power3 shouldn't be doing cpu hotplug.
+Hello,
 
-Paul's comment prompted both of us.
+Anyone has the source code of kernel2.4 device driver for Marvel 88se6121?
 
-Actually, cpu_hotplug (offline calling rtas stop-self, not dlpar
-remove) should be supported on POWER3 and RS64, its just that the
-pseries disable code calls over into xics directly.  offline support
-would help preserve system uptime under a "failing processor"
-scenerio.
+Thanks in advance,
 
-To fix that, we need a mpic version of migrate_irqs_away.   powermac
-is using the "bury head in sand" approach for that right now (ie
-if you bind an interrupt and offline all the cpus in the mask, the
-interrupt won't be delivered until you reset the affinity).  Its also
-a broken in that bringing a cpu back online adds the cpu to all
-interrupts not just those who have the cpu mask bit set.
+Mike
 
-milton
+------=_Part_24539_11292509.1192033789918
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Hello,</div>
+<div>&nbsp;</div>
+<div>Anyone has the source code of kernel2.4 device driver for Marvel 88se6121? </div>
+<div>&nbsp;</div>
+<div>Thanks in advance,</div>
+<div>&nbsp;</div>
+<div>Mike</div>
+
+------=_Part_24539_11292509.1192033789918--
