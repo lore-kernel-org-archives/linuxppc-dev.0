@@ -1,29 +1,29 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A7439DDFB9
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 06:22:52 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9AKMlt0013884
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 16:22:47 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9AKMlWb491350
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 14:22:47 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9AKMkGp004879
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 14:22:47 -0600
-Subject: Re: [PATCH 3/3] [POWERPC] Kilauea DTS
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0B167DDFB0
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 06:24:59 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9AKOqvp001442
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 16:24:52 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9AKOq8L120218
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 16:24:52 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9AKOkSq018560
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 16:24:47 -0400
+Subject: Re: [PATCH 2/3] [POWERPC] Add AMCC Kilauea eval board support to
+	platforms/40x
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200710081110.16447.sr@denx.de>
-References: <200710081110.16447.sr@denx.de>
+In-Reply-To: <200710081108.51625.sr@denx.de>
+References: <200710081108.51625.sr@denx.de>
 Content-Type: text/plain
-Date: Wed, 10 Oct 2007 15:21:54 -0500
-Message-Id: <1192047714.5534.81.camel@localhost.localdomain>
+Date: Wed, 10 Oct 2007 15:23:45 -0500
+Message-Id: <1192047825.5534.84.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,290 +35,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-10-08 at 11:10 +0200, Stefan Roese wrote:
-> Signed-off-by: Stefan Roese <sr@denx.de>
-
-Looks pretty good.  Just a couple of questions.
-
-> ---
->  arch/powerpc/boot/dts/kilauea.dts |  253 +++++++++++++++++++++++++++++++++++++
->  1 files changed, 253 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/kilauea.dts
+On Mon, 2007-10-08 at 11:08 +0200, Stefan Roese wrote:
+> This patch adds basic support for the new 405EX and the AMCC eval board
+> Kilauea to arch/powerpc.
 > 
-> diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+>  arch/powerpc/platforms/40x/Kconfig   |   17 +++++++--
+>  arch/powerpc/platforms/40x/Makefile  |    5 ++-
+>  arch/powerpc/platforms/40x/kilauea.c |   63 ++++++++++++++++++++++++++++++++++
+>  3 files changed, 80 insertions(+), 5 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/40x/kilauea.c
+> 
+> diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+> index a0a50b1..da8d02d 100644
+> --- a/arch/powerpc/platforms/40x/Kconfig
+> +++ b/arch/powerpc/platforms/40x/Kconfig
+> @@ -29,6 +29,14 @@
+>  #	help
+>  #	  This option enables support for the extra features of the EP405PC board.
+> 
+> +config KILAUEA
+> +	bool "Kilauea"
+> +	depends on 40x
+> +	default y
+
+I think we decided to say default n here.  I need to fix the Walnut
+example, I know.
+
+> +	select 405EX
+> +	help
+> +	  This option enables support for the AMCC PPC405EX evaluation board.
+> +
+>  #config REDWOOD_5
+>  #	bool "Redwood-5"
+>  #	depends on 40x
+> @@ -89,14 +97,17 @@ config 403GCX
+>  	#depends on OAK
+>  	select IBM405_ERR51
+> 
+> +config 405EP
+> +	bool
+> +
+> +config 405EX
+> +	bool
+> +
+>  config 405GP
+>  	bool
+>  	select IBM405_ERR77
+>  	select IBM405_ERR51
+> 
+> -config 405EP
+> -	bool
+> -
+>  config 405GPR
+>  	bool
+> 
+> diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
+> index 0a3cfe9..51dadee 100644
+> --- a/arch/powerpc/platforms/40x/Makefile
+> +++ b/arch/powerpc/platforms/40x/Makefile
+> @@ -1,2 +1,3 @@
+> -obj-$(CONFIG_WALNUT) += walnut.o
+> -obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD) += virtex.o
+> +obj-$(CONFIG_KILAUEA)				+= kilauea.o
+> +obj-$(CONFIG_WALNUT)				+= walnut.o
+> +obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
+> diff --git a/arch/powerpc/platforms/40x/kilauea.c b/arch/powerpc/platforms/40x/kilauea.c
 > new file mode 100644
-> index 0000000..4683174
+> index 0000000..6cbd528
 > --- /dev/null
-> +++ b/arch/powerpc/boot/dts/kilauea.dts
-> @@ -0,0 +1,253 @@
+> +++ b/arch/powerpc/platforms/40x/kilauea.c
+> @@ -0,0 +1,63 @@
 > +/*
-> + * Device Tree Source for AMCC Kilauea (405EX)
+> + * Kilauea board specific routines
 > + *
 > + * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
 > + *
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
+> + * Based on the Walnut code by
+> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> + * Copyright 2007 IBM Corporation
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
 > + */
+> +#include <linux/init.h>
+> +#include <asm/machdep.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/time.h>
+> +#include <asm/uic.h>
+> +#include <asm/of_platform.h>
 > +
-> +/ {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "amcc,kilauea";
-> +	compatible = "amcc,kilauea";
-> +	dcr-parent = <&/cpus/PowerPC,405EX@0>;
+> +static struct of_device_id kilauea_of_bus[] = {
+> +	{ .compatible = "ibm,plb4", },
+> +	{ .compatible = "ibm,opb", },
+> +	{ .compatible = "ibm,ebc", },
+> +	{},
+> +};
 > +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
+> +static int __init kilauea_device_probe(void)
+> +{
+> +	if (!machine_is(kilauea))
+> +		return 0;
 > +
-> +		PowerPC,405EX@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			clock-frequency = <0>; /* Filled in by U-Boot */
+> +	of_platform_bus_probe(NULL, kilauea_of_bus, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(kilauea_device_probe);
+> +
+> +static int __init kilauea_probe(void)
+> +{
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (!of_flat_dt_is_compatible(root, "amcc,kilauea"))
+> +		return 0;
+> +
+> +	return 1;
+> +}
+> +
+> +static void __init kilauea_setup_arch(void)
+> +{
+> +}
 
-Filled in by U-Boot itself?  Or by a cuboot wrapper? (which I can't find
-in the patches.)
+Assuming Grant's patch to make setup_arch optional gets applied, this
+can go too.
 
-> +			timebase-frequency = <0>; /* Filled in by U-Boot */
-> +			i-cache-line-size = <20>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-size = <4000>; /* 16 kB */
-> +			d-cache-size = <4000>; /* 16 kB */
-> +			dcr-controller;
-> +			dcr-access-method = "native";
-> +		};
-> +	};
 > +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <0 0>; /* Filled in by U-Boot */
-> +	};
-> +
-> +	UIC0: interrupt-controller {
-> +		compatible = "ibm,uic-405ex", "ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <0>;
-> +		dcr-reg = <0c0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +	};
-> +
-> +	UIC1: interrupt-controller1 {
-> +		compatible = "ibm,uic-405ex","ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <1>;
-> +		dcr-reg = <0d0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +		interrupts = <1e 4 1f 4>; /* cascade */
-> +		interrupt-parent = <&UIC0>;
-> +	};
-> +
-> +	UIC2: interrupt-controller2 {
-> +		compatible = "ibm,uic-405ex","ibm,uic";
-> +		interrupt-controller;
-> +		cell-index = <2>;
-> +		dcr-reg = <0e0 009>;
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-> +		#interrupt-cells = <2>;
-> +		interrupts = <1c 4 1d 4>; /* cascade */
-> +		interrupt-parent = <&UIC0>;
-> +	};
-> +
-> +	plb {
-> +		compatible = "ibm,plb-405ex", "ibm,plb4";
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		ranges;
-> +		clock-frequency = <0>; /* Filled in by U-Boot */
-> +
-> +		SDRAM0: memory-controller {
-> +			compatible = "ibm,sdram-405ex";
-> +			dcr-reg = <010 2>;
-> +		};
-> +
-> +		MAL0: mcmal {
-> +			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
-> +			dcr-reg = <180 62>;
-> +			num-tx-chans = <2>;
-> +			num-rx-chans = <2>;
-> +			interrupt-parent = <&MAL0>;
-> +			interrupts = <0 1 2 3 4>;
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			#size-cells = <0>;
-> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-> +					/*RXEOB*/ 1 &UIC0 b 4
-> +					/*SERR*/  2 &UIC1 0 4
-> +					/*TXDE*/  3 &UIC1 1 4
-> +					/*RXDE*/  4 &UIC1 2 4>;
-> +			interrupt-map-mask = <ffffffff>;
-> +		};
-> +
-> +		POB0: opb {
-> +			compatible = "ibm,opb-405ex", "ibm,opb";
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			ranges = <ef600000 ef600000 a00000>;
-> +			dcr-reg = <0a0 5>;
-> +			clock-frequency = <0>; /* Filled in by U-Boot */
-> +
-> +			EBC0: ebc {
-> +				compatible = "ibm,ebc-405ex", "ibm,ebc";
-> +				dcr-reg = <012 2>;
-> +				#address-cells = <2>;
-> +				#size-cells = <1>;
-> +				clock-frequency = <0>; /* Filled in by U-Boot */
-> +				interrupts = <5 1>;
+> +define_machine(kilauea) {
+> +	.name 				= "Kilauea",
+> +	.probe 				= kilauea_probe,
+> +	.setup_arch			= kilauea_setup_arch,
+> +	.progress 			= udbg_progress,
+> +	.init_IRQ 			= uic_init_tree,
+> +	.get_irq 			= uic_get_irq,
+> +	.calibrate_decr			= generic_calibrate_decr,
+> +};
 
-This interrupt is really rising edge?  Just double checking.
-
-> +				interrupt-parent = <&UIC1>;
-> +
-> +				nor_flash@0,0 {
-
-You have no ranges property for the ebc parent node.  Is if filled in by
-U-Boot?  If so, please add a comment because otherwise I don't see how
-this mapping will work.
-
-> +					compatible = "amd,s29gl256n", "cfi-flash";
-> +					bank-width = <2>;
-> +					reg = <0 000000 4000000>;
-> +					#address-cells = <1>;
-> +					#size-cells = <1>;
-> +					partition@0 {
-> +						label = "Kernel";
-> +						reg = <0 180000>;
-> +					};
-> +					partition@180000 {
-> +						label = "ramdisk";
-> +						reg = <180000 200000>;
-> +					};
-> +					partition@380000 {
-> +						label = "file system";
-> +						reg = <380000 3aa0000>;
-> +					};
-> +					partition@3e20000 {
-> +						label = "kozio";
-> +						reg = <3e20000 140000>;
-> +					};
-> +					partition@3f60000 {
-> +						label = "env";
-> +						reg = <3f60000 40000>;
-> +					};
-> +					partition@3fa0000 {
-> +						label = "u-boot";
-> +						reg = <3fa0000 60000>;
-> +					};
-> +				};
-> +			};
-> +
-> +			UART0: serial@ef600200 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <ef600200 8>;
-> +				virtual-reg = <ef600200>;
-> +				clock-frequency = <0>; /* Filled in by U-Boot */
-> +				current-speed = <0>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <1a 4>;
-> +			};
-> +
-> +			UART1: serial@ef600300 {
-> +				device_type = "serial";
-> +				compatible = "ns16550";
-> +				reg = <ef600300 8>;
-> +				virtual-reg = <ef600300>;
-> +				clock-frequency = <0>; /* Filled in by U-Boot */
-> +				current-speed = <0>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <1 4>;
-> +			};
-> +
-> +			IIC0: i2c@ef600400 {
-> +				device_type = "i2c";
-> +				compatible = "ibm,iic-405ex", "ibm,iic";
-> +				reg = <ef600400 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <2 4>;
-> +			};
-> +
-> +			IIC1: i2c@ef600500 {
-> +				device_type = "i2c";
-> +				compatible = "ibm,iic-405ex", "ibm,iic";
-> +				reg = <ef600500 14>;
-> +				interrupt-parent = <&UIC0>;
-> +				interrupts = <7 4>;
-> +			};
-> +
-> +
-> +			RGMII0: emac-rgmii@ef600b00 {
-> +				device_type = "rgmii-interface";
-> +				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
-> +				reg = <ef600b00 104>;
-> +			};
-> +
-> +			EMAC0: ethernet@ef600900 {
-> +				linux,network-index = <0>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				interrupt-parent = <&EMAC0>;
-> +				interrupts = <0 1>;
-> +				#interrupt-cells = <1>;
-> +				#address-cells = <0>;
-> +				#size-cells = <0>;
-> +				interrupt-map = </*Status*/ 0 &UIC0 18 4
-> +						/*Wake*/  1 &UIC1 1d 4>;
-> +				reg = <ef600900 70>;
-> +				local-mac-address = [000000000000];
-
-Does U-Boot (or the wrapper) poke these values as well?
-
-> +				mal-device = <&MAL0>;
-> +				mal-tx-channel = <0>;
-> +				mal-rx-channel = <0>;
-> +				cell-index = <0>;
-> +				max-frame-size = <5dc>;
-> +				rx-fifo-size = <1000>;
-> +				tx-fifo-size = <800>;
-> +				phy-mode = "rgmii";
-> +				phy-map = <00000000>;
-> +				rgmii-device = <&RGMII0>;
-> +				rgmii-channel = <0>;
-> +			};
-> +
-> +			EMAC1: ethernet@ef600a00 {
-> +				linux,network-index = <1>;
-> +				device_type = "network";
-> +				compatible = "ibm,emac-405ex", "ibm,emac4";
-> +				interrupt-parent = <&EMAC1>;
-> +				interrupts = <0 1>;
-> +				#interrupt-cells = <1>;
-> +				#address-cells = <0>;
-> +				#size-cells = <0>;
-> +				interrupt-map = </*Status*/ 0 &UIC0 19 4
-> +						/*Wake*/  1 &UIC1 1f 4>;
-> +				reg = <ef600a00 70>;
-> +				local-mac-address = [000000000000];
-> +				mal-device = <&MAL0>;
-> +				mal-tx-channel = <1>;
-> +				mal-rx-channel = <1>;
-> +				cell-index = <1>;
-> +				max-frame-size = <5dc>;
-> +				rx-fifo-size = <1000>;
-> +				tx-fifo-size = <800>;
-> +				phy-mode = "rgmii";
-> +				phy-map = <00000000>;
-> +				rgmii-device = <&RGMII0>;
-> +				rgmii-channel = <1>;
-> +			};
-> +		};
-> +	};
-
-No chosen node?
+Other than those two comments, looks good.
 
 josh
