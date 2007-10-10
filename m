@@ -1,15 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <470D31BC.7010400@freescale.com>
-Date: Wed, 10 Oct 2007 15:10:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Bootwrapper: Enable debug info on boot wrapper
-References: <20071004040501.16923.68468.stgit@trillian.cg.shawcable.net>
-	<fa686aa40710101256q3783994dr854e2bdecddf9820@mail.gmail.com>
-In-Reply-To: <fa686aa40710101256q3783994dr854e2bdecddf9820@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7439DDFB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 06:22:52 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9AKMlt0013884
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 16:22:47 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9AKMlWb491350
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 14:22:47 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9AKMkGp004879
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 14:22:47 -0600
+Subject: Re: [PATCH 3/3] [POWERPC] Kilauea DTS
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200710081110.16447.sr@denx.de>
+References: <200710081110.16447.sr@denx.de>
+Content-Type: text/plain
+Date: Wed, 10 Oct 2007 15:21:54 -0500
+Message-Id: <1192047714.5534.81.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,9 +35,290 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> Any comments on this one?  Scott?  David?
+On Mon, 2007-10-08 at 11:10 +0200, Stefan Roese wrote:
+> Signed-off-by: Stefan Roese <sr@denx.de>
 
-It's fine with me.
+Looks pretty good.  Just a couple of questions.
 
--Scott
+> ---
+>  arch/powerpc/boot/dts/kilauea.dts |  253 +++++++++++++++++++++++++++++++++++++
+>  1 files changed, 253 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/kilauea.dts
+> 
+> diff --git a/arch/powerpc/boot/dts/kilauea.dts b/arch/powerpc/boot/dts/kilauea.dts
+> new file mode 100644
+> index 0000000..4683174
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/kilauea.dts
+> @@ -0,0 +1,253 @@
+> +/*
+> + * Device Tree Source for AMCC Kilauea (405EX)
+> + *
+> + * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without
+> + * any warranty of any kind, whether express or implied.
+> + */
+> +
+> +/ {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	model = "amcc,kilauea";
+> +	compatible = "amcc,kilauea";
+> +	dcr-parent = <&/cpus/PowerPC,405EX@0>;
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,405EX@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			clock-frequency = <0>; /* Filled in by U-Boot */
+
+Filled in by U-Boot itself?  Or by a cuboot wrapper? (which I can't find
+in the patches.)
+
+> +			timebase-frequency = <0>; /* Filled in by U-Boot */
+> +			i-cache-line-size = <20>;
+> +			d-cache-line-size = <20>;
+> +			i-cache-size = <4000>; /* 16 kB */
+> +			d-cache-size = <4000>; /* 16 kB */
+> +			dcr-controller;
+> +			dcr-access-method = "native";
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <0 0>; /* Filled in by U-Boot */
+> +	};
+> +
+> +	UIC0: interrupt-controller {
+> +		compatible = "ibm,uic-405ex", "ibm,uic";
+> +		interrupt-controller;
+> +		cell-index = <0>;
+> +		dcr-reg = <0c0 009>;
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <2>;
+> +	};
+> +
+> +	UIC1: interrupt-controller1 {
+> +		compatible = "ibm,uic-405ex","ibm,uic";
+> +		interrupt-controller;
+> +		cell-index = <1>;
+> +		dcr-reg = <0d0 009>;
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <2>;
+> +		interrupts = <1e 4 1f 4>; /* cascade */
+> +		interrupt-parent = <&UIC0>;
+> +	};
+> +
+> +	UIC2: interrupt-controller2 {
+> +		compatible = "ibm,uic-405ex","ibm,uic";
+> +		interrupt-controller;
+> +		cell-index = <2>;
+> +		dcr-reg = <0e0 009>;
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+> +		#interrupt-cells = <2>;
+> +		interrupts = <1c 4 1d 4>; /* cascade */
+> +		interrupt-parent = <&UIC0>;
+> +	};
+> +
+> +	plb {
+> +		compatible = "ibm,plb-405ex", "ibm,plb4";
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		ranges;
+> +		clock-frequency = <0>; /* Filled in by U-Boot */
+> +
+> +		SDRAM0: memory-controller {
+> +			compatible = "ibm,sdram-405ex";
+> +			dcr-reg = <010 2>;
+> +		};
+> +
+> +		MAL0: mcmal {
+> +			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
+> +			dcr-reg = <180 62>;
+> +			num-tx-chans = <2>;
+> +			num-rx-chans = <2>;
+> +			interrupt-parent = <&MAL0>;
+> +			interrupts = <0 1 2 3 4>;
+> +			#interrupt-cells = <1>;
+> +			#address-cells = <0>;
+> +			#size-cells = <0>;
+> +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
+> +					/*RXEOB*/ 1 &UIC0 b 4
+> +					/*SERR*/  2 &UIC1 0 4
+> +					/*TXDE*/  3 &UIC1 1 4
+> +					/*RXDE*/  4 &UIC1 2 4>;
+> +			interrupt-map-mask = <ffffffff>;
+> +		};
+> +
+> +		POB0: opb {
+> +			compatible = "ibm,opb-405ex", "ibm,opb";
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			ranges = <ef600000 ef600000 a00000>;
+> +			dcr-reg = <0a0 5>;
+> +			clock-frequency = <0>; /* Filled in by U-Boot */
+> +
+> +			EBC0: ebc {
+> +				compatible = "ibm,ebc-405ex", "ibm,ebc";
+> +				dcr-reg = <012 2>;
+> +				#address-cells = <2>;
+> +				#size-cells = <1>;
+> +				clock-frequency = <0>; /* Filled in by U-Boot */
+> +				interrupts = <5 1>;
+
+This interrupt is really rising edge?  Just double checking.
+
+> +				interrupt-parent = <&UIC1>;
+> +
+> +				nor_flash@0,0 {
+
+You have no ranges property for the ebc parent node.  Is if filled in by
+U-Boot?  If so, please add a comment because otherwise I don't see how
+this mapping will work.
+
+> +					compatible = "amd,s29gl256n", "cfi-flash";
+> +					bank-width = <2>;
+> +					reg = <0 000000 4000000>;
+> +					#address-cells = <1>;
+> +					#size-cells = <1>;
+> +					partition@0 {
+> +						label = "Kernel";
+> +						reg = <0 180000>;
+> +					};
+> +					partition@180000 {
+> +						label = "ramdisk";
+> +						reg = <180000 200000>;
+> +					};
+> +					partition@380000 {
+> +						label = "file system";
+> +						reg = <380000 3aa0000>;
+> +					};
+> +					partition@3e20000 {
+> +						label = "kozio";
+> +						reg = <3e20000 140000>;
+> +					};
+> +					partition@3f60000 {
+> +						label = "env";
+> +						reg = <3f60000 40000>;
+> +					};
+> +					partition@3fa0000 {
+> +						label = "u-boot";
+> +						reg = <3fa0000 60000>;
+> +					};
+> +				};
+> +			};
+> +
+> +			UART0: serial@ef600200 {
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <ef600200 8>;
+> +				virtual-reg = <ef600200>;
+> +				clock-frequency = <0>; /* Filled in by U-Boot */
+> +				current-speed = <0>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <1a 4>;
+> +			};
+> +
+> +			UART1: serial@ef600300 {
+> +				device_type = "serial";
+> +				compatible = "ns16550";
+> +				reg = <ef600300 8>;
+> +				virtual-reg = <ef600300>;
+> +				clock-frequency = <0>; /* Filled in by U-Boot */
+> +				current-speed = <0>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <1 4>;
+> +			};
+> +
+> +			IIC0: i2c@ef600400 {
+> +				device_type = "i2c";
+> +				compatible = "ibm,iic-405ex", "ibm,iic";
+> +				reg = <ef600400 14>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <2 4>;
+> +			};
+> +
+> +			IIC1: i2c@ef600500 {
+> +				device_type = "i2c";
+> +				compatible = "ibm,iic-405ex", "ibm,iic";
+> +				reg = <ef600500 14>;
+> +				interrupt-parent = <&UIC0>;
+> +				interrupts = <7 4>;
+> +			};
+> +
+> +
+> +			RGMII0: emac-rgmii@ef600b00 {
+> +				device_type = "rgmii-interface";
+> +				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+> +				reg = <ef600b00 104>;
+> +			};
+> +
+> +			EMAC0: ethernet@ef600900 {
+> +				linux,network-index = <0>;
+> +				device_type = "network";
+> +				compatible = "ibm,emac-405ex", "ibm,emac4";
+> +				interrupt-parent = <&EMAC0>;
+> +				interrupts = <0 1>;
+> +				#interrupt-cells = <1>;
+> +				#address-cells = <0>;
+> +				#size-cells = <0>;
+> +				interrupt-map = </*Status*/ 0 &UIC0 18 4
+> +						/*Wake*/  1 &UIC1 1d 4>;
+> +				reg = <ef600900 70>;
+> +				local-mac-address = [000000000000];
+
+Does U-Boot (or the wrapper) poke these values as well?
+
+> +				mal-device = <&MAL0>;
+> +				mal-tx-channel = <0>;
+> +				mal-rx-channel = <0>;
+> +				cell-index = <0>;
+> +				max-frame-size = <5dc>;
+> +				rx-fifo-size = <1000>;
+> +				tx-fifo-size = <800>;
+> +				phy-mode = "rgmii";
+> +				phy-map = <00000000>;
+> +				rgmii-device = <&RGMII0>;
+> +				rgmii-channel = <0>;
+> +			};
+> +
+> +			EMAC1: ethernet@ef600a00 {
+> +				linux,network-index = <1>;
+> +				device_type = "network";
+> +				compatible = "ibm,emac-405ex", "ibm,emac4";
+> +				interrupt-parent = <&EMAC1>;
+> +				interrupts = <0 1>;
+> +				#interrupt-cells = <1>;
+> +				#address-cells = <0>;
+> +				#size-cells = <0>;
+> +				interrupt-map = </*Status*/ 0 &UIC0 19 4
+> +						/*Wake*/  1 &UIC1 1f 4>;
+> +				reg = <ef600a00 70>;
+> +				local-mac-address = [000000000000];
+> +				mal-device = <&MAL0>;
+> +				mal-tx-channel = <1>;
+> +				mal-rx-channel = <1>;
+> +				cell-index = <1>;
+> +				max-frame-size = <5dc>;
+> +				rx-fifo-size = <1000>;
+> +				tx-fifo-size = <800>;
+> +				phy-mode = "rgmii";
+> +				phy-map = <00000000>;
+> +				rgmii-device = <&RGMII0>;
+> +				rgmii-channel = <1>;
+> +			};
+> +		};
+> +	};
+
+No chosen node?
+
+josh
