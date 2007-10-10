@@ -1,34 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8E6A7DDFA8
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 05:45:17 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l9AIaZIh001977
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 14:36:35 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9AJjEVL452488
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 13:45:14 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9AJjDjn026094
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 13:45:14 -0600
-Subject: Re: [PATCH 2/3] [POWERPC] Add AMCC Kilauea eval board support to
-	platforms/40x
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200710091334.16682.sr@denx.de>
-References: <200710081108.51625.sr@denx.de>
-	<20071008193404.GA10348@lixom.net>  <200710091334.16682.sr@denx.de>
-Content-Type: text/plain
-Date: Wed, 10 Oct 2007 14:44:26 -0500
-Message-Id: <1192045466.5534.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id DE404DDFC7
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 05:56:06 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so372297wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 12:56:05 -0700 (PDT)
+Message-ID: <fa686aa40710101256q3783994dr854e2bdecddf9820@mail.gmail.com>
+Date: Wed, 10 Oct 2007 13:56:05 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au, paulus@ozlabs.org,
+	"Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH] Bootwrapper: Enable debug info on boot wrapper
+In-Reply-To: <20071004040501.16923.68468.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071004040501.16923.68468.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,51 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-10-09 at 13:34 +0200, Stefan Roese wrote:
-> Hi Olof,
-> 
-> On Monday 08 October 2007, Olof Johansson wrote:
-> > > +config KILAUEA
-> > > +	bool "Kilauea"
-> > > +	depends on 40x
-> > > +	default y
-> > > +	select 405EX
-> > > +	help
-> > > +	  This option enables support for the AMCC PPC405EX evaluation board.
-> > > +
-> > >  #config REDWOOD_5
-> > >  #	bool "Redwood-5"
-> > >  #	depends on 40x
-> > > @@ -89,14 +97,17 @@ config 403GCX
-> > >  	#depends on OAK
-> > >  	select IBM405_ERR51
-> > >
-> > > +config 405EP
-> > > +	bool
-> > > +
-> > > +config 405EX
-> > > +	bool
-> > > +
-> >
-> > Do you really need config options for 405EP/EX? I don't seem them used
-> > anywhere else in the code (and it's also contradictory to the whole new
-> > multiplatform way of looking at stuff :).
-> >
-> > I know the 405/440 is still somewhat #ifdef:ed on the cpu here and there,
-> > but since this doesn't add any such code I don't see a need for the config
-> > options?
-> 
-> Yes, I'm still used to needing these defines from arch/ppc (for example for 
-> the 4xx EMAC driver). But its possible, that we really don't need it at all 
-> in arch/powerpc with all the device tree information. Not sure though.
-> 
-> Josh, what do you think? Should I remove the 405EX define completely?
+Any comments on this one?  Scott?  David?
 
-If it's not needed, it can go.  As Olof said, it doesn't appear to be
-used anywhere in the code so I think it's fine.
+Cheers,
+g.
 
-One question I do have is if 405EX and 405EP need any of the 405GP
-errata config options selected.  I would like to think those don't apply
-because the hardware is fixed, but I haven't checked to be sure.
+On 10/3/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Add '-g' to BOOTCFLAGS if CONFIG_DEBUG_INFO is set.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>
+>  arch/powerpc/boot/Makefile |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index cf80db3..9dfe79b 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -25,6 +25,10 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+>                  -isystem $(shell $(CROSS32CC) -print-file-name=include)
+>  BOOTAFLAGS     := -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+>
+> +ifdef CONFIG_DEBUG_INFO
+> +BOOTCFLAGS     += -g
+> +endif
+> +
+>  ifeq ($(call cc-option-yn, -fstack-protector),y)
+>  BOOTCFLAGS     += -fno-stack-protector
+>  endif
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-josh
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
