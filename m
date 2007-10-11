@@ -1,22 +1,15 @@
-Return-Path: <rpjday@mindspring.com>
-Received: from rubicon.netdirect.ca (nic.NetDirect.CA [216.16.235.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1FA25DDF14
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 18:33:22 +1000 (EST)
-Received: from [192.168.1.100]
-	(CPE0018396a01fc-CM001225dbafb6.cpe.net.cable.rogers.com
-	[99.236.101.138]) (authenticated bits=0)
-	by rubicon.netdirect.ca (8.13.1/8.13.1) with ESMTP id l9B8WxEG018071
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 04:33:10 -0400
-Date: Thu, 11 Oct 2007 04:29:30 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: Kconfig selects non-existent IBM_NEW_EMAC_ZMII
-Message-ID: <Pine.LNX.4.64.0710110427260.21029@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: port gnome
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bai Shuwei <baishuwei@gmail.com>
+In-Reply-To: <f3566d60710110122q23a0c49bkf0b8e8fd4f66b1e9@mail.gmail.com>
+References: <f3566d60710110122q23a0c49bkf0b8e8fd4f66b1e9@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 11 Oct 2007 18:32:08 +1000
+Message-Id: <1192091528.8476.31.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +20,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-  just FYI, from arch/powerpc/platforms/4xx/Kconfig:
+On Thu, 2007-10-11 at 16:22 +0800, Bai Shuwei wrote:
+> 
+> all, hi
+>   I want to port the GNOME or KDE to AMCC PowerPC 440EP board. I want
+> to know whether it will run and whether the monitor work if I use PCI
+> to connect the monitor card? Thank you very much!
 
-...
-config 440GP
-        bool
-        select IBM_NEW_EMAC_ZMII
-...
+Gnome and KDE themselves should just work...
 
-  there is no such Kconfig variable IBM_NEW_EMAC_ZMII.
+The problem is to get a video card working. The main issue is to
+soft-boot it with some kind of x86 emulator such as x86emu. Once
+that's done, the second main problem is that 440 tend to have
+PCI memory space above 32bits, which totally defeats broken X
+hacks through /dev/mem.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+There's a way to work around the later by doing a kernel tweak to
+create a "window" in /dev/mem that gets remapped to the appropriate
+PCI space, but you still need to fake the card base address for
+X ... pretty hard overall (doable though).
 
-http://crashcourse.ca
-========================================================================
+Ben.
+ 
