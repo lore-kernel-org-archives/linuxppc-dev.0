@@ -1,21 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3241BDE01A
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 08:51:10 +1000 (EST)
-In-Reply-To: <18190.42074.495464.74585@cargo.ozlabs.ibm.com>
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
-	<18190.42074.495464.74585@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4D0E51C1-6B26-4166-AB89-DF9748A6BA97@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc commits for 2.6.24
-Date: Thu, 11 Oct 2007 17:51:33 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+References: <20071011071558.676463639@au1.ibm.com>
+	<20071011072208.075979098@au1.ibm.com>
+	<DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZbF/pTGSW0O73+6a+MeH"
+Date: Fri, 12 Oct 2007 09:31:12 +1000
+Message-Id: <1192145472.6274.4.camel@concordia>
+Mime-Version: 1.0
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +25,121 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 11, 2007, at 5:31 PM, Paul Mackerras wrote:
+--=-ZbF/pTGSW0O73+6a+MeH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Kumar Gala writes:
->
->> I'm debugging one issue with MPC8560 that should get fixed today with
->> a new pull request after I find the issue.
->
-> There's no particular hurry for bug fixes.
+On Thu, 2007-10-11 at 08:04 -0500, Kumar Gala wrote:
+> On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
+>=20
+> > Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code =20
+> > which
+> > allows for more flexibility in the note type for the state of =20
+> > 'extended
+> > floating point' implementations in coredumps. New note types can =20
+> > now be
+> > added with an appropriate #define.
+> >
+> > #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
+> > there's are no change in behaviour.
+>=20
+> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled =20
+> to the x86 specific name?
+>=20
+> >
+> > Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+> > ---
+> >  arch/ia64/ia32/elfcore32.h     |    1 +
+> >  arch/x86_64/ia32/ia32_binfmt.c |    1 +
+> >  fs/binfmt_elf.c                |    4 ++--
+> >  include/asm-i386/elf.h         |    1 +
+> >  4 files changed, 5 insertions(+), 2 deletions(-)
+> >
+> > Index: linux/arch/ia64/ia32/elfcore32.h
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/arch/ia64/ia32/elfcore32.h
+> > +++ linux/arch/ia64/ia32/elfcore32.h
+> > @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
+> >  }
+> >
+> >  #define ELF_CORE_COPY_XFPREGS 1
+> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+> >  static inline int
+> >  elf_core_copy_task_xfpregs(struct task_struct *tsk, =20
+> > elf_fpxregset_t *xfpu)
+> >  {
+> > Index: linux/arch/x86_64/ia32/ia32_binfmt.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
+> > +++ linux/arch/x86_64/ia32/ia32_binfmt.c
+> > @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
+> >  }
+> >
+> >  #define ELF_CORE_COPY_XFPREGS 1
+> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
+> >  static inline int
+> >  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t =20
+> > *xfpu)
+> >  {
+> > Index: linux/fs/binfmt_elf.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux.orig/fs/binfmt_elf.c
+> > +++ linux/fs/binfmt_elf.c
+> > @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
+> >
+> >  #ifdef ELF_CORE_COPY_XFPREGS
+> >  	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
+> > -		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
+> > -			  &t->xfpu);
+> > +		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
+> > +			  sizeof(t->xfpu), &t->xfpu);
+> >  		t->num_notes++;
+> >  		sz +=3D notesize(&t->notes[2]);
+> >  	}
+>=20
+> You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
+>=20
+> Also, I'm not a fan of your proposed mechanism to "overload" the =20
+> elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t =20
+> and have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
 
-Already dealt with, mainly I was being stupid.
+He's not overloading it, there is no such thing as an elf_fpxregset_t,
+unless it's typedef'd to something else by the arch code, eg:
 
->> Just to clarify, are we closing 2.6.24 for new code after you send
->> Linus a pull request or are we still taking things during the two
->> week merge window?
->
-> Basically, yes.  We got a lecture at kernel summit from Linus and
-> Andrew where we got told to get everything merged early in the merge
-> window.  I might make an exception for stuff that has already been
-> posted for review but still needs some minor changes, but other than
-> that, the window for new code has closed.
+include/asm-i386/elf.h:typedef struct user_fxsr_struct elf_fpxregset_t;
+include/asm-ia64/elf.h:typedef unsigned long elf_fpxregset_t;
 
-I was wondering about this case.  I'll follow your lead here.
+Introducing another typedef would just be another layer of obfuscation
+IMO, and the elf code doesn't need any more of that.
 
-- k
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZbF/pTGSW0O73+6a+MeH
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHDrJAdSjSd0sB4dIRAjLxAJ4mzBvuCsD43PszkIoCDxrhXK04SACgpjSC
+cIMJvUxlwPO4hqc9dMpHbLA=
+=8e3U
+-----END PGP SIGNATURE-----
+
+--=-ZbF/pTGSW0O73+6a+MeH--
