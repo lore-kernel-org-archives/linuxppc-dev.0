@@ -1,23 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD78CDE1B6
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 08:01:28 +1000 (EST)
-In-Reply-To: <18190.39864.4562.852292@cargo.ozlabs.ibm.com>
-References: <20071011071558.676463639@au1.ibm.com>
-	<20071011072208.075979098@au1.ibm.com>
-	<DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-	<18190.39864.4562.852292@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2C31F1C3-3337-483B-A463-767459305F1E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
-Date: Thu, 11 Oct 2007 17:01:43 -0500
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 29D11DE141
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 08:08:03 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9BM7x5m013348
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 18:07:59 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9BM7xap474628
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 16:07:59 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9BM7wIF005792
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 16:07:58 -0600
+Subject: Re: powerpc commits for 2.6.24
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1192106826.5534.114.camel@localhost.localdomain>
+References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
+	<1192106826.5534.114.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 11 Oct 2007 17:07:41 -0500
+Message-Id: <1192140461.3061.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-10-11 at 07:47 -0500, Josh Boyer wrote:
+> On Thu, 2007-10-11 at 22:30 +1000, Paul Mackerras wrote:
+> > Below is the list of commits that I plan to ask Linus to pull
+> > tomorrow.  This is the last call for anything else or for objections
+> > to any of these commits going in.  These commits are in powerpc.git on
+> > the master and for-2.6.24 branches.
+> 
+> Hi Paul,
+> 
+> Could you pull from:
+> 
+> master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.24
+> 
+> to pick up some Xilinx changes from Grant?  I'm also hoping to get
+> Stefan's 405EX changes in soon.
 
-On Oct 11, 2007, at 4:55 PM, Paul Mackerras wrote:
+I added Stefan's latest patch set to my tree as well.  They look good.
 
-> Kumar Gala writes:
->
->>> #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current  
->>> users so
->>> there's are no change in behaviour.
->>
->> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled
->> to the x86 specific name?
->
-> How is "extended floating point registers" x86-specific?
-
-we'll I don't consider the altivec register file as 'extended fp'.   
-I'm assuming the name XFP came from IA32 land when MMX/SSE came into  
-existence.
-
-> ELF_CORE_XFPREG_TYPE is a suitable name for something that's used in
-> conjunction with a function called elf_core_copy_task_xfpregs().
-
-agreed, I think the function name should change as well.
-
-- k
+josh
