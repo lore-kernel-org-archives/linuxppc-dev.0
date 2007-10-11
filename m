@@ -1,17 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id CFCD7DE155
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 02:53:04 +1000 (EST)
-Date: Thu, 11 Oct 2007 11:58:25 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: powerpc commits for 2.6.24
-Message-ID: <20071011165825.GA10877@lixom.net>
+Date: Thu, 11 Oct 2007 19:06:03 +0200
 References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
+	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
+	<470E4311.4060909@freescale.com>
+In-Reply-To: <470E4311.4060909@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710111906.03632.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 11, 2007 at 10:30:05PM +1000, Paul Mackerras wrote:
-> Below is the list of commits that I plan to ask Linus to pull
-> tomorrow.  This is the last call for anything else or for objections
-> to any of these commits going in.  These commits are in powerpc.git on
-> the master and for-2.6.24 branches.
+On Thursday 11 October 2007, Timur Tabi wrote:
+>=20
+> Kumar Gala wrote:
+>=20
+> > Just to clarify, are we closing 2.6.24 for new code after you send =A0
+> > Linus a pull request or are we still taking things during the two =A0
+> > week merge window?
+>=20
+> I certainly hope the window isn't closed! =A0I need another week to get m=
+y UART=20
+> driver in.
 
-What about:
+Officially, the time for submissions to paulus is now over and you should
+not be working on code for the open merge window any more. I'm saying this
+as someone who's normally one of the worst offenders of this rule and
+I do feel guilty about it.
 
-[PATCH v2] powerpc: Implement logging of unhandled signals
+There is always stuff that goes in late in the merge window, so not all
+is lost for you, but you should be aware that what you are doing is wrong
+and you will be subject to public shaming on #mklinux when you try ;-)
 
-
-Thanks,
-
--Olof
+	Arnd <><
