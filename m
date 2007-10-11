@@ -1,19 +1,19 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [patch 1/2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
+Subject: Re: [PATCH v2] Fix regression. Make hot unlplug of CPU0 work again.
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-References: <20071011071558.676463639@au1.ibm.com>
-	<20071011072208.075979098@au1.ibm.com>
-	<DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20071011073040.GD9814@bakeyournoodle.com>
+References: <20071005070519.GQ9814@bakeyournoodle.com>
+	<200710051716.l95HG1cV019434@sullivan.realtime.net>
+	<20071011073040.GD9814@bakeyournoodle.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-ZbF/pTGSW0O73+6a+MeH"
-Date: Fri, 12 Oct 2007 09:31:12 +1000
-Message-Id: <1192145472.6274.4.camel@concordia>
+	boundary="=-Lq/RTzFLik5EeYGSV7dY"
+Date: Fri, 12 Oct 2007 09:33:50 +1000
+Message-Id: <1192145630.6274.5.camel@concordia>
 Mime-Version: 1.0
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,98 +25,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-ZbF/pTGSW0O73+6a+MeH
+--=-Lq/RTzFLik5EeYGSV7dY
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-10-11 at 08:04 -0500, Kumar Gala wrote:
-> On Oct 11, 2007, at 2:15 AM, markn@au1.ibm.com wrote:
+On Thu, 2007-10-11 at 17:30 +1000, Tony Breeds wrote:
+> Early in the 2.6.23 cycle we broke the ability to offline cpu0
+> (7ccb4a662462616f6be5053e26b79580e02f1529).  This patch fixes that by
+> ensuring that the (xics)  default irq server, will not be 0 when taking
+> cpu0 offline.
 >=20
-> > Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code =20
-> > which
-> > allows for more flexibility in the note type for the state of =20
-> > 'extended
-> > floating point' implementations in coredumps. New note types can =20
-> > now be
-> > added with an appropriate #define.
-> >
-> > #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all current users so
-> > there's are no change in behaviour.
+> Also catches a use of irq, when virq should be used (I think that's the
+> last one).
 >=20
-> Can we make this ELF_CORE_VECREG_TYPE or something that is so coupled =20
-> to the x86 specific name?
+> This patch also include the fix from Milton which makes JS21 work
+> aswell. In the commit message for that patch Milton writes:
+> 	xics_set_affinity no longer looks at the cpu_mask arg, instead
+> 	get_irq_server reads it from the irq descriptor.
 >=20
-> >
-> > Signed-off-by: Mark Nelson <markn@au1.ibm.com>
-> > ---
-> >  arch/ia64/ia32/elfcore32.h     |    1 +
-> >  arch/x86_64/ia32/ia32_binfmt.c |    1 +
-> >  fs/binfmt_elf.c                |    4 ++--
-> >  include/asm-i386/elf.h         |    1 +
-> >  4 files changed, 5 insertions(+), 2 deletions(-)
-> >
-> > Index: linux/arch/ia64/ia32/elfcore32.h
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/arch/ia64/ia32/elfcore32.h
-> > +++ linux/arch/ia64/ia32/elfcore32.h
-> > @@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
-> >  }
-> >
-> >  #define ELF_CORE_COPY_XFPREGS 1
-> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
-> >  static inline int
-> >  elf_core_copy_task_xfpregs(struct task_struct *tsk, =20
-> > elf_fpxregset_t *xfpu)
-> >  {
-> > Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-> > +++ linux/arch/x86_64/ia32/ia32_binfmt.c
-> > @@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
-> >  }
-> >
-> >  #define ELF_CORE_COPY_XFPREGS 1
-> > +#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
-> >  static inline int
-> >  elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t =20
-> > *xfpu)
-> >  {
-> > Index: linux/fs/binfmt_elf.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- linux.orig/fs/binfmt_elf.c
-> > +++ linux/fs/binfmt_elf.c
-> > @@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
-> >
-> >  #ifdef ELF_CORE_COPY_XFPREGS
-> >  	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
-> > -		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
-> > -			  &t->xfpu);
-> > +		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-> > +			  sizeof(t->xfpu), &t->xfpu);
-> >  		t->num_notes++;
-> >  		sz +=3D notesize(&t->notes[2]);
-> >  	}
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> Signed-off-by: Milton Miller <miltonm@bga.com>
 >=20
-> You've only fixed up one of 4 NT_PRXFPREG uses in the kernel.
+> ---
+> Milton also says in his patch:
+> > A more complete fix might be to pass the cpu_mask struct to get_irq_ser=
+ver,
+> > but kernel/irq/manage.c currently sets the descriptor first.
 >=20
-> Also, I'm not a fan of your proposed mechanism to "overload" the =20
-> elf_fpxregset_t.  I'd rather see us introduce a new elf_vecregset_t =20
-> and have it typedef'd to be elf_fpxregset_t on i386, x86_64, ia64
+>  arch/powerpc/platforms/pseries/xics.c |   11 ++++++++++-
+>  1 files changed, 10 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platfor=
+ms/pseries/xics.c
+> index f0b5ff1..217ae5d 100644
+> --- a/arch/powerpc/platforms/pseries/xics.c
+> +++ b/arch/powerpc/platforms/pseries/xics.c
+> @@ -837,6 +837,15 @@ void xics_migrate_irqs_away(void)
+>  	/* Allow IPIs again... */
+>  	xics_set_cpu_priority(cpu, DEFAULT_PRIORITY);
+> =20
+> +	/* It would be bad to migrate any IRQs to the CPU we're taking down */
+> +	if (default_server =3D=3D cpu) {
+> +		unsigned int new_server =3D first_cpu(cpu_online_map);
+> +
+> +		default_server =3D get_hard_smp_processor_id(new_server);
+> +		printk(KERN_WARNING "%s: default server was %d, reset to %d\n",
+> +		       __func__, cpu, default_server);
 
-He's not overloading it, there is no such thing as an elf_fpxregset_t,
-unless it's typedef'd to something else by the arch code, eg:
-
-include/asm-i386/elf.h:typedef struct user_fxsr_struct elf_fpxregset_t;
-include/asm-ia64/elf.h:typedef unsigned long elf_fpxregset_t;
-
-Introducing another typedef would just be another layer of obfuscation
-IMO, and the elf code doesn't need any more of that.
+WARNING? It's not like the user can do anything about it.
 
 cheers
 
@@ -130,16 +86,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-ZbF/pTGSW0O73+6a+MeH
+--=-Lq/RTzFLik5EeYGSV7dY
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHDrJAdSjSd0sB4dIRAjLxAJ4mzBvuCsD43PszkIoCDxrhXK04SACgpjSC
-cIMJvUxlwPO4hqc9dMpHbLA=
-=8e3U
+iD8DBQBHDrLddSjSd0sB4dIRAnykAKCHM2wiEeNSSnLzV0zUN5cTt+RmsQCbBT1e
+kVhQK3ithMEtkdXx1ARCPIA=
+=HmUF
 -----END PGP SIGNATURE-----
 
---=-ZbF/pTGSW0O73+6a+MeH--
+--=-Lq/RTzFLik5EeYGSV7dY--
