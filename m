@@ -1,20 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2DF9DE011
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:00:34 +1000 (EST)
-Date: Thu, 11 Oct 2007 14:57:26 +1000
+	by ozlabs.org (Postfix) with ESMTP id CAD5FDE02E
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:00:35 +1000 (EST)
+Date: Thu, 11 Oct 2007 14:58:31 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 5/7] [POWERPC] iSeries: move detection of virtual cdroms
-Message-Id: <20071011145726.59bcbc02.sfr@canb.auug.org.au>
-In-Reply-To: <20071011145502.49a16436.sfr@canb.auug.org.au>
+Subject: [PATCH 6/7] [POWERPC] iSeries: move detection of virtual tapes
+Message-Id: <20071011145831.20c4e691.sfr@canb.auug.org.au>
+In-Reply-To: <20071011145726.59bcbc02.sfr@canb.auug.org.au>
 References: <20071011144824.a5e3de59.sfr@canb.auug.org.au>
 	<20071011145055.1de13742.sfr@canb.auug.org.au>
 	<20071011145332.e3638c2e.sfr@canb.auug.org.au>
 	<20071011145502.49a16436.sfr@canb.auug.org.au>
+	<20071011145726.59bcbc02.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,320 +26,193 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Now we will only have entries in the device tree for the actual existing
-devices (including their OS/400 properties).  This way viocd.c gets all
-the information about the devices from the device tree.
+devices (including their OS/400 properties).  This way viotape.c gets
+all the information about the devices from the device tree.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/powerpc/kernel/vio.c               |    3 -
- arch/powerpc/platforms/iseries/Makefile |    2 +-
- arch/powerpc/platforms/iseries/dt.c     |    4 -
- arch/powerpc/platforms/iseries/vio.c    |  317 +++++++++++++++++++++++++++++++
- drivers/cdrom/viocd.c                   |  116 ++----------
- include/asm-powerpc/iseries/vio.h       |   24 +++
- 6 files changed, 361 insertions(+), 105 deletions(-)
- create mode 100644 arch/powerpc/platforms/iseries/vio.c
+ arch/powerpc/platforms/iseries/dt.c  |    7 --
+ arch/powerpc/platforms/iseries/vio.c |  149 ++++++++++++++++++++++++++++++----
+ drivers/char/viotape.c               |  124 ++++------------------------
+ include/asm-powerpc/iseries/vio.h    |   41 +++++++++
+ 4 files changed, 192 insertions(+), 129 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index b7c9e44..cb22a35 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -247,9 +247,6 @@ static int __init vio_bus_init(void)
- 	int err;
- 	struct device_node *node_vroot;
- 
--	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		iommu_vio_init();
--
- 	err = bus_register(&vio_bus_type);
- 	if (err) {
- 		printk(KERN_ERR "failed to register VIO bus\n");
-diff --git a/arch/powerpc/platforms/iseries/Makefile b/arch/powerpc/platforms/iseries/Makefile
-index 60db509..a65f1b4 100644
---- a/arch/powerpc/platforms/iseries/Makefile
-+++ b/arch/powerpc/platforms/iseries/Makefile
-@@ -7,7 +7,7 @@ obj-y += hvlog.o hvlpconfig.o lpardata.o setup.o dt_mod.o mf.o lpevents.o \
- 	hvcall.o proc.o htab.o iommu.o misc.o irq.o
- obj-$(CONFIG_PCI) += pci.o vpdinfo.o
- obj-$(CONFIG_SMP) += smp.o
--obj-$(CONFIG_VIOPATH) += viopath.o
-+obj-$(CONFIG_VIOPATH) += viopath.o vio.o
- obj-$(CONFIG_MODULES) += ksyms.o
- 
- quiet_cmd_dt_strings = DT_STR  $@
 diff --git a/arch/powerpc/platforms/iseries/dt.c b/arch/powerpc/platforms/iseries/dt.c
-index 9e8a334..84fcee1 100644
+index 84fcee1..2e4ad6b 100644
 --- a/arch/powerpc/platforms/iseries/dt.c
 +++ b/arch/powerpc/platforms/iseries/dt.c
-@@ -381,10 +381,6 @@ static void __init dt_vdevices(struct iseries_flat_dt *dt)
+@@ -73,7 +73,6 @@ static char __initdata device_type_memory[] = "memory";
+ static char __initdata device_type_serial[] = "serial";
+ static char __initdata device_type_network[] = "network";
+ static char __initdata device_type_block[] = "block";
+-static char __initdata device_type_byte[] = "byte";
+ static char __initdata device_type_pci[] = "pci";
+ static char __initdata device_type_vdevice[] = "vdevice";
+ static char __initdata device_type_vscsi[] = "vscsi";
+@@ -380,12 +379,6 @@ static void __init dt_vdevices(struct iseries_flat_dt *dt)
+ 	for (i = 0; i < HVMAXARCHITECTEDVIRTUALDISKS; i++)
  		dt_do_vdevice(dt, "viodasd", reg, i, device_type_block,
  				"IBM,iSeries-viodasd", 1);
- 	reg += HVMAXARCHITECTEDVIRTUALDISKS;
+-	reg += HVMAXARCHITECTEDVIRTUALDISKS;
+-	reg += HVMAXARCHITECTEDVIRTUALCDROMS;
 -
--	for (i = 0; i < HVMAXARCHITECTEDVIRTUALCDROMS; i++)
--		dt_do_vdevice(dt, "viocd", reg, i, device_type_block,
--				"IBM,iSeries-viocd", 1);
- 	reg += HVMAXARCHITECTEDVIRTUALCDROMS;
+-	for (i = 0; i < HVMAXARCHITECTEDVIRTUALTAPES; i++)
+-		dt_do_vdevice(dt, "viotape", reg, i, device_type_byte,
+-				"IBM,iSeries-viotape", 1);
  
- 	for (i = 0; i < HVMAXARCHITECTEDVIRTUALTAPES; i++)
+ 	dt_end_node(dt);
+ }
 diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
-new file mode 100644
-index 0000000..08f6884
---- /dev/null
+index 08f6884..b4f7433 100644
+--- a/arch/powerpc/platforms/iseries/vio.c
 +++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -0,0 +1,317 @@
-+/*
-+ * Legacy iSeries specific vio initialisation
-+ * that needs to be built in (not a module).
-+ *
-+ * © Copyright 2007 IBM Corporation
-+ *	Author: Stephen Rothwell
-+ *	Some parts collected from various other files
-+ *
-+ * This program is free software;  you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of the
-+ * License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+#include <linux/of.h>
-+#include <linux/init.h>
-+#include <linux/gfp.h>
-+#include <linux/completion.h>
-+#include <linux/proc_fs.h>
-+
-+#include <asm/firmware.h>
-+#include <asm/iseries/vio.h>
-+#include <asm/iseries/iommu.h>
-+#include <asm/iseries/hv_types.h>
-+#include <asm/iseries/hv_lp_event.h>
-+
-+#define FIRST_VTY	0
-+#define NUM_VTYS	1
-+#define FIRST_VSCSI	(FIRST_VTY + NUM_VTYS)
-+#define NUM_VSCSIS	1
-+#define FIRST_VLAN	(FIRST_VSCSI + NUM_VSCSIS)
-+#define NUM_VLANS	HVMAXARCHITECTEDVIRTUALLANS
-+#define FIRST_VIODASD	(FIRST_VLAN + NUM_VLANS)
-+#define NUM_VIODASDS	HVMAXARCHITECTEDVIRTUALDISKS
-+#define FIRST_VIOCD	(FIRST_VIODASD + NUM_VIODASDS)
-+#define NUM_VIOCDS	HVMAXARCHITECTEDVIRTUALCDROMS
-+#define FIRST_VIOTAPE	(FIRST_VIOCD + NUM_VIOCDS)
-+#define NUM_VIOTAPES	HVMAXARCHITECTEDVIRTUALTAPES
-+
-+static struct property * __init new_property(const char *name, int length,
-+		const void *value)
-+{
-+	struct property *np = kzalloc(sizeof(*np) + strlen(name) + 1 + length,
-+			GFP_KERNEL);
-+
-+	if (!np)
-+		return NULL;
-+	np->name = (char *)(np + 1);
-+	np->value = np->name + strlen(name) + 1;
-+	strcpy(np->name, name);
-+	memcpy(np->value, value, length);
-+	np->length = length;
-+	return np;
-+}
-+
-+static void __init free_property(struct property *np)
-+{
-+	kfree(np);
-+}
-+
-+static struct device_node * __init new_node(const char *path,
-+		struct device_node *parent)
-+{
-+	struct device_node *np = kzalloc(sizeof(*np), GFP_KERNEL);
-+
-+	if (!np)
-+		return NULL;
-+	np->full_name = kmalloc(strlen(path) + 1, GFP_KERNEL);
-+	if (!np->full_name) {
-+		kfree(np);
-+		return NULL;
-+	}
-+	strcpy(np->full_name, path);
-+	of_node_set_flag(np, OF_DYNAMIC);
-+	kref_init(&np->kref);
-+	np->parent = of_node_get(parent);
-+	return np;
-+}
-+
-+static void __init free_node(struct device_node *np)
-+{
-+	struct property *next;
-+	struct property *prop;
-+
-+	next = np->properties;
-+	while (next) {
-+		prop = next;
-+		next = prop->next;
-+		free_property(prop);
-+	}
-+	of_node_put(np->parent);
-+	kfree(np->full_name);
-+	kfree(np);
-+}
-+
-+static int __init add_string_property(struct device_node *np, const char *name,
-+		const char *value)
-+{
-+	struct property *nprop = new_property(name, strlen(value) + 1, value);
-+
-+	if (!nprop)
-+		return 0;
-+	prom_add_property(np, nprop);
-+	return 1;
-+}
-+
-+static int __init add_raw_property(struct device_node *np, const char *name,
-+		int length, const void *value)
-+{
-+	struct property *nprop = new_property(name, length, value);
-+
-+	if (!nprop)
-+		return 0;
-+	prom_add_property(np, nprop);
-+	return 1;
-+}
-+
-+struct viocd_waitevent {
+@@ -45,6 +45,18 @@
+ #define FIRST_VIOTAPE	(FIRST_VIOCD + NUM_VIOCDS)
+ #define NUM_VIOTAPES	HVMAXARCHITECTEDVIRTUALTAPES
+ 
++struct vio_waitevent {
 +	struct completion	com;
 +	int			rc;
 +	u16			sub_result;
 +};
 +
-+struct cdrom_info {
++struct vio_resource {
 +	char	rsrcname[10];
 +	char	type[4];
 +	char	model[3];
 +};
 +
-+static void __init handle_cd_event(struct HvLpEvent *event)
+ static struct property * __init new_property(const char *name, int length,
+ 		const void *value)
+ {
+@@ -123,22 +135,10 @@ static int __init add_raw_property(struct device_node *np, const char *name,
+ 	return 1;
+ }
+ 
+-struct viocd_waitevent {
+-	struct completion	com;
+-	int			rc;
+-	u16			sub_result;
+-};
+-
+-struct cdrom_info {
+-	char	rsrcname[10];
+-	char	type[4];
+-	char	model[3];
+-};
+-
+ static void __init handle_cd_event(struct HvLpEvent *event)
+ {
+ 	struct viocdlpevent *bevent;
+-	struct viocd_waitevent *pwe;
++	struct vio_waitevent *pwe;
+ 
+ 	if (!event)
+ 		/* Notification that a partition went away! */
+@@ -158,7 +158,7 @@ static void __init handle_cd_event(struct HvLpEvent *event)
+ 
+ 	switch (event->xSubtype & VIOMINOR_SUBTYPE_MASK) {
+ 	case viocdgetinfo:
+-		pwe = (struct viocd_waitevent *)event->xCorrelationToken;
++		pwe = (struct vio_waitevent *)event->xCorrelationToken;
+ 		pwe->rc = event->xRc;
+ 		pwe->sub_result = bevent->sub_result;
+ 		complete(&pwe->com);
+@@ -179,8 +179,8 @@ static void __init get_viocd_info(struct device_node *vio_root)
+ {
+ 	HvLpEvent_Rc hvrc;
+ 	u32 unit;
+-	struct viocd_waitevent we;
+-	struct cdrom_info *unitinfo;
++	struct vio_waitevent we;
++	struct vio_resource *unitinfo;
+ 	dma_addr_t unitinfo_dmaaddr;
+ 	int ret;
+ 
+@@ -286,6 +286,122 @@ static void __init get_viocd_info(struct device_node *vio_root)
+ 	viopath_close(viopath_hostLp, viomajorsubtype_cdio, 2);
+ }
+ 
++/* Handle interrupt events for tape */
++static void __init handle_tape_event(struct HvLpEvent *event)
 +{
-+	struct viocdlpevent *bevent;
-+	struct viocd_waitevent *pwe;
++	struct vio_waitevent *we;
++	struct viotapelpevent *tevent = (struct viotapelpevent *)event;
 +
-+	if (!event)
++	if (event == NULL)
 +		/* Notification that a partition went away! */
 +		return;
 +
-+	/* First, we should NEVER get an int here...only acks */
-+	if (hvlpevent_is_int(event)) {
-+		printk(KERN_WARNING "handle_cd_event: got an unexpected int\n");
-+		if (hvlpevent_need_ack(event)) {
-+			event->xRc = HvLpEvent_Rc_InvalidSubtype;
-+			HvCallEvent_ackLpEvent(event);
-+		}
-+		return;
-+	}
-+
-+	bevent = (struct viocdlpevent *)event;
-+
++	we = (struct vio_waitevent *)event->xCorrelationToken;
 +	switch (event->xSubtype & VIOMINOR_SUBTYPE_MASK) {
-+	case viocdgetinfo:
-+		pwe = (struct viocd_waitevent *)event->xCorrelationToken;
-+		pwe->rc = event->xRc;
-+		pwe->sub_result = bevent->sub_result;
-+		complete(&pwe->com);
++	case viotapegetinfo:
++		we->rc = tevent->sub_type_result;
++		complete(&we->com);
 +		break;
-+
 +	default:
-+		printk(KERN_WARNING "handle_cd_event: "
-+			"message with unexpected subtype %0x04X!\n",
-+			event->xSubtype & VIOMINOR_SUBTYPE_MASK);
-+		if (hvlpevent_need_ack(event)) {
-+			event->xRc = HvLpEvent_Rc_InvalidSubtype;
-+			HvCallEvent_ackLpEvent(event);
-+		}
++		printk(KERN_WARNING "handle_tape_event: weird ack\n");
 +	}
 +}
 +
-+static void __init get_viocd_info(struct device_node *vio_root)
++static void __init get_viotape_info(struct device_node *vio_root)
 +{
 +	HvLpEvent_Rc hvrc;
 +	u32 unit;
-+	struct viocd_waitevent we;
-+	struct cdrom_info *unitinfo;
++	struct vio_resource *unitinfo;
 +	dma_addr_t unitinfo_dmaaddr;
++	size_t len = sizeof(*unitinfo) * HVMAXARCHITECTEDVIRTUALTAPES;
++	struct vio_waitevent we;
 +	int ret;
 +
-+	ret = viopath_open(viopath_hostLp, viomajorsubtype_cdio, 2);
++	ret = viopath_open(viopath_hostLp, viomajorsubtype_tape, 2);
 +	if (ret) {
-+		printk(KERN_WARNING
-+			"get_viocd_info: error opening path to host partition %d\n",
-+			viopath_hostLp);
++		printk(KERN_WARNING "get_viotape_info: "
++			"error on viopath_open to hostlp %d\n", ret);
 +		return;
 +	}
 +
-+	/* Initialize our request handler */
-+	vio_setHandler(viomajorsubtype_cdio, handle_cd_event);
++	vio_setHandler(viomajorsubtype_tape, handle_tape_event);
 +
-+	unitinfo = iseries_hv_alloc(
-+			sizeof(*unitinfo) * HVMAXARCHITECTEDVIRTUALCDROMS,
-+			&unitinfo_dmaaddr, GFP_ATOMIC);
-+	if (!unitinfo) {
-+		printk(KERN_WARNING
-+			"get_viocd_info: error allocating unitinfo\n");
++	unitinfo = iseries_hv_alloc(len, &unitinfo_dmaaddr, GFP_ATOMIC);
++	if (!unitinfo)
 +		goto clear_handler;
-+	}
 +
-+	memset(unitinfo, 0, sizeof(*unitinfo) * HVMAXARCHITECTEDVIRTUALCDROMS);
-+
-+	init_completion(&we.com);
++	memset(unitinfo, 0, len);
 +
 +	hvrc = HvCallEvent_signalLpEventFast(viopath_hostLp,
 +			HvLpEvent_Type_VirtualIo,
-+			viomajorsubtype_cdio | viocdgetinfo,
++			viomajorsubtype_tape | viotapegetinfo,
 +			HvLpEvent_AckInd_DoAck, HvLpEvent_AckType_ImmediateAck,
 +			viopath_sourceinst(viopath_hostLp),
 +			viopath_targetinst(viopath_hostLp),
-+			(u64)&we, VIOVERSION << 16, unitinfo_dmaaddr, 0,
-+			sizeof(*unitinfo) * HVMAXARCHITECTEDVIRTUALCDROMS, 0);
++			(u64)(unsigned long)&we, VIOVERSION << 16,
++			unitinfo_dmaaddr, len, 0, 0);
 +	if (hvrc != HvLpEvent_Rc_Good) {
-+		printk(KERN_WARNING
-+			"get_viocd_info: cdrom error sending event. rc %d\n",
-+			(int)hvrc);
++		printk(KERN_WARNING "get_viotape_info: hv error on op %d\n",
++				(int)hvrc);
 +		goto hv_free;
 +	}
 +
 +	wait_for_completion(&we.com);
 +
-+	if (we.rc) {
-+		printk(KERN_WARNING "get_viocd_info: bad rc %d:0x%04X\n",
-+			we.rc, we.sub_result);
-+		goto hv_free;
-+	}
-+
-+	for (unit = 0; (unit < HVMAXARCHITECTEDVIRTUALCDROMS) &&
++	for (unit = 0; (unit < HVMAXARCHITECTEDVIRTUALTAPES) &&
 +			unitinfo[unit].rsrcname[0]; unit++) {
 +		struct device_node *np;
 +		char name[64];
-+		u32 reg = FIRST_VIOCD + unit;
++		u32 reg = FIRST_VIOTAPE + unit;
 +
-+		snprintf(name, sizeof(name), "/vdevice/viocd@%08x", reg);
++		snprintf(name, sizeof(name), "/vdevice/viotape@%08x", reg);
 +		np = new_node(name, vio_root);
 +		if (!np)
 +			goto hv_free;
-+		if (!add_string_property(np, "name", "viocd") ||
-+			!add_string_property(np, "device_type", "block") ||
++		if (!add_string_property(np, "name", "viotape") ||
++			!add_string_property(np, "device_type", "byte") ||
 +			!add_string_property(np, "compatible",
-+				"IBM,iSeries-viocd") ||
++				"IBM,iSeries-viotape") ||
 +			!add_raw_property(np, "reg", sizeof(reg), &reg) ||
 +			!add_raw_property(np, "linux,unit_address",
 +				sizeof(unit), &unit) ||
@@ -373,264 +247,251 @@ index 0000000..08f6884
 +	}
 +
 + hv_free:
-+	iseries_hv_free(sizeof(*unitinfo) * HVMAXARCHITECTEDVIRTUALCDROMS,
-+			unitinfo, unitinfo_dmaaddr);
++	iseries_hv_free(len, unitinfo, unitinfo_dmaaddr);
 + clear_handler:
-+	vio_clearHandler(viomajorsubtype_cdio);
-+	viopath_close(viopath_hostLp, viomajorsubtype_cdio, 2);
++	vio_clearHandler(viomajorsubtype_tape);
++	viopath_close(viopath_hostLp, viomajorsubtype_tape, 2);
 +}
 +
-+static int __init iseries_vio_init(void)
-+{
-+	struct device_node *vio_root;
-+
-+	if (!firmware_has_feature(FW_FEATURE_ISERIES))
-+		return -ENODEV;
-+
-+	iommu_vio_init();
-+
-+	vio_root = of_find_node_by_path("/vdevice");
-+	if (!vio_root)
-+		return -ENODEV;
-+
-+	if (viopath_hostLp == HvLpIndexInvalid) {
-+		vio_set_hostlp();
-+		/* If we don't have a host, bail out */
-+		if (viopath_hostLp == HvLpIndexInvalid)
-+			goto put_node;
-+	}
-+
-+	get_viocd_info(vio_root);
-+
-+	return 0;
-+
-+ put_node:
-+	of_node_put(vio_root);
-+	return -ENODEV;
-+}
-+arch_initcall(iseries_vio_init);
-diff --git a/drivers/cdrom/viocd.c b/drivers/cdrom/viocd.c
-index c081e54..880b5dc 100644
---- a/drivers/cdrom/viocd.c
-+++ b/drivers/cdrom/viocd.c
-@@ -56,30 +56,6 @@
- #define VIOCD_KERN_WARNING		KERN_WARNING "viocd: "
- #define VIOCD_KERN_INFO			KERN_INFO "viocd: "
- 
--struct viocdlpevent {
--	struct HvLpEvent	event;
--	u32			reserved;
--	u16			version;
--	u16			sub_result;
--	u16			disk;
--	u16			flags;
--	u32			token;
--	u64			offset;		/* On open, max number of disks */
--	u64			len;		/* On open, size of the disk */
--	u32			block_size;	/* Only set on open */
--	u32			media_size;	/* Only set on open */
--};
--
--enum viocdsubtype {
--	viocdopen = 0x0001,
--	viocdclose = 0x0002,
--	viocdread = 0x0003,
--	viocdwrite = 0x0004,
--	viocdlockdoor = 0x0005,
--	viocdgetinfo = 0x0006,
--	viocdcheck = 0x0007
--};
--
- /*
-  * Should probably make this a module parameter....sigh
-  */
-@@ -131,17 +107,13 @@ static struct capability_entry capability_table[] __initdata = {
- /* These are our internal structures for keeping track of devices */
- static int viocd_numdev;
- 
--struct cdrom_info {
--	char	rsrcname[10];
--	char	type[4];
--	char	model[3];
--};
--
- struct disk_info {
- 	struct gendisk			*viocd_disk;
- 	struct cdrom_device_info	viocd_info;
- 	struct device			*dev;
--	struct cdrom_info		unitinfo;
-+	const char			*rsrcname;
-+	const char			*type;
-+	const char			*model;
- };
- static struct disk_info viocd_diskinfo[VIOCD_MAX_CD];
- 
-@@ -159,9 +131,9 @@ static int proc_viocd_show(struct seq_file *m, void *v)
- 	for (i = 0; i < viocd_numdev; i++) {
- 		seq_printf(m, "viocd device %d is iSeries resource %10.10s"
- 				"type %4.4s, model %3.3s\n",
--				i, viocd_diskinfo[i].unitinfo.rsrcname,
--				viocd_diskinfo[i].unitinfo.type,
--				viocd_diskinfo[i].unitinfo.model);
-+				i, viocd_diskinfo[i].rsrcname,
-+				viocd_diskinfo[i].type,
-+				viocd_diskinfo[i].model);
+ static int __init iseries_vio_init(void)
+ {
+ 	struct device_node *vio_root;
+@@ -307,6 +423,7 @@ static int __init iseries_vio_init(void)
  	}
- 	return 0;
- }
-@@ -211,61 +183,6 @@ struct block_device_operations viocd_fops = {
- 	.media_changed =	viocd_blk_media_changed,
- };
  
--/* Get info on CD devices from OS/400 */
--static void __init get_viocd_info(void)
+ 	get_viocd_info(vio_root);
++	get_viotape_info(vio_root);
+ 
+ 	return 0;
+ 
+diff --git a/drivers/char/viotape.c b/drivers/char/viotape.c
+index 064c091..f1d60f0 100644
+--- a/drivers/char/viotape.c
++++ b/drivers/char/viotape.c
+@@ -92,47 +92,6 @@ struct viot_devinfo_struct {
+ #define VIOTAPOP_SETPART       14
+ #define VIOTAPOP_UNLOAD        15
+ 
+-struct viotapelpevent {
+-	struct HvLpEvent event;
+-	u32 reserved;
+-	u16 version;
+-	u16 sub_type_result;
+-	u16 tape;
+-	u16 flags;
+-	u32 token;
+-	u64 len;
+-	union {
+-		struct {
+-			u32 tape_op;
+-			u32 count;
+-		} op;
+-		struct {
+-			u32 type;
+-			u32 resid;
+-			u32 dsreg;
+-			u32 gstat;
+-			u32 erreg;
+-			u32 file_no;
+-			u32 block_no;
+-		} get_status;
+-		struct {
+-			u32 block_no;
+-		} get_pos;
+-	} u;
+-};
+-
+-enum viotapesubtype {
+-	viotapeopen = 0x0001,
+-	viotapeclose = 0x0002,
+-	viotaperead = 0x0003,
+-	viotapewrite = 0x0004,
+-	viotapegetinfo = 0x0005,
+-	viotapeop = 0x0006,
+-	viotapegetpos = 0x0007,
+-	viotapesetpos = 0x0008,
+-	viotapegetstatus = 0x0009
+-};
+-
+ enum viotaperc {
+ 	viotape_InvalidRange = 0x0601,
+ 	viotape_InvalidToken = 0x0602,
+@@ -223,14 +182,11 @@ static const struct vio_error_entry viotape_err_table[] = {
+ #define VIOT_WRITING		2
+ 
+ /* Our info on the tapes */
+-struct tape_descr {
+-	char rsrcname[10];
+-	char type[4];
+-	char model[3];
+-};
+-
+-static struct tape_descr *viotape_unitinfo;
+-static dma_addr_t viotape_unitinfo_token;
++static struct {
++	const char *rsrcname;
++	const char *type;
++	const char *model;
++} viotape_unitinfo[VIOTAPE_MAX_TAPE];
+ 
+ static struct mtget viomtget[VIOTAPE_MAX_TAPE];
+ 
+@@ -381,53 +337,6 @@ int tape_rc_to_errno(int tape_rc, char *operation, int tapeno)
+ 	return -err->errno;
+ }
+ 
+-/* Get info on all tapes from OS/400 */
+-static int get_viotape_info(void)
 -{
 -	HvLpEvent_Rc hvrc;
 -	int i;
--	struct viocd_waitevent we;
--	struct cdrom_info *viocd_unitinfo;
--	dma_addr_t unitinfo_dmaaddr;
+-	size_t len = sizeof(*viotape_unitinfo) * VIOTAPE_MAX_TAPE;
+-	struct op_struct *op = get_op_struct();
 -
--	viocd_unitinfo = iseries_hv_alloc(
--			sizeof(*viocd_unitinfo) * VIOCD_MAX_CD,
--			&unitinfo_dmaaddr, GFP_ATOMIC);
--	if (viocd_unitinfo == NULL) {
--		printk(VIOCD_KERN_WARNING "error allocating unitinfo\n");
--		return;
+-	if (op == NULL)
+-		return -ENOMEM;
+-
+-	viotape_unitinfo = iseries_hv_alloc(len, &viotape_unitinfo_token,
+-		GFP_ATOMIC);
+-	if (viotape_unitinfo == NULL) {
+-		free_op_struct(op);
+-		return -ENOMEM;
 -	}
 -
--	memset(viocd_unitinfo, 0, sizeof(*viocd_unitinfo) * VIOCD_MAX_CD);
--
--	init_completion(&we.com);
+-	memset(viotape_unitinfo, 0, len);
 -
 -	hvrc = HvCallEvent_signalLpEventFast(viopath_hostLp,
 -			HvLpEvent_Type_VirtualIo,
--			viomajorsubtype_cdio | viocdgetinfo,
+-			viomajorsubtype_tape | viotapegetinfo,
 -			HvLpEvent_AckInd_DoAck, HvLpEvent_AckType_ImmediateAck,
 -			viopath_sourceinst(viopath_hostLp),
 -			viopath_targetinst(viopath_hostLp),
--			(u64)&we, VIOVERSION << 16, unitinfo_dmaaddr, 0,
--			sizeof(*viocd_unitinfo) * VIOCD_MAX_CD, 0);
+-			(u64) (unsigned long) op, VIOVERSION << 16,
+-			viotape_unitinfo_token, len, 0, 0);
 -	if (hvrc != HvLpEvent_Rc_Good) {
--		printk(VIOCD_KERN_WARNING "cdrom error sending event. rc %d\n",
+-		printk(VIOTAPE_KERN_WARN "hv error on op %d\n",
 -				(int)hvrc);
--		goto error_ret;
+-		free_op_struct(op);
+-		return -EIO;
 -	}
 -
--	wait_for_completion(&we.com);
+-	wait_for_completion(&op->com);
 -
--	if (we.rc) {
--		const struct vio_error_entry *err =
--			vio_lookup_rc(viocd_err_table, we.sub_result);
--		printk(VIOCD_KERN_WARNING "bad rc %d:0x%04X on getinfo: %s\n",
--				we.rc, we.sub_result, err->msg);
--		goto error_ret;
--	}
+-	free_op_struct(op);
 -
--	for (i = 0; (i < VIOCD_MAX_CD) && viocd_unitinfo[i].rsrcname[0]; i++) {
--		viocd_diskinfo[viocd_numdev].unitinfo = viocd_unitinfo[i];
--		viocd_numdev++;
--	}
--
--error_ret:
--	iseries_hv_free(sizeof(*viocd_unitinfo) * VIOCD_MAX_CD,
--			viocd_unitinfo, unitinfo_dmaaddr);
+-	for (i = 0;
+-	     ((i < VIOTAPE_MAX_TAPE) && (viotape_unitinfo[i].rsrcname[0]));
+-	     i++)
+-		viotape_numdev++;
+-	return 0;
 -}
 -
- static int viocd_open(struct cdrom_device_info *cdi, int purpose)
+-
+ /* Write */
+ static ssize_t viotap_write(struct file *file, const char *buf,
+ 		size_t count, loff_t * ppos)
+@@ -899,7 +808,6 @@ static void vioHandleTapeEvent(struct HvLpEvent *event)
+ 	tapeminor = event->xSubtype & VIOMINOR_SUBTYPE_MASK;
+ 	op = (struct op_struct *)event->xCorrelationToken;
+ 	switch (tapeminor) {
+-	case viotapegetinfo:
+ 	case viotapeopen:
+ 	case viotapeclose:
+ 		op->rc = tevent->sub_type_result;
+@@ -942,11 +850,23 @@ static int viotape_probe(struct vio_dev *vdev, const struct vio_device_id *id)
  {
-         struct disk_info *diskinfo = cdi->handle;
-@@ -576,7 +493,6 @@ static void vio_handle_cd_event(struct HvLpEvent *event)
- 					bevent->block_size / 512);
- 		}
- 		/* FALLTHROUGH !! */
--	case viocdgetinfo:
- 	case viocdlockdoor:
- 		pwe = (struct viocd_waitevent *)event->xCorrelationToken;
- return_complete:
-@@ -660,22 +576,30 @@ static int viocd_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	int deviceno;
- 	struct disk_info *d;
- 	struct cdrom_device_info *c;
--	struct cdrom_info *ci;
- 	struct request_queue *q;
+ 	int i = vdev->unit_address;
+ 	int j;
 +	struct device_node *node = vdev->dev.archdata.of_node;
  
- 	deviceno = vdev->unit_address;
--	if (deviceno >= viocd_numdev)
-+	if (deviceno > VIOCD_MAX_CD)
- 		return -ENODEV;
-+	if (!node)
+-	if (i >= viotape_numdev)
++	if (i > VIOTAPE_MAX_TAPE)
 +		return -ENODEV;
++	if (!node)
+ 		return -ENODEV;
+ 
++	if (i >= viotape_numdev)
++		viotape_numdev = i + 1;
 +
-+	if (deviceno >= viocd_numdev)
-+		viocd_numdev = deviceno + 1;
+ 	tape_device[i] = &vdev->dev;
++	viotape_unitinfo[i].rsrcname = of_get_property(node,
++					"linux,vio_rsrcname", NULL);
++	viotape_unitinfo[i].type = of_get_property(node, "linux,vio_type",
++					NULL);
++	viotape_unitinfo[i].model = of_get_property(node, "linux,vio_model",
++					NULL);
  
- 	d = &viocd_diskinfo[deviceno];
-+	d->rsrcname = of_get_property(node, "linux,vio_rsrcname", NULL);
-+	d->type = of_get_property(node, "linux,vio_type", NULL);
-+	d->model = of_get_property(node, "linux,vio_model", NULL);
-+
- 	c = &d->viocd_info;
--	ci = &d->unitinfo;
- 
- 	c->ops = &viocd_dops;
- 	c->speed = 4;
- 	c->capacity = 1;
- 	c->handle = d;
--	c->mask = ~find_capability(ci->type);
-+	c->mask = ~find_capability(d->type);
- 	sprintf(c->name, VIOCD_DEVICE "%c", 'a' + deviceno);
- 
- 	if (register_cdrom(c) != 0) {
-@@ -685,7 +609,7 @@ static int viocd_probe(struct vio_dev *vdev, const struct vio_device_id *id)
+ 	state[i].cur_part = 0;
+ 	for (j = 0; j < MAX_PARTITIONS; ++j)
+@@ -1044,11 +964,6 @@ int __init viotap_init(void)
+ 		goto unreg_chrdev;
  	}
- 	printk(VIOCD_KERN_INFO "cd %s is iSeries resource %10.10s "
- 			"type %4.4s, model %3.3s\n",
--			c->name, ci->rsrcname, ci->type, ci->model);
-+			c->name, d->rsrcname, d->type, d->model);
- 	q = blk_init_queue(do_viocd_request, &viocd_reqlock);
- 	if (q == NULL) {
- 		printk(VIOCD_KERN_WARNING "Cannot allocate queue for %s!\n",
-@@ -794,8 +718,6 @@ static int __init viocd_init(void)
- 	/* Initialize our request handler */
- 	vio_setHandler(viomajorsubtype_cdio, vio_handle_cd_event);
  
--	get_viocd_info();
+-	if ((ret = get_viotape_info()) < 0) {
+-		printk(VIOTAPE_KERN_WARN "Unable to obtain virtual device information");
+-		goto unreg_class;
+-	}
 -
- 	spin_lock_init(&viocd_reqlock);
- 
- 	ret = vio_register_driver(&viocd_driver);
+ 	ret = vio_register_driver(&viotape_driver);
+ 	if (ret)
+ 		goto unreg_class;
+@@ -1102,9 +1017,6 @@ static void __exit viotap_exit(void)
+ 	vio_unregister_driver(&viotape_driver);
+ 	class_destroy(tape_class);
+ 	unregister_chrdev(VIOTAPE_MAJOR, "viotape");
+-	if (viotape_unitinfo)
+-		iseries_hv_free(sizeof(viotape_unitinfo[0]) * VIOTAPE_MAX_TAPE,
+-				viotape_unitinfo, viotape_unitinfo_token);
+ 	viopath_close(viopath_hostLp, viomajorsubtype_tape, VIOTAPE_MAXREQ + 2);
+ 	vio_clearHandler(viomajorsubtype_tape);
+ 	clear_op_struct_pool();
 diff --git a/include/asm-powerpc/iseries/vio.h b/include/asm-powerpc/iseries/vio.h
-index 5a5cd0f..e5a405b 100644
+index e5a405b..2555dfd 100644
 --- a/include/asm-powerpc/iseries/vio.h
 +++ b/include/asm-powerpc/iseries/vio.h
-@@ -51,6 +51,30 @@
-  */
- #define VIO_MAX_SUBTYPES 8
+@@ -75,6 +75,47 @@ enum viocdsubtype {
+ 	viocdcheck = 0x0007
+ };
  
-+struct viocdlpevent {
-+	struct HvLpEvent	event;
-+	u32			reserved;
-+	u16			version;
-+	u16			sub_result;
-+	u16			disk;
-+	u16			flags;
-+	u32			token;
-+	u64			offset;		/* On open, max number of disks */
-+	u64			len;		/* On open, size of the disk */
-+	u32			block_size;	/* Only set on open */
-+	u32			media_size;	/* Only set on open */
++struct viotapelpevent {
++	struct HvLpEvent event;
++	u32 reserved;
++	u16 version;
++	u16 sub_type_result;
++	u16 tape;
++	u16 flags;
++	u32 token;
++	u64 len;
++	union {
++		struct {
++			u32 tape_op;
++			u32 count;
++		} op;
++		struct {
++			u32 type;
++			u32 resid;
++			u32 dsreg;
++			u32 gstat;
++			u32 erreg;
++			u32 file_no;
++			u32 block_no;
++		} get_status;
++		struct {
++			u32 block_no;
++		} get_pos;
++	} u;
 +};
 +
-+enum viocdsubtype {
-+	viocdopen = 0x0001,
-+	viocdclose = 0x0002,
-+	viocdread = 0x0003,
-+	viocdwrite = 0x0004,
-+	viocdlockdoor = 0x0005,
-+	viocdgetinfo = 0x0006,
-+	viocdcheck = 0x0007
++enum viotapesubtype {
++	viotapeopen = 0x0001,
++	viotapeclose = 0x0002,
++	viotaperead = 0x0003,
++	viotapewrite = 0x0004,
++	viotapegetinfo = 0x0005,
++	viotapeop = 0x0006,
++	viotapegetpos = 0x0007,
++	viotapesetpos = 0x0008,
++	viotapegetstatus = 0x0009
 +};
 +
  /*
