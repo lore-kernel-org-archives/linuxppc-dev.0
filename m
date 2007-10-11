@@ -1,20 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id AC2DEDDFFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 00:29:12 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so671448wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 07:29:11 -0700 (PDT)
-Message-ID: <fa686aa40710110729o1a7f27dfn2791fae8cc7f4bff@mail.gmail.com>
-Date: Thu, 11 Oct 2007 08:29:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: powerpc commits for 2.6.24
-In-Reply-To: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
+Return-Path: <oliver8849@yahoo.com>
+Received: from web53808.mail.re2.yahoo.com (web53808.mail.re2.yahoo.com
+	[206.190.36.203]) by ozlabs.org (Postfix) with SMTP id BAE98DDFC5
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 01:07:41 +1000 (EST)
+Date: Thu, 11 Oct 2007 08:00:15 -0700 (PDT)
+From: Oliver Liu <oliver8849@yahoo.com>
+Subject: Warning: "isa_io_base" [/home/oliu/pmm-mpc-k26-6437/pmm.ko] undefined!
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-486800107-1192114815=:72998"
+Message-ID: <4613.72998.qm@web53808.mail.re2.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/11/07, Paul Mackerras <paulus@samba.org> wrote:
-> Below is the list of commits that I plan to ask Linus to pull
-> tomorrow.  This is the last call for anything else or for objections
-> to any of these commits going in.  These commits are in powerpc.git on
-> the master and for-2.6.24 branches.
->
+--0-486800107-1192114815=:72998
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-How about these 4?  Do you want to pull them directly, or would you
-rather me repost them to the list?
+Hi,
+   
+  When i compile my device driver for kernel2.6, i got a warning as followng:
+  Warning: "isa_io_base" [/home/oliu/pmm-mpc-k26-6437/pmm.ko] undefined! 
+   
+  When i insmod pmm.ko, i got the message as following:
+  # insmod pmm.ko
+pmm: Unknown symbol isa_io_base
+insmod: cannot insert `pmm.ko': Unknown symbol in module (-1): No such file or directory
+# 
+   
+  I am sure the symbol "isa_io_base" is not come from my driver source code. Has anybody  ever met this problem before?
+   
+  Regards,
+  Oliver
 
-are available in the git repository at:
+       
+---------------------------------
+Be a better Heartthrob. Get better relationship answers from someone who knows.
+Yahoo! Answers - Check it out. 
+--0-486800107-1192114815=:72998
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
- git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.24
+<div>Hi,</div>  <div>&nbsp;</div>  <div>When&nbsp;i compile my device driver for kernel2.6,&nbsp;i got a warning as followng:</div>  <div><STRONG>Warning: "isa_io_base" [/home/oliu/pmm-mpc-k26-6437/pmm.ko] undefined!</STRONG> </div>  <div>&nbsp;</div>  <div>When i insmod pmm.ko, i got the message as following:</div>  <div># insmod pmm.ko<BR><STRONG>pmm: Unknown symbol isa_io_base<BR>insmod: cannot insert `pmm.ko': Unknown symbol in module (-1): No such file or directory</STRONG><BR># </div>  <div>&nbsp;</div>  <div>I am sure the symbol "isa_io_base" is not come from my driver source code. Has anybody&nbsp; ever met this problem before?</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Oliver</div><p>&#32;
+      <hr size=1>Be a better Heartthrob. <a href="http://us.rd.yahoo.com/evt=48255/*http://answers.yahoo.com/dir/_ylc=X3oDMTI5MGx2aThyBF9TAzIxMTU1MDAzNTIEX3MDMzk2NTQ1MTAzBHNlYwNCQUJwaWxsYXJfTklfMzYwBHNsawNQcm9kdWN0X3F1ZXN0aW9uX3BhZ2U-?link=list&sid=396545433">Get better relationship answers </a>from someone who knows.<br>Yahoo! Answers - Check it out. 
 
-Grant Likely (4):
-     [POWERPC] MPC52xx: Drop show_cpuinfo platform hooks from Lite5200
-     [POWERPC] MPC52xx: Trim includes on mpc5200 platform support code
-     [POWERPC] MPC5200: Don't make firmware fixups into common code
-     [POWERPC] Add co-maintainer for PowerPC MPC52xx platform
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+--0-486800107-1192114815=:72998--
