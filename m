@@ -2,19 +2,16 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A7358DE071
+	by ozlabs.org (Postfix) with ESMTP id 85A55DE1BE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Oct 2007 02:42:36 +1000 (EST)
-Message-ID: <470E5241.9050606@scram.de>
-Date: Thu, 11 Oct 2007 18:41:37 +0200
+	Fri, 12 Oct 2007 02:42:41 +1000 (EST)
+Message-ID: <470E5245.8020801@scram.de>
+Date: Thu, 11 Oct 2007 18:41:41 +0200
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: Fwd: [PATCH#2 3/4] [PPC] Compile fix for 8xx CPM Ehernet driver
-References: <46F7F0B7.2090205@scram.de>	<7F0D5001-BDDC-48A3-A414-2D3C1CE1574B@kernel.crashing.org>
-	<46FD1FF0.7020607@garzik.org>
-In-Reply-To: <46FD1FF0.7020607@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH] [PPC] Compile fix for 8xx CPM Ehernet driver
+Content-Type: multipart/mixed; boundary="------------050601090006010803040305"
 Cc: netdev <netdev@vger.kernel.org>,
 	"linux-ppc-embedded \(\(\(\(E-Mail\)\)\)\)" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -27,32 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jeff,
+This is a multi-part message in MIME format.
+--------------050601090006010803040305
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Kumar Gala wrote:
->   
->> Begin forwarded message:
->>
->>     
->>> From: Jochen Friedrich <jochen@scram.de>
->>> Date: September 24, 2007 12:15:35 PM CDT
->>> To: linuxppc-embedded@ozlabs.org
->>> Cc: linux-kernel@vger.kernel.org, Marcelo Tosatti <marcelo@kvack.org>
->>> Subject: [PATCH#2 3/4] [PPC] Compile fix for 8xx CPM Ehernet driver
->>>       
->> Jeff,
->>
->> Please pick up for 2.6.23 if you don't mind.
->>     
->
-> Please send an apply-able patch...
->
-> 	Jeff, off to bed
->   
 
-I rebased git://git.bocc.de/dbox2.git ppc-fixes against 2.6.23. This 
-patch is the only remaining one in this head.
-I'll resend.
+Add #include <asm/cacheflush.h> for flush_dcache_range
+to make the driver compile again.
 
-Thanks,
-Jochen
+  CC      arch/ppc/8xx_io/enet.o
+arch/ppc/8xx_io/enet.c: In function 'scc_enet_start_xmit':
+arch/ppc/8xx_io/enet.c:240: error: implicit declaration of function
+'flush_dcache_range'
+make[1]: *** [arch/ppc/8xx_io/enet.o] Error 1
+make: *** [arch/ppc/8xx_io] Error 2
+
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/ppc/8xx_io/enet.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+--------------050601090006010803040305
+Content-Type: text/x-patch;
+ name="16d5c009c75feb68cf1136330efabdffbec8e095.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="16d5c009c75feb68cf1136330efabdffbec8e095.diff"
+
+diff --git a/arch/ppc/8xx_io/enet.c b/arch/ppc/8xx_io/enet.c
+index 703d47e..eace3bc 100644
+--- a/arch/ppc/8xx_io/enet.c
++++ b/arch/ppc/8xx_io/enet.c
+@@ -44,6 +44,7 @@
+ #include <asm/mpc8xx.h>
+ #include <asm/uaccess.h>
+ #include <asm/commproc.h>
++#include <asm/cacheflush.h>
+ 
+ /*
+  *				Theory of Operation
+
+
+--------------050601090006010803040305--
