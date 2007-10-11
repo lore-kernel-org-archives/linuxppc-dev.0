@@ -2,17 +2,25 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 975C6DE0B8
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:36:07 +1000 (EST)
-Date: Thu, 11 Oct 2007 16:35:49 -0500 (CDT)
-Message-Id: <200710112135.l9BLZnaf030827@sullivan.realtime.net>
+	by ozlabs.org (Postfix) with ESMTP id 2DEA2DE05C
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:43:02 +1000 (EST)
+Date: Thu, 11 Oct 2007 16:42:51 -0500 (CDT)
+Message-Id: <200710112142.l9BLgp6U031283@sullivan.realtime.net>
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
-Subject: Re: Hard hang in hypervisor!?
-References: <18189.26776.326248.278431@cargo.ozlabs.ibm.com>
-In-Reply-To: <18189.26776.326248.278431@cargo.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] powerpc: don't enable cpu hotplug on mpic-based pseries
+In-Reply-To: <18189.47620.466515.645055@cargo.ozlabs.ibm.com>
+References: <20071008180406.052382073@mini.kroah.org>,
+	<20071008180633.GJ7627@kroah.com>,
+	<20071009151702.GA19209@lixom.net>,
+	<20071009222003.GA21228@kroah.com>,
+	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>,
+	<alpine.LFD.0.999.0710091625520.3838@woody.linux%foundation.org>,
+	<20071010000815.GB7875@lixom.net>,
+	<20071010101826.186f1f24.sfr@canb.auug.org.au>,
+	<20071010003824.GA8477@lixom.net>,
+	<18189.47620.466515.645055@cargo.ozlabs.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu Oct 11 10:04:40 EST 2007, Paul Mackerras wrote:
-> Linas Vepstas writes:
->> Err ..  it was cpu 0 that was spinlocked.  Are interrupts not
->> distributed?
+Paul Mackerras writes:
+> Olof Johansson writes:
+>> Don't allow cpu hotplug on systems lacking XICS interrupt controller,
+>> since current code is hardcoded for it.
+> ...
+>> +	for (np = NULL; (np = of_find_node_by_name(np,
+>> +						   "interrupt-controller"));) {
 > 
-> We have some bogosities in the xics code that I noticed a couple of
-> days ago.  Basically we only set the xics to distribute interrupts to
-> all cpus if (a) the affinity mask is equal to CPU_MASK_ALL (which has
-> ones in every bit position from 0 to NR_CPUS-1) and (b) all present
-> cpus are online (cpu_online_map == cpu_present_map).  Otherwise we
-> direct interrupts to the first cpu in the affinity map.  So you can
-> easily have the affinity mask containing all the online cpus and still
-> not get distributed interrupts.
+> Looks like for_each_node_by_name would be nicer here.
+> 
+> If you agree, I'll hand-edit your patch to do that and apply it.  Of
+> course, ultimately we should implement the necessary mpic bits to
+> support cpu hotplug.
+> 
 
+While you are editing, can you please change the condition to finding
+ppc-xicp instead of not finding open-pic?
 
-The second condition was just added to try fix some issues where a 
-vendor wants to always run the kdump kernel with maxcpus=1 on all
-architectures, and the emulated xics on js20 was not working.
-For a true xics, this should work because we (1) remove all but 1
-cpu from the global server list and (2) raise the prioirity of the
-cpu to disabled and the hardware will deliver to another cpu in the
-parition.
-
-http://ozlabs.org/pipermail/linuxppc-dev/2006-December/028941.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-January/029607.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-March/032621.html
-
-However, my experience the other day on a js21 was that firmware
-delivered either to all cpus (if we bound to the global server) or
-the first online cpu in the partition, regardless of to which cpu
-we bound the interrupt, so I don't know that the change will fix
-the original problem.
-
-It does mean that taking a cpu offline but not dlpar removing it from the
-kernel will result in the inability to actually distribute interrupts
-to all cpus.
-
-I'd be happy to say remove the extra check and work with firmware to
-property distribute the interrupts.
-
+thanks.
 milton
