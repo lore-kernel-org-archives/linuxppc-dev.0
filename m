@@ -1,21 +1,20 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4F21BDDFD4
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:22:14 +1000 (EST)
-Date: Thu, 11 Oct 2007 00:27:31 -0500
+	by ozlabs.org (Postfix) with ESMTP id D75CBDDFD9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:24:52 +1000 (EST)
+Date: Thu, 11 Oct 2007 00:30:10 -0500
 From: Olof Johansson <olof@lixom.net>
 To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 3/7] [POWERPC] remove iSeries_vio_dev
-Message-ID: <20071011052731.GB578@lixom.net>
-References: <20071011144824.a5e3de59.sfr@canb.auug.org.au>
-	<20071011145055.1de13742.sfr@canb.auug.org.au>
-	<20071011145332.e3638c2e.sfr@canb.auug.org.au>
-	<20071011052535.GA578@lixom.net>
+Subject: Re: [PATCH] [POWERPC] move of_platform_driver initialisations:
+	arch/powerpc
+Message-ID: <20071011053010.GC578@lixom.net>
+References: <20071011151903.efa8fdb8.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071011052535.GA578@lixom.net>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20071011151903.efa8fdb8.sfr@canb.auug.org.au>
+Cc: Maxim Shchetynin <maxim@de.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	paulus@samba.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 11, 2007 at 12:25:35AM -0500, Olof Johansson wrote:
-> Hi Stephen,
+On Thu, Oct 11, 2007 at 03:19:03PM +1000, Stephen Rothwell wrote:
+> We no longer initialise the name and owner fields of the
+> of_platform_driver, but use the fields of the embedded device_driver's
+> name field instead.
 > 
-> > @@ -189,6 +191,34 @@ void iommu_devnode_init_iSeries(struct pci_dev *pdev, struct device_node *dn)
-> >  }
-> >  #endif
-> >  
-> > +extern struct iommu_table vio_iommu_table;
-> 
-> This looks like it really should go in a header file
-> instead. include/asm-powerpc/vio.h perhaps?
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Oh nevermind, I just noticed the variable got moved in the next
-patch. Twice the review work!
+Acked-by: Olof Johansson <olof@lixom.net>
 
 
 -Olof
