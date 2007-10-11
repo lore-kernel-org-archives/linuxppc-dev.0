@@ -1,16 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18189.26776.326248.278431@cargo.ozlabs.ibm.com>
-Date: Thu, 11 Oct 2007 10:04:40 +1000
+Message-ID: <18189.27251.48582.614106@cargo.ozlabs.ibm.com>
+Date: Thu, 11 Oct 2007 10:12:35 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: Hard hang in hypervisor!?
-In-Reply-To: <20071009212810.GN4350@austin.ibm.com>
-References: <20071009203724.GM4350@austin.ibm.com>
-	<20071009211819.GR29559@localdomain>
-	<20071009212810.GN4350@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Build failure on treeboot-walnut.cg
+In-Reply-To: <470BA6ED.3020504@freescale.com>
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<20071009030729.GI12499@localhost.localdomain>
+	<470BA6ED.3020504@freescale.com>
+Cc: linuxppc-dev@ozlabs.com, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas writes:
+Timur Tabi writes:
 
-> Err ..  it was cpu 0 that was spinlocked.  Are interrupts not
-> distributed?
+> Is this a new policy?  Modules in the kernel are not built unless you want 
+> them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
+> targeting is built.  So I don't really understand why you claim it's normal 
+> for platform-specific files to be built, regardless of the actual platform.
 
-We have some bogosities in the xics code that I noticed a couple of
-days ago.  Basically we only set the xics to distribute interrupts to
-all cpus if (a) the affinity mask is equal to CPU_MASK_ALL (which has
-ones in every bit position from 0 to NR_CPUS-1) and (b) all present
-cpus are online (cpu_online_map == cpu_present_map).  Otherwise we
-direct interrupts to the first cpu in the affinity map.  So you can
-easily have the affinity mask containing all the online cpus and still
-not get distributed interrupts.
+The wrapper script is intended to be a standalone tool which is
+independent of the kernel configuration, and can be used separately
+from the kernel build process.
 
-So in your case it's quite possible that all interrupts were directed
-to cpu 0.
+> And frankly, I don't like this "policy".  Build bugs for 4xx should not 
+> interfere in my 83xx development.  I can't build any kernels now because of 
+> this bug!
+
+I'm sure you're not actually that helpless. :)  Just carry a patch to
+arch/powerpc/boot/Makefile in your local tree.
 
 Paul.
