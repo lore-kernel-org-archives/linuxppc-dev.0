@@ -1,22 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 72FDFDE025
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 01:36:57 +1000 (EST)
-Message-ID: <470E4311.4060909@freescale.com>
-Date: Thu, 11 Oct 2007 10:36:49 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc commits for 2.6.24
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
-In-Reply-To: <3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 3E2BEDE025
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 01:37:03 +1000 (EST)
+To: Stefan Roese <sr@denx.de>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 4/4 v2] [POWERPC] Kilauea defconfig file
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 11 Oct 2007 15:31:12 +0200."
+	<200710111531.13022.sr@denx.de>
+Date: Thu, 11 Oct 2007 17:37:00 +0200
+Sender: wd@denx.de
+Message-Id: <20071011153700.6E2272486E@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Hallo Stefan,
 
-> Just to clarify, are we closing 2.6.24 for new code after you send  
-> Linus a pull request or are we still taking things during the two  
-> week merge window?
+In message <200710111531.13022.sr@denx.de> you wrote:
+> 
+> > If not, do you want this set by default so 
+> > floating point instructions work?
 
-I certainly hope the window isn't closed!  I need another week to get my UART 
-driver in.
+No, we use soft-float on all such systems which is much faster.
+
+> I just checked some existing arch/ppc defconfig files (and arch/powerpc too). 
+> Most if not all have MATH_EMULATION not set. Even on those PPC's without FPU. 
+> I assume we see no problems since soft-float is used while compiling.
+> 
+> Anyways, I'll change this and resubmit.
+
+No, please leave as is.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Be kind to unkind people - they need it the most.
