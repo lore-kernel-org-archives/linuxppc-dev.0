@@ -1,25 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 05D26DDF16
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 14:58:27 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so511069wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2007 21:58:25 -0700 (PDT)
-Message-ID: <fa686aa40710102158r5d488d3kae3d02177625da1e@mail.gmail.com>
-Date: Wed, 10 Oct 2007 22:58:25 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Device tree bindings for Xilinx devices
-In-Reply-To: <20071011042441.GG14873@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071008075127.9887.38702.stgit@trillian.cg.shawcable.net>
-	<1192048682.5534.92.camel@localhost.localdomain>
-	<20071011013817.GB14873@localhost.localdomain>
-	<fa686aa40710101925x6b005aa7paaeb072ba492c81f@mail.gmail.com>
-	<20071011040622.GE14873@localhost.localdomain>
-	<fa686aa40710102118p3e62d06eqff8db252772eb58c@mail.gmail.com>
-	<20071011042441.GG14873@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A134CDDF7E
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:00:30 +1000 (EST)
+Date: Thu, 11 Oct 2007 14:48:24 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/7] [POWERPC] Clean up vio.h
+Message-Id: <20071011144824.a5e3de59.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,65 +19,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/10/07, David Gibson <dwg@au1.ibm.com> wrote:
-> On Wed, Oct 10, 2007 at 10:18:50PM -0600, Grant Likely wrote:
-> > On 10/10/07, David Gibson <dwg@au1.ibm.com> wrote:
-> > > On Wed, Oct 10, 2007 at 08:25:36PM -0600, Grant Likely wrote:
-> > > > On 10/10/07, David Gibson <dwg@au1.ibm.com> wrote:
-> > > > > We've used 'cell-index' for similar purposes on other 4xx.
-> > > >
-> > > > Unfortunately, 'cell' has been used in the sense of a logic cell in an
-> > > > SoC.  In the case of the SystemACE, it is an external chip.
-> > > >
-> > > > What about "device-number"?
-> > >
-> > > Ok, I misunderstood.  If it's not on chip, what significance does this
-> > > serial number have?  Where would a driver need it?
-> >
-> > If there were 2 systemace devices on board; one attached to a CF slot
-> > labeled "1" and the other to one labeled "2".  :-)  Same problem as
-> > lining up serial device files to physical port numbers.
-> >
-> > The driver doesn't technically need it, but the information does need
-> > to flow through to the creation of logically numbered device files.
->
-> Ah.  Then, I'm afraid it doesn't belong in the core binding.
->
-> Preferably, you should just figure out something without help of this
-> property - plenty of other things have to figure out device names
-> without assistance like this.
+Remove vio_dma_ops declaration (since it no longer exists) and some
+unused fields from struct vio_driver.
 
-I'm not too stuck on the method used, but I do think it is appropriate
-to encode this kind of data in the device tree in some form...
-However, for this particular device I'm probably just borrowing
-trouble.  I'll drop the property.
-
-My main concern is that I don't like the implicit numbering that
-occurs simply based on the order of devices in the device tree.  If
-the probe algorithm ever changes to parse in reverse order or
-something reorders the tree, then the device numbers also change.  :-(
-
-I'd rather be explicit.  In fact I've already been bitten by this
-where the mpc5200 has 6 PSC, each of which can be configured as a
-serial port.  However, I've got access to 3 different boards; each of
-which has the logical port numbers 100% unrelated to the 'cell'
-number.
-
-> If you really must you could do this in analogy with the
-> "linux,network-index" property - but this would be, as that is, an
-> ugly hack, and should be recognized as such
->
-> Segher's suggestion of using OF-style aliases for this is a fairly
-> good one, actually.  I just need to get to implementing it...
-
-/me needs to look up what that look like and how I would use it.  My
-knowledge of OF is sadly lacking.
-
-Cheers,
-g.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/vio.c |   11 -----------
+ include/asm-powerpc/vio.h |    5 -----
+ 2 files changed, 0 insertions(+), 16 deletions(-)
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index 1d7b272..fd631d4 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -168,16 +168,6 @@ static int vio_bus_remove(struct device *dev)
+ 	return 1;
+ }
+ 
+-/* convert from struct device to struct vio_dev and pass to driver. */
+-static void vio_bus_shutdown(struct device *dev)
+-{
+-	struct vio_dev *viodev = to_vio_dev(dev);
+-	struct vio_driver *viodrv = to_vio_driver(dev->driver);
+-
+-	if (dev->driver && viodrv->shutdown)
+-		viodrv->shutdown(viodev);
+-}
+-
+ /**
+  * vio_register_driver: - Register a new vio driver
+  * @drv:	The vio_driver structure to be registered.
+@@ -397,7 +387,6 @@ static struct bus_type vio_bus_type = {
+ 	.match = vio_bus_match,
+ 	.probe = vio_bus_probe,
+ 	.remove = vio_bus_remove,
+-	.shutdown = vio_bus_shutdown,
+ };
+ 
+ /**
+diff --git a/include/asm-powerpc/vio.h b/include/asm-powerpc/vio.h
+index 598d111..9204c15 100644
+--- a/include/asm-powerpc/vio.h
++++ b/include/asm-powerpc/vio.h
+@@ -53,17 +53,12 @@ struct vio_dev {
+ };
+ 
+ struct vio_driver {
+-	struct list_head node;
+ 	const struct vio_device_id *id_table;
+ 	int (*probe)(struct vio_dev *dev, const struct vio_device_id *id);
+ 	int (*remove)(struct vio_dev *dev);
+-	void (*shutdown)(struct vio_dev *dev);
+-	unsigned long driver_data;
+ 	struct device_driver driver;
+ };
+ 
+-extern struct dma_mapping_ops vio_dma_ops;
+-
+ extern int vio_register_driver(struct vio_driver *drv);
+ extern void vio_unregister_driver(struct vio_driver *drv);
+ 
+-- 
+1.5.3.4
