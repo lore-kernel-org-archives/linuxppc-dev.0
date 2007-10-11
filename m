@@ -1,18 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A7810DDFB0
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:19:07 +1000 (EST)
-Date: Thu, 11 Oct 2007 15:19:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] move of_platform_driver initialisations:
-	arch/powerpc
-Message-Id: <20071011151903.efa8fdb8.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	Maxim Shchetynin <maxim@de.ibm.com>, Christian Krafft <krafft@de.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0EF7BDDFCB
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:20:20 +1000 (EST)
+Date: Thu, 11 Oct 2007 00:25:35 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/7] [POWERPC] remove iSeries_vio_dev
+Message-ID: <20071011052535.GA578@lixom.net>
+References: <20071011144824.a5e3de59.sfr@canb.auug.org.au>
+	<20071011145055.1de13742.sfr@canb.auug.org.au>
+	<20071011145332.e3638c2e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071011145332.e3638c2e.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,81 +24,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We no longer initialise the name and owner fields of the
-of_platform_driver, but use the fields of the embedded device_driver's
-name field instead.
+Hi Stephen,
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/pasemi/gpio_mdio.c |    4 +++-
- arch/powerpc/sysdev/axonram.c             |    8 +++++---
- arch/powerpc/sysdev/pmi.c                 |    6 ++++--
- 3 files changed, 12 insertions(+), 6 deletions(-)
+On Thu, Oct 11, 2007 at 02:53:32PM +1000, Stephen Rothwell wrote:
+> It was only being used to carry around dma_iommu_ops and vio_iommu_table
+> which we can use directly instead.  This also means that vio_bus_device
+> doesn't need to refer to them either.
+> 
+> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+> index fd631d4..eaf7f69 100644
+> --- a/arch/powerpc/kernel/vio.c
+> +++ b/arch/powerpc/kernel/vio.c
+> @@ -49,11 +49,8 @@ static struct vio_dev vio_bus_device  = { /* fake "parent" device */
+>  };
+>  
+>  #ifdef CONFIG_PPC_ISERIES
+> -struct device *iSeries_vio_dev = &vio_bus_device.dev;
+> -EXPORT_SYMBOL(iSeries_vio_dev);
+> -
+>  static struct iommu_table veth_iommu_table;
+> -static struct iommu_table vio_iommu_table;
+> +struct iommu_table vio_iommu_table;
+>  
+>  static void __init iommu_vio_init(void)
+>  {
+> @@ -66,8 +63,6 @@ static void __init iommu_vio_init(void)
+>  		printk("Virtual Bus VETH TCE table failed.\n");
+>  	if (!iommu_init_table(&vio_iommu_table, -1))
+>  		printk("Virtual Bus VIO TCE table failed.\n");
+> -	vio_bus_device.dev.archdata.dma_ops = &dma_iommu_ops;
+> -	vio_bus_device.dev.archdata.dma_data = &vio_iommu_table;
+>  }
+>  #else
+>  static void __init iommu_vio_init(void)
+> diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
+> index 3b6a966..3281f10 100644
+> --- a/arch/powerpc/platforms/iseries/iommu.c
+> +++ b/arch/powerpc/platforms/iseries/iommu.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/dma-mapping.h>
+>  #include <linux/list.h>
+>  #include <linux/pci.h>
+> +#include <linux/module.h>
+>  
+>  #include <asm/iommu.h>
+>  #include <asm/tce.h>
+> @@ -36,6 +37,7 @@
+>  #include <asm/prom.h>
+>  #include <asm/pci-bridge.h>
+>  #include <asm/iseries/hv_call_xm.h>
+> +#include <asm/iseries/hv_call_event.h>
+>  #include <asm/iseries/iommu.h>
+>  
+>  static void tce_build_iSeries(struct iommu_table *tbl, long index, long npages,
+> @@ -189,6 +191,34 @@ void iommu_devnode_init_iSeries(struct pci_dev *pdev, struct device_node *dn)
+>  }
+>  #endif
+>  
+> +extern struct iommu_table vio_iommu_table;
 
-This patch depends on my "Prepare to remove of_platform_driver name"
-patch.
+This looks like it really should go in a header file
+instead. include/asm-powerpc/vio.h perhaps?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-index c91a335..dae9f65 100644
---- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
-+++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
-@@ -320,10 +320,12 @@ static struct of_device_id gpio_mdio_match[] =
- 
- static struct of_platform_driver gpio_mdio_driver =
- {
--	.name		= "gpio-mdio-bitbang",
- 	.match_table	= gpio_mdio_match,
- 	.probe		= gpio_mdio_probe,
- 	.remove		= gpio_mdio_remove,
-+	.driver		= {
-+		.name	= "gpio-mdio-bitbang",
-+	},
- };
- 
- int gpio_mdio_init(void)
-diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
-index ab037a3..4d3ba63 100644
---- a/arch/powerpc/sysdev/axonram.c
-+++ b/arch/powerpc/sysdev/axonram.c
-@@ -324,11 +324,13 @@ static struct of_device_id axon_ram_device_id[] = {
- };
- 
- static struct of_platform_driver axon_ram_driver = {
--	.owner		= THIS_MODULE,
--	.name		= AXON_RAM_MODULE_NAME,
- 	.match_table	= axon_ram_device_id,
- 	.probe		= axon_ram_probe,
--	.remove		= axon_ram_remove
-+	.remove		= axon_ram_remove,
-+	.driver		= {
-+		.owner	= THIS_MODULE,
-+		.name	= AXON_RAM_MODULE_NAME,
-+	},
- };
- 
- /**
-diff --git a/arch/powerpc/sysdev/pmi.c b/arch/powerpc/sysdev/pmi.c
-index 2f91b55..20edd1e 100644
---- a/arch/powerpc/sysdev/pmi.c
-+++ b/arch/powerpc/sysdev/pmi.c
-@@ -205,10 +205,12 @@ static int pmi_of_remove(struct of_device *dev)
- }
- 
- static struct of_platform_driver pmi_of_platform_driver = {
--	.name		= "pmi",
- 	.match_table	= pmi_match,
- 	.probe		= pmi_of_probe,
--	.remove		= pmi_of_remove
-+	.remove		= pmi_of_remove,
-+	.driver		= {
-+		.name	= "pmi",
-+	},
- };
- 
- static int __init pmi_module_init(void)
--- 
-1.5.3.4
+
+-Olof
