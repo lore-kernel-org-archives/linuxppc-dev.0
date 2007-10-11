@@ -1,17 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: powerpc commits for 2.6.24
-Date: Thu, 11 Oct 2007 19:06:03 +0200
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
-	<470E4311.4060909@freescale.com>
-In-Reply-To: <470E4311.4060909@freescale.com>
+Return-Path: <olof@lixom.net>
+Date: Thu, 11 Oct 2007 12:14:13 -0500
+From: Olof Johansson <olof@lixom.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] powerpc: Switch to generic WARN_ON()/BUG_ON()
+Message-ID: <20071011171413.GC10877@lixom.net>
+References: <20071011171211.GB10877@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710111906.03632.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071011171211.GB10877@lixom.net>
+Cc: grundler@parisc-linux.org, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +19,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 11 October 2007, Timur Tabi wrote:
->=20
-> Kumar Gala wrote:
->=20
-> > Just to clarify, are we closing 2.6.24 for new code after you send =A0
-> > Linus a pull request or are we still taking things during the two =A0
-> > week merge window?
->=20
-> I certainly hope the window isn't closed! =A0I need another week to get m=
-y UART=20
-> driver in.
+Not using the ppc-specific WARN_ON/BUG_ON constructs actually saves about
+4K text on a ppc64_defconfig. The main reason seems to be that prepping
+the arguments to the conditional trap instructions is more work than
+just doing a compare and branch.
 
-Officially, the time for submissions to paulus is now over and you should
-not be working on code for the open merge window any more. I'm saying this
-as someone who's normally one of the worst offenders of this rule and
-I do feel guilty about it.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-There is always stuff that goes in late in the merge window, so not all
-is lost for you, but you should be aware that what you are doing is wrong
-and you will be subject to public shaming on #mklinux when you try ;-)
-
-	Arnd <><
+diff --git a/include/asm-powerpc/bug.h b/include/asm-powerpc/bug.h
+index 02e171c..966de9b 100644
+--- a/include/asm-powerpc/bug.h
++++ b/include/asm-powerpc/bug.h
+@@ -54,12 +54,6 @@
+ 	".previous\n"
+ #endif
+ 
+-/*
+- * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+- * optimisations. However depending on the complexity of the condition
+- * some compiler versions may not produce optimal results.
+- */
+-
+ #define BUG() do {						\
+ 	__asm__ __volatile__(					\
+ 		"1:	twi 31,0,0\n"				\
+@@ -69,20 +63,6 @@
+ 	for(;;) ;						\
+ } while (0)
+ 
+-#define BUG_ON(x) do {						\
+-	if (__builtin_constant_p(x)) {				\
+-		if (x)						\
+-			BUG();					\
+-	} else {						\
+-		__asm__ __volatile__(				\
+-		"1:	"PPC_TLNEI"	%4,0\n"			\
+-		_EMIT_BUG_ENTRY					\
+-		: : "i" (__FILE__), "i" (__LINE__), "i" (0),	\
+-		  "i" (sizeof(struct bug_entry)),		\
+-		  "r" ((__force long)(x)));			\
+-	}							\
+-} while (0)
+-
+ #define __WARN() do {						\
+ 	__asm__ __volatile__(					\
+ 		"1:	twi 31,0,0\n"				\
+@@ -92,27 +72,8 @@
+ 		  "i" (sizeof(struct bug_entry)));		\
+ } while (0)
+ 
+-#define WARN_ON(x) ({						\
+-	int __ret_warn_on = !!(x);				\
+-	if (__builtin_constant_p(__ret_warn_on)) {		\
+-		if (__ret_warn_on)				\
+-			__WARN();				\
+-	} else {						\
+-		__asm__ __volatile__(				\
+-		"1:	"PPC_TLNEI"	%4,0\n"			\
+-		_EMIT_BUG_ENTRY					\
+-		: : "i" (__FILE__), "i" (__LINE__),		\
+-		  "i" (BUGFLAG_WARNING),			\
+-		  "i" (sizeof(struct bug_entry)),		\
+-		  "r" (__ret_warn_on));				\
+-	}							\
+-	unlikely(__ret_warn_on);				\
+-})
+-
+ #define HAVE_ARCH_BUG
+ #define HAVE_ARCH_WARN
+-#define HAVE_ARCH_BUG_ON
+-#define HAVE_ARCH_WARN_ON
+ #endif /* __ASSEMBLY __ */
+ #endif /* CONFIG_BUG */
+ 
