@@ -1,18 +1,19 @@
 Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A01C1DE077
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 04:50:41 +1000 (EST)
-Message-ID: <470E703C.4090301@ru.mvista.com>
-Date: Thu, 11 Oct 2007 22:49:32 +0400
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 970CBDE0B9
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 05:10:39 +1000 (EST)
+Date: Thu, 11 Oct 2007 23:09:25 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] PowerPC: Fix find_legacy_serial_ports on OPB.
-References: <20071011152609.GA10320@ru.mvista.com>
-	<200710111750.41852.arnd@arndb.de>
-In-Reply-To: <200710111750.41852.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC: Add legacy serial support for OPB with flattened
+	device tree.
+Message-ID: <20071011190925.GA22704@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710111909.39927.arnd@arndb.de>
+Cc: arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Thursday 11 October 2007, Valentine Barshak wrote:
->> Currently find_legacy_serial_ports() can find no serial ports on the OPB.
->> Thus no legacy boot console can be initialized. Just the early udbg console
->> works, which is initialized with udbg_init_44x_as1() on the UART's physical
->> address specified in kernel config. This happens because we look for ns16750
->> and higher serial devices only and expect opb node to have a device type
->> property. This patch makes it look for ns16550 compatible devices and use
->> of_device_is_compatible() for opb instead of checking device type.
->> Lack of legacy serial ports found causes problems for KGDB over serial.
->>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> 
-> The patch would make sense if we were only dealing with flattened device
-> tree systems at this point. Unfortunately, IBM is shipping hardware that
-> encodes the serial port in exactly the way that find_legacy_serial_ports
-> is looking for (parent->type == "opb", compatible = "ns16750" "ns16550"
-> "ns16450" i8250").
-> 
-> Changing the search for ns16750 to ns16550 should be fine, but unnecessary
-> because AFAIK, all OPB serial imlpementations are actually ns16750 and
-> should have that in the device tree as well.
+Currently find_legacy_serial_ports() can find no serial ports on the OPB
+with flattened device. Thus no legacy boot console can be initialized.
+Just the early udbg console works, which is initialized with udbg_init_44x_as1
+on the UART's physical address specified in kernel config. This happens
+because we look for ns16750 serial devices only and expect opb node to have
+a device type property. This patch makes it look for ns16550-compatible
+devices and use of_device_is_compatible() for opb in case device type is not
+specified.
 
-This is a bit odd. The docs say that uart chips on the ppc44x processors 
-are registry-compatible to 16750, but have 16-byte FIFO's.
-This is OK for legacy serial stuff (since it really needs the chip to be 
-16550-compatible), but the 8250 driver expects 64-byte FIFO size for 16750.
-I guess that's why 44x uart dts entries don't have 16750 compatible 
-property.
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ arch/powerpc/kernel/legacy_serial.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-> 
-> For the device type of the bus, please check for both compatible and
-> type, so that it still works on machines that are missing the compatible
-> property.
-> 
-> 	Arnd <><
+diff -pruN linux-2.6.orig/arch/powerpc/kernel/legacy_serial.c linux-2.6/arch/powerpc/kernel/legacy_serial.c
+--- linux-2.6.orig/arch/powerpc/kernel/legacy_serial.c	2007-10-11 17:12:09.000000000 +0400
++++ linux-2.6/arch/powerpc/kernel/legacy_serial.c	2007-10-11 23:01:25.000000000 +0400
+@@ -340,9 +340,10 @@ void __init find_legacy_serial_ports(voi
+ 	}
+ 
+ 	/* First fill our array with opb bus ports */
+-	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16750")) != NULL;) {
++	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
+ 		struct device_node *opb = of_get_parent(np);
+-		if (opb && !strcmp(opb->type, "opb")) {
++		if (opb && (!strcmp(opb->type, "opb") ||
++			    of_device_is_compatible(opb, "ibm,opb"))) {
+ 			index = add_legacy_soc_port(np, np);
+ 			if (index >= 0 && np == stdout)
+ 				legacy_serial_console = index;
