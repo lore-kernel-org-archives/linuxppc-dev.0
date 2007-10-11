@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18190.42074.495464.74585@cargo.ozlabs.ibm.com>
-Date: Fri, 12 Oct 2007 08:31:54 +1000
+Message-ID: <18190.41756.133902.397573@cargo.ozlabs.ibm.com>
+Date: Fri, 12 Oct 2007 08:26:36 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc commits for 2.6.24
-In-Reply-To: <3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
+Subject: Re: [PATCH] Make clockevents work on PPC601 processors
+In-Reply-To: <96C1AFB8-784F-445E-A3F2-5D68494541CD@kernel.crashing.org>
+References: <18190.3365.54961.935346@cargo.ozlabs.ibm.com>
+	<96C1AFB8-784F-445E-A3F2-5D68494541CD@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,19 +21,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Kumar Gala writes:
 
-> I'm debugging one issue with MPC8560 that should get fixed today with  
-> a new pull request after I find the issue.
+> do you still have a 601 running somewhere?
 
-There's no particular hurry for bug fixes.
-
-> Just to clarify, are we closing 2.6.24 for new code after you send  
-> Linus a pull request or are we still taking things during the two  
-> week merge window?
-
-Basically, yes.  We got a lecture at kernel summit from Linus and
-Andrew where we got told to get everything merged early in the merge
-window.  I might make an exception for stuff that has already been
-posted for review but still needs some minor changes, but other than
-that, the window for new code has closed.
+Yes, I still have the original 601 cpu card for my PowerMac 7500. :)
 
 Paul.
