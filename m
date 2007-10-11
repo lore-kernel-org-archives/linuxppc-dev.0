@@ -1,30 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 99026DDFB7
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 15:54:24 +1000 (EST)
-Date: Thu, 11 Oct 2007 00:59:41 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] powerpc: don't enable cpu hotplug on mpic-based pseries
-Message-ID: <20071011055941.GA1783@lixom.net>
-References: <20071008180406.052382073@mini.kroah.org>
-	<20071008180633.GJ7627@kroah.com>
-	<20071009151702.GA19209@lixom.net>
-	<20071009222003.GA21228@kroah.com>
-	<alpine.LFD.0.9999.0710100120340.7766@localhost.localdomain>
-	<alpine.LFD.0.999.0710091625520.3838@woody.linux-foundation.org>
-	<20071010000815.GB7875@lixom.net>
-	<20071010101826.186f1f24.sfr@canb.auug.org.au>
-	<20071010003824.GA8477@lixom.net>
-	<18189.47620.466515.645055@cargo.ozlabs.ibm.com>
+Return-Path: <SRS0=DCot=PF=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 730FFDDF9B
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 16:10:41 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] [POWERPC] Add AMCC Kilauea eval board support to
+	platforms/40x
+Date: Thu, 11 Oct 2007 08:06:01 +0200
+References: <200710081108.51625.sr@denx.de> <200710091334.16682.sr@denx.de>
+	<1192045466.5534.60.camel@localhost.localdomain>
+In-Reply-To: <1192045466.5534.60.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18189.47620.466515.645055@cargo.ozlabs.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-	Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-	Chris Wedgwood <reviews@ml.cw.f00f.org>, linuxppc-dev@ozlabs.org,
-	tgall.foo@gmail.com, Thomas Gleixner <tglx@linutronix.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>, stable@kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710110806.02233.sr@denx.de>
+Cc: Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,29 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 11, 2007 at 03:52:04PM +1000, Paul Mackerras wrote:
-> Olof Johansson writes:
-> 
-> > Don't allow cpu hotplug on systems lacking XICS interrupt controller,
-> > since current code is hardcoded for it.
-> ...
-> > +	for (np = NULL; (np = of_find_node_by_name(np,
-> > +						   "interrupt-controller"));) {
-> 
-> Looks like for_each_node_by_name would be nicer here.
-> 
-> If you agree, I'll hand-edit your patch to do that and apply it.
+On Wednesday 10 October 2007, Josh Boyer wrote:
+> > > Do you really need config options for 405EP/EX? I don't seem them used
+> > > anywhere else in the code (and it's also contradictory to the whole new
+> > > multiplatform way of looking at stuff :).
+> > >
+> > > I know the 405/440 is still somewhat #ifdef:ed on the cpu here and
+> > > there, but since this doesn't add any such code I don't see a need for
+> > > the config options?
+> >
+> > Yes, I'm still used to needing these defines from arch/ppc (for example
+> > for the 4xx EMAC driver). But its possible, that we really don't need it
+> > at all in arch/powerpc with all the device tree information. Not sure
+> > though.
+> >
+> > Josh, what do you think? Should I remove the 405EX define completely?
+>
+> If it's not needed, it can go.  As Olof said, it doesn't appear to be
+> used anywhere in the code so I think it's fine.
 
-Go for it, I just stole that out of the detection code. That
-could be changed accordingly as well at some point (I'm guessing
-for_each_node_by_name didn't exist when that was written).
+OK, I'll remove it. If we later see that we need it, we can always add it 
+again.
 
-> Of course, ultimately we should implement the necessary mpic bits to
-> support cpu hotplug.
+> One question I do have is if 405EX and 405EP need any of the 405GP
+> errata config options selected.  I would like to think those don't apply
+> because the hardware is fixed, but I haven't checked to be sure.
 
-Yep. I'll leave that to people who have hardware access. :-)
+Yes, the 2 405 errata's IBM405_ERR51 and IBM405_ERR77 do not apply to "newer" 
+405 cores. Only 405GP (and 405CR I assume) are affected.
 
-
-Thanks,
-
--Olof
+Best regards,
+Stefan
