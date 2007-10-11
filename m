@@ -1,15 +1,19 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: tony@bakeyournoodle.com (Tony Breeds)
-Subject: Re: [PATCH v2] Fix regression. Make hot unlplug of CPU0 work again. 
-In-reply-to: <20071011073040.GD9814@bakeyournoodle.com> 
-References: <20071005070519.GQ9814@bakeyournoodle.com>
-	<200710051716.l95HG1cV019434@sullivan.realtime.net>
-	<20071011073040.GD9814@bakeyournoodle.com>
-Date: Thu, 11 Oct 2007 18:37:03 +1000
-Message-ID: <12111.1192091823@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>
+Return-Path: <SRS0=DCot=PF=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 67690DDF8C
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 18:48:32 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] [POWERPC] Kilauea DTS
+Date: Thu, 11 Oct 2007 10:49:02 +0200
+References: <200710081110.16447.sr@denx.de>
+	<1192047714.5534.81.camel@localhost.localdomain>
+In-Reply-To: <1192047714.5534.81.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200710111049.02253.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,79 +23,307 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20071011073040.GD9814@bakeyournoodle.com> you wrote:
-> 
-> Early in the 2.6.23 cycle we broke the ability to offline cpu0
-> (7ccb4a662462616f6be5053e26b79580e02f1529).  This patch fixes that by
-> ensuring that the (xics)  default irq server, will not be 0 when taking
-> cpu0 offline.
-> 
-> Also catches a use of irq, when virq should be used (I think that's the
-> last one).
-> 
-> This patch also include the fix from Milton which makes JS21 work
-> aswell. In the commit message for that patch Milton writes:
-> 	xics_set_affinity no longer looks at the cpu_mask arg, instead
-> 	get_irq_server reads it from the irq descriptor.
+On Wednesday 10 October 2007, Josh Boyer wrote:
+> On Mon, 2007-10-08 at 11:10 +0200, Stefan Roese wrote:
+> > Signed-off-by: Stefan Roese <sr@denx.de>
+>
+> Looks pretty good.  Just a couple of questions.
+>
+> > ---
+> >  arch/powerpc/boot/dts/kilauea.dts |  253
+> > +++++++++++++++++++++++++++++++++++++ 1 files changed, 253 insertions(+),
+> > 0 deletions(-)
+> >  create mode 100644 arch/powerpc/boot/dts/kilauea.dts
+> >
+> > diff --git a/arch/powerpc/boot/dts/kilauea.dts
+> > b/arch/powerpc/boot/dts/kilauea.dts new file mode 100644
+> > index 0000000..4683174
+> > --- /dev/null
+> > +++ b/arch/powerpc/boot/dts/kilauea.dts
+> > @@ -0,0 +1,253 @@
+> > +/*
+> > + * Device Tree Source for AMCC Kilauea (405EX)
+> > + *
+> > + * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
+> > + *
+> > + * This file is licensed under the terms of the GNU General Public
+> > + * License version 2.  This program is licensed "as is" without
+> > + * any warranty of any kind, whether express or implied.
+> > + */
+> > +
+> > +/ {
+> > +	#address-cells = <1>;
+> > +	#size-cells = <1>;
+> > +	model = "amcc,kilauea";
+> > +	compatible = "amcc,kilauea";
+> > +	dcr-parent = <&/cpus/PowerPC,405EX@0>;
+> > +
+> > +	cpus {
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
+> > +
+> > +		PowerPC,405EX@0 {
+> > +			device_type = "cpu";
+> > +			reg = <0>;
+> > +			clock-frequency = <0>; /* Filled in by U-Boot */
+>
+> Filled in by U-Boot itself?  Or by a cuboot wrapper? (which I can't find
+> in the patches.)
 
-This doesn't fix the problem for me.  
+By U-Boot itself. I have a U-Boot patch in the queue to add device tree 
+support for 4xx. Therefor I don't plan adding a cuboot wrapper for Kilauea.
 
-If I offline CPU0, then online it again, it's fine, but doing the same
-for CPU1 kills the machine.
+> > +			timebase-frequency = <0>; /* Filled in by U-Boot */
+> > +			i-cache-line-size = <20>;
+> > +			d-cache-line-size = <20>;
+> > +			i-cache-size = <4000>; /* 16 kB */
+> > +			d-cache-size = <4000>; /* 16 kB */
+> > +			dcr-controller;
+> > +			dcr-access-method = "native";
+> > +		};
+> > +	};
+> > +
+> > +	memory {
+> > +		device_type = "memory";
+> > +		reg = <0 0>; /* Filled in by U-Boot */
+> > +	};
+> > +
+> > +	UIC0: interrupt-controller {
+> > +		compatible = "ibm,uic-405ex", "ibm,uic";
+> > +		interrupt-controller;
+> > +		cell-index = <0>;
+> > +		dcr-reg = <0c0 009>;
+> > +		#address-cells = <0>;
+> > +		#size-cells = <0>;
+> > +		#interrupt-cells = <2>;
+> > +	};
+> > +
+> > +	UIC1: interrupt-controller1 {
+> > +		compatible = "ibm,uic-405ex","ibm,uic";
+> > +		interrupt-controller;
+> > +		cell-index = <1>;
+> > +		dcr-reg = <0d0 009>;
+> > +		#address-cells = <0>;
+> > +		#size-cells = <0>;
+> > +		#interrupt-cells = <2>;
+> > +		interrupts = <1e 4 1f 4>; /* cascade */
+> > +		interrupt-parent = <&UIC0>;
+> > +	};
+> > +
+> > +	UIC2: interrupt-controller2 {
+> > +		compatible = "ibm,uic-405ex","ibm,uic";
+> > +		interrupt-controller;
+> > +		cell-index = <2>;
+> > +		dcr-reg = <0e0 009>;
+> > +		#address-cells = <0>;
+> > +		#size-cells = <0>;
+> > +		#interrupt-cells = <2>;
+> > +		interrupts = <1c 4 1d 4>; /* cascade */
+> > +		interrupt-parent = <&UIC0>;
+> > +	};
+> > +
+> > +	plb {
+> > +		compatible = "ibm,plb-405ex", "ibm,plb4";
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		ranges;
+> > +		clock-frequency = <0>; /* Filled in by U-Boot */
+> > +
+> > +		SDRAM0: memory-controller {
+> > +			compatible = "ibm,sdram-405ex";
+> > +			dcr-reg = <010 2>;
+> > +		};
+> > +
+> > +		MAL0: mcmal {
+> > +			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
+> > +			dcr-reg = <180 62>;
+> > +			num-tx-chans = <2>;
+> > +			num-rx-chans = <2>;
+> > +			interrupt-parent = <&MAL0>;
+> > +			interrupts = <0 1 2 3 4>;
+> > +			#interrupt-cells = <1>;
+> > +			#address-cells = <0>;
+> > +			#size-cells = <0>;
+> > +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
+> > +					/*RXEOB*/ 1 &UIC0 b 4
+> > +					/*SERR*/  2 &UIC1 0 4
+> > +					/*TXDE*/  3 &UIC1 1 4
+> > +					/*RXDE*/  4 &UIC1 2 4>;
+> > +			interrupt-map-mask = <ffffffff>;
+> > +		};
+> > +
+> > +		POB0: opb {
+> > +			compatible = "ibm,opb-405ex", "ibm,opb";
+> > +			#address-cells = <1>;
+> > +			#size-cells = <1>;
+> > +			ranges = <ef600000 ef600000 a00000>;
+> > +			dcr-reg = <0a0 5>;
+> > +			clock-frequency = <0>; /* Filled in by U-Boot */
+> > +
+> > +			EBC0: ebc {
+> > +				compatible = "ibm,ebc-405ex", "ibm,ebc";
+> > +				dcr-reg = <012 2>;
+> > +				#address-cells = <2>;
+> > +				#size-cells = <1>;
+> > +				clock-frequency = <0>; /* Filled in by U-Boot */
+> > +				interrupts = <5 1>;
+>
+> This interrupt is really rising edge?  Just double checking.
 
-Mikey
+Yes, it is rising edge. I have to admit though, that I'm not sure if this 
+interrupt will ever be used at all.
 
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> 
-> ---
-> Milton also says in his patch:
-> > A more complete fix might be to pass the cpu_mask struct to get_irq_server,
-> > but kernel/irq/manage.c currently sets the descriptor first.
-> 
->  arch/powerpc/platforms/pseries/xics.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/xics.c b/arch/powerpc/platforms/p
-series/xics.c
-> index f0b5ff1..217ae5d 100644
-> --- a/arch/powerpc/platforms/pseries/xics.c
-> +++ b/arch/powerpc/platforms/pseries/xics.c
-> @@ -837,6 +837,15 @@ void xics_migrate_irqs_away(void)
->  	/* Allow IPIs again... */
->  	xics_set_cpu_priority(cpu, DEFAULT_PRIORITY);
->  
-> +	/* It would be bad to migrate any IRQs to the CPU we're taking down */
-> +	if (default_server == cpu) {
-> +		unsigned int new_server = first_cpu(cpu_online_map);
-> +
-> +		default_server = get_hard_smp_processor_id(new_server);
-> +		printk(KERN_WARNING "%s: default server was %d, reset to %d\n",
-> +		       __func__, cpu, default_server);
-> +	}
-> +
->  	for_each_irq(virq) {
->  		struct irq_desc *desc;
->  		int xics_status[2];
-> @@ -881,8 +890,8 @@ void xics_migrate_irqs_away(void)
->  		       virq, cpu);
->  
->  		/* Reset affinity to all cpus */
-> +		irq_desc[virq].affinity = CPU_MASK_ALL;
->  		desc->chip->set_affinity(virq, CPU_MASK_ALL);
-> -		irq_desc[irq].affinity = CPU_MASK_ALL;
->  unlock:
->  		spin_unlock_irqrestore(&desc->lock, flags);
->  	}
-> 
-> Yours Tony
-> 
->   linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
->   Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+> > +				interrupt-parent = <&UIC1>;
+> > +
+> > +				nor_flash@0,0 {
+>
+> You have no ranges property for the ebc parent node.  Is if filled in by
+> U-Boot?  If so, please add a comment because otherwise I don't see how
+> this mapping will work.
+
+Yes, it's filled in by U-Boot too. I'll add a comment here.
+
+> > +					compatible = "amd,s29gl256n", "cfi-flash";
+> > +					bank-width = <2>;
+> > +					reg = <0 000000 4000000>;
+> > +					#address-cells = <1>;
+> > +					#size-cells = <1>;
+> > +					partition@0 {
+> > +						label = "Kernel";
+> > +						reg = <0 180000>;
+> > +					};
+> > +					partition@180000 {
+> > +						label = "ramdisk";
+> > +						reg = <180000 200000>;
+> > +					};
+> > +					partition@380000 {
+> > +						label = "file system";
+> > +						reg = <380000 3aa0000>;
+> > +					};
+> > +					partition@3e20000 {
+> > +						label = "kozio";
+> > +						reg = <3e20000 140000>;
+> > +					};
+> > +					partition@3f60000 {
+> > +						label = "env";
+> > +						reg = <3f60000 40000>;
+> > +					};
+> > +					partition@3fa0000 {
+> > +						label = "u-boot";
+> > +						reg = <3fa0000 60000>;
+> > +					};
+> > +				};
+> > +			};
+> > +
+> > +			UART0: serial@ef600200 {
+> > +				device_type = "serial";
+> > +				compatible = "ns16550";
+> > +				reg = <ef600200 8>;
+> > +				virtual-reg = <ef600200>;
+> > +				clock-frequency = <0>; /* Filled in by U-Boot */
+> > +				current-speed = <0>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <1a 4>;
+> > +			};
+> > +
+> > +			UART1: serial@ef600300 {
+> > +				device_type = "serial";
+> > +				compatible = "ns16550";
+> > +				reg = <ef600300 8>;
+> > +				virtual-reg = <ef600300>;
+> > +				clock-frequency = <0>; /* Filled in by U-Boot */
+> > +				current-speed = <0>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <1 4>;
+> > +			};
+> > +
+> > +			IIC0: i2c@ef600400 {
+> > +				device_type = "i2c";
+> > +				compatible = "ibm,iic-405ex", "ibm,iic";
+> > +				reg = <ef600400 14>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <2 4>;
+> > +			};
+> > +
+> > +			IIC1: i2c@ef600500 {
+> > +				device_type = "i2c";
+> > +				compatible = "ibm,iic-405ex", "ibm,iic";
+> > +				reg = <ef600500 14>;
+> > +				interrupt-parent = <&UIC0>;
+> > +				interrupts = <7 4>;
+> > +			};
+> > +
+> > +
+> > +			RGMII0: emac-rgmii@ef600b00 {
+> > +				device_type = "rgmii-interface";
+> > +				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+> > +				reg = <ef600b00 104>;
+> > +			};
+> > +
+> > +			EMAC0: ethernet@ef600900 {
+> > +				linux,network-index = <0>;
+> > +				device_type = "network";
+> > +				compatible = "ibm,emac-405ex", "ibm,emac4";
+> > +				interrupt-parent = <&EMAC0>;
+> > +				interrupts = <0 1>;
+> > +				#interrupt-cells = <1>;
+> > +				#address-cells = <0>;
+> > +				#size-cells = <0>;
+> > +				interrupt-map = </*Status*/ 0 &UIC0 18 4
+> > +						/*Wake*/  1 &UIC1 1d 4>;
+> > +				reg = <ef600900 70>;
+> > +				local-mac-address = [000000000000];
+>
+> Does U-Boot (or the wrapper) poke these values as well?
+
+Yes, I'll add a comment here too.
+
+> > +				mal-device = <&MAL0>;
+> > +				mal-tx-channel = <0>;
+> > +				mal-rx-channel = <0>;
+> > +				cell-index = <0>;
+> > +				max-frame-size = <5dc>;
+> > +				rx-fifo-size = <1000>;
+> > +				tx-fifo-size = <800>;
+> > +				phy-mode = "rgmii";
+> > +				phy-map = <00000000>;
+> > +				rgmii-device = <&RGMII0>;
+> > +				rgmii-channel = <0>;
+> > +			};
+> > +
+> > +			EMAC1: ethernet@ef600a00 {
+> > +				linux,network-index = <1>;
+> > +				device_type = "network";
+> > +				compatible = "ibm,emac-405ex", "ibm,emac4";
+> > +				interrupt-parent = <&EMAC1>;
+> > +				interrupts = <0 1>;
+> > +				#interrupt-cells = <1>;
+> > +				#address-cells = <0>;
+> > +				#size-cells = <0>;
+> > +				interrupt-map = </*Status*/ 0 &UIC0 19 4
+> > +						/*Wake*/  1 &UIC1 1f 4>;
+> > +				reg = <ef600a00 70>;
+> > +				local-mac-address = [000000000000];
+> > +				mal-device = <&MAL0>;
+> > +				mal-tx-channel = <1>;
+> > +				mal-rx-channel = <1>;
+> > +				cell-index = <1>;
+> > +				max-frame-size = <5dc>;
+> > +				rx-fifo-size = <1000>;
+> > +				tx-fifo-size = <800>;
+> > +				phy-mode = "rgmii";
+> > +				phy-map = <00000000>;
+> > +				rgmii-device = <&RGMII0>;
+> > +				rgmii-channel = <1>;
+> > +			};
+> > +		};
+> > +	};
+>
+> No chosen node?
+
+No. U-Boot will provide all needed information here.
+
+Thanks.
+
+Best regards,
+Stefan
