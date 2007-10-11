@@ -1,17 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18189.27251.48582.614106@cargo.ozlabs.ibm.com>
-Date: Thu, 11 Oct 2007 10:12:35 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Build failure on treeboot-walnut.cg
-In-Reply-To: <470BA6ED.3020504@freescale.com>
-References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
-	<470AA224.7050709@freescale.com>
-	<20071009030729.GI12499@localhost.localdomain>
-	<470BA6ED.3020504@freescale.com>
-Cc: linuxppc-dev@ozlabs.com, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1CB42DDF84
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 11:00:01 +1000 (EST)
+Date: Thu, 11 Oct 2007 10:59:51 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 3/9] add Freescale SerDes PHY support
+Message-Id: <20071011105951.95967235.sfr@canb.auug.org.au>
+In-Reply-To: <1192010804-20071-3-git-send-email-leoli@freescale.com>
+References: <1192010804-20071-1-git-send-email-leoli@freescale.com>
+	<1192010804-20071-2-git-send-email-leoli@freescale.com>
+	<1192010804-20071-3-git-send-email-leoli@freescale.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__11_Oct_2007_10_59_51_+1000_4tEDrkMugx6xaDTS"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi writes:
+--Signature=_Thu__11_Oct_2007_10_59_51_+1000_4tEDrkMugx6xaDTS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Is this a new policy?  Modules in the kernel are not built unless you want 
-> them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
-> targeting is built.  So I don't really understand why you claim it's normal 
-> for platform-specific files to be built, regardless of the actual platform.
+On Wed, 10 Oct 2007 18:06:38 +0800 Li Yang <leoli@freescale.com> wrote:
+>
+> +++ b/arch/powerpc/sysdev/fsl_serdes.c
+>
+> +#include <asm/prom.h>
 
-The wrapper script is intended to be a standalone tool which is
-independent of the kernel configuration, and can be used separately
-from the kernel build process.
+You actually want linux/of.h not asm/prom.h
 
-> And frankly, I don't like this "policy".  Build bugs for 4xx should not 
-> interfere in my 83xx development.  I can't build any kernels now because of 
-> this bug!
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-I'm sure you're not actually that helpless. :)  Just carry a patch to
-arch/powerpc/boot/Makefile in your local tree.
+--Signature=_Thu__11_Oct_2007_10_59_51_+1000_4tEDrkMugx6xaDTS
+Content-Type: application/pgp-signature
 
-Paul.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHDXWNTgG2atn1QN8RAvkjAJ9MVWDm7l1d/mlmAdInABtvIqi5hACfaFJq
++6wthgOaITuL9lUJu3Fjlmw=
+=eTqL
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__11_Oct_2007_10_59_51_+1000_4tEDrkMugx6xaDTS--
