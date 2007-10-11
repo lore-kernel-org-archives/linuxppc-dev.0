@@ -1,16 +1,32 @@
-Return-Path: <SRS0=DCot=PF=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 79CF5DE1C2
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 22:08:21 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/4 v2] [POWERPC] Add AMCC Kilauea eval board support to
-	platforms/40x
-Date: Thu, 11 Oct 2007 14:08:21 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200710111408.21421.sr@denx.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9DF86DDFB8
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 22:15:58 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9BCFsN5003945
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:15:54 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9BCFsPi141594
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:15:54 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9BCFslG022858
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:15:54 -0400
+Subject: Re: [PATCH 3/3] [POWERPC] Kilauea DTS
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200710111402.12449.sr@denx.de>
+References: <200710081110.16447.sr@denx.de> <200710111049.02253.sr@denx.de>
+	<1192103498.5534.101.camel@localhost.localdomain>
+	<200710111402.12449.sr@denx.de>
+Content-Type: text/plain
+Date: Thu, 11 Oct 2007 07:13:39 -0500
+Message-Id: <1192104819.5534.109.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,108 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds basic support for the new 405EX and the AMCC eval board
-Kilauea to arch/powerpc.
+On Thu, 2007-10-11 at 14:02 +0200, Stefan Roese wrote:
+> On Thursday 11 October 2007, Josh Boyer wrote:
+> > On Thu, 2007-10-11 at 10:49 +0200, Stefan Roese wrote:
+> > > > > +		PowerPC,405EX@0 {
+> > > > > +			device_type = "cpu";
+> > > > > +			reg = <0>;
+> > > > > +			clock-frequency = <0>; /* Filled in by U-Boot */
+> > > >
+> > > > Filled in by U-Boot itself?  Or by a cuboot wrapper? (which I can't
+> > > > find in the patches.)
+> > >
+> > > By U-Boot itself. I have a U-Boot patch in the queue to add device tree
+> > > support for 4xx. Therefor I don't plan adding a cuboot wrapper for
+> > > Kilauea.
+> >
+> > Very cool!
+> 
+> You can take a look at the kilauea-405ex branch of my 4xx custodian repository 
+> for a latest development snapshort:
+> 
+> http://www.denx.de/cgi-bin/gitweb.cgi?p=u-boot/u-boot-ppc4xx.git;a=shortlog;h=kilauea-405ex
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/powerpc/platforms/40x/Kconfig   |    7 ++++
- arch/powerpc/platforms/40x/Makefile  |    5 ++-
- arch/powerpc/platforms/40x/kilauea.c |   58 ++++++++++++++++++++++++++++++++++
- 3 files changed, 68 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/40x/kilauea.c
+Ok, so how does the DTS file from the kernel get to U-Boot?  Since there
+is no defconfig provided and no wrapper bits, I'm assuming this port
+takes a raw uImage.  Is that correct?  If so, do you expect a separate
+DTB file to be built for this that is passed to U-Boot?
 
-diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
-index a0a50b1..47b3b0a 100644
---- a/arch/powerpc/platforms/40x/Kconfig
-+++ b/arch/powerpc/platforms/40x/Kconfig
-@@ -29,6 +29,13 @@
- #	help
- #	  This option enables support for the extra features of the EP405PC board.
- 
-+config KILAUEA
-+	bool "Kilauea"
-+	depends on 40x
-+	default n
-+	help
-+	  This option enables support for the AMCC PPC405EX evaluation board.
-+
- #config REDWOOD_5
- #	bool "Redwood-5"
- #	depends on 40x
-diff --git a/arch/powerpc/platforms/40x/Makefile b/arch/powerpc/platforms/40x/Makefile
-index 0a3cfe9..51dadee 100644
---- a/arch/powerpc/platforms/40x/Makefile
-+++ b/arch/powerpc/platforms/40x/Makefile
-@@ -1,2 +1,3 @@
--obj-$(CONFIG_WALNUT) += walnut.o
--obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD) += virtex.o
-+obj-$(CONFIG_KILAUEA)				+= kilauea.o
-+obj-$(CONFIG_WALNUT)				+= walnut.o
-+obj-$(CONFIG_XILINX_VIRTEX_GENERIC_BOARD)	+= virtex.o
-diff --git a/arch/powerpc/platforms/40x/kilauea.c b/arch/powerpc/platforms/40x/kilauea.c
-new file mode 100644
-index 0000000..1bffdbd
---- /dev/null
-+++ b/arch/powerpc/platforms/40x/kilauea.c
-@@ -0,0 +1,58 @@
-+/*
-+ * Kilauea board specific routines
-+ *
-+ * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
-+ *
-+ * Based on the Walnut code by
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+
-+static struct of_device_id kilauea_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
-+
-+static int __init kilauea_device_probe(void)
-+{
-+	if (!machine_is(kilauea))
-+		return 0;
-+
-+	of_platform_bus_probe(NULL, kilauea_of_bus, NULL);
-+
-+	return 0;
-+}
-+device_initcall(kilauea_device_probe);
-+
-+static int __init kilauea_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "amcc,kilauea"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+define_machine(kilauea) {
-+	.name 				= "Kilauea",
-+	.probe 				= kilauea_probe,
-+	.progress 			= udbg_progress,
-+	.init_IRQ 			= uic_init_tree,
-+	.get_irq 			= uic_get_irq,
-+	.calibrate_decr			= generic_calibrate_decr,
-+};
--- 
-1.5.3.4
+josh
