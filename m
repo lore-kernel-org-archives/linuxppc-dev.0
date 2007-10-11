@@ -1,24 +1,19 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A878CDE0A6
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 05:56:06 +1000 (EST)
-Date: Thu, 11 Oct 2007 14:55:44 -0500
+Date: Thu, 11 Oct 2007 15:02:37 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 2/2] powerpc: Switch to generic WARN_ON()/BUG_ON()
-Message-ID: <20071011195544.GA4247@loki.buserror.net>
-References: <20071011171211.GB10877@lixom.net>
-	<20071011171413.GC10877@lixom.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Build failure on treeboot-walnut.cg
+Message-ID: <20071011200237.GB4247@loki.buserror.net>
+References: <fa686aa40709251546p725e66dcsbc0483cadb3ec3fb@mail.gmail.com>
+	<470AA224.7050709@freescale.com>
+	<20071009030729.GI12499@localhost.localdomain>
+	<470BA6ED.3020504@freescale.com>
+	<18189.27251.48582.614106@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071011171413.GC10877@lixom.net>
-Cc: grundler@parisc-linux.org, linux-kernel@vger.kernel.org,
-	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	lethal@linux-sh.org, akpm@linux-foundation.org
+In-Reply-To: <18189.27251.48582.614106@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.com, Timur Tabi <timur@freescale.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 11, 2007 at 12:14:13PM -0500, Olof Johansson wrote:
-> Not using the ppc-specific WARN_ON/BUG_ON constructs actually saves about
-> 4K text on a ppc64_defconfig. The main reason seems to be that prepping
-> the arguments to the conditional trap instructions is more work than
-> just doing a compare and branch.
+On Thu, Oct 11, 2007 at 10:12:35AM +1000, Paul Mackerras wrote:
+> Timur Tabi writes:
+> 
+> > Is this a new policy?  Modules in the kernel are not built unless you want 
+> > them.  Even in arch/powerpc/platforms, only the specific platform file I'm 
+> > targeting is built.  So I don't really understand why you claim it's normal 
+> > for platform-specific files to be built, regardless of the actual platform.
+> 
+> The wrapper script is intended to be a standalone tool which is
+> independent of the kernel configuration, and can be used separately
+> from the kernel build process.
 
-It'd be nice if we could get GCC to generate bug table entries for
-__builtin_trap(); that way we could use GCC's ability to put arbitrary
-conditions in the trap instruction.
+Is it ever actually used that way?  I wonder if this "intent" is worth the
+pain...
 
 -Scott
