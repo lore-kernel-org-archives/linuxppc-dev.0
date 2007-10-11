@@ -1,33 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39C6CDE128
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:14:15 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9BLECdA003850
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 17:14:12 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9BLECol545288
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 17:14:12 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9BLE2JV030307
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 17:14:02 -0400
-Subject: Re: [PATCH 4/4 v2] [POWERPC] Kilauea defconfig file
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20071011201232.GD4247@loki.buserror.net>
-References: <200710111408.34207.sr@denx.de>
-	<1192107771.5534.120.camel@localhost.localdomain>
-	<200710111531.13022.sr@denx.de>
-	<20071011201232.GD4247@loki.buserror.net>
-Content-Type: text/plain
-Date: Thu, 11 Oct 2007 16:13:39 -0500
-Message-Id: <1192137219.3061.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 975C6DE0B8
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:36:07 +1000 (EST)
+Date: Thu, 11 Oct 2007 16:35:49 -0500 (CDT)
+Message-Id: <200710112135.l9BLZnaf030827@sullivan.realtime.net>
+From: Milton Miller <miltonm@bga.com>
+Sender: Milton Miller <miltonm@realtime.net>
+Subject: Re: Hard hang in hypervisor!?
+References: <18189.26776.326248.278431@cargo.ozlabs.ibm.com>
+In-Reply-To: <18189.26776.326248.278431@cargo.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,26 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-10-11 at 15:12 -0500, Scott Wood wrote:
-> On Thu, Oct 11, 2007 at 03:31:12PM +0200, Stefan Roese wrote:
-> > Yes, good catch. Since I'm not using the bootwrapper, I should be able to get 
-> > rid of WANT_DEVICE_TREE too. But it seems to be autoselected in 
-> > arch/powerpc/platforms/Kconfig.cputype for 40x and most other "embedded" 
-> > CPU's. Any idea why this is the case?
+On Thu Oct 11 10:04:40 EST 2007, Paul Mackerras wrote:
+> Linas Vepstas writes:
+>> Err ..  it was cpu 0 that was spinlocked.  Are interrupts not
+>> distributed?
 > 
-> Probably copying from 83xx, 85xx, etc, which set it on the entire CPU family
-> because there's a wrapper platform that covers the entire family.  AFAICT,
-> there are only board wrappers for 4xx, so individual boards should be
-> selecting WANT_DEVICE_TREE.
+> We have some bogosities in the xics code that I noticed a couple of
+> days ago.  Basically we only set the xics to distribute interrupts to
+> all cpus if (a) the affinity mask is equal to CPU_MASK_ALL (which has
+> ones in every bit position from 0 to NR_CPUS-1) and (b) all present
+> cpus are online (cpu_online_map == cpu_present_map).  Otherwise we
+> direct interrupts to the first cpu in the affinity map.  So you can
+> easily have the affinity mask containing all the online cpus and still
+> not get distributed interrupts.
 
-Probably.  Seems somewhat redundant at this point to move it into the
-individual board options though.
 
-> In any case, you can just set DEVICE_TREE to an empty string if you only
-> want the regular uImage.
+The second condition was just added to try fix some issues where a 
+vendor wants to always run the kdump kernel with maxcpus=1 on all
+architectures, and the emulated xics on js20 was not working.
+For a true xics, this should work because we (1) remove all but 1
+cpu from the global server list and (2) raise the prioirity of the
+cpu to disabled and the hardware will deliver to another cpu in the
+parition.
 
-Well, he wants the raw uImage, and a separate DTB to be spit out as far
-as I can tell.  So we don't want an empty string here, but what's there
-currently doesn't do the latter part either.
+http://ozlabs.org/pipermail/linuxppc-dev/2006-December/028941.html
+http://ozlabs.org/pipermail/linuxppc-dev/2007-January/029607.html
+http://ozlabs.org/pipermail/linuxppc-dev/2007-March/032621.html
 
-josh
+However, my experience the other day on a js21 was that firmware
+delivered either to all cpus (if we bound to the global server) or
+the first online cpu in the partition, regardless of to which cpu
+we bound the interrupt, so I don't know that the change will fix
+the original problem.
+
+It does mean that taking a cpu offline but not dlpar removing it from the
+kernel will result in the inability to actually distribute interrupts
+to all cpus.
+
+I'd be happy to say remove the extra check and work with firmware to
+property distribute the interrupts.
+
+milton
