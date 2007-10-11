@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42554DE198
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:06:49 +1000 (EST)
-In-Reply-To: <1192136106.8476.56.camel@pasglop>
-References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-	<91E54A0A-EFD6-46C8-A703-7892731FA3F8@kernel.crashing.org>
-	<1192136106.8476.56.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1376CD4A-8633-4517-B1D0-2F332DC70F0A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc commits for 2.6.24
-Date: Thu, 11 Oct 2007 16:06:58 -0500
-To: benh@kernel.crashing.org
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 7D277DE0D4
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:11:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PowerPC: Add legacy serial support for OPB with flattened
+	device tree.
+Date: Thu, 11 Oct 2007 23:10:49 +0200
+References: <20071011190925.GA22704@ru.mvista.com>
+In-Reply-To: <20071011190925.GA22704@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710112310.50582.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 11 October 2007, Valentine Barshak wrote:
+> Currently find_legacy_serial_ports() can find no serial ports on the OPB
+> with flattened device. Thus no legacy boot console can be initialized.
+> Just the early udbg console works, which is initialized with udbg_init_44x_as1
+> on the UART's physical address specified in kernel config. This happens
+> because we look for ns16750 serial devices only and expect opb node to have
+> a device type property. This patch makes it look for ns16550-compatible
+> devices and use of_device_is_compatible() for opb in case device type is not
+> specified.
+> 
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-On Oct 11, 2007, at 3:55 PM, Benjamin Herrenschmidt wrote:
+Looks correct for QS21 now.
 
->
-> On Thu, 2007-10-11 at 07:52 -0500, Kumar Gala wrote:
->>> Benjamin Herrenschmidt (3):
->>>       [POWERPC] Fix platinumfb framebuffer
->>>       [POWERPC] cell: Move cbe_regs.h to include/asm-powerpc/cell-
->>> regs.h
->>>       [POWERPC] cell: Add Cell memory controller register defs and
->>> expose it
->>
->> Ben, your slacking :)
->
->  ?
-
-Just three patches for 2.6.24... :)
-
-- k
+Acked-by: Arnd Bergmann <arnd@arndb.de>
