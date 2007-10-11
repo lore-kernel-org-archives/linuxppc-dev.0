@@ -1,19 +1,25 @@
-Return-Path: <SRS0=DCot=PF=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 67690DDF8C
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 18:48:32 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] [POWERPC] Kilauea DTS
-Date: Thu, 11 Oct 2007 10:49:02 +0200
-References: <200710081110.16447.sr@denx.de>
-	<1192047714.5534.81.camel@localhost.localdomain>
-In-Reply-To: <1192047714.5534.81.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710111049.02253.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BEB89DDFAD
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 19:43:23 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l9B9hHr6020434
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 02:43:18 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9B9hGfi028800
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 04:43:17 -0500 (CDT)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/9 v2] add Freescale SerDes PHY support
+Date: Thu, 11 Oct 2007 17:53:45 +0800
+Message-Id: <1192096425-30192-1-git-send-email-leoli@freescale.com>
+Cc: Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,307 +29,262 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 10 October 2007, Josh Boyer wrote:
-> On Mon, 2007-10-08 at 11:10 +0200, Stefan Roese wrote:
-> > Signed-off-by: Stefan Roese <sr@denx.de>
->
-> Looks pretty good.  Just a couple of questions.
->
-> > ---
-> >  arch/powerpc/boot/dts/kilauea.dts |  253
-> > +++++++++++++++++++++++++++++++++++++ 1 files changed, 253 insertions(+),
-> > 0 deletions(-)
-> >  create mode 100644 arch/powerpc/boot/dts/kilauea.dts
-> >
-> > diff --git a/arch/powerpc/boot/dts/kilauea.dts
-> > b/arch/powerpc/boot/dts/kilauea.dts new file mode 100644
-> > index 0000000..4683174
-> > --- /dev/null
-> > +++ b/arch/powerpc/boot/dts/kilauea.dts
-> > @@ -0,0 +1,253 @@
-> > +/*
-> > + * Device Tree Source for AMCC Kilauea (405EX)
-> > + *
-> > + * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
-> > + *
-> > + * This file is licensed under the terms of the GNU General Public
-> > + * License version 2.  This program is licensed "as is" without
-> > + * any warranty of any kind, whether express or implied.
-> > + */
-> > +
-> > +/ {
-> > +	#address-cells = <1>;
-> > +	#size-cells = <1>;
-> > +	model = "amcc,kilauea";
-> > +	compatible = "amcc,kilauea";
-> > +	dcr-parent = <&/cpus/PowerPC,405EX@0>;
-> > +
-> > +	cpus {
-> > +		#address-cells = <1>;
-> > +		#size-cells = <0>;
-> > +
-> > +		PowerPC,405EX@0 {
-> > +			device_type = "cpu";
-> > +			reg = <0>;
-> > +			clock-frequency = <0>; /* Filled in by U-Boot */
->
-> Filled in by U-Boot itself?  Or by a cuboot wrapper? (which I can't find
-> in the patches.)
+The SerDes(serializer/deserializer) PHY block is a new SoC block used
+in Freescale chips to support multiple serial interfaces, such as PCI
+Express, SGMII, SATA.
 
-By U-Boot itself. I have a U-Boot patch in the queue to add device tree 
-support for 4xx. Therefor I don't plan adding a cuboot wrapper for Kilauea.
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/platforms/Kconfig   |    4 +
+ arch/powerpc/sysdev/Makefile     |    1 +
+ arch/powerpc/sysdev/fsl_serdes.c |  170 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_serdes.h |   36 ++++++++
+ 4 files changed, 211 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_serdes.c
+ create mode 100644 arch/powerpc/sysdev/fsl_serdes.h
 
-> > +			timebase-frequency = <0>; /* Filled in by U-Boot */
-> > +			i-cache-line-size = <20>;
-> > +			d-cache-line-size = <20>;
-> > +			i-cache-size = <4000>; /* 16 kB */
-> > +			d-cache-size = <4000>; /* 16 kB */
-> > +			dcr-controller;
-> > +			dcr-access-method = "native";
-> > +		};
-> > +	};
-> > +
-> > +	memory {
-> > +		device_type = "memory";
-> > +		reg = <0 0>; /* Filled in by U-Boot */
-> > +	};
-> > +
-> > +	UIC0: interrupt-controller {
-> > +		compatible = "ibm,uic-405ex", "ibm,uic";
-> > +		interrupt-controller;
-> > +		cell-index = <0>;
-> > +		dcr-reg = <0c0 009>;
-> > +		#address-cells = <0>;
-> > +		#size-cells = <0>;
-> > +		#interrupt-cells = <2>;
-> > +	};
-> > +
-> > +	UIC1: interrupt-controller1 {
-> > +		compatible = "ibm,uic-405ex","ibm,uic";
-> > +		interrupt-controller;
-> > +		cell-index = <1>;
-> > +		dcr-reg = <0d0 009>;
-> > +		#address-cells = <0>;
-> > +		#size-cells = <0>;
-> > +		#interrupt-cells = <2>;
-> > +		interrupts = <1e 4 1f 4>; /* cascade */
-> > +		interrupt-parent = <&UIC0>;
-> > +	};
-> > +
-> > +	UIC2: interrupt-controller2 {
-> > +		compatible = "ibm,uic-405ex","ibm,uic";
-> > +		interrupt-controller;
-> > +		cell-index = <2>;
-> > +		dcr-reg = <0e0 009>;
-> > +		#address-cells = <0>;
-> > +		#size-cells = <0>;
-> > +		#interrupt-cells = <2>;
-> > +		interrupts = <1c 4 1d 4>; /* cascade */
-> > +		interrupt-parent = <&UIC0>;
-> > +	};
-> > +
-> > +	plb {
-> > +		compatible = "ibm,plb-405ex", "ibm,plb4";
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		ranges;
-> > +		clock-frequency = <0>; /* Filled in by U-Boot */
-> > +
-> > +		SDRAM0: memory-controller {
-> > +			compatible = "ibm,sdram-405ex";
-> > +			dcr-reg = <010 2>;
-> > +		};
-> > +
-> > +		MAL0: mcmal {
-> > +			compatible = "ibm,mcmal-405ex", "ibm,mcmal2";
-> > +			dcr-reg = <180 62>;
-> > +			num-tx-chans = <2>;
-> > +			num-rx-chans = <2>;
-> > +			interrupt-parent = <&MAL0>;
-> > +			interrupts = <0 1 2 3 4>;
-> > +			#interrupt-cells = <1>;
-> > +			#address-cells = <0>;
-> > +			#size-cells = <0>;
-> > +			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-> > +					/*RXEOB*/ 1 &UIC0 b 4
-> > +					/*SERR*/  2 &UIC1 0 4
-> > +					/*TXDE*/  3 &UIC1 1 4
-> > +					/*RXDE*/  4 &UIC1 2 4>;
-> > +			interrupt-map-mask = <ffffffff>;
-> > +		};
-> > +
-> > +		POB0: opb {
-> > +			compatible = "ibm,opb-405ex", "ibm,opb";
-> > +			#address-cells = <1>;
-> > +			#size-cells = <1>;
-> > +			ranges = <ef600000 ef600000 a00000>;
-> > +			dcr-reg = <0a0 5>;
-> > +			clock-frequency = <0>; /* Filled in by U-Boot */
-> > +
-> > +			EBC0: ebc {
-> > +				compatible = "ibm,ebc-405ex", "ibm,ebc";
-> > +				dcr-reg = <012 2>;
-> > +				#address-cells = <2>;
-> > +				#size-cells = <1>;
-> > +				clock-frequency = <0>; /* Filled in by U-Boot */
-> > +				interrupts = <5 1>;
->
-> This interrupt is really rising edge?  Just double checking.
-
-Yes, it is rising edge. I have to admit though, that I'm not sure if this 
-interrupt will ever be used at all.
-
-> > +				interrupt-parent = <&UIC1>;
-> > +
-> > +				nor_flash@0,0 {
->
-> You have no ranges property for the ebc parent node.  Is if filled in by
-> U-Boot?  If so, please add a comment because otherwise I don't see how
-> this mapping will work.
-
-Yes, it's filled in by U-Boot too. I'll add a comment here.
-
-> > +					compatible = "amd,s29gl256n", "cfi-flash";
-> > +					bank-width = <2>;
-> > +					reg = <0 000000 4000000>;
-> > +					#address-cells = <1>;
-> > +					#size-cells = <1>;
-> > +					partition@0 {
-> > +						label = "Kernel";
-> > +						reg = <0 180000>;
-> > +					};
-> > +					partition@180000 {
-> > +						label = "ramdisk";
-> > +						reg = <180000 200000>;
-> > +					};
-> > +					partition@380000 {
-> > +						label = "file system";
-> > +						reg = <380000 3aa0000>;
-> > +					};
-> > +					partition@3e20000 {
-> > +						label = "kozio";
-> > +						reg = <3e20000 140000>;
-> > +					};
-> > +					partition@3f60000 {
-> > +						label = "env";
-> > +						reg = <3f60000 40000>;
-> > +					};
-> > +					partition@3fa0000 {
-> > +						label = "u-boot";
-> > +						reg = <3fa0000 60000>;
-> > +					};
-> > +				};
-> > +			};
-> > +
-> > +			UART0: serial@ef600200 {
-> > +				device_type = "serial";
-> > +				compatible = "ns16550";
-> > +				reg = <ef600200 8>;
-> > +				virtual-reg = <ef600200>;
-> > +				clock-frequency = <0>; /* Filled in by U-Boot */
-> > +				current-speed = <0>;
-> > +				interrupt-parent = <&UIC0>;
-> > +				interrupts = <1a 4>;
-> > +			};
-> > +
-> > +			UART1: serial@ef600300 {
-> > +				device_type = "serial";
-> > +				compatible = "ns16550";
-> > +				reg = <ef600300 8>;
-> > +				virtual-reg = <ef600300>;
-> > +				clock-frequency = <0>; /* Filled in by U-Boot */
-> > +				current-speed = <0>;
-> > +				interrupt-parent = <&UIC0>;
-> > +				interrupts = <1 4>;
-> > +			};
-> > +
-> > +			IIC0: i2c@ef600400 {
-> > +				device_type = "i2c";
-> > +				compatible = "ibm,iic-405ex", "ibm,iic";
-> > +				reg = <ef600400 14>;
-> > +				interrupt-parent = <&UIC0>;
-> > +				interrupts = <2 4>;
-> > +			};
-> > +
-> > +			IIC1: i2c@ef600500 {
-> > +				device_type = "i2c";
-> > +				compatible = "ibm,iic-405ex", "ibm,iic";
-> > +				reg = <ef600500 14>;
-> > +				interrupt-parent = <&UIC0>;
-> > +				interrupts = <7 4>;
-> > +			};
-> > +
-> > +
-> > +			RGMII0: emac-rgmii@ef600b00 {
-> > +				device_type = "rgmii-interface";
-> > +				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
-> > +				reg = <ef600b00 104>;
-> > +			};
-> > +
-> > +			EMAC0: ethernet@ef600900 {
-> > +				linux,network-index = <0>;
-> > +				device_type = "network";
-> > +				compatible = "ibm,emac-405ex", "ibm,emac4";
-> > +				interrupt-parent = <&EMAC0>;
-> > +				interrupts = <0 1>;
-> > +				#interrupt-cells = <1>;
-> > +				#address-cells = <0>;
-> > +				#size-cells = <0>;
-> > +				interrupt-map = </*Status*/ 0 &UIC0 18 4
-> > +						/*Wake*/  1 &UIC1 1d 4>;
-> > +				reg = <ef600900 70>;
-> > +				local-mac-address = [000000000000];
->
-> Does U-Boot (or the wrapper) poke these values as well?
-
-Yes, I'll add a comment here too.
-
-> > +				mal-device = <&MAL0>;
-> > +				mal-tx-channel = <0>;
-> > +				mal-rx-channel = <0>;
-> > +				cell-index = <0>;
-> > +				max-frame-size = <5dc>;
-> > +				rx-fifo-size = <1000>;
-> > +				tx-fifo-size = <800>;
-> > +				phy-mode = "rgmii";
-> > +				phy-map = <00000000>;
-> > +				rgmii-device = <&RGMII0>;
-> > +				rgmii-channel = <0>;
-> > +			};
-> > +
-> > +			EMAC1: ethernet@ef600a00 {
-> > +				linux,network-index = <1>;
-> > +				device_type = "network";
-> > +				compatible = "ibm,emac-405ex", "ibm,emac4";
-> > +				interrupt-parent = <&EMAC1>;
-> > +				interrupts = <0 1>;
-> > +				#interrupt-cells = <1>;
-> > +				#address-cells = <0>;
-> > +				#size-cells = <0>;
-> > +				interrupt-map = </*Status*/ 0 &UIC0 19 4
-> > +						/*Wake*/  1 &UIC1 1f 4>;
-> > +				reg = <ef600a00 70>;
-> > +				local-mac-address = [000000000000];
-> > +				mal-device = <&MAL0>;
-> > +				mal-tx-channel = <1>;
-> > +				mal-rx-channel = <1>;
-> > +				cell-index = <1>;
-> > +				max-frame-size = <5dc>;
-> > +				rx-fifo-size = <1000>;
-> > +				tx-fifo-size = <800>;
-> > +				phy-mode = "rgmii";
-> > +				phy-map = <00000000>;
-> > +				rgmii-device = <&RGMII0>;
-> > +				rgmii-channel = <1>;
-> > +			};
-> > +		};
-> > +	};
->
-> No chosen node?
-
-No. U-Boot will provide all needed information here.
-
-Thanks.
-
-Best regards,
-Stefan
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 19d4628..e89f803 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -291,4 +291,8 @@ config FSL_ULI1575
+ 	  Freescale reference boards. The boards all use the ULI in pretty
+ 	  much the same way.
+ 
++config FSL_SERDES
++	bool
++	default n
++
+ endmenu
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 08ce31e..315aa36 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -19,6 +19,7 @@ mv64x60-$(CONFIG_PCI)		+= mv64x60_pci.o
+ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o
+ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
+ obj-$(CONFIG_AXON_RAM)		+= axonram.o
++obj-$(CONFIG_FSL_SERDES)	+= fsl_serdes.o
+ 
+ # contains only the suspend handler for time
+ ifeq ($(CONFIG_RTC_CLASS),)
+diff --git a/arch/powerpc/sysdev/fsl_serdes.c b/arch/powerpc/sysdev/fsl_serdes.c
+new file mode 100644
+index 0000000..8a04395
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_serdes.c
+@@ -0,0 +1,170 @@
++/*
++ * arch/powerpc/sysdev/fsl_serdes.c
++ *
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: Li Yang <leoli@freescale.com>
++ *
++ * Freescale SerDes initialization routines
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation;  either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/delay.h>
++#include <linux/of.h>
++
++#include <asm/system.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++
++#include "fsl_serdes.h"
++
++static int __init setup_serdes(struct device_node *np)
++{
++	void __iomem *regs;
++	const void *prot;
++	const unsigned int *freq;
++	struct resource res;
++	u32 tmp, rfcks;
++
++	of_address_to_resource(np, 0, &res);
++	regs = ioremap(res.start, res.end - res.start + 1);
++
++	prot = of_get_property(np, "protocol", NULL);
++	if (!prot)
++		return -EINVAL;
++	freq = of_get_property(np, "clock", NULL);
++	switch (*freq) {
++	case 100:
++		rfcks = FSL_SRDSCR4_RFCKS_100;
++		break;
++	case 125:
++		rfcks = FSL_SRDSCR4_RFCKS_125;
++		break;
++	case 150:
++		rfcks = FSL_SRDSCR4_RFCKS_150;
++		break;
++	default:
++		printk(KERN_ERR "SerDes: Wrong frequency\n");
++		return -EINVAL;
++	}
++
++	/* Use default prescale and counter */
++
++	/* 1.0V corevdd */
++	if (of_get_property(np, "vdd-1v", NULL)) {
++		/* DPPE/DPPA = 0 */
++		tmp = in_be32(regs + FSL_SRDSCR0_OFFS);
++		tmp &= ~FSL_SRDSCR0_DPP_1V2;
++		out_be32(regs + FSL_SRDSCR0_OFFS, tmp);
++
++		/* VDD = 0 */
++		tmp = in_be32(regs + FSL_SRDSCR2_OFFS);
++		tmp &= ~FSL_SRDSCR2_VDD_1V2;
++		out_be32(regs + FSL_SRDSCR2_OFFS, tmp);
++	}
++
++	/* protocol specific configuration */
++	if (!strcmp(prot, "sata")) {
++		/* Set and clear reset bits */
++		tmp = in_be32(regs + FSL_SRDSRSTCTL_OFFS);
++		tmp |= FSL_SRDSRSTCTL_SATA_RESET;
++		out_be32(regs + FSL_SRDSRSTCTL_OFFS, tmp);
++		mdelay(1);
++		tmp &= ~FSL_SRDSRSTCTL_SATA_RESET;
++		out_be32(regs + FSL_SRDSRSTCTL_OFFS, tmp);
++
++		/* Configure SRDSCR1 */
++		tmp = in_be32(regs + FSL_SRDSCR1_OFFS);
++		tmp &= ~FSL_SRDSCR1_PLLBW;
++		out_be32(regs + FSL_SRDSCR1_OFFS, tmp);
++
++		/* Configure SRDSCR2 */
++		tmp = in_be32(regs + FSL_SRDSCR2_OFFS);
++		tmp &= ~FSL_SRDSCR2_SEIC_MASK;
++		tmp |= FSL_SRDSCR2_SEIC_SATA;
++		out_be32(regs + FSL_SRDSCR2_OFFS, tmp);
++
++		/* Configure SRDSCR3 */
++		tmp = FSL_SRDSCR3_KFR_SATA | FSL_SRDSCR3_KPH_SATA |
++			FSL_SRDSCR3_SDFM_SATA_PEX |
++			FSL_SRDSCR3_SDTXL_SATA;
++		out_be32(regs + FSL_SRDSCR3_OFFS, tmp);
++
++		/* Configure SRDSCR4 */
++		tmp = rfcks | FSL_SRDSCR4_PROT_SATA;
++		out_be32(regs + FSL_SRDSCR4_OFFS, tmp);
++
++	} else if (!strcmp(prot, "pcie")) {
++		/* Configure SRDSCR1 */
++		tmp = in_be32(regs + FSL_SRDSCR1_OFFS);
++		tmp |= FSL_SRDSCR1_PLLBW;
++		out_be32(regs + FSL_SRDSCR1_OFFS, tmp);
++
++		/* Configure SRDSCR2 */
++		tmp = in_be32(regs + FSL_SRDSCR2_OFFS);
++		tmp &= ~FSL_SRDSCR2_SEIC_MASK;
++		tmp |= FSL_SRDSCR2_SEIC_PEX;
++		out_be32(regs + FSL_SRDSCR2_OFFS, tmp);
++
++		/* Configure SRDSCR3 */
++		tmp = FSL_SRDSCR3_SDFM_SATA_PEX;
++		out_be32(regs + FSL_SRDSCR3_OFFS, tmp);
++
++		/* Configure SRDSCR4 */
++		tmp = rfcks | FSL_SRDSCR4_PROT_PEX;
++		if (of_get_property(np, "pcie-x2", NULL))
++				tmp |= FSL_SRDSCR4_PLANE_X2;
++		out_be32(regs + FSL_SRDSCR4_OFFS, tmp);
++
++	} else if (!strcmp(prot, "sgmii")) {
++		/* Configure SRDSCR1 */
++		tmp = in_be32(regs + FSL_SRDSCR1_OFFS);
++		tmp &= ~FSL_SRDSCR1_PLLBW;
++		out_be32(regs + FSL_SRDSCR1_OFFS, tmp);
++
++		/* Configure SRDSCR2 */
++		tmp = in_be32(regs + FSL_SRDSCR2_OFFS);
++		tmp &= ~FSL_SRDSCR2_SEIC_MASK;
++		tmp |= FSL_SRDSCR2_SEIC_SGMII;
++		out_be32(regs + FSL_SRDSCR2_OFFS, tmp);
++
++		/* Configure SRDSCR3 */
++		out_be32(regs + FSL_SRDSCR3_OFFS, 0);
++
++		/* Configure SRDSCR4 */
++		tmp = rfcks | FSL_SRDSCR4_PROT_SGMII;
++		out_be32(regs + FSL_SRDSCR4_OFFS, tmp);
++
++	} else {
++		printk(KERN_ERR "SerDes: Wrong protocol\n");
++		return -EINVAL;
++	}
++
++	/* Do a software reset */
++	tmp = in_be32(regs + FSL_SRDSRSTCTL_OFFS);
++	tmp |= FSL_SRDSRSTCTL_RST;
++	out_be32(regs + FSL_SRDSRSTCTL_OFFS, tmp);
++
++	printk(KERN_INFO "Freescale SerDes at %8x initialized\n", res.start);
++
++	return 0;
++}
++
++static int __init fsl_serdes_init(void) {
++	struct device_node *np;
++
++	for (np = NULL; (np = of_find_compatible_node(np, NULL, "fsl,serdes")) != NULL;)
++		setup_serdes(np);
++
++	return 0;
++}
++
++arch_initcall(fsl_serdes_init);
+diff --git a/arch/powerpc/sysdev/fsl_serdes.h b/arch/powerpc/sysdev/fsl_serdes.h
+new file mode 100644
+index 0000000..d4e5570
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_serdes.h
+@@ -0,0 +1,36 @@
++/*
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation;  either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++/* SerDes registers */
++#define FSL_SRDSCR0_OFFS		0x0
++#define FSL_SRDSCR0_DPP_1V2		0x00008800
++#define FSL_SRDSCR1_OFFS		0x4
++#define FSL_SRDSCR1_PLLBW		0x00000040
++#define FSL_SRDSCR2_OFFS		0x8
++#define FSL_SRDSCR2_VDD_1V2		0x00800000
++#define FSL_SRDSCR2_SEIC_MASK		0x00001c1c
++#define FSL_SRDSCR2_SEIC_SATA		0x00001414
++#define FSL_SRDSCR2_SEIC_PEX		0x00001010
++#define FSL_SRDSCR2_SEIC_SGMII		0x00000101
++#define FSL_SRDSCR3_OFFS		0xc
++#define FSL_SRDSCR3_KFR_SATA		0x10100000
++#define FSL_SRDSCR3_KPH_SATA		0x04040000
++#define FSL_SRDSCR3_SDFM_SATA_PEX	0x01010000
++#define FSL_SRDSCR3_SDTXL_SATA		0x00000505
++#define FSL_SRDSCR4_OFFS		0x10
++#define FSL_SRDSCR4_PROT_SATA		0x00000808
++#define FSL_SRDSCR4_PROT_PEX		0x00000101
++#define FSL_SRDSCR4_PROT_SGMII		0x00000505
++#define FSL_SRDSCR4_PLANE_X2		0x01000000
++#define FSL_SRDSCR4_RFCKS_100		0x00000000
++#define FSL_SRDSCR4_RFCKS_125		0x10000000
++#define FSL_SRDSCR4_RFCKS_150		0x30000000
++#define FSL_SRDSRSTCTL_OFFS		0x20
++#define FSL_SRDSRSTCTL_RST		0x80000000
++#define FSL_SRDSRSTCTL_SATA_RESET	0xf
+-- 
+1.5.3.2.104.g41ef
