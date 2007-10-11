@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84CA4DDFD4
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 00:12:28 +1000 (EST)
-In-Reply-To: <18190.3365.54961.935346@cargo.ozlabs.ibm.com>
-References: <18190.3365.54961.935346@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <96C1AFB8-784F-445E-A3F2-5D68494541CD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Make clockevents work on PPC601 processors
-Date: Thu, 11 Oct 2007 09:12:49 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.224])
+	by ozlabs.org (Postfix) with ESMTP id B5769DDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 00:16:10 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so441930nzh
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 07:16:09 -0700 (PDT)
+Message-ID: <fa686aa40710110716kfc58ebbn74d20ead21e1a7c4@mail.gmail.com>
+Date: Thu, 11 Oct 2007 08:16:08 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: powerpc commits for 2.6.24
+In-Reply-To: <3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
+	<3A203D25-2CC1-4450-ADA1-752A99504108@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 10/11/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> Just to clarify, are we closing 2.6.24 for new code after you send
+> Linus a pull request or are we still taking things during the two
+> week merge window?
 
-On Oct 11, 2007, at 6:46 AM, Paul Mackerras wrote:
+And as a follow-on question; if you are closing for new code, will you
+still accept patches for documentation/defconfigs/device trees?
 
-> In testing the new clocksource and clockevent code on a PPC601
-> processor, I discovered that the clockevent multiplier value for the
-> decrementer clockevent was overflowing.  Because the RTCL register in
-> the 601 effectively counts at 1GHz (it doesn't actually, but it
-> increases by 128 every 128ns), and the shift value was 32, that meant
-> the multiplier value had to be 2^32, which won't fit in an unsigned
-> long on 32-bit.  The same problem would arise on any platform where
-> the timebase frequency was 1GHz or more (not that we actually have any
-> such machines today).
+Cheers,
+g.
 
-do you still have a 601 running somewhere?
-
-- k
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
