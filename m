@@ -1,30 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 374FADDEBB
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 22:49:58 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9BCnjoh001838
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:49:45 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9BCnjcj116302
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:49:45 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9BCnZYm021120
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 08:49:35 -0400
-Subject: Re: powerpc commits for 2.6.24
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3EFCBDDE99
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Oct 2007 22:51:57 +1000 (EST)
 In-Reply-To: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
 References: <18190.5965.836544.396721@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 11 Oct 2007 07:47:06 -0500
-Message-Id: <1192106826.5534.114.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <91E54A0A-EFD6-46C8-A703-7892731FA3F8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: powerpc commits for 2.6.24
+Date: Thu, 11 Oct 2007 07:52:17 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,19 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-10-11 at 22:30 +1000, Paul Mackerras wrote:
-> Below is the list of commits that I plan to ask Linus to pull
-> tomorrow.  This is the last call for anything else or for objections
-> to any of these commits going in.  These commits are in powerpc.git on
-> the master and for-2.6.24 branches.
+> Benjamin Herrenschmidt (3):
+>       [POWERPC] Fix platinumfb framebuffer
+>       [POWERPC] cell: Move cbe_regs.h to include/asm-powerpc/cell- 
+> regs.h
+>       [POWERPC] cell: Add Cell memory controller register defs and  
+> expose it
 
-Hi Paul,
+Ben, your slacking :)
 
-Could you pull from:
+> Wolfgang Denk (1):
+>       [POWERPC] Disable vDSO support for ARCH=ppc where it's not  
+> implemented
 
-master.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.24
+Did I miss this getting posted to linuxppc-dev?
 
-to pick up some Xilinx changes from Grant?  I'm also hoping to get
-Stefan's 405EX changes in soon.
-
-josh
+- k
