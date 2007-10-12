@@ -1,17 +1,17 @@
 Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CAEEADDE09
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 23:05:58 +1000 (EST)
-Date: Fri, 12 Oct 2007 17:04:45 +0400
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 27457DDDFC
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 23:08:31 +1000 (EST)
+Message-ID: <470F7188.5040107@ru.mvista.com>
+Date: Fri, 12 Oct 2007 17:07:20 +0400
 From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] NEW EMAC Fix RGMII build error: use of_device_is_compatible
-Message-ID: <20071012130445.GA14704@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org
+Subject: Re: [PATCH] PowerPC: Add NEW EMAC driver support to 440EPx Sequoia
+	board.
+References: <20071012130305.GA14682@ru.mvista.com>
+In-Reply-To: <20071012130305.GA14682@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +21,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix build RGMII error: use of_device_is_compatible()
-insteadof now deprecated device_is_compatible() function.
+This one has to be applied on top of the previously submitted RGMII patch:
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- drivers/net/ibm_newemac/rgmii.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+http://ozlabs.org/pipermail/linuxppc-dev/2007-October/043435.html
 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/rgmii.c linux-2.6/drivers/net/ibm_newemac/rgmii.c
---- linux-2.6.orig/drivers/net/ibm_newemac/rgmii.c	2007-10-12 16:02:41.000000000 +0400
-+++ linux-2.6/drivers/net/ibm_newemac/rgmii.c	2007-10-12 16:49:07.000000000 +0400
-@@ -251,7 +251,7 @@ static int __devinit rgmii_probe(struct 
- 	}
- 
- 	/* Check for RGMII type */
--	if (device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
-+	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
- 		dev->type = RGMII_AXON;
- 	else
- 		dev->type = RGMII_STANDARD;
+Josh, are these OK, since Paul has NEW EMAC driver in his tree now?
+Thanks,
+Valentine.
