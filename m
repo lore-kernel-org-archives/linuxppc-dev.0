@@ -1,12 +1,14 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20071012145052.640177000@pademelon.sonytel.be>
-Date: Fri, 12 Oct 2007 16:50:52 +0200
+Message-Id: <20071012145129.480506000@pademelon.sonytel.be>
+References: <20071012145052.640177000@pademelon.sonytel.be>
+Date: Fri, 12 Oct 2007 16:50:53 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 00/13] ps3av/fb patches for 2.6.24
+Subject: [patch 01/13] ps3av: Fix black and white stripes
 Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,36 +19,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-        Hi Tony, Andrew,
+From: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
 
-Here are the remaining patches for the PS3 Audio/Video Settings Driver (ps3av)
-and the PS3 Virtual Frame Buffer Device Driver (ps3fb) that are not yet in
-2.6.23-mm1:
-   [1] ps3av: Fix black and white stripes
-   [2] ps3fb: Fix spurious mode change failures
-   [3] ps3fb: Convert from printk()/DPRINTK() to dev_*()/pr_*()
-   [4] ps3fb: Do not print warnings on invalid frame numbers
-   [5] ps3fb: Clean up includes
-   [6] ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static
-   [7] ps3fb: Fix possible overlap of GPU command buffer and frame buffer
-   [8] ps3fb: Use fb_info.par properly
-   [9] ps3fb: Don't keep the borders for non-fullscreen modes in XDR memory
-  [10] ps3fb: Add virtual screen and panning support
-  [11] ps3fb: Enhance horizontal panning on firmware 1.90 and up
-  [12] fb: Move and rename extern declaration for global_mode_option
-  [13] ps3fb: Default to 480p on DVI-D/HDMI if video=safe
+Fix the black and white stripes issue with WUXGA monitor via HDMI.
 
-Patches 1-2 are old bug fixes that didn't make it into 2.6.23.
+It seems that when we use a VESA resolution from boot up, the AV settings
+driver could not be initialized correctly.
+In that case we need a dummy packet before VESA setting.
 
-Patches 3-11 were submitted for review last week and received no comments.
+[Geert] Refactored to reduce code duplication.
 
-Patches 12-13 introduce a safe mode for DVI-D/HDMI displays, to be used by
-`kboot'-style boot loaders (i.e. first-stage kernels), as requested by
-reviewers of the PS3 video mode autodetection patches (which are in
-2.6.23-mm1).
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+CC: Geoff Levand <geoffrey.levand@am.sony.com>
+---
+ drivers/ps3/ps3av.c |   58 ++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 38 insertions(+), 20 deletions(-)
 
-Please apply, thanks!
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -491,10 +491,10 @@ static int ps3av_set_videomode(void)
+ 	return 0;
+ }
+ 
+-static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++static void ps3av_set_videomode_packet(u32 id)
+ {
+ 	struct ps3av_pkt_avb_param avb_param;
+-	int i;
++	unsigned int i;
+ 	u32 len = 0, av_video_cs;
+ 	const struct avset_video_mode *video_mode;
+ 	int res;
+@@ -507,24 +507,6 @@ static void ps3av_set_videomode_cont(u32
+ 					ps3av->av_hw_conf.num_of_avmulti;
+ 	avb_param.num_of_av_audio_pkt = 0;
+ 
+-	/* video signal off */
+-	ps3av_set_video_disable_sig();
+-
+-	/* Retail PS3 product doesn't support this */
+-	if (id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
+-		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core, "Not supported\n");
+-		else if (res)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
+-		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
+-		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
+-			dev_dbg(&ps3av->dev->core,
+-				"ps3av_cmd_av_hdmi_mode failed\n");
+-	}
+-
+ 	/* video_pkt */
+ 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
+ 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
+@@ -555,6 +537,42 @@ static void ps3av_set_videomode_cont(u32
+ 		       __func__);
+ 	else if (res)
+ 		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
++}
++
++static void ps3av_set_videomode_cont(u32 id, u32 old_id)
++{
++	static int vesa;
++	int res;
++
++	/* video signal off */
++	ps3av_set_video_disable_sig();
++
++	/*
++	 * AV backend needs non-VESA mode setting at least one time
++	 * when VESA mode is used.
++	 */
++	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
++		/* vesa mode */
++		ps3av_set_videomode_packet(2);	/* 480P */
++	}
++	vesa = 1;
++
++	/* Retail PS3 product doesn't support this */
++	if (id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
++		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core, "Not supported\n");
++		else if (res)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
++		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
++		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
++			dev_dbg(&ps3av->dev->core,
++				"ps3av_cmd_av_hdmi_mode failed\n");
++	}
++
++	ps3av_set_videomode_packet(id);
+ 
+ 	msleep(1500);
+ 	/* av video mute */
 
+-- 
 With kind regards,
  
 Geert Uytterhoeven
