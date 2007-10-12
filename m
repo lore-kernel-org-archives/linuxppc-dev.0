@@ -1,25 +1,18 @@
-Return-Path: <willis@arlut.utexas.edu>
-Received: from ns4.arlut.utexas.edu (ns4.arlut.utexas.edu [66.162.93.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 26AC4DDDCA
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
+	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 18FDBDDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Oct 2007 05:23:20 +1000 (EST)
-Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
-	by ns4.arlut.utexas.edu (8.13.7/8.13.7) with ESMTP id l9CITo3c086916
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Oct 2007 13:29:51 -0500 (CDT)
-Received: from ns5.arlut.utexas.edu (ns5.arlut.utexas.edu [10.4.1.6])
-	by ns2.arlut.utexas.edu (8.13.7/8.13.7) with ESMTP id l9CITjX6068765
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Oct 2007 13:29:45 -0500 (CDT)
-Subject: MPC85xx and linux IDE driver
-From: Michael Brian Willis <willis@arlut.utexas.edu>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 12 Oct 2007 13:29:44 -0500
-Message-Id: <1192213784.4862.48.camel@louie>
-Mime-Version: 1.0
+	Sat, 13 Oct 2007 05:55:09 +1000 (EST)
+Message-ID: <470FCF8A.1000504@qstreams.com>
+Date: Fri, 12 Oct 2007 15:48:26 -0400
+From: Ben Warren <bwarren@qstreams.com>
+MIME-Version: 1.0
+To: Michael Brian Willis <willis@arlut.utexas.edu>
+Subject: Re: MPC85xx and linux IDE driver
+References: <1192213784.4862.48.camel@louie>
+In-Reply-To: <1192213784.4862.48.camel@louie>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,29 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, 
+Michael Brian Willis wrote:
+> Hello, 
+>
+> I am using an MPC8540 based embedded system with a Compact Flash card in
+> true IDE mode. The Compact Flash card is directly connected to the
+> MPC8540 bus without the use of a pcmcia adapter. 
+>
+> The Compact Flash card is being initialized correctly using the U-boot
+> boot-loader and is working properly as an ide device in U-boot. However
+> I cannot get linux to recognize the ide device.
+>
+> I have tried several different linux config options and have tried
+> passing kernel command line options as advised in the
+> Documentation/ide.txt help file. However I have not been able to get the
+> kernel to recognize my ide device. 
+>
+> Does anybody know if I can use the generic linux ide drivers? Or will I
+> need to modify/write my own driver for this type of setup? 
+>   
+Here's what I use:
 
-I am using an MPC8540 based embedded system with a Compact Flash card in
-true IDE mode. The Compact Flash card is directly connected to the
-MPC8540 bus without the use of a pcmcia adapter. 
+http://marc.info/?l=linux-kernel&m=113877891224982&w=2
 
-The Compact Flash card is being initialized correctly using the U-boot
-boot-loader and is working properly as an ide device in U-boot. However
-I cannot get linux to recognize the ide device.
+Please note that if you're using a kernel newer than 2.6.18, the _insw() 
+and _outsw() calls no longer exist, so you'll need to replace them. 
+Here's how I modified Kumar's functions. Not necessarily the right way, 
+but it seems to work:
 
-I have tried several different linux config options and have tried
-passing kernel command line options as advised in the
-Documentation/ide.txt help file. However I have not been able to get the
-kernel to recognize my ide device. 
+/* xxx: use standard outsw, insw when byte lanes swapped */
+static void cfide_outsw(unsigned long port, void *addr, u32 count)
+{
+u16 *tmp = addr;
+while (count--)
+out_le16((u16 *)port, *tmp++);
+}
 
-Does anybody know if I can use the generic linux ide drivers? Or will I
-need to modify/write my own driver for this type of setup? 
+static void cfide_insw(unsigned long port, void *addr, u32 count)
+{
+u16 *tmp = addr;
+while (count--)
+*tmp++ = in_le16((u16 *)port);
+}
 
-Any help is greatly appreciated. 
 
-
-Regards, 
-
-Michael Willis
-Applied Research Labs - University of Texas
-willis  <at>  arlut.utexas.edu
+regards,
+Ben
