@@ -1,27 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3684FDDEFC
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 01:26:25 +1000 (EST)
-Message-ID: <470F90C4.1060108@freescale.com>
-Date: Fri, 12 Oct 2007 10:20:36 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id C6DD3DDE05
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 04:30:16 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1144189wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 11:30:15 -0700 (PDT)
+Message-ID: <fa686aa40710121130p7ec957bar471c2e8245bd162b@mail.gmail.com>
+Date: Fri, 12 Oct 2007 12:30:14 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Paul Mackerras" <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	"Sylvain Munaut" <tnt@246tnt.com>
+Subject: mpc52xx bestcomm patches.
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 4/4 v2] [POWERPC] Kilauea defconfig file
-References: <200710111408.34207.sr@denx.de>
-	<1192107771.5534.120.camel@localhost.localdomain>
-	<200710111531.13022.sr@denx.de>
-	<20071011201232.GD4247@loki.buserror.net>
-	<1192137219.3061.2.camel@localhost.localdomain>
-	<20071012032344.GG21056@localhost.localdomain>
-In-Reply-To: <20071012032344.GG21056@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,10 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> This is, of course, why CONFIG_DEVICE_TREE makes no real sense and
-> never has: it's a per-image, not a per-configuration variable.
+Paulus, how do you feel about merging these changes?
 
-Enh.  It's useful.  When we have an image config file, let me know. :-)
+This is Sylvain's series of bestcomm patches.
 
--Scott
+http://patchwork.ozlabs.org/linuxppc/patch?id=13488
+http://patchwork.ozlabs.org/linuxppc/patch?id=13489
+http://patchwork.ozlabs.org/linuxppc/patch?id=13490
+http://patchwork.ozlabs.org/linuxppc/patch?id=13491
+http://patchwork.ozlabs.org/linuxppc/patch?id=13492
+http://patchwork.ozlabs.org/linuxppc/patch?id=13493
+http://patchwork.ozlabs.org/linuxppc/patch?id=13494
+
+There are still a few minor issues to be resolved, but Sylvain is
+suffering from a severe lack of time and this series has been stalled
+for a long time because of it.  Domen and others have been working on
+drivers which use bestcomm, but they can neither get their drivers
+included nor address the issues in this series because of it.
+
+Personally, I think it will be better to just merge it now and allow
+others to address the remaining comments.  It's not like this is a
+change to an old device that could be risky.
+
+/me thinks about somebody saying at some time "The perfect is the
+enemy of the good"  :-)
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
