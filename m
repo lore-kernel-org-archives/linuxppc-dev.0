@@ -1,33 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 71BBADDE42
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 21:58:03 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9CBvxEO028623
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:57:59 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9CBvxfU458288
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 05:57:59 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9CBvxgU018504
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 05:57:59 -0600
-Subject: Re: [PATCH] [POWERPC] Use PAGE_OFFSET to tell if an address is
-	user/kernel in SW TLB handlers
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20071012033032.GH21056@localhost.localdomain>
-References: <Pine.LNX.4.64.0710111341140.27045@blarg.am.freescale.net>
-	<20071012033032.GH21056@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 12 Oct 2007 06:56:24 -0500
-Message-Id: <1192190184.3061.27.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EC96BDDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 23:04:19 +1000 (EST)
+Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l9CD36xO014699
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 17:03:06 +0400
+Received: (from vaxon@localhost)
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l9CD3672014696
+	for linuxppc-dev@ozlabs.org; Fri, 12 Oct 2007 17:03:06 +0400
+Date: Fri, 12 Oct 2007 17:03:05 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC: Add NEW EMAC driver support to 440EPx Sequoia board.
+Message-ID: <20071012130305.GA14682@ru.mvista.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,27 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-10-12 at 13:30 +1000, David Gibson wrote:
-> On Thu, Oct 11, 2007 at 01:42:30PM -0500, Kumar Gala wrote:
-> > Move to using PAGE_OFFSET instead of TASK_SIZE or KERNELBASE value on
-> > 6xx/40x/44x/fsl-booke to determine if the faulting address is a kernel or
-> > user space address.  This mimics how the macro is_kernel_addr()
-> > works.
-> 
-> Actually it's ambiguous whether TASK_SIZE or PAGE_OFFSET is correct in
-> most of these cases (KERNELBASE is certainly wrong, though).
-> 
-> TASK_SIZE is the top of the userspace mapped area, PAGE_OFFSET is the
-> bottom of the linear mapping.  So, strictly speaking there are 3 paths
-> for the miss handlers: < TASK_SIZE => user mapping, >= PAGE_OFFSET =>
-> kernel mapping, between the two => immediate fault.
-> 
-> We get away with a two way comparison on 32-bit because, a) they have
-> the same value and b) none of the pagetables, user or kernel, should
-> have any entries in the in between region so we'll end up in
-> do_page_fault in the end, anyway.
+This patch enables NEW EMAC support for PowerPC 440EPx Sequoia board
+and adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
+These PHY chips are used on PowerPC440EPx boards.
+The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
 
-Kumar's other patch removes the gap.  He changed the default
-CONFIG_TASK_SIZE to 0xc0000000.
+Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-josh
+---
+ arch/powerpc/platforms/44x/Kconfig |    7 ++----
+ drivers/net/ibm_newemac/phy.c      |   39 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+), 4 deletions(-)
+
+--- linux.orig/arch/powerpc/platforms/44x/Kconfig	2007-07-30 15:05:50.000000000 +0400
++++ linux/arch/powerpc/platforms/44x/Kconfig	2007-07-30 17:59:05.000000000 +0400
+@@ -48,10 +48,9 @@
+ config 440EPX
+ 	bool
+ 	select PPC_FPU
+-# Disabled until the new EMAC Driver is merged.
+-#	select IBM_NEW_EMAC_EMAC4
+-#	select IBM_NEW_EMAC_RGMII
+-#	select IBM_NEW_EMAC_ZMII
++	select IBM_NEW_EMAC_EMAC4
++	select IBM_NEW_EMAC_RGMII
++	select IBM_NEW_EMAC_ZMII
+ 
+ config 440GP
+ 	bool
+--- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
++++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
+@@ -306,8 +306,47 @@
+ 	.ops		= &cis8201_phy_ops
+ };
+ 
++static struct mii_phy_def bcm5248_phy_def = {
++
++	.phy_id		= 0x0143bc00,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "BCM5248 10/100 SMII Ethernet",
++	.ops		= &generic_phy_ops
++};
++
++static int m88e1111_init(struct mii_phy *phy)
++{
++	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
++	phy_write(phy, 0x14, 0x0ce3);
++	phy_write(phy, 0x18, 0x4101);
++	phy_write(phy, 0x09, 0x0e00);
++	phy_write(phy, 0x04, 0x01e1);
++	phy_write(phy, 0x00, 0x9140);
++	phy_write(phy, 0x00, 0x1140);
++
++	return  0;
++}
++
++static struct mii_phy_ops m88e1111_phy_ops = {
++	.init		= m88e1111_init,
++	.setup_aneg	= genmii_setup_aneg,
++	.setup_forced	= genmii_setup_forced,
++	.poll_link	= genmii_poll_link,
++	.read_link	= genmii_read_link
++};
++
++static struct mii_phy_def m88e1111_phy_def = {
++
++	.phy_id		= 0x01410CC0,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "Marvell 88E1111 Ethernet",
++	.ops		= &m88e1111_phy_ops,
++};
++
+ static struct mii_phy_def *mii_phy_table[] = {
+ 	&cis8201_phy_def,
++	&bcm5248_phy_def,
++	&m88e1111_phy_def,
+ 	&genmii_phy_def,
+ 	NULL
+ };
