@@ -1,12 +1,11 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20071012145130.182399000@pademelon.sonytel.be>
+Message-Id: <20071012145130.006392000@pademelon.sonytel.be>
 References: <20071012145052.640177000@pademelon.sonytel.be>
-Date: Fri, 12 Oct 2007 16:50:58 +0200
+Date: Fri, 12 Oct 2007 16:50:57 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 06/13] ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl()
-	static
+Subject: [patch 05/13] ps3fb: Clean up includes
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
@@ -22,36 +21,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3fb: Make ps3fb_wait_for_vsync() and ps3fb_flip_ctl() static, as they're no
-(longer) used outside ps3fb.
-
+ps3fb: Clean up includes
+  
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/ps3fb.c |   10 +---------
+ 1 files changed, 1 insertion(+), 9 deletions(-)
 
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -652,7 +652,7 @@ static int ps3fb_get_vblank(struct fb_vb
- 	return 0;
- }
- 
--int ps3fb_wait_for_vsync(u32 crtc)
-+static int ps3fb_wait_for_vsync(u32 crtc)
- {
- 	int ret;
- 	u64 count;
-@@ -667,9 +667,7 @@ int ps3fb_wait_for_vsync(u32 crtc)
- 	return 0;
- }
- 
--EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+@@ -22,22 +22,14 @@
+ #include <linux/errno.h>
+ #include <linux/string.h>
+ #include <linux/mm.h>
+-#include <linux/tty.h>
+-#include <linux/slab.h>
+-#include <linux/vmalloc.h>
+-#include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/console.h>
+ #include <linux/ioctl.h>
+-#include <linux/notifier.h>
+-#include <linux/reboot.h>
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
 -
--void ps3fb_flip_ctl(int on, void *data)
-+static void ps3fb_flip_ctl(int on, void *data)
- {
- 	struct ps3fb_priv *priv = data;
- 	if (on)
+-#include <asm/uaccess.h>
+ #include <linux/fb.h>
+ #include <linux/init.h>
+-#include <asm/time.h>
++#include <linux/uaccess.h>
+ 
+ #include <asm/abs_addr.h>
+ #include <asm/lv1call.h>
 
 -- 
 With kind regards,
