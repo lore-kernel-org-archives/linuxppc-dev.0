@@ -1,21 +1,17 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3CD83DE047
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 15:38:28 +1000 (EST)
-Date: Thu, 11 Oct 2007 22:38:18 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git master branch
-In-Reply-To: <18190.63495.790381.701352@cargo.ozlabs.ibm.com>
-Message-ID: <alpine.LFD.0.999.0710112233590.6887@woody.linux-foundation.org>
-References: <18190.63495.790381.701352@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6977CDE032
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 16:00:27 +1000 (EST)
+Date: Fri, 12 Oct 2007 07:00:19 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] missed bio_endio() in axonram
+Message-ID: <20071012060019.GY8181@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: axboe@kernel.dk, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +22,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-
-On Fri, 12 Oct 2007, Paul Mackerras wrote:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git master
-
-I got a merge conflict on Documentation/powerpc/booting-without-of.txt, 
-which I tried to fix up. I may or may not have succeeded. 
-
-The issue was the interaction of David Gibson's device-tree-aware EMAC 
-driver which got merged with the net driver update through the networking 
-tree, and all the other new cases added in the PPC tree.
-
-I think I merged it ok, but you guys should check and send me any fixes.
-
-		Linus
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
+index ab037a3..46fd9c6 100644
+--- a/arch/powerpc/sysdev/axonram.c
++++ b/arch/powerpc/sysdev/axonram.c
+@@ -117,7 +117,7 @@ axon_ram_make_request(struct request_queue *queue, struct bio *bio)
+ 	transfered = 0;
+ 	bio_for_each_segment(vec, bio, idx) {
+ 		if (unlikely(phys_mem + vec->bv_len > phys_end)) {
+-			bio_io_error(bio, bio->bi_size);
++			bio_io_error(bio);
+ 			rc = -ERANGE;
+ 			break;
+ 		}
+@@ -131,7 +131,7 @@ axon_ram_make_request(struct request_queue *queue, struct bio *bio)
+ 		phys_mem += vec->bv_len;
+ 		transfered += vec->bv_len;
+ 	}
+-	bio_endio(bio, transfered, 0);
++	bio_endio(bio, 0);
+ 
+ 	return rc;
+ }
