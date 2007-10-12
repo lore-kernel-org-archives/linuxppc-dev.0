@@ -4,22 +4,22 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7870DDDFE6
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 23:18:50 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 88625DE009
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 23:18:51 +1000 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l9CDIfhi003744
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 06:18:41 -0700 (MST)
+	l9CDIhfs003761
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 06:18:44 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9CDIKNL006039
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 08:18:38 -0500 (CDT)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9CDIKNN006039
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 08:18:42 -0500 (CDT)
 From: Li Yang <leoli@freescale.com>
 To: galak@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 8/9] add MPC837x MDS default kernel configuration
-Date: Fri, 12 Oct 2007 21:28:47 +0800
-Message-Id: <1192195728-24189-9-git-send-email-leoli@freescale.com>
-In-Reply-To: <1192195728-24189-8-git-send-email-leoli@freescale.com>
+Subject: [PATCH v3 9/9] add MPC837x MDS board default device tree
+Date: Fri, 12 Oct 2007 21:28:48 +0800
+Message-Id: <1192195728-24189-10-git-send-email-leoli@freescale.com>
+In-Reply-To: <1192195728-24189-9-git-send-email-leoli@freescale.com>
 References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
 	<1192195728-24189-2-git-send-email-leoli@freescale.com>
 	<1192195728-24189-3-git-send-email-leoli@freescale.com>
@@ -28,6 +28,7 @@ References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
 	<1192195728-24189-6-git-send-email-leoli@freescale.com>
 	<1192195728-24189-7-git-send-email-leoli@freescale.com>
 	<1192195728-24189-8-git-send-email-leoli@freescale.com>
+	<1192195728-24189-9-git-send-email-leoli@freescale.com>
 Cc: Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -40,893 +41,895 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/configs/mpc837x_mds_defconfig |  878 ++++++++++++++++++++++++++++
- 1 files changed, 878 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/configs/mpc837x_mds_defconfig
+ arch/powerpc/boot/dts/mpc8377_mds.dts |  288 ++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8378_mds.dts |  268 ++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/mpc8379_mds.dts |  308 +++++++++++++++++++++++++++++++++
+ 3 files changed, 864 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+ create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+ create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
 
-diff --git a/arch/powerpc/configs/mpc837x_mds_defconfig b/arch/powerpc/configs/mpc837x_mds_defconfig
+diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
 new file mode 100644
-index 0000000..4f49aee
+index 0000000..8530de6
 --- /dev/null
-+++ b/arch/powerpc/configs/mpc837x_mds_defconfig
-@@ -0,0 +1,878 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.23
-+# Wed Oct 10 16:31:39 2007
-+#
-+# CONFIG_PPC64 is not set
++++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+@@ -0,0 +1,288 @@
++/*
++ * MPC8377E MDS Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+#
-+# Processor support
-+#
-+CONFIG_6xx=y
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+# CONFIG_44x is not set
-+# CONFIG_E200 is not set
-+CONFIG_83xx=y
-+CONFIG_PPC_FPU=y
-+CONFIG_PPC_STD_MMU=y
-+CONFIG_PPC_STD_MMU_32=y
-+# CONFIG_PPC_MM_SLICES is not set
-+# CONFIG_SMP is not set
-+CONFIG_PPC32=y
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+# CONFIG_ARCH_NO_VIRT_TO_BUS is not set
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+CONFIG_OF=y
-+CONFIG_PPC_UDBG_16550=y
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+CONFIG_DEFAULT_UIMAGE=y
-+# CONFIG_PPC_DCR_NATIVE is not set
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
++/ {
++	model = "fsl,mpc8377emds";
++	compatible = "fsl,mpc8377emds","fsl,mpc837xmds";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#
-+# General setup
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+CONFIG_SYSVIPC_SYSCTL=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_USER_NS is not set
-+# CONFIG_AUDIT is not set
-+# CONFIG_IKCONFIG is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_ANON_INODES=y
-+# CONFIG_EPOLL is not set
-+CONFIG_SIGNALFD=y
-+CONFIG_EVENTFD=y
-+CONFIG_SHMEM=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_SLAB=y
-+# CONFIG_SLUB is not set
-+# CONFIG_SLOB is not set
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+# CONFIG_KMOD is not set
-+CONFIG_BLOCK=y
-+# CONFIG_LBD is not set
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+# CONFIG_BLK_DEV_BSG is not set
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
++		PowerPC,837x@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++			32-bit;
++		};
++	};
 +
-+#
-+# Platform support
-+#
-+# CONFIG_PPC_MULTIPLATFORM is not set
-+# CONFIG_EMBEDDED6xx is not set
-+# CONFIG_PPC_82xx is not set
-+CONFIG_PPC_83xx=y
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_PPC_MPC52xx is not set
-+# CONFIG_PPC_MPC5200 is not set
-+# CONFIG_PPC_CELL is not set
-+# CONFIG_PPC_CELL_NATIVE is not set
-+# CONFIG_PQ2ADS is not set
-+# CONFIG_MPC8313_RDB is not set
-+# CONFIG_MPC832x_MDS is not set
-+# CONFIG_MPC832x_RDB is not set
-+# CONFIG_MPC834x_MDS is not set
-+# CONFIG_MPC834x_ITX is not set
-+# CONFIG_MPC836x_MDS is not set
-+CONFIG_MPC837x_MDS=y
-+CONFIG_PPC_MPC837x=y
-+# CONFIG_MPIC is not set
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+# CONFIG_PPC_RTAS is not set
-+# CONFIG_MMIO_NVRAM is not set
-+# CONFIG_PPC_MPC106 is not set
-+# CONFIG_PPC_970_NAP is not set
-+# CONFIG_PPC_INDIRECT_IO is not set
-+# CONFIG_GENERIC_IOMAP is not set
-+# CONFIG_CPU_FREQ is not set
-+# CONFIG_CPM2 is not set
-+# CONFIG_FSL_ULI1575 is not set
-+CONFIG_FSL_SERDES=y
++	memory {
++		device_type = "memory";
++		reg = <00000000 20000000>;	// 512MB at 0
++	};
 +
-+#
-+# Kernel options
-+#
-+# CONFIG_HIGHMEM is not set
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_MISC is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+# CONFIG_RESOURCES_64BIT is not set
-+CONFIG_ZONE_DMA_FLAG=1
-+CONFIG_BOUNCE=y
-+CONFIG_VIRT_TO_BUS=y
-+CONFIG_PROC_DEVICETREE=y
-+# CONFIG_CMDLINE_BOOL is not set
-+# CONFIG_PM is not set
-+CONFIG_SUSPEND_UP_POSSIBLE=y
-+CONFIG_HIBERNATION_UP_POSSIBLE=y
-+CONFIG_SECCOMP=y
-+CONFIG_WANT_DEVICE_TREE=y
-+CONFIG_DEVICE_TREE=""
-+CONFIG_ISA_DMA_API=y
++	soc837x@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00000200>;
++		bus-frequency = <0>;
 +
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+CONFIG_GENERIC_ISA_DMA=y
-+CONFIG_PPC_INDIRECT_PCI=y
-+CONFIG_FSL_SOC=y
-+# CONFIG_PCI is not set
-+# CONFIG_PCI_DOMAINS is not set
-+# CONFIG_PCI_SYSCALL is not set
-+# CONFIG_ARCH_SUPPORTS_MSI is not set
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <200 100>;
++		};
 +
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <e 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
 +
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <f 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
 +
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_BOOT_LOAD=0x00800000
++		spi@7000 {
++			device_type = "spi";
++			compatible = "mpc83xx_spi";
++			reg = <7000 1000>;
++			interrupts = <10 8>;
++			interrupt-parent = < &ipic >;
++			mode = <0>;
++		};
 +
-+#
-+# Networking
-+#
-+CONFIG_NET=y
++		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
++		usb@23000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <23000 1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = < &ipic >;
++			interrupts = <26 8>;
++			phy_type = "utmi_wide";
++		};
 +
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+CONFIG_XFRM_USER=m
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+CONFIG_IP_MULTICAST=y
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_BOOTP=y
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_IP_MROUTE is not set
-+# CONFIG_ARPD is not set
-+CONFIG_SYN_COOKIES=y
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+# CONFIG_NETFILTER is not set
-+# CONFIG_IP_DCCP is not set
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
++		mdio@24520 {
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			phy2: ethernet-phy@2 {
++				interrupt-parent = < &ipic >;
++				interrupts = <11 8>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			phy3: ethernet-phy@3 {
++				interrupt-parent = < &ipic >;
++				interrupts = <12 8>;
++				reg = <3>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+#
-+# QoS and/or fair queueing
-+#
-+# CONFIG_NET_SCHED is not set
++		ethernet@24000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <20 8 21 8 22 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy2 >;
++		};
 +
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_AF_RXRPC is not set
++		ethernet@25000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <23 8 24 8 25 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy3 >;
++		};
 +
-+#
-+# Wireless
-+#
-+# CONFIG_CFG80211 is not set
-+# CONFIG_WIRELESS_EXT is not set
-+# CONFIG_MAC80211 is not set
-+# CONFIG_IEEE80211 is not set
-+# CONFIG_RFKILL is not set
-+# CONFIG_NET_9P is not set
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# Device Drivers
-+#
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <a 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# Generic Driver Options
-+#
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+# CONFIG_CONNECTOR is not set
-+# CONFIG_MTD is not set
-+CONFIG_OF_DEVICE=y
-+# CONFIG_PARPORT is not set
-+CONFIG_BLK_DEV=y
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+CONFIG_BLK_DEV_LOOP=y
-+# CONFIG_BLK_DEV_CRYPTOLOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=32768
-+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_EEPROM_93CX6 is not set
-+# CONFIG_IDE is not set
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC3";
++			compatible = "talitos";
++			reg = <30000 10000>;
++			interrupts = <b 8>;
++			interrupt-parent = < &ipic >;
++			/* Rev. 3.0 geometry */
++			num-channels = <4>;
++			channel-fifo-len = <18>;
++			exec-units-mask = <000009fe>;
++			descriptor-types-mask = <03ab0ebf>;
++		};
 +
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+CONFIG_SCSI=y
-+CONFIG_SCSI_DMA=y
-+# CONFIG_SCSI_TGT is not set
-+# CONFIG_SCSI_NETLINK is not set
-+CONFIG_SCSI_PROC_FS=y
++		sdhc@2e000 {
++			model = "eSDHC";
++			compatible = "fsl,esdhc";
++			reg = <2e000 1000>;
++			interrupts = <2a 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# SCSI support type (disk, tape, CD-ROM)
-+#
-+CONFIG_BLK_DEV_SD=y
-+# CONFIG_CHR_DEV_ST is not set
-+# CONFIG_CHR_DEV_OSST is not set
-+# CONFIG_BLK_DEV_SR is not set
-+CONFIG_CHR_DEV_SG=y
-+# CONFIG_CHR_DEV_SCH is not set
++		sata@18000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <18000 1000>;
++			interrupts = <2c 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes1 >;
++		};
 +
-+#
-+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-+#
-+# CONFIG_SCSI_MULTI_LUN is not set
-+# CONFIG_SCSI_CONSTANTS is not set
-+# CONFIG_SCSI_LOGGING is not set
-+# CONFIG_SCSI_SCAN_ASYNC is not set
-+CONFIG_SCSI_WAIT_SCAN=m
++		sata@19000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <19000 1000>;
++			interrupts = <2d 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes1 >;
++		};
 +
-+#
-+# SCSI Transports
-+#
-+# CONFIG_SCSI_SPI_ATTRS is not set
-+# CONFIG_SCSI_FC_ATTRS is not set
-+# CONFIG_SCSI_ISCSI_ATTRS is not set
-+# CONFIG_SCSI_SAS_LIBSAS is not set
-+CONFIG_SCSI_LOWLEVEL=y
-+# CONFIG_ISCSI_TCP is not set
-+# CONFIG_SCSI_DEBUG is not set
-+CONFIG_ATA=y
-+# CONFIG_ATA_NONSTANDARD is not set
-+CONFIG_SATA_FSL=y
-+# CONFIG_PATA_PLATFORM is not set
-+# CONFIG_MD is not set
-+# CONFIG_MACINTOSH_DRIVERS is not set
-+CONFIG_NETDEVICES=y
-+# CONFIG_NETDEVICES_MULTIQUEUE is not set
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_MACVLAN is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+CONFIG_PHYLIB=y
++		serdes1:serdes@e3000 {
++			compatible = "fsl,serdes";
++			reg = <e3000 100>;
++			vdd-1v;
++			protocol = "sata";
++			clock = <d#100>;
++		};
 +
-+#
-+# MII PHY device drivers
-+#
-+CONFIG_MARVELL_PHY=y
-+# CONFIG_DAVICOM_PHY is not set
-+# CONFIG_QSEMI_PHY is not set
-+# CONFIG_LXT_PHY is not set
-+# CONFIG_CICADA_PHY is not set
-+# CONFIG_VITESSE_PHY is not set
-+# CONFIG_SMSC_PHY is not set
-+# CONFIG_BROADCOM_PHY is not set
-+# CONFIG_ICPLUS_PHY is not set
-+# CONFIG_FIXED_PHY is not set
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=y
-+CONFIG_NETDEV_1000=y
-+CONFIG_GIANFAR=y
-+# CONFIG_GFAR_NAPI is not set
-+CONFIG_NETDEV_10000=y
++		serdes2:serdes@e3100 {
++			compatible = "fsl,serdes";
++			reg = <e3100 100>;
++			vdd-1v;
++			protocol = "pcie";
++			clock = <d#100>;
++		};
 +
-+#
-+# Wireless LAN
-+#
-+# CONFIG_WLAN_PRE80211 is not set
-+# CONFIG_WLAN_80211 is not set
-+# CONFIG_WAN is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_SHAPER is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+# CONFIG_ISDN is not set
-+# CONFIG_PHONE is not set
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: pic@700 {
++			compatible = "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <700 100>;
++		};
++	};
 +
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+# CONFIG_INPUT_POLLDEV is not set
++	pci@e0008500 {
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
 +
-+#
-+# Userland interfaces
-+#
-+# CONFIG_INPUT_MOUSEDEV is not set
-+# CONFIG_INPUT_JOYDEV is not set
-+# CONFIG_INPUT_TSDEV is not set
-+# CONFIG_INPUT_EVDEV is not set
-+# CONFIG_INPUT_EVBUG is not set
++				/* IDSEL 0x11 */
++				 8800 0 0 1 &ipic 14 8
++				 8800 0 0 2 &ipic 15 8
++				 8800 0 0 3 &ipic 16 8
++				 8800 0 0 4 &ipic 17 8
 +
-+#
-+# Input Device Drivers
-+#
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+# CONFIG_INPUT_JOYSTICK is not set
-+# CONFIG_INPUT_TABLET is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+# CONFIG_INPUT_MISC is not set
++				/* IDSEL 0x12 */
++				 9000 0 0 1 &ipic 16 8
++				 9000 0 0 2 &ipic 17 8
++				 9000 0 0 3 &ipic 14 8
++				 9000 0 0 4 &ipic 15 8
 +
-+#
-+# Hardware I/O ports
-+#
-+# CONFIG_SERIO is not set
-+# CONFIG_GAMEPORT is not set
++				/* IDSEL 0x13 */
++				 9800 0 0 1 &ipic 17 8
++				 9800 0 0 2 &ipic 14 8
++				 9800 0 0 3 &ipic 15 8
++				 9800 0 0 4 &ipic 16 8
 +
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
++				/* IDSEL 0x15 */
++				 a800 0 0 1 &ipic 14 8
++				 a800 0 0 2 &ipic 15 8
++				 a800 0 0 3 &ipic 16 8
++				 a800 0 0 4 &ipic 17 8
 +
-+#
-+# Serial drivers
-+#
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-+# CONFIG_SERIAL_8250_EXTENDED is not set
++				/* IDSEL 0x16 */
++				 b000 0 0 1 &ipic 17 8
++				 b000 0 0 2 &ipic 14 8
++				 b000 0 0 3 &ipic 15 8
++				 b000 0 0 4 &ipic 16 8
 +
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_OF_PLATFORM is not set
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+# CONFIG_IPMI_HANDLER is not set
-+CONFIG_WATCHDOG=y
-+# CONFIG_WATCHDOG_NOWAYOUT is not set
++				/* IDSEL 0x17 */
++				 b800 0 0 1 &ipic 16 8
++				 b800 0 0 2 &ipic 17 8
++				 b800 0 0 3 &ipic 14 8
++				 b800 0 0 4 &ipic 15 8
 +
-+#
-+# Watchdog Device Drivers
-+#
-+# CONFIG_SOFT_WATCHDOG is not set
-+CONFIG_83xx_WDT=y
-+# CONFIG_HW_RANDOM is not set
-+# CONFIG_NVRAM is not set
-+CONFIG_GEN_RTC=y
-+# CONFIG_GEN_RTC_X is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_RAW_DRIVER is not set
-+# CONFIG_TCG_TPM is not set
-+CONFIG_I2C=y
-+CONFIG_I2C_BOARDINFO=y
-+CONFIG_I2C_CHARDEV=y
++				/* IDSEL 0x18 */
++				 c000 0 0 1 &ipic 15 8
++				 c000 0 0 2 &ipic 16 8
++				 c000 0 0 3 &ipic 17 8
++				 c000 0 0 4 &ipic 14 8>;
++		interrupt-parent = < &ipic >;
++		interrupts = <42 8>;
++		bus-range = <0 0>;
++		ranges = <02000000 0 90000000 90000000 0 10000000
++		          42000000 0 80000000 80000000 0 10000000
++		          01000000 0 00000000 e2000000 0 00100000>;
++		clock-frequency = <0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e0008500 100>;
++		compatible = "fsl,mpc83xx-pci", "83xx";
++		device_type = "pci";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
+new file mode 100644
+index 0000000..009300b
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
+@@ -0,0 +1,268 @@
++/*
++ * MPC8378E MDS Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+#
-+# I2C Algorithms
-+#
-+# CONFIG_I2C_ALGOBIT is not set
-+# CONFIG_I2C_ALGOPCF is not set
-+# CONFIG_I2C_ALGOPCA is not set
++/ {
++	model = "fsl,mpc8378emds";
++	compatible = "fsl,mpc8378emds","fsl,mpc837xmds";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+#
-+# I2C Hardware Bus support
-+#
-+CONFIG_I2C_MPC=y
-+# CONFIG_I2C_OCORES is not set
-+# CONFIG_I2C_PARPORT_LIGHT is not set
-+# CONFIG_I2C_SIMTEC is not set
-+# CONFIG_I2C_TAOS_EVM is not set
-+# CONFIG_I2C_STUB is not set
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+#
-+# Miscellaneous I2C Chip support
-+#
-+# CONFIG_SENSORS_DS1337 is not set
-+# CONFIG_SENSORS_DS1374 is not set
-+# CONFIG_DS1682 is not set
-+# CONFIG_SENSORS_EEPROM is not set
-+# CONFIG_SENSORS_PCF8574 is not set
-+# CONFIG_SENSORS_PCA9539 is not set
-+# CONFIG_SENSORS_PCF8591 is not set
-+# CONFIG_SENSORS_M41T00 is not set
-+# CONFIG_SENSORS_MAX6875 is not set
-+# CONFIG_SENSORS_TSL2550 is not set
-+# CONFIG_I2C_DEBUG_CORE is not set
-+# CONFIG_I2C_DEBUG_ALGO is not set
-+# CONFIG_I2C_DEBUG_BUS is not set
-+# CONFIG_I2C_DEBUG_CHIP is not set
++		PowerPC,837x@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++			32-bit;
++		};
++	};
 +
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+# CONFIG_W1 is not set
-+# CONFIG_POWER_SUPPLY is not set
-+CONFIG_HWMON=y
-+# CONFIG_HWMON_VID is not set
-+# CONFIG_SENSORS_ABITUGURU is not set
-+# CONFIG_SENSORS_ABITUGURU3 is not set
-+# CONFIG_SENSORS_AD7418 is not set
-+# CONFIG_SENSORS_ADM1021 is not set
-+# CONFIG_SENSORS_ADM1025 is not set
-+# CONFIG_SENSORS_ADM1026 is not set
-+# CONFIG_SENSORS_ADM1029 is not set
-+# CONFIG_SENSORS_ADM1031 is not set
-+# CONFIG_SENSORS_ADM9240 is not set
-+# CONFIG_SENSORS_ASB100 is not set
-+# CONFIG_SENSORS_ATXP1 is not set
-+# CONFIG_SENSORS_DS1621 is not set
-+# CONFIG_SENSORS_F71805F is not set
-+# CONFIG_SENSORS_FSCHER is not set
-+# CONFIG_SENSORS_FSCPOS is not set
-+# CONFIG_SENSORS_GL518SM is not set
-+# CONFIG_SENSORS_GL520SM is not set
-+# CONFIG_SENSORS_IT87 is not set
-+# CONFIG_SENSORS_LM63 is not set
-+# CONFIG_SENSORS_LM75 is not set
-+# CONFIG_SENSORS_LM77 is not set
-+# CONFIG_SENSORS_LM78 is not set
-+# CONFIG_SENSORS_LM80 is not set
-+# CONFIG_SENSORS_LM83 is not set
-+# CONFIG_SENSORS_LM85 is not set
-+# CONFIG_SENSORS_LM87 is not set
-+# CONFIG_SENSORS_LM90 is not set
-+# CONFIG_SENSORS_LM92 is not set
-+# CONFIG_SENSORS_LM93 is not set
-+# CONFIG_SENSORS_MAX1619 is not set
-+# CONFIG_SENSORS_MAX6650 is not set
-+# CONFIG_SENSORS_PC87360 is not set
-+# CONFIG_SENSORS_PC87427 is not set
-+# CONFIG_SENSORS_DME1737 is not set
-+# CONFIG_SENSORS_SMSC47M1 is not set
-+# CONFIG_SENSORS_SMSC47M192 is not set
-+# CONFIG_SENSORS_SMSC47B397 is not set
-+# CONFIG_SENSORS_THMC50 is not set
-+# CONFIG_SENSORS_VT1211 is not set
-+# CONFIG_SENSORS_W83781D is not set
-+# CONFIG_SENSORS_W83791D is not set
-+# CONFIG_SENSORS_W83792D is not set
-+# CONFIG_SENSORS_W83793 is not set
-+# CONFIG_SENSORS_W83L785TS is not set
-+# CONFIG_SENSORS_W83627HF is not set
-+# CONFIG_SENSORS_W83627EHF is not set
-+# CONFIG_HWMON_DEBUG_CHIP is not set
++	memory {
++		device_type = "memory";
++		reg = <00000000 20000000>;	// 512MB at 0
++	};
 +
-+#
-+# Multifunction device drivers
-+#
-+# CONFIG_MFD_SM501 is not set
++	soc837x@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00000200>;
++		bus-frequency = <0>;
 +
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+# CONFIG_DVB_CORE is not set
-+CONFIG_DAB=y
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <200 100>;
++		};
 +
-+#
-+# Graphics support
-+#
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <e 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
 +
-+#
-+# Display device support
-+#
-+# CONFIG_DISPLAY_SUPPORT is not set
-+# CONFIG_VGASTATE is not set
-+CONFIG_VIDEO_OUTPUT_CONTROL=m
-+# CONFIG_FB is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <f 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
 +
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+CONFIG_HID_SUPPORT=y
-+CONFIG_HID=y
-+# CONFIG_HID_DEBUG is not set
-+CONFIG_USB_SUPPORT=y
-+CONFIG_USB_ARCH_HAS_HCD=y
-+# CONFIG_USB_ARCH_HAS_OHCI is not set
-+CONFIG_USB_ARCH_HAS_EHCI=y
-+# CONFIG_USB is not set
++		spi@7000 {
++			device_type = "spi";
++			compatible = "mpc83xx_spi";
++			reg = <7000 1000>;
++			interrupts = <10 8>;
++			interrupt-parent = < &ipic >;
++			mode = <0>;
++		};
 +
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
++		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
++		usb@23000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <23000 1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = < &ipic >;
++			interrupts = <26 8>;
++			phy_type = "utmi_wide";
++		};
 +
-+#
-+# USB Gadget Support
-+#
-+# CONFIG_USB_GADGET is not set
-+# CONFIG_MMC is not set
-+# CONFIG_NEW_LEDS is not set
-+# CONFIG_EDAC is not set
-+# CONFIG_RTC_CLASS is not set
++		mdio@24520 {
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			phy2: ethernet-phy@2 {
++				interrupt-parent = < &ipic >;
++				interrupts = <11 8>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			phy3: ethernet-phy@3 {
++				interrupt-parent = < &ipic >;
++				interrupts = <12 8>;
++				reg = <3>;
++				device_type = "ethernet-phy";
++			};
++		};
 +
-+#
-+# DMA Engine support
-+#
-+# CONFIG_DMA_ENGINE is not set
++		ethernet@24000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <20 8 21 8 22 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy2 >;
++		};
 +
-+#
-+# DMA Clients
-+#
++		ethernet@25000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <23 8 24 8 25 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy3 >;
++		};
 +
-+#
-+# DMA Devices
-+#
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# Userspace I/O
-+#
-+# CONFIG_UIO is not set
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <a 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+# CONFIG_EXT3_FS_POSIX_ACL is not set
-+# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT4DEV_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+CONFIG_FS_MBCACHE=y
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC3";
++			compatible = "talitos";
++			reg = <30000 10000>;
++			interrupts = <b 8>;
++			interrupt-parent = < &ipic >;
++			/* Rev. 3.0 geometry */
++			num-channels = <4>;
++			channel-fifo-len = <18>;
++			exec-units-mask = <000009fe>;
++			descriptor-types-mask = <03ab0ebf>;
++		};
 +
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
++		sdhc@2e000 {
++			model = "eSDHC";
++			compatible = "fsl,esdhc";
++			reg = <2e000 1000>;
++			interrupts = <2a 8>;
++			interrupt-parent = < &ipic >;
++		};
 +
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
++		serdes1:serdes@e3000 {
++			compatible = "fsl,serdes";
++			reg = <e3000 100>;
++			vdd-1v;
++			protocol = "sgmii";
++			clock = <d#100>;
++		};
 +
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_RAMFS=y
-+# CONFIG_CONFIGFS_FS is not set
++		serdes2:serdes@e3100 {
++			compatible = "fsl,serdes";
++			reg = <e3100 100>;
++			vdd-1v;
++			protocol = "pcie";
++			clock = <d#100>;
++		};
 +
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: pic@700 {
++			compatible = "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <700 100>;
++		};
++	};
 +
-+#
-+# Network File Systems
-+#
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+CONFIG_NFS_V4=y
-+# CONFIG_NFS_DIRECTIO is not set
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+CONFIG_SUNRPC_GSS=y
-+# CONFIG_SUNRPC_BIND34 is not set
-+CONFIG_RPCSEC_GSS_KRB5=y
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
++	pci@e0008500 {
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
 +
-+#
-+# Partition Types
-+#
-+CONFIG_PARTITION_ADVANCED=y
-+# CONFIG_ACORN_PARTITION is not set
-+# CONFIG_OSF_PARTITION is not set
-+# CONFIG_AMIGA_PARTITION is not set
-+# CONFIG_ATARI_PARTITION is not set
-+# CONFIG_MAC_PARTITION is not set
-+CONFIG_MSDOS_PARTITION=y
-+# CONFIG_BSD_DISKLABEL is not set
-+# CONFIG_MINIX_SUBPARTITION is not set
-+# CONFIG_SOLARIS_X86_PARTITION is not set
-+# CONFIG_UNIXWARE_DISKLABEL is not set
-+# CONFIG_LDM_PARTITION is not set
-+# CONFIG_SGI_PARTITION is not set
-+# CONFIG_ULTRIX_PARTITION is not set
-+# CONFIG_SUN_PARTITION is not set
-+# CONFIG_KARMA_PARTITION is not set
-+# CONFIG_EFI_PARTITION is not set
-+# CONFIG_SYSV68_PARTITION is not set
++				/* IDSEL 0x11 */
++				 8800 0 0 1 &ipic 14 8
++				 8800 0 0 2 &ipic 15 8
++				 8800 0 0 3 &ipic 16 8
++				 8800 0 0 4 &ipic 17 8
 +
-+#
-+# Native Language Support
-+#
-+# CONFIG_NLS is not set
++				/* IDSEL 0x12 */
++				 9000 0 0 1 &ipic 16 8
++				 9000 0 0 2 &ipic 17 8
++				 9000 0 0 3 &ipic 14 8
++				 9000 0 0 4 &ipic 15 8
 +
-+#
-+# Distributed Lock Manager
-+#
-+# CONFIG_DLM is not set
-+# CONFIG_UCC_SLOW is not set
++				/* IDSEL 0x13 */
++				 9800 0 0 1 &ipic 17 8
++				 9800 0 0 2 &ipic 14 8
++				 9800 0 0 3 &ipic 15 8
++				 9800 0 0 4 &ipic 16 8
 +
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC32=y
-+# CONFIG_CRC7 is not set
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+CONFIG_HAS_DMA=y
++				/* IDSEL 0x15 */
++				 a800 0 0 1 &ipic 14 8
++				 a800 0 0 2 &ipic 15 8
++				 a800 0 0 3 &ipic 16 8
++				 a800 0 0 4 &ipic 17 8
 +
-+#
-+# Instrumentation Support
-+#
-+# CONFIG_PROFILING is not set
-+# CONFIG_KPROBES is not set
++				/* IDSEL 0x16 */
++				 b000 0 0 1 &ipic 17 8
++				 b000 0 0 2 &ipic 14 8
++				 b000 0 0 3 &ipic 15 8
++				 b000 0 0 4 &ipic 16 8
 +
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_ENABLE_MUST_CHECK=y
-+# CONFIG_MAGIC_SYSRQ is not set
-+# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_HEADERS_CHECK is not set
-+# CONFIG_DEBUG_KERNEL is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
++				/* IDSEL 0x17 */
++				 b800 0 0 1 &ipic 16 8
++				 b800 0 0 2 &ipic 17 8
++				 b800 0 0 3 &ipic 14 8
++				 b800 0 0 4 &ipic 15 8
 +
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=y
-+CONFIG_CRYPTO_MANAGER=y
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+CONFIG_CRYPTO_MD5=y
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+CONFIG_CRYPTO_ECB=m
-+CONFIG_CRYPTO_CBC=y
-+CONFIG_CRYPTO_PCBC=m
-+# CONFIG_CRYPTO_LRW is not set
-+# CONFIG_CRYPTO_CRYPTD is not set
-+CONFIG_CRYPTO_DES=y
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_TEST is not set
-+CONFIG_CRYPTO_HW=y
++				/* IDSEL 0x18 */
++				 c000 0 0 1 &ipic 15 8
++				 c000 0 0 2 &ipic 16 8
++				 c000 0 0 3 &ipic 17 8
++				 c000 0 0 4 &ipic 14 8>;
++		interrupt-parent = < &ipic >;
++		interrupts = <42 8>;
++		bus-range = <0 0>;
++		ranges = <02000000 0 90000000 90000000 0 10000000
++		          42000000 0 80000000 80000000 0 10000000
++		          01000000 0 00000000 e2000000 0 00100000>;
++		clock-frequency = <0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e0008500 100>;
++		compatible = "fsl,mpc83xx-pci", "83xx";
++		device_type = "pci";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+new file mode 100644
+index 0000000..0f6e9d4
+--- /dev/null
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -0,0 +1,308 @@
++/*
++ * MPC8379E MDS Device Tree Source
++ *
++ * Copyright 2007 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/ {
++	model = "fsl,mpc8379emds";
++	compatible = "fsl,mpc8379emds","fsl,mpc837xmds";
++	#address-cells = <1>;
++	#size-cells = <1>;
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,837x@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <8000>;		// L1, 32K
++			i-cache-size = <8000>;		// L1, 32K
++			timebase-frequency = <0>;
++			bus-frequency = <0>;
++			clock-frequency = <0>;
++			32-bit;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <00000000 20000000>;	// 512MB at 0
++	};
++
++	soc837x@e0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		device_type = "soc";
++		ranges = <0 e0000000 00100000>;
++		reg = <e0000000 00000200>;
++		bus-frequency = <0>;
++
++		wdt@200 {
++			device_type = "watchdog";
++			compatible = "mpc83xx_wdt";
++			reg = <200 100>;
++		};
++
++		i2c@3000 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3000 100>;
++			interrupts = <e 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
++
++		i2c@3100 {
++			device_type = "i2c";
++			compatible = "fsl-i2c";
++			reg = <3100 100>;
++			interrupts = <f 8>;
++			interrupt-parent = < &ipic >;
++			dfsrr;
++		};
++
++		spi@7000 {
++			device_type = "spi";
++			compatible = "mpc83xx_spi";
++			reg = <7000 1000>;
++			interrupts = <10 8>;
++			interrupt-parent = < &ipic >;
++			mode = <0>;
++		};
++
++		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
++		usb@23000 {
++			device_type = "usb";
++			compatible = "fsl-usb2-dr";
++			reg = <23000 1000>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			interrupt-parent = < &ipic >;
++			interrupts = <26 8>;
++			phy_type = "utmi_wide";
++		};
++
++		mdio@24520 {
++			device_type = "mdio";
++			compatible = "gianfar";
++			reg = <24520 20>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			phy2: ethernet-phy@2 {
++				interrupt-parent = < &ipic >;
++				interrupts = <11 8>;
++				reg = <2>;
++				device_type = "ethernet-phy";
++			};
++			phy3: ethernet-phy@3 {
++				interrupt-parent = < &ipic >;
++				interrupts = <12 8>;
++				reg = <3>;
++				device_type = "ethernet-phy";
++			};
++		};
++
++		ethernet@24000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <24000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <20 8 21 8 22 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy2 >;
++		};
++
++		ethernet@25000 {
++			device_type = "network";
++			model = "eTSEC";
++			compatible = "gianfar";
++			reg = <25000 1000>;
++			local-mac-address = [ 00 00 00 00 00 00 ];
++			interrupts = <23 8 24 8 25 8>;
++			phy-connection-type = "mii";
++			interrupt-parent = < &ipic >;
++			phy-handle = < &phy3 >;
++		};
++
++		serial@4500 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4500 100>;
++			clock-frequency = <0>;
++			interrupts = <9 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		serial@4600 {
++			device_type = "serial";
++			compatible = "ns16550";
++			reg = <4600 100>;
++			clock-frequency = <0>;
++			interrupts = <a 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		crypto@30000 {
++			device_type = "crypto";
++			model = "SEC3";
++			compatible = "talitos";
++			reg = <30000 10000>;
++			interrupts = <b 8>;
++			interrupt-parent = < &ipic >;
++			/* Rev. 3.0 geometry */
++			num-channels = <4>;
++			channel-fifo-len = <18>;
++			exec-units-mask = <000009fe>;
++			descriptor-types-mask = <03ab0ebf>;
++		};
++
++		sdhc@2e000 {
++			model = "eSDHC";
++			compatible = "fsl,esdhc";
++			reg = <2e000 1000>;
++			interrupts = <2a 8>;
++			interrupt-parent = < &ipic >;
++		};
++
++		sata@18000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <18000 1000>;
++			interrupts = <2c 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes1 >;
++		};
++
++		sata@19000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <19000 1000>;
++			interrupts = <2d 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes1 >;
++		};
++
++		sata@1a000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <1a000 1000>;
++			interrupts = <2e 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes2 >;
++		};
++
++		sata@1b000 {
++			device_type = "sata";
++			model = "SATA-300";
++			compatible = "fsl,mpc8379-sata";
++			reg = <1b000 1000>;
++			interrupts = <2f 8>;
++			interrupt-parent = < &ipic >;
++			phy-handle = < &serdes2 >;
++		};
++
++		serdes1:serdes@e3000 {
++			compatible = "fsl,serdes";
++			reg = <e3000 100>;
++			vdd-1v;
++			protocol = "sata";
++			clock = <d#100>;
++		};
++
++		serdes2:serdes@e3100 {
++			compatible = "fsl,serdes";
++			reg = <e3100 100>;
++			vdd-1v;
++			protocol = "sata";
++			clock = <d#100>;
++		};
++
++		/* IPIC
++		 * interrupts cell = <intr #, sense>
++		 * sense values match linux IORESOURCE_IRQ_* defines:
++		 * sense == 8: Level, low assertion
++		 * sense == 2: Edge, high-to-low change
++		 */
++		ipic: pic@700 {
++			compatible = "fsl,ipic";
++			interrupt-controller;
++			#address-cells = <0>;
++			#interrupt-cells = <2>;
++			reg = <700 100>;
++		};
++	};
++
++	pci@e0008500 {
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <
++
++				/* IDSEL 0x11 */
++				 8800 0 0 1 &ipic 14 8
++				 8800 0 0 2 &ipic 15 8
++				 8800 0 0 3 &ipic 16 8
++				 8800 0 0 4 &ipic 17 8
++
++				/* IDSEL 0x12 */
++				 9000 0 0 1 &ipic 16 8
++				 9000 0 0 2 &ipic 17 8
++				 9000 0 0 3 &ipic 14 8
++				 9000 0 0 4 &ipic 15 8
++
++				/* IDSEL 0x13 */
++				 9800 0 0 1 &ipic 17 8
++				 9800 0 0 2 &ipic 14 8
++				 9800 0 0 3 &ipic 15 8
++				 9800 0 0 4 &ipic 16 8
++
++				/* IDSEL 0x15 */
++				 a800 0 0 1 &ipic 14 8
++				 a800 0 0 2 &ipic 15 8
++				 a800 0 0 3 &ipic 16 8
++				 a800 0 0 4 &ipic 17 8
++
++				/* IDSEL 0x16 */
++				 b000 0 0 1 &ipic 17 8
++				 b000 0 0 2 &ipic 14 8
++				 b000 0 0 3 &ipic 15 8
++				 b000 0 0 4 &ipic 16 8
++
++				/* IDSEL 0x17 */
++				 b800 0 0 1 &ipic 16 8
++				 b800 0 0 2 &ipic 17 8
++				 b800 0 0 3 &ipic 14 8
++				 b800 0 0 4 &ipic 15 8
++
++				/* IDSEL 0x18 */
++				 c000 0 0 1 &ipic 15 8
++				 c000 0 0 2 &ipic 16 8
++				 c000 0 0 3 &ipic 17 8
++				 c000 0 0 4 &ipic 14 8>;
++		interrupt-parent = < &ipic >;
++		interrupts = <42 8>;
++		bus-range = <0 0>;
++		ranges = <02000000 0 90000000 90000000 0 10000000
++		          42000000 0 80000000 80000000 0 10000000
++		          01000000 0 00000000 e2000000 0 00100000>;
++		clock-frequency = <0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		reg = <e0008500 100>;
++		compatible = "fsl,mpc83xx-pci", "83xx";
++		device_type = "pci";
++	};
++};
 -- 
 1.5.3.2.104.g41ef
