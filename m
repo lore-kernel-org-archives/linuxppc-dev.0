@@ -1,33 +1,17 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A5D1DDE39
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 00:31:14 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l9CEV8dY006753
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:31:08 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9CEV60q020815
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 09:31:07 -0500 (CDT)
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3 3/9] add Freescale SerDes PHY support
+Date: Fri, 12 Oct 2007 16:33:48 +0200
+References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
+	<1192195728-24189-3-git-send-email-leoli@freescale.com>
+	<1192195728-24189-4-git-send-email-leoli@freescale.com>
+In-Reply-To: <1192195728-24189-4-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps SATA
-	Controller
-Date: Fri, 12 Oct 2007 22:31:06 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B582F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20071012145522.29dd7413@the-village.bc.nu>
-References: <1192196849-24758-1-git-send-email-leoli@freescale.com>
-	<20071012145522.29dd7413@the-village.bc.nu>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com,
-	Kalra Ashish-B00888 <ashish.kalra@freescale.com>, linuxppc-dev@ozlabs.org
+  charset="iso-8859-1"
+Message-Id: <200710121633.49263.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,29 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]=20
-> Sent: Friday, October 12, 2007 9:55 PM
-> To: Li Yang-r58472
-> Cc: jgarzik@pobox.com; linux-ide@vger.kernel.org;=20
-> linuxppc-dev@ozlabs.org; Kalra Ashish-B00888; Li Yang-r58472
-> Subject: Re: [PATCH v2] drivers/ata: add support to Freescale=20
-> 3.0Gbps SATA Controller
->=20
-> > +	cd =3D pp->cmdentry + tag;
-> > +
-> > +	memcpy(fis, &cd->sfis, 6 * 4);	/* should we use=20
-> memcpy_from_io() */
->=20
-> If cd->sfis points at memory over the PCI bus (eg mmio or=20
-> memory on the controller card) then you need to use=20
-> ioread/_io type functions. If
-> cd->sfis points into host memory where the FIS is delivered=20
-> by DMA from
-> the card you will be fine if it was allocated with an=20
-> _coherent allocator
+On Friday 12 October 2007, Li Yang wrote:
+> The SerDes(serializer/deserializer) PHY block is a new SoC block used
+> in Freescale chips to support multiple serial interfaces, such as PCI
+> Express, SGMII, SATA.
 
-Thanks for the clarification.  So the code here is ok, that we use
-command descriptor from dma_alloc_coherent().  :)
+Some of my comments here are similar to those for the ata driver,
+so I won't be as verbose here
 
-- Leo
+> +static int __init setup_serdes(struct device_node *np)
+> +{
+> +	void __iomem *regs;
+> +	const void *prot;
+> +	const unsigned int *freq;
+> +	struct resource res;
+> +	u32 rfcks;
+> +
+> +	of_address_to_resource(np, 0, &res);
+> +	regs = ioremap(res.start, res.end - res.start + 1);
+
+of_iomap?
+
+Also, shouldn't there be a matching iounmap?
+
+> +static int __init fsl_serdes_init(void) {
+> +	struct device_node *np;
+> +
+> +	for (np = NULL; (np = of_find_compatible_node(np, NULL, "fsl,serdes")) != NULL;)
+> +		setup_serdes(np);
+> +
+> +	return 0;
+> +}
+> +
+> +arch_initcall(fsl_serdes_init);
+
+I suppose the reason why you can't use an of_platform_device here is that
+the serdes node is a child of the actual device that is using the serdes
+interface, right?
+
+Could you perhaps call fsl_serdes_init from all the drivers that can have
+a serdes attachment, and pass the parent device into the setup function? 
+
+> diff --git a/arch/powerpc/sysdev/fsl_serdes.h b/arch/powerpc/sysdev/fsl_serdes.h
+> new file mode 100644
+> index 0000000..d4e5570
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/fsl_serdes.h
+> @@ -0,0 +1,36 @@
+> +/*
+> + * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by the
+> + * Free Software Foundation;  either version 2 of the License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +/* SerDes registers */
+> +#define FSL_SRDSCR0_OFFS		0x0
+> +#define FSL_SRDSCR0_DPP_1V2		0x00008800
+> +#define FSL_SRDSCR1_OFFS		0x4
+> +#define FSL_SRDSCR1_PLLBW		0x00000040
+> +#define FSL_SRDSCR2_OFFS		0x8
+> +#define FSL_SRDSCR2_VDD_1V2		0x00800000
+> +#define FSL_SRDSCR2_SEIC_MASK		0x00001c1c
+> +#define FSL_SRDSCR2_SEIC_SATA		0x00001414
+> +#define FSL_SRDSCR2_SEIC_PEX		0x00001010
+> +#define FSL_SRDSCR2_SEIC_SGMII		0x00000101
+> +#define FSL_SRDSCR3_OFFS		0xc
+> +#define FSL_SRDSCR3_KFR_SATA		0x10100000
+> +#define FSL_SRDSCR3_KPH_SATA		0x04040000
+> +#define FSL_SRDSCR3_SDFM_SATA_PEX	0x01010000
+> +#define FSL_SRDSCR3_SDTXL_SATA		0x00000505
+> +#define FSL_SRDSCR4_OFFS		0x10
+> +#define FSL_SRDSCR4_PROT_SATA		0x00000808
+> +#define FSL_SRDSCR4_PROT_PEX		0x00000101
+> +#define FSL_SRDSCR4_PROT_SGMII		0x00000505
+> +#define FSL_SRDSCR4_PLANE_X2		0x01000000
+> +#define FSL_SRDSCR4_RFCKS_100		0x00000000
+> +#define FSL_SRDSCR4_RFCKS_125		0x10000000
+> +#define FSL_SRDSCR4_RFCKS_150		0x30000000
+> +#define FSL_SRDSRSTCTL_OFFS		0x20
+> +#define FSL_SRDSRSTCTL_RST		0x80000000
+> +#define FSL_SRDSRSTCTL_SATA_RESET	0xf
+
+These can all be moved to the source file so you can kill the
+entire header.
+
+	Arnd <><
