@@ -1,19 +1,27 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 1CFE2DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 19:56:48 +1000 (EST)
-Received: from pademelon.sonytel.be (piraat.sonytel.be [43.221.60.197])
-	by vervifontaine.sonycom.com (Postfix) with ESMTP id 1325258ABD
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 11:56:43 +0200 (MEST)
-Date: Fri, 12 Oct 2007 11:56:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: linux-2.6.git: cannot build PS3 image
-Message-ID: <Pine.LNX.4.62.0710121152500.28100@pademelon.sonytel.be>
+Return-Path: <Thomas.Hommel@gefanuc.com>
+Received: from ext-ch1gw-1.online-age.net (ext-ch1gw-1.online-age.net
+	[216.34.191.35])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-ch1gw.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3A86ADDDD6
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 21:10:27 +1000 (EST)
+Received: from int-ch1gw-3.online-age.net (int-ch1gw-3 [3.159.232.67])
+	by ext-ch1gw-1.online-age.net (8.13.6/8.13.6/20051111-SVVS-TLS-DNSBL)
+	with ESMTP id l9CAm35x009535
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 06:48:03 -0400 (EDT)
+Received: from cinmlef11.e2k.ad.ge.com (int-ch1gw-3 [3.159.232.67])
+	by int-ch1gw-3.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id l9CAm29h010743
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 06:48:02 -0400 (EDT)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-713630467-1192183002=:28100"
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: Set up device tree for PCI bus
+Date: Fri, 12 Oct 2007 12:48:03 +0200
+Message-ID: <62DDBB9E5E23CC4A929EE46F9427CEAF3682BB@BUDMLVEM04.e2k.ad.ge.com>
+From: "Hommel, Thomas (GE Indust, GE Fanuc)" <Thomas.Hommel@gefanuc.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi all,
+I'm wondering how to set up a proper device tree for a PCI bus. The bus
+has a tree-like structure with several bridges and can be extended
+dynamically (by adding PMC/XMC modules).
 
----584337861-713630467-1192183002=:28100
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+The structure looks like this:
 
-On current linux-2.6.git (782e3b3b3804c38d5130c7f21d7ec7bf6709023f), I get:
+                           ----------------------
+                           |      MPC8641       |
+                           |                    |
+                           |     BDF 0:0:0      |
+                           ----------------------
+                                      |
+                                      |Bus #1
+                                      |PCIe 8x
+                                      |
+                -----------------------------------------------
+                | PCIe switch         |                       |
+                |               -------------                 |
+                |               | BDF 1:0:0 |                 |  =20
+                |               -------------                 |
+                |                     |Bus #2                 |
+                |       -----------------------------         |
+                |       |             |             |         |
+                |  -----------  ------------   -----------    |
+                |  |BDF 2:1:0|  |BDF 2:2:0 |   |BDF 2:3:0|    |
+                |  -----------  ------------   -----------    |
+                |       |Bus #3       |Bus #5       |Bus #6   |
+                |       |PCIe 4x      |PCIe 2x      |PCIe 2x  |
+                -----------------------------------------------
+                        |             |             |
+                   -----------  ------------   -----------   =20
+                   |Bridge   |  |Expansion |   |SATA     |   =20
+                   |BDF 3:0:0|  |Slot      |   |BDF 6:0:0|   =20
+                   -----------  ------------   -----------   =20
+                        |
+                        |Bus #4
+                        |PCI-X
+             ----------------------
+             |                    |
+        ------------         ------------=20
+        |VME Bridge|         |PMC Slot  |    =20
+        |BDF 4:e:0 |         |BDF 4:c:0 |    =20
+        ------------         ------------    =20
 
-|   WRAP    arch/powerpc/boot/zImage.ps3
-| DTC: dts->dtb  on file "/usr/people/geert.nba/ps3/ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts"
-| ln: accessing `arch/powerpc/boot/zImage.ps3': No such file or directory
+A problem is that the modules in the Expansion/PMC slot can contain more
+bridges and therefore the bus numbering isn't fixed. For example, if the
+PMC adds one more bus, #5 becomes #6 and #6 becomes #7.
+Can I assign fixed resources for all the bridge parts of the system?
 
-`make V=1' gives:
-
-|   /bin/sh ps3-linux-2.6/arch/powerpc/boot/wrapper -c -o arch/powerpc/boot/zImage.ps3 -p ps3 -C "ppu-"  -s ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts vmlinux
-| DTC: dts->dtb  on file "ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts"
-| ln: accessing `arch/powerpc/boot/zImage.ps3': No such file or directory
-
-I don't see a change to arch/powerpc/boot/Makefile that could explain this.
-
-Anyone with a clue? Thx!
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-713630467-1192183002=:28100--
+Thanks
+Thomas
