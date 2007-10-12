@@ -1,19 +1,32 @@
-Return-Path: <emmedve1@emmedve1-12.am.freescale.net>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <ashish.kalra@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A59FCDDE1B
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 09:34:08 +1000 (EST)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: akpm@linux-foundation.org, jgarzik@pobox.com, leoli@Freescale.com,
-	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] ucc_geth: Fix build break introduced by commit
-	09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
-Date: Fri, 12 Oct 2007 18:26:28 -0500
-Message-Id: <1192231588-17516-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 31947DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 00:37:01 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9CEauRJ012980
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:36:56 -0700 (MST)
+Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
+	[10.232.192.5])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9CEareH022007
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 09:36:55 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps SATA
+	Controller
+Date: Fri, 12 Oct 2007 20:06:52 +0530
+Message-ID: <2A6F278C5B66C4459AF4013E77A40CD3FCB95E@zin33exm20.fsl.freescale.net>
+In-Reply-To: <20071012145522.29dd7413@the-village.bc.nu>
+From: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+	"Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com,
+	Kalra Ashish-B00888 <ashish.kalra@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,69 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  CC      drivers/net/ucc_geth.o
-drivers/net/ucc_geth.c: In function 'ucc_geth_startup':
-drivers/net/ucc_geth.c:2614: warning: assignment makes integer from pointer without a cast
-drivers/net/ucc_geth.c:2651: warning: assignment makes integer from pointer without a cast
-drivers/net/ucc_geth.c: In function 'ucc_geth_rx':
-drivers/net/ucc_geth.c:3483: error: 'dev' undeclared (first use in this function)
-drivers/net/ucc_geth.c:3483: error: (Each undeclared identifier is reported only once
-drivers/net/ucc_geth.c:3483: error: for each function it appears in.)
-make[2]: *** [drivers/net/ucc_geth.o] Error 1
+This should be fine, as cd->sfis is allocated in host memory using a
+_coherent allocator and the SATA-2 controller is
+DMA'ing the D2H FIS into it.
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+Ashish =20
 
-Here is a convenient link for the culprit patch: http://git.kernel.org/?p=linux/kernel/git/jgarzik/netdev-2.6.git;a=commit;h=09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
+-----Original Message-----
+From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]=20
+Sent: Friday, October 12, 2007 7:25 PM
+To: Li Yang-r58472
+Cc: jgarzik@pobox.com; linux-ide@vger.kernel.org;
+linuxppc-dev@ozlabs.org; Kalra Ashish-B00888; Li Yang-r58472
+Subject: Re: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps
+SATA Controller
 
-netdev-2.6> scripts/checkpatch.pl 0001-POWERPC-ucc_geth-Fix-build-break-introduced-by-co.patch 
-Your patch has no obvious style problems and is ready for submission.
+> +	cd =3D pp->cmdentry + tag;
+> +
+> +	memcpy(fis, &cd->sfis, 6 * 4);	/* should we use
+memcpy_from_io() */
 
- drivers/net/ucc_geth.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+If cd->sfis points at memory over the PCI bus (eg mmio or memory on the
+controller card) then you need to use ioread/_io type functions. If
+cd->sfis points into host memory where the FIS is delivered by DMA from
+the card you will be fine if it was allocated with an _coherent
+allocator
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index d00e7d4..c43d4d1 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -63,7 +63,7 @@
- #define UGETH_MSG_DEFAULT	(NETIF_MSG_IFUP << 1 ) - 1
- 
- void uec_set_ethtool_ops(struct net_device *netdev);
--	
-+
- static DEFINE_SPINLOCK(ugeth_lock);
- 
- static struct {
-@@ -3480,9 +3480,9 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 				dev_kfree_skb_any(skb);
- 
- 			ugeth->rx_skbuff[rxQ][ugeth->skb_currx[rxQ]] = NULL;
--			dev->stats.rx_dropped++;
-+			ugeth->dev->stats.rx_dropped++;
- 		} else {
--			dev->stats.rx_packets++;
-+			ugeth->dev->stats.rx_packets++;
- 			howmany++;
- 
- 			/* Prep the skb for the packet */
-@@ -3491,7 +3491,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 			/* Tell the skb what kind of packet this is */
- 			skb->protocol = eth_type_trans(skb, ugeth->dev);
- 
--			dev->stats.rx_bytes += length;
-+			ugeth->dev->stats.rx_bytes += length;
- 			/* Send the packet up the stack */
- #ifdef CONFIG_UGETH_NAPI
- 			netif_receive_skb(skb);
-@@ -3506,7 +3506,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 		if (!skb) {
- 			if (netif_msg_rx_err(ugeth))
- 				ugeth_warn("%s: No Rx Data Buffer", __FUNCTION__);
--			dev->stats.rx_dropped++;
-+			ugeth->dev->stats.rx_dropped++;
- 			break;
- 		}
- 
--- 
-1.5.3.GIT
+
+Alan
