@@ -1,33 +1,21 @@
-Return-Path: <markn@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 22813DE024
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 12:16:22 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9C2GA5c022392
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 12:16:10 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9C2GCiS3838186
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 12:16:12 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9C2FvdH024734
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 12:15:57 +1000
-Message-ID: <470ED8BA.4010503@au1.ibm.com>
-Date: Fri, 12 Oct 2007 12:15:22 +1000
-From: Mark Nelson <markn@au1.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 0124EDDFF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 12:35:27 +1000 (EST)
+Date: Thu, 11 Oct 2007 21:40:52 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/2] powerpc: Switch to generic WARN_ON()/BUG_ON()
+Message-ID: <20071012024052.GA19865@lixom.net>
+References: <20071011171211.GB10877@lixom.net>
+	<20071011171413.GC10877@lixom.net>
+	<18190.52379.97647.468384@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 1/2] [V2] Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE #define
-References: <20071011071558.676463639@au1.ibm.com>	<20071011072208.075979098@au1.ibm.com>	<DFC6881D-E917-4EC5-B19C-8CE04E040B06@kernel.crashing.org>
-	<470ECFF7.9040008@au1.ibm.com>
-In-Reply-To: <470ECFF7.9040008@au1.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Cc: PowerPC dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <18190.52379.97647.468384@cargo.ozlabs.ibm.com>
+Cc: grundler@parisc-linux.org, linux-kernel@vger.kernel.org,
+	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,125 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Replace NT_PRXFPREG with ELF_CORE_XFPREG_TYPE in the coredump code which
-allows for more flexibility in the note type for the state of 'extended
-floating point' implementations in coredumps.  New note types can now be
-added with an appropriate #define.
+On Fri, Oct 12, 2007 at 11:23:39AM +1000, Paul Mackerras wrote:
+> Olof Johansson writes:
+> 
+> > Not using the ppc-specific WARN_ON/BUG_ON constructs actually saves about
+> > 4K text on a ppc64_defconfig. The main reason seems to be that prepping
+> > the arguments to the conditional trap instructions is more work than
+> > just doing a compare and branch.
+> 
+> It might be more instructions but it takes fewer cycles, I would
+> expect.  Do you have the actual instruction sequences to compare?
 
-This does #define ELF_CORE_XFPREG_TYPE to be NT_PRXFPREG in all
-current users so there's are no change in behaviour.
+Sure. Just looking at a couple of cases:
 
-This will let us use different note types on powerpc for the
-Altivec/VMX state that some PowerPC cpus have (G4, PPC970, POWER6) and
-for the SPE (signal processing extension) state that some embedded
-PowerPC cpus from Freescale have.
+On range comparisons such as (a < CONST):
+* without this patch, you end up with a comparison, then a cr-to-cr op +
+mfcr + mask operation + tdnei.
+* with the patch, you get a comparison and a conditional branch with
+twi out of line.
 
-Signed-off-by: Mark Nelson <markn@au1.ibm.com>
----
- arch/ia64/ia32/elfcore32.h     |    1 +
- arch/x86_64/ia32/ia32_binfmt.c |    1 +
- fs/binfmt_elf.c                |    8 ++++----
- fs/binfmt_elf_fdpic.c          |    6 +++---
- include/asm-i386/elf.h         |    1 +
- 5 files changed, 10 insertions(+), 7 deletions(-)
+On multiple comparisons like WARN_ON( a || b), it seems that there's an
+added li to make the tdnei always hit for the first case. There it uses
+a regular conditional branch, so no real difference in generated code
+besides that.
 
-Index: linux/arch/ia64/ia32/elfcore32.h
-===================================================================
---- linux.orig/arch/ia64/ia32/elfcore32.h
-+++ linux/arch/ia64/ia32/elfcore32.h
-@@ -117,6 +117,7 @@ elf_core_copy_task_fpregs(struct task_st
- }
- 
- #define ELF_CORE_COPY_XFPREGS 1
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- static inline int
- elf_core_copy_task_xfpregs(struct task_struct *tsk, elf_fpxregset_t *xfpu)
- {
-Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-===================================================================
---- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-+++ linux/arch/x86_64/ia32/ia32_binfmt.c
-@@ -188,6 +188,7 @@ elf_core_copy_task_fpregs(struct task_st
- }
- 
- #define ELF_CORE_COPY_XFPREGS 1
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- static inline int 
- elf_core_copy_task_xfpregs(struct task_struct *t, elf_fpxregset_t *xfpu)
- {
-Index: linux/fs/binfmt_elf.c
-===================================================================
---- linux.orig/fs/binfmt_elf.c
-+++ linux/fs/binfmt_elf.c
-@@ -1411,7 +1411,7 @@ struct elf_thread_status
- 	elf_fpregset_t fpu;		/* NT_PRFPREG */
- 	struct task_struct *thread;
- #ifdef ELF_CORE_COPY_XFPREGS
--	elf_fpxregset_t xfpu;		/* NT_PRXFPREG */
-+	elf_fpxregset_t xfpu;		/* ELF_CORE_XFPREG_TYPE */
- #endif
- 	struct memelfnote notes[3];
- 	int num_notes;
-@@ -1446,8 +1446,8 @@ static int elf_dump_thread_status(long s
- 
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
--		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
--			  &t->xfpu);
-+		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE,
-+			  sizeof(t->xfpu), &t->xfpu);
- 		t->num_notes++;
- 		sz += notesize(&t->notes[2]);
- 	}
-@@ -1624,7 +1624,7 @@ static int elf_core_dump(long signr, str
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(current, xfpu))
- 		fill_note(notes + numnote++,
--			  "LINUX", NT_PRXFPREG, sizeof(*xfpu), xfpu);
-+			  "LINUX", ELF_CORE_XFPREG_TYPE, sizeof(*xfpu), xfpu);
- #endif	
-   
- 	fs = get_fs();
-Index: linux/fs/binfmt_elf_fdpic.c
-===================================================================
---- linux.orig/fs/binfmt_elf_fdpic.c
-+++ linux/fs/binfmt_elf_fdpic.c
-@@ -1417,7 +1417,7 @@ struct elf_thread_status
- 	elf_fpregset_t fpu;		/* NT_PRFPREG */
- 	struct task_struct *thread;
- #ifdef ELF_CORE_COPY_XFPREGS
--	elf_fpxregset_t xfpu;		/* NT_PRXFPREG */
-+	elf_fpxregset_t xfpu;		/* ELF_CORE_XFPREG_TYPE */
- #endif
- 	struct memelfnote notes[3];
- 	int num_notes;
-@@ -1453,7 +1453,7 @@ static int elf_dump_thread_status(long s
- 
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(p, &t->xfpu)) {
--		fill_note(&t->notes[2], "LINUX", NT_PRXFPREG, sizeof(t->xfpu),
-+		fill_note(&t->notes[2], "LINUX", ELF_CORE_XFPREG_TYPE, sizeof(t->xfpu),
- 			  &t->xfpu);
- 		t->num_notes++;
- 		sz += notesize(&t->notes[2]);
-@@ -1690,7 +1690,7 @@ static int elf_fdpic_core_dump(long sign
- #ifdef ELF_CORE_COPY_XFPREGS
- 	if (elf_core_copy_task_xfpregs(current, xfpu))
- 		fill_note(notes + numnote++,
--			  "LINUX", NT_PRXFPREG, sizeof(*xfpu), xfpu);
-+			  "LINUX", ELF_CORE_XFPREG_TYPE, sizeof(*xfpu), xfpu);
- #endif
- 
- 	fs = get_fs();
-Index: linux/include/asm-i386/elf.h
-===================================================================
---- linux.orig/include/asm-i386/elf.h
-+++ linux/include/asm-i386/elf.h
-@@ -129,6 +129,7 @@ extern int dump_task_extended_fpu (struc
- #define ELF_CORE_COPY_TASK_REGS(tsk, elf_regs) dump_task_regs(tsk, elf_regs)
- #define ELF_CORE_COPY_FPREGS(tsk, elf_fpregs) dump_task_fpu(tsk, elf_fpregs)
- #define ELF_CORE_COPY_XFPREGS(tsk, elf_xfpregs) dump_task_extended_fpu(tsk, elf_xfpregs)
-+#define ELF_CORE_XFPREG_TYPE NT_PRXFPREG
- 
- #define VDSO_HIGH_BASE		(__fix_to_virt(FIX_VDSO))
- #define VDSO_CURRENT_BASE	((unsigned long)current->mm->context.vdso)
+Code examples. This was with a ppc64_defconfig, so CONFIG_POWER4_ONLY
+wasn't enabled. It uses mfocrf when it is, which is alot cheaper. Still,
+the rest of the code sequence is the same:
+
+void irq_free_virt(unsigned int virq, unsigned int count)
+{
+        unsigned long flags;
+        unsigned int i;
+
+        WARN_ON (virq < NUM_ISA_INTERRUPTS);
+        WARN_ON (count == 0 || (virq + count) > irq_virq_count);
+
+        spin_lock_irqsave(&irq_big_lock, flags);
+
+Without the patch:
+
+c00000000000b33c <.irq_free_virt>:
+c00000000000b33c:       7c 08 02 a6     mflr    r0
+c00000000000b340:       2b 83 00 0f     cmplwi  cr7,r3,15
+c00000000000b344:       fb c1 ff f0     std     r30,-16(r1)
+c00000000000b348:       fb e1 ff f8     std     r31,-8(r1)
+c00000000000b34c:       7c 9e 23 78     mr      r30,r4
+c00000000000b350:       7c 7f 1b 78     mr      r31,r3
+c00000000000b354:       4f dd e8 42     crnot   4*cr7+eq,4*cr7+gt
+c00000000000b358:       f8 01 00 10     std     r0,16(r1)
+c00000000000b35c:       f8 21 ff 81     stdu    r1,-128(r1)
+c00000000000b360:       7c 00 00 26     mfcr    r0
+c00000000000b364:       54 00 ff fe     rlwinm  r0,r0,31,31,31
+c00000000000b368:       0b 00 00 00     tdnei   r0,0
+c00000000000b36c:       2f a4 00 00     cmpdi   cr7,r4,0
+c00000000000b370:       38 00 00 01     li      r0,1
+c00000000000b374:       41 9e 00 1c     beq     cr7,c00000000000b390 <.irq_free_virt+0x54>
+c00000000000b378:       e9 22 80 d8     ld      r9,-32552(r2)
+c00000000000b37c:       7d 63 22 14     add     r11,r3,r4
+c00000000000b380:       80 09 00 00     lwz     r0,0(r9)
+c00000000000b384:       7f 8b 00 40     cmplw   cr7,r11,r0
+c00000000000b388:       7c 00 00 26     mfcr    r0
+c00000000000b38c:       54 00 f7 fe     rlwinm  r0,r0,30,31,31
+c00000000000b390:       0b 00 00 00     tdnei   r0,0
+c00000000000b394:       e8 62 80 f8     ld      r3,-32520(r2)
+c00000000000b398:       48 54 4c b1     bl      c000000000550048 <._spin_lock_irqsave>
+c00000000000b39c:       60 00 00 00     nop
+
+With the patch:
+
+c00000000000b0b0 <.irq_free_virt>:
+c00000000000b0b0:       7c 08 02 a6     mflr    r0
+c00000000000b0b4:       2b 83 00 0f     cmplwi  cr7,r3,15
+c00000000000b0b8:       fb c1 ff f0     std     r30,-16(r1)
+c00000000000b0bc:       fb e1 ff f8     std     r31,-8(r1)
+c00000000000b0c0:       7c 9e 23 78     mr      r30,r4
+c00000000000b0c4:       7c 7f 1b 78     mr      r31,r3
+c00000000000b0c8:       f8 01 00 10     std     r0,16(r1)
+c00000000000b0cc:       f8 21 ff 81     stdu    r1,-128(r1)
+c00000000000b0d0:       41 bd 00 08     bgt     cr7,c00000000000b0d8 <.irq_free_virt+0x28>
+c00000000000b0d4:       0f e0 00 00     twi     31,r0,0
+c00000000000b0d8:       2f be 00 00     cmpdi   cr7,r30,0
+c00000000000b0dc:       41 9e 00 18     beq     cr7,c00000000000b0f4 <.irq_free_virt+0x44>
+c00000000000b0e0:       e9 22 80 d8     ld      r9,-32552(r2)
+c00000000000b0e4:       7d 7f f2 14     add     r11,r31,r30
+c00000000000b0e8:       80 09 00 00     lwz     r0,0(r9)
+c00000000000b0ec:       7f 8b 00 40     cmplw   cr7,r11,r0
+c00000000000b0f0:       40 bd 00 08     ble     cr7,c00000000000b0f8 <.irq_free_virt+0x48>
+c00000000000b0f4:       0f e0 00 00     twi     31,r0,0
+c00000000000b0f8:       e8 62 80 f8     ld      r3,-32520(r2)
+c00000000000b0fc:       48 54 3f 75     bl      c00000000054f070 <._spin_lock_irqsave>
+c00000000000b100:       60 00 00 00     nop
