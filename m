@@ -1,28 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F333DDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 06:19:15 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l9CKJAZv018931
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 13:19:11 -0700 (MST)
-Received: from loki ([10.82.17.119])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9CKJAA6009578
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 15:19:10 -0500 (CDT)
-Received: from scott by loki with local (Exim 4.68)
-	(envelope-from <scottwood@freescale.com>) id 1IgQyV-0002LB-3I
-	for linuxppc-dev@ozlabs.org; Fri, 12 Oct 2007 15:19:11 -0500
-Date: Fri, 12 Oct 2007 15:19:11 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] cpm: Fix a couple minor issues in cpm_common.c.
-Message-ID: <20071012201910.GA8988@loki.buserror.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
+	by ozlabs.org (Postfix) with ESMTP id B826FDDE16
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 06:30:58 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1174588wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 13:30:58 -0700 (PDT)
+Message-ID: <fa686aa40710121330j6501a639uc19edc72095b3180@mail.gmail.com>
+Date: Fri, 12 Oct 2007 14:30:57 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: mpc52xx bestcomm patches.
+In-Reply-To: <DDF4941D-02CA-49FA-999D-8BD08740902C@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40710121130p7ec957bar471c2e8245bd162b@mail.gmail.com>
+	<903EBFBB-D6B6-42EA-A0E3-63CAA55F6E23@kernel.crashing.org>
+	<fa686aa40710121154i52e6caa0ve1130ea146b55a3f@mail.gmail.com>
+	<DDF4941D-02CA-49FA-999D-8BD08740902C@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,35 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A debugging printk is removed, and a comment is fixed to match
-the code.
+On 10/12/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Oct 12, 2007, at 1:54 PM, Grant Likely wrote:
+>
+> > On 10/12/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >>
+> >> On Oct 12, 2007, at 1:30 PM, Grant Likely wrote:
+> >>
+> >>> Paulus, how do you feel about merging these changes?
+> >>>
+> >>> This is Sylvain's series of bestcomm patches.
+> >>>
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13488
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13489
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13490
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13491
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13492
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13493
+> >>> http://patchwork.ozlabs.org/linuxppc/patch?id=13494
+> >>>
+> >>> There are still a few minor issues to be resolved, but Sylvain is
+> >>> suffering from a severe lack of time and this series has been
+> >>> stalled
+> >>> for a long time because of it.  Domen and others have been
+> >>> working on
+> >>> drivers which use bestcomm, but they can neither get their drivers
+> >>> included nor address the issues in this series because of it.
+> >>>
+> >>> Personally, I think it will be better to just merge it now and allow
+> >>> others to address the remaining comments.  It's not like this is a
+> >>> change to an old device that could be risky.
+> >>
+> >> I'm against this getting merged w/o addressing some of the long
+> >> standing comments I've made:
+> >>
+> >> http://ozlabs.org/pipermail/linuxppc-dev/2007-May/036224.html
+> >> http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042632.html
+> >> http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042633.html
+> >>
+> >> Additionally I think ALL new "libraries" like this should come with
+> >> kerneldoc.
+> >
+> > The problem is that bestcomm is completely stalled on Sylvain.  He's
+> > done good work, but he isn't able to put in the effort for the last
+> > push to get it fixed and in.  But until that happens, nobody else will
+> > step in to add patches on top of it to fix it up.
+>
+> If Sylvain doesn't have the time can't someone else pick up what he's
+> done and fixup the issues with it?
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/sysdev/cpm_common.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+As we talked about on IRC, I'm rebasing the patches now and I'll deal
+with the minor issues.  There are a couple of developers actively
+working on drivers which depend on bestcomm; since they are using it,
+they will be able to support it too.
 
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 66c8ad4..165981c 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -77,8 +77,6 @@ int __init cpm_muram_init(void)
- 	int i = 0;
- 	int ret = 0;
- 
--	printk("cpm_muram_init\n");
--
- 	spin_lock_init(&cpm_muram_lock);
- 	/* initialize the info header */
- 	rh_init(&cpm_muram_info, 1,
-@@ -193,7 +191,7 @@ void __iomem *cpm_muram_addr(unsigned long offset)
- EXPORT_SYMBOL(cpm_muram_addr);
- 
- /**
-- * cpm_muram_phys - turn a muram virtual address into a DMA address
-+ * cpm_muram_dma - turn a muram virtual address into a DMA address
-  * @offset: virtual address from cpm_muram_addr() to convert
-  */
- dma_addr_t cpm_muram_dma(void __iomem *addr)
+The code is in good shape; is well layed out and coded.  There are
+developers actively using this driver in private trees.
+
+However, that leaves the last major issue; documentation.  The
+requested documentation has not been written.  However, I do not thing
+this device driver should be blocked from merging over this issue.  I
+think there is a better chance of it getting documented if it is
+merged instead of sitting in Sylvain's queue.
+
+Cheers,
+g.
+
 -- 
-1.5.3.4
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
