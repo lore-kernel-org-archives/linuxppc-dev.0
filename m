@@ -1,11 +1,11 @@
 Return-Path: <geert@sonycom.com>
-Message-Id: <20071012145129.480506000@pademelon.sonytel.be>
+Message-Id: <20071012145129.616597000@pademelon.sonytel.be>
 References: <20071012145052.640177000@pademelon.sonytel.be>
-Date: Fri, 12 Oct 2007 16:50:53 +0200
+Date: Fri, 12 Oct 2007 16:50:54 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: "Antonino A. Daplas" <adaplas@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 01/13] ps3av: Fix black and white stripes
+Subject: [patch 02/13] ps3fb: Fix spurious mode change failures
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net,
@@ -19,105 +19,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Masashi Kimoto <Masashi_Kimoto@hq.scei.sony.co.jp>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Fix the black and white stripes issue with WUXGA monitor via HDMI.
+ps3fb: Add a `mode' parameter to ps3fb_get_res_table(), as in some cases it
+should check the full-screen flag of the _new_ video mode instead of the
+current video mode.
 
-It seems that when we use a VESA resolution from boot up, the AV settings
-driver could not be initialized correctly.
-In that case we need a dummy packet before VESA setting.
-
-[Geert] Refactored to reduce code duplication.
+This bug caused spurious mode change failures when switching between fullscreen
+and non-fullscreen modes using fbset, while ps3-video-mode worked fine.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 CC: Geoff Levand <geoffrey.levand@am.sony.com>
+CC: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 ---
- drivers/ps3/ps3av.c |   58 ++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 38 insertions(+), 20 deletions(-)
+ drivers/video/ps3fb.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -491,10 +491,10 @@ static int ps3av_set_videomode(void)
- 	return 0;
- }
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -303,13 +303,13 @@ module_param(ps3fb_mode, int, 0);
  
--static void ps3av_set_videomode_cont(u32 id, u32 old_id)
-+static void ps3av_set_videomode_packet(u32 id)
+ static char *mode_option __devinitdata;
+ 
+-static int ps3fb_get_res_table(u32 xres, u32 yres)
++static int ps3fb_get_res_table(u32 xres, u32 yres, int mode)
  {
- 	struct ps3av_pkt_avb_param avb_param;
--	int i;
-+	unsigned int i;
- 	u32 len = 0, av_video_cs;
- 	const struct avset_video_mode *video_mode;
- 	int res;
-@@ -507,24 +507,6 @@ static void ps3av_set_videomode_cont(u32
- 					ps3av->av_hw_conf.num_of_avmulti;
- 	avb_param.num_of_av_audio_pkt = 0;
+ 	int full_mode;
+ 	unsigned int i;
+ 	u32 x, y, f;
  
--	/* video signal off */
--	ps3av_set_video_disable_sig();
--
--	/* Retail PS3 product doesn't support this */
--	if (id & PS3AV_MODE_HDCP_OFF) {
--		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
--		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
--			dev_dbg(&ps3av->dev->core, "Not supported\n");
--		else if (res)
--			dev_dbg(&ps3av->dev->core,
--				"ps3av_cmd_av_hdmi_mode failed\n");
--	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
--		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
--		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
--			dev_dbg(&ps3av->dev->core,
--				"ps3av_cmd_av_hdmi_mode failed\n");
--	}
--
- 	/* video_pkt */
- 	for (i = 0; i < avb_param.num_of_video_pkt; i++)
- 		len += ps3av_cmd_set_video_mode(&avb_param.buf[len],
-@@ -555,6 +537,42 @@ static void ps3av_set_videomode_cont(u32
- 		       __func__);
- 	else if (res)
- 		dev_dbg(&ps3av->dev->core, "ps3av_cmd_avb_param failed\n");
-+}
-+
-+static void ps3av_set_videomode_cont(u32 id, u32 old_id)
-+{
-+	static int vesa;
-+	int res;
-+
-+	/* video signal off */
-+	ps3av_set_video_disable_sig();
-+
-+	/*
-+	 * AV backend needs non-VESA mode setting at least one time
-+	 * when VESA mode is used.
-+	 */
-+	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
-+		/* vesa mode */
-+		ps3av_set_videomode_packet(2);	/* 480P */
-+	}
-+	vesa = 1;
-+
-+	/* Retail PS3 product doesn't support this */
-+	if (id & PS3AV_MODE_HDCP_OFF) {
-+		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_HDCP_OFF);
-+		if (res == PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
-+			dev_dbg(&ps3av->dev->core, "Not supported\n");
-+		else if (res)
-+			dev_dbg(&ps3av->dev->core,
-+				"ps3av_cmd_av_hdmi_mode failed\n");
-+	} else if (old_id & PS3AV_MODE_HDCP_OFF) {
-+		res = ps3av_cmd_av_hdmi_mode(PS3AV_CMD_AV_HDMI_MODE_NORMAL);
-+		if (res < 0 && res != PS3AV_STATUS_UNSUPPORTED_HDMI_MODE)
-+			dev_dbg(&ps3av->dev->core,
-+				"ps3av_cmd_av_hdmi_mode failed\n");
-+	}
-+
-+	ps3av_set_videomode_packet(id);
+-	full_mode = (ps3fb_mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
++	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
+ 	for (i = 0;; i++) {
+ 		x = ps3fb_res[i].xres;
+ 		y = ps3fb_res[i].yres;
+@@ -527,7 +527,7 @@ static int ps3fb_check_var(struct fb_var
+ 	}
  
- 	msleep(1500);
- 	/* av video mute */
+ 	/* Memory limit */
+-	i = ps3fb_get_res_table(var->xres, var->yres);
++	i = ps3fb_get_res_table(var->xres, var->yres, mode);
+ 	if (ps3fb_res[i].xres*ps3fb_res[i].yres*BPP > ps3fb_videomemory.size) {
+ 		DPRINTK("Not enough memory\n");
+ 		return -ENOMEM;
+@@ -553,13 +553,14 @@ static int ps3fb_set_par(struct fb_info 
+ 	DPRINTK("xres:%d xv:%d yres:%d yv:%d clock:%d\n",
+ 		info->var.xres, info->var.xres_virtual,
+ 		info->var.yres, info->var.yres_virtual, info->var.pixclock);
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
+-	ps3fb.res_index = i;
+ 
+ 	mode = ps3fb_find_mode(&info->var, &info->fix.line_length);
+ 	if (!mode)
+ 		return -EINVAL;
+ 
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, mode);
++	ps3fb.res_index = i;
++
+ 	offset = FB_OFF(i) + VP_OFF(i);
+ 	info->fix.smem_len = ps3fb_videomemory.size - offset;
+ 	info->screen_base = (char __iomem *)ps3fb.xdr_ea + offset;
+@@ -610,7 +611,7 @@ static int ps3fb_mmap(struct fb_info *in
+ 	unsigned long size, offset;
+ 	int i;
+ 
+-	i = ps3fb_get_res_table(info->var.xres, info->var.yres);
++	i = ps3fb_get_res_table(info->var.xres, info->var.yres, ps3fb_mode);
+ 	if (i == -1)
+ 		return -EINVAL;
+ 
+@@ -999,7 +1000,7 @@ static int __devinit ps3fb_probe(struct 
+ 
+ 	if (ps3fb_mode > 0 &&
+ 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
+-		ps3fb.res_index = ps3fb_get_res_table(xres, yres);
++		ps3fb.res_index = ps3fb_get_res_table(xres, yres, ps3fb_mode);
+ 		DPRINTK("res_index:%d\n", ps3fb.res_index);
+ 	} else
+ 		ps3fb.res_index = GPU_RES_INDEX;
 
 -- 
 With kind regards,
