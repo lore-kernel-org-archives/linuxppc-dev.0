@@ -1,15 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E6361DE04C
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 16:05:16 +1000 (EST)
-Date: Fri, 12 Oct 2007 16:05:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 498F9DE025
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 16:39:29 +1000 (EST)
+Date: Fri, 12 Oct 2007 01:44:55 -0500
+From: Olof Johansson <olof@lixom.net>
 To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix iSeries_hpte_insert prototype
-Message-Id: <20071012160514.0d61713d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Fix 1TB segment detection
+Message-ID: <20071012064455.GA30829@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +19,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 1189be6508d45183013ddb82b18f4934193de274 ([POWERPC] Use 1TB
-segments) added an argument to hpte_insert.
+Buglet in the 1TB detection makes it return after checking the first
+property word, even if it's not a match.
 
-Also make iSeries_hpte_insert static.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/iseries/htab.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/platforms/iseries/htab.c b/arch/powerpc/platforms/iseries/htab.c
-index 15a7097..f99c6c4 100644
---- a/arch/powerpc/platforms/iseries/htab.c
-+++ b/arch/powerpc/platforms/iseries/htab.c
-@@ -39,9 +39,9 @@ static inline void iSeries_hunlock(unsigned long slot)
- 	spin_unlock(&iSeries_hlocks[(slot >> 4) & 0x3f]);
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 611ad08..09da90b 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -209,8 +209,8 @@ static int __init htab_dt_scan_seg_sizes(unsigned long node,
+ 		if (prop[0] == 40) {
+ 			DBG("1T segment support detected\n");
+ 			cur_cpu_spec->cpu_features |= CPU_FTR_1T_SEGMENT;
++			return 1;
+ 		}
+-		return 1;
+ 	}
+ 	return 0;
  }
- 
--long iSeries_hpte_insert(unsigned long hpte_group, unsigned long va,
-+static long iSeries_hpte_insert(unsigned long hpte_group, unsigned long va,
- 			 unsigned long pa, unsigned long rflags,
--			 unsigned long vflags, int psize)
-+			 unsigned long vflags, int psize, int ssize)
- {
- 	long slot;
- 	struct hash_pte lhpte;
--- 
-1.5.3.4
