@@ -1,19 +1,21 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B27A3DDDFC
+	by ozlabs.org (Postfix) with ESMTP id 1EF49DDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Oct 2007 21:18:32 +1000 (EST)
-Date: Sat, 13 Oct 2007 15:18:20 +0400
+	Sat, 13 Oct 2007 23:52:48 +1000 (EST)
+Date: Sat, 13 Oct 2007 17:52:42 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Henrik Larson <henka@henka.dyndns.org>
-Subject: Re: USB Host Controller MPC875 Linux 2.6
-Message-ID: <20071013151820.68255d1e@ru.mvista.com>
-In-Reply-To: <Pine.LNX.4.62.0704291844350.8880@henka.dyndns.org>
-References: <Pine.LNX.4.62.0704291844350.8880@henka.dyndns.org>
+To: "Charles Krinke" <ckrinke@istor.com>
+Subject: Re: I2C support for 8541
+Message-ID: <20071013175242.040cb371@ru.mvista.com>
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F9@MERCURY.inside.istor.com>
+References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F4@MERCURY.inside.istor.com>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F9@MERCURY.inside.istor.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/FYWWt3t5kvdEx8j=SM5O=8Q";
+Content-Type: multipart/signed; boundary="Sig_/.LFl7k9Xzl+LLzwnDoI3.z8";
 	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-embedded@ozlabs.org
+Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
+	Kevin Smith <ksmith@istor.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_/FYWWt3t5kvdEx8j=SM5O=8Q
+--Sig_/.LFl7k9Xzl+LLzwnDoI3.z8
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Hello Henrik,
+Hello Charles,
 
-On Sun, 29 Apr 2007 19:19:09 +0200 (CEST)
-Henrik Larson wrote:
+On Mon, 30 Apr 2007 09:25:28 -0700
+Charles Krinke wrote:
 
+> Assuming I have the external IRQ's understood, the next issue is the
+> hardware clock on our board with the linux-2.6.17.11 kernel. We are
+> using a "DS1338U", which is an I2C RTC.
 >=20
-> Hi,
+> I am trying to identify the relevant source for the 8541/8555 I2C
+> interface in the source base which reads/writes I2MOD, I2ADD, II2BRG,
+> I2COM, I2CER & I2CMR.
 >=20
-> I have a board with a MPC875 processor with a Linux 2.6.16 kernel and=20
-> looking for USB support.
+> I can find a few references to MPC85xx_CPM_I2C in
+> ../syslib/mpc85xx_devices.c, but nothing close in drivers/i2c/...
 >=20
-> Previous, for the 2.4 kernel, I've used used Brad Parker's=20
-> m8xxhci driver (with success).
+> Can someone help me understand the completeness of the I2C source in the
+> 2.6.17.11 kernel, please.
 >=20
-> Does anyone know if there is a Linux 2.6.x USB Host Controller driver
-> for MPC875 (or MPC8xx) somewhere ?
->=20
-Not that I am aware of. Even on 2.4, Brad's driver was not apparent to get =
-to work.
-So moving USB host forward never seemed like a worthwhile idea so far.
 
->=20
-> Thanks.
->=20
-> /Henrik
->=20
->=20
+i2c-mpc.c is prolly responsible to care of 8xxx i2c stuff...
+
+HTH
+> Charles Krinke
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
---Sig_/FYWWt3t5kvdEx8j=SM5O=8Q
+--Sig_/.LFl7k9Xzl+LLzwnDoI3.z8
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFHEKl9e8XNc4YXvvgRAkkhAKCosybe6seFY4CAfiJL9IA3HuuJ8ACgzRaj
-hIyKBjC2gvFXTjUC8WlFQVw=
-=C+3W
+iD8DBQFHEM2qe8XNc4YXvvgRApSnAJ0Tq/Ik9DzLs/GzHGnfijd2S2Dv1gCdF81X
+XrVdR83+1AHN4mE3IL+P8aw=
+=Nfjs
 -----END PGP SIGNATURE-----
 
---Sig_/FYWWt3t5kvdEx8j=SM5O=8Q--
+--Sig_/.LFl7k9Xzl+LLzwnDoI3.z8--
