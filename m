@@ -1,19 +1,15 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 30304DDE10
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 23:56:00 +1000 (EST)
-Date: Sat, 13 Oct 2007 17:55:44 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpm: Fix a couple minor issues in cpm_common.c.
-Message-ID: <20071013175544.36394e5a@kernel.crashing.org>
-In-Reply-To: <20071012201910.GA8988@loki.buserror.net>
-References: <20071012201910.GA8988@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+	by ozlabs.org (Postfix) with ESMTP id EB237DDE1A
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 01:02:44 +1000 (EST)
+From: =?utf-8?q?Michel=20D=C3=A4nzer?= <michel@tungstengraphics.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH 0/2] Add support for Apple aluminum USB keyboards
+Date: Sat, 13 Oct 2007 16:37:23 +0200
+Message-Id: <1192286246-11489-1-git-send-email-michel@tungstengraphics.com>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	mactel-linux-devel@lists.sourceforge.net,
+	linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Scott,
+The following series of two patches adds support for Apple aluminum USB
+keyboards to the hid and usbhid modules. The first patch contains no functional
+change but just renames code identifiers, the second patch adds the actual
+support by reusing and extending the existing quirks for Apple laptop USB
+keyboards.
 
-On Fri, 12 Oct 2007 15:19:11 -0500
-Scott Wood wrote:
+There's some things I'm not too sure about and would appreciate suggestions
+for, e.g.
 
-> A debugging printk is removed, and a comment is fixed to match
-> the code.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-Acked-by: Vitaly Bordug <vbordug@kernel.crashing.com>
-
-
--- 
-Sincerely, Vitaly
+* The keycodes generated for the Exposé and Dashboard keys.
+* Whether F5 and F6 should be subject to the pb_fn_mode option even though they
+  don't have any special engravings.
+* I only have an ISO keyboard, so the device IDs for the ANSI and JIS variants
+  are guessed from the previous models.
