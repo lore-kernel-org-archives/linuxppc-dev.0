@@ -1,32 +1,23 @@
-Return-Path: <ashish.kalra@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 31947DDE9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 00:37:01 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9CEauRJ012980
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 07:36:56 -0700 (MST)
-Received: from zin33exm20.fsl.freescale.net (zin33exm20.ap.freescale.net
-	[10.232.192.5])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9CEareH022007
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Oct 2007 09:36:55 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps SATA
-	Controller
-Date: Fri, 12 Oct 2007 20:06:52 +0530
-Message-ID: <2A6F278C5B66C4459AF4013E77A40CD3FCB95E@zin33exm20.fsl.freescale.net>
-In-Reply-To: <20071012145522.29dd7413@the-village.bc.nu>
-From: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-	"Li Yang-r58472" <LeoLi@freescale.com>
-Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com,
-	Kalra Ashish-B00888 <ashish.kalra@freescale.com>, linuxppc-dev@ozlabs.org
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ED5D6DDE00
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Oct 2007 16:53:46 +1000 (EST)
+Date: Fri, 12 Oct 2007 23:52:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.23-mm1 - build failure with advansys
+Message-Id: <20071012235242.9d7daf05.akpm@linux-foundation.org>
+In-Reply-To: <47104D26.7050206@linux.vnet.ibm.com>
+References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
+	<47104D26.7050206@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,31 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This should be fine, as cd->sfis is allocated in host memory using a
-_coherent allocator and the SATA-2 controller is
-DMA'ing the D2H FIS into it.
+On Sat, 13 Oct 2007 10:14:22 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-Ashish =20
+> Hi Andrew,
+> 
+> Another build failure with following message
+> 
+>   CC      drivers/scsi/advansys.o
+> drivers/scsi/advansys.c:71:2: warning: #warning this driver is still not properly converted to the DMA API
+> drivers/scsi/advansys.c: In function ‘AdvBuildCarrierFreelist’:
+> drivers/scsi/advansys.c:6486: error: implicit declaration of function ‘virt_to_bus’
+> drivers/scsi/advansys.c: In function ‘AdvInitAsc3550Driver’:
+> drivers/scsi/advansys.c:6974: error: implicit declaration of function ‘bus_to_virt’
+> drivers/scsi/advansys.c:6974: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c:6994: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c: In function ‘AdvInitAsc38C0800Driver’:
+> drivers/scsi/advansys.c:7450: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c:7471: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c: In function ‘AdvInitAsc38C1600Driver’:
+> drivers/scsi/advansys.c:7939: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c:7963: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c: In function ‘adv_isr_callback’:
+> drivers/scsi/advansys.c:8175: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c: In function ‘AdvISR’:
+> drivers/scsi/advansys.c:8392: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c:8412: warning: cast to pointer from integer of different size
+> drivers/scsi/advansys.c: In function ‘AdvExeScsiQueue’:
+> drivers/scsi/advansys.c:10845: warning: cast to pointer from integer of different size
+> make[2]: *** [drivers/scsi/advansys.o] Error 1
+> make[1]: *** [drivers/scsi] Error 2
+> make: *** [drivers] Error 2
+> 
+> 
+> The functions virt_to_bus and bus_to_virt are begin defined between ifdef CONFIG_PPC32
+> but when i compile allyesconfig with ppc64 box,i get this error. This patch removes the
+> ifdef.
 
------Original Message-----
-From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]=20
-Sent: Friday, October 12, 2007 7:25 PM
-To: Li Yang-r58472
-Cc: jgarzik@pobox.com; linux-ide@vger.kernel.org;
-linuxppc-dev@ozlabs.org; Kalra Ashish-B00888; Li Yang-r58472
-Subject: Re: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps
-SATA Controller
+Please copy the powerpc developers on powerpc patches.
 
-> +	cd =3D pp->cmdentry + tag;
-> +
-> +	memcpy(fis, &cd->sfis, 6 * 4);	/* should we use
-memcpy_from_io() */
+> Signed-off-by : Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> ---
+> --- linux-2.6.23/include/asm-powerpc/io.h       2007-10-12 15:46:14.000000000 +0530
+> +++ linux-2.6.23/include/asm-powerpc/~io.h      2007-10-12 15:46:00.000000000 +0530
+> @@ -690,7 +690,6 @@ static inline void * phys_to_virt(unsign
+>   * drivers (shame shame shame) that use bus_to_virt() and haven't been
+>   * fixed yet so I need to define it here.
+>   */
+> -#ifdef CONFIG_PPC32
+>  
+>  static inline unsigned long virt_to_bus(volatile void * address)
+>  {
+> @@ -708,7 +707,6 @@ static inline void * bus_to_virt(unsigne
+>  
+>  #define page_to_bus(page)      (page_to_phys(page) + PCI_DRAM_OFFSET)
+>  
+> -#endif /* CONFIG_PPC32 */
+>  
+>  /* access ports */
+>  #define setbits32(_addr, _v) out_be32((_addr), in_be32(_addr) |  (_v))
+> 
 
-If cd->sfis points at memory over the PCI bus (eg mmio or memory on the
-controller card) then you need to use ioread/_io type functions. If
-cd->sfis points into host memory where the FIS is delivered by DMA from
-the card you will be fine if it was allocated with an _coherent
-allocator
+especially ones like that ;)
 
+Matthew has proposed that advansys should be dependent upon
+CONFIG_VIRT_TO_BUS.  I don't think anyone's done a patch yet though.
 
-Alan
+(Actually, the code which you've altered there should probably be using
+CONFIG_VIRT_TO_BUS, too).
