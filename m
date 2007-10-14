@@ -1,12 +1,21 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 14 Oct 2007 16:54:37 -0500
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, tglx@linutronix.de
-Subject: [PATCH] Hook compat_sys_nanosleep up to high res timer code
-Message-ID: <20071014215437.GF26693@kryten>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 10DD9DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 08:05:18 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1867376wag
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 15:05:18 -0700 (PDT)
+Message-ID: <fa686aa40710141505w1787e7e1g6116185001561a4d@mail.gmail.com>
+Date: Sun, 14 Oct 2007 16:05:17 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH v3 4/4] FEC mpc52xx: phy part of the driver
+In-Reply-To: <20071014075958.GG3000@nd47.coderock.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071014075511.GC3000@nd47.coderock.org>
+	<20071014075958.GG3000@nd47.coderock.org>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,94 +25,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 10/14/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> PHY part of the driver for mpc5200(b) ethernet.
 
-Now we have high res timers on ppc64 I thought Id test them. It turns
-out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
-is limited to HZ resolution.
+Assuming I understand correctly, this comment is not correct and this
+patch just adds an MDIO bus driver.  PHY drivers are in phylib and
+data transfer is setup via the core driver, correct?
 
-The following patch makes compat_sys_nanosleep call hrtimer_nanosleep
-and uses compat_alloc_user_space to avoid setting KERNEL_DS.
+It is conceivable that the PHY is connected to an alternate MDIO bus,
+or the MDIO bus is used for a PHY connected to an external Ethernet
+controller.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Speaking of which, is it possible to use this MDIO bus without the
+core FEC being initialized?
 
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 3bae374..46795ac 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -40,62 +40,29 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
- 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
- }
- 
--static long compat_nanosleep_restart(struct restart_block *restart)
--{
--	unsigned long expire = restart->arg0, now = jiffies;
--	struct compat_timespec __user *rmtp;
--
--	/* Did it expire while we handled signals? */
--	if (!time_after(expire, now))
--		return 0;
--
--	expire = schedule_timeout_interruptible(expire - now);
--	if (expire == 0)
--		return 0;
--
--	rmtp = (struct compat_timespec __user *)restart->arg1;
--	if (rmtp) {
--		struct compat_timespec ct;
--		struct timespec t;
--
--		jiffies_to_timespec(expire, &t);
--		ct.tv_sec = t.tv_sec;
--		ct.tv_nsec = t.tv_nsec;
--		if (copy_to_user(rmtp, &ct, sizeof(ct)))
--			return -EFAULT;
--	}
--	/* The 'restart' block is already filled in */
--	return -ERESTART_RESTARTBLOCK;
--}
--
- asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
--		struct compat_timespec __user *rmtp)
-+				     struct compat_timespec __user *rmtp)
- {
--	struct timespec t;
--	struct restart_block *restart;
--	unsigned long expire;
-+	struct timespec tu;
-+	struct timespec __user *rmtp64;
-+	long ret;
- 
--	if (get_compat_timespec(&t, rqtp))
-+	if (get_compat_timespec(&tu, rqtp))
- 		return -EFAULT;
- 
--	if ((t.tv_nsec >= 1000000000L) || (t.tv_nsec < 0) || (t.tv_sec < 0))
-+	if (!timespec_valid(&tu))
- 		return -EINVAL;
- 
--	expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
--	expire = schedule_timeout_interruptible(expire);
--	if (expire == 0)
--		return 0;
-+	rmtp64 = compat_alloc_user_space(sizeof(*rmtp64));
-+	ret = hrtimer_nanosleep(&tu, rmtp64, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
- 
--	if (rmtp) {
--		jiffies_to_timespec(expire, &t);
--		if (put_compat_timespec(&t, rmtp))
-+	if (ret) {
-+		if (copy_from_user(&tu, rmtp64, sizeof(*rmtp64)) ||
-+		    put_compat_timespec(&tu, rmtp))
- 			return -EFAULT;
- 	}
--	restart = &current_thread_info()->restart_block;
--	restart->fn = compat_nanosleep_restart;
--	restart->arg0 = jiffies + expire;
--	restart->arg1 = (unsigned long) rmtp;
--	return -ERESTART_RESTARTBLOCK;
-+
-+	return ret;
- }
- 
- static inline long get_compat_itimerval(struct itimerval *o,
+> +static struct of_device_id fec_mdio_match[] = {
+> +       {
+> +               .type = "mdio",
+> +               .compatible = "mpc5200b-fec-phy",
+
+This is not a phy; it's an MDIO bus.  Also, shouldn't this be
+"mpc5200-..." instead of "mpc5200b-..."?
+
+> +       },
+> +       {},
+> +};
+> +
+> +struct of_platform_driver mpc52xx_fec_mdio_driver = {
+> +       .name = "mpc5200b-fec-phy",
+> +       .probe = fec_mdio_probe,
+> +       .remove = fec_mdio_remove,
+> +       .match_table = fec_mdio_match,
+
+Inconsistent naming.  Please use the same prefix on all global/static
+symbols (ie. use "mpc52xx_mdio_" instead of the mix of
+"mpc52xx_fec_mdio_", "fec_mdio_", etc.)  I also thing that "fec_mdio_"
+is too generic because there are a number of different incompatible
+FEC devices.
+
+> +};
+> +
+> +/* let fec driver call it, since this has to be registered before it */
+> +EXPORT_SYMBOL_GPL(mpc52xx_fec_mdio_driver);
+
+Why not have a module_init()/module_exit() in this file?  I don't
+think the FEC driver calls this driver's functions directly anymore,
+and it's still dependent on the of_platform bus probe order anyway.
+
+As an added bonus, it makes your Makefile much simpler.
+
+> +
+> +
+> +MODULE_LICENSE("Dual BSD/GPL");
+> Index: linux.git/drivers/net/fec_mpc52xx/Makefile
+> ===================================================================
+> --- linux.git.orig/drivers/net/fec_mpc52xx/Makefile
+> +++ linux.git/drivers/net/fec_mpc52xx/Makefile
+> @@ -1,2 +1,7 @@
+>  obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx.o
+>  fec_mpc52xx-objs := fec.o
+> +
+> +ifeq ($(CONFIG_FEC_MPC52xx_MDIO),y)
+> +       obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx_phy.o
+> +       fec_mpc52xx_phy-objs := fec_phy.o
+> +endif
+> Index: linux.git/drivers/net/fec_mpc52xx/Kconfig
+> ===================================================================
+> --- linux.git.orig/drivers/net/fec_mpc52xx/Kconfig
+> +++ linux.git/drivers/net/fec_mpc52xx/Kconfig
+> @@ -11,5 +11,18 @@ config FEC_MPC52xx
+>         ---help---
+>           This option enables support for the MPC5200's on-chip
+>           Fast Ethernet Controller
+> +         If compiled as module, it will be called 'fec_mpc52xx.ko'.
+
+Drop this line and make the help text the same format as the other eth
+drivers in drivers/net.
+
+> +
+> +config FEC_MPC52xx_MDIO
+> +       bool "FEC MII PHY driver"
+> +       depends on FEC_MPC52xx
+> +       default y
+> +       ---help---
+> +         The MPC5200's FEC can connect to the Ethernet either with
+> +         an external MII PHY chip or 10 Mbps 7-wire interface
+> +         (Motorola? industry standard).
+> +         If your board uses an external PHY, enable this.
+
+Not strictly true.  This enables talking to a PHY using the internal
+MDIO controller.  PHY register access could just as easily be accessed
+via an alternate interface.
+
+> +         If not sure, enable.
+> +         If compiled as module, it will be called 'fec_mpc52xx_phy.ko'.
+
+Drop the module name comment.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
