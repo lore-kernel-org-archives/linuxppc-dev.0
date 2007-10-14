@@ -1,12 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 14 Oct 2007 14:33:17 -0500
-From: Anton Blanchard <anton@samba.org>
-To: paulus@samba.org
-Subject: [PATCH] Quieten cache information at boot
-Message-ID: <20071014193317.GC26693@kryten>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D04FBDDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 06:08:42 +1000 (EST)
+Date: Sun, 14 Oct 2007 15:14:31 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] Quieten cache information at boot
+Message-ID: <20071014201431.GA23002@lixom.net>
+References: <20071014193317.GC26693@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20071014193317.GC26693@kryten>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,44 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, Oct 14, 2007 at 02:33:17PM -0500, Anton Blanchard wrote:
+> 
+> After 6 years the ppc64 kernel still thinks its important to tell me my
+> cache line size is 0x80 bytes. I think most people who care know that by
+> now. The rest probably cant even understand the hex output.
+> 
+> Since we might have misconfigured firmware or cpus that have a linesize
+> that isnt 128 bytes, I still print it out for those cases. If people
+> would prefer to remove it completely, lets do it.
 
-After 6 years the ppc64 kernel still thinks its important to tell me my
-cache line size is 0x80 bytes. I think most people who care know that by
-now. The rest probably cant even understand the hex output.
+Let's just remove it completely. I have yet to see a bug because of it,
+and we have 0x40 byte cache lines.
 
-Since we might have misconfigured firmware or cpus that have a linesize
-that isnt 128 bytes, I still print it out for those cases. If people
-would prefer to remove it completely, lets do it.
+If anything, compare firmware setting to cputable one and print a warning.
 
-Also for lpar remove the htab_address printout since its not used.
+Should maybe give them loglevels too, since you're touching them? I
+suggest KERN_DEBUG -- if needed it's there in dmesg, and if you need it
+on the console you can just add "debug" to the kernel command line.
 
-Anton
-ppc64 boot log usability expert
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 008ab68..e413c49 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -426,11 +426,14 @@ void __init setup_system(void)
- 	printk("-----------------------------------------------------\n");
- 	printk("ppc64_pft_size                = 0x%lx\n", ppc64_pft_size);
- 	printk("physicalMemorySize            = 0x%lx\n", lmb_phys_mem_size());
--	printk("ppc64_caches.dcache_line_size = 0x%x\n",
--	       ppc64_caches.dline_size);
--	printk("ppc64_caches.icache_line_size = 0x%x\n",
--	       ppc64_caches.iline_size);
--	printk("htab_address                  = 0x%p\n", htab_address);
-+	if (ppc64_caches.dline_size != 0x80)
-+		printk("ppc64_caches.dcache_line_size = 0x%x\n",
-+		       ppc64_caches.dline_size);
-+	if (ppc64_caches.iline_size != 0x80)
-+		printk("ppc64_caches.icache_line_size = 0x%x\n",
-+		       ppc64_caches.iline_size);
-+	if (htab_address)
-+		printk("htab_address                  = 0x%p\n", htab_address);
- 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
- #if PHYSICAL_START > 0
- 	printk("physical_start                = 0x%x\n", PHYSICAL_START);
+-Olof
