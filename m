@@ -1,14 +1,16 @@
 Return-Path: <domen.puncer@telargo.com>
 Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id AFEFCDDE0F
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 17:55:25 +1000 (EST)
-Date: Sun, 14 Oct 2007 09:55:11 +0200
+	by ozlabs.org (Postfix) with ESMTP id DDB40DDE1B
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 17:57:14 +1000 (EST)
+Date: Sun, 14 Oct 2007 09:57:11 +0200
 From: Domen Puncer <domen.puncer@telargo.com>
 To: galak@kernel.crashing.org, jgarzik@pobox.com
-Subject: [PATCH v3 0/4] FEC - fast ethernet controller for mpc52xx
-Message-ID: <20071014075511.GC3000@nd47.coderock.org>
+Subject: [PATCH v3 1/4] FEC mpc52xx: device tree changes
+Message-ID: <20071014075711.GD3000@nd47.coderock.org>
+References: <20071014075511.GC3000@nd47.coderock.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071014075511.GC3000@nd47.coderock.org>
 Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,23 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello!
-
-If there are no objections, I would like to get this merged
-when bestcomm goes in (any time now?).
-
-It's split into four parts:
-1 - device tree
-2 - small bestcomm change
-3 - the actual driver
-4 - phy part of the driver
+Add device tree entries for lite5200b's FEC's PHY.
 
 
-	Domen
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
--- 
-Domen Puncer | Research & Development
-.............................................................................................
-Telargo d.o.o. | Zagrebška cesta 20 | 2000 Maribor | Slovenia
-.............................................................................................
-www.telargo.com
+---
+ arch/powerpc/boot/dts/lite5200b.dts |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletion(-)
+
+Index: linux.git/arch/powerpc/boot/dts/lite5200b.dts
+===================================================================
+--- linux.git.orig/arch/powerpc/boot/dts/lite5200b.dts
++++ linux.git/arch/powerpc/boot/dts/lite5200b.dts
+@@ -277,10 +277,26 @@
+ 		ethernet@3000 {
+ 			device_type = "network";
+ 			compatible = "mpc5200b-fec","mpc5200-fec";
+-			reg = <3000 800>;
++			reg = <3000 400>;
+ 			mac-address = [ 02 03 04 05 06 07 ]; // Bad!
+ 			interrupts = <2 5 0>;
+ 			interrupt-parent = <&mpc5200_pic>;
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "mpc5200b-fec-phy";
++			reg = <3000 400>;	// fec range, since we need to setup fec interrupts
++			interrupts = <2 5 0>;	// these are for "mii command finished", not link changes & co.
++			interrupt-parent = <&mpc5200_pic>;
++
++			phy0:ethernet-phy@0 {
++				device_type = "ethernet-phy";
++				reg = <0>;
++			};
+ 		};
+ 
+ 		ata@3a00 {
