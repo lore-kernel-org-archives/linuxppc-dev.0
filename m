@@ -1,17 +1,12 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D04FBDDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 06:08:42 +1000 (EST)
-Date: Sun, 14 Oct 2007 15:14:31 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] Quieten cache information at boot
-Message-ID: <20071014201431.GA23002@lixom.net>
-References: <20071014193317.GC26693@kryten>
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 14 Oct 2007 15:06:59 -0500
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org
+Subject: [PATCH] Enable NO_HZ and high res timers for pseries and ppc64 configs
+Message-ID: <20071014200659.GD26693@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071014193317.GC26693@kryten>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 14, 2007 at 02:33:17PM -0500, Anton Blanchard wrote:
-> 
-> After 6 years the ppc64 kernel still thinks its important to tell me my
-> cache line size is 0x80 bytes. I think most people who care know that by
-> now. The rest probably cant even understand the hex output.
-> 
-> Since we might have misconfigured firmware or cpus that have a linesize
-> that isnt 128 bytes, I still print it out for those cases. If people
-> would prefer to remove it completely, lets do it.
 
-Let's just remove it completely. I have yet to see a bug because of it,
-and we have 0x40 byte cache lines.
+Enable NO_HZ and high res timers for the ppc64 and pseries defconfigs.
+Thoughts?
 
-If anything, compare firmware setting to cputable one and print a warning.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Should maybe give them loglevels too, since you're touching them? I
-suggest KERN_DEBUG -- if needed it's there in dmesg, and if you need it
-on the console you can just add "debug" to the kernel command line.
-
-
--Olof
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 5f6224a..bb8d4e4 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -216,6 +217,10 @@ CONFIG_AXON_RAM=m
+ #
+ # Kernel options
+ #
++CONFIG_TICK_ONESHOT=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+ # CONFIG_HZ_100 is not set
+ CONFIG_HZ_250=y
+ # CONFIG_HZ_300 is not set
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 0f274e5..c09eb8c 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -176,6 +177,10 @@ CONFIG_IBMEBUS=y
+ #
+ # Kernel options
+ #
++CONFIG_TICK_ONESHOT=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
++CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+ # CONFIG_HZ_100 is not set
+ CONFIG_HZ_250=y
+ # CONFIG_HZ_300 is not set
