@@ -1,17 +1,19 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id A3C2BDDE17
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 18:10:30 +1000 (EST)
-Date: Sun, 14 Oct 2007 10:10:27 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH 2/2] clk for mpc52xx: use psc_mclk's in spi driver
-Message-ID: <20071014081027.GJ3000@nd47.coderock.org>
-References: <20071014080813.GH3000@nd47.coderock.org>
-Mime-Version: 1.0
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id 2796CDDE0F
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 21:51:32 +1000 (EST)
+Date: Sun, 14 Oct 2007 13:33:36 +0200
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
+	MPC5200
+Message-ID: <20071014113336.GA23286@powerlinux.fr>
+References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
+	<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071014080813.GH3000@nd47.coderock.org>
-Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+From: Sven Luther <sven@powerlinux.fr>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,167 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use clocks subsystem in spi driver.
+On Sat, Oct 13, 2007 at 10:42:05PM -0600, Grant Likely wrote:
+> From: Sylvain Munaut <tnt@246tNt.com>
+> 
+> This patch adds support for the core of the BestComm API
+> for the Freescale MPC5200(b). The BestComm engine is a
+> microcode-controlled / tasks-based DMA used by several
+> of the onchip devices.
+> 
+> Setting up the tasks / memory allocation and all common
+> low level functions are handled by this patch.
+> The specifics details of each tasks and their microcode
+> are split-out in separate patches.
+> 
+> This is not the official API, but a much cleaner one.
+> (hopefully)
+> 
+> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
+Hi Grant, ...
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+I am unsure if this is a regression with regard to Sylvain's patch, or
+somethign else, but it is no more possible to build bestcomm modular :
 
----
- drivers/spi/mpc52xx_psc_spi.c |   64 +++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 57 insertions(+), 7 deletions(-)
+ERROR: "bcom_enable" [drivers/net/fec_mpc52xx/fec_mpc52xx.ko] undefined!
+ERROR: "bcom_disable" [drivers/net/fec_mpc52xx/fec_mpc52xx.ko] undefined!
+ERROR: "bcom_task_alloc" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_sram" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_load_image" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_task_free" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_eng" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_set_initiator" [arch/powerpc/sysdev/bestcomm/bestcomm-gen-bd.ko] undefined!
+ERROR: "bcom_task_alloc" [arch/powerpc/sysdev/bestcomm/bestcomm-fec.ko] undefined!
+ERROR: "bcom_sram" [arch/powerpc/sysdev/bestcomm/bestcomm-fec.ko] undefined!
+ERROR: "bcom_load_image" [arch/powerpc/sysdev/bestcomm/bestcomm-fec.ko] undefined!
+ERROR: "bcom_task_free" [arch/powerpc/sysdev/bestcomm/bestcomm-fec.ko] undefined!
+ERROR: "bcom_eng" [arch/powerpc/sysdev/bestcomm/bestcomm-fec.ko] undefined!
+ERROR: "bcom_task_alloc" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
+ERROR: "bcom_sram" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
+ERROR: "bcom_load_image" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
+ERROR: "bcom_task_free" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
+ERROR: "bcom_eng" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
+ERROR: "bcom_set_initiator" [arch/powerpc/sysdev/bestcomm/bestcomm-ata.ko] undefined!
 
-Index: linux.git/drivers/spi/mpc52xx_psc_spi.c
-===================================================================
---- linux.git.orig/drivers/spi/mpc52xx_psc_spi.c
-+++ linux.git/drivers/spi/mpc52xx_psc_spi.c
-@@ -18,6 +18,7 @@
- 
- #if defined(CONFIG_PPC_MERGE)
- #include <asm/of_platform.h>
-+#include <linux/clk.h>
- #else
- #include <linux/platform_device.h>
- #endif
-@@ -53,6 +54,8 @@ struct mpc52xx_psc_spi {
- 	spinlock_t lock;
- 
- 	struct completion done;
-+
-+	struct clk *clk;
- };
- 
- /* controller state */
-@@ -85,6 +88,13 @@ static void mpc52xx_psc_spi_activate_cs(
- 	u32 sicr;
- 	u16 ccr;
- 
-+#ifdef CONFIG_PPC_MERGE
-+	u8 bitclkdiv = 2;	/* minimum bitclkdiv */
-+	int speed = cs->speed_hz ? cs->speed_hz : 1000000;
-+	int mclk;
-+	int system;
-+#endif
-+
- 	sicr = in_be32(&psc->sicr);
- 
- 	/* Set clock phase and polarity */
-@@ -106,13 +116,39 @@ static void mpc52xx_psc_spi_activate_cs(
- 	/* Set clock frequency and bits per word
- 	 * Because psc->ccr is defined as 16bit register instead of 32bit
- 	 * just set the lower byte of BitClkDiv
-+	 * Because BitClkDiv is 8-bit on mpc5200. Lets stay compatible.
- 	 */
- 	ccr = in_be16(&psc->ccr);
- 	ccr &= 0xFF00;
-+
-+#ifdef CONFIG_PPC_MERGE
-+	/*
-+	 * pscclk = mclk/(bitclkdiv+1))		bitclkdiv is 8-bit, >= 2
-+	 * mclk = fsys/(mclkdiv+1)		mclkdiv is 9-bit, >= 1
-+	 * as mclkdiv has higher precision, we want is as big as possible
-+	 * => we get < 0.002*clock error
-+	 */
-+
-+	system = clk_get_rate(clk_get_parent(mps->clk));
-+	mclk = speed * (bitclkdiv+1);
-+	if (system/mclk > 512) { /* bigger than mclkdiv */
-+		bitclkdiv = (system/512) / speed;
-+		mclk = speed * (bitclkdiv+1);
-+	}
-+
-+	if (clk_set_rate(mps->clk, mclk))
-+		dev_err(&spi->dev, "couldn't set psc_mclk's rate\n");
-+
-+	dev_info(&spi->dev, "clock: wanted: %i, got: %li\n", speed,
-+			clk_round_rate(mps->clk, mclk) / (bitclkdiv+1));
-+
-+	ccr |= bitclkdiv;
-+#else
- 	if (cs->speed_hz)
- 		ccr |= (MCLK / cs->speed_hz - 1) & 0xFF;
- 	else /* by default SPI Clk 1MHz */
- 		ccr |= (MCLK / 1000000 - 1) & 0xFF;
-+#endif
- 	out_be16(&psc->ccr, ccr);
- 	mps->bits_per_word = cs->bits_per_word;
- 
-@@ -330,20 +366,17 @@ static void mpc52xx_psc_spi_cleanup(stru
- 
- static int mpc52xx_psc_spi_port_config(int psc_id, struct mpc52xx_psc_spi *mps)
- {
-+	struct mpc52xx_psc __iomem *psc = mps->psc;
-+	int ret = 0;
-+
-+#if !defined(CONFIG_PPC_MERGE)
- 	struct mpc52xx_cdm __iomem *cdm;
- 	struct mpc52xx_gpio __iomem *gpio;
--	struct mpc52xx_psc __iomem *psc = mps->psc;
- 	u32 ul;
- 	u32 mclken_div;
--	int ret = 0;
- 
--#if defined(CONFIG_PPC_MERGE)
--	cdm = mpc52xx_find_and_map("mpc5200-cdm");
--	gpio = mpc52xx_find_and_map("mpc5200-gpio");
--#else
- 	cdm = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
- 	gpio = ioremap(MPC52xx_PA(MPC52xx_GPIO_OFFSET), MPC52xx_GPIO_SIZE);
--#endif
- 	if (!cdm || !gpio) {
- 		printk(KERN_ERR "Error mapping CDM/GPIO\n");
- 		ret = -EFAULT;
-@@ -399,6 +432,7 @@ static int mpc52xx_psc_spi_port_config(i
- 		ret = -EINVAL;
- 		goto unmap_regs;
- 	}
-+#endif
- 
- 	/* Reset the PSC into a known state */
- 	out_8(&psc->command, MPC52xx_PSC_RST_RX);
-@@ -422,11 +456,13 @@ static int mpc52xx_psc_spi_port_config(i
- 
- 	mps->bits_per_word = 8;
- 
-+#if !defined(CONFIG_PPC_MERGE)
- unmap_regs:
- 	if (cdm)
- 		iounmap(cdm);
- 	if (gpio)
- 		iounmap(gpio);
-+#endif
- 
- 	return ret;
- }
-@@ -511,11 +547,22 @@ static int __init mpc52xx_psc_spi_do_pro
- 
- 	ret = spi_register_master(master);
- 	if (ret < 0)
-+		goto destr_wq;
-+
-+#ifdef CONFIG_PPC_MERGE
-+	mps->clk = clk_get(dev, "psc_mclk");
-+	if (IS_ERR(mps->clk)) {
-+		dev_err(dev, "couldn't get psc_mclk clock\n");
-+		ret = -ENOENT;
- 		goto unreg_master;
-+	}
-+#endif
- 
- 	return ret;
- 
- unreg_master:
-+	spi_unregister_master(master);
-+destr_wq:
- 	destroy_workqueue(mps->workqueue);
- free_irq:
- 	free_irq(mps->irq, mps);
-@@ -532,6 +579,9 @@ static int __exit mpc52xx_psc_spi_do_rem
- 	struct spi_master *master = dev_get_drvdata(dev);
- 	struct mpc52xx_psc_spi *mps = spi_master_get_devdata(master);
- 
-+#ifdef CONFIG_PPC_MERGE
-+	clk_put(mps->clk);
-+#endif
- 	flush_workqueue(mps->workqueue);
- 	destroy_workqueue(mps->workqueue);
- 	spi_unregister_master(master);
+.config snipplet leading to this : 
+
+CONFIG_PPC_BESTCOMM=m
+CONFIG_PPC_BESTCOMM_ATA=m
+CONFIG_PPC_BESTCOMM_FEC=m
+CONFIG_PPC_BESTCOMM_GEN_BD=m
+CONFIG_FEC_MPC52xx=m
+CONFIG_FEC_MPC52xx_MDIO=m
+
+This is building against the 2.6.23 tree, with assorted debian patches
+applied, and the latest version of this and domen's patches.
+
+Friendly,
+
+Sven Luther
