@@ -1,14 +1,20 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 14 Oct 2007 16:03:05 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Olof Johansson <olof@lixom.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ABD4CDDE2D
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 07:18:02 +1000 (EST)
 Subject: Re: [PATCH] Quieten cache information at boot
-Message-ID: <20071014210305.GE26693@kryten>
-References: <20071014193317.GC26693@kryten> <20071014201431.GA23002@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071014201431.GA23002@lixom.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20071014193317.GC26693@kryten>
+References: <20071014193317.GC26693@kryten>
+Content-Type: text/plain
+Date: Mon, 15 Oct 2007 07:17:51 +1000
+Message-Id: <1192396671.6188.6.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,22 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-Hi,
 
-> Let's just remove it completely. I have yet to see a bug because of it,
-> and we have 0x40 byte cache lines.
-
-Yeah I completely support killing it too :)
-
-> If anything, compare firmware setting to cputable one and print a warning.
+On Sun, 2007-10-14 at 14:33 -0500, Anton Blanchard wrote:
+> After 6 years the ppc64 kernel still thinks its important to tell me my
+> cache line size is 0x80 bytes. I think most people who care know that by
+> now. The rest probably cant even understand the hex output.
 > 
-> Should maybe give them loglevels too, since you're touching them? I
-> suggest KERN_DEBUG -- if needed it's there in dmesg, and if you need it
-> on the console you can just add "debug" to the kernel command line.
+> Since we might have misconfigured firmware or cpus that have a linesize
+> that isnt 128 bytes, I still print it out for those cases. If people
+> would prefer to remove it completely, lets do it.
+> 
+> Also for lpar remove the htab_address printout since its not used.
 
-I started playing with loglevels but theres some ordering issues since
-the options to change loglevel (eg the "debug" boot option) doesnt get
-parsed until later in a __setup function.
+Why not also make those KERN_DEBUG ?
 
-Anton
+Ben.
