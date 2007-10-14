@@ -1,29 +1,29 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 9DDE1DDE18
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 08:49:20 +1000 (EST)
-Received: from pd4mr5so.prod.shaw.ca (pd4mr5so-qfe3.prod.shaw.ca [10.0.141.50])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JPX00AMHBD1RZ40@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 14 Oct 2007 16:48:37 -0600 (MDT)
-Received: from pn2ml8so.prod.shaw.ca ([10.0.121.152])
-	by pd4mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	by ozlabs.org (Postfix) with ESMTP id 83358DDEA3
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 08:49:21 +1000 (EST)
+Received: from pd4mr4so.prod.shaw.ca
+	(pd4mr4so-qfe3.prod.shaw.ca [10.0.141.215]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JPX00AMOBD8S040@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 14 Oct 2007 16:48:44 -0600 (MDT)
+Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
+	by pd4mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JPX008UVBCZPN10@pd4mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 14 Oct 2007 16:48:37 -0600 (MDT)
+	5 2006)) with ESMTP id <0JPX00KUGBD43B40@pd4mr4so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 14 Oct 2007 16:48:44 -0600 (MDT)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
 	2004))
-	with ESMTP id <0JPX00L9FBCYP8L0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 14 Oct 2007 16:48:34 -0600 (MDT)
-Date: Sun, 14 Oct 2007 16:48:34 -0600
+	with ESMTP id <0JPX0007FBD38HA0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 14 Oct 2007 16:48:39 -0600 (MDT)
+Date: Sun, 14 Oct 2007 16:48:39 -0600
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v3 5/7] bestcomm: ATA task support
+Subject: [PATCH v3 6/7] bestcomm: FEC task support
 In-reply-to: <20071014224724.14235.96152.stgit@trillian.cg.shawcable.net>
 To: galak@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
 	tnt@246tnt.com, domen.puncer@telargo.com
-Message-id: <20071014224834.14235.82045.stgit@trillian.cg.shawcable.net>
+Message-id: <20071014224839.14235.40395.stgit@trillian.cg.shawcable.net>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
 References: <20071014224724.14235.96152.stgit@trillian.cg.shawcable.net>
@@ -38,7 +38,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Sylvain Munaut <tnt@246tNt.com>
 
-This is the microcode for the ATA task and the associated
+This is the microcode for the FEC task and the associated
 support code.
 
 The microcode itself comes directly from the offical
@@ -48,252 +48,51 @@ Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- arch/powerpc/sysdev/bestcomm/Kconfig         |    7 +
- arch/powerpc/sysdev/bestcomm/Makefile        |    2 
- arch/powerpc/sysdev/bestcomm/ata.c           |  154 ++++++++++++++++++++++++++
- arch/powerpc/sysdev/bestcomm/ata.h           |   37 ++++++
- arch/powerpc/sysdev/bestcomm/bcom_ata_task.c |   67 +++++++++++
- 5 files changed, 267 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/bestcomm/Kconfig            |    7 +
+ arch/powerpc/sysdev/bestcomm/Makefile           |    2 
+ arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c |   78 +++++++
+ arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c |   91 ++++++++
+ arch/powerpc/sysdev/bestcomm/fec.c              |  270 +++++++++++++++++++++++
+ arch/powerpc/sysdev/bestcomm/fec.h              |   61 +++++
+ 6 files changed, 509 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/sysdev/bestcomm/Kconfig b/arch/powerpc/sysdev/bestcomm/Kconfig
-index 3366e24..9d087ce 100644
+index 9d087ce..831763b 100644
 --- a/arch/powerpc/sysdev/bestcomm/Kconfig
 +++ b/arch/powerpc/sysdev/bestcomm/Kconfig
-@@ -16,3 +16,10 @@ config PPC_BESTCOMM
- 	  If you want to use drivers that require DMA operations,
- 	  answer Y or M. Otherwise say N.
+@@ -23,3 +23,10 @@ config PPC_BESTCOMM_ATA
+ 	help
+ 	  This option enables the support for the ATA task.
  
-+config PPC_BESTCOMM_ATA
-+	tristate "Bestcomm ATA task support"
++config PPC_BESTCOMM_FEC
++	tristate "Bestcomm FEC tasks support"
 +	depends on PPC_BESTCOMM
 +	default n
 +	help
-+	  This option enables the support for the ATA task.
++	  This option enables the support for the FEC tasks.
 +
 diff --git a/arch/powerpc/sysdev/bestcomm/Makefile b/arch/powerpc/sysdev/bestcomm/Makefile
-index 8e33217..242d822 100644
+index 242d822..43046cf 100644
 --- a/arch/powerpc/sysdev/bestcomm/Makefile
 +++ b/arch/powerpc/sysdev/bestcomm/Makefile
-@@ -3,6 +3,8 @@
- #
+@@ -4,7 +4,9 @@
  
  bestcomm-core-objs	:= bestcomm.o sram.o
-+bestcomm-ata-objs	:= ata.o bcom_ata_task.o
+ bestcomm-ata-objs	:= ata.o bcom_ata_task.o
++bestcomm-fec-objs	:= fec.o bcom_fec_rx_task.o bcom_fec_tx_task.o
  
  obj-y					+= bestcomm-core.o
-+obj-$(CONFIG_PPC_BESTCOMM_ATA)		+= bestcomm-ata.o
+ obj-$(CONFIG_PPC_BESTCOMM_ATA)		+= bestcomm-ata.o
++obj-$(CONFIG_PPC_BESTCOMM_FEC)		+= bestcomm-fec.o
   
-diff --git a/arch/powerpc/sysdev/bestcomm/ata.c b/arch/powerpc/sysdev/bestcomm/ata.c
+diff --git a/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c
 new file mode 100644
-index 0000000..1f5258f
+index 0000000..a1ad6a0
 --- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/ata.c
-@@ -0,0 +1,154 @@
++++ b/arch/powerpc/sysdev/bestcomm/bcom_fec_rx_task.c
+@@ -0,0 +1,78 @@
 +/*
-+ * Bestcomm ATA task driver
-+ *
-+ *
-+ * Patterned after bestcomm/fec.c by Dale Farnsworth <dfarnsworth@mvista.com>
-+ *                                   2003-2004 (c) MontaVista, Software, Inc.
-+ *
-+ * Copyright (C) 2006-2007 Sylvain Munaut <tnt@246tNt.com>
-+ * Copyright (C) 2006      Freescale - John Rigby
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <asm/io.h>
-+
-+#include "bestcomm.h"
-+#include "bestcomm_priv.h"
-+#include "ata.h"
-+
-+
-+/* ======================================================================== */
-+/* Task image/var/inc                                                       */
-+/* ======================================================================== */
-+
-+/* ata task image */
-+extern u32 bcom_ata_task[];
-+
-+/* ata task vars that need to be set before enabling the task */
-+struct bcom_ata_var {
-+	u32 enable;		/* (u16*) address of task's control register */
-+	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
-+	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
-+	u32 bd_start;		/* (struct bcom_bd*) current bd */
-+	u32 buffer_size;	/* size of receive buffer */
-+};
-+
-+/* ata task incs that need to be set before enabling the task */
-+struct bcom_ata_inc {
-+	u16 pad0;
-+	s16 incr_bytes;
-+	u16 pad1;
-+	s16 incr_dst;
-+	u16 pad2;
-+	s16 incr_src;
-+};
-+
-+
-+/* ======================================================================== */
-+/* Task support code                                                        */
-+/* ======================================================================== */
-+
-+struct bcom_task *
-+bcom_ata_init(int queue_len, int maxbufsize)
-+{
-+	struct bcom_task *tsk;
-+	struct bcom_ata_var *var;
-+	struct bcom_ata_inc *inc;
-+
-+	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_ata_bd), 0);
-+	if (!tsk)
-+		return NULL;
-+
-+	tsk->flags = BCOM_FLAGS_NONE;
-+
-+	bcom_ata_reset_bd(tsk);
-+
-+	var = (struct bcom_ata_var *) bcom_task_var(tsk->tasknum);
-+	inc = (struct bcom_ata_inc *) bcom_task_inc(tsk->tasknum);
-+
-+	if (bcom_load_image(tsk->tasknum, bcom_ata_task)) {
-+		bcom_task_free(tsk);
-+		return NULL;
-+	}
-+
-+	var->enable	= bcom_eng->regs_base +
-+				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
-+	var->bd_base	= tsk->bd_pa;
-+	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
-+	var->bd_start	= tsk->bd_pa;
-+	var->buffer_size = maxbufsize;
-+
-+	/* Configure some stuff */
-+	bcom_set_task_pragma(tsk->tasknum, BCOM_ATA_PRAGMA);
-+	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
-+
-+	out_8(&bcom_eng->regs->ipr[BCOM_INITIATOR_ATA_RX], BCOM_IPR_ATA_RX);
-+	out_8(&bcom_eng->regs->ipr[BCOM_INITIATOR_ATA_TX], BCOM_IPR_ATA_TX);
-+
-+	out_be32(&bcom_eng->regs->IntPend, 1<<tsk->tasknum); /* Clear ints */
-+
-+	return tsk;
-+}
-+EXPORT_SYMBOL_GPL(bcom_ata_init);
-+
-+void bcom_ata_rx_prepare(struct bcom_task *tsk)
-+{
-+	struct bcom_ata_inc *inc;
-+
-+	inc = (struct bcom_ata_inc *) bcom_task_inc(tsk->tasknum);
-+
-+	inc->incr_bytes	= -(s16)sizeof(u32);
-+	inc->incr_src	= 0;
-+	inc->incr_dst	= sizeof(u32);
-+
-+	bcom_set_initiator(tsk->tasknum, BCOM_INITIATOR_ATA_RX);
-+}
-+EXPORT_SYMBOL_GPL(bcom_ata_rx_prepare);
-+
-+void bcom_ata_tx_prepare(struct bcom_task *tsk)
-+{
-+	struct bcom_ata_inc *inc;
-+
-+	inc = (struct bcom_ata_inc *) bcom_task_inc(tsk->tasknum);
-+
-+	inc->incr_bytes	= -(s16)sizeof(u32);
-+	inc->incr_src	= sizeof(u32);
-+	inc->incr_dst	= 0;
-+
-+	bcom_set_initiator(tsk->tasknum, BCOM_INITIATOR_ATA_TX);
-+}
-+EXPORT_SYMBOL_GPL(bcom_ata_tx_prepare);
-+
-+void bcom_ata_reset_bd(struct bcom_task *tsk)
-+{
-+	struct bcom_ata_var *var;
-+
-+	/* Reset all BD */
-+	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
-+
-+	tsk->index = 0;
-+	tsk->outdex = 0;
-+
-+	var = (struct bcom_ata_var *) bcom_task_var(tsk->tasknum);
-+	var->bd_start = var->bd_base;
-+}
-+EXPORT_SYMBOL_GPL(bcom_ata_reset_bd);
-+
-+void bcom_ata_release(struct bcom_task *tsk)
-+{
-+	/* Nothing special for the ATA tasks */
-+	bcom_task_free(tsk);
-+}
-+EXPORT_SYMBOL_GPL(bcom_ata_release);
-+
-+
-+MODULE_DESCRIPTION("BestComm ATA task driver");
-+MODULE_AUTHOR("John Rigby");
-+MODULE_LICENSE("GPL v2");
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/ata.h b/arch/powerpc/sysdev/bestcomm/ata.h
-new file mode 100644
-index 0000000..1098276
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/ata.h
-@@ -0,0 +1,37 @@
-+/*
-+ * Header for Bestcomm ATA task driver
-+ *
-+ *
-+ * Copyright (C) 2006 Freescale - John Rigby
-+ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifndef __BESTCOMM_ATA_H__
-+#define __BESTCOMM_ATA_H__
-+
-+
-+struct bcom_ata_bd {
-+	u32	status;
-+	u32	dst_pa;
-+	u32	src_pa;
-+};
-+
-+extern struct bcom_task *
-+bcom_ata_init(int queue_len, int maxbufsize);
-+
-+extern void
-+bcom_ata_rx_prepare(struct bcom_task *tsk);
-+
-+extern void
-+bcom_ata_tx_prepare(struct bcom_task *tsk);
-+
-+extern void
-+bcom_ata_reset_bd(struct bcom_task *tsk);
-+
-+
-+#endif /* __BESTCOMM_ATA_H__ */
-+
-diff --git a/arch/powerpc/sysdev/bestcomm/bcom_ata_task.c b/arch/powerpc/sysdev/bestcomm/bcom_ata_task.c
-new file mode 100644
-index 0000000..cc6049a
---- /dev/null
-+++ b/arch/powerpc/sysdev/bestcomm/bcom_ata_task.c
-@@ -0,0 +1,67 @@
-+/*
-+ * Bestcomm ATA task microcode
++ * Bestcomm FEC RX task microcode
 + *
 + * Copyright (c) 2004 Freescale Semiconductor, Inc.
 + *
@@ -301,7 +100,8 @@ index 0000000..cc6049a
 + * under the terms of the GNU General Public License version 2 as published
 + * by the Free Software Foundation.
 + *
-+ * Created based on bestcom/code_dma/image_rtos1/dma_image.hex
++ * Automatically created based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
++ * on Tue Mar 22 11:19:38 2005 GMT
 + */
 +
 +#include <asm/types.h>
@@ -318,44 +118,494 @@ index 0000000..cc6049a
 + * The size fields contain the number of 32-bit words.
 + */
 +
-+u32 bcom_ata_task[] = {
++u32 bcom_fec_rx_task[] = {
 +	/* header */
 +	0x4243544b,
-+	0x0e060709,
++	0x18060709,
 +	0x00000000,
 +	0x00000000,
 +
 +	/* Task descriptors */
-+	0x8198009b, /* LCD: idx0 = var3; idx0 <= var2; idx0 += inc3 */
-+	0x13e00c08, /*   DRD1A: var3 = var1; FN=0 MORE init=31 WS=0 RS=0 */
-+	0xb8000264, /*   LCD: idx1 = *idx0, idx2 = var0; idx1 < var9; idx1 += inc4, idx2 += inc4 */
-+	0x10000f00, /*     DRD1A: var3 = idx0; FN=0 MORE init=0 WS=0 RS=0 */
++	0x808220e3, /* LCD: idx0 = var1, idx1 = var4; idx1 <= var3; idx0 += inc4, idx1 += inc3 */
++	0x10601010, /*   DRD1A: var4 = var2; FN=0 MORE init=3 WS=0 RS=0 */
++	0xb8800264, /*   LCD: idx2 = *idx1, idx3 = var0; idx2 < var9; idx2 += inc4, idx3 += inc4 */
++	0x10001308, /*     DRD1A: var4 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
 +	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
-+	0x0c8cfc8a, /*     DRD2B1: *idx2 = EU3(); EU3(*idx2,var10)  */
-+	0xd8988240, /*   LCDEXT: idx1 = idx1; idx1 > var9; idx1 += inc0 */
-+	0xf845e011, /*   LCDEXT: idx2 = *(idx0 + var00000015); ; idx2 += inc2 */
-+	0xb845e00a, /*   LCD: idx3 = *(idx0 + var00000019); ; idx3 += inc1 */
-+	0x0bfecf90, /*     DRD1A: *idx3 = *idx2; FN=0 TFD init=31 WS=3 RS=3 */
-+	0x9898802d, /*   LCD: idx1 = idx1; idx1 once var0; idx1 += inc5 */
-+	0x64000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 INT EXT init=0 WS=0 RS=0 */
-+	0x0c0cf849, /*     DRD2B1: *idx0 = EU3(); EU3(idx1,var9)  */
-+	0x000001f8, /* NOP */
++	0x0cccfcca, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var10)  */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0xb8c58029, /*   LCD: idx3 = *(idx1 + var00000015); idx3 once var0; idx3 += inc5 */
++	0x60000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=0 RS=0 */
++	0x088cf8cc, /*     DRD2B1: idx2 = EU3(); EU3(idx3,var12)  */
++	0x991982f2, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var11; idx2 += inc6, idx3 += inc2 */
++	0x006acf80, /*     DRD1A: *idx3 = *idx0; FN=0 init=3 WS=1 RS=1 */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0x9999802d, /*   LCD: idx3 = idx3; idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x034cfc4e, /*     DRD2B1: var13 = EU3(); EU3(*idx1,var14)  */
++	0x00008868, /*     DRD1A: idx2 = var13; FN=0 init=0 WS=0 RS=0 */
++	0x99198341, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var13; idx2 += inc0, idx3 += inc1 */
++	0x007ecf80, /*     DRD1A: *idx3 = *idx0; FN=0 init=3 WS=3 RS=3 */
++	0x99198272, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var9; idx2 += inc6, idx3 += inc2 */
++	0x046acf80, /*     DRD1A: *idx3 = *idx0; FN=0 INT init=3 WS=1 RS=1 */
++	0x9819002d, /*   LCD: idx2 = idx0; idx2 once var0; idx2 += inc5 */
++	0x0060c790, /*     DRD1A: *idx1 = *idx2; FN=0 init=3 WS=0 RS=0 */
++	0x000001f8, /*   NOP */
 +
 +	/* VAR[9]-VAR[14] */
 +	0x40000000,
 +	0x7fff7fff,
 +	0x00000000,
-+	0x00000000,
-+	0x00000000,
-+	0x00000000,
++	0x00000003,
++	0x40000008,
++	0x43ffffff,
 +
 +	/* INC[0]-INC[6] */
 +	0x40000000,
 +	0xe0000000,
 +	0xe0000000,
-+	0xa000000c,
++	0xa0000008,
 +	0x20000000,
 +	0x00000000,
-+	0x00000000,
++	0x4000ffff,
 +};
++
+diff --git a/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c b/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c
+new file mode 100644
+index 0000000..b1c495c
+--- /dev/null
++++ b/arch/powerpc/sysdev/bestcomm/bcom_fec_tx_task.c
+@@ -0,0 +1,91 @@
++/*
++ * Bestcomm FEC TX task microcode
++ *
++ * Copyright (c) 2004 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ *
++ * Automatically created based on BestCommAPI-2.2/code_dma/image_rtos1/dma_image.hex
++ * on Tue Mar 22 11:19:29 2005 GMT
++ */
++
++#include <asm/types.h>
++
++/*
++ * The header consists of the following fields:
++ *	u32	magic;
++ *	u8	desc_size;
++ *	u8	var_size;
++ *	u8	inc_size;
++ *	u8	first_var;
++ *	u8	reserved[8];
++ *
++ * The size fields contain the number of 32-bit words.
++ */
++
++u32 bcom_fec_tx_task[] = {
++	/* header */
++	0x4243544b,
++	0x2407070d,
++	0x00000000,
++	0x00000000,
++
++	/* Task descriptors */
++	0x8018001b, /* LCD: idx0 = var0; idx0 <= var0; idx0 += inc3 */
++	0x60000005, /*   DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
++	0x01ccfc0d, /*   DRD2B1: var7 = EU3(); EU3(*idx0,var13)  */
++	0x8082a123, /* LCD: idx0 = var1, idx1 = var5; idx1 <= var4; idx0 += inc4, idx1 += inc3 */
++	0x10801418, /*   DRD1A: var5 = var3; FN=0 MORE init=4 WS=0 RS=0 */
++	0xf88103a4, /*   LCDEXT: idx2 = *idx1, idx3 = var2; idx2 < var14; idx2 += inc4, idx3 += inc4 */
++	0x801a6024, /*   LCD: idx4 = var0; ; idx4 += inc4 */
++	0x10001708, /*     DRD1A: var5 = idx1; FN=0 MORE init=0 WS=0 RS=0 */
++	0x60140002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT init=0 WS=2 RS=2 */
++	0x0cccfccf, /*     DRD2B1: *idx3 = EU3(); EU3(*idx3,var15)  */
++	0x991a002c, /*   LCD: idx2 = idx2, idx3 = idx4; idx2 once var0; idx2 += inc5, idx3 += inc4 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x024cfc4d, /*     DRD2B1: var9 = EU3(); EU3(*idx1,var13)  */
++	0x60000003, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=3 EXT init=0 WS=0 RS=0 */
++	0x0cccf247, /*     DRD2B1: *idx3 = EU3(); EU3(var9,var7)  */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0xb8c80029, /*   LCD: idx3 = *(idx1 + var0000001a); idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x088cf8d1, /*     DRD2B1: idx2 = EU3(); EU3(idx3,var17)  */
++	0x00002f10, /*     DRD1A: var11 = idx2; FN=0 init=0 WS=0 RS=0 */
++	0x99198432, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var16; idx2 += inc6, idx3 += inc2 */
++	0x008ac398, /*     DRD1A: *idx0 = *idx3; FN=0 init=4 WS=1 RS=1 */
++	0x80004000, /*   LCDEXT: idx2 = 0x00000000; ; */
++	0x9999802d, /*   LCD: idx3 = idx3; idx3 once var0; idx3 += inc5 */
++	0x70000002, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=2 EXT MORE init=0 WS=0 RS=0 */
++	0x048cfc53, /*     DRD2B1: var18 = EU3(); EU3(*idx1,var19)  */
++	0x60000008, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=8 EXT init=0 WS=0 RS=0 */
++	0x088cf48b, /*     DRD2B1: idx2 = EU3(); EU3(var18,var11)  */
++	0x99198481, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var18; idx2 += inc0, idx3 += inc1 */
++	0x009ec398, /*     DRD1A: *idx0 = *idx3; FN=0 init=4 WS=3 RS=3 */
++	0x991983b2, /*   LCD: idx2 = idx2, idx3 = idx3; idx2 > var14; idx2 += inc6, idx3 += inc2 */
++	0x088ac398, /*     DRD1A: *idx0 = *idx3; FN=0 TFD init=4 WS=1 RS=1 */
++	0x9919002d, /*   LCD: idx2 = idx2; idx2 once var0; idx2 += inc5 */
++	0x60000005, /*     DRD2A: EU0=0 EU1=0 EU2=0 EU3=5 EXT init=0 WS=0 RS=0 */
++	0x0c4cf88e, /*     DRD2B1: *idx1 = EU3(); EU3(idx2,var14)  */
++	0x000001f8, /*   NOP */
++
++	/* VAR[13]-VAR[19] */
++	0x0c000000,
++	0x40000000,
++	0x7fff7fff,
++	0x00000000,
++	0x00000003,
++	0x40000004,
++	0x43ffffff,
++
++	/* INC[0]-INC[6] */
++	0x40000000,
++	0xe0000000,
++	0xe0000000,
++	0xa0000008,
++	0x20000000,
++	0x00000000,
++	0x4000ffff,
++};
++
+diff --git a/arch/powerpc/sysdev/bestcomm/fec.c b/arch/powerpc/sysdev/bestcomm/fec.c
+new file mode 100644
+index 0000000..957a988
+--- /dev/null
++++ b/arch/powerpc/sysdev/bestcomm/fec.c
+@@ -0,0 +1,270 @@
++/*
++ * Bestcomm FEC tasks driver
++ *
++ *
++ * Copyright (C) 2006-2007 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003-2004 MontaVista, Software, Inc.
++ *                         ( by Dale Farnsworth <dfarnsworth@mvista.com> )
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <asm/io.h>
++
++#include "bestcomm.h"
++#include "bestcomm_priv.h"
++#include "fec.h"
++
++
++/* ======================================================================== */
++/* Task image/var/inc                                                       */
++/* ======================================================================== */
++
++/* fec tasks images */
++extern u32 bcom_fec_rx_task[];
++extern u32 bcom_fec_tx_task[];
++
++/* rx task vars that need to be set before enabling the task */
++struct bcom_fec_rx_var {
++	u32 enable;		/* (u16*) address of task's control register */
++	u32 fifo;		/* (u32*) address of fec's fifo */
++	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
++	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
++	u32 bd_start;		/* (struct bcom_bd*) current bd */
++	u32 buffer_size;	/* size of receive buffer */
++};
++
++/* rx task incs that need to be set before enabling the task */
++struct bcom_fec_rx_inc {
++	u16 pad0;
++	s16 incr_bytes;
++	u16 pad1;
++	s16 incr_dst;
++	u16 pad2;
++	s16 incr_dst_ma;
++};
++
++/* tx task vars that need to be set before enabling the task */
++struct bcom_fec_tx_var {
++	u32 DRD;		/* (u32*) address of self-modified DRD */
++	u32 fifo;		/* (u32*) address of fec's fifo */
++	u32 enable;		/* (u16*) address of task's control register */
++	u32 bd_base;		/* (struct bcom_bd*) beginning of ring buffer */
++	u32 bd_last;		/* (struct bcom_bd*) end of ring buffer */
++	u32 bd_start;		/* (struct bcom_bd*) current bd */
++	u32 buffer_size;	/* set by uCode for each packet */
++};
++
++/* tx task incs that need to be set before enabling the task */
++struct bcom_fec_tx_inc {
++	u16 pad0;
++	s16 incr_bytes;
++	u16 pad1;
++	s16 incr_src;
++	u16 pad2;
++	s16 incr_src_ma;
++};
++
++/* private structure in the task */
++struct bcom_fec_priv {
++	phys_addr_t	fifo;
++	int		maxbufsize;
++};
++
++
++/* ======================================================================== */
++/* Task support code                                                        */
++/* ======================================================================== */
++
++struct bcom_task *
++bcom_fec_rx_init(int queue_len, phys_addr_t fifo, int maxbufsize)
++{
++	struct bcom_task *tsk;
++	struct bcom_fec_priv *priv;
++
++	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_fec_bd),
++				sizeof(struct bcom_fec_priv));
++	if (!tsk)
++		return NULL;
++
++	tsk->flags = BCOM_FLAGS_NONE;
++
++	priv = tsk->priv;
++	priv->fifo = fifo;
++	priv->maxbufsize = maxbufsize;
++
++	if (bcom_fec_rx_reset(tsk)) {
++		bcom_task_free(tsk);
++		return NULL;
++	}
++
++	return tsk;
++}
++EXPORT_SYMBOL_GPL(bcom_fec_rx_init);
++
++int
++bcom_fec_rx_reset(struct bcom_task *tsk)
++{
++	struct bcom_fec_priv *priv = tsk->priv;
++	struct bcom_fec_rx_var *var;
++	struct bcom_fec_rx_inc *inc;
++
++	/* Shutdown the task */
++	bcom_disable_task(tsk->tasknum);
++
++	/* Reset the microcode */
++	var = (struct bcom_fec_rx_var *) bcom_task_var(tsk->tasknum);
++	inc = (struct bcom_fec_rx_inc *) bcom_task_inc(tsk->tasknum);
++
++	if (bcom_load_image(tsk->tasknum, bcom_fec_rx_task))
++		return -1;
++
++	var->enable	= bcom_eng->regs_base +
++				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
++	var->fifo	= (u32) priv->fifo;
++	var->bd_base	= tsk->bd_pa;
++	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
++	var->bd_start	= tsk->bd_pa;
++	var->buffer_size = priv->maxbufsize;
++
++	inc->incr_bytes	= -(s16)sizeof(u32);	/* These should be in the   */
++	inc->incr_dst	= sizeof(u32);		/* task image, but we stick */
++	inc->incr_dst_ma= sizeof(u8);		/* to the official ones     */
++
++	/* Reset the BDs */
++	tsk->index = 0;
++	tsk->outdex = 0;
++
++	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
++
++	/* Configure some stuff */
++	bcom_set_task_pragma(tsk->tasknum, BCOM_FEC_RX_BD_PRAGMA);
++	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
++
++	out_8(&bcom_eng->regs->ipr[BCOM_INITIATOR_FEC_RX], BCOM_IPR_FEC_RX);
++
++	out_be32(&bcom_eng->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(bcom_fec_rx_reset);
++
++void
++bcom_fec_rx_release(struct bcom_task *tsk)
++{
++	/* Nothing special for the FEC tasks */
++	bcom_task_free(tsk);
++}
++EXPORT_SYMBOL_GPL(bcom_fec_rx_release);
++
++
++
++	/* Return 2nd to last DRD */
++	/* This is an ugly hack, but at least it's only done
++	   once at initialization */
++static u32 *self_modified_drd(int tasknum)
++{
++	u32 *desc;
++	int num_descs;
++	int drd_count;
++	int i;
++
++	num_descs = bcom_task_num_descs(tasknum);
++	desc = bcom_task_desc(tasknum) + num_descs - 1;
++	drd_count = 0;
++	for (i=0; i<num_descs; i++, desc--)
++		if (bcom_desc_is_drd(*desc) && ++drd_count == 3)
++			break;
++	return desc;
++}
++
++struct bcom_task *
++bcom_fec_tx_init(int queue_len, phys_addr_t fifo)
++{
++	struct bcom_task *tsk;
++	struct bcom_fec_priv *priv;
++
++	tsk = bcom_task_alloc(queue_len, sizeof(struct bcom_fec_bd),
++				sizeof(struct bcom_fec_priv));
++	if (!tsk)
++		return NULL;
++
++	tsk->flags = BCOM_FLAGS_ENABLE_TASK;
++
++	priv = tsk->priv;
++	priv->fifo = fifo;
++
++	if (bcom_fec_tx_reset(tsk)) {
++		bcom_task_free(tsk);
++		return NULL;
++	}
++
++	return tsk;
++}
++EXPORT_SYMBOL_GPL(bcom_fec_tx_init);
++
++int
++bcom_fec_tx_reset(struct bcom_task *tsk)
++{
++	struct bcom_fec_priv *priv = tsk->priv;
++	struct bcom_fec_tx_var *var;
++	struct bcom_fec_tx_inc *inc;
++
++	/* Shutdown the task */
++	bcom_disable_task(tsk->tasknum);
++
++	/* Reset the microcode */
++	var = (struct bcom_fec_tx_var *) bcom_task_var(tsk->tasknum);
++	inc = (struct bcom_fec_tx_inc *) bcom_task_inc(tsk->tasknum);
++
++	if (bcom_load_image(tsk->tasknum, bcom_fec_tx_task))
++		return -1;
++
++	var->enable	= bcom_eng->regs_base +
++				offsetof(struct mpc52xx_sdma, tcr[tsk->tasknum]);
++	var->fifo	= (u32) priv->fifo;
++	var->DRD	= bcom_sram_va2pa(self_modified_drd(tsk->tasknum));
++	var->bd_base	= tsk->bd_pa;
++	var->bd_last	= tsk->bd_pa + ((tsk->num_bd-1) * tsk->bd_size);
++	var->bd_start	= tsk->bd_pa;
++
++	inc->incr_bytes	= -(s16)sizeof(u32);	/* These should be in the   */
++	inc->incr_src	= sizeof(u32);		/* task image, but we stick */
++	inc->incr_src_ma= sizeof(u8);		/* to the official ones     */
++
++	/* Reset the BDs */
++	tsk->index = 0;
++	tsk->outdex = 0;
++
++	memset(tsk->bd, 0x00, tsk->num_bd * tsk->bd_size);
++
++	/* Configure some stuff */
++	bcom_set_task_pragma(tsk->tasknum, BCOM_FEC_TX_BD_PRAGMA);
++	bcom_set_task_auto_start(tsk->tasknum, tsk->tasknum);
++
++	out_8(&bcom_eng->regs->ipr[BCOM_INITIATOR_FEC_TX], BCOM_IPR_FEC_TX);
++
++	out_be32(&bcom_eng->regs->IntPend, 1<<tsk->tasknum);	/* Clear ints */
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(bcom_fec_tx_reset);
++
++void
++bcom_fec_tx_release(struct bcom_task *tsk)
++{
++	/* Nothing special for the FEC tasks */
++	bcom_task_free(tsk);
++}
++EXPORT_SYMBOL_GPL(bcom_fec_tx_release);
++
++
++MODULE_DESCRIPTION("BestComm FEC tasks driver");
++MODULE_AUTHOR("Dale Farnsworth <dfarnsworth@mvista.com>");
++MODULE_LICENSE("GPL v2");
++
+diff --git a/arch/powerpc/sysdev/bestcomm/fec.h b/arch/powerpc/sysdev/bestcomm/fec.h
+new file mode 100644
+index 0000000..ee565d9
+--- /dev/null
++++ b/arch/powerpc/sysdev/bestcomm/fec.h
+@@ -0,0 +1,61 @@
++/*
++ * Header for Bestcomm FEC tasks driver
++ *
++ *
++ * Copyright (C) 2006-2007 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003-2004 MontaVista, Software, Inc.
++ *                         ( by Dale Farnsworth <dfarnsworth@mvista.com> )
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef __BESTCOMM_FEC_H__
++#define __BESTCOMM_FEC_H__
++
++
++struct bcom_fec_bd {
++	u32	status;
++	u32	skb_pa;
++};
++
++#define BCOM_FEC_TX_BD_TFD	0x08000000ul	/* transmit frame done */
++#define BCOM_FEC_TX_BD_TC	0x04000000ul	/* transmit CRC */
++#define BCOM_FEC_TX_BD_ABC	0x02000000ul	/* append bad CRC */
++
++#define BCOM_FEC_RX_BD_L	0x08000000ul	/* buffer is last in frame */
++#define BCOM_FEC_RX_BD_BC	0x00800000ul	/* DA is broadcast */
++#define BCOM_FEC_RX_BD_MC	0x00400000ul	/* DA is multicast and not broadcast */
++#define BCOM_FEC_RX_BD_LG	0x00200000ul	/* Rx frame length violation */
++#define BCOM_FEC_RX_BD_NO	0x00100000ul	/* Rx non-octet aligned frame */
++#define BCOM_FEC_RX_BD_CR	0x00040000ul	/* Rx CRC error */
++#define BCOM_FEC_RX_BD_OV	0x00020000ul	/* overrun */
++#define BCOM_FEC_RX_BD_TR	0x00010000ul	/* Rx frame truncated */
++#define BCOM_FEC_RX_BD_LEN_MASK	0x000007fful	/* mask for length of received frame */
++#define BCOM_FEC_RX_BD_ERRORS	(BCOM_FEC_RX_BD_LG | BCOM_FEC_RX_BD_NO | \
++		BCOM_FEC_RX_BD_CR | BCOM_FEC_RX_BD_OV | BCOM_FEC_RX_BD_TR)
++
++
++extern struct bcom_task *
++bcom_fec_rx_init(int queue_len, phys_addr_t fifo, int maxbufsize);
++
++extern int
++bcom_fec_rx_reset(struct bcom_task *tsk);
++
++extern void
++bcom_fec_rx_release(struct bcom_task *tsk);
++
++
++extern struct bcom_task *
++bcom_fec_tx_init(int queue_len, phys_addr_t fifo);
++
++extern int
++bcom_fec_tx_reset(struct bcom_task *tsk);
++
++extern void
++bcom_fec_tx_release(struct bcom_task *tsk);
++
++
++#endif /* __BESTCOMM_FEC_H__ */
 +
