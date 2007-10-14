@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0FEE7DDE04
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 23:34:08 +1000 (EST)
-Date: Sun, 14 Oct 2007 23:33:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: [PATCH 1/2] clk for mpc52xx: platform part
-Message-Id: <20071014233357.189bb0ef.sfr@canb.auug.org.au>
-In-Reply-To: <20071014080923.GI3000@nd47.coderock.org>
-References: <20071014080813.GH3000@nd47.coderock.org>
-	<20071014080923.GI3000@nd47.coderock.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__14_Oct_2007_23_33_57_+1000_zrjG0HQq.r=iit3P"
-Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4714EDDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 03:32:01 +1000 (EST)
+Message-ID: <47125276.7070703@garzik.org>
+Date: Sun, 14 Oct 2007 13:31:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
+References: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
+In-Reply-To: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: dwm@enoyolf.org, linux-ide@vger.kernel.org, bahadir.balban@gmail.com,
+	linuxppc-dev@ozlabs.org, albertl@mail.com, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__14_Oct_2007_23_33_57_+1000_zrjG0HQq.r=iit3P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Mikael Pettersson wrote:
+> On Thu, 16 Aug 2007 21:19:40 +0100, Alan Cox wrote:
+>>>> Unfortunately this breaks pata_pdc2027x on my PowerMac G3:
+>>> Did this ever get resolved?
+>> All went quiet so I assume its gone away ?
+> 
+> -ENOTIME
+> 
+> The regression is still there in 2.6.23-rc3 (I just checked),
+> but I haven't had time to debug it yet. I'll try to do something
+> about it this weekend.
 
-On Sun, 14 Oct 2007 10:09:23 +0200 Domen Puncer <domen.puncer@telargo.com> =
-wrote:
->
-> +++ linux.git/arch/powerpc/platforms/52xx/mpc52xx_clock.c
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/list.h>
-> +#include <linux/errno.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/clk.h>
-> +
-> +#include <asm/io.h>
-> +#include <asm/mpc52xx.h>
-> +#include <asm/clk_interface.h>
+Still broken?
 
-You should include <linux/of.h> to use struct device_node and its
-accessors.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__14_Oct_2007_23_33_57_+1000_zrjG0HQq.r=iit3P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHEhrMTgG2atn1QN8RAisiAJ93W18Q1uHN5446DWiPihHKNVYy/gCfdaf7
-O+VZbd7nQ9ALs2cnuCtbrsE=
-=YHAl
------END PGP SIGNATURE-----
-
---Signature=_Sun__14_Oct_2007_23_33_57_+1000_zrjG0HQq.r=iit3P--
+	Jeff
