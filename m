@@ -1,21 +1,14 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id EBE6EDDE20
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 06:25:36 +1000 (EST)
-Date: Sun, 14 Oct 2007 22:25:35 +0200
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
-	MPC5200
-Message-ID: <20071014202535.GA29218@powerlinux.fr>
-References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
-	<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
-	<20071014113336.GA23286@powerlinux.fr>
-	<fa686aa40710141322h308db79ey921fd9d4cea5d1d5@mail.gmail.com>
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 14 Oct 2007 16:03:05 -0500
+From: Anton Blanchard <anton@samba.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] Quieten cache information at boot
+Message-ID: <20071014210305.GE26693@kryten>
+References: <20071014193317.GC26693@kryten> <20071014201431.GA23002@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710141322h308db79ey921fd9d4cea5d1d5@mail.gmail.com>
-From: Sven Luther <sven@powerlinux.fr>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
+In-Reply-To: <20071014201431.GA23002@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 14, 2007 at 02:22:16PM -0600, Grant Likely wrote:
-> On 10/14/07, Sven Luther <sven@powerlinux.fr> wrote:
-> > On Sat, Oct 13, 2007 at 10:42:05PM -0600, Grant Likely wrote:
-> > > From: Sylvain Munaut <tnt@246tNt.com>
-> > >
-> > > This patch adds support for the core of the BestComm API
-> > > for the Freescale MPC5200(b). The BestComm engine is a
-> > > microcode-controlled / tasks-based DMA used by several
-> > > of the onchip devices.
-> > >
-> > > Setting up the tasks / memory allocation and all common
-> > > low level functions are handled by this patch.
-> > > The specifics details of each tasks and their microcode
-> > > are split-out in separate patches.
-> > >
-> > > This is not the official API, but a much cleaner one.
-> > > (hopefully)
-> > >
-> > > Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
-> > > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > Hi Grant, ...
-> >
-> > I am unsure if this is a regression with regard to Sylvain's patch, or
-> > somethign else, but it is no more possible to build bestcomm modular :
+ 
+Hi,
+
+> Let's just remove it completely. I have yet to see a bug because of it,
+> and we have 0x40 byte cache lines.
+
+Yeah I completely support killing it too :)
+
+> If anything, compare firmware setting to cputable one and print a warning.
 > 
-> Hmmm, interesting.  I'll try that out here this afternoon.
+> Should maybe give them loglevels too, since you're touching them? I
+> suggest KERN_DEBUG -- if needed it's there in dmesg, and if you need it
+> on the console you can just add "debug" to the kernel command line.
 
-Notice that domen said it was working, so it could have been a
-mismanipulation on my part, or some problem with the debian patches.
+I started playing with loglevels but theres some ordering issues since
+the options to change loglevel (eg the "debug" boot option) doesnt get
+parsed until later in a __setup function.
 
-The older patchset with 2.6.23-rc6 worked fine though, and making the
-main bestcomm module builtin solved the error messages. I did not spot
-anything obvious when looking at the code.
-
-Friendly;
-
-Sven Luther
+Anton
