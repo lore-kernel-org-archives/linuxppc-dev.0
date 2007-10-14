@@ -1,21 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 57CE2DDE0E
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 07:43:26 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1861599wag
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 14:43:25 -0700 (PDT)
-Message-ID: <fa686aa40710141443u4defd1f4m8076a730a185135b@mail.gmail.com>
-Date: Sun, 14 Oct 2007 15:43:25 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH v3 3/4] FEC mpc52xx: the driver
-In-Reply-To: <20071014075921.GF3000@nd47.coderock.org>
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 14 Oct 2007 16:54:37 -0500
+From: Anton Blanchard <anton@samba.org>
+To: mingo@elte.hu, tglx@linutronix.de
+Subject: [PATCH] Hook compat_sys_nanosleep up to high res timer code
+Message-ID: <20071014215437.GF26693@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071014075511.GC3000@nd47.coderock.org>
-	<20071014075921.GF3000@nd47.coderock.org>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,88 +16,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/14/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> Driver for ethernet on mpc5200/mpc5200b SoCs (FEC).
->
->
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-Looks quite good to me.  Comments below...
+Now we have high res timers on ppc64 I thought Id test them. It turns
+out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
+is limited to HZ resolution.
 
->
-> ---
->  drivers/net/Kconfig              |    1
->  drivers/net/Makefile             |    1
->  drivers/net/fec_mpc52xx/Kconfig  |   15
->  drivers/net/fec_mpc52xx/Makefile |    2
->  drivers/net/fec_mpc52xx/fec.c    | 1098 +++++++++++++++++++++++++++++++++++++++
->  drivers/net/fec_mpc52xx/fec.h    |  313 +++++++++++
->  6 files changed, 1430 insertions(+)
->
-> Index: linux.git/drivers/net/Kconfig
-> ===================================================================
-> --- linux.git.orig/drivers/net/Kconfig
-> +++ linux.git/drivers/net/Kconfig
-> @@ -1894,6 +1894,7 @@ config NE_H8300
->           controller on the Renesas H8/300 processor.
->
->  source "drivers/net/fec_8xx/Kconfig"
-> +source "drivers/net/fec_mpc52xx/Kconfig"
+The following patch makes compat_sys_nanosleep call hrtimer_nanosleep
+and uses compat_alloc_user_space to avoid setting KERNEL_DS.
 
-Personally, I'd just add the mpc52xx items to drivers/net/Kconfig; but
-I won't make a fuss either way.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-===================================================================
-> --- linux.git.orig/drivers/net/Makefile
-> +++ linux.git/drivers/net/Makefile
-> @@ -210,6 +210,7 @@ obj-$(CONFIG_SMC911X) += smc911x.o
->  obj-$(CONFIG_BFIN_MAC) += bfin_mac.o
->  obj-$(CONFIG_DM9000) += dm9000.o
->  obj-$(CONFIG_FEC_8XX) += fec_8xx/
-> +obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx/
-
-Ditto here;  Heck, we're only talking about 3 files here.  I'd
-probably put all three into drivers/net...  or even merge the 2 .c and
-one .h files into a single file.  But, again, it's not a big deal.
-
->  obj-$(CONFIG_PASEMI_MAC) += pasemi_mac.o
->  obj-$(CONFIG_MLX4_CORE) += mlx4/
->
-> Index: linux.git/drivers/net/fec_mpc52xx/Kconfig
-> ===================================================================
-> --- /dev/null
-> +++ linux.git/drivers/net/fec_mpc52xx/Kconfig
-> @@ -0,0 +1,15 @@
-> +menu "MPC5200 Networking Options"
-> +       depends PPC_MPC52xx && NET_ETHERNET
-
-Drop the menu
-
-> +
-> +config FEC_MPC52xx
-> +       tristate "FEC driver"
-> +       depends on NET_ETHERNET
-
-Drop "NET_ETHERNET"; if you're here, then NET_ETHERNET *is* selected.
-Add "PPC_MPC52xx"
-
-> +       select PPC_BESTCOMM
-> +       select PPC_BESTCOMM_FEC
-> +       select CRC32
-> +       select PHYLIB
-> +       ---help---
-> +         This option enables support for the MPC5200's on-chip
-> +         Fast Ethernet Controller
-> +
-> +endmenu
-> Index: linux.git/drivers/net/fec_mpc52xx/Makefile
->
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 3bae374..46795ac 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -40,62 +40,29 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
+ 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
+ }
+ 
+-static long compat_nanosleep_restart(struct restart_block *restart)
+-{
+-	unsigned long expire = restart->arg0, now = jiffies;
+-	struct compat_timespec __user *rmtp;
+-
+-	/* Did it expire while we handled signals? */
+-	if (!time_after(expire, now))
+-		return 0;
+-
+-	expire = schedule_timeout_interruptible(expire - now);
+-	if (expire == 0)
+-		return 0;
+-
+-	rmtp = (struct compat_timespec __user *)restart->arg1;
+-	if (rmtp) {
+-		struct compat_timespec ct;
+-		struct timespec t;
+-
+-		jiffies_to_timespec(expire, &t);
+-		ct.tv_sec = t.tv_sec;
+-		ct.tv_nsec = t.tv_nsec;
+-		if (copy_to_user(rmtp, &ct, sizeof(ct)))
+-			return -EFAULT;
+-	}
+-	/* The 'restart' block is already filled in */
+-	return -ERESTART_RESTARTBLOCK;
+-}
+-
+ asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
+-		struct compat_timespec __user *rmtp)
++				     struct compat_timespec __user *rmtp)
+ {
+-	struct timespec t;
+-	struct restart_block *restart;
+-	unsigned long expire;
++	struct timespec tu;
++	struct timespec __user *rmtp64;
++	long ret;
+ 
+-	if (get_compat_timespec(&t, rqtp))
++	if (get_compat_timespec(&tu, rqtp))
+ 		return -EFAULT;
+ 
+-	if ((t.tv_nsec >= 1000000000L) || (t.tv_nsec < 0) || (t.tv_sec < 0))
++	if (!timespec_valid(&tu))
+ 		return -EINVAL;
+ 
+-	expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
+-	expire = schedule_timeout_interruptible(expire);
+-	if (expire == 0)
+-		return 0;
++	rmtp64 = compat_alloc_user_space(sizeof(*rmtp64));
++	ret = hrtimer_nanosleep(&tu, rmtp64, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
+ 
+-	if (rmtp) {
+-		jiffies_to_timespec(expire, &t);
+-		if (put_compat_timespec(&t, rmtp))
++	if (ret) {
++		if (copy_from_user(&tu, rmtp64, sizeof(*rmtp64)) ||
++		    put_compat_timespec(&tu, rmtp))
+ 			return -EFAULT;
+ 	}
+-	restart = &current_thread_info()->restart_block;
+-	restart->fn = compat_nanosleep_restart;
+-	restart->arg0 = jiffies + expire;
+-	restart->arg1 = (unsigned long) rmtp;
+-	return -ERESTART_RESTARTBLOCK;
++
++	return ret;
+ }
+ 
+ static inline long get_compat_itimerval(struct itimerval *o,
