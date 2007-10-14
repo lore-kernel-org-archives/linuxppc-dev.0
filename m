@@ -1,20 +1,15 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4714EDDE19
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 03:32:01 +1000 (EST)
-Message-ID: <47125276.7070703@garzik.org>
-Date: Sun, 14 Oct 2007 13:31:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
-References: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
-In-Reply-To: <200708172051.l7HKpNtq009682@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dwm@enoyolf.org, linux-ide@vger.kernel.org, bahadir.balban@gmail.com,
-	linuxppc-dev@ozlabs.org, albertl@mail.com, alan@lxorguk.ukuu.org.uk
+	by ozlabs.org (Postfix) with ESMTP id 5DBB6DDE19
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 04:35:06 +1000 (EST)
+To: torvalds@linux-foundation.org
+Subject: [PATCH] endian-clean in_le64/out_le64
+Message-Id: <E1Ih8Im-00041u-6N@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Sun, 14 Oct 2007 19:35:00 +0100
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mikael Pettersson wrote:
-> On Thu, 16 Aug 2007 21:19:40 +0100, Alan Cox wrote:
->>>> Unfortunately this breaks pata_pdc2027x on my PowerMac G3:
->>> Did this ever get resolved?
->> All went quiet so I assume its gone away ?
-> 
-> -ENOTIME
-> 
-> The regression is still there in 2.6.23-rc3 (I just checked),
-> but I haven't had time to debug it yet. I'll try to do something
-> about it this weekend.
 
-Still broken?
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ include/asm-powerpc/io.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-	Jeff
+diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
+index affba70..0d0589e 100644
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -138,12 +138,12 @@ DEF_MMIO_IN_BE(in_be64, 64, ld);
+ /* There is no asm instructions for 64 bits reverse loads and stores */
+ static inline u64 in_le64(const volatile u64 __iomem *addr)
+ {
+-	return le64_to_cpu(in_be64(addr));
++	return swab64(in_be64(addr));
+ }
+ 
+ static inline void out_le64(volatile u64 __iomem *addr, u64 val)
+ {
+-	out_be64(addr, cpu_to_le64(val));
++	out_be64(addr, swab64(val));
+ }
+ #endif /* __powerpc64__ */
+ 
+-- 
+1.5.3.GIT
