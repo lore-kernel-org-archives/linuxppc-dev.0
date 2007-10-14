@@ -1,16 +1,12 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89A2ADDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 05:30:26 +1000 (EST)
-Date: Sun, 14 Oct 2007 20:33:09 +0200 (MEST)
-Message-Id: <200710141833.l9EIX9fZ021807@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: jeff@garzik.org, mikpe@it.uu.se
-Subject: Re: [PATCH 1/1] libata: pata_pdc2027x PLL input clock fix
-Cc: dwm@enoyolf.org, linux-ide@vger.kernel.org, bahadir.balban@gmail.com,
-	linuxppc-dev@ozlabs.org, albertl@mail.com, alan@lxorguk.ukuu.org.uk
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 14 Oct 2007 14:33:17 -0500
+From: Anton Blanchard <anton@samba.org>
+To: paulus@samba.org
+Subject: [PATCH] Quieten cache information at boot
+Message-ID: <20071014193317.GC26693@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +16,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 14 Oct 2007 13:31:34 -0400, Jeff Garzik wrote:
-> Mikael Pettersson wrote:
-> > On Thu, 16 Aug 2007 21:19:40 +0100, Alan Cox wrote:
-> >>>> Unfortunately this breaks pata_pdc2027x on my PowerMac G3:
-> >>> Did this ever get resolved?
-> >> All went quiet so I assume its gone away ?
-> > 
-> > -ENOTIME
-> > 
-> > The regression is still there in 2.6.23-rc3 (I just checked),
-> > but I haven't had time to debug it yet. I'll try to do something
-> > about it this weekend.
-> 
-> Still broken?
 
-No, my fix was included in 2.6.23-rc4.
+After 6 years the ppc64 kernel still thinks its important to tell me my
+cache line size is 0x80 bytes. I think most people who care know that by
+now. The rest probably cant even understand the hex output.
+
+Since we might have misconfigured firmware or cpus that have a linesize
+that isnt 128 bytes, I still print it out for those cases. If people
+would prefer to remove it completely, lets do it.
+
+Also for lpar remove the htab_address printout since its not used.
+
+Anton
+ppc64 boot log usability expert
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 008ab68..e413c49 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -426,11 +426,14 @@ void __init setup_system(void)
+ 	printk("-----------------------------------------------------\n");
+ 	printk("ppc64_pft_size                = 0x%lx\n", ppc64_pft_size);
+ 	printk("physicalMemorySize            = 0x%lx\n", lmb_phys_mem_size());
+-	printk("ppc64_caches.dcache_line_size = 0x%x\n",
+-	       ppc64_caches.dline_size);
+-	printk("ppc64_caches.icache_line_size = 0x%x\n",
+-	       ppc64_caches.iline_size);
+-	printk("htab_address                  = 0x%p\n", htab_address);
++	if (ppc64_caches.dline_size != 0x80)
++		printk("ppc64_caches.dcache_line_size = 0x%x\n",
++		       ppc64_caches.dline_size);
++	if (ppc64_caches.iline_size != 0x80)
++		printk("ppc64_caches.icache_line_size = 0x%x\n",
++		       ppc64_caches.iline_size);
++	if (htab_address)
++		printk("htab_address                  = 0x%p\n", htab_address);
+ 	printk("htab_hash_mask                = 0x%lx\n", htab_hash_mask);
+ #if PHYSICAL_START > 0
+ 	printk("physical_start                = 0x%x\n", PHYSICAL_START);
