@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 816D8DDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 08:28:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Hook compat_sys_nanosleep up to high res timer code
-Date: Mon, 15 Oct 2007 00:28:05 +0200
-References: <20071014215437.GF26693@kryten>
-In-Reply-To: <20071014215437.GF26693@kryten>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id 4F902DDE2E
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 08:42:46 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1876615wag
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Oct 2007 15:42:45 -0700 (PDT)
+Message-ID: <fa686aa40710141542w552eacet7ba13e8e251e2285@mail.gmail.com>
+Date: Sun, 14 Oct 2007 16:42:45 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH 2/2] clk for mpc52xx: use psc_mclk's in spi driver
+In-Reply-To: <20071014081027.GJ3000@nd47.coderock.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710150028.06493.arnd@arndb.de>
-Cc: mingo@elte.hu, tglx@linutronix.de, Anton Blanchard <anton@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071014080813.GH3000@nd47.coderock.org>
+	<20071014081027.GJ3000@nd47.coderock.org>
+Cc: david-b@pacbell.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 14 October 2007, Anton Blanchard wrote:
-> Now we have high res timers on ppc64 I thought Id test them. It turns
-> out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
-> is limited to HZ resolution.
-> 
-> The following patch makes compat_sys_nanosleep call hrtimer_nanosleep
-> and uses compat_alloc_user_space to avoid setting KERNEL_DS.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+On 10/14/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> Use clocks subsystem in spi driver.
 
-The code looks correct, but I think it would be nicer to change 
-hrtimer_nanosleep to take a kernel pointer and have all three
-callers (common_nsleep, sys_nanosleep and compat_sys_nanosleep)
-do the copy_to_user/put_compat_timespec in the caller.
+I don't understand the advantage of this approach.  Is the current code broken?
 
-This would also make it possible to get rid of set_fs() in
-compat_sys_clock_nanosleep().
+I agree that abstraction is good; but in this case it seems these two
+patches add a lot of code for a very simple calculation.  Also, there
+is exactly 2 chips that use these devices, the mpc5200 and the
+mpc5200b, and they are both wired up in exactly the same way.  I'm
+inclined to believe that splitting of reading of the CDM into a
+separate driver (or at least using the clk infrastructure) is over the
+edge of diminishing returns.  However, I could be convinced that
+having a utility function for setting the PSC clock rate is a useful
+thing, but until arch/ppc goes away, you should support it in both
+arch/ppc and arch/powerpc.
 
-	Arnd <><
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
