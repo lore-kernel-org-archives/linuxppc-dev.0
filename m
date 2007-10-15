@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id A7B7CDDE9D
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 09:34:10 +1000 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id C0B57DDEBD
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 09:36:43 +1000 (EST)
+To: "S. Fricke" <silvio.fricke@gmail.com>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+Subject: Re: can and mpc5200b
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 15 Oct 2007 18:07:06 CDT."
-	<7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-Date: Tue, 16 Oct 2007 01:34:07 +0200
+In-reply-to: Your message of "Mon, 15 Oct 2007 15:32:33 +0200."
+	<20071015133233.GB4859@sfrouter>
+Date: Tue, 16 Oct 2007 01:36:42 +0200
 Sender: wd@denx.de
-Message-Id: <20071015233407.D15CC247BB@gemini.denx.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Message-Id: <20071015233642.04D1F247BB@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Kumar,
-
-in message <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org> you wrote:
+In message <20071015133233.GB4859@sfrouter> you wrote:
 > 
-> I was wondering if you cared about the following boards existing in  
-> arch/powerpc:
-> 
-...
-> * TQM 85xx
-...
+> what is the reasonable can-driver for a mpc5200b?
 
-We definitely care about the TQM8xx{L,M,D}, TQM5200, TQM82xx, TQM834x,
-TQM85xx and TQM86xx boards.
+socket-can.
 
-> I'm willing to look into doing the port over, but would need some  
-> help testing.
+> I have seen for the peak-3.17 driver a port for the mpc5200 from denx on their
+> website, but with kernel 2.6.23 I dont have a chance to use this?
 
-Ah! Excellent!
-
-As for 85xx, I can test any time on  TQM8540,  TQM8541,  TQM8555  and
-TQM8560.
+No, but socket-can is part of our kernel tree already, and of the
+kernel.org tree in 2.6.24
 
 Best regards,
 
@@ -52,5 +42,5 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"The hottest places in Hell are reserved for those who, in  times  of
-moral crisis, preserved their neutrality."                    - Dante
+The human mind ordinarily operates at only ten percent of its capaci-
+ty - the rest is overhead for the operating system.
