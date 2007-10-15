@@ -1,9 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 15 Oct 2007 17:28:16 +1000
-Subject: [RFC/PATCH 0/2] powerpc: 64 bits irqtrace / lockdep support
-Message-Id: <1192433296.924212.737979117370.qpush@grosgo>
+Date: Mon, 15 Oct 2007 17:28:17 +1000
+Subject: [RFC/PATCH 1/2] powerpc: lockdep stacktrace support
+In-Reply-To: <1192433296.924212.737979117370.qpush@grosgo>
+Message-Id: <20071015072825.66C59DDE16@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,11 +14,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is 2 patches, one from Christoph Hellwig that adds the backtrace support,
-and one from Johannes Berg modified by me that adds the irq tracing support.
+From: Christoph Hellwig <hch@lst.de>
 
-This successfully boots a POWER5 pSeries machine. I'm going to run some more
-tests in the upcoming few days, so this is not an official submission (and it's
-too late for .24 merge window anyway) but it's looking good so far.
+I recently tried to work on lockdep for powerpc.  I have preliminary
+version of the stacktrace code, but had to give up on trace irqflags
+support because I'm not that knowledgeable on lowlevel ppc details.
 
-Then, I -might- give a go at a 32 bits version but no promises there :-)
+Maybe someone more faimilar with the code wants to give it another try?
+
+My stacktrace code is below:
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+ arch/powerpc/Kconfig             |    4 +++
+ arch/powerpc/kernel/Makefile     |    1 
+ arch/powerpc/kernel/stacktrace.c |   52 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 57 insertions(+)
+
+Index: linux-work/arch/powerpc/Kconfig
+===================================================================
+--- linux-work.orig/arch/powerpc/Kconfig	2007-10-15 11:19:35.000000000 +1000
++++ linux-work/arch/powerpc/Kconfig	2007-10-15 14:04:05.000000000 +1000
+@@ -46,6 +46,10 @@ config IRQ_PER_CPU
+ 	bool
+ 	default y
+ 
++config STACKTRACE_SUPPORT
++	bool
++	default y
++
+ config RWSEM_GENERIC_SPINLOCK
+ 	bool
+ 
+Index: linux-work/arch/powerpc/kernel/Makefile
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/Makefile	2007-10-15 11:19:35.000000000 +1000
++++ linux-work/arch/powerpc/kernel/Makefile	2007-10-15 14:04:05.000000000 +1000
+@@ -65,6 +65,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+ obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
++obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ 
+ pci64-$(CONFIG_PPC64)		+= pci_dn.o isa-bridge.o
+ obj-$(CONFIG_PCI)		+= pci_$(CONFIG_WORD_SIZE).o $(pci64-y) \
+Index: linux-work/arch/powerpc/kernel/stacktrace.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/kernel/stacktrace.c	2007-10-15 14:04:05.000000000 +1000
+@@ -0,0 +1,52 @@
++
++#include <linux/sched.h>
++#include <linux/stacktrace.h>
++
++
++#ifdef CONFIG_PPC64
++#define MIN_STACK_FRAME 112     /* same as STACK_FRAME_OVERHEAD, in fact */
++#define FRAME_LR_SAVE   2
++#define INT_FRAME_SIZE  (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD + 288)
++#define REGS_MARKER     0x7265677368657265ul
++#define FRAME_MARKER    12
++#else
++#define MIN_STACK_FRAME 16
++#define FRAME_LR_SAVE   1
++#define INT_FRAME_SIZE  (sizeof(struct pt_regs) + STACK_FRAME_OVERHEAD)
++#define REGS_MARKER     0x72656773ul
++#define FRAME_MARKER    2
++#endif
++
++
++/*
++ * Save stack-backtrace addresses into a stack_trace buffer.
++ * If all_contexts is set, all contexts (hardirq, softirq and process)
++ * are saved. If not set then only the current context is saved.
++ */
++void save_stack_trace(struct stack_trace *trace)
++{
++	unsigned long sp;
++
++	asm("mr %0,1" : "=r" (sp));
++
++	for (;;) {
++		unsigned long *stack = (unsigned long *) sp;
++		unsigned long newsp, ip;
++
++		if (!validate_sp(sp, current, MIN_STACK_FRAME))
++			return;
++
++		newsp = stack[0];
++		ip = stack[FRAME_LR_SAVE];
++
++		if (!trace->skip)
++			trace->entries[trace->nr_entries++] = ip;
++		else
++			trace->skip--;
++
++		if (trace->nr_entries >= trace->max_entries)
++			return;
++
++		sp = newsp;
++	}
++}
