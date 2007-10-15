@@ -1,21 +1,23 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF7D1DDDF8
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 16:11:30 +1000 (EST)
-Date: Mon, 15 Oct 2007 08:11:03 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] Hook compat_sys_nanosleep up to high res timer code
-In-Reply-To: <20071014231616.GA24519@kryten>
-Message-ID: <alpine.LFD.0.9999.0710150804290.22612@localhost.localdomain>
-References: <20071014215437.GF26693@kryten> <200710150028.06493.arnd@arndb.de>
-	<20071014231616.GA24519@kryten>
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id 27759DDE17
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 16:12:50 +1000 (EST)
+Date: Mon, 15 Oct 2007 08:12:47 +0200
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
+	MPC5200
+Message-ID: <20071015061246.GA25751@powerlinux.fr>
+References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
+	<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+	<20071014113336.GA23286@powerlinux.fr>
+	<fa686aa40710141322h308db79ey921fd9d4cea5d1d5@mail.gmail.com>
+	<20071014202535.GA29218@powerlinux.fr>
+	<fa686aa40710141423o69666b16pa7ce6851fa407d5e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710141423o69666b16pa7ce6851fa407d5e@mail.gmail.com>
+From: Sven Luther <sven@powerlinux.fr>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,86 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 14 Oct 2007, Anton Blanchard wrote:
-> Hi Arnd,
->  
-> > The code looks correct, but I think it would be nicer to change 
-> > hrtimer_nanosleep to take a kernel pointer and have all three
-> > callers (common_nsleep, sys_nanosleep and compat_sys_nanosleep)
-> > do the copy_to_user/put_compat_timespec in the caller.
+On Sun, Oct 14, 2007 at 03:23:21PM -0600, Grant Likely wrote:
+> On 10/14/07, Sven Luther <sven@powerlinux.fr> wrote:
+> > On Sun, Oct 14, 2007 at 02:22:16PM -0600, Grant Likely wrote:
+> > > On 10/14/07, Sven Luther <sven@powerlinux.fr> wrote:
+> > > > On Sat, Oct 13, 2007 at 10:42:05PM -0600, Grant Likely wrote:
+> > > > > From: Sylvain Munaut <tnt@246tNt.com>
+> > > > >
+> > > > > This patch adds support for the core of the BestComm API
+> > > > > for the Freescale MPC5200(b). The BestComm engine is a
+> > > > > microcode-controlled / tasks-based DMA used by several
+> > > > > of the onchip devices.
+> > > > >
+> > > > > Setting up the tasks / memory allocation and all common
+> > > > > low level functions are handled by this patch.
+> > > > > The specifics details of each tasks and their microcode
+> > > > > are split-out in separate patches.
+> > > > >
+> > > > > This is not the official API, but a much cleaner one.
+> > > > > (hopefully)
+> > > > >
+> > > > > Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+> > > > > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > > >
+> > > > Hi Grant, ...
+> > > >
+> > > > I am unsure if this is a regression with regard to Sylvain's patch, or
+> > > > somethign else, but it is no more possible to build bestcomm modular :
+> > >
+> > > Hmmm, interesting.  I'll try that out here this afternoon.
+> >
+> > Notice that domen said it was working, so it could have been a
+> > mismanipulation on my part, or some problem with the debian patches.
+> >
+> > The older patchset with 2.6.23-rc6 worked fine though, and making the
+> > main bestcomm module builtin solved the error messages. I did not spot
+> > anything obvious when looking at the code.
 > 
-> Good idea, I had considered that but thought a larger cleanup might run
-> afoul of the merge rules :)
+> Yes, it is a regression.  There had been a change to the Makefile.
+> I've reverted it and it works fine now.  I'll repost v3 shortly.
 
-Looks good, except ....
- 
-> --- a/kernel/compat.c
-> +++ b/kernel/compat.c
-> @@ -40,62 +40,26 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
->  			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
->  }
+Ok, thanks.
 
-Can you put this into a separate patch please ?
-  
-> --- a/kernel/hrtimer.c
-> +++ b/kernel/hrtimer.c
->  	restart = &current_thread_info()->restart_block;
-> @@ -1353,7 +1347,8 @@ long hrtimer_nanosleep(struct timespec *rqtp, struct timespec __user *rmtp,
->  asmlinkage long
->  sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
->  {
-> -	struct timespec tu;
-> +	struct timespec tu, rmt;
-> +	int ret;
->  
->  	if (copy_from_user(&tu, rqtp, sizeof(tu)))
->  		return -EFAULT;
-> @@ -1361,7 +1356,14 @@ sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
->  	if (!timespec_valid(&tu))
->  		return -EINVAL;
->  
-> -	return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
-> +	ret = hrtimer_nanosleep(&tu, &rmt, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
-> +
-> +	if (ret) {
+Friendly,
 
-Can you check for rmtp as well ? rmtp is optional and can be NULL
-
-> +		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
-> +			return -EFAULT;
-> +	}
-> +
-> +	return ret;
->  }
->  
->  /*
-> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-> index 7a15afb..fc7dac2 100644
-> --- a/kernel/posix-timers.c
-> +++ b/kernel/posix-timers.c
-> @@ -980,9 +980,19 @@ sys_clock_getres(const clockid_t which_clock, struct timespec __user *tp)
->  static int common_nsleep(const clockid_t which_clock, int flags,
->  			 struct timespec *tsave, struct timespec __user *rmtp)
->  {
-> -	return hrtimer_nanosleep(tsave, rmtp, flags & TIMER_ABSTIME ?
-> +	struct timespec rmt;
-> +	int ret;
-> +
-> +	ret = hrtimer_nanosleep(tsave, &rmt, flags & TIMER_ABSTIME ?
->  				 HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
->  				 which_clock);
-> +
-> +	if (ret) {
-
-Ditto.
-
-> +		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
-> +			return -EFAULT;
-> +	}
-> +
-> +	return ret;
->  }
-
-Thanks,
-
-	tglx
+Sven Luther
