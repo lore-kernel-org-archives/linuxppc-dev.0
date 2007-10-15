@@ -1,17 +1,26 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id CA081DE465
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:22:11 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
-Date: Mon, 15 Oct 2007 21:21:53 +0200
-References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-In-Reply-To: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 74077DDDF8
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:26:11 +1000 (EST)
+Message-ID: <4713BCE8.4050307@freescale.com>
+Date: Mon, 15 Oct 2007 14:18:00 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710152121.54977.arnd@arndb.de>
+To: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
+References: <200710151529.11485.sr@denx.de>
+	<20071015163216.GA8127@gate.ebshome.net>
+	<fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
+	<20071015185340.GB4474@loki.buserror.net>
+	<20071015191118.GA9733@gate.ebshome.net>
+In-Reply-To: <20071015191118.GA9733@gate.ebshome.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Jean Delvare <khali@linux-fr.org>, Stefan Roese <sr@denx.de>,
+	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 15 October 2007, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+Eugene Surovegin wrote:
+> On Mon, Oct 15, 2007 at 01:53:40PM -0500, Scott Wood wrote:
+>> Though, I don't see what the problem with the original approach is,
+>> as long as the numbers are chosen in the same way when registering
+>> i2c clients based on the children of the adapter node.  There's no
+>> concept in the hardware itself of a bus number.
 > 
-> Here's my second version of xilinx device tree bindings.  Please review
-> and comment.  I'd like to push these out to Paulus in the next couple
-> of days.
+> Huh? As far as I can tell, there is.
 
-There are a few more properties that I can imagine you might need.
-Not sure if it makes sense specifying them now, but here are my thoughts:
- 
->     More devices will be defined as this spec matures.
->  
-> +   l) Xilinx ML300 Framebuffer
-> +
-> +   Simple framebuffer device from the ML300 reference design (also on the
-> +   ML403 reference design as well as others).
-> +
-> +   Required properties:
-> +    - compatible : Must include "xilinx,ml300-fb"
-> +    - reg : offset and length of the framebuffer register set
-> +
-> +   Optional properties:
-> +    - resolution : <xres yres> pixel resolution of framebuffer.  Some
-> +                   implementations use a different resolution.  Default
-> +                   is <d#640 d#480>
-> +    - virt-resolution : <xvirt yvirt> Size of framebuffer in memory.
-> +                        Default is <d#1024 d#480>.
-> +    - rotate-display (empty) : rotate display 180 degrees.
+Where?  Hardware != Documentation.
 
-rotate-display could be defined as something that allows 0/90/180/270
-degrees, as well as mirroring, not just 180 degree rotation.
+> Also, I want messages from the kernel mention something I can map to
+> the real hw, e.g. fixed IIC device index, not some random number.
 
-> +   o) Xilinx Uartlite
-> +
-> +   Xilinx uartlite devices are simple fixed speed serial ports.  Uartlite
-> +   ports should be described in a node with the following properties.
-> +
-> +   Requred properties:
-> +    - compatible : Must include "xilinx,uartlite"
-> +    - reg : offset and length of uartlite register set
-> +
-> +    Recommended properties:
-> +    - interrupt-parent, interrupts : Connection of device irq signal.
-> +
+The OF node path should have a unit address that accomplishes that.
 
-typically, serial ports include properties for current-speed and
-clock-frequency. I guess it would be good to include at least one
-of the two here.
+> I find it rather puzzling that instead people are trying to make this
+> a non-issue as soon as it cannot be implemented easily with their new
+> and shiny infrastructure.
 
-	Arnd <><
+"People" are not a monolithic entity.  I never advocated using bus numbers.
+
+-Scott
