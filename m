@@ -1,23 +1,33 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 15 Oct 2007 10:37:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v3 9/9] add MPC837x MDS board default device tree
-Message-ID: <20071015003703.GA14108@localhost.localdomain>
-References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
-	<1192195728-24189-2-git-send-email-leoli@freescale.com>
-	<1192195728-24189-3-git-send-email-leoli@freescale.com>
-	<1192195728-24189-4-git-send-email-leoli@freescale.com>
-	<1192195728-24189-5-git-send-email-leoli@freescale.com>
-	<1192195728-24189-6-git-send-email-leoli@freescale.com>
-	<1192195728-24189-7-git-send-email-leoli@freescale.com>
-	<1192195728-24189-8-git-send-email-leoli@freescale.com>
-	<1192195728-24189-9-git-send-email-leoli@freescale.com>
-	<1192195728-24189-10-git-send-email-leoli@freescale.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 505EEDDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:55:22 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9F0tLXu011782
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:55:21 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9F0tL2U966880
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:55:21 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9F0qTPI008843
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:52:29 +1000
+Date: Mon, 15 Oct 2007 10:54:47 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] [POWERPC] Use PAGE_OFFSET to tell if an address is
+	user/kernel in SW TLB handlers
+Message-ID: <20071015005447.GD14108@localhost.localdomain>
+References: <Pine.LNX.4.64.0710111341140.27045@blarg.am.freescale.net>
+	<20071012033032.GH21056@localhost.localdomain>
+	<1192190184.3061.27.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1192195728-24189-10-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <1192190184.3061.27.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,97 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 12, 2007 at 09:28:48PM +0800, Li Yang wrote:
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8377_mds.dts |  288 ++++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8378_mds.dts |  268 ++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8379_mds.dts |  308 +++++++++++++++++++++++++++++++++
->  3 files changed, 864 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
->  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
->  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
+On Fri, Oct 12, 2007 at 06:56:24AM -0500, Josh Boyer wrote:
+> On Fri, 2007-10-12 at 13:30 +1000, David Gibson wrote:
+> > On Thu, Oct 11, 2007 at 01:42:30PM -0500, Kumar Gala wrote:
+> > > Move to using PAGE_OFFSET instead of TASK_SIZE or KERNELBASE value on
+> > > 6xx/40x/44x/fsl-booke to determine if the faulting address is a kernel or
+> > > user space address.  This mimics how the macro is_kernel_addr()
+> > > works.
+> > 
+> > Actually it's ambiguous whether TASK_SIZE or PAGE_OFFSET is correct in
+> > most of these cases (KERNELBASE is certainly wrong, though).
+> > 
+> > TASK_SIZE is the top of the userspace mapped area, PAGE_OFFSET is the
+> > bottom of the linear mapping.  So, strictly speaking there are 3 paths
+> > for the miss handlers: < TASK_SIZE => user mapping, >= PAGE_OFFSET =>
+> > kernel mapping, between the two => immediate fault.
+> > 
+> > We get away with a two way comparison on 32-bit because, a) they have
+> > the same value and b) none of the pagetables, user or kernel, should
+> > have any entries in the in between region so we'll end up in
+> > do_page_fault in the end, anyway.
 > 
-> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts
-> b/arch/powerpc/boot/dts/mpc8377_mds.dts
-[snip]
-> +	soc837x@e0000000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		device_type = "soc";
-> +		ranges = <0 e0000000 00100000>;
-> +		reg = <e0000000 00000200>;
-> +		bus-frequency = <0>;
-> +
-> +		wdt@200 {
-> +			device_type = "watchdog";
+> Kumar's other patch removes the gap.  He changed the default
+> CONFIG_TASK_SIZE to 0xc0000000.
 
-Drop this device_type.
-
-> +			compatible = "mpc83xx_wdt";
-> +			reg = <200 100>;
-> +		};
-> +
-> +		i2c@3000 {
-> +			device_type = "i2c";
-
-And this one.
-
-> +			compatible = "fsl-i2c";
-> +			reg = <3000 100>;
-> +			interrupts = <e 8>;
-> +			interrupt-parent = < &ipic >;
-> +			dfsrr;
-> +		};
-> +
-> +		i2c@3100 {
-> +			device_type = "i2c";
-
-And here.
-
-> +			compatible = "fsl-i2c";
-> +			reg = <3100 100>;
-> +			interrupts = <f 8>;
-> +			interrupt-parent = < &ipic >;
-> +			dfsrr;
-> +		};
-> +
-> +		spi@7000 {
-> +			device_type = "spi";
-
-And this one.
-
-[snip]
-> +		crypto@30000 {
-> +			device_type = "crypto";
-
-And definitely this one.
-
-> +			model = "SEC3";
-> +			compatible = "talitos";
-> +			reg = <30000 10000>;
-> +			interrupts = <b 8>;
-> +			interrupt-parent = < &ipic >;
-> +			/* Rev. 3.0 geometry */
-> +			num-channels = <4>;
-> +			channel-fifo-len = <18>;
-> +			exec-units-mask = <000009fe>;
-> +			descriptor-types-mask = <03ab0ebf>;
-> +		};
-> +
-> +		sdhc@2e000 {
-> +			model = "eSDHC";
-> +			compatible = "fsl,esdhc";
-> +			reg = <2e000 1000>;
-> +			interrupts = <2a 8>;
-> +			interrupt-parent = < &ipic >;
-> +		};
-> +
-> +		sata@18000 {
-> +			device_type = "sata";
-
-And again.
-
+That's (a) and only removes the gap in the default configuration..
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
