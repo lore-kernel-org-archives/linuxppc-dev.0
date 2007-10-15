@@ -1,33 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id D10DBDE9AE
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 01:55:48 +1000 (EST)
-Received: from pd4mr4so.prod.shaw.ca
-	(pd4mr4so-qfe3.prod.shaw.ca [10.0.141.215]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JPY00FKBMUONS80@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 15 Oct 2007 09:54:24 -0600 (MDT)
-Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
-	by pd4mr4so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JPY00EOAMUNTS60@pd4mr4so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 15 Oct 2007 09:54:24 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JPY00IKOMTL28P0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 15 Oct 2007 09:53:45 -0600 (MDT)
-Date: Mon, 15 Oct 2007 09:53:44 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH v2] Device tree bindings for Xilinx devices
-To: linuxppc-dev@ozlabs.org,
-	Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>,
-	Leonid <Leonid@a-k-a.net>,
-	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-	microblaze-uclinux@itee.uq.edu.au
-Message-id: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D88F9DE9FD
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 01:57:36 +1000 (EST)
+Date: Mon, 15 Oct 2007 19:57:30 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] [RFC][POWERPC] MPC8568E-MDS: create localbus node
+Message-ID: <20071015155730.GA30008@localhost.localdomain>
+References: <20071015153525.GA28761@localhost.localdomain>
+	<47138A54.8030307@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <47138A54.8030307@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,84 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Mon, Oct 15, 2007 at 07:42:12PM +0400, Sergei Shtylyov wrote:
+> Anton Vorontsov wrote:
+>
+>> This patch creates localbus node, moves bcsr into it, and adds
+>> localbus to the probe path.
+>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>
+>> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts 
+>> b/arch/powerpc/boot/dts/mpc8568mds.dts
+>> index 5439437..296adc3 100644
+>> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
+>> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+>> @@ -42,9 +42,17 @@
+>>  		reg = <00000000 10000000>;
+>>  	};
+>>  -	bcsr@f8000000 {
 
-Here's my second version of xilinx device tree bindings.  Please review
-and comment.  I'd like to push these out to Paulus in the next couple
-of days.
+Heh, this is wrong.
 
-Cheers,
-g.
+>> -		device_type = "board-control";
+>> -		reg = <f8000000 8000>;
+>> +	localbus@f0000000 {
+>> +		compatible = "fsl,mpc8568mds-localbus";
+>
+>    Is the entity described as "localbus" indeed so *board* specific?
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+That's what booting-without-of.txt gives as an example.
 
- Documentation/powerpc/booting-without-of.txt |   55 ++++++++++++++++++++++++++
- 1 files changed, 55 insertions(+), 0 deletions(-)
+>> +		#address-cells = <2>;
+>> +		#size-cells = <1>;
+>> +		reg = <f0000000 10000000>;
+>> +		ranges = <0 0 f8000000 0008000>;
+>
+>    Isn't that range a part of "reg"?
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 7a6c5f2..21afaea 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -2089,6 +2089,61 @@ platforms are moved over to use the flattened-device-tree model.
- 
-    More devices will be defined as this spec matures.
- 
-+   l) Xilinx ML300 Framebuffer
-+
-+   Simple framebuffer device from the ML300 reference design (also on the
-+   ML403 reference design as well as others).
-+
-+   Required properties:
-+    - compatible : Must include "xilinx,ml300-fb"
-+    - reg : offset and length of the framebuffer register set
-+
-+   Optional properties:
-+    - resolution : <xres yres> pixel resolution of framebuffer.  Some
-+                   implementations use a different resolution.  Default
-+                   is <d#640 d#480>
-+    - virt-resolution : <xvirt yvirt> Size of framebuffer in memory.
-+                        Default is <d#1024 d#480>.
-+    - rotate-display (empty) : rotate display 180 degrees.
-+
-+   m) Xilinx SystemACE
-+
-+   The Xilinx SystemACE device is used to program FPGAs from an FPGA
-+   bitstream stored on a CF card.  It can also be used as a generic CF
-+   interface device.
-+
-+   Required properties:
-+    - compatible : Must include "xilinx,sysace"
-+    - reg : offset and length of SystemACE register set
-+
-+   Recommended properties:
-+    - interrupt-parent, interrupts : Connection of device irq signal.
-+
-+   Optional properties:
-+    - 8-bit (empty) : Set this property if the SystemACE must be in 8 bit mode
-+
-+   n) Xilinx EMAC and Xilinx TEMAC
-+
-+   Xilinx Ethernet devices.  Uses common properties from other Ethernet
-+   devices with the following constraints:
-+   
-+   Required properties:
-+    - compatible : Must include one of: "xilinx,plb-temac",
-+                   "xilinx,plb-emac", "xilinx-opb-emac"
-+    - dma-mode : Must be one of "none", "simple", "sg" (sg == scatter gather)
-+
-+   o) Xilinx Uartlite
-+
-+   Xilinx uartlite devices are simple fixed speed serial ports.  Uartlite
-+   ports should be described in a node with the following properties.
-+
-+   Requred properties:
-+    - compatible : Must include "xilinx,uartlite"
-+    - reg : offset and length of uartlite register set
-+
-+    Recommended properties:
-+    - interrupt-parent, interrupts : Connection of device irq signal.
-+
- VII - Specifying interrupt information for devices
- ===================================================
- 
+Heh. Right you are.
+
+>> +
+>> +		bcsr@0,0 {
+
+Hrm, wrong.
+
+>> +			device_type = "board-control";
+>> +			reg = <0 0 8000>;
+>> +		};
+>>  	};
+>>   	soc8568@e0000000 {
+>
+> WBR, Sergei
+
+I'll repost fixed version shortly.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
