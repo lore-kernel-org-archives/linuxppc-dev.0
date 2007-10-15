@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <emmedve1@emmedve1-12.am.freescale.net>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25C73DE094
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 23:42:59 +1000 (EST)
-In-Reply-To: <20071014044154.23438.58701.stgit@trillian.cg.shawcable.net>
-References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
-	<20071014044154.23438.58701.stgit@trillian.cg.shawcable.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <751956FC-6B75-416C-A62A-67915652EA51@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/7] rheap: Changes config mechanism
-Date: Mon, 15 Oct 2007 08:43:27 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 73B9DDDE3C
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 23:51:37 +1000 (EST)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: akpm@linux-foundation.org, jgarzik@pobox.com, leoli@Freescale.com,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] [POWERPC] ucc_geth: Fix build break introduced by commit
+	09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
+Date: Mon, 15 Oct 2007 08:43:50 -0500
+Message-Id: <1192455830-1028-1-git-send-email-Emilian.Medve@Freescale.com>
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,40 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+drivers/net/ucc_geth.c: In function 'ucc_geth_rx':
+drivers/net/ucc_geth.c:3483: error: 'dev' undeclared (first use in this function)
+drivers/net/ucc_geth.c:3483: error: (Each undeclared identifier is reported only once
+drivers/net/ucc_geth.c:3483: error: for each function it appears in.)
+make[2]: *** [drivers/net/ucc_geth.o] Error 1
 
-On Oct 13, 2007, at 11:41 PM, Grant Likely wrote:
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+---
 
-> From: Sylvain Munaut <tnt@246tNt.com>
->
-> Instead of having in the makefile all the option that
-> requires rheap, we define a configuration symbol
-> and when needed we make sure it's selected.
->
-> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->
->  arch/powerpc/Kconfig                   |    4 ++++
->  arch/powerpc/lib/Makefile              |    5 +----
->  arch/powerpc/platforms/Kconfig         |    2 ++
->  arch/powerpc/platforms/Kconfig.cputype |    1 +
->  arch/ppc/Kconfig                       |    6 ++++++
->  5 files changed, 14 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 037664d..8300e6a 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -698,3 +698,7 @@ source "crypto/Kconfig"
->  config PPC_CLOCK
->  	bool
->  	default n
-> +
-> +config PPC_LIB_RHEAP
+Here is a convenient link for the culprit patch: http://git.kernel.org/?p=linux/kernel/git/jgarzik/netdev-2.6.git;a=commit;h=09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
 
-we should really have help for this option.
+netdev-2.6> scripts/checkpatch.pl 0001-POWERPC-ucc_geth-Fix-build-break-introduced-by-co.patch 
+Your patch has no obvious style problems and is ready for submission.
 
-> +	bool
-> +
+ drivers/net/ucc_geth.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-- k
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index d00e7d4..bec413b 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -63,7 +63,7 @@
+ #define UGETH_MSG_DEFAULT	(NETIF_MSG_IFUP << 1 ) - 1
+ 
+ void uec_set_ethtool_ops(struct net_device *netdev);
+-	
++
+ static DEFINE_SPINLOCK(ugeth_lock);
+ 
+ static struct {
+@@ -3454,9 +3454,12 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 	u16 length, howmany = 0;
+ 	u32 bd_status;
+ 	u8 *bdBuffer;
++	struct net_device * dev;
+ 
+ 	ugeth_vdbg("%s: IN", __FUNCTION__);
+ 
++	dev = ugeth->dev;
++
+ 	/* collect received buffers */
+ 	bd = ugeth->rxBd[rxQ];
+ 
+-- 
+1.5.3.GIT
