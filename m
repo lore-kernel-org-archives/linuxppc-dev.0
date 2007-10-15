@@ -1,19 +1,20 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D1138DE370
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 02:16:39 +1000 (EST)
-Received: from localhost (unknown [10.150.0.9])
-	by buildserver.ru.mvista.com (Postfix) with ESMTP id 4760D8810
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:16:36 +0500 (SAMST)
-Date: Mon, 15 Oct 2007 20:16:31 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-Message-ID: <20071015161631.GB30512@localhost.localdomain>
-References: <20071015155730.GA30008@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071015155730.GA30008@localhost.localdomain>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DE254DE1EC
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 02:32:19 +1000 (EST)
+Date: Mon, 15 Oct 2007 09:32:16 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
+Message-ID: <20071015163216.GA8127@gate.ebshome.net>
+References: <200710151529.11485.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710151529.11485.sr@denx.de>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
+On Mon, Oct 15, 2007 at 03:29:11PM +0200, Stefan Roese wrote:
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+<snip>
 
-Patch is against galak/powerpc.git master branch.
+> +#ifdef CONFIG_PPC_MERGE
+> +static int device_idx = -1;
+> +#endif
+> +
 
- arch/powerpc/boot/dts/mpc8568mds.dts |   35 +++++++++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletions(-)
+<snip>
 
-diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-index 8e15dba..1198363 100644
---- a/arch/powerpc/boot/dts/mpc8568mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-@@ -47,12 +47,45 @@
- 		#address-cells = <2>;
- 		#size-cells = <1>;
- 		reg = <e0005000 d8>;
--		ranges = <1 0 f8000000 0008000>;
-+		ranges = <1 0 f8000000 0008000
-+			  0 0 fe000000 2000000>;
- 
- 		bcsr@1,0 {
- 			device_type = "board-control";
- 			reg = <1 0 8000>;
- 		};
-+
-+		flash@0,0 {
-+			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
-+			reg = <0 0 2000000>;
-+			probe-type = "CFI";
-+			bank-width = <2>;
-+			device-width = <1>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			hrcw@0 {
-+				label = "hrcw";
-+				reg = <0 20001>;
-+				read-only;
-+			};
-+
-+			kernel@20000 {
-+				label = "kernel";
-+				reg = <20000 200000>;
-+			};
-+
-+			rootfs@220000 {
-+				label = "rootfs";
-+				reg = <220000 1d60000>;
-+			};
-+
-+			uboot@1f80000 {
-+				label = "u-boot";
-+				reg = <1f80000 80000>;
-+				read-only;
-+			};
-+		};
- 	};
- 
- 	soc8568@e0000000 {
+> +	dev->idx = ++device_idx;
+> +	adap->nr = dev->idx;
+
+Hmm, this doesn't look right. That mighty powerpc device everybody 
+was so excited about for the last years doesn't provide a device 
+instance number/index?
+
+I think this approach is wrong, because I want i2c bus numbers for the 
+on-chip i2c to be fixed. This code makes it dependent on the order 
+devices were described in the device tree; how do you handle a 
+situation when only the second i2c adapter is connected? For OCP I 
+would just remove ocp_def for the IIC0.
+
 -- 
-1.5.0.6
+Eugene
