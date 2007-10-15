@@ -1,18 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 33B1ADE087
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 03:33:27 +1000 (EST)
-Message-ID: <4713A474.1000301@ru.mvista.com>
-Date: Mon, 15 Oct 2007 21:33:40 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 42430DE0ED
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 03:35:02 +1000 (EST)
+Date: Mon, 15 Oct 2007 12:40:59 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Refactor booting-without-of.txt
+Message-ID: <20071015174059.GA17387@lixom.net>
+References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
+	<20071015165505.GA16040@lixom.net>
+	<fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-References: <20071015155730.GA30008@localhost.localdomain>
-	<20071015161631.GB30512@localhost.localdomain>
-In-Reply-To: <20071015161631.GB30512@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,74 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+Hi,
 
-> MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
+On Mon, Oct 15, 2007 at 11:14:44AM -0600, Grant Likely wrote:
+> On 10/15/07, Olof Johansson <olof@lixom.net> wrote:
+> >
+> > The flat device tree is, in spite of what some people would like it to be,
+> > not open firmware, nor is it the same as their bindings. So I think we'd
+> > be doing ourselves a disservice by continuing to associate them together.
+> > All it would take is a rename of the directory, unfortunately i don't
+> > have any suggestions on better names though.
+> 
+> I think I need to stick with the of prefix.  All the support API in
+> include/linux/of_* is prefixed with "of_" already, so convention is
+> established.
+> 
+> How about Documentation/of-device-tree?
 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Sounds good to me, even though it doesn't really address the original
+OF separation comment. :)
 
-> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
-> index 8e15dba..1198363 100644
-> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
-> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-> @@ -47,12 +47,45 @@
->  		#address-cells = <2>;
->  		#size-cells = <1>;
->  		reg = <e0005000 d8>;
-> -		ranges = <1 0 f8000000 0008000>;
-> +		ranges = <1 0 f8000000 0008000
-> +			  0 0 fe000000 2000000>;
->  
->  		bcsr@1,0 {
->  			device_type = "board-control";
->  			reg = <1 0 8000>;
->  		};
-> +
-> +		flash@0,0 {
-> +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
-> +			reg = <0 0 2000000>;
-> +			probe-type = "CFI";
+Maybe it's enough to document the difference between the linux-specific
+flat device tree bindings and classic 1275-style bindings in the top
+readme in that directory. Either way, it's not worth arguing over,
+your suggestion is good enough.
 
-    I don't get it -- has physmap_of.c rewrite been already committed?
-If yes, you don't need probe_type; if no, your "compatible" won't work...
-Well, I see that the driver rewrite has been committed (when I wasn't looking 
-8-)...
+> > Looks reasonable. The other way to cut it would be to slice along vendor
+> > boundaries, but I think I like the functional partitioning you suggested
+> > better.
+> 
+> I think vendor partitioning makes sense for non-common devices that
+> don't easily fit into a particular mold (soc glue nodes come to mind).
+>  Other than that, the functional partitioning
+> lets us start with defining common property usage for a given device
+> type and follow up with device specific properties.
 
-> +			bank-width = <2>;
-> +			device-width = <1>;
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +
-> +			hrcw@0 {
-> +				label = "hrcw";
-> +				reg = <0 20001>;
+Yep, it could always be added down the road in case it's needed.
 
-    What?! Odd sized partition? Don't try to follow both the old and new 
-partition device tree specs -- you'll only get yourself into trouble with 
-this.  The size-cell doesn't bear r/o flag in the new paritions spec.
 
-> +				read-only;
-> +			};
-> +
-> +			kernel@20000 {
-> +				label = "kernel";
-> +				reg = <20000 200000>;
-> +			};
-> +
-> +			rootfs@220000 {
-> +				label = "rootfs";
-> +				reg = <220000 1d60000>;
-> +			};
-> +
-> +			uboot@1f80000 {
-> +				label = "u-boot";
-> +				reg = <1f80000 80000>;
-> +				read-only;
-
-    Well, this is not even consistent... :-)
-
-> +			};
-> +		};
->  	};
-
-WBR, Sergei
+-Olof
