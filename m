@@ -1,19 +1,31 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id D2B8BDDE23
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 20:56:07 +1000 (EST)
-Date: Mon, 15 Oct 2007 12:56:01 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v3 4/4] FEC mpc52xx: phy part of the driver\
-Message-ID: <20071015105601.GM3000@nd47.coderock.org>
-References: <20071014075511.GC3000@nd47.coderock.org>
-	<20071014075958.GG3000@nd47.coderock.org>
-	<fa686aa40710141505w1787e7e1g6116185001561a4d@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <fa686aa40710141505w1787e7e1g6116185001561a4d@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2E7C5DDE18
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:41 +1000 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9FB8cNI012852
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:38 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9FB8eeP590034
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:40 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9FB8NJI011985
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:24 +1000
+Message-ID: <47134A1B.8000001@linux.vnet.ibm.com>
+Date: Mon, 15 Oct 2007 16:38:11 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] Linux 2.6.23.1 - Open Firmware exception handler invoked
+References: <20071012170140.GA18498@kroah.com>
+In-Reply-To: <20071012170140.GA18498@kroah.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,143 +35,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 14/10/07 16:05 -0600, Grant Likely wrote:
-> On 10/14/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > PHY part of the driver for mpc5200(b) ethernet.
-> 
-> Assuming I understand correctly, this comment is not correct and this
-> patch just adds an MDIO bus driver.  PHY drivers are in phylib and
-> data transfer is setup via the core driver, correct?
+Hi,
 
-Right.
+The Open Firmware exception handler is begin invoked, on power5 lpar.
 
-> 
-> It is conceivable that the PHY is connected to an alternate MDIO bus,
-> or the MDIO bus is used for a PHY connected to an external Ethernet
-> controller.
-> 
-> Speaking of which, is it possible to use this MDIO bus without the
-> core FEC being initialized?
+boot: 2.6.23.1
+Please wait, loading kernel...
+Allocated 03500000 bytes for kernel @ 01c00000
+   Elf64 kernel loaded...
+Loading ramdisk...
+ramdisk loaded 0020d000 @ 06b00000
+DEFAULT CATCH!, exception-handler=fff00300 
+at   %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+Open Firmware exception handler entered from non-OF code
 
-IIRC fec doesn't need any initialization for MDIO bus registers to work.
+Client's Fix Pt Regs:
+ 00 0223100003080000 00000000018bfac0 0000000004bbeaf8 00000000018bfb48
+ 04 00000000018bfc90 0000000000c39a48 0000000000000000 5c3a03080000a0fa
+ 08 0000000000000001 0000000000000000 05910000194c0223 000000005cae0000
+ 0c 0000000003f1eaf8 0000000000000000 0000000000000000 0000000000000000
+ 10 0000000000000000 0000000000c39a48 0000000000000000 00000000018bfc90
+ 14 0000000000c00000 000000000020d000 0000000000000000 0000000008b00000
+ 18 0000000000280004 00000000018bff04 0000000000000001 0000000000000000
+ 1c 0000000008b00000 0000000000c39a48 c000000004d1e530 0000000008b00000
+Special Regs:
+    %IV: 00000300     %CR: 44000028    %XER: 00000000  %DSISR: 08000000 
+  %SRR0: c00000000202705c   %SRR1: 8000000000003002 
+    %LR: c000000002027428    %CTR: c0000000020273f0 
+   %DAR: 05910000194c02eb 
+Virtual PID = 0 
+PFW: Unable to send error log!
+ ofdbg
+0 > 
 
-> 
-> > +static struct of_device_id fec_mdio_match[] = {
-> > +       {
-> > +               .type = "mdio",
-> > +               .compatible = "mpc5200b-fec-phy",
-> 
-> This is not a phy; it's an MDIO bus.  Also, shouldn't this be
-> "mpc5200-..." instead of "mpc5200b-..."?
+# cat /proc/cpuinfo 
+processor       : 0
+cpu             : POWER5+ (gs)
+clock           : 1498.500000MHz
+revision        : 2.0 (pvr 003b 0200)
 
-Didn't know if it's ok for mpc5200, guess it is?
+processor       : 1
+cpu             : POWER5+ (gs)
+clock           : 1498.500000MHz
+revision        : 2.0 (pvr 003b 0200)
 
-> 
-> > +       },
-> > +       {},
-> > +};
-> > +
-> > +struct of_platform_driver mpc52xx_fec_mdio_driver = {
-> > +       .name = "mpc5200b-fec-phy",
-> > +       .probe = fec_mdio_probe,
-> > +       .remove = fec_mdio_remove,
-> > +       .match_table = fec_mdio_match,
-> 
-> Inconsistent naming.  Please use the same prefix on all global/static
-> symbols (ie. use "mpc52xx_mdio_" instead of the mix of
-> "mpc52xx_fec_mdio_", "fec_mdio_", etc.)  I also thing that "fec_mdio_"
-> is too generic because there are a number of different incompatible
-> FEC devices.
-
-OK.
-
-> 
-> > +};
-> > +
-> > +/* let fec driver call it, since this has to be registered before it */
-> > +EXPORT_SYMBOL_GPL(mpc52xx_fec_mdio_driver);
-> 
-> Why not have a module_init()/module_exit() in this file?  I don't
-> think the FEC driver calls this driver's functions directly anymore,
-> and it's still dependent on the of_platform bus probe order anyway.
-
-It was one way of making sure mdio driver is registered before fec.
-(and of_platform bus probe order won't work for modules)
-Nicer alternatives?
-
-> 
-> As an added bonus, it makes your Makefile much simpler.
-> 
-> > +
-> > +
-> > +MODULE_LICENSE("Dual BSD/GPL");
-> > Index: linux.git/drivers/net/fec_mpc52xx/Makefile
-> > ===================================================================
-> > --- linux.git.orig/drivers/net/fec_mpc52xx/Makefile
-> > +++ linux.git/drivers/net/fec_mpc52xx/Makefile
-> > @@ -1,2 +1,7 @@
-> >  obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx.o
-> >  fec_mpc52xx-objs := fec.o
-> > +
-> > +ifeq ($(CONFIG_FEC_MPC52xx_MDIO),y)
-> > +       obj-$(CONFIG_FEC_MPC52xx) += fec_mpc52xx_phy.o
-> > +       fec_mpc52xx_phy-objs := fec_phy.o
-> > +endif
-> > Index: linux.git/drivers/net/fec_mpc52xx/Kconfig
-> > ===================================================================
-> > --- linux.git.orig/drivers/net/fec_mpc52xx/Kconfig
-> > +++ linux.git/drivers/net/fec_mpc52xx/Kconfig
-> > @@ -11,5 +11,18 @@ config FEC_MPC52xx
-> >         ---help---
-> >           This option enables support for the MPC5200's on-chip
-> >           Fast Ethernet Controller
-> > +         If compiled as module, it will be called 'fec_mpc52xx.ko'.
-> 
-> Drop this line and make the help text the same format as the other eth
-> drivers in drivers/net.
-
-How exactly is it different now?
-And most of them have the "Module will be called xxx" line.
-
-> 
-> > +
-> > +config FEC_MPC52xx_MDIO
-> > +       bool "FEC MII PHY driver"
-> > +       depends on FEC_MPC52xx
-> > +       default y
-> > +       ---help---
-> > +         The MPC5200's FEC can connect to the Ethernet either with
-> > +         an external MII PHY chip or 10 Mbps 7-wire interface
-> > +         (Motorola? industry standard).
-> > +         If your board uses an external PHY, enable this.
-> 
-> Not strictly true.  This enables talking to a PHY using the internal
-> MDIO controller.  PHY register access could just as easily be accessed
-> via an alternate interface.
-
-Not just that is also selects which mode will it use.
-If you don't enable this, fec will be set up as 7-wire
-( 696                 rcntrl |= FEC_RCNTRL_MII_MODE;)
-
-
-> 
-> > +         If not sure, enable.
-> > +         If compiled as module, it will be called 'fec_mpc52xx_phy.ko'.
-> 
-> Drop the module name comment.
-> 
-> Cheers,
-> g.
-> 
-> -- 
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
-
+timebase        : 187199000
+platform        : pSeries
+machine         : CHRP IBM,9133-55A
 -- 
-Domen Puncer | Research & Development
-.............................................................................................
-Telargo d.o.o. | Zagrebška cesta 20 | 2000 Maribor | Slovenia
-.............................................................................................
-www.telargo.com
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
