@@ -1,17 +1,18 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 15 Oct 2007 16:13:56 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] Hook compat_sys_nanosleep up to high res timer code
-Message-ID: <20071015211356.GB28633@kryten>
-References: <20071014215437.GF26693@kryten>
-	<alpine.LFD.0.9999.0710150804290.22612@localhost.localdomain>
-	<20071015063833.GA15396@kryten> <200710150928.56916.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200710150928.56916.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	mingo@elte.hu, linux-kernel@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Date: Mon, 15 Oct 2007 14:43:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [patch 12/13] fb: Move and rename extern declaration for
+	global_mode_option
+Message-Id: <20071015144340.167d1cda.akpm@linux-foundation.org>
+In-Reply-To: <20071012145130.867069000@pademelon.sonytel.be>
+References: <20071012145052.640177000@pademelon.sonytel.be>
+	<20071012145130.867069000@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
+	linux-fbdev-devel@lists.sourceforge.net, cbe-oss-dev@ozlabs.org,
+	adaplas@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,91 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 12 Oct 2007 16:51:04 +0200
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-Now we have high res timers on ppc64 I thought Id test them. It turns
-out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
-is limited to HZ resolution.
+> -    if (mode_option || (mode_option = global_mode_option)) {
+> +    if (mode_option || (mode_option = fb_mode_option)) {
 
-The follow patch converts compat_sys_nanosleep to use high res timers.
+I guess that equals-which-looks-like-it-should-be-equals-equals really
+is intended to be an assignment?
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 3bae374..252a446 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -40,62 +40,27 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
- 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
- }
- 
--static long compat_nanosleep_restart(struct restart_block *restart)
--{
--	unsigned long expire = restart->arg0, now = jiffies;
--	struct compat_timespec __user *rmtp;
--
--	/* Did it expire while we handled signals? */
--	if (!time_after(expire, now))
--		return 0;
--
--	expire = schedule_timeout_interruptible(expire - now);
--	if (expire == 0)
--		return 0;
--
--	rmtp = (struct compat_timespec __user *)restart->arg1;
--	if (rmtp) {
--		struct compat_timespec ct;
--		struct timespec t;
--
--		jiffies_to_timespec(expire, &t);
--		ct.tv_sec = t.tv_sec;
--		ct.tv_nsec = t.tv_nsec;
--		if (copy_to_user(rmtp, &ct, sizeof(ct)))
--			return -EFAULT;
--	}
--	/* The 'restart' block is already filled in */
--	return -ERESTART_RESTARTBLOCK;
--}
--
- asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
--		struct compat_timespec __user *rmtp)
-+				     struct compat_timespec __user *rmtp)
- {
--	struct timespec t;
--	struct restart_block *restart;
--	unsigned long expire;
-+	struct timespec tu, rmt;
-+	long ret;
- 
--	if (get_compat_timespec(&t, rqtp))
-+	if (get_compat_timespec(&tu, rqtp))
- 		return -EFAULT;
- 
--	if ((t.tv_nsec >= 1000000000L) || (t.tv_nsec < 0) || (t.tv_sec < 0))
-+	if (!timespec_valid(&tu))
- 		return -EINVAL;
- 
--	expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
--	expire = schedule_timeout_interruptible(expire);
--	if (expire == 0)
--		return 0;
-+	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
-+				CLOCK_MONOTONIC);
- 
--	if (rmtp) {
--		jiffies_to_timespec(expire, &t);
--		if (put_compat_timespec(&t, rmtp))
-+	if (ret && rmtp) {
-+		if (put_compat_timespec(&rmt, rmtp))
- 			return -EFAULT;
- 	}
--	restart = &current_thread_info()->restart_block;
--	restart->fn = compat_nanosleep_restart;
--	restart->arg0 = jiffies + expire;
--	restart->arg1 = (unsigned long) rmtp;
--	return -ERESTART_RESTARTBLOCK;
-+
-+	return ret;
- }
- 
- static inline long get_compat_itimerval(struct itimerval *o,
+I guess.  After staring at it for a while.  It's a pretty obnoxious way
+of coding it, especially in kernel context where such things are unexpected...
