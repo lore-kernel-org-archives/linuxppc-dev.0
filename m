@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 35A7BDDE9B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:45:59 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Kalra Ashish-B00888" <ashish.kalra@freescale.com>
-Subject: Re: [PATCH v2] drivers/ata: add support to Freescale 3.0Gbps SATA
-	Controller
-Date: Mon, 15 Oct 2007 13:45:06 +0200
-References: <2A6F278C5B66C4459AF4013E77A40CD3FCBB59@zin33exm20.fsl.freescale.net>
-In-Reply-To: <2A6F278C5B66C4459AF4013E77A40CD3FCBB59@zin33exm20.fsl.freescale.net>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0A1A8DDF5B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:53:07 +1000 (EST)
+Message-ID: <4713551B.9040103@genesi-usa.com>
+Date: Mon, 15 Oct 2007 12:55:07 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710151345.07515.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, linux-ide@vger.kernel.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
+	MPC5200
+References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
+	<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+In-Reply-To: <20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 15 October 2007, Kalra Ashish-B00888 wrote:
-> Thanks for your comments and feedback.
-> 
-> Actually, for PowerPC platforms iowrite32/ioread32 internally call
-> writel/readl, which are again mapped to out_le32/in_le32,
 
-This is correct on 6xx and e500 for now, but it's a little more
-complicated than that in general:
+My nits:
 
-iowriteXX/ioreadXX are either the simple readX/writeX wrappers
-from arch/powerpc/kernel/iomap.c, or the more complex functions
-from lib/iomap.c, depending on whether any of the active platforms
-has set CONFIG_PPC_INDIRECT_IO.
+Grant Likely wrote:
+> From: Sylvain Munaut <tnt@246tNt.com>
+> +static int __devinit
+> +bcom_engine_init(void)
 
-writeX/readX can either map directly to out_leXX/in_leXX, or do
-something more complicated, again depending on the platform.
-In general, writeX/readX may need to consider PCI specific error
-handling or synchronization requirements, while out_leXX/in_leXX
-are low-level accessors that should only be used by device drivers
-when they are used on directly connected (non-PCI) devices.
+Why "bcom" and not "bestcomm"?
 
-Since iowriteXX/ioreadXX is supposed to be the most generic
-variant covering both PCI MMIO (writeX/readX) and PCI PIO
-(outX/inX) transfers, it would make sense to extend them to
-also do SOC MMIO (out_leXX/in_leXX/out_beXX/in_beXX) and
-DCR (dcr_write/dcr_read) accesses in the future.
+> +	/* Disable COMM Bus Prefetch, apparently it's not reliable yet */
+> +	/* FIXME: This should be done on 5200 and not 5200B ... */
+> +	out_be16(&bcom_eng->regs->PtdCntrl, in_be16(&bcom_eng->regs->PtdCntrl) | 1);
 
-	Arnd <><
+This really, really shouldn't even be here, could it be moved to a platform
+init, or switched on a PVR/SVR here?
+
+> +int bcom_sram_init(struct device_node *sram_node, char *owner)
+> +{
+> +	int rv;
+> +	const u32 *regaddr_p;
+> +	u64 regaddr64, size64;
+> +	unsigned int psize;
+> +
+> +	/* Create our state struct */
+> +	if (bcom_sram) {
+> +		printk(KERN_ERR "%s: bcom_sram_init: "
+> +			"Already initialiwed !\n", owner);
+> +		return -EBUSY;
+> +	}
+
+initialised or initialized :)
+
+> +		printk(KERN_ERR "%s: bcom_sram_init: "
+> +			"Couln't request region !\n", owner);
+> +		rv = -EBUSY;
+> +		goto error_free;
+
+Couldn't or could not.
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
