@@ -1,19 +1,23 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9439CDDF00
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:34:20 +1000 (EST)
-Message-ID: <4713B2A1.4000503@pobox.com>
-Date: Mon, 15 Oct 2007 14:34:09 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34D2BDDF28
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:47:44 +1000 (EST)
+Date: Mon, 15 Oct 2007 13:47:43 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH 1/2] [RFC][POWERPC] MPC8568E-MDS: create localbus node
+Message-ID: <20071015184743.GA4474@loki.buserror.net>
+References: <20071015153525.GA28761@localhost.localdomain>
+	<47138A54.8030307@ru.mvista.com>
+	<20071015155730.GA30008@localhost.localdomain>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/5] Update ibm_newemac to use dcr_host_t.base
-References: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
-In-Reply-To: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071015155730.GA30008@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> Now that dcr_host_t contains the base address, we can use that in the
-> ibm_newemac code, rather than storing it separately.
+On Mon, Oct 15, 2007 at 07:57:30PM +0400, Anton Vorontsov wrote:
+> On Mon, Oct 15, 2007 at 07:42:12PM +0400, Sergei Shtylyov wrote:
+> >    Is the entity described as "localbus" indeed so *board* specific?
 > 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  drivers/net/ibm_newemac/mal.c |    9 +++++----
->  drivers/net/ibm_newemac/mal.h |    5 ++---
->  2 files changed, 7 insertions(+), 7 deletions(-)
+> That's what booting-without-of.txt gives as an example.
 
-applied 1-5
+The board should have been left out of that.  Your compatible should be
+something like "fsl,mpc8568-localbus", possibly with some canonical mpc85xx
+chip as well, chosen to represent 85xx localbus in general.
+
+-Scott
