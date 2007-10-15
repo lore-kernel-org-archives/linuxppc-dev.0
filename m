@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4FAACDE438
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 00:02:49 +1000 (EST)
-In-Reply-To: <fa686aa40710150655s37d8c7d5ye9122034f768a897@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.236])
+	by ozlabs.org (Postfix) with ESMTP id 9E142DE2EC
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 00:04:18 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so806802wri
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 07:04:17 -0700 (PDT)
+Message-ID: <fa686aa40710150704j15f3a511rf5924573282c966b@mail.gmail.com>
+Date: Mon, 15 Oct 2007 08:04:16 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Matt Sealey" <matt@genesi-usa.com>
+Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
+	MPC5200
+In-Reply-To: <4713551B.9040103@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>
-	<20071014044154.23438.58701.stgit@trillian.cg.shawcable.net>
-	<751956FC-6B75-416C-A62A-67915652EA51@kernel.crashing.org>
-	<fa686aa40710150655s37d8c7d5ye9122034f768a897@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5D5FEAFA-AFB9-4F8D-941E-11686E8992F4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/7] rheap: Changes config mechanism
-Date: Mon, 15 Oct 2007 09:03:17 -0500
-To: "Grant Likely" <grant.likely@secretlab.ca>
+	<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>
+	<4713551B.9040103@genesi-usa.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,36 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 15, 2007, at 8:55 AM, Grant Likely wrote:
-
-> On 10/15/07, Kumar Gala <galak@kernel.crashing.org> wrote:
->>
->> On Oct 13, 2007, at 11:41 PM, Grant Likely wrote:
->>
->>> From: Sylvain Munaut <tnt@246tNt.com>
->>>
->>> Instead of having in the makefile all the option that
->>> requires rheap, we define a configuration symbol
->>> and when needed we make sure it's selected.
->>>
->>> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
->>> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->>> ---
->>>
->>> +
->>> +config PPC_LIB_RHEAP
->>
->> we should really have help for this option.
+On 10/15/07, Matt Sealey <matt@genesi-usa.com> wrote:
 >
-> This is a non-user-selectable option; none of the other
-> non-user-selectable options have help text.
+> My nits:
+>
+> Grant Likely wrote:
+> > From: Sylvain Munaut <tnt@246tNt.com>
+> > +static int __devinit
+> > +bcom_engine_init(void)
+>
+> Why "bcom" and not "bestcomm"?
 
-I don't see why we can't let users select it (saying that  
-differently, we should let users have this ability)
+I can type 'bcom' twice as fast.  :-)  bcom is a suitable shortening;
+I'm not concerned about it.
 
-> I can add a comment; want to give me some text to squirt in there?
+>
+> > +     /* Disable COMM Bus Prefetch, apparently it's not reliable yet */
+> > +     /* FIXME: This should be done on 5200 and not 5200B ... */
+> > +     out_be16(&bcom_eng->regs->PtdCntrl, in_be16(&bcom_eng->regs->PtdCntrl) | 1);
+>
+> This really, really shouldn't even be here, could it be moved to a platform
+> init, or switched on a PVR/SVR here?
 
-grab something out of the comment at the top of lib/rheap.c
+I think I'd like to leave it here for getting this series merged; it
+may not be good to have it here; but it's not dangerous either.  I'm
+trying to keep churn on this series down to a minimum.
 
-- k
+Please submit a patch to make this change once it's merged.
+
+>
+> > +int bcom_sram_init(struct device_node *sram_node, char *owner)
+> > +{
+> > +     int rv;
+> > +     const u32 *regaddr_p;
+> > +     u64 regaddr64, size64;
+> > +     unsigned int psize;
+> > +
+> > +     /* Create our state struct */
+> > +     if (bcom_sram) {
+> > +             printk(KERN_ERR "%s: bcom_sram_init: "
+> > +                     "Already initialiwed !\n", owner);
+> > +             return -EBUSY;
+> > +     }
+>
+> initialised or initialized :)
+
+fixed
+
+>
+> > +             printk(KERN_ERR "%s: bcom_sram_init: "
+> > +                     "Couln't request region !\n", owner);
+> > +             rv = -EBUSY;
+> > +             goto error_free;
+>
+> Couldn't or could not.
+
+fixed; thanks.
+
+Cheers,
+g.
+
+>
+> --
+> Matt Sealey <matt@genesi-usa.com>
+> Genesi, Manager, Developer Relations
+>
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
