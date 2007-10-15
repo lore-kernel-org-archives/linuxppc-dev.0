@@ -1,25 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 025CFDDFB4
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 07:11:35 +1000 (EST)
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support
-	to NEW EMAC.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <4713B9C1.5010001@garzik.org>
-References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
-	<20071015134813.6aacdcca@weaponx.rchland.ibm.com>
-	<4713B726.6080404@garzik.org>
-	<20071015135959.5b603d7d@weaponx.rchland.ibm.com>
-	<4713B9C1.5010001@garzik.org>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 07:05:23 +1000
-Message-Id: <1192482323.11795.38.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 15 Oct 2007 16:13:56 -0500
+From: Anton Blanchard <anton@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] Hook compat_sys_nanosleep up to high res timer code
+Message-ID: <20071015211356.GB28633@kryten>
+References: <20071014215437.GF26693@kryten>
+	<alpine.LFD.0.9999.0710150804290.22612@localhost.localdomain>
+	<20071015063833.GA15396@kryten> <200710150928.56916.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710150928.56916.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	mingo@elte.hu, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +22,90 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mon, 2007-10-15 at 15:04 -0400, Jeff Garzik wrote:
-> I would ideally like a single active patch generator (even if they
-> are 
-> merely reviewed others work sometimes).
-> 
-> Outside of that, I'm hoping you and the other people listed making 
-> changes will self-organize without my help :)
+Now we have high res timers on ppc64 I thought Id test them. It turns
+out compat_sys_nanosleep hasnt been converted to the hrtimer code and so
+is limited to HZ resolution.
 
-Josh, do you want to be the central point / maintainer for it or do you
-want me to do it ? There's a lot of code from me in there and I did this
-fork in the first place so I have a pretty good idea of what's going on
-in this driver and what still needs to be done :-)
+The follow patch converts compat_sys_nanosleep to use high res timers.
 
-Cheers,
-Ben.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 3bae374..252a446 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -40,62 +40,27 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
+ 			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
+ }
+ 
+-static long compat_nanosleep_restart(struct restart_block *restart)
+-{
+-	unsigned long expire = restart->arg0, now = jiffies;
+-	struct compat_timespec __user *rmtp;
+-
+-	/* Did it expire while we handled signals? */
+-	if (!time_after(expire, now))
+-		return 0;
+-
+-	expire = schedule_timeout_interruptible(expire - now);
+-	if (expire == 0)
+-		return 0;
+-
+-	rmtp = (struct compat_timespec __user *)restart->arg1;
+-	if (rmtp) {
+-		struct compat_timespec ct;
+-		struct timespec t;
+-
+-		jiffies_to_timespec(expire, &t);
+-		ct.tv_sec = t.tv_sec;
+-		ct.tv_nsec = t.tv_nsec;
+-		if (copy_to_user(rmtp, &ct, sizeof(ct)))
+-			return -EFAULT;
+-	}
+-	/* The 'restart' block is already filled in */
+-	return -ERESTART_RESTARTBLOCK;
+-}
+-
+ asmlinkage long compat_sys_nanosleep(struct compat_timespec __user *rqtp,
+-		struct compat_timespec __user *rmtp)
++				     struct compat_timespec __user *rmtp)
+ {
+-	struct timespec t;
+-	struct restart_block *restart;
+-	unsigned long expire;
++	struct timespec tu, rmt;
++	long ret;
+ 
+-	if (get_compat_timespec(&t, rqtp))
++	if (get_compat_timespec(&tu, rqtp))
+ 		return -EFAULT;
+ 
+-	if ((t.tv_nsec >= 1000000000L) || (t.tv_nsec < 0) || (t.tv_sec < 0))
++	if (!timespec_valid(&tu))
+ 		return -EINVAL;
+ 
+-	expire = timespec_to_jiffies(&t) + (t.tv_sec || t.tv_nsec);
+-	expire = schedule_timeout_interruptible(expire);
+-	if (expire == 0)
+-		return 0;
++	ret = hrtimer_nanosleep(&tu, rmtp ? &rmt : NULL, HRTIMER_MODE_REL,
++				CLOCK_MONOTONIC);
+ 
+-	if (rmtp) {
+-		jiffies_to_timespec(expire, &t);
+-		if (put_compat_timespec(&t, rmtp))
++	if (ret && rmtp) {
++		if (put_compat_timespec(&rmt, rmtp))
+ 			return -EFAULT;
+ 	}
+-	restart = &current_thread_info()->restart_block;
+-	restart->fn = compat_nanosleep_restart;
+-	restart->arg0 = jiffies + expire;
+-	restart->arg1 = (unsigned long) rmtp;
+-	return -ERESTART_RESTARTBLOCK;
++
++	return ret;
+ }
+ 
+ static inline long get_compat_itimerval(struct itimerval *o,
