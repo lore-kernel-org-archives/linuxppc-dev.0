@@ -1,18 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id C0B57DDEBD
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 09:36:43 +1000 (EST)
-To: "S. Fricke" <silvio.fricke@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: can and mpc5200b
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 15 Oct 2007 15:32:33 +0200."
-	<20071015133233.GB4859@sfrouter>
-Date: Tue, 16 Oct 2007 01:36:42 +0200
-Sender: wd@denx.de
-Message-Id: <20071015233642.04D1F247BB@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+Date: Tue, 16 Oct 2007 09:44:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+In-Reply-To: <4713A616.3090103@ru.mvista.com>
+References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20071015133233.GB4859@sfrouter> you wrote:
-> 
-> what is the reasonable can-driver for a mpc5200b?
+Sergei Shtylyov writes:
 
-socket-can.
+>     I don't see my own signoff or at least a reference to my prior work in
+> this patch or even at -rt patch -- despite this code ha clearly borrowed from
+> it.  And I'm not sure why this crippled version (lacking 40x/ Book E specific
+> clockevents implementation) is preferred over mine, unless this implementation
+> was only aimed at PPC64 machines...
 
-> I have seen for the peak-3.17 driver a port for the mpc5200 from denx on their
-> website, but with kernel 2.6.23 I dont have a chance to use this?
+Tony started from an earlier patch by John Stultz, not from your
+patches.
 
-No, but socket-can is part of our kernel tree already, and of the
-kernel.org tree in 2.6.24
+The main reason your patches were rejected were that you completely
+broke the VDSO and the deterministic time accounting, and made no
+attempt to fix them.
 
-Best regards,
+As for 40x/Book E, the main thing there is the auto-reload.  However,
+since the generic core can use a oneshot clock event source to
+generate periodic ticks, there is no advantage to using the
+auto-reload.
 
-Wolfgang Denk
+>     Also, have the deterministic CPU accounting incompatibility with
+> clockevents been dealt with?
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The human mind ordinarily operates at only ten percent of its capaci-
-ty - the rest is overhead for the operating system.
+The S390 guys looked at that and solved it with Ingo's and Thomas's
+help (although I did see something on linux-kernel about some further
+problems).
+
+>     I'd use (evt - 1) since the interrupt gets generated at 0xffffffff count, 
+> not 0 (on classic CPUs).  With you removing of the code that compensated for 
+
+See commit d968014b7280e2c447b20363e576999040ac72ef; I already fixed
+that.
+
+> the errors, they will accumulate.  And no, this wouldn't be enough anyway, 
+
+No, they don't accumulate.  See tick_setup_periodic().  The interval
+until the next tick is determined using ktime_get() rather than just
+being a constant.
+
+> since on 40x and Book E you'll need to set it for evt anyway, since the 
+> interrupt happens at 0 count...
+>     NAK the patch.  And I really don't understand why you're throwing alway 
+> already tested/working code...
+
+Because you broke important features and because you seem to have some
+fundamental misconceptions (e.g. the comment about errors accumulating
+you just made).
+
+Paul.
