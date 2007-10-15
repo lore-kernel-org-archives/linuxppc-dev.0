@@ -1,22 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 3D499DDE1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:19:48 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so3944697pyi
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 12:19:47 -0700 (PDT)
-Message-ID: <fa686aa40710151219l1d0da6aduccf29994cb23a365@mail.gmail.com>
-Date: Mon, 15 Oct 2007 13:19:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: [PATCH v3 0/4] FEC - fast ethernet controller for mpc52xx
-In-Reply-To: <4713BA1C.2050604@pobox.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id CA081DE465
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:22:11 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
+Date: Mon, 15 Oct 2007 21:21:53 +0200
+References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
+In-Reply-To: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071014075511.GC3000@nd47.coderock.org>
-	<4713BA1C.2050604@pobox.com>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Domen Puncer <domen.puncer@telargo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710152121.54977.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
-> Domen Puncer wrote:
-> > Hello!
-> >
-> > If there are no objections, I would like to get this merged
-> > when bestcomm goes in (any time now?).
-> >
-> > It's split into four parts:
-> > 1 - device tree
-> > 2 - small bestcomm change
-> > 3 - the actual driver
-> > 4 - phy part of the driver
->
-> patches #3 and #4 need to be combined together.
->
-> Are the arch people OK with patches #1 and #2?
+On Monday 15 October 2007, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Here's my second version of xilinx device tree bindings.  Please review
+> and comment.  I'd like to push these out to Paulus in the next couple
+> of days.
 
-Yes, I'll be pushing both to Paulus shortly.
+There are a few more properties that I can imagine you might need.
+Not sure if it makes sense specifying them now, but here are my thoughts:
+ 
+>     More devices will be defined as this spec matures.
+>  
+> +   l) Xilinx ML300 Framebuffer
+> +
+> +   Simple framebuffer device from the ML300 reference design (also on the
+> +   ML403 reference design as well as others).
+> +
+> +   Required properties:
+> +    - compatible : Must include "xilinx,ml300-fb"
+> +    - reg : offset and length of the framebuffer register set
+> +
+> +   Optional properties:
+> +    - resolution : <xres yres> pixel resolution of framebuffer.  Some
+> +                   implementations use a different resolution.  Default
+> +                   is <d#640 d#480>
+> +    - virt-resolution : <xvirt yvirt> Size of framebuffer in memory.
+> +                        Default is <d#1024 d#480>.
+> +    - rotate-display (empty) : rotate display 180 degrees.
 
-Cheers,
-g.
+rotate-display could be defined as something that allows 0/90/180/270
+degrees, as well as mirroring, not just 180 degree rotation.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> +   o) Xilinx Uartlite
+> +
+> +   Xilinx uartlite devices are simple fixed speed serial ports.  Uartlite
+> +   ports should be described in a node with the following properties.
+> +
+> +   Requred properties:
+> +    - compatible : Must include "xilinx,uartlite"
+> +    - reg : offset and length of uartlite register set
+> +
+> +    Recommended properties:
+> +    - interrupt-parent, interrupts : Connection of device irq signal.
+> +
+
+typically, serial ports include properties for current-speed and
+clock-frequency. I guess it would be good to include at least one
+of the two here.
+
+	Arnd <><
