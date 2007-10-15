@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C350DE10A
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:00:27 +1000 (EST)
-In-Reply-To: <4713A474.1000301@ru.mvista.com>
-References: <20071015155730.GA30008@localhost.localdomain>
-	<20071015161631.GB30512@localhost.localdomain>
-	<4713A474.1000301@ru.mvista.com>
+	by ozlabs.org (Postfix) with ESMTP id CFD99DE200
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:00:36 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l9FHxlGY021365
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 12:59:56 -0500
 Mime-Version: 1.0 (Apple Message framework v752.2)
+Message-Id: <9F7A6CA7-FA22-4A6D-8538-43A5D3AD7104@kernel.crashing.org>
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F248D8A0-B412-41B8-B7F8-FD158576785D@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-Date: Mon, 15 Oct 2007 13:00:24 -0500
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: my git tree rebased
+Date: Mon, 15 Oct 2007 13:00:29 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+For anyone using my git tree I've rebased it now that the merge  
+window for 2.6.24 is ongoing and removed all branches.
 
-On Oct 15, 2007, at 12:33 PM, Sergei Shtylyov wrote:
+The master/HEAD now is in sync with Linus's tree.  I'll be starting  
+of a fixes-2.6.24 branch at some point as well as for-2.6.25 branch.
 
-> Anton Vorontsov wrote:
->
->> MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
->
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->
->> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/ 
->> boot/dts/mpc8568mds.dts
->> index 8e15dba..1198363 100644
->> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
->> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
->> @@ -47,12 +47,45 @@
->>  		#address-cells = <2>;
->>  		#size-cells = <1>;
->>  		reg = <e0005000 d8>;
->> -		ranges = <1 0 f8000000 0008000>;
->> +		ranges = <1 0 f8000000 0008000
->> +			  0 0 fe000000 2000000>;
->>
->>  		bcsr@1,0 {
->>  			device_type = "board-control";
->>  			reg = <1 0 8000>;
->>  		};
->> +
->> +		flash@0,0 {
->> +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
->> +			reg = <0 0 2000000>;
->> +			probe-type = "CFI";
->
->     I don't get it -- has physmap_of.c rewrite been already committed?
-> If yes, you don't need probe_type; if no, your "compatible" won't  
-> work...
-> Well, I see that the driver rewrite has been committed (when I  
-> wasn't looking
-> 8-)...
-
-Any NOR flash nodes should conform to the "new" bindings from David  
-Gibson, et al.  Not sure about the status of those being in  
-physmap_of.c w/regards to 2.6.24.
+I'll try to keep the master branch as a merge of the various patches  
+that exist in the other branches.  Please use the master to create  
+any patches against.
 
 - k
