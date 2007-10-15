@@ -1,13 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Add 1TB workaround for PA6T 
-In-reply-to: <18194.62797.632192.458851@cargo.ozlabs.ibm.com> 
-References: <20071012064942.GB30829@lixom.net>
-	<18194.62797.632192.458851@cargo.ozlabs.ibm.com>
-Date: Mon, 15 Oct 2007 15:25:40 +1000
-Message-ID: <4062.1192425940@neuling.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CF7D1DDDF8
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 16:11:30 +1000 (EST)
+Date: Mon, 15 Oct 2007 08:11:03 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] Hook compat_sys_nanosleep up to high res timer code
+In-Reply-To: <20071014231616.GA24519@kryten>
+Message-ID: <alpine.LFD.0.9999.0710150804290.22612@localhost.localdomain>
+References: <20071014215437.GF26693@kryten> <200710150028.06493.arnd@arndb.de>
+	<20071014231616.GA24519@kryten>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,36 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <18194.62797.632192.458851@cargo.ozlabs.ibm.com> you wrote:
-> Olof Johansson writes:
+On Sun, 14 Oct 2007, Anton Blanchard wrote:
+> Hi Arnd,
+>  
+> > The code looks correct, but I think it would be nicer to change 
+> > hrtimer_nanosleep to take a kernel pointer and have all three
+> > callers (common_nsleep, sys_nanosleep and compat_sys_nanosleep)
+> > do the copy_to_user/put_compat_timespec in the caller.
 > 
-> > @@ -367,7 +368,7 @@ extern void do_feature_fixups(unsigned long value, void
- *fixup_start,
-> >  #define CPU_FTRS_PA6T (CPU_FTR_USE_TB | \
-> >  	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-> >  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CI_LARGE_PAGE | \
-> > -	    CPU_FTR_PURR | CPU_FTR_REAL_LE)
-> > +	    CPU_FTR_PURR | CPU_FTR_REAL_LE | CPU_FTR_NO_SLBIE_B)
-> >  #define CPU_FTRS_COMPATIBLE	(CPU_FTR_USE_TB | \
-> >  	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
-> >  
-> > @@ -375,7 +376,8 @@ extern void do_feature_fixups(unsigned long value, void
- *fixup_start,
-> >  #define CPU_FTRS_POSSIBLE	\
-> >  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
-> >  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
-> > -	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_1T_SEGMENT)
-> > +	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_1T_SEGMENT |	\
-> > +	    CPU_FTR_NO_SLBIE_B)
-> >  #else
-> >  enum {
-> >  	CPU_FTRS_POSSIBLE =
-> 
-> I don't think the second hunk there is necessary, since
-> CPU_FTRS_POSSIBLE will already get CPU_FTR_NO_SLBIE_B via
-> CPU_FTRS_PA6T.
+> Good idea, I had considered that but thought a larger cleanup might run
+> afoul of the merge rules :)
 
-On that, should we put CPU_FTR_1T_SEGMENT in CPU_FTR_POWER6 and
-CPU_FTR_PA6T?  Then we can remove it from CPU_FTRS_POSSIBLE also.  
+Looks good, except ....
+ 
+> --- a/kernel/compat.c
+> +++ b/kernel/compat.c
+> @@ -40,62 +40,26 @@ int put_compat_timespec(const struct timespec *ts, struct compat_timespec __user
+>  			__put_user(ts->tv_nsec, &cts->tv_nsec)) ? -EFAULT : 0;
+>  }
 
-Mikey
+Can you put this into a separate patch please ?
+  
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+>  	restart = &current_thread_info()->restart_block;
+> @@ -1353,7 +1347,8 @@ long hrtimer_nanosleep(struct timespec *rqtp, struct timespec __user *rmtp,
+>  asmlinkage long
+>  sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
+>  {
+> -	struct timespec tu;
+> +	struct timespec tu, rmt;
+> +	int ret;
+>  
+>  	if (copy_from_user(&tu, rqtp, sizeof(tu)))
+>  		return -EFAULT;
+> @@ -1361,7 +1356,14 @@ sys_nanosleep(struct timespec __user *rqtp, struct timespec __user *rmtp)
+>  	if (!timespec_valid(&tu))
+>  		return -EINVAL;
+>  
+> -	return hrtimer_nanosleep(&tu, rmtp, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
+> +	ret = hrtimer_nanosleep(&tu, &rmt, HRTIMER_MODE_REL, CLOCK_MONOTONIC);
+> +
+> +	if (ret) {
+
+Can you check for rmtp as well ? rmtp is optional and can be NULL
+
+> +		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
+> +			return -EFAULT;
+> +	}
+> +
+> +	return ret;
+>  }
+>  
+>  /*
+> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+> index 7a15afb..fc7dac2 100644
+> --- a/kernel/posix-timers.c
+> +++ b/kernel/posix-timers.c
+> @@ -980,9 +980,19 @@ sys_clock_getres(const clockid_t which_clock, struct timespec __user *tp)
+>  static int common_nsleep(const clockid_t which_clock, int flags,
+>  			 struct timespec *tsave, struct timespec __user *rmtp)
+>  {
+> -	return hrtimer_nanosleep(tsave, rmtp, flags & TIMER_ABSTIME ?
+> +	struct timespec rmt;
+> +	int ret;
+> +
+> +	ret = hrtimer_nanosleep(tsave, &rmt, flags & TIMER_ABSTIME ?
+>  				 HRTIMER_MODE_ABS : HRTIMER_MODE_REL,
+>  				 which_clock);
+> +
+> +	if (ret) {
+
+Ditto.
+
+> +		if (copy_to_user(rmtp, &rmt, sizeof(*rmtp)))
+> +			return -EFAULT;
+> +	}
+> +
+> +	return ret;
+>  }
+
+Thanks,
+
+	tglx
