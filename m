@@ -1,22 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.229])
-	by ozlabs.org (Postfix) with ESMTP id EA25BDE007
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 02:57:50 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so857927wri
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 09:57:49 -0700 (PDT)
-Message-ID: <fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
-Date: Mon, 15 Oct 2007 10:57:48 -0600
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 07607DDF1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 03:14:45 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2194817wag
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:14:44 -0700 (PDT)
+Message-ID: <fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
+Date: Mon, 15 Oct 2007 11:14:44 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Eugene Surovegin" <ebs@ebshome.net>
-Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
-In-Reply-To: <20071015163216.GA8127@gate.ebshome.net>
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: Refactor booting-without-of.txt
+In-Reply-To: <20071015165505.GA16040@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <200710151529.11485.sr@denx.de>
-	<20071015163216.GA8127@gate.ebshome.net>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>, i2c@lm-sensors.org
+References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
+	<20071015165505.GA16040@lixom.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, Eugene Surovegin <ebs@ebshome.net> wrote:
-> On Mon, Oct 15, 2007 at 03:29:11PM +0200, Stefan Roese wrote:
+On 10/15/07, Olof Johansson <olof@lixom.net> wrote:
+> On Mon, Oct 15, 2007 at 10:08:44AM -0600, Grant Likely wrote:
+> > Adding the Linux expected device tree bindings to
+> > booting-without-of.txt seems to be getting a little unwieldy.  Plus
+> > with more than one arch using the device tree (powerpc, sparc &
+> > microblaze) the device tree bindings aren't necessarily powerpc only
+> > (the Xilinx devices certainly fall in this category).
+> >
+> > Anyone have comments about splitting the expected device tree bindings
+> > out of booting-without-of.txt into a separate directory?
 >
-> <snip>
->
-> > +#ifdef CONFIG_PPC_MERGE
-> > +static int device_idx = -1;
-> > +#endif
-> > +
->
-> <snip>
->
-> > +     dev->idx = ++device_idx;
-> > +     adap->nr = dev->idx;
->
-> Hmm, this doesn't look right. That mighty powerpc device everybody
-> was so excited about for the last years doesn't provide a device
-> instance number/index?
->
-> I think this approach is wrong, because I want i2c bus numbers for the
-> on-chip i2c to be fixed. This code makes it dependent on the order
-> devices were described in the device tree; how do you handle a
-> situation when only the second i2c adapter is connected? For OCP I
-> would just remove ocp_def for the IIC0.
+> The flat device tree is, in spite of what some people would like it to be,
+> not open firmware, nor is it the same as their bindings. So I think we'd
+> be doing ourselves a disservice by continuing to associate them together.
+> All it would take is a rename of the directory, unfortunately i don't
+> have any suggestions on better names though.
 
-Segher is recommending that we use an aliases node as per the open
-firmware example for this.  I think in this case it would look
-something like this (but I'm not the expert):
+I think I need to stick with the of prefix.  All the support API in
+include/linux/of_* is prefixed with "of_" already, so convention is
+established.
 
-aliases {
-     IIC0 = "/path/to/bus/iic@0x2000";
-     IIC1 = "/path/to/bus/iic@0x2000";
-};
+How about Documentation/of-device-tree?
 
-Which seems to make sense to me.  And it keeps it easy to have
-multiple iic bus types sharing the same IIC bus number space (each
-device does not try to maintain it's own little 'next index' value).
+>
+> > Perhaps something like this; each file contains common bindings for
+> > the type of device and device specific properties:
+> >
+> > Documentation/of/
+> > Documentation/of/README - Description of the purpose and layout of
+> > this directory
+> > Documentation/of/net.txt - network device bindings (eth, MDIO, phy, etc)
+> > Documentation/of/serial.txt - serial device bindings
+> > Documentation/of/misc.txt - anything that doesn't fit anywhere else yet.
+> > Documentation/of/soc/* - System on chip stuff that doesn't fit will
+> > into established device types; possibly a separate file for each chip.
+> > Documentation/of/usb.txt - usb blah blah blah
+> > Documentation/of/whatever - you get the picture.
+> >
+> > Thoughts?
+>
+> Looks reasonable. The other way to cut it would be to slice along vendor
+> boundaries, but I think I like the functional partitioning you suggested
+> better.
 
-Cheers,
+I think vendor partitioning makes sense for non-common devices that
+don't easily fit into a particular mold (soc glue nodes come to mind).
+ Other than that, the functional partitioning
+lets us start with defining common property usage for a given device
+type and follow up with device specific properties.
+
+Thanks for the feedback,
 g.
 
 -- 
