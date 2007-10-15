@@ -1,17 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6B06FDDE06
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 02:49:08 +1000 (EST)
-Date: Mon, 15 Oct 2007 11:55:05 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Refactor booting-without-of.txt
-Message-ID: <20071015165505.GA16040@lixom.net>
-References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
+Return-Path: <runet@innovsys.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Override timer interrupt
+Date: Mon, 15 Oct 2007 11:49:38 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B037D4F05@ismail.innsys.innovsys.com>
+In-Reply-To: <1192229894.22054.29.camel@pasglop>
+References: <DCEAAC0833DD314AB0B58112AD99B93B037D4BA9@ismail.innsys.innovsys.com>
+	<20071012213041.GB22894@mag.az.mvista.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B037D4C1B@ismail.innsys.innovsys.com>
+	<1192229894.22054.29.camel@pasglop>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 15, 2007 at 10:08:44AM -0600, Grant Likely wrote:
-> Adding the Linux expected device tree bindings to
-> booting-without-of.txt seems to be getting a little unwieldy.  Plus
-> with more than one arch using the device tree (powerpc, sparc &
-> microblaze) the device tree bindings aren't necessarily powerpc only
-> (the Xilinx devices certainly fall in this category).
-> 
-> Anyone have comments about splitting the expected device tree bindings
-> out of booting-without-of.txt into a separate directory?
+> From: Benjamin Herrenschmidt
+> In fact, I'm not sure what is your problem with the DEC=20
+> proper as the TB
+> will be used ultimately and thus it shouldn't drift more than the TB
+> does. Can your part use an externally clocked TB ?
+>=20
+> If not, and you still have a drift despite calibration, you can always
+> use NTP services to adjust timekeeping.
 
-The flat device tree is, in spite of what some people would like it to be,
-not open firmware, nor is it the same as their bindings. So I think we'd
-be doing ourselves a disservice by continuing to associate them together.
-All it would take is a rename of the directory, unfortunately i don't
-have any suggestions on better names though.
+We use NTP, which is why I didn't see it until recently. (Happened to
+have a board without NTP configured
 
-> Perhaps something like this; each file contains common bindings for
-> the type of device and device specific properties:
->
-> Documentation/of/
-> Documentation/of/README - Description of the purpose and layout of
-> this directory
-> Documentation/of/net.txt - network device bindings (eth, MDIO, phy, etc)
-> Documentation/of/serial.txt - serial device bindings
-> Documentation/of/misc.txt - anything that doesn't fit anywhere else yet.
-> Documentation/of/soc/* - System on chip stuff that doesn't fit will
-> into established device types; possibly a separate file for each chip.
-> Documentation/of/usb.txt - usb blah blah blah
-> Documentation/of/whatever - you get the picture.
-> 
-> Thoughts?
+The main couse is that our main bus frequency cannort be divided into
+1kHz evently by the decrementer.
+Main bus freq =3D 99532800 Hz.
+Decrementer then becomes 24883, which gives us 999991.9624485600nsec per
+jiffy.
+That is not a number easilly converted into time without drift.
 
-Looks reasonable. The other way to cut it would be to slice along vendor
-boundaries, but I think I like the functional partitioning you suggested
-better.
+Changing HZ to 100 fixes it, but is for varous reasons not an option
+right now.
 
+What I did do is change the timer interrupt to be called by an ecxternal
+1kHz interrupt source instead of the decrementer.
 
--Olof
+The TB register is only ued for offsets from the last jiffie, not as a
+continous offset, so then it works out pretty good.
+There is a discontinuity in the sub ms resolution of the clock that I
+can live with. msec and up are dead accurate.
