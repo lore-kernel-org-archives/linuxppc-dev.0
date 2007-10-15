@@ -1,31 +1,32 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2E7C5DDE18
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:41 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9FB8cNI012852
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:38 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9FB8eeP590034
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:40 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9FB8NJI011985
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:08:24 +1000
-Message-ID: <47134A1B.8000001@linux.vnet.ibm.com>
-Date: Mon, 15 Oct 2007 16:38:11 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 839B2DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 21:18:26 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9FBIHkF010718
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 04:18:17 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9FBIF2e002211
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 06:18:16 -0500 (CDT)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] Linux 2.6.23.1 - Open Firmware exception handler invoked
-References: <20071012170140.GA18498@kroah.com>
-In-Reply-To: <20071012170140.GA18498@kroah.com>
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
-	stable@kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] ucc_geth: Fix build break introduced by commit
+	09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
+Date: Mon, 15 Oct 2007 19:17:58 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B590C@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1192231588-17516-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1192231588-17516-1-git-send-email-Emilian.Medve@Freescale.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>,
+	<akpm@linux-foundation.org>, <jgarzik@pobox.com>,
+	<netdev@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,55 +36,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+> -----Original Message-----
+> From: Medve Emilian-EMMEDVE1=20
+> Sent: Saturday, October 13, 2007 7:26 AM
+> To: akpm@linux-foundation.org; jgarzik@pobox.com; Li=20
+> Yang-r58472; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Cc: Medve Emilian-EMMEDVE1
+> Subject: [PATCH] [POWERPC] ucc_geth: Fix build break=20
+> introduced by commit 09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
+>=20
+>=20
+>   CC      drivers/net/ucc_geth.o
+> drivers/net/ucc_geth.c: In function 'ucc_geth_startup':
+> drivers/net/ucc_geth.c:2614: warning: assignment makes=20
+> integer from pointer without a cast
+> drivers/net/ucc_geth.c:2651: warning: assignment makes=20
+> integer from pointer without a cast
+> drivers/net/ucc_geth.c: In function 'ucc_geth_rx':
+> drivers/net/ucc_geth.c:3483: error: 'dev' undeclared (first=20
+> use in this function)
+> drivers/net/ucc_geth.c:3483: error: (Each undeclared=20
+> identifier is reported only once
+> drivers/net/ucc_geth.c:3483: error: for each function it appears in.)
+> make[2]: *** [drivers/net/ucc_geth.o] Error 1
 
-The Open Firmware exception handler is begin invoked, on power5 lpar.
+Thanks for the patch.  Here are some comments.
 
-boot: 2.6.23.1
-Please wait, loading kernel...
-Allocated 03500000 bytes for kernel @ 01c00000
-   Elf64 kernel loaded...
-Loading ramdisk...
-ramdisk loaded 0020d000 @ 06b00000
-DEFAULT CATCH!, exception-handler=fff00300 
-at   %SRR0: c00000000202705c   %SRR1: 8000000000003002 
-Open Firmware exception handler entered from non-OF code
+The patch fixes the dev undeclared compile error not the warnings.  So
+they shouldn't be listed here.
 
-Client's Fix Pt Regs:
- 00 0223100003080000 00000000018bfac0 0000000004bbeaf8 00000000018bfb48
- 04 00000000018bfc90 0000000000c39a48 0000000000000000 5c3a03080000a0fa
- 08 0000000000000001 0000000000000000 05910000194c0223 000000005cae0000
- 0c 0000000003f1eaf8 0000000000000000 0000000000000000 0000000000000000
- 10 0000000000000000 0000000000c39a48 0000000000000000 00000000018bfc90
- 14 0000000000c00000 000000000020d000 0000000000000000 0000000008b00000
- 18 0000000000280004 00000000018bff04 0000000000000001 0000000000000000
- 1c 0000000008b00000 0000000000c39a48 c000000004d1e530 0000000008b00000
-Special Regs:
-    %IV: 00000300     %CR: 44000028    %XER: 00000000  %DSISR: 08000000 
-  %SRR0: c00000000202705c   %SRR1: 8000000000003002 
-    %LR: c000000002027428    %CTR: c0000000020273f0 
-   %DAR: 05910000194c02eb 
-Virtual PID = 0 
-PFW: Unable to send error log!
- ofdbg
-0 > 
+>=20
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+>=20
+> Here is a convenient link for the culprit patch:=20
+> http://git.kernel.org/?p=3Dlinux/kernel/git/jgarzik/netdev-2.6.g
+> it;a=3Dcommit;h=3D09f75cd7bf13720738e6a196cc0107ce9a5bd5a0
+>=20
+> netdev-2.6> scripts/checkpatch.pl=20
+> 0001-POWERPC-ucc_geth-Fix-build-break-introduced-by-co.patch
+> Your patch has no obvious style problems and is ready for submission.
+>=20
+>  drivers/net/ucc_geth.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c=20
+> index d00e7d4..c43d4d1 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -63,7 +63,7 @@
+>  #define UGETH_MSG_DEFAULT	(NETIF_MSG_IFUP << 1 ) - 1
+> =20
+>  void uec_set_ethtool_ops(struct net_device *netdev);
+> -=09
+> +
+>  static DEFINE_SPINLOCK(ugeth_lock);
+> =20
+>  static struct {
 
-# cat /proc/cpuinfo 
-processor       : 0
-cpu             : POWER5+ (gs)
-clock           : 1498.500000MHz
-revision        : 2.0 (pvr 003b 0200)
+There are quite a few references to the dev structure.  I would prefer
+to add a new variable dev here.
 
-processor       : 1
-cpu             : POWER5+ (gs)
-clock           : 1498.500000MHz
-revision        : 2.0 (pvr 003b 0200)
+- Leo
 
-timebase        : 187199000
-platform        : pSeries
-machine         : CHRP IBM,9133-55A
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> @@ -3480,9 +3480,9 @@ static int ucc_geth_rx(struct=20
+> ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+>  				dev_kfree_skb_any(skb);
+> =20
+>  		=09
+> ugeth->rx_skbuff[rxQ][ugeth->skb_currx[rxQ]] =3D NULL;
+> -			dev->stats.rx_dropped++;
+> +			ugeth->dev->stats.rx_dropped++;
+>  		} else {
+> -			dev->stats.rx_packets++;
+> +			ugeth->dev->stats.rx_packets++;
+>  			howmany++;
+> =20
+>  			/* Prep the skb for the packet */
+> @@ -3491,7 +3491,7 @@ static int ucc_geth_rx(struct=20
+> ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+>  			/* Tell the skb what kind of packet this is */
+>  			skb->protocol =3D eth_type_trans(skb, ugeth->dev);
+> =20
+> -			dev->stats.rx_bytes +=3D length;
+> +			ugeth->dev->stats.rx_bytes +=3D length;
+>  			/* Send the packet up the stack */
+>  #ifdef CONFIG_UGETH_NAPI
+>  			netif_receive_skb(skb);
+> @@ -3506,7 +3506,7 @@ static int ucc_geth_rx(struct=20
+> ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+>  		if (!skb) {
+>  			if (netif_msg_rx_err(ugeth))
+>  				ugeth_warn("%s: No Rx Data=20
+> Buffer", __FUNCTION__);
+> -			dev->stats.rx_dropped++;
+> +			ugeth->dev->stats.rx_dropped++;
+>  			break;
+>  		}
+> =20
+> --
+> 1.5.3.GIT
+>=20
+>=20
