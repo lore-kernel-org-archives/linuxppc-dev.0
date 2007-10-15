@@ -1,21 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B24BFDDF96
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:27:42 +1000 (EST)
-Message-ID: <4713B10B.5000607@garzik.org>
-Date: Mon, 15 Oct 2007 14:27:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 542B5DDDF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:33:34 +1000 (EST)
+Message-ID: <4713B28A.2060004@ru.mvista.com>
+Date: Mon, 15 Oct 2007 22:33:46 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>,
-	jwboyer@linux.vnet.ibm.com, Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support
-	to NEW EMAC.
-References: <20071015175717.GA4602@ru.mvista.com>
-In-Reply-To: <20071015175717.GA4602@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
+In-Reply-To: <4713A616.3090103@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Paul Mackerras <paulus@samba.org>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,69 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
-> This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
-> These PHY chips are used on PowerPC 440EPx boards.
-> The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
->  drivers/net/ibm_newemac/phy.c |   39 +++++++++++++++++++++++++++++++++++++++
->  1 files changed, 39 insertions(+)
-> 
-> --- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
-> +++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
-> @@ -306,8 +306,47 @@
->  	.ops		= &cis8201_phy_ops
->  };
->  
-> +static struct mii_phy_def bcm5248_phy_def = {
-> +
-> +	.phy_id		= 0x0143bc00,
-> +	.phy_id_mask	= 0x0ffffff0,
-> +	.name		= "BCM5248 10/100 SMII Ethernet",
-> +	.ops		= &generic_phy_ops
-> +};
-> +
-> +static int m88e1111_init(struct mii_phy *phy)
-> +{
-> +	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
-> +	phy_write(phy, 0x14, 0x0ce3);
-> +	phy_write(phy, 0x18, 0x4101);
-> +	phy_write(phy, 0x09, 0x0e00);
-> +	phy_write(phy, 0x04, 0x01e1);
-> +	phy_write(phy, 0x00, 0x9140);
-> +	phy_write(phy, 0x00, 0x1140);
-> +
-> +	return  0;
-> +}
-> +
-> +static struct mii_phy_ops m88e1111_phy_ops = {
-> +	.init		= m88e1111_init,
-> +	.setup_aneg	= genmii_setup_aneg,
-> +	.setup_forced	= genmii_setup_forced,
-> +	.poll_link	= genmii_poll_link,
-> +	.read_link	= genmii_read_link
-> +};
-> +
-> +static struct mii_phy_def m88e1111_phy_def = {
-> +
-> +	.phy_id		= 0x01410CC0,
-> +	.phy_id_mask	= 0x0ffffff0,
-> +	.name		= "Marvell 88E1111 Ethernet",
-> +	.ops		= &m88e1111_phy_ops,
-> +};
-> +
->  static struct mii_phy_def *mii_phy_table[] = {
->  	&cis8201_phy_def,
-> +	&bcm5248_phy_def,
-> +	&m88e1111_phy_def,
->  	&genmii_phy_def,
+Hello, I wrote:
 
-Seems sane to me -- ACK -- but we have multiple people sending me 
-patches for a single driver.  That's normal for janitorial cleanups 
-across the whole tree, but discouraged when multiple people are actively 
-working on the same driver.
+>>@@ -797,6 +796,53 @@ void __init clocksource_init(void)
+>> 	       clock->name, clock->mult, clock->shift);
+>> }
 
-Please coordinate, and have ONE person send me patches...
+>>+static int decrementer_set_next_event(unsigned long evt,
+>>+				      struct clock_event_device *dev)
+>>+{
+>>+	set_dec(evt);
+
+>     I'd use (evt - 1) since the interrupt gets generated at 0xffffffff count, 
+> not 0 (on classic CPUs).  With you removing of the code that compensated for 
+> the errors, they will accumulate.  And no, this wouldn't be enough anyway, 
+> since on 40x and Book E you'll need to set it for evt anyway, since the 
+> interrupt happens at 0 count...
+
+    What that means is that the off-by-one-clock drift is introduced for 
+classic CPUs (not 40x or Book E which interrupt at 0).  And this has dealt 
+with months ago in the clockevent driver in the -rt patch.  So much for my 
+efforts...
+
+>     NAK the patch.
+
+    It's too late for NAKs -- I should've given these patches more attention 
+(yet I was in hospital for 1.5 months).
+
+WBR, Sergei
