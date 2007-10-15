@@ -1,19 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 542B5DDDF7
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:33:34 +1000 (EST)
-Message-ID: <4713B28A.2060004@ru.mvista.com>
-Date: Mon, 15 Oct 2007 22:33:46 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9439CDDF00
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:34:20 +1000 (EST)
+Message-ID: <4713B2A1.4000503@pobox.com>
+Date: Mon, 15 Oct 2007 14:34:09 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
-References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
-In-Reply-To: <4713A616.3090103@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/5] Update ibm_newemac to use dcr_host_t.base
+References: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
+In-Reply-To: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+Michael Ellerman wrote:
+> Now that dcr_host_t contains the base address, we can use that in the
+> ibm_newemac code, rather than storing it separately.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  drivers/net/ibm_newemac/mal.c |    9 +++++----
+>  drivers/net/ibm_newemac/mal.h |    5 ++---
+>  2 files changed, 7 insertions(+), 7 deletions(-)
 
->>@@ -797,6 +796,53 @@ void __init clocksource_init(void)
->> 	       clock->name, clock->mult, clock->shift);
->> }
-
->>+static int decrementer_set_next_event(unsigned long evt,
->>+				      struct clock_event_device *dev)
->>+{
->>+	set_dec(evt);
-
->     I'd use (evt - 1) since the interrupt gets generated at 0xffffffff count, 
-> not 0 (on classic CPUs).  With you removing of the code that compensated for 
-> the errors, they will accumulate.  And no, this wouldn't be enough anyway, 
-> since on 40x and Book E you'll need to set it for evt anyway, since the 
-> interrupt happens at 0 count...
-
-    What that means is that the off-by-one-clock drift is introduced for 
-classic CPUs (not 40x or Book E which interrupt at 0).  And this has dealt 
-with months ago in the clockevent driver in the -rt patch.  So much for my 
-efforts...
-
->     NAK the patch.
-
-    It's too late for NAKs -- I should've given these patches more attention 
-(yet I was in hospital for 1.5 months).
-
-WBR, Sergei
+applied 1-5
