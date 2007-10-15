@@ -1,21 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3A60DDE07
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 19:26:02 +1000 (EST)
-Subject: Re: [RFC/PATCH 2/2] powerpc: irqtrace support to 64-bit powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1192437681.3349.12.camel@johannes.berg>
-References: <20071015072826.2D541DDE16@ozlabs.org>
-	<1192437681.3349.12.camel@johannes.berg>
-Content-Type: text/plain
-Date: Mon, 15 Oct 2007 19:25:48 +1000
-Message-Id: <1192440348.11795.9.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH 1/5] Update ibm_newemac to use dcr_host_t.base
+Date: Mon, 15 Oct 2007 19:34:34 +1000 (EST)
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +14,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Now that dcr_host_t contains the base address, we can use that in the
+ibm_newemac code, rather than storing it separately.
 
-> 
-> > --- linux-work.orig/include/asm-powerpc/irqflags.h	2007-10-15 17:10:12.000000000 +1000
-> > +++ linux-work/include/asm-powerpc/irqflags.h	2007-10-15 17:11:09.000000000 +1000
->  
-> >  /*
-> > - * Do the CPU's IRQ-state tracing from assembly code. We call a
-> > - * C function, so save all the C-clobbered registers:
-> > + * Most of the CPU's IRQ-state tracing is done from assembly code; we
-> > + * have to call a C function so call a wrapper that saves all the
-> > + * C-clobbered registers.
-> >   */
-> 
-> That comment is now wrong, it should probably be removed.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ drivers/net/ibm_newemac/mal.c |    9 +++++----
+ drivers/net/ibm_newemac/mal.h |    5 ++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Ah yes, it's stale, I'll get rid of it. Thanks.
-
-Ben.
+diff --git a/drivers/net/ibm_newemac/mal.c b/drivers/net/ibm_newemac/mal.c
+index 5885411..748a869 100644
+--- a/drivers/net/ibm_newemac/mal.c
++++ b/drivers/net/ibm_newemac/mal.c
+@@ -461,6 +461,7 @@ static int __devinit mal_probe(struct of_device *ofdev,
+ 	struct mal_instance *mal;
+ 	int err = 0, i, bd_size;
+ 	int index = mal_count++;
++	unsigned int dcr_base;
+ 	const u32 *prop;
+ 	u32 cfg;
+ 
+@@ -497,14 +498,14 @@ static int __devinit mal_probe(struct of_device *ofdev,
+ 	}
+ 	mal->num_rx_chans = prop[0];
+ 
+-	mal->dcr_base = dcr_resource_start(ofdev->node, 0);
+-	if (mal->dcr_base == 0) {
++	dcr_base = dcr_resource_start(ofdev->node, 0);
++	if (dcr_base == 0) {
+ 		printk(KERN_ERR
+ 		       "mal%d: can't find DCR resource!\n", index);
+ 		err = -ENODEV;
+ 		goto fail;
+ 	}
+-        mal->dcr_host = dcr_map(ofdev->node, mal->dcr_base, 0x100);
++	mal->dcr_host = dcr_map(ofdev->node, dcr_base, 0x100);
+ 	if (!DCR_MAP_OK(mal->dcr_host)) {
+ 		printk(KERN_ERR
+ 		       "mal%d: failed to map DCRs !\n", index);
+@@ -626,7 +627,7 @@ static int __devinit mal_probe(struct of_device *ofdev,
+  fail2:
+ 	dma_free_coherent(&ofdev->dev, bd_size, mal->bd_virt, mal->bd_dma);
+  fail_unmap:
+-	dcr_unmap(mal->dcr_host, mal->dcr_base, 0x100);
++	dcr_unmap(mal->dcr_host, dcr_base, 0x100);
+  fail:
+ 	kfree(mal);
+ 
+diff --git a/drivers/net/ibm_newemac/mal.h b/drivers/net/ibm_newemac/mal.h
+index cb1a16d..6daa98e 100644
+--- a/drivers/net/ibm_newemac/mal.h
++++ b/drivers/net/ibm_newemac/mal.h
+@@ -185,7 +185,6 @@ struct mal_commac {
+ 
+ struct mal_instance {
+ 	int			version;
+-	int			dcr_base;
+ 	dcr_host_t		dcr_host;
+ 
+ 	int			num_tx_chans;	/* Number of TX channels */
+@@ -213,12 +212,12 @@ struct mal_instance {
+ 
+ static inline u32 get_mal_dcrn(struct mal_instance *mal, int reg)
+ {
+-	return dcr_read(mal->dcr_host, mal->dcr_base + reg);
++	return dcr_read(mal->dcr_host, mal->dcr_host.base + reg);
+ }
+ 
+ static inline void set_mal_dcrn(struct mal_instance *mal, int reg, u32 val)
+ {
+-	dcr_write(mal->dcr_host, mal->dcr_base + reg, val);
++	dcr_write(mal->dcr_host, mal->dcr_host.base + reg, val);
+ }
+ 
+ /* Register MAL devices */
+-- 
+1.5.1.3.g7a33b
