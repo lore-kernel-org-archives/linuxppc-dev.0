@@ -1,37 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 26F38DDEBF
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 08:56:31 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9FMuRAw006421
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 18:56:27 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9FMuRfj332122
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 16:56:27 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9FMuQ3l006236
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 16:56:26 -0600
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support
-	to NEW EMAC.
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1192482323.11795.38.camel@pasglop>
-References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
-	<20071015134813.6aacdcca@weaponx.rchland.ibm.com>
-	<4713B726.6080404@garzik.org>
-	<20071015135959.5b603d7d@weaponx.rchland.ibm.com>
-	<4713B9C1.5010001@garzik.org>  <1192482323.11795.38.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 07FCCDDEC5
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 09:03:09 +1000 (EST)
+Subject: Re: [PATCH v2 1/4] Implement {read,update}_persistent_clock.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <4713AC4E.4050002@ru.mvista.com>
+References: <1190345162.620000.305760830507.qpush@thor>
+	<Pine.LNX.4.58.0709261502590.4465@gandalf.stny.rr.com>
+	<46FAB56E.8080509@ru.mvista.com> <1190858397.11034.22.camel@pasglop>
+	<4713AC4E.4050002@ru.mvista.com>
 Content-Type: text/plain
-Date: Mon, 15 Oct 2007 17:47:26 -0500
-Message-Id: <1192488446.13993.9.camel@localhost.localdomain>
+Date: Tue, 16 Oct 2007 09:02:47 +1000
+Message-Id: <1192489367.11795.48.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Paul Mackerras <paulus@samba.org>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,21 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-10-16 at 07:05 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-10-15 at 15:04 -0400, Jeff Garzik wrote:
-> > I would ideally like a single active patch generator (even if they
-> > are 
-> > merely reviewed others work sometimes).
-> > 
-> > Outside of that, I'm hoping you and the other people listed making 
-> > changes will self-organize without my help :)
+
+On Mon, 2007-10-15 at 22:07 +0400, Sergei Shtylyov wrote:
+> > Proper approach is to rip off what is altready in -rt there and
+> replace
+> > it with Tony patch set.
 > 
-> Josh, do you want to be the central point / maintainer for it or do you
-> want me to do it ? There's a lot of code from me in there and I did this
-> fork in the first place so I have a pretty good idea of what's going on
-> in this driver and what still needs to be done :-)
+>     Tony's patchset is broken at places compared to what is in -rt. So
+> that 
+> would be proper *double standard* approach. :-/
 
-As always, you're welcome to it.  You probably don't want to own it long
-term, but I'd appreciate the help for the time being.
+Rather than tony patchset, can you look at what paulus has been
+submitting, which should fix a few issues in tony initial patch and is
+working, and tell us if you think something is still broken ?
 
-josh
+Cheers,
+Ben.
