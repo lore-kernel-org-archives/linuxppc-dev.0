@@ -1,12 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-Id: <277d6dd54a145c8f214ea15c2d63b7180afd4fc4.1192440801.git.michael@ellerman.id.au>
-In-Reply-To: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
-References: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 5/5] Remove msic_dcr_read() in axon_msi.c
-Date: Mon, 15 Oct 2007 19:34:38 +1000 (EST)
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 6E31CDDE32
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 19:51:05 +1000 (EST)
+Date: Mon, 15 Oct 2007 11:51:03 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] PS3 system bus add_uevent_var() fallout
+Message-ID: <Pine.LNX.4.62.0710151150090.28206@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1757741-1192441863=:28206"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,46 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-msic_dcr_read() doesn't really do anything useful, just replace it with
-direct calls to dcr_read().
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---584337861-1757741-1192441863=:28206
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+PS3 system bus add_uevent_var() fallout: kill unused variables
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/powerpc/platforms/cell/axon_msi.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/ps3/system-bus.c |    1 -
+ 1 files changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index aca1500..095988f 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -80,18 +80,13 @@ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
- 	dcr_write(msic->dcr_host, dcr_n, val);
- }
- 
--static u32 msic_dcr_read(struct axon_msic *msic, unsigned int dcr_n)
--{
--	return dcr_read(msic->dcr_host, dcr_n);
--}
--
- static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -440,7 +440,6 @@ static void ps3_system_bus_shutdown(stru
+ static int ps3_system_bus_uevent(struct device *_dev, struct kobj_uevent_env *env)
  {
- 	struct axon_msic *msic = get_irq_data(irq);
- 	u32 write_offset, msi;
- 	int idx;
+ 	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
+-	int i = 0, length = 0;
  
--	write_offset = msic_dcr_read(msic, MSIC_WRITE_OFFSET_REG);
-+	write_offset = dcr_read(msic->dcr_host, MSIC_WRITE_OFFSET_REG);
- 	pr_debug("axon_msi: original write_offset 0x%x\n", write_offset);
+ 	if (add_uevent_var(env, "MODALIAS=ps3:%d", dev->match_id))
+ 		return -ENOMEM;
+
+With kind regards,
  
- 	/* write_offset doesn't wrap properly, so we have to mask it */
-@@ -306,7 +301,7 @@ static int axon_msi_notify_reboot(struct notifier_block *nb,
- 	list_for_each_entry(msic, &axon_msic_list, list) {
- 		pr_debug("axon_msi: disabling %s\n",
- 			  msic->irq_host->of_node->full_name);
--		tmp  = msic_dcr_read(msic, MSIC_CTRL_REG);
-+		tmp  = dcr_read(msic->dcr_host, MSIC_CTRL_REG);
- 		tmp &= ~MSIC_CTRL_ENABLE & ~MSIC_CTRL_IRQ_ENABLE;
- 		msic_dcr_write(msic, MSIC_CTRL_REG, tmp);
- 	}
--- 
-1.5.1.3.g7a33b
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1757741-1192441863=:28206--
