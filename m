@@ -1,19 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CFD99DE200
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:00:36 +1000 (EST)
-Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l9FHxlGY021365
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 12:59:56 -0500
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Message-Id: <9F7A6CA7-FA22-4A6D-8538-43A5D3AD7104@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: my git tree rebased
-Date: Mon, 15 Oct 2007 13:00:29 -0500
+	by ozlabs.org (Postfix) with ESMTP id 86E10DE310
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 04:00:32 +1000 (EST)
+Date: Mon, 15 Oct 2007 21:57:17 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support to NEW
+	EMAC.
+Message-ID: <20071015175717.GA4602@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071015122616.08250b54@weaponx.rchland.ibm.com>
+Cc: netdev@vger.kernel.org, jeff@garzik.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For anyone using my git tree I've rebased it now that the merge  
-window for 2.6.24 is ongoing and removed all branches.
+This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
+These PHY chips are used on PowerPC 440EPx boards.
+The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
 
-The master/HEAD now is in sync with Linus's tree.  I'll be starting  
-of a fixes-2.6.24 branch at some point as well as for-2.6.25 branch.
+Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ drivers/net/ibm_newemac/phy.c |   39 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 39 insertions(+)
 
-I'll try to keep the master branch as a merge of the various patches  
-that exist in the other branches.  Please use the master to create  
-any patches against.
-
-- k
+--- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
++++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
+@@ -306,8 +306,47 @@
+ 	.ops		= &cis8201_phy_ops
+ };
+ 
++static struct mii_phy_def bcm5248_phy_def = {
++
++	.phy_id		= 0x0143bc00,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "BCM5248 10/100 SMII Ethernet",
++	.ops		= &generic_phy_ops
++};
++
++static int m88e1111_init(struct mii_phy *phy)
++{
++	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
++	phy_write(phy, 0x14, 0x0ce3);
++	phy_write(phy, 0x18, 0x4101);
++	phy_write(phy, 0x09, 0x0e00);
++	phy_write(phy, 0x04, 0x01e1);
++	phy_write(phy, 0x00, 0x9140);
++	phy_write(phy, 0x00, 0x1140);
++
++	return  0;
++}
++
++static struct mii_phy_ops m88e1111_phy_ops = {
++	.init		= m88e1111_init,
++	.setup_aneg	= genmii_setup_aneg,
++	.setup_forced	= genmii_setup_forced,
++	.poll_link	= genmii_poll_link,
++	.read_link	= genmii_read_link
++};
++
++static struct mii_phy_def m88e1111_phy_def = {
++
++	.phy_id		= 0x01410CC0,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "Marvell 88E1111 Ethernet",
++	.ops		= &m88e1111_phy_ops,
++};
++
+ static struct mii_phy_def *mii_phy_table[] = {
+ 	&cis8201_phy_def,
++	&bcm5248_phy_def,
++	&m88e1111_phy_def,
+ 	&genmii_phy_def,
+ 	NULL
+ };
