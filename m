@@ -1,19 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/5] Update ibm_newemac to use dcr_host_t.base
-From: Michael Ellerman <michael@ellerman.id.au>
-To: benh@kernel.crashing.org
-In-Reply-To: <1192481682.11795.23.camel@pasglop>
-References: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
-	<4713B2A1.4000503@pobox.com>  <1192481682.11795.23.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-A7Yqq5Mqt/48ElqgHa4c"
-Date: Tue, 16 Oct 2007 09:22:59 +1000
-Message-Id: <1192490579.6371.2.camel@concordia>
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Jeff Garzik <jgarzik@pobox.com>,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id A7B7CDDE9D
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 09:34:10 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 15 Oct 2007 18:07:06 CDT."
+	<7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
+Date: Tue, 16 Oct 2007 01:34:07 +0200
+Sender: wd@denx.de
+Message-Id: <20071015233407.D15CC247BB@gemini.denx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dear Kumar,
 
---=-A7Yqq5Mqt/48ElqgHa4c
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+in message <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org> you wrote:
+> 
+> I was wondering if you cared about the following boards existing in  
+> arch/powerpc:
+> 
+...
+> * TQM 85xx
+...
 
-On Tue, 2007-10-16 at 06:54 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-10-15 at 14:34 -0400, Jeff Garzik wrote:
-> > Michael Ellerman wrote:
-> > > Now that dcr_host_t contains the base address, we can use that in the
-> > > ibm_newemac code, rather than storing it separately.
-> > >=20
-> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > > ---
-> > >  drivers/net/ibm_newemac/mal.c |    9 +++++----
-> > >  drivers/net/ibm_newemac/mal.h |    5 ++---
-> > >  2 files changed, 7 insertions(+), 7 deletions(-)
-> >=20
-> > applied 1-5
->=20
-> Those patches have been around for some time now, they didn't make
-> paulus initial merge for reasons I'm not sure about but I think they
-> should go into 2.6.24. Now the question is via Jeff or via Paulus ? :-)
+We definitely care about the TQM8xx{L,M,D}, TQM5200, TQM82xx, TQM834x,
+TQM85xx and TQM86xx boards.
 
-The first three went in already, these are the following cleanups. I
-wanted to wait for the newemac driver to go into Linus' tree via Jeff. I
-have no opinion on who's tree they should go through from here.
+> I'm willing to look into doing the port over, but would need some  
+> help testing.
 
-cheers
+Ah! Excellent!
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+As for 85xx, I can test any time on  TQM8540,  TQM8541,  TQM8555  and
+TQM8560.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Best regards,
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Wolfgang Denk
 
---=-A7Yqq5Mqt/48ElqgHa4c
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHE/ZTdSjSd0sB4dIRAr7XAJoC7nL/Nm1bpInATRW+QOk/RfoWFgCfTg9a
-x51lspZhU4r/z0BjzaDqs1U=
-=g8XX
------END PGP SIGNATURE-----
-
---=-A7Yqq5Mqt/48ElqgHa4c--
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"The hottest places in Hell are reserved for those who, in  times  of
+moral crisis, preserved their neutrality."                    - Dante
