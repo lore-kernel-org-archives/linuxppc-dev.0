@@ -1,19 +1,22 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25697DE009
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:06:12 +1000 (EST)
-Message-ID: <4713BA1C.2050604@pobox.com>
-Date: Mon, 15 Oct 2007 15:06:04 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-MIME-Version: 1.0
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: [PATCH v3 0/4] FEC - fast ethernet controller for mpc52xx
-References: <20071014075511.GC3000@nd47.coderock.org>
-In-Reply-To: <20071014075511.GC3000@nd47.coderock.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 8C88CDE014
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:08:26 +1000 (EST)
+In-Reply-To: <20071015184743.GA4474@loki.buserror.net>
+References: <20071015153525.GA28761@localhost.localdomain>
+	<47138A54.8030307@ru.mvista.com>
+	<20071015155730.GA30008@localhost.localdomain>
+	<20071015184743.GA4474@loki.buserror.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3387D0D7-EBB8-4346-853D-75850159BCE4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] [RFC][POWERPC] MPC8568E-MDS: create localbus node
+Date: Mon, 15 Oct 2007 14:08:43 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Domen Puncer wrote:
-> Hello!
-> 
-> If there are no objections, I would like to get this merged
-> when bestcomm goes in (any time now?).
-> 
-> It's split into four parts:
-> 1 - device tree
-> 2 - small bestcomm change
-> 3 - the actual driver
-> 4 - phy part of the driver
 
-patches #3 and #4 need to be combined together.
+On Oct 15, 2007, at 1:47 PM, Scott Wood wrote:
 
-Are the arch people OK with patches #1 and #2?
+> On Mon, Oct 15, 2007 at 07:57:30PM +0400, Anton Vorontsov wrote:
+>> On Mon, Oct 15, 2007 at 07:42:12PM +0400, Sergei Shtylyov wrote:
+>>>    Is the entity described as "localbus" indeed so *board* specific?
+>>
+>> That's what booting-without-of.txt gives as an example.
+>
+> The board should have been left out of that.  Your compatible  
+> should be
+> something like "fsl,mpc8568-localbus", possibly with some canonical  
+> mpc85xx
+> chip as well, chosen to represent 85xx localbus in general.
 
-	Jeff
+Lets be careful, there are at least two forms of localbus on 85xx.
+
+- k
