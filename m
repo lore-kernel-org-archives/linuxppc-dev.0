@@ -1,20 +1,28 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-231-monday.dmz.nerim.net
-	[195.5.254.231]) by ozlabs.org (Postfix) with ESMTP id 85255DDFAA
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 06:19:58 +1000 (EST)
-Received: from mallaury.nerim.net (smtp-101-monday.noc.nerim.net [62.4.17.101])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id C65EB2699B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 22:19:45 +0200 (CEST)
-Date: Mon, 15 Oct 2007 22:19:49 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 1/2] i2c: ibm_iic: Whitespace cleanup
-Message-ID: <20071015221949.0db47419@hyperion.delvare>
-In-Reply-To: <200710151528.55261.sr@denx.de>
-References: <200710151528.55261.sr@denx.de>
-Mime-Version: 1.0
+Return-Path: <glikely@secretlab.ca>
+Received: from qb-out-0506.google.com (qb-out-0506.google.com [72.14.204.239])
+	by ozlabs.org (Postfix) with ESMTP id 93360DDF23
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 06:26:38 +1000 (EST)
+Received: by qb-out-0506.google.com with SMTP id e11so2038328qbe
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 13:26:36 -0700 (PDT)
+Message-ID: <fa686aa40710151326m789046aaq60ba002e180d4e14@mail.gmail.com>
+Date: Mon, 15 Oct 2007 14:26:35 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
+In-Reply-To: <4713C57F.7060509@freescale.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+References: <200710151529.11485.sr@denx.de>
+	<20071015163216.GA8127@gate.ebshome.net>
+	<fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
+	<20071015185340.GB4474@loki.buserror.net>
+	<fa686aa40710151213r670bea49i63fa5f5402aa150d@mail.gmail.com>
+	<4713BE5E.3030406@freescale.com>
+	<fa686aa40710151248y5e921a4fmbb0a3e0b7c9a2ca5@mail.gmail.com>
+	<4713C57F.7060509@freescale.com>
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +32,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Stefan,
+On 10/15/07, Scott Wood <scottwood@freescale.com> wrote:
+> Grant Likely wrote:
+> > On 10/15/07, Scott Wood <scottwood@freescale.com> wrote:
+> >> For associating a device node with a human readable label, I'd
+> >> prefer a "label" property in the device node, rather than doing it
+> >> backwards with aliases.
+> >
+> > Here the corresponding problem; having to scan every device node to
+> > make sure you don't assign a number already selected by another node
+> > (in the case where one node is assigned a number and another is not).
+> >
+> Don't Do That(tm).  If you use this mechanism, and an adapter node
+> doesn't have a bus number, then it doesn't get to pre-register devices,
+> but instead must use i2c_new_device.
 
-On Mon, 15 Oct 2007 15:28:54 +0200, Stefan Roese wrote:
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> ---
->  drivers/i2c/busses/i2c-ibm_iic.c |  192 +++++++++++++++++++-------------=
-------
->  drivers/i2c/busses/i2c-ibm_iic.h |    8 +-
->  2 files changed, 100 insertions(+), 100 deletions(-)
->=20
-> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ib=
-m_iic.c
-> index e08baca..956b947 100644
-> --- a/drivers/i2c/busses/i2c-ibm_iic.c
-> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
-> @@ -6,7 +6,7 @@
->   * Copyright (c) 2003, 2004 Zultys Technologies.
->   * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
->   *
-> - * Based on original work by=20
-> + * Based on original work by
->   * 	Ian DaSilva  <idasilva@mvista.com>
->   *      Armin Kuster <akuster@mvista.com>
->   * 	Matt Porter  <mporter@mvista.com>
-> @@ -18,7 +18,7 @@
->   *   	Copyright 1995-97 Simon G. Vogl
->   *                1998-99 Hans Berglund
->   *
-> - *   	With some changes from Ky=F6sti M=E4lkki <kmalkki@cc.hut.fi>=20
-> + *   	With some changes from Ky=F6sti M=E4lkki <kmalkki@cc.hut.fi>
->   *	and even Frodo Looijaard <frodol@dds.nl>
->   *
->   * This program is free software; you can redistribute  it and/or modify=
- it
+Even that doesn't work.  For example if a PCI device is probed which
+registers an i2c bus; there needs to be a mechanism for the i2c layer
+to know that an id is already spoken for, so once again there needs to
+be a mechanism to map easily from id to device (or lack thereof).
 
-(etc.)
+> >>> As per your point below; if all the i2c devices are children of
+> >>> the adapter, then yes you are right that the bus number doesn't
+> >>> matter to the user.  But it *does* matter for things like serial
+> >>> and ethernet ports.
+> >> And a label property would be great for that. :-)
+> >
+> > Not really; if the user needs to renumber devices; you don't want him
+> >  fiddling around in the hardware description.
+>
+> Why would the user renumber devices?
 
-Applied, thank you.
+Where user == system integrator or firmware engineer.  ie. boards with
+no-populate options which affect the numbering; changes to match the
+silkscreening on the chassis when a common board is used by multiple
+systems.  It's a conceivable scenario.  (Again; this is more relevant
+to eth and serial devices than i2c).
 
---=20
-Jean Delvare
+>
+> > Just like the chosen node; an aliases describes logical constructs,
+> > not physical ones.  I don't think this is any different from the
+> > linux,stdout-path property in chosen.
+>
+> Well, it's somewhat different in that stdout describes a usage of the
+> device, not the identity.
+>
+> Still, I don't like linux,stdout-path. :-)
+> At the very least it should be a phandle.
+
+I'm cool with it being a phandle.  (insert obvious objection someone
+will make about that not being OF compatible)  :-)
+
+Perhaps aliases should look like (which can be generated from the OF
+path form when the device tree if flattened):
+aliases {
+     linux,eth0 = <phandle1>;
+     linux,eth1 = <phandle2>;
+}
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
