@@ -1,24 +1,25 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.236])
-	by ozlabs.org (Postfix) with ESMTP id E0EECDE0DB
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:13:23 +1000 (EST)
-Received: by hu-out-0506.google.com with SMTP id 24so1379352hud
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 12:13:16 -0700 (PDT)
-Message-ID: <fa686aa40710151213r670bea49i63fa5f5402aa150d@mail.gmail.com>
-Date: Mon, 15 Oct 2007 13:13:14 -0600
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id 2FAE7DE0F9
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 05:16:19 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so3942351pyi
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 12:16:18 -0700 (PDT)
+Message-ID: <fa686aa40710151216k48d021cfo4302b8e9001fea9a@mail.gmail.com>
+Date: Mon, 15 Oct 2007 13:16:17 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
-To: "Scott Wood" <scottwood@freescale.com>
+To: "Eugene Surovegin" <ebs@ebshome.net>
 Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
-In-Reply-To: <20071015185340.GB4474@loki.buserror.net>
+In-Reply-To: <20071015191118.GA9733@gate.ebshome.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <200710151529.11485.sr@denx.de>
 	<20071015163216.GA8127@gate.ebshome.net>
 	<fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
 	<20071015185340.GB4474@loki.buserror.net>
-Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
-	Stefan Roese <sr@denx.de>, i2c@lm-sensors.org
+	<20071015191118.GA9733@gate.ebshome.net>
+Cc: Jean Delvare <khali@linux-fr.org>, Stefan Roese <sr@denx.de>,
+	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, Oct 15, 2007 at 10:57:48AM -0600, Grant Likely wrote:
-> > Segher is recommending that we use an aliases node as per the open
-> > firmware example for this.  I think in this case it would look
-> > something like this (but I'm not the expert):
-> >
-> > aliases {
-> >      IIC0 = "/path/to/bus/iic@0x2000";
-> >      IIC1 = "/path/to/bus/iic@0x2000";
-> > };
+On 10/15/07, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Mon, Oct 15, 2007 at 01:53:40PM -0500, Scott Wood wrote:
+> > Though, I don't see what the problem with the original approach is, as long
+> > as the numbers are chosen in the same way when registering i2c clients based
+> > on the children of the adapter node.  There's no concept in the hardware
+> > itself of a bus number.
 >
-> I think this is overly complicated; something like linux,i2c-index in the
-> i2c adapter node would be simpler.
+> Huh? As far as I can tell, there is. Also, I want messages from the
+> kernel mention something I can map to the real hw, e.g. fixed IIC
+> device index, not some random number.
 
-But not perhaps better.  Enumeration is a system-wide thing.  It does
-make sense to group all the device enumerations in one place.  It
-eliminates two nodes trying to enumerate to the same device number and
-since device numbers are something that the user will potentially want
-to modify, it separates enumeration from hardware description.
+Yes, in the same way that there may be more than one on-chip serial or
+ethernet controllers.  However, it does not necessarily follow that
+the *logical* bus number will match the way on chip devices are
+numbered.
 
-As per your point below; if all the i2c devices are children of the
-adapter, then yes you are right that the bus number doesn't matter to
-the user.  But it *does* matter for things like serial and ethernet
-ports.
+Example: Suppose you have a board with 2 chips which each include 2
+i2c controllers.  Each chip numbers them 1 & 2.  So, which chip gets
+1-2 and which one gets 3-4?
 
 >
-> Though, I don't see what the problem with the original approach is, as long
-> as the numbers are chosen in the same way when registering i2c clients based
-> on the children of the adapter node.  There's no concept in the hardware
-> itself of a bus number.
+> This already works with the current OCP code, so if you want change
+> it to a "superior" technology, please, make sure it provides the same
+> functionality as trivial OCP one.
 
-Even if you take this approach, the driver still need to know what bus
-number to use (as per the i2c infrastructure).  It is not sane for an
-i2c bus driver to attempt to assign the bus number itself because it
-could conflict with another arbitrarily chosen bus number from another
-driver.
+agreed
+
+> I find it rather puzzling that instead people are trying to make
+> this a non-issue as soon as it cannot be implemented easily with
+> their new and shiny infrastructure.
+
+No, it is a real problem; and not just for i2c.  We need a solution for it.
 
 Cheers,
 g.
