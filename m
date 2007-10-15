@@ -1,14 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Refactor Makefiles (v2) 
-In-Reply-To: Your message of "Thu, 04 Oct 2007 15:37:43 +1000."
-	<20071004053743.GI6024@localhost.localdomain>
-References: <20071003055933.GE18978@localhost.localdomain>
-	<20071004052053.GH6024@localhost.localdomain>
-	<20071004053743.GI6024@localhost.localdomain>
-Date: Mon, 15 Oct 2007 08:35:50 -0500
+Subject: Re: libfdt: Add functions to get/add/delete memory reservemap entries
+In-Reply-To: Your message of "Wed, 10 Oct 2007 17:12:12 +1000."
+	<20071010071212.GC6135@localhost.localdomain>
+References: <20071010071212.GC6135@localhost.localdomain> 
+Date: Mon, 15 Oct 2007 08:37:06 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IhQ6o-0002sf-6s@jdl.com>
+Message-Id: <E1IhQ82-0002uY-Ad@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,23 +18,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
+> This patch adds functions to libfdt for accessing the memory
+> reservation map section of a device tree blob.  fdt_num_mem_rsv()
+> retreives the number of reservation entries in a dtb, and
+> fdt_get_mem_rsv() retreives a specific reservation entry.
+> fdt_add_mem_rsv() adds a new entry, and fdt_del_mem_rsv() removes a
+> specific numbered entry.
 > 
-> Here's a corrected version.
-> 
-> dtc: Refactor Makefiles
-> 
-> This patch makes a number of Makefile cleanups and improvements:
-> 	- We use more generic rules to invoke flex and bison, which is
-> useful for some of the other changes.
-> 	- We use the name dtc-lexer.lex.c for the flex output, instead
-> of the default lex.yy.c.  That means less potential for confusion if
-> dtc is embedded into other projects (e.g. the kernel).
-> 	- We separate out a Makefile.dtc designed for embedding into
-> other projects, analagous to Makefile.libfdt.
-> 	- Makefile.libfdt is cleaned up to be more useful based on
-> some actual trial runs of embedding libfdt in the kernel bootwrapper.
-> 	- Versioning related rules and variables are collected into
-> one place in the Makefile.
+> Testcases for these new functions are also included.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
