@@ -1,22 +1,21 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 95D1CDDEDE
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 06:54:17 +1000 (EST)
-Message-ID: <4713D3D6.6070203@genesi-usa.com>
-Date: Mon, 15 Oct 2007 21:55:50 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 4/7] bestcomm: core bestcomm support for Freescale
-	MPC5200
-References: <20071014044041.23438.14070.stgit@trillian.cg.shawcable.net>		<20071014044205.23438.36036.stgit@trillian.cg.shawcable.net>		<4713551B.9040103@genesi-usa.com>	<fa686aa40710150704j15f3a511rf5924573282c966b@mail.gmail.com>
-	<4713D35A.9080200@genesi-usa.com>
-In-Reply-To: <4713D35A.9080200@genesi-usa.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, domen.puncer@telargo.com
+	by ozlabs.org (Postfix) with ESMTP id 19E0BDDDF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 06:54:55 +1000 (EST)
+Subject: Re: [PATCH 1/5] Update ibm_newemac to use dcr_host_t.base
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jgarzik@pobox.com>
+In-Reply-To: <4713B2A1.4000503@pobox.com>
+References: <33ee227bae85a8d7ccde69a717cff47000888354.1192440801.git.michael@ellerman.id.au>
+	<4713B2A1.4000503@pobox.com>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 06:54:42 +1000
+Message-Id: <1192481682.11795.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,14 +26,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Matt Sealey wrote:
+On Mon, 2007-10-15 at 14:34 -0400, Jeff Garzik wrote:
+> Michael Ellerman wrote:
+> > Now that dcr_host_t contains the base address, we can use that in the
+> > ibm_newemac code, rather than storing it separately.
+> > 
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >  drivers/net/ibm_newemac/mal.c |    9 +++++----
+> >  drivers/net/ibm_newemac/mal.h |    5 ++---
+> >  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> applied 1-5
 
-> call a PSC, we wouldn't be making structures called mpc52xx_programmable_serial_controller,
-> that's redundant, I don't think calling it "bestcomm" (which is it's name) over
-> "bcom" (which isn't) works to anyone's advantage here.
-
-Disadvantage, even. Damn autocorrecting :(
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Those patches have been around for some time now, they didn't make
+paulus initial merge for reasons I'm not sure about but I think they
+should go into 2.6.24. Now the question is via Jeff or via Paulus ? :-)
+ 
+Ben.
