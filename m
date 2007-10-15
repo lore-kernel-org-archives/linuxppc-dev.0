@@ -1,21 +1,32 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 07607DDF1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 03:14:45 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2194817wag
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 10:14:44 -0700 (PDT)
-Message-ID: <fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
-Date: Mon, 15 Oct 2007 11:14:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Olof Johansson" <olof@lixom.net>
-Subject: Re: Refactor booting-without-of.txt
-In-Reply-To: <20071015165505.GA16040@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
-	<20071015165505.GA16040@lixom.net>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B62BADE0BF
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 03:27:58 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9FHRjdV018799
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 13:27:45 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9FHQmfI484504
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 11:27:44 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9FHQH1X016941
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 11:26:18 -0600
+Date: Mon, 15 Oct 2007 12:26:16 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] PowerPC: Add NEW EMAC driver support to 440EPx Sequoia
+	board.
+Message-ID: <20071015122616.08250b54@weaponx.rchland.ibm.com>
+In-Reply-To: <20071012130305.GA14682@ru.mvista.com>
+References: <20071012130305.GA14682@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, Olof Johansson <olof@lixom.net> wrote:
-> On Mon, Oct 15, 2007 at 10:08:44AM -0600, Grant Likely wrote:
-> > Adding the Linux expected device tree bindings to
-> > booting-without-of.txt seems to be getting a little unwieldy.  Plus
-> > with more than one arch using the device tree (powerpc, sparc &
-> > microblaze) the device tree bindings aren't necessarily powerpc only
-> > (the Xilinx devices certainly fall in this category).
-> >
-> > Anyone have comments about splitting the expected device tree bindings
-> > out of booting-without-of.txt into a separate directory?
->
-> The flat device tree is, in spite of what some people would like it to be,
-> not open firmware, nor is it the same as their bindings. So I think we'd
-> be doing ourselves a disservice by continuing to associate them together.
-> All it would take is a rename of the directory, unfortunately i don't
-> have any suggestions on better names though.
 
-I think I need to stick with the of prefix.  All the support API in
-include/linux/of_* is prefixed with "of_" already, so convention is
-established.
+On Fri, 12 Oct 2007 17:03:05 +0400
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-How about Documentation/of-device-tree?
+> This patch enables NEW EMAC support for PowerPC 440EPx Sequoia board
+> and adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
+> These PHY chips are used on PowerPC440EPx boards.
+> The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
 
->
-> > Perhaps something like this; each file contains common bindings for
-> > the type of device and device specific properties:
-> >
-> > Documentation/of/
-> > Documentation/of/README - Description of the purpose and layout of
-> > this directory
-> > Documentation/of/net.txt - network device bindings (eth, MDIO, phy, etc)
-> > Documentation/of/serial.txt - serial device bindings
-> > Documentation/of/misc.txt - anything that doesn't fit anywhere else yet.
-> > Documentation/of/soc/* - System on chip stuff that doesn't fit will
-> > into established device types; possibly a separate file for each chip.
-> > Documentation/of/usb.txt - usb blah blah blah
-> > Documentation/of/whatever - you get the picture.
-> >
-> > Thoughts?
->
-> Looks reasonable. The other way to cut it would be to slice along vendor
-> boundaries, but I think I like the functional partitioning you suggested
-> better.
+Could you send the phy part to Jeff Garzik and the netdev list by
+itself?  That way it will get picked up and we'll update the Kconfig
+with a later patch.
 
-I think vendor partitioning makes sense for non-common devices that
-don't easily fit into a particular mold (soc glue nodes come to mind).
- Other than that, the functional partitioning
-lets us start with defining common property usage for a given device
-type and follow up with device specific properties.
-
-Thanks for the feedback,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+josh
