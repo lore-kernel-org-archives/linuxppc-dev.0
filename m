@@ -1,19 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 31CFBDDEDA
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 17:44:31 +1000 (EST)
-Date: Tue, 16 Oct 2007 00:44:34 -0700 (PDT)
-Message-Id: <20071016.004434.106264901.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH/RFC] net: Add __napi_sycnhronize() to sync with napi poll
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1192520223.7205.5.camel@pasglop>
-References: <E1IhfZr-0002FE-00@gondolin.me.apana.org.au>
-	<1192520223.7205.5.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F3508DDE3C
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 20:23:57 +1000 (EST)
+Subject: Re: [PATCH] powerpc64 vDSO: linker script indentation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland McGrath <roland@redhat.com>
+In-Reply-To: <20071016034333.19BEE4D0389@magilla.localdomain>
+References: <20071016034333.19BEE4D0389@magilla.localdomain>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 20:23:43 +1000
+Message-Id: <1192530223.7205.25.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, rdreier@cisco.com, shemminger@linux-foundation.org,
-	herbert@gondor.apana.org.au, linuxppc-dev@ozlabs.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +27,270 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 16 Oct 2007 17:37:03 +1000
 
+On Mon, 2007-10-15 at 20:43 -0700, Roland McGrath wrote:
+> This cleans up the formatting in the vDSO linker script, mostly just the
+> use of whitespace.  It's intended to approximate the kernel standard
+> conventions for indenting C, treating elements of the linker script about
+> like initialized variable definitions.
 > 
-> On Tue, 2007-10-16 at 14:06 +0800, Herbert Xu wrote:
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > >
-> > > Note: I use msleep_interruptible(1); just like napi_disable(). However
-> > > I'm not too happy that the "hot" loop that results of a pending signal
-> > > here will spin without even a cpu_relax ... what do you guys think would
-> > > be the best way to handle this ?
-> > 
-> > Well since the loop does not check signals at all, it should
-> > just use msleep.
-> > 
-> > Granted the process will end up in the D state and contribute
-> > to the load average.  But if this loop executes long enough
-> > for that to be noticed then we've got bigger problems to worry
-> > about.
-> 
-> If Dave & Stephen agree, I'll send a patch changing napi_disable() too
-> then.
+> Signed-off-by: Roland McGrath <roland@redhat.com>
+> CC: Sam Ravnborg <sam@ravnborg.org>
 
-I agree with the msleep() change.
+Thanks Roland !
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ 
+> ---
+>  arch/powerpc/kernel/vdso64/vdso64.lds.S |  225 +++++++++++++++++--------------
+>  1 files changed, 122 insertions(+), 103 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/vdso64/vdso64.lds.S b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> index 2d70f35..932b3fd 100644
+> --- a/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> +++ b/arch/powerpc/kernel/vdso64/vdso64.lds.S
+> @@ -10,100 +10,114 @@ ENTRY(_start)
+>  
+>  SECTIONS
+>  {
+> -  . = VDSO64_LBASE + SIZEOF_HEADERS;
+> -  .hash           : { *(.hash) }		:text
+> -  .gnu.hash       : { *(.gnu.hash) }
+> -  .dynsym         : { *(.dynsym) }
+> -  .dynstr         : { *(.dynstr) }
+> -  .gnu.version    : { *(.gnu.version) }
+> -  .gnu.version_d  : { *(.gnu.version_d) }
+> -  .gnu.version_r  : { *(.gnu.version_r) }
+> -
+> -  .note		  : { *(.note.*) }		:text	:note
+> -
+> -  . = ALIGN (16);
+> -  .text           :
+> -  {
+> -    *(.text .stub .text.* .gnu.linkonce.t.*)
+> -    *(.sfpr .glink)
+> -  }						:text
+> -  PROVIDE (__etext = .);
+> -  PROVIDE (_etext = .);
+> -  PROVIDE (etext = .);
+> -
+> -  . = ALIGN(8);
+> -  __ftr_fixup : {
+> -    *(__ftr_fixup)
+> -  }
+> -
+> -  . = ALIGN(8);
+> -  __fw_ftr_fixup : {
+> -    *(__fw_ftr_fixup)
+> -  }
+> -
+> -  /* Other stuff is appended to the text segment: */
+> -  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+> -  .rodata1        : { *(.rodata1) }
+> -  .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text	:eh_frame_hdr
+> -  .eh_frame       : { KEEP (*(.eh_frame)) }	:text
+> -  .gcc_except_table   : { *(.gcc_except_table) }
+> -
+> -  .opd           ALIGN(8) : { KEEP (*(.opd)) }
+> -  .got		 ALIGN(8) : { *(.got .toc) }
+> -  .rela.dyn	 ALIGN(8) : { *(.rela.dyn) }
+> -
+> -  .dynamic        : { *(.dynamic) }		:text	:dynamic
+> -
+> -  _end = .;
+> -  PROVIDE (end = .);
+> -
+> -  /* Stabs debugging sections are here too
+> -   */
+> -  .stab          0 : { *(.stab) }
+> -  .stabstr       0 : { *(.stabstr) }
+> -  .stab.excl     0 : { *(.stab.excl) }
+> -  .stab.exclstr  0 : { *(.stab.exclstr) }
+> -  .stab.index    0 : { *(.stab.index) }
+> -  .stab.indexstr 0 : { *(.stab.indexstr) }
+> -  .comment       0 : { *(.comment) }
+> -  /* DWARF debug sectio/ns.
+> -     Symbols in the DWARF debugging sections are relative to the beginning
+> -     of the section so we begin them at 0.  */
+> -  /* DWARF 1 */
+> -  .debug          0 : { *(.debug) }
+> -  .line           0 : { *(.line) }
+> -  /* GNU DWARF 1 extensions */
+> -  .debug_srcinfo  0 : { *(.debug_srcinfo) }
+> -  .debug_sfnames  0 : { *(.debug_sfnames) }
+> -  /* DWARF 1.1 and DWARF 2 */
+> -  .debug_aranges  0 : { *(.debug_aranges) }
+> -  .debug_pubnames 0 : { *(.debug_pubnames) }
+> -  /* DWARF 2 */
+> -  .debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+> -  .debug_abbrev   0 : { *(.debug_abbrev) }
+> -  .debug_line     0 : { *(.debug_line) }
+> -  .debug_frame    0 : { *(.debug_frame) }
+> -  .debug_str      0 : { *(.debug_str) }
+> -  .debug_loc      0 : { *(.debug_loc) }
+> -  .debug_macinfo  0 : { *(.debug_macinfo) }
+> -  /* SGI/MIPS DWARF 2 extensions */
+> -  .debug_weaknames 0 : { *(.debug_weaknames) }
+> -  .debug_funcnames 0 : { *(.debug_funcnames) }
+> -  .debug_typenames 0 : { *(.debug_typenames) }
+> -  .debug_varnames  0 : { *(.debug_varnames) }
+> -
+> -  /DISCARD/ : { *(.note.GNU-stack) }
+> -  /DISCARD/ : { *(.branch_lt) }
+> -  /DISCARD/ : { *(.data .data.* .gnu.linkonce.d.*) }
+> -  /DISCARD/ : { *(.bss .sbss .dynbss .dynsbss) }
+> +	. = VDSO64_LBASE + SIZEOF_HEADERS;
+> +
+> +	.hash		: { *(.hash) }			:text
+> +	.gnu.hash	: { *(.gnu.hash) }
+> +	.dynsym		: { *(.dynsym) }
+> +	.dynstr		: { *(.dynstr) }
+> +	.gnu.version	: { *(.gnu.version) }
+> +	.gnu.version_d	: { *(.gnu.version_d) }
+> +	.gnu.version_r	: { *(.gnu.version_r) }
+> +
+> +	.note		: { *(.note.*) }		:text	:note
+> +
+> +	. = ALIGN(16);
+> +	.text		: {
+> +		*(.text .stub .text.* .gnu.linkonce.t.*)
+> +		*(.sfpr .glink)
+> +	}						:text
+> +	PROVIDE(__etext = .);
+> +	PROVIDE(_etext = .);
+> +	PROVIDE(etext = .);
+> +
+> +	. = ALIGN(8);
+> +	__ftr_fixup	: { *(__ftr_fixup) }
+> +
+> +	. = ALIGN(8);
+> +	__fw_ftr_fixup	: { *(__fw_ftr_fixup) }
+> +
+> +	/*
+> +	 * Other stuff is appended to the text segment:
+> +	 */
+> +	.rodata		: { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+> +	.rodata1	: { *(.rodata1) }
+> +
+> +	.eh_frame_hdr	: { *(.eh_frame_hdr) }		:text	:eh_frame_hdr
+> +	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
+> +	.gcc_except_table : { *(.gcc_except_table) }
+> +
+> +	.opd ALIGN(8)	: { KEEP (*(.opd)) }
+> +	.got ALIGN(8)	: { *(.got .toc) }
+> +	.rela.dyn ALIGN(8) : { *(.rela.dyn) }
+> +
+> +	.dynamic	: { *(.dynamic) }		:text	:dynamic
+> +
+> +	_end = .;
+> +	PROVIDE(end = .);
+> +
+> +	/*
+> +	 * Stabs debugging sections are here too.
+> +	 */
+> +	.stab          0 : { *(.stab) }
+> +	.stabstr       0 : { *(.stabstr) }
+> +	.stab.excl     0 : { *(.stab.excl) }
+> +	.stab.exclstr  0 : { *(.stab.exclstr) }
+> +	.stab.index    0 : { *(.stab.index) }
+> +	.stab.indexstr 0 : { *(.stab.indexstr) }
+> +	.comment       0 : { *(.comment) }
+> +
+> +	/*
+> +	 * DWARF debug sections.
+> +	 * Symbols in the DWARF debugging sections are relative to the beginning
+> +	 * of the section so we begin them at 0.
+> +	 */
+> +	/* DWARF 1 */
+> +	.debug          0 : { *(.debug) }
+> +	.line           0 : { *(.line) }
+> +	/* GNU DWARF 1 extensions */
+> +	.debug_srcinfo  0 : { *(.debug_srcinfo) }
+> +	.debug_sfnames  0 : { *(.debug_sfnames) }
+> +	/* DWARF 1.1 and DWARF 2 */
+> +	.debug_aranges  0 : { *(.debug_aranges) }
+> +	.debug_pubnames 0 : { *(.debug_pubnames) }
+> +	/* DWARF 2 */
+> +	.debug_info     0 : { *(.debug_info .gnu.linkonce.wi.*) }
+> +	.debug_abbrev   0 : { *(.debug_abbrev) }
+> +	.debug_line     0 : { *(.debug_line) }
+> +	.debug_frame    0 : { *(.debug_frame) }
+> +	.debug_str      0 : { *(.debug_str) }
+> +	.debug_loc      0 : { *(.debug_loc) }
+> +	.debug_macinfo  0 : { *(.debug_macinfo) }
+> +	/* SGI/MIPS DWARF 2 extensions */
+> +	.debug_weaknames 0 : { *(.debug_weaknames) }
+> +	.debug_funcnames 0 : { *(.debug_funcnames) }
+> +	.debug_typenames 0 : { *(.debug_typenames) }
+> +	.debug_varnames  0 : { *(.debug_varnames) }
+> +
+> +	/DISCARD/	: {
+> +		*(.note.GNU-stack)
+> +		*(.branch_lt)
+> +		*(.data .data.* .gnu.linkonce.d.* .sdata*)
+> +		*(.bss .sbss .dynbss .dynsbss)
+> +	}
+>  }
+>  
+> +/*
+> + * Very old versions of ld do not recognize this name token; use the constant.
+> + */
+> +#define PT_GNU_EH_FRAME	0x6474e550
+> +
+> +/*
+> + * We must supply the ELF program headers explicitly to get just one
+> + * PT_LOAD segment, and set the flags explicitly to make segments read-only.
+> + */
+>  PHDRS
+>  {
+> -  text PT_LOAD FILEHDR PHDRS FLAGS(5); /* PF_R|PF_X */
+> -  note PT_NOTE FLAGS(4); /* PF_R */
+> -  dynamic PT_DYNAMIC FLAGS(4); /* PF_R */
+> -  eh_frame_hdr 0x6474e550; /* PT_GNU_EH_FRAME, but ld doesn't match the name */
+> +	text		PT_LOAD FILEHDR PHDRS FLAGS(5);	/* PF_R|PF_X */
+> +	dynamic		PT_DYNAMIC FLAGS(4);		/* PF_R */
+> +	note		PT_NOTE FLAGS(4);		/* PF_R */
+> +	eh_frame_hdr	PT_GNU_EH_FRAME;
+>  }
+>  
+>  /*
+> @@ -111,17 +125,22 @@ PHDRS
+>   */
+>  VERSION
+>  {
+> -  VDSO_VERSION_STRING {
+> -    global:
+> -	__kernel_datapage_offset; /* Has to be there for the kernel to find */
+> -	__kernel_get_syscall_map;
+> -    	__kernel_gettimeofday;
+> -	__kernel_clock_gettime;
+> -	__kernel_clock_getres;
+> -	__kernel_get_tbfreq;
+> -	__kernel_sync_dicache;
+> -	__kernel_sync_dicache_p5;
+> -	__kernel_sigtramp_rt64;
+> -    local: *;
+> -  };
+> +	VDSO_VERSION_STRING {
+> +	global:
+> +		/*
+> +		 * Has to be there for the kernel to find
+> +		 */
+> +		__kernel_datapage_offset;
+> +
+> +		__kernel_get_syscall_map;
+> +		__kernel_gettimeofday;
+> +		__kernel_clock_gettime;
+> +		__kernel_clock_getres;
+> +		__kernel_get_tbfreq;
+> +		__kernel_sync_dicache;
+> +		__kernel_sync_dicache_p5;
+> +		__kernel_sigtramp_rt64;
+> +
+> +	local: *;
+> +	};
+>  }
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
