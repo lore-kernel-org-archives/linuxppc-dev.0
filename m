@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 767BEDDF34
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:51:28 +1000 (EST)
-In-Reply-To: <200710160728.38897.sr@denx.de>
-References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-	<200710160640.47010.sr@denx.de>
-	<B9E8682B-5455-48EA-B078-CB0EDCB2060A@kernel.crashing.org>
-	<200710160728.38897.sr@denx.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
-Date: Tue, 16 Oct 2007 00:51:51 -0500
-To: Stefan Roese <sr@denx.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Merge dtc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18196.20112.728499.256646@cargo.ozlabs.ibm.com>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
+	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 16:00:55 +1000
+Message-Id: <1192514455.19073.27.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +22,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 16, 2007, at 12:28 AM, Stefan Roese wrote:
+> You must have missed the thread where various people where complaining
+> about how powerpc is the only architecture where they can't build
+> kernels without some external tool that they don't have, etc., etc.
+> 
+> We thought about shipping compiled DTBs for various platforms, but the
+> problem there is that they can't be updated with a patch, so whoever
+> commits a patch to the relevant .dts would have to remember to run dtc
+> and commit the updated .dtb as well, which seems a bit error-prone.
+> 
+> In the end, dtc isn't all that much code.  We already have several
+> other programs that run on the host in the process of making a zImage,
+> such as wrapper, hack-coff, and addnote, not to mention the various C
+> programs that are part of Kbuild, and unifdef, kallsyms, etc.
+> 
+> So I think there definitely is a precedent for including dtc.
 
-> On Tuesday 16 October 2007, Kumar Gala wrote:
->>>> I'm willing to look into doing the port over, but would need some
->>>> help testing.
->>>
->>> Yes, it would be greatly appreciated if you could start this
->>> TQM85xx port. I
->>> will of course do the testing.
->>
->> Ok, for the TQM85xx code in arch/ppc can I get a few things from you:
->>
->> 1. what processors does this actually support/run on.  I'm guessing
->> MPC8541, MPC8555?  But not really sure
->
-> IIRC there are 4 different versions of the board:
-> - 8540, 8541, 8555 & 8560
+Note that I just tried to build a 4xx kernel today ... and failed due to
+the lack of mkimage ..
 
-do they all boot/run with the code that exists in arch/ppc ?
+Another one that we need to either add to the kernel or make the
+building of cuImage's optional.
 
-thanks for the other info, that's exactly what I needed.
-
-- k
+Ben.
