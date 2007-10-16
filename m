@@ -1,17 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 16 Oct 2007 11:12:30 +1000
+Date: Tue, 16 Oct 2007 11:15:04 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-Message-ID: <20071016011230.GA26787@localhost.localdomain>
-References: <20071015155730.GA30008@localhost.localdomain>
-	<20071015161631.GB30512@localhost.localdomain>
-	<4713A474.1000301@ru.mvista.com>
-	<F248D8A0-B412-41B8-B7F8-FD158576785D@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v4 9/9] add MPC837x MDS board default device tree
+Message-ID: <20071016011504.GB26787@localhost.localdomain>
+References: <1192460210-26920-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F248D8A0-B412-41B8-B7F8-FD158576785D@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1192460210-26920-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 15, 2007 at 01:00:24PM -0500, Kumar Gala wrote:
-> 
-> On Oct 15, 2007, at 12:33 PM, Sergei Shtylyov wrote:
-> 
-> > Anton Vorontsov wrote:
-> >
-> >> MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
-> >
-> >> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> >
-> >> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/ 
-> >> boot/dts/mpc8568mds.dts
-> >> index 8e15dba..1198363 100644
-> >> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
-> >> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
-> >> @@ -47,12 +47,45 @@
-> >>  		#address-cells = <2>;
-> >>  		#size-cells = <1>;
-> >>  		reg = <e0005000 d8>;
-> >> -		ranges = <1 0 f8000000 0008000>;
-> >> +		ranges = <1 0 f8000000 0008000
-> >> +			  0 0 fe000000 2000000>;
-> >>
-> >>  		bcsr@1,0 {
-> >>  			device_type = "board-control";
-> >>  			reg = <1 0 8000>;
-> >>  		};
-> >> +
-> >> +		flash@0,0 {
-> >> +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
-> >> +			reg = <0 0 2000000>;
-> >> +			probe-type = "CFI";
-> >
-> >     I don't get it -- has physmap_of.c rewrite been already committed?
-> > If yes, you don't need probe_type; if no, your "compatible" won't  
-> > work...
-> > Well, I see that the driver rewrite has been committed (when I  
-> > wasn't looking
-> > 8-)...
-> 
-> Any NOR flash nodes should conform to the "new" bindings from David  
-> Gibson, et al.  Not sure about the status of those being in  
-> physmap_of.c w/regards to 2.6.24.
+On Mon, Oct 15, 2007 at 10:56:50PM +0800, Li Yang wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
 
-Yes, in which case probe_type should be dropped, as should the low bit
-in the read-only partitions.
+[snip]
+> +		mdio@24520 {
+> +			device_type = "mdio";
+> +			compatible = "gianfar";
+> +			reg = <24520 20>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			phy2: ethernet-phy@2 {
+> +				interrupt-parent = < &ipic >;
+> +				interrupts = <11 8>;
+> +				reg = <2>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			phy3: ethernet-phy@3 {
+> +				interrupt-parent = < &ipic >;
+> +				interrupts = <12 8>;
+> +				reg = <3>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +		};
+> +
+> +		ethernet@24000 {
+> +			device_type = "network";
+> +			model = "eTSEC";
+> +			compatible = "gianfar";
+
+This isn't a problem with *this* patch per se, but we have *got* to
+fix that fucked up binding which gives both the mdio and ethernet
+devices the same compatible property.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
