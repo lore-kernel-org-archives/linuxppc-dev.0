@@ -1,22 +1,17 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 744C3DDEED
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:24:34 +1000 (EST)
+Return-Path: <alan@akb.net>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
+	by ozlabs.org (Postfix) with ESMTP id D3AAFDDEE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:36:47 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id r27so480050ele
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 11:36:45 -0700 (PDT)
+Message-ID: <bfa0697f0710161136y7d28ccd6w828f16d30f85ce19@mail.gmail.com>
+Date: Tue, 16 Oct 2007 12:36:44 -0600
+From: "Alan Bennett" <embedded@akb.net>
+Sender: alan@akb.net
+To: linuxppc-dev@ozlabs.org
+Subject: Describing devices in the device tree
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2] Device tree bindings for Xilinx devices
-Date: Tue, 16 Oct 2007 11:24:07 -0700
-In-Reply-To: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-	"Wolfgang Reissnegger" <wre@xilinx.com>, "Leonid" <Leonid@a-k-a.net>,
-	<microblaze-uclinux@itee.uq.edu.au>
-Message-Id: <20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm using a modified ep8248e.dts to describe my hardware and I want to
+enable the use of 3 standard interrupts.
 
-> +   n) Xilinx EMAC and Xilinx TEMAC
-> +
-> +   Xilinx Ethernet devices.  Uses common properties from=20
-> other Ethernet
-> +   devices with the following constraints:
-> +  =20
-> +   Required properties:
-> +    - compatible : Must include one of: "xilinx,plb-temac",
-> +                   "xilinx,plb-emac", "xilinx-opb-emac"
-> +    - dma-mode : Must be one of "none", "simple", "sg" (sg=20
-> =3D=3D scatter gather)
+  1. irq5
+  2. timer1
+  3. timer2
 
-I think it's going to be a significant headache to remap things like the
-dma-mode from the xilinx configurations to something else, and then
-interpret them correctly in the drivers.
+How bad does this look?
+soc --> cpm -->
+                       timer {
+                               device_type = "timer";
+                               compatible = "fsl,mpc8248-timer";
+                               interrupts = <c 8 d 8>;
+                               interrupt-parent = <&PIC>;
+                       };
+                       irq5 {
+                               device_type = "irq5";
+                               compatible = "fsl,mpc8248-irq5";
+                               interrupts = <17 8>;
+                               interrupt-parent = <&PIC>;
+                       };
 
-Although it lacks a bit in style, perhaps, I'd greatly prefer having
-something like:
-
-	Ethernet_MAC {
-		xilinx,C_DMA_PRESENT =3D <1>;
-            ...
-      }
-
-(which happens to correspond to "none" above)
-DMA mode is perhaps a bad example, since the Xilinx EDK encoding for
-this is so unnecessarily obfuscated, but I'd like to avoid setting
-precedent for defining a new set of parameterizations here.  In the long
-term, I'm afraid this will just be an added source of confusion and more
-code to maintain.
-
-Steve
+-Alan
