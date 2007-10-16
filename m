@@ -1,16 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <18196.20112.728499.256646@cargo.ozlabs.ibm.com>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
-	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Merge dtc
-Date: Tue, 16 Oct 2007 00:50:15 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 27AA9DDEF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:50:12 +1000 (EST)
+Subject: [PATCH/RFC] net: Add __napi_sycnhronize() to sync with napi poll
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: shemminger@linux-foundation.org
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 15:49:52 +1000
+Message-Id: <1192513792.19073.23.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+net: Add __napi_sycnhronize() to sync with napi poll
 
-On Oct 16, 2007, at 12:39 AM, Paul Mackerras wrote:
+The EMAC driver which needs to handle multiple devices with one
+NAPI instance implements its own per-channel disable bit. However,
+when setting such a bit, it needs to synchronize with the poller
+(that is make sure that any pending poller instance has completed,
+or is started late enough to see that disable bit).
 
-> Kumar Gala writes:
->
->> Dare I ask why we are including dtc in the kernel source tree?  We
->> don't really have precedence for this and there are users outside of
->> linux for dtc.
->
-> You must have missed the thread where various people where complaining
-> about how powerpc is the only architecture where they can't build
-> kernels without some external tool that they don't have, etc., etc.
+This implements a low level __napi_synchronize() function to acheive
+that. The underscores are to emphasis the low level aspect of it and
+to discourage driver writers who don't know what they are doing to
+use it (to please DaveM :-)
 
-I must have missed this thread.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> We thought about shipping compiled DTBs for various platforms, but the
-> problem there is that they can't be updated with a patch, so whoever
-> commits a patch to the relevant .dts would have to remember to run dtc
-> and commit the updated .dtb as well, which seems a bit error-prone.
+(Use correct address for Stephen this time)
 
-agreed, would seem .S would have been a better choice than .dtb, but  
-I agree the keeping a .dts and .S form insync would be a bit of a pain.
+If the approach is accepted, I would like to have this merged now
+so the EMAC patch to make it work again can follow :-)
 
-> In the end, dtc isn't all that much code.  We already have several
-> other programs that run on the host in the process of making a zImage,
-> such as wrapper, hack-coff, and addnote, not to mention the various C
-> programs that are part of Kbuild, and unifdef, kallsyms, etc.
->
-> So I think there definitely is a precedent for including dtc.
+Note: I use msleep_interruptible(1); just like napi_disable(). However
+I'm not too happy that the "hot" loop that results of a pending signal
+here will spin without even a cpu_relax ... what do you guys think would
+be the best way to handle this ?
 
-Just out of interest who's complaining?  We don't include mkimage for  
-u-boot related builds and I haven't seen any gripes related to that.
 
-- k
+
+Index: linux-work/include/linux/netdevice.h
+===================================================================
+--- linux-work.orig/include/linux/netdevice.h	2007-10-16 15:27:27.000000000 +1000
++++ linux-work/include/linux/netdevice.h	2007-10-16 15:27:38.000000000 +1000
+@@ -394,6 +394,21 @@ static inline void napi_disable(struct n
+ }
+ 
+ /**
++ *	__napi_synchronize - synchronize with a concurrent poll
++ *	@n: napi context
++ *
++ * Synchronizes with a concurrent poll. Not to be used in normal
++ * drivers, mostly useful if you end up with multiple interfaces
++ * on one NAPI instance.
++ */
++static inline void __napi_synchronize(struct napi_struct *n)
++{
++	smp_mb();
++	while (test_bit(NAPI_STATE_SCHED, &n->state))
++		msleep_interruptible(1);
++}
++
++/**
+  *	napi_enable - enable NAPI scheduling
+  *	@n: napi context
+  *
