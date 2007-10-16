@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EDCA2DDE34
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:28:50 +1000 (EST)
-Message-ID: <4714E505.3080801@freescale.com>
-Date: Tue, 16 Oct 2007 11:21:25 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id B99D9DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:36:20 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2669857wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 12:36:19 -0700 (PDT)
+Message-ID: <fa686aa40710161236h4cc82edbqfee328bbcb21c752@mail.gmail.com>
+Date: Tue, 16 Oct 2007 13:36:18 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
+In-Reply-To: <20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2] pasemi: process i2c device tree entries at boot
-References: <20071015015232.GA4641@lixom.net>
-	<20071015224932.GA23875@lixom.net> <4713EFBB.3070203@freescale.com>
-	<20071016001701.GA25444@lixom.net>
-In-Reply-To: <20071016001701.GA25444@lixom.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
+	<20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au,
+	Wolfgang Reissnegger <wre@xilinx.com>, Leonid <Leonid@a-k-a.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> On Mon, Oct 15, 2007 at 05:54:51PM -0500, Scott Wood wrote:
->> Olof Johansson wrote:
->>> Setup i2c_board_info based on device tree contents. This has to be
->>> a device_initcall since we need PCI to be probed by the time we
->>> run it, but before the actual driver is initialized.
->> Can we factor at least some of this stuff out into common code?
-> 
-> I didn't really feel strong motivations to do so, given that the amount
-> of shared code is quite small, and the official bindings are not yet
-> determined.
+On 10/16/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+>
+> > +   n) Xilinx EMAC and Xilinx TEMAC
+> > +
+> > +   Xilinx Ethernet devices.  Uses common properties from
+> > other Ethernet
+> > +   devices with the following constraints:
+> > +
+> > +   Required properties:
+> > +    - compatible : Must include one of: "xilinx,plb-temac",
+> > +                   "xilinx,plb-emac", "xilinx-opb-emac"
+> > +    - dma-mode : Must be one of "none", "simple", "sg" (sg
+> > == scatter gather)
+>
+> I think it's going to be a significant headache to remap things like the
+> dma-mode from the xilinx configurations to something else, and then
+> interpret them correctly in the drivers.
+>
+> Although it lacks a bit in style, perhaps, I'd greatly prefer having
+> something like:
+>
+>         Ethernet_MAC {
+>                 xilinx,C_DMA_PRESENT = <1>;
+>             ...
+>       }
+>
+> (which happens to correspond to "none" above)
 
-Enh...  I'm just irked because I originally did it in a generic manner, 
-and whoever it was that did further work on my patch shoved in into 
-fsl_soc. :-P
+Ugh.  Can't say I'm thrilled about this....
 
-> Chances are whenever the bindings are done they might be incompatible
-> with what we already have in our firmware, so the code would need to be
-> separated out again.
+But in this case is might be a necessity.  The IP core is already
+parameterized and the best way to describe the device is to use the
+existing parameter names.
 
-Well, then it'd be better to just have one bit of code to fix, right? :-)
+I want to be careful though.  Parameters can change from one version
+of an IP core to another.  The driver needs to be able to determine
+what version of the IP core is used so that the parameters make sense.
+ I'm also nervous about adding every possible C_ value to the device
+node for each xilinx IP-core; that could make the device tree quite
+large.  (on the other hand; maybe that doesn't matter... It is
+probably a bigger deal for microblaze than powerpc too.).
 
-It'd suck to see different i2c controllers end up implementing the 
-binding differently due to the forking, though.  Already with this 
-patch, we have a different set of i2c devices that will be recognized 
-depending on the adapter.
+Cheers,
+g.
 
--Scott
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
