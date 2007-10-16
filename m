@@ -1,22 +1,28 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id B99D9DDF11
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:36:20 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2669857wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 12:36:19 -0700 (PDT)
-Message-ID: <fa686aa40710161236h4cc82edbqfee328bbcb21c752@mail.gmail.com>
-Date: Tue, 16 Oct 2007 13:36:18 -0600
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 184E3DDE9C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:39:43 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2670967wag
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 12:39:42 -0700 (PDT)
+Message-ID: <fa686aa40710161239w2103a3dch224024d3543a77f0@mail.gmail.com>
+Date: Tue, 16 Oct 2007 13:39:42 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
-In-Reply-To: <20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
+Subject: Re: Refactor booting-without-of.txt
+In-Reply-To: <20071016172509.08B73FE0077@mail38-dub.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-	<20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au,
-	Wolfgang Reissnegger <wre@xilinx.com>, Leonid <Leonid@a-k-a.net>
+References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
+	<20071015165505.GA16040@lixom.net>
+	<fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
+	<20071016023845.GK26787@localhost.localdomain>
+	<fa686aa40710152002l5bb2c746i8174827e8d66c746@mail.gmail.com>
+	<20071016032415.GO26787@localhost.localdomain>
+	<20071016172509.08B73FE0077@mail38-dub.bigfish.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	microblaze-uclinux@itee.uq.edu.au,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,48 +33,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 10/16/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
->
-> > +   n) Xilinx EMAC and Xilinx TEMAC
-> > +
-> > +   Xilinx Ethernet devices.  Uses common properties from
-> > other Ethernet
-> > +   devices with the following constraints:
-> > +
-> > +   Required properties:
-> > +    - compatible : Must include one of: "xilinx,plb-temac",
-> > +                   "xilinx,plb-emac", "xilinx-opb-emac"
-> > +    - dma-mode : Must be one of "none", "simple", "sg" (sg
-> > == scatter gather)
->
-> I think it's going to be a significant headache to remap things like the
-> dma-mode from the xilinx configurations to something else, and then
-> interpret them correctly in the drivers.
->
-> Although it lacks a bit in style, perhaps, I'd greatly prefer having
-> something like:
->
->         Ethernet_MAC {
->                 xilinx,C_DMA_PRESENT = <1>;
->             ...
->       }
->
-> (which happens to correspond to "none" above)
+> How about just 'device-tree', referring to any source, and then
+> of-device-tree and flat-device-tree to document how the device tree is
+> constructed.
+> The fact that the API is poorly named is something that can always be
+> fixed (and perhaps should be earlier rather than later).
 
-Ugh.  Can't say I'm thrilled about this....
+It's not so much that it's poorly named; it's just historically named.  :-)
 
-But in this case is might be a necessity.  The IP core is already
-parameterized and the best way to describe the device is to use the
-existing parameter names.
-
-I want to be careful though.  Parameters can change from one version
-of an IP core to another.  The driver needs to be able to determine
-what version of the IP core is used so that the parameters make sense.
- I'm also nervous about adding every possible C_ value to the device
-node for each xilinx IP-core; that could make the device tree quite
-large.  (on the other hand; maybe that doesn't matter... It is
-probably a bigger deal for microblaze than powerpc too.).
-
-Cheers,
 g.
 
 -- 
