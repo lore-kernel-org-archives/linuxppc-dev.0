@@ -1,19 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 16E4BDDDF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 08:24:00 +1000 (EST)
-Date: Tue, 16 Oct 2007 15:24:04 -0700 (PDT)
-Message-Id: <20071016.152404.35664335.davem@davemloft.net>
-To: arnd@arndb.de
-Subject: Re: ioctl32: Unknown cmd
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200710162150.37636.arnd@arndb.de>
-References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
-	<200710162150.37636.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, jens.axboe@oracle.com
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F10C5DDE2A
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 08:29:47 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/2] bootwrapper: Allow wrapper script to execute verbosely
+References: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
+Date: Wed, 17 Oct 2007 00:29:36 +0200
+In-Reply-To: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
+	(Grant Likely's message of "Tue\, 16 Oct 2007 15\:31\:01 -0600")
+Message-ID: <jeejfuae27.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 Oct 2007 21:50:35 +0200
+Grant Likely <grant.likely@secretlab.ca> writes:
 
-> The one point where it is expected to have changed now is when you
-> try to do these ioctls on something that is not a block device. Are
-> you sure that the files you tried them on were created correctly?
+> +# Allow for verbose output
+> +if [ "$V" == "1" ]; then
 
-Many many many programs do this exact sort of thing.
+The correct syntax is [ a = b ] (and the quotes around 1 are not needed,
+btw.).
 
-It is one of the bad aspects of moving the compat handling
-down into the file ops for a specific device.
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
