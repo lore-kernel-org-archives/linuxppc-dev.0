@@ -1,15 +1,23 @@
-Return-Path: <ravi.rao@rflelect.com>
-In-Reply-To: <66E8AEE9980BB44CA5FCAD39EBA56AC6029A29DD@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
-To: avenkatesh@hcl.in
-Subject: Re: cross compilation issue
+Return-Path: <soleynichenko@zenith.com>
+Received: from LGEMRELSE3Q.lge.com (mail2.lge.co.kr [156.147.1.113])
+	by ozlabs.org (Postfix) with ESMTP id 85ED5DDEE3
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Oct 2007 01:30:55 +1000 (EST)
+Received: from USCSO10DA0193 (unknown [156.147.140.121])
+	by LGEMRELSE3Q.lge.com (Symantec Mail Security) with ESMTP id
+	E2BC14E4018 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Oct 2007 00:08:45 +0900 (KST)
+From: "Sergey Oleynichenko" <soleynichenko@zenith.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <12694083.post@talk.nabble.com><fa686aa40709152009k2b27ffc9kfb3fd0848f6b16d@mail.gmail.com><12696686.post@talk.nabble.com>
+	<13219154.post@talk.nabble.com>
+Subject: RE: Linux booting problem on Xilinx ppc
+Date: Tue, 16 Oct 2007 10:08:45 -0500
+Message-ID: <000901c81006$7303b490$bb3ca688@LGE.NET>
 MIME-Version: 1.0
-Message-ID: <OF1782007A.A1A7A36C-ON85257376.005181BD-85257376.00519317@rflelect.com>
-From: ravi.rao@rflelect.com
-Date: Tue, 16 Oct 2007 10:51:40 -0400
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0051931585257376_="
-Cc: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <13219154.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,189 +28,119 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0051931585257376_=
-Content-Type: text/plain; charset="US-ASCII"
 
-Hi,
- Easiest way is to edit the x86 Makefile so that gcc and ld points to Ur 
-tool chain's ppc_6xx-gcc & ppc_6xx-ld..
+I noticed this problem happens when on-chip memories are enabled in a design
+(it is 4th page in base system builder). Try to leave them "none" for both
+instruction and data.
+
+Sergey
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+soleynichenko=zenith.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+soleynichenko=zenith.com@ozlabs.org] On
+Behalf Of aauer1
+Sent: Monday, October 15, 2007 1:47 PM
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux booting problem on Xilinx ppc
+
+
+Hello
+
+I'm also working with ML403 board from Xilinx and have the same problem as
+you. The boot process stops after decompressing with the message "Now
+booting the kernel". We also used gcc-4.1.0 for the cross compilation. So, I
+would be glad to know, which gcc version have you used to get a working
+kernel!
+
 Thanks,
-Ravishankar Govindarao
-RFL Electronics Inc.
-E-mail : Ravi.Rao@rflelect.com
-Voice: 973.334.3100 Ext. 233
-Fax: 973.334.3863
- 
-CONFIDENTIALITY NOTE
-This e-mail, including any attachments, may contain confidential and/or 
-legally privileged information.  The Information is intended only for the 
-use of the individual or entity named on this e-mail .  If you are not the 
-intended recipient, you are hereby notified that any disclosure, copying, 
-distribution, or the taking of any action in reliance on the contents of 
-this transmitted Information is strictly prohibited.  Further, if you are 
-not the intended recipient, please notify us by return e-mail and delete 
-the Information promptly.
- 
- 
- 
+Andreas
 
 
 
-"Venkatesh Ananthakrishnan, TLS-Chennai" <avenkatesh@hcl.in> 
-Sent by: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org
-10/16/2007 10:24 AM
+Junqiang Hu wrote:
+> 
+> 
+> Hi Grant,
+> 
+>    Thank you so much for the reply!  Fortunately I got it work now -- it's
+> the crosstool compiler problem.  Originally I was using gcc-4.1.0, yet
+> when compiling kernel 2.6.22, I noticed that it says gcc-4.1.0 will
+> miscompile the kernel, so I changed to another version, and now I can let
+> it go!
+> 
+>   Right now still not fully booted because of the SystemACE problem, or
+> maybe the partition is not correct.  I'm still working on it, hopefully to
+> get it solved soon :-)
+> 
+> Thanks,
+> -J.
+> 
+> 
+> Grant Likely-2 wrote:
+>> 
+>> On 9/15/07, Junqiang Hu <jqhu936@yahoo.com> wrote:
+>>>
+>>>
+>>> Dear friends,
+>>>
+>>>    I'm trying to run Linux in AvNet (Memec) Xilinx-XC2VP50-EVKT-FF1152
+>>>  board.  The Linux version I'm using is 2.4; the cross-compiler is
+>>> gcc-4.1.0, glibc 2.3.6.  When booting the kernel, it shows:
+>>>       loaded at:     00400000 004B51E4
+>>>       board data at: 00000000 00000018
+>>>       relocated to:  0040526C 00405284
+>>>       zimage at:     00405B2B 004B177C
+>>>       avail ram:     004B6000 60000000
+>> 
+>> I strongly recommend moving to a 2.6 kernel.  Recent mainline has
+>> support for the Xilinx ppc built in.
+>>>
+>>>       Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part3
+>>> rw
+>>>       Uncompressing Linux...done.
+>>>       Now booting the kernel
+>>>
+>>> Then it hangs. First it seems to me that the "avail ram" is not correct,
+>>> since I configured only 32MB SDRAM.  Moreover, if it's first powered on,
+>>> the
+>>> end address of "avail ram" would be FFD9FBED. Then I tried to
+>>> investigate
+>>> the problem using xmd.  When  launched, it says:
+>> 
+>> (If you're using u-boot) You might have a mismatch between the board
+>> info structure used by u-boot and the one used by Linux.
+>> 
+>> Also, you should use your debugger to inspect the __log_buf memory of
+>> the kernel.  A common problem is the kernel starts booting, but the
+>> console is setup incorrectly and so you see nothing.  But, you can
+>> read the console output directly from memory if you look at the
+>> __log_buf region (find the address in the System.map file; you might
+>> need to subtract 0xC0000000 from the address to view the memory)
+>> 
+>> Cheers,
+>> g.
+>> 
+>> -- 
+>> Grant Likely, B.Sc., P.Eng.
+>> Secret Lab Technologies Ltd.
+>> grant.likely@secretlab.ca
+>> (403) 399-0195
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>> 
+>> 
+> 
+> 
 
-To
-<linuxppc-embedded@ozlabs.org>
-cc
+-- 
+View this message in context:
+http://www.nabble.com/Linux-booting-problem-on-Xilinx-ppc-tf4449060.html#a13
+219154
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
 
-Subject
-cross compilation issue
-
-
-
-
-
-
-Hai
-I am newbi to linux.
-I wrote the application usb libusb which works fine with x86 pc.
-I want to compile the application for ppc. I have cross compiled libusb. I 
-have tool chain also.
-If I give ppc_6xx-gcc filename.c 
-It gives the error message as usb.h No such a file or directory.
-How to give include path and library path during compilation?
-Please do the needful
- 
-Regards,
-Venkatesh
- 
-
-DISCLAIMER:
------------------------------------------------------------------------------------------------------------------------
-
-The contents of this e-mail and any attachment(s) are confidential and 
-intended for the named recipient(s) only.
-It shall not attach any liability on the originator or HCL or its 
-affiliates. Any views or opinions presented in 
-this email are solely those of the author and may not necessarily reflect 
-the opinions of HCL or its affiliates.
-Any form of reproduction, dissemination, copying, disclosure, 
-modification, distribution and / or publication of 
-this message without the prior written consent of the author of this 
-e-mail is strictly prohibited. If you have 
-received this email in error please delete it and notify the sender 
-immediately. Before opening any mail and 
-attachments please check them for viruses and defect.
-
------------------------------------------------------------------------------------------------------------------------
 _______________________________________________
 Linuxppc-embedded mailing list
 Linuxppc-embedded@ozlabs.org
 https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
---=_alternative 0051931585257376_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi,</font>
-<br><font size=2 face="sans-serif">&nbsp;Easiest way is to edit the x86
-Makefile so that gcc and ld points to Ur tool chain's </font><font size=2 face="Arial">ppc_6xx-gcc</font><font size=2 face="sans-serif">
-&amp; </font><font size=2 face="Arial">ppc_6xx-ld..</font>
-<br><font size=2 face="sans-serif">Thanks,<br>
-</font><font size=2 face="Tms Rmn">Ravishankar Govindarao<br>
-RFL Electronics Inc.<br>
-E-mail</font><font size=1 face="Tms Rmn"> </font><font size=2 face="Tms Rmn">:
-</font><a href=mailto:Ravi.Rao@rflelect.com><font size=2 color=blue face="Tms Rmn"><u>Ravi.Rao@rflelect.com</u></font></a>
-<br><font size=2 face="Tms Rmn">Voice: 973.334.3100 Ext. 233<br>
-Fax: 973.334.3863</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<div align=center>
-<br><font size=2 color=blue face="Tms Rmn"><u>CONFIDENTIALITY NOTE</u></font></div>
-<br><font size=1 face="Tms Rmn">This e-mail, including any attachments,
-may contain confidential and/or legally privileged information.&nbsp; The
-Information is intended only for the use of the individual or entity named
-on this e-mail</font><font size=1 face="Tms Rmn"> </font><font size=1 face="Tms Rmn">.&nbsp;
-If you are not the intended recipient, you are hereby notified that any
-disclosure, copying, distribution, or the taking of any action in reliance
-on the contents of this transmitted Information is strictly prohibited.&nbsp;
-Further, if you are not the intended recipient, please notify us by return
-e-mail and delete the Information promptly.</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=2 face="Tms Rmn">&nbsp;</font>
-<p><font size=3>&nbsp;</font>
-<br>
-<br>
-<br>
-<table width=100%>
-<tr valign=top>
-<td width=40%><font size=1 face="sans-serif"><b>&quot;Venkatesh Ananthakrishnan,
-TLS-Chennai&quot; &lt;avenkatesh@hcl.in&gt;</b> </font>
-<br><font size=1 face="sans-serif">Sent by: linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org</font>
-<p><font size=1 face="sans-serif">10/16/2007 10:24 AM</font>
-<td width=59%>
-<table width=100%>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">To</font></div>
-<td><font size=1 face="sans-serif">&lt;linuxppc-embedded@ozlabs.org&gt;</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">cc</font></div>
-<td>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">Subject</font></div>
-<td><font size=1 face="sans-serif">cross compilation issue</font></table>
-<br>
-<table>
-<tr valign=top>
-<td>
-<td></table>
-<br></table>
-<br>
-<br>
-<br><font size=2 face="Arial">Hai</font>
-<br><font size=2 face="Arial">I am newbi to linux.</font>
-<br><font size=2 face="Arial">I wrote the application usb libusb which
-works fine with x86 pc.</font>
-<br><font size=2 face="Arial">I want to compile the application for ppc.
-I have cross compiled libusb. I have tool chain also.</font>
-<br><font size=2 face="Arial">If I give ppc_6xx-gcc filename.c </font>
-<br><font size=2 face="Arial">It gives the error message as usb.h No such
-a file or directory.</font>
-<br><font size=2 face="Arial">How to give include path and library path
-during compilation?</font>
-<br><font size=2 face="Arial">Please do the needful</font>
-<br><font size=2 face="Arial">&nbsp;</font>
-<br><font size=2 face="Arial">Regards,</font>
-<br><font size=2 face="Arial">Venkatesh</font>
-<br><font size=2 face="Arial">&nbsp;</font>
-<p>
-<table width=100%>
-<tr>
-<td width=100% bgcolor=white><font size=3>DISCLAIMER:<br>
------------------------------------------------------------------------------------------------------------------------<br>
-<br>
-The contents of this e-mail and any attachment(s) are confidential and
-intended for the named recipient(s) only.<br>
-It shall not attach any liability on the originator or HCL or its affiliates.
-Any views or opinions presented in <br>
-this email are solely those of the author and may not necessarily reflect
-the opinions of HCL or its affiliates.<br>
-Any form of reproduction, dissemination, copying, disclosure, modification,
-distribution and / or publication of <br>
-this message without the prior written consent of the author of this e-mail
-is strictly prohibited. If you have <br>
-received this email in error please delete it and notify the sender immediately.
-Before opening any mail and <br>
-attachments please check them for viruses and defect.<br>
-<br>
------------------------------------------------------------------------------------------------------------------------</font></table>
-<br><font size=2><tt>_______________________________________________<br>
-Linuxppc-embedded mailing list<br>
-Linuxppc-embedded@ozlabs.org<br>
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded</tt></font>
-<br>
---=_alternative 0051931585257376_=--
