@@ -1,27 +1,35 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11B3ADDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 01:00:46 +1000 (EST)
-Message-ID: <4714D20A.3080607@garzik.org>
-Date: Tue, 16 Oct 2007 11:00:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
-	match eHCA and eHEA drivers
-References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
-	<200710162320.00630.fenkes@de.ibm.com>
-In-Reply-To: <200710162320.00630.fenkes@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 10FACDDEA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 01:22:38 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l9GFMYs5242180
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:22:34 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l9GFMXRn2228408
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 17:22:33 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l9GFMXit026134
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 17:22:33 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
 	LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 0/5] IB/ehca: SRQ and MR/MW fixes
+MIME-Version: 1.0
+Date: Tue, 16 Oct 2007 17:22:28 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710161722.29144.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,46 +39,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Joachim Fenkes wrote:
-> On Tuesday 09 October 2007 10:21, Jan-Bernd Themann wrote:
->> Roland Dreier <rdreier@cisco.com> wrote on 03.10.2007 20:05:44:
->>>  > > Replace struct ibmebus_dev and struct ibmebus_driver with struct 
-> of_device
->>>  > > and struct of_platform_driver, respectively. Match the external 
-> ibmebus
->>>  > > interface and drivers using it.
->>>  > >
->>>  > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
->>>  >
->>>  > This is somewhat difficult as this patch touches files that are the
->>>  > responsibility of three different maintainers. �Is it possible to
->>>  > split the patch into three, one for each maintainer (possibly by
->>>  > keeping both old and new interfaces around for a little while)?
->>>  > 
->>>  > If not, then you need to get an Acked-by and an agreement that this
->>>  > change can go via the powerpc.git tree from Roland Dreier and Jeff
->>>  > Garzik.
->>>
->>> I don't see anything objectionable in the infiniband parts of the
->>> patch -- I don't have any way to test the changes but it all looks
->>> like a straightforward conversion to a new platform API.  So:
->>>
->>> Acked-by: Roland Dreier <rolandd@cisco.com>
->>>
->>>  - R.
->> Looks good from eHEA driver perspective.
->>
->> Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> Jeff, do you have any objections against this patch going into the kernel
-> via Paul's powerpc.git tree? It touches only a few lines of ehea which are
-> specific to the bus interface changes.
-> 
-> You can see the full patch here:
->   http://patchwork.ozlabs.org/linuxppc/patch?id=13750
-> 
-> If you have no objections, please ack the patch so Paul can include it.
+Here are some more fixes for the eHCA driver, fixing some problems we found
+during internal system test.
 
-Fine with me...
+[1/5] fixes the QP pointer determination for SRQ base QPs
+[2/5] fixes a masking error in {,re}reg_phys_mr()
+[3/5] fixes a bug in alloc_fmr() and simplifies some code
+[4/5] refactors hca_cap_mr_pgsize and fixes a problem with ib_srp
+[5/5] enables large page MRs by default
 
-	Jeff
+I built the patches on top of Roland's for-2.6.24 git branch. Please review
+and queue them for 2.6.24-rc1 if you're okay with them. Thanks!
+
+Cheers,
+  Joachim
+
+=2D-=20
+Joachim Fenkes =A0-- =A0eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH =A0-- =A0Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220 =A0-- =A071032 Boeblingen =A0-- =A0Germany
+eMail: fenkes@de.ibm.com
