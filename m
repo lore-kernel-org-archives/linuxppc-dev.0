@@ -1,17 +1,22 @@
-Return-Path: <jfannin@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.186])
-	by ozlabs.org (Postfix) with ESMTP id AF4DFDDEAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:17:01 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1368511rvf
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 11:17:00 -0700 (PDT)
-Date: Tue, 16 Oct 2007 14:16:44 -0400
-From: Joseph Fannin <jfannin@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: current -git adbhid.c build error
-Message-ID: <20071016181644.GA9337@nineveh.local>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 744C3DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:24:34 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v2] Device tree bindings for Xilinx devices
+Date: Tue, 16 Oct 2007 11:24:07 -0700
+In-Reply-To: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
+References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+	"Wolfgang Reissnegger" <wre@xilinx.com>, "Leonid" <Leonid@a-k-a.net>,
+	<microblaze-uclinux@itee.uq.edu.au>
+Message-Id: <20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Commit b981d8b3f5e008ff10d993be633ad00564fc22cd in Linus's git tree
-did this:
+> +   n) Xilinx EMAC and Xilinx TEMAC
+> +
+> +   Xilinx Ethernet devices.  Uses common properties from=20
+> other Ethernet
+> +   devices with the following constraints:
+> +  =20
+> +   Required properties:
+> +    - compatible : Must include one of: "xilinx,plb-temac",
+> +                   "xilinx,plb-emac", "xilinx-opb-emac"
+> +    - dma-mode : Must be one of "none", "simple", "sg" (sg=20
+> =3D=3D scatter gather)
 
+I think it's going to be a significant headache to remap things like the
+dma-mode from the xilinx configurations to something else, and then
+interpret them correctly in the drivers.
 
-@@ -374,9 +373,9 @@ adbhid_input_keycode(int id, int scancode, int repeat)
- #endif /* CONFIG_PPC_PMAC */
-        }
+Although it lacks a bit in style, perhaps, I'd greatly prefer having
+something like:
 
--       if (adbhid[id]->keycode[keycode]) {
--               input_report_key(adbhid[id]->input,
--                                adbhid[id]->keycode[keycode],
-                                 adbhid[id]->!up_flag);
-+       key = adbhid[id]->keycode[keycode];
-+       if (key) {
-+               input_report_key(adbhid[id]->input, key, !up_flag);
-                input_sync(adbhid[id]->input);
-        } else
-                printk(KERN_INFO "Unhandled ADB key (scancode %#02x)
-                %s.\n", keycode,
+	Ethernet_MAC {
+		xilinx,C_DMA_PRESENT =3D <1>;
+            ...
+      }
 
-... but did not define "key":
+(which happens to correspond to "none" above)
+DMA mode is perhaps a bad example, since the Xilinx EDK encoding for
+this is so unnecessarily obfuscated, but I'd like to avoid setting
+precedent for defining a new set of parameterizations here.  In the long
+term, I'm afraid this will just be an added source of confusion and more
+code to maintain.
 
-drivers/macintosh/adbhid.c: In function ‘adbhid_input_keycode’:
-drivers/macintosh/adbhid.c:376: error: ‘key’ undeclared (first use in this function)
-
-Gitweb says something about a merge conflict in this file, so maybe
-Linus did this, and not Dmitry?
-
-I'll leave it up to someone else to decide how best this variable
-should be defined.
-
---
-Joseph Fannin
-jfannin@gmail.com
+Steve
