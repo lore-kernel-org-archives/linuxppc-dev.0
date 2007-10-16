@@ -1,20 +1,35 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 02C75DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 20:55:45 +1000 (EST)
-Date: Tue, 16 Oct 2007 14:55:32 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-Message-ID: <20071016105532.GB1169@localhost.localdomain>
-References: <20071015155730.GA30008@localhost.localdomain>
-	<20071015161631.GB30512@localhost.localdomain>
-	<4713A474.1000301@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4713A474.1000301@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4C46ADDE36
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 21:03:54 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9GB3ng1003804
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 07:03:49 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9GB3nbq118616
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 07:03:49 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9GB3dA0006627
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 07:03:39 -0400
+Subject: Re: Merge dtc
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1192514497.19073.29.camel@pasglop>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
+	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
+	<5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
+	<1192514497.19073.29.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 16 Oct 2007 05:53:34 -0500
+Message-Id: <1192532014.13993.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,95 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 15, 2007 at 09:33:40PM +0400, Sergei Shtylyov wrote:
-> Anton Vorontsov wrote:
->
->> MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
->
->> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
->
->> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts 
->> b/arch/powerpc/boot/dts/mpc8568mds.dts
->> index 8e15dba..1198363 100644
->> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
->> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
->> @@ -47,12 +47,45 @@
->>  		#address-cells = <2>;
->>  		#size-cells = <1>;
->>  		reg = <e0005000 d8>;
->> -		ranges = <1 0 f8000000 0008000>;
->> +		ranges = <1 0 f8000000 0008000
->> +			  0 0 fe000000 2000000>;
->>   		bcsr@1,0 {
->>  			device_type = "board-control";
->>  			reg = <1 0 8000>;
->>  		};
->> +
->> +		flash@0,0 {
->> +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
->> +			reg = <0 0 2000000>;
->> +			probe-type = "CFI";
->
->    I don't get it -- has physmap_of.c rewrite been already committed?
-> If yes, you don't need probe_type; if no, your "compatible" won't work...
+On Tue, 2007-10-16 at 16:01 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-10-16 at 00:50 -0500, Kumar Gala wrote:
+> > Just out of interest who's complaining?  We don't include mkimage
+> > for  
+> > u-boot related builds and I haven't seen any gripes related to that.
+> 
+> It's a pain in the neck since those are built even for things that don't
+> need them (such as 4xx where I use the treeboot images).
 
-I see.
+You might not need them, but others with 4xx boards do.  Boards like
+Sequoia, etc don't use OpenBIOS.  And your compile didn't fail.  It just
+didn't create the cuImage.
 
-/* Helper function to handle probing of the obsolete "direct-mapped"
- * compatible binding, which has an extra "probe-type" property [...]
+Anyway, I said a couple months ago we should include mkimage in the
+kernel and I never got around to doing it.  I'll add it to the list.
 
-Obsolete, very good.
-
-> Well, I see that the driver rewrite has been committed (when I wasn't 
-> looking 8-)...
->> +			bank-width = <2>;
->> +			device-width = <1>;
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +
->> +			hrcw@0 {
->> +				label = "hrcw";
->> +				reg = <0 20001>;
->
->    What?! Odd sized partition? Don't try to follow both the old and new 
-> partition device tree specs -- you'll only get yourself into trouble with 
-> this.  The size-cell doesn't bear r/o flag in the new paritions spec.
-
-Thanks for spotting this. It's, of course, forward-porting "thinko".
-
->> +				read-only;
->> +			};
->> +
->> +			kernel@20000 {
->> +				label = "kernel";
->> +				reg = <20000 200000>;
->> +			};
->> +
->> +			rootfs@220000 {
->> +				label = "rootfs";
->> +				reg = <220000 1d60000>;
->> +			};
->> +
->> +			uboot@1f80000 {
->> +				label = "u-boot";
->> +				reg = <1f80000 80000>;
->> +				read-only;
->
->    Well, this is not even consistent... :-)
-
-Yup, it was a thinko in the hrcw node, not something I really
-meant to spread over all ro nodes.
-
->> +			};
->> +		};
->>  	};
->
-> WBR, Sergei
-
-Much thanks for the review,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+josh
