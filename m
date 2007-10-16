@@ -1,17 +1,20 @@
-Return-Path: <alan@akb.net>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
-	by ozlabs.org (Postfix) with ESMTP id D3AAFDDEE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:36:47 +1000 (EST)
-Received: by el-out-1112.google.com with SMTP id r27so480050ele
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 11:36:45 -0700 (PDT)
-Message-ID: <bfa0697f0710161136y7d28ccd6w828f16d30f85ce19@mail.gmail.com>
-Date: Tue, 16 Oct 2007 12:36:44 -0600
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: linuxppc-dev@ozlabs.org
-Subject: Describing devices in the device tree
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <vitb@kernel.crashing.org>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 541C9DDF04
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:42:11 +1000 (EST)
+Date: Tue, 16 Oct 2007 21:53:08 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [UNTESTED PATCH v2] 8xx: Convert mpc866ads to the new device
+	binding.
+Message-ID: <20071016215308.764d9922@vitb.ru.mvista.com>
+In-Reply-To: <20071008224847.GA4053@loki.buserror.net>
+References: <20071008224847.GA4053@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm using a modified ep8248e.dts to describe my hardware and I want to
-enable the use of 3 standard interrupts.
+Hi Scott,
 
-  1. irq5
-  2. timer1
-  3. timer2
+orig one does not build (not your issue apparently):
 
-How bad does this look?
-soc --> cpm -->
-                       timer {
-                               device_type = "timer";
-                               compatible = "fsl,mpc8248-timer";
-                               interrupts = <c 8 d 8>;
-                               interrupt-parent = <&PIC>;
-                       };
-                       irq5 {
-                               device_type = "irq5";
-                               compatible = "fsl,mpc8248-irq5";
-                               interrupts = <17 8>;
-                               interrupt-parent = <&PIC>;
-                       };
+  CC      drivers/net/fs_enet/fs_enet-main.o
+drivers/net/fs_enet/fs_enet-main.c: In function `fs_enet_probe':
+drivers/net/fs_enet/fs_enet-main.c:1252: error: implicit declaration of 
+function `SET_MODULE_OWNER'
+drivers/net/fs_enet/fs_enet-main.c:1292: error: structure has no member 
+named `poll'
+drivers/net/fs_enet/fs_enet-main.c:1293: error: structure has no member 
+named `weight'
+make[3]: *** [drivers/net/fs_enet/fs_enet-main.o] Error 1
+make[2]: *** [drivers/net/fs_enet] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
--Alan
+because net_device does not have 'poll' and 'weight' anymore.
+
+Moreover, with the patch, it does not seem to boot(with upper lines commented out to get it build). I'm investigating the reason right now.
+
+On Mon, 8 Oct 2007 17:48:47 -0500
+Scott Wood <scottwood@freescale.com> wrote:
+
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> Whoops, forgot the localbus node last time.
+> 
+>  arch/powerpc/boot/dts/mpc866ads.dts          |  137 +++++++------
+>  arch/powerpc/platforms/8xx/Kconfig           |    1 +
+>  arch/powerpc/platforms/8xx/mpc86xads.h       |   44 ----
+>  arch/powerpc/platforms/8xx/mpc86xads_setup.c |  289 +++++++-------------------
+>  4 files changed, 156 insertions(+), 315 deletions(-)
+> 
+[...]
+-- 
+Sincerely, 
+Vitaly
