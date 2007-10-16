@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.235])
-	by ozlabs.org (Postfix) with ESMTP id 06744DDE3E
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 13:02:13 +1000 (EST)
-Received: by hu-out-0506.google.com with SMTP id 24so1880159hud
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2007 20:02:11 -0700 (PDT)
-Message-ID: <fa686aa40710152002l5bb2c746i8174827e8d66c746@mail.gmail.com>
-Date: Mon, 15 Oct 2007 21:02:09 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Olof Johansson" <olof@lixom.net>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: Refactor booting-without-of.txt
-In-Reply-To: <20071016023845.GK26787@localhost.localdomain>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 16 Oct 2007 13:20:41 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
+Message-ID: <20071016032041.GN26787@localhost.localdomain>
+References: <200710151529.11485.sr@denx.de>
+	<20071015163216.GA8127@gate.ebshome.net>
+	<fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
+	<20071015185340.GB4474@loki.buserror.net>
+	<fa686aa40710151213r670bea49i63fa5f5402aa150d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
-	<20071015165505.GA16040@lixom.net>
-	<fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
-	<20071016023845.GK26787@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710151213r670bea49i63fa5f5402aa150d@mail.gmail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Stefan Roese <sr@denx.de>,
+	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Mon, Oct 15, 2007 at 11:14:44AM -0600, Grant Likely wrote:
-> > On 10/15/07, Olof Johansson <olof@lixom.net> wrote:
-> > > On Mon, Oct 15, 2007 at 10:08:44AM -0600, Grant Likely wrote:
-> > > > Adding the Linux expected device tree bindings to
-> > > > booting-without-of.txt seems to be getting a little unwieldy.  Plus
-> > > > with more than one arch using the device tree (powerpc, sparc &
-> > > > microblaze) the device tree bindings aren't necessarily powerpc only
-> > > > (the Xilinx devices certainly fall in this category).
-> > > >
-> > > > Anyone have comments about splitting the expected device tree bindings
-> > > > out of booting-without-of.txt into a separate directory?
+On Mon, Oct 15, 2007 at 01:13:14PM -0600, Grant Likely wrote:
+> On 10/15/07, Scott Wood <scottwood@freescale.com> wrote:
+> > On Mon, Oct 15, 2007 at 10:57:48AM -0600, Grant Likely wrote:
+> > > Segher is recommending that we use an aliases node as per the open
+> > > firmware example for this.  I think in this case it would look
+> > > something like this (but I'm not the expert):
 > > >
-> > > The flat device tree is, in spite of what some people would like it to be,
-> > > not open firmware, nor is it the same as their bindings. So I think we'd
-> > > be doing ourselves a disservice by continuing to associate them together.
-> > > All it would take is a rename of the directory, unfortunately i don't
-> > > have any suggestions on better names though.
+> > > aliases {
+> > >      IIC0 = "/path/to/bus/iic@0x2000";
+> > >      IIC1 = "/path/to/bus/iic@0x2000";
+> > > };
 > >
-> > I think I need to stick with the of prefix.  All the support API in
-> > include/linux/of_* is prefixed with "of_" already, so convention is
-> > established.
-> >
-> > How about Documentation/of-device-tree?
->
-> It seems a little counterintuitive to change names from "booting
-> *without* of" to "of *"...
+> > I think this is overly complicated; something like linux,i2c-index in the
+> > i2c adapter node would be simpler.
+> 
+> But not perhaps better.  Enumeration is a system-wide thing.  It does
+> make sense to group all the device enumerations in one place.  It
+> eliminates two nodes trying to enumerate to the same device number and
+> since device numbers are something that the user will potentially want
+> to modify, it separates enumeration from hardware description.
+> 
+> As per your point below; if all the i2c devices are children of the
+> adapter, then yes you are right that the bus number doesn't matter to
+> the user.  But it *does* matter for things like serial and ethernet
+> ports.
 
-Heh; true.  The *only* reason I think it should be 'of-<anything>' is
-because *all* the support APIs are named that way.  I'll happily use
-another name if I get the impression that most of us in our little
-group think it should be something else.
+As the inventor of "linux,network-index", please don't invent
+"linux,i2c-index".  linux,network-index was and is a hack - it's
+badness is limited by the fact that it's essentially local to the
+bootwrapper.  It's only used in the bootwrapper, and I only really
+intended it for use in bootwrappers which provide their own device
+tree, so as to match the device nodes against whatever order the MAC
+addresses were supplied by the firmware.
 
-Cheers,
-g.
+I plan to replace the linux,network-index thing with aliases
+(including some dtc support to make that easy) just as soon as I get
+around to it... don't hold your breath.
 
+Using a similar property from an actual kernel driver would be much
+uglier, and harder to clean up later.
+
+Using aliases would be.. less bad, but it would still require that
+the device tree always supply an alias for the iic driver to work
+which is kind of nasty.
+
+In fact I think it may be acceptle to do the idx++ thing in this
+situation.  Bus numbers are ugly, but it's not the worst ugliness in
+the horrible mess that is the Linux i2c subsystem.  It means that bus
+numbers are theoretically unstable, but that's increasingly true of
+devices of all sorts - it's up to udev to assign meaningful labels at
+the user level.
+
+> > Though, I don't see what the problem with the original approach is, as long
+> > as the numbers are chosen in the same way when registering i2c clients based
+> > on the children of the adapter node.  There's no concept in the hardware
+> > itself of a bus number.
+> 
+> Even if you take this approach, the driver still need to know what bus
+> number to use (as per the i2c infrastructure).  It is not sane for an
+> i2c bus driver to attempt to assign the bus number itself because it
+> could conflict with another arbitrarily chosen bus number from another
+> driver.
+> 
+> Cheers,
+> g.
+> 
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
