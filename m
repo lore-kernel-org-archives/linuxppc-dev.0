@@ -1,27 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F080BDDE0D
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 11:19:23 +1000 (EST)
-Subject: Re: [PATCH v2 1/4] Implement {read,update}_persistent_clock.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-In-Reply-To: <4713ABDA.2000506@ru.mvista.com>
-References: <1190345162.620000.305760830507.qpush@thor>
-	<Pine.LNX.4.58.0709261502590.4465@gandalf.stny.rr.com>
-	<46FAB56E.8080509@ru.mvista.com>
-	<Pine.LNX.4.58.0709261543080.5123@gandalf.stny.rr.com>
-	<1190836713.23376.41.camel@chaos>  <4713ABDA.2000506@ru.mvista.com>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 11:19:03 +1000
-Message-Id: <1192497543.19073.0.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Paul Mackerras <paulus@samba.org>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 16 Oct 2007 11:12:30 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] [POWERPC] MPC8568E-MDS: add support for flash
+Message-ID: <20071016011230.GA26787@localhost.localdomain>
+References: <20071015155730.GA30008@localhost.localdomain>
+	<20071015161631.GB30512@localhost.localdomain>
+	<4713A474.1000301@ru.mvista.com>
+	<F248D8A0-B412-41B8-B7F8-FD158576785D@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F248D8A0-B412-41B8-B7F8-FD158576785D@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,16 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Oct 15, 2007 at 01:00:24PM -0500, Kumar Gala wrote:
+> 
+> On Oct 15, 2007, at 12:33 PM, Sergei Shtylyov wrote:
+> 
+> > Anton Vorontsov wrote:
+> >
+> >> MPC8568E-MDS have 1 32MB Spansion x16 CFI flash chip. Let's use it.
+> >
+> >> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >
+> >> diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/ 
+> >> boot/dts/mpc8568mds.dts
+> >> index 8e15dba..1198363 100644
+> >> --- a/arch/powerpc/boot/dts/mpc8568mds.dts
+> >> +++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+> >> @@ -47,12 +47,45 @@
+> >>  		#address-cells = <2>;
+> >>  		#size-cells = <1>;
+> >>  		reg = <e0005000 d8>;
+> >> -		ranges = <1 0 f8000000 0008000>;
+> >> +		ranges = <1 0 f8000000 0008000
+> >> +			  0 0 fe000000 2000000>;
+> >>
+> >>  		bcsr@1,0 {
+> >>  			device_type = "board-control";
+> >>  			reg = <1 0 8000>;
+> >>  		};
+> >> +
+> >> +		flash@0,0 {
+> >> +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
+> >> +			reg = <0 0 2000000>;
+> >> +			probe-type = "CFI";
+> >
+> >     I don't get it -- has physmap_of.c rewrite been already committed?
+> > If yes, you don't need probe_type; if no, your "compatible" won't  
+> > work...
+> > Well, I see that the driver rewrite has been committed (when I  
+> > wasn't looking
+> > 8-)...
+> 
+> Any NOR flash nodes should conform to the "new" bindings from David  
+> Gibson, et al.  Not sure about the status of those being in  
+> physmap_of.c w/regards to 2.6.24.
 
->    Eh... poor you. Tony got clockevent driver reengineered for no apparent 
-> reason.  And he's introduced the jiffy drift by deleting the main loop from 
-> timer_interrupt(). Yet this borken version was preferred to what was known 
-> working since about 2.6.18 and included into 2.6.21-rt patchset.  I don't like 
-> that policy. Will you be pushing fixes from -rt to PowerPC, or will it fall on 
-> my shoulders now?
+Yes, in which case probe_type should be dropped, as should the low bit
+in the read-only partitions.
 
-Possibly because whatever implementation existed before was never
-provided in a mergeable form and pushed to -rt bypassing the powerpc
-architecture maintainer ?
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
