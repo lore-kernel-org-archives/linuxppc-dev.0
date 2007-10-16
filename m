@@ -1,14 +1,13 @@
-Return-Path: <wd@denx.de>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: cross compilation issue
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 16 Oct 2007 12:36:46 EDT."
-	<556445368AFA1C438794ABDA8901891C0750DDF0@USA0300MS03.na.xerox.net>
-Date: Tue, 16 Oct 2007 21:07:50 +0200
-Sender: wd@denx.de
-Message-Id: <20071016190750.224A3242E9@gemini.denx.de>
+Return-Path: <Martin.Leisner@xerox.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: cross compilation issue
+Date: Tue, 16 Oct 2007 15:34:52 -0400
+Message-ID: <556445368AFA1C438794ABDA8901891C064600D5@USA0300MS03.na.xerox.net>
+References: <20071016190750.224A3242E9@gemini.denx.de>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: "Wolfgang Denk" <wd@denx.de>
 Cc: linuxppc-embedded@ozlabs.org,
 	linuxppc-embedded-bounces+ravi.rao=rflelect.com@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,22 +20,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Wolfgang,
+
+I disagree vehemently with "modifying" you session to suit the platform.
+This becomes a problem when cross-platforms > 1.  When I "set the PATH =
+and
+environment variables" I have the same problem -- I go to a different=20
+platform, type make and get bad results.  =20
+
+Why is modifying the makefile a "bad thing?"  hardhat did it, and =
+afterwards
+the cross-compile/arch becomes painless and transparent.  Building ways =
+to=20
+construct software with fewer chances of human error is IMHO a "good =
+thing".
+
+I tend to lock down my source tree, and have a link tree for each =
+platform.
+So I'm not changing my build parameters, hard coding these things in the =
+makefile
+becomes a "set and forget" operation.
+
+I agree with "problems" running from command lines...I often link in=20
+special tools into ~/bin so I can find them (instead of modifying my =
+path).
+But I can go weeks without having to run a tool from the command line, =
+make's I run daily.
+
+
+Having to "source" a script is another thing you can "forget" to do.
+I often "forget" to run my 'make-line' script, and when I quickly hit =
+<cntl>-C I don't
+have problems (but sometimes I do).
+
+marty
+
+PS:
+To cross developers,  its VERY handy to build a copy of binutils which =
+support multiple=20
+architectures -- so the
+only thing which is really platform dependent is gas...so my host =
+nm/objcopy/objdump/ld
+supports all the platforms I'm working on...
+
+-----Original Message-----
+From: Wolfgang Denk [mailto:wd@denx.de]
+Sent: Tue 10/16/2007 3:07 PM
+To: Leisner, Martin
+Cc: ravi.rao@rflelect.com; avenkatesh@hcl.in; =
+linuxppc-embedded-bounces+ravi.rao=3Drflelect.com@ozlabs.org; =
+linuxppc-embedded@ozlabs.org
+Subject: Re: cross compilation issue
+=20
 Dear Martin,
 
-in message <556445368AFA1C438794ABDA8901891C0750DDF0@USA0300MS03.na.xerox.net> you wrote:
-> 
+in message =
+<556445368AFA1C438794ABDA8901891C0750DDF0@USA0300MS03.na.xerox.net> you =
+wrote:
+>=20
 > #! /bin/bash
-> 
-> exec make ARCH=powerpc CROSS_COMPILE=/opt/denx/eldk4.1/usr/bin/ppc_74xx- INSTALL_MOD_PATH=${PWD}/root $*
+>=20
+> exec make ARCH=3Dpowerpc =
+CROSS_COMPILE=3D/opt/denx/eldk4.1/usr/bin/ppc_74xx- =
+INSTALL_MOD_PATH=3D${PWD}/root $*
 
 Note that this is *NOT* a suppoted value for CROSS_COMPILE. Please set
 your PATH to include the /opt/denx/eldk4.1/usr/bin directory, and set
-CROSS_COMPILE=ppc_74xx- 
+CROSS_COMPILE=3Dppc_74xx-=20
 
-> I know hardhat linux had a strategy to make . files hiding the names of ARCH/CROSS_COMPILE -- so typing make
+> I know hardhat linux had a strategy to make . files hiding the names =
+of ARCH/CROSS_COMPILE -- so typing make
 > would work once configured...
-> 
-> IMHO it should be hardcoded in the Makefile after configuration -- it causes a lot of grief if you FORGET
+>=20
+> IMHO it should be hardcoded in the Makefile after configuration -- it =
+causes a lot of grief if you FORGET
 > to specify one of these and just type "make".
 
 I disagree. Such an approach will hit you as soon as you run a command
@@ -51,10 +108,10 @@ the  "eldk_init"  script   ("/opt/denx/eldk4.1/eldk_init"   in   your
 installation) which can be "sourced" from the shell like this:
 
 	$ source /opt/denx/eldk4.1/eldk_init 74xx
-	ARCH=ppc
-	CROSS_COMPILE=ppc_74xx-
-	DEPMOD=/opt/denx/eldk4.1/usr/bin/depmod.pl
-	PATH=/opt/denx/eldk4.1/usr/bin:/opt/denx/eldk4.1/bin: ...
+	ARCH=3Dppc
+	CROSS_COMPILE=3Dppc_74xx-
+	DEPMOD=3D/opt/denx/eldk4.1/usr/bin/depmod.pl
+	PATH=3D/opt/denx/eldk4.1/usr/bin:/opt/denx/eldk4.1/bin: ...
 	$
 
 ELDK 4.2 will use a much cleverer script "eldk-switch" which allows
@@ -71,7 +128,8 @@ to select versions and board like this:
 	-> eldk-switch MPC7448
 	Setup for ppc_74xx (using ELDK 4.2)
 
-> One of the things I want to do is look at how the linux make system works now (I recall at times I edit the Makefile
+> One of the things I want to do is look at how the linux make system =
+works now (I recall at times I edit the Makefile
 > to hardcode these things).
 
 Never edit the Makefile - this is always a Bad Thing (TM) to do.
@@ -84,9 +142,9 @@ Best regards,
 
 Wolfgang Denk
 
--- 
+--=20
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Wenn Du ein' weise Antwort verlangst, Mußt Du vernünftig fragen.
+Wenn Du ein' weise Antwort verlangst, Mu=DFt Du vern=FCnftig fragen.
                                                 -- Goethe, Invektiven
