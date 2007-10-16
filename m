@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Merge dtc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id AABCCDDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 16:06:52 +1000 (EST)
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
-	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
-	<5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 16:01:37 +1000
-Message-Id: <1192514497.19073.29.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
-Reply-To: benh@kernel.crashing.org
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 16 Oct 2007 00:51:51 CDT."
+	<D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org>
+Date: Tue, 16 Oct 2007 08:06:50 +0200
+Sender: wd@denx.de
+Message-Id: <20071016060650.4B994247BB@gemini.denx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dear Kumar,
 
-On Tue, 2007-10-16 at 00:50 -0500, Kumar Gala wrote:
-> Just out of interest who's complaining?  We don't include mkimage
-> for  
-> u-boot related builds and I haven't seen any gripes related to that.
+in message <D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org> you wrote:
+> 
+> >> 1. what processors does this actually support/run on.  I'm guessing
+> >> MPC8541, MPC8555?  But not really sure
+> >
+> > IIRC there are 4 different versions of the board:
+> > - 8540, 8541, 8555 & 8560
+> 
+> do they all boot/run with the code that exists in arch/ppc ?
 
-It's a pain in the neck since those are built even for things that don't
-need them (such as 4xx where I use the treeboot images).
+Yes, they do.
 
-Ben.
+> thanks for the other info, that's exactly what I needed.
+
+Just let us know what you need...
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Technology is dominated by those who manage what they do  not  under-
+stand.
