@@ -1,24 +1,23 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
-	[62.4.17.102]) by ozlabs.org (Postfix) with ESMTP id 447E2DDE26
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:19:42 +1000 (EST)
-Date: Tue, 16 Oct 2007 21:19:39 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
-Message-ID: <20071016211939.250c2da4@hyperion.delvare>
-In-Reply-To: <fa686aa40710152121o2fe0d7c9m156170901fd3bf98@mail.gmail.com>
-References: <200710151529.11485.sr@denx.de>
-	<20071015163216.GA8127@gate.ebshome.net>
-	<fa686aa40710150957s74693835g257b376adfdb4e90@mail.gmail.com>
-	<20071015185340.GB4474@loki.buserror.net>
-	<fa686aa40710151213r670bea49i63fa5f5402aa150d@mail.gmail.com>
-	<20071016032041.GN26787@localhost.localdomain>
-	<fa686aa40710152121o2fe0d7c9m156170901fd3bf98@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>, i2c@lm-sensors.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EDCA2DDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:28:50 +1000 (EST)
+Message-ID: <4714E505.3080801@freescale.com>
+Date: Tue, 16 Oct 2007 11:21:25 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v2] pasemi: process i2c device tree entries at boot
+References: <20071015015232.GA4641@lixom.net>
+	<20071015224932.GA23875@lixom.net> <4713EFBB.3070203@freescale.com>
+	<20071016001701.GA25444@lixom.net>
+In-Reply-To: <20071016001701.GA25444@lixom.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,29 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 Oct 2007 22:21:38 -0600, Grant Likely wrote:
-> On 10/15/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > In fact I think it may be acceptle to do the idx++ thing in this
-> > situation.  Bus numbers are ugly, but it's not the worst ugliness in
-> > the horrible mess that is the Linux i2c subsystem.  It means that bus
-> > numbers are theoretically unstable, but that's increasingly true of
-> > devices of all sorts - it's up to udev to assign meaningful labels at
-> > the user level.
+Olof Johansson wrote:
+> On Mon, Oct 15, 2007 at 05:54:51PM -0500, Scott Wood wrote:
+>> Olof Johansson wrote:
+>>> Setup i2c_board_info based on device tree contents. This has to be
+>>> a device_initcall since we need PCI to be probed by the time we
+>>> run it, but before the actual driver is initialized.
+>> Can we factor at least some of this stuff out into common code?
+> 
+> I didn't really feel strong motivations to do so, given that the amount
+> of shared code is quite small, and the official bindings are not yet
+> determined.
 
-David, after such a rant against the Linux i2c subsystem, I sure hope
-that you're going to contribute patches to make it better (whatever you
-think needs to be improved, as you didn't say.)
+Enh...  I'm just irked because I originally did it in a generic manner, 
+and whoever it was that did further work on my patch shoved in into 
+fsl_soc. :-P
 
-> I think the real problem here comes into play when there are 2 types
-> of i2c busses in the system.  If they both maintain their own idx++
-> values; then they will conflict.  If an auto assigned bus number is
-> used; then it needs to be assigned by the i2c infrastructure; not by
-> the driver.
+> Chances are whenever the bindings are done they might be incompatible
+> with what we already have in our firmware, so the code would need to be
+> separated out again.
 
-Very true. If you aren't going to define the i2c bus numbers at
-platform data level, then you shouldn't be defining them _at all_.
-Don't use i2c_add_numbered_adapter, use i2c_add_adapter and let
-i2c-core choose an appropriate a bus number.
+Well, then it'd be better to just have one bit of code to fix, right? :-)
 
--- 
-Jean Delvare
+It'd suck to see different i2c controllers end up implementing the 
+binding differently due to the forking, though.  Already with this 
+patch, we have a different set of i2c devices that will be recognized 
+depending on the adapter.
+
+-Scott
