@@ -1,18 +1,26 @@
-Return-Path: <mhamed@future-group.com>
-Received: from mail.thesecuremail.net (unknown [217.139.35.140])
+Return-Path: <avenkatesh@hcl.in>
+Received: from gws04.hcl.in (gws04.mail.hcl.in [203.105.186.20])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mohamed fekry", Issuer "mohamed fekry" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D63D7DDE3F
+	(Client CN "gws04.hcl.in",
+	Issuer "VeriSign Trust Network" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 97410DDE3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Oct 2007 23:55:07 +1000 (EST)
-Subject: Re: Antwort: Re: ATA flash disk ok, missing ip config
-From: Mohamed Hamed <mhamed@future-group.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <0FOJ00CF99QJAJ@pmdf-it.hasler.ascom.ch>
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 14:44:53 +0200
-Message-Id: <1192538693.9518.11.camel@mhamed>
-Mime-Version: 1.0
+	Wed, 17 Oct 2007 00:44:59 +1000 (EST)
+Received: from gws04.hcl.in (gws04 [10.249.64.135])
+	by localhost.hcl.in (Postfix) with ESMTP id C0A4336001A
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 16 Oct 2007 19:54:16 +0530 (IST)
+Received: from chn-egw01-out.corp.hcl.in (unknown [10.249.64.37])by
+	gws04.hcl.in (Postfix) with ESMTP id 97FFC360028for
+	<linuxppc-embedded@ozlabs.org>; Tue, 16 Oct 2007 19:54:16 +0530 (IST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C81000.03CD27DB"
+Subject: cross compilation issue
+Date: Tue, 16 Oct 2007 19:54:45 +0530
+Message-ID: <66E8AEE9980BB44CA5FCAD39EBA56AC6029A29DD@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
+From: "Venkatesh Ananthakrishnan, TLS-Chennai" <avenkatesh@hcl.in>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,133 +31,187 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Sir,
+This is a multi-part message in MIME format.
 
-	i'm trying to install qemu in a debian linux system , ubuntu , and when
-i finished from installation and trying to run the qemu more error be
-found as follow :
-
-
-
- (qemu) Uncompressing
-Linux.......................................................................... done, booting the kernel.
-Linux version 2.6.17-rc3 (paul@wren) (gcc version 4.1.0 (CodeSourcery
-ARM)) #53 Thu May 4 15:05:18 BST 2006
-CPU: ARM926EJ-Sid(wb) [41069265] revision 5 (ARMv5TEJ)
-Machine: ARM-IntegratorCP
-Memory policy: ECC disabled, Data cache writeback
-CPU0: D VIVT write-through cache
-CPU0: I cache: 4096 bytes, associativity 4, 32 byte lines, 32 sets
-CPU0: D cache: 65536 bytes, associativity 4, 32 byte lines, 512 sets
-Built 1 zonelists
-Kernel command line: console=ttyAMA0 root= /dev/nfs
-nfsroot=10.1.6.1:/nfs/share/arm,rsize=8192,wsize=8192,hard,intr,tcp,nolock ip=10.1.6.50::10.1.6.1:255.255.255.0:arm.home:eth0 
-PID hash table entries: 2048 (order: 11, 8192 bytes)
-Console: colour dummy device 80x30
-Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
-Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
-Memory: 256MB = 256MB total
-Memory: 257280KB available (1928K code, 388K data, 104K init)
-Mount-cache hash table entries: 512
-CPU: Testing write buffer coherency: ok
-NET: Registered protocol family 16
-NetWinder Floating Point Emulator V0.97 (double precision)
-Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
-Initializing Cryptographic API
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-io scheduler deadline registered
-io scheduler cfq registered
-CLCD: Integrator/CP hardware, VGA display
-Clock CLCDCLK: setting VCO reg params: S=1 R=39 V=35
-Console: switching to colour frame buffer device 80x30
-Serial: AMBA PL011 UART driver
-mb:16: ttyAMA0 at MMIO 0x16000000 (irq = 1) is a AMBA/PL011
-mb:17: ttyAMA1 at MMIO 0x17000000 (irq = 2) is a AMBA/PL011
-RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
-loop: loaded (max 8 devices)
-nbd: registered device at major 43
-smc91x.c: v1.1, sep 22 2004 by Nicolas Pitre <nico@cam.org>
-eth0: SMC91C11xFD (rev 1) at d0816000 IRQ 27 [nowait]
-eth0: Ethernet addr: 52:54:00:12:34:56
-mice: PS/2 mouse device common for all mice
-Green LED off
-input: AT Raw Set 2 keyboard as /class/input/input0
-input: ImExPS/2 Generic Explorer Mouse as /class/input/input1
-NET: Registered protocol family 2
-IP route cache hash table entries: 2048 (order: 1, 8192 bytes)
-TCP established hash table entries: 8192 (order: 3, 32768 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 8192 bind 4096)
-TCP reno registered
-IPv4 over IPv4 tunneling driver
-GRE over IPv4 tunneling driver
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-802.1Q VLAN Support v1.8 Ben Greear <greearb@candelatech.com>
-All bugs added by David S. Miller <davem@redhat.com>
-VFP support v0.3: implementor 41 architecture 1 part 10 variant 9 rev 0
-eth0: link up
-IP-Config: Complete:
-      device=eth0, addr=10.1.6.50, mask=255.255.255.0, gw=10.1.6.1,
-     host=arm, domain=, nis-domain=home,
-     bootserver=255.255.255.255, rootserver=10.1.6.1, rootpath=
-Looking up port of RPC 100003/2 on 10.1.6.1
-Root-NFS: Unable to get nfsd port number from server, using default
-Looking up port of RPC 100005/1 on 10.1.6.1
-Root-NFS: Unable to get mountd port number from server, using default
-Root-NFS: Server returned error -5 while mounting /nfs/share/arm
-VFS: Unable to mount root fs via NFS, trying floppy.
-VFS: Cannot open root device "<NULL>" or unknown-block(2,0)
-Please append a correct "root=" boot option
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(2,0)
- 
-
-and i don't know what is the reason and i don't know what the line root
-=boot option 
-
-this is the script which i run
-
-#!/bin/sh
-
-console="ttyAMA0"		# serial console
-nfsserver="10.1.6.1"		# address of NFS server
-nfsdir="/nfs/share/arm"		# exported share where debian/arm is installed
-address="10.1.6.50"		# address for guest server
-gateway="10.1.6.1"		# default gateway
-netmask="255.255.255.0"		# subnet mask
-hostname="arm.home"		# hostname for guest server
-device="eth0"			# interface that guest server will use
-mem=256				# memory for guest server in Mb
-tap="/var/run/vde/tap0.ctl"	# vde tap socket
-
-kernel="/usr/local/etc/images/zimage.arm"	# arm kernel
-nfsopts="rsize=8192,wsize=8192,hard,intr,tcp,nolock"	# nfs options
-
-consoleopt="console=$console"
-nfsrootopt="nfsroot=$nfsserver:$nfsdir,$nfsopts"
-ipopt="ip=$address::$gateway:$netmask:$hostname:$device"
-
-init=""
-
-if [ "x$1" == "xsingle" ]
-then
-	init="init=/bin/bash"
-fi
-vdeq qemu-system-arm -sock $tap -m $mem \
-	-kernel $kernel -nographic \
-	-append "$consoleopt root= /dev/nfs  $nfsrootopt $ipopt $init" 
-
-and i don't know this line root = /dev/nfs , where this directory  is
-empty
+------_=_NextPart_001_01C81000.03CD27DB
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 
-thanks for helping me 
+Hai
 
-i hope to reply me at this mail mhamed@future-group.com
-or at eng_m_elsaidy@yahoo.com
+I am newbi to linux=2E
+
+I wrote the application usb libusb which works fine with x86 pc=2E
+
+I want to compile the application for ppc=2E I have cross compiled libusb=
+=2E
+I have tool chain also=2E
+
+If I give ppc_6xx-gcc filename=2Ec=20
+
+It gives the error message as usb=2Eh No such a file or directory=2E
+
+How to give include path and library path during compilation?
+
+Please do the needful
+
+=20
+
+Regards,
+
+Venkatesh
+
+=20
 
 
-Hamed 
+
+DISCLAIMER:
+---------------------------------------------------------------------------=
+--------------------------------------------
+
+The contents of this e-mail and any attachment(s) are confidential and=
+ intended for the named recipient(s) only=2E
+It shall not attach any liability on the originator or HCL or its=
+ affiliates=2E Any views or opinions presented in=20
+this email are solely those of the author and may not necessarily reflect=
+ the opinions of HCL or its affiliates=2E
+Any form of reproduction, dissemination, copying, disclosure, modification,=
+ distribution and / or publication of=20
+this message without the prior written consent of the author of this e-mail=
+ is strictly prohibited=2E If you have=20
+received this email in error please delete it and notify the sender=
+ immediately=2E Before opening any mail and=20
+attachments please check them for viruses and defect=2E
+
+---------------------------------------------------------------------------=
+--------------------------------------------
+------_=_NextPart_001_01C81000.03CD27DB
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=
+=3D"urn:schemas-microsoft-com:office:word" xmlns=3D"http://www=2Ew3=
+=2Eorg/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=
+=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p=2EMsoNormal, li=2EMsoNormal, div=2EMsoNormal
+	{margin:0in;
+	margin-bottom:=2E0001pt;
+	font-size:12=2E0pt;
+	font-family:"Times New Roman";}
+a:link, span=2EMsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span=2EMsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span=2EEmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8=2E5in 11=2E0in;
+	margin:1=2E0in 1=2E25in 1=2E0in 1=2E25in;}
+div=2ESection1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>Hai<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>I am newbi to linux=2E<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>I wrote the application usb libusb which works fine with=
+ x86
+pc=2E<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>I want to compile the application for ppc=2E I have=
+ cross
+compiled libusb=2E I have tool chain also=2E<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>If I give ppc_6xx-gcc filename=2Ec=
+ <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>It gives the error message as usb=2Eh No such a file or
+directory=2E<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>How to give include path and library path during
+compilation?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>Please do the needful<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>Regards,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'>Venkatesh<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span style=
+=3D'font-size:10=2E0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000>DISCLAIMER:<br>
+---------------------------------------------------------------------------=
+--------------------------------------------<br>
+<br>
+The contents of this e-mail and any attachment(s) are confidential and=
+ intended for the named recipient(s) only=2E<br>
+It shall not attach any liability on the originator or HCL or its=
+ affiliates=2E Any views or opinions presented in <br>
+this email are solely those of the author and may not necessarily reflect=
+ the opinions of HCL or its affiliates=2E<br>
+Any form of reproduction, dissemination, copying, disclosure, modification,=
+ distribution and / or publication of <br>
+this message without the prior written consent of the author of this e-mail=
+ is strictly prohibited=2E If you have <br>
+received this email in error please delete it and notify the sender=
+ immediately=2E Before opening any mail and <br>
+attachments please check them for viruses and defect=2E<br>
+<br>
+---------------------------------------------------------------------------=
+--------------------------------------------<br>
+</font></td></tr></table>
+------_=_NextPart_001_01C81000.03CD27DB--
