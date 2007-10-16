@@ -1,20 +1,23 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+Return-Path: <shemminger@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 541C9DDF04
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:42:11 +1000 (EST)
-Date: Tue, 16 Oct 2007 21:53:08 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [UNTESTED PATCH v2] 8xx: Convert mpc866ads to the new device
-	binding.
-Message-ID: <20071016215308.764d9922@vitb.ru.mvista.com>
-In-Reply-To: <20071008224847.GA4053@loki.buserror.net>
-References: <20071008224847.GA4053@loki.buserror.net>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BD6CDDDE2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 04:54:00 +1000 (EST)
+Date: Tue, 16 Oct 2007 11:53:18 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH/RFC] net: Add __napi_sycnhronize() to sync with napi poll
+Message-ID: <20071016115318.0fc36af3@freepuppy.rosehill>
+In-Reply-To: <1192513792.19073.23.camel@pasglop>
+References: <1192513792.19073.23.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, Dreier <rdreier@cisco.com>, Roland,
+	"David S. Miller" <davem@davemloft.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On Tue, 16 Oct 2007 15:49:52 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-orig one does not build (not your issue apparently):
-
-  CC      drivers/net/fs_enet/fs_enet-main.o
-drivers/net/fs_enet/fs_enet-main.c: In function `fs_enet_probe':
-drivers/net/fs_enet/fs_enet-main.c:1252: error: implicit declaration of 
-function `SET_MODULE_OWNER'
-drivers/net/fs_enet/fs_enet-main.c:1292: error: structure has no member 
-named `poll'
-drivers/net/fs_enet/fs_enet-main.c:1293: error: structure has no member 
-named `weight'
-make[3]: *** [drivers/net/fs_enet/fs_enet-main.o] Error 1
-make[2]: *** [drivers/net/fs_enet] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
-
-because net_device does not have 'poll' and 'weight' anymore.
-
-Moreover, with the patch, it does not seem to boot(with upper lines commented out to get it build). I'm investigating the reason right now.
-
-On Mon, 8 Oct 2007 17:48:47 -0500
-Scott Wood <scottwood@freescale.com> wrote:
-
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> net: Add __napi_sycnhronize() to sync with napi poll
+> 
+> The EMAC driver which needs to handle multiple devices with one
+> NAPI instance implements its own per-channel disable bit. However,
+> when setting such a bit, it needs to synchronize with the poller
+> (that is make sure that any pending poller instance has completed,
+> or is started late enough to see that disable bit).
+> 
+> This implements a low level __napi_synchronize() function to acheive
+> that. The underscores are to emphasis the low level aspect of it and
+> to discourage driver writers who don't know what they are doing to
+> use it (to please DaveM :-)
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
-> Whoops, forgot the localbus node last time.
 > 
->  arch/powerpc/boot/dts/mpc866ads.dts          |  137 +++++++------
->  arch/powerpc/platforms/8xx/Kconfig           |    1 +
->  arch/powerpc/platforms/8xx/mpc86xads.h       |   44 ----
->  arch/powerpc/platforms/8xx/mpc86xads_setup.c |  289 +++++++-------------------
->  4 files changed, 156 insertions(+), 315 deletions(-)
+> (Use correct address for Stephen this time)
 > 
-[...]
+> If the approach is accepted, I would like to have this merged now
+> so the EMAC patch to make it work again can follow :-)
+> 
+> Note: I use msleep_interruptible(1); just like napi_disable(). However
+> I'm not too happy that the "hot" loop that results of a pending signal
+> here will spin without even a cpu_relax ... what do you guys think would
+> be the best way to handle this ?
+
+
+So this is really just like synchronize_irq()?  Using msleep is bogus
+because you want to spin, you are only waiting for a softirq on the other
+cpu to finish. If you wait for a whole millisecond and sleep that
+is far longer than the napi routine should take.
+
+You could even optimize it like synchronize_irq() for the non-SMP case.
+
+
+
 -- 
-Sincerely, 
-Vitaly
+Stephen Hemminger <shemminger@linux-foundation.org>
