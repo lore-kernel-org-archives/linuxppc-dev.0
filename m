@@ -1,20 +1,20 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from penguin.embeddededge.com (embeddededge.com [209.113.146.155])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD326DDDFC
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:11:40 +1000 (EST)
-In-Reply-To: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id EB224DDED0
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:17:48 +1000 (EST)
+In-Reply-To: <20071015163324.8520.3528.stgit@trillian.cg.shawcable.net>
+References: <20071015163324.8520.3528.stgit@trillian.cg.shawcable.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E006C783-7607-4887-A356-9F3DE6F78F12@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
-Date: Tue, 16 Oct 2007 00:32:41 -0400
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>,
-	David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <96D13B28-206A-4BC6-8769-D86B2D49E0D7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] mpc8349emitx(gp): add UHCI support and other misc
+	defconfig changes
+Date: Tue, 16 Oct 2007 00:18:00 -0500
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +25,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 15, 2007, at 7:07 PM, Kumar Gala wrote:
+On Oct 15, 2007, at 11:33 AM, Grant Likely wrote:
 
-> I was wondering if you cared about the following boards existing in
-> arch/powerpc:
+> From: Grant Likely <grant.likely@secretlab.ca>
 >
-> * STX GP3
+> USB support for the 8349itx got added a while back; but the defconfig
+> never got updated.  This patch updates defconfig and adds the  
+> appropriate
+> USB config options.
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> CC: Scott Wood <scottwood@freescale.com>
+> CC: Kumar Gala <galak@kernel.crashing.org>
+> CC: Timur Tabi <timur@freescale.com>
+> ---
+>
+>  arch/powerpc/configs/mpc834x_itx_defconfig   |   87 ++++++++----
+>  arch/powerpc/configs/mpc834x_itxgp_defconfig |  190 +++++++++++++++ 
+> +++++++----
+>  2 files changed, 224 insertions(+), 53 deletions(-)
 
-I have GP3 and GP3-SSA for testing.
-If you can make a first pass at the changes
-I'll debug and finish.
+Can you limit this to the USB support?  The other changes like  
+enabling SLUB, and PRINTK_TIME, should really be clearly documented  
+and discussed some.
 
-Thanks.
-
-	-- Dan
+- k
