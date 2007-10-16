@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 27AA9DDEF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:50:12 +1000 (EST)
-Subject: [PATCH/RFC] net: Add __napi_sycnhronize() to sync with napi poll
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: shemminger@linux-foundation.org
-Content-Type: text/plain
-Date: Tue, 16 Oct 2007 15:49:52 +1000
-Message-Id: <1192513792.19073.23.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	"David S. Miller" <davem@davemloft.net>,
+	by ozlabs.org (Postfix) with ESMTP id 767BEDDF34
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:51:28 +1000 (EST)
+In-Reply-To: <200710160728.38897.sr@denx.de>
+References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
+	<200710160640.47010.sr@denx.de>
+	<B9E8682B-5455-48EA-B078-CB0EDCB2060A@kernel.crashing.org>
+	<200710160728.38897.sr@denx.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+Date: Tue, 16 Oct 2007 00:51:51 -0500
+To: Stefan Roese <sr@denx.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-net: Add __napi_sycnhronize() to sync with napi poll
 
-The EMAC driver which needs to handle multiple devices with one
-NAPI instance implements its own per-channel disable bit. However,
-when setting such a bit, it needs to synchronize with the poller
-(that is make sure that any pending poller instance has completed,
-or is started late enough to see that disable bit).
+On Oct 16, 2007, at 12:28 AM, Stefan Roese wrote:
 
-This implements a low level __napi_synchronize() function to acheive
-that. The underscores are to emphasis the low level aspect of it and
-to discourage driver writers who don't know what they are doing to
-use it (to please DaveM :-)
+> On Tuesday 16 October 2007, Kumar Gala wrote:
+>>>> I'm willing to look into doing the port over, but would need some
+>>>> help testing.
+>>>
+>>> Yes, it would be greatly appreciated if you could start this
+>>> TQM85xx port. I
+>>> will of course do the testing.
+>>
+>> Ok, for the TQM85xx code in arch/ppc can I get a few things from you:
+>>
+>> 1. what processors does this actually support/run on.  I'm guessing
+>> MPC8541, MPC8555?  But not really sure
+>
+> IIRC there are 4 different versions of the board:
+> - 8540, 8541, 8555 & 8560
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+do they all boot/run with the code that exists in arch/ppc ?
 
-(Use correct address for Stephen this time)
+thanks for the other info, that's exactly what I needed.
 
-If the approach is accepted, I would like to have this merged now
-so the EMAC patch to make it work again can follow :-)
-
-Note: I use msleep_interruptible(1); just like napi_disable(). However
-I'm not too happy that the "hot" loop that results of a pending signal
-here will spin without even a cpu_relax ... what do you guys think would
-be the best way to handle this ?
-
-
-
-Index: linux-work/include/linux/netdevice.h
-===================================================================
---- linux-work.orig/include/linux/netdevice.h	2007-10-16 15:27:27.000000000 +1000
-+++ linux-work/include/linux/netdevice.h	2007-10-16 15:27:38.000000000 +1000
-@@ -394,6 +394,21 @@ static inline void napi_disable(struct n
- }
- 
- /**
-+ *	__napi_synchronize - synchronize with a concurrent poll
-+ *	@n: napi context
-+ *
-+ * Synchronizes with a concurrent poll. Not to be used in normal
-+ * drivers, mostly useful if you end up with multiple interfaces
-+ * on one NAPI instance.
-+ */
-+static inline void __napi_synchronize(struct napi_struct *n)
-+{
-+	smp_mb();
-+	while (test_bit(NAPI_STATE_SCHED, &n->state))
-+		msleep_interruptible(1);
-+}
-+
-+/**
-  *	napi_enable - enable NAPI scheduling
-  *	@n: napi context
-  *
+- k
