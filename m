@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 3243CDDED7
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 05:50:47 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: ioctl32: Unknown cmd
-Date: Tue, 16 Oct 2007 21:50:35 +0200
-References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
+	by ozlabs.org (Postfix) with ESMTP id 917FADDDFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 06:06:13 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1342887nzh
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 13:06:12 -0700 (PDT)
+Message-ID: <fa686aa40710161306s780ebe64g680d6106ecb77d0e@mail.gmail.com>
+Date: Tue, 16 Oct 2007 14:06:04 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Alan Bennett" <embedded@akb.net>
+Subject: Re: Describing devices in the device tree
+In-Reply-To: <bfa0697f0710161136y7d28ccd6w828f16d30f85ce19@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710162150.37636.arnd@arndb.de>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <bfa0697f0710161136y7d28ccd6w828f16d30f85ce19@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 16 October 2007, Geert Uytterhoeven wrote:
-> The recent (post 2.6.23) changes to compat_ioctl made the reporting of
-> unsupported ioctls more verbose. E.g. on the PS3 I get:
-> 
-> | ioctl32(cdrom_id:608): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-11-0
-> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
-> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
-> 
-> The first one is triggered by the detection of the CD/DVD/BD-ROM driver,
-> The others are triggered by me running hdparm.
-> 
-> Was this intentional?
-> 
+On 10/16/07, Alan Bennett <embedded@akb.net> wrote:
+> I'm using a modified ep8248e.dts to describe my hardware and I want to
+> enable the use of 3 standard interrupts.
+>
+>   1. irq5
+>   2. timer1
+>   3. timer2
+>
+> How bad does this look?
+> soc --> cpm -->
+>                        timer {
+>                                device_type = "timer";
+>                                compatible = "fsl,mpc8248-timer";
+>                                interrupts = <c 8 d 8>;
+>                                interrupt-parent = <&PIC>;
+>                        };
+>                        irq5 {
+>                                device_type = "irq5";
+>                                compatible = "fsl,mpc8248-irq5";
+>                                interrupts = <17 8>;
+>                                interrupt-parent = <&PIC>;
+>                        };
 
-No, it was certainly not intentional, and I can't figure out why it happens.
-The ioctl numbers from your example are HDIO_DRIVE_CMD and CDROM_GET_CAPABILITY,
-both of which should be handled through compat_blkdev_driver_ioctl by calling
-the native ioctl method of the driver, and return -ENOTTY otherwise.
+Don't do this.  Instead, describe the device that generates the
+interrupt.  You don't need the device_type property either unless it
+is a common device.  The compatible property should also describe your
+device; not the irq line.
 
-The one point where it is expected to have changed now is when you try
-to do these ioctls on something that is not a block device. Are you sure that
-the files you tried them on were created correctly?
+Just creating a device node to describe an irq line doesn't buy you
+anything because your device driver still needs to have the knowledge
+built into it to use IRQ5.  You may as well have just hard coded the
+value into your driver instead of traversing through the device tree
+to get it.
 
-	Arnd <><
+You get an advantage when you create a node for you *device* that your
+device driver can bind, and embed into that node the IRQ line that it
+uses.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
