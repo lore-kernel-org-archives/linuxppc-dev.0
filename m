@@ -1,20 +1,33 @@
-Return-Path: <adaplas@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 797ACDDEC0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:32:03 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so4800303pyi
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 14:32:02 -0700 (PDT)
-Subject: Re: [Linux-fbdev-devel] vga16fb doesn't build on powerpc
-	(vgacon_remap_base)
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20071016191403.GA5962@nineveh.local>
-References: <20071016191403.GA5962@nineveh.local>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 05:31:54 +0800
-Message-Id: <1192570314.15588.11.camel@daplas>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 9FE2ADDEFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:32:16 +1000 (EST)
+Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQ000ASHX3UO680@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 16 Oct 2007 15:31:06 -0600 (MDT)
+Received: from pn2ml8so.prod.shaw.ca ([10.0.121.152])
+	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQ0009Y5X3UPB70@pd2mr5so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Tue, 16 Oct 2007 15:31:07 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQ000LSYX3T8K90@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 16 Oct 2007 15:31:06 -0600 (MDT)
+Date: Tue, 16 Oct 2007 15:31:07 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 2/2] bootwrapper: Bail from script if any command fails
+In-reply-to: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>,
+	Scott Wood <scottwood@freescale.com>
+Message-id: <20071016213107.14117.3858.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-10-16 at 15:14 -0400, Joseph Fannin wrote:
-> vga16fb is an available config option on powerpc, but it won't link
-> with my .config:
-> 
->     ERROR: "vgacon_remap_base" [drivers/video/vga16fb.ko] undefined!
-> 
-> 
-> I'm guessing this is because include/asm-powerpc/vga.h declares
-> vgacon_remap_base: 
-> 
->     extern unsigned long vgacon_remap_base;
-> 
-> 
-> ...but arch/powerpc/kernel/setup_32.c wraps the definition in an #ifdef:
-> 
->     #ifdef CONFIG_VGA_CONSOLE
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Perhaps #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_FB_VGA16) ?
+Add the 'set -e' command to the wrapper script so that if any command
+fails then the script will automatically exit
 
-or
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-bool VGA_HARDWARE
+ arch/powerpc/boot/wrapper |   27 ++++++++++-----------------
+ 1 files changed, 10 insertions(+), 17 deletions(-)
 
-#if CONFIG_VGA_HARDWARE
-    unsigned long vgacon_remap_base;
-    EXPORT_SYMBOL(vgacon_remap_base);
-#endif
-
-and for the Kconfig entry of vgacon and vga16fb
-
-select VGA_HARDWARE if PPC32
-(or depends on (VGA_HARDWARE && PPC32))
-
-Tony
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 8323ea4..da5fcfa 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -21,6 +21,9 @@
+ #		(default ./arch/powerpc/boot)
+ # -W dir	specify working directory for temporary files (default .)
+ 
++# Stop execution if any command fails
++set -e
++
+ # Allow for verbose output
+ if [ "$V" == "1" ]; then
+     set -x
+@@ -116,7 +119,7 @@ if [ -n "$dts" ]; then
+     if [ -z "$dtb" ]; then
+ 	dtb="$platform.dtb"
+     fi
+-    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
++    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts"
+ fi
+ 
+ if [ -z "$kernel" ]; then
+@@ -287,23 +290,13 @@ ps3)
+ 
+     rm -f "$object/otheros.bld"
+ 
+-    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc \
+-        skip=$overlay_dest seek=$system_reset_kernel      \
+-        count=$overlay_size bs=1 2>&1)
+-
+-    if [ $? -ne "0" ]; then
+-       echo $msg
+-       exit 1
+-    fi
++    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
++        skip=$overlay_dest seek=$system_reset_kernel  \
++        count=$overlay_size bs=1
+ 
+-    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc \
+-        skip=$system_reset_overlay seek=$overlay_dest     \
+-        count=$overlay_size bs=1 2>&1)
+-
+-    if [ $? -ne "0" ]; then
+-       echo $msg
+-       exit 2
+-    fi
++    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
++        skip=$system_reset_overlay seek=$overlay_dest \
++        count=$overlay_size bs=1
+ 
+     gzip --force -9 --stdout "$ofile.bin" > "$object/otheros.bld"
+     ;;
