@@ -1,21 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <axboe@kernel.dk>
+Received: from kernel.dk (brick.kernel.dk [87.55.233.238])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0830CDDE46
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 02:31:44 +1000 (EST)
-Message-ID: <4714E763.5060901@freescale.com>
-Date: Tue, 16 Oct 2007 11:31:31 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client CN "A common name", Issuer "A common name" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 97988DDE34
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 02:58:42 +1000 (EST)
+Date: Tue, 16 Oct 2007 18:58:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: ioctl32: Unknown cmd
+Message-ID: <20071016165833.GB9942@kernel.dk>
+References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: Alan Bennett <embedded@akb.net>
-Subject: Re: Serial init / BRG
-References: <bfa0697f0710160719r44099b19jbda55af2ef88e9f8@mail.gmail.com>
-In-Reply-To: <bfa0697f0710160719r44099b19jbda55af2ef88e9f8@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alan Bennett wrote:
->   A few questions:  To use 3 brgs, should I have 1 brg entry and X reg
-> values or three brg entries in my device tree? 
-
-The current brg entry describes all 8 BRGs... don't touch it. :-)
-
-> what are the third and fourth reg values of the brg item in the
-> device tree. I'll need 3 separate baud rates on the serial lines.
-> Should I just add code to initialize the brg's in u-boot or figure
-> out how to get the kernel to do it?
-
-No, the kernel should do it.  Are you associating the BRG with the SCC 
-in the CMXSCR register, and setting up the pins required by SCC1 and 
-SCC4, in either u-boot or your platform code?
-
-> boot sequence
-> ===========
->  CPM UART serial mem=e0011a80 pram=e0000000
->  ttyCPM0 at MMIO 0xe0011a80 (irq = 16) is a CPM UART
+On Tue, Oct 16 2007, Geert Uytterhoeven wrote:
+> 	Hi Arnd, Jens,
 > 
->  CPM UART serial mem=e0011a00 pram=e0008000
->  CPM uart[1]:init_scc - sup = e0008000
->  ttyCPM1 at MMIO 0xe0011a00 (irq = 40) is a CPM UART
+> The recent (post 2.6.23) changes to compat_ioctl made the reporting of
+> unsupported ioctls more verbose. E.g. on the PS3 I get:
 > 
->  CPM UART serial mem=e0011a60 pram=e0008300
->  CPM uart[2]:init_scc - sup = e0008300
->  ttyCPM2 at MMIO 0xe0011a60 (irq = 43) is a CPM UART
+> | ioctl32(cdrom_id:608): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-11-0
+> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
+> | ioctl32(hdparm:1427): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(00000000) on /dev/ps3da
 > 
-> BRG Values after above
-> =================
-> brgc1: 0x00000000
-> brgc2: 0x00000000
-> brgc3: 0x00000000
-> brgc4: 0x00000000
-> brgc5: 0x00000000
-> brgc6: 0x00000000
-> brgc7: 0x0001004e
-> brgc8: 0x00000000
+> The first one is triggered by the detection of the CD/DVD/BD-ROM driver,
+> The others are triggered by me running hdparm.
+> 
+> Was this intentional?
 
-This is expected if you haven't opened the other serial ports yet...  it 
-doesn't initialize the brg until then.
+Nope, not intential to me at least. I'll check up on it.
 
--Scott
+-- 
+Jens Axboe
