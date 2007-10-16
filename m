@@ -1,14 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 16 Oct 2007 11:15:04 +1000
+Date: Tue, 16 Oct 2007 12:38:45 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v4 9/9] add MPC837x MDS board default device tree
-Message-ID: <20071016011504.GB26787@localhost.localdomain>
-References: <1192460210-26920-1-git-send-email-leoli@freescale.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Refactor booting-without-of.txt
+Message-ID: <20071016023845.GK26787@localhost.localdomain>
+References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
+	<20071015165505.GA16040@lixom.net>
+	<fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1192460210-26920-1-git-send-email-leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <fa686aa40710151014q5e151ea9w3f589d9e89e95905@mail.gmail.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 15, 2007 at 10:56:50PM +0800, Li Yang wrote:
-> Signed-off-by: Li Yang <leoli@freescale.com>
+On Mon, Oct 15, 2007 at 11:14:44AM -0600, Grant Likely wrote:
+> On 10/15/07, Olof Johansson <olof@lixom.net> wrote:
+> > On Mon, Oct 15, 2007 at 10:08:44AM -0600, Grant Likely wrote:
+> > > Adding the Linux expected device tree bindings to
+> > > booting-without-of.txt seems to be getting a little unwieldy.  Plus
+> > > with more than one arch using the device tree (powerpc, sparc &
+> > > microblaze) the device tree bindings aren't necessarily powerpc only
+> > > (the Xilinx devices certainly fall in this category).
+> > >
+> > > Anyone have comments about splitting the expected device tree bindings
+> > > out of booting-without-of.txt into a separate directory?
+> >
+> > The flat device tree is, in spite of what some people would like it to be,
+> > not open firmware, nor is it the same as their bindings. So I think we'd
+> > be doing ourselves a disservice by continuing to associate them together.
+> > All it would take is a rename of the directory, unfortunately i don't
+> > have any suggestions on better names though.
+> 
+> I think I need to stick with the of prefix.  All the support API in
+> include/linux/of_* is prefixed with "of_" already, so convention is
+> established.
+> 
+> How about Documentation/of-device-tree?
 
-[snip]
-> +		mdio@24520 {
-> +			device_type = "mdio";
-> +			compatible = "gianfar";
-> +			reg = <24520 20>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			phy2: ethernet-phy@2 {
-> +				interrupt-parent = < &ipic >;
-> +				interrupts = <11 8>;
-> +				reg = <2>;
-> +				device_type = "ethernet-phy";
-> +			};
-> +			phy3: ethernet-phy@3 {
-> +				interrupt-parent = < &ipic >;
-> +				interrupts = <12 8>;
-> +				reg = <3>;
-> +				device_type = "ethernet-phy";
-> +			};
-> +		};
-> +
-> +		ethernet@24000 {
-> +			device_type = "network";
-> +			model = "eTSEC";
-> +			compatible = "gianfar";
-
-This isn't a problem with *this* patch per se, but we have *got* to
-fix that fucked up binding which gives both the mdio and ethernet
-devices the same compatible property.
+It seems a little counterintuitive to change names from "booting
+*without* of" to "of *"...
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
