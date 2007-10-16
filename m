@@ -1,17 +1,40 @@
-Return-Path: <alan@akb.net>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 2A52CDDE2F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 00:19:55 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so135159anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 07:19:54 -0700 (PDT)
-Message-ID: <bfa0697f0710160719r44099b19jbda55af2ef88e9f8@mail.gmail.com>
-Date: Tue, 16 Oct 2007 08:19:53 -0600
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: "Scott Wood" <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Serial init / BRG
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4C460DDE2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 00:20:36 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l9GEKVOR119260
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 14:20:31 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l9GEKVn32789386
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:20:31 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l9GEKPeY015586
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:20:25 +0100
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
+	match eHCA and eHEA drivers
+Date: Tue, 16 Oct 2007 23:20:00 +0200
+References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
+In-Reply-To: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200710162320.00630.fenkes@de.ibm.com>
+Cc: Thomas Q Klein <tklein@de.ibm.com>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev@vger.kernel.org, Paul Mackerras <pmac@au1.ibm.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +44,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For some reason I'm unable to track down the right sequence to
-initialize my serial ports.  (note: my console is working, but
-attempts to initialize SCC1 and SCC4 fail).  My console has the luxury
-of having uboot initialize it and its brg, but SCC1 / SCC4 aren't so
-lucky.
+On Tuesday 09 October 2007 10:21, Jan-Bernd Themann wrote:
+> Roland Dreier <rdreier@cisco.com> wrote on 03.10.2007 20:05:44:
+> >  > > Replace struct ibmebus_dev and struct ibmebus_driver with struct=20
+of_device
+> >  > > and struct of_platform_driver, respectively. Match the external=20
+ibmebus
+> >  > > interface and drivers using it.
+> >  > >
+> >  > > Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> >  >
+> >  > This is somewhat difficult as this patch touches files that are the
+> >  > responsibility of three different maintainers. =A0Is it possible to
+> >  > split the patch into three, one for each maintainer (possibly by
+> >  > keeping both old and new interfaces around for a little while)?
+> >  >=20
+> >  > If not, then you need to get an Acked-by and an agreement that this
+> >  > change can go via the powerpc.git tree from Roland Dreier and Jeff
+> >  > Garzik.
+> >
+> > I don't see anything objectionable in the infiniband parts of the
+> > patch -- I don't have any way to test the changes but it all looks
+> > like a straightforward conversion to a new platform API.  So:
+> >
+> > Acked-by: Roland Dreier <rolandd@cisco.com>
+> >
+> >  - R.
+>
+> Looks good from eHEA driver perspective.
+>
+> Acked-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-  A few questions:  To use 3 brgs, should I have 1 brg entry and X reg
-values or three brg entries in my device tree?  what are the third and
-fourth reg values of the brg item in the device tree.  I'll  need 3
-separate baud rates on the serial lines.  Should I just add code to
-initialize the brg's in u-boot or figure out how to get the kernel to
-do it?
+Jeff, do you have any objections against this patch going into the kernel
+via Paul's powerpc.git tree? It touches only a few lines of ehea which are
+specific to the bus interface changes.
 
-boot sequence
-===========
- CPM UART serial mem=e0011a80 pram=e0000000
- ttyCPM0 at MMIO 0xe0011a80 (irq = 16) is a CPM UART
+You can see the full patch here:
+  http://patchwork.ozlabs.org/linuxppc/patch?id=3D13750
 
- CPM UART serial mem=e0011a00 pram=e0008000
- CPM uart[1]:init_scc - sup = e0008000
- ttyCPM1 at MMIO 0xe0011a00 (irq = 40) is a CPM UART
+If you have no objections, please ack the patch so Paul can include it.
 
- CPM UART serial mem=e0011a60 pram=e0008300
- CPM uart[2]:init_scc - sup = e0008300
- ttyCPM2 at MMIO 0xe0011a60 (irq = 43) is a CPM UART
-
-BRG Values after above
-=================
-brgc1: 0x00000000
-brgc2: 0x00000000
-brgc3: 0x00000000
-brgc4: 0x00000000
-brgc5: 0x00000000
-brgc6: 0x00000000
-brgc7: 0x0001004e
-brgc8: 0x00000000
-
-Device Tree:
-                       brg@119f0 {
-                               compatible = "fsl,mpc8272-brg",
-                                            "fsl,cpm2-brg",
-                                            "fsl,cpm-brg";
-                               reg = <119f0 10 115f0 10>;
-                       };
-                       /* Monitor port/SMC1 */
-                       serial@11a80 {
-                               device_type = "serial";
-                               compatible = "fsl,mpc8248-smc-uart",
-                                            "fsl,cpm2-smc-uart";
-                               reg = <11a80 20 0 40>;
-                               interrupts = <4 8>;
-                               interrupt-parent = <&PIC>;
-                               fsl,cpm-brg = <7>;
-                               fsl,cpm-command = <1d000000>;
-                       };
-                       /* "Serial" port/SCC1 */
-                       serial@11a00 {
-                               device_type = "serial";
-                               compatible = "fsl,mpc8248-scc-uart",
-                                            "fsl,cpm2-scc-uart";
-                               reg = <11a00 20 8000 100>;
-                               interrupts = <28 8>;
-                               interrupt-parent = <&PIC>;
-                               fsl,cpm-brg = <1>;
-                               fsl,cpm-command = <00800000>;
-                       };
-                       /* "Serial" port/SCC4 */
-                       serial@11a60 {
-                               device_type = "serial";
-                               compatible = "fsl,mpc8248-scc-uart",
-                                            "fsl,cpm2-scc-uart";
-                               reg = <11a60 20 8300 100>;
-                               interrupts = <2B 8>;
-                               interrupt-parent = <&PIC>;
-                               fsl,cpm-brg = <4>;
-                               fsl,cpm-command = <0CE00000>;
-                       };
+Thanks and regards,
+  Joachim
