@@ -1,21 +1,19 @@
-Return-Path: <SRS0=+eM0=PK=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 5D7DADDE9D
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 16:15:10 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
-Date: Tue, 16 Oct 2007 08:15:38 +0200
-References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-	<200710160728.38897.sr@denx.de>
-	<D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org>
-In-Reply-To: <D332B7CF-6633-494C-8031-807F7DF53D78@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710160815.38646.sr@denx.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <1192514497.19073.29.camel@pasglop>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
+	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
+	<5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
+	<1192514497.19073.29.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C7CB7F1C-1EE4-4E51-9E62-5375FBC1822C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Merge dtc
+Date: Tue, 16 Oct 2007 01:23:59 -0500
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 16 October 2007, Kumar Gala wrote:
-> On Oct 16, 2007, at 12:28 AM, Stefan Roese wrote:
-> > On Tuesday 16 October 2007, Kumar Gala wrote:
-> >>>> I'm willing to look into doing the port over, but would need some
-> >>>> help testing.
-> >>>
-> >>> Yes, it would be greatly appreciated if you could start this
-> >>> TQM85xx port. I
-> >>> will of course do the testing.
-> >>
-> >> Ok, for the TQM85xx code in arch/ppc can I get a few things from you:
-> >>
-> >> 1. what processors does this actually support/run on.  I'm guessing
-> >> MPC8541, MPC8555?  But not really sure
-> >
-> > IIRC there are 4 different versions of the board:
-> > - 8540, 8541, 8555 & 8560
+
+On Oct 16, 2007, at 1:01 AM, Benjamin Herrenschmidt wrote:
+
 >
-> do they all boot/run with the code that exists in arch/ppc ?
+> On Tue, 2007-10-16 at 00:50 -0500, Kumar Gala wrote:
+>> Just out of interest who's complaining?  We don't include mkimage
+>> for
+>> u-boot related builds and I haven't seen any gripes related to that.
+>
+> It's a pain in the neck since those are built even for things that  
+> don't
+> need them (such as 4xx where I use the treeboot images).
 
-Yes. I have to admit though, that I'm not sure if the denx arch/ppc version 
-differs from the kernel.org version.
+That was Paul's decision :)
 
-Best regards,
-Stefan
+- k
