@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: libfdt_env.h must be included first 
-In-Reply-To: Your message of "Tue, 16 Oct 2007 13:50:34 +1000."
-	<20071016035034.GP26787@localhost.localdomain>
-References: <20071016035034.GP26787@localhost.localdomain> 
-Date: Tue, 16 Oct 2007 07:38:12 -0500
+Subject: Re: dtc: Don't delete *.test.dtb between testgroups 
+In-Reply-To: Your message of "Tue, 16 Oct 2007 13:53:20 +1000."
+	<20071016035320.GQ26787@localhost.localdomain>
+References: <20071016035320.GQ26787@localhost.localdomain> 
+Date: Tue, 16 Oct 2007 07:39:25 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ihlga-0002Tw-EO@jdl.com>
+Message-Id: <E1Ihlhm-0002Vo-0T@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,18 +18,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> libfdt.h currently includes fdt.h, then libfdt_env.h.  This is
-> incorrect, because depending on the environment into which libfdt is
-> embedded, libfdt_env.h may be needed to define datatypes used in
-> fdt.h.  This patch corrects the problem.
+> The dtc/libfdt testsuite creates a number of .dtb files during its
+> run.  To ensure a clean test run, these are currently deleted before
+> each group of tests.
+> 
+> This is, in fact, a mistake, since if something goes wrong in the
+> first group of tests, deleting the .dtb at the beginning of the second
+> group of tests makes it harder to figure out what the problem was.
+> 
+> This patch changes the script to only delete the files once, before
+> the whole test run.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
-> 
-> I've sent this one before, but I guess it got lost in the backlog.
-
-Sorry.  There was some froohah around it and I didn't track
-where it landed.
 
 Applied.
 
