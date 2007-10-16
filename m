@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: Add functions for handling the "compatible" property 
-In-Reply-To: Your message of "Tue, 16 Oct 2007 13:58:25 +1000."
-	<20071016035825.GR26787@localhost.localdomain>
-References: <20071016035825.GR26787@localhost.localdomain> 
-Date: Tue, 16 Oct 2007 07:43:07 -0500
+Subject: Re: dtc: Improve support for string escapes 
+In-Reply-To: Your message of "Tue, 16 Oct 2007 16:42:02 +1000."
+	<20071016064202.GC9052@localhost.localdomain>
+References: <20071016064202.GC9052@localhost.localdomain> 
+Date: Tue, 16 Oct 2007 08:14:20 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IhllL-0002aX-KF@jdl.com>
+Message-Id: <E1IhmFY-0002wD-Iv@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,15 +18,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> This patch adds functions for dealing with the compatible property.
-> fdt_node_check_compatible() can be used to determine whether a node is
-> compatible with a given string and fdt_node_offset_by_compatible()
-> locates nodes with a given compatible string.
+> dtc supports the use of C-style escapes (\n, \t and so forth) in
+> string property definitions via the data_copy_escape_string()
+> function.  However, while it supports the most common escape
+> characters, it doesn't support the full set that C does, which is a
+> potential gotcha.
 > 
-> Testcases for these functions are also included.
+> Worse, a bug in the lexer means that while data_copy_escape_string()
+> can handle the \" escape, a string with such an escape won't lex
+> correctly.
+> 
+> This patch fixes both problems, extending data_copy_escape_string() to
+> support the missing escapes, and fixing the regex for strings in the
+> lexer to handle internal escaped quotes.
+> 
+> This also adds a testcase for string escape functionality.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied.
+Excellent.  Thanks.
+
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ dtc/tests/string_escapes.c	2007-10-16 16:34:20.000000000 +1000
+> @@ -0,0 +1,42 @@
+> +/*
+> + * libfdt - Flat Device Tree manipulation
+> + *	Testcase for strinc escapes in dtc
+
+Applied, modulo fixing that typo.
 
 jdl
