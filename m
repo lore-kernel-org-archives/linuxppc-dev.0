@@ -1,23 +1,22 @@
-Return-Path: <soleynichenko@zenith.com>
-Received: from LGEMRELSE3Q.lge.com (mail2.lge.co.kr [156.147.1.113])
-	by ozlabs.org (Postfix) with ESMTP id 85ED5DDEE3
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B8C6BDDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Oct 2007 01:30:55 +1000 (EST)
-Received: from USCSO10DA0193 (unknown [156.147.140.121])
-	by LGEMRELSE3Q.lge.com (Symantec Mail Security) with ESMTP id
-	E2BC14E4018 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Oct 2007 00:08:45 +0900 (KST)
-From: "Sergey Oleynichenko" <soleynichenko@zenith.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <12694083.post@talk.nabble.com><fa686aa40709152009k2b27ffc9kfb3fd0848f6b16d@mail.gmail.com><12696686.post@talk.nabble.com>
-	<13219154.post@talk.nabble.com>
-Subject: RE: Linux booting problem on Xilinx ppc
-Date: Tue, 16 Oct 2007 10:08:45 -0500
-Message-ID: <000901c81006$7303b490$bb3ca688@LGE.NET>
+	Wed, 17 Oct 2007 02:18:37 +1000 (EST)
+Message-ID: <4714E44F.7030909@freescale.com>
+Date: Tue, 16 Oct 2007 11:18:23 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <13219154.post@talk.nabble.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: mpc 860 boot linux2.6.23 problem
+References: <20071015233839.959F4247BB@gemini.denx.de>
+In-Reply-To: <20071015233839.959F4247BB@gemini.denx.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,119 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-I noticed this problem happens when on-chip memories are enabled in a design
-(it is 4th page in base system builder). Try to leave them "none" for both
-instruction and data.
-
-Sergey
-
------Original Message-----
-From: linuxppc-embedded-bounces+soleynichenko=zenith.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+soleynichenko=zenith.com@ozlabs.org] On
-Behalf Of aauer1
-Sent: Monday, October 15, 2007 1:47 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux booting problem on Xilinx ppc
-
-
-Hello
-
-I'm also working with ML403 board from Xilinx and have the same problem as
-you. The boot process stops after decompressing with the message "Now
-booting the kernel". We also used gcc-4.1.0 for the cross compilation. So, I
-would be glad to know, which gcc version have you used to get a working
-kernel!
-
-Thanks,
-Andreas
-
-
-
-Junqiang Hu wrote:
+Wolfgang Denk wrote:
+> In message <4713A08C.3060204@freescale.com> you wrote:
+>> keng_629 wrote:
+>>>  
+>>> i am proting linux2.63.23 to mpc860t board with uboot1.1.4 as bootloader.
+>>> my bootargs is root=/dev/ram rw init=/linuxrc.
+>>> i use debugger to see the regedits, find pc is run in the cpu_idle().
+>>> what is wrong with my kernel, plese give me some advice.thank you .
+>> Posting the same thing over and over again isn't going to change the 
+>> response.  Try head-of-Linus's-git, make sure you're using arch/powerpc, 
+>> and post the device tree you're using.  Without more information, we 
+>> can't help you.
 > 
-> 
-> Hi Grant,
-> 
->    Thank you so much for the reply!  Fortunately I got it work now -- it's
-> the crosstool compiler problem.  Originally I was using gcc-4.1.0, yet
-> when compiling kernel 2.6.22, I noticed that it says gcc-4.1.0 will
-> miscompile the kernel, so I changed to another version, and now I can let
-> it go!
-> 
->   Right now still not fully booted because of the SystemACE problem, or
-> maybe the partition is not correct.  I'm still working on it, hopefully to
-> get it solved soon :-)
-> 
-> Thanks,
-> -J.
-> 
-> 
-> Grant Likely-2 wrote:
->> 
->> On 9/15/07, Junqiang Hu <jqhu936@yahoo.com> wrote:
->>>
->>>
->>> Dear friends,
->>>
->>>    I'm trying to run Linux in AvNet (Memec) Xilinx-XC2VP50-EVKT-FF1152
->>>  board.  The Linux version I'm using is 2.4; the cross-compiler is
->>> gcc-4.1.0, glibc 2.3.6.  When booting the kernel, it shows:
->>>       loaded at:     00400000 004B51E4
->>>       board data at: 00000000 00000018
->>>       relocated to:  0040526C 00405284
->>>       zimage at:     00405B2B 004B177C
->>>       avail ram:     004B6000 60000000
->> 
->> I strongly recommend moving to a 2.6 kernel.  Recent mainline has
->> support for the Xilinx ppc built in.
->>>
->>>       Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part3
->>> rw
->>>       Uncompressing Linux...done.
->>>       Now booting the kernel
->>>
->>> Then it hangs. First it seems to me that the "avail ram" is not correct,
->>> since I configured only 32MB SDRAM.  Moreover, if it's first powered on,
->>> the
->>> end address of "avail ram" would be FFD9FBED. Then I tried to
->>> investigate
->>> the problem using xmd.  When  launched, it says:
->> 
->> (If you're using u-boot) You might have a mismatch between the board
->> info structure used by u-boot and the one used by Linux.
->> 
->> Also, you should use your debugger to inspect the __log_buf memory of
->> the kernel.  A common problem is the kernel starts booting, but the
->> console is setup incorrectly and so you see nothing.  But, you can
->> read the console output directly from memory if you look at the
->> __log_buf region (find the address in the System.map file; you might
->> need to subtract 0xC0000000 from the address to view the memory)
->> 
->> Cheers,
->> g.
->> 
->> -- 
->> Grant Likely, B.Sc., P.Eng.
->> Secret Lab Technologies Ltd.
->> grant.likely@secretlab.ca
->> (403) 399-0195
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->> 
->> 
-> 
-> 
+> Just to point out the obvious: U-Boot 1.1.4 is *way* too old to
+> support any device-tree based kernel, so the fist step is to update
+> U-Boot to a somewhat recent version (i. e. 1.3.0-rcX).
 
--- 
-View this message in context:
-http://www.nabble.com/Linux-booting-problem-on-Xilinx-ppc-tf4449060.html#a13
-219154
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Upgrading to the latest u-boot certainly shouldn't hurt, but I don't 
+think there's any device tree support for 8xx yet, so for now he should 
+boot with cuImage.
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-Scott
