@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB224DDED0
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 15:17:48 +1000 (EST)
-In-Reply-To: <20071015163324.8520.3528.stgit@trillian.cg.shawcable.net>
-References: <20071015163324.8520.3528.stgit@trillian.cg.shawcable.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <96D13B28-206A-4BC6-8769-D86B2D49E0D7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] mpc8349emitx(gp): add UHCI support and other misc
-	defconfig changes
-Date: Tue, 16 Oct 2007 00:18:00 -0500
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 16 Oct 2007 15:18:50 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Merge dtc
+Message-ID: <20071016051850.GB9052@localhost.localdomain>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Oct 16, 2007 at 12:08:06AM -0500, Kumar Gala wrote:
+> 
+> On Oct 16, 2007, at 12:02 AM, David Gibson wrote:
+> 
+> > This very large patch incorporates a copy of dtc into the kernel
+> > source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
+> > longer an external dependency to build kernels with configurations
+> > which need a dtb file.
+> >
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> >
+> > Too big for the list, full patch at
+> > http://ozlabs.org/~dgibson/home/merge-dtc.patch
+> 
+> Dare I ask why we are including dtc in the kernel source tree?  We  
 
-On Oct 15, 2007, at 11:33 AM, Grant Likely wrote:
+Well, we aren't unless Paul merges it..
 
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> USB support for the 8349itx got added a while back; but the defconfig
-> never got updated.  This patch updates defconfig and adds the  
-> appropriate
-> USB config options.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> CC: Scott Wood <scottwood@freescale.com>
-> CC: Kumar Gala <galak@kernel.crashing.org>
-> CC: Timur Tabi <timur@freescale.com>
-> ---
->
->  arch/powerpc/configs/mpc834x_itx_defconfig   |   87 ++++++++----
->  arch/powerpc/configs/mpc834x_itxgp_defconfig |  190 +++++++++++++++ 
-> +++++++----
->  2 files changed, 224 insertions(+), 53 deletions(-)
+> don't really have precedence for this and there are users outside of  
+> linux for dtc.
 
-Can you limit this to the USB support?  The other changes like  
-enabling SLUB, and PRINTK_TIME, should really be clearly documented  
-and discussed some.
+Because having dtc as an external dependency is inconvenient.  This is
+supposed to remain an embedded copy of dtc, not become the main dtc
+repository.
 
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
