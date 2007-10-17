@@ -1,19 +1,21 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 3D7FDDDE39
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CBB1ADDE9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 04:44:14 +1000 (EST)
-Message-ID: <471657FB.3040806@qstreams.com>
-Date: Wed, 17 Oct 2007 14:44:11 -0400
-From: Ben Warren <bwarren@qstreams.com>
+	Thu, 18 Oct 2007 04:54:49 +1000 (EST)
+Message-ID: <47165A7E.1070206@scram.de>
+Date: Wed, 17 Oct 2007 20:54:54 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: Michael Brian Willis <willis@arlut.utexas.edu>
-Subject: Re: MPC85xx and linux IDE driver
-References: <1192213784.4862.48.camel@louie> <470FCF8A.1000504@qstreams.com>
-	<1192643237.4929.41.camel@louie>
-In-Reply-To: <1192643237.4929.41.camel@louie>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: mpc 860 boot linux2.6.23 problem
+References: <20071015233839.959F4247BB@gemini.denx.de>	<4714E44F.7030909@freescale.com>	<85100356-D95B-4343-98BE-66080EA9887D@embeddedalley.com>
+	<47162AE7.80305@freescale.com>
+In-Reply-To: <47162AE7.80305@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,68 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Michael Brian Willis wrote:
-> On Fri, 2007-10-12 at 15:48 -0400, Ben Warren wrote:
->   
->   
->> Here's what I use:
->>
->> http://marc.info/?l=linux-kernel&m=113877891224982&w=2
->>     
+Hi Scott,
+
+> I just pulled Wolfgang's latest u-boot tree, and I don't see any fdt or 
+> ft_ calls in cpu/mpc8xx, nor in any 8xx board that I recognize.
 >
-> Thanks for the response Ben. 
->
-> I have put the driver you mentioned in my linux source and added the
-> necessary information in the Kconfig file and the Makefile. So, I am now
-> able to build the driver when I make my kernel image. However, I can't
-> figure out what else needs to be done in order to actually use the
-> driver for my compact flash device. Do I need to specify anything at the
-> kernel command line, or do I need to modify any other config files?
-> (Below is the ide portion of my linux .config file)
->
+> I may have been unclear in that I was talking about device tree support 
+> in u-boot, not the kernel.  Obviously there's device tree support in the 
+> kernel, as evidenced by my reference to using cuImage.
 >   
-This device driver is a platform driver, so you need to register a 
-platform device somewhere in your board-specific init code that contains 
-the hardware details (memory mapping and IRQ #).  You can either pass 
-this in via device tree or hard code it.  I chose the latter in order to 
-get up and runninq quickly.  Here's the init function I use.  CS0 is @ 
-0xe4000000, CS1 is @ 0xe4100000 and I'm using IRQ20, which is one of the 
-external IRQs on my CPU:
 
-/* Compact Flash Initialization */
+Can u-boot work on dtb trees embedded in an cuImage, at all?
+How would command line arguments work without a chosen
+node?
 
-static int __init prism_setup_cf(void)
-{
-    struct resource r[3];
-    struct platform_device *cf_dev;
-    unsigned int virq;
+I tried to boot a mpc823 using the 3 argument mboot command.
+u-boot processed the dtb and added the chosen node correctly,
+however the kernel immediately oopsed with unable to access
+virtual memory when accessing the dtb memory as this memory
+was not contained in the kernel MMU space.
 
-    memset(&r, 0, sizeof(r));
-    r[0].start = 0xe4000000;
-    r[0].end = 0xe400000f;
-    r[0].flags = IORESOURCE_MEM;
-
-    r[1].start = 0xe4100000;
-    r[1].end = 0xe410000f;
-    r[1].flags = IORESOURCE_MEM;
-
-   
-    virq = irq_find_mapping(NULL, 20);
-    set_irq_type(virq, IRQ_TYPE_EDGE_FALLING);
-    r[2].start = virq;
-    r[2].end = 0;
-    r[2].flags = IORESOURCE_IRQ;
-
-    cf_dev = platform_device_register_simple("mmio-cfide", 0, r, 3);
-
-    return (cf_dev ? 0 : PTR_ERR(cf_dev));
-}
-
-> Thank you for your help so far, anymore help/direction is greatly
-> appreciated. 
->
->   
-Glad to help.
-
-regards,
-Ben
+Thanks,
+Jochen
