@@ -1,21 +1,34 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id BE406DDE23
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:23:44 +1000 (EST)
-Date: Wed, 17 Oct 2007 15:23:43 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Scott Wood <scottwood@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: linux-2.6.git: cannot build PS3 image
-In-Reply-To: <Pine.LNX.4.62.0710121531250.757@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0710171523120.19421@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0710121152500.28100@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0710121531250.757@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-2092211940-1192627423=:19421"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 37C3DDDE9C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:31:19 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9HDVFl3016767
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 09:31:15 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9HDVE3E257082
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:31:14 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9HDVErO032605
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:31:14 -0600
+Received: from weaponx.rchland.ibm.com (weaponx.rchland.ibm.com [9.10.86.71])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l9HDVD3T032560
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:31:14 -0600
+Date: Wed, 17 Oct 2007 08:31:13 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Please pull powerpc.git merge branch
+Message-ID: <20071017083113.69982b99@weaponx.rchland.ibm.com>
+In-Reply-To: <18198.1222.253923.277227@cargo.ozlabs.ibm.com>
+References: <18198.1222.253923.277227@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,70 +38,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 17 Oct 2007 22:49:10 +1000
+Paul Mackerras <paulus@samba.org> wrote:
 
----584337861-2092211940-1192627423=:19421
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 12 Oct 2007, Geert Uytterhoeven wrote:
-> On Fri, 12 Oct 2007, Geert Uytterhoeven wrote:
-> > On current linux-2.6.git (782e3b3b3804c38d5130c7f21d7ec7bf6709023f), I get:
-> > 
-> > |   WRAP    arch/powerpc/boot/zImage.ps3
-> > | DTC: dts->dtb  on file "/usr/people/geert.nba/ps3/ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts"
-> > | ln: accessing `arch/powerpc/boot/zImage.ps3': No such file or directory
-> > 
-> > `make V=1' gives:
-> > 
-> > |   /bin/sh ps3-linux-2.6/arch/powerpc/boot/wrapper -c -o arch/powerpc/boot/zImage.ps3 -p ps3 -C "ppu-"  -s ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts vmlinux
-> > | DTC: dts->dtb  on file "ps3-linux-2.6/arch/powerpc/boot/dts/ps3.dts"
-> > | ln: accessing `arch/powerpc/boot/zImage.ps3': No such file or directory
-> > 
-> > I don't see a change to arch/powerpc/boot/Makefile that could explain this.
+> Linus,
 > 
-> After bisecting between 2.6.23 and current, I found the culprit:
+> Please do
 > 
-> > commit 11c146cc19df337f4af42dade9e4fca33c5a54ee
-> > Author: Scott Wood <scottwood@freescale.com>
-> > Date:   Fri Sep 14 14:58:25 2007 -0500
-> > 
-> >     [POWERPC] 8xx/wrapper: Embedded Planet EP88xC support
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-> Below is a quick and dirty temporary fix:
-> 
-> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-> index 39b27e5..795f988 100755
-> --- a/arch/powerpc/boot/wrapper
-> +++ b/arch/powerpc/boot/wrapper
-> @@ -232,7 +232,7 @@ base=0x`${CROSS}nm "$ofile" | grep ' _start$' | cut -d' ' -f1`
->  entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | cut -d' ' -f3`
->  
->  if [ -n "$binary" ]; then
-> -    mv "$ofile" "$ofile".elf
-> +    cp "$ofile" "$ofile".elf
->      ${CROSS}objcopy -O binary "$ofile".elf "$ofile".bin
->  fi
+Could you please pull this into your master and/or for-2.6.24
+branches?  It'll make it easier on those of us tracking your tree.
 
-No comments?
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-2092211940-1192627423=:19421--
+josh
