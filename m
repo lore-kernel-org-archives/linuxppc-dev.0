@@ -1,21 +1,22 @@
-Return-Path: <silvio.fricke@googlemail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 77D1CDDECA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:41:47 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so2325766nfd
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:41:46 -0700 (PDT)
-Date: Wed, 17 Oct 2007 16:41:43 +0200
-To: linuxppc-dev@ozlabs.org
-Subject: Re: can and mpc5200b
-Message-ID: <20071017144143.GI4859@sfrouter>
-References: <20071015133233.GB4859@sfrouter>
-	<f87351060710150705l5e4d1ba5v6806686cd25418bb@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.237])
+	by ozlabs.org (Postfix) with ESMTP id 19AD2DDE43
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:57:20 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1566479nzh
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:57:19 -0700 (PDT)
+Message-ID: <fa686aa40710170757v694a001av8a3e95acbdf37bde@mail.gmail.com>
+Date: Wed, 17 Oct 2007 08:57:18 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH 01/15] [POWERPC] TQM5200 DTS
+In-Reply-To: <4715ED92.80503@semihalf.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Do4IU1xF/9sod/r6"
-In-Reply-To: <f87351060710150705l5e4d1ba5v6806686cd25418bb@mail.gmail.com>
-From: "S. Fricke" <silvio.fricke@googlemail.com>
-Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47075FA7.3030108@semihalf.com> <4708BFDD.9020900@semihalf.com>
+	<fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com>
+	<4715ED92.80503@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---Do4IU1xF/9sod/r6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hello list,
-
-> > Hello Friends,
-> > what is the reasonable can-driver for a mpc5200b?
+On 10/17/07, Marian Balakowicz <m8@semihalf.com> wrote:
+> Grant Likely wrote:
+> >> +       memory {
+> >> +               device_type = "memory";
+> >> +               reg = <00000000 04000000>;      // 64MB
+> >> +       };
+> >> +
+> >> +       soc5200@f0000000 {
 > >
-> > I have seen for the peak-3.17 driver a port for the mpc5200 from denx o=
-n their
-> > website, but with kernel 2.6.23 I dont have a chance to use this?
->=20
-> Check this out http://developer.berlios.de/projects/socketcan/ . This
-> is the CAN driver we use and it works pretty well for us. It is very
-> updated and supports the mscan chipset that is available with the
-> mpc5200b.
+> > I think we're moving to the convetion of naming these nodes
+> > "soc@<addr>" now.  (You can drop the 5200 for the node name)
+>
+> Seems that this will not be painless, U-boot uses hardcoded
+> paths with 'soc5200', so the appropriate patch will be needed.
+> That may be ok for new boards but what do we do with lite5200,
+> where U-boot upgrade is not always an option?
 
-Socketcan works for me perfectly with the canconfig tool.
-Thank you.
+Hmm; yeah I guess there are probably already deployed tqm5200 boards
+with hard coded soc5200.  Alright; leave it as is.
 
-Silvio
-
-
-Mit freundlichen Gruessen
-Silvio Fricke
-
---=20
--- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
-   Diplom-Informatiker (FH)
-   Linux-Entwicklung
-----------------------------------------------------------------------------
+Cheers,
+g.
 
 
---Do4IU1xF/9sod/r6
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHFh8m8WEBxatmn40RAkolAJ92C8bcRxFCUwD7IY6Am26OmiSVXwCgm1Wf
-/7tJBS7qYDzzscKFm4BWV2s=
-=/JfU
------END PGP SIGNATURE-----
-
---Do4IU1xF/9sod/r6--
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
