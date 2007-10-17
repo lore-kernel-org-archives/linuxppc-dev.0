@@ -1,31 +1,17 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F00B5DDE40
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:29:29 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9H5SxEe000890
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:28:59 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9H5WarY144492
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:32:36 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9H5SjsC026507
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:28:45 +1000
-Date: Wed, 17 Oct 2007 15:22:20 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Merge dtc
-Message-ID: <20071017052220.GA3801@localhost.localdomain>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<fa686aa40710160617o57564cb4r260a40cd66407852@mail.gmail.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 83248DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 16:07:48 +1000 (EST)
+Date: Wed, 17 Oct 2007 16:07:48 +1000
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: New time code miscalculates cpu usage
+Message-ID: <20071017060747.GF9814@bakeyournoodle.com>
+References: <20071016202525.GA11837@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710160617o57564cb4r260a40cd66407852@mail.gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20071016202525.GA11837@lixom.net>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,24 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 16, 2007 at 07:17:01AM -0600, Grant Likely wrote:
-> On 10/15/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> > This very large patch incorporates a copy of dtc into the kernel
-> > source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
-> > longer an external dependency to build kernels with configurations
-> > which need a dtb file.
+On Tue, Oct 16, 2007 at 03:25:25PM -0500, Olof Johansson wrote:
+> Hi,
 > 
-> Powerpc is probably not going to be the only user of dtc.  Microblaze
-> will be using it too.  Can it be put somewhere more common?
+> Not sure when this started happening, but I wanted to report it. I'll
+> start bisecting in a day or two if noone else has gotten around to
+> looking at it:
+> 
+> $ echo "int main(void) { while(1); }" > test.c ; gcc test.c
+> $ time ./a.out & sleep 2 ; killall a.out
+> real    0m2.008s
+> user    0m4.014s
+> sys     0m0.002s
+> 
+> Seen on POWER5 and PA6T, haven't tried anything else yet.
 
-Well, I guess we can move it to scripts/ when microblaze starts using
-it.
+For what it's worth, this is my bug.  I suspected it, and git bisect
+confirmed it.I have an ugly work around now, but hope to have something
+better out tomorrow.
 
-Also, tell me more about this microblaze, I'm certainly interested in
-new users of dtc...
+Thanks Olof.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
