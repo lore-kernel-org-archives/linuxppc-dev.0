@@ -1,42 +1,22 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 151C1DDE33
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 01:22:10 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l9HFLgtw433318
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:21:42 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l9HFLgGc2867332
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 16:21:42 +0100
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l9HFLP10032221
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 16:21:25 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 4/5] ibmebus: Move to of_device and of_platform_driver,
-	match eHCA and eHEA drivers
-Date: Wed, 17 Oct 2007 17:21:07 +0200
-References: <OF48E0997F.B61F7220-ONC125736F.002D7F06-C125736F.002DD39C@de.ibm.com>
-	<200710162320.00630.fenkes@de.ibm.com>
-	<20071017012706.adbd3188.sfr@canb.auug.org.au>
-In-Reply-To: <20071017012706.adbd3188.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200710171721.08565.fenkes@de.ibm.com>
-Cc: Thomas Q Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Paul Mackerras <pmac@au1.ibm.com>, netdev@vger.kernel.org,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7C80DDE3C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 01:29:39 +1000 (EST)
+In-Reply-To: <24BADA7A-1716-43B1-BC92-F4DB7ED0D331@kernel.crashing.org>
+References: <989B956029373F45A0B8AF0297081890B768A2@zch01exm26.fsl.freescale.net>
+	<24BADA7A-1716-43B1-BC92-F4DB7ED0D331@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] qe_lib: export symbols to fix compile error when QE
+	drivers compile as modules
+Date: Wed, 17 Oct 2007 10:30:08 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,20 +26,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 16 October 2007 17:27, Stephen Rothwell wrote:
 
-> One small change - I intend to remove the name and owner fields from
-> struct of_platform_driver, so you should not bother initialising the name
-> field and just initialise the name field of the embedded struct
-> device_driver instead.  This, of course, means that you don't need
-> 
-> 	drv->driver.name = drv->name;
-> 
-> in ibmebus_register_driver.
+On May 25, 2007, at 7:15 AM, Kumar Gala wrote:
 
-I'd prefer to let this line stay in place until you actually make your
-change, to keep the data structures consistent as long as the name field is
-present. You could remove it in your patch then.
+>
+> On May 24, 2007, at 9:45 PM, Li Yang-r58472 wrote:
+>
+>>
+>>> -----Original Message-----
+>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>>> Sent: Thursday, May 24, 2007 7:44 PM
+>>> To: Li Yang-r58472
+>>> Cc: Paul; linuxppc-dev@ozlabs.org
+>>> Subject: Re: [PATCH] qe_lib: export symbols to fix compile error  
+>>> when
+>> QE drivers
+>>> compile as modules
+>>>
+>>>
+>>> On May 24, 2007, at 4:14 AM, Li Yang wrote:
+>>>
+>>>> Export symbols of qe_lib to be used by QE drivers.
+>>>>
+>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>> ---
+>>>> arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
+>>>> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
+>>>> arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
+>>>> 3 files changed, 25 insertions(+), 2 deletions(-)
+>>>
+>>> A number of the EXPORT_SYMBOL() are not used by any in kernel  
+>>> drivers
+>>> and thus should not be added.  See comments below.  Also, should
+>>> these be EXPORT_SYMBOL_GPL().
+>>
+>> Some of them are not used by in kernel driver, but they are used by
+>> some
+>> off kernel drivers and driver in development.  Shouldn't we export
+>> them?
+>
+> Nope, its been a pretty established rule that we don't export symbols
+> for drivers not in the kernel.  These drivers should really be
+> submitted for acceptance into the kernel and than we can export the
+> symbols they need.
+>
+> While I can see a need for the *slow* symbols to be exported until
+> there is a driver needing them we shouldn't export the symbols.
+>
+>> I know Linux is again non-GPL modules, but Freescale won't be forcing
+>> customers to use GPL as long as Linux doesn't ban non-GPL module
+>> completely.
+>
+> That's fine.
+>
+>>>> static void get_cmxucr_reg(int ucc_num, volatile u32 ** p_cmxucr,
+>>>> u8 * reg_num,
+>>>> 			   u8 * shift)
+>>>> @@ -122,6 +126,7 @@ static void get_cmxucr_reg(int ucc_num,
+>>>> volatile u32 ** p_cmxucr, u8 * reg_num,
+>>>> 		break;
+>>>> 	}
+>>>> }
+>>>> +EXPORT_SYMBOL(get_cmxucr_reg);
+>>>
+>>> remove, you shouldn't be exporting something marked static.
+>>
+>> Good catch.
+>>
+>> Thanks,
+>> Leo
 
-Regards,
-  Joachim
+What happened with this?
+
+- k
