@@ -2,27 +2,24 @@ Return-Path: <bounces@nabble.com>
 Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD1FEDDE3C
+	by ozlabs.org (Postfix) with ESMTP id 7E741DDEC4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Oct 2007 22:09:43 +1000 (EST)
+	Wed, 17 Oct 2007 22:17:29 +1000 (EST)
 Received: from isper.nabble.com ([192.168.236.156])
 	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Ii7iS-0000Zy-Vp
-	for linuxppc-embedded@ozlabs.org; Wed, 17 Oct 2007 05:09:36 -0700
-Message-ID: <13252272.post@talk.nabble.com>
-Date: Wed, 17 Oct 2007 05:09:36 -0700 (PDT)
-From: aauer1 <aauer1@gmx.at>
+	(envelope-from <bounces@nabble.com>) id 1Ii7q2-0000lf-JM
+	for linuxppc-embedded@ozlabs.org; Wed, 17 Oct 2007 05:17:26 -0700
+Message-ID: <13252501.post@talk.nabble.com>
+Date: Wed, 17 Oct 2007 05:17:26 -0700 (PDT)
+From: Misbah khan <misbah_khan@engineer.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux booting problem on Xilinx ppc
-In-Reply-To: <fa686aa40710161237t54688b71g9c7cf9acdac2b744@mail.gmail.com>
+Subject: Re: PPC440EPx GPIO control help
+In-Reply-To: <1192618194.13993.25.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <12694083.post@talk.nabble.com>
-	<fa686aa40709152009k2b27ffc9kfb3fd0848f6b16d@mail.gmail.com>
-	<12696686.post@talk.nabble.com> <13219154.post@talk.nabble.com>
-	<000901c81006$7303b490$bb3ca688@LGE.NET>
-	<13239003.post@talk.nabble.com>
-	<fa686aa40710161237t54688b71g9c7cf9acdac2b744@mail.gmail.com>
+References: <400754.83957.qm@web45604.mail.sp1.yahoo.com>
+	<47158C69.2070903@ovro.caltech.edu> <4715A9D9.6090308@mock.com>
+	<1192618194.13993.25.camel@localhost.localdomain>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,43 +31,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hello.
+I Prefer that you write a coustem driver. map the GPIO address (Either make
+use of mapped area of GPIO that u may find in the source for comercial
+kernel or else map the physical address in the driver and access it ).
+
+---Misbah
 
 
-Grant Likely-2 wrote:
+Josh Boyer-4 wrote:
 > 
-> On 10/16/07, aauer1 <aauer1@gmx.at> wrote:
->>
->> The on-chip memories are disabled. Only the BRAM is enabled. Now, we also
->> use
->> the ELDK 4.1 from Denx and the included cross compiler. The result is the
->> same... the Kernel stops at "Now booting the kernel". Now, we also have
->> an
->> USB JTAG cable. So, we can debug the memory.
->> Probably, anyone has another idea.
+> On Tue, 2007-10-16 at 23:21 -0700, Jeff Mock wrote:
+>> David Hawkins wrote:
+>> >> I have a PPC440EPx Sequoia Evaluation board that runs on Linux 2.6.21. 
+>> >> What I would want to do is to control (write and read values to) its 
+>> >> GPIO. Perhaps similar to Turbo C's outputb(0x378,0x01) to write and 
+>> >> inportb(0x378) to read. I read the PPC440EPx manual but I find it 
+>> >> difficult to understand.
+>> >>
+>> >> Could anyone show me any tutorial or some sample codes?
+>> > 
+>> > I copied the code below from some test code I wrote for a TS7300
+>> > board (uses an ARM EP9302 processor). However, since its user-space
+>> > code it should work fine.
+>> > 
+>> 
+>> I might be a little out of date, but I think you must write your own 
+>> driver to wiggle the GPIO pins on a 440 processor.  I just finished a 
+>> project using a 440GX with a 2.6.15 kernel (we froze the code about 8 
+>> months ago).
+>> 
+>> The 440 powerPC core is a 32-bit processor with 36-bit physical 
+>> addresses.  The physical address for the GPIO pins is someplace above 
+>> 4GB.  An mmap() of /dev/mem only lets you map the lower 4GB of the 
+>> address space, as a result you can't write a user space program on the 
+>> 440 to wiggle the GPIO pins.  (This was true with 2.6.15, I can't speak 
+>> for later kernels).
 > 
-> There are two common reasons for this behaviour:
-> 1. kernel crashes before the console is configured
-> 2. the console is not configured correctly.
+> This depends on the 440 chip itself.  If I recall correctly, the
+> 440EP(x) chips don't have I/O above 4GB.
 > 
-> In both cases; finding a way to look at __log_buf is the fastest way
-> to figure out what is going on.
+> josh
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
 > 
 
-I was able to look at the __log_buf variable with the JTAG cable. So, I
-recognized that the kernel doesn't halt after the "No booting the kernel"
-message. There are many output messages in the __log_buf variable until it
-stops at with a "Kernel panic" because the rootfs is not found (but this is
-the minor problem).
-Now, I know that the kernel boots but I don't get an output with my Xilinx
-UartLite module. Are there some kernel modules which must be activated?? 
-Btw. I have used the Linux-2.6-virtex kernel from
-http://git.secretlab.ca/git/ and another Kernel (2.6.23 from kernel.org) -
-both with the same result.
-
-Thanks a lot,
-Andreas
 -- 
-View this message in context: http://www.nabble.com/Linux-booting-problem-on-Xilinx-ppc-tf4449060.html#a13252272
+View this message in context: http://www.nabble.com/PPC440EPx-GPIO-control-help-tf4638058.html#a13252501
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
