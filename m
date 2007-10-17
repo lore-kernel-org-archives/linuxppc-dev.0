@@ -1,26 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C6036DDE43
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:14:18 +1000 (EST)
-Subject: [PATCH] fix EMAC driver for proper napi_synchronize API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-In-Reply-To: <20071017083107.6a1b1bd3@freepuppy.rosehill>
-References: <1192513792.19073.23.camel@pasglop>
-	<20071016115318.0fc36af3@freepuppy.rosehill>
-	<1192589522.11899.130.camel@pasglop> <47157EA4.1000500@garzik.org>
-	<1192591481.11899.134.camel@pasglop>
-	<20071017083107.6a1b1bd3@freepuppy.rosehill>
-Content-Type: text/plain
-Date: Thu, 18 Oct 2007 09:14:03 +1000
-Message-Id: <1192662843.6783.48.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	"David S. Miller" <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id CFD6ADDEB8
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:42:31 +1000 (EST)
+Received: from pd3mr2so.prod.shaw.ca
+	(pd3mr2so-qfe3.prod.shaw.ca [10.0.141.178]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JQ200A3LXS8KJF0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 17 Oct 2007 17:40:56 -0600 (MDT)
+Received: from pn2ml3so.prod.shaw.ca ([10.0.121.147])
+	by pd3mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQ200KCSXS7IQ00@pd3mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Wed, 17 Oct 2007 17:40:56 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQ200J1YXS62552@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 17 Oct 2007 17:40:55 -0600 (MDT)
+Date: Wed, 17 Oct 2007 17:41:00 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] commit e8f605cd71aa09a8f8b73f410a15d2a46022a60e
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Message-id: <20071017234100.7729.85901.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,23 +33,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The EMAC driver "fix" was merged by mistake before the dust had settled on
-the new napi synchronize interface (and before it got merged). The final
-version of that function is spelled without underscores.
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---- 
+mpc8349emitx(gp): add UHCI and USB storage support
 
-Index: linux-work/drivers/net/ibm_newemac/mal.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/mal.c	2007-10-18 08:02:22.000000000 +1000
-+++ linux-work/drivers/net/ibm_newemac/mal.c	2007-10-18 08:02:24.000000000 +1000
-@@ -322,7 +322,7 @@ void mal_poll_disable(struct mal_instanc
- 		msleep(1);
+    USB support for the 8349itx got added a while back; but the defconfig
+    never got updated.  This patch adds the appropriate USB config options
+    to defconfig
+
+    Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+    CC: Scott Wood <scottwood@freescale.com>
+    CC: Kumar Gala <galak@kernel.crashing.org>
+    CC: Timur Tabi <timur@freescale.com>
+---
+
+ arch/powerpc/configs/mpc834x_itx_defconfig   |    2 -
+ arch/powerpc/configs/mpc834x_itxgp_defconfig |   88 ++++++++++++++++++++++++++
+ 2 files changed, 88 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/configs/mpc834x_itx_defconfig b/arch/powerpc/configs/mpc834x_itx_defconfig
+index eb28dd8..ba512d1 100644
+--- a/arch/powerpc/configs/mpc834x_itx_defconfig
++++ b/arch/powerpc/configs/mpc834x_itx_defconfig
+@@ -867,7 +867,7 @@ CONFIG_USB_EHCI_ROOT_HUB_TT=y
+ CONFIG_USB_EHCI_FSL=y
+ # CONFIG_USB_ISP116X_HCD is not set
+ # CONFIG_USB_OHCI_HCD is not set
+-# CONFIG_USB_UHCI_HCD is not set
++CONFIG_USB_UHCI_HCD=y
+ # CONFIG_USB_SL811_HCD is not set
+ # CONFIG_USB_R8A66597_HCD is not set
  
- 	/* Synchronize with the MAL NAPI poller */
--	__napi_synchronize(&mal->napi);
-+	napi_synchronize(&mal->napi);
- }
+diff --git a/arch/powerpc/configs/mpc834x_itxgp_defconfig b/arch/powerpc/configs/mpc834x_itxgp_defconfig
+index 22b9546..9faa948 100644
+--- a/arch/powerpc/configs/mpc834x_itxgp_defconfig
++++ b/arch/powerpc/configs/mpc834x_itxgp_defconfig
+@@ -760,15 +760,101 @@ CONFIG_USB_SUPPORT=y
+ CONFIG_USB_ARCH_HAS_HCD=y
+ CONFIG_USB_ARCH_HAS_OHCI=y
+ CONFIG_USB_ARCH_HAS_EHCI=y
+-# CONFIG_USB is not set
++CONFIG_USB=y
++# CONFIG_USB_DEBUG is not set
++
++#
++# Miscellaneous USB options
++#
++# CONFIG_USB_DEVICEFS is not set
++CONFIG_USB_DEVICE_CLASS=y
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_OTG is not set
++
++#
++# USB Host Controller Drivers
++#
++CONFIG_USB_EHCI_HCD=y
++# CONFIG_USB_EHCI_SPLIT_ISO is not set
+ CONFIG_USB_EHCI_ROOT_HUB_TT=y
++# CONFIG_USB_EHCI_TT_NEWSCHED is not set
+ CONFIG_USB_EHCI_FSL=y
++# CONFIG_USB_ISP116X_HCD is not set
++# CONFIG_USB_OHCI_HCD is not set
++CONFIG_USB_UHCI_HCD=y
++# CONFIG_USB_SL811_HCD is not set
++# CONFIG_USB_R8A66597_HCD is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
  
- void mal_poll_enable(struct mal_instance *mal, struct mal_commac *commac)
+ #
+ # NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+ #
+ 
+ #
++# may also be needed; see USB_STORAGE Help for more information
++#
++CONFIG_USB_STORAGE=y
++# CONFIG_USB_STORAGE_DEBUG is not set
++# CONFIG_USB_STORAGE_DATAFAB is not set
++# CONFIG_USB_STORAGE_FREECOM is not set
++# CONFIG_USB_STORAGE_DPCM is not set
++# CONFIG_USB_STORAGE_USBAT is not set
++# CONFIG_USB_STORAGE_SDDR09 is not set
++# CONFIG_USB_STORAGE_SDDR55 is not set
++# CONFIG_USB_STORAGE_JUMPSHOT is not set
++# CONFIG_USB_STORAGE_ALAUDA is not set
++# CONFIG_USB_STORAGE_KARMA is not set
++# CONFIG_USB_LIBUSUAL is not set
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++CONFIG_USB_MON=y
++
++#
++# USB port drivers
++#
++
++#
++# USB Serial Converter support
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_ADUTUX is not set
++# CONFIG_USB_AUERSWALD is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_BERRY_CHARGE is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYPRESS_CY7C63 is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_PHIDGET is not set
++# CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_FTDI_ELAN is not set
++# CONFIG_USB_APPLEDISPLAY is not set
++# CONFIG_USB_SISUSBVGA is not set
++# CONFIG_USB_LD is not set
++# CONFIG_USB_TRANCEVIBRATOR is not set
++# CONFIG_USB_IOWARRIOR is not set
++
++#
++# USB DSL modem support
++#
++
++#
+ # USB Gadget Support
+ #
+ # CONFIG_USB_GADGET is not set
