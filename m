@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 497DEDDE9B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:36:52 +1000 (EST)
-Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20071017.042229.95059231.davem@davemloft.net>
-References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
-	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-	<20071017.042229.95059231.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 21:36:30 +1000
-Message-Id: <1192620990.11899.168.camel@pasglop>
-Mime-Version: 1.0
-Cc: sparclinux@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-	sfr@canb.auug.org.au
-Reply-To: benh@kernel.crashing.org
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id A4C77DDEAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:42:42 +1000 (EST)
+Message-ID: <4715F51D.2060000@semihalf.com>
+Date: Wed, 17 Oct 2007 13:42:21 +0200
+From: Marian Balakowicz <m8@semihalf.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [POWERPC 03/15] [POWERPC] TQM5200 board support
+References: <47075FA7.3030108@semihalf.com> <4708C0DA.2040606@semihalf.com>
+	<20071008150449.GB4289@loki.buserror.net>
+In-Reply-To: <20071008150449.GB4289@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> I find it ironic that you add of_get_pci_dev_node() as a function
-> which gets the node and grabs a reference to it, and then the very
-> first usage you make of it doesn't drop the reference at all.
+Scott Wood wrote:
 > 
-> That reference grabbing aspect of the new interface is obviously very
-> useful! :-)
+>> +void tqm5200_show_cpuinfo(struct seq_file *m)
+>> +{
+>> +	struct device_node* np = of_find_all_nodes(NULL);
+>> +	const char *model = NULL;
+>> +
+>> +	if (np)
+>> +		model = of_get_property(np, "model", NULL);
+>> +
+>> +	seq_printf(m, "vendor\t\t:	Freescale Semiconductor\n");
+>> +	seq_printf(m, "machine\t\t:	%s\n", model ? model : "unknown");
+>> +
+>> +	of_node_put(np);
+>> +}
 > 
-> Kidding aside (I realize that in this case probably the driver never
-> unregisters and therefore the reference never needs to be released)
-> it's really much nicer to add facilities when you have patches in hand
-> that actually use them.
+> Get rid of this.
 
-I think in this case, it's mostly a matter of consistency... pretty much
-everything that returns a device_node grabs a reference... except
-pci_device_to_OF_node :-)
+Agree, that may be overhead in some cases. But there would be also
+cases where printing out a machine name would be informative. CM5200
+is one such example, there are several variants of the hw and platform
+name is too generic.
 
-I think Michael is trying to address that, and axon-msi happens to be
-something he wrote so a good candidate for an initial conversion :-)
+Other situation would be adding compatible='mpc5200-generic' platform
+where platform name would not provide any details.
 
-Cheers,
-Ben.
+m.
