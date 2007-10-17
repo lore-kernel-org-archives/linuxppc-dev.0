@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0B3F2DDE9C
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:12:37 +1000 (EST)
-In-Reply-To: <1192195728-24189-4-git-send-email-leoli@freescale.com>
-References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
-	<1192195728-24189-2-git-send-email-leoli@freescale.com>
-	<1192195728-24189-3-git-send-email-leoli@freescale.com>
-	<1192195728-24189-4-git-send-email-leoli@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7B7F41BB-05FB-4BFD-B4C6-ADDE1E2D76E3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 3/9] add Freescale SerDes PHY support
-Date: Wed, 17 Oct 2007 09:13:09 -0500
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id DECD7DDE21
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:29:01 +1000 (EST)
+Message-ID: <47161C38.2070305@ru.mvista.com>
+Date: Wed, 17 Oct 2007 18:29:12 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+References: <20070921032603.0D3EA32C887@thor>	<4713A616.3090103@ru.mvista.com>
+	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+In-Reply-To: <18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,180 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-> diff --git a/arch/powerpc/sysdev/fsl_serdes.c b/arch/powerpc/sysdev/ 
-> fsl_serdes.c
-> new file mode 100644
-> index 0000000..5e91eb7
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/fsl_serdes.c
-> @@ -0,0 +1,152 @@
-> +/*
-> + * arch/powerpc/sysdev/fsl_serdes.c
-> + *
-> + * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights  
-> reserved.
-> + *
-> + * Author: Li Yang <leoli@freescale.com>
-> + *
-> + * Freescale SerDes initialization routines
-> + *
-> + * This program is free software; you can redistribute it and/or  
-> modify it
-> + * under the terms of the GNU General Public License as published  
-> by the
-> + * Free Software Foundation;  either version 2 of the License, or  
-> (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/stddef.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/errno.h>
-> +#include <linux/delay.h>
-> +#include <linux/of.h>
-> +
-> +#include <asm/system.h>
-> +#include <asm/io.h>
-> +#include <asm/machdep.h>
-> +
-> +#include "fsl_serdes.h"
+Paul Mackerras wrote:
 
-just move the #defines into the .c file and kill the header.
+>>    I don't see my own signoff or at least a reference to my prior work in
+>>this patch or even at -rt patch -- despite this code ha clearly borrowed from
+>>it.  And I'm not sure why this crippled version (lacking 40x/ Book E specific
+>>clockevents implementation) is preferred over mine, unless this implementation
+>>was only aimed at PPC64 machines...
 
-> +
-> +static int __init setup_serdes(struct device_node *np)
-> +{
-> +	void __iomem *regs;
-> +	const void *prot;
-> +	const unsigned int *freq;
-> +	struct resource res;
-> +	u32 rfcks;
-> +
-> +	of_address_to_resource(np, 0, &res);
-> +	regs = ioremap(res.start, res.end - res.start + 1);
+> Tony started from an earlier patch by John Stultz, not from your
+> patches.
 
-you don't unmap this ever (on error or exit of the function).
-> +
-> +	prot = of_get_property(np, "protocol", NULL);
-> +	if (!prot)
-> +		return -EINVAL;
-> +	freq = of_get_property(np, "clock", NULL);
-> +	switch (*freq) {
-> +	case 100:
-> +		rfcks = FSL_SRDSCR4_RFCKS_100;
-> +		break;
-> +	case 125:
-> +		rfcks = FSL_SRDSCR4_RFCKS_125;
-> +		break;
-> +	case 150:
-> +		rfcks = FSL_SRDSCR4_RFCKS_150;
-> +		break;
-> +	default:
-> +		printk(KERN_ERR "SerDes: Wrong frequency\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* Use default prescale and counter */
-> +
-> +	/* 1.0V corevdd */
-> +	if (of_get_property(np, "vdd-1v", NULL)) {
-> +		/* DPPE/DPPA = 0 */
-> +		clrbits32(regs + FSL_SRDSCR0_OFFS, FSL_SRDSCR0_DPP_1V2);
-> +
-> +		/* VDD = 0 */
-> +		clrbits32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_VDD_1V2);
-> +	}
-> +
-> +	/* protocol specific configuration */
-> +	if (!strcmp(prot, "sata")) {
-> +		/* Set and clear reset bits */
-> +		setbits32(regs + FSL_SRDSRSTCTL_OFFS,
-> +				FSL_SRDSRSTCTL_SATA_RESET);
-> +		mdelay(1);
-> +		clrbits32(regs + FSL_SRDSRSTCTL_OFFS,
-> +				FSL_SRDSRSTCTL_SATA_RESET);
-> +
-> +		/* Configure SRDSCR1 */
-> +		clrbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
-> +
-> +		/* Configure SRDSCR2 */
-> +		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS,
-> +				FSL_SRDSCR2_SEIC_MASK, FSL_SRDSCR2_SEIC_SATA);
-> +
-> +		/* Configure SRDSCR3 */
-> +		out_be32(regs + FSL_SRDSCR3_OFFS, FSL_SRDSCR3_KFR_SATA |
-> +				FSL_SRDSCR3_KPH_SATA |
-> +				FSL_SRDSCR3_SDFM_SATA_PEX |
-> +				FSL_SRDSCR3_SDTXL_SATA);
-> +
-> +		/* Configure SRDSCR4 */
-> +		out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
-> +				FSL_SRDSCR4_PROT_SATA);
-> +
-> +	} else if (!strcmp(prot, "pcie")) {
-> +		/* Configure SRDSCR1 */
-> +		setbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
-> +
-> +		/* Configure SRDSCR2 */
-> +		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_SEIC_MASK,
-> +				FSL_SRDSCR2_SEIC_PEX);
-> +
-> +		/* Configure SRDSCR3 */
-> +		out_be32(regs + FSL_SRDSCR3_OFFS, FSL_SRDSCR3_SDFM_SATA_PEX);
-> +
-> +		/* Configure SRDSCR4 */
-> +		if (of_get_property(np, "pcie-x2", NULL))
-> +			out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
-> +				FSL_SRDSCR4_PROT_PEX | FSL_SRDSCR4_PLANE_X2);
-> +		else
-> +			out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
-> +				FSL_SRDSCR4_PROT_PEX);
-> +
-> +	} else if (!strcmp(prot, "sgmii")) {
-> +		/* Configure SRDSCR1 */
-> +		clrbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
-> +
-> +		/* Configure SRDSCR2 */
-> +		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_SEIC_MASK,
-> +				FSL_SRDSCR2_SEIC_SGMII);
-> +
-> +		/* Configure SRDSCR3 */
-> +		out_be32(regs + FSL_SRDSCR3_OFFS, 0);
-> +
-> +		/* Configure SRDSCR4 */
-> +		out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
-> +				FSL_SRDSCR4_PROT_SGMII);
-> +
-> +	} else {
-> +		printk(KERN_ERR "SerDes: Wrong protocol\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* Do a software reset */
-> +	setbits32(regs + FSL_SRDSRSTCTL_OFFS, FSL_SRDSRSTCTL_RST);
-> +
-> +	printk(KERN_INFO "Freescale SerDes at %8x initialized\n",  
-> res.start);
-> +
-> +	return 0;
-> +}
-> +
-> +static int __init fsl_serdes_init(void) {
-> +	struct device_node *np;
-> +
-> +	for (np = NULL; (np = of_find_compatible_node(np, NULL,  
-> "fsl,serdes")) != NULL;)
+    Well, that I can believe, yet the clockevents patch has traces of my
+former work, and looking at read_persisitent_time() it looks suspiciously 
+close to my version too...
 
-use for_each_compatible_node
+> The main reason your patches were rejected were that you completely
+> broke the VDSO and the deterministic time accounting, and made no
 
-> +		setup_serdes(np);
-> +
-> +	return 0;
-> +}
-> +
-> +arch_initcall(fsl_serdes_init);
->
+    That's just not true!
+    They didn't broke vDSO (to be precise it was John's patch that broke it), 
+they just removed the vDSO code known to already be broken by -rt patch for 
+several months by then.  And they didn't broke determinictic accounting -- 
+they just made two things mutually exclusive.  I haven't yet seen how the 
+patches that were preferred dealt with it at all.
 
-- k
+> attempt to fix them.
+
+    I lacked time to do this, so did what I could.
+
+> As for 40x/Book E, the main thing there is the auto-reload.  However,
+> since the generic core can use a oneshot clock event source to
+> generate periodic ticks, there is no advantage to using the
+> auto-reload.
+
+    Really? IMO, the harware does keep a constant interrupt rate better than 
+software.
+
+>>    Also, have the deterministic CPU accounting incompatibility with
+>>clockevents been dealt with?
+
+> The S390 guys looked at that and solved it with Ingo's and Thomas's
+> help (although I did see something on linux-kernel about some further
+> problems).
+
+    Good to hear.  Nobody offered any help to me (except maybe Thomas -- but we
+never came to any viable approach).
+
+>>    I'd use (evt - 1) since the interrupt gets generated at 0xffffffff count, 
+>>not 0 (on classic CPUs).  With you removing of the code that compensated for 
+
+> See commit d968014b7280e2c447b20363e576999040ac72ef; I already fixed
+> that.
+
+    Good to hear this has been dealt with, along with that PowerMAC "IRQ 
+simulation" nuisance -- I didn't care about it, sorry. :-)
+
+>>the errors, they will accumulate.  And no, this wouldn't be enough anyway, 
+
+> No, they don't accumulate.  See tick_setup_periodic().  The interval
+> until the next tick is determined using ktime_get() rather than just
+> being a constant.
+
+    The interrupt always happens 1 clock later depsite what value
+have been selected for the decrementer.  Well, OK, that should still get 
+compensated by the tick_setup_periodic() by selecting shorter next period.
+    Well, I'm taking comfot in that you've finally had to sutract 1. :-)
+
+>>since on 40x and Book E you'll need to set it for evt anyway, since the 
+>>interrupt happens at 0 count...
+>>    NAK the patch.  And I really don't understand why you're throwing alway 
+>>already tested/working code...
+
+> Because you broke important features
+
+    That is *not true*.
+    And nobody had interest to fix them for months (quite strange if they're 
+so important) while I had neither time nor interest to deal with them anymore 
+having written the code that *did work*, and not only for me.
+
+> and because you seem to have some
+
+> fundamental misconceptions  (e.g. the comment about errors accumulating
+
+    Where's the misconception in the patch? ;-)
+
+> you just made).
+
+    I see, I'm a bad guy... but still not convinced. :-)
+
+> Paul.
+
+WBR, Sergei
