@@ -1,15 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 17 Oct 2007 10:33:31 +1000
+Date: Wed, 17 Oct 2007 10:34:56 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 2/2] bootwrapper: Bail from script if any command fails
-Message-ID: <20071017003331.GA28260@localhost.localdomain>
-References: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
-	<20071016213107.14117.3858.stgit@trillian.cg.shawcable.net>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: DTC Updates
+Message-ID: <20071017003456.GB28260@localhost.localdomain>
+References: <E1IhmXN-0003CC-39@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071016213107.14117.3858.stgit@trillian.cg.shawcable.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <E1IhmXN-0003CC-39@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,14 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 16, 2007 at 03:31:07PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Oct 16, 2007 at 08:32:45AM -0500, Jon Loeliger wrote:
 > 
-> Add the 'set -e' command to the wrapper script so that if any command
-> fails then the script will automatically exit
+> Guys and Dolls,
+> 
+> I pushed out all of David's recent DTC and libfdt patches.
+> I also jammed the following patch into the mix as well.
+> 
+> HTH,
+> jdl
+> 
+> 
+> 
+> commit 9e32930ebcacfcf7cb7c1c2b8e776eb3957cf6cb
+> Author: Jon Loeliger <jdl@freescale.com>
+> Date:   Tue Oct 16 07:35:38 2007 -0500
+> 
+>     Restore warning message about bison expected output.
 
-Ah.. this will conflict with my patch to merge dtc (because that
-touches the line invoking dtc to change the path to it).
+Heh, the removal was kind of deliberate, since I didn't think it was
+actually all that much use.  But I don't really care much one way or
+the other.
+
+I really wish bison would suppress these warnings in glr-parser mode.
+
+> 
+>     It was dropped in ad9593f229362782b953da4b805df713e8468df0.
+> 
+>     Signed-off-by: Jon Loeliger <jdl@jdl.com>
+> 
+> diff --git a/Makefile b/Makefile
+> index 84f0efe..d7d1af5 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -207,6 +207,7 @@ clean: libfdt_clean tests_clean
+> 
+>  %.tab.c %.tab.h %.output: %.y
+>         @$(VECHO) BISON $@
+> +       @$(VECHO) ---- Expect 2 s/r and 2 r/r. ----
+>         $(BISON) -d $<
+> 
+>  FORCE:
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
