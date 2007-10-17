@@ -1,16 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4874ADDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 13:43:41 +1000 (EST)
-Date: Wed, 17 Oct 2007 13:41:23 +1000
+	by ozlabs.org (Postfix) with ESMTP id EE72EDDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 13:43:42 +1000 (EST)
+Date: Wed, 17 Oct 2007 13:43:34 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 1/2] [SPARC/64] Consolidate of_register_driver
-Message-Id: <20071017134123.cfe10b79.sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 2/2] [POWERPC] Use of_register_driver to implement
+	of_register_platform_driver
+Message-Id: <20071017134334.cad2363e.sfr@canb.auug.org.au>
+In-Reply-To: <20071017134123.cfe10b79.sfr@canb.auug.org.au>
+References: <20071017134123.cfe10b79.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
-	wli@holomorphy.com
+	"David S. Miller" <davem@davemloft.net>, wli@holomorphy.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,176 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also of_unregister_driver.  These will be shortly also used by the
-PowerPC code.
+Also of_unregister{,_platform}_driver.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/sparc/kernel/of_device.c     |   20 --------------------
- arch/sparc64/kernel/of_device.c   |   20 --------------------
- drivers/of/platform.c             |   21 +++++++++++++++++++++
- include/asm-sparc/of_platform.h   |    5 +----
- include/asm-sparc64/of_platform.h |    5 +----
- include/linux/of_platform.h       |    4 ++++
- 6 files changed, 27 insertions(+), 48 deletions(-)
+ arch/powerpc/kernel/of_platform.c |   20 --------------------
+ include/asm-powerpc/of_platform.h |   10 ++++++++--
+ 2 files changed, 8 insertions(+), 22 deletions(-)
 
+This depends on the Sparc part (patch 1/2) being in the tree first.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
-index fb2caef..3ea000d 100644
---- a/arch/sparc/kernel/of_device.c
-+++ b/arch/sparc/kernel/of_device.c
-@@ -585,24 +585,6 @@ static int __init of_debug(char *str)
+diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+index eca8ccc..9b01602 100644
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -67,26 +67,6 @@ static int __init of_bus_driver_init(void)
  
- __setup("of_debug=", of_debug);
+ postcore_initcall(of_bus_driver_init);
  
--int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+-int of_register_platform_driver(struct of_platform_driver *drv)
 -{
 -	/* initialize common driver fields */
 -	if (!drv->driver.name)
 -		drv->driver.name = drv->name;
 -	if (!drv->driver.owner)
 -		drv->driver.owner = drv->owner;
--	drv->driver.bus = bus;
+-	drv->driver.bus = &of_platform_bus_type;
 -
 -	/* register with core */
 -	return driver_register(&drv->driver);
 -}
+-EXPORT_SYMBOL(of_register_platform_driver);
 -
--void of_unregister_driver(struct of_platform_driver *drv)
+-void of_unregister_platform_driver(struct of_platform_driver *drv)
 -{
 -	driver_unregister(&drv->driver);
 -}
+-EXPORT_SYMBOL(of_unregister_platform_driver);
 -
- struct of_device* of_platform_device_create(struct device_node *np,
- 					    const char *bus_id,
- 					    struct device *parent,
-@@ -628,6 +610,4 @@ struct of_device* of_platform_device_create(struct device_node *np,
- 	return dev;
- }
- 
--EXPORT_SYMBOL(of_register_driver);
--EXPORT_SYMBOL(of_unregister_driver);
- EXPORT_SYMBOL(of_platform_device_create);
-diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
-index 42d7798..fc5c0cc 100644
---- a/arch/sparc64/kernel/of_device.c
-+++ b/arch/sparc64/kernel/of_device.c
-@@ -869,26 +869,6 @@ static int __init of_debug(char *str)
- 
- __setup("of_debug=", of_debug);
- 
--int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
--{
--	/* initialize common driver fields */
--	if (!drv->driver.name)
--		drv->driver.name = drv->name;
--	if (!drv->driver.owner)
--		drv->driver.owner = drv->owner;
--	drv->driver.bus = bus;
--
--	/* register with core */
--	return driver_register(&drv->driver);
--}
--EXPORT_SYMBOL(of_register_driver);
--
--void of_unregister_driver(struct of_platform_driver *drv)
--{
--	driver_unregister(&drv->driver);
--}
--EXPORT_SYMBOL(of_unregister_driver);
--
- struct of_device* of_platform_device_create(struct device_node *np,
- 					    const char *bus_id,
- 					    struct device *parent,
-diff --git a/drivers/of/platform.c b/drivers/of/platform.c
-index 864f09f..b47bb2d 100644
---- a/drivers/of/platform.c
-+++ b/drivers/of/platform.c
-@@ -12,6 +12,7 @@
-  *
-  */
- #include <linux/errno.h>
-+#include <linux/module.h>
- #include <linux/device.h>
- #include <linux/of_device.h>
+ static void of_platform_make_bus_id(struct of_device *dev)
+ {
+ 	struct device_node *node = dev->node;
+diff --git a/include/asm-powerpc/of_platform.h b/include/asm-powerpc/of_platform.h
+index 80e6fad..d20a4cd 100644
+--- a/include/asm-powerpc/of_platform.h
++++ b/include/asm-powerpc/of_platform.h
+@@ -15,8 +15,14 @@
  #include <linux/of_platform.h>
-@@ -94,3 +95,23 @@ int of_bus_type_init(struct bus_type *bus, const char *name)
- 	bus->resume = of_platform_device_resume;
- 	return bus_register(bus);
- }
-+
-+int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+ 
+ /* Platform drivers register/unregister */
+-extern int of_register_platform_driver(struct of_platform_driver *drv);
+-extern void of_unregister_platform_driver(struct of_platform_driver *drv);
++static inline int of_register_platform_driver(struct of_platform_driver *drv)
 +{
-+	/* initialize common driver fields */
-+	if (!drv->driver.name)
-+		drv->driver.name = drv->name;
-+	if (!drv->driver.owner)
-+		drv->driver.owner = drv->owner;
-+	drv->driver.bus = bus;
-+
-+	/* register with core */
-+	return driver_register(&drv->driver);
++	return of_register_driver(drv, &of_platform_bus_type);
 +}
-+EXPORT_SYMBOL(of_register_driver);
-+
-+void of_unregister_driver(struct of_platform_driver *drv)
++static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
 +{
-+	driver_unregister(&drv->driver);
++	of_unregister_driver(drv);
 +}
-+EXPORT_SYMBOL(of_unregister_driver);
-diff --git a/include/asm-sparc/of_platform.h b/include/asm-sparc/of_platform.h
-index 64a2300..d638737 100644
---- a/include/asm-sparc/of_platform.h
-+++ b/include/asm-sparc/of_platform.h
-@@ -18,12 +18,9 @@
  
- extern struct bus_type ebus_bus_type;
- extern struct bus_type sbus_bus_type;
--extern struct bus_type of_platform_bus_type;
-+
- #define of_bus_type	of_platform_bus_type	/* for compatibility */
- 
--extern int of_register_driver(struct of_platform_driver *drv,
--			      struct bus_type *bus);
--extern void of_unregister_driver(struct of_platform_driver *drv);
+ /* Platform devices and busses creation */
  extern struct of_device *of_platform_device_create(struct device_node *np,
- 						   const char *bus_id,
- 						   struct device *parent,
-diff --git a/include/asm-sparc64/of_platform.h b/include/asm-sparc64/of_platform.h
-index f7c1f17..f15cfa7 100644
---- a/include/asm-sparc64/of_platform.h
-+++ b/include/asm-sparc64/of_platform.h
-@@ -19,12 +19,9 @@
- extern struct bus_type isa_bus_type;
- extern struct bus_type ebus_bus_type;
- extern struct bus_type sbus_bus_type;
--extern struct bus_type of_platform_bus_type;
-+
- #define of_bus_type	of_platform_bus_type	/* for compatibility */
- 
--extern int of_register_driver(struct of_platform_driver *drv,
--			      struct bus_type *bus);
--extern void of_unregister_driver(struct of_platform_driver *drv);
- extern struct of_device *of_platform_device_create(struct device_node *np,
- 						   const char *bus_id,
- 						   struct device *parent,
-diff --git a/include/linux/of_platform.h b/include/linux/of_platform.h
-index 448f70b..a8efcfe 100644
---- a/include/linux/of_platform.h
-+++ b/include/linux/of_platform.h
-@@ -48,6 +48,10 @@ struct of_platform_driver
- #define	to_of_platform_driver(drv) \
- 	container_of(drv,struct of_platform_driver, driver)
- 
-+extern int of_register_driver(struct of_platform_driver *drv,
-+			      struct bus_type *bus);
-+extern void of_unregister_driver(struct of_platform_driver *drv);
-+
- #include <asm/of_platform.h>
- 
- extern struct of_device *of_find_device_by_node(struct device_node *np);
 -- 
 1.5.3.4
