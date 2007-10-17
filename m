@@ -1,19 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 8A1C1DDE45
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:34:21 +1000 (EST)
-Message-ID: <47161D79.6000003@ru.mvista.com>
-Date: Wed, 17 Oct 2007 18:34:33 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
+	by ozlabs.org (Postfix) with ESMTP id 77D1CDDECA
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:41:47 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so2325766nfd
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:41:46 -0700 (PDT)
+Date: Wed, 17 Oct 2007 16:41:43 +0200
+To: linuxppc-dev@ozlabs.org
+Subject: Re: can and mpc5200b
+Message-ID: <20071017144143.GI4859@sfrouter>
+References: <20071015133233.GB4859@sfrouter>
+	<f87351060710150705l5e4d1ba5v6806686cd25418bb@mail.gmail.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
-References: <20070921032603.0D3EA32C887@thor>	<4713A616.3090103@ru.mvista.com>
-	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
-In-Reply-To: <18195.64334.985238.848522@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Do4IU1xF/9sod/r6"
+In-Reply-To: <f87351060710150705l5e4d1ba5v6806686cd25418bb@mail.gmail.com>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Paul Mackerras wrote:
+--Do4IU1xF/9sod/r6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->>    I'd use (evt - 1) since the interrupt gets generated at 0xffffffff count, 
->>not 0 (on classic CPUs).  With you removing of the code that compensated for 
+Hello list,
 
-> See commit d968014b7280e2c447b20363e576999040ac72ef; I already fixed
-> that.
+> > Hello Friends,
+> > what is the reasonable can-driver for a mpc5200b?
+> >
+> > I have seen for the peak-3.17 driver a port for the mpc5200 from denx o=
+n their
+> > website, but with kernel 2.6.23 I dont have a chance to use this?
+>=20
+> Check this out http://developer.berlios.de/projects/socketcan/ . This
+> is the CAN driver we use and it works pretty well for us. It is very
+> updated and supports the mscan chipset that is available with the
+> mpc5200b.
 
-    BTW, while fixing that for classic PPC, but you've broke it for 40x / book 
-E CPU which interrupt at 0.  Congratulations. :-)
+Socketcan works for me perfectly with the canconfig tool.
+Thank you.
 
-WBR, Sergei
+Silvio
+
+
+Mit freundlichen Gruessen
+Silvio Fricke
+
+--=20
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)
+   Linux-Entwicklung
+----------------------------------------------------------------------------
+
+
+--Do4IU1xF/9sod/r6
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHFh8m8WEBxatmn40RAkolAJ92C8bcRxFCUwD7IY6Am26OmiSVXwCgm1Wf
+/7tJBS7qYDzzscKFm4BWV2s=
+=/JfU
+-----END PGP SIGNATURE-----
+
+--Do4IU1xF/9sod/r6--
