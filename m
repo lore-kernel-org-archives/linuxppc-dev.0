@@ -1,26 +1,26 @@
 Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1AA7DDDE9E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:24:16 +1000 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9H4NtJf030021
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:23:55 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9H4NwA11290282
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:23:58 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9H4NvtA020889
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:23:58 +1000
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 087D7DDEBC
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:27:40 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9H4RMXX025912
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:27:22 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9H4UvG6270224
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:30:57 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9H4OTu4031929
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:24:30 +1000
 Subject: [PATCH] powerpc: Fix 64 bits vDSO dwarf info for CR register
 From: Benjamin Herrenschmidt <benh@au1.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Wed, 17 Oct 2007 14:23:57 +1000
-Message-Id: <1192595037.11899.146.camel@pasglop>
+Date: Wed, 17 Oct 2007 14:26:50 +1000
+Message-Id: <1192595210.11899.149.camel@pasglop>
 Mime-Version: 1.0
 Cc: Jakub Jelinek <jakub@redhat.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
@@ -45,6 +45,13 @@ Problem identified by Andrew Haley, and fix provided by Jakub Jelinek
 Unfortunately, a bug in gcc cause it to not quite work either, but that
 is being fixed separately with something around the lines of:
 
+linux-unwind.h:
+
+     fs->regs.reg[R_CR2].loc.offset = (long) &regs->ccr - new_cfa;
++    /* CR? regs are just 32-bit and PPC is big-endian.  */
++    fs->regs.reg[R_CR2].loc.offset += sizeof (long) - 4;
+
+(According to Jakub)
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
