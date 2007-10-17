@@ -1,22 +1,20 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	by ozlabs.org (Postfix) with ESMTP id CCC10DDEDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 08:09:44 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-Date: Wed, 17 Oct 2007 18:09:28 -0500
-References: <boot-8-00.miltonm@bga.com>
-	<20071001053326.GA15132@localhost.localdomain>
-	<fa686aa40710171328y195aca9k6ee8a1a5502fcf57@mail.gmail.com>
-In-Reply-To: <fa686aa40710171328y195aca9k6ee8a1a5502fcf57@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710171809.28922.rob@landley.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>, Christoph Hellwig <hch@lst.de>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F1B51DDE38
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 08:40:50 +1000 (EST)
+Date: Thu, 18 Oct 2007 02:40:15 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] fs_enet: Update for API changes
+Message-ID: <20071018024015.1712d3eb@kernel.crashing.org>
+In-Reply-To: <20071017174243.GA4462@loki.buserror.net>
+References: <20071017174243.GA4462@loki.buserror.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +24,138 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 17 October 2007 3:28:41 pm Grant Likely wrote:
-> > Including .dtbs in the kernel tree has a big practical problem:
-> > they're binary, so can't be patch(1)ed, which makes updating them a
-> > complete PITA.
+Hello Scott,
 
-I note that kconfig includes the lex/yacc output files (blah.c_shipped) so you 
-don't have to have lex and yacc installed to run "menuconfig".  It _also_ 
-includes the lex/yacc source which is what you patch and rebuild the _shipped 
-files from when they need to be changed.
+On Wed, 17 Oct 2007 12:42:43 -0500
+Scott Wood wrote:
 
-> > I'm working on merging dtc into the kernel tree instead.
->
-> I'm kind of late to this party; but I have to say I disagree.  Most of
-> us are doing just fine installing the dtc tool (and mkimage tool for
-> that matter).  Cloning it in the kernel tree is just asking for
-> divergence.
+> This driver was recently broken by several changes for which this
+> driver was not (or was improperly) updated:
+> 
+> 1. SET_MODULE_OWNER() was removed.
+> 2. netif_napi_add() was only being called when building with
+> the old CPM binding.
+> 3. The received/budget test was backwards.
+> 4. to_net_dev() was wrong -- the device struct embedded in
+> the net_device struct is not the same as the of_platform
+> device in the private struct.
+> 5. napi_disable/napi_enable was being called even when napi
+> was not being used.
+> 
+Good cleanup, thanks!
 
-Milton Miller has some patches that make a "PPC qemu target" kernel image 
-which doesn't include a device tree, and generates a rom image to boot qemu 
-with which contains a device tree and hands it off to the Linux kernel.  If 
-qemu can merge that rom image in its BIOS collection, this approach would 
-meet my immediate needs.
+Jeff: this is important fix, and should be applied if possible.
 
-> Cheers,
-> g.
+> These changes have been fixed, and napi is now on by default.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> ---
+>  drivers/net/fs_enet/fs_enet-main.c |   28 ++++++++++++++++------------
+>  drivers/net/fs_enet/fs_enet.h      |    1 +
+>  2 files changed, 17 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+> index 04c6fae..f2a4d39 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -88,7 +88,7 @@ static void skb_align(struct sk_buff *skb, int align)
+>  static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
+>  {
+>  	struct fs_enet_private *fep = container_of(napi, struct fs_enet_private, napi);
+> -	struct net_device *dev = to_net_dev(fep->dev);
+> +	struct net_device *dev = fep->ndev;
+>  	const struct fs_platform_info *fpi = fep->fpi;
+>  	cbd_t __iomem *bdp;
+>  	struct sk_buff *skb, *skbn, *skbt;
+> @@ -217,7 +217,7 @@ static int fs_enet_rx_napi(struct napi_struct *napi, int budget)
+>  
+>  	fep->cur_rx = bdp;
+>  
+> -	if (received >= budget) {
+> +	if (received < budget) {
+>  		/* done */
+>  		netif_rx_complete(dev, napi);
+>  		(*fep->ops->napi_enable_rx)(dev);
+> @@ -807,20 +807,23 @@ static int fs_enet_open(struct net_device *dev)
+>  	int r;
+>  	int err;
+>  
+> -	napi_enable(&fep->napi);
+> +	if (fep->fpi->use_napi)
+> +		napi_enable(&fep->napi);
+>  
+>  	/* Install our interrupt handler. */
+>  	r = fs_request_irq(dev, fep->interrupt, "fs_enet-mac", fs_enet_interrupt);
+>  	if (r != 0) {
+>  		printk(KERN_ERR DRV_MODULE_NAME
+>  		       ": %s Could not allocate FS_ENET IRQ!", dev->name);
+> -		napi_disable(&fep->napi);
+> +		if (fep->fpi->use_napi)
+> +			napi_disable(&fep->napi);
+>  		return -EINVAL;
+>  	}
+>  
+>  	err = fs_init_phy(dev);
+> -	if(err) {
+> -		napi_disable(&fep->napi);
+> +	if (err) {
+> +		if (fep->fpi->use_napi)
+> +			napi_disable(&fep->napi);
+>  		return err;
+>  	}
+>  	phy_start(fep->phydev);
+> @@ -1232,7 +1235,7 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
+>  	fpi->rx_ring = 32;
+>  	fpi->tx_ring = 32;
+>  	fpi->rx_copybreak = 240;
+> -	fpi->use_napi = 0;
+> +	fpi->use_napi = 1;
+>  	fpi->napi_weight = 17;
+>  
+>  	ret = find_phy(ofdev->node, fpi);
+> @@ -1249,11 +1252,11 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
+>  		goto out_free_fpi;
+>  	}
+>  
+> -	SET_MODULE_OWNER(ndev);
+>  	dev_set_drvdata(&ofdev->dev, ndev);
+>  
+>  	fep = netdev_priv(ndev);
+>  	fep->dev = &ofdev->dev;
+> +	fep->ndev = ndev;
+>  	fep->fpi = fpi;
+>  	fep->ops = match->data;
+>  
+> @@ -1288,10 +1291,11 @@ static int __devinit fs_enet_probe(struct of_device *ofdev,
+>  	ndev->stop = fs_enet_close;
+>  	ndev->get_stats = fs_enet_get_stats;
+>  	ndev->set_multicast_list = fs_set_multicast_list;
+> -	if (fpi->use_napi) {
+> -		ndev->poll = fs_enet_rx_napi;
+> -		ndev->weight = fpi->napi_weight;
+> -	}
+> +
+> +	if (fpi->use_napi)
+> +		netif_napi_add(ndev, &fep->napi, fs_enet_rx_napi,
+> +		               fpi->napi_weight);
+> +
+>  	ndev->ethtool_ops = &fs_ethtool_ops;
+>  	ndev->do_ioctl = fs_ioctl;
+>  
+> diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
+> index baf6477..c675e29 100644
+> --- a/drivers/net/fs_enet/fs_enet.h
+> +++ b/drivers/net/fs_enet/fs_enet.h
+> @@ -75,6 +75,7 @@ struct phy_info {
+>  struct fs_enet_private {
+>  	struct napi_struct napi;
+>  	struct device *dev;	/* pointer back to the device (must be initialized first) */
+> +	struct net_device *ndev;
+>  	spinlock_t lock;	/* during all ops except TX pckt processing */
+>  	spinlock_t tx_lock;	/* during fs_start_xmit and fs_tx         */
+>  	struct fs_platform_info *fpi;
 
-Rob
+
 -- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Sincerely, Vitaly
