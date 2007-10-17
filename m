@@ -1,21 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CB6A5DDE37
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 19:01:31 +1000 (EST)
-Subject: Re: vga16fb doesn't build on powerpc (vgacon_remap_base)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0710171047430.29856@pademelon.sonytel.be>
-References: <20071016191403.GA5962@nineveh.local>
-	<Pine.LNX.4.62.0710171047430.29856@pademelon.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 17 Oct 2007 19:01:19 +1000
-Message-Id: <1192611679.11899.160.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net
-Reply-To: benh@kernel.crashing.org
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 1203DDDE39
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:10:32 +1000 (EST)
+Message-ID: <4715ED92.80503@semihalf.com>
+Date: Wed, 17 Oct 2007 13:10:10 +0200
+From: Marian Balakowicz <m8@semihalf.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 01/15] [POWERPC] TQM5200 DTS
+References: <47075FA7.3030108@semihalf.com> <4708BFDD.9020900@semihalf.com>
+	<fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com>
+In-Reply-To: <fa686aa40710071036u164f2cbaob8cfa4ebc0b1ed1c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 2007-10-17 at 10:49 +0200, Geert Uytterhoeven wrote:
-> > 
-> > So VGACON probably doesn't work either on 32bit.  I'm guessing
-> arch/powerpc
-> > doesn't support PREP.
+Grant Likely wrote:
+>> +       memory {
+>> +               device_type = "memory";
+>> +               reg = <00000000 04000000>;      // 64MB
+>> +       };
+>> +
+>> +       soc5200@f0000000 {
 > 
-> It's not only useful for PREP, but also for CHRP.
-> 
-> > How best could this be fixed up? Or should I just let the thing
-> > be?  This is obviously not a new thing, and I don't have any
-> hardware
-> > that supports this stuff either.
-> 
-> I remember this problem was present when I still had a working
-> LongTrail (which
-> is CHRP), long before arch/powerpc/ was created.
+> I think we're moving to the convetion of naming these nodes
+> "soc@<addr>" now.  (You can drop the 5200 for the node name)
 
-It's all very old stuff that needs to be dusted. If you have a setup
-where legacy VGA is useable, feel free to do a bit of work on that :-)
+Seems that this will not be painless, U-boot uses hardcoded
+paths with 'soc5200', so the appropriate patch will be needed.
+That may be ok for new boards but what do we do with lite5200,
+where U-boot upgrade is not always an option?
 
-Ben.
+m.
