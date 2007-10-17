@@ -1,24 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20071015003703.GA14108@localhost.localdomain>
-References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
-	<1192195728-24189-2-git-send-email-leoli@freescale.com>
-	<1192195728-24189-3-git-send-email-leoli@freescale.com>
-	<1192195728-24189-4-git-send-email-leoli@freescale.com>
-	<1192195728-24189-5-git-send-email-leoli@freescale.com>
-	<1192195728-24189-6-git-send-email-leoli@freescale.com>
-	<1192195728-24189-7-git-send-email-leoli@freescale.com>
-	<1192195728-24189-8-git-send-email-leoli@freescale.com>
-	<1192195728-24189-9-git-send-email-leoli@freescale.com>
-	<1192195728-24189-10-git-send-email-leoli@freescale.com>
-	<20071015003703.GA14108@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <09B82C85-E2DE-46AD-8ABC-B7A261BAFF6D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 9/9] add MPC837x MDS board default device tree
-Date: Wed, 17 Oct 2007 08:59:23 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 97E16DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:02:32 +1000 (EST)
+Date: Thu, 18 Oct 2007 00:02:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH 3/4] [POWERPC] Add restart support for mpc52xx based
+	platforms
+Message-Id: <20071018000222.1bf53d3c.sfr@canb.auug.org.au>
+In-Reply-To: <471607A8.6050203@semihalf.com>
+References: <47160689.4020301@semihalf.com>
+	<471607A8.6050203@semihalf.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__18_Oct_2007_00_02_22_+1000_Klm4lcKmiiIGQ=K5"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__18_Oct_2007_00_02_22_+1000_Klm4lcKmiiIGQ=K5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Oct 14, 2007, at 7:37 PM, David Gibson wrote:
-
-> On Fri, Oct 12, 2007 at 09:28:48PM +0800, Li Yang wrote:
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> ---
->>  arch/powerpc/boot/dts/mpc8377_mds.dts |  288 +++++++++++++++++++++ 
->> +++++++++
->>  arch/powerpc/boot/dts/mpc8378_mds.dts |  268 +++++++++++++++++++++ 
->> +++++++
->>  arch/powerpc/boot/dts/mpc8379_mds.dts |  308 +++++++++++++++++++++ 
->> ++++++++++++
->>  3 files changed, 864 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
->>  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
->>  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
->>
->> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts
->> b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> [snip]
->> +	soc837x@e0000000 {
->> +		#address-cells = <1>;
->> +		#size-cells = <1>;
->> +		device_type = "soc";
->> +		ranges = <0 e0000000 00100000>;
->> +		reg = <e0000000 00000200>;
->> +		bus-frequency = <0>;
->> +
->> +		wdt@200 {
->> +			device_type = "watchdog";
+On Wed, 17 Oct 2007 15:01:28 +0200 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
 >
-> Drop this device_type.
->
->> +			compatible = "mpc83xx_wdt";
->> +			reg = <200 100>;
->> +		};
->> +
->> +		i2c@3000 {
->> +			device_type = "i2c";
->
-> And this one.
+> +void __init
+> +mpc52xx_map_wdt(void)
+> +{
+> +        const void *has_wdt;
+   ^^^^^^^^
+white space damage
 
-I've asked Leo to leave this one as all other fsl boards do this and  
-the code depends on it.  There was some discussion about this but I  
-wasn't sure if it was closed or not.
+> +	struct device_node *np;
+> +
+> +	/* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
+> +	 * possibly from a interrupt context. */
+> +
+> +	for (np =3D NULL;
+> +	    (np =3D of_find_compatible_node(np, NULL, "fsl,mpc5200-gpt")) !=3D =
+NULL;
+> +	    ) {
 
->> +			compatible = "fsl-i2c";
->> +			reg = <3000 100>;
->> +			interrupts = <e 8>;
->> +			interrupt-parent = < &ipic >;
->> +			dfsrr;
->> +		};
->> +
+	for_each_compatible_node(np, NULL, "fsl,mpc5200-gpt") {
 
-- k
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__18_Oct_2007_00_02_22_+1000_Klm4lcKmiiIGQ=K5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHFhX0TgG2atn1QN8RAt5vAJ9CiNfb9Q5VMyHuebPlQTgyLLIh/gCaA4i/
+XJ7P4+aBlLJ1aTlEkejKuUU=
+=wsKP
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__18_Oct_2007_00_02_22_+1000_Klm4lcKmiiIGQ=K5--
