@@ -1,24 +1,12 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id F26CDDDE2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 12:35:47 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1466699rvf
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 19:35:46 -0700 (PDT)
-Message-ID: <fa686aa40710161935p2aef36efx6154071b0055698f@mail.gmail.com>
-Date: Tue, 16 Oct 2007 20:35:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
-In-Reply-To: <20071017002156.289E2B58056@mail41-cpk.bigfish.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 17 Oct 2007 12:39:10 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Improve -Odts output
+Message-ID: <20071017023910.GH28260@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071015155223.7403.39615.stgit@trillian.cg.shawcable.net>
-	<20071016182425.DCBF0BA804F@mail41-fra.bigfish.com>
-	<fa686aa40710161236h4cc82edbqfee328bbcb21c752@mail.gmail.com>
-	<20071017002156.289E2B58056@mail41-cpk.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, microblaze-uclinux@itee.uq.edu.au,
-	Wolfgang Reissnegger <wre@xilinx.com>, Leonid <Leonid@a-k-a.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,152 +16,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/16/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
->
->
-> > -----Original Message-----
-> > From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On
-> > Behalf Of Grant Likely
-> > Sent: Tuesday, October 16, 2007 12:36 PM
-> > To: Stephen Neuendorffer
-> > Cc: linuxppc-dev@ozlabs.org; Wolfgang Reissnegger; Leonid;
-> > microblaze-uclinux@itee.uq.edu.au
-> > Subject: Re: [PATCH v2] Device tree bindings for Xilinx devices
-> >
-> > On 10/16/07, Stephen Neuendorffer
-> > <stephen.neuendorffer@xilinx.com> wrote:
-> > >
-> > > > +   n) Xilinx EMAC and Xilinx TEMAC
-> > > > +
-> > > > +   Xilinx Ethernet devices.  Uses common properties from
-> > > > other Ethernet
-> > > > +   devices with the following constraints:
-> > > > +
-> > > > +   Required properties:
-> > > > +    - compatible : Must include one of: "xilinx,plb-temac",
-> > > > +                   "xilinx,plb-emac", "xilinx-opb-emac"
-> > > > +    - dma-mode : Must be one of "none", "simple", "sg" (sg
-> > > > == scatter gather)
-> > >
-> > > I think it's going to be a significant headache to remap
-> > things like the
-> > > dma-mode from the xilinx configurations to something else, and then
-> > > interpret them correctly in the drivers.
-> > >
-> > > Although it lacks a bit in style, perhaps, I'd greatly prefer having
-> > > something like:
-> > >
-> > >         Ethernet_MAC {
-> > >                 xilinx,C_DMA_PRESENT = <1>;
-> > >             ...
-> > >       }
-> > >
-> > > (which happens to correspond to "none" above)
-> >
-> > Ugh.  Can't say I'm thrilled about this....
-> >
-> > But in this case is might be a necessity.  The IP core is already
-> > parameterized and the best way to describe the device is to use the
-> > existing parameter names.
->
-> I don't really like it either, expecially after thinking about it more.
-> The problem is that a single IP core might correspond to multiple
-> logical devices.  The parameters actually need to be from the point of
-> view of the drivers. That is, they need to be names like in the
-> xparameters:
->
->         xilinx,DMA_PRESENT = <1>;
+This patch makes improvements to the way properties are printed when
+in dtc is producing dts output.  
+	- Characters which need escaping are now properly handled when
+printing properties as strings
+	- The heuristics for what format to use for a property are
+improved so that 'compatible' properties will be displayed as
+expected.
+	- escapes.dts is altered to better demonstrate the changes,
+and the string_escapes testcase is adjusted accordingly.
 
-Hmm, not bad.  It does still get a little harry when one IP core
-implements multiple logical devices, but maybe the IP core should
-create a node and the logical devices can be sub nodes with the
-appropriate properties needed to describe which logical device it is.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
->
-> In this case, the translation looks simple, but it is currently
-> implemented by a bunch of gnarly .tcl code.  (Don't ask... :)  In the
-> future, this *could* be simple code, but in the short term, it won't be
-> any simpler than having pretty names.  Furthermore, the best driver code
-> that I can come up with for using this essentially looks like:
->
-> static int __devinit xenet_of_probe(struct of_device *ofdev, const
-> struct of_device_id *match)
-> {
->         struct xemac_platform_data pdata_struct;
->         struct resource r_irq_struct;
->         struct resource r_mem_struct;
->
->         struct resource *r_irq = &r_irq_struct; /* Interrupt resources
-> */
->         struct resource *r_mem = &r_mem_struct; /* IO mem resources */
->         struct xemac_platform_data *pdata = &pdata_struct;
->         int rc = 0;
->
->         printk(KERN_ERR "Device Tree Probing \'%s\'\n",
->                         ofdev->node->name);
->
->         /* Get iospace for the device */
->         rc = of_address_to_resource(ofdev->node, 0, r_mem);
->         if(rc) {
->                 dev_warn(&ofdev->dev, "invalid address\n");
->                 return rc;
->         }
->
->         /* Get IRQ for the device */
->         rc = of_irq_to_resource(ofdev->node, 0, r_irq);
->         if(rc == NO_IRQ) {
->                 dev_warn(&ofdev->dev, "no IRQ found.\n");
->                 return rc;
->         }
->
->         pdata_struct.dma_mode           = get_u32(ofdev,
-> "C_DMA_PRESENT");
->         pdata_struct.has_mii            = get_u32(ofdev, "C_MII_EXIST");
->         pdata_struct.has_cam            = get_u32(ofdev, "C_CAM_EXIST");
->         pdata_struct.has_err_cnt        = get_u32(ofdev,
-> "C_ERR_COUNT_EXIST");
->         pdata_struct.has_jumbo          = get_u32(ofdev,
-> "C_JUMBO_EXIST");
->         pdata_struct.tx_dre             = get_u32(ofdev,
-> "C_TX_DRE_TYPE");
->         pdata_struct.rx_dre             = get_u32(ofdev,
-> "C_RX_DRE_TYPE");
->         pdata_struct.tx_hw_csum         = get_u32(ofdev,
-> "C_TX_INCLUDE_CSUM");
->         pdata_struct.rx_hw_csum         = get_u32(ofdev,
-> "C_RX_INCLUDE_CSUM");
->         memcpy(pdata_struct.mac_addr, of_get_mac_address(ofdev->node),
-> 6);
->
->         return probe_initialization(&ofdev->dev, r_mem, r_irq, pdata);
-> }
->
-> Where probe_initialization contains shares code with the platform_device
-> version of probe.  This means that the string is still translated into
-> another name anyway.  Anybody have any better ideas for doing this?
-
-That's pretty close to what I've done on the sysace, uartlite and
-xilinxfb drivers.
-
-> > I want to be careful though.  Parameters can change from one version
-> > of an IP core to another.  The driver needs to be able to determine
-> > what version of the IP core is used so that the parameters make sense.
-> >  I'm also nervous about adding every possible C_ value to the device
-> > node for each xilinx IP-core; that could make the device tree quite
-> > large.  (on the other hand; maybe that doesn't matter... It is
-> > probably a bigger deal for microblaze than powerpc too.).
->
-> Using the xparameters set of values could solve this problem, since only
-> things that make sense to the driver are actually set.
-
-I've thought about this more since I wrote the above paragraph.  The
-compatible property was designed to solve that exact problem.  We'll
-just embed the version in the compatible list.
-
-g.
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2007-10-17 10:27:35.000000000 +1000
++++ dtc/treesource.c	2007-10-17 11:43:18.000000000 +1000
+@@ -56,22 +56,31 @@
+ 	PROP_BYTES,
+ };
+ 
++int isstring(char c)
++{
++	return (isprint(c)
++		|| (c == '\0')
++		|| strchr("\a\b\t\n\v\f\r", c));
++}
++
+ static enum proptype guess_type(struct property *prop)
+ {
+ 	int len = prop->val.len;
+ 	char *p = prop->val.val;
+-	int nnoprint = 0;
++	int nnotstring = 0, nnul = 0;
+ 	int i;
+ 
+ 	if (len == 0)
+ 		return PROP_EMPTY;
+ 
+ 	for (i = 0; i < len; i++) {
+-		if (! isprint(p[i]))
+-			nnoprint++;
++		if (! isstring(p[i]))
++			nnotstring++;
++		if (p[i] == '\0')
++			nnul++;
+ 	}
+ 
+-	if ((nnoprint == 1) && (p[len-1] == '\0'))
++	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul)))
+ 		return PROP_STRING;
+ 	else if ((len % sizeof(cell_t)) == 0)
+ 		return PROP_CELLS;
+@@ -79,6 +88,87 @@
+ 		return PROP_BYTES;
+ }
+ 
++static void write_propval_string(FILE *f, struct data val)
++{
++	char *str = val.val;
++	int i;
++
++	assert(str[val.len-1] == '\0');
++
++	fprintf(f, " = \"");
++	for (i = 0; i < (val.len-1); i++) {
++		char c = str[i];
++
++		switch (c) {
++		case '\a':
++			fprintf(f, "\\a");
++			break;
++		case '\b':
++			fprintf(f, "\\b");
++			break;
++		case '\t':
++			fprintf(f, "\\t");
++			break;
++		case '\n':
++			fprintf(f, "\\n");
++			break;
++		case '\v':
++			fprintf(f, "\\v");
++			break;
++		case '\f':
++			fprintf(f, "\\f");
++			break;
++		case '\r':
++			fprintf(f, "\\r");
++			break;
++		case '\\':
++			fprintf(f, "\\\\");
++			break;
++		case '\"':
++			fprintf(f, "\\\"");
++			break;
++		case '\0':
++			fprintf(f, "\", \"");
++			break;
++		default:
++			if (isprint(c))
++				fprintf(f, "%c", c);
++			else
++				fprintf(f, "\\x%02hhx", c);
++		}
++	}
++	fprintf(f, "\";\n");
++}
++
++static void write_propval_cells(FILE *f, struct data val)
++{
++	void *propend = val.val + val.len;
++	cell_t *cp = (cell_t *)val.val;
++
++	fprintf(f, " = <");
++	for (;;) {
++		fprintf(f, "%x", be32_to_cpu(*cp++));
++		if ((void *)cp >= propend)
++			break;
++		fprintf(f, " ");
++	}
++	fprintf(f, ">;\n");
++}
++
++static void write_propval_bytes(FILE *f, struct data val)
++{
++	void *propend = val.val + val.len;
++	char *bp = val.val;
++
++	fprintf(f, " = [");
++	for (;;) {
++		fprintf(f, "%02hhx", *bp++);
++		if ((void *)bp >= propend)
++			break;
++		fprintf(f, " ");
++	}
++	fprintf(f, "];\n");
++}
+ 
+ static void write_tree_source_node(FILE *f, struct node *tree, int level)
+ {
+@@ -92,15 +182,11 @@
+ 		fprintf(f, "/ {\n");
+ 
+ 	for_each_property(tree, prop) {
+-		cell_t *cp;
+-		char *bp;
+-		void *propend;
+ 		enum proptype type;
+ 
+ 		write_prefix(f, level);
+ 		fprintf(f, "\t%s", prop->name);
+ 		type = guess_type(prop);
+-		propend = prop->val.val + prop->val.len;
+ 
+ 		switch (type) {
+ 		case PROP_EMPTY:
+@@ -108,31 +194,15 @@
+ 			break;
+ 
+ 		case PROP_STRING:
+-			fprintf(f, " = \"%s\";\n", (char *)prop->val.val);
++			write_propval_string(f, prop->val);
+ 			break;
+ 
+ 		case PROP_CELLS:
+-			fprintf(f, " = <");
+-			cp = (cell_t *)prop->val.val;
+-			for (;;) {
+-				fprintf(f, "%x", be32_to_cpu(*cp++));
+-				if ((void *)cp >= propend)
+-					break;
+-				fprintf(f, " ");
+-			}
+-			fprintf(f, ">;\n");
++			write_propval_cells(f, prop->val);
+ 			break;
+ 
+ 		case PROP_BYTES:
+-			fprintf(f, " = [");
+-			bp = prop->val.val;
+-			for (;;) {
+-				fprintf(f, "%02hhx", *bp++);
+-				if ((void *)bp >= propend)
+-					break;
+-				fprintf(f, " ");
+-			}
+-			fprintf(f, "];\n");
++			write_propval_bytes(f, prop->val);
+ 			break;
+ 		}
+ 	}
+Index: dtc/tests/escapes.dts
+===================================================================
+--- dtc.orig/tests/escapes.dts	2007-10-17 11:36:37.000000000 +1000
++++ dtc/tests/escapes.dts	2007-10-17 12:32:27.000000000 +1000
+@@ -1,4 +1,5 @@
+ / {
+ 	compatible = "test_string_escapes";
+-	escape-str = "nastystring: \a\b\t\n\v\f\r\\\"\xff";
++	escape-str = "nastystring: \a\b\t\n\v\f\r\\\"";
++	escape-str-2 = "\xde\xad\xbe\xef";
+ };
+Index: dtc/tests/string_escapes.c
+===================================================================
+--- dtc.orig/tests/string_escapes.c	2007-10-17 12:31:56.000000000 +1000
++++ dtc/tests/string_escapes.c	2007-10-17 12:32:04.000000000 +1000
+@@ -37,6 +37,8 @@
+ 
+ 	check_getprop(fdt, 0, "escape-str",
+ 		      strlen(TEST_STRING_2)+1, TEST_STRING_2);
++	check_getprop(fdt, 0, "escape-str-2",
++		      strlen(TEST_STRING_3)+1, TEST_STRING_3);
+ 
+ 	PASS();
+ }
+Index: dtc/tests/testdata.h
+===================================================================
+--- dtc.orig/tests/testdata.h	2007-10-17 12:28:50.000000000 +1000
++++ dtc/tests/testdata.h	2007-10-17 12:31:45.000000000 +1000
+@@ -24,7 +24,8 @@
+ #define TEST_VALUE_2	cell_to_fdt(0xabcd1234)
+ 
+ #define TEST_STRING_1	"hello world"
+-#define TEST_STRING_2	"nastystring: \a\b\t\n\v\f\r\\\"\xff"
++#define TEST_STRING_2	"nastystring: \a\b\t\n\v\f\r\\\""
++#define TEST_STRING_3	"\xde\xad\xbe\xef"
+ 
+ #ifndef __ASSEMBLY__
+ extern struct fdt_header _test_tree1;
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
