@@ -1,17 +1,23 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D838FDDEF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 05:58:06 +1000 (EST)
-Date: Wed, 17 Oct 2007 23:57:46 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: leoli@freescale.com, jgarzik@pobox.com, paulus@samba.org
-Subject: [PATCH][NET] gianfar: fix obviously wrong #ifdef CONFIG_GFAR_NAPI
-	placement
-Message-ID: <20071017195746.GA15592@localhost.localdomain>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 15E23DDEB9
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 05:59:17 +1000 (EST)
+Message-ID: <47166988.3010606@freescale.com>
+Date: Wed, 17 Oct 2007 14:59:04 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Merge dtc
+References: <20071016050217.GA9052@localhost.localdomain>	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
+	<5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
+In-Reply-To: <5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Erroneous #ifdef introduced by 293c8513398657f6263fcdb03c87f2760cf61be4
-causing NAPI-less ethernet malfunctioning.
+Kumar Gala wrote:
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
----
+> Just out of interest who's complaining?  We don't include mkimage for  
+> u-boot related builds and I haven't seen any gripes related to that.
 
-if (...)
-#if
-	...;
-#endif
+I think we should include mkimage *and* dtc.  But then, I'm not sure how much 
+weight my opinion has. :-)
 
-good candidate for checkpatch?
-
- drivers/net/gianfar.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index cc288d8..38268d7 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -956,10 +956,12 @@ static int gfar_enet_open(struct net_device *dev)
- 	}
- 
- 	err = startup_gfar(dev);
--	if (err)
-+	if (err) {
- #ifdef CONFIG_GFAR_NAPI
- 		napi_disable(&priv->napi);
- #endif
-+		return err;
-+	}
- 
- 	netif_start_queue(dev);
- 
 -- 
-1.5.0.6
+Timur Tabi
+Linux Kernel Developer @ Freescale
