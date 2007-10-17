@@ -1,36 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 130AADDEE0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:12:52 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9HKCoUM007837
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 16:12:50 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9HKCnsd449414
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:12:49 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9HKCcx7022656
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:12:49 -0600
-Date: Wed, 17 Oct 2007 15:12:30 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Merge dtc
-Message-ID: <20071017151230.01ccd2f8@weaponx.rchland.ibm.com>
-In-Reply-To: <47166988.3010606@freescale.com>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<B17BEF48-34FC-44E0-AC23-1DB7522EB198@kernel.crashing.org>
-	<18196.20112.728499.256646@cargo.ozlabs.ibm.com>
-	<5E3B6FCC-5930-4C76-AB4B-86B35551B9E0@kernel.crashing.org>
-	<47166988.3010606@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul, Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.236])
+	by ozlabs.org (Postfix) with ESMTP id 91D6FDDF7C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:28:46 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1653312nzh
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 13:28:42 -0700 (PDT)
+Message-ID: <fa686aa40710171328y195aca9k6ee8a1a5502fcf57@mail.gmail.com>
+Date: Wed, 17 Oct 2007 14:28:41 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Segher Boessenkool" <segher@kernel.crashing.org>,
+	"Paul Mackerras" <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	"Rob Landley" <rob@landley.net>, "Milton Miller" <miltonm@bga.com>,
+	"Christoph Hellwig" <hch@lst.de>
+Subject: Re: [PATCH 1/2] qemu platform, v2
+In-Reply-To: <20071001053326.GA15132@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <boot-8-00.miltonm@bga.com> <qemu-8-01.miltonm@bga.com>
+	<20070922095546.GA14185@lst.de> <200709221416.21580.rob@landley.net>
+	<18165.60185.316393.213864@cargo.ozlabs.ibm.com>
+	<4d27912d86d1373ca01d43bd296e237b@kernel.crashing.org>
+	<20071001053326.GA15132@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,19 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 17 Oct 2007 14:59:04 -0500
-Timur Tabi <timur@freescale.com> wrote:
+On 9/30/07, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Fri, Sep 28, 2007 at 06:53:28PM +0200, Segher Boessenkool wrote:
+> > >> I'd be following this more closely if compiling a device tree didn't
+> > >> currently
+> > >> require an external utility (dtc or some such) that doesn't come with
+> > >> the
+> > >> Linux kernel.  No other target platform I've built kernels for
+> > >> requires such
+> > >> an environmental dependency.
+> > >
+> > > No?  You haven't built kernels for other platforms that have external
+> > > dependencies such as perl, gcc, make, binutils, etc.? :)
+> >
+> > Two of the supported Linux archs cannot be built with a mainline
+> > compiler, even!
+> >
+> > And I have to install GNU sed/awk to get builds to work, too.
+> >
+> > OTOH, it would be nice if we didn't need DTC -- it itself doesn't
+> > build out-of-the-box on all systems, either ;-)
+> >
+> > >>  (This is a problem both for hardwiring the
+> > >> device tree into the kernel and for building a new boot rom from the
+> > >> linux
+> > >> kernel's ppc boot wrapper that would contain such a device tree to
+> > >> feed to
+> > >> the kernel.)
+> > >
+> > > It's only really been a problem for ps3 so far, since the embedded
+> > > guys don't seem to have any difficulty with installing dtc.  We are
+> > > looking at what to do for ps3 and prep, and the answer may well
+> > > involve bundling dtc in the kernel source (it's not too big, around
+> > > 3400 lines).
+> >
+> > If only a few platforms have this problem, we could instead include
+> > their .dtb files in the kernel source tree.
+>
+> Including .dtbs in the kernel tree has a big practical problem:
+> they're binary, so can't be patch(1)ed, which makes updating them a
+> complete PITA.
+>
+> I'm working on merging dtc into the kernel tree instead.
 
-> Kumar Gala wrote:
-> 
-> > Just out of interest who's complaining?  We don't include mkimage for  
-> > u-boot related builds and I haven't seen any gripes related to that.
-> 
-> I think we should include mkimage *and* dtc.  But then, I'm not sure how much 
-> weight my opinion has. :-)
+I'm kind of late to this party; but I have to say I disagree.  Most of
+us are doing just fine installing the dtc tool (and mkimage tool for
+that matter).  Cloning it in the kernel tree is just asking for
+divergence.
 
-Either way, if we're going to include DTC we need to do it soon.
-mkimage I'm less worried about because it should be a much smaller
-patch.
+Cheers,
+g.
 
-josh
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
