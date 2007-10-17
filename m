@@ -1,29 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 98B4FDDE24
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
+	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 3D7FDDDE39
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 04:24:01 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3047417wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Oct 2007 11:24:00 -0700 (PDT)
-Message-ID: <fa686aa40710171123uefac227q4fecd64516794129@mail.gmail.com>
-Date: Wed, 17 Oct 2007 12:23:59 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: aauer1 <aauer1@gmx.at>
-Subject: Re: Linux booting problem on Xilinx ppc
-In-Reply-To: <13259685.post@talk.nabble.com>
+	Thu, 18 Oct 2007 04:44:14 +1000 (EST)
+Message-ID: <471657FB.3040806@qstreams.com>
+Date: Wed, 17 Oct 2007 14:44:11 -0400
+From: Ben Warren <bwarren@qstreams.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <12694083.post@talk.nabble.com>
-	<fa686aa40709152009k2b27ffc9kfb3fd0848f6b16d@mail.gmail.com>
-	<12696686.post@talk.nabble.com> <13219154.post@talk.nabble.com>
-	<000901c81006$7303b490$bb3ca688@LGE.NET>
-	<13239003.post@talk.nabble.com>
-	<fa686aa40710161237t54688b71g9c7cf9acdac2b744@mail.gmail.com>
-	<13252272.post@talk.nabble.com>
-	<fa686aa40710170754p54aa405au9b046f7039ecb9ac@mail.gmail.com>
-	<13259685.post@talk.nabble.com>
+To: Michael Brian Willis <willis@arlut.utexas.edu>
+Subject: Re: MPC85xx and linux IDE driver
+References: <1192213784.4862.48.camel@louie> <470FCF8A.1000504@qstreams.com>
+	<1192643237.4929.41.camel@louie>
+In-Reply-To: <1192643237.4929.41.camel@louie>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -35,57 +24,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/17/07, aauer1 <aauer1@gmx.at> wrote:
+Michael Brian Willis wrote:
+> On Fri, 2007-10-12 at 15:48 -0400, Ben Warren wrote:
+>   
+>   
+>> Here's what I use:
+>>
+>> http://marc.info/?l=linux-kernel&m=113877891224982&w=2
+>>     
 >
+> Thanks for the response Ben. 
 >
-> Grant Likely-2 wrote:
-> >
-> > On 10/17/07, aauer1 <aauer1@gmx.at> wrote:
-> >> Now, I know that the kernel boots but I don't get an output with my
-> >> Xilinx
-> >> UartLite module. Are there some kernel modules which must be activated??
-> >> Btw. I have used the Linux-2.6-virtex kernel from
-> >> http://git.secretlab.ca/git/ and another Kernel (2.6.23 from kernel.org)
-> >> -
-> >> both with the same result.
-> >
-> > Post the output of __log_buf here please.
-> >
-> >
+> I have put the driver you mentioned in my linux source and added the
+> necessary information in the Kconfig file and the Makefile. So, I am now
+> able to build the driver when I make my kernel image. However, I can't
+> figure out what else needs to be done in order to actually use the
+> driver for my compact flash device. Do I need to specify anything at the
+> kernel command line, or do I need to modify any other config files?
+> (Below is the ide portion of my linux .config file)
 >
-> Here is my dump of the __log_buf:
-> ======================
-> <5>[    0.000000] Linux version 2.6.23-rc2
-> (aauer@servitus.student.iaik.tugraz.at) (gcc version 4.0.0 (DENX ELDK 4.1
-> 4.0
-> .0)) #8 Wed Oct 17 20:05:28 CEST 2007
-> <6>[    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
-> <7>[    0.000000] Entering add_active_range(0, 0, 16384) 0 entries of 256
-> used
-> <4>[    0.000000] Zone PFN ranges:
-> <4>[    0.000000]   DMA             0 ->    16384
-> <4>[    0.000000]   Normal      16384 ->    16384
-> <4>[    0.000000] Movable zone start PFN for each node
-> <4>[    0.000000] early_node_map[1] active PFN ranges
-> <4>[    0.000000]     0:        0 ->    16384
-> <7>[    0.000000] On node 0 totalpages: 16384
-> <7>[    0.000000]   DMA zone: 128 pages used for memmap
-> <7>[    0.000000]   DMA zone: 0 pages reserved
-> <7>[    0.000000]   DMA zone: 16256 pages, LIFO batch:3
-> <7>[    0.000000]   Normal zone: 0 pages used for memmap
-> <7>[    0.000000]   Movable zone: 0 pages used for memmap
-> <4>[    0.000000] Built 1 zonelists in Zone order.  Total pages: 16256
-> <5>[    0.000000] Kernel command line: console=ttUL0 root=/dev/xsysace2 rw
+>   
+This device driver is a platform driver, so you need to register a 
+platform device somewhere in your board-specific init code that contains 
+the hardware details (memory mapping and IRQ #).  You can either pass 
+this in via device tree or hard code it.  I chose the latter in order to 
+get up and runninq quickly.  Here's the init function I use.  CS0 is @ 
+0xe4000000, CS1 is @ 0xe4100000 and I'm using IRQ20, which is one of the 
+external IRQs on my CPU:
 
-Typo!  :-)
+/* Compact Flash Initialization */
 
-Try  "ttyUL0"
+static int __init prism_setup_cf(void)
+{
+    struct resource r[3];
+    struct platform_device *cf_dev;
+    unsigned int virq;
 
-g.
+    memset(&r, 0, sizeof(r));
+    r[0].start = 0xe4000000;
+    r[0].end = 0xe400000f;
+    r[0].flags = IORESOURCE_MEM;
 
+    r[1].start = 0xe4100000;
+    r[1].end = 0xe410000f;
+    r[1].flags = IORESOURCE_MEM;
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+   
+    virq = irq_find_mapping(NULL, 20);
+    set_irq_type(virq, IRQ_TYPE_EDGE_FALLING);
+    r[2].start = virq;
+    r[2].end = 0;
+    r[2].flags = IORESOURCE_IRQ;
+
+    cf_dev = platform_device_register_simple("mmio-cfide", 0, r, 3);
+
+    return (cf_dev ? 0 : PTR_ERR(cf_dev));
+}
+
+> Thank you for your help so far, anymore help/direction is greatly
+> appreciated. 
+>
+>   
+Glad to help.
+
+regards,
+Ben
