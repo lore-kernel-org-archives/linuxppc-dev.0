@@ -1,21 +1,32 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CBB1ADDE9C
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00662DDE9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 04:54:49 +1000 (EST)
-Message-ID: <47165A7E.1070206@scram.de>
-Date: Wed, 17 Oct 2007 20:54:54 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Thu, 18 Oct 2007 04:56:48 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IiE4U-0005x5-7P
+	for linuxppc-embedded@ozlabs.org; Wed, 17 Oct 2007 11:56:46 -0700
+Message-ID: <13260526.post@talk.nabble.com>
+Date: Wed, 17 Oct 2007 11:56:46 -0700 (PDT)
+From: aauer1 <aauer1@gmx.at>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux booting problem on Xilinx ppc
+In-Reply-To: <fa686aa40710171123uefac227q4fecd64516794129@mail.gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: mpc 860 boot linux2.6.23 problem
-References: <20071015233839.959F4247BB@gemini.denx.de>	<4714E44F.7030909@freescale.com>	<85100356-D95B-4343-98BE-66080EA9887D@embeddedalley.com>
-	<47162AE7.80305@freescale.com>
-In-Reply-To: <47162AE7.80305@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <12694083.post@talk.nabble.com>
+	<fa686aa40709152009k2b27ffc9kfb3fd0848f6b16d@mail.gmail.com>
+	<12696686.post@talk.nabble.com> <13219154.post@talk.nabble.com>
+	<000901c81006$7303b490$bb3ca688@LGE.NET>
+	<13239003.post@talk.nabble.com>
+	<fa686aa40710161237t54688b71g9c7cf9acdac2b744@mail.gmail.com>
+	<13252272.post@talk.nabble.com>
+	<fa686aa40710170754p54aa405au9b046f7039ecb9ac@mail.gmail.com>
+	<13259685.post@talk.nabble.com>
+	<fa686aa40710171123uefac227q4fecd64516794129@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +37,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
-> I just pulled Wolfgang's latest u-boot tree, and I don't see any fdt or 
-> ft_ calls in cpu/mpc8xx, nor in any 8xx board that I recognize.
->
-> I may have been unclear in that I was talking about device tree support 
-> in u-boot, not the kernel.  Obviously there's device tree support in the 
-> kernel, as evidenced by my reference to using cuImage.
->   
+Thanks. Now, I get the output over the serial line!!!!
 
-Can u-boot work on dtb trees embedded in an cuImage, at all?
-How would command line arguments work without a chosen
-node?
+Thanks, very much!
+Andreas
 
-I tried to boot a mpc823 using the 3 argument mboot command.
-u-boot processed the dtb and added the chosen node correctly,
-however the kernel immediately oopsed with unable to access
-virtual memory when accessing the dtb memory as this memory
-was not contained in the kernel MMU space.
 
-Thanks,
-Jochen
+
+Grant Likely-2 wrote:
+> 
+> On 10/17/07, aauer1 <aauer1@gmx.at> wrote:
+>>
+>>
+>> Grant Likely-2 wrote:
+>> >
+>> > On 10/17/07, aauer1 <aauer1@gmx.at> wrote:
+>> >> Now, I know that the kernel boots but I don't get an output with my
+>> >> Xilinx
+>> >> UartLite module. Are there some kernel modules which must be
+>> activated??
+>> >> Btw. I have used the Linux-2.6-virtex kernel from
+>> >> http://git.secretlab.ca/git/ and another Kernel (2.6.23 from
+>> kernel.org)
+>> >> -
+>> >> both with the same result.
+>> >
+>> > Post the output of __log_buf here please.
+>> >
+>> >
+>>
+>> Here is my dump of the __log_buf:
+>> ======================
+>> <5>[    0.000000] Linux version 2.6.23-rc2
+>> (aauer@servitus.student.iaik.tugraz.at) (gcc version 4.0.0 (DENX ELDK 4.1
+>> 4.0
+>> .0)) #8 Wed Oct 17 20:05:28 CEST 2007
+>> <6>[    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
+>> <7>[    0.000000] Entering add_active_range(0, 0, 16384) 0 entries of 256
+>> used
+>> <4>[    0.000000] Zone PFN ranges:
+>> <4>[    0.000000]   DMA             0 ->    16384
+>> <4>[    0.000000]   Normal      16384 ->    16384
+>> <4>[    0.000000] Movable zone start PFN for each node
+>> <4>[    0.000000] early_node_map[1] active PFN ranges
+>> <4>[    0.000000]     0:        0 ->    16384
+>> <7>[    0.000000] On node 0 totalpages: 16384
+>> <7>[    0.000000]   DMA zone: 128 pages used for memmap
+>> <7>[    0.000000]   DMA zone: 0 pages reserved
+>> <7>[    0.000000]   DMA zone: 16256 pages, LIFO batch:3
+>> <7>[    0.000000]   Normal zone: 0 pages used for memmap
+>> <7>[    0.000000]   Movable zone: 0 pages used for memmap
+>> <4>[    0.000000] Built 1 zonelists in Zone order.  Total pages: 16256
+>> <5>[    0.000000] Kernel command line: console=ttUL0 root=/dev/xsysace2
+>> rw
+> 
+> Typo!  :-)
+> 
+> Try  "ttyUL0"
+> 
+> g.
+> 
+> 
+> -- 
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+
+-- 
+View this message in context: http://www.nabble.com/Linux-booting-problem-on-Xilinx-ppc-tf4449060.html#a13260526
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
