@@ -1,21 +1,23 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+Return-Path: <dan@embeddedalley.com>
+Received: from penguin.embeddededge.com (embeddededge.com [209.113.146.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D0C48DDE18
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AA038DDEC2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 02:18:42 +1000 (EST)
-Message-ID: <4716360B.3080502@ovro.caltech.edu>
-Date: Wed, 17 Oct 2007 09:19:23 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: PPC440EPx GPIO control help
-References: <400754.83957.qm@web45604.mail.sp1.yahoo.com>
-	<47158C69.2070903@ovro.caltech.edu> <4715A9D9.6090308@mock.com>
-In-Reply-To: <4715A9D9.6090308@mock.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 18 Oct 2007 02:40:12 +1000 (EST)
+In-Reply-To: <47162AE7.80305@freescale.com>
+References: <20071015233839.959F4247BB@gemini.denx.de>
+	<4714E44F.7030909@freescale.com>
+	<85100356-D95B-4343-98BE-66080EA9887D@embeddedalley.com>
+	<47162AE7.80305@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5E6FFDE1-D706-4460-8621-0BFA38FDC502@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: mpc 860 boot linux2.6.23 problem
+Date: Wed, 17 Oct 2007 12:40:33 -0400
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,18 +28,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dell,
 
-If you do decide to look at kernel drivers, Jeff has sent you
-code, and I also have a tutorial with example code you are
-welcome to look at:
+On Oct 17, 2007, at 11:31 AM, Scott Wood wrote:
 
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
-http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
+> I just pulled Wolfgang's latest u-boot tree, and I don't see any  
+> fdt or ft_ calls in cpu/mpc8xx, nor in any 8xx board that I recognize.
 
-Feel free to ask questions. I recall writing some test driver
-code for the 440EP Yosemite board too. I'm just not sure where
-I put it ...  :)
+The STx XTc 885 is supported and was used for
+a majority of the FT development in u-boot.  I
+just built it a few months ago, it worked fine, so
+if it isn't working today the changes should be
+minimal to bring it up to date.
 
-Cheers,
-Dave
+Thanks.
+
+	-- Dan
