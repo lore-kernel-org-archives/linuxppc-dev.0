@@ -1,18 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 0BD21DDF03
+Return-Path: <jeff@mock.com>
+Received: from mail.mock.com (gw.mock.com [209.157.146.194])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C1DFFDDF0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 06:23:11 +1000 (EST)
-Message-ID: <47166F3B.2080904@ru.mvista.com>
-Date: Thu, 18 Oct 2007 00:23:23 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Thu, 18 Oct 2007 06:26:47 +1000 (EST)
+Message-ID: <47167002.7060202@mock.com>
+Date: Wed, 17 Oct 2007 13:26:42 -0700
+From: Jeff Mock <jeff@mock.com>
 MIME-Version: 1.0
-To: Sebastian Siewior <linuxppc-embedded@ml.breakpoint.cc>
-Subject: Re: loading NOR flash from DT
-References: <20071017192651.GA5192@Chamillionaire.breakpoint.cc>	<20071017144759.320209bd@weaponx.rchland.ibm.com>
-	<20071017195542.GA5501@Chamillionaire.breakpoint.cc>
-In-Reply-To: <20071017195542.GA5501@Chamillionaire.breakpoint.cc>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: PPC440EPx GPIO control help
+References: <400754.83957.qm@web45604.mail.sp1.yahoo.com>	
+	<47158C69.2070903@ovro.caltech.edu> <4715A9D9.6090308@mock.com>
+	<1192618194.13993.25.camel@localhost.localdomain>
+In-Reply-To: <1192618194.13993.25.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,39 +27,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sebastian Siewior wrote:
 
->>>I have here a MPC8544 DS board with NOR flash on it and Kumar's git
->>>tree. I'm trying to detect this flash with the physmap_of module. I
->>>added a nor_flash block (I used sequoia.dts as an example) into my
->>>device tree on the same level as soc8544 or memory (or between them).
->>>After modprobing physmap_of nothing happend. Then I tried to make a tree
->>>with plb -> opb -> ebc and finally nor_flash but still nothing changed.
+
+Josh Boyer wrote:
+> On Tue, 2007-10-16 at 23:21 -0700, Jeff Mock wrote:
+>> David Hawkins wrote:
+>>>> I have a PPC440EPx Sequoia Evaluation board that runs on Linux 2.6.21. 
+>>>> What I would want to do is to control (write and read values to) its 
+>>>> GPIO. Perhaps similar to Turbo C's outputb(0x378,0x01) to write and 
+>>>> inportb(0x378) to read. I read the PPC440EPx manual but I find it 
+>>>> difficult to understand.
+>>>>
+>>>> Could anyone show me any tutorial or some sample codes?
+>>> I copied the code below from some test code I wrote for a TS7300
+>>> board (uses an ARM EP9302 processor). However, since its user-space
+>>> code it should work fine.
 >>>
->>>Is there a user space dependency or did I just edit my device tree the
->>>wrong way? Any hints are welcome :)
+>> I might be a little out of date, but I think you must write your own 
+>> driver to wiggle the GPIO pins on a 440 processor.  I just finished a 
+>> project using a 440GX with a 2.6.15 kernel (we froze the code about 8 
+>> months ago).
 >>
->>Post your device tree please.  I don't recall MPC8544 even having PLB,
->>OPB, or EBC busses, so they likely aren't getting probed.
+>> The 440 powerPC core is a 32-bit processor with 36-bit physical 
+>> addresses.  The physical address for the GPIO pins is someplace above 
+>> 4GB.  An mmap() of /dev/mem only lets you map the lower 4GB of the 
+>> address space, as a result you can't write a user space program on the 
+>> 440 to wiggle the GPIO pins.  (This was true with 2.6.15, I can't speak 
+>> for later kernels).
+> 
+> This depends on the 440 chip itself.  If I recall correctly, the
+> 440EP(x) chips don't have I/O above 4GB.
+> 
 
-[...]
-> 	flash@fc000000 {
-> 			compatible = "amd,s29gl512n", "cfi-flash";
-> 			reg = <fc000000 4000000>;
-> 			bank-width = <2>;
-> 			#address-cells = <1>;
-> 			#size-cells = <1>;
-> 			fs@0 {
-> 					label = "fs";
-> 					reg = <0 f80000>;
-> 			};
-> 			firmware@f80000 {
-> 					label ="firmware";
-> 					reg = <f80000 80000>;
-> 					read-only;
-> 			};
+At first I thought you were right, I remember something about the 440GX 
+being the weird processor with I/O mapped above 4GB.  I just took a look 
+at the 440EPx datasheet on the AMCC website and it looks like the GPIO 
+registers are mapped above 4GB:
 
-    This looks good, so the problem is it doesn't get registered by the 
-platform code as I've said.
+    GPIO0 controller       1 EF60 0B00
+    GPIO1 controller       1 EF60 0C00
 
-WBR, Sergei
+Someone has to do the ioremap() to get at these physical addresses, so I 
+think you have to write a driver to get them mapped into user space. 
+It's unfortunate, especially for someone just getting started with the 
+processor that just wants to turn on an LED...
+
+jeff
