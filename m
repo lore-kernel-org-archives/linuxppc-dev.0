@@ -1,34 +1,29 @@
-Return-Path: <linas@austin.ibm.com>
+Return-Path: <pbadari@us.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C9BC1DDE48
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:04:54 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 36689DDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:06:22 +1000 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9HN4oJS011575
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 19:04:50 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9HN6JSo014624
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 19:06:19 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9HN4ohO408494
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 17:04:50 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9HN4nSH031096
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 17:04:50 -0600
-Date: Wed, 17 Oct 2007 18:04:49 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-Message-ID: <20071017230449.GZ4891@austin.ibm.com>
-References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
-	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Paul Mackerras <paulus@samba.org>,
-	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+	l9HN6IIe362690
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 17:06:19 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9HN6ITf016624
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 17:06:18 -0600
+Subject: [PATCH] Move _rtc_time() routines under CONFIG_ADB_CUDA
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 17 Oct 2007 16:09:38 -0700
+Message-Id: <1192662578.14504.11.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 17, 2007 at 05:12:27PM +1000, Michael Ellerman wrote:
+Fix to clean up compile warnings (against 2.6.23-git12)
 
-> +struct device_node *of_get_pci_dev_node(struct pci_dev *pdev)
-> +{
-> +       return of_node_get(pci_device_to_OF_node(pdev));
-> +}
+Thanks,
+Badari
 
-[...]
+to_rtc_time() and from_rtc_time() seems to be used only if CONFIG_ADB_CUDA
+defined. Moving them under that ifdef.
 
-> -	dn = of_node_get(pci_device_to_OF_node(dev));
-> +	dn = of_get_pci_dev_node(dev);
+arch/powerpc/platforms/powermac/time.c:88: warning: `to_rtc_time' defined but not used
+arch/powerpc/platforms/powermac/time.c:95: warning: `from_rtc_time' defined but not used
 
-Is this really useful or wise?
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+---
+ arch/powerpc/platforms/powermac/time.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As a matter of personal taste, I find stuff like this clutters
-and confuses my mind. I go to read new code, and I run across some
-routine I haven't heard of before ... e.g. of_get_pci_dev_node(),
-so now I have to look it up to see what it does.  A few minutes later, 
-I realize that its just a pair of old freinds (of_node_get and 
-pci_device_to_OF_node) and so now I have to make mental room for it.  
-
-Tommorrow, or 3 days later, I'm again looking at of_get_pci_dev_node()
-and I'm thinking "gee what did that thing do again??"
-
-I don't much like this style, and I've been known to submit
-patches that remove stuff like this ... 
-
---linas
+Index: linux-2.6.23/arch/powerpc/platforms/powermac/time.c
+===================================================================
+--- linux-2.6.23.orig/arch/powerpc/platforms/powermac/time.c	2007-10-09 13:31:38.000000000 -0700
++++ linux-2.6.23/arch/powerpc/platforms/powermac/time.c	2007-10-17 15:59:56.000000000 -0700
+@@ -84,6 +84,7 @@ long __init pmac_time_init(void)
+ 	return delta;
+ }
+ 
++#ifdef CONFIG_ADB_CUDA
+ static void to_rtc_time(unsigned long now, struct rtc_time *tm)
+ {
+ 	to_tm(now, tm);
+@@ -97,7 +98,6 @@ static unsigned long from_rtc_time(struc
+ 		      tm->tm_hour, tm->tm_min, tm->tm_sec);
+ }
+ 
+-#ifdef CONFIG_ADB_CUDA
+ static unsigned long cuda_get_time(void)
+ {
+ 	struct adb_request req;
