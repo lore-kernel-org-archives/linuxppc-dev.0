@@ -1,21 +1,31 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id 18784DDEBE
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 14:31:49 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so5007335pyi
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2007 21:31:49 -0700 (PDT)
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: current -git adbhid.c build error
-Date: Wed, 17 Oct 2007 00:31:40 -0400
-References: <20071016181644.GA9337@nineveh.local>
-	<18197.36181.369197.363642@cargo.ozlabs.ibm.com>
-In-Reply-To: <18197.36181.369197.363642@cargo.ozlabs.ibm.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp04.au.ibm.com (E23SMTP04.au.ibm.com [202.81.18.173])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F00B5DDE40
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:29:29 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp04.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9H5SxEe000890
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:28:59 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9H5WarY144492
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:32:36 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9H5SjsC026507
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 15:28:45 +1000
+Date: Wed, 17 Oct 2007 15:22:20 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Merge dtc
+Message-ID: <20071017052220.GA3801@localhost.localdomain>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<fa686aa40710160617o57564cb4r260a40cd66407852@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710170031.40176.dmitry.torokhov@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710160617o57564cb4r260a40cd66407852@mail.gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 17 October 2007, Paul Mackerras wrote:
+On Tue, Oct 16, 2007 at 07:17:01AM -0600, Grant Likely wrote:
+> On 10/15/07, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > This very large patch incorporates a copy of dtc into the kernel
+> > source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
+> > longer an external dependency to build kernels with configurations
+> > which need a dtb file.
 > 
-> It was a mis-merge between 555ddbb4, which made that change and *did*
-> add the declaration of key, and 9a402b64, which deleted the line that
-> the declaration of key was added to.
+> Powerpc is probably not going to be the only user of dtc.  Microblaze
+> will be using it too.  Can it be put somewhere more common?
 
-Oops, sorry.
+Well, I guess we can move it to scripts/ when microblaze starts using
+it.
 
-> 
-> We need the patch below.  Dmitry, will you push it or will I?
-> 
-
-Please do. Thanks!
+Also, tell me more about this microblaze, I'm certainly interested in
+new users of dtc...
 
 -- 
-Dmitry
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
