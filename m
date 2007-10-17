@@ -2,18 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79C48DDE9A
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:45:13 +1000 (EST)
-In-Reply-To: <1192195728-24189-3-git-send-email-leoli@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 0AB28DDEB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:46:49 +1000 (EST)
+In-Reply-To: <1192195728-24189-5-git-send-email-leoli@freescale.com>
 References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
 	<1192195728-24189-2-git-send-email-leoli@freescale.com>
 	<1192195728-24189-3-git-send-email-leoli@freescale.com>
+	<1192195728-24189-4-git-send-email-leoli@freescale.com>
+	<1192195728-24189-5-git-send-email-leoli@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BB3ACE22-7584-49D9-BEB0-DC355FA25BA1@kernel.crashing.org>
+Message-Id: <F5AD4702-2832-4408-81DB-0E78B1883D76@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/9] ipic: add new interrupts introduced by new chip
-Date: Wed, 17 Oct 2007 08:45:45 -0500
+Subject: Re: [PATCH v3 4/9] add platform support for MPC837x MDS board
+Date: Wed, 17 Oct 2007 08:47:21 -0500
 To: Li Yang <leoli@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,39 +30,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Oct 12, 2007, at 8:28 AM, Li Yang wrote:
 
-> These interrupts are introduced by the latest Freescale SoC such as
-> MPC837x.  The patch also adds comment to interrupts.
+> The MPC837x MDS is a new member of Freescale MDS reference system.
 >
 > Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
->  arch/powerpc/sysdev/ipic.c |  224 +++++++++++++++++++++++++++++++++ 
-> +----------
->  arch/powerpc/sysdev/ipic.h |    7 +-
->  include/asm-powerpc/ipic.h |   12 ++-
->  3 files changed, 186 insertions(+), 57 deletions(-)
+>  arch/powerpc/platforms/83xx/Kconfig       |   12 ++++
+>  arch/powerpc/platforms/83xx/Makefile      |    1 +
+>  arch/powerpc/platforms/83xx/mpc837x_mds.c |  103 ++++++++++++++++++ 
+> +++++++++++
+>  3 files changed, 116 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/83xx/mpc837x_mds.c
 >
-> diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-> index 05a56e5..cd8590d 100644
-> --- a/arch/powerpc/sysdev/ipic.c
-> +++ b/arch/powerpc/sysdev/ipic.c
-> @@ -33,7 +33,31 @@ static struct ipic * primary_ipic;
->  static DEFINE_SPINLOCK(ipic_lock);
+> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/ 
+> platforms/83xx/Kconfig
+> index ec305f1..0c61e7a 100644
+> --- a/arch/powerpc/platforms/83xx/Kconfig
+> +++ b/arch/powerpc/platforms/83xx/Kconfig
+> @@ -50,6 +50,11 @@ config MPC836x_MDS
+>  	help
+>  	  This option enables support for the MPC836x MDS Processor Board.
 >
->  static struct ipic_info ipic_info[] = {
-> -	[9] = {
-> +	[1] = {	/* PEX1 CNT */
+> +config MPC837x_MDS
+> +	bool "Freescale MPC837x MDS"
+> +	select DEFAULT_UIMAGE
+> +	help
+> +	  This option enables support for the MPC837x MDS Processor Board.
+>  endchoice
+>
+>  config PPC_MPC831x
+> @@ -75,3 +80,10 @@ config PPC_MPC836x
+>  	select PPC_UDBG_16550
+>  	select PPC_INDIRECT_PCI
+>  	default y if MPC836x_MDS
+> +
+> +config PPC_MPC837x
+> +	bool
+> +	select PPC_UDBG_16550
+> +	select PPC_INDIRECT_PCI
+> +	select FSL_SERDES
+> +	default y if MPC837x_MDS
 
-Remove the comments, they are not correct for all IPIC users and thus  
-misleading.
-
-> +		.pend	= IPIC_SIPNR_H,
-> +		.mask	= IPIC_SIMSR_H,
-> +		.prio	= IPIC_SIPRR_C,
-> +		.force	= IPIC_SIFCR_H,
-> +		.bit	= 16,
-> +		.prio_mask = 0,
-> +	},
-
-[snip]
+Do we really need this Kconfig option for anything?
 
 - k
