@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DCDC8DDF99
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4F23FDDEDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 05:15:29 +1000 (EST)
-Message-ID: <47165F50.9010809@freescale.com>
-Date: Wed, 17 Oct 2007 14:15:28 -0500
-From: Scott Wood <scottwood@freescale.com>
+	Thu, 18 Oct 2007 05:20:54 +1000 (EST)
+Message-ID: <47166085.1010608@scram.de>
+Date: Wed, 17 Oct 2007 21:20:37 +0200
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: mpc 860 boot linux2.6.23 problem
-References: <20071015233839.959F4247BB@gemini.denx.de>	<4714E44F.7030909@freescale.com>	<85100356-D95B-4343-98BE-66080EA9887D@embeddedalley.com>
-	<47162AE7.80305@freescale.com> <47165A7E.1070206@scram.de>
-In-Reply-To: <47165A7E.1070206@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH take2] [POWERPC] i2c: adds support for i2c bus on 8xx
+References: <47134A94.60606@scram.de> <20071015183107.GA4361@loki.buserror.net>
+In-Reply-To: <20071015183107.GA4361@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Carsten Juttner <carjay@gmx.net>, linux-kernel@vger.kernel.org,
+	i2c@lm-sensors.org,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,36 +27,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jochen Friedrich wrote:
-> Hi Scott,
-> 
->> I just pulled Wolfgang's latest u-boot tree, and I don't see any fdt 
->> or ft_ calls in cpu/mpc8xx, nor in any 8xx board that I recognize.
->>
->> I may have been unclear in that I was talking about device tree 
->> support in u-boot, not the kernel.  Obviously there's device tree 
->> support in the kernel, as evidenced by my reference to using cuImage.
->>   
-> 
-> Can u-boot work on dtb trees embedded in an cuImage, at all?
+Hi Scott,
 
-No.  If you want that, you need to use a normal uImage.
+> Do we really need to be adding features for arch/ppc at this point?  It'll
+> be going away in June.  arch/ppc-specific things outside of arch/ppc itself
+> will also be more likely to be missed in the removal.
+>
+> Also, please post inline rather than as an attachment; attachments are
+> harder to quote in a reply.
+>   
 
-> How would command line arguments work without a chosen
-> node?
+OK. I'll remove the ARC=ppc parts.
 
-The bad old way: argument registers and the bd_t.  The bootwrapper fills 
-in /chosen/bootargs and other things based on that.
+>> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+>> index 8848e63..a526c02 100644
+>> --- a/arch/powerpc/boot/dts/mpc885ads.dts
+>> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
+>> @@ -213,6 +213,15 @@
+>>  				fsl,cpm-command = <0080>;
+>>  				linux,network-index = <2>;
+>>  			};
+>> +
+>> +			i2c@860 {
+>> +				device_type = "i2c";
+>>     
+>
+> No device_type.
+>   
 
-It's just for compatibility; use uImage if you can.
+Why? Documentation/powerpc/booting-without-of.txt says for I2C interfaces
+device_type is required and should be "i2c". Is this no longer true?
 
-> I tried to boot a mpc823 using the 3 argument mboot command.
-> u-boot processed the dtb and added the chosen node correctly,
-> however the kernel immediately oopsed with unable to access
-> virtual memory when accessing the dtb memory as this memory
-> was not contained in the kernel MMU space.
+> Should be fsl,cpm-i2c.  Is cpm2 i2c the same?  If not, it should be
+> fsl,cpm1-i2c.  It's probably best to specify it anyway, along with
+> fsl,mpc885-i2c.
+>   
 
-Make sure your version of u-boot understands the new bindings for things 
-like brg frequency, or (less preferred) set it manually in your dts.
+CPM2 i2c seems to be the same. However, i have no way to test this.
 
--Scott
+>> +#ifdef CONFIG_I2C_8XX
+>> +	setbits32(&mpc8xx_immr->im_cpm.cp_pbpar, 0x00000030);
+>> +	setbits32(&mpc8xx_immr->im_cpm.cp_pbdir, 0x00000030);
+>> +	setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, 0x0030);
+>> +#endif
+>>     
+>
+> Please add this to mpc885ads_pins, rather than poking the registers
+> directly.  The relevant lines are:
+>
+> 	{CPM_PORTB, 26, CPM_PIN_OUTPUT},
+> 	{CPM_PORTB, 27, CPM_PIN_OUTPUT},
+>   
+
+I noticed cpm1_set_pin32, but this function don't seem to set the
+odr register. Will this be added? Then it would be:
+
+	{CPM_PORTB, 26, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
+	{CPM_PORTB, 27, CPM_PIN_OUTPUT | CPM_PIN_OPENDRAIN},
+
+
+>> +	/* Select an arbitrary address.  Just make sure it is unique.
+>> +	 */
+>> +	out_8(&i2c->i2c_i2add, 0xfe);
+>>     
+>
+> It's a 7-bit address...  and are you sure that 0x7e is unique?  Does this
+> driver even support slave operation?
+>   
+
+It's in fact 0x7F << 1. The same value is used in the 2.4 driver and
+in u-boot, as well. Slave operation is not supported.
+
+> Why is an 8xx driver matching all i2c cpm (i.e. what about cpm2)?
+>   
+
+With the suggested change to use fsl,cpm-command, the driver should
+be able to use  both cpm1 and cpm2. The operation and structs for i2c
+are identical. The only difference might be the hack^wsupport for
+relocation.
+
+Thanks,
+Jochen
