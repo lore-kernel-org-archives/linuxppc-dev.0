@@ -1,22 +1,21 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id F15E4DDE2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:59:16 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2983327wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 07:59:14 -0700 (PDT)
-Message-ID: <fa686aa40710170759n5e92bac0x82e7cf72f03e932c@mail.gmail.com>
-Date: Wed, 17 Oct 2007 08:59:14 -0600
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 26EEADDE44
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 01:02:27 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id d23so190522and
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 08:02:26 -0700 (PDT)
+Message-ID: <fa686aa40710170802t442f549ck5f7b94c19955f56b@mail.gmail.com>
+Date: Wed, 17 Oct 2007 09:02:20 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH 04/15] [POWERPC] CM5200 DTS
-In-Reply-To: <4715FE6C.2070201@semihalf.com>
+Subject: Re: [PATCH 1/4] [POWERPC] Add mpc52xx_find_and_map_path(),
+	refactor utility functions
+In-Reply-To: <47160709.5020002@semihalf.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <47075FA7.3030108@semihalf.com> <4708C112.9020506@semihalf.com>
-	<20071008015021.GA12499@localhost.localdomain>
-	<4715FE6C.2070201@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+References: <47160689.4020301@semihalf.com> <47160709.5020002@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +26,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 10/17/07, Marian Balakowicz <m8@semihalf.com> wrote:
-> David Gibson wrote:
-> > [snip]
-> >> +            flash@c000000 {
-> >> +                    device_type = "rom";
-> >> +                    compatible = "direct-mapped";
-> >> +                    reg = <0c000000 02000000>;
-> >> +                    probe-type = "CFI";
-> >> +                    bank-width = <2>;
-> >> +                    partitions = <00000000 00060000
-> >> +                            00060000 00020000
-> >> +                            00080000 00020000
-> >> +                            000a0000 00020000
-> >> +                            000c0000 00200000
-> >> +                            002c0000 01b40000
-> >> +                            01e00000 00200000>;
-> >> +                    partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
-> >> +            };
-> >
-> > First, this is the old flash binding, please use the new one.
 >
-> Ok.
+> Add helper routine mpc52xx_find_and_map_path(). Extract common code to
+> mpc52xx_map_node() and refactor mpc52xx_find_and_map().
 >
-> > Second, is the flash really part of the SoC?
->
-> Not directly, it is attached to LocalPlus Bus Controller, which is
-> part of the SoC. And the soc@ is currently the only recognized of bus
-> for mpc5200, so if we want to move it to some other place new bindings
-> will need to be defined for lpc (LocalPlus Controller) bus. But I am
-> not quite sure where this should be attached. Bus is under LPC which
-> is a part of the SoC, but on the other hand Soc address range covers
-> only device control registers not the address space LPC may handle
-> (that may be varied). Any ideas?
+> Signed-off-by: Jan Wrobel <wrr@semihalf.com>
+> Reviewed-by: Grant Likely <grant.likely@secretlab.ca>
 
-My vote is for an lpc node off the root of the tree for devices like
-this to hang off.
+Yeah, this is probably okay.  Eventually these util functions should
+be refactored to be usable by any platform.
 
 Cheers,
 g.
+
+
 
 -- 
 Grant Likely, B.Sc., P.Eng.
