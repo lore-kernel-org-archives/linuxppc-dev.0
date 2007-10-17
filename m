@@ -1,23 +1,15 @@
-Return-Path: <ak@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C3AEFDDE48
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 10:25:26 +1000 (EST)
-Sender: ak@suse.de
-To: David Miller <davem@davemloft.net>
-Subject: Re: ioctl32: Unknown cmd
-References: <Pine.LNX.4.62.0710161642200.20196@pademelon.sonytel.be>
-	<200710162150.37636.arnd@arndb.de>
-	<20071016.152404.35664335.davem@davemloft.net>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 17 Oct 2007 02:25:20 +0200
-In-Reply-To: <20071016.152404.35664335.davem@davemloft.net>
-Message-ID: <p73wstmy4cv.fsf@crumb.suse.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 17 Oct 2007 10:33:31 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 2/2] bootwrapper: Bail from script if any command fails
+Message-ID: <20071017003331.GA28260@localhost.localdomain>
+References: <20071016213101.14117.43657.stgit@trillian.cg.shawcable.net>
+	<20071016213107.14117.3858.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, arnd@arndb.de, jens.axboe@oracle.com
+In-Reply-To: <20071016213107.14117.3858.stgit@trillian.cg.shawcable.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller <davem@davemloft.net> writes:
-
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Tue, 16 Oct 2007 21:50:35 +0200
+On Tue, Oct 16, 2007 at 03:31:07PM -0600, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> > The one point where it is expected to have changed now is when you
-> > try to do these ioctls on something that is not a block device. Are
-> > you sure that the files you tried them on were created correctly?
-> 
-> Many many many programs do this exact sort of thing.
-> 
-> It is one of the bad aspects of moving the compat handling
-> down into the file ops for a specific device.
+> Add the 'set -e' command to the wrapper script so that if any command
+> fails then the script will automatically exit
 
-When this happens one should add respective IGNORE_IOCTL()s to 
-compat_ioctl.c
+Ah.. this will conflict with my patch to merge dtc (because that
+touches the line invoking dtc to change the path to it).
 
--Andi
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
