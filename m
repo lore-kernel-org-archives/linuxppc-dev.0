@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <aph@littlepinkcloud.COM>
+Received: from zebedee.littlepinkcloud.COM
+	(cpc1-cmbg8-0-0-cust558.cmbg.cable.ntl.com [82.6.106.47])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B863DDF6E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 01:35:35 +1000 (EST)
-Message-ID: <47162BC4.2090907@freescale.com>
-Date: Wed, 17 Oct 2007 10:35:32 -0500
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 53A74DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 00:58:16 +1000 (EST)
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: linux-2.6.git: cannot build PS3 image
-References: <Pine.LNX.4.62.0710121152500.28100@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0710121531250.757@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0710171523120.19421@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0710171523120.19421@pademelon.sonytel.be>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18198.5489.890128.317389@zebedee.pink>
+Date: Wed, 17 Oct 2007 15:00:17 +0100
+From: Andrew Haley <aph@redhat.com>
+To: Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] powerpc: Fix 64 bits vDSO dwarf info for CR register
+In-Reply-To: <20071017135055.GP5451@devserv.devel.redhat.com>
+References: <1192595210.11899.149.camel@pasglop>
+	<20071017135055.GP5451@devserv.devel.redhat.com>
+Cc: Deepak Bhole <dbhole@redhat.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Alan Modra <amodra@bigpond.net.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven wrote:
->> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
->> index 39b27e5..795f988 100755
->> --- a/arch/powerpc/boot/wrapper
->> +++ b/arch/powerpc/boot/wrapper
->> @@ -232,7 +232,7 @@ base=0x`${CROSS}nm "$ofile" | grep ' _start$' | cut -d' ' -f1`
->>  entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | cut -d' ' -f3`
->>  
->>  if [ -n "$binary" ]; then
->> -    mv "$ofile" "$ofile".elf
->> +    cp "$ofile" "$ofile".elf
->>      ${CROSS}objcopy -O binary "$ofile".elf "$ofile".bin
->>  fi
-> 
-> No comments?
+Jakub Jelinek writes:
+ > On Wed, Oct 17, 2007 at 02:26:50PM +1000, Benjamin Herrenschmidt wrote:
+ > > Unfortunately, a bug in gcc cause it to not quite work either, but that
+ > > is being fixed separately with something around the lines of:
+ > > 
+ > > linux-unwind.h:
+ > > 
+ > >      fs->regs.reg[R_CR2].loc.offset = (long) &regs->ccr - new_cfa;
+ > > +    /* CR? regs are just 32-bit and PPC is big-endian.  */
+ > > +    fs->regs.reg[R_CR2].loc.offset += sizeof (long) - 4;
+ > 
+ > Small correction.  If vdso is present, then fixing the vdso is all that is
+ > needed, the above mentioned code is used only if the vdso is not present
+ > (or if glibc doesn't support the vdso).
 
-That'd work in this case, though it'd probably be better to make the 
-$ofile be the end result that will boot on the ps3, and leave a suffix 
-on the intermediate files.
+Perhaps we should test this change with a hacked libgcc, just to make
+sure it fixes the bug.
 
-I wonder if we may be better off just making zImage a phony target and 
-removing the link altogether....
+Andrew.
 
--Scott
+-- 
+Red Hat UK Ltd, Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, UK
+Registered in England and Wales No. 3798903
