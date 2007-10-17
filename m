@@ -1,19 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EE72EDDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 13:43:42 +1000 (EST)
-Date: Wed, 17 Oct 2007 13:43:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH 2/2] [POWERPC] Use of_register_driver to implement
-	of_register_platform_driver
-Message-Id: <20071017134334.cad2363e.sfr@canb.auug.org.au>
-In-Reply-To: <20071017134123.cfe10b79.sfr@canb.auug.org.au>
-References: <20071017134123.cfe10b79.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
-	"David S. Miller" <davem@davemloft.net>, wli@holomorphy.com
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18197.36181.369197.363642@cargo.ozlabs.ibm.com>
+Date: Wed, 17 Oct 2007 14:19:33 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Joseph Fannin <jfannin@gmail.com>
+Subject: Re: current -git adbhid.c build error
+In-Reply-To: <20071016181644.GA9337@nineveh.local>
+References: <20071016181644.GA9337@nineveh.local>
+Cc: linuxppc-dev@ozlabs.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,70 +18,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Also of_unregister{,_platform}_driver.
+Joseph Fannin writes:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Commit b981d8b3f5e008ff10d993be633ad00564fc22cd in Linus's git tree
+> did this:
+> 
+> 
+> @@ -374,9 +373,9 @@ adbhid_input_keycode(int id, int scancode, int repeat)
+>  #endif /* CONFIG_PPC_PMAC */
+>         }
+> 
+> -       if (adbhid[id]->keycode[keycode]) {
+> -               input_report_key(adbhid[id]->input,
+> -                                adbhid[id]->keycode[keycode],
+>                                  adbhid[id]->!up_flag);
+> +       key = adbhid[id]->keycode[keycode];
+> +       if (key) {
+> +               input_report_key(adbhid[id]->input, key, !up_flag);
+>                 input_sync(adbhid[id]->input);
+>         } else
+>                 printk(KERN_INFO "Unhandled ADB key (scancode %#02x)
+>                 %s.\n", keycode,
+> 
+> ... but did not define "key":
+
+It was a mis-merge between 555ddbb4, which made that change and *did*
+add the declaration of key, and 9a402b64, which deleted the line that
+the declaration of key was added to.
+
+We need the patch below.  Dmitry, will you push it or will I?
+
+Paul.
+
+[PATCH] Restore declaration of key in adbhid_input_keycode.
+
+Merge commit b981d8b3f5e008ff10d993be633ad00564fc22cd lost the
+declaration of `key' that 555ddbb4e2191c8823df2d61525218ac39481385
+added, resulting in failure to compile.  This fixes it.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/of_platform.c |   20 --------------------
- include/asm-powerpc/of_platform.h |   10 ++++++++--
- 2 files changed, 8 insertions(+), 22 deletions(-)
 
-This depends on the Sparc part (patch 1/2) being in the tree first.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index eca8ccc..9b01602 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -67,26 +67,6 @@ static int __init of_bus_driver_init(void)
- 
- postcore_initcall(of_bus_driver_init);
- 
--int of_register_platform_driver(struct of_platform_driver *drv)
--{
--	/* initialize common driver fields */
--	if (!drv->driver.name)
--		drv->driver.name = drv->name;
--	if (!drv->driver.owner)
--		drv->driver.owner = drv->owner;
--	drv->driver.bus = &of_platform_bus_type;
--
--	/* register with core */
--	return driver_register(&drv->driver);
--}
--EXPORT_SYMBOL(of_register_platform_driver);
--
--void of_unregister_platform_driver(struct of_platform_driver *drv)
--{
--	driver_unregister(&drv->driver);
--}
--EXPORT_SYMBOL(of_unregister_platform_driver);
--
- static void of_platform_make_bus_id(struct of_device *dev)
+diff --git a/drivers/macintosh/adbhid.c b/drivers/macintosh/adbhid.c
+index 8cce016..2766e4f 100644
+--- a/drivers/macintosh/adbhid.c
++++ b/drivers/macintosh/adbhid.c
+@@ -282,7 +282,7 @@ static void
+ adbhid_input_keycode(int id, int scancode, int repeat)
  {
- 	struct device_node *node = dev->node;
-diff --git a/include/asm-powerpc/of_platform.h b/include/asm-powerpc/of_platform.h
-index 80e6fad..d20a4cd 100644
---- a/include/asm-powerpc/of_platform.h
-+++ b/include/asm-powerpc/of_platform.h
-@@ -15,8 +15,14 @@
- #include <linux/of_platform.h>
+ 	struct adbhid *ahid = adbhid[id];
+-	int keycode, up_flag;
++	int keycode, up_flag, key;
  
- /* Platform drivers register/unregister */
--extern int of_register_platform_driver(struct of_platform_driver *drv);
--extern void of_unregister_platform_driver(struct of_platform_driver *drv);
-+static inline int of_register_platform_driver(struct of_platform_driver *drv)
-+{
-+	return of_register_driver(drv, &of_platform_bus_type);
-+}
-+static inline void of_unregister_platform_driver(struct of_platform_driver *drv)
-+{
-+	of_unregister_driver(drv);
-+}
- 
- /* Platform devices and busses creation */
- extern struct of_device *of_platform_device_create(struct device_node *np,
--- 
-1.5.3.4
+ 	keycode = scancode & 0x7f;
+ 	up_flag = scancode & 0x80;
