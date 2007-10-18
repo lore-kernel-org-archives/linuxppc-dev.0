@@ -1,33 +1,12 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7C63CDDE2C
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 14:09:18 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9I49Blj015756
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:09:12 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9I49AvL003558
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:09:11 -0500 (CDT)
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 18 Oct 2007 14:14:09 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Make helper macros in trees.S more flexible
+Message-ID: <20071018041409.GC8206@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v3 2/9] ipic: add new interrupts introduced by new chip
-Date: Thu, 18 Oct 2007 12:09:09 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5B44@zch01exm26.fsl.freescale.net>
-In-Reply-To: <BB3ACE22-7584-49D9-BEB0-DC355FA25BA1@kernel.crashing.org>
-References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
-	<1192195728-24189-2-git-send-email-leoli@freescale.com>
-	<1192195728-24189-3-git-send-email-leoli@freescale.com>
-	<BB3ACE22-7584-49D9-BEB0-DC355FA25BA1@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,50 +16,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Wednesday, October 17, 2007 9:46 PM
-> To: Li Yang-r58472
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH v3 2/9] ipic: add new interrupts=20
-> introduced by new chip
->=20
->=20
-> On Oct 12, 2007, at 8:28 AM, Li Yang wrote:
->=20
-> > These interrupts are introduced by the latest Freescale SoC such as=20
-> > MPC837x.  The patch also adds comment to interrupts.
-> >
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> >  arch/powerpc/sysdev/ipic.c |  224 +++++++++++++++++++++++++++++++++
-> > +----------
-> >  arch/powerpc/sysdev/ipic.h |    7 +-
-> >  include/asm-powerpc/ipic.h |   12 ++-
-> >  3 files changed, 186 insertions(+), 57 deletions(-)
-> >
-> > diff --git a/arch/powerpc/sysdev/ipic.c=20
-> b/arch/powerpc/sysdev/ipic.c=20
-> > index 05a56e5..cd8590d 100644
-> > --- a/arch/powerpc/sysdev/ipic.c
-> > +++ b/arch/powerpc/sysdev/ipic.c
-> > @@ -33,7 +33,31 @@ static struct ipic * primary_ipic;  static=20
-> > DEFINE_SPINLOCK(ipic_lock);
-> >
-> >  static struct ipic_info ipic_info[] =3D {
-> > -	[9] =3D {
-> > +	[1] =3D {	/* PEX1 CNT */
->=20
-> Remove the comments, they are not correct for all IPIC users=20
-> and thus misleading.
+This patch makes the helper macros in trees.S use separate labels for
+the end of each dt subblock, rather than using only start labels.
+This means that the macros can now be used to create trees with the
+subblocks in non-standard orders.
 
-We had discussed about this.  The reason why I add these comments is
-that IPIC register definition in our user manual only reference
-interrupts by name rather than numbers.  It will greatly enhance the
-readability of the code, so that we can check easily if the current code
-fits IPIC definition of a specific chip.  Without comments the check
-will be a disaster. :)
-The comments are correct for all the in tree CPUs.  It should be kept
-up-to-date easily when adding new CPUs.
+In addition, it adds a bunch of extra ; after lines of asm code in
+macros, making them safe to use in nested macros.
 
-- Leo
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/tests/trees.S
+===================================================================
+--- dtc.orig/tests/trees.S	2007-10-17 10:27:35.000000000 +1000
++++ dtc/tests/trees.S	2007-10-18 14:09:06.000000000 +1000
+@@ -5,7 +5,7 @@
+ 	.byte	((val) >> 24) & 0xff ; \
+ 	.byte	((val) >> 16) & 0xff ; \
+ 	.byte	((val) >> 8) & 0xff ; \
+-	.byte	(val) & 0xff
++	.byte	(val) & 0xff	;
+ 
+ #define FDTQUAD(val) \
+ 	.byte	((val) >> 56) & 0xff ; \
+@@ -15,10 +15,10 @@
+ 	.byte	((val) >> 24) & 0xff ; \
+ 	.byte	((val) >> 16) & 0xff ; \
+ 	.byte	((val) >> 8) & 0xff ; \
+-	.byte	(val) & 0xff
++	.byte	(val) & 0xff	;
+ 
+ #define TREE_HDR(tree) \
+-	.balign	4		; \
++	.balign	8		; \
+ 	.globl	_##tree		; \
+ _##tree:	\
+ tree:	\
+@@ -30,17 +30,18 @@
+ 	FDTLONG(0x11)		; \
+ 	FDTLONG(0x10)		; \
+ 	FDTLONG(0)		; \
+-	FDTLONG(tree##_end - tree##_strings) ; \
+-	FDTLONG(tree##_strings - tree##_struct) ;
++	FDTLONG(tree##_strings_end - tree##_strings) ; \
++	FDTLONG(tree##_struct_end - tree##_struct) ;
+ 
+ #define RSVMAP_ENTRY(addr, len) \
+ 	FDTQUAD(addr)		; \
+-	FDTQUAD(len)		;
++	FDTQUAD(len)		; \
+ 
+ #define EMPTY_RSVMAP(tree) \
+ 	.balign	8		; \
+ tree##_rsvmap:			; \
+-	RSVMAP_ENTRY(0, 0)
++	RSVMAP_ENTRY(0, 0) \
++tree##_rsvmap_end:		;
+ 
+ #define PROPHDR(tree, name, len) \
+ 	FDTLONG(FDT_PROP)	; \
+@@ -50,26 +51,26 @@
+ #define PROP_INT(tree, name, val) \
+ 	PROPHDR(tree, name, 4) \
+ 	/* For ease of testing the property values go in native-endian */ \
+-	.long	val
++	.long	val		;
+ 
+ #define PROP_STR(tree, name, str) \
+ 	PROPHDR(tree, name, 55f - 54f) \
+ 54:	\
+ 	.string	str		; \
+ 55:	\
+-	.balign	4
++	.balign	4		;
+ 
+ #define BEGIN_NODE(name) \
+ 	FDTLONG(FDT_BEGIN_NODE)	; \
+ 	.string	name		; \
+-	.balign 4
++	.balign 4		;
+ 
+ #define END_NODE \
+ 	FDTLONG(FDT_END_NODE)	;
+ 
+ #define STRING(tree, name, str) \
+-tree##_##name:	\
+-	.string	str
++tree##_##name:			; \
++	.string	str		;
+ 
+ 	.data
+ 
+@@ -80,6 +81,7 @@
+ 	RSVMAP_ENTRY(TEST_ADDR_1, TEST_SIZE_1)
+ 	RSVMAP_ENTRY(TEST_ADDR_2, TEST_SIZE_2)
+ 	RSVMAP_ENTRY(0, 0)
++test_tree1_rsvmap_end:
+ 
+ test_tree1_struct:
+ 	BEGIN_NODE("")
+@@ -108,13 +110,16 @@
+ 
+ 	END_NODE
+ 	FDTLONG(FDT_END)
++test_tree1_struct_end:
+ 
+ test_tree1_strings:
+ 	STRING(test_tree1, compatible, "compatible")
+ 	STRING(test_tree1, prop_int, "prop-int")
+ 	STRING(test_tree1, prop_str, "prop-str")
++test_tree1_strings_end:
+ test_tree1_end:
+ 
++
+ 	TREE_HDR(truncated_property)
+ 	EMPTY_RSVMAP(truncated_property)
+ 
+@@ -122,7 +127,10 @@
+ 	BEGIN_NODE("")
+ 	PROPHDR(truncated_property, prop_truncated, 4)
+ 	/* Oops, no actual property data here */
++truncated_property_struct_end:
+ 
+ truncated_property_strings:
+ 	STRING(truncated_property, prop_truncated, "truncated")
++truncated_property_strings_end:
++
+ truncated_property_end:
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
