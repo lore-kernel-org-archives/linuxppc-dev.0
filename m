@@ -1,21 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9E24EDDF32
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:02:50 +1000 (EST)
-Message-ID: <4717ADCE.9070807@freescale.com>
-Date: Thu, 18 Oct 2007 14:02:38 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 1908EDDF21
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:03:24 +1000 (EST)
+Message-ID: <4717ADE6.3020304@semihalf.com>
+Date: Thu, 18 Oct 2007 21:03:02 +0200
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: qe: add ability to upload QE firmware
-References: <11927201051427-git-send-email-timur@freescale.com>
-	<20071018185738.GA16782@localhost.localdomain>
-In-Reply-To: <20071018185738.GA16782@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 3/4] [POWERPC] Add restart support for mpc52xx based
+	platforms
+References: <20071018184407.3584.3513.stgit@hekate.izotz.org>	
+	<20071018184433.3584.77107.stgit@hekate.izotz.org>
+	<fa686aa40710181153w7bb794ceve38e7802d603ad42@mail.gmail.com>
+In-Reply-To: <fa686aa40710181153w7bb794ceve38e7802d603ad42@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,41 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
->> +	if (firmware->length == (length + sizeof(u32))) {
->> +		/* Length is valid, and there's a CRC */
->> +		crc = be32_to_cpu(*((__be32 *) ((void *) firmware + length)));
+Grant Likely wrote:
+> On 10/18/07, Marian Balakowicz <m8@semihalf.com> wrote:
+>> Add common helper routines: mpc52xx_map_wdt() and mpc52xx_restart().
+>>
+>> This patch relies on Sascha Hauer's patch published in:
+>> http://patchwork.ozlabs.org/linuxppc/patch?id=8910.
 > 
-> Spaces are not needed after "(__be32 *)" and "(void *)". The whole
-> construction isn't easy to parse, thus spaces are only distracting.
+> By 'relies', do you mean "depends on" or "was derived from"?
 
-I have to disagree.  I added the spaces to make it easier to read.
+Initial version was derived from, and since then it slightly evolved.
 
->> +	/* If there's only one microcode, then we assume it's common for all
->> +	   RISCs, so we set the CERCR.CIR bit to share the IRAM with all RISCs.
->> +	   This should be safe even on SOCs with only one RISC.
->> +
->> +	   If there are multiple 'microcode' structures, but each one points
->> +	   to the same microcode binary (ignoring offsets), then we also assume
->> +	   that we want share RAM.
->> +	 */
-> 
-> Comment style is unorthodox.
-
-Should I prefix each line with a "*"?
-
->> +		code = (void *) firmware + be32_to_cpu(ucode->code_offset);
-> 
-> space after (void *).
-
-Really?  This:
-
-	code = (void *)firmware + be32_to_cpu(ucode->code_offset);
-
-is harder to read.  Without the space, it looks like *)firmware is one word.
-
-I shall apply the other changes.  Thanks.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+m.
