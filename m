@@ -1,22 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2880EDDE33
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:04:15 +1000 (EST)
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B5BCC@zch01exm26.fsl.freescale.net>
-References: <1192702580-6353-1-git-send-email-leoli@freescale.com>
-	<9982D235-54B3-4733-8F67-4F75C7D1AFC3@kernel.crashing.org>
-	<989B956029373F45A0B8AF0297081890019B5BCC@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2ADE481F-2C20-44A9-BCF3-D1707E97CC94@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
-Date: Thu, 18 Oct 2007 09:04:26 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>, Kim Phillips <kim@kimphillips.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
+	by ozlabs.org (Postfix) with ESMTP id 699F2DDEBB
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:15:28 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so155644wri
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 07:15:27 -0700 (PDT)
+Message-ID: <fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+Date: Thu, 18 Oct 2007 08:15:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jeff Garzik" <jgarzik@pobox.com>
+Subject: Re: [PATCH v3 0/4] FEC - fast ethernet controller for mpc52xx
+In-Reply-To: <4713BA1C.2050604@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071014075511.GC3000@nd47.coderock.org>
+	<4713BA1C.2050604@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 18, 2007, at 8:33 AM, Li Yang-r58472 wrote:
-
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Thursday, October 18, 2007 9:17 PM
->> To: Li Yang-r58472
->> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
->> Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
->>
->> is it me or are you just posting the patches you're updating?
->>  (this is the only v5 patch I saw in the series)
+On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+> Domen Puncer wrote:
+> > Hello!
+> >
+> > If there are no objections, I would like to get this merged
+> > when bestcomm goes in (any time now?).
+> >
+> > It's split into four parts:
+> > 1 - device tree
+> > 2 - small bestcomm change
+> > 3 - the actual driver
+> > 4 - phy part of the driver
 >
-> I'm only posting the patch updated, to prevent spamming the list.  If
-> you want, I can send the whole series to you.
-
-I think posting the full patchset for v6 would be good since we've  
-gotten that far.
-
->> On Oct 18, 2007, at 5:16 AM, Li Yang wrote:
->>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/
->>> boot/dts/mpc8377_mds.dts new file mode 100644 index 0000000..8530de6
+> patches #3 and #4 need to be combined together.
 >
->>> +	memory {
->>> +		device_type = "memory";
->>> +		reg = <00000000 20000000>;	// 512MB at 0
->>> +	};
->>> +
->>> +	soc837x@e0000000 {
->>
->> soc@e0000000
->
-> I can update this now, but the device tree won't be usable by current
-> u-boot.
+> Are the arch people OK with patches #1 and #2?
 
-Its my understanding Kim's going to deal with this in the public u- 
-boot tree.
+Jeff,
 
->>> +		spi@7000 {
->>> +			compatible = "mpc83xx_spi";
->>> +			reg = <7000 1000>;
->>> +			interrupts = <10 8>;
->>> +			interrupt-parent = < &ipic >;
->>
->> mode = "cpu";
->
-> Oh ya,  the spec has been changed.  I also need to update  
-> mpc83xx_spi to
-> fsl_spi.
->
-> - Leo
+The bestcomm patches and patch 1 & 2 from this series are now in
+Linus' tree.  That clears the way for the FEC driver when Domen
+reposts it.  (In other words; there is nothing left in arch land
+blocking this driver)
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
