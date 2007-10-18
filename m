@@ -1,27 +1,16 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A57B9DDF3C
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 10:21:59 +1000 (EST)
-Message-ID: <4716A71F.5000102@garzik.org>
-Date: Wed, 17 Oct 2007 20:21:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 18 Oct 2007 10:22:56 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH 04/15] [POWERPC] CM5200 DTS
+Message-ID: <20071018002256.GA24236@localhost.localdomain>
+References: <47075FA7.3030108@semihalf.com> <4708C112.9020506@semihalf.com>
+	<20071008015021.GA12499@localhost.localdomain>
+	<4715FE6C.2070201@semihalf.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] fix EMAC driver for proper napi_synchronize API
-References: <1192513792.19073.23.camel@pasglop>	
-	<20071016115318.0fc36af3@freepuppy.rosehill>	
-	<1192589522.11899.130.camel@pasglop> <47157EA4.1000500@garzik.org>	
-	<1192591481.11899.134.camel@pasglop>	
-	<20071017083107.6a1b1bd3@freepuppy.rosehill>
-	<1192662843.6783.48.camel@pasglop>
-In-Reply-To: <1192662843.6783.48.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, Roland Dreier <rdreier@cisco.com>,
-	Stephen Hemminger <shemminger@linux-foundation.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4715FE6C.2070201@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +20,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> The EMAC driver "fix" was merged by mistake before the dust had settled on
-> the new napi synchronize interface (and before it got merged). The final
-> version of that function is spelled without underscores.
+On Wed, Oct 17, 2007 at 02:22:04PM +0200, Marian Balakowicz wrote:
+> David Gibson wrote:
+> > [snip]
+> >> +		flash@c000000 {
+> >> +			device_type = "rom";
+> >> +			compatible = "direct-mapped";
+> >> +			reg = <0c000000 02000000>;
+> >> +			probe-type = "CFI";
+> >> +			bank-width = <2>;
+> >> +			partitions = <00000000 00060000
+> >> +				00060000 00020000
+> >> +				00080000 00020000
+> >> +				000a0000 00020000
+> >> +				000c0000 00200000
+> >> +				002c0000 01b40000
+> >> +				01e00000 00200000>;
+> >> +			partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
+> >> +		};
+> > 
+> > First, this is the old flash binding, please use the new one.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Ok.
+> 
+> > Second, is the flash really part of the SoC?
+> 
+> Not directly, it is attached to LocalPlus Bus Controller, which is
+> part of the SoC. And the soc@ is currently the only recognized of bus
+> for mpc5200, so if we want to move it to some other place new bindings
+> will need to be defined for lpc (LocalPlus Controller) bus. But I am
+> not quite sure where this should be attached. Bus is under LPC which
+> is a part of the SoC, but on the other hand Soc address range covers
+> only device control registers not the address space LPC may handle
+> (that may be varied). Any ideas?
 
-applied
+The bus bridge has to be there.  Is this something similar to the
+"localbus" / "chipselect" bus controllers that a whole bunch of the
+Freescale SoCs have?  Because the bridged addresses don't lie in the
+IMMR, althoug the control registers do, the current convention is to
+make the localbus node a sibling of /soc, even though it is really
+part of the SoC (/soc would perhaps be better called /immr, but /soc
+is established now).  This approach is imperfect, but so are most of
+the other compromises we could make.
+
+Incidentally LPC is a pretty bad abbreviation, since LPC more
+frequently refers to the Low Pin Count connections that frequently
+appear on south bridges or superIO chips.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
