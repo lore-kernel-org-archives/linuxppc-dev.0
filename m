@@ -1,13 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18199.59909.763111.810973@cargo.ozlabs.ibm.com>
-Date: Fri, 19 Oct 2007 09:19:33 +1000
+Message-ID: <18199.60025.563689.10810@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Oct 2007 09:21:29 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] powerpc: Add -mno-spe for ARCH=powerpc builds
-In-Reply-To: <Pine.LNX.4.64.0710181655270.28684@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0710181655270.28684@blarg.am.freescale.net>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
+In-Reply-To: <200710181108.19413.yur@emcraft.com>
+References: <200710181108.19413.yur@emcraft.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,13 +18,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Yuri Tikhonov writes:
 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> The following patch adds support for 256KB PAGE_SIZE on ppc44x-based boards. 
+> The applications to be run on the kernel with 256KB PAGE_SIZE have to be 
+> built using the modified version of binutils, where the MAXPAGESIZE 
+> definition is set to 0x40000 (as opposite to standard 0x10000).
 
-Your commit message doesn't give any reason why you are doing this, or
-any explanation of what goes wrong without it.  In fact, the commit
-message is completely empty. :)  Please resubmit with a decent commit
-message.
+Have you measured the performance using a 64kB page size?  If so, how
+does it compare with the 256kB page size?
+
+The 64kB page size has the attraction that no binutils changes are
+required.
 
 Paul.
