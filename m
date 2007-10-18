@@ -1,22 +1,20 @@
-Return-Path: <lacrimosa02@sina.com>
-Received: from smtp.sina.com.cn (smtp.sina.com.cn [202.108.3.233])
-	by ozlabs.org (Postfix) with ESMTP id C40FFDDE33
+Return-Path: <jeff@mock.com>
+Received: from mail.mock.com (gw.mock.com [209.157.146.194])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.mock.com", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F162CDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 12:19:22 +1000 (EST)
-Received: from neukxpax3m59t7 (unknown [58.154.193.229])
-	by smtp.sina.com.cn (SINAMAIL) with ESMTP id B74DE3B6B10
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Oct 2007 10:19:13 +0800 (CST)
-From: =?gb2312?B?zfXW2A==?= <lacrimosa02@sina.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.3.1192500005.32221.linuxppc-embedded@ozlabs.org>
-Subject: Re: aty128fb PCI card on ppc 405ep taihu board
-Date: Thu, 18 Oct 2007 10:19:09 +0800
-Message-ID: <6E33812279E8474394974D11898C2BE2@neukxpax3m59t7>
+	Thu, 18 Oct 2007 13:22:42 +1000 (EST)
+Message-ID: <4716D17D.1070206@mock.com>
+Date: Wed, 17 Oct 2007 20:22:37 -0700
+From: Jeff Mock <jeff@mock.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0003_01C81170.54846030"
-In-Reply-To: <mailman.3.1192500005.32221.linuxppc-embedded@ozlabs.org>
+To: Dell Query <dell.query@yahoo.com>
+Subject: Re: PPC440EPx GPIO control help
+References: <65478.31425.qm@web45611.mail.sp1.yahoo.com>
+In-Reply-To: <65478.31425.qm@web45611.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,334 +25,82 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0003_01C81170.54846030
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-Thanks Bill and thanks Wolfgang! VGA BIOS is the problem. I use scitechsoft
-videoboot to initialize the card. Videoboot is based on scitechsoft x86emu
-which could run x86 code on other platforms. Now I successfully initialized
-the card and get the framebuffer information. But the monitor still gets NO
-SIGNAL through the card.
-
- 
-
-Serial console shows framebuffer is enabled: 
-
- 
-
-     videoboot: Booting PCI video card bus 0, function 0, device 6
-
-     aty128fb: Found Intel x86 BIOS ROM Image
-
-     aty128fb: Rage128 BIOS located
-
-     aty128fb: Rage128 RK PCI [chip rev 0x2] 32M 64-bit SDR SGRAM (2:1)
-
-     fb0: ATY Rage128 frame buffer device on Rage128 RK PCI
-
- 
-
-Some information I get from framebuffer:
-
- 
-
-     id = ATY Rage128
-
-     depth =  16
-
-       smemlen = 33554432
-
-       line_length = 0
-
-       FB_TYPE_ = 0
-
-     type_aux = 0
-
-     FB_VISUAL_ = 3
-
-     xpanstep = 8
-
-     ypanstep = 1
-
-     ywrapstep = 0
-
-     mmio_start = bbffc0000d
-
-     mmio_len = 8192
-
-     accel = 32
-
-     xres = 640
-
-     yres = 480
-
-     xres_virtul = 640
-
-     yres_virtul = 480
-
-     xoffset = 0
-
-     yoffset = 0
-
-     bits_per_pixel = 16
-
- 
-
-
-------=_NextPart_000_0003_01C81170.54846030
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dgb2312">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"chmetcnv"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:=CB=CE=CC=E5;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:"\@=CB=CE=CC=E5";
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:justify;
-	text-justify:inter-ideograph;
-	font-size:10.5pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:9.0pt;
-	font-family:=CB=CE=CC=E5;}
- /* Page Definitions */
- @page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 126.65pt 72.0pt 126.65pt;
-	layout-grid:15.6pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DZH-CN link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
-
-<div class=3DSection1 style=3D'layout-grid:15.6pt'>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>Thanks Bill and thanks Wolfgang! VGA BIOS is the problem. I use =
-scitechsoft
-videoboot to initialize the card. Videoboot is based on scitechsoft =
-x86emu
-which could run x86 code on other platforms. Now I successfully =
-initialized the
-card and get the framebuffer information. But the monitor still gets NO =
-SIGNAL
-through the card.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>Serial console shows framebuffer is enabled: =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>videoboot: =
-Booting PCI
-video card bus 0, function 0, device 6<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>aty128fb: =
-Found Intel
-x86 BIOS ROM Image<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>aty128fb: =
-Rage128 BIOS
-located<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>aty128fb: =
-Rage128 RK
-PCI [chip rev 0x2] <st1:chmetcnv TCSC=3D"0" NumberType=3D"1" =
-Negative=3D"False"
-HasSpace=3D"False" SourceValue=3D"32" UnitName=3D"m" =
-w:st=3D"on">32M</st1:chmetcnv>
-64-bit SDR SGRAM (2:1)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>fb0: ATY =
-Rage128 frame
-buffer device on Rage128 RK PCI<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>Some information I get from =
-framebuffer:<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>id =3D ATY =
-Rage128<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:
-9.0pt'>&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=3DEN-US>depth =
-=3D&nbsp; 16<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Times New Roman"><span =
-lang=3DEN-US
-style=3D'font-size:10.5pt'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></font><font
-size=3D1 face=3D=CB=CE=CC=E5><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:=CB=CE=CC=E5'>smemlen
-=3D 33554432<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Times New Roman"><span =
-lang=3DEN-US
-style=3D'font-size:10.5pt'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></font><font
-size=3D1 face=3D=CB=CE=CC=E5><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:=CB=CE=CC=E5'>line_length
-=3D 0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3D"Times New Roman"><span =
-lang=3DEN-US
-style=3D'font-size:10.5pt'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-</span></font><font
-size=3D1 face=3D=CB=CE=CC=E5><span lang=3DEN-US =
-style=3D'font-size:9.0pt;font-family:=CB=CE=CC=E5'>FB_TYPE_
-=3D 0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; type_aux =3D =
-0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; FB_VISUAL_ =3D =
-3<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; xpanstep =3D =
-8<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; ypanstep =3D =
-1<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; ywrapstep =3D =
-0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; mmio_start =3D =
-bbffc0000d<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span lang=3DES =
-style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; mmio_len =3D =
-8192<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span lang=3DES =
-style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; accel =3D =
-32<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span lang=3DES =
-style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; xres =3D =
-640<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span lang=3DES =
-style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; yres =3D =
-480<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; xres_virtul =3D =
-640<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; yres_virtul =3D =
-480<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; xoffset =3D =
-0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; yoffset =3D =
-0<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US style=3D'font-size:9.0pt;
-font-family:=CB=CE=CC=E5'>&nbsp;&nbsp;&nbsp;&nbsp; bits_per_pixel =3D =
-16<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D1 face=3D=CB=CE=CC=E5><span =
-lang=3DEN-US><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0003_01C81170.54846030--
+Oh no, it's not necessary to use /proc, pdev-lcd was my first device 
+driver.  I wanted to try out all of the different features and it was 
+fun to add a /proc interface.  It could just as easily have a read 
+interface or an ioctl() or whatever.
+
+I think LDD3 is fantastic, stick with it and go slowly.  Start out by 
+writing little test drivers on your desktop machine where it's easy to 
+debug.  LDD3 really got me over the hump of writing device drivers.
+
+jeff
+
+
+
+Dell Query wrote:
+> Hi Jeff,
+> 
+> I read the device drivers part of the LDD3, it's really difficult as
+> I
+expected. Thanks for the sample codes. I'll develop my own driver basing
+from your samples. Regarding reading the status of the LED, is it really
+necessary to use proc?
+
+> Regards,
+> dell
+> 
+> Jeff Mock <jeff@mock.com> wrote: 
+> David Hawkins wrote:
+>>> I have a PPC440EPx Sequoia Evaluation board that runs on Linux 2.6.21. 
+>>> What I would want to do is to control (write and read values to) its 
+>>> GPIO. Perhaps similar to Turbo C's outputb(0x378,0x01) to write and 
+>>> inportb(0x378) to read. I read the PPC440EPx manual but I find it 
+>>> difficult to understand.
+>>>
+>>> Could anyone show me any tutorial or some sample codes?
+>> I copied the code below from some test code I wrote for a TS7300
+>> board (uses an ARM EP9302 processor). However, since its user-space
+>> code it should work fine.
+>>
+> 
+> I might be a little out of date, but I think you must write your own 
+> driver to wiggle the GPIO pins on a 440 processor.  I just finished a 
+> project using a 440GX with a 2.6.15 kernel (we froze the code about 8 
+> months ago).
+> 
+> The 440 powerPC core is a 32-bit processor with 36-bit physical 
+> addresses.  The physical address for the GPIO pins is someplace above 
+> 4GB.  An mmap() of /dev/mem only lets you map the lower 4GB of the 
+> address space, as a result you can't write a user space program on the 
+> 440 to wiggle the GPIO pins.  (This was true with 2.6.15, I can't speak 
+> for later kernels).
+> 
+> This tossed me into writing device drivers, which turned out to be not 
+> nearly as scary as I imagined.  The Linux Device Drivers book is fabulous:
+> 
+>     http://lwn.net/Kernel/LDD3/
+> 
+> Here is a driver for the 440GX that controls an LED on one of the GPIO 
+> pins you can use as an example.  The device /dev/pdev-led has a 
+> read/write interface so you can do something like this:
+> 
+>     # echo "1" > /dev/pdev-led      # turn on LED
+>     # echo "0" > /dev/pdev-led      # turn off LED
+> 
+> It also has a /proc interface so you can cat /proc/pdev-led to read the 
+> status of the LED.  There are several other drivers there that probably 
+> won't be interesting, but pdev-led.c is probably a good starting point:
+>  
+> http://www.mock.com/wsvn/listing.php?repname=mock.pdev&path=/trunk/sw/driver/
+> 
+> jeff
+> 
+> 
+> 
+> 
+>  __________________________________________________
+> Do You Yahoo!?
+> Tired of spam?  Yahoo! Mail has the best spam protection around 
+> http://mail.yahoo.com 
