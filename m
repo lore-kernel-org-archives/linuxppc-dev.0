@@ -1,23 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 71C77DDE43
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 12:41:09 +1000 (EST)
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710171906150.26902@woody.linux-foundation.org>
-References: <1192670742.12879.5.camel@pasglop>
-	<alpine.LFD.0.999.0710171906150.26902@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 18 Oct 2007 12:40:54 +1000
-Message-Id: <1192675254.12879.29.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 85374DDE49
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 12:46:20 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9I2kEsP016659
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 19:46:14 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9I2kCso023425
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:46:13 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v3 3/9] add Freescale SerDes PHY support
+Date: Thu, 18 Oct 2007 10:46:13 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B5B26@zch01exm26.fsl.freescale.net>
+In-Reply-To: <7B7F41BB-05FB-4BFD-B4C6-ADDE1E2D76E3@kernel.crashing.org>
+References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
+	<1192195728-24189-2-git-send-email-leoli@freescale.com>
+	<1192195728-24189-3-git-send-email-leoli@freescale.com>
+	<1192195728-24189-4-git-send-email-leoli@freescale.com>
+	<7B7F41BB-05FB-4BFD-B4C6-ADDE1E2D76E3@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,66 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Wednesday, October 17, 2007 10:13 PM
+> To: Li Yang-r58472
+> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH v3 3/9] add Freescale SerDes PHY support
+>=20
+{snip}
 
-On Wed, 2007-10-17 at 19:12 -0700, Linus Torvalds wrote:
-> 
-> So, what exactly does it protect against? At a minimum, this needs a 
-> comment in the changelog, and probably preferably in the source code too.
+This patch has been superseded by v4.  And the problems have already
+been addressed.  Thanks.
 
-I replied to Andrew, but I agree, it's worth a comment, I'll add one.
-
-> The thing is, synchronize_irq() can only protect against interrupts that 
-> are *already*running* on another CPU, and the caller must have made sure 
-> that no new interrupts are coming in (or at least that whatever new 
-> interrupts that come in will not pick up a certain piece of data). 
-> 
-> So I can imagine that the smb_mb() is there so that the caller - who has 
-> cleared some list or done something like that - will have any preceding 
-> writes that it did be serialized with actually checking the old state of 
-> "desc->status".
-
-Yes.
-
-> Fair enough - I can see that a smp_mb() is useful. But I think it needs 
-> documenting as such, and preferably with an example of how this actually 
-> happened in the first place (do you have one?)
-
-One could argue that it's the caller that should do the mb() but that
-would really be asking for trouble. Since most usage scenario require
-it, and it's not a hot path, I prefer having it here.
-
-Note that some kind of read barrier or compiler barrier should be needed
-regardless, or we are just not sync'ing with anything at all (we may
-have loaded the value ages ago and thus operate on a totally stale
-value). I prefer a full barrier to also ensure all previous stores are
-pushed out.
-
-> The synchronize_irq() users that are really fundamental (ie the irq 
-> datastructures themselves) all should use the irq descriptor spinlock, and 
-> should *not* be needing any of this, since they would have serialized with 
-> whoever actually set the IRQ_INPROGRESS bit in the first place.
-
-That isn't always the case. You can have very efficient lock-less fast
-path and use synchronize_irq as a kind of RCU-like way to have the slow
-path do the right thing.
-
-> So in *that* sense, I think the memory barrier is useless, and I can't 
-> make up my mind whether it's good or bad. Which is why I'd really like to 
-> have an example scenario spelled out where it makes a difference..
-
-Well, typically, I can clear a pointer and want to make sure my IRQ
-handler isn't using it anymore before freeing the memory. Or set a "HW
-is off" flag. Having spinlocks all over isn't always the best approach
-on things that are really hot path, it's fair enough to use lockless
-approaches like that by moving the burden to the slow path that does
-synchronize_irq.
-
-In general, I tend to think that for this function to make any sense
-(that is, to synchronize anything at all), it needs a barrier or you are
-just making a decision based on a totally random value of desc->status
-since it can have been re-ordered, speculatively loaded, pre-fetched,
-whatever'ed... :-).
-
-Want a respin with a comment ?
-
-Ben.
+- Leo
