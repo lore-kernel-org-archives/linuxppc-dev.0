@@ -1,17 +1,27 @@
-Return-Path: <sprasad@bivio.net>
-Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 9C639DDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 09:37:42 +1000 (EST)
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 18B9CDDEDD
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 09:41:48 +1000 (EST)
+Date: Thu, 18 Oct 2007 16:39:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+In-Reply-To: <1192749449.7367.51.camel@pasglop>
+Message-ID: <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Building zImage
-Date: Thu, 18 Oct 2007 16:22:36 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7D8D790@corpexc01.corp.networkrobots.com>
-In-Reply-To: <mailman.1363.1192734606.3099.linuxppc-dev@ozlabs.org>
-References: <mailman.1363.1192734606.3099.linuxppc-dev@ozlabs.org>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +31,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-When I tried to build zImage (make zImage V=3D1) based on the 2.6.19
-kernel for 8641HPCN board, I got the following error...
 
-make -f scripts/Makefile.build obj=3Dlib
-make -f
-/export/beavis/work/sprasad/2.6.19/linux-2.6.19/scripts/Makefile.modpost
-vmlinux
-  scripts/mod/modpost -m  -o
-/export/beavis/work/sprasad/2.6.19/linux-2.6.19/Module.symvers
-vmlinux=20
-rm -f .old_version
-make ARCH=3Dppc64 -f scripts/Makefile.build obj=3Darch/powerpc/boot
-arch/powerpc/boot/zImage
-ln: accessing `arch/powerpc/boot/zImage': No such file or directory
-make[1]: *** [arch/powerpc/boot/zImage] Error 1
-make: *** [zImage] Error 2
+On Fri, 19 Oct 2007, Benjamin Herrenschmidt wrote:
+> 
+> I agree and you can see that in fact, we don't have enough barrier on
+> the other side since spin_unlock doesn't prevent subsequent loads from
+> crossing a previous store...
+> 
+> I wonder if that's worth trying to address, adding a barrier in
+> handle_IRQ_event for example, or we can continue ignoring the barrier
+> and let some drivers do their own fixes in fancy ways.
 
-When I looked into the Makefile, "image-y" was having no value. So, "ln"
-was failing. Do I have to select one of the below options of zImage. I
-am not really sure which one to use for 8641 supported by FreeScale.
+So how about something like this (untested! not necessarily very well 
+thought through either!)
 
-image-$(CONFIG_PPC_PSERIES)             +=3D zImage.pseries
-image-$(CONFIG_PPC_MAPLE)               +=3D zImage.pseries
-image-$(CONFIG_PPC_IBM_CELL_BLADE)      +=3D zImage.pseries
-image-$(CONFIG_PPC_CHRP)                +=3D zImage.chrp
-image-$(CONFIG_PPC_PMAC)                +=3D zImage.pmac
-image-$(CONFIG_DEFAULT_UIMAGE)          +=3D uImage
+Basic notion: the only thing that serializes the IRQ_INPROGRESS flag is 
+the descriptor lock. And we don't have to (or even want to!) hold it while 
+waiting for the thing, but we want to *have*held*it* in between whatever 
+we're synchronizing with.
 
-Well!... we are not using U-Boot, so uImage is not an option, and that
-builds fine.
+The internal irq handler functions already held the lock when they did 
+whatever they need to serialize - and they are possibly performance 
+critical too - so they use the "internal" function that doesn't get the 
+lock unnecessarily again.
 
-Any way, I tried to make uImage, but I am not sure if it is including
-the dts file in the final uImage built, as the wrapper was passed the
-value of platform as "uboot". I am confused.
+Hmm? 
 
-Thanks for your help in advance.
+		Linus
 
-- siva
+---
+ kernel/irq/manage.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 80eab7a..f3e9575 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -14,6 +14,18 @@
+ 
+ #include "internals.h"
+ 
++/*
++ * Internally wait for IRQ_INPROGRESS to go away on other CPU's,
++ * after having serialized with the descriptor lock.
++ */
++static inline void do_synchronize_irq(struct irq_desc *desc)
++{
++#ifdef CONFIG_SMP
++	while (desc->status & IRQ_INPROGRESS)
++		cpu_relax();
++#endif
++}
++
+ #ifdef CONFIG_SMP
+ 
+ /**
+@@ -28,13 +40,15 @@
+  */
+ void synchronize_irq(unsigned int irq)
+ {
++	unsigned long flags;
+ 	struct irq_desc *desc = irq_desc + irq;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	spin_lock_irqsave(&desc->lock, flags);
++	spin_unlock_irqrestore(&desc->lock, flags);
++	do_synchronize_irq(desc);
+ }
+ EXPORT_SYMBOL(synchronize_irq);
+ 
+@@ -129,7 +143,7 @@ void disable_irq(unsigned int irq)
+ 
+ 	disable_irq_nosync(irq);
+ 	if (desc->action)
+-		synchronize_irq(irq);
++		do_synchronize_irq(desc);
+ }
+ EXPORT_SYMBOL(disable_irq);
+ 
+@@ -443,7 +457,7 @@ void free_irq(unsigned int irq, void *dev_id)
+ 			unregister_handler_proc(irq, action);
+ 
+ 			/* Make sure it's not being used on another CPU */
+-			synchronize_irq(irq);
++			do_synchronize_irq(desc);
+ #ifdef CONFIG_DEBUG_SHIRQ
+ 			/*
+ 			 * It's a shared IRQ -- the driver ought to be
