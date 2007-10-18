@@ -1,35 +1,30 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EA761DDE36
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 13:51:59 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l9I3prdr000111
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 20:51:54 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9I3pqmc001475
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 22:51:53 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v3 4/9] add platform support for MPC837x MDS board
-Date: Thu, 18 Oct 2007 11:51:54 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5B3F@zch01exm26.fsl.freescale.net>
-In-Reply-To: <F5AD4702-2832-4408-81DB-0E78B1883D76@kernel.crashing.org>
-References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
-	<1192195728-24189-2-git-send-email-leoli@freescale.com>
-	<1192195728-24189-3-git-send-email-leoli@freescale.com>
-	<1192195728-24189-4-git-send-email-leoli@freescale.com>
-	<1192195728-24189-5-git-send-email-leoli@freescale.com>
-	<F5AD4702-2832-4408-81DB-0E78B1883D76@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id C6310DDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 13:56:17 +1000 (EST)
+Received: from pd4mr1so.prod.shaw.ca
+	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JQ300JL19JGQYB0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 17 Oct 2007 21:54:52 -0600 (MDT)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
+	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQ300EMS9JG5F40@pd4mr1so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Wed, 17 Oct 2007 21:54:52 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQ3008BZ9JFXLA2@l-daemon> for linuxppc-dev@ozlabs.org;
+	Wed, 17 Oct 2007 21:54:51 -0600 (MDT)
+Date: Wed, 17 Oct 2007 21:54:58 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] gianfar: fix compile warning
+To: Li Yang <leoli@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Message-id: <20071018035458.22355.99460.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,60 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Wednesday, October 17, 2007 9:47 PM
-> To: Li Yang-r58472
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH v3 4/9] add platform support for MPC837x MDS board
->=20
->=20
-> On Oct 12, 2007, at 8:28 AM, Li Yang wrote:
->=20
-> > The MPC837x MDS is a new member of Freescale MDS reference system.
-> >
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> >  arch/powerpc/platforms/83xx/Kconfig       |   12 ++++
-> >  arch/powerpc/platforms/83xx/Makefile      |    1 +
-> >  arch/powerpc/platforms/83xx/mpc837x_mds.c |  103 ++++++++++++++++++
-> > +++++++++++
-> >  3 files changed, 116 insertions(+), 0 deletions(-)  create mode=20
-> > 100644 arch/powerpc/platforms/83xx/mpc837x_mds.c
-> >
-> > diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/=20
-> > platforms/83xx/Kconfig index ec305f1..0c61e7a 100644
-> > --- a/arch/powerpc/platforms/83xx/Kconfig
-> > +++ b/arch/powerpc/platforms/83xx/Kconfig
-> > @@ -50,6 +50,11 @@ config MPC836x_MDS
-> >  	help
-> >  	  This option enables support for the MPC836x MDS=20
-> Processor Board.
-> >
-> > +config MPC837x_MDS
-> > +	bool "Freescale MPC837x MDS"
-> > +	select DEFAULT_UIMAGE
-> > +	help
-> > +	  This option enables support for the MPC837x MDS=20
-> Processor Board.
-> >  endchoice
-> >
-> >  config PPC_MPC831x
-> > @@ -75,3 +80,10 @@ config PPC_MPC836x
-> >  	select PPC_UDBG_16550
-> >  	select PPC_INDIRECT_PCI
-> >  	default y if MPC836x_MDS
-> > +
-> > +config PPC_MPC837x
-> > +	bool
-> > +	select PPC_UDBG_16550
-> > +	select PPC_INDIRECT_PCI
-> > +	select FSL_SERDES
-> > +	default y if MPC837x_MDS
->=20
-> Do we really need this Kconfig option for anything?
+From: Grant Likely <grant.likely@secretlab.ca>
 
-The chip series can be used on other boards.  This option is a container
-for CPU related selects and can be reused by other boards.
+Eliminate an uninitialized variable warning.  The code is correct, but
+a pointer to the automatic variable 'addr' is passed to dma_alloc_coherent.
+Since addr has never been initialized, and the compiler doesn't know
+what dma_alloc_coherent will do with it, it complains.
 
-- Leo
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ drivers/net/gianfar.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+index cc288d8..c009ab6 100644
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -696,7 +696,7 @@ int startup_gfar(struct net_device *dev)
+ {
+ 	struct txbd8 *txbdp;
+ 	struct rxbd8 *rxbdp;
+-	dma_addr_t addr;
++	dma_addr_t addr = 0;
+ 	unsigned long vaddr;
+ 	int i;
+ 	struct gfar_private *priv = netdev_priv(dev);
