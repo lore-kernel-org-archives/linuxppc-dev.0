@@ -1,17 +1,27 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 55C06DE35C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:56:28 +1000 (EST)
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-In-Reply-To: <1192676235.12879.40.camel@pasglop>
-Message-Id: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-Date: Thu, 18 Oct 2007 22:56:17 +0800
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id A553DDDF36
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:58:04 +1000 (EST)
+In-Reply-To: <1192719847-25045-9-git-send-email-leoli@freescale.com>
+References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
+	<1192719847-25045-2-git-send-email-leoli@freescale.com>
+	<1192719847-25045-3-git-send-email-leoli@freescale.com>
+	<1192719847-25045-4-git-send-email-leoli@freescale.com>
+	<1192719847-25045-5-git-send-email-leoli@freescale.com>
+	<1192719847-25045-6-git-send-email-leoli@freescale.com>
+	<1192719847-25045-7-git-send-email-leoli@freescale.com>
+	<1192719847-25045-8-git-send-email-leoli@freescale.com>
+	<1192719847-25045-9-git-send-email-leoli@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E3380792-5585-4CF8-8DC5-BE634576821E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v6 9/9] add MPC837x MDS board default device tree
+Date: Thu, 18 Oct 2007 09:58:39 -0500
+To: Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +31,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+On Oct 18, 2007, at 10:04 AM, Li Yang wrote:
+
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8377_mds.dts |  282 ++++++++++++++++++++++ 
+> +++++++++
+>  arch/powerpc/boot/dts/mpc8378_mds.dts |  264 ++++++++++++++++++++++ 
+> +++++++
+>  arch/powerpc/boot/dts/mpc8379_mds.dts |  300 ++++++++++++++++++++++ 
+> +++++++++++
+>  3 files changed, 846 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+>  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+>  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
 >
-> Take a real life example:
-> 
-> drivers/message/fusion/mptbase.c
-> 
->        /* Disable interrupts! */
->        CHIPREG_WRITE32(&ioc->chip->IntMask, 0xFFFFFFFF);
-> 
->        ioc->active = 0;
->        synchronize_irq(pdev->irq);
-> 
-> And we aren't in a spinlock here. 
-> 
-> That's just a random example grepped.... I think I see a few more. Then,
-> some drivers like tg3 actually do an smp_mb() before calling
-> synchronize_irq(). But then, some don't.
+> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/ 
+> boot/dts/mpc8377_mds.dts
+> new file mode 100644
+> index 0000000..154d18b
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> @@ -0,0 +1,282 @@
+> +/*
+> + * MPC8377E MDS Device Tree Source
+> + *
+> + * Copyright 2007 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +/ {
+> +	model = "fsl,mpc8377emds";
+> +	compatible = "fsl,mpc8377emds","fsl,mpc837xmds";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,837x@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			d-cache-line-size = <20>;
+> +			i-cache-line-size = <20>;
+> +			d-cache-size = <8000>;		// L1, 32K
+> +			i-cache-size = <8000>;		// L1, 32K
+> +			timebase-frequency = <0>;
+> +			bus-frequency = <0>;
+> +			clock-frequency = <0>;
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <00000000 20000000>;	// 512MB at 0
+> +	};
+> +
+> +	soc@e0000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		device_type = "soc";
+> +		ranges = <0 e0000000 00100000>;
+> +		reg = <e0000000 00000200>;
+> +		bus-frequency = <0>;
+> +
+> +		wdt@200 {
+> +			compatible = "mpc83xx_wdt";
+> +			reg = <200 100>;
+> +		};
+> +
+> +		i2c@3000 {
 
-I really don't see what the point of the barrier would be here.
-Barriers are generally useless unless you have a counter-part
-on the other side.
+still missing #address-cell & #size-cells
 
-The counterpart here is presumably the interrupt handler, which
-should be terminated by the IO write above regardless of the
-memory barrier.
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3000 100>;
+> +			interrupts = <e 8>;
+> +			interrupt-parent = < &ipic >;
+> +			dfsrr;
+> +		};
+> +
+> +		i2c@3100 {
 
-Of course I might have missed your point.  If so please give
-a description like this for the race that you see:
+still missing #address-cell & #size-cells
 
-CPU1			CPU2
-disable IRQ
-			whatever the race is
-synchronize_irq
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3100 100>;
+> +			interrupts = <f 8>;
+> +			interrupt-parent = < &ipic >;
+> +			dfsrr;
+> +		};
+> +
+> +		spi@7000 {
+> +			compatible = "fsl_spi";
+> +			reg = <7000 1000>;
+> +			interrupts = <10 8>;
+> +			interrupt-parent = < &ipic >;
+> +			mode = "spi";
 
-> I think trying to have all drivers be correct here is asking for
-> trouble, we'd rather have synchronize_irq() be uber-safe. It's not like
-> it was used in hot path anyway.
+mode = "cpu"
 
-While in general I'd agree with you about give latitude to
-drivers, memory barriers I think is something that we can't
-afford to.
+> +		};
 
-The reason is that memory barries tend to come in pairs, e.g.,
 
-CPU1			CPU2
-write A
-wmb
-write B
-			read B
-			rmb
-			read A
-
-Taking away either barrier would render the other useless.
-
-So whenever we add only one barrier for the benefit of driver
-writers who don't bother to think about barriers we may not
-be helping them at all.
-
-In any case, such writers should use easier tools like spin
-locks rather than trying to go lockless.
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+- k
