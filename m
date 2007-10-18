@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6013BDDE24
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 07:35:34 +1000 (EST)
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <E1IiWTY-0000jx-00@gondolin.me.apana.org.au>
-References: <E1IiWTY-0000jx-00@gondolin.me.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 07:35:05 +1000
-Message-Id: <1192743305.7367.11.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id C53A1DDE43
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 07:56:45 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l9ILuelk030477
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 16:56:41 -0500
+Date: Thu, 18 Oct 2007 16:55:59 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] powerpc: Add -mno-spe for ARCH=powerpc builds
+Message-ID: <Pine.LNX.4.64.0710181655270.28684@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ arch/powerpc/Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-On Thu, 2007-10-18 at 22:35 +0800, Herbert Xu wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > Note that some kind of read barrier or compiler barrier should be needed
-> > regardless, or we are just not sync'ing with anything at all (we may
-> > have loaded the value ages ago and thus operate on a totally stale
-> > value). I prefer a full barrier to also ensure all previous stores are
-> > pushed out.
-> 
-> We already have a compiler barrier there in the form of cpu_relax.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 4e16534..bd87626 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -107,6 +107,9 @@ endif
+ # No AltiVec instruction when building kernel
+ KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
 
-Isn't it too late ? The barrier should be before the test_bit, to
-prevent it from moving up.
-
-Ben.
- 
++# No SPE instruction when building kernel
++KBUILD_CFLAGS += $(call cc-option,-mno-spe)
++
+ # Enable unit-at-a-time mode when possible. It shrinks the
+ # kernel considerably.
+ KBUILD_CFLAGS += $(call cc-option,-funit-at-a-time)
+-- 
+1.5.2.4
