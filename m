@@ -1,30 +1,21 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 45CD2DDE49
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:24:09 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l9IEO3hV022355
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 07:24:04 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9IEO21t016617
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:24:03 -0500 (CDT)
+Return-Path: <bruce.ashfield@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.182])
+	by ozlabs.org (Postfix) with ESMTP id 01BECDDEC1
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:29:34 +1000 (EST)
+Received: by el-out-1112.google.com with SMTP id r27so56033ele
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 07:29:33 -0700 (PDT)
+Message-ID: <3bd6b93c0710180729y11ac55e3n52a4aa0f22b219e6@mail.gmail.com>
+Date: Thu, 18 Oct 2007 10:29:32 -0400
+From: "Bruce Ashfield" <bruce.ashfield@windriver.com>
+Sender: bruce.ashfield@gmail.com
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+In-Reply-To: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Fix ethernet multicast for ucc_geth.
-Date: Thu, 18 Oct 2007 22:24:00 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5BD2@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1192611942.7848.19.camel@gentoo-jocke.transmode.se>
-References: <1192611942.7848.19.camel@gentoo-jocke.transmode.se>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: <joakim.tjernlund@transmode.se>, "Netdev" <netdev@vger.kernel.org>,
-	<linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Stefan Roese <sr@denx.de>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,21 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]=20
-> Sent: Wednesday, October 17, 2007 5:06 PM
-> To: Netdev; Li Yang-r58472
-> Subject: [PATCH] Fix ethernet multicast for ucc_geth.
->=20
-> >From 5761a9e5924b34615c748fba2dcb977ed04c1243 Mon Sep 17=20
-> 00:00:00 2001
-> From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-> Date: Wed, 17 Oct 2007 11:01:44 +0200
-> Subject: [PATCH] Fix ethernet multicast for ucc_geth.
->  hw_add_addr_in_hash() already swaps byte  order, don't do it=20
-> in ucc_geth_set_multi() too.
->=20
->=20
-> Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+On 10/15/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> Guys,
+>
+> I was wondering if you cared about the following boards existing in
+> arch/powerpc:
+>
+> * STX GP3
+> * TQM 85xx
+> * SBC 8560
+>
+> I'm told WR doesn't care about the SBC 8560, so I'll see if David does.
 
-Acked-by: Li Yang <leoli@freescale.com>
+Sorry for the late reply, this just popped up on my radar this
+morning when the 10th or 11th reply came in.
+
+That doesn't reflect our intentions for that board, it is still active
+and will continue to be that way for some time. Transition plans
+are still in flux.
+
+Bruce
+
+>
+> I'm willing to look into doing the port over, but would need some
+> help testing.
+>
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+-- 
+"Thou shalt not follow the NULL pointer, for chaos and madness await
+thee at its end"
