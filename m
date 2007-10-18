@@ -1,21 +1,30 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20071017230449.GZ4891@austin.ibm.com>
-References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
-	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-	<20071017230449.GZ4891@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-6AftRWopW2GkOeR1ArBI"
-Date: Thu, 18 Oct 2007 11:27:23 +1000
-Message-Id: <1192670843.6681.10.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C1EEDE060
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 11:27:31 +1000 (EST)
+Subject: Re: [PATCH] net: Add napi_sycnhronize() to sync with napi poll
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <1192669323.13993.33.camel@localhost.localdomain>
+References: <1192513792.19073.23.camel@pasglop>
+	<20071016115318.0fc36af3@freepuppy.rosehill>
+	<1192589522.11899.130.camel@pasglop> <47157EA4.1000500@garzik.org>
+	<1192591481.11899.134.camel@pasglop>
+	<20071017083107.6a1b1bd3@freepuppy.rosehill>
+	<1192658654.6783.43.camel@pasglop>
+	<1192669323.13993.33.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 11:26:22 +1000
+Message-Id: <1192670782.12879.7.camel@pasglop>
 Mime-Version: 1.0
-Cc: sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Paul Mackerras <paulus@samba.org>,
-	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+	Roland Dreier <rdreier@cisco.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +35,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-6AftRWopW2GkOeR1ArBI
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2007-10-17 at 20:02 -0500, Josh Boyer wrote:
+> k, trying again, leaving the actual patch below.  In the above patch
+> description, you still call it __napi_synchronize.  In the patch
+> below,
+> it's napi_syncronize.
+> 
+> I was just trying to point out to whomever commits this patch that the
+> actual description should probably be fixed.
 
-On Wed, 2007-10-17 at 18:04 -0500, Linas Vepstas wrote:
-> On Wed, Oct 17, 2007 at 05:12:27PM +1000, Michael Ellerman wrote:
->=20
-> > +struct device_node *of_get_pci_dev_node(struct pci_dev *pdev)
-> > +{
-> > +       return of_node_get(pci_device_to_OF_node(pdev));
-> > +}
->=20
-> [...]
->=20
-> > -	dn =3D of_node_get(pci_device_to_OF_node(dev));
-> > +	dn =3D of_get_pci_dev_node(dev);
->=20
-> Is this really useful or wise?
+Yup, I noticed finally :-) I think whoever commits can fix it up (it's
+likely that it's sch patch that gets commited anyway).
 
-Yes, and yes.
-
-> As a matter of personal taste, I find stuff like this clutters
-> and confuses my mind. I go to read new code, and I run across some
-> routine I haven't heard of before ... e.g. of_get_pci_dev_node(),
-> so now I have to look it up to see what it does.  A few minutes later,=20
-> I realize that its just a pair of old freinds (of_node_get and=20
-> pci_device_to_OF_node) and so now I have to make mental room for it. =20
->=20
-> Tommorrow, or 3 days later, I'm again looking at of_get_pci_dev_node()
-> and I'm thinking "gee what did that thing do again??"
-
-It does what pci_device_to_OF_node() does, but in the right way.=20
-
-The plan is to remove pci_device_to_OF_node() once all the callers have
-been converted to properly handle the refcounting. When that happens you
-can use the mental room it consumed for something else :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-6AftRWopW2GkOeR1ArBI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHFrZ7dSjSd0sB4dIRApXVAKCtejhHEA4X51bMr+PVDDGA3mz1iACeIM7M
-MAhMDy8V7ykCqMEhvlfA9SU=
-=bTbR
------END PGP SIGNATURE-----
-
---=-6AftRWopW2GkOeR1ArBI--
+Ben.
