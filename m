@@ -1,23 +1,17 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 680BADDEE2
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 03:50:16 +1000 (EST)
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4EB65DDEC8
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 04:01:19 +1000 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id CBDCB8810
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 23:01:16 +0500 (SAMST)
+Date: Thu, 18 Oct 2007 22:00:53 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 1/2] [POWERPC] MPC8568E-MDS: create localbus node
+Message-ID: <20071018180053.GA16748@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v3] Device tree bindings for Xilinx devices
-Date: Thu, 18 Oct 2007 10:49:11 -0700
-In-Reply-To: <20071018172259.14948.74736.stgit@trillian.cg.shawcable.net>
-References: <20071018172259.14948.74736.stgit@trillian.cg.shawcable.net>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-	"Wolfgang Reissnegger" <wre@xilinx.com>, "Leonid" <Leonid@a-k-a.net>,
-	<microblaze-uclinux@itee.uq.edu.au>,
-	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>, "Arnd Bergmann" <arnd@arndb.de>
-Message-Id: <20071018174956.05D7A1AA008D@mail197-blu.bigfish.com>
+Content-Type: text/plain; charset=utf8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,58 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
-> -----Original Message-----
-> From: Grant Likely [mailto:grant.likely@secretlab.ca]=20
-> Sent: Thursday, October 18, 2007 10:23 AM
-> To: linuxppc-dev@ozlabs.org; Stephen Neuendorffer; Wolfgang=20
-> Reissnegger; Leonid; microblaze-uclinux@itee.uq.edu.au; Josh=20
-> Boyer; Arnd Bergmann
-> Subject: [PATCH v3] Device tree bindings for Xilinx devices
->=20
-> From: Grant Likely <grant.likely@secretlab.ca>
->=20
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+This patch creates localbus node, moves bcsr into it, and adds
+localbus to the probe path.
 
-Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/mpc8568mds.dts      |   14 +++++++++++---
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    1 +
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-This is good enough for the moment, and it reflects the best we can do
-right now...  But:
-
-> +	(parameter#):	C_* parameters from system.mhs.  The C_=20
-> prefix is
-> +			dropped from the parameter name, the=20
-> name is converted
-> +			to lowercase and all underscore '_'=20
-> characters are
-> +			converted to dashes '-'.
-
-Unfortunately, xparameters don't follow this exactly, particularly for
-the 'multiple logical devices' case...  Maybe it's worth adding
-something like: "For simple devices, the parameter name can be formed
-by:"
-
-In any event, this should essentially document what the mechanism for
-generating the device trees actually does...  Have you updated
-gen_mhs_devtree.py to reflect all this?
-
-> +   Typically, the compatible list will include the exact IP=20
-> core version
-> +   followed by an older IP core version which implements the same
-> +   interface or any other device with the same interface.
-
-This seems to be awkward, since it means that the tree *and* the driver
-will likely have long lists of compatible types.  In the driver, this is
-hard to maintain, and in the device tree we don't have an easy way of
-knowing exactly what is compatible and what isn't anyway...  It seems
-better to me to have the
-compatible list include the exact type (e.g. xilinx,opb-uartlite-1.00.b)
-and
-a generic compatibility class (e.g. xilinx,uartlite), and for the
-drivers
-to essentially define the gross compatibility classes.  Then the driver
-only has an of_match with:
-
- .compatible =3D "xilinx,uartlite"
-
-Steve
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 5439437..be8d512 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -42,9 +42,17 @@
+ 		reg = <00000000 10000000>;
+ 	};
+ 
+-	bcsr@f8000000 {
+-		device_type = "board-control";
+-		reg = <f8000000 8000>;
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8568-localbus";
++		reg = <e0005000 d8>;
++		ranges = <1 0 f8000000 0008000>;
++
++		bcsr@1,0 {
++			device_type = "board-control";
++			reg = <1 0 8000>;
++		};
+ 	};
+ 
+ 	soc8568@e0000000 {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 61b3eed..45ffca4 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -139,6 +139,7 @@ static struct of_device_id mpc85xx_ids[] = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+ 	{ .type = "qe", },
++	{ .compatible = "fsl,mpc8568-localbus", },
+ 	{},
+ };
+ 
+-- 
+1.5.0.6
