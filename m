@@ -1,22 +1,23 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 3529CDDEFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 04:44:49 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id DDC2FDDFC7
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 04:44:54 +1000 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id C5EF3142D3
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 20:44:48 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id DB28014383
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 20:44:54 +0200 (CEST)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 11661-03 for <linuxppc-dev@ozlabs.org>;
-	Thu, 18 Oct 2007 20:44:46 +0200 (CEST)
+	with ESMTP id 16741-01 for <linuxppc-dev@ozlabs.org>;
+	Thu, 18 Oct 2007 20:44:53 +0200 (CEST)
 Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
-	by mail.semihalf.com (Postfix) with ESMTP id 405E714383
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 20:44:46 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id 23D99142D3
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 20:44:53 +0200 (CEST)
 From: Marian Balakowicz <m8@semihalf.com>
-Subject: [PATCH v2 2/4] [POWERPC] Update device tree binding for mpc5200 gpt
+Subject: [PATCH v2 3/4] [POWERPC] Add restart support for mpc52xx based
+	platforms
 To: linuxppc-dev@ozlabs.org
-Date: Thu, 18 Oct 2007 20:44:24 +0200
-Message-ID: <20071018184424.3584.77643.stgit@hekate.izotz.org>
+Date: Thu, 18 Oct 2007 20:44:33 +0200
+Message-ID: <20071018184433.3584.77107.stgit@hekate.izotz.org>
 In-Reply-To: <20071018184407.3584.3513.stgit@hekate.izotz.org>
 References: <20071018184407.3584.3513.stgit@hekate.izotz.org>
 MIME-Version: 1.0
@@ -30,231 +31,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 'fsl,' prefix to 'compatible' property for gpt nodes.
-Add 'fsl,' prefix to empty, GPT0 specific 'has-wdt' property.
+Add common helper routines: mpc52xx_map_wdt() and mpc52xx_restart().
+
+This patch relies on Sascha Hauer's patch published in:
+http://patchwork.ozlabs.org/linuxppc/patch?id=8910.
 
 Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
 
- .../powerpc/mpc52xx-device-tree-bindings.txt       |    4 ++-
- arch/powerpc/boot/dts/lite5200.dts                 |   26 +++++++-------------
- arch/powerpc/boot/dts/lite5200b.dts                |   26 +++++++-------------
- drivers/char/watchdog/mpc5200_wdt.c                |    3 ++
- 4 files changed, 23 insertions(+), 36 deletions(-)
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |   50 ++++++++++++++++++++++++++
+ include/asm-powerpc/mpc52xx.h                |    3 ++
+ 2 files changed, 53 insertions(+), 0 deletions(-)
 
 
-diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-index e59fcbb..fedf7ef 100644
---- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-+++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-@@ -185,7 +185,7 @@ bestcomm@<addr>	dma-controller		mpc5200-bestcomm 5200 pic also requires
- Recommended soc5200 child nodes; populate as needed for your board
- name		device_type	compatible	  Description
- ----		-----------	----------	  -----------
--gpt@<addr>	gpt		mpc5200-gpt	  General purpose timers
-+gpt@<addr>	gpt		fsl,mpc5200-gpt	  General purpose timers
- rtc@<addr>	rtc		mpc5200-rtc	  Real time clock
- mscan@<addr>	mscan		mpc5200-mscan	  CAN bus controller
- pci@<addr>	pci		mpc5200-pci	  PCI bridge
-@@ -213,7 +213,7 @@ cell-index	int		When multiple devices are present, is the
- 5) General Purpose Timer nodes (child of soc5200 node)
- On the mpc5200 and 5200b, GPT0 has a watchdog timer function.  If the board
- design supports the internal wdt, then the device node for GPT0 should
--include the empty property 'has-wdt'.
-+include the empty property 'fsl,has-wdt'.
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+index 74b4b41..9850685 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -18,6 +18,13 @@
+ #include <asm/prom.h>
+ #include <asm/mpc52xx.h>
  
- 6) PSC nodes (child of soc5200 node)
- PSC nodes can define the optional 'port-number' property to force assignment
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index bc45f5f..6731763 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -70,18 +70,16 @@
- 		};
++/*
++ * This variable is mapped in mpc52xx_map_wdt() and used in mpc52xx_restart().
++ * Permanent mapping is required because mpc52xx_restart() can be called
++ * from interrupt context while node mapping (which calls ioremap())
++ * cannot be used at such point.
++ */
++static volatile struct mpc52xx_gpt *mpc52xx_wdt = NULL;
  
- 		gpt@600 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <0>;
- 			reg = <600 10>;
- 			interrupts = <1 9 0>;
- 			interrupt-parent = <&mpc5200_pic>;
--			has-wdt;
-+			fsl,has-wdt;
- 		};
+ static void __iomem *
+ mpc52xx_map_node(struct device_node *ofn)
+@@ -126,3 +133,46 @@ mpc52xx_declare_of_platform_devices(void)
+ 			"Error while probing of_platform bus\n");
+ }
  
- 		gpt@610 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <1>;
- 			reg = <610 10>;
- 			interrupts = <1 a 0>;
-@@ -89,8 +87,7 @@
- 		};
++void __init
++mpc52xx_map_wdt(void)
++{
++	const void *has_wdt;
++	struct device_node *np;
++
++	/* mpc52xx_wdt is mapped here and used in mpc52xx_restart,
++	 * possibly from a interrupt context. wdt is only implement
++	 * on a gpt0, so check has-wdt property before mapping.
++	 */
++	for_each_compatible_node(np, NULL, "fsl,mpc5200-gpt") {
++		has_wdt = of_get_property(np, "fsl,has-wdt", NULL);
++		if (has_wdt) {
++			mpc52xx_wdt = mpc52xx_map_node(np);
++			return;
++		}
++	}
++	for_each_compatible_node(np, NULL, "mpc5200-gpt") {
++		has_wdt = of_get_property(np, "has-wdt", NULL);
++		if (has_wdt) {
++			mpc52xx_wdt = mpc52xx_map_node(np);
++			return;
++		}
++	}
++}
++
++void
++mpc52xx_restart(char *cmd)
++{
++	local_irq_disable();
++
++	/* Turn on the watchdog and wait for it to expire.
++	 * It effectively does a reset. */
++	if (mpc52xx_wdt) {
++		out_be32(&mpc52xx_wdt->mode, 0x00000000);
++		out_be32(&mpc52xx_wdt->count, 0x000000ff);
++		out_be32(&mpc52xx_wdt->mode, 0x00009004);
++	} else
++		printk("mpc52xx_restart: Can't access wdt. "
++			"Restart impossible, system halted.\n");
++
++	while (1);
++}
+diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
+index 9cf05f9..39f619f 100644
+--- a/include/asm-powerpc/mpc52xx.h
++++ b/include/asm-powerpc/mpc52xx.h
+@@ -252,6 +252,9 @@ extern unsigned int mpc52xx_get_irq(void);
  
- 		gpt@620 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <2>;
- 			reg = <620 10>;
- 			interrupts = <1 b 0>;
-@@ -98,8 +95,7 @@
- 		};
+ extern int __init mpc52xx_add_bridge(struct device_node *node);
  
- 		gpt@630 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <3>;
- 			reg = <630 10>;
- 			interrupts = <1 c 0>;
-@@ -107,8 +103,7 @@
- 		};
++extern void __init mpc52xx_map_wdt(void);
++extern void mpc52xx_restart(char *cmd);
++
+ #endif /* __ASSEMBLY__ */
  
- 		gpt@640 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <4>;
- 			reg = <640 10>;
- 			interrupts = <1 d 0>;
-@@ -116,8 +111,7 @@
- 		};
- 
- 		gpt@650 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <5>;
- 			reg = <650 10>;
- 			interrupts = <1 e 0>;
-@@ -125,8 +119,7 @@
- 		};
- 
- 		gpt@660 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <6>;
- 			reg = <660 10>;
- 			interrupts = <1 f 0>;
-@@ -134,8 +127,7 @@
- 		};
- 
- 		gpt@670 {	// General Purpose Timer
--			compatible = "mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200-gpt";
- 			cell-index = <7>;
- 			reg = <670 10>;
- 			interrupts = <1 10 0>;
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-index 6582c9a..b540388 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -70,18 +70,16 @@
- 		};
- 
- 		gpt@600 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <0>;
- 			reg = <600 10>;
- 			interrupts = <1 9 0>;
- 			interrupt-parent = <&mpc5200_pic>;
--			has-wdt;
-+			fsl,has-wdt;
- 		};
- 
- 		gpt@610 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <1>;
- 			reg = <610 10>;
- 			interrupts = <1 a 0>;
-@@ -89,8 +87,7 @@
- 		};
- 
- 		gpt@620 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <2>;
- 			reg = <620 10>;
- 			interrupts = <1 b 0>;
-@@ -98,8 +95,7 @@
- 		};
- 
- 		gpt@630 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <3>;
- 			reg = <630 10>;
- 			interrupts = <1 c 0>;
-@@ -107,8 +103,7 @@
- 		};
- 
- 		gpt@640 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <4>;
- 			reg = <640 10>;
- 			interrupts = <1 d 0>;
-@@ -116,8 +111,7 @@
- 		};
- 
- 		gpt@650 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <5>;
- 			reg = <650 10>;
- 			interrupts = <1 e 0>;
-@@ -125,8 +119,7 @@
- 		};
- 
- 		gpt@660 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <6>;
- 			reg = <660 10>;
- 			interrupts = <1 f 0>;
-@@ -134,8 +127,7 @@
- 		};
- 
- 		gpt@670 {	// General Purpose Timer
--			compatible = "mpc5200b-gpt","mpc5200-gpt";
--			device_type = "gpt";
-+			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
- 			cell-index = <7>;
- 			reg = <670 10>;
- 			interrupts = <1 10 0>;
-diff --git a/drivers/char/watchdog/mpc5200_wdt.c b/drivers/char/watchdog/mpc5200_wdt.c
-index 9cfb975..11f6a11 100644
---- a/drivers/char/watchdog/mpc5200_wdt.c
-+++ b/drivers/char/watchdog/mpc5200_wdt.c
-@@ -176,6 +176,8 @@ static int mpc5200_wdt_probe(struct of_device *op, const struct of_device_id *ma
- 
- 	has_wdt = of_get_property(op->node, "has-wdt", NULL);
- 	if (!has_wdt)
-+		has_wdt = of_get_property(op->node, "fsl,has-wdt", NULL);
-+	if (!has_wdt)
- 		return -ENODEV;
- 
- 	wdt = kzalloc(sizeof(*wdt), GFP_KERNEL);
-@@ -254,6 +256,7 @@ static int mpc5200_wdt_shutdown(struct of_device *op)
- 
- static struct of_device_id mpc5200_wdt_match[] = {
- 	{ .compatible = "mpc5200-gpt", },
-+	{ .compatible = "fsl,mpc5200-gpt", },
- 	{},
- };
- static struct of_platform_driver mpc5200_wdt_driver = {
+ #ifdef CONFIG_PM
