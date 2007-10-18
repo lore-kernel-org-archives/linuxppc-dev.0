@@ -1,21 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20071017.042345.108116673.davem@davemloft.net>
-References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
-	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-	<20071017.042229.95059231.davem@davemloft.net>
-	<20071017.042345.108116673.davem@davemloft.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-leJjvchPFQ20mvu3NS+T"
-Date: Thu, 18 Oct 2007 11:23:02 +1000
-Message-Id: <1192670582.6681.4.camel@concordia>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84011DDEA3
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 11:25:51 +1000 (EST)
+Subject: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 18 Oct 2007 11:25:42 +1000
+Message-Id: <1192670742.12879.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: sparclinux@vger.kernel.org, sfr@canb.auug.org.au, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,54 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+synchronize_irq needs at the very least a compiler barrier and a
+read barrier on SMP, but there are enough cases around where a
+write barrier is also needed and it's not a hot path so I prefer
+using a full smp_mb() here.
 
---=-leJjvchPFQ20mvu3NS+T
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It will degrade to a compiler barrier on !SMP.
 
-On Wed, 2007-10-17 at 04:23 -0700, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Wed, 17 Oct 2007 04:22:29 -0700 (PDT)
->=20
-> > From: Michael Ellerman <michael@ellerman.id.au>
-> > Date: Wed, 17 Oct 2007 17:12:27 +1000 (EST)
-> >=20
-> > > Use of_get_pci_dev_node() in axon_msi.c. Switch to including <linux/o=
-f.h>
-> > > so we get the prototype.
-> > >=20
-> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> >=20
-> > I find it ironic that you add of_get_pci_dev_node() as a function
-> > which gets the node and grabs a reference to it, and then the very
-> > first usage you make of it doesn't drop the reference at all.
->=20
-> Ignore this poor attempt at humor, I misread your patch :)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Well it _would_ have been funny :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-leJjvchPFQ20mvu3NS+T
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHFrV2dSjSd0sB4dIRAgArAJ9dxVCUS29HMFxHOcNB1kvpL2BODwCfftBA
-4fYb6jPYvw+LdFg8j7n9XK0=
-=uHPQ
------END PGP SIGNATURE-----
-
---=-leJjvchPFQ20mvu3NS+T--
+Index: linux-work/kernel/irq/manage.c
+===================================================================
+--- linux-work.orig/kernel/irq/manage.c	2007-10-18 11:22:16.000000000 +1000
++++ linux-work/kernel/irq/manage.c	2007-10-18 11:22:20.000000000 +1000
+@@ -33,6 +33,7 @@ void synchronize_irq(unsigned int irq)
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
++	smp_mb();
+ 	while (desc->status & IRQ_INPROGRESS)
+ 		cpu_relax();
+ }
