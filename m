@@ -1,22 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 74E27DDE37
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 02:16:26 +1000 (EST)
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B5BD8@zch01exm26.fsl.freescale.net>
-References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
-	<1192719847-25045-2-git-send-email-leoli@freescale.com>
-	<3551DBD0-5DCB-4ECE-8509-E99B010A6D07@kernel.crashing.org>
-	<989B956029373F45A0B8AF0297081890019B5BD8@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <D9A3E80B-B554-4855-9A3C-0AC76703542F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v6 2/9] ipic: add new interrupts introduced by new chip
-Date: Thu, 18 Oct 2007 11:16:56 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2F04BDDE3B
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 02:39:30 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l9IGdPZV016173
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 09:39:26 -0700 (MST)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9IGdPF3013174
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 11:39:25 -0500 (CDT)
+Message-ID: <47178C3D.4070309@freescale.com>
+Date: Thu, 18 Oct 2007 11:39:25 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: qe: add ability to upload QE firmware
+References: <11927201051427-git-send-email-timur@freescale.com>
+In-Reply-To: <11927201051427-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instructions
+> on how to upload it.  Add function qe_upload_microcode() to parse the blob
+> and perform the actual upload.  Fully define 'struct rsp' in immap_qe.h to
+> include the actual RISC Special Registers.
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-On Oct 18, 2007, at 10:29 AM, Li Yang-r58472 wrote:
+I need to add a few fields to the structure, but I would still appreciate 
+comments on the structure and the corresponding code.
 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Thursday, October 18, 2007 10:57 PM
->> To: Li Yang-r58472
->> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
->> Subject: Re: [PATCH v6 2/9] ipic: add new interrupts
->> introduced by new chip
->>
->>
->> On Oct 18, 2007, at 10:04 AM, Li Yang wrote:
->>
->>> These interrupts are introduced by the latest Freescale SoC such as
->>> MPC837x.  The patch also adds comment to interrupts.
->>>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>>  arch/powerpc/sysdev/ipic.c |  224 +++++++++++++++++++++++++++++++++
->>> +----------
->>>  arch/powerpc/sysdev/ipic.h |    7 +-
->>>  include/asm-powerpc/ipic.h |   12 ++-
->>>  3 files changed, 186 insertions(+), 57 deletions(-)
->>
->> see comments:
->>
->> http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044636.html
->
-> But you didn't answer to my feedback
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-October/044711.html
-
-sorry missed this.
-
-> If you are so persistent on thinking it's harmful rather than useful,
-> please at least attempt to persuade me.
-
-The MPC5121e users the IPIC and has different interrupt assignment.
-I suggest that the UMs be updated to more useful not the code.
-
-- k
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
