@@ -1,19 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id 84048DDEE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 08:23:13 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so373661wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 15:23:12 -0700 (PDT)
-Message-ID: <fa686aa40710181523l629a0226raa12ad447b45d78d@mail.gmail.com>
-Date: Thu, 18 Oct 2007 16:23:12 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Alan Bennett" <alan@akb.net>
-Subject: Re: driver using device trees, irqs, powerpc
-In-Reply-To: <bfa0697f0710181519y261b41b1y46df293c61be344c@mail.gmail.com>
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [63.240.77.83])
+	by ozlabs.org (Postfix) with ESMTP id 2DF54DDE2C
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 08:43:25 +1000 (EST)
+Message-ID: <4717DEE8.9010508@gmail.com>
+Date: Thu, 18 Oct 2007 18:32:08 -0400
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <bfa0697f0710181519y261b41b1y46df293c61be344c@mail.gmail.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: qe: add ability to upload QE firmware
+References: <11927201051427-git-send-email-timur@freescale.com>
+In-Reply-To: <11927201051427-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,39 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/18/07, Alan Bennett <alan@akb.net> wrote:
-> Need help adding new driver to supports a custom FPGA.  Is there a
-> good driver that anyone would recommend I can look at that is fully
-> functional, works with 2.6.23 (powerpc style) and is described within
-> a device tree?
->
-> Bonus points:
->   uses freescale interrupts (timers/irq's from mpc 82xx/etc...)
->   isn't enet / cpm_uart (I've already looked at these)
+Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instructions
+> on how to upload it.  Add function qe_upload_microcode() to parse the blob
+> and perform the actual upload.  Fully define 'struct rsp' in immap_qe.h to
+> include the actual RISC Special Registers.
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-Take a look at the xilinx device drivers.
+[snip]
 
-drivers/block/xsysace.c
-drivers/video/xilinxfb.c
-driver/serial/uartlite.c
+> +/*
+> + * Download a microcode to the I-RAM at a specific address.
+       ^^^^^^^^
+> + *
+> + * @firmware: pointer to qe_firmware structure
+> + */
+> +int qe_upload_microcode(const struct qe_firmware *firmware)
+           ^^^^^^
+We seem to be a little conflicted over whether it is an upload or a 
+download.  ;-)
 
-Each of these drivers support both platform bus and of_platform bus
-(device tree).  All three are merged into Linus' mainline tree.
-
-Cheers,
-g.
-
->
-> -Alan
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+gvb
