@@ -1,22 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CCCD6DDE1D
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 10:43:37 +1000 (EST)
-Date: Fri, 19 Oct 2007 10:43:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
-Message-Id: <20071019104318.edfd2ad1.sfr@canb.auug.org.au>
-In-Reply-To: <1192719847-25045-4-git-send-email-leoli@freescale.com>
-References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
-	<1192719847-25045-2-git-send-email-leoli@freescale.com>
-	<1192719847-25045-3-git-send-email-leoli@freescale.com>
-	<1192719847-25045-4-git-send-email-leoli@freescale.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__19_Oct_2007_10_43_18_+1000_GXjVIWnIPm84y+HG"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <cbou@mail.ru>
+Received: from mx28.mail.ru (mx28.mail.ru [194.67.23.67])
+	by ozlabs.org (Postfix) with ESMTP id EC0CCDDEC5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 10:17:12 +1000 (EST)
+Received: from mx39.mail.ru (mx39.mail.ru [194.67.23.35])
+	by mx28.mail.ru (mPOP.Fallback_MX) with ESMTP id 626E26CF823
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 02:29:47 +0400 (MSD)
+Date: Fri, 19 Oct 2007 02:29:27 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/2] [POWERPC] MPC8568E-MDS: add support for flash
+Message-ID: <20071018222927.GA1475@zarina>
+References: <2eed9d85d53305b2b0d6e8f8287148f7a600ad19.1192730268.git.avorontsov@ru.mvista.com>
+	<20071018180104.GB16748@localhost.localdomain>
+	<C2A61B74-FDB4-4571-A2F4-F0B7317FD7C7@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <C2A61B74-FDB4-4571-A2F4-F0B7317FD7C7@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: cbou@mail.ru
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__19_Oct_2007_10_43_18_+1000_GXjVIWnIPm84y+HG
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Oct 18, 2007 at 02:58:25PM -0500, Kumar Gala wrote:
+[...]
+> > +
+> > +		flash@0,0 {
+> > +			#address-cells = <1>;
+> > +			#size-cells = <1>;
+> > +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
+> > +			reg = <0 0 2000000>;
+> > +			bank-width = <2>;
+> > +			device-width = <1>;
+> > +
+> 
+> Are you basing the partition map on something or making it up?   
+> Clearly hrcw & u-boot are at fixed offsets, wondering about kernel &  
+> rootfs?
 
-On Thu, 18 Oct 2007 23:04:02 +0800 Li Yang <leoli@freescale.com> wrote:
->
-> +++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-> +static void __init mpc837x_mds_setup_arch(void)
-> +{
-> +#ifdef CONFIG_PCI
-> +	struct device_node *np;
-> +#endif
-> +
-> +	if (ppc_md.progress)
-> +		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
-> +
-> +#ifdef CONFIG_PCI
-> +	for (np =3D NULL; (np =3D of_find_node_by_type(np, "pci")) !=3D NULL;)
+I'm making it up. From the brief look at the u-boot* git sources,
+there is no `flashboot` yet, thus I'm free to make this up...
 
-	for_each_node_by_type(np, "pci")
+I've partitioned this flash based on these thoughts:
 
-> +static int __init mpc837x_mds_probe(void)
-> +{
-> +        unsigned long root =3D of_get_flat_dt_root();
-> +
-> +        return of_flat_dt_is_compatible(root, "fsl,mpc837xmds");
+1. HRCW - whole sector, to not wear out it, plus it's impossible to
+   create just 64 bytes partition;
+2. Kernel - 2MB, should be enough for bootup kernels?
+3. Rootfs - the rest up to...
+4. U-Boot at the end.
 
-To call these two routines, you should include <asm/prom.h> directly.
+I'm not saying that it's best map ever, I'm open to suggestions. ;-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+* Unfortunately I didn't look at the stock Freescale u-boot, maybe
+  there was flashboot, most probably.. I'll find the CD to look this
+  up.
 
---Signature=_Fri__19_Oct_2007_10_43_18_+1000_GXjVIWnIPm84y+HG
-Content-Type: application/pgp-signature
+Much thanks for noticing this,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHF/2rTgG2atn1QN8RAlh3AJ0TgxqAXGHmNwdlbh15pvpKrtXeHACfdkuI
-z0boBw2E3Eull7YZUvXGXr4=
-=Ed0C
------END PGP SIGNATURE-----
-
---Signature=_Fri__19_Oct_2007_10_43_18_+1000_GXjVIWnIPm84y+HG--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
