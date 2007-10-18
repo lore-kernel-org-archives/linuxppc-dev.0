@@ -1,35 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5924ADDED2
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:10:05 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9IJBWR6006970
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 15:11:32 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9IJA0n0070264
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 15:10:00 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9IJ9oee023793
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 15:09:50 -0400
-Date: Thu, 18 Oct 2007 14:09:39 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-Message-ID: <20071018190939.GE29903@austin.ibm.com>
-References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
-	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
-	<20071017230449.GZ4891@austin.ibm.com>
-	<1192670843.6681.10.camel@concordia>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 01DBBDDEC7
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:14:43 +1000 (EST)
+Message-ID: <4717B09B.3060800@pobox.com>
+Date: Thu, 18 Oct 2007 15:14:35 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1192670843.6681.10.camel@concordia>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	Paul Mackerras <paulus@samba.org>,
-	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 0/4] FEC - fast ethernet controller for mpc52xx
+References: <20071014075511.GC3000@nd47.coderock.org>	
+	<4713BA1C.2050604@pobox.com>
+	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+In-Reply-To: <fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,16 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 18, 2007 at 11:27:23AM +1000, Michael Ellerman wrote:
+Grant Likely wrote:
+> On 10/15/07, Jeff Garzik <jgarzik@pobox.com> wrote:
+>> Domen Puncer wrote:
+>>> Hello!
+>>>
+>>> If there are no objections, I would like to get this merged
+>>> when bestcomm goes in (any time now?).
+>>>
+>>> It's split into four parts:
+>>> 1 - device tree
+>>> 2 - small bestcomm change
+>>> 3 - the actual driver
+>>> 4 - phy part of the driver
+>> patches #3 and #4 need to be combined together.
+>>
+>> Are the arch people OK with patches #1 and #2?
 > 
-> It does what pci_device_to_OF_node() does, but in the right way. 
+> Jeff,
 > 
-> The plan is to remove pci_device_to_OF_node() once all the callers have
-> been converted to properly handle the refcounting. 
+> The bestcomm patches and patch 1 & 2 from this series are now in
+> Linus' tree.  That clears the way for the FEC driver when Domen
+> reposts it.  (In other words; there is nothing left in arch land
+> blocking this driver)
+> 
 
-Oh. Yes. well, of course, then. Excellent reason. I didn't get 
-that from the patch commit comments. So, FWIW:
-
-Ack'ed-by: Linas Vepstas <linas@austin.ibm.com>
-
---linas
+except a resend combining patches 3 and 4 as requested :)
