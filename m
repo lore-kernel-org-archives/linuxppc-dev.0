@@ -1,18 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A0CDDDEC4
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 10:21:28 +1000 (EST)
+Message-ID: <4716A702.7050907@pobox.com>
+Date: Wed, 17 Oct 2007 20:21:22 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18198.41946.697397.255427@cargo.ozlabs.ibm.com>
-Date: Thu, 18 Oct 2007 10:07:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-mm1 - build failure with advansys
-In-Reply-To: <20071012235242.9d7daf05.akpm@linux-foundation.org>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<47104D26.7050206@linux.vnet.ibm.com>
-	<20071012235242.9d7daf05.akpm@linux-foundation.org>
-Cc: Matthew Wilcox <willy@debian.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] fs_enet: Update for API changes
+References: <20071017174243.GA4462@loki.buserror.net>
+In-Reply-To: <20071017174243.GA4462@loki.buserror.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes:
+Scott Wood wrote:
+> This driver was recently broken by several changes for which this
+> driver was not (or was improperly) updated:
+> 
+> 1. SET_MODULE_OWNER() was removed.
+> 2. netif_napi_add() was only being called when building with
+> the old CPM binding.
+> 3. The received/budget test was backwards.
+> 4. to_net_dev() was wrong -- the device struct embedded in
+> the net_device struct is not the same as the of_platform
+> device in the private struct.
+> 5. napi_disable/napi_enable was being called even when napi
+> was not being used.
+> 
+> These changes have been fixed, and napi is now on by default.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-> On Sat, 13 Oct 2007 10:14:22 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-
-> > The functions virt_to_bus and bus_to_virt are begin defined between ifdef CONFIG_PPC32
-> > but when i compile allyesconfig with ppc64 box,i get this error. This patch removes the
-> > ifdef.
-
-Which is totally bogus, because virt_to_bus/bus_to_virt only work on
-systems without an IOMMU.  Most if not all ppc64 systems have one or
-more IOMMUs.  This patch is nacked.
-
-The correct fix is to make advansys depend on CONFIG_VIRT_TO_BUS, or
-alternatively fix advansys.c properly by making it use the interfaces
-described in Documentation/DMA-mapping.txt (or the equivalent scsi
-helpers).
-
-> Please copy the powerpc developers on powerpc patches.
-
-Definitely.
-
-Paul.
+applied
