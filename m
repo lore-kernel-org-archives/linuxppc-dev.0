@@ -1,20 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7EBFDDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 21:47:32 +1000 (EST)
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 87268DDEA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 22:01:47 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9IC1gNc009026
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 08:01:42 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9IC1fb6356126
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:01:41 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9IC1fBl013456
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:01:41 -0600
+Date: Thu, 18 Oct 2007 07:01:39 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Yuri Tikhonov <yur@emcraft.com>
-In-Reply-To: <200710181500.32288.yur@emcraft.com>
-References: <200710181500.32288.yur@emcraft.com>
-Content-Type: text/plain
-Date: Thu, 18 Oct 2007 21:47:18 +1000
-Message-Id: <1192708038.12879.54.camel@pasglop>
+Message-ID: <20071018070139.339e2efb@weaponx.rchland.ibm.com>
+In-Reply-To: <1192707914.12879.51.camel@pasglop>
+References: <200710181108.19413.yur@emcraft.com>
+	<1192704248.13993.36.camel@localhost.localdomain>
+	<1192707914.12879.51.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,30 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 18 Oct 2007 21:45:14 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Thu, 2007-10-18 at 15:00 +0400, Yuri Tikhonov wrote:
-> It has turned out that my mailer had corrupted my previous message (thanks
-> Wolfgang Denk for pointing this). So if you'd like to apply the patch without the
-> conflicts please use the version of the patch in this mail.
 > 
->  The following patch adds support for 256KB PAGE_SIZE on ppc44x-based boards. 
-> The applications to be run on the kernel with 256KB PAGE_SIZE have to be 
-> built using the modified version of binutils, where the MAXPAGESIZE 
-> definition is set to 0x40000 (as opposite to standard 0x10000).
+> On Thu, 2007-10-18 at 05:44 -0500, Josh Boyer wrote:
+> > On Thu, 2007-10-18 at 11:08 +0400, Yuri Tikhonov wrote:
+> > >  Hello,
+> > > 
+> > >  The following patch adds support for 256KB PAGE_SIZE on ppc44x-based boards. 
+> > > The applications to be run on the kernel with 256KB PAGE_SIZE have to be 
+> > > built using the modified version of binutils, where the MAXPAGESIZE 
+> > > definition is set to 0x40000 (as opposite to standard 0x10000).
+> > 
+> > Sorry, this is against arch/ppc which is bug fix only.  New features
+> > should be done against arch/powerpc.  Also, I'd rather see something
+> > along the lines of hugetlbfs support instead.
 > 
->  Signed-off-by: Pavel Kolesnikov <concord@emcraft.com>
->  Acked-by: Yuri Tikhonov <yur@emcraft.com>
+> I slightly disagree on that one. It does make sense in embedded
+> applications to use larger page sizes like that to compensate for small
+> TLBs, and hugetlbfs has serious constraints that may well make it
+> impractical.
 
-Small nit...
+Out of curiosity, what constraints are those?
 
-You are posting the patch, thus you should be signing off, not ack'ing.
+> Based on that, I'd be tempted to let that in provided it doesn't
+> requires ugly hacks, which seems to be the case. It still needs to be
+> adapted to arch/powerpc however, and get closer scrutiny that I didn't
+> have time to do yet.
+> 
+> You are the maintainer, so you decide, but my opinion here is that
+> wanting that is fair enough.
 
-Ack'ing means you agree with the patch but you aren't in the handling
-chain for it. In this case, it seems like the author is Pavel and you
-are forwarding it, in wich case, you -are- in the handling chain and
-should should sign it off.
+I always reserve the right to change my mind.  If something makes sense
+and the code is decent enough then it might very well be acceptable.
+Requiring a modified binutils makes me a bit nervous though.
 
-Best would be for Pavel (if he is indeed the author) to submit it
-himself though.
-
-Ben.
+josh
