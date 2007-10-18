@@ -1,19 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7933DDEAB
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:58:25 +1000 (EST)
-In-Reply-To: <20071018180053.GA16748@localhost.localdomain>
-References: <20071018180053.GA16748@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <875FF80D-D495-4285-8A9F-6A8DF176F4A1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/2] [POWERPC] MPC8568E-MDS: create localbus node
-Date: Thu, 18 Oct 2007 14:59:05 -0500
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpB.tele.dk (pasmtpb.tele.dk [80.160.77.98])
+	by ozlabs.org (Postfix) with ESMTP id EBDFFDE036
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:58:31 +1000 (EST)
+Date: Thu, 18 Oct 2007 21:59:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Milton Miller <miltonm@bga.com>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: Merge dtc
+Message-ID: <20071018195926.GA22887@uranus.ravnborg.org>
+References: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Oct 18, 2007 at 12:49:54PM -0500, Milton Miller wrote:
+> On Tue Oct 16 15:02:17 EST 2007, David Gibson wrote:
+> 
+> >This very large patch incorporates a copy of dtc into the kernel
+> >source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
+> >longer an external dependency to build kernels with configurations
+> >which need a dtb file.
+> >
+> >Signed-off-by: David Gibson <david at gibson.dropbear.id.au>
+> >
+> >Too big for the list, full patch at
+> >http://ozlabs.org/~dgibson/home/merge-dtc.patch+
+> 
+> So split it up.   The obvious one is "here is the unique content, then 
+> copy these files from dtc git" would have been better.
+One obvious split is a patch solely containing the _shipped files.
+And next patch the rest.
 
-On Oct 18, 2007, at 1:00 PM, Anton Vorontsov wrote:
+As Milton already pointed out you should build dtc in the
+dtc directory (why the -src prefix??).
+And the dtc specific Makefile looks like something from
+the late 80'. Please drop all these ALLUPPERCASE variables
+and accept a little bit of redundancy.
+Then mere humans may be able to read the Makefile.
 
-> This patch creates localbus node, moves bcsr into it, and adds
-> localbus to the probe path.
->
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+When you have done the above I would be happy to review the
+kbuild bits.
 
-why two patches for lbus and flash to lbus?
-
-- k
+	Sam
