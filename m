@@ -1,23 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 82963DDE39
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 14:48:03 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH 5/5] IB/ehca: Enable large page MRs by default
-References: <200710161722.29144.fenkes@de.ibm.com>
-	<200710161731.59688.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 17 Oct 2007 21:48:00 -0700
-In-Reply-To: <200710161731.59688.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Tue, 16 Oct 2007 17:31:59 +0200")
-Message-ID: <adair55f2pr.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7CECCDDE1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 15:23:05 +1000 (EST)
+Date: Thu, 18 Oct 2007 15:22:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linas@austin.ibm.com (Linas Vepstas)
+Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
+Message-Id: <20071018152254.344bfe48.sfr@canb.auug.org.au>
+In-Reply-To: <20071017230449.GZ4891@austin.ibm.com>
+References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
+	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
+	<20071017230449.GZ4891@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__18_Oct_2007_15_22_54_+1000_LpXn9=JJX3LiGuRW"
+Cc: sparclinux@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,4 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied 1-5
+--Signature=_Thu__18_Oct_2007_15_22_54_+1000_LpXn9=JJX3LiGuRW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 17 Oct 2007 18:04:49 -0500 linas@austin.ibm.com (Linas Vepstas) wro=
+te:
+>
+> Is this really useful or wise?
+
+Yes, it is.  We are *replacing* an interface that does no ref counting
+with one that does.
+
+> As a matter of personal taste, I find stuff like this clutters
+
+What has taste got to do with it?  And as for cluttering, you can page
+out the previous interface and page in the new one.  :-)
+
+> I don't much like this style, and I've been known to submit
+> patches that remove stuff like this ...=20
+
+What "style" are you referring to?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__18_Oct_2007_15_22_54_+1000_LpXn9=JJX3LiGuRW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHFu2yTgG2atn1QN8RAobAAJ9y1fEys133mMArkDzKVza2ncs8igCgh5Q0
+mCRMxi92t3zxGqlIUSUET90=
+=5q8T
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__18_Oct_2007_15_22_54_+1000_LpXn9=JJX3LiGuRW--
