@@ -1,16 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id F1E89DDE3C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 22:50:14 +1000 (EST)
+Message-ID: <47175683.1030407@grandegger.com>
+Date: Thu, 18 Oct 2007 14:50:11 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18199.20538.594159.877930@cargo.ozlabs.ibm.com>
-Date: Thu, 18 Oct 2007 22:23:22 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.23-mm1 - powerpc - Build fails at arch/powerpc/boot/inflate.o
-In-Reply-To: <47174C49.5050308@linux.vnet.ibm.com>
-References: <20071011213126.cf92efb7.akpm@linux-foundation.org>
-	<47174C49.5050308@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
+References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
+In-Reply-To: <4708C22D.5060805@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kamalesh Babulal writes:
+Hello,
 
-> The kernel build fails on the power box
-> 
->   INSTALL vdso64.so
-> 
->   INSTALL vdso32.so
-> 
->   BOOTCC  arch/powerpc/boot/inflate.o
-> 
-> arch/powerpc/boot/inflate.c:920:19: error: errno.h: No such file or directory
+I see one more issue.
 
-This problem is fixed by d4faaecbcc6d9ea4f7c05f6de6af98e2336a4afb in
-Linus' tree.
+Marian Balakowicz wrote:
+> Add device tree source file for Motion-PRO board.
+> 
+> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+> ---
+[deletions]
+> +		gpio@b00 {
+> +			compatible = "mpc5200b-gpio\0mpc5200-gpio";
+> +			reg = <b00 40>;
+> +			interrupts = <1 7 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +		};
 
-Paul.
+Do we not need the field "device_type = "gpio" here?
+
+> +		gpio-wkup@c00 {
+> +			compatible = "mpc5200b-gpio-wkup\0mpc5200-gpio-wkup";
+> +			reg = <c00 40>;
+> +			interrupts = <1 8 0 0 3 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +		};
+
+And the same here.
+
+Wolfgang.
