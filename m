@@ -1,16 +1,23 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 0BEBADDF00
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 03:50:13 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: Merge dtc
-Date: Thu, 18 Oct 2007 12:49:54 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 680BADDEE2
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 03:50:16 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v3] Device tree bindings for Xilinx devices
+Date: Thu, 18 Oct 2007 10:49:11 -0700
+In-Reply-To: <20071018172259.14948.74736.stgit@trillian.cg.shawcable.net>
+References: <20071018172259.14948.74736.stgit@trillian.cg.shawcable.net>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
+	"Wolfgang Reissnegger" <wre@xilinx.com>, "Leonid" <Leonid@a-k-a.net>,
+	<microblaze-uclinux@itee.uq.edu.au>,
+	"Josh Boyer" <jwboyer@linux.vnet.ibm.com>, "Arnd Bergmann" <arnd@arndb.de>
+Message-Id: <20071018174956.05D7A1AA008D@mail197-blu.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue Oct 16 15:02:17 EST 2007, David Gibson wrote:
+=20
+> -----Original Message-----
+> From: Grant Likely [mailto:grant.likely@secretlab.ca]=20
+> Sent: Thursday, October 18, 2007 10:23 AM
+> To: linuxppc-dev@ozlabs.org; Stephen Neuendorffer; Wolfgang=20
+> Reissnegger; Leonid; microblaze-uclinux@itee.uq.edu.au; Josh=20
+> Boyer; Arnd Bergmann
+> Subject: [PATCH v3] Device tree bindings for Xilinx devices
+>=20
+> From: Grant Likely <grant.likely@secretlab.ca>
+>=20
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-> This very large patch incorporates a copy of dtc into the kernel
-> source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
-> longer an external dependency to build kernels with configurations
-> which need a dtb file.
->
-> Signed-off-by: David Gibson <david at gibson.dropbear.id.au>
->
-> Too big for the list, full patch at
-> http://ozlabs.org/~dgibson/home/merge-dtc.patch+
+Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-So split it up.   The obvious one is "here is the unique content, then 
-copy these files from dtc git" would have been better.
+This is good enough for the moment, and it reflects the best we can do
+right now...  But:
 
-I finally went and looked at the url.  The Kbuild integration is wrong. 
-  It should build dtc in dtc-src and run the binary from there, and the 
-rules should be in a Kconfig as a normal host-target in that directory. 
-   (I don't have a problem with that Kbuild including Makefie.dtc).
+> +	(parameter#):	C_* parameters from system.mhs.  The C_=20
+> prefix is
+> +			dropped from the parameter name, the=20
+> name is converted
+> +			to lowercase and all underscore '_'=20
+> characters are
+> +			converted to dashes '-'.
 
-things like the dependancy on scripts_basic in the top level Makefile.
+Unfortunately, xparameters don't follow this exactly, particularly for
+the 'multiple logical devices' case...  Maybe it's worth adding
+something like: "For simple devices, the parameter name can be formed
+by:"
 
-milton
+In any event, this should essentially document what the mechanism for
+generating the device trees actually does...  Have you updated
+gen_mhs_devtree.py to reflect all this?
+
+> +   Typically, the compatible list will include the exact IP=20
+> core version
+> +   followed by an older IP core version which implements the same
+> +   interface or any other device with the same interface.
+
+This seems to be awkward, since it means that the tree *and* the driver
+will likely have long lists of compatible types.  In the driver, this is
+hard to maintain, and in the device tree we don't have an easy way of
+knowing exactly what is compatible and what isn't anyway...  It seems
+better to me to have the
+compatible list include the exact type (e.g. xilinx,opb-uartlite-1.00.b)
+and
+a generic compatibility class (e.g. xilinx,uartlite), and for the
+drivers
+to essentially define the gross compatibility classes.  Then the driver
+only has an of_match with:
+
+ .compatible =3D "xilinx,uartlite"
+
+Steve
