@@ -1,21 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 3BCB4DDEBE
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 23:16:06 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so197465wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:16:05 -0700 (PDT)
-Message-ID: <fa686aa40710180616re8e3c5ib92ab2700d98e260@mail.gmail.com>
-Date: Thu, 18 Oct 2007 07:16:04 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
-In-Reply-To: <47175683.1030407@grandegger.com>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8BD17DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 23:20:31 +1000 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
+Date: Thu, 18 Oct 2007 17:18:00 +0400
+References: <200710181108.19413.yur@emcraft.com>
+	<1192704248.13993.36.camel@localhost.localdomain>
+In-Reply-To: <1192704248.13993.36.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
-	<47175683.1030407@grandegger.com>
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200710181718.00965.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/18/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Hello,
->
-> I see one more issue.
->
-> Marian Balakowicz wrote:
-> > Add device tree source file for Motion-PRO board.
-> >
-> > Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-> > ---
-> [deletions]
-> > +             gpio@b00 {
-> > +                     compatible = "mpc5200b-gpio\0mpc5200-gpio";
-> > +                     reg = <b00 40>;
-> > +                     interrupts = <1 7 0>;
-> > +                     interrupt-parent = <&mpc5200_pic>;
-> > +             };
->
-> Do we not need the field "device_type = "gpio" here?
->
-> > +             gpio-wkup@c00 {
-> > +                     compatible = "mpc5200b-gpio-wkup\0mpc5200-gpio-wkup";
-> > +                     reg = <c00 40>;
-> > +                     interrupts = <1 8 0 0 3 0>;
-> > +                     interrupt-parent = <&mpc5200_pic>;
-> > +             };
->
-> And the same here.
 
-'GPIO' is not a standard device type (at least there are no standard
-set of GPIO bindings defined) so the device_type field should be
-omitted.  Compatible is sufficient.
+On Thursday 18 October 2007 14:44, you wrote:
+> Sorry, this is against arch/ppc which is bug fix only.  New features
+> should be done against arch/powerpc. 
 
-Cheers,
-g.
+ Understood. The situation here is that the boards, which required these
+modifications, have no support in the arch/powerpc branch. So this is 
+why we made this in arch/ppc.
+
+> Also, I'd rather see something along the lines of hugetlbfs support instead.
+
+ Here I agree with Benjamin. Furthermore, IIRC the hugetlb file-system is
+supported for PPC64 architectures only. Here we have PPC32.
+
+> josh
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
