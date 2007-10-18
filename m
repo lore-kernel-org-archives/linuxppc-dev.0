@@ -1,21 +1,17 @@
-Return-Path: <bruce.ashfield@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.182])
-	by ozlabs.org (Postfix) with ESMTP id 01BECDDEC1
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:29:34 +1000 (EST)
-Received: by el-out-1112.google.com with SMTP id r27so56033ele
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 07:29:33 -0700 (PDT)
-Message-ID: <3bd6b93c0710180729y11ac55e3n52a4aa0f22b219e6@mail.gmail.com>
-Date: Thu, 18 Oct 2007 10:29:32 -0400
-From: "Bruce Ashfield" <bruce.ashfield@windriver.com>
-Sender: bruce.ashfield@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
-In-Reply-To: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Stefan Roese <sr@denx.de>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B75B9DDEE0
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:36:43 +1000 (EST)
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+In-Reply-To: <1192675254.12879.29.camel@pasglop>
+Message-Id: <E1IiWTY-0000jx-00@gondolin.me.apana.org.au>
+Date: Thu, 18 Oct 2007 22:35:52 +0800
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/15/07, Kumar Gala <galak@kernel.crashing.org> wrote:
-> Guys,
->
-> I was wondering if you cared about the following boards existing in
-> arch/powerpc:
->
-> * STX GP3
-> * TQM 85xx
-> * SBC 8560
->
-> I'm told WR doesn't care about the SBC 8560, so I'll see if David does.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> Note that some kind of read barrier or compiler barrier should be needed
+> regardless, or we are just not sync'ing with anything at all (we may
+> have loaded the value ages ago and thus operate on a totally stale
+> value). I prefer a full barrier to also ensure all previous stores are
+> pushed out.
 
-Sorry for the late reply, this just popped up on my radar this
-morning when the 10th or 11th reply came in.
+We already have a compiler barrier there in the form of cpu_relax.
 
-That doesn't reflect our intentions for that board, it is still active
-and will continue to be that way for some time. Transition plans
-are still in flux.
-
-Bruce
-
->
-> I'm willing to look into doing the port over, but would need some
-> help testing.
->
-> - k
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
-
+Cheers,
 -- 
-"Thou shalt not follow the NULL pointer, for chaos and madness await
-thee at its end"
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
