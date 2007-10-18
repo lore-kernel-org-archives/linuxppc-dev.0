@@ -1,30 +1,33 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id C6310DDE45
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 13:56:17 +1000 (EST)
-Received: from pd4mr1so.prod.shaw.ca
-	(pd4mr1so-qfe3.prod.shaw.ca [10.0.141.212]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JQ300JL19JGQYB0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 17 Oct 2007 21:54:52 -0600 (MDT)
-Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
-	by pd4mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JQ300EMS9JG5F40@pd4mr1so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Wed, 17 Oct 2007 21:54:52 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JQ3008BZ9JFXLA2@l-daemon> for linuxppc-dev@ozlabs.org;
-	Wed, 17 Oct 2007 21:54:51 -0600 (MDT)
-Date: Wed, 17 Oct 2007 21:54:58 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] gianfar: fix compile warning
-To: Li Yang <leoli@freescale.com>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
-Message-id: <20071018035458.22355.99460.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7C63CDDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 14:09:18 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9I49Blj015756
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 21:09:12 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9I49AvL003558
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 23:09:11 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v3 2/9] ipic: add new interrupts introduced by new chip
+Date: Thu, 18 Oct 2007 12:09:09 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B5B44@zch01exm26.fsl.freescale.net>
+In-Reply-To: <BB3ACE22-7584-49D9-BEB0-DC355FA25BA1@kernel.crashing.org>
+References: <1192195728-24189-1-git-send-email-leoli@freescale.com>
+	<1192195728-24189-2-git-send-email-leoli@freescale.com>
+	<1192195728-24189-3-git-send-email-leoli@freescale.com>
+	<BB3ACE22-7584-49D9-BEB0-DC355FA25BA1@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,29 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Wednesday, October 17, 2007 9:46 PM
+> To: Li Yang-r58472
+> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH v3 2/9] ipic: add new interrupts=20
+> introduced by new chip
+>=20
+>=20
+> On Oct 12, 2007, at 8:28 AM, Li Yang wrote:
+>=20
+> > These interrupts are introduced by the latest Freescale SoC such as=20
+> > MPC837x.  The patch also adds comment to interrupts.
+> >
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> >  arch/powerpc/sysdev/ipic.c |  224 +++++++++++++++++++++++++++++++++
+> > +----------
+> >  arch/powerpc/sysdev/ipic.h |    7 +-
+> >  include/asm-powerpc/ipic.h |   12 ++-
+> >  3 files changed, 186 insertions(+), 57 deletions(-)
+> >
+> > diff --git a/arch/powerpc/sysdev/ipic.c=20
+> b/arch/powerpc/sysdev/ipic.c=20
+> > index 05a56e5..cd8590d 100644
+> > --- a/arch/powerpc/sysdev/ipic.c
+> > +++ b/arch/powerpc/sysdev/ipic.c
+> > @@ -33,7 +33,31 @@ static struct ipic * primary_ipic;  static=20
+> > DEFINE_SPINLOCK(ipic_lock);
+> >
+> >  static struct ipic_info ipic_info[] =3D {
+> > -	[9] =3D {
+> > +	[1] =3D {	/* PEX1 CNT */
+>=20
+> Remove the comments, they are not correct for all IPIC users=20
+> and thus misleading.
 
-Eliminate an uninitialized variable warning.  The code is correct, but
-a pointer to the automatic variable 'addr' is passed to dma_alloc_coherent.
-Since addr has never been initialized, and the compiler doesn't know
-what dma_alloc_coherent will do with it, it complains.
+We had discussed about this.  The reason why I add these comments is
+that IPIC register definition in our user manual only reference
+interrupts by name rather than numbers.  It will greatly enhance the
+readability of the code, so that we can check easily if the current code
+fits IPIC definition of a specific chip.  Without comments the check
+will be a disaster. :)
+The comments are correct for all the in tree CPUs.  It should be kept
+up-to-date easily when adding new CPUs.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
- drivers/net/gianfar.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index cc288d8..c009ab6 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -696,7 +696,7 @@ int startup_gfar(struct net_device *dev)
- {
- 	struct txbd8 *txbdp;
- 	struct rxbd8 *rxbdp;
--	dma_addr_t addr;
-+	dma_addr_t addr = 0;
- 	unsigned long vaddr;
- 	int i;
- 	struct gfar_private *priv = netdev_priv(dev);
+- Leo
