@@ -1,31 +1,19 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EE862DDF88
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 01:10:51 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9IFAkai013223
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 08:10:46 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9IFAis3028818
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 10:10:45 -0500 (CDT)
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 42B67DDF83
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 01:11:46 +1000 (EST)
+Message-ID: <471777BD.8090800@ru.mvista.com>
+Date: Thu, 18 Oct 2007 19:11:57 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v6 resend 9/9] add MPC837x MDS board default device tree
-Date: Thu, 18 Oct 2007 23:10:43 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5BD6@zch01exm26.fsl.freescale.net>
-In-Reply-To: <F1717431-3C1F-4528-9949-32C156F5DD4F@kernel.crashing.org>
-References: <1192720186-25228-1-git-send-email-leoli@freescale.com>
-	<F1717431-3C1F-4528-9949-32C156F5DD4F@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+References: <20070921032603.0D3EA32C887@thor>	<4713A616.3090103@ru.mvista.com>	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>	<47161C38.2070305@ru.mvista.com>
+	<18198.44590.721412.314409@cargo.ozlabs.ibm.com>
+In-Reply-To: <18198.44590.721412.314409@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,35 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Thursday, October 18, 2007 11:02 PM
-> To: Li Yang-r58472
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH v6 resend 9/9] add MPC837x MDS board=20
-> default device tree
->=20
->=20
-> On Oct 18, 2007, at 10:09 AM, Li Yang wrote:
->=20
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > Fix a typo in previous one.
-> >
-> >  arch/powerpc/boot/dts/mpc8377_mds.dts |  282 ++++++++++++++++++++++
-> > +++++++++
-> >  arch/powerpc/boot/dts/mpc8378_mds.dts |  264 ++++++++++++++++++++++
-> > +++++++
-> >  arch/powerpc/boot/dts/mpc8379_mds.dts |  300 ++++++++++++++++++++++
-> > +++++++++++
-> >  3 files changed, 846 insertions(+), 0 deletions(-)  create mode=20
-> > 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
-> >  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
-> >  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
->=20
-> still has issues with the i2c nodes.  (maybe v7 will be lucky)
+Hello.
 
-Do we still need address-cell and size-cell even when it has no child
-node?
+Paul Mackerras wrote:
 
-- Leo
+>>>Tony started from an earlier patch by John Stultz, not from your
+>>>patches.
+
+>>    Well, that I can believe, yet the clockevents patch has traces of my
+>>former work, and looking at read_persisitent_time() it looks suspiciously 
+>>close to my version too...
+
+> There is basically only one reasonably way to do a lot of this stuff.
+
+>>>The main reason your patches were rejected were that you completely
+>>>broke the VDSO and the deterministic time accounting, and made no
+
+>>    That's just not true!
+>>    They didn't broke vDSO (to be precise it was John's patch that broke it), 
+>>they just removed the vDSO code known to already be broken by -rt patch for 
+>>several months by then.  And they didn't broke determinictic accounting -- 
+>>they just made two things mutually exclusive.  I haven't yet seen how the 
+>>patches that were preferred dealt with it at all.
+
+> OK.  My requirement was that the clocksource/clockevent stuff and the
+> VDSO were both functional.  Your patch didn't meet that requirement.
+
+    Which of my patches? There were many, and only one of them dealing with 
+vDSO. That's reasonable to drop that patch but it's not reasonable to drop the 
+other ones, not directly connected to vDSO issue.  One flaw doesn't make the 
+whole patchset bad.
+    And now you have incomplete read_persistent_clock() implementation for 
+example, god knows why it was preferred to mine -- well, it also implemented 
+update_persistent_clock() bit those functions haven't appeared at the same 
+time, so read_persistent_clock() was written by me in the .
+
+>>    Really? IMO, the harware does keep a constant interrupt rate better than 
+>>software.
+
+> Well, if you have actual numbers to back that up, show them to us.
+> I don't believe you would be able to measure any difference, and so I
+> prefer the simplicity of only implementing the one-shot mode.
+
+    Well, that's up to you.  I take it you wouldn't accept a patch 
+implementing auto-reload mode?
+
+>>>Because you broke important features
+
+>>    That is *not true*.
+>>    And nobody had interest to fix them for months (quite strange if they're 
+>>so important) while I had neither time nor interest to deal with them anymore 
+>>having written the code that *did work*, and not only for me.
+
+> Well, this is the difference between having a hack that works for you,
+
+    Agreed, -rt is a patchset full of hacks. :-)
+
+> and having something that can go upstream into mainline.
+
+    It *went* upstream. Mainline wasn't my aim at that time.
+
+> Anyway, this discussion doesn't seem to be going anywhere.  If there
+> are changes you want made, or any other specific concrete action you
+
+    There are. I'll have to send patches (it's not that I have time for this) 
+but this is surely the fastest way to get things fixed (if I don't get ignored 
+that is).
+
+> want anyone to do, say so.  Otherwise stop whinging.
+
+    I just wanted the reasons clarified and got what I wanted -- as I thought, 
+the decision behind preferring patches was somewhat biased, nobody really 
+cared about code quality or just wasn't familiar with hrtimers enough to judge 
+on the code quality...
+
+> Paul.
+
+WBR, Sergei
