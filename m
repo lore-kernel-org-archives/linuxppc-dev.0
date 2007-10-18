@@ -1,19 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.184])
-	by ozlabs.org (Postfix) with ESMTP id DB0B0DDEBD
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 11:26:49 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so11256rvf
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2007 18:26:49 -0700 (PDT)
-Message-ID: <fa686aa40710171826m232e2318l925f654de917b9a0@mail.gmail.com>
-Date: Wed, 17 Oct 2007 19:26:48 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] commit e8f605cd71aa09a8f8b73f410a15d2a46022a60e
-In-Reply-To: <20071017234100.7729.85901.stgit@trillian.cg.shawcable.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071017234100.7729.85901.stgit@trillian.cg.shawcable.net>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20071017230449.GZ4891@austin.ibm.com>
+References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
+	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
+	<20071017230449.GZ4891@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-6AftRWopW2GkOeR1ArBI"
+Date: Thu, 18 Oct 2007 11:27:23 +1000
+Message-Id: <1192670843.6681.10.camel@concordia>
+Mime-Version: 1.0
+Cc: sparclinux@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Paul Mackerras <paulus@samba.org>,
+	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,157 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/17/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> mpc8349emitx(gp): add UHCI and USB storage support
 
-Oops, sorry about the subject line; I kind of messed that up in stgit.
+--=-6AftRWopW2GkOeR1ArBI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-g.
+On Wed, 2007-10-17 at 18:04 -0500, Linas Vepstas wrote:
+> On Wed, Oct 17, 2007 at 05:12:27PM +1000, Michael Ellerman wrote:
+>=20
+> > +struct device_node *of_get_pci_dev_node(struct pci_dev *pdev)
+> > +{
+> > +       return of_node_get(pci_device_to_OF_node(pdev));
+> > +}
+>=20
+> [...]
+>=20
+> > -	dn =3D of_node_get(pci_device_to_OF_node(dev));
+> > +	dn =3D of_get_pci_dev_node(dev);
+>=20
+> Is this really useful or wise?
 
+Yes, and yes.
 
->
->     USB support for the 8349itx got added a while back; but the defconfig
->     never got updated.  This patch adds the appropriate USB config options
->     to defconfig
->
->     Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->     CC: Scott Wood <scottwood@freescale.com>
->     CC: Kumar Gala <galak@kernel.crashing.org>
->     CC: Timur Tabi <timur@freescale.com>
-> ---
->
->  arch/powerpc/configs/mpc834x_itx_defconfig   |    2 -
->  arch/powerpc/configs/mpc834x_itxgp_defconfig |   88 ++++++++++++++++++++++++++
->  2 files changed, 88 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/configs/mpc834x_itx_defconfig b/arch/powerpc/configs/mpc834x_itx_defconfig
-> index eb28dd8..ba512d1 100644
-> --- a/arch/powerpc/configs/mpc834x_itx_defconfig
-> +++ b/arch/powerpc/configs/mpc834x_itx_defconfig
-> @@ -867,7 +867,7 @@ CONFIG_USB_EHCI_ROOT_HUB_TT=y
->  CONFIG_USB_EHCI_FSL=y
->  # CONFIG_USB_ISP116X_HCD is not set
->  # CONFIG_USB_OHCI_HCD is not set
-> -# CONFIG_USB_UHCI_HCD is not set
-> +CONFIG_USB_UHCI_HCD=y
->  # CONFIG_USB_SL811_HCD is not set
->  # CONFIG_USB_R8A66597_HCD is not set
->
-> diff --git a/arch/powerpc/configs/mpc834x_itxgp_defconfig b/arch/powerpc/configs/mpc834x_itxgp_defconfig
-> index 22b9546..9faa948 100644
-> --- a/arch/powerpc/configs/mpc834x_itxgp_defconfig
-> +++ b/arch/powerpc/configs/mpc834x_itxgp_defconfig
-> @@ -760,15 +760,101 @@ CONFIG_USB_SUPPORT=y
->  CONFIG_USB_ARCH_HAS_HCD=y
->  CONFIG_USB_ARCH_HAS_OHCI=y
->  CONFIG_USB_ARCH_HAS_EHCI=y
-> -# CONFIG_USB is not set
-> +CONFIG_USB=y
-> +# CONFIG_USB_DEBUG is not set
-> +
-> +#
-> +# Miscellaneous USB options
-> +#
-> +# CONFIG_USB_DEVICEFS is not set
-> +CONFIG_USB_DEVICE_CLASS=y
-> +# CONFIG_USB_DYNAMIC_MINORS is not set
-> +# CONFIG_USB_OTG is not set
-> +
-> +#
-> +# USB Host Controller Drivers
-> +#
-> +CONFIG_USB_EHCI_HCD=y
-> +# CONFIG_USB_EHCI_SPLIT_ISO is not set
->  CONFIG_USB_EHCI_ROOT_HUB_TT=y
-> +# CONFIG_USB_EHCI_TT_NEWSCHED is not set
->  CONFIG_USB_EHCI_FSL=y
-> +# CONFIG_USB_ISP116X_HCD is not set
-> +# CONFIG_USB_OHCI_HCD is not set
-> +CONFIG_USB_UHCI_HCD=y
-> +# CONFIG_USB_SL811_HCD is not set
-> +# CONFIG_USB_R8A66597_HCD is not set
-> +
-> +#
-> +# USB Device Class drivers
-> +#
-> +# CONFIG_USB_ACM is not set
-> +# CONFIG_USB_PRINTER is not set
->
->  #
->  # NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
->  #
->
->  #
-> +# may also be needed; see USB_STORAGE Help for more information
-> +#
-> +CONFIG_USB_STORAGE=y
-> +# CONFIG_USB_STORAGE_DEBUG is not set
-> +# CONFIG_USB_STORAGE_DATAFAB is not set
-> +# CONFIG_USB_STORAGE_FREECOM is not set
-> +# CONFIG_USB_STORAGE_DPCM is not set
-> +# CONFIG_USB_STORAGE_USBAT is not set
-> +# CONFIG_USB_STORAGE_SDDR09 is not set
-> +# CONFIG_USB_STORAGE_SDDR55 is not set
-> +# CONFIG_USB_STORAGE_JUMPSHOT is not set
-> +# CONFIG_USB_STORAGE_ALAUDA is not set
-> +# CONFIG_USB_STORAGE_KARMA is not set
-> +# CONFIG_USB_LIBUSUAL is not set
-> +
-> +#
-> +# USB Imaging devices
-> +#
-> +# CONFIG_USB_MDC800 is not set
-> +# CONFIG_USB_MICROTEK is not set
-> +CONFIG_USB_MON=y
-> +
-> +#
-> +# USB port drivers
-> +#
-> +
-> +#
-> +# USB Serial Converter support
-> +#
-> +# CONFIG_USB_SERIAL is not set
-> +
-> +#
-> +# USB Miscellaneous drivers
-> +#
-> +# CONFIG_USB_EMI62 is not set
-> +# CONFIG_USB_EMI26 is not set
-> +# CONFIG_USB_ADUTUX is not set
-> +# CONFIG_USB_AUERSWALD is not set
-> +# CONFIG_USB_RIO500 is not set
-> +# CONFIG_USB_LEGOTOWER is not set
-> +# CONFIG_USB_LCD is not set
-> +# CONFIG_USB_BERRY_CHARGE is not set
-> +# CONFIG_USB_LED is not set
-> +# CONFIG_USB_CYPRESS_CY7C63 is not set
-> +# CONFIG_USB_CYTHERM is not set
-> +# CONFIG_USB_PHIDGET is not set
-> +# CONFIG_USB_IDMOUSE is not set
-> +# CONFIG_USB_FTDI_ELAN is not set
-> +# CONFIG_USB_APPLEDISPLAY is not set
-> +# CONFIG_USB_SISUSBVGA is not set
-> +# CONFIG_USB_LD is not set
-> +# CONFIG_USB_TRANCEVIBRATOR is not set
-> +# CONFIG_USB_IOWARRIOR is not set
-> +
-> +#
-> +# USB DSL modem support
-> +#
-> +
-> +#
->  # USB Gadget Support
->  #
->  # CONFIG_USB_GADGET is not set
->
->
+> As a matter of personal taste, I find stuff like this clutters
+> and confuses my mind. I go to read new code, and I run across some
+> routine I haven't heard of before ... e.g. of_get_pci_dev_node(),
+> so now I have to look it up to see what it does.  A few minutes later,=20
+> I realize that its just a pair of old freinds (of_node_get and=20
+> pci_device_to_OF_node) and so now I have to make mental room for it. =20
+>=20
+> Tommorrow, or 3 days later, I'm again looking at of_get_pci_dev_node()
+> and I'm thinking "gee what did that thing do again??"
 
+It does what pci_device_to_OF_node() does, but in the right way.=20
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+The plan is to remove pci_device_to_OF_node() once all the callers have
+been converted to properly handle the refcounting. When that happens you
+can use the mental room it consumed for something else :)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-6AftRWopW2GkOeR1ArBI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHFrZ7dSjSd0sB4dIRApXVAKCtejhHEA4X51bMr+PVDDGA3mz1iACeIM7M
+MAhMDy8V7ykCqMEhvlfA9SU=
+=bTbR
+-----END PGP SIGNATURE-----
+
+--=-6AftRWopW2GkOeR1ArBI--
