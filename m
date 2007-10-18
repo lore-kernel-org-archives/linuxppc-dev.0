@@ -1,18 +1,21 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7804BDDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 22:56:36 +1000 (EST)
-Date: Thu, 18 Oct 2007 16:55:13 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC: Split early debug output and early boot console for
-	44x
-Message-ID: <20071018125513.GA24673@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: david@gibson.dropbear.id.au
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
+	by ozlabs.org (Postfix) with ESMTP id 3BCB4DDEBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 23:16:06 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so197465wag
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 06:16:05 -0700 (PDT)
+Message-ID: <fa686aa40710180616re8e3c5ib92ab2700d98e260@mail.gmail.com>
+Date: Thu, 18 Oct 2007 07:16:04 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: [PATCH 07/15] [POWERPC] Promess Motion-PRO DTS
+In-Reply-To: <47175683.1030407@grandegger.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47075FA7.3030108@semihalf.com> <4708C22D.5060805@semihalf.com>
+	<47175683.1030407@grandegger.com>
+Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently there's no way to enable early boot console on PowerPC 44x
-not specifying uart's physical address in kernel config, which is used
-for very early debug messages. This patch splits very early debug output
-(which needs uart physical address in kernel config) and early boot console
-(which searches for uarts in the device tree using find_legacy_serial_ports).
-We enable early boot console for all 44x processors, while (dangerous)
-early debug is user-selectable.
+On 10/18/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Hello,
+>
+> I see one more issue.
+>
+> Marian Balakowicz wrote:
+> > Add device tree source file for Motion-PRO board.
+> >
+> > Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+> > ---
+> [deletions]
+> > +             gpio@b00 {
+> > +                     compatible = "mpc5200b-gpio\0mpc5200-gpio";
+> > +                     reg = <b00 40>;
+> > +                     interrupts = <1 7 0>;
+> > +                     interrupt-parent = <&mpc5200_pic>;
+> > +             };
+>
+> Do we not need the field "device_type = "gpio" here?
+>
+> > +             gpio-wkup@c00 {
+> > +                     compatible = "mpc5200b-gpio-wkup\0mpc5200-gpio-wkup";
+> > +                     reg = <c00 40>;
+> > +                     interrupts = <1 8 0 0 3 0>;
+> > +                     interrupt-parent = <&mpc5200_pic>;
+> > +             };
+>
+> And the same here.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/Kconfig.debug             |    1 -
- arch/powerpc/platforms/Kconfig.cputype |    1 +
- 2 files changed, 1 insertion(+), 1 deletion(-)
+'GPIO' is not a standard device type (at least there are no standard
+set of GPIO bindings defined) so the device_type field should be
+omitted.  Compatible is sufficient.
 
-diff -pruN linux-2.6.orig/arch/powerpc/Kconfig.debug linux-2.6/arch/powerpc/Kconfig.debug
---- linux-2.6.orig/arch/powerpc/Kconfig.debug	2007-10-18 15:59:09.000000000 +0400
-+++ linux-2.6/arch/powerpc/Kconfig.debug	2007-10-18 16:08:33.000000000 +0400
-@@ -216,7 +216,6 @@ config PPC_EARLY_DEBUG_BEAT
- config PPC_EARLY_DEBUG_44x
- 	bool "Early serial debugging for IBM/AMCC 44x CPUs"
- 	depends on 44x
--	select PPC_UDBG_16550
- 	help
- 	  Select this to enable early debugging for IBM 44x chips via the
- 	  inbuilt serial port.
-diff -pruN linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype linux-2.6/arch/powerpc/platforms/Kconfig.cputype
---- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype	2007-10-18 15:59:10.000000000 +0400
-+++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype	2007-10-18 16:08:33.000000000 +0400
-@@ -48,6 +48,7 @@ config 44x
- 	bool "AMCC 44x"
- 	select PPC_DCR_NATIVE
- 	select WANT_DEVICE_TREE
-+	select PPC_UDBG_16550
- 
- config E200
- 	bool "Freescale e200"
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
