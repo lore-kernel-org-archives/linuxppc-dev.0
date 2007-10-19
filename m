@@ -1,31 +1,24 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DB02CDDEA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:39:18 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l9JDdD8e009098
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 06:39:13 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9JDdDbd005419
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 08:39:13 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
-Date: Fri, 19 Oct 2007 06:39:12 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
-In-Reply-To: <20071018.173032.48505868.davem@davemloft.net>
-References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com>
-	<20071018.173032.48505868.davem@davemloft.net>
-From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 17696DDEB7
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:44:23 +1000 (EST)
+Date: Fri, 19 Oct 2007 23:44:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
+Message-Id: <20071019234416.cc1066ec.sfr@canb.auug.org.au>
+In-Reply-To: <044B09E9-2B1B-4BCC-BDFD-31269E41CC8F@kernel.crashing.org>
+References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
+	<1192719847-25045-2-git-send-email-leoli@freescale.com>
+	<1192719847-25045-3-git-send-email-leoli@freescale.com>
+	<1192719847-25045-4-git-send-email-leoli@freescale.com>
+	<20071019104318.edfd2ad1.sfr@canb.auug.org.au>
+	<044B09E9-2B1B-4BCC-BDFD-31269E41CC8F@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__19_Oct_2007_23_44_16_+1000_FW2WEVnTJ2894Az3"
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,39 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello David
+--Signature=_Fri__19_Oct_2007_23_44_16_+1000_FW2WEVnTJ2894Az3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, 19 Oct 2007 08:10:00 -0500 Kumar Gala <galak@kernel.crashing.org> w=
+rote:
+>
+> what's the rule of thumb to know when to include <asm/prom.h> does =20
+> everything starting with of_flat_* come from there?
 
-> It only kills the warning on 32-bit systems, the cast is wrong
-> either way.
+Basically anything that deals with the flattened device tee should
+include asm/prom.h.  This may change in the future, but that will be my
+problem.  linux/of.h should be included for dealing with the unflattened
+device tree.
 
-I'm not aware of the QE being present on any 64-bit PowerPC. However,
-porting the entire driver to a 64-bit platform is an exercise in itself
-as many other things would need tweaking the QE hardware itself. But
-that's an orthogonal issue. For now I just want to fix that warning.
-
->=20
-> >  			ugeth->tx_bd_ring_offset[j] =3D
-> > -				kmalloc((u32) (length + align),=20
-> GFP_KERNEL);
-> > +				(u32)kmalloc(length + align,=20
-> GFP_KERNEL);
-> > =20
-> >  			if (ugeth->tx_bd_ring_offset[j] !=3D 0)
-> >  				ugeth->p_tx_bd_ring[j] =3D
->=20
-> Pointers can be up to "unsigned long" in size, therefore that
-> is the minimal amount of storage you need to store them into
-> if they are needed in integer form for some reason.
->=20
-> Any cast from pointer to integer like this is a huge red flag.
-
-Agreed, but again, I'm not trying to fix the entire driver or to port it
-to a different architecture.
-
-For the current situation, 32-bit QE, 32-bit PowerPC, do you find the
-patch acceptable?
-
-
+--=20
 Cheers,
-Emil.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__19_Oct_2007_23_44_16_+1000_FW2WEVnTJ2894Az3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHGLS1TgG2atn1QN8RAjFVAJ9qVDZjHDn17nSyrRjM2gkRGDzAsACeIhSm
+c+Efm0c+n2s4KDaWFW1zfYE=
+=zmQR
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__19_Oct_2007_23_44_16_+1000_FW2WEVnTJ2894Az3--
