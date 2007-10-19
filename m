@@ -1,17 +1,22 @@
-Return-Path: <alan@akb.net>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.239])
-	by ozlabs.org (Postfix) with ESMTP id 746F8DDEC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 00:29:46 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so442004wri
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 07:29:44 -0700 (PDT)
-Message-ID: <bfa0697f0710190729r64ad503foabdb20f446310520@mail.gmail.com>
-Date: Fri, 19 Oct 2007 08:29:43 -0600
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: mahendravarman15@gmail.com, linuxppc-dev@ozlabs.org
-Subject: re: Linux root file system with X window support for a powerpc board
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 238E4DDED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 00:35:45 +1000 (EST)
+Message-ID: <4718C0BA.5060800@freescale.com>
+Date: Fri, 19 Oct 2007 09:35:38 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Emil Medve <Emilian.Medve@freescale.com>
+Subject: Re: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
+References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, leoli@freescale.com, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-debian:
-(on x86/fedora development system) (used on 82xx)
-  1. debootstrap with the --foreign
-    i.e. debootstrap --arch powerpc etch http://mirrors.kernel.org/debian
-    mannually create an inittab, create/copy some default /dev entries
+Emil Medve wrote:
+> drivers/net/ucc_geth.c: In function 'ucc_geth_startup':
+> drivers/net/ucc_geth.c:2614: warning: assignment makes integer from pointer without a cast
+> drivers/net/ucc_geth.c:2651: warning: assignment makes integer from pointer without a cast
+> 
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 
-  2. boot 74xx target with above root filesystem, run
-/debootstrap/debootstrap --second-stage
-  Now add in packages using apt-get (or add them initially in step 1)
-
--Alan
-
-
-Hi all
-
-Can anybody help me how to create a Linux root file system with X
-window support for a powerpc 74xx based board ?
-
-Any documents/links  related to that is also welcome
-
-Thanks in advance
-
-R.Mahendravarman
+Acked-by: Timur Tabi <timur@freescale.com>
