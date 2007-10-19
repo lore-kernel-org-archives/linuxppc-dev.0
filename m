@@ -4,24 +4,25 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 72394DDEFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:28:32 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 79027DDF36
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:28:33 +1000 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l9JBSRwh015104
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 04:28:27 -0700 (MST)
+	l9JBSSar015116
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 04:28:28 -0700 (MST)
 Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
 	[10.192.129.221])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9JBSNKY016129
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 06:28:26 -0500 (CDT)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9JBSNKa016129
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 06:28:27 -0500 (CDT)
 From: Li Yang <leoli@freescale.com>
 To: galak@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH v7 2/9] ipic: add new interrupts introduced by new chip
-Date: Fri, 19 Oct 2007 19:38:43 +0800
-Message-Id: <1192793930-26039-3-git-send-email-leoli@freescale.com>
-In-Reply-To: <1192793930-26039-2-git-send-email-leoli@freescale.com>
+Subject: [PATCH v7 3/9] add Freescale SerDes PHY support
+Date: Fri, 19 Oct 2007 19:38:44 +0800
+Message-Id: <1192793930-26039-4-git-send-email-leoli@freescale.com>
+In-Reply-To: <1192793930-26039-3-git-send-email-leoli@freescale.com>
 References: <1192793930-26039-1-git-send-email-leoli@freescale.com>
 	<1192793930-26039-2-git-send-email-leoli@freescale.com>
+	<1192793930-26039-3-git-send-email-leoli@freescale.com>
 Cc: Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,257 +33,248 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These interrupts are introduced by the latest Freescale SoC such as
-MPC837x.
+The SerDes(serializer/deserializer) PHY block is a new SoC block used
+in Freescale chips to support multiple serial interfaces, such as PCI
+Express, SGMII, SATA.
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/sysdev/ipic.c |  138 ++++++++++++++++++++++++++++++++++++++++++--
- arch/powerpc/sysdev/ipic.h |    7 +-
- include/asm-powerpc/ipic.h |   12 ++--
- 3 files changed, 143 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/Kconfig   |    7 ++
+ arch/powerpc/sysdev/Makefile     |    1 +
+ arch/powerpc/sysdev/fsl_serdes.c |  195 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 203 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_serdes.c
 
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 05a56e5..7168b03 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -33,6 +33,30 @@ static struct ipic * primary_ipic;
- static DEFINE_SPINLOCK(ipic_lock);
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 229d355..5d64f84 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -315,6 +315,13 @@ config FSL_ULI1575
+ config CPM
+ 	bool
  
- static struct ipic_info ipic_info[] = {
-+	[1] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 16,
-+		.prio_mask = 0,
-+	},
-+	[2] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 17,
-+		.prio_mask = 1,
-+	},
-+	[4] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_C,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 19,
-+		.prio_mask = 3,
-+	},
- 	[9] = {
- 		.pend	= IPIC_SIPNR_H,
- 		.mask	= IPIC_SIMSR_H,
-@@ -57,6 +81,22 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 26,
- 		.prio_mask = 2,
- 	},
-+	[12] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_D,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 27,
-+		.prio_mask = 3,
-+	},
-+	[13] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_D,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 28,
-+		.prio_mask = 4,
-+	},
- 	[14] = {
- 		.pend	= IPIC_SIPNR_H,
- 		.mask	= IPIC_SIMSR_H,
-@@ -201,6 +241,46 @@ static struct ipic_info ipic_info[] = {
- 		.bit	= 7,
- 		.prio_mask = 7,
- 	},
-+	[42] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 10,
-+		.prio_mask = 2,
-+	},
-+	[44] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 12,
-+		.prio_mask = 4,
-+	},
-+	[45] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 13,
-+		.prio_mask = 5,
-+	},
-+	[46] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 14,
-+		.prio_mask = 6,
-+	},
-+	[47] = {
-+		.pend	= IPIC_SIPNR_H,
-+		.mask	= IPIC_SIMSR_H,
-+		.prio	= IPIC_SIPRR_B,
-+		.force	= IPIC_SIFCR_H,
-+		.bit	= 15,
-+		.prio_mask = 7,
-+	},
- 	[48] = {
- 		.pend	= IPIC_SEPNR,
- 		.mask	= IPIC_SEMSR,
-@@ -336,6 +416,20 @@ static struct ipic_info ipic_info[] = {
- 		.force	= IPIC_SIFCR_L,
- 		.bit	= 16,
- 	},
-+	[81] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 17,
-+	},
-+	[82] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 18,
-+	},
- 	[84] = {
- 		.pend	= IPIC_SIPNR_L,
- 		.mask	= IPIC_SIMSR_L,
-@@ -350,6 +444,34 @@ static struct ipic_info ipic_info[] = {
- 		.force	= IPIC_SIFCR_L,
- 		.bit	= 21,
- 	},
-+	[86] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 22,
-+	},
-+	[87] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 23,
-+	},
-+	[88] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 24,
-+	},
-+	[89] = {
-+		.pend	= IPIC_SIPNR_L,
-+		.mask	= IPIC_SIMSR_L,
-+		.prio	= 0,
-+		.force	= IPIC_SIFCR_L,
-+		.bit	= 25,
-+	},
- 	[90] = {
- 		.pend	= IPIC_SIPNR_L,
- 		.mask	= IPIC_SIMSR_L,
-@@ -593,6 +715,10 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
- 	 * configure SICFR accordingly */
- 	if (flags & IPIC_SPREADMODE_GRP_A)
- 		temp |= SICFR_IPSA;
-+	if (flags & IPIC_SPREADMODE_GRP_B)
-+		temp |= SICFR_IPSB;
-+	if (flags & IPIC_SPREADMODE_GRP_C)
-+		temp |= SICFR_IPSC;
- 	if (flags & IPIC_SPREADMODE_GRP_D)
- 		temp |= SICFR_IPSD;
- 	if (flags & IPIC_SPREADMODE_MIX_A)
-@@ -600,7 +726,7 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
- 	if (flags & IPIC_SPREADMODE_MIX_B)
- 		temp |= SICFR_MPSB;
++config FSL_SERDES
++	bool
++	help
++	  The SerDes(serializer/deserializer) PHY block is a new SoC block
++	  used in Freescale chips to support multiple serial interfaces,
++	  such as PCI Express, SGMII, SATA.
++
+ source "arch/powerpc/sysdev/bestcomm/Kconfig"
  
--	ipic_write(ipic->regs, IPIC_SICNR, temp);
-+	ipic_write(ipic->regs, IPIC_SICFR, temp);
+ endmenu
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 99a77d7..2343ea4 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MV64X60)		+= $(mv64x60-y) mv64x60_pic.o mv64x60_dev.o \
+ 				   mv64x60_udbg.o
+ obj-$(CONFIG_RTC_DRV_CMOS)	+= rtc_cmos_setup.o
+ obj-$(CONFIG_AXON_RAM)		+= axonram.o
++obj-$(CONFIG_FSL_SERDES)	+= fsl_serdes.o
  
- 	/* handle MCP route */
- 	temp = 0;
-@@ -672,10 +798,12 @@ void ipic_set_highest_priority(unsigned int virq)
- 
- void ipic_set_default_priority(void)
- {
--	ipic_write(primary_ipic->regs, IPIC_SIPRR_A, IPIC_SIPRR_A_DEFAULT);
--	ipic_write(primary_ipic->regs, IPIC_SIPRR_D, IPIC_SIPRR_D_DEFAULT);
--	ipic_write(primary_ipic->regs, IPIC_SMPRR_A, IPIC_SMPRR_A_DEFAULT);
--	ipic_write(primary_ipic->regs, IPIC_SMPRR_B, IPIC_SMPRR_B_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SIPRR_A, IPIC_PRIORITY_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SIPRR_B, IPIC_PRIORITY_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SIPRR_C, IPIC_PRIORITY_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SIPRR_D, IPIC_PRIORITY_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SMPRR_A, IPIC_PRIORITY_DEFAULT);
-+	ipic_write(primary_ipic->regs, IPIC_SMPRR_B, IPIC_PRIORITY_DEFAULT);
- }
- 
- void ipic_enable_mcp(enum ipic_mcp_irq mcp_irq)
-diff --git a/arch/powerpc/sysdev/ipic.h b/arch/powerpc/sysdev/ipic.h
-index bb309a5..1158b8f 100644
---- a/arch/powerpc/sysdev/ipic.h
-+++ b/arch/powerpc/sysdev/ipic.h
-@@ -23,13 +23,12 @@
- #define IPIC_IRQ_EXT7 23
- 
- /* Default Priority Registers */
--#define IPIC_SIPRR_A_DEFAULT 0x05309770
--#define IPIC_SIPRR_D_DEFAULT 0x05309770
--#define IPIC_SMPRR_A_DEFAULT 0x05309770
--#define IPIC_SMPRR_B_DEFAULT 0x05309770
-+#define IPIC_PRIORITY_DEFAULT 0x05309770
- 
- /* System Global Interrupt Configuration Register */
- #define	SICFR_IPSA	0x00010000
-+#define	SICFR_IPSB	0x00020000
-+#define	SICFR_IPSC	0x00040000
- #define	SICFR_IPSD	0x00080000
- #define	SICFR_MPSA	0x00200000
- #define	SICFR_MPSB	0x00400000
-diff --git a/include/asm-powerpc/ipic.h b/include/asm-powerpc/ipic.h
-index edec79d..8ff08be 100644
---- a/include/asm-powerpc/ipic.h
-+++ b/include/asm-powerpc/ipic.h
-@@ -20,11 +20,13 @@
- 
- /* Flags when we init the IPIC */
- #define IPIC_SPREADMODE_GRP_A	0x00000001
--#define IPIC_SPREADMODE_GRP_D	0x00000002
--#define IPIC_SPREADMODE_MIX_A	0x00000004
--#define IPIC_SPREADMODE_MIX_B	0x00000008
--#define IPIC_DISABLE_MCP_OUT	0x00000010
--#define IPIC_IRQ0_MCP		0x00000020
-+#define IPIC_SPREADMODE_GRP_B	0x00000002
-+#define IPIC_SPREADMODE_GRP_C	0x00000004
-+#define IPIC_SPREADMODE_GRP_D	0x00000008
-+#define IPIC_SPREADMODE_MIX_A	0x00000010
-+#define IPIC_SPREADMODE_MIX_B	0x00000020
-+#define IPIC_DISABLE_MCP_OUT	0x00000040
-+#define IPIC_IRQ0_MCP		0x00000080
- 
- /* IPIC registers offsets */
- #define IPIC_SICFR	0x00	/* System Global Interrupt Configuration Register */
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+diff --git a/arch/powerpc/sysdev/fsl_serdes.c b/arch/powerpc/sysdev/fsl_serdes.c
+new file mode 100644
+index 0000000..670015d
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_serdes.c
+@@ -0,0 +1,195 @@
++/*
++ * arch/powerpc/sysdev/fsl_serdes.c
++ *
++ * Copyright (C) 2007 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * Author: Li Yang <leoli@freescale.com>
++ *
++ * Freescale SerDes initialization routines
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation;  either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/delay.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++
++#include <asm/system.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++
++#define FSL_SRDSCR0_OFFS		0x0
++#define FSL_SRDSCR0_DPP_1V2		0x00008800
++#define FSL_SRDSCR1_OFFS		0x4
++#define FSL_SRDSCR1_PLLBW		0x00000040
++#define FSL_SRDSCR2_OFFS		0x8
++#define FSL_SRDSCR2_VDD_1V2		0x00800000
++#define FSL_SRDSCR2_SEIC_MASK		0x00001c1c
++#define FSL_SRDSCR2_SEIC_SATA		0x00001414
++#define FSL_SRDSCR2_SEIC_PEX		0x00001010
++#define FSL_SRDSCR2_SEIC_SGMII		0x00000101
++#define FSL_SRDSCR3_OFFS		0xc
++#define FSL_SRDSCR3_KFR_SATA		0x10100000
++#define FSL_SRDSCR3_KPH_SATA		0x04040000
++#define FSL_SRDSCR3_SDFM_SATA_PEX	0x01010000
++#define FSL_SRDSCR3_SDTXL_SATA		0x00000505
++#define FSL_SRDSCR4_OFFS		0x10
++#define FSL_SRDSCR4_PROT_SATA		0x00000808
++#define FSL_SRDSCR4_PROT_PEX		0x00000101
++#define FSL_SRDSCR4_PROT_SGMII		0x00000505
++#define FSL_SRDSCR4_PLANE_X2		0x01000000
++#define FSL_SRDSCR4_RFCKS_100		0x00000000
++#define FSL_SRDSCR4_RFCKS_125		0x10000000
++#define FSL_SRDSCR4_RFCKS_150		0x30000000
++#define FSL_SRDSRSTCTL_OFFS		0x20
++#define FSL_SRDSRSTCTL_RST		0x80000000
++#define FSL_SRDSRSTCTL_SATA_RESET	0xf
++
++static int fsl_serdes_probe(struct of_device *ofdev,
++		const struct of_device_id *match)
++{
++	struct device_node *np = ofdev->node;
++	void __iomem *regs;
++	const char *prot;
++	const unsigned int *freq;
++	u32 rfcks;
++
++	regs = of_iomap(np, 0);
++	if (!regs)
++		return -ENOMEM;
++
++	prot = of_get_property(np, "protocol", NULL);
++	if (!prot)
++		goto out;
++	freq = of_get_property(np, "clock", NULL);
++	if (!freq)
++		goto out;
++	switch (*freq) {
++	case 100:
++		rfcks = FSL_SRDSCR4_RFCKS_100;
++		break;
++	case 125:
++		rfcks = FSL_SRDSCR4_RFCKS_125;
++		break;
++	case 150:
++		rfcks = FSL_SRDSCR4_RFCKS_150;
++		break;
++	default:
++		printk(KERN_ERR "SerDes: Wrong frequency\n");
++		goto out;
++	}
++
++	/* Use default prescale and counter */
++
++	/* 1.0V corevdd */
++	if (of_get_property(np, "vdd-1v", NULL)) {
++		/* DPPE/DPPA = 0 */
++		clrbits32(regs + FSL_SRDSCR0_OFFS, FSL_SRDSCR0_DPP_1V2);
++
++		/* VDD = 0 */
++		clrbits32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_VDD_1V2);
++	}
++
++	/* protocol specific configuration */
++	if (!strcmp(prot, "sata")) {
++		/* Set and clear reset bits */
++		setbits32(regs + FSL_SRDSRSTCTL_OFFS,
++				FSL_SRDSRSTCTL_SATA_RESET);
++		mdelay(1);
++		clrbits32(regs + FSL_SRDSRSTCTL_OFFS,
++				FSL_SRDSRSTCTL_SATA_RESET);
++
++		/* Configure SRDSCR1 */
++		clrbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
++
++		/* Configure SRDSCR2 */
++		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS,
++				FSL_SRDSCR2_SEIC_MASK, FSL_SRDSCR2_SEIC_SATA);
++
++		/* Configure SRDSCR3 */
++		out_be32(regs + FSL_SRDSCR3_OFFS, FSL_SRDSCR3_KFR_SATA |
++				FSL_SRDSCR3_KPH_SATA |
++				FSL_SRDSCR3_SDFM_SATA_PEX |
++				FSL_SRDSCR3_SDTXL_SATA);
++
++		/* Configure SRDSCR4 */
++		out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
++				FSL_SRDSCR4_PROT_SATA);
++
++	} else if (!strcmp(prot, "pcie")) {
++		/* Configure SRDSCR1 */
++		setbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
++
++		/* Configure SRDSCR2 */
++		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_SEIC_MASK,
++				FSL_SRDSCR2_SEIC_PEX);
++
++		/* Configure SRDSCR3 */
++		out_be32(regs + FSL_SRDSCR3_OFFS, FSL_SRDSCR3_SDFM_SATA_PEX);
++
++		/* Configure SRDSCR4 */
++		if (of_get_property(np, "pcie-x2", NULL))
++			out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
++				FSL_SRDSCR4_PROT_PEX | FSL_SRDSCR4_PLANE_X2);
++		else
++			out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
++				FSL_SRDSCR4_PROT_PEX);
++
++	} else if (!strcmp(prot, "sgmii")) {
++		/* Configure SRDSCR1 */
++		clrbits32(regs + FSL_SRDSCR1_OFFS, FSL_SRDSCR1_PLLBW);
++
++		/* Configure SRDSCR2 */
++		clrsetbits_be32(regs + FSL_SRDSCR2_OFFS, FSL_SRDSCR2_SEIC_MASK,
++				FSL_SRDSCR2_SEIC_SGMII);
++
++		/* Configure SRDSCR3 */
++		out_be32(regs + FSL_SRDSCR3_OFFS, 0);
++
++		/* Configure SRDSCR4 */
++		out_be32(regs + FSL_SRDSCR4_OFFS, rfcks |
++				FSL_SRDSCR4_PROT_SGMII);
++
++	} else {
++		printk(KERN_ERR "SerDes: Wrong protocol\n");
++		goto out;
++	}
++
++	/* Do a software reset */
++	setbits32(regs + FSL_SRDSRSTCTL_OFFS, FSL_SRDSRSTCTL_RST);
++	iounmap(regs);
++
++	dev_printk(KERN_INFO, &ofdev->dev, "Initialized as %s\n", prot);
++
++	return 0;
++out:
++	iounmap(regs);
++	return -EINVAL;
++}
++
++static struct of_device_id fsl_serdes_match[] = {
++	{
++		.compatible = "fsl,serdes",
++	},
++	{},
++};
++
++static struct of_platform_driver fsl_serdes_driver = {
++	.name		= "fsl-serdes",
++	.match_table	= fsl_serdes_match,
++	.probe		= fsl_serdes_probe,
++};
++
++static int __init fsl_serdes_init(void)
++{
++	of_register_platform_driver(&fsl_serdes_driver);
++	return 0;
++}
++device_initcall(fsl_serdes_init);
 -- 
 1.5.3.2.104.g41ef
