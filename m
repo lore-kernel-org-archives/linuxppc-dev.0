@@ -1,34 +1,19 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 85F15DDEA3
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 20:45:02 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9JAiuS9015018
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 03:44:57 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9JAitU6018116
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:44:56 -0500 (CDT)
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 471A8DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:06:55 +1000 (EST)
+Message-ID: <47188FB6.70306@semihalf.com>
+Date: Fri, 19 Oct 2007 13:06:30 +0200
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] qe_lib: export symbols to fix compile error when QE
-	drivers compile as modules
-Date: Fri, 19 Oct 2007 18:44:53 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5C9B@zch01exm26.fsl.freescale.net>
-In-Reply-To: <F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
-References: <989B956029373F45A0B8AF0297081890B768A2@zch01exm26.fsl.freescale.net>
-	<24BADA7A-1716-43B1-BC92-F4DB7ED0D331@kernel.crashing.org>
-	<F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tabi Timur-B04825 <timur@freescale.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 04/15] [POWERPC] CM5200 DTS
+References: <47075FA7.3030108@semihalf.com>
+	<4708C112.9020506@semihalf.com>	<20071008015021.GA12499@localhost.localdomain>	<4715FE6C.2070201@semihalf.com>
+	<20071018002256.GA24236@localhost.localdomain>
+In-Reply-To: <20071018002256.GA24236@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,46 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Wednesday, October 17, 2007 11:30 PM
-> To: Li Yang-r58472
-> Cc: linuxppc-dev list; Tabi Timur-B04825
-> Subject: Re: [PATCH] qe_lib: export symbols to fix compile=20
-> error when QE drivers compile as modules
->=20
->=20
-> On May 25, 2007, at 7:15 AM, Kumar Gala wrote:
->=20
-> >
-> > On May 24, 2007, at 9:45 PM, Li Yang-r58472 wrote:
-> >
-> >>
-> >>> -----Original Message-----
-> >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >>> Sent: Thursday, May 24, 2007 7:44 PM
-> >>> To: Li Yang-r58472
-> >>> Cc: Paul; linuxppc-dev@ozlabs.org
-> >>> Subject: Re: [PATCH] qe_lib: export symbols to fix compile error=20
-> >>> when
-> >> QE drivers
-> >>> compile as modules
-> >>>
-> >>>
-> >>> On May 24, 2007, at 4:14 AM, Li Yang wrote:
-> >>>
-> >>>> Export symbols of qe_lib to be used by QE drivers.
-> >>>>
-> >>>> Signed-off-by: Li Yang <leoli@freescale.com>
-> >>>> ---
-> >>>> arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
-> >>>> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
-> >>>> arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
-> >>>> 3 files changed, 25 insertions(+), 2 deletions(-)
-> >>>
->=20
-> What happened with this?
+David Gibson wrote:
+> On Wed, Oct 17, 2007 at 02:22:04PM +0200, Marian Balakowicz wrote:
+>> David Gibson wrote:
+>>> [snip]
+>>>> +		flash@c000000 {
+>>>> +			device_type = "rom";
+>>>> +			compatible = "direct-mapped";
+>>>> +			reg = <0c000000 02000000>;
+>>>> +			probe-type = "CFI";
+>>>> +			bank-width = <2>;
+>>>> +			partitions = <00000000 00060000
+>>>> +				00060000 00020000
+>>>> +				00080000 00020000
+>>>> +				000a0000 00020000
+>>>> +				000c0000 00200000
+>>>> +				002c0000 01b40000
+>>>> +				01e00000 00200000>;
+>>>> +			partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
+>>>> +		};
+>>> First, this is the old flash binding, please use the new one.
+>> Ok.
+>>
+>>> Second, is the flash really part of the SoC?
+>> Not directly, it is attached to LocalPlus Bus Controller, which is
+>> part of the SoC. And the soc@ is currently the only recognized of bus
+>> for mpc5200, so if we want to move it to some other place new bindings
+>> will need to be defined for lpc (LocalPlus Controller) bus. But I am
+>> not quite sure where this should be attached. Bus is under LPC which
+>> is a part of the SoC, but on the other hand Soc address range covers
+>> only device control registers not the address space LPC may handle
+>> (that may be varied). Any ideas?
+> 
+> The bus bridge has to be there.  Is this something similar to the
+> "localbus" / "chipselect" bus controllers that a whole bunch of the
+> Freescale SoCs have?  
 
-This has been merged as commit 65482ccf9d00bf4f68e17eb9c656d045d26e5d1f.
+Yes, that's kind of a local bus.
 
-- Leo
+> Because the bridged addresses don't lie in the
+> IMMR, althoug the control registers do, the current convention is to
+> make the localbus node a sibling of /soc, even though it is really
+> part of the SoC (/soc would perhaps be better called /immr, but /soc
+> is established now).  This approach is imperfect, but so are most of
+> the other compromises we could make.
+> 
+> Incidentally LPC is a pretty bad abbreviation, since LPC more
+> frequently refers to the Low Pin Count connections that frequently
+> appear on south bridges or superIO chips.
+
+How about 'LocalPlus Bus' and 'lpb' node then?
+
+m.
