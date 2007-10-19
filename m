@@ -1,19 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 46B9BDDEC7
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 09:41:31 +1000 (EST)
-Date: Fri, 19 Oct 2007 16:41:43 -0700 (PDT)
-Message-Id: <20071019.164143.75786621.davem@davemloft.net>
-To: Emilian.Medve@freescale.com
-Subject: Re: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
-References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com>
-	<20071018.173032.48505868.davem@davemloft.net>
-	<598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8D22FDDEDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 09:43:14 +1000 (EST)
+Date: Fri, 19 Oct 2007 18:49:50 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: mpic: minor optimization of ipi handler
+Message-ID: <20071019234950.GA18112@lixom.net>
+References: <20071019185110.GA11911@lixom.net>
+	<1192835859.17235.12.camel@pasglop>
+	<20071019233134.GA17851@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071019233134.GA17851@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +23,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-Date: Fri, 19 Oct 2007 06:39:12 -0700
+Optimize MPIC IPIs, by passing in the IPI number as the argument to the
+handler, since all we did was translate it back based on which mpic
+the interrupt came though on (and that was always the primary mpic).
 
-> For the current situation, 32-bit QE, 32-bit PowerPC, do you find
-> the patch acceptable?
 
-No piece of code in the kernel should live in a vacuum.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-In order to improve overall code quality, every piece of
-driver code should avoid assuming things about pointer
-sizes and things of this nature.
 
-Then the driver can get enabled into the build on every
-platform, and therefore nobody will break the build of
-this driver again since it will get hit by "allmodconfig"
-et al. builds even on platforms other than the one it is
-meant for.
+---
 
-This hack fix is not acceptable, really.
+On Fri, Oct 19, 2007 at 06:31:34PM -0500, Olof Johansson wrote:
+> On Sat, Oct 20, 2007 at 09:17:39AM +1000, Benjamin Herrenschmidt wrote:
+> > 
+> > On Fri, 2007-10-19 at 13:51 -0500, Olof Johansson wrote:
+> > > Jeff Garzik pointed out that we don't actually have to lookup the mpic
+> > > instance since it's passed in as the interrupt handler data for IPIs.
+> > 
+> > Note that's typically one of the annoying case where we use "irq"
+> > for a good reasons, getting the way of Jeff attempt at removing
+> > this argument.
+> > 
+> > I suppose a working approach would be to have 4 mpic IPI handlers...
+> 
+> We still need the _irq_, but we don't need to lookup the mpic based on it.
+> 
+> We knew the mpic pointer at irq setup time, and passed it in as the
+> argument to pass to the handler. Doing a second lookup is just extra
+> overhead, it should return the same controller:
+
+Oh, I see what you mean. You didn't make it easy to parse. :)
+
+This should actually do the work.
+
+-Olof
+
+
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index e479388..a8d7c68 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -614,10 +614,9 @@ static inline void mpic_eoi(struct mpic *mpic)
+ #ifdef CONFIG_SMP
+ static irqreturn_t mpic_ipi_action(int irq, void *data)
+ {
+-	struct mpic *mpic;
++	long ipi = (long)data;
+ 
+-	mpic = mpic_find(irq, NULL);
+-	smp_message_recv(mpic_irq_to_hw(irq) - mpic->ipi_vecs[0]);
++	smp_message_recv(ipi);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -1457,7 +1456,7 @@ unsigned int mpic_get_irq(void)
+ void mpic_request_ipis(void)
+ {
+ 	struct mpic *mpic = mpic_primary;
+-	int i, err;
++	long i, err;
+ 	static char *ipi_names[] = {
+ 		"IPI0 (call function)",
+ 		"IPI1 (reschedule)",
+@@ -1472,14 +1471,14 @@ void mpic_request_ipis(void)
+ 		unsigned int vipi = irq_create_mapping(mpic->irqhost,
+ 						       mpic->ipi_vecs[0] + i);
+ 		if (vipi == NO_IRQ) {
+-			printk(KERN_ERR "Failed to map IPI %d\n", i);
++			printk(KERN_ERR "Failed to map IPI %ld\n", i);
+ 			break;
+ 		}
+ 		err = request_irq(vipi, mpic_ipi_action,
+ 				  IRQF_DISABLED|IRQF_PERCPU,
+-				  ipi_names[i], mpic);
++				  ipi_names[i], (void *)i);
+ 		if (err) {
+-			printk(KERN_ERR "Request of irq %d for IPI %d failed\n",
++			printk(KERN_ERR "Request of irq %d for IPI %ld failed\n",
+ 			       vipi, i);
+ 			break;
+ 		}
