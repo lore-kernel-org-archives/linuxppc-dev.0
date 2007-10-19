@@ -1,19 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Date: Thu, 18 Oct 2007 21:03:45 -0500
+From: Olof Johansson <olof@lixom.net>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] [2/2] powerpc: Switch to generic WARN_ON()/BUG_ON()
+Message-ID: <20071019020345.GB28359@lixom.net>
+References: <20071011171211.GB10877@lixom.net>
+	<20071011171413.GC10877@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18200.3600.459275.823335@cargo.ozlabs.ibm.com>
-Date: Fri, 19 Oct 2007 11:53:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
-In-Reply-To: <471777BD.8090800@ru.mvista.com>
-References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
-	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
-	<47161C38.2070305@ru.mvista.com>
-	<18198.44590.721412.314409@cargo.ozlabs.ibm.com>
-	<471777BD.8090800@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+In-Reply-To: <20071011171413.GC10877@lixom.net>
+Cc: grundler@parisc-linux.org, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
+[POWERPC] Switch to generic WARN_ON()/BUG_ON()
 
->     And now you have incomplete read_persistent_clock() implementation for 
+Not using the ppc-specific WARN_ON/BUG_ON constructs actually saves about
+4K text on a ppc64_defconfig. The main reason seems to be that prepping
+the arguments to the conditional trap instructions is more work than
+just doing a compare and branch.
 
-I don't see anything incomplete about it.  If you do, feel free to
-post a patch.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-> example, god knows why it was preferred to mine -- well, it also implemented 
-
-Your most recent post of your patch to implement read_persistent_clock
-was in May -- five months ago -- and you said this about it: "This
-patch hasn't received a good testing though".
-
-You don't have to be a god to figure out why I preferred a patch that
-had been tested, where the author was responding to comments and
-posting updated versions of his patch in the period leading up to the
-merge window, over that.
-
->     Well, that's up to you.  I take it you wouldn't accept a patch 
-> implementing auto-reload mode?
-
-I already told you.  Show me numbers (real measurements showing that
-it's better) and I'll consider it.
-
->     There are. I'll have to send patches (it's not that I have time for this) 
-> but this is surely the fastest way to get things fixed (if I don't get ignored 
-> that is).
-
-All of us only get stuff in by spending the time to develop patches
-and posting them for comment.  Stop whinging.
-
->     I just wanted the reasons clarified and got what I wanted -- as I thought, 
-> the decision behind preferring patches was somewhat biased, nobody really 
-> cared about code quality or just wasn't familiar with hrtimers enough to judge 
-> on the code quality...
-
-You really know how to persuade people to cooperate, don't you...  :P
-
-Paul.
+Index: k.org/include/asm-powerpc/bug.h
+===================================================================
+--- k.org.orig/include/asm-powerpc/bug.h
++++ k.org/include/asm-powerpc/bug.h
+@@ -54,12 +54,6 @@
+ 	".previous\n"
+ #endif
+ 
+-/*
+- * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
+- * optimisations. However depending on the complexity of the condition
+- * some compiler versions may not produce optimal results.
+- */
+-
+ #define BUG() do {						\
+ 	__asm__ __volatile__(					\
+ 		"1:	twi 31,0,0\n"				\
+@@ -69,20 +63,6 @@
+ 	for(;;) ;						\
+ } while (0)
+ 
+-#define BUG_ON(x) do {						\
+-	if (__builtin_constant_p(x)) {				\
+-		if (x)						\
+-			BUG();					\
+-	} else {						\
+-		__asm__ __volatile__(				\
+-		"1:	"PPC_TLNEI"	%4,0\n"			\
+-		_EMIT_BUG_ENTRY					\
+-		: : "i" (__FILE__), "i" (__LINE__), "i" (0),	\
+-		  "i" (sizeof(struct bug_entry)),		\
+-		  "r" ((__force long)(x)));			\
+-	}							\
+-} while (0)
+-
+ #define __WARN() do {						\
+ 	__asm__ __volatile__(					\
+ 		"1:	twi 31,0,0\n"				\
+@@ -92,23 +72,6 @@
+ 		  "i" (sizeof(struct bug_entry)));		\
+ } while (0)
+ 
+-#define WARN_ON(x) ({						\
+-	int __ret_warn_on = !!(x);				\
+-	if (__builtin_constant_p(__ret_warn_on)) {		\
+-		if (__ret_warn_on)				\
+-			__WARN();				\
+-	} else {						\
+-		__asm__ __volatile__(				\
+-		"1:	"PPC_TLNEI"	%4,0\n"			\
+-		_EMIT_BUG_ENTRY					\
+-		: : "i" (__FILE__), "i" (__LINE__),		\
+-		  "i" (BUGFLAG_WARNING),			\
+-		  "i" (sizeof(struct bug_entry)),		\
+-		  "r" (__ret_warn_on));				\
+-	}							\
+-	unlikely(__ret_warn_on);				\
+-})
+-
+ #endif /* __ASSEMBLY __ */
+ #endif /* CONFIG_BUG */
+ 
