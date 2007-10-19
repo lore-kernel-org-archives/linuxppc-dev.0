@@ -1,19 +1,30 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 001FCDDE23
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:35:04 +1000 (EST)
-In-Reply-To: <20071019013048.GC30283@localhost.localdomain>
-References: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
-	<20071019013048.GC30283@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <83c7a6126bf86eaf90c6744ba43df3df@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: Merge dtc
-Date: Fri, 19 Oct 2007 00:34:53 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Sam Ravnborg <sam@ravnborg.org>
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C8039DDE48
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:36:42 +1000 (EST)
+Date: Fri, 19 Oct 2007 13:36:24 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [NET]: Fix possible dev_deactivate race condition
+Message-ID: <20071019053624.GA10560@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	<20071019023219.GB8453@gondor.apana.org.au>
+	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+	<20071019042025.GA9617@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	netdev@vger.kernel.org, akpm@linux-foundation.org,
+	Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,85 +34,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 18, 2007, at 8:30 PM, David Gibson wrote:
-
-> On Thu, Oct 18, 2007 at 12:49:54PM -0500, Milton Miller wrote:
->> On Tue Oct 16 15:02:17 EST 2007, David Gibson wrote:
->>> Too big for the list, full patch at
->>> http://ozlabs.org/~dgibson/home/merge-dtc.patch+
->>
->> So split it up.   The obvious one is "here is the unique content, then
->> copy these files from dtc git" would have been better.
+On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
 >
-> *facepalm*
->
-> The point of the small patches thing is not to glom together logically
-> separate patches.  It's *not* to split patches up simply for the sake
-> of making them smaller.
+> In fact this bug exists elsewhere too.  For example, the network
+> stack does this in net/sched/sch_generic.c:
+> 
+>         /* Wait for outstanding qdisc_run calls. */
+> 	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+> 		yield();
+> 
+> This has the same problem as the current synchronize_irq code.
 
-The point of posting on the list is to encourage review before merging. 
-  Hiding them behind a download means a lot fewer people are looking at 
-the code.
+OK here is the fix for that case.
 
-> You've suggested the closest thing to a logical split here, but even
-> then - the dtc files are dead without the Makefile changes, and the
-> Makefile changes won't build without the dtc files (so the patches
-> would have to go in reversed order to what you suggest).
->
-> Not to mention that the Makefile patch will be tiny and the raw import
-> will still be way too big for the list.
+[NET]: Fix possible dev_deactivate race condition
 
-I'm talking about split for review, not necessarily merge.
+The function dev_deactivate is supposed to only return when
+all outstanding transmissions have completed.  Unfortunately
+it is possible for store operations in the driver's transmit
+function to only become visible after dev_deactivate returns.
 
-We split by function for review so that different people pay closer 
-attention to their areas of intrest and speciality.  This helps prevent 
-people being distracted by the bulk.
+This patch fixes this by taking the queue lock after we see
+the end of the queue run.  This ensures that all effects of
+any previous transmit calls are visible.
 
-The files that are verbatim from the other project have been reviewed 
-in that project (at least in theory), and therefore are not likely to 
-draw comments.   Especially since they are (1) shadows from another 
-project and (2) host files, there is more flexibility and less review 
-required, eg relaxed coding standards, correctness already tested, and 
-in this case multiple platform testing.
+If however we detect that there is another queue run occuring,
+then we'll warn about it because this should never happen as
+we have pointed dev->qdisc to noop_qdisc within the same queue
+lock earlier in the functino.
 
-Sam's suggestion to split the generated files was because they require 
-no review other than for damage.
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 
-In contrast, the files such as the make rules are original and unique 
-to this import, and therefore draw comments during review.  If you 
-weren't asking for a review, why did you post to the mailing list?
-
-Oh, and the files being in the tree but dead is fine from a bisect 
-standpoint.  The patch can be reverted if the makefile doesn't go in 
-(not that a maintainer would commit them separately).
-
->> I finally went and looked at the url.  The Kbuild integration is 
->> wrong.
->
-> Wrong?  Not how you'd prefer them perhaps...
-
-Wrong in that its unlike every other program that Kbuild makes.
-
->>   It should build dtc in dtc-src and run the binary from there, and 
->> the
->> rules should be in a Kconfig as a normal host-target in that 
->> directory.
->
-> Why?  This approach has the advantage that the subdirectory contains
-> *only* verbatim imported files, which could well make updates simpler.
-
-The file name Kbuild is unlikely to conflict with a file from that 
-other repository.  It doesn't contain all the files in that repository 
-(or even all in a subdirectory) so there is some filtering going on 
-anyways.
-
->    (I don't have a problem with that Kbuild including Makefie.dtc).
->>
->> things like the dependancy on scripts_basic in the top level
->> Makefile.
->
-> I'm not even sure what you mean by this.
-
-I was trying to give a hint where you could find "compile programs in 
-that directory so I can run them here" for you to draw upon.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index e01d576..b3b7420 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -556,6 +556,7 @@ void dev_deactivate(struct net_device *dev)
+ {
+ 	struct Qdisc *qdisc;
+ 	struct sk_buff *skb;
++	int running;
+ 
+ 	spin_lock_bh(&dev->queue_lock);
+ 	qdisc = dev->qdisc;
+@@ -571,12 +572,31 @@ void dev_deactivate(struct net_device *dev)
+ 
+ 	dev_watchdog_down(dev);
+ 
+-	/* Wait for outstanding dev_queue_xmit calls. */
++	/* Wait for outstanding qdisc-less dev_queue_xmit calls. */
+ 	synchronize_rcu();
+ 
+ 	/* Wait for outstanding qdisc_run calls. */
+-	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+-		yield();
++	do {
++		while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
++			yield();
++
++		/*
++		 * Double-check inside queue lock to ensure that all effects
++		 * of the queue run are visible when we return.
++		 */
++		spin_lock_bh(&dev->queue_lock);
++		running = test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
++		spin_unlock_bh(&dev->queue_lock);
++
++		/*
++		 * The running flag should never be set at this point because
++		 * we've already set dev->qdisc to noop_qdisc *inside* the same
++		 * pair of spin locks.  That is, if any qdisc_run starts after
++		 * our initial test it should see the noop_qdisc and then
++		 * clear the RUNNING bit before dropping the queue lock.  So
++		 * if it is set here then we've found a bug.
++		 */
++	} while (WARN_ON_ONCE(running));
+ }
+ 
+ void dev_init_scheduler(struct net_device *dev)
