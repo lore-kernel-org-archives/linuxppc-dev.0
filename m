@@ -1,31 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6D4BBDDE22
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 16:23:16 +1000 (EST)
-Date: Fri, 19 Oct 2007 13:53:33 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-ID: <20071019055333.GA10748@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-	<1192745137.7367.40.camel@pasglop>
-	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	<1192749449.7367.51.camel@pasglop>
-	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	<20071019023219.GB8453@gondor.apana.org.au>
-	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	<1192767073.7367.84.camel@pasglop>
-	<1192768014.7367.96.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1192768014.7367.96.camel@pasglop>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
+Return-Path: <rob@landley.net>
+Received: from grelber.thyrsus.com
+	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
+	by ozlabs.org (Postfix) with ESMTP id 60813DDE2C
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 16:28:10 +1000 (EST)
+From: Rob Landley <rob@landley.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/2] qemu platform, v2
+Date: Fri, 19 Oct 2007 01:28:02 -0500
+References: <boot-8-00.miltonm@bga.com>
+	<440d60abf1ef533839cf5d9beb0584c9@bga.com>
+	<fa686aa40710181029o6852b1b0pf6259f27cabfd085@mail.gmail.com>
+In-Reply-To: <fa686aa40710181029o6852b1b0pf6259f27cabfd085@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710190128.02537.rob@landley.net>
+Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 02:26:54PM +1000, Benjamin Herrenschmidt wrote:
+On Thursday 18 October 2007 12:29:08 pm Grant Likely wrote:
+> On 10/18/07, Milton Miller <miltonm@bga.com> wrote:
+> > If we say only some boards or ports are special and need to build then
+> > I would vote for shipping asm files.  If we think we need to build any
+> > random embedded platform without installing dtc then we should merge
+> > dtc.
 >
-> I think a simple smp_mb(); here after foo = 1; is enough, which means
-> basically just having an smp_mp(); inside napi_synchronize(), before
-> the test_bit(). Or do I miss something ?
+> I don't think we do.  It's looking like there are going to be out of
+> tree users of dtc also (The are some patches floating around for
+> u-boot to use the device tree for it's own initialization).  I don't
+> think it's unreasonable to install dtc for embedded development.
 
-Yes I think you're right.  In this case we do have barriers
-everywhere else so this should work.
+There are out of tree users of yacc and lex, but the kernel has *.c_shipped 
+files so as not to require that external tool of people who simply want to 
+build the sucker without modifying it.  "make oldconfig" was modified not to 
+require curses.
 
-Although if you want napi_synchronize to have the property that
-when it returns all NAPI processing effects are visible then
-you'd need another smp_mb() after the loop.
+How about *.S_shipped files?
 
-Cheers,
+> I like the idea of shipping asm files to support the qemu target; at
+> least until qemu gets better firmware.
+
+I've now gotten qemu to boot a kernel I built, using Milton's 1/2 patch and a 
+a self-contained build of a 4k ppc_boot.rom (which includes the dtc source 
+because I don't expect anybody else to have it installed, either).  
+Description and links to source, binaries, and build scripts in this message:
+
+http://lists.gnu.org/archive/html/qemu-devel/2007-10/msg00415.html
+
+There's a problem with qemu-cvs (detailed in the message), but qemu-system-ppc 
+0.9.0 boots fine, up to a shell prompt.
+
+> Cheers,
+> g.
+
+Rob
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
