@@ -1,19 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 8D22FDDEDC
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 09:43:14 +1000 (EST)
-Date: Fri, 19 Oct 2007 18:49:50 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: mpic: minor optimization of ipi handler
-Message-ID: <20071019234950.GA18112@lixom.net>
-References: <20071019185110.GA11911@lixom.net>
-	<1192835859.17235.12.camel@pasglop>
-	<20071019233134.GA17851@lixom.net>
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from mail3-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B2901DDE3F
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 09:43:52 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071019233134.GA17851@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, jgarzik@pobox.com
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH v3] Device tree bindings for Xilinx devices
+Date: Fri, 19 Oct 2007 16:42:58 -0700
+In-Reply-To: <20071018190555.8EE7177805F@mail76-sin.bigfish.com>
+References: <20071018172259.14948.74736.stgit@trillian.cg.shawcable.net><20071018174956.05D7A1AA008D@mail197-blu.bigfish.com><fa686aa40710181112pbe37a18xb21b7c5bcbe973b6@mail.gmail.com>
+	<20071018190555.8EE7177805F@mail76-sin.bigfish.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>
+Message-Id: <20071019234347.38C1111C006B@mail3-dub.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org, Leonid <Leonid@a-k-a.net>,
+	Wolfgang Reissnegger <wre@xilinx.com>,
+	Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,83 +28,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Optimize MPIC IPIs, by passing in the IPI number as the argument to the
-handler, since all we did was translate it back based on which mpic
-the interrupt came though on (and that was always the primary mpic).
 
+Here's a full .dts generated using an updated version of
+gen_mhs_devtree.py, following the proposal.
+It happens to be a microblaze system, but you get the idea.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Grant: Is this pretty what you intend?
 
+Steve
 
----
-
-On Fri, Oct 19, 2007 at 06:31:34PM -0500, Olof Johansson wrote:
-> On Sat, Oct 20, 2007 at 09:17:39AM +1000, Benjamin Herrenschmidt wrote:
-> > 
-> > On Fri, 2007-10-19 at 13:51 -0500, Olof Johansson wrote:
-> > > Jeff Garzik pointed out that we don't actually have to lookup the mpic
-> > > instance since it's passed in as the interrupt handler data for IPIs.
-> > 
-> > Note that's typically one of the annoying case where we use "irq"
-> > for a good reasons, getting the way of Jeff attempt at removing
-> > this argument.
-> > 
-> > I suppose a working approach would be to have 4 mpic IPI handlers...
-> 
-> We still need the _irq_, but we don't need to lookup the mpic based on it.
-> 
-> We knew the mpic pointer at irq setup time, and passed it in as the
-> argument to pass to the handler. Doing a second lookup is just extra
-> overhead, it should return the same controller:
-
-Oh, I see what you mean. You didn't make it easy to parse. :)
-
-This should actually do the work.
-
--Olof
-
-
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index e479388..a8d7c68 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -614,10 +614,9 @@ static inline void mpic_eoi(struct mpic *mpic)
- #ifdef CONFIG_SMP
- static irqreturn_t mpic_ipi_action(int irq, void *data)
- {
--	struct mpic *mpic;
-+	long ipi = (long)data;
- 
--	mpic = mpic_find(irq, NULL);
--	smp_message_recv(mpic_irq_to_hw(irq) - mpic->ipi_vecs[0]);
-+	smp_message_recv(ipi);
- 
- 	return IRQ_HANDLED;
- }
-@@ -1457,7 +1456,7 @@ unsigned int mpic_get_irq(void)
- void mpic_request_ipis(void)
- {
- 	struct mpic *mpic = mpic_primary;
--	int i, err;
-+	long i, err;
- 	static char *ipi_names[] = {
- 		"IPI0 (call function)",
- 		"IPI1 (reschedule)",
-@@ -1472,14 +1471,14 @@ void mpic_request_ipis(void)
- 		unsigned int vipi = irq_create_mapping(mpic->irqhost,
- 						       mpic->ipi_vecs[0] + i);
- 		if (vipi == NO_IRQ) {
--			printk(KERN_ERR "Failed to map IPI %d\n", i);
-+			printk(KERN_ERR "Failed to map IPI %ld\n", i);
- 			break;
- 		}
- 		err = request_irq(vipi, mpic_ipi_action,
- 				  IRQF_DISABLED|IRQF_PERCPU,
--				  ipi_names[i], mpic);
-+				  ipi_names[i], (void *)i);
- 		if (err) {
--			printk(KERN_ERR "Request of irq %d for IPI %d failed\n",
-+			printk(KERN_ERR "Request of irq %d for IPI %ld failed\n",
- 			       vipi, i);
- 			break;
- 		}
+/ {
+	#address-cells =3D <1>;
+	#size-cells =3D <1>;
+	compatible =3D "ibm,plb4";
+	model =3D "system.mhs";
+	Ethernet_MAC {
+		compatible =3D
+"xilinx,opb-ethernet-1.04.a\0xilinx,opb-ethernet";
+		device_type =3D "opb_ethernet";
+		interrupt-parent =3D <101>;
+		interrupts =3D < 1 0 >;
+		reg =3D < 40c00000 10000 >;
+		xilinx,cam-exist =3D <0>;
+		xilinx,dev-blk-id =3D <0>;
+		xilinx,dev-mir-enable =3D <0>;
+		xilinx,dma-present =3D <1>;
+		xilinx,include-dev-pencoder =3D <0>;
+		xilinx,ipif-rdfifo-depth =3D <4000>;
+		xilinx,ipif-wrfifo-depth =3D <4000>;
+		xilinx,jumbo-exist =3D <0>;
+		xilinx,mac-fifo-depth =3D <10>;
+		xilinx,mii-exist =3D <1>;
+		xilinx,opb-clk-period-ps =3D <2710>;
+		xilinx,reset-present =3D <1>;
+		xilinx,rx-dre-type =3D <0>;
+		xilinx,rx-include-csum =3D <0>;
+		xilinx,tx-dre-type =3D <0>;
+		xilinx,tx-include-csum =3D <0>;
+	} ;
+	IIC_EEPROM {
+		compatible =3D "xilinx,opb-iic-1.02.a\0xilinx,opb-iic";
+		device_type =3D "opb_iic";
+		interrupt-parent =3D <101>;
+		interrupts =3D < 2 0 >;
+		reg =3D < 40800000 10000 >;
+		xilinx,clk-freq =3D <5f5e100>;
+		xilinx,iic-freq =3D <186a0>;
+		xilinx,ten-bit-adr =3D <0>;
+	} ;
+	RS232_Uart_1 {
+		compatible =3D
+"xilinx,opb-uartlite-1.00.b\0xilinx,opb-uartlite";
+		device_type =3D "opb_uartlite";
+		interrupt-parent =3D <101>;
+		interrupts =3D < 3 0 >;
+		reg =3D < 40600000 10000 >;
+		xilinx,baudrate =3D <2580>;
+		xilinx,clk-freq =3D <5f5e100>;
+		xilinx,data-bits =3D <8>;
+		xilinx,odd-parity =3D <0>;
+		xilinx,use-parity =3D <0>;
+	} ;
+	chosen {
+		bootargs =3D "root=3D/dev/xsysace/disc0/part2";
+		interrupt-controller =3D <101>;
+		linux,platform =3D <600>;
+	} ;
+	cpus {
+		#address-cells =3D <1>;
+		#cpus =3D <1>;
+		#size-cells =3D <0>;
+		microblaze_0,6.00. {
+			32-bit;
+			clock-frequency =3D <5f5e1000>;
+			d-cache-line-size =3D <10>;
+			d-cache-size =3D <4000>;
+			device_type =3D "cpu";
+			i-cache-line-size =3D <10>;
+			i-cache-size =3D <4000>;
+			linux,boot-cpu;
+			reg =3D <0>;
+			timebase-frequency =3D <1fca055>;
+			xilinx,cache-byte-size =3D <4000>;
+			xilinx,dcache-baseaddr =3D <50000000>;
+			xilinx,dcache-byte-size =3D <4000>;
+			xilinx,dcache-highaddr =3D <5fffffff>;
+			xilinx,debug-enabled =3D <1>;
+			xilinx,div-zero-exception =3D <1>;
+			xilinx,dopb-bus-exception =3D <1>;
+			xilinx,fpu-exception =3D <1>;
+			xilinx,icache-baseaddr =3D <50000000>;
+			xilinx,icache-highaddr =3D <5fffffff>;
+			xilinx,ill-opcode-exception =3D <1>;
+			xilinx,iopb-bus-exception =3D <1>;
+			xilinx,number-of-pc-brk =3D <2>;
+			xilinx,pvr =3D <2>;
+			xilinx,unaligned-exceptions =3D <1>;
+			xilinx,use-barrel =3D <1>;
+			xilinx,use-dcache =3D <1>;
+			xilinx,use-div =3D <1>;
+			xilinx,use-fpu =3D <1>;
+			xilinx,use-icache =3D <1>;
+			xilinx,use-msr-instr =3D <1>;
+			xilinx,use-pcmp-instr =3D <1>;
+		} ;
+	} ;
+	debug_module {
+		compatible =3D "xilinx,opb-mdm-2.00.a\0xilinx,opb-mdm";
+		device_type =3D "opb_mdm";
+		reg =3D < 41400000 10000 >;
+		xilinx,mb-dbg-ports =3D <1>;
+		xilinx,uart-width =3D <8>;
+		xilinx,use-uart =3D <1>;
+	} ;
+	memory@50000000 {
+		device_type =3D "memory";
+		edk_name =3D "DDR2_SDRAM_32Mx32";
+		memreg:reg =3D < 50000000 10000000 >;
+	} ;
+	opb_hwicap_0 {
+		compatible =3D
+"xilinx,opb-hwicap-1.10.a\0xilinx,opb-hwicap";
+		device_type =3D "opb_hwicap";
+		reg =3D < 41300000 10000 >;
+	} ;
+	opb_intc_0 {
+		#interrupt-cells =3D <2>;
+		compatible =3D "xilinx,opb-intc-1.00.c\0xilinx,opb-intc";
+		device_type =3D "opb_intc";
+		interrupt-controller;
+		linux,phandle =3D <101>;
+		reg =3D < 41200000 10000 >;
+	} ;
+	opb_timer_1 {
+		compatible =3D
+"xilinx,opb-timer-1.00.b\0xilinx,opb-timer";
+		device_type =3D "opb_timer";
+		interrupt-parent =3D <101>;
+		interrupts =3D < 0 0 >;
+		reg =3D < 41c00000 10000 >;
+		xilinx,count-width =3D <20>;
+		xilinx,one-timer-only =3D <1>;
+	} ;
+} ;=20
