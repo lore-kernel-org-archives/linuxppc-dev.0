@@ -1,13 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84D58DDEBA
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:35:51 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 44D80DDF23
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:48:21 +1000 (EST)
+Date: Fri, 19 Oct 2007 12:48:06 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
+Message-ID: <20071019044806.GA10080@gondor.apana.org.au>
 References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
 	<1192745137.7367.40.camel@pasglop>
 	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
@@ -17,15 +18,12 @@ References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
 	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
 	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
 	<20071019042025.GA9617@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 14:35:10 +1000
-Message-Id: <1192768510.7367.104.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
-Reply-To: benh@kernel.crashing.org
+	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,52 +33,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
+>
+> That's why I think this patch is in fact the only one that
+> solves all the races in this thread.  The case that it solves
+> which the lock/unlock patch does not is the one where action
+> flows downwards past the clearing of IRQ_INPROGRESS.  I missed
+> this case earlier.
 
-> What may happen is that action can either float upwards to give
-> 
-> 	spin_lock
-> 	action
-> 	set IRQ_INPROGRESS
-> 	spin_unlock
-> 
-> 	spin_lock
-> 	clear IRQ_INPROGRESS
-> 	spin_unlock
-> 
-> or it can float downwards to give
-> 
-> 	spin_lock
-> 	set IRQ_INPROGRESS
-> 	spin_unlock
-> 
-> 	spin_lock
-> 	clear IRQ_INPROGRESS
-> 	action
-> 	spin_unlock
-> 
+OK, here is the patch again with a changelog:
 
-Well, we are generally safer here. That is, unless action is a store,
-it will not pass spin_lock, at least not on powerpc afaik.
+[IRQ]: Fix synchronize_irq races with IRQ handler
 
-In fact, if action, as it is in our case, is something like
+As it is some callers of synchronize_irq rely on memory barriers
+to provide synchronisation against the IRQ handlers.  For example,
+the tg3 driver does
 
-if (foo)
-	return;
+	tp->irq_sync = 1;
+	smp_mb();
+	synchronize_irq();
 
-We cant execute the store inside spin_lock() without having loaded
-foo, there is an implicit dependency here.
+and then in the IRQ handler:
 
-But anyway, Linus patch fixes that too if it was a problem. Now if
-we grep for while (test_bit and while (!test_bit I'm sure we'll find
-other similar surprises.
+	if (!tp->irq_sync)
+		netif_rx_schedule(dev, &tp->napi);
 
-That's also one of the reasons why I _love_ nick patches that add a
-proper lock/unlock API on bits, because at least those who are doing
-those hand-made pseudo-locks with bitops to save space will be
-getting a proper lock/unlock API, no more excuse.
+Unfortunately memory barriers only work well when they come in
+pairs.  Because we don't actually have memory barriers on the
+IRQ path, the memory barrier before the synchronize_irq() doesn't
+actually protect us.
 
-The network stack is doing more fancy things so it's harder (though I
-wonder sometimes if it's really worth the risks taken for not using
-spinlocks... maybe).
+In particular, synchronize_irq() may return followed by the
+result of netif_rx_schedule being made visible.
 
-Ben.
+This patch (mostly written by Linus) fixes this by using spin
+locks instead of memory barries on the synchronize_irq() path.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 80eab7a..1f31422 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -29,12 +29,28 @@
+ void synchronize_irq(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_desc + irq;
++	unsigned int status;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	do {
++		unsigned long flags;
++
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/* Ok, that indicated we're done: double-check carefully. */
++		spin_lock_irqsave(&desc->lock, flags);
++		status = desc->status;
++		spin_unlock_irqrestore(&desc->lock, flags);
++
++		/* Oops, that failed? */
++	} while (status & IRQ_INPROGRESS);
+ }
+ EXPORT_SYMBOL(synchronize_irq);
+ 
