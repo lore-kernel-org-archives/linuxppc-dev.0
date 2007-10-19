@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 327DBDDF06
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:29:42 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 84D58DDEBA
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:35:51 +1000 (EST)
 Subject: Re: [PATCH] synchronize_irq needs a barrier
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Herbert Xu <herbert@gondor.apana.org.au>
@@ -18,8 +18,8 @@ References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
 	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
 	<20071019042025.GA9617@gondor.apana.org.au>
 Content-Type: text/plain
-Date: Fri, 19 Oct 2007 14:29:03 +1000
-Message-Id: <1192768143.7367.98.camel@pasglop>
+Date: Fri, 19 Oct 2007 14:35:10 +1000
+Message-Id: <1192768510.7367.104.camel@pasglop>
 Mime-Version: 1.0
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
@@ -36,25 +36,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-10-19 at 12:20 +0800, Herbert Xu wrote:
+> What may happen is that action can either float upwards to give
 > 
-> That's why I think this patch is in fact the only one that
-> solves all the races in this thread.  The case that it solves
-> which the lock/unlock patch does not is the one where action
-> flows downwards past the clearing of IRQ_INPROGRESS.  I missed
-> this case earlier.
+> 	spin_lock
+> 	action
+> 	set IRQ_INPROGRESS
+> 	spin_unlock
 > 
-> In fact this bug exists elsewhere too.  For example, the network
-> stack does this in net/sched/sch_generic.c:
+> 	spin_lock
+> 	clear IRQ_INPROGRESS
+> 	spin_unlock
 > 
->         /* Wait for outstanding qdisc_run calls. */
->         while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
->                 yield();
+> or it can float downwards to give
 > 
-> This has the same problem as the current synchronize_irq code.
+> 	spin_lock
+> 	set IRQ_INPROGRESS
+> 	spin_unlock
+> 
+> 	spin_lock
+> 	clear IRQ_INPROGRESS
+> 	action
+> 	spin_unlock
+> 
 
-The network stack always made be nervous with it's bitops use as locks.
-Any loop of test_bit() alone as a synchronisation method, without locks
-or barriers is, imho, inherently buggy.
+Well, we are generally safer here. That is, unless action is a store,
+it will not pass spin_lock, at least not on powerpc afaik.
+
+In fact, if action, as it is in our case, is something like
+
+if (foo)
+	return;
+
+We cant execute the store inside spin_lock() without having loaded
+foo, there is an implicit dependency here.
+
+But anyway, Linus patch fixes that too if it was a problem. Now if
+we grep for while (test_bit and while (!test_bit I'm sure we'll find
+other similar surprises.
+
+That's also one of the reasons why I _love_ nick patches that add a
+proper lock/unlock API on bits, because at least those who are doing
+those hand-made pseudo-locks with bitops to save space will be
+getting a proper lock/unlock API, no more excuse.
+
+The network stack is doing more fancy things so it's harder (though I
+wonder sometimes if it's really worth the risks taken for not using
+spinlocks... maybe).
 
 Ben.
