@@ -1,21 +1,25 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B557DDDEE0
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 01:39:57 +1000 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
-Date: Fri, 19 Oct 2007 19:37:23 +0400
-References: <200710181108.19413.yur@emcraft.com>
-	<18199.60025.563689.10810@cargo.ozlabs.ibm.com>
-In-Reply-To: <18199.60025.563689.10810@cargo.ozlabs.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.238])
+	by ozlabs.org (Postfix) with ESMTP id 3869DDDF62
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 01:41:49 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so82730nzh
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 08:41:48 -0700 (PDT)
+Message-ID: <fa686aa40710190841q4f0c5ceao29ee55cc7fa2ff04@mail.gmail.com>
+Date: Fri, 19 Oct 2007 09:41:47 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Li Yang" <leoli@freescale.com>
+Subject: Re: [PATCH v7 5/9] add documentation for SATA nodes
+In-Reply-To: <1192793930-26039-6-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710191937.23638.yur@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1192793930-26039-1-git-send-email-leoli@freescale.com>
+	<1192793930-26039-2-git-send-email-leoli@freescale.com>
+	<1192793930-26039-3-git-send-email-leoli@freescale.com>
+	<1192793930-26039-4-git-send-email-leoli@freescale.com>
+	<1192793930-26039-5-git-send-email-leoli@freescale.com>
+	<1192793930-26039-6-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 19 October 2007 03:21, Paul Mackerras wrote:
-> Have you measured the performance using a 64kB page size?  If so, how
-> does it compare with the 256kB page size?
+On 10/19/07, Li Yang <leoli@freescale.com> wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   32 ++++++++++++++++++++++++++
+>  1 files changed, 32 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index a96e853..8d49942 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -2242,6 +2242,38 @@ platforms are moved over to use the flattened-device-tree model.
+>                            available.
+>                            For Axon: 0x0000012a
+>
+> +    o) SATA nodes
+> +
+> +    SATA nodes are defined to describe on-chip Serial ATA controllers.
+> +
+> +    Required properties:
+> +
+> +    - compatible : Should specify what this SATA controller is compatible
+> +      with.
+> +    - reg : Offset and length of the register set for the device.
+> +    - interrupts : <a b> where a is the interrupt number and b is a
+> +      field that represents an encoding of the sense and level
+> +      information for the interrupt.  This should be encoded based on
+> +      the information in section 2) depending on the type of interrupt
+> +      controller you have.
+> +    - interrupt-parent : the phandle for the interrupt controller that
+> +      services interrupts for this device.
+> +
+> +    Recommended properties :
+> +
+> +    - phy-handle : Some SATA controller uses a shared SerDes PHY. This
+> +      property should specify the phandle of the SerDes node.
 
- I measured the performance of the sequential full-stripe write operations to
-a RAID-5 array (P values below are in MB per second) using the h/w accelerated
-RAID-5 driver.
+I'm not sure about this property.  Does the driver need to know about
+this?  Will this setup ever change at runtime?  It seems to me that
+like GPIOs and chip selects, setting you which shared PHY goes with
+which device is something that should be done at board setup time.
 
- Here are the comparative results for the different PAGE_SIZE values:
-
-PAGE_SIZE = 4K:
- P = 66 MBps;
-
-PAGE_SIZE = 16K:
- P = 145 MBps;
-
-PAGE_SIZE = 64K:
- P = 196 MBps;
-
-PAGE_SIZE = 256K:
- P = 217 MBps.
-
-> The 64kB page size has the attraction that no binutils changes are
-> required.
-
- That's true, but the additional performance is an attractive thing too.
-
-> 
-> Paul.
-> 
+g.
 
 -- 
-Yuri Tikhonov, Senior Software Engineer
-Emcraft Systems, www.emcraft.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
