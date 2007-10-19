@@ -1,19 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id A21FEDDEDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:49:27 +1000 (EST)
-Message-ID: <471899D1.2000903@ru.mvista.com>
-Date: Fri, 19 Oct 2007 15:49:37 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3866EDDEBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:57:53 +1000 (EST)
+Message-ID: <47189B78.1040709@ru.mvista.com>
+Date: Fri, 19 Oct 2007 15:56:40 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
-References: <20070921032603.0D3EA32C887@thor>	<4713A616.3090103@ru.mvista.com>	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>	<47161D79.6000003@ru.mvista.com>	<18198.43687.44059.477047@cargo.ozlabs.ibm.com>	<47177229.2030200@ru.mvista.com>
-	<18199.63230.583536.307945@cargo.ozlabs.ibm.com>
-In-Reply-To: <18199.63230.583536.307945@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH 2/2] i2c: Add devtree-aware iic support for PPC4xx
+References: <200710151529.11485.sr@denx.de>
+In-Reply-To: <200710151529.11485.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Jean Delvare <khali@linux-fr.org>, linuxppc-dev@ozlabs.org,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +22,366 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Please, take a look at my comments below
 
-Paul Mackerras wrote:
+Stefan Roese wrote:
+> This patch reworks existing ibm-iic driver to support of_platform_device
+> and enables it to talk to device tree directly. The "old" OCP interface
+> for arch/ppc is still supported via #ifdef's and shall be removed when
+> arch/ppc is gone in a few months.
+> 
+> This is done to enable I2C support for the PPC4xx platforms now
+> being moved from arch/ppc (ocp) to arch/powerpc (of).
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> ---
+>  drivers/i2c/busses/Kconfig       |    2 +-
+>  drivers/i2c/busses/i2c-ibm_iic.c |  209 +++++++++++++++++++++++++++++++++++++-
+>  drivers/i2c/busses/i2c-ibm_iic.h |    2 +
+>  3 files changed, 211 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index de95c75..a47b5e6 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -241,7 +241,7 @@ config I2C_PIIX4
+>  
+>  config I2C_IBM_IIC
+>  	tristate "IBM PPC 4xx on-chip I2C interface"
+> -	depends on IBM_OCP
+> +	depends on 4xx
+>  	help
+>  	  Say Y here if you want to use IIC peripheral found on 
+>  	  embedded IBM PPC 4xx based systems. 
+> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+> index 956b947..78c6bf4 100644
+> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> @@ -39,8 +39,13 @@
+>  #include <asm/io.h>
+>  #include <linux/i2c.h>
+>  #include <linux/i2c-id.h>
+> +
+> +#ifdef CONFIG_PPC_MERGE
+> +#include <linux/of_platform.h>
+> +#else
+>  #include <asm/ocp.h>
+>  #include <asm/ibm4xx.h>
+> +#endif
+>  
+>  #include "i2c-ibm_iic.h"
+>  
+> @@ -57,6 +62,10 @@ static int iic_force_fast;
+>  module_param(iic_force_fast, bool, 0);
+>  MODULE_PARM_DESC(iic_fast_poll, "Force fast mode (400 kHz)");
+>  
+> +#ifdef CONFIG_PPC_MERGE
+> +static int device_idx = -1;
+> +#endif
+> +
+>  #define DBG_LEVEL 0
+>  
+>  #ifdef DBG
+> @@ -660,8 +669,205 @@ static inline u8 iic_clckdiv(unsigned int opb)
+>  /*
+>   * Register single IIC interface
+>   */
+> -static int __devinit iic_probe(struct ocp_device *ocp){
+>  
+> +#ifdef CONFIG_PPC_MERGE
+> +/*
+> + * device-tree (of) when used from arch/powerpc
+> + */
+> +static int __devinit iic_probe(struct of_device *ofdev,
+> +			       const struct of_device_id *match)
+> +{
+> +	struct ibm_iic_private* dev;
+> +	struct i2c_adapter* adap;
+> +	struct device_node *np;
+> +	int ret = -ENODEV;
+> +	int  irq, len;
+> +	const u32 *prop;
+> +	struct resource res;
+> +
+> +	np = ofdev->node;
+> +	if (!(dev = kzalloc(sizeof(*dev), GFP_KERNEL))) {
+> +		printk(KERN_CRIT "ibm-iic(%s): failed to allocate device data\n",
+> +		       np->full_name);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	dev_set_drvdata(&ofdev->dev, dev);
+> +
+> +	dev->np = np;
+> +	irq = irq_of_parse_and_map(np, 0);
 
->>>What problem do you see arising from this?
+In case of an error irq might be NO_IRQ here (0)
+This could cause problems in chacking the mode (irq or poll) later.
 
->>    Timers firing too early.
+> +
+> +	if (of_address_to_resource(np, 0, &res)) {
+> +		printk(KERN_ERR "ibd-iic(%s): Can't get registers address\n",
+> +		       np->full_name);
+> +		goto fail1;
+> +	}
+> +	dev->paddr = res.start;
+> +
+> +	if (!request_mem_region(dev->paddr, sizeof(struct iic_regs), "ibm_iic")) {
+> +		ret = -EBUSY;
+> +		goto fail1;
+> +	}
+> +	dev->vaddr = ioremap(dev->paddr, sizeof(struct iic_regs));
+> +
+> +	if (dev->vaddr == NULL) {
+> +		printk(KERN_CRIT "ibm-iic(%s): failed to ioremap device regs\n",
+> +		       dev->np->full_name);
+> +		ret = -ENXIO;
+> +		goto fail2;
+> +	}
+> +
+> +	init_waitqueue_head(&dev->wq);
+> +
+> +	dev->irq = iic_force_poll ? -1 : (irq == NO_IRQ) ? -1 : irq;
+> +	if (dev->irq >= 0){
 
-> Only if the minimum interrupt latency is less than 1 decrementer
-> tick.  That seems pretty unlikely to me unless you have a very slow
-> timebase frequency.
+If irq equals NO_IRQ (irq == 0) we shouldn't assume interrupt mode here.
+I'd suggest to update the driver to use (irq != NO_IRQ) checks instead 
+of (irq >=0)
 
-    Well, MPC8540 has 825 MHz CPU clock yet decrementor/timebase are clocked 
-with 25 MHz clock if I don't mistake. That gives us 33 CPU clocks of available 
-interrupt latency...
+> +		/* Disable interrupts until we finish initialization,
+> +		 * assumes level-sensitive IRQ setup...
+> +		 */
+> +		iic_interrupt_mode(dev, 0);
+> +		if (request_irq(dev->irq, iic_handler, 0, "IBM IIC", dev)) {
+> +			printk(KERN_ERR "ibm-iic(%s): request_irq %d failed\n",
+> +			       dev->np->full_name, dev->irq);
+> +			/* Fallback to the polling mode */
+> +			dev->irq = -1;
+> +		}
+> +	}
+> +
+> +	if (dev->irq < 0)
+> +		printk(KERN_WARNING "ibm-iic(%s): using polling mode\n",
+> +		       dev->np->full_name);
+> +
+> +	/* Board specific settings */
+> +	prop = of_get_property(np, "iic-mode", &len);
+> +	/* use 400kHz only if stated in dts, 100kHz otherwise */
+> +	dev->fast_mode = (prop && (*prop == 400));
+> +	/* clckdiv is the same for *all* IIC interfaces,
+> +	 * but I'd rather make a copy than introduce another global. --ebs
+> +	 */
+> +	/* Parent bus should have frequency filled */
+> +	prop = of_get_property(of_get_parent(np), "clock-frequency", &len);
+> +	if (prop == NULL) {
+> +		printk(KERN_ERR
+> +		       "ibm-iic(%s):no clock-frequency prop on parent bus!\n",
+> +		       dev->np->full_name);
+> +		goto fail;
+> +	}
+> +
+[ snip ]
+> +	dev->clckdiv = iic_clckdiv(*prop);
+> +	DBG("%s: clckdiv = %d\n", dev->np->full_name, dev->clckdiv);
+> +
+> +	/* Initialize IIC interface */
+> +	iic_dev_init(dev);
+> +
+> +	/* Register it with i2c layer */
+> +	adap = &dev->adap;
+> +	adap->dev.parent = &ofdev->dev;
+> +	strcpy(adap->name, "IBM IIC");
+> +	i2c_set_adapdata(adap, dev);
+> +	adap->id = I2C_HW_OCP;
+> +	adap->class = I2C_CLASS_HWMON;
+> +	adap->algo = &iic_algo;
+> +	adap->client_register = NULL;
+> +	adap->client_unregister = NULL;
+> +	adap->timeout = 1;
+> +	adap->retries = 1;
+> +
+> +	dev->idx = ++device_idx;
+> +	adap->nr = dev->idx;
+> +	if ((ret = i2c_add_numbered_adapter(adap)) < 0) {
+[ snip ]
 
-> In fact what we should program the decrementer to is:
+This stuff might be extracted into the common init function.
+Something like this:
 
-> 	timeout - (is_booke? 0: 1) - min_interrupt_latency
+static int iic_adap_add(struct ibm_iic_private *dev, unsigned int opb)
+{
+	struct i2c_adapter *adap;
 
-    BTW, why not handle the decrementer difference right in set_dec() where we 
-already have #ifdef'ed code?
+	/* clckdiv is the same for *all* IIC interfaces,
+	 * but I'd rather make a copy than introduce another global. --ebs
+	 */
+	dev->clckdiv = iic_clckdiv(opb);
+	DBG("%d: clckdiv = %d\n", dev->idx, dev->clckdiv);
 
-> I was assuming that min_interrupt_latency (measured in timebase ticks)
-> would be at least 1, but apparently some systems can have a timebase
-> frequency as low as 1kHz, so we'll have to have an ifdef or something.
+	/* Initialize IIC interface */
+	iic_dev_init(dev);
 
-    IMHO it's better to have #ifdef based on the decremeter model and forget 
-about the whole issue, rather than to #ifdef based on some bizarre system with 
-slowish decremeter, isn't it?
+	/* Register it with i2c layer */
+	adap = &dev->adap;
+	strcpy(adap->name, "IBM IIC");
+	i2c_set_adapdata(adap, dev);
+	adap->id = I2C_HW_OCP;
+	adap->class = I2C_CLASS_HWMON;
+	adap->algo = &iic_algo;
+	adap->client_register = NULL;
+	adap->client_unregister = NULL;
+	adap->timeout = 1;
+	adap->retries = 1;
+	return i2c_add_adapter(adap);
+}
 
-> Paul.
+Though, I really don't care, since OCP part is dying.
 
-WBR, Sergei
+> +		printk(KERN_CRIT"ibm-iic(%s): failed to register i2c adapter\n",
+> +		       dev->np->full_name);
+> +		goto fail;
+> +	}
+> +
+> +	printk(KERN_INFO "ibm-iic(%s): using %s mode\n", dev->np->full_name,
+> +	       dev->fast_mode ?
+> +	       "fast (400 kHz)" : "standard (100 kHz)");
+> +
+> +	return 0;
+> +
+> +fail:
+> +	if (dev->irq >= 0){
+> +		iic_interrupt_mode(dev, 0);
+> +		free_irq(dev->irq, dev);
+
+Please, add a call to irq_dispose_mapping(dev->irq);
+
+> +	}
+> +
+> +	iounmap(dev->vaddr);
+> +fail2:
+> +	release_mem_region(dev->paddr, sizeof(struct iic_regs));
+> +fail1:
+> +	dev_set_drvdata(&ofdev->dev, NULL);
+> +	kfree(dev);
+> +
+> +	return ret;
+> +}
+> +
+> +/*
+> + * Cleanup initialized IIC interface
+> + */
+> +static int __devexit iic_remove(struct of_device *ofdev)
+> +{
+> +	struct ibm_iic_private *dev =
+> +		(struct ibm_iic_private *)dev_get_drvdata(&ofdev->dev);
+> +	BUG_ON(dev == NULL);
+> +	if (i2c_del_adapter(&dev->adap)){
+> +		printk(KERN_CRIT "ibm-iic(%s): failed to delete i2c adapter\n",
+> +		       dev->np->full_name);
+> +		/* That's *very* bad, just shutdown IRQ ... */
+> +		if (dev->irq >= 0){
+> +			iic_interrupt_mode(dev, 0);
+> +			free_irq(dev->irq, dev);
+> +			dev->irq = -1;
+> +		}
+> +	} else {
+> +		if (dev->irq >= 0){
+> +			iic_interrupt_mode(dev, 0);
+> +			free_irq(dev->irq, dev);
+> +		}
+
+This can be reorganized to switch to poll mode, diapose irq and check 
+i2c_del_adapter retval after that, instead of duplicating the free_irq 
+stuff.
+Also irq_dispose_mapping(dev->irq); should be added:
+.........
+	int retval;
+
+	retval = i2c_del_adapter(&dev->adap);
+	if (dev->irq != NO_IRQ) {
+		iic_interrupt_mode(dev, 0);
+		free_irq(dev->irq, dev);
+		irq_dispose_mapping(dev->irq);
+	}
+
+	if (retval) {
+		printk(KERN_CRIT "ibm-iic(%s): failed to delete i2c adapter :(\n",
+			dev->np->full_name);
+		/* That's *very* bad, just shutdown IRQ ... */
+		dev->irq = NO_IRQ;
+		return 0;
+	}
+	iounmap(dev->vaddr);
+.......
+
+> +		iounmap(dev->vaddr);
+> +		release_mem_region(dev->paddr, sizeof(struct iic_regs));
+> +		kfree(dev);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static struct of_device_id ibm_iic_match[] = {
+> +	{
+> +		.type = "i2c",
+> +		.compatible = "ibm,iic",
+> +	},
+> +	{},
+> +};
+> +
+> +MODULE_DEVICE_TABLE(of, ibm_iic_match);
+> +
+> +static struct of_platform_driver ibm_iic_driver = {
+> +	.name = "ibm-iic",
+> +	.match_table = ibm_iic_match,
+> +	.probe = iic_probe,
+> +	.remove = iic_remove,
+> +#if defined(CONFIG_PM)
+> +	.suspend = NULL,
+> +	.resume = NULL,
+> +#endif
+> +};
+> +
+> +static int __init iic_init(void)
+> +{
+> +	printk(KERN_INFO "IBM IIC driver v" DRIVER_VERSION "\n");
+> +	return of_register_platform_driver(&ibm_iic_driver);
+> +}
+> +
+> +static void __exit iic_exit(void)
+> +{
+> +	of_unregister_platform_driver(&ibm_iic_driver);
+> +}
+> +#else
+> +/*
+> + * OCP when used from arch/ppc
+> + */
+> +static int __devinit iic_probe(struct ocp_device *ocp)
+> +{
+>  	struct ibm_iic_private* dev;
+>  	struct i2c_adapter* adap;
+>  	struct ocp_func_iic_data* iic_data = ocp->def->additions;
+> @@ -828,6 +1034,7 @@ static void __exit iic_exit(void)
+>  {
+>  	ocp_unregister_driver(&ibm_iic_driver);
+>  }
+> +#endif /* CONFIG_PPC_MERGE */
+>  
+>  module_init(iic_init);
+>  module_exit(iic_exit);
+> diff --git a/drivers/i2c/busses/i2c-ibm_iic.h b/drivers/i2c/busses/i2c-ibm_iic.h
+> index fdaa482..c15b091 100644
+> --- a/drivers/i2c/busses/i2c-ibm_iic.h
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.h
+> @@ -50,6 +50,8 @@ struct ibm_iic_private {
+>  	int irq;
+>  	int fast_mode;
+>  	u8  clckdiv;
+> +	struct device_node *np;
+> +	phys_addr_t paddr;
+>  };
+>  
+>  /* IICx_CNTL register */
+
+Thanks,
+Valentine.
