@@ -1,16 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 19 Oct 2007 11:45:10 +1000
+Date: Fri, 19 Oct 2007 11:46:10 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Merge dtc
-Message-ID: <20071019014510.GD30283@localhost.localdomain>
-References: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
-	<20071018195926.GA22887@uranus.ravnborg.org>
+To: Alan Bennett <embedded@akb.net>
+Subject: Re: Freescale Interrupt enabling
+Message-ID: <20071019014610.GE30283@localhost.localdomain>
+References: <bfa0697f0710180741i5063ad94ga13086bf3c43a511@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071018195926.GA22887@uranus.ravnborg.org>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Milton Miller <miltonm@bga.com>
+In-Reply-To: <bfa0697f0710180741i5063ad94ga13086bf3c43a511@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,51 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 18, 2007 at 09:59:26PM +0200, Sam Ravnborg wrote:
-> On Thu, Oct 18, 2007 at 12:49:54PM -0500, Milton Miller wrote:
-> > On Tue Oct 16 15:02:17 EST 2007, David Gibson wrote:
-> > 
-> > >This very large patch incorporates a copy of dtc into the kernel
-> > >source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
-> > >longer an external dependency to build kernels with configurations
-> > >which need a dtb file.
-> > >
-> > >Signed-off-by: David Gibson <david at gibson.dropbear.id.au>
-> > >
-> > >Too big for the list, full patch at
-> > >http://ozlabs.org/~dgibson/home/merge-dtc.patch+
-> > 
-> > So split it up.   The obvious one is "here is the unique content, then 
-> > copy these files from dtc git" would have been better.
-> One obvious split is a patch solely containing the _shipped files.
-> And next patch the rest.
+On Thu, Oct 18, 2007 at 08:41:35AM -0600, Alan Bennett wrote:
+> We were developing with Linux 2.6.10 and a Planetcore boot loader,
+> however, recent work has us up and running with 2.6.23+ and U-boot
+> 1.2.0.  However, we are now running into a few challenges regarding
+> the differences.
+> 
+> Our driver writer's code isn't functioning, but it was with 2.6.10 and
+> planet core.  The best I can tell is that the default interrupt
+> controller configuration isn't where it was in the planetcore/2.6.10
+> version.
+> 
+> for example, let's look at enabling timer1 / interrupt number 12
+> 
+> simple description.
+> 	       timer1 {
+> 	 	       name = "timer1";
+>  		       compatible = "fsl,mpc8248_timer";
+> 		       interrupts = <c 8>;
+> 		       interrupt-parent = <&PIC>;
 
-Um.. why?  No way is that a logical split.
-
-> As Milton already pointed out you should build dtc in the
-> dtc directory (why the -src prefix??).
-
-The -src suffix is only there because I'm not building in the
-directory - we can't have both a dtc binary and a dtc directory in
-arch/powerpc/boot.  
-
-Ok, so how do I build in the subdirectory?  I was going to do that,
-but couldn't for the life of me figure out how.
-
-> And the dtc specific Makefile looks like something from
-> the late 80'. Please drop all these ALLUPPERCASE variables
-> and accept a little bit of redundancy.
-
-Hrm... I'm pretty dubious about this.  Practically every Makefile in
-the universe, *except* Kbuild uses uppercase for most variables.
-Makefile.dtc is imported verbatim from the standalone dtc package, and
-is supposed to have the minimal information about what needs to be
-built to import into Makefiles that actually know how to build things.
-
-> Then mere humans may be able to read the Makefile.
-
-Says a maintainer of Kbuild, about my tiny and not-very-complex
-Makefile fragment... um, ok...
+Device tree nodes should really describe an actual device, not just
+some random floating interrupt.  You need to work out what device this
+interrupt actually belongs to, and describe that.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
