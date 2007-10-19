@@ -1,32 +1,33 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <peterz@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB64BDDE36
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 17:31:41 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9J7VYCd011092
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 00:31:35 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9J7VXm4021913
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 02:31:34 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v5 9/9] add MPC837x MDS board default device tree
-Date: Fri, 19 Oct 2007 15:31:32 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5C7A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20071019005613.GA18240@localhost.localdomain>
-References: <1192702580-6353-1-git-send-email-leoli@freescale.com>
-	<20071019005613.GA18240@localhost.localdomain>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>,
-	"Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6913DDEC9
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 17:35:47 +1000 (EST)
+Subject: Re: [NET]: Fix possible dev_deactivate race condition
+From: Peter Zijlstra <peterz@infradead.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <20071019053624.GA10560@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	<20071019023219.GB8453@gondor.apana.org.au>
+	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+	<20071019042025.GA9617@gondor.apana.org.au>
+	<20071019053624.GA10560@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 09:35:19 +0200
+Message-Id: <1192779319.27435.163.camel@twins>
+Mime-Version: 1.0
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
+	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
+	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Gibson [mailto:david@gibson.dropbear.id.au]=20
-> Sent: Friday, October 19, 2007 8:56 AM
-> To: Li Yang-r58472
-> Cc: galak@kernel.crashing.org; paulus@samba.org;=20
-> linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
->=20
-> On Thu, Oct 18, 2007 at 06:16:20PM +0800, Li Yang wrote:
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts=20
-> > b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> > new file mode 100644
-> > index 0000000..8530de6
-> > --- /dev/null
-> > +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> > @@ -0,0 +1,282 @@
-> [snip]
-> > +		crypto@30000 {
-> > +			model =3D "SEC3";
-> > +			compatible =3D "talitos";
->=20
-> That compatible doesn't look specific enough.  It should at=20
-> least have a vendor portion.  In general it's best to have=20
-> all the information you need to pick a driver and options in=20
-> compatible, rather than splitting that info into model.
+On Fri, 2007-10-19 at 13:36 +0800, Herbert Xu wrote:
+> On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
+> >
+> > In fact this bug exists elsewhere too.  For example, the network
+> > stack does this in net/sched/sch_generic.c:
+> > 
+> >         /* Wait for outstanding qdisc_run calls. */
+> >       while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+> >               yield();
+> > 
+> > This has the same problem as the current synchronize_irq code.
+> 
 
-I think we could do this in a separate patch.  Change the spec and then
-update all the in-tree device tree with SEC node.
+> diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+> index e01d576..b3b7420 100644
+> --- a/net/sched/sch_generic.c
+> +++ b/net/sched/sch_generic.c
+> @@ -556,6 +556,7 @@ void dev_deactivate(struct net_device *dev)
+>  {
+>         struct Qdisc *qdisc;
+>         struct sk_buff *skb;
+> +       int running;
+>  
+>         spin_lock_bh(&dev->queue_lock);
+>         qdisc = dev->qdisc;
+> @@ -571,12 +572,31 @@ void dev_deactivate(struct net_device *dev)
+>  
+>         dev_watchdog_down(dev);
+>  
+> -       /* Wait for outstanding dev_queue_xmit calls. */
+> +       /* Wait for outstanding qdisc-less dev_queue_xmit calls. */
+>         synchronize_rcu();
+>  
+>         /* Wait for outstanding qdisc_run calls. */
+> -       while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+> -               yield();
+> +       do {
+> +               while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+> +                       yield();
+> +
 
-- Leo
+Ouch!, is there really no sane locking alternative? Hashed waitqueues
+like for the page lock come to mind.
+
+> +               /*
+> +                * Double-check inside queue lock to ensure that all effects
+> +                * of the queue run are visible when we return.
+> +                */
+> +               spin_lock_bh(&dev->queue_lock);
+> +               running = test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state);
+> +               spin_unlock_bh(&dev->queue_lock);
+> +
+> +               /*
+> +                * The running flag should never be set at this point because
+> +                * we've already set dev->qdisc to noop_qdisc *inside* the same
+> +                * pair of spin locks.  That is, if any qdisc_run starts after
+> +                * our initial test it should see the noop_qdisc and then
+> +                * clear the RUNNING bit before dropping the queue lock.  So
+> +                * if it is set here then we've found a bug.
+> +                */
+> +       } while (WARN_ON_ONCE(running));
+>  }
+>  
+>  void dev_init_scheduler(struct net_device *dev) 
