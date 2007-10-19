@@ -1,14 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 20 Oct 2007 08:57:15 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 0/4] DTC: Introduce better DTS literal support
-Message-ID: <20071019225715.GA26642@localhost.localdomain>
-References: <E1IivrG-00077n-O8@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IivrG-00077n-O8@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B92B7DDEB9
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 09:17:50 +1000 (EST)
+Subject: Re: [PATCH] powerpc: mpic: minor optimization of ipi handler
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20071019185110.GA11911@lixom.net>
+References: <20071019185110.GA11911@lixom.net>
+Content-Type: text/plain
+Date: Sat, 20 Oct 2007 09:17:39 +1000
+Message-Id: <1192835859.17235.12.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, jgarzik@pobox.com
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 12:42:02PM -0500, Jon Loeliger wrote:
-> Folks,
-> 
-> This 4 part patch series for the DTC has:
-> 
->     0001-Reformat-grammar-rules-to-not-mix-language-syntax-an.patch
->     0002-Quiet-a-bogus-May-be-used-uninitialized-warning.patch
->     0003-Appease-the-printf-format-Gods-with-a-correct-typ.patch
->     0004-Begin-the-path-to-sane-literals-and-expressions.patch
-> 
-> The first is a pure whitespace formatting cleaning.
-> The second two clean compiler warnings.
-> The final one introduces a versioned DTS file with
->     support for C-like literals.
 
-I certainly have some comments on these, but I'm busy today and won't
-be able to comment in detail until Monday or so.  Please don't apply
-them to mainline before then?
+On Fri, 2007-10-19 at 13:51 -0500, Olof Johansson wrote:
+> Jeff Garzik pointed out that we don't actually have to lookup the mpic
+> instance since it's passed in as the interrupt handler data for IPIs.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Note that's typically one of the annoying case where we use "irq"
+for a good reasons, getting the way of Jeff attempt at removing
+this argument.
+
+I suppose a working approach would be to have 4 mpic IPI handlers...
+
+Ben. 
+
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index e479388..6bf56f4 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -612,11 +612,10 @@ static inline void mpic_eoi(struct mpic *mpic)
+>  }
+>  
+>  #ifdef CONFIG_SMP
+> -static irqreturn_t mpic_ipi_action(int irq, void *dev_id)
+> +static irqreturn_t mpic_ipi_action(int irq, void *data)
+>  {
+> -	struct mpic *mpic;
+> +	struct mpic *mpic = data;
+>  
+> -	mpic = mpic_find(irq, NULL);
+>  	smp_message_recv(mpic_irq_to_hw(irq) - mpic->ipi_vecs[0]);
+>  
+>  	return IRQ_HANDLED;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
