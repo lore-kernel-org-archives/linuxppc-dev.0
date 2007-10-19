@@ -1,32 +1,23 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DEF2DDE2E
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 19:30:05 +1000 (EST)
-Date: Fri, 19 Oct 2007 17:29:21 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [NET]: Fix possible dev_deactivate race condition
-Message-ID: <20071019092921.GA12380@gondor.apana.org.au>
-References: <1192745137.7367.40.camel@pasglop>
-	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	<1192749449.7367.51.camel@pasglop>
-	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	<20071019023219.GB8453@gondor.apana.org.au>
-	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	<20071019042025.GA9617@gondor.apana.org.au>
-	<20071019053624.GA10560@gondor.apana.org.au>
-	<1192779319.27435.163.camel@twins>
-Mime-Version: 1.0
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 27DDDDDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 19:44:58 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Fri, 19 Oct 2007 11:22:05 +0200
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+Message-ID: <20071019092205.GA9668@iram.es>
+References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
+	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+	<47161D79.6000003@ru.mvista.com>
+	<18198.43687.44059.477047@cargo.ozlabs.ibm.com>
+	<47177229.2030200@ru.mvista.com>
+	<18199.63230.583536.307945@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1192779319.27435.163.camel@twins>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-	Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <18199.63230.583536.307945@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 09:35:19AM +0200, Peter Zijlstra wrote:
->
-> >         /* Wait for outstanding qdisc_run calls. */
-> > -       while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> > -               yield();
-> > +       do {
-> > +               while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
-> > +                       yield();
-> > +
+On Fri, Oct 19, 2007 at 10:14:54AM +1000, Paul Mackerras wrote:
+> Sergei Shtylyov writes:
 > 
-> Ouch!, is there really no sane locking alternative? Hashed waitqueues
-> like for the page lock come to mind.
+> > > What problem do you see arising from this?
+> > 
+> >     Timers firing too early.
+> 
+> Only if the minimum interrupt latency is less than 1 decrementer
+> tick.  That seems pretty unlikely to me unless you have a very slow
+> timebase frequency.
+> 
+> In fact what we should program the decrementer to is:
+> 
+> 	timeout - (is_booke? 0: 1) - min_interrupt_latency
+> 
+> I was assuming that min_interrupt_latency (measured in timebase ticks)
+> would be at least 1, but apparently some systems can have a timebase
+> frequency as low as 1kHz, so we'll have to have an ifdef or something.
 
-Well if we ever moved the transmission to full process context
-then we'll gladly accept your patch :)
+If it is the case (the slowest I've seen was in the 8 MHz range), then
+it is better not to subtract the one: think of what happens when you
+have say, a 10kHz timebase/decrementer frequency and you want to
+interrupt after 1 ms. You actually want to interrupt after 11
+transitions of the decrementer, not 10 since the result could be
+as low as 900us if you happen to read the timebase just before
+a transition.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+I'd really wish there were a guarantee of a minimum timebase 
+frequency, for anything above ~10MHz, we are splitting hairs
+about an off-by-one error that never accumulates, but if systems
+with very low TB freq exist, you have to be very careful. In any case
+timer interrupts should never came earlier than asked for.
+
+	Gabriel
