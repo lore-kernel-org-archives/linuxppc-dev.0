@@ -1,29 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A4330DDE9E
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 07:31:24 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9JLVLKX007458
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 17:31:21 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9JLVLmF066182
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:31:21 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9JLVLAc025674
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:31:21 -0600
-Date: Fri, 19 Oct 2007 16:31:19 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-Subject: Please pull from 'for-2.6.24' branch of 4xx tree
-Message-ID: <20071019163119.62eec6f0@weaponx.rchland.ibm.com>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 21BE6DDEB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 07:33:52 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9JLXlC2012460
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 17:33:47 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9JLXlnc073984
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:33:47 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9JLXkI7027833
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 15:33:47 -0600
+Subject: [bug] block subsystem related crash on Legacy iSeries  viodasd.c
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 16:33:34 -0500
+Message-Id: <1192829614.11003.30.camel@farscape.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,26 +35,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+Hi Jens, Stephen, and Everyone else.
 
-Please pull from
+   I am seeing this crash on a legacy iSeries box.   Bisect points at
+70eb8040dc81212c884a464b75e37dca8014f3ad  (Add chained sg support to
+linux/scatterlist.h).
 
- master.kernel.org:/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git for-2.6.24
+I see there were some related troubles discussed a couple days back.
+I've refreshed my tree, so believe I should have pulled in all the
+changes that fixed those issues by now, so this is an additional problem
+(viodasd funkyness), or I've screwed something up in my pulls, or fixes
+are still pending in another tree. 
 
-to pick up a handful of fixes for 4xx.  These are mostly to enable the
-ibm_newemac driver for the various boards.  Since a few patches to the
-driver are needed from Linus' tree, the branch is based off of his
-latest tree as of this morning.
+>From the register dump, looks like sg passed into memset was a -2.  
 
-josh
+(from blk_rq_map_sg())	if (!sg)
+				sg = sglist;
+			else
+				sg = sg_next(sg);
 
-Josh Boyer (4):
-      [POWERPC] 4xx: Enable EMAC on the PPC 440GP Ebony board
-      [POWERPC] 4xx: Fix timebase clock selection on Walnut
-      [POWERPC] 4xx: Enable EMAC for PPC405 Walnut board
-      [POWERPC] 4xx: Enable EMAC on Bamboo board
+			memset(sg, 0, sizeof(*sg));  <--
 
-Valentine Barshak (3):
-      [POWERPC] 4xx: Add RGMII support for Sequoia 440EPx
-      [POWERPC] 4xx: Enable NEW EMAC support for Sequoia 440EPx.
-      [POWERPC] 4xx: Split early debug output and early boot console for 44x
+
+linux-2.6.git tree at 
+	commit 4fa4d23fa20de67df919030c1216295664866ad7
+	Merge: a9e82d3... 4f1e5ba...
+	Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+	Date:   Thu Oct 18 19:31:54 2007 -0700
+    Merge branch 'upstream-linus' of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6
+
+> git log drivers/scsi/scsi_lib.c
+commit a3bec5c5aea0da263111c4d8f8eabc1f8560d7bf
+Author: Jens Axboe <axboe@carl.home.kernel.dk>
+Date:   Wed Oct 17 19:33:05 2007 +0200
+
+    Revert "[SCSI] Remove full sg table memset()"
+
+> > git log block/ll_rw_blk.c
+commit ba951841ceb7fa5b06ad48caa5270cc2ae17941e
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Wed Oct 17 19:34:11 2007 +0200
+
+    [BLOCK] blk_rq_map_sg() next_sg fixup
+
+--  The panic is:
+Freeing unused kernel memory: 224k freed
+Unable to handle kernel paging request for data at address 0xfffffffffffffffe
+Faulting instruction address: 0xc0000000000282f0
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=32 iSeries
+Modules linked in:
+NIP: c0000000000282f0 LR: c0000000001c772c CTR: 0000000000000000
+REGS: c000000002026b00 TRAP: 0300   Not tainted  (2.6.23)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44000022  XER: 00000008
+DAR: fffffffffffffffe, DSISR: 0000000042000000
+TASK = c000000002022000[1] 'swapper' THREAD: c000000002024000 CPU: 1
+GPR00: 0000000000000002 c000000002026d80 c0000000005168c8 fffffffffffffffe
+GPR04: 0000000000000000 000000000000001e fffffffffffffffe 0000000000000000
+GPR08: 0000000000000000 0000000000000001 6db6db6db6db6db7 0000000001491000
+GPR12: c00000000058d000 c000000000464f80 0000000000000000 c000000002027780
+GPR16: c00000000300a0c8 0000000000000001 c0000000004d4dd0 c00000000297e868
+GPR20: c000000002720000 c000000002026ec0 0000000000000001 0000000000000003
+GPR24: 0000000000000000 c000000002720000 0000000000001000 0000000000000003
+GPR28: fffffffffffffffe c000000002a61000 c0000000004c2510 c0000000027f64b0
+NIP [c0000000000282f0] .memset+0x3c/0xfc
+LR [c0000000001c772c] .blk_rq_map_sg+0x154/0x1e8
+Call Trace:
+[c000000002026d80] [c0000000004d4ed8] 0xc0000000004d4ed8 (unreliable)
+[c000000002026e50] [c0000000002283d8] .do_viodasd_request+0xb4/0x448
+[c0000000020270a0] [c0000000001c8ddc] .__generic_unplug_device+0x54/0x6c
+[c000000002027120] [c0000000001ca438] .generic_unplug_device+0x30/0x78
+[c0000000020271b0] [c0000000001c5888] .blk_backing_dev_unplug+0x34/0x48
+[c000000002027230] [c0000000000cf75c] .block_sync_page+0x78/0x90
+[c0000000020272b0] [c000000000074d50] .sync_page+0x74/0x98
+[c000000002027330] [c000000000344538] .__wait_on_bit_lock+0x8c/0x110
+[c0000000020273d0] [c000000000074c94] .__lock_page+0x70/0x90
+[c0000000020274a0] [c0000000000758b4] .do_generic_mapping_read+0x248/0x47c
+[c0000000020275a0] [c000000000077644] .generic_file_aio_read+0x144/0x1d4
+[c000000002027680] [c0000000000a3ad8] .do_sync_read+0xc4/0x124
+[c000000002027820] [c0000000000a4350] .vfs_read+0xd8/0x1a4
+[c0000000020278c0] [c0000000000a965c] .kernel_read+0x38/0x5c
+[c000000002027960] [c0000000000aad18] .do_execve+0xe8/0x208
+[c000000002027a10] [c00000000000e0b4] .sys_execve+0x6c/0xf0
+[c000000002027ab0] [c000000000007540] syscall_exit+0x0/0x40
+--- Exception: c01 at .kernel_execve+0x8/0x14
+    LR = .run_init_process+0x28/0x40
+[c000000002027da0] [c0000000000b35ec] .sys_dup+0x2c/0x44 (unreliable)
+[c000000002027e20] [c000000000007fb4] .init_post+0xc4/0xe8
+[c000000002027ea0] [c000000000407978] .kernel_init+0x384/0x3b8
+[c000000002027f90] [c000000000020000] .kernel_thread+0x4c/0x68
+Instruction dump:
+5084801e 7c850040 7884000e 7c001120 7c661b78 418400ac 41a2002c 7ca02850
+409f000c 98860000 38c60001 409e000c <b0860000> 38c60002 409d000c 90860000
+Kernel panic - not syncing: Attempted to kill init!
+Rebooting in 180 seconds..                                       
+
+
+Thanks,
+--Will
