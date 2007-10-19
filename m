@@ -1,22 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
-	by ozlabs.org (Postfix) with ESMTP id 6E274DDF00
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C857DDEF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Oct 2007 00:38:12 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so64927nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Oct 2007 07:38:11 -0700 (PDT)
-Message-ID: <fa686aa40710190738q1211a266lced10ac8767e5071@mail.gmail.com>
-Date: Fri, 19 Oct 2007 08:38:09 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: FDT bindings for I2C devices
-In-Reply-To: <4718BB40.2050901@grandegger.com>
+	Sat, 20 Oct 2007 04:13:38 +1000 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IiwLn-0002hC-FN
+	for linuxppc-embedded@ozlabs.org; Fri, 19 Oct 2007 11:13:35 -0700
+Message-ID: <13300089.post@talk.nabble.com>
+Date: Fri, 19 Oct 2007 11:13:35 -0700 (PDT)
+From: aauer1 <aauer1@gmx.at>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: SystemACE driver problem
+In-Reply-To: <fa686aa40710190704j18feabf2geb417d554ebb11c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4718BB40.2050901@grandegger.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <13290652.post@talk.nabble.com>
+	<fa686aa40710190704j18feabf2geb417d554ebb11c@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,60 +29,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/19/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Hello,
->
-> is it forseen to define and configure devices like RTC, temperature
-> sensors or EEPROM on the I2C bus with the Flat Device Tree? If yes, how
-> would the DTS entries look like?
 
-booting-without-of.txt has some information about describing the controller.
 
-Scott Wood made an attempt at defining a device binding for I2C
-devices, but it has not been merged into booting-without-of.txt yet.
-I've copied what he wrote below.  I would add to his definition the
-following:
-- If compatible is missing, driver should *not* fall back to the device name.
-- 'compatible' list should include the exact device in the form "<mfg>,<part>"
 
-Cheers,
-g.
+Grant Likely-2 wrote:
+> 
+> On 10/19/07, aauer1 <aauer1@gmx.at> wrote:
+>>
+>> Hello
+>>
+>> I'm trying to boot a Linux Kernel 2.6.23-rc2 from Grant Likely (thanks
+>> for
+>> the great work) on a Xilinx ML403 board. I want to use the second
+>> partition
+>> of the Compact Flash Card as root filesystem. But the boot process hangs
+>> at
+>> the initialization of the SystemACE module. A strange effect is that the
+>> DONE LED (configuration of the FPGA is done) turns off. So, this means
+>> that
+>> the FPGA loses his configuration.
+>> Has anybody recognized a similar problem with the SystemACE module??
+>>
+>> The boot log:
+>> ========
+> [snipped]
+>> [    0.268807] uartlite.0: ttyUL0 at MMIO 0x40600000 (irq = 2) is a
+>> uartlite
+>> [    0.270399] console [ttyUL0] enabled
+>> [    1.762725] RAMDISK driver initialized: 8 RAM disks of 8192K size 1024
+>> blocke
+>> [    1.852062] Registering Xilinx SystemACE driver, major=254
+>> [    1.919734] xsysace xsysace.0: ace_probe(c01638e0)
+> 
+> Yes, I've seen that.  It means something went wrong with the setup and
+> caused the sysace to reload the FPGA.  Is the systemace base address
+> and bus width set correctly?
+> 
+> 
 
-Here's the thread and an excerpt from Scott's original post:
+The base address is the same as in the system.mhs file of my hardware
+design. So, I think it should be correct. The bus width is set to 16 bits
+(hardware design). So far as I can see, the sysace driver defines a 16 bit
+data bus (hard coded), too. 
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=11223
+A paper of BlueCat Linux says that there is a problem with the System ACE
+hardware module:
+"Due to a known problem of the opb_sysace IP Core programmed into the FPGA
+(incorrect operation in the interrupt mode) the SystemACE Compact Flash
+device is supported in the polling mode."
 
-+   e2) I2C Devices
-+
-+   Required properties :
-+
-+    - reg : Unshifted 7-bit I2C address for the device
-+
-+   Recommended properties :
-+
-+    - compatible : The name of the Linux device driver that
-+      handles this device.  If unspecified, the name of the
-+      node will be used.
-+    - interrupts : <a b> where a is the interrupt number and b is a
-+      field that represents an encoding of the sense and level
-+      information for the interrupt.  This should be encoded based on
-+      the information in section 2) depending on the type of interrupt
-+      controller you have.
-+    - interrupt-parent : the phandle for the interrupt controller that
-+      services interrupts for this device.
-+
-+   Example :
-+
-+       rtc@68 {
-+               device_type = "rtc";
-+               compatible = "ds1374";
-+               reg = <68>;
-+               interrupts = <13 8>;
-+               interrupt-parent = <700>;
-+       };
+Does anyone know something about the bug in the SystemACE IP core?? 
+
+Thanks,
+Andreas
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+View this message in context: http://www.nabble.com/SystemACE-driver-problem-tf4651846.html#a13300089
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
