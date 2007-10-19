@@ -1,19 +1,21 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id 471A8DDE3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:06:55 +1000 (EST)
-Message-ID: <47188FB6.70306@semihalf.com>
-Date: Fri, 19 Oct 2007 13:06:30 +0200
-From: Marian Balakowicz <m8@semihalf.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 04/15] [POWERPC] CM5200 DTS
-References: <47075FA7.3030108@semihalf.com>
-	<4708C112.9020506@semihalf.com>	<20071008015021.GA12499@localhost.localdomain>	<4715FE6C.2070201@semihalf.com>
-	<20071018002256.GA24236@localhost.localdomain>
-In-Reply-To: <20071018002256.GA24236@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18200.37750.627398.669482@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Oct 2007 21:22:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+In-Reply-To: <20071019092205.GA9668@iram.es>
+References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
+	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+	<47161D79.6000003@ru.mvista.com>
+	<18198.43687.44059.477047@cargo.ozlabs.ibm.com>
+	<47177229.2030200@ru.mvista.com>
+	<18199.63230.583536.307945@cargo.ozlabs.ibm.com>
+	<20071019092205.GA9668@iram.es>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Oct 17, 2007 at 02:22:04PM +0200, Marian Balakowicz wrote:
->> David Gibson wrote:
->>> [snip]
->>>> +		flash@c000000 {
->>>> +			device_type = "rom";
->>>> +			compatible = "direct-mapped";
->>>> +			reg = <0c000000 02000000>;
->>>> +			probe-type = "CFI";
->>>> +			bank-width = <2>;
->>>> +			partitions = <00000000 00060000
->>>> +				00060000 00020000
->>>> +				00080000 00020000
->>>> +				000a0000 00020000
->>>> +				000c0000 00200000
->>>> +				002c0000 01b40000
->>>> +				01e00000 00200000>;
->>>> +			partition-names = "uboot\0env\0redund_env\0dtb\0kernel\0rootfs\0config";
->>>> +		};
->>> First, this is the old flash binding, please use the new one.
->> Ok.
->>
->>> Second, is the flash really part of the SoC?
->> Not directly, it is attached to LocalPlus Bus Controller, which is
->> part of the SoC. And the soc@ is currently the only recognized of bus
->> for mpc5200, so if we want to move it to some other place new bindings
->> will need to be defined for lpc (LocalPlus Controller) bus. But I am
->> not quite sure where this should be attached. Bus is under LPC which
->> is a part of the SoC, but on the other hand Soc address range covers
->> only device control registers not the address space LPC may handle
->> (that may be varied). Any ideas?
-> 
-> The bus bridge has to be there.  Is this something similar to the
-> "localbus" / "chipselect" bus controllers that a whole bunch of the
-> Freescale SoCs have?  
+Gabriel Paubert writes:
 
-Yes, that's kind of a local bus.
+> I'd really wish there were a guarantee of a minimum timebase 
+> frequency, for anything above ~10MHz, we are splitting hairs
+> about an off-by-one error that never accumulates, but if systems
+> with very low TB freq exist, you have to be very careful.
 
-> Because the bridged addresses don't lie in the
-> IMMR, althoug the control registers do, the current convention is to
-> make the localbus node a sibling of /soc, even though it is really
-> part of the SoC (/soc would perhaps be better called /immr, but /soc
-> is established now).  This approach is imperfect, but so are most of
-> the other compromises we could make.
-> 
-> Incidentally LPC is a pretty bad abbreviation, since LPC more
-> frequently refers to the Low Pin Count connections that frequently
-> appear on south bridges or superIO chips.
+Exactly.  In looking through the generic clockevents code, there are a
+few places where counts are rounded down.  For example,
+clockevents_program_event does this to convert from nanoseconds (in
+"delta") to the count value for the clock event device:
 
-How about 'LocalPlus Bus' and 'lpb' node then?
+	clc = delta * dev->mult;
+	clc >>= dev->shift;
 
-m.
+Here the right shift can lose up to a whole count.  If the clock
+frequency of the device is very slow, say 1kHz, then this could lose
+up to 999999 nanoseconds.  Then, on Book E, putting 1 into the
+decrementer could result in an interrupt anywhere from straight away to
+1 millisecond later (assuming 1kHz timebase frequency, again).
+
+The net result is that delta = 1999999 nanoseconds could result in the
+interrupt coming in immediately, i.e. almost 2ms early.
+
+I believe the clockevents framework has not been designed for use with
+very slow one-shot clock event devices.  If it is to be used with very
+low clock rates, then there are several points where I think the
+rounding/truncation issues need to be carefully thought through.
+
+In any case, the code we have at the moment won't work with timebase
+clock rates below 15.258kHz, because decrementer_clockevent.mult will
+become zero.
+
+Regards,
+Paul.
