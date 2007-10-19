@@ -1,29 +1,24 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 44D80DDF23
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:48:21 +1000 (EST)
-Date: Fri, 19 Oct 2007 12:48:06 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-ID: <20071019044806.GA10080@gondor.apana.org.au>
-References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
-	<1192745137.7367.40.camel@pasglop>
-	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	<1192749449.7367.51.camel@pasglop>
-	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	<20071019023219.GB8453@gondor.apana.org.au>
-	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	<20071019042025.GA9617@gondor.apana.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1944EDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:48:47 +1000 (EST)
+Date: Fri, 19 Oct 2007 14:48:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
+Message-Id: <20071019144841.5e45dc30.sfr@canb.auug.org.au>
+In-Reply-To: <989B956029373F45A0B8AF0297081890019B5C3A@zch01exm26.fsl.freescale.net>
+References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
+	<1192719847-25045-2-git-send-email-leoli@freescale.com>
+	<1192719847-25045-3-git-send-email-leoli@freescale.com>
+	<1192719847-25045-4-git-send-email-leoli@freescale.com>
+	<20071019104318.edfd2ad1.sfr@canb.auug.org.au>
+	<989B956029373F45A0B8AF0297081890019B5C3A@zch01exm26.fsl.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071019042025.GA9617@gondor.apana.org.au>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__19_Oct_2007_14_48_41_+1000_N07ZsENOCz3C3LoL"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,83 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 12:20:25PM +0800, Herbert Xu wrote:
+--Signature=_Fri__19_Oct_2007_14_48_41_+1000_N07ZsENOCz3C3LoL
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 19 Oct 2007 11:56:34 +0800 "Li Yang-r58472" <LeoLi@freescale.com> w=
+rote:
 >
-> That's why I think this patch is in fact the only one that
-> solves all the races in this thread.  The case that it solves
-> which the lock/unlock patch does not is the one where action
-> flows downwards past the clearing of IRQ_INPROGRESS.  I missed
-> this case earlier.
+> <asm/prom.h> is included in <linux/of.h> now.  Do you think it should be
+> included explicitly?
 
-OK, here is the patch again with a changelog:
+Yes.  It may not be included by linux/of.h in the future.
 
-[IRQ]: Fix synchronize_irq races with IRQ handler
+(My general opinion is that if you use something, you should explictly
+include the file that defines/declares it.)
 
-As it is some callers of synchronize_irq rely on memory barriers
-to provide synchronisation against the IRQ handlers.  For example,
-the tg3 driver does
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-	tp->irq_sync = 1;
-	smp_mb();
-	synchronize_irq();
+--Signature=_Fri__19_Oct_2007_14_48_41_+1000_N07ZsENOCz3C3LoL
+Content-Type: application/pgp-signature
 
-and then in the IRQ handler:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-	if (!tp->irq_sync)
-		netif_rx_schedule(dev, &tp->napi);
+iD8DBQFHGDcuTgG2atn1QN8RAho5AKCAKaXTOjr+/+kFSJpCAFRHoIhA8ACggKpq
+vHt5ds4onRTD2X7kZ0Ux4Fg=
+=owOa
+-----END PGP SIGNATURE-----
 
-Unfortunately memory barriers only work well when they come in
-pairs.  Because we don't actually have memory barriers on the
-IRQ path, the memory barrier before the synchronize_irq() doesn't
-actually protect us.
-
-In particular, synchronize_irq() may return followed by the
-result of netif_rx_schedule being made visible.
-
-This patch (mostly written by Linus) fixes this by using spin
-locks instead of memory barries on the synchronize_irq() path.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 80eab7a..1f31422 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -29,12 +29,28 @@
- void synchronize_irq(unsigned int irq)
- {
- 	struct irq_desc *desc = irq_desc + irq;
-+	unsigned int status;
- 
- 	if (irq >= NR_IRQS)
- 		return;
- 
--	while (desc->status & IRQ_INPROGRESS)
--		cpu_relax();
-+	do {
-+		unsigned long flags;
-+
-+		/*
-+		 * Wait until we're out of the critical section.  This might
-+		 * give the wrong answer due to the lack of memory barriers.
-+		 */
-+		while (desc->status & IRQ_INPROGRESS)
-+			cpu_relax();
-+
-+		/* Ok, that indicated we're done: double-check carefully. */
-+		spin_lock_irqsave(&desc->lock, flags);
-+		status = desc->status;
-+		spin_unlock_irqrestore(&desc->lock, flags);
-+
-+		/* Oops, that failed? */
-+	} while (status & IRQ_INPROGRESS);
- }
- EXPORT_SYMBOL(synchronize_irq);
- 
+--Signature=_Fri__19_Oct_2007_14_48_41_+1000_N07ZsENOCz3C3LoL--
