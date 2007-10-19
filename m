@@ -1,31 +1,30 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B3B0BDDF0F
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 13:56:40 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l9J3uYsA018110
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 20:56:35 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9J3uXiJ018260
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2007 22:56:34 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v6 4/9] add platform support for MPC837x MDS board
-Date: Fri, 19 Oct 2007 11:56:34 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5C3A@zch01exm26.fsl.freescale.net>
-In-Reply-To: <20071019104318.edfd2ad1.sfr@canb.auug.org.au>
-References: <1192719847-25045-1-git-send-email-leoli@freescale.com><1192719847-25045-2-git-send-email-leoli@freescale.com><1192719847-25045-3-git-send-email-leoli@freescale.com><1192719847-25045-4-git-send-email-leoli@freescale.com>
-	<20071019104318.edfd2ad1.sfr@canb.auug.org.au>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4486DDED5
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:11:43 +1000 (EST)
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	<20071019023219.GB8453@gondor.apana.org.au>
+	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 19 Oct 2007 14:11:13 +1000
+Message-Id: <1192767073.7367.84.camel@pasglop>
+Mime-Version: 1.0
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Stephen Rothwell [mailto:sfr@canb.auug.org.au]=20
-> Sent: Friday, October 19, 2007 8:43 AM
-> To: Li Yang-r58472
-> Cc: galak@kernel.crashing.org; paulus@samba.org;=20
-> linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
 
-> > +static int __init mpc837x_mds_probe(void) {
-> > +        unsigned long root =3D of_get_flat_dt_root();
-> > +
-> > +        return of_flat_dt_is_compatible(root, "fsl,mpc837xmds");
->=20
-> To call these two routines, you should include <asm/prom.h> directly.
+> 
+> 	repeat:
+> 		/* Optimistic, no-locking loop */
+> 		while (desc->status & IRQ_INPROGRESS)
+> 			cpu_relax();
+> 
+> 		/* Ok, that indicated we're done: double-check carefully */
+> 		spin_lock_irqsave(&desc->lock, flags);
+> 		status = desc->status;
+> 		spin_unlock_irqrestore(&desc->lock, flags);
+> 
+> 		/* Oops, that failed? */
+> 		if (status & IRQ_INPROGRESS)
+> 			goto repeat;
+> 
+> Hmm?
 
-<asm/prom.h> is included in <linux/of.h> now.  Do you think it should be
-included explicitly?
+Paulus and I convinced ourselves that this would work. If we call our
+variable that gets set before synchronize_irq and read in the IRQ
+handler "foo", we get to:
 
-- Leo
+	- writing foo can travel down at most to just before the unlock in the
+code above
+
+	- reading foo can travel up out of the IRQ handler at most just after
+the lock in the code that sets IRQ_INPROGRESS.
+
+The whole lock/set IRQ_INPROGRESS/unlock path can then only happen
+before the locked section above, in which case we see and wait nicely
+and all is good, or after, in which case the store to foo will be
+visible to the IRQ handler as it will be ordered with the unlock in the
+code above.
+
+Pfiew !
+
+So Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Thanks !
+
+Ben.
