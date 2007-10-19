@@ -1,16 +1,25 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 18 Oct 2007 21:03:45 -0500
-From: Olof Johansson <olof@lixom.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] [2/2] powerpc: Switch to generic WARN_ON()/BUG_ON()
-Message-ID: <20071019020345.GB28359@lixom.net>
-References: <20071011171211.GB10877@lixom.net>
-	<20071011171413.GC10877@lixom.net>
-MIME-Version: 1.0
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3AA44DDE1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 12:33:21 +1000 (EST)
+Date: Fri, 19 Oct 2007 10:32:19 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+Message-ID: <20071019023219.GB8453@gondor.apana.org.au>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071011171413.GC10877@lixom.net>
-Cc: grundler@parisc-linux.org, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	lethal@linux-sh.org, akpm@linux-foundation.org
+In-Reply-To: <alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,74 +29,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[POWERPC] Switch to generic WARN_ON()/BUG_ON()
+On Thu, Oct 18, 2007 at 04:39:59PM -0700, Linus Torvalds wrote:
+>
+> Basic notion: the only thing that serializes the IRQ_INPROGRESS flag is 
+> the descriptor lock. And we don't have to (or even want to!) hold it while 
+> waiting for the thing, but we want to *have*held*it* in between whatever 
+> we're synchronizing with.
 
-Not using the ppc-specific WARN_ON/BUG_ON constructs actually saves about
-4K text on a ppc64_defconfig. The main reason seems to be that prepping
-the arguments to the conditional trap instructions is more work than
-just doing a compare and branch.
+Thinking about this again and checking code I have come to the
+conclusion that
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+1) There is a race (in some drivers) even with the full mb.
+2) Linus's patch fixes it.
+3) It's difficult to fix it elegantly in the driver.
 
-Index: k.org/include/asm-powerpc/bug.h
-===================================================================
---- k.org.orig/include/asm-powerpc/bug.h
-+++ k.org/include/asm-powerpc/bug.h
-@@ -54,12 +54,6 @@
- 	".previous\n"
- #endif
- 
--/*
-- * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
-- * optimisations. However depending on the complexity of the condition
-- * some compiler versions may not produce optimal results.
-- */
--
- #define BUG() do {						\
- 	__asm__ __volatile__(					\
- 		"1:	twi 31,0,0\n"				\
-@@ -69,20 +63,6 @@
- 	for(;;) ;						\
- } while (0)
- 
--#define BUG_ON(x) do {						\
--	if (__builtin_constant_p(x)) {				\
--		if (x)						\
--			BUG();					\
--	} else {						\
--		__asm__ __volatile__(				\
--		"1:	"PPC_TLNEI"	%4,0\n"			\
--		_EMIT_BUG_ENTRY					\
--		: : "i" (__FILE__), "i" (__LINE__), "i" (0),	\
--		  "i" (sizeof(struct bug_entry)),		\
--		  "r" ((__force long)(x)));			\
--	}							\
--} while (0)
--
- #define __WARN() do {						\
- 	__asm__ __volatile__(					\
- 		"1:	twi 31,0,0\n"				\
-@@ -92,23 +72,6 @@
- 		  "i" (sizeof(struct bug_entry)));		\
- } while (0)
- 
--#define WARN_ON(x) ({						\
--	int __ret_warn_on = !!(x);				\
--	if (__builtin_constant_p(__ret_warn_on)) {		\
--		if (__ret_warn_on)				\
--			__WARN();				\
--	} else {						\
--		__asm__ __volatile__(				\
--		"1:	"PPC_TLNEI"	%4,0\n"			\
--		_EMIT_BUG_ENTRY					\
--		: : "i" (__FILE__), "i" (__LINE__),		\
--		  "i" (BUGFLAG_WARNING),			\
--		  "i" (sizeof(struct bug_entry)),		\
--		  "r" (__ret_warn_on));				\
--	}							\
--	unlikely(__ret_warn_on);				\
--})
--
- #endif /* __ASSEMBLY __ */
- #endif /* CONFIG_BUG */
- 
+In other words I think this patch is great :)
+
+First of all let's agree on some basic assumptions:
+
+* A pair of spin lock/unlock subsumes the effect of a full mb.
+* A spin lock in general only equates to (SS/SL/LL).
+* A spin unlock in general only equates to (SS/LS).
+
+In particular, a load after a spin unlock may pass before the
+spin unlock.
+
+Here is the race (with tg3 as the only example that I know of).
+The driver attempts to quiesce interrupts such that after the
+call to synchronize_irq it is intended that no further IRQ
+handler calls for that device will do any work besides acking
+the IRQ.
+
+Here is how it does it:
+
+CPU0				CPU1
+				spin lock
+					load irq_sync
+irq_sync = 1
+smp_mb
+synchronize_irq()
+	while (IRQ_INPROGRESS)
+		wait
+	return
+				set IRQ_INPROGRESS
+				spin unlock
+				tg3_msi
+					ack IRQ
+					if (irq_sync)
+						return
+					do work
+
+The problem here is that load of irq_sync in the handler has
+passed above the setting of IRQ_INPROGRESS.
+
+Linus's patch fixes it because this becomes:
+
+CPU0				CPU1
+				spin lock
+					load irq_sync
+irq_sync = 1
+smp_mb
+synchronize_irq
+				set IRQ_INPROGRESS
+				spin unlock
+	spin lock
+	spin unlock
+				tg3_msi
+					ack IRQ
+					if (irq_sync)
+						return
+					do work
+	while (IRQ_INPROGRESS)
+		wait
+				spin lock
+				clear IRQ_INPROGRESS
+				spin unlock
+	return
+
+Even though we still do the work on the right we will now notice
+the INPROGRESS flag on the left and wait.
+
+It's hard to fix this in the drivers because they'd either have
+to access the desc lock or add a full mb to the fast path on the
+right.
+
+Once this goes in we can also remove the smp_mb from tg3.c.  BTW,
+a lot of drivers (including the fusion example Ben quoted) call
+synchronize_irq before free_irq.  This is unnecessary because
+the latter already calls it anyway.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
