@@ -1,22 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
-	by ozlabs.org (Postfix) with ESMTP id CBE60DDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:09:18 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so40710nzh
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 06:09:17 -0700 (PDT)
-Message-ID: <fa686aa40710190609jebd4e31q9240d2ff5b4a5d47@mail.gmail.com>
-Date: Fri, 19 Oct 2007 07:09:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] bestcomm: Restrict disabling of bus prefetch to original
-	mpc5200 silicon.
-In-Reply-To: <20071019112916.GE27403@nd47.coderock.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071017163555.24992.40095.stgit@trillian.cg.shawcable.net>
-	<20071019112916.GE27403@nd47.coderock.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43516DE0AD
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:09:31 +1000 (EST)
+In-Reply-To: <20071019104318.edfd2ad1.sfr@canb.auug.org.au>
+References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
+	<1192719847-25045-2-git-send-email-leoli@freescale.com>
+	<1192719847-25045-3-git-send-email-leoli@freescale.com>
+	<1192719847-25045-4-git-send-email-leoli@freescale.com>
+	<20071019104318.edfd2ad1.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <044B09E9-2B1B-4BCC-BDFD-31269E41CC8F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
+Date: Fri, 19 Oct 2007 08:10:00 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/19/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 17/10/07 10:36 -0600, Grant Likely wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
-> >
-> > Only the MPC5200 needs this bug fix.  MPC5200B is okay.
-> >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > ---
-> >
-> > Sven, Domen;
-> >
-> > Can you please test this patch?
+
+On Oct 18, 2007, at 7:43 PM, Stephen Rothwell wrote:
+
+> On Thu, 18 Oct 2007 23:04:02 +0800 Li Yang <leoli@freescale.com>  
+> wrote:
+>>
+>> +++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
+>> +static void __init mpc837x_mds_setup_arch(void)
+>> +{
+>> +#ifdef CONFIG_PCI
+>> +	struct device_node *np;
+>> +#endif
+>> +
+>> +	if (ppc_md.progress)
+>> +		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
+>> +
+>> +#ifdef CONFIG_PCI
+>> +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
 >
-> I found no obvious problems with it on Efika (mpc5200b)
+> 	for_each_node_by_type(np, "pci")
+>
+>> +static int __init mpc837x_mds_probe(void)
+>> +{
+>> +        unsigned long root = of_get_flat_dt_root();
+>> +
+>> +        return of_flat_dt_is_compatible(root, "fsl,mpc837xmds");
+>
+> To call these two routines, you should include <asm/prom.h> directly.
 
-Cool, I'll add it to my list of patches for Paulus to pull
+what's the rule of thumb to know when to include <asm/prom.h> does  
+everything starting with of_flat_* come from there?
 
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+- k
