@@ -1,23 +1,20 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 27DDDDDEA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 19:44:58 +1000 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Fri, 19 Oct 2007 11:22:05 +0200
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
-Message-ID: <20071019092205.GA9668@iram.es>
-References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
-	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
-	<47161D79.6000003@ru.mvista.com>
-	<18198.43687.44059.477047@cargo.ozlabs.ibm.com>
-	<47177229.2030200@ru.mvista.com>
-	<18199.63230.583536.307945@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18199.63230.583536.307945@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	Realtime Kernel <linux-rt-users@vger.kernel.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] NULL terminate the pci_device_ids in pasemi_edac
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20071019064725.GA1806@lixom.net>
+References: <20071019150722.8d48eb1d.sfr@canb.auug.org.au>
+	<20071019064725.GA1806@lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-zHdkcW4d0KanMgsSc9Io"
+Date: Fri, 19 Oct 2007 20:34:32 +1000
+Message-Id: <1192790072.6345.3.camel@concordia>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 10:14:54AM +1000, Paul Mackerras wrote:
-> Sergei Shtylyov writes:
-> 
-> > > What problem do you see arising from this?
-> > 
-> >     Timers firing too early.
-> 
-> Only if the minimum interrupt latency is less than 1 decrementer
-> tick.  That seems pretty unlikely to me unless you have a very slow
-> timebase frequency.
-> 
-> In fact what we should program the decrementer to is:
-> 
-> 	timeout - (is_booke? 0: 1) - min_interrupt_latency
-> 
-> I was assuming that min_interrupt_latency (measured in timebase ticks)
-> would be at least 1, but apparently some systems can have a timebase
-> frequency as low as 1kHz, so we'll have to have an ifdef or something.
 
-If it is the case (the slowest I've seen was in the 8 MHz range), then
-it is better not to subtract the one: think of what happens when you
-have say, a 10kHz timebase/decrementer frequency and you want to
-interrupt after 1 ms. You actually want to interrupt after 11
-transitions of the decrementer, not 10 since the result could be
-as low as 900us if you happen to read the timebase just before
-a transition.
+--=-zHdkcW4d0KanMgsSc9Io
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'd really wish there were a guarantee of a minimum timebase 
-frequency, for anything above ~10MHz, we are splitting hairs
-about an off-by-one error that never accumulates, but if systems
-with very low TB freq exist, you have to be very careful. In any case
-timer interrupts should never came earlier than asked for.
 
-	Gabriel
+On Fri, 2007-10-19 at 01:47 -0500, Olof Johansson wrote:
+> On Fri, Oct 19, 2007 at 03:07:22PM +1000, Stephen Rothwell wrote:
+> > Fixes:
+> > drivers/edac/pasemi_edac: struct pci_device_id is 32 bytes.  The last o=
+f 1 is:
+> > 0x00 0x00 0x19 0x59 0x00 0x00 0xa0 0x0a 0xff 0xff 0xff 0xff 0xff 0xff 0=
+xff 0xff
+> > 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0=
+x00 0x00
+> > FATAL: drivers/edac/pasemi_edac: struct pci_device_id is not terminated=
+ with a NULL entry!
+> >=20
+> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>=20
+> Acked-by: Olof Johansson <olof@lixom.net>
+>=20
+> Thanks for fixing this, Stephen. ID lists without termination can really
+> cause weird problems at the most random times since it depends on how
+> the kernel is built whether they do any (immediate) harm or not.
+
+Kind of makes you wonder if some macro foo to automatically append the
+NULL entry wouldn't be a good idea.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-zHdkcW4d0KanMgsSc9Io
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHGIg4dSjSd0sB4dIRAs/9AKCsovT7QtpQ6wC+Maizjww/YgvqzQCgyloR
+4nNLHRoRBfL/G2/E8E3F6FE=
+=D1Yi
+-----END PGP SIGNATURE-----
+
+--=-zHdkcW4d0KanMgsSc9Io--
