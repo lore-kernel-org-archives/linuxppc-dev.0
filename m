@@ -1,18 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 80775DDEC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 05:04:32 +1000 (EST)
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 19 Oct 2007 11:36:34 CDT."
-	<20071019113634.397c63f7@weaponx.rchland.ibm.com>
-Date: Fri, 19 Oct 2007 21:04:30 +0200
-Sender: wd@denx.de
-Message-Id: <20071019190430.1C6B2243CA@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40710191209u883b3d0r954e7b3d6d1b8d12@mail.gmail.com>
+Date: Fri, 19 Oct 2007 13:09:39 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Leisner, Martin" <Martin.Leisner@xerox.com>
+Subject: Re: embedded a default dtb in the kernel (was merge dtc)
+In-Reply-To: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Josh,
-
-in message <20071019113634.397c63f7@weaponx.rchland.ibm.com> you wrote:
+On 10/19/07, Leisner, Martin <Martin.Leisner@xerox.com> wrote:
+> Is there a way to embed a default dtb into the kernel?
+> When I build a kernel, I want to embed a dtb into it --
+> so I don't have to deal with the headaches of finding the
+> right file to match the right board (its always easier to
+> deal with 1 file than 2).
 >
-> >  The following patch adds support for 256KB PAGE_SIZE on ppc44x-based boards. 
-> > The applications to be run on the kernel with 256KB PAGE_SIZE have to be 
-> > built using the modified version of binutils, where the MAXPAGESIZE 
-> > definition is set to 0x40000 (as opposite to standard 0x10000).
-...
-> 
-> BTW, what tree did you base this on?  I don't seem to have the
-> PPC_PAGE_* options in my tree.
+> If there is, it makes sense to put dtc into the tree.
+> If there's not, there should be a way to embed dtb's; and put
+> dtc and dts's into the tree.
+> If there can't be (I haven't examined this but relaying my
+> experiences), then it should be in a separate repository
+> (but the DTS and DTC should be in one place).
+> It was a little difficult to cobble together a working
+> system the first time.
+>
+> Also, mkimage SHOULD definitely go in the tree.  Its necessary
+> to build, hence should be in the tree...
 
-If you like to see the patches in context, you can find this stuff in
-the linux-2.6-denx repository at denx.de
+Why?  mkimage is u-boot specific, and hence is maintained by u-boot.
+If you're not using u-boot, then you don't need mkimage.  What is
+wrong with it being a prereq like all the other tools we use?  If
+you're doing embedded development, you're installing non-distribution
+cross toolchain anyway.
 
-The 256K page size stuff is based on and requires as prerequisite the
-"ppc: Add support for bigger page sizes than 4KB on PPC44x" posted
-here on April 25, see
-http://patchwork.ozlabs.org/linuxppc/patch?q=Add%20support%20for%20bigger%20page%20sizes&id=10646
+dtc and mkimage are embedded development tools.  They belong with the
+embedded development toolchain.  mkimage is already part of ELDK.
 
-Best regards,
-
-Wolfgang Denk
+Cheers,
+g.
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Q: Why do PCs have a reset button on the front?
-A: Because they are expected to run Microsoft operating systems.
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
