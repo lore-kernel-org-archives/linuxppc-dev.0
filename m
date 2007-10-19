@@ -1,23 +1,17 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 43516DE0AD
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:09:31 +1000 (EST)
-In-Reply-To: <20071019104318.edfd2ad1.sfr@canb.auug.org.au>
-References: <1192719847-25045-1-git-send-email-leoli@freescale.com>
-	<1192719847-25045-2-git-send-email-leoli@freescale.com>
-	<1192719847-25045-3-git-send-email-leoli@freescale.com>
-	<1192719847-25045-4-git-send-email-leoli@freescale.com>
-	<20071019104318.edfd2ad1.sfr@canb.auug.org.au>
+In-Reply-To: <989B956029373F45A0B8AF0297081890019B5C7A@zch01exm26.fsl.freescale.net>
+References: <1192702580-6353-1-git-send-email-leoli@freescale.com>
+	<20071019005613.GA18240@localhost.localdomain>
+	<989B956029373F45A0B8AF0297081890019B5C7A@zch01exm26.fsl.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <044B09E9-2B1B-4BCC-BDFD-31269E41CC8F@kernel.crashing.org>
+Message-Id: <DB820C38-6CE5-4A7A-BC29-6E528CD3F061@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v6 4/9] add platform support for MPC837x MDS board
-Date: Fri, 19 Oct 2007 08:10:00 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>, paulus@samba.org
+Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
+Date: Fri, 19 Oct 2007 08:10:50 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
+	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +22,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 18, 2007, at 7:43 PM, Stephen Rothwell wrote:
+On Oct 19, 2007, at 2:31 AM, Li Yang-r58472 wrote:
 
-> On Thu, 18 Oct 2007 23:04:02 +0800 Li Yang <leoli@freescale.com>  
-> wrote:
+>> -----Original Message-----
+>> From: David Gibson [mailto:david@gibson.dropbear.id.au]
+>> Sent: Friday, October 19, 2007 8:56 AM
+>> To: Li Yang-r58472
+>> Cc: galak@kernel.crashing.org; paulus@samba.org;
+>> linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
 >>
->> +++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
->> +static void __init mpc837x_mds_setup_arch(void)
->> +{
->> +#ifdef CONFIG_PCI
->> +	struct device_node *np;
->> +#endif
->> +
->> +	if (ppc_md.progress)
->> +		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
->> +
->> +#ifdef CONFIG_PCI
->> +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+>> On Thu, Oct 18, 2007 at 06:16:20PM +0800, Li Yang wrote:
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> ---
+>>> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts
+>>> b/arch/powerpc/boot/dts/mpc8377_mds.dts
+>>> new file mode 100644
+>>> index 0000000..8530de6
+>>> --- /dev/null
+>>> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+>>> @@ -0,0 +1,282 @@
+>> [snip]
+>>> +		crypto@30000 {
+>>> +			model = "SEC3";
+>>> +			compatible = "talitos";
+>>
+>> That compatible doesn't look specific enough.  It should at
+>> least have a vendor portion.  In general it's best to have
+>> all the information you need to pick a driver and options in
+>> compatible, rather than splitting that info into model.
 >
-> 	for_each_node_by_type(np, "pci")
->
->> +static int __init mpc837x_mds_probe(void)
->> +{
->> +        unsigned long root = of_get_flat_dt_root();
->> +
->> +        return of_flat_dt_is_compatible(root, "fsl,mpc837xmds");
->
-> To call these two routines, you should include <asm/prom.h> directly.
+> I think we could do this in a separate patch.  Change the spec and  
+> then
+> update all the in-tree device tree with SEC node.
 
-what's the rule of thumb to know when to include <asm/prom.h> does  
-everything starting with of_flat_* come from there?
+agreed.
 
 - k
