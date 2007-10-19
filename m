@@ -1,22 +1,18 @@
-Return-Path: <rob@landley.net>
-Received: from grelber.thyrsus.com
-	(static-71-162-243-5.phlapa.fios.verizon.net [71.162.243.5])
-	by ozlabs.org (Postfix) with ESMTP id 60813DDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 16:28:10 +1000 (EST)
-From: Rob Landley <rob@landley.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] qemu platform, v2
-Date: Fri, 19 Oct 2007 01:28:02 -0500
-References: <boot-8-00.miltonm@bga.com>
-	<440d60abf1ef533839cf5d9beb0584c9@bga.com>
-	<fa686aa40710181029o6852b1b0pf6259f27cabfd085@mail.gmail.com>
-In-Reply-To: <fa686aa40710181029o6852b1b0pf6259f27cabfd085@mail.gmail.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 24BDADDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 16:40:56 +1000 (EST)
+Date: Fri, 19 Oct 2007 01:47:25 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] NULL terminate the pci_device_ids in pasemi_edac
+Message-ID: <20071019064725.GA1806@lixom.net>
+References: <20071019150722.8d48eb1d.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710190128.02537.rob@landley.net>
-Cc: Milton Miller <miltonm@bga.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Christoph Hellwig <hch@lst.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071019150722.8d48eb1d.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 18 October 2007 12:29:08 pm Grant Likely wrote:
-> On 10/18/07, Milton Miller <miltonm@bga.com> wrote:
-> > If we say only some boards or ports are special and need to build then
-> > I would vote for shipping asm files.  If we think we need to build any
-> > random embedded platform without installing dtc then we should merge
-> > dtc.
->
-> I don't think we do.  It's looking like there are going to be out of
-> tree users of dtc also (The are some patches floating around for
-> u-boot to use the device tree for it's own initialization).  I don't
-> think it's unreasonable to install dtc for embedded development.
+On Fri, Oct 19, 2007 at 03:07:22PM +1000, Stephen Rothwell wrote:
+> Fixes:
+> drivers/edac/pasemi_edac: struct pci_device_id is 32 bytes.  The last of 1 is:
+> 0x00 0x00 0x19 0x59 0x00 0x00 0xa0 0x0a 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+> 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+> FATAL: drivers/edac/pasemi_edac: struct pci_device_id is not terminated with a NULL entry!
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-There are out of tree users of yacc and lex, but the kernel has *.c_shipped 
-files so as not to require that external tool of people who simply want to 
-build the sucker without modifying it.  "make oldconfig" was modified not to 
-require curses.
+Acked-by: Olof Johansson <olof@lixom.net>
 
-How about *.S_shipped files?
+Thanks for fixing this, Stephen. ID lists without termination can really
+cause weird problems at the most random times since it depends on how
+the kernel is built whether they do any (immediate) harm or not.
 
-> I like the idea of shipping asm files to support the qemu target; at
-> least until qemu gets better firmware.
 
-I've now gotten qemu to boot a kernel I built, using Milton's 1/2 patch and a 
-a self-contained build of a 4k ppc_boot.rom (which includes the dtc source 
-because I don't expect anybody else to have it installed, either).  
-Description and links to source, binaries, and build scripts in this message:
-
-http://lists.gnu.org/archive/html/qemu-devel/2007-10/msg00415.html
-
-There's a problem with qemu-cvs (detailed in the message), but qemu-system-ppc 
-0.9.0 boots fine, up to a shell prompt.
-
-> Cheers,
-> g.
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+-Olof
