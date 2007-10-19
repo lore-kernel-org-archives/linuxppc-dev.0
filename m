@@ -1,17 +1,19 @@
-Return-Path: <emmedve1@emmedve1-12.am.freescale.net>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 90B39DDEE8
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 10:06:58 +1000 (EST)
-From: Emil Medve <Emilian.Medve@freescale.com>
-To: jgarzik@pobox.com, leoli@freescale.com, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
-Date: Thu, 18 Oct 2007 17:15:13 -0500
-Message-Id: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18199.63230.583536.307945@cargo.ozlabs.ibm.com>
+Date: Fri, 19 Oct 2007 10:14:54 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH v2 3/4] Implement clockevents driver for powerpc
+In-Reply-To: <47177229.2030200@ru.mvista.com>
+References: <20070921032603.0D3EA32C887@thor> <4713A616.3090103@ru.mvista.com>
+	<18195.64334.985238.848522@cargo.ozlabs.ibm.com>
+	<47161D79.6000003@ru.mvista.com>
+	<18198.43687.44059.477047@cargo.ozlabs.ibm.com>
+	<47177229.2030200@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	Realtime Kernel <linux-rt-users@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-drivers/net/ucc_geth.c: In function 'ucc_geth_startup':
-drivers/net/ucc_geth.c:2614: warning: assignment makes integer from pointer without a cast
-drivers/net/ucc_geth.c:2651: warning: assignment makes integer from pointer without a cast
+Sergei Shtylyov writes:
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+> > What problem do you see arising from this?
+> 
+>     Timers firing too early.
 
-This patch is against Jeff's tree: d85714d81cc0408daddb68c10f7fd69eafe7c213 
+Only if the minimum interrupt latency is less than 1 decrementer
+tick.  That seems pretty unlikely to me unless you have a very slow
+timebase frequency.
 
-netdev-2.6> scripts/checkpatch.pl 0001-POWERPC-ucc_geth-Eliminate-compile-warnings.patch 
-Your patch has no obvious style problems and is ready for submission.
+In fact what we should program the decrementer to is:
 
- drivers/net/ucc_geth.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+	timeout - (is_booke? 0: 1) - min_interrupt_latency
 
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index bec413b..d427da8 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -2611,7 +2611,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (UCC_GETH_TX_BD_RING_ALIGNMENT > 4)
- 				align = UCC_GETH_TX_BD_RING_ALIGNMENT;
- 			ugeth->tx_bd_ring_offset[j] =
--				kmalloc((u32) (length + align), GFP_KERNEL);
-+				(u32)kmalloc(length + align, GFP_KERNEL);
- 
- 			if (ugeth->tx_bd_ring_offset[j] != 0)
- 				ugeth->p_tx_bd_ring[j] =
-@@ -2648,7 +2648,7 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 			if (UCC_GETH_RX_BD_RING_ALIGNMENT > 4)
- 				align = UCC_GETH_RX_BD_RING_ALIGNMENT;
- 			ugeth->rx_bd_ring_offset[j] =
--				kmalloc((u32) (length + align), GFP_KERNEL);
-+				(u32)kmalloc(length + align, GFP_KERNEL);
- 			if (ugeth->rx_bd_ring_offset[j] != 0)
- 				ugeth->p_rx_bd_ring[j] =
- 					(void*)((ugeth->rx_bd_ring_offset[j] +
--- 
-1.5.3.GIT
+I was assuming that min_interrupt_latency (measured in timebase ticks)
+would be at least 1, but apparently some systems can have a timebase
+frequency as low as 1kHz, so we'll have to have an ifdef or something.
+
+Paul.
