@@ -1,22 +1,21 @@
-Return-Path: <sven@powerlinux.fr>
-Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
-	by ozlabs.org (Postfix) with ESMTP id 5DB45DDEE4
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 01:44:36 +1000 (EST)
-Date: Fri, 19 Oct 2007 17:44:35 +0200
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] bestcomm: Restrict disabling of bus prefetch to original
-	mpc5200 silicon.
-Message-ID: <20071019154435.GA32172@powerlinux.fr>
-References: <20071017163555.24992.40095.stgit@trillian.cg.shawcable.net>
-	<20071019112916.GE27403@nd47.coderock.org>
-	<fa686aa40710190609jebd4e31q9240d2ff5b4a5d47@mail.gmail.com>
-	<20071019153528.GC31749@powerlinux.fr>
-	<fa686aa40710190843l15d37ebdk71cd6b660aa1eab8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710190843l15d37ebdk71cd6b660aa1eab8@mail.gmail.com>
-From: Sven Luther <sven@powerlinux.fr>
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 31C8BDDF23
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 01:47:42 +1000 (EST)
+In-Reply-To: <200710191937.23638.yur@emcraft.com>
+References: <200710181108.19413.yur@emcraft.com>
+	<18199.60025.563689.10810@cargo.ozlabs.ibm.com>
+	<200710191937.23638.yur@emcraft.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D3506DCC-01F5-48C1-900D-2D827AB6BE19@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc44x: support for 256K PAGE_SIZE
+Date: Fri, 19 Oct 2007 10:48:01 -0500
+To: Yuri Tikhonov <yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 09:43:38AM -0600, Grant Likely wrote:
-> On 10/19/07, Sven Luther <sven@powerlinux.fr> wrote:
-> > On Fri, Oct 19, 2007 at 07:09:16AM -0600, Grant Likely wrote:
-> > > On 10/19/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > > > On 17/10/07 10:36 -0600, Grant Likely wrote:
-> > > > > From: Grant Likely <grant.likely@secretlab.ca>
-> > > > >
-> > > > > Only the MPC5200 needs this bug fix.  MPC5200B is okay.
-> > > > >
-> > > > > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> > > > > ---
-> > > > >
-> > > > > Sven, Domen;
-> > > > >
-> > > > > Can you please test this patch?
-> > > >
-> > > > I found no obvious problems with it on Efika (mpc5200b)
-> > >
-> > > Cool, I'll add it to my list of patches for Paulus to pull
-> >
-> > Sorry, i have not had time to test, but there is a problem with the
-> > userland serial console i want to investigate. At the latest i will test
-> > this on monday.
-> 
-> Your userland serial problems are unrelated to this patch though, right?
 
-Most definitively, sorry for the confusion.
+On Oct 19, 2007, at 10:37 AM, Yuri Tikhonov wrote:
 
-Friendly,
+> On Friday 19 October 2007 03:21, Paul Mackerras wrote:
+>> Have you measured the performance using a 64kB page size?  If so, how
+>> does it compare with the 256kB page size?
+>
+>  I measured the performance of the sequential full-stripe write  
+> operations to
+> a RAID-5 array (P values below are in MB per second) using the h/w  
+> accelerated
+> RAID-5 driver.
+>
+>  Here are the comparative results for the different PAGE_SIZE values:
+>
+> PAGE_SIZE = 4K:
+>  P = 66 MBps;
+>
+> PAGE_SIZE = 16K:
+>  P = 145 MBps;
+>
+> PAGE_SIZE = 64K:
+>  P = 196 MBps;
+>
+> PAGE_SIZE = 256K:
+>  P = 217 MBps.
 
-Sven Luther
+Is this all in kernel space? or is there a user space aspect to the  
+benchmark?
+
+>> The 64kB page size has the attraction that no binutils changes are
+>> required.
+>
+>  That's true, but the additional performance is an attractive thing  
+> too.
+
+- k
