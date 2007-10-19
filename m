@@ -1,13 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4486DDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:11:43 +1000 (EST)
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id EE29CDDE2D
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 14:20:39 +1000 (EST)
+Date: Fri, 19 Oct 2007 12:20:25 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+Message-ID: <20071019042025.GA9617@gondor.apana.org.au>
 References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
 	<1192745137.7367.40.camel@pasglop>
 	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
@@ -16,15 +17,12 @@ References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
 	<20071019023219.GB8453@gondor.apana.org.au>
 	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
 	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 19 Oct 2007 14:11:13 +1000
-Message-Id: <1192767073.7367.84.camel@pasglop>
 Mime-Version: 1.0
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
 	akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,7 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Oct 18, 2007 at 08:26:45PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 18 Oct 2007, Linus Torvalds wrote:
+> >
+> > I *think* it should work with something like
+> > 
+> > 	for (;;) {
+> > 		smp_rmb();
+> > 		if (!spin_is_locked(&desc->lock)) {
+> > 			smp_rmb();
+> > 			if (!(desc->status & IRQ_INPROGRESS)
+> > 				break;
+> > 		}
+> > 		cpu_relax();
+> > 	}
+> 
+> I'm starting to doubt this. 
+> 
+> One of the issues is that we still need the smp_mb() in front of the loop 
+> (because we want to serialize the loop with any writes in the caller).
 
+Right.  I think if we accept the definition of a spin lock/unlock
+that Nick outlined earlier, then we can see that on the IRQ path
+there simply isn't a memory barrier between the changing of the
+status field and the execution of the action:
+
+	spin_lock
+	set IRQ_INPROGRESS
+	spin_unlock
+
+	action
+
+	spin_lock
+	clear IRQ_INPROGRESS
+	spin_unlock
+
+What may happen is that action can either float upwards to give
+
+	spin_lock
+	action
+	set IRQ_INPROGRESS
+	spin_unlock
+
+	spin_lock
+	clear IRQ_INPROGRESS
+	spin_unlock
+
+or it can float downwards to give
+
+	spin_lock
+	set IRQ_INPROGRESS
+	spin_unlock
+
+	spin_lock
+	clear IRQ_INPROGRESS
+	action
+	spin_unlock
+
+As a result we can add as many barriers as we want on the slow
+(synchronize_irq) path and it just won't do any good (not unless
+we add some barriers on the IRQ path == fast path).
+
+What we do have on the right though is the fact in some ways
+action behaves as if it's inside the spin lock even though it's
+not.  In particular, action cannot float up past the first spin
+lock nor can it float down past the last spin unlock.
+
+> See commit fa490cfd15d7ce0900097cc4e60cfd7a76381138 and ponder. Maybe we 
+> should take the same approach here, and do something like
 > 
 > 	repeat:
 > 		/* Optimistic, no-locking loop */
@@ -49,29 +116,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > 		/* Oops, that failed? */
 > 		if (status & IRQ_INPROGRESS)
 > 			goto repeat;
-> 
-> Hmm?
 
-Paulus and I convinced ourselves that this would work. If we call our
-variable that gets set before synchronize_irq and read in the IRQ
-handler "foo", we get to:
+That's why I think this patch is in fact the only one that
+solves all the races in this thread.  The case that it solves
+which the lock/unlock patch does not is the one where action
+flows downwards past the clearing of IRQ_INPROGRESS.  I missed
+this case earlier.
 
-	- writing foo can travel down at most to just before the unlock in the
-code above
+In fact this bug exists elsewhere too.  For example, the network
+stack does this in net/sched/sch_generic.c:
 
-	- reading foo can travel up out of the IRQ handler at most just after
-the lock in the code that sets IRQ_INPROGRESS.
+        /* Wait for outstanding qdisc_run calls. */
+	while (test_bit(__LINK_STATE_QDISC_RUNNING, &dev->state))
+		yield();
 
-The whole lock/set IRQ_INPROGRESS/unlock path can then only happen
-before the locked section above, in which case we see and wait nicely
-and all is good, or after, in which case the store to foo will be
-visible to the IRQ handler as it will be ordered with the unlock in the
-code above.
+This has the same problem as the current synchronize_irq code.
 
-Pfiew !
-
-So Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Thanks !
-
-Ben.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
