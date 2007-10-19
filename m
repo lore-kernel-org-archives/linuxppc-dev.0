@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 275C4DDECF
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:07:02 +1000 (EST)
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7D8D790@corpexc01.corp.networkrobots.com>
-References: <mailman.1363.1192734606.3099.linuxppc-dev@ozlabs.org>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D7D8D790@corpexc01.corp.networkrobots.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EB4A8767-275D-4DBB-A573-99F858D29D4A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Building zImage
-Date: Fri, 19 Oct 2007 08:07:42 -0500
-To: Siva Prasad <sprasad@bivio.net>
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
+	by ozlabs.org (Postfix) with ESMTP id CBE60DDEC0
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:09:18 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so40710nzh
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 06:09:17 -0700 (PDT)
+Message-ID: <fa686aa40710190609jebd4e31q9240d2ff5b4a5d47@mail.gmail.com>
+Date: Fri, 19 Oct 2007 07:09:16 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH] bestcomm: Restrict disabling of bus prefetch to original
+	mpc5200 silicon.
+In-Reply-To: <20071019112916.GE27403@nd47.coderock.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071017163555.24992.40095.stgit@trillian.cg.shawcable.net>
+	<20071019112916.GE27403@nd47.coderock.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,50 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 10/19/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> On 17/10/07 10:36 -0600, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > Only the MPC5200 needs this bug fix.  MPC5200B is okay.
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> > Sven, Domen;
+> >
+> > Can you please test this patch?
+>
+> I found no obvious problems with it on Efika (mpc5200b)
 
-On Oct 18, 2007, at 6:22 PM, Siva Prasad wrote:
+Cool, I'll add it to my list of patches for Paulus to pull
 
-> Hi,
->
-> When I tried to build zImage (make zImage V=1) based on the 2.6.19
-> kernel for 8641HPCN board, I got the following error...
->
-> make -f scripts/Makefile.build obj=lib
-> make -f
-> /export/beavis/work/sprasad/2.6.19/linux-2.6.19/scripts/ 
-> Makefile.modpost
-> vmlinux
->   scripts/mod/modpost -m  -o
-> /export/beavis/work/sprasad/2.6.19/linux-2.6.19/Module.symvers
-> vmlinux
-> rm -f .old_version
-> make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
-> arch/powerpc/boot/zImage
-> ln: accessing `arch/powerpc/boot/zImage': No such file or directory
-> make[1]: *** [arch/powerpc/boot/zImage] Error 1
-> make: *** [zImage] Error 2
->
-> When I looked into the Makefile, "image-y" was having no value. So,  
-> "ln"
-> was failing. Do I have to select one of the below options of zImage. I
-> am not really sure which one to use for 8641 supported by FreeScale.
->
-> image-$(CONFIG_PPC_PSERIES)             += zImage.pseries
-> image-$(CONFIG_PPC_MAPLE)               += zImage.pseries
-> image-$(CONFIG_PPC_IBM_CELL_BLADE)      += zImage.pseries
-> image-$(CONFIG_PPC_CHRP)                += zImage.chrp
-> image-$(CONFIG_PPC_PMAC)                += zImage.pmac
-> image-$(CONFIG_DEFAULT_UIMAGE)          += uImage
->
-> Well!... we are not using U-Boot, so uImage is not an option, and that
-> builds fine.
->
-> Any way, I tried to make uImage, but I am not sure if it is including
-> the dts file in the final uImage built, as the wrapper was passed the
-> value of platform as "uboot". I am confused.
->
-> Thanks for your help in advance.
+g.
 
-uImage's do NOT include device trees as part of the image.
-
-- k
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
