@@ -1,20 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] NULL terminate the pci_device_ids in pasemi_edac
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071019064725.GA1806@lixom.net>
-References: <20071019150722.8d48eb1d.sfr@canb.auug.org.au>
-	<20071019064725.GA1806@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zHdkcW4d0KanMgsSc9Io"
-Date: Fri, 19 Oct 2007 20:34:32 +1000
-Message-Id: <1192790072.6345.3.camel@concordia>
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	ppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 85F15DDEA3
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 20:45:02 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9JAiuS9015018
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 03:44:57 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9JAitU6018116
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 05:44:56 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] qe_lib: export symbols to fix compile error when QE
+	drivers compile as modules
+Date: Fri, 19 Oct 2007 18:44:53 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B5C9B@zch01exm26.fsl.freescale.net>
+In-Reply-To: <F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
+References: <989B956029373F45A0B8AF0297081890B768A2@zch01exm26.fsl.freescale.net>
+	<24BADA7A-1716-43B1-BC92-F4DB7ED0D331@kernel.crashing.org>
+	<F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Tabi Timur-B04825 <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-zHdkcW4d0KanMgsSc9Io
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-On Fri, 2007-10-19 at 01:47 -0500, Olof Johansson wrote:
-> On Fri, Oct 19, 2007 at 03:07:22PM +1000, Stephen Rothwell wrote:
-> > Fixes:
-> > drivers/edac/pasemi_edac: struct pci_device_id is 32 bytes.  The last o=
-f 1 is:
-> > 0x00 0x00 0x19 0x59 0x00 0x00 0xa0 0x0a 0xff 0xff 0xff 0xff 0xff 0xff 0=
-xff 0xff
-> > 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0=
-x00 0x00
-> > FATAL: drivers/edac/pasemi_edac: struct pci_device_id is not terminated=
- with a NULL entry!
-> >=20
-> > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Wednesday, October 17, 2007 11:30 PM
+> To: Li Yang-r58472
+> Cc: linuxppc-dev list; Tabi Timur-B04825
+> Subject: Re: [PATCH] qe_lib: export symbols to fix compile=20
+> error when QE drivers compile as modules
 >=20
-> Acked-by: Olof Johansson <olof@lixom.net>
 >=20
-> Thanks for fixing this, Stephen. ID lists without termination can really
-> cause weird problems at the most random times since it depends on how
-> the kernel is built whether they do any (immediate) harm or not.
+> On May 25, 2007, at 7:15 AM, Kumar Gala wrote:
+>=20
+> >
+> > On May 24, 2007, at 9:45 PM, Li Yang-r58472 wrote:
+> >
+> >>
+> >>> -----Original Message-----
+> >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >>> Sent: Thursday, May 24, 2007 7:44 PM
+> >>> To: Li Yang-r58472
+> >>> Cc: Paul; linuxppc-dev@ozlabs.org
+> >>> Subject: Re: [PATCH] qe_lib: export symbols to fix compile error=20
+> >>> when
+> >> QE drivers
+> >>> compile as modules
+> >>>
+> >>>
+> >>> On May 24, 2007, at 4:14 AM, Li Yang wrote:
+> >>>
+> >>>> Export symbols of qe_lib to be used by QE drivers.
+> >>>>
+> >>>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>>> ---
+> >>>> arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
+> >>>> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
+> >>>> arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
+> >>>> 3 files changed, 25 insertions(+), 2 deletions(-)
+> >>>
+>=20
+> What happened with this?
 
-Kind of makes you wonder if some macro foo to automatically append the
-NULL entry wouldn't be a good idea.
+This has been merged as commit 65482ccf9d00bf4f68e17eb9c656d045d26e5d1f.
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-zHdkcW4d0KanMgsSc9Io
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHGIg4dSjSd0sB4dIRAs/9AKCsovT7QtpQ6wC+Maizjww/YgvqzQCgyloR
-4nNLHRoRBfL/G2/E8E3F6FE=
-=D1Yi
------END PGP SIGNATURE-----
-
---=-zHdkcW4d0KanMgsSc9Io--
+- Leo
