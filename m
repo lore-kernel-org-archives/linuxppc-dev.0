@@ -1,23 +1,14 @@
-Return-Path: <cbou@mail.ru>
-Received: from mx28.mail.ru (mx28.mail.ru [194.67.23.67])
-	by ozlabs.org (Postfix) with ESMTP id EC0CCDDEC5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 10:17:12 +1000 (EST)
-Received: from mx39.mail.ru (mx39.mail.ru [194.67.23.35])
-	by mx28.mail.ru (mPOP.Fallback_MX) with ESMTP id 626E26CF823
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 02:29:47 +0400 (MSD)
-Date: Fri, 19 Oct 2007 02:29:27 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v3 2/2] [POWERPC] MPC8568E-MDS: add support for flash
-Message-ID: <20071018222927.GA1475@zarina>
-References: <2eed9d85d53305b2b0d6e8f8287148f7a600ad19.1192730268.git.avorontsov@ru.mvista.com>
-	<20071018180104.GB16748@localhost.localdomain>
-	<C2A61B74-FDB4-4571-A2F4-F0B7317FD7C7@kernel.crashing.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 19 Oct 2007 10:56:13 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH v5 9/9] add MPC837x MDS board default device tree
+Message-ID: <20071019005613.GA18240@localhost.localdomain>
+References: <1192702580-6353-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <C2A61B74-FDB4-4571-A2F4-F0B7317FD7C7@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: cbou@mail.ru
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1192702580-6353-1-git-send-email-leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 18, 2007 at 02:58:25PM -0500, Kumar Gala wrote:
-[...]
-> > +
-> > +		flash@0,0 {
-> > +			#address-cells = <1>;
-> > +			#size-cells = <1>;
-> > +			compatible = "Spansion,S29GL256N11TFIV2O", "cfi-flash";
-> > +			reg = <0 0 2000000>;
-> > +			bank-width = <2>;
-> > +			device-width = <1>;
-> > +
-> 
-> Are you basing the partition map on something or making it up?   
-> Clearly hrcw & u-boot are at fixed offsets, wondering about kernel &  
-> rootfs?
+On Thu, Oct 18, 2007 at 06:16:20PM +0800, Li Yang wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> new file mode 100644
+> index 0000000..8530de6
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> @@ -0,0 +1,282 @@
+[snip]
+> +		crypto@30000 {
+> +			model = "SEC3";
+> +			compatible = "talitos";
 
-I'm making it up. From the brief look at the u-boot* git sources,
-there is no `flashboot` yet, thus I'm free to make this up...
-
-I've partitioned this flash based on these thoughts:
-
-1. HRCW - whole sector, to not wear out it, plus it's impossible to
-   create just 64 bytes partition;
-2. Kernel - 2MB, should be enough for bootup kernels?
-3. Rootfs - the rest up to...
-4. U-Boot at the end.
-
-I'm not saying that it's best map ever, I'm open to suggestions. ;-)
-
-* Unfortunately I didn't look at the stock Freescale u-boot, maybe
-  there was flashboot, most probably.. I'll find the CD to look this
-  up.
-
-Much thanks for noticing this,
+That compatible doesn't look specific enough.  It should at least have
+a vendor portion.  In general it's best to have all the information
+you need to pick a driver and options in compatible, rather than
+splitting that info into model.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
