@@ -2,23 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA0FCDDE24
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:05:07 +1000 (EST)
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B5C9B@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF0297081890B768A2@zch01exm26.fsl.freescale.net>
-	<24BADA7A-1716-43B1-BC92-F4DB7ED0D331@kernel.crashing.org>
-	<F2C6FCFC-78EF-4660-85F8-10C1AFE860F4@kernel.crashing.org>
-	<989B956029373F45A0B8AF0297081890019B5C9B@zch01exm26.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 275C4DDECF
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 23:07:02 +1000 (EST)
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7D8D790@corpexc01.corp.networkrobots.com>
+References: <mailman.1363.1192734606.3099.linuxppc-dev@ozlabs.org>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D7D8D790@corpexc01.corp.networkrobots.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C3C5278B-A57E-46EC-91FA-FB403817AFBF@kernel.crashing.org>
+Message-Id: <EB4A8767-275D-4DBB-A573-99F858D29D4A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] qe_lib: export symbols to fix compile error when QE
-	drivers compile as modules
-Date: Fri, 19 Oct 2007 08:05:44 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tabi Timur-B04825 <timur@freescale.com>
+Subject: Re: Building zImage
+Date: Fri, 19 Oct 2007 08:07:42 -0500
+To: Siva Prasad <sprasad@bivio.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>>> Export symbols of qe_lib to be used by QE drivers.
->>>>>>
->>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
->>>>>> ---
->>>>>> arch/powerpc/sysdev/qe_lib/ucc.c      |    7 +++++++
->>>>>> arch/powerpc/sysdev/qe_lib/ucc_fast.c |    8 ++++++++
->>>>>> arch/powerpc/sysdev/qe_lib/ucc_slow.c |   12 ++++++++++--
->>>>>> 3 files changed, 25 insertions(+), 2 deletions(-)
->>>>>
->>
->> What happened with this?
->
-> This has been merged as commit  
-> 65482ccf9d00bf4f68e17eb9c656d045d26e5d1f.
 
-Ignore me I see the commit.  Timur will just need to EXPORT_SYMBOL()  
-what additional functions he needs for the uart driver.
+On Oct 18, 2007, at 6:22 PM, Siva Prasad wrote:
+
+> Hi,
+>
+> When I tried to build zImage (make zImage V=1) based on the 2.6.19
+> kernel for 8641HPCN board, I got the following error...
+>
+> make -f scripts/Makefile.build obj=lib
+> make -f
+> /export/beavis/work/sprasad/2.6.19/linux-2.6.19/scripts/ 
+> Makefile.modpost
+> vmlinux
+>   scripts/mod/modpost -m  -o
+> /export/beavis/work/sprasad/2.6.19/linux-2.6.19/Module.symvers
+> vmlinux
+> rm -f .old_version
+> make ARCH=ppc64 -f scripts/Makefile.build obj=arch/powerpc/boot
+> arch/powerpc/boot/zImage
+> ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+> make[1]: *** [arch/powerpc/boot/zImage] Error 1
+> make: *** [zImage] Error 2
+>
+> When I looked into the Makefile, "image-y" was having no value. So,  
+> "ln"
+> was failing. Do I have to select one of the below options of zImage. I
+> am not really sure which one to use for 8641 supported by FreeScale.
+>
+> image-$(CONFIG_PPC_PSERIES)             += zImage.pseries
+> image-$(CONFIG_PPC_MAPLE)               += zImage.pseries
+> image-$(CONFIG_PPC_IBM_CELL_BLADE)      += zImage.pseries
+> image-$(CONFIG_PPC_CHRP)                += zImage.chrp
+> image-$(CONFIG_PPC_PMAC)                += zImage.pmac
+> image-$(CONFIG_DEFAULT_UIMAGE)          += uImage
+>
+> Well!... we are not using U-Boot, so uImage is not an option, and that
+> builds fine.
+>
+> Any way, I tried to make uImage, but I am not sure if it is including
+> the dts file in the final uImage built, as the wrapper was passed the
+> value of platform as "uboot". I am confused.
+>
+> Thanks for your help in advance.
+
+uImage's do NOT include device trees as part of the image.
 
 - k
