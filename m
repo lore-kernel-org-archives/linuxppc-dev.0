@@ -1,12 +1,15 @@
-Return-Path: <Martin.Leisner@xerox.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2DAE5DDEB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 04:44:37 +1000 (EST)
+Date: Fri, 19 Oct 2007 13:51:10 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: mpic: minor optimization of ipi handler
+Message-ID: <20071019185110.GA11911@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: embedded a default dtb in the kernel (was merge dtc)
-Date: Fri, 19 Oct 2007 14:30:28 -0400
-Message-ID: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
-From: "Leisner, Martin" <Martin.Leisner@xerox.com>
-To: "linuxppc-dev" <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is there a way to embed a default dtb into the kernel?
-When I build a kernel, I want to embed a dtb into it --
-so I don't have to deal with the headaches of finding the
-right file to match the right board (its always easier to
-deal with 1 file than 2).
+Jeff Garzik pointed out that we don't actually have to lookup the mpic
+instance since it's passed in as the interrupt handler data for IPIs.
 
-If there is, it makes sense to put dtc into the tree.
-If there's not, there should be a way to embed dtb's; and put
-dtc and dts's into the tree.
-If there can't be (I haven't examined this but relaying my
-experiences), then it should be in a separate repository
-(but the DTS and DTC should be in one place).
-It was a little difficult to cobble together a working=20
-system the first time.
 
-Also, mkimage SHOULD definitely go in the tree.  Its necessary
-to build, hence should be in the tree...
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-There are cases where one kernel can support multiple boards/DTBs.
-I guess boot flags can control whether to use an embedded DTB or
-one passed from uboot...
-
-marty
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index e479388..6bf56f4 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -612,11 +612,10 @@ static inline void mpic_eoi(struct mpic *mpic)
+ }
+ 
+ #ifdef CONFIG_SMP
+-static irqreturn_t mpic_ipi_action(int irq, void *dev_id)
++static irqreturn_t mpic_ipi_action(int irq, void *data)
+ {
+-	struct mpic *mpic;
++	struct mpic *mpic = data;
+ 
+-	mpic = mpic_find(irq, NULL);
+ 	smp_message_recv(mpic_irq_to_hw(irq) - mpic->ipi_vecs[0]);
+ 
+ 	return IRQ_HANDLED;
