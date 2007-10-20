@@ -1,24 +1,19 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F1934DDE9E
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 12:25:46 +1000 (EST)
-Date: Fri, 19 Oct 2007 19:25:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] synchronize_irq needs a barrier
-In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
-Message-ID: <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
-References: <1192670742.12879.5.camel@pasglop>
-	<200710200402.43106.maximlevitsky@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
-Cc: akpm <akpm@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <Monstr@seznam.cz>
+Received: from mxh.seznam.cz (mxh.seznam.cz [77.75.72.26])
+	by ozlabs.org (Postfix) with SMTP id C7754DDEC0
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 12:28:32 +1000 (EST)
+In-Reply-To: <20071019234347.38C1111C006B@mail3-dub.bigfish.com>
+Date: Sat, 20 Oct 2007 04:28:26 +0200 (CEST)
+To: microblaze-uclinux@itee.uq.edu.au
+From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
+Subject: =?us-ascii?Q?Re=3A=20=5Bmicroblaze=2Duclinux=5D=20RE=3A=20=5BPATCH=20v3=5D=20Device=20tree=20bindings=20for=20Xilinx=20devices?=
+Mime-Version: 1.0
+Message-Id: <1300.2720-24480-247293449-1192847306@seznam.cz>
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: Leonid <Leonid@a-k-a.net>, =?us-ascii?Q?Arnd=20Bergmann?= <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org,
+	=?us-ascii?Q?Wolfgang=20Reissnegger?= <wre@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Steve and all,
+>Here's a full .dts generated using an updated version of
+>gen_mhs_devtree.py, following the proposal.
+>It happens to be a microblaze system, but you get the idea.
 
+I think that is no good idea generate dts with all information.
+Especially information about PVR - number 2 means - Full PVR and you can
+obtain information directly from PVR. It is waste of memory space.
+			xilinx,pvr = <2>;
 
-On Sat, 20 Oct 2007, Maxim Levitsky wrote:
-> 
-> and the interrupt handler:
-> 
-> 	smp_rmb();
-> 	if (dev->insuspend)
-> 		goto out;
+In my opinion will be better generate only parameters which you want not all.
+That smells with unusable parameters.
 
-Something like that can work, yes. However, you need to make sure that:
-
- - even when you ignore the interrupt (because the driver doesn't care, 
-   it's suspending), you need to make sure the hardware gets shut up by 
-   reading (or writing) the proper interrupt status register.
-
-   Otherwise, with a level interrupt, the interrupt will continue to be 
-   held active ("screaming") and the CPU will get interrupted over and 
-   over again, until the irq subsystem will just turn the irq off 
-   entirely.
-
- - when you resume, make sure that you get the engine going again, with 
-   the understanding that some interrupts may have gotten ignored.
-
-Also, in general, these kinds of things shouldn't always even be 
-neicessary. If you use the suspend_late()/resume_early() hooks, those will 
-be called with interrupts off, and while they can be harder to debug (and 
-may be worth avoiding for non-critical drivers), they do allow for simpler 
-models partly exactly because they don't need to worry about interrupts 
-etc.
-
-		Linus
+Michal Simek
