@@ -1,20 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20FEFDDEA3
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 15:32:44 +1000 (EST)
-In-Reply-To: <20071020084737.GG26642@localhost.localdomain>
-References: <E1Iivsg-00078a-Vp@jdl.com>
-	<20071020084737.GG26642@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6a6fcd2bc9b0121cb5e9cfc675d88f57@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] DTC: Begin the path to sane literals and expressions.
-Date: Sun, 21 Oct 2007 07:32:33 +0200
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <root@hofr.at>
+Date: Sat, 20 Oct 2007 22:34:32 +0200 (CEST)
+From: Nicholas Mc Guire <der.herr@hofr.at>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: rtlinux rtai interrupt latency
+In-Reply-To: <1192937066.19375.0.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.60.0710202230230.1476@rtl14.hofr.at>
+References: <f3566d60710201945m3d29830if274e61356c0179@mail.gmail.com>
+	<1192937066.19375.0.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Use of "d#', "o#", "h#" and "b#" are gone in version 1.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+> On Sun, 2007-10-21 at 10:45 +0800, Bai Shuwei wrote:
+>> all, hi
+>>   does anyone knows RTLinux, RTAI interrupt latency and schedule
+>> latency on the PPC440, PPC405?
 >
-> Also good.  We might want to keep b#, since there's no C way of doing
-> binary literals,
+> You'd have to ask Wind River.
+>
+There are free variants around as well - XtratuM/PPC (RTLinux-4.0) is
+running on 440EP/GR and 405 Octobus, im quite sur RTAI also is available
+for AMCC CPUs - check RTAI.org (mailing list link is to be found there) 
+and rtlinux-gpl.org (mailing list link) - those lists are most likely the
+best source for the free-software hard-realtime Linux variants.
 
-GCC supports "0b...", and it is proposed new ISO C syntax, too.
+hofrat
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-
-Segher
+iD4DBQFHGmZZnU7rXZKfY2oRArrjAJ9WXETFjALA52TRuRtDRSm4x3DcZACYgylW
+60r4W0r6+LtMv+UBK+5h9A==
+=Eb2V
+-----END PGP SIGNATURE-----
