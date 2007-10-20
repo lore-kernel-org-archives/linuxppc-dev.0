@@ -1,19 +1,16 @@
-Return-Path: <Monstr@seznam.cz>
-Received: from mxh.seznam.cz (mxh.seznam.cz [77.75.72.26])
-	by ozlabs.org (Postfix) with SMTP id 57A75DDE40
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 17:05:57 +1000 (EST)
-In-Reply-To: <fa686aa40710192247u294b9329p538bbaf715610040@mail.gmail.com>
-Date: Sat, 20 Oct 2007 09:05:52 +0200 (CEST)
-To: =?us-ascii?Q?Grant=20Likely?= <grant.likely@secretlab.ca>
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?Re=3A=20=5Bmicroblaze=2Duclinux=5D=20RE=3A=20=5BPATCH=20v3=5D=20Device=20tree=20bindings=20for=20Xilinx=20devices?=
-Mime-Version: 1.0
-Message-Id: <1293.2647-29478-1639039305-1192863952@seznam.cz>
-Content-Type: text/plain;
-	charset="us-ascii"
-Cc: Leonid <Leonid@a-k-a.net>, =?us-ascii?Q?Arnd=20Bergmann?= <arnd@arndb.de>,
-	microblaze-uclinux@itee.uq.edu.au, linuxppc-dev@ozlabs.org,
-	=?us-ascii?Q?Wolfgang=20Reissnegger?= <wre@xilinx.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 20 Oct 2007 17:10:43 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: embedded a default dtb in the kernel (was merge dtc)
+Message-ID: <20071020071043.GB26642@localhost.localdomain>
+References: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
+	<fa686aa40710191209u883b3d0r954e7b3d6d1b8d12@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710191209u883b3d0r954e7b3d6d1b8d12@mail.gmail.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, "Leisner,
+	Martin" <Martin.Leisner@xerox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+On Fri, Oct 19, 2007 at 01:09:39PM -0600, Grant Likely wrote:
+> On 10/19/07, Leisner, Martin <Martin.Leisner@xerox.com> wrote:
+> > Is there a way to embed a default dtb into the kernel?
+> > When I build a kernel, I want to embed a dtb into it --
+> > so I don't have to deal with the headaches of finding the
+> > right file to match the right board (its always easier to
+> > deal with 1 file than 2).
+> >
+> > If there is, it makes sense to put dtc into the tree.
+> > If there's not, there should be a way to embed dtb's; and put
+> > dtc and dts's into the tree.
+> > If there can't be (I haven't examined this but relaying my
+> > experiences), then it should be in a separate repository
+> > (but the DTS and DTC should be in one place).
+> > It was a little difficult to cobble together a working
+> > system the first time.
+> >
+> > Also, mkimage SHOULD definitely go in the tree.  Its necessary
+> > to build, hence should be in the tree...
+> 
+> Why?  mkimage is u-boot specific, and hence is maintained by u-boot.
+> If you're not using u-boot, then you don't need mkimage.  What is
+> wrong with it being a prereq like all the other tools we use?  If
+> you're doing embedded development, you're installing non-distribution
+> cross toolchain anyway.
 
->> Hi Steve and all,
->> >Here's a full .dts generated using an updated version of
->> >gen_mhs_devtree.py, following the proposal.
->> >It happens to be a microblaze system, but you get the idea.
->>
->> I think that is no good idea generate dts with all information.
->> Especially information about PVR - number 2 means - Full PVR and you can
->> obtain information directly from PVR. It is waste of memory space.
->>                         xilinx,pvr = <2>;
->>
->> In my opinion will be better generate only parameters which you want not all.
->> That smells with unusable parameters.
->
->That is the hard part about crafting the dts; deciding which
->parameters the OS is going to care about and which ones are
->irrelevant.  The goal is to sufficiently and uniquely describe the
->board so that the OS can easily figure out what exactly what it needs
->to do to drive the board, but not to try and describe every aspect
->which it knows about.  Anything that is pollable (ie. USB devices)
->doesn't need to be in the tree.
->
->It's also important to remember that the device tree will *never* be
->perfect.  Eventually something will come up that the device tree
->doesn't describe well(a bug/quirk, something described poorly, etc).
->In this case, as long as the device tree is specific enough to
->identify which version of the board it is running on; we can alwasy
->add platform specific fixups for that unique system.
->
+The problem is that we build uImages at present, without option, for a
+bunch of targets that don't necessarily have u-boot.
 
-yes, but I think that is the right time to specify which parameters are relevant.
-I will focus on in EDK renerator.
+> dtc and mkimage are embedded development tools.  They belong with the
+> embedded development toolchain.  mkimage is already part of ELDK.
 
-Michal Simek
+dtc isn't just for embedded.  ps3 uses it already, and more may well
+do so in future.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
