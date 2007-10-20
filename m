@@ -1,14 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 20 Oct 2007 17:11:22 +1000
+Date: Sat, 20 Oct 2007 17:16:32 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: "Leisner, Martin" <Martin.Leisner@xerox.com>
-Subject: Re: embedded a default dtb in the kernel (was merge dtc)
-Message-ID: <20071020071122.GC26642@localhost.localdomain>
-References: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH 2/4] DTC: Quiet a bogus "May be used uninitialized"
+	warning.
+Message-ID: <20071020071632.GE26642@localhost.localdomain>
+References: <E1IivsA-00078F-ST@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <556445368AFA1C438794ABDA8901891C075945FD@USA0300MS03.na.xerox.net>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <E1IivsA-00078F-ST@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 19, 2007 at 02:30:28PM -0400, Leisner, Martin wrote:
-> Is there a way to embed a default dtb into the kernel?
-> When I build a kernel, I want to embed a dtb into it --
-> so I don't have to deal with the headaches of finding the
-> right file to match the right board (its always easier to
-> deal with 1 file than 2).
+On Fri, Oct 19, 2007 at 12:42:58PM -0500, Jon Loeliger wrote:
+> 
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
-You can't embed a dtb in the vmlinux, but zImages routinely contain an
-embedded dtb.
+I don't like this one much.  The warning is indeed bogus, and my
+compiler version, at least, doesn't generate it
+	mulberryst:~/dtc$ gcc --version
+	gcc (GCC) 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)
+
+Putting in the initializer would mean that even on non-broken
+compilers, we wouldn't get the warning if we ever changed the
+contained code so that it really should generate an unitialized
+variable warning.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
