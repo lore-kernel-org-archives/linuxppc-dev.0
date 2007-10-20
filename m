@@ -1,11 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-Date: Sat, 20 Oct 2007 11:33:03 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
-Subject: Device trees and audio codecs
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <sam@ravnborg.org>
+Received: from pasmtpA.tele.dk (pasmtpa.tele.dk [80.160.77.114])
+	by ozlabs.org (Postfix) with ESMTP id 25DB7DDE44
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 04:46:25 +1000 (EST)
+Date: Sat, 20 Oct 2007 20:47:53 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] restore arch/ppc/boot cflags
+Message-ID: <20071020184753.GA8572@uranus.ravnborg.org>
+References: <200710200858.l9K8w3Nn064775@sullivan.realtime.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710200858.l9K8w3Nn064775@sullivan.realtime.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,82 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm working on ALSA ASoC support for a codec chip on my mpc5200 based
-target hardware. How should the codec be represented in the device
-tree?
+On Sat, Oct 20, 2007 at 03:58:03AM -0500, Milton Miller wrote:
+> Commit 9a39e273d4df0560c724c5fe71f6314a0583ca2b removed the boot directory
+> addition to CFLAGS that was being used by the subdirectory builds.  For the
+> other files, that patch set EXTRA_CFLAGS, but Makefile.build explicitly
+> sets that to empty as it is explicitly for a single directory only.
+> Append to KBUILD_CFLAGS instead.
 
-Under ASoC the device drivers for the codec chips are platform
-independent.  In the current ASoC model there are three device
-drivers: i2s (or spi, etc), the generic codec, and a platform specific
-'fabric' driver.  Some codecs are linked to both i2c and i2s.
+Neat - I had not figured out that the assignmnet took effect
+recursively.
+I have applied following patch.
 
-The fabric driver corresponds to the 'layout-id' in the Apple model.
-It tells how to configure the generic codec driver for the specific
-configuration needed by the actual platform hardware.
+	Sam
 
-For development purposes I'm using an Efika as a target platform. It
-is easy enough to load the i2s driver using the device tree. I can add
-entries to the i2s node to trigger loading of the generic sta9766
-codec driver. How do I trigger loading the Efika specific fabric
-driver?
+>From 437374e9a95062fe310b901e48585691edaf5dd0 Mon Sep 17 00:00:00 2001
+From: Milton Miller <miltonm@bga.com>
+Date: Sat, 20 Oct 2007 03:58:03 -0500
+Subject: [PATCH] kbuild: restore arch/{ppc/xtensa}/boot cflags
 
-My target hardware has a codec that is linked to both i2s and i2c. How
-should it be represented?
+Commit 9a39e273d4df0560c724c5fe71f6314a0583ca2b removed the boot directory
+addition to CFLAGS that was being used by the subdirectory builds.  For the
+other files, that patch set EXTRA_CFLAGS, but Makefile.build explicitly
+sets that to empty as it is explicitly for a single directory only.
+Append to KBUILD_CFLAGS instead.
 
-Apple has three entries. One for i2s, one for the codec, and one for
-soundchip. What is the soundchip entry, does it correspond to real
-hardware?
+Signed-off-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/ppc/boot/Makefile    |    2 ++
+ arch/xtensa/boot/Makefile |    3 ++-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000:
-name             "i2s-a"
-device_type      "soundbus"
-compatible       "i2sbus"
-built-in
-reg              00010000 00001000 00008000 00000100 00008100 00000100
-interrupts       0000001e 00000001 00000001 00000000 00000002 00000000
-interrupt-parent ff981a38
-platform-headphone-mute ff9828a0
-platform-amp-mute ff9829f8
-platform-hw-reset ff982b48
-platform-linein-detect ff982c98
-platform-headphone-detect ff982e58
-platform-get-enable ff97c3b0
-platform-enable  ff97c3b0
-platform-disable ff97c3b0
-platform-get-clock-enable ff97c3b0
-platform-clock-enable ff97c3b0
-platform-clock-disable ff97c3b0
-platform-get-sw-reset ff97c3b0
-platform-clear-sw-reset ff97c3b0
-platform-sw-reset ff97c3b0
-platform-get-cell-enable ff97c3b0
-platform-cell-enable ff97c3b0
-platform-cell-disable ff97c3b0
-linux,phandle    ff985b88
-
-/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound:
-name             "sound"
-device_type      "soundchip"
-compatible       "AOAbase"
-built-in
-layout-id        00000046 (70)
-object-model-version 00000002
-vendor-id        0000106b (4203)
-platform-tas-codec-ref ff98cba8
-linux,phandle    ff985d48
-
-/proc/device-tree/pci@f2000000/mac-io@17/i2c@18000/i2c-bus@0/codec@6a:
-name             "codec"
-device_type      "codec"
-compatible       "tas3004"
-                 "codec"
-                 ""
-reg              0000006a (106)
-built-in
-platform-do-tas-codec-ref ff985d48 08000000 00000027
-linux,phandle    ff98cba8
-
-
+diff --git a/arch/ppc/boot/Makefile b/arch/ppc/boot/Makefile
+index 487dc66..500497e 100644
+--- a/arch/ppc/boot/Makefile
++++ b/arch/ppc/boot/Makefile
+@@ -13,6 +13,8 @@
+ # modified by Cort (cort@cs.nmt.edu)
+ #
+ 
++# KBUILD_CFLAGS used when building rest of boot (takes effect recursively)
++KBUILD_CFLAGS 	+= -fno-builtin -D__BOOTER__ -Iarch/$(ARCH)/boot/include
+ HOSTCFLAGS	+= -Iarch/$(ARCH)/boot/include
+ 
+ BOOT_TARGETS	= zImage zImage.initrd znetboot znetboot.initrd
+diff --git a/arch/xtensa/boot/Makefile b/arch/xtensa/boot/Makefile
+index 9c5185f..40aa55b 100644
+--- a/arch/xtensa/boot/Makefile
++++ b/arch/xtensa/boot/Makefile
+@@ -8,7 +8,8 @@
+ #
+ 
+ 
+-EXTRA_CFLAGS	+= -fno-builtin -Iarch/$(ARCH)/boot/include
++# KBUILD_CFLAGS used when building rest of boot (takes effect recursively)
++KBUILD_CFLAGS	+= -fno-builtin -Iarch/$(ARCH)/boot/include
+ HOSTFLAGS	+= -Iarch/$(ARCH)/boot/include
+ 
+ BIG_ENDIAN	:= $(shell echo -e __XTENSA_EB__ | $(CC) -E - | grep -v "\#")
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+1.5.3.4.206.g58ba4
