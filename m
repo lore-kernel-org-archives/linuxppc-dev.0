@@ -1,23 +1,24 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A6700DDE1C
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 13:38:33 +1000 (EST)
-Date: Sat, 20 Oct 2007 11:37:52 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
+	by ozlabs.org (Postfix) with ESMTP id 4D582DDE1E
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 13:56:13 +1000 (EST)
 Subject: Re: [PATCH] synchronize_irq needs a barrier
-Message-ID: <20071020033752.GA20760@gondor.apana.org.au>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
 References: <1192670742.12879.5.camel@pasglop>
 	<200710200402.43106.maximlevitsky@gmail.com>
+Content-Type: text/plain
+Date: Sat, 20 Oct 2007 13:56:01 +1000
+Message-Id: <1192852561.17235.23.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
-Cc: akpm <akpm@linux-foundation.org>,
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	akpm <akpm@linux-foundation.org>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,8 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 20, 2007 at 02:02:42AM +0000, Maxim Levitsky wrote:
->
+
+> I have read this thread and I concluded few things:
+> 
+> 1) It is impossible to know that the card won't send more interrupts:
+> Even if I do a read from the device, the IRQ can be pending in the bus/APIC
+> It is even possible (and likely) that the IRQ line will be shared, thus the 
+> handler can be called by non-relevant device.
+> 
+> 2) the synchronize_irq(); in .suspend is useless:
+> an IRQ can happen immediately after this synchronize_irq();
+> and interrupt even the .suspend()
+> (At least theoretically)
+
+It's not totally useless not. It guarantees that by the time your
+are out of your suspend(), a simultaneous instance of the IRQ handler
+is either finished, or it (or any subsequent occurence) have seen
+your insuspend flag set to 1.
+
 > Thus I now understand that .suspend() should do:
 > 
 > 	saa_writel(SAA7134_IRQ1, 0);
@@ -37,14 +54,36 @@ On Sat, Oct 20, 2007 at 02:02:42AM +0000, Maxim Levitsky wrote:
 > 
 > 	dev->insuspend = 1;
 > 	smp_wmb();
+> 
+> 	/* at that point the _request to disable card's IRQs was issued, we don't know 
+> 	   that there will be no irqs anymore.
+> 	   the smp_mb(); guaranties that the IRQ handler will bail out in that case. */
+> 	
+> 	/* .......*/
+> 
+> 	pci_save_state(pci_dev);
+> 	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
+> 	return 0;
 
-If we patch synchronize_irq() as discussed here then you can
-use it in place of smp_wmb() and remove the smp_rmb from the
-interrupt handler (the latter is the path that matters).
+The above doesn't handle the case where the IRQ handle just passed the
+if (insuspend) test. You may end up calling pci_set_power_state() while
+in the middle of some further HW accesses in the handler.
+
+You still need synchronize_irq() for that reason. Or use a spinlock.
+
+> and the interrupt handler:
+> 
+> 	smp_rmb();
+> 	if (dev->insuspend)
+> 		goto out;
+> 
+> Am I right?
+
+Not quite :-)
+
+Also not that the work we are doing with synchronize_irq, if it gets
+merged, renders it unnecessary for you to add those two memory barriers,
+synchronize_irq will pretty much do the ordering for you.
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ben.
