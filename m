@@ -1,17 +1,22 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+Return-Path: <SRS0+990d1eb9326e886f17cb+1518+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AACC9DDEBC
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 18:58:17 +1000 (EST)
-Date: Sat, 20 Oct 2007 03:58:03 -0500 (CDT)
-Message-Id: <200710200858.l9K8w3Nn064775@sullivan.realtime.net>
-Subject: [PATCH] restore arch/ppc/boot cflags
-Sender: Milton Miller <miltonm@realtime.net>
-From: Milton Miller <miltonm@bga.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linux-kbuild@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 3CCEFDDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 22:19:53 +1000 (EST)
+Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
+From: David Woodhouse <dwmw2@infradead.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <BFBB503A-57F8-4DD4-BD4A-A2519E88F140@kernel.crashing.org>
+References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
+	<1192646394.4026.70.camel@shinybook.infradead.org>
+	<BFBB503A-57F8-4DD4-BD4A-A2519E88F140@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 20 Oct 2007 13:19:48 +0100
+Message-Id: <1192882789.26380.14.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 9a39e273d4df0560c724c5fe71f6314a0583ca2b removed the boot directory
-addition to CFLAGS that was being used by the subdirectory builds.  For the
-other files, that patch set EXTRA_CFLAGS, but Makefile.build explicitly
-sets that to empty as it is explicitly for a single directory only.
-Append to KBUILD_CFLAGS instead.
+On Wed, 2007-10-17 at 19:54 -0500, Kumar Gala wrote:
+> This really cracked me up.  I have to ask what the sbc8560 was doing  
+> in the boot of your car?
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
----
-The commit also changed xtensia to export EXTRA_CFLAGS from its boot
-directory, that needs to be fixed too.
+The Land Rover was full.
 
-from ARCH=ppc prep_defconfig:
-
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/write.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/read.c:11:20:/data/home/miltonm/work.git/arch/ppc/boot/of1275/ofstdio.c:11:20:  error: error: of1275.h: No such file or directoryof1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/release.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/ofinit.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/map.c:12:22: error: nonstdio.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/map.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/getprop.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/common/ns16550.c:14:20: error: serial.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/common/ns16550.c:13:22: error: nonstdio.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/enter.c:11:20: error: of1275.h: No such file or directory
-error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/claim.c:12:22: error: nonstdio.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/claim.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/of1275/finddevice.c:11:20: error: of1275.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/common/bootinfo.c:14:22: error: nonstdio.h: No such file or directory
-/data/home/miltonm/work.git/arch/ppc/boot/common/misc-common.c:18:22: error: nonstdio.h: No such file or directory
-of1275.h: No such file or directory
-
-
-diff --git a/arch/ppc/boot/Makefile b/arch/ppc/boot/Makefile
-index 487dc66..52a0d38 100644
---- a/arch/ppc/boot/Makefile
-+++ b/arch/ppc/boot/Makefile
-@@ -13,6 +13,7 @@
- # modified by Cort (cort@cs.nmt.edu)
- #
- 
-+KBUILD_CFLAGS 	+= -fno-builtin -D__BOOTER__ -Iarch/$(ARCH)/boot/include
- HOSTCFLAGS	+= -Iarch/$(ARCH)/boot/include
- 
- BOOT_TARGETS	= zImage zImage.initrd znetboot znetboot.initrd
+-- 
+dwmw2
