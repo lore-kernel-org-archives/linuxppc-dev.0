@@ -1,25 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8DADBDDE9A
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 14:09:19 +1000 (EST)
+Return-Path: <maximlevitsky@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 8B674DDE35
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 14:25:42 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so802654uge
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 21:25:41 -0700 (PDT)
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] synchronize_irq needs a barrier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1192853044.17235.32.camel@pasglop>
+Date: Sat, 20 Oct 2007 06:24:58 +0200
 References: <1192670742.12879.5.camel@pasglop>
 	<200710200402.43106.maximlevitsky@gmail.com>
-	<alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
-	<1192853044.17235.32.camel@pasglop>
-Content-Type: text/plain
-Date: Sat, 20 Oct 2007 14:09:10 +1000
-Message-Id: <1192853350.17235.37.camel@pasglop>
-Mime-Version: 1.0
+	<1192852561.17235.23.camel@pasglop>
+In-Reply-To: <1192852561.17235.23.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200710200624.58261.maximlevitsky@gmail.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
+	akpm <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,29 +29,138 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> >  - even when you ignore the interrupt (because the driver doesn't care, 
-> >    it's suspending), you need to make sure the hardware gets shut up by 
-> >    reading (or writing) the proper interrupt status register.
-> >
-> >    Otherwise, with a level interrupt, the interrupt will continue to be 
-> >    held active ("screaming") and the CPU will get interrupted over and 
-> >    over again, until the irq subsystem will just turn the irq off 
-> >    entirely.
+On Saturday 20 October 2007 05:56:01 Benjamin Herrenschmidt wrote:
 > 
-> His suspend routine wrote to the IRQ mask (or equivalent) register in
-> his code example, thus the HW should shut up eventually, thus that isn't
-> strictly necessary, the IRQ in that case is just a "short
-> interrupt" (noticed by the PIC and delivered but possibly not asserted
-> anymore at this stage or about to go down).
+> > I have read this thread and I concluded few things:
+> > 
+> > 1) It is impossible to know that the card won't send more interrupts:
+> > Even if I do a read from the device, the IRQ can be pending in the bus/APIC
+> > It is even possible (and likely) that the IRQ line will be shared, thus the 
+> > handler can be called by non-relevant device.
+> > 
+> > 2) the synchronize_irq(); in .suspend is useless:
+> > an IRQ can happen immediately after this synchronize_irq();
+> > and interrupt even the .suspend()
+> > (At least theoretically)
+> 
+> It's not totally useless not. It guarantees that by the time your
+> are out of your suspend(), a simultaneous instance of the IRQ handler
+> is either finished, or it (or any subsequent occurence) have seen
+> your insuspend flag set to 1.
+> 
+> > Thus I now understand that .suspend() should do:
+> > 
+> > 	saa_writel(SAA7134_IRQ1, 0);
+> > 	saa_writel(SAA7134_IRQ2, 0);
+> > 	saa_writel(SAA7134_MAIN_CTRL, 0);
+> > 
+> > 	dev->insuspend = 1;
+> > 	smp_wmb();
+> > 
+> > 	/* at that point the _request to disable card's IRQs was issued, we don't know 
+> > 	   that there will be no irqs anymore.
+> > 	   the smp_mb(); guaranties that the IRQ handler will bail out in that case. */
+> > 	
+> > 	/* .......*/
+> > 
+> > 	pci_save_state(pci_dev);
+> > 	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
+> > 	return 0;
+> 
+> The above doesn't handle the case where the IRQ handle just passed the
+> if (insuspend) test. You may end up calling pci_set_power_state() while
+> in the middle of some further HW accesses in the handler.
+> 
+> You still need synchronize_irq() for that reason. Or use a spinlock.
+> 
+> > and the interrupt handler:
+> > 
+> > 	smp_rmb();
+> > 	if (dev->insuspend)
+> > 		goto out;
+> > 
+> > Am I right?
+> 
+> Not quite :-)
+> 
+> Also not that the work we are doing with synchronize_irq, if it gets
+> merged, renders it unnecessary for you to add those two memory barriers,
+> synchronize_irq will pretty much do the ordering for you.
+> 
+> Cheers,
+> Ben.
+> 
+> 
 
-In fact, he -must not- ack it. Because is the HW is really down (in D3),
-got knows what accessing the ACK register will do. I can give you
-ideas... from nothing on most x86 desktops to machine checks on most
-powerpc machines, though I could imagine some cards bad enough to lock
-your bus up if you try to access a register while they are in D3 (I've
-seen some of those critters and it seems not all bridges timeout on
-cards that just keep sending retries).
 
-Cheers,
-Ben.
+Fine, I Agree, and this is why I used it in first place, I just forgot.
+To wait for already running IRQ handler, that tested the dev->insuspend.
+(And I assumed that interrupts are disabled on the cpu that runs .suspend, but I know now
+that this isn't true.)
+
+Besides that can I ask few more .suspend/resume questions:
+
+1) some drivers use pci_disable_device(), and pci_enable_device().
+should I use it too?
+
+2) I accidentally did this:
+	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
+	pci_save_state(pci_dev);
+
+I somehow thought that this is correct, that I should save the pci config state
+after the power-down, but now I know that it isn't correct.
+I now need to send a patch for dmfe.c network driver that has the same commands written by me.
+(but it works perfectly anyway)
+Is it possible to access pci configuration space in D3?
+
+And lastly speaking of network drivers, one issue came to my mind:
+most network drivars has a packet queue and in case of dmfe it is located in main memory,
+and card does dma from it.
+
+
+in .suspend I ignore that some packets may be in that queue, and I want
+to ask, whenever there are better ways to do that.
+
+
+this is my dmfe .suspend routine.
+
+	/* Disable upper layer interface */
+	netif_device_detach(dev);
+
+	/* Disable Tx/Rx */
+	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);
+	update_cr6(db->cr6_data, dev->base_addr);
+
+	/* Disable Interrupt */
+	outl(0, dev->base_addr + DCR7);
+	outl(inl (dev->base_addr + DCR5), dev->base_addr + DCR5);
+
+	/* Fre RX buffers */
+	dmfe_free_rxbuffer(db);
+
+	/* Enable WOL */
+	pci_read_config_dword(pci_dev, 0x40, &tmp);
+	tmp &= ~(DMFE_WOL_LINKCHANGE|DMFE_WOL_MAGICPACKET);
+
+	if (db->wol_mode & WAKE_PHY)
+		tmp |= DMFE_WOL_LINKCHANGE;
+	if (db->wol_mode & WAKE_MAGIC)
+		tmp |= DMFE_WOL_MAGICPACKET;
+
+	pci_write_config_dword(pci_dev, 0x40, tmp);
+
+	pci_enable_wake(pci_dev, PCI_D3hot, 1);
+	pci_enable_wake(pci_dev, PCI_D3cold, 1);
+
+	/* Power down device*/
+	pci_set_power_state(pci_dev, pci_choose_state (pci_dev,state));
+	pci_save_state(pci_dev);
+
+
+I guess, everybody makes mistakes... :-)
+
+Other network drivers has a bit more complicated .suspend/.resume routines, 
+but I didn't see a driver waiting for output queue to finish
+
+Best regards,
+	Maxim Levitsky
