@@ -1,22 +1,11 @@
-Return-Path: <SRS0+990d1eb9326e886f17cb+1518+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3CCEFDDE9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 22:19:53 +1000 (EST)
-Subject: Re: boards in arch/ppc -> arch/powerpc for 85xx
-From: David Woodhouse <dwmw2@infradead.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <BFBB503A-57F8-4DD4-BD4A-A2519E88F140@kernel.crashing.org>
-References: <7DBC0977-0367-40F5-8A30-ACA02FD4E9FA@kernel.crashing.org>
-	<1192646394.4026.70.camel@shinybook.infradead.org>
-	<BFBB503A-57F8-4DD4-BD4A-A2519E88F140@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 20 Oct 2007 13:19:48 +0100
-Message-Id: <1192882789.26380.14.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Stefan Roese <sr@denx.de>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+Date: Sat, 20 Oct 2007 11:33:03 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
+Subject: Device trees and audio codecs
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,11 +15,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-10-17 at 19:54 -0500, Kumar Gala wrote:
-> This really cracked me up.  I have to ask what the sbc8560 was doing  
-> in the boot of your car?
+I'm working on ALSA ASoC support for a codec chip on my mpc5200 based
+target hardware. How should the codec be represented in the device
+tree?
 
-The Land Rover was full.
+Under ASoC the device drivers for the codec chips are platform
+independent.  In the current ASoC model there are three device
+drivers: i2s (or spi, etc), the generic codec, and a platform specific
+'fabric' driver.  Some codecs are linked to both i2c and i2s.
+
+The fabric driver corresponds to the 'layout-id' in the Apple model.
+It tells how to configure the generic codec driver for the specific
+configuration needed by the actual platform hardware.
+
+For development purposes I'm using an Efika as a target platform. It
+is easy enough to load the i2s driver using the device tree. I can add
+entries to the i2s node to trigger loading of the generic sta9766
+codec driver. How do I trigger loading the Efika specific fabric
+driver?
+
+My target hardware has a codec that is linked to both i2s and i2c. How
+should it be represented?
+
+Apple has three entries. One for i2s, one for the codec, and one for
+soundchip. What is the soundchip entry, does it correspond to real
+hardware?
+
+/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000:
+name             "i2s-a"
+device_type      "soundbus"
+compatible       "i2sbus"
+built-in
+reg              00010000 00001000 00008000 00000100 00008100 00000100
+interrupts       0000001e 00000001 00000001 00000000 00000002 00000000
+interrupt-parent ff981a38
+platform-headphone-mute ff9828a0
+platform-amp-mute ff9829f8
+platform-hw-reset ff982b48
+platform-linein-detect ff982c98
+platform-headphone-detect ff982e58
+platform-get-enable ff97c3b0
+platform-enable  ff97c3b0
+platform-disable ff97c3b0
+platform-get-clock-enable ff97c3b0
+platform-clock-enable ff97c3b0
+platform-clock-disable ff97c3b0
+platform-get-sw-reset ff97c3b0
+platform-clear-sw-reset ff97c3b0
+platform-sw-reset ff97c3b0
+platform-get-cell-enable ff97c3b0
+platform-cell-enable ff97c3b0
+platform-cell-disable ff97c3b0
+linux,phandle    ff985b88
+
+/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound:
+name             "sound"
+device_type      "soundchip"
+compatible       "AOAbase"
+built-in
+layout-id        00000046 (70)
+object-model-version 00000002
+vendor-id        0000106b (4203)
+platform-tas-codec-ref ff98cba8
+linux,phandle    ff985d48
+
+/proc/device-tree/pci@f2000000/mac-io@17/i2c@18000/i2c-bus@0/codec@6a:
+name             "codec"
+device_type      "codec"
+compatible       "tas3004"
+                 "codec"
+                 ""
+reg              0000006a (106)
+built-in
+platform-do-tas-codec-ref ff985d48 08000000 00000027
+linux,phandle    ff98cba8
+
 
 -- 
-dwmw2
+Jon Smirl
+jonsmirl@gmail.com
