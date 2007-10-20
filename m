@@ -1,23 +1,24 @@
-Return-Path: <maximlevitsky@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id A50BFDDEC7
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 12:03:24 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so796968uge
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2007 19:03:23 -0700 (PDT)
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: benh@kernel.crashing.org
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F1934DDE9E
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 12:25:46 +1000 (EST)
+Date: Fri, 19 Oct 2007 19:25:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: [PATCH] synchronize_irq needs a barrier
-Date: Sat, 20 Oct 2007 04:02:42 +0200
+In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
+Message-ID: <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
 References: <1192670742.12879.5.camel@pasglop>
-In-Reply-To: <1192670742.12879.5.camel@pasglop>
+	<200710200402.43106.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200710200402.43106.maximlevitsky@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=us-ascii
+Cc: akpm <akpm@linux-foundation.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,78 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 18 October 2007 03:25:42 Benjamin Herrenschmidt wrote:
-> synchronize_irq needs at the very least a compiler barrier and a
-> read barrier on SMP, but there are enough cases around where a
-> write barrier is also needed and it's not a hot path so I prefer
-> using a full smp_mb() here.
+
+
+On Sat, 20 Oct 2007, Maxim Levitsky wrote:
 > 
-> It will degrade to a compiler barrier on !SMP.
+> and the interrupt handler:
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Index: linux-work/kernel/irq/manage.c
-> ===================================================================
-> --- linux-work.orig/kernel/irq/manage.c	2007-10-18 11:22:16.000000000 +1000
-> +++ linux-work/kernel/irq/manage.c	2007-10-18 11:22:20.000000000 +1000
-> @@ -33,6 +33,7 @@ void synchronize_irq(unsigned int irq)
->  	if (irq >= NR_IRQS)
->  		return;
->  
-> +	smp_mb();
->  	while (desc->status & IRQ_INPROGRESS)
->  		cpu_relax();
->  }
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> 	smp_rmb();
+> 	if (dev->insuspend)
+> 		goto out;
 
-Hi,
+Something like that can work, yes. However, you need to make sure that:
 
-I have read this thread and I concluded few things:
+ - even when you ignore the interrupt (because the driver doesn't care, 
+   it's suspending), you need to make sure the hardware gets shut up by 
+   reading (or writing) the proper interrupt status register.
 
-1) It is impossible to know that the card won't send more interrupts:
-Even if I do a read from the device, the IRQ can be pending in the bus/APIC
-It is even possible (and likely) that the IRQ line will be shared, thus the 
-handler can be called by non-relevant device.
+   Otherwise, with a level interrupt, the interrupt will continue to be 
+   held active ("screaming") and the CPU will get interrupted over and 
+   over again, until the irq subsystem will just turn the irq off 
+   entirely.
 
-2) the synchronize_irq(); in .suspend is useless:
-an IRQ can happen immediately after this synchronize_irq();
-and interrupt even the .suspend()
-(At least theoretically)
+ - when you resume, make sure that you get the engine going again, with 
+   the understanding that some interrupts may have gotten ignored.
 
+Also, in general, these kinds of things shouldn't always even be 
+neicessary. If you use the suspend_late()/resume_early() hooks, those will 
+be called with interrupts off, and while they can be harder to debug (and 
+may be worth avoiding for non-critical drivers), they do allow for simpler 
+models partly exactly because they don't need to worry about interrupts 
+etc.
 
-Thus I now understand that .suspend() should do:
-
-	saa_writel(SAA7134_IRQ1, 0);
-	saa_writel(SAA7134_IRQ2, 0);
-	saa_writel(SAA7134_MAIN_CTRL, 0);
-
-	dev->insuspend = 1;
-	smp_wmb();
-
-	/* at that point the _request to disable card's IRQs was issued, we don't know 
-	   that there will be no irqs anymore.
-	   the smp_mb(); guaranties that the IRQ handler will bail out in that case. */
-	
-	/* .......*/
-
-	pci_save_state(pci_dev);
-	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
-	return 0;
-
-and the interrupt handler:
-
-	smp_rmb();
-	if (dev->insuspend)
-		goto out;
-
-Am I right?
-	Best regards,
-		Maxim Levitsky
+		Linus
