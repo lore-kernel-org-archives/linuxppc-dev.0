@@ -2,21 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D582DDE1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 13:56:13 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 7F37FDDE2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 14:04:14 +1000 (EST)
 Subject: Re: [PATCH] synchronize_irq needs a barrier
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-In-Reply-To: <200710200402.43106.maximlevitsky@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
 References: <1192670742.12879.5.camel@pasglop>
 	<200710200402.43106.maximlevitsky@gmail.com>
+	<alpine.LFD.0.999.0710191924520.3794@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 20 Oct 2007 13:56:01 +1000
-Message-Id: <1192852561.17235.23.camel@pasglop>
+Date: Sat, 20 Oct 2007 14:04:04 +1000
+Message-Id: <1192853044.17235.32.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	akpm <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
+	akpm <akpm@linux-foundation.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,61 +29,70 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I have read this thread and I concluded few things:
+On Fri, 2007-10-19 at 19:25 -0700, Linus Torvalds wrote:
 > 
-> 1) It is impossible to know that the card won't send more interrupts:
-> Even if I do a read from the device, the IRQ can be pending in the bus/APIC
-> It is even possible (and likely) that the IRQ line will be shared, thus the 
-> handler can be called by non-relevant device.
+> On Sat, 20 Oct 2007, Maxim Levitsky wrote:
+> > 
+> > and the interrupt handler:
+> > 
+> > 	smp_rmb();
+> > 	if (dev->insuspend)
+> > 		goto out;
 > 
-> 2) the synchronize_irq(); in .suspend is useless:
-> an IRQ can happen immediately after this synchronize_irq();
-> and interrupt even the .suspend()
-> (At least theoretically)
-
-It's not totally useless not. It guarantees that by the time your
-are out of your suspend(), a simultaneous instance of the IRQ handler
-is either finished, or it (or any subsequent occurence) have seen
-your insuspend flag set to 1.
-
-> Thus I now understand that .suspend() should do:
+> Something like that can work, yes. However, you need to make sure that:
 > 
-> 	saa_writel(SAA7134_IRQ1, 0);
-> 	saa_writel(SAA7134_IRQ2, 0);
-> 	saa_writel(SAA7134_MAIN_CTRL, 0);
-> 
-> 	dev->insuspend = 1;
-> 	smp_wmb();
-> 
-> 	/* at that point the _request to disable card's IRQs was issued, we don't know 
-> 	   that there will be no irqs anymore.
-> 	   the smp_mb(); guaranties that the IRQ handler will bail out in that case. */
-> 	
-> 	/* .......*/
-> 
-> 	pci_save_state(pci_dev);
-> 	pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
-> 	return 0;
+>  - even when you ignore the interrupt (because the driver doesn't care, 
+>    it's suspending), you need to make sure the hardware gets shut up by 
+>    reading (or writing) the proper interrupt status register.
+>
+>    Otherwise, with a level interrupt, the interrupt will continue to be 
+>    held active ("screaming") and the CPU will get interrupted over and 
+>    over again, until the irq subsystem will just turn the irq off 
+>    entirely.
 
-The above doesn't handle the case where the IRQ handle just passed the
-if (insuspend) test. You may end up calling pci_set_power_state() while
-in the middle of some further HW accesses in the handler.
+His suspend routine wrote to the IRQ mask (or equivalent) register in
+his code example, thus the HW should shut up eventually, thus that isn't
+strictly necessary, the IRQ in that case is just a "short
+interrupt" (noticed by the PIC and delivered but possibly not asserted
+anymore at this stage or about to go down).
 
-You still need synchronize_irq() for that reason. Or use a spinlock.
+We have many scenario generating such short interrupts (pretty much any
+time we use interrupt disable/enable on the chip, for example it's
+common with NAPI).
 
-> and the interrupt handler:
-> 
-> 	smp_rmb();
-> 	if (dev->insuspend)
-> 		goto out;
-> 
-> Am I right?
+This is one of the reasons why we used to have a "timebomb" causing an
+IRQ to erroneously get disabled by the IRQ core assuming the IRQ was
+stuck, just because we accumulated too many short interrupts on that
+line. A recent patch by Alan fixed that to use some more sensible
+algorithm checking the time since the last spurrious interrupt, though I
+suspect he's being too optimistic on his timeout value and some
+scenario, such as NAPI with just the wrong packet rate, can still
+trigger the bug. I need  to find a piece of HW slow enough in
+de-asserting the IRQ to try to make a repro-case one of these days.
 
-Not quite :-)
+>  - when you resume, make sure that you get the engine going again, with 
+>    the understanding that some interrupts may have gotten ignored.
 
-Also not that the work we are doing with synchronize_irq, if it gets
-merged, renders it unnecessary for you to add those two memory barriers,
-synchronize_irq will pretty much do the ordering for you.
+And you forgot that he still needs synchronize_irq(), or his IRQ handler
+might well be in the middle of doing something on another CPU, past the
+point where it tested "insuspend", which will do no good when a
+simultaneous pci_set_power_state() puts the chip into D3. On some
+machines, this will machine check. Either that or he needs a spinlock in
+his IRQ handler that he also takes around the code that sets insuspend. 
 
-Cheers,
+> Also, in general, these kinds of things shouldn't always even be 
+> neicessary. If you use the suspend_late()/resume_early() hooks, those will 
+> be called with interrupts off, and while they can be harder to debug (and 
+> may be worth avoiding for non-critical drivers), they do allow for simpler 
+> models partly exactly because they don't need to worry about interrupts 
+> etc.
+
+Yes, this is a easier way to deal with devices that are on a directly
+mapped bus (path to them isn't gone by the time you hit suspend_late)
+and don't need to do fancy things involing waiting for a queue to drain
+using interrupts etc... (at one stage of HW complexity, having to
+re-implement polled versions of everything is just not worth the
+benefit). In general, suspend_late should cover the need of most PCI
+devices I suppose.
+
 Ben.
