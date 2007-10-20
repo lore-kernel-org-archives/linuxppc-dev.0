@@ -1,24 +1,17 @@
-Return-Path: <mchan@broadcom.com>
-Received: from mms1.broadcom.com (mms1.broadcom.com [216.31.210.17])
-	by ozlabs.org (Postfix) with ESMTP id 679F4DDE46
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 07:59:47 +1000 (EST)
-Subject: Re: [BUG] powerpc does not save msi state [was Re: [PATCH 5/7]
-	pci: Export the pci_restore_msi_state() function
-From: "Michael Chan" <mchan@broadcom.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1192862606.7688.4.camel@concordia>
-References: <20071020000421.GO29903@austin.ibm.com>
-	<20071019.172706.57467960.davem@davemloft.net>
-	<20071020004610.GR29903@austin.ibm.com>
-	<20071019.175308.54212640.davem@davemloft.net>
-	<1192862606.7688.4.camel@concordia>
-Date: Sat, 20 Oct 2007 15:50:17 -0700
-Message-ID: <1192920617.5369.27.camel@dell>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 20 Oct 2007 19:06:33 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: [PATCH 3/4] DTC: Appease the printf() format $Gods with a correct
+	type.
+Message-ID: <20071020090633.GH26642@localhost.localdomain>
+References: <E1IivsP-00078Q-Hf@jdl.com>
+	<20071020071920.GF26642@localhost.localdomain>
+	<jesl46yxri.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: netdev <netdev@vger.kernel.org>, mcarlson@broadcom.com,
-	linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	David Miller <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <jesl46yxri.fsf@sykes.suse.de>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,34 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-10-20 at 16:43 +1000, Michael Ellerman wrote:
-> On Fri, 2007-10-19 at 17:53 -0700, David Miller wrote:
-> > I don't see this, in all cases write_msi_msg() will transfer
-> > the given "*msg" to entry->msg by this assignment in
-> > drivers/pci/msi.c:
-> > 
-> > void write_msi_msg(unsigned int irq, struct msi_msg *msg)
-> > {
-> >  ...
-> > 	entry->msg = *msg;
-> > }
-> > 
-> > So as long as write_msi_msg() is invoked, it will be saved
-> > properly.
-> > 
-> > Platforms need not do this explicitly.
+On Sat, Oct 20, 2007 at 10:51:29AM +0200, Andreas Schwab wrote:
+> David Gibson <david@gibson.dropbear.id.au> writes:
 > 
-> I'm short on context here, and it's Saturday, so excuse me if I'm
-> missing the point somewhere.
+> > What compiler/platform is this?  I can't off the top of my head think
+> > of one where size_t shouldn't be promoted to int automatically.
 > 
-> On pseries machines we don't call write_msi_msg(), because we don't
-> control the contents of the message, firmware does. So entry->msg will
-> be bogus.
-> 
-> That's a pity, but AFAIK it shouldn't be a problem because we don't
-> enable CONFIG_PM on those machines anyway. If we ever want to we'll need
-> to sort out with firmware how that will work WRT restoring MSI state.
-> 
+> Only types narrower than int are subject to integer promotion.
 
-The PCI error recovery that Linas is working on requires the MSI state
-to be restored after we do PCI reset to recover from PCI errors.
+Duh, yes.  Sorry.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
