@@ -1,15 +1,17 @@
-Return-Path: <wd@denx.de>
-To: Nicholas Mc Guire <der.herr@hofr.at>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: rtlinux rtai interrupt latency
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 20 Oct 2007 22:34:32 +0200."
-	<Pine.LNX.4.60.0710202230230.1476@rtl14.hofr.at>
-Date: Sun, 21 Oct 2007 23:25:44 +0200
-Sender: wd@denx.de
-Message-Id: <20071021212544.4FCE0243CA@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Device trees and audio codecs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
+References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+	<a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
+	<9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 08:06:39 +1000
+Message-Id: <1193004399.6745.39.camel@pasglop>
+Mime-Version: 1.0
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <Pine.LNX.4.60.0710202230230.1476@rtl14.hofr.at> you wrote:
+
+On Sun, 2007-10-21 at 17:33 -0400, Jon Smirl wrote:
+> > This is one of the i2s channels on the macio.  Dunno why they put
+> > all those platform-XXX entries in here, (most of) these don't
+> > logically belong here.
 > 
-> There are free variants around as well - XtratuM/PPC (RTLinux-4.0) is
-> running on 440EP/GR and 405 Octobus, im quite sur RTAI also is available
-> for AMCC CPUs - check RTAI.org (mailing list link is to be found there) 
+> Actually those platform-XXX entries may be the solution I am looking
+> for. I can use the generic i2s driver to load a fabric driver as an
+> ALSA module.
 
-Not really. RTAI is a dead horse for anything except x86.
+Yuck.
 
-Instead, look at Xenomai ==> www.xenomai.org
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-G's Third Law:             In spite of all evidence  to  the  contra-
-ry,  the  entire  universe  is composed of only two basic substances:
-magic and bullshit.
-H's Dictum:                There is no magic ...
+Ben.
