@@ -1,19 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 98D6BDDEA3
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 04:56:18 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1148353wag
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 11:56:17 -0700 (PDT)
-Message-ID: <fa686aa40710211156l3e74e028ja6e84aea29ecb3c5@mail.gmail.com>
-Date: Sun, 21 Oct 2007 12:56:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Paul Mackerras" <paulus@samba.org>
-Subject: Fwd: Please pull linux-2.6-mpc52xx.git
-In-Reply-To: <fa686aa40710211154r22d5ccbfu5f54d392aad99880@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <fa686aa40710211154r22d5ccbfu5f54d392aad99880@mail.gmail.com>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Device trees and audio codecs
+Date: Sun, 21 Oct 2007 21:14:44 +0200
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +18,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus, please pull the following mpc52xx related changes.
+> I'm working on ALSA ASoC support for a codec chip on my mpc5200 based
+> target hardware.
 
-The following changes since commit 2fb59d623ad85dfdb8ce03a660051743f7361896:
-  Linus Torvalds (1):
-        Merge branch 'audit.b43' of git://git.kernel.org/.../viro/audit-current
+What is ASoC?
 
-are available in the git repository at:
+> Under ASoC the device drivers for the codec chips are platform
+> independent.  In the current ASoC model there are three device
+> drivers: i2s (or spi, etc), the generic codec, and a platform specific
+> 'fabric' driver.  Some codecs are linked to both i2c and i2s.
 
-  git://git.secretlab.ca/git/linux-2.6-mpc52xx.git for-2.6.24
+The i2s driver is simply for data transport, the codec driver does,
+well, what codecs do; and what is the fabric driver for?  Just to
+know which output ports are which, etc.?
 
-Grant Likely (1):
-      [POWERPC] bestcomm: Restrict bus prefetch bugfix to original
-mpc5200 silicon.
+> The fabric driver corresponds to the 'layout-id' in the Apple model.
+> It tells how to configure the generic codec driver for the specific
+> configuration needed by the actual platform hardware.
 
-Marian Balakowicz (4):
-      [POWERPC] Add mpc52xx_find_and_map_path(), refactor utility functions
-      [POWERPC] Update device tree binding for mpc5200 gpt
-      [POWERPC] Add restart support for mpc52xx based platforms
-      [POWERPC] Enable restart support for lite5200 board
+The apple layout-id selects one of several tables with *lots* of info.
+I think you want a subset of that only.
 
- .../powerpc/mpc52xx-device-tree-bindings.txt       |    4 +-
- arch/powerpc/boot/dts/lite5200.dts                 |   26 +++-----
- arch/powerpc/boot/dts/lite5200b.dts                |   26 +++-----
- arch/powerpc/platforms/52xx/lite5200.c             |    4 +
- arch/powerpc/platforms/52xx/mpc52xx_common.c       |   71 ++++++++++++++++++-
- arch/powerpc/sysdev/bestcomm/bestcomm.c            |    9 ++-
- drivers/watchdog/mpc5200_wdt.c                     |    3 +
- include/asm-powerpc/mpc52xx.h                      |    9 +++
- 8 files changed, 109 insertions(+), 43 deletions(-)
+> My target hardware has a codec that is linked to both i2s and i2c. How
+> should it be represented?
+
+Since the codec is addressable on i2c, and not on i2s, it should be
+a child node of the i2c bus it sits on; and then you put a property
+in the codec node pointing to the i2s bus node it is connected to.
+Multiple of those (or multiple entries) if it is connected to more
+than one i2s bus.  "i2s-parent" might be a good name for such a prop.
+
+> Apple has three entries. One for i2s, one for the codec, and one for
+> soundchip. What is the soundchip entry, does it correspond to real
+> hardware?
+>
+> /proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000:
+
+This is one of the i2s channels on the macio.  Dunno why they put
+all those platform-XXX entries in here, (most of) these don't
+logically belong here.
+
+> /proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound:
+
+The codec.  I guess Apple puts this here for their weirdo platform-do
+stuff; don't imitate this :-)
+
+> /proc/device-tree/pci@f2000000/mac-io@17/i2c@18000/i2c-bus@0/codec@6a:
+
+The codec.  _Do_ put it here in your tree :-)
 
 
---
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Segher
