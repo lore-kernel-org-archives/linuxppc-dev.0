@@ -1,24 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.236])
-	by ozlabs.org (Postfix) with ESMTP id B2BD3DDE23
+Return-Path: <bounce@yaari.com>
+Received: from mail.yaari.com (mail.yaari.com [74.53.250.162])
+	by ozlabs.org (Postfix) with ESMTP id 57FCEDDE34
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Oct 2007 04:20:34 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so125061nzh
+	Sun, 21 Oct 2007 14:38:48 +1000 (EST)
+Received: from mail.yaari.com (localhost [127.0.0.1])
+	by mail.yaari.com (Postfix) with ESMTP id 48608DD9143
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Oct 2007 11:20:33 -0700 (PDT)
-Message-ID: <fa686aa40710191120w209b62a0l4f71e528e5f1a1b3@mail.gmail.com>
-Date: Fri, 19 Oct 2007 12:20:32 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: aauer1 <aauer1@gmx.at>
-Subject: Re: SystemACE driver problem
-In-Reply-To: <13300089.post@talk.nabble.com>
+	Sat, 20 Oct 2007 21:43:20 -0500 (CDT)
+To: linuxppc-embedded@ozlabs.org
+Subject: vijay is your Yaar! :)
+Date: Sat, 20 Oct 2007 21:43:15 -0500
+From: vijay <mouli1982@gmail.com>
+Message-ID: <61991e1ce0efd4631a8897ad7cd5f71e@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <13290652.post@talk.nabble.com>
-	<fa686aa40710190704j18feabf2geb417d554ebb11c@mail.gmail.com>
-	<13300089.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/html; charset="UTF-8"
+Reply-To: admin@yaari.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,69 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/19/07, aauer1 <aauer1@gmx.at> wrote:
->
->
->
-> Grant Likely-2 wrote:
-> >
-> > On 10/19/07, aauer1 <aauer1@gmx.at> wrote:
-> >>
-> >> Hello
-> >>
-> >> I'm trying to boot a Linux Kernel 2.6.23-rc2 from Grant Likely (thanks
-> >> for
-> >> the great work) on a Xilinx ML403 board. I want to use the second
-> >> partition
-> >> of the Compact Flash Card as root filesystem. But the boot process hangs
-> >> at
-> >> the initialization of the SystemACE module. A strange effect is that the
-> >> DONE LED (configuration of the FPGA is done) turns off. So, this means
-> >> that
-> >> the FPGA loses his configuration.
-> >> Has anybody recognized a similar problem with the SystemACE module??
-> >>
-> >> The boot log:
-> >> ========
-> > [snipped]
-> >> [    0.268807] uartlite.0: ttyUL0 at MMIO 0x40600000 (irq = 2) is a
-> >> uartlite
-> >> [    0.270399] console [ttyUL0] enabled
-> >> [    1.762725] RAMDISK driver initialized: 8 RAM disks of 8192K size 1024
-> >> blocke
-> >> [    1.852062] Registering Xilinx SystemACE driver, major=254
-> >> [    1.919734] xsysace xsysace.0: ace_probe(c01638e0)
-> >
-> > Yes, I've seen that.  It means something went wrong with the setup and
-> > caused the sysace to reload the FPGA.  Is the systemace base address
-> > and bus width set correctly?
-> >
-> >
->
-> The base address is the same as in the system.mhs file of my hardware
-> design. So, I think it should be correct. The bus width is set to 16 bits
-> (hardware design). So far as I can see, the sysace driver defines a 16 bit
-> data bus (hard coded), too.
-
-Hmmm; that's all very odd.  I don't know what could be causing that.
-
-> A paper of BlueCat Linux says that there is a problem with the System ACE
-> hardware module:
-> "Due to a known problem of the opb_sysace IP Core programmed into the FPGA
-> (incorrect operation in the interrupt mode) the SystemACE Compact Flash
-> device is supported in the polling mode."
->
-> Does anyone know something about the bug in the SystemACE IP core??
-
-I don't know about the old xilinx supplied sysace driver, but the new
-xsysace.c driver is robust enough to work around missed interrupts.  I
-don't know of any other problems with the opb_sysace IP core.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+CjxodG1sPgo8aGVhZD4KPC9oZWFkPgo8Ym9keT4KPHRhYmxlIGFsaWduPSJjZW50ZXIiIHdpZHRo
+PSI1NTAiIGhlaWdodD0iMjQ2IgpiYWNrZ3JvdW5kPSJodHRwOi8veWFhcmkuY29tL3ktdmlyYWwv
+aW1nL2JveC1hbGwuanBnIj48dHI+PHRkPgogIDxkaXYgaWQ9ImNvbnRhaW5lciIKc3R5bGU9InRl
+eHQtYWxpZ246Y2VudGVyO2ZvbnQtZmFtaWx5OlZlcmRhbmEsQXJpYWw7Zm9udC13ZWlnaHQ6Ym9s
+ZDtmb250LXNpemU6MTFwdDsiPgogICAgPHRhYmxlIHdpZHRoPSI5NyUiIGhlaWdodD0iOTAlIiBh
+bGlnbj0iY2VudGVyIiBzdHlsZT0ibWFyZ2luLXRvcDoxMHB4OyI+CiAgICAgIDx0ciB2YWxpZ249
+Im1pZGRsZSI+CiAgICAgICAgPHRkIHdpZHRoPSIyMCUiPgogICAgICAgICAgPGltZyBzcmM9Imh0
+dHA6Ly93d3cueWFhcmkuY29tL3VzZXJfMTAwcHhwaWMvbm9faW1nX2JpZy5qcGciCnN0eWxlPSJk
+aXNwbGF5OmJsb2NrO21hcmdpbjphdXRvO21hcmdpbi1ib3R0b206MTBweDtib3JkZXI6bm9uZTsi
+IC8+CiAgICAgICAgICA8ZGl2IHN0eWxlPSJmb250LXNpemU6OXB0O3RleHQtYWxpZ246Y2VudGVy
+OyI+dmlqYXk8L2Rpdj4KICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZTo5cHQ7Y29sb3I6
+I0IwMDt0ZXh0LWFsaWduOmNlbnRlcjsiPlJhbGVpZ2g8L2Rpdj4KICAgICAgICA8L3RkPgogICAg
+ICAgIDx0ZD4KICAgICAgICAgIDxkaXYgc3R5bGU9InRleHQtYWxpZ246Y2VudGVyOyI+dmlqYXkg
+bmlkdW1vbHUgd2FudHMgeW91IHRvIGpvaW4gWWFhcmkhPC9kaXY+CiAgICAgICAgICA8ZGl2CnN0
+eWxlPSJmb250LXNpemU6MTNwdDttYXJnaW4tdG9wOjM1cHg7bWFyZ2luLWJvdHRvbToxMHB4O3Rl
+eHQtYWxpZ246Y2VudGVyO2ZvbnQtd2VpZ2h0OmJvbGQ7Ij5Jcwp2aWpheSB5b3VyIGZyaWVuZD88
+L2Rpdj4KICAgICAgICAgIDxkaXYgYWxpZ249ImNlbnRlciIgc3R5bGU9Im1hcmdpbjoyNXB4O3Rl
+eHQtYWxpZ246Y2VudGVyOyI+CiAgICAgICAgICAgIDxhIGhyZWY9Imh0dHA6Ly93d3cueWFhcmku
+Y29tL3ktcmVnaXN0ZXIucGhwP2k9UlM4M1JRNzdURkYxOTk0UTExOTIyOTA1ODUiPgogICAgICAg
+ICAgICAgIDxpbWcgc3JjPSJodHRwOi8veWFhcmkuY29tL3ktdmlyYWwvaW1nL2J1dHRvbi15ZXMu
+Z2lmIiBhbHQ9IlllcyIKc3R5bGU9ImJvcmRlcjpub25lO21hcmdpbjowIDVweDsiLz48L2E+CiAg
+ICAgICAgICAgIDxhIGhyZWY9Imh0dHA6Ly93d3cueWFhcmkuY29tL3ktcmVnaXN0ZXIucGhwIj4K
+ICAgICAgICAgICAgICA8aW1nIHNyYz0iaHR0cDovL3lhYXJpLmNvbS95LXZpcmFsL2ltZy9idXR0
+b24tbm8uZ2lmIiBhbHQ9Ik5vIgpzdHlsZT0iYm9yZGVyOm5vbmU7bWFyZ2luOjAgNXB4OyIgLz48
+L2E+CiAgICAgICAgICA8L2Rpdj4KICAgICAgICAgIDxkaXYgc3R5bGU9ImZvbnQtc2l6ZTo5cHQ7
+dGV4dC1hbGlnbjpjZW50ZXI7Ij5QbGVhc2UgcmVzcG9uZCBvciB2aWpheSBtaWdodCB0aGluayB5
+b3Ugc2FpZApubyA6KDwvZGl2PgogICAgICAgIDwvdGQ+CiAgICAgIDwvdHI+CiAgICA8L3RhYmxl
+PgogIDwvZGl2Pgo8L3RkPjwvdHI+PC90YWJsZT4KPHAgYWxpZ249ImNlbnRlciIgc3R5bGU9ImZv
+bnQtc2l6ZToxMHB0Ij4KICA8YnIgLz4KICBUbyBzdG9wIHJlY2VpdmluZyBlbWFpbHMgZnJvbSBZ
+YWFyaS5jb20sIGNsaWNrIDxhCmhyZWY9Imh0dHA6Ly95YWFyaS5jb20veS1lbWFpbC1vcHQtb3V0
+LnBocD9wYXJhbT1iR2x1ZFhod2NHTXRaVzFpWldSa1pXUkFiM3BzWVdKekxtOXladyUzRCUzRCI+
+aGVyZTwvYT4uCiAgPGJyIC8+CiAgSWYgeW91IGhhdmUgYW55IGNvbmNlcm5zIHJlZ2FyZGluZyB0
+aGUgY29udGVudCBvZiB0aGlzIG1lc3NhZ2UsIHBsZWFzZSBlbWFpbCBhYnVzZUB5YWFyaS5jb20u
+CiAgPGJyIC8+CiAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZTo4cHQiPllhYXJpIExMQywgMzU4IEFu
+Z2llciBBdmUsIEF0bGFudGEsIEdBIAozMDMxMjwvc3Bhbj4KPC9wPgo8L2JvZHk+CjwvaHRtbD4K
