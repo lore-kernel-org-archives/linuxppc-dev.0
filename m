@@ -1,19 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Device trees and audio codecs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <9e4733910710211512v238fbc89m35783d5eb5b82bf6@mail.gmail.com>
-References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-	<a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
-	<9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
-	<1193004399.6745.39.camel@pasglop>
-	<9e4733910710211512v238fbc89m35783d5eb5b82bf6@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 08:19:44 +1000
-Message-Id: <1193005184.6745.46.camel@pasglop>
-Mime-Version: 1.0
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd3mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 5A5E3DDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 09:03:55 +1000 (EST)
+Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQA00G4JAOXRLB0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 21 Oct 2007 17:02:57 -0600 (MDT)
+Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
+	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQA006UEAOXQF40@pd2mr5so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sun, 21 Oct 2007 17:02:57 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQA009PGAOWA1J0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sun, 21 Oct 2007 17:02:56 -0600 (MDT)
+Date: Sun, 21 Oct 2007 17:02:55 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Uartlite: speed up console output
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk
+Message-id: <20071021230255.7066.64565.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Grant Likely <grant.likely@secretlab.ca>
 
-On Sun, 2007-10-21 at 18:12 -0400, Jon Smirl wrote:
-> On 10/21/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > On Sun, 2007-10-21 at 17:33 -0400, Jon Smirl wrote:
-> > > > This is one of the i2s channels on the macio.  Dunno why they put
-> > > > all those platform-XXX entries in here, (most of) these don't
-> > > > logically belong here.
-> > >
-> > > Actually those platform-XXX entries may be the solution I am looking
-> > > for. I can use the generic i2s driver to load a fabric driver as an
-> > > ALSA module.
-> >
-> > Yuck.
-> 
-> And your alternative is?
-> 
-> I can use the DTC to load the I2S and codec drivers.
-> 
-> How do I get the platform specific fabric driver loaded? There is no
-> way to load a driver matching on the platform name.
+Change the wait_tx routine to call cpu_relax() instead of udelay() to
+reduce console output latency and test for the TXFULL bit instead of
+TXEMPTY.  That way the FIFO doesn't need to by 100% flushed before
+writing the next character.
 
-platform-do-XXX is unrelated to that. It's a kind of script in a blob
-that is used to toggle various bits, it's plain ugly, totally powermac
-specific (the code to handle it is in platform/powermac and I won't make
-it generic) and so you don't want it... ever.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-For your problem, an option is to do like apple, and have a "sound"
-pseudo device which represents the "sound subsystem" of the machine
-which cn ahave a compatible property and other bits that you can use to
-match your fabric against, and loads the other bits & pieces.
+ drivers/serial/uartlite.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-Except that I would put it at the root of the tree.
-
-Ben.
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index dfef83f..a85f2d3 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -329,12 +329,14 @@ static struct uart_ops ulite_ops = {
+ static void ulite_console_wait_tx(struct uart_port *port)
+ {
+ 	int i;
++	u8 val;
+ 
+-	/* wait up to 10ms for the character(s) to be sent */
+-	for (i = 0; i < 10000; i++) {
+-		if (readb(port->membase + ULITE_STATUS) & ULITE_STATUS_TXEMPTY)
++	/* Spin waiting for TX fifo to have space available */
++	for (i = 0; i < 100000; i++) {
++		val = readb(port->membase + ULITE_STATUS);
++		if ((val & ULITE_STATUS_TXFULL) == 0)
+ 			break;
+-		udelay(1);
++		cpu_relax();
+ 	}
+ }
+ 
