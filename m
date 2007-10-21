@@ -1,29 +1,16 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd3mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 5A5E3DDE24
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 09:03:55 +1000 (EST)
-Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JQA00G4JAOXRLB0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 21 Oct 2007 17:02:57 -0600 (MDT)
-Received: from pn2ml10so.prod.shaw.ca ([10.0.121.80])
-	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JQA006UEAOXQF40@pd2mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sun, 21 Oct 2007 17:02:57 -0600 (MDT)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JQA009PGAOWA1J0@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sun, 21 Oct 2007 17:02:56 -0600 (MDT)
-Date: Sun, 21 Oct 2007 17:02:55 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Uartlite: speed up console output
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jacmet@sunsite.dk
-Message-id: <20071021230255.7066.64565.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
+References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+	<a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
+	<9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5cac8057884ac400b0596988414c7ed7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Device trees and audio codecs
+Date: Mon, 22 Oct 2007 01:33:46 +0200
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,39 +20,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+> Fabric driver tells how the generic codec is hooked up on the specific
+> board. Some of the codecs are extremely flexible and can be hooked up
+> hundreds of different ways. It is like GPIO pins, they are wired in
+> however is convenient for the design.
 
-Change the wait_tx routine to call cpu_relax() instead of udelay() to
-reduce console output latency and test for the TXFULL bit instead of
-TXEMPTY.  That way the FIFO doesn't need to by 100% flushed before
-writing the next character.
+Gotcha.  *Very* much like GPIOs, indeed.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+>>> The fabric driver corresponds to the 'layout-id' in the Apple model.
+>>> It tells how to configure the generic codec driver for the specific
+>>> configuration needed by the actual platform hardware.
+>>
+>> The apple layout-id selects one of several tables with *lots* of info.
+>> I think you want a subset of that only.
+>
+> The fabric/layout-id stuff is platform specific.
 
- drivers/serial/uartlite.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+I mean that Apple's layout-id abstraction is "bigger" than your fabric
+abstraction seems to be.  Not too important a point, anyway.
 
-diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
-index dfef83f..a85f2d3 100644
---- a/drivers/serial/uartlite.c
-+++ b/drivers/serial/uartlite.c
-@@ -329,12 +329,14 @@ static struct uart_ops ulite_ops = {
- static void ulite_console_wait_tx(struct uart_port *port)
- {
- 	int i;
-+	u8 val;
- 
--	/* wait up to 10ms for the character(s) to be sent */
--	for (i = 0; i < 10000; i++) {
--		if (readb(port->membase + ULITE_STATUS) & ULITE_STATUS_TXEMPTY)
-+	/* Spin waiting for TX fifo to have space available */
-+	for (i = 0; i < 100000; i++) {
-+		val = readb(port->membase + ULITE_STATUS);
-+		if ((val & ULITE_STATUS_TXFULL) == 0)
- 			break;
--		udelay(1);
-+		cpu_relax();
- 	}
- }
- 
+>>> My target hardware has a codec that is linked to both i2s and i2c. 
+>>> How
+>>> should it be represented?
+>>
+>> Since the codec is addressable on i2c, and not on i2s, it should be
+>> a child node of the i2c bus it sits on; and then you put a property
+>> in the codec node pointing to the i2s bus node it is connected to.
+>> Multiple of those (or multiple entries) if it is connected to more
+>> than one i2s bus.  "i2s-parent" might be a good name for such a prop.
+>
+> How do we want to be consistent with the Efika which uses an AC97
+> codec that only connects to i2s?
+
+Huh?  AC'97 isn't I2S.  Yeah you probably could hook it up to some I2S
+device if you do all the interleaving and whatever stuff by hand -- but
+then you probably shouldn't call the I2S "host" an I2S anymore, but name
+it "ac97" in the device tree, or "this-or-that-i2s-controller-hooked-up-
+in-this-particular-crazy-way".  You will want to know which driver to
+use for the device, and if it's hooked up in "strange and unforeseen"
+ways you want to know about it.
+
+Maybe the platform code should do this, dunno.
+
+_Please_ don't name busses that are not plain I2S "i2s" in the device
+tree.  At best this means you'll need a quirk in the kernel code to deal
+with this later.
+
+</rant>
+
+
+So anyway, why is it inconsistent to have an audio codec that is 
+configured
+over i2c sit on that i2c bus in the device tree as well, and refer to 
+the i2s
+bus it pumps audio data over; vs. having an ac97 codec that sits on an 
+ac97
+bus sit on that ac97 bus in the device tree as well?  In both cases, the
+device is a child of the bus via which it is addressed.
+
+The one exceptional case would be a dumb codec that isn't addressable 
+at all;
+it would be a device tree child of the dumb transport bus (where else 
+could
+it be put)?
+
+> Actually those platform-XXX entries may be the solution I am looking
+> for.
+
+Like Ben already said, no you _do not_ want the platform-do stuff.  
+Trust
+him on this.  Or if you're feeling brave, look at the existing kernel 
+code
+that handles some of it ;-P
+
+
+Segher
