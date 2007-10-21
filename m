@@ -1,17 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 20 Oct 2007 19:06:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [PATCH 3/4] DTC: Appease the printf() format $Gods with a correct
-	type.
-Message-ID: <20071020090633.GH26642@localhost.localdomain>
-References: <E1IivsP-00078Q-Hf@jdl.com>
-	<20071020071920.GF26642@localhost.localdomain>
-	<jesl46yxri.fsf@sykes.suse.de>
+Return-Path: <baishuwei@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 848C8DDE3B
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 12:45:51 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so879715nfd
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2007 19:45:49 -0700 (PDT)
+Message-ID: <f3566d60710201945m3d29830if274e61356c0179@mail.gmail.com>
+Date: Sun, 21 Oct 2007 10:45:49 +0800
+From: "Bai Shuwei" <baishuwei@gmail.com>
+To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: rtlinux rtai interrupt latency
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <jesl46yxri.fsf@sykes.suse.de>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11378_32190830.1192934749429"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 20, 2007 at 10:51:29AM +0200, Andreas Schwab wrote:
-> David Gibson <david@gibson.dropbear.id.au> writes:
-> 
-> > What compiler/platform is this?  I can't off the top of my head think
-> > of one where size_t shouldn't be promoted to int automatically.
-> 
-> Only types narrower than int are subject to integer promotion.
+------=_Part_11378_32190830.1192934749429
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Duh, yes.  Sorry.
+all, hi
+  does anyone knows RTLinux, RTAI interrupt latency and schedule latency on
+the PPC440, PPC405?
+Thanks!
+
+buroc
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+Add: Tianshui South Road 222, Lanzhou, P.R.China
+Tel: +86-931-8912025
+Zip Code: 730000
+URL: oss.lzu.edu.cn
+Email: baishuwei@gmail.com, buroc@126.com
+
+------=_Part_11378_32190830.1192934749429
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>all, hi</div>
+<div>&nbsp; does anyone knows RTLinux, RTAI interrupt latency and schedule latency on the PPC440, PPC405?</div>
+<div>Thanks!</div>
+<div>&nbsp;</div>
+<div>buroc<br clear="all"><br>-- <br><br>Add: Tianshui South Road 222, Lanzhou, P.R.China<br>Tel: +86-931-8912025<br>Zip Code: 730000<br>URL: <a href="http://oss.lzu.edu.cn">oss.lzu.edu.cn</a><br>Email: <a href="mailto:baishuwei@gmail.com">
+baishuwei@gmail.com</a>, <a href="mailto:buroc@126.com">buroc@126.com</a> </div>
+
+------=_Part_11378_32190830.1192934749429--
