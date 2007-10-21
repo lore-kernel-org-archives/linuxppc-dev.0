@@ -1,15 +1,17 @@
-Return-Path: <root@hofr.at>
-Date: Sat, 20 Oct 2007 22:34:32 +0200 (CEST)
-From: Nicholas Mc Guire <der.herr@hofr.at>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: rtlinux rtai interrupt latency
-In-Reply-To: <1192937066.19375.0.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.60.0710202230230.1476@rtl14.hofr.at>
-References: <f3566d60710201945m3d29830if274e61356c0179@mail.gmail.com>
-	<1192937066.19375.0.camel@localhost.localdomain>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id DBA27DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 Oct 2007 19:45:56 +1000 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Li Yang-r58472'" <LeoLi@freescale.com>,
+	"'Netdev'" <netdev@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+Subject: RE: [PATCH] Fix ethernet multicast for ucc_geth.
+Date: Sun, 21 Oct 2007 11:45:48 +0200
+Message-ID: <005801c813c7$2936b550$5267a8c0@Jocke>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <989B956029373F45A0B8AF0297081890019B5BD2@zch01exm26.fsl.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+> -----Original Message-----
+> From: Li Yang-r58472 [mailto:LeoLi@freescale.com] 
+> Sent: den 18 oktober 2007 16:24
+> To: joakim.tjernlund@transmode.se; Netdev; linuxppc-dev@ozlabs.org
+> Subject: RE: [PATCH] Fix ethernet multicast for ucc_geth.
+> 
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se] 
+> > Sent: Wednesday, October 17, 2007 5:06 PM
+> > To: Netdev; Li Yang-r58472
+> > Subject: [PATCH] Fix ethernet multicast for ucc_geth.
+> > 
+> > >From 5761a9e5924b34615c748fba2dcb977ed04c1243 Mon Sep 17 
+> > 00:00:00 2001
+> > From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> > Date: Wed, 17 Oct 2007 11:01:44 +0200
+> > Subject: [PATCH] Fix ethernet multicast for ucc_geth.
+> >  hw_add_addr_in_hash() already swaps byte  order, don't do it 
+> > in ucc_geth_set_multi() too.
+> > 
+> > 
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+> 
+> Acked-by: Li Yang <leoli@freescale.com>
+> 
 
-> On Sun, 2007-10-21 at 10:45 +0800, Bai Shuwei wrote:
->> all, hi
->>   does anyone knows RTLinux, RTAI interrupt latency and schedule
->> latency on the PPC440, PPC405?
->
-> You'd have to ask Wind River.
->
-There are free variants around as well - XtratuM/PPC (RTLinux-4.0) is
-running on 440EP/GR and 405 Octobus, im quite sur RTAI also is available
-for AMCC CPUs - check RTAI.org (mailing list link is to be found there) 
-and rtlinux-gpl.org (mailing list link) - those lists are most likely the
-best source for the free-software hard-realtime Linux variants.
+Ping? Did this make into a someones tree?
 
-hofrat
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD4DBQFHGmZZnU7rXZKfY2oRArrjAJ9WXETFjALA52TRuRtDRSm4x3DcZACYgylW
-60r4W0r6+LtMv+UBK+5h9A==
-=Eb2V
------END PGP SIGNATURE-----
+ Jocke
