@@ -1,14 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Device trees and audio codecs
-Date: Sun, 21 Oct 2007 21:14:44 +0200
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B211DDEC7
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 07:11:01 +1000 (EST)
+Subject: Re: [PATCH] synchronize_irq needs a barrier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <1192769910.7367.106.camel@pasglop>
+References: <E1IiWnJ-0000ne-00@gondolin.me.apana.org.au>
+	<1192745137.7367.40.camel@pasglop>
+	<alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	<20071019023219.GB8453@gondor.apana.org.au>
+	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+	<20071019042025.GA9617@gondor.apana.org.au>
+	<20071019044806.GA10080@gondor.apana.org.au>
+	<1192769910.7367.106.camel@pasglop>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 07:10:05 +1000
+Message-Id: <1193001005.6745.34.camel@pasglop>
+Mime-Version: 1.0
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,54 +37,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm working on ALSA ASoC support for a codec chip on my mpc5200 based
-> target hardware.
 
-What is ASoC?
+ .../...
 
-> Under ASoC the device drivers for the codec chips are platform
-> independent.  In the current ASoC model there are three device
-> drivers: i2s (or spi, etc), the generic codec, and a platform specific
-> 'fabric' driver.  Some codecs are linked to both i2c and i2s.
+> This patch (mostly written by Linus) fixes this by using spin
+> > locks instead of memory barries on the synchronize_irq() path.
+> > 
+> > Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> Good for me.
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The i2s driver is simply for data transport, the codec driver does,
-well, what codecs do; and what is the fabric driver for?  Just to
-know which output ports are which, etc.?
+Hrm... not on yet. Herbert, care to resend, looks like it fell down the
+wrong hole in Linus mailbox :-)
 
-> The fabric driver corresponds to the 'layout-id' in the Apple model.
-> It tells how to configure the generic codec driver for the specific
-> configuration needed by the actual platform hardware.
-
-The apple layout-id selects one of several tables with *lots* of info.
-I think you want a subset of that only.
-
-> My target hardware has a codec that is linked to both i2s and i2c. How
-> should it be represented?
-
-Since the codec is addressable on i2c, and not on i2s, it should be
-a child node of the i2c bus it sits on; and then you put a property
-in the codec node pointing to the i2s bus node it is connected to.
-Multiple of those (or multiple entries) if it is connected to more
-than one i2s bus.  "i2s-parent" might be a good name for such a prop.
-
-> Apple has three entries. One for i2s, one for the codec, and one for
-> soundchip. What is the soundchip entry, does it correspond to real
-> hardware?
->
-> /proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000:
-
-This is one of the i2s channels on the macio.  Dunno why they put
-all those platform-XXX entries in here, (most of) these don't
-logically belong here.
-
-> /proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound:
-
-The codec.  I guess Apple puts this here for their weirdo platform-do
-stuff; don't imitate this :-)
-
-> /proc/device-tree/pci@f2000000/mac-io@17/i2c@18000/i2c-bus@0/codec@6a:
-
-The codec.  _Do_ put it here in your tree :-)
-
-
-Segher
+Cheers,
+Ben.
