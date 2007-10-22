@@ -1,17 +1,25 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EC17BDDE1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 07:13:59 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1Ik4aw-0007ud-Lu
-	for linuxppc-dev@ozlabs.org; Mon, 22 Oct 2007 16:13:55 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] DTC:  Remove the need for the GLR Parser.
-Date: Mon, 22 Oct 2007 16:13:54 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ik4aw-0007ud-Lu@jdl.com>
+	by ozlabs.org (Postfix) with ESMTP id 13B1BDDE22
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 07:26:50 +1000 (EST)
+Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20071022181336.GC4280@austin.ibm.com>
+References: <1192829817.22064.559.camel@teletran1>
+	<20071021.162131.43417026.davem@davemloft.net>
+	<1193017764.10318.17.camel@concordia>
+	<20071022181336.GC4280@austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 07:24:27 +1000
+Message-Id: <1193088267.6745.108.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, there were a few shift/reduce and reduce/reduce
-errors in the grammar that were being handled by the not-so-popular
-GLR Parser technique.
 
-Flip a right-recursive stack-abusing rule into a left-recursive
-stack-friendly rule and clear up three messes in one shot: No more
-conflicts, no need for the GLR parser, and friendlier stackness.
+On Mon, 2007-10-22 at 13:13 -0500, Linas Vepstas wrote:
+> On Mon, Oct 22, 2007 at 11:49:24AM +1000, Michael Ellerman wrote:
+> > 
+> > On pseries there's a chance it will work for PCI error recovery, but if
+> > so it's just lucky that firmware has left everything configured the same
+> > way. 
+> 
+> ? The papr is quite clear that i is up to the OS to restore the msi
+> state after an eeh error.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
----
- Makefile     |    1 -
- dtc-parser.y |    5 ++---
- 2 files changed, 2 insertions(+), 4 deletions(-)
+Via direct config space access or via firmware change-msi calls ?
 
-Both "make check" and the "compare all old and new DTB kernel files"
-tests are happy with this change.
+> > Yes I think so. That way we can properly reconfigure via the firmware
+> > interface. The other option would be to design some new arch hook to do
+> > resume, but just doing a disable/enable seems simpler to me.
+> 
+> Err, If you read the code for suspend/resume, it never actually calls
+> disable/enable (and thus doesn't go to the firmware); it calls 
+> restore_msi_state() function!
+> 
+> If suspend/resume needs to call firmware to restore the state, then,
+> at the moment, suspend/resume is broken.  As I mentioned earlier,
+> I presumed that no powerpc laptops currently use msi-enabled devices,
+> as otherwise, this would have been flushed out.
 
+I don't know why you keep talking about powerpc laptops here ... 
 
-diff --git a/Makefile b/Makefile
-index d7d1af5..84f0efe 100644
---- a/Makefile
-+++ b/Makefile
-@@ -207,7 +207,6 @@ clean: libfdt_clean tests_clean
- 
- %.tab.c %.tab.h %.output: %.y
- 	@$(VECHO) BISON $@
--	@$(VECHO) ---- Expect 2 s/r and 2 r/r. ----
- 	$(BISON) -d $<
- 
- FORCE:
-diff --git a/dtc-parser.y b/dtc-parser.y
-index 4698793..0d140e5 100644
---- a/dtc-parser.y
-+++ b/dtc-parser.y
-@@ -18,7 +18,6 @@
-  *                                                                   USA
-  */
- 
--%glr-parser
- %locations
- 
- %{
-@@ -123,9 +122,9 @@ nodedef:
- 	;
- 
- proplist:
--	  propdef proplist
-+	  proplist propdef
- 		{
--			$$ = chain_property($1, $2);
-+			$$ = chain_property($2, $1);
- 		}
- 	| /* empty */
- 		{
--- 
-1.5.3.1.139.g9346b
+Ben.
