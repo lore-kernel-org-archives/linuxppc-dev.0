@@ -1,35 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A522FDDE16
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 04:13:48 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9MIDhDC029066
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 14:13:43 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9MIDc6R052488
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 12:13:38 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9MIDbku023073
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 12:13:38 -0600
-Date: Mon, 22 Oct 2007 13:13:37 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
-Message-ID: <20071022181336.GC4280@austin.ibm.com>
-References: <1192829817.22064.559.camel@teletran1>
-	<20071021.162131.43417026.davem@davemloft.net>
-	<1193017764.10318.17.camel@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1193017764.10318.17.camel@concordia>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <9e4733910710211729k2f2a065cm56670d1b0f90a1af@mail.gmail.com>
+References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+	<a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
+	<9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
+	<5cac8057884ac400b0596988414c7ed7@kernel.crashing.org>
+	<9e4733910710211729k2f2a065cm56670d1b0f90a1af@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ca49c80c1b704a41544bd8d00192620a@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Device trees and audio codecs
+Date: Mon, 22 Oct 2007 20:43:46 +0200
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,26 +22,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 22, 2007 at 11:49:24AM +1000, Michael Ellerman wrote:
-> 
-> On pseries there's a chance it will work for PCI error recovery, but if
-> so it's just lucky that firmware has left everything configured the same
-> way. 
+It seems to me there are four issues here:
 
-? The papr is quite clear that i is up to the OS to restore the msi
-state after an eeh error.
+1) How to describe the audio transport controller;
+2) How to describe the codecs;
+3) How the various parts are connected together in the device tree;
+4) How to describe the "layout".
 
-> Yes I think so. That way we can properly reconfigure via the firmware
-> interface. The other option would be to design some new arch hook to do
-> resume, but just doing a disable/enable seems simpler to me.
+>>> How do we want to be consistent with the Efika which uses an AC97
+>>> codec that only connects to i2s?
+>>
+>> Huh?  AC'97 isn't I2S.  Yeah you probably could hook it up to some I2S
+>> device if you do all the interleaving and whatever stuff by hand -- 
+>> but
+>> then you probably shouldn't call the I2S "host" an I2S anymore, but 
+>> name
+>> it "ac97" in the device tree, or 
+>> "this-or-that-i2s-controller-hooked-up-
+>> in-this-particular-crazy-way".  You will want to know which driver to
+>> use for the device, and if it's hooked up in "strange and unforeseen"
+>> ways you want to know about it.
+>
+> I meant an ac97 bus. ac97 is conceptually the same as i2s with the
+> control signals also routed over it. ac97 and i2s are handled in the
+> same PSC on the 5200.
 
-Err, If you read the code for suspend/resume, it never actually calls
-disable/enable (and thus doesn't go to the firmware); it calls 
-restore_msi_state() function!
+Okay.  On any specific board, there can _only_ be ac97 or _only_ i2s
+codecs hooked onto the bus; the device node for the PSC should say
+which it is, either by having different "compatible" entries for the
+different modes, or by having some device-specific property in there
+saying which it is.  Ideally, the name of the node would be "i2s" resp.
+"ac97" as well.
 
-If suspend/resume needs to call firmware to restore the state, then,
-at the moment, suspend/resume is broken.  As I mentioned earlier,
-I presumed that no powerpc laptops currently use msi-enabled devices,
-as otherwise, this would have been flushed out.
+This handles 1).
 
---linas
+> I have received conflicting opinions as to whether a codec hooked to
+> an ac97 bus should get a chip specific codec entry in the device tree.
+
+Every codec gets its own device node, and its "compatible" entry 
+describes
+it uniquely.  This is a very basic property of device trees.
+
+This handles 2).
+
+> Without the codec specific entry only generic ac97 features can be
+> used. The Efika has a STA9766. Looking at the data sheet for the chip
+> I see that it implements some proprietary functions in addition to the
+> standard ones.
+>
+> asoc has a generic ac97 driver. Should the ac97 bus be required to
+> have a entry for the generic ac97 device? It would make loading the
+> driver much easier.
+
+If the kernel driver does _not_ recognise the codec in the device tree,
+it could use a "generic" ac97 codec driver, if such a thing indeed 
+exists.
+If on the other hand it knows about the specific codec, it can use a 
+chip-
+specific driver.
+
+AC'97 codecs are addressed over the AC'97 bus, so the codecs should be
+children of the ac97 bus in the device tree, and have fully qualified
+names like "audio@0" or "modem@1" etc.  I2S codecs that are addressed
+(== its configuration registers written) over I2C should be children of
+their I2C bus in the device tree, with fully qualified names like
+"audio@6c"; they should show which I2S bus they sit on, for example by
+having an "i2s-bus" property (containing the phandle of the i2s bus) in
+the codec node.
+
+This is 3).
+
+
+Now for 4), the layout thing; you could try to describe the layout in
+the device tree, but that would probably fail; there just is too much
+variance.  If I understand you correctly, you have a platform-specific
+layout driver; now you need to find a nice way to probe this from the
+device tree.  Maybe you should just look at the properties in the root
+node of the device tree for this.
+
+>> _Please_ don't name busses that are not plain I2S "i2s" in the device
+>> tree.  At best this means you'll need a quirk in the kernel code to 
+>> deal
+>> with this later.
+>
+> the i2s and ac97 drivers for the mpc5200 already exist. I'm using
+> these preexisting drivers.
+
+Sure, but that doesn't mean you cannot fix the way things are probed in
+those drivers.  Bugs are there to fix ;-)
+
+
+Segher
