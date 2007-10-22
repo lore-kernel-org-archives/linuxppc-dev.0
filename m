@@ -1,25 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13B1BDDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 07:26:50 +1000 (EST)
-Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20071022181336.GC4280@austin.ibm.com>
-References: <1192829817.22064.559.camel@teletran1>
-	<20071021.162131.43417026.davem@davemloft.net>
-	<1193017764.10318.17.camel@concordia>
-	<20071022181336.GC4280@austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 07:24:27 +1000
-Message-Id: <1193088267.6745.108.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id B694BDDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 07:59:49 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1Ik5JJ-0000Cp-KT
+	for linuxppc-dev@ozlabs.org; Mon, 22 Oct 2007 16:59:46 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] DTC: Minor grammar rule shuffle.
+Date: Mon, 22 Oct 2007 16:59:45 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1Ik5JJ-0000Cp-KT@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +21,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I like to see the basis cases established early in
+the rule sets, so place  "empty" reduction first.
+Purely cosmetic.
 
-On Mon, 2007-10-22 at 13:13 -0500, Linas Vepstas wrote:
-> On Mon, Oct 22, 2007 at 11:49:24AM +1000, Michael Ellerman wrote:
-> > 
-> > On pseries there's a chance it will work for PCI error recovery, but if
-> > so it's just lucky that firmware has left everything configured the same
-> > way. 
-> 
-> ? The papr is quite clear that i is up to the OS to restore the msi
-> state after an eeh error.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ dtc-parser.y |   62 +++++++++++++++++++++++++++++-----------------------------
+ 1 files changed, 31 insertions(+), 31 deletions(-)
 
-Via direct config space access or via firmware change-msi calls ?
-
-> > Yes I think so. That way we can properly reconfigure via the firmware
-> > interface. The other option would be to design some new arch hook to do
-> > resume, but just doing a disable/enable seems simpler to me.
-> 
-> Err, If you read the code for suspend/resume, it never actually calls
-> disable/enable (and thus doesn't go to the firmware); it calls 
-> restore_msi_state() function!
-> 
-> If suspend/resume needs to call firmware to restore the state, then,
-> at the moment, suspend/resume is broken.  As I mentioned earlier,
-> I presumed that no powerpc laptops currently use msi-enabled devices,
-> as otherwise, this would have been flushed out.
-
-I don't know why you keep talking about powerpc laptops here ... 
-
-Ben.
+diff --git a/dtc-parser.y b/dtc-parser.y
+index 0d140e5..c213526 100644
+--- a/dtc-parser.y
++++ b/dtc-parser.y
+@@ -86,13 +86,13 @@ sourcefile:
+ 	;
+ 
+ memreserves:
+-	  memreserve memreserves
++	  /* empty */
+ 		{
+-			$$ = chain_reserve_entry($1, $2);
++			$$ = NULL;
+ 		}
+-	| /* empty */
++	| memreserve memreserves
+ 		{
+-			$$ = NULL;
++			$$ = chain_reserve_entry($1, $2);
+ 		}
+ 	;
+ 
+@@ -122,13 +122,13 @@ nodedef:
+ 	;
+ 
+ proplist:
+-	  proplist propdef
++	  /* empty */
+ 		{
+-			$$ = chain_property($2, $1);
++			$$ = NULL;
+ 		}
+-	| /* empty */
++	| proplist propdef
+ 		{
+-			$$ = NULL;
++			$$ = chain_property($2, $1);
+ 		}
+ 	;
+ 
+@@ -164,7 +164,11 @@ propdata:
+ 	;
+ 
+ propdataprefix:
+-	  propdata ','
++	  /* empty */
++		{
++			$$ = empty_data;
++		}
++	| propdata ','
+ 		{
+ 			$$ = $1;
+ 		}
+@@ -172,10 +176,6 @@ propdataprefix:
+ 		{
+ 			$$ = data_add_label($1, $2);
+ 		}
+-	| /* empty */
+-		{
+-			$$ = empty_data;
+-		}
+ 	;
+ 
+ opt_cell_base:
+@@ -187,7 +187,11 @@ opt_cell_base:
+ 	;
+ 
+ celllist:
+-	  celllist opt_cell_base DT_CELL
++	  /* empty */
++		{
++			$$ = empty_data;
++		}
++	| celllist opt_cell_base DT_CELL
+ 		{
+ 			$$ = data_append_cell($1,
+ 					      cell_from_string($3, $2));
+@@ -200,14 +204,14 @@ celllist:
+ 		{
+ 			$$ = data_add_label($1, $2);
+ 		}
+-	| /* empty */
+-		{
+-			$$ = empty_data;
+-		}
+ 	;
+ 
+ bytestring:
+-	  bytestring DT_BYTE
++	  /* empty */
++		{
++			$$ = empty_data;
++		}
++	| bytestring DT_BYTE
+ 		{
+ 			$$ = data_append_byte($1, $2);
+ 		}
+@@ -215,20 +219,16 @@ bytestring:
+ 		{
+ 			$$ = data_add_label($1, $2);
+ 		}
+-	| /* empty */
+-		{
+-			$$ = empty_data;
+-		}
+ 	;
+ 
+ subnodes:
+-	  subnode subnodes
++	  /* empty */
+ 		{
+-			$$ = chain_node($1, $2);
++			$$ = NULL;
+ 		}
+-	| /* empty */
++	|  subnode subnodes
+ 		{
+-			$$ = NULL;
++			$$ = chain_node($1, $2);
+ 		}
+ 	;
+ 
+@@ -251,13 +251,13 @@ nodename:
+ 	;
+ 
+ label:
+-	  DT_LABEL
++	  /* empty */
+ 		{
+-			$$ = $1;
++			$$ = NULL;
+ 		}
+-	| /* empty */
++	| DT_LABEL
+ 		{
+-			$$ = NULL;
++			$$ = $1;
+ 		}
+ 	;
+ 
+-- 
+1.5.3.1.139.g9346b
