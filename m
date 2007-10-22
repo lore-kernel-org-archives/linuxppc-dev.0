@@ -1,21 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3A495DDE23
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 6BED8DDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Oct 2007 20:03:08 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Iju7j-0003Fg-LH
-	for linuxppc-embedded@ozlabs.org; Mon, 22 Oct 2007 03:03:03 -0700
-Message-ID: <13339930.post@talk.nabble.com>
-Date: Mon, 22 Oct 2007 03:03:03 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
+	Mon, 22 Oct 2007 21:05:35 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Difference between ioremap() and phy_to_virt() Kernel function
+Subject: Re: Difference between ioremap() and phy_to_virt() Kernel function
+Date: Mon, 22 Oct 2007 13:04:43 +0200
+References: <13339930.post@talk.nabble.com>
+In-Reply-To: <13339930.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710221304.44275.arnd@arndb.de>
+Cc: Misbah khan <misbah_khan@engineer.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,13 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Monday 22 October 2007, Misbah khan wrote:
+> Could you Please let me know what is the difference between ioremap() and
+> phy_to_virt() function being provided by the Kernel.
 
-Hi all
+ioremap gives you a new mapping for I/O addresses that you can access
+with functions like in_be32 and the like.
 
-Could you Please let me know what is the difference between ioremap() and
-phy_to_virt() function being provided by the Kernel. 
+phy_to_virt() is rarely used at all, it only serves to convert a physical
+address for main memory (RAM) into the address used inside of the kernel.
 
---Misbah
--- 
-View this message in context: http://www.nabble.com/Difference-between-ioremap%28%29-and-phy_to_virt%28%29-Kernel-function-tf4669833.html#a13339930
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+	Arnd <><
