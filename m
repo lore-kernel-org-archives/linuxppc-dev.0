@@ -1,15 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 22 Oct 2007 10:51:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] DTC: Begin the path to sane literals and expressions.
-Message-ID: <20071022005133.GG17164@localhost.localdomain>
-References: <E1Iivsg-00078a-Vp@jdl.com>
-	<20d6133a9294d4f06a7e78ca627ec4f3@kernel.crashing.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (unknown [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9362DDDE3C
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 11:10:55 +1000 (EST)
+Date: Sun, 21 Oct 2007 20:17:40 -0500
+From: Olof Johansson <olof@lixom.net>
+To: scott.wood@freescale.com, linuxppc-dev@ozlabs.org
+Subject: Re: ep88xc_defconfig doesn't build
+Message-ID: <20071022011740.GA25222@lixom.net>
+References: <20071020024355.GA20356@lixom.net>
+	<20071022003625.GC17164@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20d6133a9294d4f06a7e78ca627ec4f3@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+In-Reply-To: <20071022003625.GC17164@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,22 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Oct 21, 2007 at 07:30:45AM +0200, Segher Boessenkool wrote:
-> > Property names have been limited to start with
-> > characters from the set [a-zA-Z,._#?].  That is, the
-> > digits and the expression symbols have been removed.
+On Mon, Oct 22, 2007 at 10:36:25AM +1000, David Gibson wrote:
+> On Fri, Oct 19, 2007 at 09:43:55PM -0500, Olof Johansson wrote:
+> > Hi,
+> > 
+> > Did it ever?! I get this with current mainline when building default target:
 > 
-> This cannot work; many property names start with a digit,
-> for example.
+> I think you must have an old dtc; I'm pretty sure I removed the check
+> for /chosen some time ago.  But then I also thought we added a force
+> to the dtc commant line in wrapper ages ago, so now I'm a bit confused.
 
-Yes, crap.  Ok, I guess we just have to put the literal lexer rule
-before the property name lexer rule, so literals will be recognized in
-preference.  Disallowing just those property names which look like
-literals is a little warty, but not likely to cause trouble in
-practice, I think.
+Hrm, seems like I had an old version. It's a little annoying that it's a
+moving target and it's impossible to find out form a built binary which
+version it is, besides trying to guess based on file time stamps.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+A nice enhancement could be to have a "dtc -v" and have the makefile
+verify it before using it.
+
+
+-Olof
