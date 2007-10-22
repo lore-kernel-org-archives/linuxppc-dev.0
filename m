@@ -1,20 +1,23 @@
-Return-Path: <root@hofr.at>
-Received: from mail.hofr.at (unknown [194.112.174.227])
-	by ozlabs.org (Postfix) with ESMTP id 7BC87DDE34
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 17:54:03 +1000 (EST)
-Date: Mon, 22 Oct 2007 09:53:58 +0200 (CEST)
-From: Nicholas Mc Guire <der.herr@hofr.at>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9B4ECDDE34
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 18:04:39 +1000 (EST)
+Subject: Re: ppc manual paging question
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Wang, Baojun" <wangbj@lzu.edu.cn>
-Subject: Re: [Rtlinuxgpl] ppc manual paging question
-In-Reply-To: <393096168.21831@eyou.net>
-Message-ID: <Pine.LNX.4.60.0710220944590.1639@rtl14.hofr.at>
+In-Reply-To: <200710221542.10592.wangbj@lzu.edu.cn>
 References: <200710221203.24157.wangbj@lzu.edu.cn>
-	<200710221350.31688.wangbj@lzu.edu.cn>
-	<393033430.04221@lzu.edu.cn> <393096168.21831@eyou.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: rtlinuxgpl@upv.es, Miguel Masmano <mimastel@doctor.upv.es>,
-	linuxppc-dev@ozlabs.org
+	<200710221417.43544.wangbj@lzu.edu.cn> <393039004.29574@lzu.edu.cn>
+	<200710221542.10592.wangbj@lzu.edu.cn>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 18:04:14 +1000
+Message-Id: <1193040254.6745.76.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, rtlinuxgpl@upv.es,
+	Miguel Masmano <mimastel@doctor.upv.es>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-> OK, Shall I look for the DataTLBError code in head.S? I realized that I've got
-> DataTLBError sometimes via BDI2000/kgdb (the fault address is within
-> DataTLBError), Shall I should also look for arch/ppc/mm/fault.c?
->
-if you end up in fault.c (via call to handle_page_fault) then I think you 
-allready had an invalid access - you should not have ended there if the 
-tlb entries would have been loaded properly from where ever XM put them
-(not in any pgd that linux knows of) - no COW or lazy mechanism available
-as the pgd of the domains are not handled in fault.c .
+> Yup, I've found how does the kernel handle tlbs, I think the most important 
+> thing is I forgot read/write the SPRN_SPRG3 register as _switch does.
 
-hofrat
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+SPRG3 is for use by the operating system for whatever you want... if you
+are copying linux code, then you probably indeed want to get that right
+but you don't have to use SPRG3.
 
-iD8DBQFHHFcZnU7rXZKfY2oRAtKLAJ4pdGYGSrv/WFEraJiiHdeGndVupwCgiz56
-Le5QyhS1dpfdgb0pbe5hLRk=
-=PutX
------END PGP SIGNATURE-----
+> I've add the _PAGE_PRESENT flag to the related PTE
+
+Hrm.. that has nothing ot do with the PTE. Bolting is more a property of
+your replacement algorithm in the TLB miss handler.
+
+Ben.
