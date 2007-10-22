@@ -1,17 +1,17 @@
-Return-Path: <alan@akb.net>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
-	by ozlabs.org (Postfix) with ESMTP id 235ABDDEBC
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 02:47:44 +1000 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so477404nzh
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 09:47:43 -0700 (PDT)
-Message-ID: <bfa0697f0710220947t657b209ek6f6a011cd1e6e5cf@mail.gmail.com>
-Date: Mon, 22 Oct 2007 10:47:41 -0600
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: linuxppc-dev@ozlabs.org
-Subject: request_irq fails to get interrupt 12
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 3/4] DTC: Appease the printf() format $Gods with a correct
+	type.
+In-Reply-To: Your message of "Sat, 20 Oct 2007 19:06:33 +1000."
+	<20071020090633.GH26642@localhost.localdomain>
+References: <E1IivsP-00078Q-Hf@jdl.com>
+	<20071020071920.GF26642@localhost.localdomain>
+	<jesl46yxri.fsf@sykes.suse.de>
+	<20071020090633.GH26642@localhost.localdomain>
+Date: Mon, 22 Oct 2007 11:50:52 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1Ik0UO-000389-AN@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Freescale experts.  Why on earth can't I request the IRQ for Timer1?
+So, like, the other day David Gibson mumbled:
+> On Sat, Oct 20, 2007 at 10:51:29AM +0200, Andreas Schwab wrote:
+> > David Gibson <david@gibson.dropbear.id.au> writes:
+> > 
+> > > What compiler/platform is this?  I can't off the top of my head think
+> > > of one where size_t shouldn't be promoted to int automatically.
+> > 
+> > Only types narrower than int are subject to integer promotion.
+> 
+> Duh, yes.  Sorry.
 
-static int __init
-dvr_ph_init(void)
-{
-	u32	rv;
-	int k;
-	//rv = driver_register(&dvr_ph_driver);
-	for (k=0;k<64;k++) {
-		rv = request_irq(k,dvrph_isr , 0, "dvr_ph", NULL);
-		if (rv!=-38) printkplus("request_irq for %d returns %d", k,rv);
-	}
-	return rv;
-}
+So, Hmm.  You want the patch as I wrote it applied?
+Or do you want to use %z in the format instead?  It does
+seem like there is precedent to do that (in the kernel):
 
-Results in:
-dvr_ph_init    145 - enter the routine
-dvr_ph_init    155 -
-dvr_ph_init    161 - request_irq for 16 returns -16  (vector 16 = TMCNT)
-dvr_ph_init    161 - request_irq for 32 returns 0  (vector 32 = FCC1)
-dvr_ph_init    161 - request_irq for 33 returns -16  (vector 33 = FCC2)
-dvr_ph_init    161 - request_irq for 40 returns 0  (vector 40 = SCC1)
-dvr_ph_init    161 - request_irq for 43 returns 0  (vector 43 = SCC4)
+    % grep -r '%z' arch/
+    arch/alpha/boot/tools/mkbb.c:   fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
+    arch/alpha/boot/tools/mkbb.c:   fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          (0x00.w,%a3,%za4.l*8),%d2:%d3
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          (-0x10.w,%za3,%a4.l*1),%d2:%d3
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          (ea_77_mem+0x00.w,%pc,%za4.l*8),%d2:%d3
+    ...
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%zpc,%zd4.l*1]),%d2:%d3
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%pc],%zd4.l*8,0x20.l),%d2:%d3
+    arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%zpc],%d4.l*8),%d2:%d3
+    arch/um/drivers/cow_user.c:             /* Below, %zd is for a size_t value */
+    arch/um/drivers/cow_user.c:                        "limited to %zd characters\n", backing_file,
+    arch/x86/kernel/pci-nommu_64.c:                     "nommu_%s: overflow %Lx+%zu of device mask %Lx\n",
+
+Opinions?
+
+Thanks,
+jdl
