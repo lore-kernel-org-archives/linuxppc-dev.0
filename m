@@ -1,36 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C19ADDE45
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 02:55:34 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9MGtVTv001943
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 12:55:31 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9MGtDK9047718
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 10:55:14 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9MGtCcc003515
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 10:55:13 -0600
-Date: Mon, 22 Oct 2007 11:55:11 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH 3/4] DTC: Appease the printf() format $Gods with a
-	correct type.
-Message-ID: <20071022115511.0b902044@weaponx.rchland.ibm.com>
-In-Reply-To: <E1Ik0UO-000389-AN@jdl.com>
-References: <E1IivsP-00078Q-Hf@jdl.com>
-	<20071020071920.GF26642@localhost.localdomain>
-	<jesl46yxri.fsf@sykes.suse.de>
-	<20071020090633.GH26642@localhost.localdomain>
-	<E1Ik0UO-000389-AN@jdl.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <silvio.fricke@googlemail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 0D37CDDE37
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 03:21:52 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so1071617uge
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 10:21:51 -0700 (PDT)
+Date: Mon, 22 Oct 2007 19:21:46 +0200
+To: linuxppc-dev@ozlabs.org
+Subject: Re: request_irq fails to get interrupt 12
+Message-ID: <20071022172146.GD11556@sfrouter>
+References: <bfa0697f0710220947t657b209ek6f6a011cd1e6e5cf@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kvUQC+jR9YzypDnK"
+In-Reply-To: <bfa0697f0710220947t657b209ek6f6a011cd1e6e5cf@mail.gmail.com>
+From: "S. Fricke" <silvio.fricke@googlemail.com>
+Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,41 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 22 Oct 2007 11:50:52 -0500
-Jon Loeliger <jdl@jdl.com> wrote:
 
-> So, like, the other day David Gibson mumbled:
-> > On Sat, Oct 20, 2007 at 10:51:29AM +0200, Andreas Schwab wrote:
-> > > David Gibson <david@gibson.dropbear.id.au> writes:
-> > > 
-> > > > What compiler/platform is this?  I can't off the top of my head think
-> > > > of one where size_t shouldn't be promoted to int automatically.
-> > > 
-> > > Only types narrower than int are subject to integer promotion.
-> > 
-> > Duh, yes.  Sorry.
-> 
-> So, Hmm.  You want the patch as I wrote it applied?
-> Or do you want to use %z in the format instead?  It does
-> seem like there is precedent to do that (in the kernel):
-> 
->     % grep -r '%z' arch/
->     arch/alpha/boot/tools/mkbb.c:   fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
->     arch/alpha/boot/tools/mkbb.c:   fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          (0x00.w,%a3,%za4.l*8),%d2:%d3
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          (-0x10.w,%za3,%a4.l*1),%d2:%d3
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          (ea_77_mem+0x00.w,%pc,%za4.l*8),%d2:%d3
->     ...
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%zpc,%zd4.l*1]),%d2:%d3
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%pc],%zd4.l*8,0x20.l),%d2:%d3
->     arch/m68k/ifpsp060/src/itest.S: mulu.l          ([EASTORE.l,%zpc],%d4.l*8),%d2:%d3
->     arch/um/drivers/cow_user.c:             /* Below, %zd is for a size_t value */
->     arch/um/drivers/cow_user.c:                        "limited to %zd characters\n", backing_file,
->     arch/x86/kernel/pci-nommu_64.c:                     "nommu_%s: overflow %Lx+%zu of device mask %Lx\n",
-> 
-> Opinions?
+--kvUQC+jR9YzypDnK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-%z is fairly common now-a-days.  The kernel janitors tend to LART
-people for not using it rather quickly.
+Hello,
 
-josh
+> Freescale experts.  Why on earth can't I request the IRQ for Timer1?
+
+Please consule my question on [1] and the answers.
+
+[1] http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042061.html
+
+bye
+Silvio Fricke
+
+--=20
+-- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
+   Diplom-Informatiker (FH)
+   Linux-Entwicklung
+----------------------------------------------------------------------------
+
+
+--kvUQC+jR9YzypDnK
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHHNwq8WEBxatmn40RAhSXAJ9GoJ7hDUBDXfFkvHPTRLPVlMUKMgCgy8VW
+8VpCRTdClwCGKC8oSTP/D5s=
+=auZM
+-----END PGP SIGNATURE-----
+
+--kvUQC+jR9YzypDnK--
