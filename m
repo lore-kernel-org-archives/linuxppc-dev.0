@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B4ECDDE34
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 18:04:39 +1000 (EST)
-Subject: Re: ppc manual paging question
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Wang, Baojun" <wangbj@lzu.edu.cn>
-In-Reply-To: <200710221542.10592.wangbj@lzu.edu.cn>
-References: <200710221203.24157.wangbj@lzu.edu.cn>
-	<200710221417.43544.wangbj@lzu.edu.cn> <393039004.29574@lzu.edu.cn>
-	<200710221542.10592.wangbj@lzu.edu.cn>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 18:04:14 +1000
-Message-Id: <1193040254.6745.76.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, rtlinuxgpl@upv.es,
-	Miguel Masmano <mimastel@doctor.upv.es>
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id 18D1CDDE17
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 22:37:04 +1000 (EST)
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] DTC: Begin the path to sane literals and expressions.
+In-Reply-To: Your message of "Sun, 21 Oct 2007 07:30:45 +0200."
+	<20d6133a9294d4f06a7e78ca627ec4f3@kernel.crashing.org>
+References: <E1Iivsg-00078a-Vp@jdl.com>
+	<20d6133a9294d4f06a7e78ca627ec4f3@kernel.crashing.org>
+Date: Mon, 22 Oct 2007 07:36:57 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IjwWf-0000dJ-45@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So, like, the other day Segher Boessenkool mumbled:
+> > Property names have been limited to start with
+> > characters from the set [a-zA-Z,._#?].  That is, the
+> > digits and the expression symbols have been removed.
+> 
+> This cannot work; many property names start with a digit,
+> for example.
 
-> Yup, I've found how does the kernel handle tlbs, I think the most important 
-> thing is I forgot read/write the SPRN_SPRG3 register as _switch does.
+Are any of those property names in use in any
+of our DTS files or b-w-o.txt?  Not really, no.
+In fact, with this lexical change, all of our
+DTS files still produce byte-identical results.
 
-SPRG3 is for use by the operating system for whatever you want... if you
-are copying linux code, then you probably indeed want to get that right
-but you don't have to use SPRG3.
+I really think this is one of those areas where
+we may need to stray from the other guideline.
 
-> I've add the _PAGE_PRESENT flag to the related PTE
+Is there a compelling reason somewhere?  Really?
 
-Hrm.. that has nothing ot do with the PTE. Bolting is more a property of
-your replacement algorithm in the TLB miss handler.
-
-Ben.
+jdl
