@@ -1,31 +1,35 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25EA1DDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 23:47:40 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l9MDlYqb027529
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 06:47:34 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9MDlXWG000569
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 08:47:34 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
-Date: Mon, 22 Oct 2007 06:47:32 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
-In-Reply-To: <20071019.164143.75786621.davem@davemloft.net>
-References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com><20071018.173032.48505868.davem@davemloft.net><598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
-	<20071019.164143.75786621.davem@davemloft.net>
-From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
-To: "David Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CB4F7DDE39
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 23:56:52 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9MDunb4022164
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 09:56:49 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9MDulTt075496
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 07:56:47 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9MDulhs015682
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 07:56:47 -0600
+Subject: Re: [bug] block subsystem related crash on Legacy iSeries viodasd.c
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20071021124426.GS10674@kernel.dk>
+References: <1192829614.11003.30.camel@farscape.rchland.ibm.com>
+	<20071021124426.GS10674@kernel.dk>
+Content-Type: text/plain
+Date: Mon, 22 Oct 2007 08:56:45 -0500
+Message-Id: <1193061405.11003.33.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,38 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello David,
+On Sun, 2007-10-21 at 14:44 +0200, Jens Axboe wrote:
+> On Fri, Oct 19 2007, Will Schmidt wrote:
+> > Hi Jens, Stephen, and Everyone else.
+...
+> You need this, will remember to fix that up for the new branch as well.
+> 
+> diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
+> index e824b67..2ce3622 100644
+> --- a/drivers/block/viodasd.c
+> +++ b/drivers/block/viodasd.c
+> @@ -270,6 +270,7 @@ static int send_request(struct request *req)
+>          d = req->rq_disk->private_data;
+> 
+>  	/* Now build the scatter-gather list */
+> +	memset(sg, 0, sizeof(sg));
+>  	nsg = blk_rq_map_sg(req->q, req, sg);
+>  	nsg = dma_map_sg(d->dev, sg, nsg, direction);
+> 
 
+That appears to do the trick.     Thanks!  
 
-> No piece of code in the kernel should live in a vacuum.
->=20
-> In order to improve overall code quality, every piece of
-> driver code should avoid assuming things about pointer
-> sizes and things of this nature.
-
-I'm afraid we might be talking about orthogonal issues here. I actively
-agree that all code (not only kernel) should be written up to the
-coding/quality standards you mention above, but I see a difference
-between fixing a warning and making a driver portable (to 64-bit
-PowerPCs, to other platforms, etc.). If there is a kernel todo list
-somewhere lets add to it the task to make the ucc_geth more portable.
-
-> Then the driver can get enabled into the build on every
-> platform, and therefore nobody will break the build of
-> this driver again since it will get hit by "allmodconfig"
-> et al. builds even on platforms other than the one it is
-> meant for.
->=20
-> This hack fix is not acceptable, really.
-
-Are you suggesting we leave those warnings there until somebody decides
-to fix all the portability issues of this driver? My patch is a small
-and insignificant improvement and not the revolution you're asking for,
-but is an small improvement today (I dislike warnings) vs. an improbable
-big one in the future.
-
-Leo, as author and maintainer of this driver, what's your take on this?
-
-
-Cheers,
-Emil.
+Tested-By: Will Schmidt <will_schmidt@vnet.ibm.com>
