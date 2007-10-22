@@ -1,25 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id B036BDDED0
+Return-Path: <jhahn@bcfsemi.com>
+Received: from raptor.bcfsemi.com (adsl-75-52-244-172.dsl.pltn13.sbcglobal.net
+	[75.52.244.172])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD4B5DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Oct 2007 03:24:28 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so1125193wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 21 Oct 2007 10:24:27 -0700 (PDT)
-Message-ID: <fa686aa40710211024u25de32e3jc33b2183e61649e3@mail.gmail.com>
-Date: Sun, 21 Oct 2007 11:24:26 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] mpc5200: /dev/watchdog driver for GPT0
-In-Reply-To: <20071021171436.GA1466@nd47.coderock.org>
+	Mon, 22 Oct 2007 12:52:56 +1000 (EST)
+Received: from jhahnPC ([192.168.0.121]) (authenticated bits=0)
+	by raptor.bcfsemi.com (8.13.8/8.13.8) with ESMTP id l9M2qdJH016192
+	for <linuxppc-embedded@ozlabs.org>; Sun, 21 Oct 2007 19:52:40 -0700
+From: "John Hahn" <jhahn@bcfsemi.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <13290652.post@talk.nabble.com>	<fa686aa40710190704j18feabf2geb417d554ebb11c@mail.gmail.com>	<13300089.post@talk.nabble.com>
+	<fa686aa40710191120w209b62a0l4f71e528e5f1a1b3@mail.gmail.com>
+In-Reply-To: <fa686aa40710191120w209b62a0l4f71e528e5f1a1b3@mail.gmail.com>
+Subject: RE: SystemACE driver problem
+Date: Sun, 21 Oct 2007 19:52:32 -0700
+Message-ID: <001a01c81456$985b6a90$c9123fb0$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20070612085931.GG23294@moe.telargo.com>
-	<ECDF5931-F264-4083-B4F0-C8CA1976195A@kernel.crashing.org>
-	<fa686aa40710210955v14de2e78g88bf8c0d74482176@mail.gmail.com>
-	<20071021171436.GA1466@nd47.coderock.org>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,35 +30,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/21/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 21/10/07 10:55 -0600, Grant Likely wrote:
-> > On 6/13/07, Kumar Gala <galak@kernel.crashing.org> wrote:
-> > >
-> > > On Jun 12, 2007, at 3:59 AM, Domen Puncer wrote:
-> > >
-> > > > Driver for internal mpc5200 watchdog on general purpose timer 0.
-> > > > For IPB clock of 132 MHz the maximum timeout is about 32 seconds.
-> > > >
-> > > >
-> > > > Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-> > >
-> > > Should really be submitted to the watchdog maintainer if you want
-> > > this in the kernel
-> >
-> > Domen, are you going to respin this patch and submit it to the
-> > watchdog maintainer?
+Grant
+
+Regarding your comment about the new xsysace.c driver vs. the old Xilinx
+one, is that chosen at the kernel config time ? 
+
+i.e.
+cp arch/ppc/configs/ml403_defconfig
+make ARCH=ppc CROSS_COMPILE=/opt/eldk4.1/usr/bin/ppc_4xx- oldconfig
+
+...
+Xilinx SystemACE support (XILINX_SYSACE) [N/m/y/?] (NEW) y
+Xilinx SystemACE support (old driver) (XILINX_SYSACE_OLD) [N/m/y/?] (NEW) N
+
+I am also about build and test with the 2.6.23-rc2 same source. Just wanted
+to be sure I am choosing the right driver for the ml403 reference design
+bits from Xilinx.
+
+Thanks
+
+John Hahn
+BCF Semiconductor
+---
+
+P.S. Sorry for taking the thread off on a slight tangent ...
+
+> From: Grant Likely
+> Sent: Friday, October 19, 2007 11:21 AM
+> 
+... <snip>
 >
-> Uhm... checked drivers/char/watchdog/ lately? ;-)
-
-Hmmm, I checked it just before I wrote that email...  I missed that
-drivers/char/watchdog has been moved to drivers/watchdog which is why
-I couldn't find the driver.  :-)
-
-Oops,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+> I don't know about the old xilinx supplied sysace driver, but the new
+> xsysace.c driver is robust enough to work around missed interrupts.  I
+> don't know of any other problems with the opb_sysace IP core.
+> 
+> Cheers,
+> g.
+> 
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
