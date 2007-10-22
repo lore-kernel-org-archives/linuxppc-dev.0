@@ -1,35 +1,21 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CB4F7DDE39
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 23:56:52 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9MDunb4022164
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 09:56:49 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9MDulTt075496
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 07:56:47 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9MDulhs015682
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 07:56:47 -0600
-Subject: Re: [bug] block subsystem related crash on Legacy iSeries viodasd.c
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20071021124426.GS10674@kernel.dk>
-References: <1192829614.11003.30.camel@farscape.rchland.ibm.com>
-	<20071021124426.GS10674@kernel.dk>
-Content-Type: text/plain
-Date: Mon, 22 Oct 2007 08:56:45 -0500
-Message-Id: <1193061405.11003.33.camel@farscape.rchland.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B9D3EDDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 00:10:22 +1000 (EST)
+Subject: Re: [RFC/PATCH 2/2] powerpc: irqtrace support to 64-bit powerpc
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20071015072826.2D541DDE16@ozlabs.org>
+References: <20071015072826.2D541DDE16@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-RWzIvSHN54G1IA7Dc+Kg"
+Date: Mon, 22 Oct 2007 15:35:07 +0200
+Message-Id: <1193060107.9793.8.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Reply-To: will_schmidt@vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,25 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-10-21 at 14:44 +0200, Jens Axboe wrote:
-> On Fri, Oct 19 2007, Will Schmidt wrote:
-> > Hi Jens, Stephen, and Everyone else.
-...
-> You need this, will remember to fix that up for the new branch as well.
-> 
-> diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
-> index e824b67..2ce3622 100644
-> --- a/drivers/block/viodasd.c
-> +++ b/drivers/block/viodasd.c
-> @@ -270,6 +270,7 @@ static int send_request(struct request *req)
->          d = req->rq_disk->private_data;
-> 
->  	/* Now build the scatter-gather list */
-> +	memset(sg, 0, sizeof(sg));
->  	nsg = blk_rq_map_sg(req->q, req, sg);
->  	nsg = dma_map_sg(d->dev, sg, nsg, direction);
-> 
 
-That appears to do the trick.     Thanks!  
+--=-RWzIvSHN54G1IA7Dc+Kg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Tested-By: Will Schmidt <will_schmidt@vnet.ibm.com>
+On Mon, 2007-10-15 at 17:28 +1000, Benjamin Herrenschmidt wrote:
+> This adds the low level irq tracing hooks to the powerpc architecture
+> needed to enable full lockdep functionality
+>=20
+> Some rework from Johannes initial version, removing the asm trampoline th=
+at
+> isn't needed (thus improving perfs) and fixing a couple of bugs such as
+> incorrect initial preempt_count on the softirq alternate stack.
+
+Hmm. It breaks booting on my quad, I finally got around to testing
+without this patch and it turns out that it caused the boot failure I
+reported in another mail. This is with v2.6.23-6623-g55b70a0, a clean
+tree boots fine but with these two patches applied and configured in it
+fails during boot, hanging at some point, apparently when userspace is
+entered.
+
+On the other hand, it is fine with my original version. I'll have to
+find some time to check the differences hunk by hunk I guess.
+
+johannes
+
+--=-RWzIvSHN54G1IA7Dc+Kg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARxynCqVg1VMiehFYAQLMww/+KS3a+txd7f1X9LgQ2FeI/XvoX813cMd9
+rNxKylgMH8eL30aYtOu927UjZr7H+trwbU1UQAkOsP+baiGiXiejPfxVXW1xeN74
+SHrQGaWQBi9EmuO0E1Nl7/HJtF8TQiUyfGTfdhFoeV9i8XLFSkKyNwBPFxsO/UTT
+qkleN1IN79N3XxyhPXcv6gjAAdxB1rr+yfrx/e6v1oSL4tcnYH87BTQkUCKVHgNc
+fkdFX8oimx1lTHjWY+kplr0l/T/wpHoMRvj3pzCeTlrlIek4A2bVmvposatleHeJ
+R7yIxSY0QBs6bP1nupmQCQHaS2FWE4d9kxsCH1nTXQ5pXrK8TG3+XF9cEuh+1t/5
+fI9J7DrO6j8Hrfr9p40HZt4BW20dxJ7ui5x7kUM3laMS4SSsWXJJ0gvKzHUeFTxb
+0sWMXPDo7nUOK/zg0j3N9TfabvmQ6KM+xNaLpU9XeuoilTIDc+huoFumODMKQwWC
+3dCn8jgfOl+aIGMXAZ0+llkCN4ibrxZzry7nhXqxcBRyXbGcVDHsAk8w5ndlx2ca
+KflRo9uGVykPUzVPCJ7HV3ziiPsI5vyboGMVI9IwGOm2Z9pjnFMCgAJgE6ZDf9X0
+7UQXNx+TeU2t7b5SPtvldsXRziJLMPAwpgr6uuJG53t/+n6/pG0fefRgIHbJl8PZ
+nEk5Ek4j5fc=
+=U/0y
+-----END PGP SIGNATURE-----
+
+--=-RWzIvSHN54G1IA7Dc+Kg--
