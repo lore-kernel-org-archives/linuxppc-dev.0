@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F1CA4DDE18
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 06:33:51 +1000 (EST)
-Subject: Re: request_irq fails to get interrupt 12
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Bennett <embedded@akb.net>
-In-Reply-To: <bfa0697f0710221255ubbe8c91pa09640f9b9cd0775@mail.gmail.com>
-References: <bfa0697f0710221255ubbe8c91pa09640f9b9cd0775@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 06:33:44 +1000
-Message-Id: <1193085224.6745.102.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id EC17BDDE1C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 07:13:59 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1Ik4aw-0007ud-Lu
+	for linuxppc-dev@ozlabs.org; Mon, 22 Oct 2007 16:13:55 -0500
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] DTC:  Remove the need for the GLR Parser.
+Date: Mon, 22 Oct 2007 16:13:54 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1Ik4aw-0007ud-Lu@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,67 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Previously, there were a few shift/reduce and reduce/reduce
+errors in the grammar that were being handled by the not-so-popular
+GLR Parser technique.
 
-On Mon, 2007-10-22 at 13:55 -0600, Alan Bennett wrote:
-> Ok, so what does it take to expose an interrupt vector on a pq2 PIC??
-> -Alan
+Flip a right-recursive stack-abusing rule into a left-recursive
+stack-friendly rule and clear up three messes in one shot: No more
+conflicts, no need for the GLR parser, and friendlier stackness.
 
-Also, if it's the default PIC or if you happen to have the PIC struct
-irq_host pointer at hand, a quickish way for internal device interrupts
-is to directly call irq_create_mapping() though using the device-tree is
-nicer.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ Makefile     |    1 -
+ dtc-parser.y |    5 ++---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-Ben.
+Both "make check" and the "compare all old and new DTB kernel files"
+tests are happy with this change.
 
-> Current:
->         /
->               localbus{
->         ...
->  	       fundevice1 {
-> 		       interrupts = <c 8>;
-> 		       interrupt-parent = <&PIC>;
-> 	       };
->           ...
->                soc@e0000000 {
->                       PIC: interrupt-controller@10c00 {
->                           #interrupt-cells = <2>;
->                           interrupt-controller;
->                           reg = <10c00 80>;
->                           compatible = "fsl,mpc8248-pic", "fsl,pq2-pic";
->                         };
-> Is the above device tree enough on its own?
-> Do I have to write some platform code beyond:
->   static void __init ep8248_pic_init(void)
->   {
-> 	struct device_node *np = of_find_compatible_node(NULL,   NULL, "fsl,pq2-pic");
-> 	if (!np) {
-> 		printk(KERN_ERR "PIC init: can not find cpm-pic node\n");
-> 		return;
-> 	}
-> 
-> 	cpm2_pic_init(np);
-> 	of_node_put(np);
-> }
-> 
-> -Alan
-> 
-> Hello,
-> 
-> > Freescale experts.  Why on earth can't I request the IRQ for Timer1?
-> 
-> Please consule my question on [1] and the answers.
-> 
-> [1] http://ozlabs.org/pipermail/linuxppc-dev/2007-September/042061.html
-> 
-> bye
-> Silvio Fricke
-> 
-> --
-> -- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
->    Diplom-Informatiker (FH)
->    Linux-Entwicklung
-> ----------------------------------------------------------------------------
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+diff --git a/Makefile b/Makefile
+index d7d1af5..84f0efe 100644
+--- a/Makefile
++++ b/Makefile
+@@ -207,7 +207,6 @@ clean: libfdt_clean tests_clean
+ 
+ %.tab.c %.tab.h %.output: %.y
+ 	@$(VECHO) BISON $@
+-	@$(VECHO) ---- Expect 2 s/r and 2 r/r. ----
+ 	$(BISON) -d $<
+ 
+ FORCE:
+diff --git a/dtc-parser.y b/dtc-parser.y
+index 4698793..0d140e5 100644
+--- a/dtc-parser.y
++++ b/dtc-parser.y
+@@ -18,7 +18,6 @@
+  *                                                                   USA
+  */
+ 
+-%glr-parser
+ %locations
+ 
+ %{
+@@ -123,9 +122,9 @@ nodedef:
+ 	;
+ 
+ proplist:
+-	  propdef proplist
++	  proplist propdef
+ 		{
+-			$$ = chain_property($1, $2);
++			$$ = chain_property($2, $1);
+ 		}
+ 	| /* empty */
+ 		{
+-- 
+1.5.3.1.139.g9346b
