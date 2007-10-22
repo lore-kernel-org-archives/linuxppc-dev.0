@@ -1,16 +1,31 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <471CA082.1050304@freescale.com>
-Date: Mon, 22 Oct 2007 08:07:14 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25EA1DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 23:47:40 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l9MDlYqb027529
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 06:47:34 -0700 (MST)
+Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
+	[10.64.32.14])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9MDlXWG000569
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 08:47:34 -0500 (CDT)
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Device trees and audio codecs
-References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>	
-	<471B550F.3090907@freescale.com>
-	<9e4733910710210701x67b2e99frd0784ac2c8bd27fd@mail.gmail.com>
-In-Reply-To: <9e4733910710210701x67b2e99frd0784ac2c8bd27fd@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
+Date: Mon, 22 Oct 2007 06:47:32 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
+In-Reply-To: <20071019.164143.75786621.davem@davemloft.net>
+References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com><20071018.173032.48505868.davem@davemloft.net><598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
+	<20071019.164143.75786621.davem@davemloft.net>
+From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+Hello David,
 
-> Doing it that way will make the kernel specific to the target device.
-> Currently I can load the same mpc5200 kernel on several different
-> target devices since the platform specific code is triggered in the
-> probe machine phase.
 
-Maybe I need to take a look at your code, but the fabric driver is, in 
-effect, a platform-specific driver.  Its job is to figure out what 
-hardware is on the board, how it's connected, and then initialize and 
-connect the other drivers as appropriate.
+> No piece of code in the kernel should live in a vacuum.
+>=20
+> In order to improve overall code quality, every piece of
+> driver code should avoid assuming things about pointer
+> sizes and things of this nature.
 
-> I tried making the fabric driver into a platform driver instead of an
-> openfirmware driver, but the mpc5200 code is not initializing platform
-> drivers correctly.
+I'm afraid we might be talking about orthogonal issues here. I actively
+agree that all code (not only kernel) should be written up to the
+coding/quality standards you mention above, but I see a difference
+between fixing a warning and making a driver portable (to 64-bit
+PowerPCs, to other platforms, etc.). If there is a kernel todo list
+somewhere lets add to it the task to make the ucc_geth more portable.
 
-Yeah, that wouldn't work.  Platform drivers are initialized way too early.
+> Then the driver can get enabled into the build on every
+> platform, and therefore nobody will break the build of
+> this driver again since it will get hit by "allmodconfig"
+> et al. builds even on platforms other than the one it is
+> meant for.
+>=20
+> This hack fix is not acceptable, really.
 
-> I could insert calls into arch/powerpc/platforms/52xx/whatever to load
-> the specific asoc fabric, but doing that is a mess. There must be a
-> way to trigger loading of machine specific drivers
+Are you suggesting we leave those warnings there until somebody decides
+to fix all the portability issues of this driver? My patch is a small
+and insignificant improvement and not the revolution you're asking for,
+but is an small improvement today (I dislike warnings) vs. an improbable
+big one in the future.
 
-Either you do it at driver __init time, or via a probe.  The probe 
-actually occurs at __init time, anyway, so they're kinda the same thing. 
-  The only thing the probe gets you is that you're called multiple times 
-for each instance of a node in the tree.
+Leo, as author and maintainer of this driver, what's your take on this?
 
->> Since the Apple audio drivers are not ASoC drivers, I suggest we don't pay
->> attention to what they do.
-> 
-> Those Apple drivers are very similar to asoc drivers. They could
-> easily be folded into the asoc code.
 
-Perhaps, but that's a job for another day (and another developer).
+Cheers,
+Emil.
