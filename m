@@ -1,23 +1,17 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B2094DDFEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 05:02:06 +1000 (EST)
-Date: Tue, 23 Oct 2007 14:02:13 -0500
+Date: Tue, 23 Oct 2007 14:12:36 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH v6 resend 9/9] add MPC837x MDS board default device tree
-Message-ID: <20071023190213.GA4825@loki.buserror.net>
-References: <1192720186-25228-1-git-send-email-leoli@freescale.com>
-	<F1717431-3C1F-4528-9949-32C156F5DD4F@kernel.crashing.org>
-	<989B956029373F45A0B8AF0297081890019B5BD6@zch01exm26.fsl.freescale.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Device trees and audio codecs
+Message-ID: <20071023191236.GB4825@loki.buserror.net>
+References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
+	<471B550F.3090907@freescale.com>
+	<9e4733910710210701x67b2e99frd0784ac2c8bd27fd@mail.gmail.com>
+	<471CA082.1050304@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B5BD6@zch01exm26.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <471CA082.1050304@freescale.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,11 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 18, 2007 at 11:10:43PM +0800, Li Yang-r58472 wrote:
-> Do we still need address-cell and size-cell even when it has no child
-> node?
+On Mon, Oct 22, 2007 at 08:07:14AM -0500, Timur Tabi wrote:
+> Either you do it at driver __init time, or via a probe.  The probe 
+> actually occurs at __init time, anyway, so they're kinda the same thing. 
+>   The only thing the probe gets you is that you're called multiple times 
+> for each instance of a node in the tree.
 
-Maybe not *need*, but we do want it...  it makes it less likely to be
-screwed up if someone adds a child node in the future.
+It also means that you're *not* called if there's no node in the tree at all
+-- which I believe was Jon's point about being platform specific.
 
 -Scott
