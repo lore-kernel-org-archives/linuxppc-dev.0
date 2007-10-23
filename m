@@ -1,32 +1,31 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37854DDF48
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:21:05 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9NFKeD5016372
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 11:20:40 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9NFKbNr009912
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 09:20:38 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9NFKbbt008107
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 09:20:37 -0600
-Date: Tue, 23 Oct 2007 10:20:35 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support to
-	NEW EMAC.
-Message-ID: <20071023102035.6d35d3fe@weaponx.rchland.ibm.com>
-In-Reply-To: <4713B10B.5000607@garzik.org>
-References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo3so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 0D918DDF84
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:21:39 +1000 (EST)
+Received: from pd3mr3so.prod.shaw.ca
+	(pd3mr3so-qfe3.prod.shaw.ca [10.0.141.179]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JQD00867ELWHS40@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 23 Oct 2007 09:20:20 -0600 (MDT)
+Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
+	by pd3mr3so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQD0044WELWN930@pd3mr3so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Tue, 23 Oct 2007 09:20:20 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQD00JLHELVDN61@l-daemon> for linuxppc-dev@ozlabs.org;
+	Tue, 23 Oct 2007 09:20:19 -0600 (MDT)
+Date: Tue, 23 Oct 2007 09:20:25 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] Bugfix to commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+To: linux-kernel@vger.kernel.org, Jens@secretlab.ca,
+	"Axboe <jens.axboe"@oracle.com, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@linux-foundation.org>, paulus@samba.org
+Message-id: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,79 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 Oct 2007 14:27:23 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> Valentine Barshak wrote:
-> > This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
-> > These PHY chips are used on PowerPC 440EPx boards.
-> > The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
-> > 
-> > Signed-off-by: Stefan Roese <sr@denx.de>
-> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> > ---
-> >  drivers/net/ibm_newemac/phy.c |   39 +++++++++++++++++++++++++++++++++++++++
-> >  1 files changed, 39 insertions(+)
-> > 
-> > --- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
-> > +++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
-> > @@ -306,8 +306,47 @@
-> >  	.ops		= &cis8201_phy_ops
-> >  };
-> >  
-> > +static struct mii_phy_def bcm5248_phy_def = {
-> > +
-> > +	.phy_id		= 0x0143bc00,
-> > +	.phy_id_mask	= 0x0ffffff0,
-> > +	.name		= "BCM5248 10/100 SMII Ethernet",
-> > +	.ops		= &generic_phy_ops
-> > +};
-> > +
-> > +static int m88e1111_init(struct mii_phy *phy)
-> > +{
-> > +	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
-> > +	phy_write(phy, 0x14, 0x0ce3);
-> > +	phy_write(phy, 0x18, 0x4101);
-> > +	phy_write(phy, 0x09, 0x0e00);
-> > +	phy_write(phy, 0x04, 0x01e1);
-> > +	phy_write(phy, 0x00, 0x9140);
-> > +	phy_write(phy, 0x00, 0x1140);
-> > +
-> > +	return  0;
-> > +}
-> > +
-> > +static struct mii_phy_ops m88e1111_phy_ops = {
-> > +	.init		= m88e1111_init,
-> > +	.setup_aneg	= genmii_setup_aneg,
-> > +	.setup_forced	= genmii_setup_forced,
-> > +	.poll_link	= genmii_poll_link,
-> > +	.read_link	= genmii_read_link
-> > +};
-> > +
-> > +static struct mii_phy_def m88e1111_phy_def = {
-> > +
-> > +	.phy_id		= 0x01410CC0,
-> > +	.phy_id_mask	= 0x0ffffff0,
-> > +	.name		= "Marvell 88E1111 Ethernet",
-> > +	.ops		= &m88e1111_phy_ops,
-> > +};
-> > +
-> >  static struct mii_phy_def *mii_phy_table[] = {
-> >  	&cis8201_phy_def,
-> > +	&bcm5248_phy_def,
-> > +	&m88e1111_phy_def,
-> >  	&genmii_phy_def,
-> 
-> Seems sane to me -- ACK -- but we have multiple people sending me 
-> patches for a single driver.  That's normal for janitorial cleanups 
-> across the whole tree, but discouraged when multiple people are actively 
-> working on the same driver.
-> 
-> Please coordinate, and have ONE person send me patches...
+Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
+dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
+in include/asm-powerpc/dma-mapping.h
 
-Jeff, could you please pull in this patch for 2.6.24?  We'll get the
-coordination down for any further patches.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
-thx,
-josh
-> 
+Linus, I cannot build an arch/powerpc kernel without this patch.
+
+Cheers,
+g.
+
+ include/asm-powerpc/dma-mapping.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..fd33ce4 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
++		BUG_ON(!sg_page(sg));
+ 		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		sg->dma_address = sg_phys(sg);
+ 	}
+ 
+ 	return nents;
