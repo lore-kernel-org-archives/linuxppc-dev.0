@@ -1,17 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 24F54DDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:02:40 +1000 (EST)
-Date: Tue, 23 Oct 2007 14:02:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Problems with allyesconfig kernel build
-Message-Id: <20071023140231.12698d1c.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__23_Oct_2007_14_02_31_+1000_NQX+HRNt=efG9DJ5"
-Cc: Andrew Morton <akpm@linux-foundation.org>, amodra@bigpond.net.au
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id B0E8EDDECA
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:02:50 +1000 (EST)
+Date: Mon, 22 Oct 2007 23:09:48 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: powerpc: Fix fallout from sg_page() changes
+Message-ID: <20071023040948.GA19699@lixom.net>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,80 +23,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__23_Oct_2007_14_02_31_+1000_NQX+HRNt=efG9DJ5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fix fallout from 18dabf473e15850c0dbc8ff13ac1e2806d542c15:
 
-This was first noted with the -mm tree, but has now migrated into Linus'
-tree.  An allyesconfig build dies in the link stage like this:
+In file included from include/linux/dma-mapping.h:52,
+                 from drivers/base/dma-mapping.c:10:
+include/asm/dma-mapping.h: In function 'dma_map_sg':
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:289: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h:290: error: 'struct scatterlist' has no member named 'page'
+include/asm/dma-mapping.h: In function 'dma_sync_sg_for_cpu':
+include/asm/dma-mapping.h:331: error: 'struct scatterlist' has no member named 'page'
 
-/usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call opti=
-mization to `.text.init.refok' does not allow automatic multiple TOCs; reco=
-mpile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.ini=
-t.refok' extern
-/usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call opti=
-mization to `.text.init.refok' does not allow automatic multiple TOCs; reco=
-mpile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.ini=
-t.refok' extern
-/usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call opti=
-mization to `.text.init.refok' does not allow automatic multiple TOCs; reco=
-mpile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.ini=
-t.refok' extern
-/usr/bin/ld: final link failed: Bad value
+drivers/scsi/ps3rom.c: In function 'fetch_to_dev_buffer':
+drivers/scsi/ps3rom.c:150: error: 'struct scatterlist' has no member named 'page'
 
-We already compile with -mminimal-toc and adding
--fno-optimize-sibling-call did not help.
 
-Intuiting the obvious, I changed all the _INIT_STATIC and _INIT_GLOBAL
-uses in head_64.S back to _STATIC and _GLOBAL (which just moves the code
-from .text.init.refok to .text).  Now the linker segfaults instead.  :-)
 
-/bin/sh: line 1:  5260 Segmentation fault      ld -m elf64ppc -Bstatic --em=
-it-relocs --build-id -o .tmp_vmlinux1 -T arch/powerpc/kernel/vmlinux.lds ar=
-ch/powerpc/kernel/head_64.o arch/powerpc/kernel/entry_64.o arch/powerpc/ker=
-nel/fpu.o init/built-in.o --start-group usr/built-in.o arch/powerpc/kernel/=
-built-in.o arch/powerpc/mm/built-in.o arch/powerpc/lib/built-in.o arch/powe=
-rpc/sysdev/built-in.o arch/powerpc/platforms/built-in.o arch/powerpc/xmon/b=
-uilt-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-in.o secu=
-rity/built-in.o crypto/built-in.o block/built-in.o lib/lib.a lib/built-in.o=
- drivers/built-in.o sound/built-in.o arch/powerpc/oprofile/built-in.o net/b=
-uilt-in.o --end-group
-make[1]: *** [.tmp_vmlinux1] Error 139
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-$ ld --version
-GNU ld (GNU Binutils for Debian) 2.18
-
-I take this as an improvement :-)
-
-We link .text.init.refok immediately after .text, but with
-allyesconfig, .text ends up very large.
-
-The --emit-relocs is a product of something else I am working on.  So I
-took that out and now get a whole lot more messages like:
-
-/usr/bin/ld: net/built-in.o(.fixup+0x4): sibling call optimization to `.tex=
-t' does not allow automatic multiple TOCs; recompile with -mminimal-toc or =
--fno-optimize-sibling-calls, or make `.text' extern
-/usr/bin/ld: net/built-in.o(.fixup+0xc): sibling call optimization to `.tex=
-t' does not allow automatic multiple TOCs; recompile with -mminimal-toc or =
--fno-optimize-sibling-calls, or make `.text' extern
-
-Anyone have any ideas?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__23_Oct_2007_14_02_31_+1000_NQX+HRNt=efG9DJ5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHHXJdTgG2atn1QN8RAiDSAJwIOTEub72EVPz1TIX9OfPo3zcHAgCglSHH
-lW/rhvxIISs2tLkKngaZROU=
-=cJKH
------END PGP SIGNATURE-----
-
---Signature=_Tue__23_Oct_2007_14_02_31_+1000_NQX+HRNt=efG9DJ5--
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..ff52013 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		BUG_ON(!sg_page(sg));
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
++		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
+ 	}
+ 
+ 	return nents;
+@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index 03f19b8..17b4a7c 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -147,7 +147,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd *cmd, void *buf)
+ 
+ 	req_len = fin = 0;
+ 	scsi_for_each_sg(cmd, sgpnt, scsi_sg_count(cmd), k) {
+-		kaddr = kmap_atomic(sg_page(sgpnt->page), KM_IRQ0);
++		kaddr = kmap_atomic(sg_page(sgpnt), KM_IRQ0);
+ 		len = sgpnt->length;
+ 		if ((req_len + len) > buflen) {
+ 			len = buflen - req_len;
