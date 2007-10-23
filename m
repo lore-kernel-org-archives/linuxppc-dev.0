@@ -1,17 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Date: Tue, 23 Oct 2007 14:12:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Device trees and audio codecs
-Message-ID: <20071023191236.GB4825@loki.buserror.net>
-References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-	<471B550F.3090907@freescale.com>
-	<9e4733910710210701x67b2e99frd0784ac2c8bd27fd@mail.gmail.com>
-	<471CA082.1050304@freescale.com>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id A75E0DDFC5
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 05:15:48 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 23 Oct 2007 12:15:46 -0700
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH] [POWERPC] Fix fallout from sg_page changes
+Message-ID: <20071023191546.GA15210@xyzzy.farnsworth.org>
+References: <20071023145300.GA18989@xyzzy.farnsworth.org>
+	<20071023184448.GE14671@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <471CA082.1050304@freescale.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20071023184448.GE14671@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,13 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 22, 2007 at 08:07:14AM -0500, Timur Tabi wrote:
-> Either you do it at driver __init time, or via a probe.  The probe 
-> actually occurs at __init time, anyway, so they're kinda the same thing. 
->   The only thing the probe gets you is that you're called multiple times 
-> for each instance of a node in the tree.
+On Tue, Oct 23, 2007 at 08:44:48PM +0200, Jens Axboe wrote:
+> On Tue, Oct 23 2007, Dale Farnsworth wrote:
+> > 
+> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > ---
+> >  include/asm-powerpc/dma-mapping.h |   10 +++++-----
+> >  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> Should already be merged in Linus' current tree.
 
-It also means that you're *not* called if there's no node in the tree at all
--- which I believe was Jon's point about being platform specific.
+Yes, it is.  Thank you.
 
--Scott
+-Dale
