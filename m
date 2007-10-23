@@ -1,22 +1,23 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 849B5DDFCC
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D52FFDDF60
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Oct 2007 01:48:10 +1000 (EST)
-Message-ID: <471E179F.6050605@scram.de>
-Date: Tue, 23 Oct 2007 17:47:43 +0200
-From: Jochen Friedrich <jochen@scram.de>
+	Wed, 24 Oct 2007 04:30:49 +1000 (EST)
+Message-ID: <471E3DD8.4060508@freescale.com>
+Date: Tue, 23 Oct 2007 13:30:48 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [i2c] [PATCH take2] [POWERPC] i2c: adds support for i2c bus on 8xx
-References: <47134A94.60606@scram.de>	<20071015183107.GA4361@loki.buserror.net>	<47166085.1010608@scram.de>
-	<20071017230027.334a5f48@hyperion.delvare>
-In-Reply-To: <20071017230027.334a5f48@hyperion.delvare>
-Content-Type: text/plain; charset=windows-1252
-Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org,
-	i2c@lm-sensors.org, Carsten Juttner <carjay@gmx.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: FDT bindings for I2C devices
+References: <4718BB40.2050901@grandegger.com>
+	<fa686aa40710190738q1211a266lced10ac8767e5071@mail.gmail.com>
+In-Reply-To: <fa686aa40710190738q1211a266lced10ac8767e5071@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +28,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Jean,
+Grant Likely wrote:
+> Scott Wood made an attempt at defining a device binding for I2C
+> devices, but it has not been merged into booting-without-of.txt yet.
+> I've copied what he wrote below.  I would add to his definition the
+> following:
+> - If compatible is missing, driver should *not* fall back to the device name.
+> - 'compatible' list should include the exact device in the form "<mfg>,<part>"
 
-> On Wed, 17 Oct 2007 21:20:37 +0200, Jochen Friedrich wrote:
->>>> +	/* Select an arbitrary address.  Just make sure it is unique.
->>>> +	 */
->>>> +	out_8(&i2c->i2c_i2add, 0xfe);
->>>>     
->>> It's a 7-bit address...  and are you sure that 0x7e is unique?  Does this
->>> driver even support slave operation?
->>>   
->> It's in fact 0x7F << 1. The same value is used in the 2.4 driver and
->> in u-boot, as well. Slave operation is not supported.
-> 
-> I'm not sure what exactly you are doing here, but 0x7f isn't a valid
-> 7-bit I2C address.
+Those are good recommendations for any node, but I don't see why i2c in 
+particular should mandate it.
 
-That's most probably the reason why it is used everywhere in the CPM world
-(old driver, u-boot) ;-)
-
-According to the documentation, the CPM enters a loopback mode as soon
-as a write access to the I2C address written to i2c_i2add takes place.
-This even happens if the CPM is set to master mode. So the only way to make
-sure there are no limitations to the I2C addresses which can be used is to
-use this invalid address. 0x00 can't be used either or no I2C broadcasts
-would be possible.
-
->From the MPC-823 documentation:
-
-16.13.3.1.3 I2C Loopback Configuration. Loopback on the I2C controller is a
-special part of master mode operation with a device that does not contain
-internal addresses. Refer to Figure 16-127 for more information. To begin a
-loopback transmission, you must prepare a TX buffer descriptor with a data
-buffer N+1 bytes long, where N is the number of data bytes to be written back
-to the I2C controller. You must also prepare one or more RX buffer descriptors
-to receive the N bytes of data. The first byte of the TX buffer descriptor
-must contain the address of the MPC823 I2C device’s own address, which is in
-the I2CADD register, followed by the write bit asserted (R/W = 0). The
-remaining N bytes of the TX buffer descriptor contain the data to be sent and
-received by the I2C controller. Next, set the R bit in the TX buffer descriptor
-and the E bit in the RX buffer descriptor. Then set the W and L bits in the TX
-buffer descriptor. Setting the L bit causes a stop condition to be issued after
-this buffer is transmitted to conclude the operation. Set the I bit in the TX
-and RX buffer descriptors to enable the transmission and reception status to be
-updated in the I2CE register and to enable I2C transmit and receive interrupts
-to the core. You must then set the STR bit in the I2COM register to initiate
-the loopback operation.
-
-Thanks,
-Jochen
+-Scott
