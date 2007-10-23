@@ -1,13 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-Id: <5f47235ce3542c80e043f7f183400ab3d576f1dd.1193113342.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Read back MSI message in rtas_setup_msi_irqs() so restore
-	works
-Date: Tue, 23 Oct 2007 14:23:44 +1000 (EST)
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com, linuxppc-dev@ozlabs.org,
-	mchan@broadcom.com, linux-pci@atrey.karlin.mff.cuni.cz,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 49F41DDE18
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:24:44 +1000 (EST)
+Date: Mon, 22 Oct 2007 23:31:48 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: IB/ehca: Fix sg_page() fallout
+Message-ID: <20071023043148.GA20904@lixom.net>
+References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
+	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
+	<20071023040948.GA19699@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071023040948.GA19699@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Joachim Fenkes <fenkes@de.ibm.com>,
+	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,48 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are plans afoot to use pci_restore_msi_state() to restore MSI
-state after a device reset. In order for this to work for the RTAS MSI
-backend, we need to read back the MSI message from config space after
-it has been setup by firmware.
+More fallout from sg_page changes, found with powerpc allyesconfig:
 
-This should be sufficient for restoring the MSI state after a device
-reset, however we will need to revisit this for suspend to disk if that
-is ever implemented on pseries.
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-
-Linas, can you test this on your setup with your EEH stuff? I haven't got
-any MSI supporting hardware/firmware combination.
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user1':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1779: error: 'struct scatterlist' has no member named 'page'
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_check_kpages_per_ate':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1835: error: 'struct scatterlist' has no member named 'page'
+drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user2':
+drivers/infiniband/hw/ehca/ehca_mrmw.c:1870: error: 'struct scatterlist' has no member named 'page'
 
 
- arch/powerpc/platforms/pseries/msi.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 2793a1b..f15222b 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -171,6 +171,7 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 	struct pci_dn *pdn;
- 	int hwirq, virq, i, rc;
- 	struct msi_desc *entry;
-+	struct msi_msg msg;
- 
- 	pdn = get_pdn(pdev);
- 	if (!pdn)
-@@ -213,6 +214,11 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 
- 		dev_dbg(&pdev->dev, "rtas_msi: allocated virq %d\n", virq);
- 		set_irq_msi(virq, entry);
-+
-+		/* Read config space back so we can restore after reset */
-+		read_msi_msg(virq, &msg);
-+		entry->msg = msg;
-+
- 		unmask_msi_irq(virq);
- 	}
- 
--- 
-1.5.1.3.g7a33b
+diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+index da88738..a3037f3 100644
+--- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
++++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+@@ -1776,7 +1776,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 	list_for_each_entry_continue(
+ 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
+ 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
+-			pgaddr = page_to_pfn(chunk->page_list[i].page)
++			pgaddr = page_to_pfn(sg_page(chunk->page_list[i]))
+ 				<< PAGE_SHIFT ;
+ 			*kpage = phys_to_abs(pgaddr +
+ 					     (pginfo->next_hwpage *
+@@ -1832,7 +1832,7 @@ static int ehca_check_kpages_per_ate(struct scatterlist *page_list,
+ {
+ 	int t;
+ 	for (t = start_idx; t <= end_idx; t++) {
+-		u64 pgaddr = page_to_pfn(page_list[t].page) << PAGE_SHIFT;
++		u64 pgaddr = page_to_pfn(sg_page(page_list[t])) << PAGE_SHIFT;
+ 		ehca_gen_dbg("chunk_page=%lx value=%016lx", pgaddr,
+ 			     *(u64 *)abs_to_virt(phys_to_abs(pgaddr)));
+ 		if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
+@@ -1867,7 +1867,7 @@ static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
+ 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
+ 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
+ 			if (nr_kpages == kpages_per_hwpage) {
+-				pgaddr = ( page_to_pfn(chunk->page_list[i].page)
++				pgaddr = ( page_to_pfn(sg_page(chunk->page_list[i]))
+ 					   << PAGE_SHIFT );
+ 				*kpage = phys_to_abs(pgaddr);
+ 				if ( !(*kpage) ) {
