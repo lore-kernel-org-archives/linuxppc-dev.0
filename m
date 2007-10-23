@@ -1,22 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20071022181336.GC4280@austin.ibm.com>
-References: <1192829817.22064.559.camel@teletran1>
-	<20071021.162131.43417026.davem@davemloft.net>
-	<1193017764.10318.17.camel@concordia>
-	<20071022181336.GC4280@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rS6NbzTo7X2Yz8xnYXOt"
-Date: Tue, 23 Oct 2007 14:20:46 +1000
-Message-Id: <1193113246.2898.18.camel@concordia>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18205.30425.343811.555243@cargo.ozlabs.ibm.com>
+Date: Tue, 23 Oct 2007 14:21:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,71 +16,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
---=-rS6NbzTo7X2Yz8xnYXOt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Please do
 
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-On Mon, 2007-10-22 at 13:13 -0500, Linas Vepstas wrote:
-> On Mon, Oct 22, 2007 at 11:49:24AM +1000, Michael Ellerman wrote:
-> >=20
-> > On pseries there's a chance it will work for PCI error recovery, but if
-> > so it's just lucky that firmware has left everything configured the sam=
-e
-> > way.=20
->=20
-> ? The papr is quite clear that i is up to the OS to restore the msi
-> state after an eeh error.
+to get a commit that adds Vitaly Bordug as a maintainer for the
+powerpc embedded 8xx processors.  This is something that Marcelo asked
+me to push ages ago, but it kept falling through the cracks.
 
-Perhaps. I see R1-7.3.10.5.1-10, which says we should restore the config
-space after a reset operation, but after an isolate/unisolate we must
-recall RTAS. I thought EEH was doing the isolate/unisolate, but if it's
-just a reset then just blatting the config space back should work.
+Thanks,
+Paul.
 
-> > Yes I think so. That way we can properly reconfigure via the firmware
-> > interface. The other option would be to design some new arch hook to do
-> > resume, but just doing a disable/enable seems simpler to me.
->=20
-> Err, If you read the code for suspend/resume, it never actually calls
-> disable/enable (and thus doesn't go to the firmware); it calls=20
-> restore_msi_state() function!
+ MAINTAINERS |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-I know. That was a proposed solution, to explicitly call disable/enable
-instead of restore_msi_state().
-
-> If suspend/resume needs to call firmware to restore the state, then,
-> at the moment, suspend/resume is broken.  As I mentioned earlier,
-> I presumed that no powerpc laptops currently use msi-enabled devices,
-> as otherwise, this would have been flushed out.
-
-On _pseries_ suspend/resume with MSI is broken. The other powerpc
-platforms that implement MSI should be fine, although I don't think
-anyone's tested them, because they're not laptops and so suspend/resume
-is not that interesting.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-rS6NbzTo7X2Yz8xnYXOt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHHXaedSjSd0sB4dIRAqKvAKCYrQG/2dHtB1A/Qq58kkkZiGVItQCguiGm
-f8YdD2ktBOrcKI3ozlJVErQ=
-=RDRm
------END PGP SIGNATURE-----
-
---=-rS6NbzTo7X2Yz8xnYXOt--
+Marcelo Tosatti (1):
+      [POWERPC] Add Vitaly Bordug as PPC8xx maintainer
