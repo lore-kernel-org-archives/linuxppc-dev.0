@@ -1,10 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 24 Oct 2007 09:23:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D9D77DDEDF
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 09:51:56 +1000 (EST)
+Date: Tue, 23 Oct 2007 18:59:05 -0500
+From: Olof Johansson <olof@lixom.net>
 To: Marian Balakowicz <m8@semihalf.com>
 Subject: Re: [PATCH 01/11] [POWERPC] Add 'machine: ...' line to common
 	show_cpuinfo()
-Message-ID: <20071023232303.GA10595@localhost.localdomain>
+Message-ID: <20071023235905.GA10821@lixom.net>
 References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
 	<20071023231309.29359.20887.stgit@hekate.izotz.org>
 MIME-Version: 1.0
@@ -24,15 +27,9 @@ On Wed, Oct 24, 2007 at 01:13:09AM +0200, Marian Balakowicz wrote:
 > Print out '/model' property as a machine name in generic
 > show_cpuinfo() routine.
 
-There's no such thing as /model; subnodes and properties have a
-different namespace, so the root node, /, has a property named
-'model'.
+Excellent! I was thinking about adding this just the other day since I
+couldn't tell which kind of board I was on.
 
-Yes, it's clear what you mean in this context, but it's a bad habit to
-get into.
+> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Acked-by: Olof Johansson <olof@lixom.net>
