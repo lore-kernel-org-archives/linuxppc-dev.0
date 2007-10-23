@@ -1,23 +1,27 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F007DDF34
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 17:44:34 +1000 (EST)
 Subject: Re: [PATCH 2/2] Use of_get_pci_dev_node() in axon_msi.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20071018190939.GE29903@austin.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1193125016.20274.4.camel@concordia>
 References: <8f76815cbbaf5fbab82c843d87bc0dafab038c80.1192605144.git.michael@ellerman.id.au>
 	<dadd2b9540369b9e2c6773b2a60021dadafa58e2.1192605144.git.michael@ellerman.id.au>
 	<20071017230449.GZ4891@austin.ibm.com>
 	<1192670843.6681.10.camel@concordia>
 	<20071018190939.GE29903@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-jMD8ooY2FKH7tQqUlrGk"
-Date: Tue, 23 Oct 2007 17:36:56 +1000
-Message-Id: <1193125016.20274.4.camel@concordia>
+	<1193125016.20274.4.camel@concordia>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 17:40:26 +1000
+Message-Id: <1193125226.6745.185.camel@pasglop>
 Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
 	"David S. Miller" <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,63 +32,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-jMD8ooY2FKH7tQqUlrGk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> So Ben suggested what we really want is two routines,
+> of_get_pci_dev_node() and of_peek_pci_dev_node() - the former returning
+> a refcounted copy and the latter allowing you to "peek" at the
+> device_node as long as you own the pci_dev.
+> 
+> I'm not sure it's worth the churn really, so we should probably just
+> document that pci_device_to_OF_node() is contrary, and any users that
+> need a reference can take one explicitly.
 
+Yeah, I pretty much made the same decision a couple of years ago which
+is why it's still the way it is now :-)
 
-On Thu, 2007-10-18 at 14:09 -0500, Linas Vepstas wrote:
-> On Thu, Oct 18, 2007 at 11:27:23AM +1000, Michael Ellerman wrote:
-> >=20
-> > It does what pci_device_to_OF_node() does, but in the right way.=20
-> >=20
-> > The plan is to remove pci_device_to_OF_node() once all the callers have
-> > been converted to properly handle the refcounting.=20
->=20
-> Oh. Yes. well, of course, then. Excellent reason. I didn't get=20
-> that from the patch commit comments. So, FWIW:
->=20
-> Ack'ed-by: Linas Vepstas <linas@austin.ibm.com>
-
-Thanks for the ACK. But on further consideration I'm going to NACK my
-own patch :)
-
-The reasoning being that a lot of the code that uses
-pci_device_to_OF_node() only uses the device_node while it also holds a
-reference to the pci_dev - so there's no possibility of the device_node
-going away.
-
-So Ben suggested what we really want is two routines,
-of_get_pci_dev_node() and of_peek_pci_dev_node() - the former returning
-a refcounted copy and the latter allowing you to "peek" at the
-device_node as long as you own the pci_dev.
-
-I'm not sure it's worth the churn really, so we should probably just
-document that pci_device_to_OF_node() is contrary, and any users that
-need a reference can take one explicitly.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-jMD8ooY2FKH7tQqUlrGk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHHaSYdSjSd0sB4dIRAi2WAKC54SyB49fnAuKlyDGwCGT6UzuXfwCff2zA
-MxMOfz3mdRnGgrQ2plWsNKc=
-=zdIn
------END PGP SIGNATURE-----
-
---=-jMD8ooY2FKH7tQqUlrGk--
+Cheers,
+Ben.
