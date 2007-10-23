@@ -1,19 +1,31 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710222024m41045bfbx34e19d83a8f0bfcd@mail.gmail.com>
-Date: Mon, 22 Oct 2007 21:24:52 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: Device trees and audio codecs
-In-Reply-To: <9e4733910710211729k2f2a065cm56670d1b0f90a1af@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910710200833x5d1c55b5l2cd400f77c13ec87@mail.gmail.com>
-	<a76a128145ec8a8f779727a7e11925ac@kernel.crashing.org>
-	<9e4733910710211433r7e0cf4b4sf6aed12c57dda375@mail.gmail.com>
-	<5cac8057884ac400b0596988414c7ed7@kernel.crashing.org>
-	<9e4733910710211729k2f2a065cm56670d1b0f90a1af@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 31627DDE9C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 13:27:24 +1000 (EST)
+Date: Tue, 23 Oct 2007 11:26:25 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [IRQ]: Fix synchronize_irq races with IRQ handler
+Message-ID: <20071023032625.GA26559@gondor.apana.org.au>
+References: <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
+	<1192749449.7367.51.camel@pasglop>
+	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
+	<20071019023219.GB8453@gondor.apana.org.au>
+	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
+	<20071019042025.GA9617@gondor.apana.org.au>
+	<20071019044806.GA10080@gondor.apana.org.au>
+	<1192769910.7367.106.camel@pasglop>
+	<1193001005.6745.34.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1193001005.6745.34.camel@pasglop>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +35,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/21/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> I have received conflicting opinions as to whether a codec hooked to
-> an ac97 bus should get a chip specific codec entry in the device tree.
-> Without the codec specific entry only generic ac97 features can be
-> used. The Efika has a STA9766. Looking at the data sheet for the chip
-> I see that it implements some proprietary functions in addition to the
-> standard ones.
+On Mon, Oct 22, 2007 at 07:10:05AM +1000, Benjamin Herrenschmidt wrote:
+>
+> Hrm... not on yet. Herbert, care to resend, looks like it fell down the
+> wrong hole in Linus mailbox :-)
 
-You definitely want the codec node on the control bus.  This is
-analogous to how Ethernet PHYs are handled.  The PHY nodes are
-children of an MDIO node (because that's the control path).  The
-ethernet MAC node contains a phandle to the PHY.
+Thanks for the reminder Ben.  Here it is again:
 
-In I2S/I2C terms, the CODEC ~= MAC, I2C ~= MDIO and I2S ~= MAC.
+[IRQ]: Fix synchronize_irq races with IRQ handler
 
-In AC97 terms this analogy doesn't work because AC97 doesn't separate
-the control and data interfaces.  An AC97 codec is simply a child of
-an AC97 controller.
+As it is some callers of synchronize_irq rely on memory barriers
+to provide synchronisation against the IRQ handlers.  For example,
+the tg3 driver does
 
-For the MPC5200; the device tree should reflect the required mode.  If
-the PSC needs to be in AC97 mode, then the device tree should say
-compatible = "fsl,mpc5200b-psc-ac97".  If the PSC needs to be in I2C
-mode, then it should be compatible = "fsl,mpc5200b-psc-i2s".  For the
-5200 PSCs, the device node not only reflects the hardware (a PSC
-core), but also reflects the schematic design (it is wired either as
-an I2S bus or an AC97 bus).
+	tp->irq_sync = 1;
+	smp_mb();
+	synchronize_irq();
+
+and then in the IRQ handler:
+
+	if (!tp->irq_sync)
+		netif_rx_schedule(dev, &tp->napi);
+
+Unfortunately memory barriers only work well when they come in
+pairs.  Because we don't actually have memory barriers on the
+IRQ path, the memory barrier before the synchronize_irq() doesn't
+actually protect us.
+
+In particular, synchronize_irq() may return followed by the
+result of netif_rx_schedule being made visible.
+
+This patch (mostly written by Linus) fixes this by using spin
+locks instead of memory barries on the synchronize_irq() path.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Cheers,
-g.
-
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 80eab7a..1f31422 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -29,12 +29,28 @@
+ void synchronize_irq(unsigned int irq)
+ {
+ 	struct irq_desc *desc = irq_desc + irq;
++	unsigned int status;
+ 
+ 	if (irq >= NR_IRQS)
+ 		return;
+ 
+-	while (desc->status & IRQ_INPROGRESS)
+-		cpu_relax();
++	do {
++		unsigned long flags;
++
++		/*
++		 * Wait until we're out of the critical section.  This might
++		 * give the wrong answer due to the lack of memory barriers.
++		 */
++		while (desc->status & IRQ_INPROGRESS)
++			cpu_relax();
++
++		/* Ok, that indicated we're done: double-check carefully. */
++		spin_lock_irqsave(&desc->lock, flags);
++		status = desc->status;
++		spin_unlock_irqrestore(&desc->lock, flags);
++
++		/* Oops, that failed? */
++	} while (status & IRQ_INPROGRESS);
+ }
+ EXPORT_SYMBOL(synchronize_irq);
+ 
