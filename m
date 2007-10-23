@@ -1,16 +1,20 @@
-Return-Path: <raul.moreno@telvent.abengoa.com>
-Received: from c07.abengoa.com (envio.abengoa.com [217.15.37.68])
-	by ozlabs.org (Postfix) with ESMTP id D2C26DDF5F
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5A5A0DDE10
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Oct 2007 17:57:34 +1000 (EST)
-In-Reply-To: <f8f856500709130705t2109e559v19f0ffac318a4756@mail.gmail.com>
-Subject: DMA problem - mpc8xx
+	Tue, 23 Oct 2007 19:17:49 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF0ED90B65.60296006-ONC125737D.0028DB92-C125737D.002A55F3@abengoa.com>
-Date: Tue, 23 Oct 2007 09:42:43 +0200
-From: raul.moreno@telvent.abengoa.com
+Subject: Re: Difference between ioremap() and phy_to_virt() Kernel function
+Date: Tue, 23 Oct 2007 11:11:42 +0200
+References: <13339930.post@talk.nabble.com> <200710221304.44275.arnd@arndb.de>
+	<13357088.post@talk.nabble.com>
+In-Reply-To: <13357088.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710231111.43062.arnd@arndb.de>
+Cc: Misbah khan <misbah_khan@engineer.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,30 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+On Tuesday 23 October 2007, Misbah khan wrote:
+> But i wish to know that could i use phy_to_virt() function in place io
+> ioremap() ?????
 
-I am having problems with the serial cpm driver in a mpc866. But I've f=
-ound
-out that my problem comes from the DMA and not really from the driver. =
- The
-Rx and Tx buffers use the DMA and then the sytem hangs. However, if I s=
-et
-these buffers to internal ram memory (DPRAM), it works. The DMA address=
- is
-configured with a kernel parameter in advance setup:
-CONFIG_CONSISTENT_START (and the size in CONFIG_CONSISTENT_SIZE), but I=
+Sorry to disappoint you there, but you can't.
 
-don't know what they are exactly and I could not find a right documenta=
-tion
-about it.
-I saw a pair of mailing list where some guys set the
-CONFIG_CONSISTENT_START to 0xff100000, but my driver continues failing =
-(and
-an error about dma-mapping appears in the boot).
+> And could you give me an example where we could use phy_to_virt().
 
-Did anyone have a similar problem?
-Could anyone help me?
+Not really, I can't think of any correct use of phys_to_virt on powerpc.
 
-Thanks in advance,
-
-Ra=FAl Moreno=
+	Arnd <><
