@@ -1,21 +1,27 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 601F7DDE43
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:23:12 +1000 (EST)
-Date: Mon, 22 Oct 2007 17:23:32 -0700 (PDT)
-Message-Id: <20071022.172332.112621497.davem@davemloft.net>
-To: linas@austin.ibm.com
-Subject: Re: [BUG] powerpc does not save msi state [was Re: [PATCH 5/7]
-	pci: Export the pci_restore_msi_state() function
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20071022195451.GE4280@austin.ibm.com>
-References: <20071020004610.GR29903@austin.ibm.com>
-	<20071019.175308.54212640.davem@davemloft.net>
-	<20071022195451.GE4280@austin.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D9100DDEAB
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:32:09 +1000 (EST)
+Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20071023001307.GF4280@austin.ibm.com>
+References: <1192829817.22064.559.camel@teletran1>
+	<20071021.162131.43417026.davem@davemloft.net>
+	<1193017764.10318.17.camel@concordia>
+	<20071022181336.GC4280@austin.ibm.com>
+	<1193088267.6745.108.camel@pasglop>
+	<20071023001307.GF4280@austin.ibm.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 10:29:24 +1000
+Message-Id: <1193099364.6745.168.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com, linuxppc-dev@ozlabs.org,
-	mchan@broadcom.com, linux-pci@atrey.karlin.mff.cuni.cz
+Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,10 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: linas@austin.ibm.com (Linas Vepstas)
-Date: Mon, 22 Oct 2007 14:54:52 -0500
 
-> As discussed in the other thread, I'll try to set up a patch
-> for an arch callback for restoring msi state.
+> > I don't know why you keep talking about powerpc laptops here ... 
+> 
+> Well, there are Apple laptops, right?  Aren't those the "powermac" 
+> platform?  Now, I don't know if they support MSI, but if they do,
+> I get the impression that they might not restore msi state correctly,
+> after being put into hardware suspend.  But perhaps I'm mistaken;
+> I was simply grepping for various msi-related functions in various
+> arch subdirectories, comparing x86 to other arches, and noticed 
+> that code that would restore msi state seems to be missing for
+> most arches and most powerpc platforms.
 
-Thank you.
+Ah ok, i see. Well, platforms that use write_msi_msg() shouldn't need
+anything special right ? So only pSeries is an issue here....
+
+PowerBooks don't indeed have MSI support, though G5's do and some people
+have been toying around with suspend/resume on them (hibernation only at
+that stage) but it doesn't matter at this stage. We are specifically
+talking about pSeries which is the "special" case here.
+
+Ben.
