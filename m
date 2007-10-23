@@ -1,16 +1,15 @@
-Return-Path: <jdl@jdl.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] DTC: Remove the need for the GLR Parser. 
-In-Reply-To: Your message of "Tue, 23 Oct 2007 16:41:51 +0200."
-	<cace68e0fe3e4e257b7c63d18c805f18@kernel.crashing.org>
-References: <E1Ik4aw-0007ud-Lu@jdl.com>
-	<20071023025412.GI31839@localhost.localdomain>
-	<E1IkKge-00060g-2l@jdl.com>
-	<cace68e0fe3e4e257b7c63d18c805f18@kernel.crashing.org>
-Date: Tue, 23 Oct 2007 09:49:09 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IkL49-0006W4-8X@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id 511D5DDF7E
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 00:53:03 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 23 Oct 2007 07:53:01 -0700
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH] [POWERPC] Fix fallout from sg_page changes
+Message-ID: <20071023145300.GA18989@xyzzy.farnsworth.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,24 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Segher Boessenkool mumbled:
-> 
-> >> And even without glr-parser, I'm still uncomfortable with the
-> >> lexer<->parser execution ordering issues with the current
-> >> /dts-version/ proposal.  It may now be true that the order is
-> >> guaranteed to be correct, but it's still not exactly obvious.
-> 
-> If you require /dts-version/ (and similar global dtc-control stmts)
-> to be at the start of the file, can't you avoid this ordering problem
-> by starting to parse the file with a simple (hand-written) parser
-> (which would handle these statements) and only when you cannot parse
-> any more switch to the "normal" parser (which won't handle them)?
-> Or is this a stupid suggestion :-)
 
-My concern here is that I think we are attempting to make
-this significantly more complex than it needs to be.
-We have a pretty good KISS opportunity here, and I've shown
-it to be working so far.  Longer term, all this cruft will
-go away and it will become a moot point anyway.
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+---
+ include/asm-powerpc/dma-mapping.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-jdl
+diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+index 65be95d..43b4f3b 100644
+--- a/include/asm-powerpc/dma-mapping.h
++++ b/include/asm-powerpc/dma-mapping.h
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		BUG_ON(!sg_page(sg));
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
++		sg->dma_address = virt_to_bus(sg_virt(sg));
+ 	}
+ 
+ 	return nents;
+@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
+-- 
+1.5.3.4
