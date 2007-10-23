@@ -1,17 +1,13 @@
-Return-Path: <aurel32@hall.aurel32.net>
-Received: from hall.aurel32.net (hall.aurel32.net [88.191.38.19])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C6C69DDEDF
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 23:40:08 +1000 (EST)
-Date: Tue, 23 Oct 2007 15:06:38 +0200
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [PPC/POWERPC] i8259: Add disable method
-Message-ID: <20071023130638.GA736@hall.aurel32.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Sender: "aurel32,,," <aurel32@hall.aurel32.net>
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH] DTC: Remove the need for the GLR Parser. 
+In-Reply-To: Your message of "Tue, 23 Oct 2007 12:54:12 +1000."
+	<20071023025412.GI31839@localhost.localdomain>
+References: <E1Ik4aw-0007ud-Lu@jdl.com>
+	<20071023025412.GI31839@localhost.localdomain>
+Date: Tue, 23 Oct 2007 09:24:52 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IkKge-00060g-2l@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,42 +18,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the NE2000 card
-is not working anymore on PPC and POWERPC and produces WATCHDOG 
-timeouts.
+So, like, the other day David Gibson mumbled:
+> On Mon, Oct 22, 2007 at 04:13:54PM -0500, Jon Loeliger wrote:
+> > Previously, there were a few shift/reduce and reduce/reduce
+> > errors in the grammar that were being handled by the not-so-popular
+> > GLR Parser technique.
+> 
+> I haven't actually heard anyone whinge about glr-parser...
 
-The patch below fixes that the same way it has been done on x86, x86_64 
-and MIPS.
+I have. :-)
 
-Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+> > Flip a right-recursive stack-abusing rule into a left-recursive
+> > stack-friendly rule and clear up three messes in one shot: No more
+> > conflicts, no need for the GLR parser, and friendlier stackness.
+> 
+> Ouch.  I'm feeling a bit stupid now,
 
-diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
-index 7c1b27a..216c0f5 100644
---- a/arch/powerpc/sysdev/i8259.c
-+++ b/arch/powerpc/sysdev/i8259.c
-@@ -137,6 +137,7 @@ static void i8259_unmask_irq(unsigned int irq_nr)
- static struct irq_chip i8259_pic = {
- 	.typename	= " i8259    ",
- 	.mask		= i8259_mask_irq,
-+	.disable	= i8259_mask_irq,
- 	.unmask		= i8259_unmask_irq,
- 	.mask_ack	= i8259_mask_and_ack_irq,
- };
-diff --git a/arch/ppc/syslib/i8259.c b/arch/ppc/syslib/i8259.c
-index 1e5a00a..559f27c 100644
---- a/arch/ppc/syslib/i8259.c
-+++ b/arch/ppc/syslib/i8259.c
-@@ -127,6 +127,7 @@ static void i8259_unmask_irq(unsigned int irq_nr)
- static struct irq_chip i8259_pic = {
- 	.typename	= " i8259    ",
- 	.mask		= i8259_mask_irq,
-+	.disable	= i8259_mask_irq,
- 	.unmask		= i8259_unmask_irq,
- 	.mask_ack	= i8259_mask_and_ack_irq,
- };
+Absolutely no need for that.
 
--- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
+> I really thought our conflicts
+> were somewhere else.  Specifically I thought the problem was that we
+> needed to look ahead more tokens that we were able to differentiate
+> between property and subnode definitions, i.e. between:
+> 	label propname =
+> and
+> 	label propname {
+
+Yes, it was.  When you compute the closure of the propdef with
+the rule as a right-recursive, that's when you get the conflict.
+
+
+> Well, regardless of that, I have a few concerns.
+> 
+> First, a trivial one: I remember leaving this as a right-recursion,
+> despite the stack-nastiness, because that way the properties end up in
+> the same order as in the source.  I think that behaviour is worth
+> preserving, but of course we can do it with left-recursion by changing
+> chain_property() to add to the end of the list instead of the
+> beginning.
+
+Understood.  And I wrestled with that as well.  In fact, I even
+wrote the reverse_properties() function, which I will include,
+and used it initially.  However, several test failed.  So I
+removed it, and it all started happily working again.
+
+> Also, if we're going to avoid right-recursion here, we
+> should do so for the 'subnodes' productions as well, which is
+> completely analogous.
+
+Well, isn't _that_ an interesting observation... :-)
+I'll add it to the grand "DTC To Do" list.
+
+> More significantly, I don't know that we want to burn our bridges with
+> glr-parser.  glr-parser is a beautiful algorithm which means we can
+> use essentially whatever form of grammar is the easiest to work with
+> without having to fiddle about to ensure it's LALR(1).  This could
+> still be useful if we encounter some less easily finessable grammar
+> construct in future.
+
+I'm not saying we can't use it in the future, as needed!  I'm just
+saying it isn't strictly necessary now.
+
+> And even without glr-parser, I'm still uncomfortable with the
+> lexer<->parser execution ordering issues with the current
+> /dts-version/ proposal.  It may now be true that the order is
+> guaranteed to be correct, but it's still not exactly obvious.
+
+I'm fine with it, and though I read your words, I'm not really
+sure why you are not....  In the long term, maybe think of it
+as a temporary hack then.  We'll convert the existing DTS files
+over to the new version, and then deprecate the "dts-version 0"
+files and support and it will all go away relatively soon.
+
+
+> It seems to me that the version change introduces a lexical change to
+> the input format, and should therefore be handled at the lexical
+> level.  And I think there are other potential advantages to parsing
+> the version identifier as a token, rather than as an integer (such as
+> being able to define entirely different grammars for different
+> versions, if we have to).
+
+Version symbol or number, that's still not precluded, I don't think.
+
+jdl
