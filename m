@@ -2,14 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9AB13DDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:06:07 +1000 (EST)
-Subject: [PATCH] fix powerpc breakage in sg chaining code (again)
+	by ozlabs.org (Postfix) with ESMTP id BC5A1DDF17
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:08:13 +1000 (EST)
+Subject: Re: [PATCH] fix powerpc breakage in sg chaining code (again)
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Anton Blanchard <anton@samba.org>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 23:00:22 +0200
-Message-Id: <1193173222.7733.42.camel@johannes.berg>
+In-Reply-To: <1193173222.7733.42.camel@johannes.berg>
+References: <1193173222.7733.42.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-nwDzQKlOZw5LzSb3aGIT"
+Date: Tue, 23 Oct 2007 23:47:14 +0200
+Message-Id: <1193176034.4097.3.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
@@ -22,46 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 33ff910f0f466184ffc3514628f18403dcd86761 fixed commit
-78bdc3106a877cfa50439fa66b52acbc4e7868df but the code that got put in
-uses struct scatterlist->page which no longer exists since commit
-18dabf473e15850c0dbc8ff13ac1e2806d542c15 which requires using
-sg_page(sg) instead of sg->page.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-If it was fixed before please ignore, I just ran into this.
+--=-nwDzQKlOZw5LzSb3aGIT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---- linux-2.6.orig/include/asm/dma-mapping.h	2007-10-23 22:55:33.551133142 +0200
-+++ linux-2.6/include/asm/dma-mapping.h	2007-10-23 22:56:07.081133142 +0200
-@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct sc
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		BUG_ON(!sg->page);
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
-+		BUG_ON(!sg_page(sg));
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
- 	}
- 
- 	return nents;
-@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(s
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline void dma_sync_sg_for_device(struct device *dev,
-@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_devic
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline int dma_mapping_error(dma_addr_t dma_addr)
+On Tue, 2007-10-23 at 23:00 +0200, Johannes Berg wrote:
+> Commit 33ff910f0f466184ffc3514628f18403dcd86761 fixed commit
+> 78bdc3106a877cfa50439fa66b52acbc4e7868df but the code that got put in
+> uses struct scatterlist->page which no longer exists since commit
+> 18dabf473e15850c0dbc8ff13ac1e2806d542c15 which requires using
+> sg_page(sg) instead of sg->page.
+
+This doesn't help though, when I boot I get a NULL-pointer dereference
+that looks approximately like this:
+
+NIP blk_rq_map_sg + 0x64/0x190
+LR ide_map_sg + 0x38/?
+Call trace:
+cfq_remove_request + 0x168 (unreliable)
+cfq_dispatch_request + 0x44
+ide_build_sglist + 0x38?
+pmac_ide_dma_setup + 0xa0?
+ide_do_rw_disk? + ?
+[...]
+
+I can upload the picture I took but it's hardly readable (taken with my
+crappy cell phone)
+
+johannes
+
+--=-nwDzQKlOZw5LzSb3aGIT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARx5r4aVg1VMiehFYAQJuZhAAi1gdWoqHG02BnMyVzldd59S5ze3vrI3G
+qBpRf2cnd6EoSgSbB7Y5VdsCgxKSEP3WxuhgjG2TEQth/xRrSnYaGoSVoMrcJAq5
+oYtcqD4gZLdE1PGKMeTk5xRJfoEXk7+VxpzDma7MaasF5p6qB7e1ymLsP93VtgHN
+gMlscHwFXsaHk+XSRl4rN02QbtU+N1W+THKrqeLYVZsXaqG41YzG8g+773wrEcVG
+G9dzMmEcTeWe1LNXEDlnNAWa0243kUuJ5JTB+ylMZhtBjPO5ohh4Dgic5fPpIuN/
+/eqfY47+Mh9zf/3qd5wOYL1FvTkrPZZcfB92C01zbYfHyzEjfSG45S/8zVq5r02n
+OvgaXOSereiPzzZS+IOUb+vn+TvXUh1N3FVyYBAjF8flUWIJ5pr4arev0xnug7HX
+JmhLHpP2+37ffEYC8Yylp4ssfWV58da9cfI2cm1RPtlD9pyAS2LooUtM7x8/27w2
+BB5OMIA3RDipiwuJqYHpccqQqbmjiSwn+KMFXBkmO/sm5ZbBZkygi0WSZPxAWM10
+D1pxhu3zRrKS1lzdpKyM2HC1Ymimlo5jUkyUL2/E4Cu7dwDX3ThkV1mzLWuoew2v
+8WNtcGuN3/ZotbCG2J28C8NcDZEq3VwzOz5KAOHneXSiyoIBsxXAnpgX+SYk6NIG
+JXUYM+6FGhc=
+=6TOJ
+-----END PGP SIGNATURE-----
+
+--=-nwDzQKlOZw5LzSb3aGIT--
