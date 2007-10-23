@@ -1,33 +1,15 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 35660DDE3C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 13:38:35 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l9N3cTP4004216
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 20:38:29 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9N3cRSc028564
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 22:38:28 -0500 (CDT)
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40710222057y58202c8ev4610e045e5e389df@mail.gmail.com>
+Date: Mon, 22 Oct 2007 21:57:54 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: Audio codec device tree entries
+In-Reply-To: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
-Date: Tue, 23 Oct 2007 11:38:25 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890019B5E2E@zch01exm26.fsl.freescale.net>
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
-References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com><20071018.173032.48505868.davem@davemloft.net><598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
-	<20071019.164143.75786621.davem@davemloft.net>
-	<598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>,
-	"David Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,51 +19,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Medve Emilian-EMMEDVE1=20
-> Sent: Monday, October 22, 2007 9:48 PM
-> To: David Miller
-> Cc: jgarzik@pobox.com; Li Yang-r58472;=20
-> netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
-> Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
->=20
-> Hello David,
->=20
->=20
-> > No piece of code in the kernel should live in a vacuum.
-> >=20
-> > In order to improve overall code quality, every piece of=20
-> driver code=20
-> > should avoid assuming things about pointer sizes and things of this=20
-> > nature.
->=20
-> I'm afraid we might be talking about orthogonal issues here.=20
-> I actively agree that all code (not only kernel) should be=20
-> written up to the coding/quality standards you mention above,=20
-> but I see a difference between fixing a warning and making a=20
-> driver portable (to 64-bit PowerPCs, to other platforms,=20
-> etc.). If there is a kernel todo list somewhere lets add to=20
-> it the task to make the ucc_geth more portable.
->=20
-> > Then the driver can get enabled into the build on every=20
-> platform, and=20
-> > therefore nobody will break the build of this driver again since it=20
-> > will get hit by "allmodconfig"
-> > et al. builds even on platforms other than the one it is meant for.
-> >=20
-> > This hack fix is not acceptable, really.
->=20
-> Are you suggesting we leave those warnings there until=20
-> somebody decides to fix all the portability issues of this=20
-> driver? My patch is a small and insignificant improvement and=20
-> not the revolution you're asking for, but is an small=20
-> improvement today (I dislike warnings) vs. an improbable big=20
-> one in the future.
+On 10/22/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Is this what the device tree entries should look like?
+>
+> First example is ac97 audio:
+>
+> ac97@2000 {           // PSC1
+>       device_type = "sound";
+>       compatible = "mpc5200b-psc-ac97\0mpc5200-psc-ac97";
 
-I'd say we can not use our way of doing things while working with the
-community.  The community has to consider the kernel as a whole and thus
-has its own virtue.  The warning has been there for some time.  It stays
-as an indicator that we have something to do to improve the portability.
-I will work on a patch to fix this portability issue.
+This format is so, like. 3 months ago.  :-)
 
-- Leo
+dtc now supports a comma separated format:  property = "string1",
+"string2", "string3"
+
+Embedded nulls no longer needed.
+
+>       cell-index = <0>;
+>       reg = <2000 100>;
+>       interrupts = <2 1 0>;
+>       interrupt-parent = <&mpc5200_pic>;
+>       codec-handle = <&codec0>
+> };
+
+Isn't this the ac97 bus node?  Can't the ac97 codecs simply be
+children of this bus?
+
+>
+> pseudo-sound@0 { // use to trigger loading platform specific fabric driver
+>       device_type = "pseudo-sound"
+> };
+
+I don't think this is a good idea.  The device tree is for describing
+your hardware; so the layout should reflect that.  Make the platform
+code do the right thing with the real nodes.
+
+>
+> codec0:codec@0 {
+>       device_type = "codec"
+>       compatible = "stac9766\0ac97"
+> };
+>
+> Second is i2s/i2c connected:
+> How do I link this to the i2c bus?
+>
+> i2s@2000 {           // PSC1
+>       device_type = "sound";
+>       compatible = "mpc5200b-psc-i2s\0mpc5200-psc-i2s";
+>       cell-index = <0>;
+>       reg = <2000 100>;
+>       interrupts = <2 1 0>;
+>       interrupt-parent = <&mpc5200_pic>;
+>       codec-handle = <&codec0>
+> };
+>
+> i2c@3d00 {
+>       device_type = "i2c";
+>       compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+>       cell-index = <0>;
+>       reg = <3d00 40>;
+>       interrupts = <2 f 0>;
+>       interrupt-parent = <&mpc5200_pic>;
+>       fsl5200-clocking;
+> };
+>
+> pseudo-sound@0 { // use to trigger loading platform specific fabric driver
+>       device_type = "pseudo-sound"
+> };
+>
+> codec0:codec@0 {
+>       device_type = "codec"
+>       compatible = "tas5508"
+> };
+
+I think this is what you want:
+
+ac97@2000 {           // PSC1
+      compatible = "fsl,mpc5200b-psc-ac97","fsl,mpc5200-psc-ac97";
+      cell-index = <0>;
+      reg = <2000 100>;
+      #address-cells = <1>;
+      #size-cells = <0>;
+      interrupts = <2 1 0>;
+      interrupt-parent = <&mpc5200_pic>;
+      // The following codec stuff could be a little off; It has been
+a while since I've looked
+      // at ac97 codec interfacing, but if I remember correctly you
+can have multiple
+      // codecs on an ac97 bus; an audio codec and a modem codec.  The following
+      // reflects that understanding...
+      ac97-codec@0 {
+            // This could be the audio codec
+            reg = <0>;
+            compatible = "stac9766","ac97-audio"
+      };
+      ac97-codec@1 {
+            // This could be the modem codec
+            reg = <1>;
+            compatible = "super-sexy-modem-codec","ac97-modem"
+      };
+};
+
+
+// Now here's a big example for i2c.
+// I've shown 3 audio interfaces; 2 i2s busses and 1 i2c controller.
+// This may not be realistic on a 5200, but it is a possible scenario
+and this shows
+// that it can be handled elegantly.
+i2s@2000 {           // PSC1
+      compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
+      cell-index = <0>;
+      reg = <2000 100>;
+      interrupts = <2 1 0>;
+      interrupt-parent = <&mpc5200_pic>;
+
+      // There are 2 codecs on this i2s bus; either only one at a time
+can be used, or
+      // (if both the i2s controller and codecs support it) both at
+the same time if audio
+      // stream interleaving is supported.
+      codec-handle = <&codec0 &codec2>;
+};
+
+i2s@2200 {           // PSC2
+      compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
+      cell-index = <0>;
+      reg = <2200 100>;
+      interrupts = <2 2 0>;
+      interrupt-parent = <&mpc5200_pic>;
+      codec-handle = <&codec1>;
+};
+
+i2c@3d00 {
+      compatible = "fsl,mpc5200b-i2c", "fsl,mpc5200-i2c", "fsl-i2c";
+      #address-cells = <1>;
+      #size-cells = <0>;
+      cell-index = <0>;
+      reg = <3d00 40>;
+      interrupts = <2 f 0>;
+      interrupt-parent = <&mpc5200_pic>;
+      fsl5200-clocking;
+
+      codec0: i2s-codec@0 {
+            compatible = "<mfg>,tas5508";
+            reg = <0>;
+      };
+      codec1: i2s-codec@1 {
+            compatible = "<mfg>,tas5508";
+            reg = <1>;
+      };
+      codec2: i2s-codec@2 {
+            compatible = "<mfg>,tas5508";
+            reg = <2>;
+      };
+};
+
+So, this scheme describes the hardware, but it does not describe 2 of
+your questions:
+
+1. How does the device tree describe the myriad of possible circuits
+that an audio codec can get dropped into, and
+2. How do the drivers get probed
+
+For question #1, I think the answer is simple... it doesn't try.  :-)
+
+As was described in the previous thread, trying to describe the
+circuit is very complex and figuring out what software would do with
+such a description is even worse.  Instead, I propose the following:
+- as much as possible, make the board firmware and the platform setup
+code configure the GPIOs, port_config, and other 'fixed' configuration
+- make the driver code look at either the board model/compatible
+properties or add a board-unique value to the codec's compatible list.
+ Either way the driver can apply board specific tweaks to its
+behavious.  (I think the better solution is to add a value to the
+front of the codec's compatible list because the same circuit can be
+used on a different board and it can then claim compatibility with the
+older board for just that part of the circuit).
+
+(Segher, what are your thoughts on my above suggestion?)
+
+As for question #2, I think you make the i2s driver probe on the i2s
+bus node and the ac97 driver probe on the ac97 bus node.  In both
+cases, the driver can find the link to the codec; determine what kind
+of system it is running on, and instantiate the appropriate ASoC
+fabric driver.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
