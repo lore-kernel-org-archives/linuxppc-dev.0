@@ -1,22 +1,35 @@
-Return-Path: <emmedve1@emmedve1-12.am.freescale.net>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 582FDDDFCF
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 02:25:38 +1000 (EST)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: axboe@kernel.dk, paulus@samba.org, chris@zankel.net,
-	grundler@parisc-linux.org, kyle@parisc-linux.org,
-	linux-arm-kernel@lists.arm.linux.org.uk, torvalds@linux-foundation.org,
-	ashok.raj@intel.com, shaohua.li@intel.com, anil.s.keshavamurthy@intel.com
-Subject: [PATCH] Use the new sg_page() helper
-Date: Tue, 23 Oct 2007 11:14:52 -0500
-Message-Id: <1193156092-11819-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Emil Medve <Emilian.Medve@Freescale.com>,
-	linux-arm-kernel@lists.arm.linux.org.uk,
-	parisc-linux@lists.parisc-linux.org, linux-kernel@vger.kernel.org
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EFC9BDDF89
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 02:29:23 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9NGTL20021031
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 12:29:21 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9NGQD21095168
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:29:20 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9NGH8In004538
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:17:09 -0600
+Date: Tue, 23 Oct 2007 11:17:06 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support to
+	NEW EMAC.
+Message-ID: <20071023111706.2af5735d@weaponx.rchland.ibm.com>
+In-Reply-To: <38505C5B-4252-4AA7-B4F5-6B5267A6DBAA@kernel.crashing.org>
+References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
+	<20071023102035.6d35d3fe@weaponx.rchland.ibm.com>
+	<38505C5B-4252-4AA7-B4F5-6B5267A6DBAA@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,190 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix build error messages such as this:
+On Tue, 23 Oct 2007 11:13:48 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-In file included from include/linux/dma-mapping.h:52,
-                 from include/linux/dmaengine.h:29,
-                 from include/linux/skbuff.h:29,
-                 from include/linux/netlink.h:155,
-                 from include/linux/genetlink.h:4,
-                 from include/net/genetlink.h:4,
-                 from include/linux/taskstats_kern.h:12,
-                 from init/main.c:46:
-include/asm/dma-mapping.h: In function 'dma_map_sg':
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:290: error: 'struct scatterlist' has no member named 'page'
+> 
+> On Oct 23, 2007, at 10:20 AM, Josh Boyer wrote:
+> 
+> > On Mon, 15 Oct 2007 14:27:23 -0400
+> > Jeff Garzik <jeff@garzik.org> wrote:
+> >
+> >> Valentine Barshak wrote:
+> >>> This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW  
+> >>> EMAC driver.
+> >>> These PHY chips are used on PowerPC 440EPx boards.
+> >>> The PHY code is based on the previous work by Stefan Roese  
+> >>> <sr@denx.de>
+> >>>
+> >>> Signed-off-by: Stefan Roese <sr@denx.de>
+> >>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> >>> ---
+> 
+> You guys should really look at moving emac over to the phylib so we  
+> don't have to duplicate drivers for the same phys all over the place :)
 
-This change in the struct scatterlist was introduced by this commit: 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+Yes, we should.  It's on the list.  Just not for 2.6.24 since it's way
+too late.
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
-
-linux-2.6> scripts/checkpatch.pl 0001-Use-the-new-sg_page-helper.patch 
-Your patch has no obvious style problems and is ready for submission.
-
- drivers/mmc/host/mmci.h           |    4 ++--
- drivers/pci/intel-iommu.c         |    2 +-
- include/asm-arm/dma-mapping.h     |    8 ++++----
- include/asm-parisc/scatterlist.h  |    3 ++-
- include/asm-powerpc/dma-mapping.h |   10 +++++-----
- include/asm-xtensa/dma-mapping.h  |   10 +++++-----
- 6 files changed, 19 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/mmc/host/mmci.h b/drivers/mmc/host/mmci.h
-index 000e6a9..de3c223 100644
---- a/drivers/mmc/host/mmci.h
-+++ b/drivers/mmc/host/mmci.h
-@@ -112,7 +112,7 @@
-  * The size of the FIFO in bytes.
-  */
- #define MCI_FIFOSIZE	(16*4)
--	
-+
- #define MCI_FIFOHALFSIZE (MCI_FIFOSIZE / 2)
- 
- #define NR_SG		16
-@@ -169,7 +169,7 @@ static inline char *mmci_kmap_atomic(struct mmci_host *host, unsigned long *flag
- 	struct scatterlist *sg = host->sg_ptr;
- 
- 	local_irq_save(*flags);
--	return kmap_atomic(sg->page, KM_BIO_SRC_IRQ) + sg->offset;
-+	return kmap_atomic(sg_page(sg), KM_BIO_SRC_IRQ) + sg->offset;
- }
- 
- static inline void mmci_kunmap_atomic(struct mmci_host *host, void *buffer, unsigned long *flags)
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index b3d7031..347948c 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2010,7 +2010,7 @@ static int intel_nontranslate_map_sg(struct device *hddev,
- 	struct scatterlist *sg;
- 
- 	for_each_sg(sglist, sg, nelems, i) {
--		BUG_ON(!sg->page);
-+		BUG_ON(!sg_page(sg));
- 		sg->dma_address = virt_to_bus(SG_ENT_VIRT_ADDRESS(sg));
- 		sg->dma_length = sg->length;
- 	}
-diff --git a/include/asm-arm/dma-mapping.h b/include/asm-arm/dma-mapping.h
-index 1eb8aac..08afd5a 100644
---- a/include/asm-arm/dma-mapping.h
-+++ b/include/asm-arm/dma-mapping.h
-@@ -274,8 +274,8 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	for (i = 0; i < nents; i++, sg++) {
- 		char *virt;
- 
--		sg->dma_address = page_to_dma(dev, sg->page) + sg->offset;
--		virt = page_address(sg->page) + sg->offset;
-+		sg->dma_address = page_to_dma(dev, sg_page(sg)) + sg->offset;
-+		virt = page_address(sg_page(sg)) + sg->offset;
- 
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
-@@ -371,7 +371,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nents,
- 	int i;
- 
- 	for (i = 0; i < nents; i++, sg++) {
--		char *virt = page_address(sg->page) + sg->offset;
-+		char *virt = page_address(sg_page(sg)) + sg->offset;
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
- 	}
-@@ -384,7 +384,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nents,
- 	int i;
- 
- 	for (i = 0; i < nents; i++, sg++) {
--		char *virt = page_address(sg->page) + sg->offset;
-+		char *virt = page_address(sg_page(sg)) + sg->offset;
- 		if (!arch_is_coherent())
- 			dma_cache_maint(virt, sg->length, dir);
- 	}
-diff --git a/include/asm-parisc/scatterlist.h b/include/asm-parisc/scatterlist.h
-index cd3cfdf..3c79a2a 100644
---- a/include/asm-parisc/scatterlist.h
-+++ b/include/asm-parisc/scatterlist.h
-@@ -18,7 +18,8 @@ struct scatterlist {
- 	__u32      iova_length; /* bytes mapped */
- };
- 
--#define sg_virt_addr(sg) ((unsigned long)(page_address(sg->page) + sg->offset))
-+#define sg_virt_addr(sg) \
-+		((unsigned long)(page_address(sg_page(sg)) + sg->offset))
- #define sg_dma_address(sg) ((sg)->iova)
- #define sg_dma_len(sg)     ((sg)->iova_length)
- 
-diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
-index 65be95d..ff52013 100644
---- a/include/asm-powerpc/dma-mapping.h
-+++ b/include/asm-powerpc/dma-mapping.h
-@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		BUG_ON(!sg->page);
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
-+		BUG_ON(!sg_page(sg));
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
- 	}
- 
- 	return nents;
-@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline void dma_sync_sg_for_device(struct device *dev,
-@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline int dma_mapping_error(dma_addr_t dma_addr)
-diff --git a/include/asm-xtensa/dma-mapping.h b/include/asm-xtensa/dma-mapping.h
-index 82b03b3..2b3e975 100644
---- a/include/asm-xtensa/dma-mapping.h
-+++ b/include/asm-xtensa/dma-mapping.h
-@@ -58,10 +58,10 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for (i = 0; i < nents; i++, sg++ ) {
--		BUG_ON(!sg->page);
-+		BUG_ON(!sg_page(sg));
- 
--		sg->dma_address = page_to_phys(sg->page) + sg->offset;
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		sg->dma_address = page_to_phys(sg_page(sg)) + sg->offset;
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, direction);
- 	}
- 
-@@ -128,7 +128,7 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
- {
- 	int i;
- 	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, dir);
- }
- 
-@@ -138,7 +138,7 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
- {
- 	int i;
- 	for (i = 0; i < nelems; i++, sg++)
--		consistent_sync(page_address(sg->page) + sg->offset,
-+		consistent_sync(page_address(sg_page(sg)) + sg->offset,
- 				sg->length, dir);
- }
- static inline int
--- 
-1.5.3.GIT
+josh
