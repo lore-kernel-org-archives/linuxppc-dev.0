@@ -1,11 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
-Date: Mon, 22 Oct 2007 21:59:00 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
-Subject: Audio codec device tree entries
+Return-Path: <michaelellerman@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 4D57EDDE99
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 12:02:41 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so1207677nfd
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 19:02:40 -0700 (PDT)
+Message-ID: <dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
+Date: Tue, 23 Oct 2007 12:02:39 +1000
+From: "Michael Ellerman" <michael@ellerman.id.au>
+Sender: michaelellerman@gmail.com
+To: "Greg Kroah-Hartman" <greg@kroah.com>
+Subject: Re: [PATCH] Allow sysfs_remove_group() to be called on non-added
+	groups
+In-Reply-To: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+References: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,65 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Is this what the device tree entries should look like?
+On 9/13/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> It would be nice to be able to do:
+>
+> for_each_thing(thing) {
+>         error = sysfs_create_group(&thing->kobj, attrs);
+>         if (error) {
+>                 for_each_thing(thing)
+>                         sysfs_remove_group(&thing->kobj, attrs);
+>                 return error;
+>         }
+> }
+>
+> But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
+> were never added.
+>
+> As discussed here ...
+> http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
+>
+> .. we should just return in that case instead of BUG'ing.
+>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+>  fs/sysfs/group.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+> index f318b73..a256775 100644
+> --- a/fs/sysfs/group.c
+> +++ b/fs/sysfs/group.c
+> @@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
+>
+>         if (grp->name) {
+>                 sd = sysfs_get_dirent(dir_sd, grp->name);
+> -               BUG_ON(!sd);
+> +               if (!sd)
+> +                       return;
+>         } else
+>                 sd = sysfs_get(dir_sd);
+>
+>
 
-First example is ac97 audio:
+Hi Greg,
 
-ac97@2000 {           // PSC1
-      device_type = "sound";
-      compatible = "mpc5200b-psc-ac97\0mpc5200-psc-ac97";
-      cell-index = <0>;
-      reg = <2000 100>;
-      interrupts = <2 1 0>;
-      interrupt-parent = <&mpc5200_pic>;
-      codec-handle = <&codec0>
-};
+I didn't see this in your series, any objections? AFAICT it still applies.
 
-pseudo-sound@0 { // use to trigger loading platform specific fabric driver
-      device_type = "pseudo-sound"
-};
-
-codec0:codec@0 {
-      device_type = "codec"
-      compatible = "stac9766\0ac97"
-};
-
-Second is i2s/i2c connected:
-How do I link this to the i2c bus?
-
-i2s@2000 {           // PSC1
-      device_type = "sound";
-      compatible = "mpc5200b-psc-i2s\0mpc5200-psc-i2s";
-      cell-index = <0>;
-      reg = <2000 100>;
-      interrupts = <2 1 0>;
-      interrupt-parent = <&mpc5200_pic>;
-      codec-handle = <&codec0>
-};
-
-i2c@3d00 {
-      device_type = "i2c";
-      compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
-      cell-index = <0>;
-      reg = <3d00 40>;
-      interrupts = <2 f 0>;
-      interrupt-parent = <&mpc5200_pic>;
-      fsl5200-clocking;
-};
-
-pseudo-sound@0 { // use to trigger loading platform specific fabric driver
-      device_type = "pseudo-sound"
-};
-
-codec0:codec@0 {
-      device_type = "codec"
-      compatible = "tas5508"
-};
-
-
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+cheers
