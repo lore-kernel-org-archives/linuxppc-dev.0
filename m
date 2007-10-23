@@ -1,19 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 060B4DDE9C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:08:03 +1000 (EST)
-Date: Tue, 23 Oct 2007 14:07:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: Problems with allyesconfig kernel build
-Message-Id: <20071023140757.c7a3730d.sfr@canb.auug.org.au>
-In-Reply-To: <20071023140231.12698d1c.sfr@canb.auug.org.au>
-References: <20071023140231.12698d1c.sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: [PATCH] Allow sysfs_remove_group() to be called on non-added groups
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Greg KH <greg@kroah.com>
+In-Reply-To: <20071023032836.GC7486@kroah.com>
+References: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
+	<dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
+	<20071023032836.GC7486@kroah.com>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 14:18:17 +1000
+Message-Id: <1193113097.2898.14.camel@concordia>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__23_Oct_2007_14_07_57_+1000_ls3nIvdk2rQc1tu_"
-Cc: Andrew Morton <akpm@linux-foundation.org>, amodra@bigpond.net.au
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__23_Oct_2007_14_07_57_+1000_ls3nIvdk2rQc1tu_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It would be nice to be able to do:
 
-On Tue, 23 Oct 2007 14:02:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> We link .text.init.refok immediately after .text, but with
-> allyesconfig, .text ends up very large.
+for_each_thing(thing) {
+ 	error = sysfs_create_group(&thing->kobj, attrs);
+ 	if (error) {
+ 		for_each_thing(thing)
+ 			sysfs_remove_group(&thing->kobj, attrs);
+		return error;
+	}
+}
 
-Just to give you some idea of what "very large" means, this is an
-allyesconfig built vmlinux from August:
+But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
+were never added.
 
-$ ls -l vmlinux
--rwxr-xr-x 1 sfr sfr 378704409 2007-08-21 13:44 vmlinux
-$ size vmlinux
-   text    data     bss     dec     hex filename
-41368641        9142448 3491272 54002361        33802b9 vmlinux
+As discussed here ...
+http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
 
-:-)
+.. we should just return in that case instead of BUG'ing.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
+ fs/sysfs/group.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
---Signature=_Tue__23_Oct_2007_14_07_57_+1000_ls3nIvdk2rQc1tu_
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHHXOhTgG2atn1QN8RAmbpAKCG/dFgm1Ihm0MSUEhsZy1Bwe3pxQCgkUB+
-pTFRQqeUAlp/WEjDCg4Dj5o=
-=Z4MA
------END PGP SIGNATURE-----
-
---Signature=_Tue__23_Oct_2007_14_07_57_+1000_ls3nIvdk2rQc1tu_--
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index f318b73..a256775 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
+ 
+ 	if (grp->name) {
+ 		sd = sysfs_get_dirent(dir_sd, grp->name);
+-		BUG_ON(!sd);
++		if (!sd)
++			return;
+ 	} else
+ 		sd = sysfs_get(dir_sd);
+ 
+-- 
+1.5.1.3.g7a33b
