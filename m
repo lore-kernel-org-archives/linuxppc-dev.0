@@ -1,31 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9F49DDDFDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:33:30 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9NFXRfp032467
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 11:33:27 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9NFXIEi073382
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 09:33:18 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9NFXIZ3009667
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 09:33:18 -0600
-Date: Tue, 23 Oct 2007 10:33:16 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC 440EPx Sequoia USB OHCI DTS entry
-Message-ID: <20071023103316.471f8afa@weaponx.rchland.ibm.com>
-In-Reply-To: <20071008142658.GA15197@ru.mvista.com>
-References: <20071008142658.GA15197@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <glikely@secretlab.ca>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
+	by ozlabs.org (Postfix) with ESMTP id 419CBDDFD6
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:35:51 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so782006nzh
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 08:35:50 -0700 (PDT)
+Message-ID: <fa686aa40710230835t5c2a3a37yf70104c7b5042f79@mail.gmail.com>
+Date: Tue, 23 Oct 2007 09:35:49 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: linux-kernel@vger.kernel.org, "Jens Axboe" <axboe@kernel.dk>,
+	linuxppc-dev@ozlabs.org,
+	"Linus Torvalds" <torvalds@linux-foundation.org>, paulus@samba.org
+Subject: Re: [PATCH] Bugfix to commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15
+In-Reply-To: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071023151929.12090.3835.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,40 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 8 Oct 2007 18:26:58 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-
-> PowerPC 440EPx Sequoia USB OHCI device tree entry.
-> 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-
-I think I saw the OHCI big endian quirk patch go into Linus' tree
-recently.  Is that the only patch this one depends on?
-
-josh
-
+On 10/23/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
+>
+> Fixup for commit 18dabf473e15850c0dbc8ff13ac1e2806d542c15.  Changes to
+> dma_map_sg where done in asm-x86/dma-mapping_32.h, but were not mirrored
+> in include/asm-powerpc/dma-mapping.h
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 > ---
->  arch/powerpc/boot/dts/sequoia.dts |    7 +++++++
->  1 files changed, 7 insertions(+)
-> 
-> diff -pruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6/arch/powerpc/boot/dts/sequoia.dts
-> --- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-10-08 16:29:54.000000000 +0400
-> +++ linux-2.6/arch/powerpc/boot/dts/sequoia.dts	2007-10-08 17:56:05.000000000 +0400
-> @@ -122,6 +122,13 @@
->  			interrupt-map-mask = <ffffffff>;
->  		};
-> 
-> +		USB1: usb@e0000400 {
-> +			compatible = "ohci-be";
-> +			reg = <0 e0000400 60>;
-> +			interrupt-parent = <&UIC0>;
-> +			interrupts = <15 8>;
-> +		};
-> +
->  		POB0: opb {
->  		  	compatible = "ibm,opb-440epx", "ibm,opb";
->  			#address-cells = <1>;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+> Linus, I cannot build an arch/powerpc kernel without this patch.
+
+Oops, ignore this patch.  It's doesn't change all the references, it
+uses the wrong method for calculating dma_address and 2 other people
+have already sent the fix for this.
+
+/me puts on a paper bag
+g.
+
+>
+> Cheers,
+> g.
+>
+>  include/asm-powerpc/dma-mapping.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
+> index 65be95d..fd33ce4 100644
+> --- a/include/asm-powerpc/dma-mapping.h
+> +++ b/include/asm-powerpc/dma-mapping.h
+> @@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+>         BUG_ON(direction == DMA_NONE);
+>
+>         for_each_sg(sgl, sg, nents, i) {
+> -               BUG_ON(!sg->page);
+> +               BUG_ON(!sg_page(sg));
+>                 __dma_sync_page(sg->page, sg->offset, sg->length, direction);
+> -               sg->dma_address = page_to_bus(sg->page) + sg->offset;
+> +               sg->dma_address = sg_phys(sg);
+>         }
+>
+>         return nents;
+>
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
