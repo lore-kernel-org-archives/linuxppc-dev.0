@@ -1,20 +1,32 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 49F41DDE18
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:24:44 +1000 (EST)
-Date: Mon, 22 Oct 2007 23:31:48 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: IB/ehca: Fix sg_page() fallout
-Message-ID: <20071023043148.GA20904@lixom.net>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-	<20071023040948.GA19699@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071023040948.GA19699@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, Joachim Fenkes <fenkes@de.ibm.com>,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id A2C1ADDEC6
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:27:28 +1000 (EST)
+Received: from pd4mr2so.prod.shaw.ca
+	(pd4mr2so-qfe3.prod.shaw.ca [10.0.141.213]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JQC00LMNKDRJ770@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 22 Oct 2007 22:27:27 -0600 (MDT)
+Received: from pn2ml9so.prod.shaw.ca ([10.0.121.7])
+	by pd4mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JQC00CNNKDR9330@pd4mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Mon, 22 Oct 2007 22:27:27 -0600 (MDT)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JQC0072OKDQIIE0@l-daemon> for linuxppc-dev@ozlabs.org;
+	Mon, 22 Oct 2007 22:27:27 -0600 (MDT)
+Date: Mon, 22 Oct 2007 22:27:31 -0600
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 1/4] bootwrapper: Allow wrapper script to execute verbosely
+In-reply-to: <20071023042353.30309.93118.stgit@trillian.cg.shawcable.net>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Message-id: <20071023042731.30309.4940.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20071023042353.30309.93118.stgit@trillian.cg.shawcable.net>
+Cc: David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-More fallout from sg_page changes, found with powerpc allyesconfig:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user1':
-drivers/infiniband/hw/ehca/ehca_mrmw.c:1779: error: 'struct scatterlist' has no member named 'page'
-drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_check_kpages_per_ate':
-drivers/infiniband/hw/ehca/ehca_mrmw.c:1835: error: 'struct scatterlist' has no member named 'page'
-drivers/infiniband/hw/ehca/ehca_mrmw.c: In function 'ehca_set_pagebuf_user2':
-drivers/infiniband/hw/ehca/ehca_mrmw.c:1870: error: 'struct scatterlist' has no member named 'page'
+Allow wrapper script to print verbose progress when the V is set in the
+environment.
 
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+ arch/powerpc/boot/wrapper |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index da88738..a3037f3 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -1776,7 +1776,7 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
- 	list_for_each_entry_continue(
- 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
- 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
--			pgaddr = page_to_pfn(chunk->page_list[i].page)
-+			pgaddr = page_to_pfn(sg_page(chunk->page_list[i]))
- 				<< PAGE_SHIFT ;
- 			*kpage = phys_to_abs(pgaddr +
- 					     (pginfo->next_hwpage *
-@@ -1832,7 +1832,7 @@ static int ehca_check_kpages_per_ate(struct scatterlist *page_list,
- {
- 	int t;
- 	for (t = start_idx; t <= end_idx; t++) {
--		u64 pgaddr = page_to_pfn(page_list[t].page) << PAGE_SHIFT;
-+		u64 pgaddr = page_to_pfn(sg_page(page_list[t])) << PAGE_SHIFT;
- 		ehca_gen_dbg("chunk_page=%lx value=%016lx", pgaddr,
- 			     *(u64 *)abs_to_virt(phys_to_abs(pgaddr)));
- 		if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
-@@ -1867,7 +1867,7 @@ static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
- 		chunk, (&(pginfo->u.usr.region->chunk_list)), list) {
- 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
- 			if (nr_kpages == kpages_per_hwpage) {
--				pgaddr = ( page_to_pfn(chunk->page_list[i].page)
-+				pgaddr = ( page_to_pfn(sg_page(chunk->page_list[i]))
- 					   << PAGE_SHIFT );
- 				*kpage = phys_to_abs(pgaddr);
- 				if ( !(*kpage) ) {
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 39b27e5..347639c 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -21,6 +21,11 @@
+ #		(default ./arch/powerpc/boot)
+ # -W dir	specify working directory for temporary files (default .)
+ 
++# Allow for verbose output
++if [ "$V" = 1 ]; then
++    set -x
++fi
++
+ # defaults
+ kernel=
+ ofile=zImage
