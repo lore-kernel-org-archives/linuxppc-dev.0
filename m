@@ -1,12 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18205.30425.343811.555243@cargo.ozlabs.ibm.com>
-Date: Tue, 23 Oct 2007 14:21:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-Id: <5f47235ce3542c80e043f7f183400ab3d576f1dd.1193113342.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Read back MSI message in rtas_setup_msi_irqs() so restore
+	works
+Date: Tue, 23 Oct 2007 14:23:44 +1000 (EST)
+Cc: netdev@vger.kernel.org, mcarlson@broadcom.com, linuxppc-dev@ozlabs.org,
+	mchan@broadcom.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,22 +17,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+There are plans afoot to use pci_restore_msi_state() to restore MSI
+state after a device reset. In order for this to work for the RTAS MSI
+backend, we need to read back the MSI message from config space after
+it has been setup by firmware.
 
-Please do
+This should be sufficient for restoring the MSI state after a device
+reset, however we will need to revisit this for suspend to disk if that
+is ever implemented on pseries.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-to get a commit that adds Vitaly Bordug as a maintainer for the
-powerpc embedded 8xx processors.  This is something that Marcelo asked
-me to push ages ago, but it kept falling through the cracks.
+Linas, can you test this on your setup with your EEH stuff? I haven't got
+any MSI supporting hardware/firmware combination.
 
-Thanks,
-Paul.
 
- MAINTAINERS |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/msi.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-Marcelo Tosatti (1):
-      [POWERPC] Add Vitaly Bordug as PPC8xx maintainer
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 2793a1b..f15222b 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -171,6 +171,7 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 	struct pci_dn *pdn;
+ 	int hwirq, virq, i, rc;
+ 	struct msi_desc *entry;
++	struct msi_msg msg;
+ 
+ 	pdn = get_pdn(pdev);
+ 	if (!pdn)
+@@ -213,6 +214,11 @@ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ 
+ 		dev_dbg(&pdev->dev, "rtas_msi: allocated virq %d\n", virq);
+ 		set_irq_msi(virq, entry);
++
++		/* Read config space back so we can restore after reset */
++		read_msi_msg(virq, &msg);
++		entry->msg = msg;
++
+ 		unmask_msi_irq(virq);
+ 	}
+ 
+-- 
+1.5.1.3.g7a33b
