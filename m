@@ -1,21 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ABCB1DDE00
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:18:49 +1000 (EST)
-Date: Mon, 22 Oct 2007 21:18:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Problems with allyesconfig kernel build
-Message-Id: <20071022211836.45a87a12.akpm@linux-foundation.org>
-In-Reply-To: <20071023140231.12698d1c.sfr@canb.auug.org.au>
-References: <20071023140231.12698d1c.sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 5/7] pci: Export the pci_restore_msi_state() function
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20071022181336.GC4280@austin.ibm.com>
+References: <1192829817.22064.559.camel@teletran1>
+	<20071021.162131.43417026.davem@davemloft.net>
+	<1193017764.10318.17.camel@concordia>
+	<20071022181336.GC4280@austin.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-rS6NbzTo7X2Yz8xnYXOt"
+Date: Tue, 23 Oct 2007 14:20:46 +1000
+Message-Id: <1193113246.2898.18.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, amodra@bigpond.net.au
+Cc: netdev@vger.kernel.org, mcarlson@broadcom.com,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, mchan@broadcom.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, David Miller <davem@davemloft.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 23 Oct 2007 14:02:31 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> This was first noted with the -mm tree, but has now migrated into Linus'
-> tree.
+--=-rS6NbzTo7X2Yz8xnYXOt
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yeah, sorry, I didn't know what to do about that.  I'm not even sure which
-patch caused it.
 
->  An allyesconfig build dies in the link stage like this:
-> 
-> /usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x80c8): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> /usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x8160): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> /usr/bin/ld: arch/powerpc/kernel/head_64.o(.text+0x81c4): sibling call optimization to `.text.init.refok' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text.init.refok' extern
-> /usr/bin/ld: final link failed: Bad value
-> 
-> We already compile with -mminimal-toc and adding
-> -fno-optimize-sibling-call did not help.
-> 
-> Intuiting the obvious, I changed all the _INIT_STATIC and _INIT_GLOBAL
-> uses in head_64.S back to _STATIC and _GLOBAL (which just moves the code
-> from .text.init.refok to .text).  Now the linker segfaults instead.  :-)
-> 
-> /bin/sh: line 1:  5260 Segmentation fault      ld -m elf64ppc -Bstatic --emit-relocs --build-id -o .tmp_vmlinux1 -T arch/powerpc/kernel/vmlinux.lds arch/powerpc/kernel/head_64.o arch/powerpc/kernel/entry_64.o arch/powerpc/kernel/fpu.o init/built-in.o --start-group usr/built-in.o arch/powerpc/kernel/built-in.o arch/powerpc/mm/built-in.o arch/powerpc/lib/built-in.o arch/powerpc/sysdev/built-in.o arch/powerpc/platforms/built-in.o arch/powerpc/xmon/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o lib/lib.a lib/built-in.o drivers/built-in.o sound/built-in.o arch/powerpc/oprofile/built-in.o net/built-in.o --end-group
-> make[1]: *** [.tmp_vmlinux1] Error 139
-> 
-> $ ld --version
-> GNU ld (GNU Binutils for Debian) 2.18
-> 
-> I take this as an improvement :-)
-> 
-> We link .text.init.refok immediately after .text, but with
-> allyesconfig, .text ends up very large.
-> 
-> The --emit-relocs is a product of something else I am working on.  So I
-> took that out and now get a whole lot more messages like:
-> 
-> /usr/bin/ld: net/built-in.o(.fixup+0x4): sibling call optimization to `.text' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text' extern
-> /usr/bin/ld: net/built-in.o(.fixup+0xc): sibling call optimization to `.text' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `.text' extern
-> 
-> Anyone have any ideas?
+On Mon, 2007-10-22 at 13:13 -0500, Linas Vepstas wrote:
+> On Mon, Oct 22, 2007 at 11:49:24AM +1000, Michael Ellerman wrote:
+> >=20
+> > On pseries there's a chance it will work for PCI error recovery, but if
+> > so it's just lucky that firmware has left everything configured the sam=
+e
+> > way.=20
+>=20
+> ? The papr is quite clear that i is up to the OS to restore the msi
+> state after an eeh error.
 
-I still don't know ;)
+Perhaps. I see R1-7.3.10.5.1-10, which says we should restore the config
+space after a reset operation, but after an isolate/unisolate we must
+recall RTAS. I thought EEH was doing the isolate/unisolate, but if it's
+just a reset then just blatting the config space back should work.
 
-What did we do which caused all this to start happening?
+> > Yes I think so. That way we can properly reconfigure via the firmware
+> > interface. The other option would be to design some new arch hook to do
+> > resume, but just doing a disable/enable seems simpler to me.
+>=20
+> Err, If you read the code for suspend/resume, it never actually calls
+> disable/enable (and thus doesn't go to the firmware); it calls=20
+> restore_msi_state() function!
+
+I know. That was a proposed solution, to explicitly call disable/enable
+instead of restore_msi_state().
+
+> If suspend/resume needs to call firmware to restore the state, then,
+> at the moment, suspend/resume is broken.  As I mentioned earlier,
+> I presumed that no powerpc laptops currently use msi-enabled devices,
+> as otherwise, this would have been flushed out.
+
+On _pseries_ suspend/resume with MSI is broken. The other powerpc
+platforms that implement MSI should be fine, although I don't think
+anyone's tested them, because they're not laptops and so suspend/resume
+is not that interesting.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-rS6NbzTo7X2Yz8xnYXOt
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHHXaedSjSd0sB4dIRAqKvAKCYrQG/2dHtB1A/Qq58kkkZiGVItQCguiGm
+f8YdD2ktBOrcKI3ozlJVErQ=
+=RDRm
+-----END PGP SIGNATURE-----
+
+--=-rS6NbzTo7X2Yz8xnYXOt--
