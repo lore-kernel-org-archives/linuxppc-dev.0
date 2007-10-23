@@ -1,20 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 5A5A0DDE10
+Return-Path: <hex87125@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.230])
+	by ozlabs.org (Postfix) with ESMTP id EE55CDDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Oct 2007 19:17:49 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+	Tue, 23 Oct 2007 19:22:27 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1447515wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 Oct 2007 02:22:26 -0700 (PDT)
+Message-ID: <4da43e0b0710230222u4accdf2dhb1d78f46ac4ad844@mail.gmail.com>
+Date: Tue, 23 Oct 2007 17:22:26 +0800
+From: "x he" <hex87125@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Difference between ioremap() and phy_to_virt() Kernel function
-Date: Tue, 23 Oct 2007 11:11:42 +0200
-References: <13339930.post@talk.nabble.com> <200710221304.44275.arnd@arndb.de>
-	<13357088.post@talk.nabble.com>
-In-Reply-To: <13357088.post@talk.nabble.com>
+Subject: [help]about amcc440
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710231111.43062.arnd@arndb.de>
-Cc: Misbah khan <misbah_khan@engineer.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_29455_29033471.1193131346629"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 23 October 2007, Misbah khan wrote:
-> But i wish to know that could i use phy_to_virt() function in place io
-> ioremap() ?????
+------=_Part_29455_29033471.1193131346629
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Sorry to disappoint you there, but you can't.
+hi,everyone!
+i've got a amcc440ep,and i buy a pci video-card, but it doesn't work.i want
+to know which card is well supported by amcc440,does anyone knows? thank you
+!
 
-> And could you give me an example where we could use phy_to_virt().
+------=_Part_29455_29033471.1193131346629
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Not really, I can't think of any correct use of phys_to_virt on powerpc.
+hi,everyone!<br>i&#39;ve got a amcc440ep,and i buy a pci video-card, but it doesn&#39;t work.i want to know which card is well supported by amcc440,does anyone knows? thank you !<br>
 
-	Arnd <><
+------=_Part_29455_29033471.1193131346629--
