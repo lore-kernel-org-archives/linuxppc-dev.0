@@ -1,21 +1,14 @@
-Return-Path: <michaelellerman@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 4D57EDDE99
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 12:02:41 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so1207677nfd
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 19:02:40 -0700 (PDT)
-Message-ID: <dc1166600710221902t1383ff88q421a17b1ff1382cd@mail.gmail.com>
-Date: Tue, 23 Oct 2007 12:02:39 +1000
-From: "Michael Ellerman" <michael@ellerman.id.au>
-Sender: michaelellerman@gmail.com
-To: "Greg Kroah-Hartman" <greg@kroah.com>
-Subject: Re: [PATCH] Allow sysfs_remove_group() to be called on non-added
-	groups
-In-Reply-To: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 23 Oct 2007 12:54:12 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] DTC:  Remove the need for the GLR Parser.
+Message-ID: <20071023025412.GI31839@localhost.localdomain>
+References: <E1Ik4aw-0007ud-Lu@jdl.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <096fae99bd9797c5484ed8f4b87b82e58737cdc0.1189657514.git.michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1Ik4aw-0007ud-Lu@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,49 +18,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 9/13/07, Michael Ellerman <michael@ellerman.id.au> wrote:
-> It would be nice to be able to do:
->
-> for_each_thing(thing) {
->         error = sysfs_create_group(&thing->kobj, attrs);
->         if (error) {
->                 for_each_thing(thing)
->                         sysfs_remove_group(&thing->kobj, attrs);
->                 return error;
->         }
-> }
->
-> But there's a BUG_ON() in sysfs_remove_group() which hits if the attributes
-> were never added.
->
-> As discussed here ...
-> http://ozlabs.org/pipermail/cbe-oss-dev/2007-July/002774.html
->
-> .. we should just return in that case instead of BUG'ing.
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  fs/sysfs/group.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-> index f318b73..a256775 100644
-> --- a/fs/sysfs/group.c
-> +++ b/fs/sysfs/group.c
-> @@ -73,7 +73,8 @@ void sysfs_remove_group(struct kobject * kobj,
->
->         if (grp->name) {
->                 sd = sysfs_get_dirent(dir_sd, grp->name);
-> -               BUG_ON(!sd);
-> +               if (!sd)
-> +                       return;
->         } else
->                 sd = sysfs_get(dir_sd);
->
->
+On Mon, Oct 22, 2007 at 04:13:54PM -0500, Jon Loeliger wrote:
+> Previously, there were a few shift/reduce and reduce/reduce
+> errors in the grammar that were being handled by the not-so-popular
+> GLR Parser technique.
 
-Hi Greg,
+I haven't actually heard anyone whinge about glr-parser...
 
-I didn't see this in your series, any objections? AFAICT it still applies.
+> Flip a right-recursive stack-abusing rule into a left-recursive
+> stack-friendly rule and clear up three messes in one shot: No more
+> conflicts, no need for the GLR parser, and friendlier stackness.
 
-cheers
+Ouch.  I'm feeling a bit stupid now, I really thought our conflicts
+were somewhere else.  Specifically I thought the problem was that we
+needed to look ahead more tokens that we were able to differentiate
+between property and subnode definitions, i.e. between:
+	label propname =
+and
+	label propname {
+
+Except... I'm almost certain the conflicts first appeared when I added
+labels, and I can't see how that would affect this.  Well, colour me
+baffled.
+
+Especially since the comments and content of commit
+4102d840d993e7cce7d5c5aea8ef696dc81236fc (second commit in the entire
+history!) appear to back up my memory of this.  I used to have a
+lookahead hack in the lexer to remove the conflict.
+
+But this patch certainly seems to make the conflicts go away, so I'm
+confused.
+
+
+Well, regardless of that, I have a few concerns.
+
+First, a trivial one: I remember leaving this as a right-recursion,
+despite the stack-nastiness, because that way the properties end up in
+the same order as in the source.  I think that behaviour is worth
+preserving, but of course we can do it with left-recursion by changing
+chain_property() to add to the end of the list instead of the
+beginning.  Also, if we're going to avoid right-recursion here, we
+should do so for the 'subnodes' productions as well, which is
+completely analogous.
+
+More significantly, I don't know that we want to burn our bridges with
+glr-parser.  glr-parser is a beautiful algorithm which means we can
+use essentially whatever form of grammar is the easiest to work with
+without having to fiddle about to ensure it's LALR(1).  This could
+still be useful if we encounter some less easily finessable grammar
+construct in future.
+
+And even without glr-parser, I'm still uncomfortable with the
+lexer<->parser execution ordering issues with the current
+/dts-version/ proposal.  It may now be true that the order is
+guaranteed to be correct, but it's still not exactly obvious.
+
+It seems to me that the version change introduces a lexical change to
+the input format, and should therefore be handled at the lexical
+level.  And I think there are other potential advantages to parsing
+the version identifier as a token, rather than as an integer (such as
+being able to define entirely different grammars for different
+versions, if we have to).
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
