@@ -1,22 +1,22 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id A9EF1DE026
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 09:14:25 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B6833DE183
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 09:14:30 +1000 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 51F8714311
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:14:26 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id 59EF914466
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:14:31 +0200 (CEST)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 15150-01 for <linuxppc-dev@ozlabs.org>;
-	Wed, 24 Oct 2007 01:14:22 +0200 (CEST)
+	with ESMTP id 08109-09 for <linuxppc-dev@ozlabs.org>;
+	Wed, 24 Oct 2007 01:14:28 +0200 (CEST)
 Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
-	by mail.semihalf.com (Postfix) with ESMTP id BCD89142C1
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:14:21 +0200 (CEST)
+	by mail.semihalf.com (Postfix) with ESMTP id E2DAF142C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:14:27 +0200 (CEST)
 From: Marian Balakowicz <m8@semihalf.com>
-Subject: [PATCH 09/11] [POWERPC] Motion-PRO: Add LED support.
+Subject: [PATCH 10/11] [POWERPC] Promess Motion-PRO DTS
 To: linuxppc-dev@ozlabs.org
-Date: Wed, 24 Oct 2007 01:13:58 +0200
-Message-ID: <20071023231358.29359.90259.stgit@hekate.izotz.org>
+Date: Wed, 24 Oct 2007 01:14:04 +0200
+Message-ID: <20071023231404.29359.34377.stgit@hekate.izotz.org>
 In-Reply-To: <20071023231302.29359.27417.stgit@hekate.izotz.org>
 References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
 MIME-Version: 1.0
@@ -30,293 +30,379 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add LED driver for Promess Motion-PRO board.
+Add device tree source file for Motion-PRO board.
 
-Signed-off-by: Jan Wrobel <wrr@semihalf.com>
 Signed-off-by: Marian Balakowicz <m8@semihalf.com>
 ---
 
- drivers/leds/Kconfig          |    7 +
- drivers/leds/Makefile         |    3 -
- drivers/leds/leds-motionpro.c |  222 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/mpc52xx.h |    5 +
- 4 files changed, 236 insertions(+), 1 deletions(-)
- create mode 100644 drivers/leds/leds-motionpro.c
+ arch/powerpc/boot/dts/motionpro.dts |  360 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 360 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/motionpro.dts
 
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index ec568fa..1567ed6 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -55,6 +55,13 @@ config LEDS_TOSA
- 	  This option enables support for the LEDs on Sharp Zaurus
- 	  SL-6000 series.
- 
-+config LEDS_MOTIONPRO
-+	tristate "Motion-PRO LEDs Support"
-+	depends on LEDS_CLASS && PPC_MPC5200
-+	help
-+	  This option enables support for status and ready LEDs connected
-+	  to GPIO lines on Motion-PRO board.
-+
- config LEDS_S3C24XX
- 	tristate "LED Support for Samsung S3C24XX GPIO LEDs"
- 	depends on LEDS_CLASS && ARCH_S3C2410
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index a60de1b..a56d399 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -18,7 +18,8 @@ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
- obj-$(CONFIG_LEDS_COBALT_QUBE)		+= leds-cobalt-qube.o
- obj-$(CONFIG_LEDS_COBALT_RAQ)		+= leds-cobalt-raq.o
- obj-$(CONFIG_LEDS_GPIO)			+= leds-gpio.o
--obj-$(CONFIG_LEDS_CM_X270)              += leds-cm-x270.o
-+obj-$(CONFIG_LEDS_CM_X270)		+= leds-cm-x270.o
-+obj-$(CONFIG_LEDS_MOTIONPRO)		+= leds-motionpro.o
- 
- # LED Triggers
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
-diff --git a/drivers/leds/leds-motionpro.c b/drivers/leds/leds-motionpro.c
+diff --git a/arch/powerpc/boot/dts/motionpro.dts b/arch/powerpc/boot/dts/motionpro.dts
 new file mode 100644
-index 0000000..d4b872c
+index 0000000..5b9896a
 --- /dev/null
-+++ b/drivers/leds/leds-motionpro.c
-@@ -0,0 +1,222 @@
++++ b/arch/powerpc/boot/dts/motionpro.dts
+@@ -0,0 +1,360 @@
 +/*
-+ * LEDs driver for the Motionpro board.
-+ * 
++ * Motion-PRO board Device Tree Source
++ *
 + * Copyright (C) 2007 Semihalf
++ * Marian Balakowicz <m8@semihalf.com>
 + *
-+ * Author: Jan Wrobel <wrr@semihalf.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc., 51
-+ * Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ *
-+ *
-+ * This driver enables control over Motionpro's status and ready LEDs through
-+ * sysfs. LEDs can be controlled by writing to sysfs files:
-+ * class/leds/motionpro-(ready|status)led/(brightness|delay_off|delay_on).
-+ * See Documentation/leds-class.txt for more details
-+ *
-+ * Before user issues first control command via sysfs, LED blinking is
-+ * controlled by the kernel. By default status LED is blinking fast and ready
-+ * LED is turned off.
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/leds.h>
-+
-+#include <asm/mpc52xx.h>
-+#include <asm/io.h>
-+
-+/* Led status */
-+#define LED_NOT_REGISTERED	0
-+#define LED_KERNEL_CONTROLLED	1
-+#define LED_USER_CONTROLLED	2
-+
-+/* Led control bits */
-+#define LED_ON	MPC52xx_GPT_OUTPUT_1
-+
-+static void mpled_set(struct led_classdev *led_cdev,
-+		      enum led_brightness brightness);
-+
-+struct motionpro_led{
-+	/* Protects the led data */
-+	spinlock_t led_lock;
-+
-+	/* Path to led's control register DTS node */
-+	char *reg_compat;
-+
-+	/* Address to access led's register */
-+	void __iomem *reg_addr;
-+
-+	int status;
-+
-+	/* Blinking timer used when led is controlled by the kernel */
-+	struct timer_list kernel_mode_timer;
-+
-+	/*
-+	 * Delay between blinks when led is controlled by the kernel.
-+	 * If set to 0 led blinking is off.
-+	 */
-+	int kernel_mode_delay;
-+
-+	struct led_classdev classdev;
-+};
-+
-+static struct motionpro_led led[] = {
-+	{
-+		.reg_compat = "promess,motionpro-statusled",
-+		.reg_addr = 0,
-+		.led_lock = SPIN_LOCK_UNLOCKED,
-+		.status = LED_NOT_REGISTERED,
-+		.kernel_mode_delay = HZ / 10,
-+		.classdev = {
-+			.name = "motionpro-statusled",
-+			.brightness_set = mpled_set,
-+			.default_trigger = "timer",
-+		},
-+	},
-+	{
-+		.reg_compat = "promess,motionpro-readyled",
-+		.reg_addr = 0,
-+		.led_lock = SPIN_LOCK_UNLOCKED,
-+		.status = LED_NOT_REGISTERED,
-+		.kernel_mode_delay = 0,
-+		.classdev = {
-+			.name = "motionpro-readyled",
-+			.brightness_set = mpled_set,
-+			.default_trigger = "timer",
-+		}
-+	}
-+};
-+
-+/* Timer event - blinks led before user takes control over it */
-+static void mpled_timer_toggle(unsigned long ptr)
-+{
-+	struct motionpro_led *mled = (struct motionpro_led *) ptr;
-+
-+	spin_lock_bh(&mled->led_lock);
-+	if (mled->status == LED_KERNEL_CONTROLLED){
-+		u32 reg = in_be32(mled->reg_addr);
-+		reg ^= LED_ON;
-+		out_be32(mled->reg_addr, reg);
-+		led->kernel_mode_timer.expires = jiffies +
-+			led->kernel_mode_delay;
-+		add_timer(&led->kernel_mode_timer);
-+	}
-+	spin_unlock_bh(&mled->led_lock);
-+}
-+
 +
 +/*
-+ * Turn on/off led according to user settings in sysfs.
-+ * First call to this function disables kernel blinking.
++ * WARNING: Do not depend on this tree layout remaining static just yet.
++ * The MPC5200 device tree conventions are still in flux
++ * Keep an eye on the linuxppc-dev mailing list for more details
 + */
-+static void mpled_set(struct led_classdev *led_cdev,
-+		      enum led_brightness brightness)
-+{
-+	struct motionpro_led *mled;
-+	u32 reg;
 +
-+	mled = container_of(led_cdev, struct motionpro_led, classdev);
++/ {
++	model = "promess,motionpro";
++	compatible = "promess,motionpro","generic-mpc5200";
++	#address-cells = <1>;
++	#size-cells = <1>;
 +
-+	spin_lock_bh(&mled->led_lock);
-+	mled->status = LED_USER_CONTROLLED;
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+	reg = in_be32(mled->reg_addr);
-+	if (brightness)
-+		reg |= LED_ON;
-+	else
-+		reg &= ~LED_ON;
-+	out_be32(mled->reg_addr, reg);
++		PowerPC,5200@0 {
++			device_type = "cpu";
++			reg = <0>;
++			d-cache-line-size = <20>;
++			i-cache-line-size = <20>;
++			d-cache-size = <4000>;		// L1, 16K
++			i-cache-size = <4000>;		// L1, 16K
++			timebase-frequency = <0>;	// from bootloader
++			bus-frequency = <0>;		// from bootloader
++			clock-frequency = <0>;		// from bootloader
++		};
++	};
 +
-+	spin_unlock_bh(&mled->led_lock);
-+}
++	memory {
++		device_type = "memory";
++		reg = <00000000 04000000>;	// 64MB
++	};
 +
-+static void mpled_init_led(void __iomem *reg_addr)
-+{
-+	u32 reg = in_be32(reg_addr);
-+	reg |= MPC52xx_GPT_ENABLE_OUTPUT;
-+	reg &= ~LED_ON;
-+	out_be32(reg_addr, reg);
-+}
++	soc5200@f0000000 {
++		model = "fsl,mpc5200b";
++		compatible = "mpc5200";
++		revision = "";			// from bootloader
++		device_type = "soc";
++		ranges = <0 f0000000 0000c000>;
++		reg = <f0000000 00000100>;
++		bus-frequency = <0>;		// from bootloader
++		system-frequency = <0>;		// from bootloader
 +
-+static void mpled_clean(void)
-+{
-+	int i;
-+	for (i = 0; i < sizeof(led) / sizeof(struct motionpro_led); i++){
-+		if (led[i].status != LED_NOT_REGISTERED){
-+			spin_lock_bh(&led[i].led_lock);
-+			led[i].status = LED_NOT_REGISTERED;
-+			spin_unlock_bh(&led[i].led_lock);
-+			led_classdev_unregister(&led[i].classdev);
-+		}
-+		if (led[i].reg_addr){
-+			iounmap(led[i].reg_addr);
-+			led[i].reg_addr = 0;
-+		}
-+	}
-+}
++		cdm@200 {
++			compatible = "mpc5200b-cdm","mpc5200-cdm";
++			reg = <200 38>;
++		};
 +
-+static int __init mpled_init(void)
-+{
-+	int i, error;
++		mpc5200_pic: pic@500 {
++			// 5200 interrupts are encoded into two levels;
++			interrupt-controller;
++			#interrupt-cells = <3>;
++			device_type = "interrupt-controller";
++			compatible = "mpc5200b-pic","mpc5200-pic";
++			reg = <500 80>;
++		};
 +
-+	for (i = 0; i < sizeof(led) / sizeof(struct motionpro_led); i++){
-+		led[i].reg_addr = mpc52xx_find_and_map(led[i].reg_compat);
-+		if (!led[i].reg_addr){
-+			printk(KERN_ERR __FILE__ ": "
-+			       "Error while mapping GPIO register for LED %s\n",
-+			       led[i].classdev.name);
-+			error = -EIO;
-+			goto err;
-+		}
++		gpt@600 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <0>;
++			reg = <600 10>;
++			interrupts = <1 9 0>;
++			interrupt-parent = <&mpc5200_pic>;
++			fsl,has-wdt;
++		};
 +
-+		mpled_init_led(led[i].reg_addr);
-+		led[i].status = LED_KERNEL_CONTROLLED;
-+		if (led[i].kernel_mode_delay){
-+			init_timer(&led[i].kernel_mode_timer);
-+			led[i].kernel_mode_timer.function = mpled_timer_toggle;
-+			led[i].kernel_mode_timer.data = (unsigned long)&led[i];
-+			led[i].kernel_mode_timer.expires =
-+				jiffies + led[i].kernel_mode_delay;
-+			add_timer(&led[i].kernel_mode_timer);
-+		}
++		gpt@610 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <1>;
++			reg = <610 10>;
++			interrupts = <1 a 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+		if ((error = led_classdev_register(NULL, &led[i].classdev)) < 0){
-+			printk(KERN_ERR __FILE__ ": "
-+			       "Error while registering class device for LED "
-+			       "%s\n",
-+			       led[i].classdev.name);
-+			goto err;
-+		}
-+	}
++		gpt@620 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <2>;
++			reg = <620 10>;
++			interrupts = <1 b 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+	printk("Motionpro LEDs driver initialized\n");
-+	return 0;
-+err:
-+	mpled_clean();
-+	return error;
-+}
++		gpt@630 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <3>;
++			reg = <630 10>;
++			interrupts = <1 c 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+static void __exit mpled_exit(void)
-+{
-+	mpled_clean();
-+}
++		gpt@640 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <4>;
++			reg = <640 10>;
++			interrupts = <1 d 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+module_init(mpled_init);
-+module_exit(mpled_exit);
++		gpt@650 {	// General Purpose Timer
++			compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
++			cell-index = <5>;
++			reg = <650 10>;
++			interrupts = <1 e 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+MODULE_LICENSE("GPL")
-+MODULE_DESCRIPTION("LEDs support for Motionpro");
-+MODULE_AUTHOR("Jan Wrobel <wrr@semihalf.com>");
-diff --git a/include/asm-powerpc/mpc52xx.h b/include/asm-powerpc/mpc52xx.h
-index 859ffb0..7e20f54 100644
---- a/include/asm-powerpc/mpc52xx.h
-+++ b/include/asm-powerpc/mpc52xx.h
-@@ -140,6 +140,11 @@ struct mpc52xx_gpio {
- #define MPC52xx_GPIO_PSC_CONFIG_UART_WITH_CD	5
- #define MPC52xx_GPIO_PCI_DIS			(1<<15)
- 
-+/* Enables GPT register to operate as simple GPIO output register */
-+#define MPC52xx_GPT_ENABLE_OUTPUT	0x00000024
-+/* Puts 1 on GPT output pin */
-+#define MPC52xx_GPT_OUTPUT_1		0x00000010
++		gpt@660 {	// Motion-PRO status LED
++			compatible = "promess,motionpro-statusled";
++			cell-index = <6>;
++			reg = <660 10>;
++			interrupts = <1 f 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
- /* GPIO with WakeUp*/
- struct mpc52xx_gpio_wkup {
- 	u8 wkup_gpioe;		/* GPIO_WKUP + 0x00 */
++		gpt@670 {	// Motion-PRO ready LED
++			compatible = "promess,motionpro-readyled";
++			cell-index = <7>;
++			reg = <670 10>;
++			interrupts = <1 10 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		rtc@800 {	// Real time clock
++			compatible = "mpc5200b-rtc","mpc5200-rtc";
++			device_type = "rtc";
++			reg = <800 100>;
++			interrupts = <1 5 0 1 6 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		mscan@980 {
++			compatible = "mpc5200b-mscan","mpc5200-mscan";
++			cell-index = <1>;
++			interrupts = <2 12 0>;
++			interrupt-parent = <&mpc5200_pic>;
++			reg = <980 80>;
++		};
++
++		gpio@b00 {
++			compatible = "mpc5200b-gpio","mpc5200-gpio";
++			reg = <b00 40>;
++			interrupts = <1 7 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		gpio-wkup@c00 {
++			compatible = "mpc5200b-gpio-wkup","mpc5200-gpio-wkup";
++			reg = <c00 40>;
++			interrupts = <1 8 0 0 3 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++
++		spi@f00 {
++			device_type = "spi";
++			compatible = "mpc5200b-spi","mpc5200-spi";
++			reg = <f00 20>;
++			interrupts = <2 d 0 2 e 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		usb@1000 {
++			device_type = "usb-ohci-be";
++			compatible = "mpc5200b-ohci","mpc5200-ohci","ohci-be";
++			reg = <1000 ff>;
++			interrupts = <2 6 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		dma-controller@1200 {
++			compatible = "mpc5200b-bestcomm","mpc5200-bestcomm";
++			reg = <1200 80>;
++			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
++			              3 4 0  3 5 0  3 6 0  3 7 0
++			              3 8 0  3 9 0  3 a 0  3 b 0
++			              3 c 0  3 d 0  3 e 0  3 f 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		xlb@1f00 {
++			compatible = "mpc5200b-xlb","mpc5200-xlb";
++			reg = <1f00 100>;
++		};
++
++		serial@2000 {		// PSC1
++			device_type = "serial";
++			compatible = "mpc5200b-psc-uart","mpc5200-psc-uart";
++			port-number = <0>;  // Logical port assignment
++			cell-index = <0>;
++			reg = <2000 100>;
++			interrupts = <2 1 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		// PSC2 in spi master mode 
++		spi@2200 {		// PSC2
++			device_type = "spi";
++			compatible = "mpc5200b-psc-spi","mpc5200-psc-spi";
++			cell-index = <1>;
++			reg = <2200 100>;
++			interrupts = <2 2 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		// PSC5 in uart mode
++		serial@2800 {		// PSC5
++			device_type = "serial";
++			compatible = "mpc5200b-psc-uart","mpc5200-psc-uart";
++			port-number = <4>;  // Logical port assignment
++			cell-index = <4>;
++			reg = <2800 100>;
++			interrupts = <2 c 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		ethernet@3000 {
++			device_type = "network";
++			compatible = "mpc5200b-fec","mpc5200-fec";
++			reg = <3000 800>;
++			local-mac-address = [ 00 00 00 00 00 00 ]; /* Filled in by U-Boot */
++			interrupts = <2 5 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		ata@3a00 {
++			device_type = "ata";
++			compatible = "mpc5200b-ata","mpc5200-ata";
++			reg = <3a00 100>;
++			interrupts = <2 7 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		i2c@3d40 {
++			device_type = "i2c";
++			compatible = "mpc5200b-i2c","mpc5200-i2c","fsl-i2c";
++			reg = <3d40 40>;
++			interrupts = <2 10 0>;
++			interrupt-parent = <&mpc5200_pic>;
++			fsl5200-clocking;
++		};
++
++		sram@8000 {
++			compatible = "mpc5200b-sram","mpc5200-sram","sram";
++			reg = <8000 4000>;
++		};
++	};
++
++	lpb {
++		model = "fsl,lpb";
++		compatible = "lpb";
++		device_type = "lpb";
++		ranges = <50000000 50000000 00030000
++			  ff000000 ff000000 01000000>;
++
++		// 8-bit DualPort SRAM on LocalPlus Bus CS1
++		kollmorgen@50000000 {
++			compatible = "promess,motionpro-kollmorgen";
++			reg = <50000000 ffff>;
++			interrupts = <1 1 0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
++
++		// 8-bit board CPLD on LocalPlus Bus CS2
++		cpld@50010000 {
++			compatible = "promess,motionpro-cpld";
++			reg = <50010000 ffff>;
++		};
++
++		// 8-bit custom Anybus Module on LocalPlus Bus CS3
++		anybus50020000 {
++			compatible = "promess,motionpro-anybus";
++			reg = <50020000 ffff>;
++		};
++		pro_module_general@50020000 {
++			compatible = "promess,pro_module_general";
++			reg = <50020000 3>;
++		};
++		pro_module_dio@50020800 {
++			compatible = "promess,pro_module_dio";
++			reg = <50020800 2>;
++		};
++
++		// 16-bit flash device at LocalPlus Bus CS0
++		flash@ff000000 {
++			compatible = "cfi-flash";
++			reg = <ff000000 01000000>;
++			bank-width = <2>;
++			device-width = <2>;
++			#size-cells = <1>;
++			#address-cells = <1>;
++			partition@0 {
++				label = "fs";
++				reg = <0 d00000>;
++			};
++			partition@d00000 {
++				label = "kernel";
++				reg = <d00000 200000>;
++			};
++			partition@f00000 {
++				label = "uboot";
++				reg = <f00000 40000>;
++			};
++			partition@f40000 {
++				label = "env";
++				reg = <f40000 20000>;
++			};
++			partition@f60000 {
++				label = "redund_env";
++				reg = <f60000 20000>;
++			};
++			partition@f80000 {
++				label = "dtb";
++				reg = <f80000 20000>;
++			};
++			partition@fa0000 {
++				label = "user_data";
++				reg = <fa0000 60000>;
++			};
++		};
++	};
++
++	pci@f0000d00 {
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		compatible = "mpc5200b-pci","mpc5200-pci";
++		reg = <f0000d00 100>;
++		interrupt-map-mask = <f800 0 0 7>;
++		interrupt-map = <c000 0 0 1 &mpc5200_pic 0 0 3 // 1st slot
++				 c000 0 0 2 &mpc5200_pic 1 1 3
++				 c000 0 0 3 &mpc5200_pic 1 2 3
++				 c000 0 0 4 &mpc5200_pic 1 3 3
++
++				 c800 0 0 1 &mpc5200_pic 1 1 3 // 2nd slot
++				 c800 0 0 2 &mpc5200_pic 1 2 3
++				 c800 0 0 3 &mpc5200_pic 1 3 3
++				 c800 0 0 4 &mpc5200_pic 0 0 3>;
++		clock-frequency = <0>; // From boot loader
++		interrupts = <2 8 0 2 9 0 2 a 0>;
++		interrupt-parent = <&mpc5200_pic>;
++		bus-range = <0 0>;
++		ranges = <42000000 0 80000000 80000000 0 20000000
++			  02000000 0 a0000000 a0000000 0 10000000
++			  01000000 0 00000000 b0000000 0 01000000>;
++	};
++};
