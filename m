@@ -1,31 +1,33 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from arnor.apana.org.au (rhun.apana.org.au [64.62.148.172])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31627DDE9C
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 13:27:24 +1000 (EST)
-Date: Tue, 23 Oct 2007 11:26:25 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [IRQ]: Fix synchronize_irq races with IRQ handler
-Message-ID: <20071023032625.GA26559@gondor.apana.org.au>
-References: <alpine.LFD.0.999.0710181549330.26902@woody.linux-foundation.org>
-	<1192749449.7367.51.camel@pasglop>
-	<alpine.LFD.0.999.0710181627091.26902@woody.linux-foundation.org>
-	<20071019023219.GB8453@gondor.apana.org.au>
-	<alpine.LFD.0.999.0710181941020.26902@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0710182007170.26902@woody.linux-foundation.org>
-	<20071019042025.GA9617@gondor.apana.org.au>
-	<20071019044806.GA10080@gondor.apana.org.au>
-	<1192769910.7367.106.camel@pasglop>
-	<1193001005.6745.34.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1193001005.6745.34.camel@pasglop>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 35660DDE3C
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 13:38:35 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l9N3cTP4004216
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 20:38:29 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9N3cRSc028564
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Oct 2007 22:38:28 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
+Date: Tue, 23 Oct 2007 11:38:25 +0800
+Message-ID: <989B956029373F45A0B8AF0297081890019B5E2E@zch01exm26.fsl.freescale.net>
+In-Reply-To: <598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
+References: <1192745713-20829-1-git-send-email-Emilian.Medve@Freescale.com><20071018.173032.48505868.davem@davemloft.net><598D5675D34BE349929AF5EDE9B03E270168520B@az33exm24.fsl.freescale.net>
+	<20071019.164143.75786621.davem@davemloft.net>
+	<598D5675D34BE349929AF5EDE9B03E2701685446@az33exm24.fsl.freescale.net>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>,
+	"David Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,81 +37,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 22, 2007 at 07:10:05AM +1000, Benjamin Herrenschmidt wrote:
->
-> Hrm... not on yet. Herbert, care to resend, looks like it fell down the
-> wrong hole in Linus mailbox :-)
+> -----Original Message-----
+> From: Medve Emilian-EMMEDVE1=20
+> Sent: Monday, October 22, 2007 9:48 PM
+> To: David Miller
+> Cc: jgarzik@pobox.com; Li Yang-r58472;=20
+> netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: RE: [PATCH] [POWERPC] ucc_geth: Eliminate compile warnings
+>=20
+> Hello David,
+>=20
+>=20
+> > No piece of code in the kernel should live in a vacuum.
+> >=20
+> > In order to improve overall code quality, every piece of=20
+> driver code=20
+> > should avoid assuming things about pointer sizes and things of this=20
+> > nature.
+>=20
+> I'm afraid we might be talking about orthogonal issues here.=20
+> I actively agree that all code (not only kernel) should be=20
+> written up to the coding/quality standards you mention above,=20
+> but I see a difference between fixing a warning and making a=20
+> driver portable (to 64-bit PowerPCs, to other platforms,=20
+> etc.). If there is a kernel todo list somewhere lets add to=20
+> it the task to make the ucc_geth more portable.
+>=20
+> > Then the driver can get enabled into the build on every=20
+> platform, and=20
+> > therefore nobody will break the build of this driver again since it=20
+> > will get hit by "allmodconfig"
+> > et al. builds even on platforms other than the one it is meant for.
+> >=20
+> > This hack fix is not acceptable, really.
+>=20
+> Are you suggesting we leave those warnings there until=20
+> somebody decides to fix all the portability issues of this=20
+> driver? My patch is a small and insignificant improvement and=20
+> not the revolution you're asking for, but is an small=20
+> improvement today (I dislike warnings) vs. an improbable big=20
+> one in the future.
 
-Thanks for the reminder Ben.  Here it is again:
+I'd say we can not use our way of doing things while working with the
+community.  The community has to consider the kernel as a whole and thus
+has its own virtue.  The warning has been there for some time.  It stays
+as an indicator that we have something to do to improve the portability.
+I will work on a patch to fix this portability issue.
 
-[IRQ]: Fix synchronize_irq races with IRQ handler
-
-As it is some callers of synchronize_irq rely on memory barriers
-to provide synchronisation against the IRQ handlers.  For example,
-the tg3 driver does
-
-	tp->irq_sync = 1;
-	smp_mb();
-	synchronize_irq();
-
-and then in the IRQ handler:
-
-	if (!tp->irq_sync)
-		netif_rx_schedule(dev, &tp->napi);
-
-Unfortunately memory barriers only work well when they come in
-pairs.  Because we don't actually have memory barriers on the
-IRQ path, the memory barrier before the synchronize_irq() doesn't
-actually protect us.
-
-In particular, synchronize_irq() may return followed by the
-result of netif_rx_schedule being made visible.
-
-This patch (mostly written by Linus) fixes this by using spin
-locks instead of memory barries on the synchronize_irq() path.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 80eab7a..1f31422 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -29,12 +29,28 @@
- void synchronize_irq(unsigned int irq)
- {
- 	struct irq_desc *desc = irq_desc + irq;
-+	unsigned int status;
- 
- 	if (irq >= NR_IRQS)
- 		return;
- 
--	while (desc->status & IRQ_INPROGRESS)
--		cpu_relax();
-+	do {
-+		unsigned long flags;
-+
-+		/*
-+		 * Wait until we're out of the critical section.  This might
-+		 * give the wrong answer due to the lack of memory barriers.
-+		 */
-+		while (desc->status & IRQ_INPROGRESS)
-+			cpu_relax();
-+
-+		/* Ok, that indicated we're done: double-check carefully. */
-+		spin_lock_irqsave(&desc->lock, flags);
-+		status = desc->status;
-+		spin_unlock_irqrestore(&desc->lock, flags);
-+
-+		/* Oops, that failed? */
-+	} while (status & IRQ_INPROGRESS);
- }
- EXPORT_SYMBOL(synchronize_irq);
- 
+- Leo
