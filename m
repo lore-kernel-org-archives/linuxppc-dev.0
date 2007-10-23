@@ -4,15 +4,17 @@ Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E35C3DDE17
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 07:23:54 +1000 (EST)
-Date: Tue, 23 Oct 2007 16:24:04 -0500
+	by ozlabs.org (Postfix) with ESMTP id 1A63FDDE26
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 07:24:30 +1000 (EST)
+Date: Tue, 23 Oct 2007 16:24:41 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 1/7] Implement arch disable/enable irq hooks.
-Message-ID: <20071023212404.GA30942@loki.buserror.net>
+Subject: [PATCH 2/7] pm: Add TLF_SLEEPING hack to delay interrupt delivery
+	when waking from sleep.
+Message-ID: <20071023212441.GA30959@loki.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071023212404.GA30942@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,102 +25,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These hooks ensure that a decrementer interrupt is not pending when
-suspending; otherwise, problems may occur.  For example, with deep sleep
-on the 831x, a pending decrementer will cause a system freeze because the
-SoC thinks the decrementer interrupt would have woken the system, but the
-core must have interrupts disabled due to the setup required for deep
-sleep.
+The e300 core (and probably most other 6xx chips) can only come out of
+sleep mode with an interrupt.  However, interrupts are logically disabled
+by the power management layer.
+
+This hack extends the existing doze/nap hack to also suppress the running
+of the interrupt handler when in sleep mode.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-Please queue these patches for 2.6.25 if they do not offend.
+ arch/powerpc/kernel/entry_32.S    |    6 ++--
+ arch/powerpc/kernel/idle_6xx.S    |   41 ++++++++++++++++++++++++++++++++++++-
+ include/asm-powerpc/thread_info.h |    2 +
+ 3 files changed, 45 insertions(+), 4 deletions(-)
 
- arch/powerpc/kernel/time.c    |   41 +++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/machdep.h |   13 +++++++++++++
- 2 files changed, 54 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 9eb3284..5e2a39b 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -647,6 +647,47 @@ void wakeup_decrementer(void)
- 	set_dec(ticks);
- }
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 21d889e..85710b7 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -138,8 +138,8 @@ transfer_to_handler:
+ #ifdef CONFIG_6xx
+ 	tophys(r9,r9)			/* check local flags */
+ 	lwz	r12,TI_LOCAL_FLAGS(r9)
+-	mtcrf	0x01,r12
+-	bt-	31-TLF_NAPPING,4f
++	andi.	r8, r12, _TLF_NAPPING | _TLF_SLEEPING
++	bne-	4f
+ #endif /* CONFIG_6xx */
+ 	.globl transfer_to_handler_cont
+ transfer_to_handler_cont:
+@@ -154,7 +154,7 @@ transfer_to_handler_cont:
+ 	RFI				/* jump to handler, enable MMU */
+ 
+ #ifdef CONFIG_6xx
+-4:	rlwinm	r12,r12,0,~_TLF_NAPPING
++4:	rlwinm	r12,r12,0,~(_TLF_NAPPING | _TLF_SLEEPING)
+ 	stw	r12,TI_LOCAL_FLAGS(r9)
+ 	b	power_save_6xx_restore
+ #endif
+diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
+index 01bcd52..341f474 100644
+--- a/arch/powerpc/kernel/idle_6xx.S
++++ b/arch/powerpc/kernel/idle_6xx.S
+@@ -147,16 +147,30 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	b	1b
  
 +#ifdef CONFIG_SUSPEND
-+void generic_suspend_disable_irqs(void)
-+{
-+	preempt_disable();
++ret_from_sleep:
++	.long	ret_from_except
++	.long	ret_from_except
++#endif
 +
-+	/* Disable the decrementer, so that it doesn't interfere
-+	 * with suspending.
-+	 */
-+
-+	set_dec(0x7fffffff);
-+	hard_irq_disable();
-+	set_dec(0x7fffffff);
-+}
-+
-+void generic_suspend_enable_irqs(void)
-+{
-+	wakeup_decrementer();
-+
-+	local_irq_enable();
-+	preempt_enable();
-+}
-+
-+/* Overrides the weak version in kernel/power/main.c */
-+void arch_suspend_disable_irqs(void)
-+{
-+	if (ppc_md.suspend_disable_irqs)
-+		ppc_md.suspend_disable_irqs();
-+	else
-+		generic_suspend_disable_irqs();
-+}
-+
-+/* Overrides the weak version in kernel/power/main.c */
-+void arch_suspend_enable_irqs(void)
-+{
-+	if (ppc_md.suspend_enable_irqs)
-+		ppc_md.suspend_enable_irqs();
-+	else
-+		generic_suspend_enable_irqs();
-+}
+ /*
+  * Return from NAP/DOZE mode, restore some CPU specific registers,
+  * we are called with DR/IR still off and r2 containing physical
+  * address of current.  R11 points to the exception frame (physical
+- * address).  We have to preserve r10.
++ * address).  r8 contains _TLF_NAPPING or _TLF_SLEEPING.  We have to
++ * preserve r10.
+  */
+ _GLOBAL(power_save_6xx_restore)
+ 	lwz	r9,_LINK(r11)		/* interrupted in ppc6xx_idle: */
++#ifdef CONFIG_SUSPEND
++	andi.	r12, r8, _TLF_SLEEPING
++#endif
+ 	stw	r9,_NIP(r11)		/* make it do a blr */
+ 
++#ifdef CONFIG_SUSPEND
++	bne-	sleep_6xx_restore
 +#endif
 +
  #ifdef CONFIG_SMP
- void __init smp_space_timers(unsigned int max_cpus)
- {
-diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
-index 6968f43..15ba15a 100644
---- a/include/asm-powerpc/machdep.h
-+++ b/include/asm-powerpc/machdep.h
-@@ -253,6 +253,16 @@ struct machdep_calls {
- 	 */
- 	void (*machine_kexec)(struct kimage *image);
- #endif /* CONFIG_KEXEC */
-+
+ 	mfspr	r12,SPRN_SPRG3
+ 	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
+@@ -185,6 +199,31 @@ BEGIN_FTR_SECTION
+ END_FTR_SECTION_IFSET(CPU_FTR_DUAL_PLL_750FX)
+ 	b	transfer_to_handler_cont
+ 
 +#ifdef CONFIG_SUSPEND
-+	/* These are called to disable and enable, respectively, IRQs when
-+	 * entering a suspend state.  If NULL, then the generic versions
-+	 * will be called.  The generic versions disable/enable the
-+	 * decrementer along with interrupts.
++sleep_6xx_restore:
++	/*
++	 * SLEEP mode is invoked through the PM subsystem, which means
++	 * that interrupts should be disabled.  However, the hardware
++	 * requires them to be enabled to wake up.  To prevent the
++	 * interrupt from being visible to Linux, return immediately
++	 * rather than run the interrupt handler.
 +	 */
-+	void (*suspend_disable_irqs)(void);
-+	void (*suspend_enable_irqs)(void);
-+#endif
- };
- 
- extern void power4_idle(void);
-@@ -326,5 +336,8 @@ static inline void log_error(char *buf, unsigned int err_type, int fatal)
- 		ppc_md.log_error(buf, err_type, fatal);
- }
- 
-+void generic_suspend_disable_irqs(void);
-+void generic_suspend_enable_irqs(void);
++	lis	r9, ret_from_sleep@h
++	ori	r9, r9, ret_from_sleep@l
++	tophys(r9, r9)
++	mtlr	r9
 +
++	/*
++	 * Disable interrupts, so that the interrupt doesn't happen
++	 * again until the PM code sets MSR[EE].
++	 */
++	lwz	r9, _MSR(r11)
++	rlwinm	r9, r9, 0, ~MSR_EE
++	stw	r9, _MSR(r11)
++
++	b	transfer_to_handler_cont
++#endif
++
+ 	.data
+ 
+ _GLOBAL(nap_save_msscr0)
+diff --git a/include/asm-powerpc/thread_info.h b/include/asm-powerpc/thread_info.h
+index 40d5f98..f7cb48b 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -151,8 +151,10 @@ static inline struct thread_info *current_thread_info(void)
+ /* Bits in local_flags */
+ /* Don't move TLF_NAPPING without adjusting the code in entry_32.S */
+ #define TLF_NAPPING		0	/* idle thread enabled NAP mode */
++#define TLF_SLEEPING		1	/* suspend code enabled SLEEP mode */
+ 
+ #define _TLF_NAPPING		(1 << TLF_NAPPING)
++#define _TLF_SLEEPING		(1 << TLF_SLEEPING)
+ 
  #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_MACHDEP_H */
+ 
 -- 
 1.5.3.4
