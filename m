@@ -1,20 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 6F23BDDF13
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 17:16:31 +1000 (EST)
-Date: Wed, 24 Oct 2007 17:16:19 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 03/11] [POWERPC] Add common mpc52xx_setup_pci() routine
-Message-Id: <20071024171619.465d501f.sfr@canb.auug.org.au>
-In-Reply-To: <20071023231321.29359.96506.stgit@hekate.izotz.org>
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231321.29359.96506.stgit@hekate.izotz.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9AB13DDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:06:07 +1000 (EST)
+Subject: [PATCH] fix powerpc breakage in sg chaining code (again)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain
+Date: Tue, 23 Oct 2007 23:00:22 +0200
+Message-Id: <1193173222.7733.42.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b"
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Jens Axboe <jens.axboe@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Commit 33ff910f0f466184ffc3514628f18403dcd86761 fixed commit
+78bdc3106a877cfa50439fa66b52acbc4e7868df but the code that got put in
+uses struct scatterlist->page which no longer exists since commit
+18dabf473e15850c0dbc8ff13ac1e2806d542c15 which requires using
+sg_page(sg) instead of sg->page.
 
-On Wed, 24 Oct 2007 01:13:21 +0200 Marian Balakowicz <m8@semihalf.com> wrot=
-e:
->
-> +++ b/arch/powerpc/platforms/52xx/lite5200.c
-> @@ -155,11 +155,7 @@ static void __init lite5200_setup_arch(void)
->  #endif
-> =20
->  #ifdef CONFIG_PCI
-> -	np =3D of_find_node_by_type(NULL, "pci");
-> -	if (np) {
-> -		mpc52xx_add_bridge(np);
-> -		of_node_put(np);
-> -	}
-> +	mpc52xx_setup_pci();
->  #endif
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+If it was fixed before please ignore, I just ran into this.
 
-Normally we would have no "#ifdef CONFIG_PCI" here but instead define a
-
-static inline void mpc52xx_setup_pci(void) { }
-
-in the header file for the non PCI case.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHHvFNTgG2atn1QN8RAltcAJsF3bGxJYfp00AenhVMRJgRk5g3BgCbB1sx
-VO2SWsLtc6+E/Hs53PXrTXA=
-=RBzq
------END PGP SIGNATURE-----
-
---Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b--
+--- linux-2.6.orig/include/asm/dma-mapping.h	2007-10-23 22:55:33.551133142 +0200
++++ linux-2.6/include/asm/dma-mapping.h	2007-10-23 22:56:07.081133142 +0200
+@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct sc
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i) {
+-		BUG_ON(!sg->page);
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
+-		sg->dma_address = page_to_bus(sg->page) + sg->offset;
++		BUG_ON(!sg_page(sg));
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
++		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
+ 	}
+ 
+ 	return nents;
+@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(s
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_devic
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sgl, sg, nents, i)
+-		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
++		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+ }
+ 
+ static inline int dma_mapping_error(dma_addr_t dma_addr)
