@@ -1,32 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37373DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 08:47:19 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9NMlEXM010406
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 18:47:14 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9NMlElm043174
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 18:47:14 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9NMlEE8023792
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 18:47:14 -0400
-Subject: Re: [PATCH 1/7] Implement arch disable/enable irq hooks.
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <471E68E2.3040008@freescale.com>
-References: <20071023212404.GA30942@loki.buserror.net>
-	<20071023163301.4857393e@weaponx.rchland.ibm.com>
-	<471E68E2.3040008@freescale.com>
-Content-Type: text/plain
-Date: Tue, 23 Oct 2007 17:45:02 -0500
-Message-Id: <1193179502.25515.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id 1AC3DDDF05
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 09:13:28 +1000 (EST)
+Received: from localhost (unknown [127.0.0.1])
+	by mail.semihalf.com (Postfix) with ESMTP id F197414311
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:13:27 +0200 (CEST)
+Received: from mail.semihalf.com ([127.0.0.1])
+	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 15423-05 for <linuxppc-dev@ozlabs.org>;
+	Wed, 24 Oct 2007 01:13:26 +0200 (CEST)
+Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
+	by mail.semihalf.com (Postfix) with ESMTP id BF634142C1
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 01:13:26 +0200 (CEST)
+From: Marian Balakowicz <m8@semihalf.com>
+Subject: [PATCH 00/11] [POWERPC] Add TQM5200/CM5200/Motion-PRO board support
+To: linuxppc-dev@ozlabs.org
+Date: Wed, 24 Oct 2007 01:13:03 +0200
+Message-ID: <20071023231302.29359.27417.stgit@hekate.izotz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,36 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-10-23 at 16:34 -0500, Scott Wood wrote:
-> Josh Boyer wrote:
-> >> +#ifdef CONFIG_SUSPEND
-> >> +void generic_suspend_disable_irqs(void)
-> >> +{
-> >> +	preempt_disable();
-> >> +
-> >> +	/* Disable the decrementer, so that it doesn't interfere
-> >> +	 * with suspending.
-> >> +	 */
-> >> +
-> >> +	set_dec(0x7fffffff);
-> >> +	hard_irq_disable();
-> >> +	set_dec(0x7fffffff);
-> >> +}
-> >> +
-> >> +void generic_suspend_enable_irqs(void)
-> >> +{
-> >> +	wakeup_decrementer();
-> >> +
-> >> +	local_irq_enable();
-> >> +	preempt_enable();
-> >> +}
-> > 
-> > Should these be static functions?  Seems so...
-> 
-> I was asked to make them available to be called by non-generic 
-> implementations.
+This is a reworked set of patches that adds arch/powerpc support for
+three MPC5200 based boards: TQ-Components TQM5200, Schindler CM5200
+and Promess Motion-PRO.
 
-Perhaps it's just me, but the names seem a bit _too_ generic if they
-aren't going to be static functions.  Maybe I'm paranoid.
+Besides board support there are also few more MPC5200 common patches
+that include update to show_cpuinfo(), adding new 'lpb' bus,
+moving lite pci init code to common routine and adding platform support
+for 'generic-mpc5200' compatible boards. All the above mentioned boards
+use this generic support.
 
-josh
+[POWERPC] Promess Motion-PRO defconfig
+[POWERPC] Promess Motion-PRO DTS
+[POWERPC] Motion-PRO: Add LED support.
+[POWERPC] CM5200 defconfig
+[POWERPC] CM5200 DTS
+[POWERPC] TQM5200 defconfig
+[POWERPC] TQM5200 DTS
+[POWERPC] Add generic support for MPC5200 based boards
+[POWERPC] Add common mpc52xx_setup_pci() routine
+[POWERPC] Add 'lpb' bus type for MPC5200 LocalPlus Bus
+[POWERPC] Add 'machine: ...' line to common show_cpuinfo()
+
+Will appreciate review comments.
+
+Cheers,
+m.
