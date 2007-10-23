@@ -1,19 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B0E8EDDECA
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:02:50 +1000 (EST)
-Date: Mon, 22 Oct 2007 23:09:48 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: powerpc: Fix fallout from sg_page() changes
-Message-ID: <20071023040948.GA19699@lixom.net>
-References: <1193076664-13652-1-git-send-email-jens.axboe@oracle.com>
-	<1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1193076664-13652-10-git-send-email-jens.axboe@oracle.com>
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <Monstr@seznam.cz>
+Received: from mxh.seznam.cz (mxh.seznam.cz [77.75.72.26])
+	by ozlabs.org (Postfix) with SMTP id E0D0EDDE30
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 14:07:59 +1000 (EST)
+In-Reply-To: <20071022180700.8B3938E0088@mail19-fra.bigfish.com>
+Date: Tue, 23 Oct 2007 06:07:56 +0200 (CEST)
+To: microblaze-uclinux@itee.uq.edu.au
+From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
+Subject: =?us-ascii?Q?RE=3A=20=5Bmicroblaze=2Duclinux=5D=20Re=3A=20=5Bmicroblaze=2Duclinux=5D=20RE=3A=20=5BPATCH=20v3=5D=20Device=20tree=20bindings=20for=20Xilinx=20devices?=
+Mime-Version: 1.0
+Message-Id: <1837.2996-6584-798350907-1193112476@seznam.cz>
+Content-Type: text/plain;
+	charset="us-ascii"
+Cc: Leonid <Leonid@a-k-a.net>,
+	=?us-ascii?Q?Wolfgang=20Reissnegger?= <wre@xilinx.com>,
+	=?us-ascii?Q?Arnd=20Bergmann?= <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,71 +23,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix fallout from 18dabf473e15850c0dbc8ff13ac1e2806d542c15:
+>> In my opinion will be better generate only parameters which 
+>> you want not all.
+>> That smells with unusable parameters.
+>
+>In the long term, this may be true.  In the short term:
+>1) dtb size is not the key problem
+Yes of course
+>2) making sure that everything works is a key problem.
+>3) The code that generates the dts should be as simple as possible,
+>so that we can easily document what it does.
+Yes but you must document every parameter which your generate do. The better way is 
+document only parameters which you want use.
 
-In file included from include/linux/dma-mapping.h:52,
-                 from drivers/base/dma-mapping.c:10:
-include/asm/dma-mapping.h: In function 'dma_map_sg':
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:288: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:289: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h:290: error: 'struct scatterlist' has no member named 'page'
-include/asm/dma-mapping.h: In function 'dma_sync_sg_for_cpu':
-include/asm/dma-mapping.h:331: error: 'struct scatterlist' has no member named 'page'
+>In the long term, I'm all for optimizing the device tree that gets
+>built,
+>assuming that it appears to be a problem in real systems.
+We can optimize now. I made new version of my generator  u-boot_v3_00_a (monstr.eu)
+where you can simply add parameter which you want to use. 
 
-drivers/scsi/ps3rom.c: In function 'fetch_to_dev_buffer':
-drivers/scsi/ps3rom.c:150: error: 'struct scatterlist' has no member named 'page'
+If you want use any parameter add it. 
+For microblaze cpu - line 1184. 
+And for others peripherals lines 926-980. (The last parameter of function call).
 
+Which parameters do you want for PPC405, Grant?
 
+Regards,
+Michal Simek
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+This is example of generator.
 
-diff --git a/include/asm-powerpc/dma-mapping.h b/include/asm-powerpc/dma-mapping.h
-index 65be95d..ff52013 100644
---- a/include/asm-powerpc/dma-mapping.h
-+++ b/include/asm-powerpc/dma-mapping.h
-@@ -285,9 +285,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i) {
--		BUG_ON(!sg->page);
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
--		sg->dma_address = page_to_bus(sg->page) + sg->offset;
-+		BUG_ON(!sg_page(sg));
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
- 	}
- 
- 	return nents;
-@@ -328,7 +328,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline void dma_sync_sg_for_device(struct device *dev,
-@@ -341,7 +341,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
- 	BUG_ON(direction == DMA_NONE);
- 
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg->page, sg->offset, sg->length, direction);
-+		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
- }
- 
- static inline int dma_mapping_error(dma_addr_t dma_addr)
-diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
-index 03f19b8..17b4a7c 100644
---- a/drivers/scsi/ps3rom.c
-+++ b/drivers/scsi/ps3rom.c
-@@ -147,7 +147,7 @@ static int fetch_to_dev_buffer(struct scsi_cmnd *cmd, void *buf)
- 
- 	req_len = fin = 0;
- 	scsi_for_each_sg(cmd, sgpnt, scsi_sg_count(cmd), k) {
--		kaddr = kmap_atomic(sg_page(sgpnt->page), KM_IRQ0);
-+		kaddr = kmap_atomic(sg_page(sgpnt), KM_IRQ0);
- 		len = sgpnt->length;
- 		if ((req_len + len) > buflen) {
- 			len = buflen - req_len;
+/ {
+	model = "mONStR";
+	chosen {
+		linux,platform = <600>;
+		bootargs = "root=/dev/xsysace/disc0/part2";
+	} ;
+	cpus {
+		#size-cells = <0>;
+		#cpus = < 0 >;
+		#address-cells = <1>;
+		microblaze_0,5.00.c {
+			32-bit;
+			linux,boot-cpu;
+			device_type = "cpu";
+			reg = <0>;
+			clock-frequency = <5f5e1000>;
+			timebase-frequency = <1FCA055>;
+			i-cache-line-size = <2000>;
+			i-cache-size = <10>;
+			d-cache-line-size = <2000>;
+			d-cache-size = <10>;
+			xilinx,pvr = <0>;
+			xilinx,debug-enabled = <1>;
+			xilinx,fsl-links = <0>;
+		} ;
+	} ;
+
+	opb_mdm@41400000 {
+		compatible = "opb_mdm_2.00.a\0opb_mdm";
+		name = "debug_module";
+		reg = < 41400000 10000 >;
+		device_type = "opb_mdm";
+		xilinx,mb-dbg-ports = <1>;
+		xilinx,uart-width = <8>;
+		xilinx,use-uart = <1>;
+	} ;
+	opb_uartlite@40600000 {
+		compatible = "opb_uartlite_1.00.b\0opb_uartlite";
+		name = "RS232_Uart_1";
+		interrupts = < 4 0 >;
+		reg = < 40600000 10000 >;
+		device_type = "opb_uartlite";
+		xilinx,baudrate = <2580>;
+		xilinx,data-bits = <8>;
+		xilinx,clk-freq = <5f5e100>;
+		xilinx,odd-parity = <0>;
+		xilinx,use-parity = <0>;
+	} ;
+	opb_ethernet@40c00000 {
+		compatible = "opb_ethernet_1.04.a\0opb_ethernet";
+		name = "Ethernet_MAC";
+		interrupts = < 3 0 >;
+		reg = < 40c00000 10000 >;
+		device_type = "opb_ethernet";
+		xilinx,cam-exist = <0>;
+		xilinx,dev-blk-id = <1>;
+		xilinx,dev-mir-enable = <1>;
+		xilinx,dma-present = <1>;
+		xilinx,include-dev-pencoder = <1>;
+		xilinx,ipif-rdfifo-depth = <8000>;
+		xilinx,ipif-wrfifo-depth = <8000>;
+		xilinx,mii-exist = <1>;
+	} ;
+	opb_sysace@41820000 {
+		compatible = "opb_sysace_1.00.c\0opb_sysace";
+		name = "SysACE_CompactFlash";
+		reg = < 41820000 10000 >;
+		device_type = "opb_sysace";
+		xilinx,mem-width = <10>;
+	} ;
+	opb_gpio@40000000 {
+		compatible = "opb_gpio_3.01.b\0opb_gpio";
+		name = "LEDs_4Bit";
+		reg = < 40000000 10000 >;
+		device_type = "opb_gpio";
+		xilinx,gpio-width = <4>;
+		xilinx,is-dual = <0>;
+	} ;
+	memory@30000000 {
+		edk_name = "DDR_256MB_32MX64_rank1_row13_col10_cl2_5";
+		compatible = "opb_ddr";
+		memreg:reg = < 30000000 10000000 >;
+		device_type = "memory";
+	} ;
+	opb_ps2_dual_ref@7a400000 {
+		compatible = "opb_ps2_dual_ref_1.00.a\0opb_ps2_dual_ref";
+		name = "PS2_Ports";
+		interrupts = < 2 0 >;
+		interrupts = < 1 0 >;
+		reg = < 7a400000 10000 >;
+		device_type = "opb_ps2_dual_ref";
+	} ;
+	opb_timer@41c00000 {
+		compatible = "opb_timer_1.00.b\0opb_timer";
+		name = "opb_timer_1";
+		interrupts = < 0 0 >;
+		reg = < 41c00000 10000 >;
+		device_type = "opb_timer";
+		xilinx,count-width = <20>;
+		xilinx,one-timer-only = <0>;
+	} ;
+	opb_intc@41200000 {
+		compatible = "opb_intc_1.00.c\0opb_intc";
+		name = "opb_intc_0";
+		reg = < 41200000 10000 >;
+		device_type = "opb_intc";
+	} ;
+	opb_uart16550@40400000 {
+		compatible = "opb_uart16550_1.00.d\0opb_uart16550";
+		name = "opb_uart16550_0";
+		reg = < 40400000 10000 >;
+		device_type = "opb_uart16550";
+	} ;
+	opb_sysace@41800000 {
+		compatible = "opb_sysace_1.00.c\0opb_sysace";
+		name = "opb_sysace_0";
+		reg = < 41800000 10000 >;
+		device_type = "opb_sysace";
+		xilinx,mem-width = <10>;
+	} ;
+} ;
