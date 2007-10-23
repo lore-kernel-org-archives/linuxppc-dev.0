@@ -1,35 +1,15 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EFC9BDDF89
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 02:29:23 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9NGTL20021031
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 12:29:21 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9NGQD21095168
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:29:20 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9NGH8In004538
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2007 10:17:09 -0600
-Date: Tue, 23 Oct 2007 11:17:06 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support to
-	NEW EMAC.
-Message-ID: <20071023111706.2af5735d@weaponx.rchland.ibm.com>
-In-Reply-To: <38505C5B-4252-4AA7-B4F5-6B5267A6DBAA@kernel.crashing.org>
-References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
-	<20071023102035.6d35d3fe@weaponx.rchland.ibm.com>
-	<38505C5B-4252-4AA7-B4F5-6B5267A6DBAA@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <471E12C7.8020509@freescale.com>
+References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
+	<471E12C7.8020509@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8416ea754e013a67441aec778c81ad73@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Audio codec device tree entries
+Date: Tue, 23 Oct 2007 18:56:04 +0200
+To: Timur Tabi <timur@freescale.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,30 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 23 Oct 2007 11:13:48 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
+>> First example is ac97 audio:
+>>
+>> ac97@2000 {           // PSC1
 
-> 
-> On Oct 23, 2007, at 10:20 AM, Josh Boyer wrote:
-> 
-> > On Mon, 15 Oct 2007 14:27:23 -0400
-> > Jeff Garzik <jeff@garzik.org> wrote:
-> >
-> >> Valentine Barshak wrote:
-> >>> This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW  
-> >>> EMAC driver.
-> >>> These PHY chips are used on PowerPC 440EPx boards.
-> >>> The PHY code is based on the previous work by Stefan Roese  
-> >>> <sr@denx.de>
-> >>>
-> >>> Signed-off-by: Stefan Roese <sr@denx.de>
-> >>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> >>> ---
-> 
-> You guys should really look at moving emac over to the phylib so we  
-> don't have to duplicate drivers for the same phys all over the place :)
+> I think the codec node should be a child of this node, not a separate 
+> node.
+> Then there should be another codec node as a child of the i2c node.
 
-Yes, we should.  It's on the list.  Just not for 2.6.24 since it's way
-too late.
+AC'97 codecs don't typically have an I2C connection (if ever).
 
-josh
+You shouldn't have two device nodes for the same device if ever you
+can help it; instead, have the device's sole device node contain a
+property that points to the device node of its secondary bus.  That
+property could be called "i2s-handle" for a standard codec (which
+probably is a direct child of an IIC bus, itself).
+
+
+Segher
