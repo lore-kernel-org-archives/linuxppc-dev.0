@@ -1,19 +1,20 @@
-Return-Path: <barisa.kisku@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.233])
-	by ozlabs.org (Postfix) with ESMTP id AF207DDF28
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Oct 2007 20:22:20 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so1010300wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Oct 2007 03:22:19 -0700 (PDT)
-Message-ID: <80bb1bc60710230322t17fa517bt324031195abced24@mail.gmail.com>
-Date: Tue, 23 Oct 2007 15:52:18 +0530
-From: "Barisa Kisku" <barisa.kisku@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Kernel function having physical address. how?
+Return-Path: <mahendravarman15@gmail.com>
+Received: from rn-out-0102.google.com (rn-out-0910.google.com [64.233.170.184])
+	by ozlabs.org (Postfix) with ESMTP id B553FDDF6A
+	for <linuxppc-embedded@ozlabs.org.>;
+	Wed, 24 Oct 2007 00:51:26 +1000 (EST)
+Received: by rn-out-0102.google.com with SMTP id e25so660092rng
+	for <linuxppc-embedded@ozlabs.org.>;
+	Tue, 23 Oct 2007 07:51:25 -0700 (PDT)
+Message-ID: <4ac2955e0710230751ibdfb52dwe8e37b49986ddb98@mail.gmail.com>
+Date: Tue, 23 Oct 2007 20:21:24 +0530
+From: "mahendra varman" <mahendravarman15@gmail.com>
+To: XFree86@xfree86.org, xorg@lists.freedesktop.org,
+	linuxppc-embedded@ozlabs.org., linux-kernel@vger.kernel.org
+Subject: Root file system for powerpc 74xx board
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_269_4192556.1193134938189"
+	boundary="----=_Part_375_1745777.1193151084992"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,48 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_269_4192556.1193134938189
+------=_Part_375_1745777.1193151084992
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-hi,
+Hi All
 
-I have  ported linux-2.6.20 in cutom board based on MPC860.Kernel with the
-KERNELBASE as default 0xc00000000.
-uImage is downloaded at some address and booted with "bootm"
-command.Kernelis uncompressed and  loaded at
-0x00000000.All  the kernel function is now having physical address  (e.g.
-0x000020c8 instead of 0xc00020c8, which
-is given by compiler).I think this required, to run kernel before MMU is on,
-but how  this change in assembled code happens.
-Does u-boot do this when uncompressing and loading the kernel. Please
-comment.
+Iam a beginner/Learner in this field.
 
-thanks in advance.
+I have  Linux running on an intel x86 machine with cross development
+environment.
+I want to host 74xx file system  with Xfree86 and library support  on the
+intel machine.
 
-Barisa
+I will boot the file system using NFS to the 74xx system.
 
-------=_Part_269_4192556.1193134938189
+How to create/extract the file system with xfree86 support from fedora file
+system  ?
+
+
+Please help me on the above
+
+Thanks in advance
+Mahendra
+
+------=_Part_375_1745777.1193151084992
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-hi,<br>
-<br>
-I have&nbsp; ported linux-2.6.20 in cutom board based on MPC860.Kernel with the KERNELBASE as default 0xc00000000.<br>
-uImage is downloaded at some address and booted with &quot;bootm&quot; command.Kernel is uncompressed and&nbsp; loaded at <br>
-0x00000000.All&nbsp; the kernel function is now having physical
-address&nbsp; (e.g.&nbsp; 0x000020c8 instead of 0xc00020c8, which<br>
-is given by compiler).I think this required, to run kernel before MMU
-is on, but how&nbsp; this change in assembled code happens.<br>
-Does u-boot do this when uncompressing and loading the kernel. Please comment.<br>
-<br>
-thanks in advance.<br>
-<br>
-Barisa<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp; <br>
-<br>
+<br>Hi All<br><br>Iam a beginner/Learner in this field.<br><br>I have&nbsp; Linux running on an intel x86 machine with cross development environment.<br>I want to host 74xx file system&nbsp; with Xfree86 and library support&nbsp; on the intel machine.
+<br><br>I will boot the file system using NFS to the 74xx system.<br><br>How to create/extract the file system with xfree86 support from fedora file system&nbsp; ?<br><br><br>Please help me on the above<br><br>Thanks in advance
+<br>Mahendra<br><br><br>
 
-------=_Part_269_4192556.1193134938189--
+------=_Part_375_1745777.1193151084992--
