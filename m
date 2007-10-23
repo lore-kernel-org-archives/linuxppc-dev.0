@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DBFFDDFEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 02:15:12 +1000 (EST)
-In-Reply-To: <20071023102035.6d35d3fe@weaponx.rchland.ibm.com>
-References: <20071015175717.GA4602@ru.mvista.com> <4713B10B.5000607@garzik.org>
-	<20071023102035.6d35d3fe@weaponx.rchland.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <38505C5B-4252-4AA7-B4F5-6B5267A6DBAA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support to
-	NEW EMAC.
-Date: Tue, 23 Oct 2007 11:13:48 -0500
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 674E7DDFC9
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 02:25:11 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [microblaze-uclinux] Re: [microblaze-uclinux] RE: [PATCH v3]
+	Device tree bindings for Xilinx devices
+Date: Tue, 23 Oct 2007 09:25:02 -0700
+In-Reply-To: <1837.2996-6584-798350907-1193112476@seznam.cz>
+References: <20071022180700.8B3938E0088@mail19-fra.bigfish.com>
+	<1837.2996-6584-798350907-1193112476@seznam.cz>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Michal Simek" <Monstr@seznam.cz>,
+	<microblaze-uclinux@itee.uq.edu.au>
+Message-Id: <20071023162504.CAFF01690066@mail124-blu.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+=20
 
-On Oct 23, 2007, at 10:20 AM, Josh Boyer wrote:
+> -----Original Message-----
+> From:=20
+> linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.or
+> g=20
+> [mailto:linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@o
+zlabs.org] On Behalf Of Michal Simek
+> Sent: Monday, October 22, 2007 9:08 PM
+> To: microblaze-uclinux@itee.uq.edu.au
+> Cc: Leonid; Wolfgang Reissnegger; Arnd Bergmann;=20
+> linuxppc-dev@ozlabs.org
+> Subject: RE: [microblaze-uclinux] Re: [microblaze-uclinux]=20
+> RE: [PATCH v3] Device tree bindings for Xilinx devices
+>=20
+> >> In my opinion will be better generate only parameters which=20
+> >> you want not all.
+> >> That smells with unusable parameters.
+> >
+> >In the long term, this may be true.  In the short term:
+> >1) dtb size is not the key problem
+> Yes of course
+> >2) making sure that everything works is a key problem.
+> >3) The code that generates the dts should be as simple as possible,
+> >so that we can easily document what it does.
+> Yes but you must document every parameter which your generate=20
+> do. The better way is=20
+> document only parameters which you want use.
 
-> On Mon, 15 Oct 2007 14:27:23 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
->
->> Valentine Barshak wrote:
->>> This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW  
->>> EMAC driver.
->>> These PHY chips are used on PowerPC 440EPx boards.
->>> The PHY code is based on the previous work by Stefan Roese  
->>> <sr@denx.de>
->>>
->>> Signed-off-by: Stefan Roese <sr@denx.de>
->>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->>> ---
+No, that's exactly my point.  The generator should document what it
+*does*
+i.e.  When there is a parameter in the EDK file, then such and such
+corresponding parameter will be generated in the dts.  The devices and
+drivers
+will inevitably change over time: your proposal would result in
+an unnecessary maintenance headache...  The documentation of what the
+individual
+parameters are should be unambiguous from the EDK documentation.
 
-You guys should really look at moving emac over to the phylib so we  
-don't have to duplicate drivers for the same phys all over the place :)
+The only things that the generator should handle 'specially', in my
+opinion
+are parameters that need to be munged to be standard names.
 
-- k
+Steve
