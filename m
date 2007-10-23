@@ -1,23 +1,16 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9D9F2DDED0
+Return-Path: <raul.moreno@telvent.abengoa.com>
+Received: from c07.abengoa.com (envio.abengoa.com [217.15.37.68])
+	by ozlabs.org (Postfix) with ESMTP id D2C26DDF5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Oct 2007 14:08:23 +1000 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IkB3z-00082I-K1
-	for linuxppc-embedded@ozlabs.org; Mon, 22 Oct 2007 21:08:19 -0700
-Message-ID: <13357088.post@talk.nabble.com>
-Date: Mon, 22 Oct 2007 21:08:19 -0700 (PDT)
-From: Misbah khan <misbah_khan@engineer.com>
+	Tue, 23 Oct 2007 17:57:34 +1000 (EST)
+In-Reply-To: <f8f856500709130705t2109e559v19f0ffac318a4756@mail.gmail.com>
+Subject: DMA problem - mpc8xx
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Difference between ioremap() and phy_to_virt() Kernel function
-In-Reply-To: <200710221304.44275.arnd@arndb.de>
+Message-ID: <OF0ED90B65.60296006-ONC125737D.0028DB92-C125737D.002A55F3@abengoa.com>
+Date: Tue, 23 Oct 2007 09:42:43 +0200
+From: raul.moreno@telvent.abengoa.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <13339930.post@talk.nabble.com> <200710221304.44275.arnd@arndb.de>
+Content-type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,37 +21,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi everybody,
 
+I am having problems with the serial cpm driver in a mpc866. But I've f=
+ound
+out that my problem comes from the DMA and not really from the driver. =
+ The
+Rx and Tx buffers use the DMA and then the sytem hangs. However, if I s=
+et
+these buffers to internal ram memory (DPRAM), it works. The DMA address=
+ is
+configured with a kernel parameter in advance setup:
+CONFIG_CONSISTENT_START (and the size in CONFIG_CONSISTENT_SIZE), but I=
 
-Thanks Arnd 
+don't know what they are exactly and I could not find a right documenta=
+tion
+about it.
+I saw a pair of mailing list where some guys set the
+CONFIG_CONSISTENT_START to 0xff100000, but my driver continues failing =
+(and
+an error about dma-mapping appears in the boot).
 
-But i wish to know that could i use phy_to_virt() function in place io
-ioremap() ????? And could you give me an example where we could use
-phy_to_virt(). ioremap() implementation i have already done.
+Did anyone have a similar problem?
+Could anyone help me?
 
----Misbah
+Thanks in advance,
 
-
-Arnd Bergmann wrote:
-> 
-> On Monday 22 October 2007, Misbah khan wrote:
->> Could you Please let me know what is the difference between ioremap() and
->> phy_to_virt() function being provided by the Kernel.
-> 
-> ioremap gives you a new mapping for I/O addresses that you can access
-> with functions like in_be32 and the like.
-> 
-> phy_to_virt() is rarely used at all, it only serves to convert a physical
-> address for main memory (RAM) into the address used inside of the kernel.
-> 
-> 	Arnd <><
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
--- 
-View this message in context: http://www.nabble.com/Difference-between-ioremap%28%29-and-phy_to_virt%28%29-Kernel-function-tf4669833.html#a13357088
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Ra=FAl Moreno=
