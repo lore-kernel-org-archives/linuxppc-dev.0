@@ -1,24 +1,22 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <471F6C3F.10003@freescale.com>
-Date: Wed, 24 Oct 2007 11:01:03 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 7F629DDF36
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 02:26:34 +1000 (EST)
+Date: Wed, 24 Oct 2007 18:26:32 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: linux-2.6.git: cannot build PS3 image
+In-Reply-To: <47162BC4.2090907@freescale.com>
+Message-ID: <Pine.LNX.4.62.0710241820010.17958@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0710121152500.28100@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0710121531250.757@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0710171523120.19421@pademelon.sonytel.be>
+	<47162BC4.2090907@freescale.com>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Audio codec device tree entries
-References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>	
-	<471E12C7.8020509@freescale.com>	
-	<8416ea754e013a67441aec778c81ad73@kernel.crashing.org>	
-	<9e4733910710231529h1089eacdy888306f20af92555@mail.gmail.com>	
-	<471F52ED.10007@freescale.com>	
-	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>	
-	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>	
-	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>	
-	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>	
-	<fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
-	<9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
-In-Reply-To: <9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-2054510590-1193243192=:17958"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> It makes sense to me, there needs to be some way to trigger loading
-> the fabric driver.
+---584337861-2054510590-1193243192=:17958
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Well, you only really two have choices:
+On Wed, 17 Oct 2007, Scott Wood wrote:
+> Geert Uytterhoeven wrote:
+> >> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+> >> index 39b27e5..795f988 100755
+> >> --- a/arch/powerpc/boot/wrapper
+> >> +++ b/arch/powerpc/boot/wrapper
+> >> @@ -232,7 +232,7 @@ base=0x`${CROSS}nm "$ofile" | grep ' _start$' | cut -d' ' -f1`
+> >>  entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | cut -d' ' -f3`
+> >>  
+> >>  if [ -n "$binary" ]; then
+> >> -    mv "$ofile" "$ofile".elf
+> >> +    cp "$ofile" "$ofile".elf
+> >>      ${CROSS}objcopy -O binary "$ofile".elf "$ofile".bin
+> >>  fi
+> > 
+> > No comments?
+> 
+> That'd work in this case, though it'd probably be better to make the 
+> $ofile be the end result that will boot on the ps3, and leave a suffix 
+> on the intermediate files.
 
-1) Probe on the AC97/SSI nodes
-2) When the driver initializes, just scan all the nodes in the device tree (no 
-probing).
+The $ofile is the end result to boot using kboot (2nd stage kernel).
+otheros.bld is the end result to write to FLASH ROM (1st stage kernel).
 
-I think option #2 makes the most sense, because option #1 says that your fabric 
-driver is really an AC97 driver, which it isn't.
+The funny thing is that we pass `-o arch/powerpc/boot/zImage.ps3' to the
+wrapper script (which indicates the _output_ file, i.e. $ofile, as per the
+documentation at the top of the wrapper script), while this output file is
+no longer created by the wrapper script!
+Instead it creates arch/powerpc/boot/zImage.ps3.elf.
 
-You can try to make the fabric driver into a bus driver, but I think that just 
-complicates things.
+So I do think your change broke the expected and obvious behavior.
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-2054510590-1193243192=:17958--
