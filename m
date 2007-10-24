@@ -1,19 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id B57BADDF45
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 00:28:10 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: ioctl32 unknown cmds with 2.6.24-rc1
-Date: Wed, 24 Oct 2007 16:27:17 +0200
-References: <1193229045.4510.35.camel@johannes.berg>
-In-Reply-To: <1193229045.4510.35.camel@johannes.berg>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 42780DDEC1
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 00:29:14 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so210230nfd
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 07:29:13 -0700 (PDT)
+Message-ID: <d120d5000710240729v2e3faea8u615cfa7f1e489d11@mail.gmail.com>
+Date: Wed, 24 Oct 2007 10:29:12 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: [PATCH] fix appletouch geyser 1 breakage
+In-Reply-To: <1193233015.4510.44.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710241627.18284.arnd@arndb.de>
-Cc: Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1193222676.4510.5.camel@johannes.berg>
+	<d120d5000710240555m545a4f95v8bfc1ac790273001@mail.gmail.com>
+	<1193231110.4510.42.camel@johannes.berg>
+	<d120d5000710240634j21d2b660t267ace56bd9d6af6@mail.gmail.com>
+	<1193233015.4510.44.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Anton Ekblad <valderman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 24 October 2007, Johannes Berg wrote:
->   Show Details
->   I've been getting these warnings (many more of them but this is a list
-> of unique ones) on my quad G5 with 32-bit userspace:
-> 
-> ioctl32(cdrom_id:1078): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-3-0
-> ioctl32(ata_id:1095): Unknown cmd fd(3) cmd(0000030d){t:03;sz:0} arg(ff863970) on /dev/.tmp-3-0
-> ioctl32(smartd:3563): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(ffeb5480) on /dev/sda
-> ioctl32(hald-probe-stor:3761): Unknown cmd fd(4) cmd(00005320){t:'S';sz:0} arg(00000004) on /dev/hda
-> ioctl32(gnome-terminal:4187): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0} arg(0fd8e400) on /dev/pts/0
-> 
-> Does anybody know whether this is expected?
+On 10/24/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> On Wed, 2007-10-24 at 09:34 -0400, Dmitry Torokhov wrote:
+>
+> > Well, but what about fountains then? Regardless of the model, if there
+> > is a way to stop "empty" meaurements, we should do it.
+>
+> There is no way on fountains though. We could check the measurement
+> ourselves and if no finger is detected decrease the polling frequency or
+> something, but there's no hw support.
+>
 
-It's probably my fault, since I changed the compat ioctl handling for
-block devices. Geert already reported the same, but I haven't had
-a chance to reproduce it on my system to look into what went wrong.
-Probably a trivial bug I introduced in block/compat_ioctl.c
+Do yo know who has powerbooks with older geyser models (0x214, 215,
+216)? It would be nice to know if they send the data continiously and
+whether the geyser 3 reset hack works on them.
 
-	Arnd <><
+-- 
+Dmitry
