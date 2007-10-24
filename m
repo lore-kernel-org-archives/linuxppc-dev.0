@@ -1,18 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (unknown [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 8D1F4DDF22
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 06:12:22 +1000 (EST)
-Date: Wed, 24 Oct 2007 15:19:32 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Subject: Re: New time code miscalculates cpu usage
-Message-ID: <20071024201932.GA29542@lixom.net>
-References: <20071016202525.GA11837@lixom.net>
-	<20071017060747.GF9814@bakeyournoodle.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 459D2DDF1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 06:14:45 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so395648wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 13:14:44 -0700 (PDT)
+Message-ID: <fa686aa40710241314w2dbe0863ja15746614cff0dd@mail.gmail.com>
+Date: Wed, 24 Oct 2007 14:14:40 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH 0/2] mpc52xx: stop drivers from accessing clock config
+	directly
+In-Reply-To: <20071024191206.GD3369@nd47.coderock.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071017060747.GF9814@bakeyournoodle.com>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071024182308.21194.69416.stgit@trillian.cg.shawcable.net>
+	<20071024191206.GD3369@nd47.coderock.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 17, 2007 at 04:07:48PM +1000, Tony Breeds wrote:
-> On Tue, Oct 16, 2007 at 03:25:25PM -0500, Olof Johansson wrote:
-> > Hi,
-> > 
-> > Not sure when this started happening, but I wanted to report it. I'll
-> > start bisecting in a day or two if noone else has gotten around to
-> > looking at it:
-> > 
-> > $ echo "int main(void) { while(1); }" > test.c ; gcc test.c
-> > $ time ./a.out & sleep 2 ; killall a.out
-> > real    0m2.008s
-> > user    0m4.014s
-> > sys     0m0.002s
-> > 
-> > Seen on POWER5 and PA6T, haven't tried anything else yet.
-> 
-> For what it's worth, this is my bug.  I suspected it, and git bisect
-> confirmed it.I have an ugly work around now, but hope to have something
-> better out tomorrow.
+On 10/24/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> On 24/10/07 12:24 -0600, Grant Likely wrote:
+> > Domen,
+> >
+> > Here's a real solution to the problem.  I've somewhat tested this on
+> > the lite5200b.  Can you give it a spin on efika and see if SPI still
+> > works for you?
+>
+> My test case was lite5200b too, I don't think I ever tried SPI on
+> efika.
+> (Are even the right pins on irda connector, or is a necessary line
+> missing?)
 
-Hi Tony,
+Hmm, I guess that's right.  Can you at least make sure it still boots
+on Efika?  Some of the clock detection stuff has changed so I want to
+make sure it still boots.
 
-Any news?
+Are you setup to do your SPI test easily on you lite5200b?  When I say
+"somewhat" tested; I mean I probed the driver and it didn't crash.
+:-)  I haven't tried to run traffic over it.
 
+Can you check that on your system?  If not, can you email me what
+setup/programs you used for testing?  I know very little about the SPI
+infrastructure.
 
--Olof
+Thanks,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
