@@ -1,20 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 08944DDEF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 17:11:38 +1000 (EST)
-Date: Wed, 24 Oct 2007 17:11:29 +1000
+	by ozlabs.org (Postfix) with ESMTP id 6F23BDDF13
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 17:16:31 +1000 (EST)
+Date: Wed, 24 Oct 2007 17:16:19 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 01/11] [POWERPC] Add 'machine: ...' line to common
-	show_cpuinfo()
-Message-Id: <20071024171129.3ad06712.sfr@canb.auug.org.au>
-In-Reply-To: <20071023231309.29359.20887.stgit@hekate.izotz.org>
+Subject: Re: [PATCH 03/11] [POWERPC] Add common mpc52xx_setup_pci() routine
+Message-Id: <20071024171619.465d501f.sfr@canb.auug.org.au>
+In-Reply-To: <20071023231321.29359.96506.stgit@hekate.izotz.org>
 References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231309.29359.20887.stgit@hekate.izotz.org>
+	<20071023231321.29359.96506.stgit@hekate.izotz.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__24_Oct_2007_17_11_29_+1000_Y62_Jy3FEi9oslbA"
+	boundary="Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,39 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__24_Oct_2007_17_11_29_+1000_Y62_Jy3FEi9oslbA
+--Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 24 Oct 2007 01:13:09 +0200 Marian Balakowicz <m8@semihalf.com> wrot=
+On Wed, 24 Oct 2007 01:13:21 +0200 Marian Balakowicz <m8@semihalf.com> wrot=
 e:
 >
-> +		root =3D of_find_node_by_path("/");
-> +		if (root)
-> +			model =3D of_get_property(root, "model", NULL);
-> +		of_node_put(root);
+> +++ b/arch/powerpc/platforms/52xx/lite5200.c
+> @@ -155,11 +155,7 @@ static void __init lite5200_setup_arch(void)
+>  #endif
+> =20
+>  #ifdef CONFIG_PCI
+> -	np =3D of_find_node_by_type(NULL, "pci");
+> -	if (np) {
+> -		mpc52xx_add_bridge(np);
+> -		of_node_put(np);
+> -	}
+> +	mpc52xx_setup_pci();
+>  #endif
 
-The paranoid part of me says:
+Normally we would have no "#ifdef CONFIG_PCI" here but instead define a
 
-		if (model)
+static inline void mpc52xx_setup_pci(void) { }
 
-> +		seq_printf(m, "machine\t\t: %s\n", model);
+in the header file for the non PCI case.
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Wed__24_Oct_2007_17_11_29_+1000_Y62_Jy3FEi9oslbA
+--Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHHvAmTgG2atn1QN8RAplbAJ0epwUfwJjCl9bC+eKBmm/p9HX+AwCbB0rO
-+R5qLuH6UUztH0fS9H3YBas=
-=fSvR
+iD8DBQFHHvFNTgG2atn1QN8RAltcAJsF3bGxJYfp00AenhVMRJgRk5g3BgCbB1sx
+VO2SWsLtc6+E/Hs53PXrTXA=
+=RBzq
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__24_Oct_2007_17_11_29_+1000_Y62_Jy3FEi9oslbA--
+--Signature=_Wed__24_Oct_2007_17_16_19_+1000_TI/rnlrb0L6GL/5b--
