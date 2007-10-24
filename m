@@ -1,20 +1,19 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Message-ID: <471F5576.4060603@ru.mvista.com>
-Date: Wed, 24 Oct 2007 18:23:50 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id B57BADDF45
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 00:28:10 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: ioctl32 unknown cmds with 2.6.24-rc1
+Date: Wed, 24 Oct 2007 16:27:17 +0200
+References: <1193229045.4510.35.camel@johannes.berg>
+In-Reply-To: <1193229045.4510.35.camel@johannes.berg>
 MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH] PowerPC 440EPx Sequoia USB OHCI DTS entry
-References: <20071008142658.GA15197@ru.mvista.com>
-	<e1b19c12c7006e763a56627fa9a05ec9@kernel.crashing.org>
-	<20071023214000.424.qmail@farnsworth.org>
-	<471F2A32.8030202@ru.mvista.com>
-	<20071024120804.GA1180@xyzzy.farnsworth.org>
-	<471F4C53.1070506@ru.mvista.com>
-	<20071024141041.GA13586@xyzzy.farnsworth.org>
-In-Reply-To: <20071024141041.GA13586@xyzzy.farnsworth.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200710241627.18284.arnd@arndb.de>
+Cc: Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dale Farnsworth wrote:
-> On Wed, Oct 24, 2007 at 05:44:51PM +0400, Valentine Barshak wrote:
->> Dale Farnsworth wrote:
->>> On Wed, Oct 24, 2007 at 03:19:14PM +0400, Valentine Barshak wrote:
->>>> Dale Farnsworth wrote:
->>>>> Valentine wrote:
->>>>>> Actually I also don't see much reason for the 
->>>>>> USB_OHCI_HCD_PPC_OF_BE/USB_OHCI_HCD_PPC_OF_LE stuff.
->>>>>> Is this really needed?
->>>>> I think so.  The SOC host controllers are BE and the PCI
->>>>> host controllers are LE.  Or, do you have an alternative
->>>>> method of handling both types?
->>>> Yes, PCI controllers are LE, but do we really need user-selectable 
->>>> USB_OHCI_HCD_PPC_OF_LE option, since USB_OHCI_LITTLE_ENDIAN is selected
->>>> by default for USB_OHCI_HCD_PCI?
->>>> The USB_OHCI_HCD_PPC_OF_LE/BE stuff is related to PPC OF glue only.
->>>> I think it's useless. We should always enable
->>>> USB_OHCI_BIG_ENDIAN_DESC and USB_OHCI_BIG_ENDIAN_MMIO for PPC OF
->>>> and the real LE/BE implementation should be selected by the 
->>>> corresponding properties in the device tree.
->>> I agree that they don't need to be user selectable.  It is far preferable
->>> to deduce their values from existing information, if possible.
->>>
->>> -Dale
->> This is the original thread:
->> http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025054.html
->>
->> I think the USB_OHCI_HCD_PPC_OF_LE/BE should be removed.
->> We can't avoid the slight overhead even using these options, since 
->> USB_OHCI_BIG_ENDIAN_MMIO/DESC should always be anabled for PPC OF and we 
->> we still enable USB_OHCI_LITTLE_ENDIAN for USB_OHCI_HCD_PCI even if 
->> USB_OHCI_HCD_PPC_OF_LE is not set.
+On Wednesday 24 October 2007, Johannes Berg wrote:
+>   Show Details
+>   I've been getting these warnings (many more of them but this is a list
+> of unique ones) on my quad G5 with 32-bit userspace:
 > 
-> I believe you are saying that we can select any valid combination
-> of USB_OHCI_BIG_ENDIAN_DESC, USB_OHCI_BIG_ENDIAN_MMIO, and
-> USB_OHCI_LITTLE_ENDIAN, without using USB_OHCI_HCD_PPC_OF_BE and
-> USB_OHCI_HCD_PPC_OF_LE.  I agree.  It looks like we can get rid of
-> these last two with zero loss in performance or functionality.
+> ioctl32(cdrom_id:1078): Unknown cmd fd(3) cmd(00005331){t:'S';sz:0} arg(00000000) on /dev/.tmp-3-0
+> ioctl32(ata_id:1095): Unknown cmd fd(3) cmd(0000030d){t:03;sz:0} arg(ff863970) on /dev/.tmp-3-0
+> ioctl32(smartd:3563): Unknown cmd fd(3) cmd(0000031f){t:03;sz:0} arg(ffeb5480) on /dev/sda
+> ioctl32(hald-probe-stor:3761): Unknown cmd fd(4) cmd(00005320){t:'S';sz:0} arg(00000004) on /dev/hda
+> ioctl32(gnome-terminal:4187): Unknown cmd fd(19) cmd(0000530b){t:'S';sz:0} arg(0fd8e400) on /dev/pts/0
 > 
-> Do you have a patch?
+> Does anybody know whether this is expected?
 
-No I don't have it yet :)
-I planed to make, test and submit it a bit later.
-Thanks,
-Valentine.
+It's probably my fault, since I changed the compat ioctl handling for
+block devices. Geert already reported the same, but I haven't had
+a chance to reproduce it on my system to look into what went wrong.
+Probably a trivial bug I introduced in block/compat_ioctl.c
 
-> 
-> -Dale
+	Arnd <><
