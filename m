@@ -1,11 +1,10 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710240854l5438e94g86b932f45eb5b546@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:54:09 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Timur Tabi" <timur@freescale.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
+Date: Wed, 24 Oct 2007 11:54:23 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: Audio codec device tree entries
-In-Reply-To: <471F6761.3030405@freescale.com>
+In-Reply-To: <fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
@@ -15,9 +14,11 @@ References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
 	<471F52ED.10007@freescale.com>
 	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
 	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
-	<9e4733910710240823v2022661ftb1b754a86cab88f3@mail.gmail.com>
-	<471F6761.3030405@freescale.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
+	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
+	<fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/24/07, Timur Tabi <timur@freescale.com> wrote:
-> Jon Smirl wrote:
+On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > Do you want to pick one and add it to the device tree documentation
+> > with an example for i2s and ac97? I'll use which ever one is picked.
 >
-> > I see your point about putting the child node onto the control bus.
-> > ac97 is both a control and data bus. For the i2s case the child should
-> > go onto the i2c bus.
+> Sure, I'll draft something up and post it for review.
 >
-> I know AC97 is *also* a control bus, but treating I2S and AC97 differently is
-> bad, IMHO.  If you're going to put the child node in the AC97 node, you should
-> also put it in the I2S node.
+> On the device probing front; what about this method:
+>
+> Rather than trying to figure things out from the board model, or the
+> combination of the codec and i2s bus; add another node to represent
+> the sound circuit.  All that node would need is a unique compatible
+> property and a phandle to either the i2s bus or the codec (depending
+> on which binding approach is used).  It could have additional
+> properties to represent optional features, etc.
 
-They *are* different.  The choice you're making is whether or not you
-keep them similar in the control path or the data path; but you still
-have to choose.
+That's the pseudo-sound node proposal that other people objected to.
+
+It makes sense to me, there needs to be some way to trigger loading
+the fabric driver.
 
 >
-> The 8610 has an SSI that can operate as either AC97 or I2S.  If I want to switch
-> from AC97 to I2S, I should not have to move the child node out of the AC97 node.
->   I should instead just add an I2C node and point to it.
+> For example:
+> sound@0 {
+>       compatible = "<mfg>,<board>,sound"   // The board might have
+> more than one sound i/f which could be wired differently
+>       codec-handle = <&codec0>;
+> };
 
-But you need a different codec node regardless.  The board/system will
-in the vast majority of cases designed to only use AC97 or only use
-I2S.  It's not moving a node.  It's deleting an ac97 codec node and
-adding an i2s codec node.
+Do you even need the parameters,  how about simply this?
 
-Besides; correctness is more important that how many device tree
-changes need to be made to go from one board design to another.
+sound-fabric {
+};
 
-Cheers,
-g.
+That will trigger loading all of the sound-fabric drivers built into
+the kernel. In their probe functions they can look in the device tree
+and extract the machine name and then decide to stay loaded or fail
+the probe.
+
+> This would give your fabric driver something unique to probe on; but
+> the i2c, i2s and codec nodes which actually describe interconnects
+> will still be present.
+>
+> Cheers,
+> g.
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>
+
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
