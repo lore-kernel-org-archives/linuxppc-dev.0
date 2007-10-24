@@ -1,26 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id A2B16DDF22
+Return-Path: <drow@false.org>
+Received: from nan.false.org (NaN.false.org [208.75.86.248])
+	by ozlabs.org (Postfix) with ESMTP id 5EFAFDDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Oct 2007 08:40:25 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so438920wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Oct 2007 15:40:24 -0700 (PDT)
-Message-ID: <fa686aa40710241540y498b0c92le63920862d6b9315@mail.gmail.com>
-Date: Wed, 24 Oct 2007 16:40:23 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Matt Mackall" <mpm@selenic.com>
+	Thu, 25 Oct 2007 09:03:54 +1000 (EST)
+Date: Wed, 24 Oct 2007 18:41:30 -0400
+From: Daniel Jacobowitz <drow@false.org>
+To: Matt Mackall <mpm@selenic.com>
 Subject: Re: Apparent kernel bug with GDB on ppc405
-In-Reply-To: <fa686aa40710241539r792380dam62ea820a48dab62e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <20071024224130.GA30819@caradoc.them.org>
 References: <20071024194640.GB19691@waste.org>
 	<fa686aa40710241328x77435cc1lf09cac730b0ce5ac@mail.gmail.com>
-	<20071024204215.GC19691@waste.org> <20071024215421.GF19691@waste.org>
+	<20071024204215.GC19691@waste.org>
+	<20071024215421.GF19691@waste.org>
 	<fa686aa40710241527j1a316760lf36d512eb625810f@mail.gmail.com>
 	<20071024223250.GI19691@waste.org>
-	<fa686aa40710241539r792380dam62ea820a48dab62e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071024223250.GI19691@waste.org>
 Cc: gdb@sourceware.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,29 +28,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > Not completely implausible, but a) why isn't this seen on basically
-> > every machine with software TLB? b) why does -local- GDB, which is
-> > presumably doing much less work than gdbserver + network stack, not fail?
->
-> a) I don't know.... very odd.
->
-> b) gdb is big.  It probably touches far more pages (via library calls)
-> than gdbserver.  The network stack is also big, but it's probably more
-> localized too.
->
-> Niceing down the host also makes sense because if the PC is being slow
-> then the target may go off and run other things while between setting
-> the breakpoint and getting the 'go' command.
->
-> Can you grab a snapshot of the TLB before and after setting the breakpoint?
+On Wed, Oct 24, 2007 at 05:32:50PM -0500, Matt Mackall wrote:
+> Not completely implausible, but a) why isn't this seen on basically
+> every machine with software TLB? b) why does -local- GDB, which is
+> presumably doing much less work than gdbserver + network stack, not fail?
 
-Or; probably more relevant, before and after the page copy?
+You said it yourself.  Local gdb does more work -> blows through more
+TLB entries.
 
-g.
+I can't answer you about the other half, but I'm pretty sure TLB
+invalidation is already supposed to be happening... somewhere.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Daniel Jacobowitz
+CodeSourcery
