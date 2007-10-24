@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 24 Oct 2007 09:44:50 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] DTC: Remove the need for the GLR Parser.
-Message-ID: <20071023234450.GD10595@localhost.localdomain>
-References: <E1Ik4aw-0007ud-Lu@jdl.com>
-	<20071023025412.GI31839@localhost.localdomain>
-	<E1IkKge-00060g-2l@jdl.com> <E1IkMI8-0000b3-0U@jdl.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 467ADDDF0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 10:02:29 +1000 (EST)
+Date: Tue, 23 Oct 2007 19:09:41 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH 02/11] [POWERPC] Add 'lpb' bus type for MPC5200
+	LocalPlus Bus
+Message-ID: <20071024000941.GA10926@lixom.net>
+References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
+	<20071023231315.29359.87832.stgit@hekate.izotz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IkMI8-0000b3-0U@jdl.com>
+In-Reply-To: <20071023231315.29359.87832.stgit@hekate.izotz.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,35 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 23, 2007 at 11:07:39AM -0500, Jon Loeliger wrote:
-> So, like, the other day Jon Loeliger mumbled:
-> > 
-> > > First, a trivial one: I remember leaving this as a right-recursion,
-> > > despite the stack-nastiness, because that way the properties end up in
-> > > the same order as in the source.  I think that behaviour is worth
-> > > preserving, but of course we can do it with left-recursion by changing
-> > > chain_property() to add to the end of the list instead of the
-> > > beginning.
-> > 
-> > Understood.  And I wrestled with that as well.  In fact, I even
-> > wrote the reverse_properties() function, which I will include,
-> > and used it initially.  However, several test failed.  So I
-> > removed it, and it all started happily working again.
-> 
-> I was confused.  It was the version of the code that _did_
-> use the property reversal that worked.
+Hi,
 
-Ok.  Except that I think we shouldn't need to have an explicit
-reverse_properties().  Just build the list in-order by having
-chain_property() append to the end of the list.
+On Wed, Oct 24, 2007 at 01:13:15AM +0200, Marian Balakowicz wrote:
+> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+> ---
 
-It's theoretically expensive, since we have to walk the list each
-time, but frankly I don't think we need to worry about dtc performance
-until we actually see a single non-contrived tree that takes a
-noticeable amount of time to process:  I've never seen one yet.
+Your patch lacks any kind of description beyond the title. (I know, it's a
+real simple patch, but a real simple description would do too :)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> --- a/arch/powerpc/kernel/of_platform.c
+> +++ b/arch/powerpc/kernel/of_platform.c
+> @@ -49,6 +49,7 @@ static struct of_device_id of_default_bus_ids[] = {
+>  	{ .type = "plb4", },
+>  	{ .type = "opb", },
+>  	{ .type = "ebc", },
+> +	{ .type = "lpb", },
+
+I thought it was consensus to keep the new bus ids only in platform
+code and not add them to the default list, and just pass that list in
+to of_platform_bus_probe().
+
+
+
+
+-Olof
