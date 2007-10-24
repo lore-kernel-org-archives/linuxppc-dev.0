@@ -1,21 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2866CDDF32
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 08:02:58 +1000 (EST)
-Message-ID: <471FC191.6020704@genesi-usa.com>
-Date: Wed, 24 Oct 2007 23:05:05 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.190])
+	by ozlabs.org (Postfix) with ESMTP id 3941FDDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 08:44:07 +1000 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so275572rvf
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 15:44:05 -0700 (PDT)
+Message-ID: <9e4733910710241544p673b3f7dnc0c8accf191b4bbd@mail.gmail.com>
+Date: Wed, 24 Oct 2007 18:44:05 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: Tjernlund <tjernlund@tjernlund.se>
+Subject: Re: i2c-mpc.c driver issues
+In-Reply-To: <019001c81681$b5d449c0$5267a8c0@Jocke>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 1/2] USB: Rework OHCI PPC OF for new bindings
-References: <20071024163412.GA17785@ru.mvista.com>
-In-Reply-To: <20071024163412.GA17785@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com,
-	linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
+References: <019001c81681$b5d449c0$5267a8c0@Jocke>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,79 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
-> Rework ohci-ppc-of driver to use big-endian property instead of
-> ohci-be/ohci-le compatible strings. Also remove unnecessary
-> user-selectable USB_OHCI_HCD_PPC_OF_LE/BE stuff, because
-> USB_OHCI_BIG_ENDIAN_DESC/MMIO should always be enabled for ppc
-> and USB_OHCI_LITTLE_ENDIAN is selected for USB_OHCI_HCD_PCI by default.
-> 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
-> ---
+On 10/24/07, Tjernlund <tjernlund@tjernlund.se> wrote:
+> While browsing the i2c-mpc.c driver I noticed some things that look odd
+> to me so I figured I report them. Could not find a maintainer in the MAINTANERS file
+> so I sent here, cc:ed linuxppc-dev as well.
 
-[snip]
+There appear to be more issues with this driver. It is still
+registering as platform driver instead of a of_platform driver.
 
->  
->  config USB_UHCI_HCD
-> diff -pruN linux-2.6.orig/drivers/usb/host/ohci-ppc-of.c linux-2.6/drivers/usb/host/ohci-ppc-of.c
-> --- linux-2.6.orig/drivers/usb/host/ohci-ppc-of.c	2007-10-24 18:44:25.000000000 +0400
-> +++ linux-2.6/drivers/usb/host/ohci-ppc-of.c	2007-10-24 19:32:21.000000000 +0400
-> @@ -15,8 +15,8 @@
->  
->  #include <linux/signal.h>
->  
-> -#include <asm/of_platform.h>
-> -#include <asm/prom.h>
-> +#include <linux/of.h>
-> +#include <linux/of_platform.h>
->  
->  
->  static int __devinit
-> @@ -91,15 +91,10 @@ ohci_hcd_ppc_of_probe(struct of_device *
->  	int irq;
->  
->  	int rv;
-> -	int is_bigendian;
->  
->  	if (usb_disabled())
->  		return -ENODEV;
->  
-> -	is_bigendian =
-> -		of_device_is_compatible(dn, "ohci-bigendian") ||
-> -		of_device_is_compatible(dn, "ohci-be");
-> -
->  	dev_dbg(&op->dev, "initializing PPC-OF USB Controller\n");
->  
->  	rv = of_address_to_resource(dn, 0, &res);
-> @@ -134,9 +129,10 @@ ohci_hcd_ppc_of_probe(struct of_device *
->  	}
->  
->  	ohci = hcd_to_ohci(hcd);
-> -	if (is_bigendian) {
-> +
-> +	if (of_get_property(dn, "big-endian", NULL)) {
->  		ohci->flags |= OHCI_QUIRK_BE_MMIO | OHCI_QUIRK_BE_DESC;
-> -		if (of_device_is_compatible(dn, "mpc5200-ohci"))
-> +		if (of_device_is_compatible(dn, "mpc5200-usb-ohci"))
->  			ohci->flags |= OHCI_QUIRK_FRAME_NO;
->  	}
+On the mpc5200 the probe function for platform drivers is not getting
+called, so fsl_i2c_probe never gets called.  It's not clear to me that
+this driver is functioning on the mpc5200.
 
-Just a note, this is a fairly destructive change and will stop the Efika
-from having it's USB ports detected.
+> 1) There are a lot of return -1 error code that is propagated back to
+>    userspace. Should be changed to proper -Exxx codes.
+>
+> 2) mpc_read(), according to the comment below it sends a STOP condition here but
+>    this function does not known if this is the last read or not. mpc_xfer is
+>    the one that knows when the transaction is over and should send the stop, which it already
+>    does.
+>
+>  /* Generate stop on last byte */
+>   if (i == length - 1)
+>        writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
+>
+>  Jocke
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
 
-I've updated the Efika Device Tree Supplement script internally, but I
-would really rather not have users be forced to update their kernel and
-firmware quite so often just for what is, here, a merely aesthetic
-change.
-
-Can we just make sure real quickly that the changing of compatibles
-doesn't break existing, not-easily-flashable firmwares?
-
-At least work in 'mpc5200-ohci' for the endian check (it's always big
-endian, but our device tree has no big-endian property by default and
-does not contain mpc5200-usb-ohci or usb-ohci properties) otherwise we are
-going to have users complain. To you guys.
 
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Jon Smirl
+jonsmirl@gmail.com
