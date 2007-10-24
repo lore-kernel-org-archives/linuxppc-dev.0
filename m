@@ -1,19 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 79103DDF9D
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 02:56:22 +1000 (EST)
-Date: Wed, 24 Oct 2007 11:56:28 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH] wrapper: Revert ps3 binary flag usage, and remove .bin suffix.
-Message-ID: <20071024165628.GA13863@loki.buserror.net>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710241001g165e7aeatdc92096544fbeb60@mail.gmail.com>
+Date: Wed, 24 Oct 2007 13:01:52 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Audio codec device tree entries
+In-Reply-To: <fa686aa40710240938l5b8c30b9qe538cc641df5e61b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, geert@sonytel.be
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
+	<9e4733910710231529h1089eacdy888306f20af92555@mail.gmail.com>
+	<471F52ED.10007@freescale.com>
+	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
+	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
+	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
+	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
+	<fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
+	<9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
+	<fa686aa40710240938l5b8c30b9qe538cc641df5e61b@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,75 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The ps3 target produces two images, and the binary one is not the
-"primary" image that corresponds to the -o flag; thus, it no longer
-uses the generic binary flag.
+On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> Heh, I'm one of the folks who objected to it; here's what was written:
+>
+> > > >
+> > > > pseudo-sound@0 { // use to trigger loading platform specific fabric driver
+> > > >       device_type = "pseudo-sound"
+> > > > };
+> > >
+> > > I don't think this is a good idea.  The device tree is for describing
+> > > your hardware; so the layout should reflect that.  Make the platform
+> > > code do the right thing with the real nodes.
+>
+> What I objected to was that the pseudo-sound node didn't contain any
+> real information.  It was just being a hook to trigger calling a probe
+> function.  If you're going to do that then you might as well just call
+> it directly from platform code.
 
-On platforms which do use the binary flag, it no longer produces a
-.bin suffix, so that the output file matches what was passed to the -o flag.
+Calling it directly from the platform code is an option, but where
+does the fabric driver code live? It doesn't make a lot of sense to
+put ALSA code into arch/powerpc/platforms/52xx. I could make a
+function call from arch/powerpc/platforms/52xx over to
+sound/soc/powerpc but that's not very pretty.
 
-This should fix the zImage ln problems for the ps3 target.
+Another option is to make the fabric driver a "struct platform_driver"
+instead of a "struct of_platform_driver". "struct platform_driver" is
+not being probed in the current mpc5200 code. This option makes senses
+to me, "struct platform_driver" will load without a device tree node.
+The driver will still need to check and see if it is on the right
+platform when more than one is compiled in.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/wrapper |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+>
+> > > For example:
+> > > sound@0 {
+> > >       compatible = "<mfg>,<board>,sound"   // The board might have
+> > > more than one sound i/f which could be wired differently
+> > >       codec-handle = <&codec0>;
+> > > };
+>
+> The difference here is that the node provides real information about
+> the board.  It has a compatible field which tells you *exactly* what
+> sound circuit is present on the board.  It can have additional
+> information that does make sense to encode into the device tree (ie.
+> the codec that is used).  It's not addressable (no registers or
+> anything), but it does describe the board.
+>
+> It would be possible and reasonable for a single fabric driver to work
+> with many different circuit layouts as long as it has the information
+> needed to adapt each instance.
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 39b27e5..ece6f49 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -149,7 +149,6 @@ cuboot*)
- ps3)
-     platformo="$object/ps3-head.o $object/ps3-hvcall.o $object/ps3.o"
-     lds=$object/zImage.ps3.lds
--    binary=y
-     gzip=
-     ext=bin
-     objflags="-O binary --set-section-flags=.bss=contents,alloc,load,data"
-@@ -233,7 +232,7 @@ entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | cut -d' ' -f3`
- 
- if [ -n "$binary" ]; then
-     mv "$ofile" "$ofile".elf
--    ${CROSS}objcopy -O binary "$ofile".elf "$ofile".bin
-+    ${CROSS}objcopy -O binary "$ofile".elf "$ofile"
- fi
- 
- # post-processing needed for some platforms
-@@ -246,9 +245,9 @@ coff)
-     $object/hack-coff "$ofile"
-     ;;
- cuboot*)
--    gzip -f -9 "$ofile".bin
-+    gzip -f -9 "$ofile"
-     mkimage -A ppc -O linux -T kernel -C gzip -a "$base" -e "$entry" \
--            $uboot_version -d "$ofile".bin.gz "$ofile"
-+            $uboot_version -d "$ofile".gz "$ofile"
-     ;;
- treeboot*)
-     mv "$ofile" "$ofile.elf"
-@@ -269,11 +268,11 @@ ps3)
-     # then copied to offset 0x100.  At runtime the bootwrapper program
-     # copies the 0x100 bytes at __system_reset_kernel to addr 0x100.
- 
--    system_reset_overlay=0x`${CROSS}nm "$ofile".elf \
-+    system_reset_overlay=0x`${CROSS}nm "$ofile" \
-         | grep ' __system_reset_overlay$'       \
-         | cut -d' ' -f1`
-     system_reset_overlay=`printf "%d" $system_reset_overlay`
--    system_reset_kernel=0x`${CROSS}nm "$ofile".elf \
-+    system_reset_kernel=0x`${CROSS}nm "$ofile" \
-         | grep ' __system_reset_kernel$'       \
-         | cut -d' ' -f1`
-     system_reset_kernel=`printf "%d" $system_reset_kernel`
-@@ -282,6 +281,8 @@ ps3)
- 
-     rm -f "$object/otheros.bld"
- 
-+    ${CROSS}objcopy -O binary "$ofile" "$ofile.bin"
-+
-     msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc \
-         skip=$overlay_dest seek=$system_reset_kernel      \
-         count=$overlay_size bs=1 2>&1)
+That is how the Apple driver is implemented. There is a single fabric
+driver that uses layout-id to set everything up to match the physical
+PCB.
+sound/aoa/fabrics/snd-aoa-fabric-layout.c
+
+But Apple put the layout id down inside the a sound node:
+/proc/device-tree/pci@f2000000/mac-io@17/i2s@0/i2s-a@10000/sound:
+name             "sound"
+device_type      "soundchip"
+compatible       "AOAbase"
+built-in
+layout-id        00000046 (70)
+object-model-version 00000002
+vendor-id        0000106b (4203)
+platform-tas-codec-ref ff98cba8
+linux,phandle    ff985d48
+
+
+>
+> >
+> > Do you even need the parameters,  how about simply this?
+> >
+> > sound-fabric {
+> > };
+>
+> But this goes back to having nodes that don't provide any information.
+>  You don't want that.
+>
+> >
+> > That will trigger loading all of the sound-fabric drivers built into
+> > the kernel. In their probe functions they can look in the device tree
+> > and extract the machine name and then decide to stay loaded or fail
+> > the probe.
+> >
+>
+> ...
+>
+> Now is probably a good time to mention that there is *nothing* in the
+> device tree that enforces a 1:1 relationship between device tree nodes
+> and driver instances.  Sure, it make sense to register the i2s and
+> codec drivers from probing on the i2s and codec nodes.  However, there
+> is nothing that prevents the codec driver from *also* registering a
+> fabric driver based on a property in the codec node or the board-level
+> compatible property.
+
+But there is something in the kernel that enforces it. I haven't
+checked the powerpc code, but the PCI code won't probe anymore drivers
+once one has attached to a device. The rule of one driver per device
+is a good one. Places where that rule has been broken have caused a
+lot of problems (fbdev vs DRM).
+
+> Fabric drivers are codec specific anyway.  It's not all that
+> unrealistic for the device tree binding for a codec to have a list of
+> fabric drivers that it can register.
+
+The codec drivers in asoc are completely agnostic. The same codec
+driver works on x86, arm, powerpc, etc.
+
+
+>
+> Cheers,
+> g.
+>
+> --
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>
+
+
 -- 
-1.5.3.4
+Jon Smirl
+jonsmirl@gmail.com
