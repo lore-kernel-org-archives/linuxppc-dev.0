@@ -1,23 +1,23 @@
 Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710240947n72dc331aj18b38a07f9119020@mail.gmail.com>
-Date: Wed, 24 Oct 2007 10:47:47 -0600
+Message-ID: <fa686aa40710240952t3fdaf34bgf8ff7c049dcd836b@mail.gmail.com>
+Date: Wed, 24 Oct 2007 10:52:07 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@secretlab.ca
 To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: Audio codec device tree entries
-In-Reply-To: <471F75CD.6080606@freescale.com>
+In-Reply-To: <471F75A1.1000909@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
+	<471F52ED.10007@freescale.com>
 	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
 	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
 	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
 	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
 	<fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
 	<9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
-	<471F6C3F.10003@freescale.com>
-	<fa686aa40710240939p408d3e5bj5daae8afcb5ab77f@mail.gmail.com>
-	<471F75CD.6080606@freescale.com>
+	<fa686aa40710240938l5b8c30b9qe538cc641df5e61b@mail.gmail.com>
+	<471F75A1.1000909@freescale.com>
 Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,24 +31,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On 10/24/07, Timur Tabi <timur@freescale.com> wrote:
 > Grant Likely wrote:
 >
-> > If you need to scan the tree, don't do it when the driver registers,
-> > do it in the platform code instead.  Otherwise you unconditionally
-> > incur the penalty of scanning the whole device tree on every system
-> > that loads the driver, regardless of whether or not the device is
-> > present.
+> > Now is probably a good time to mention that there is *nothing* in the
+> > device tree that enforces a 1:1 relationship between device tree nodes
+> > and driver instances.  Sure, it make sense to register the i2s and
+> > codec drivers from probing on the i2s and codec nodes.  However, there
+> > is nothing that prevents the codec driver from *also* registering a
+> > fabric driver based on a property in the codec node or the board-level
+> > compatible property.
 >
-> So your saying that the fabric driver should be embedded in the platform driver?
+> Wouldn't it make more sense for the fabric driver to register the codec driver?
+>   The fabric driver is the "master" of the other drivers, should it needs to
+> load and run first.
 
-No; that's not what I mean.
+It doesn't really matter.  There doesn't need to be a 1:1 relationship
+between driver instances and device nodes.  A probe on one device node
+can cause the instantiation of both a fabric driver and a codec driver
+(just put the appropriate calls in the of_platform_bus probe hook).
 
-But the scanning of the device tree to decide whether or not to
-instantiate the driver should be called from platform code.  The
-device tree should not be scanned on driver loading.
+>
+> > Fabric drivers are codec specific anyway.
+>
+> Yes and no.  They're really platform-specific, but they should be able to scan
+> the device tree, determine which codecs are actually on the system, and then
+> link in the appropriate codec driver.
 
-In other words: populate either a platform_device or an
-of_platform_device that the driver can bind against.
+My point is; most likely if you change the codec, you need to change
+the fabric driver too.
 
-Cheers,
+There will be many fabric drivers using a single codec,
+but there will not be many codec drivers using a single fabric.
+
 g.
 
 -- 
