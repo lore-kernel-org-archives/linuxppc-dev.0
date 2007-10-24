@@ -1,11 +1,10 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:16:58 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710240819m3d1cefeand264d2ced243904e@mail.gmail.com>
+Date: Wed, 24 Oct 2007 11:19:33 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: Audio codec device tree entries
-In-Reply-To: <9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
+In-Reply-To: <fa686aa40710240808r5d634905t6ba81c802e8f123a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
@@ -13,7 +12,7 @@ References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
 	<8416ea754e013a67441aec778c81ad73@kernel.crashing.org>
 	<9e4733910710231529h1089eacdy888306f20af92555@mail.gmail.com>
 	<471F52ED.10007@freescale.com>
-	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
+	<fa686aa40710240808r5d634905t6ba81c802e8f123a@mail.gmail.com>
 Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
 	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,44 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/24/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
 > On 10/24/07, Timur Tabi <timur@freescale.com> wrote:
-> > Jon Smirl wrote:
-> > > Is this consensus on how the tree should look?
-> > >
-> > > There is no attempt to describe the codec connections inside the
-> > > device tree.
+> > >       codec0: i2s-codec@0 {
+> > >             compatible = "ti,tas5508";
+> > >             reg = <0>;
+> > >             i2s-handle = <&i2s@2000>;
+> > >       };
 > >
-> > I don't think I agree with that.  The device tree should indicate which codec is
-> > connected to which I2S/AC97 device.
+> > I'd do this the other way around -- that is:
+> >
+> > i2s@2200 {           // PSC2
+> >         compatible = "fsl,mpc5200b-psc-i2s","fsl,mpc5200-psc-i2s";
+> >         ...
+> >         i2c-handle = <&codec0>;  /* Or something like that */
 >
-> What I meant was that there is no attempt to describe how the codec is
-> connected to the external world. Those connections are described in
-> the fabric driver.
->
-> I'm getting conflicting opinions on how the devices should be linked
-> into the tree. We should pick one and add it to the documentation.
+> i2c-handle is a poor property name here.  It should be 'codec-handle'.
+>  The codec could theoretically live on just about *any* control bus;
+> not just i2c.
 
-Two valid methods have been proposed
-1. a codec-
+That's one of the reasons I put the second option in the post.
 
-> The DTC experts need to tell us which way to make the pointers between
-> i2s and i2c for the codec.  Here's a another way it could be done that
-> looks more like the ac97 model.
+In the second option the i2s driver would instantiate first. Next the
+generic code would get loaded. The generic codec will know the control
+but for the device and it can go look in the i2c node for the address.
+i2c node still lists all of the devices on the i2c bus. But the codecs
+are in the i2c-handle property so they don't trigger a second loading
+of the codec.
 
-I *really* don't think this is a good idea.  Put the node on the bus
-that the device is addressed from.  I2S is the *data* path, not the
-*control* path, but you cannot control the codec from there.
+A fundamental question is, which bus should trigger the loading of the
+generic codec driver. The answer to this determines how the device
+tree should look.
 
-Your suggestion only looks more like the AC97 model if you're looking
-at the data path.  If you're looking at the control path it looks
-completely different.  The device tree convention is to orient around
-the control path.
-
-g.
+I'm using the model that a child node means load the driver and a
+reference does not load a driver.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
