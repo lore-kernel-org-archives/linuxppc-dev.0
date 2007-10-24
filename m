@@ -1,15 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 24 Oct 2007 11:51:15 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-Message-ID: <20071024015115.GK10595@localhost.localdomain>
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071023231333.29359.35252.stgit@hekate.izotz.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E8034DDF1A
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 13:33:24 +1000 (EST)
+Subject: Re: [PATCH] PowerPC: Add BCM5248 and Marvell 88E1111 PHY support
+	to NEW EMAC.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <20071015175717.GA4602@ru.mvista.com>
+References: <20071015175717.GA4602@ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 24 Oct 2007 13:31:58 +1000
+Message-Id: <1193196718.2085.35.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, jeff@garzik.org, netdev@vger.kernel.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,82 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 24, 2007 at 01:13:33AM +0200, Marian Balakowicz wrote:
-> Add device tree source file for TQM5200 board.
-> 
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-> ---
-> 
->  arch/powerpc/boot/dts/tqm5200.dts |  236 +++++++++++++++++++++++++++++++++++++
->  1 files changed, 236 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/tqm5200.dts
-> 
-> 
-> diff --git a/arch/powerpc/boot/dts/tqm5200.dts b/arch/powerpc/boot/dts/tqm5200.dts
-> new file mode 100644
-> index 0000000..01c7778
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/tqm5200.dts
-> @@ -0,0 +1,236 @@
-> +/*
-> + * TQM5200 board Device Tree Source
-[snip]
-> +	soc5200@f0000000 {
 
-I thought we were moving towards calling these just /soc@address?
+On Tue, 2007-10-23 at 20:57 -0500, Valentine Barshak wrote:
 
-> +		model = "fsl,mpc5200";
-> +		compatible = "mpc5200";
+> +static int m88e1111_init(struct mii_phy *phy)
+> +{
+> +	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
+> +	phy_write(phy, 0x14, 0x0ce3);
+> +	phy_write(phy, 0x18, 0x4101);
+> +	phy_write(phy, 0x09, 0x0e00);
+> +	phy_write(phy, 0x04, 0x01e1);
+> +	phy_write(phy, 0x00, 0x9140);
+> +	phy_write(phy, 0x00, 0x1140);
+> +
+> +	return  0;
+> +}
 
-That should have a vendor prefix.
+Care to put a few comments on why the above is necessary and what it
+does ?
 
-[snip]
-> +		serial@2000 {		// PSC1
-> +			device_type = "serial";
-> +			compatible = "mpc5200-psc-uart";
-> +			port-number = <0>;  // Logical port assignment
+Thanks !
+Ben.
 
-How are these port-number things used?  The device tree shouldn't
-generally contain information that isn't inherent to the hardware.
-There can be reasons for hacks like this, but we should avoid them if
-possible.
-
-> +			cell-index = <0>;
-
-cell-index should only be used if the index number is used when
-manipulating the hardware (e.g. if there's a global control register
-which takes this number).
-
-[snip]
-> +		ata@3a00 {
-> +			device_type = "ata";
-
-No such thing as device_type = "ata", drop it.  In general, never
-include a device_type unless a binding explicitly says to do so.
-
-[snip]
-> +	lpb@fc000000 {
-> +		model = "fsl,lpb";
-> +		compatible = "lpb";
-
-Not nearly specific enough.  Must include a vendor prefix at least,
-and should have a lot more revision information.  You should always be
-able to pick the right driver with compatible alone, "model" should
-generally be for human consumption, the driver shouldn't need it.
-
-> +		device_type = "lpb";
-
-Drop this.  Again, presence of a device_type property is the
-exception, not the rule.
-
-> +		ranges = <0 fc000000 02000000>;
-
-You need #address-cells and #size-cells properties, too.
-
-[snip]
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> +static struct mii_phy_ops m88e1111_phy_ops = {
+> +	.init		= m88e1111_init,
+> +	.setup_aneg	= genmii_setup_aneg,
+> +	.setup_forced	= genmii_setup_forced,
+> +	.poll_link	= genmii_poll_link,
+> +	.read_link	= genmii_read_link
+> +};
+> +
+> +static struct mii_phy_def m88e1111_phy_def = {
+> +
+> +	.phy_id		= 0x01410CC0,
+> +	.phy_id_mask	= 0x0ffffff0,
+> +	.name		= "Marvell 88E1111 Ethernet",
+> +	.ops		= &m88e1111_phy_ops,
+> +};
+> +
+>  static struct mii_phy_def *mii_phy_table[] = {
+>  	&cis8201_phy_def,
+> +	&bcm5248_phy_def,
+> +	&m88e1111_phy_def,
+>  	&genmii_phy_def,
+>  	NULL
+>  };
