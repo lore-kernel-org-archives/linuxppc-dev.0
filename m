@@ -1,9 +1,8 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:20:44 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710240823v2022661ftb1b754a86cab88f3@mail.gmail.com>
+Date: Wed, 24 Oct 2007 11:23:40 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: Audio codec device tree entries
 In-Reply-To: <fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
 MIME-Version: 1.0
@@ -27,47 +26,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 10/24/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > On 10/24/07, Timur Tabi <timur@freescale.com> wrote:
-> > > Jon Smirl wrote:
-> > > > Is this consensus on how the tree should look?
-> > > >
-> > > > There is no attempt to describe the codec connections inside the
-> > > > device tree.
-> > >
-> > > I don't think I agree with that.  The device tree should indicate which codec is
-> > > connected to which I2S/AC97 device.
-> >
-> > What I meant was that there is no attempt to describe how the codec is
-> > connected to the external world. Those connections are described in
-> > the fabric driver.
-> >
-> > I'm getting conflicting opinions on how the devices should be linked
-> > into the tree. We should pick one and add it to the documentation.
+> > The DTC experts need to tell us which way to make the pointers between
+> > i2s and i2c for the codec.  Here's a another way it could be done that
+> > looks more like the ac97 model.
 >
-> Two valid methods have been proposed
-> 1. a codec-
+> I *really* don't think this is a good idea.  Put the node on the bus
+> that the device is addressed from.  I2S is the *data* path, not the
+> *control* path, but you cannot control the codec from there.
+>
+> Your suggestion only looks more like the AC97 model if you're looking
+> at the data path.  If you're looking at the control path it looks
+> completely different.  The device tree convention is to orient around
+> the control path.
 
-oops
+It doesn't make any difference to me which one we pick. I'm just
+listing all of the possible combinations. I just want to pick a model
+so that we can write the code.
 
-1. a codec-handle property in the i2s node
-2. an i2s-handle property in the codec node
-
-Either are reasonable.  I prefer putting the handle in the i2s node;
-but I'm looking at it from the way that ethernet phys are being
-described currently.  The other is also perfectly valid.
-
-I suppose it depends on what point of view you see the system from; either:
-a. the codec is supported by the i2s bus, in which case use the
-i2s-handle property
-b. the i2s bus is supported by the codec; in which case use the
-codec-handle property.
-
-Cheers,
-g.
+I see your point about putting the child node onto the control bus.
+ac97 is both a control and data bus. For the i2s case the child should
+go onto the i2c bus.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
