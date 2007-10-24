@@ -1,18 +1,12 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Use of_get_next_child() in k2_sata_proc_info()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jeff Garzik <jgarzik@pobox.com>
-In-Reply-To: <471EE082.3090204@pobox.com>
-References: <2576ec47fb43bd1f4464beb8b78adfa70bdde418.1193199877.git.michael@ellerman.id.au>
-	<1193202117.2085.45.camel@pasglop>  <471EE082.3090204@pobox.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rYa/SfzmZeZtmKiGN+VT"
-Date: Wed, 24 Oct 2007 16:23:29 +1000
-Message-Id: <1193207009.8788.9.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: paulus@samba.org, akpm@linux-foundation.org, linux390@de.ibm.com
+MIME-Version: 1.0
+Subject: [PATCH] taskstats scaled time cleanup
+Date: Wed, 24 Oct 2007 16:54:57 +1000
+Message-ID: <8789.1193208897@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,72 +16,172 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This moves the ability to scale cputime into generic code.  This
+allows us to fix the issue in kernel/timer.c (noticed by Balbir) where
+we could only add an unscaled value to the scaled utime/stime.
 
---=-rYa/SfzmZeZtmKiGN+VT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This adds a cputime_to_scaled function.  As before, the POWERPC
+version does the scaling based on the last SPURR/PURR ratio
+calculated.  The generic and s390 (only other arch to implement
+asm/cputime.h) versions are both NOPs.
 
-On Wed, 2007-10-24 at 02:04 -0400, Jeff Garzik wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Wed, 2007-10-24 at 14:25 +1000, Michael Ellerman wrote:
-> >> k2_sata_proc_info() uses its own hand-rolled loop to check a nodes
-> >> children for a property, this is not safe WRT refcounting, so fix it
-> >> to use of_get_next_child().
-> >>
-> >> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> >=20
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >=20
-> > (Pending you test boot it on one of our G5s first !)
-> >=20
-> >> ---
-> >>  drivers/ata/sata_svw.c |    5 ++++-
-> >>  1 files changed, 4 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
-> >> index 12d613c..64c3812 100644
-> >> --- a/drivers/ata/sata_svw.c
-> >> +++ b/drivers/ata/sata_svw.c
-> >> @@ -289,7 +289,10 @@ static int k2_sata_proc_info(struct Scsi_Host *sh=
-ost, char *page, char **start,
-> >> =20
-> >>  	/* Match it to a port node */
-> >>  	index =3D (ap =3D=3D ap->host->ports[0]) ? 0 : 1;
-> >> -	for (np =3D np->child; np !=3D NULL; np =3D np->sibling) {
-> >> +
-> >> +	for (np =3D of_get_next_child(np, NULL);
-> >> +	     np !=3D NULL;
-> >> +	     np =3D of_get_next_child(np, np)) {
-> >>  		const u32 *reg =3D of_get_property(np, "reg", NULL);
->=20
-> This sort of thing I would prefer to ACK (ACK!), and let it go upstream=20
-> via the powerpc tree.
+Also moves the SPURR and PURR snapshots closer.
 
-Sure thing, just ACK (ACK!) (ACK?) it, and I'll pester paulus to merge
-it via his tree.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/time.c    |   14 +++++++-------
+ include/asm-generic/cputime.h |    1 +
+ include/asm-powerpc/cputime.h |   14 ++++++++++++++
+ include/asm-powerpc/paca.h    |    2 --
+ include/asm-s390/cputime.h    |    1 +
+ kernel/timer.c                |    9 +++++----
+ 6 files changed, 28 insertions(+), 13 deletions(-)
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-rYa/SfzmZeZtmKiGN+VT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHHuThdSjSd0sB4dIRArsqAJsExrvztJg6m2CkkVFs4XbWGSkqGQCgizpn
-Mu73jJuvFZIghSXfYq/jA9o=
-=F4vC
------END PGP SIGNATURE-----
-
---=-rYa/SfzmZeZtmKiGN+VT--
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+@@ -66,6 +66,7 @@
+ #include <asm/smp.h>
+ #include <asm/vdso_datapage.h>
+ #include <asm/firmware.h>
++#include <asm/cputime.h>
+ #ifdef CONFIG_PPC_ISERIES
+ #include <asm/iseries/it_lp_queue.h>
+ #include <asm/iseries/hv_call_xm.h>
+@@ -186,6 +187,8 @@ u64 __cputime_sec_factor;
+ EXPORT_SYMBOL(__cputime_sec_factor);
+ u64 __cputime_clockt_factor;
+ EXPORT_SYMBOL(__cputime_clockt_factor);
++DEFINE_PER_CPU(unsigned long, cputime_last_delta);
++DEFINE_PER_CPU(unsigned long, cputime_scaled_last_delta);
+ 
+ static void calc_cputime_factors(void)
+ {
+@@ -232,9 +235,9 @@ void account_system_vtime(struct task_st
+ 
+ 	local_irq_save(flags);
+ 	now = read_purr();
++	nowscaled = read_spurr(now);
+ 	delta = now - get_paca()->startpurr;
+ 	get_paca()->startpurr = now;
+-	nowscaled = read_spurr(now);
+ 	deltascaled = nowscaled - get_paca()->startspurr;
+ 	get_paca()->startspurr = nowscaled;
+ 	if (!in_interrupt()) {
+@@ -247,9 +250,9 @@ void account_system_vtime(struct task_st
+ 		get_paca()->system_time = 0;
+ 	}
+ 	account_system_time(tsk, 0, delta);
+-	get_paca()->purrdelta = delta;
++	per_cpu(cputime_last_delta, smp_processor_id()) = delta;
+ 	account_system_time_scaled(tsk, deltascaled);
+-	get_paca()->spurrdelta = deltascaled;
++	per_cpu(cputime_scaled_last_delta, smp_processor_id()) = deltascaled;
+ 	local_irq_restore(flags);
+ }
+ 
+@@ -267,10 +270,7 @@ void account_process_vtime(struct task_s
+ 	get_paca()->user_time = 0;
+ 	account_user_time(tsk, utime);
+ 
+-	/* Estimate the scaled utime by scaling the real utime based
+-	 * on the last spurr to purr ratio */
+-	utimescaled = utime * get_paca()->spurrdelta / get_paca()->purrdelta;
+-	get_paca()->spurrdelta = get_paca()->purrdelta = 0;
++	utimescaled = cputime_to_scaled(utime);
+ 	account_user_time_scaled(tsk, utimescaled);
+ }
+ 
+Index: linux-2.6-ozlabs/include/asm-generic/cputime.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-generic/cputime.h
++++ linux-2.6-ozlabs/include/asm-generic/cputime.h
+@@ -18,6 +18,7 @@ typedef unsigned long cputime_t;
+ #define cputime_lt(__a, __b)		((__a) <  (__b))
+ #define cputime_le(__a, __b)		((__a) <= (__b))
+ #define cputime_to_jiffies(__ct)	(__ct)
++#define cputime_to_scaled(__ct)		(__ct)
+ #define jiffies_to_cputime(__hz)	(__hz)
+ 
+ typedef u64 cputime64_t;
+Index: linux-2.6-ozlabs/include/asm-powerpc/cputime.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/cputime.h
++++ linux-2.6-ozlabs/include/asm-powerpc/cputime.h
+@@ -52,12 +52,26 @@ typedef u64 cputime64_t;
+  * Convert cputime <-> jiffies
+  */
+ extern u64 __cputime_jiffies_factor;
++DECLARE_PER_CPU(unsigned long, cputime_last_delta);
++DECLARE_PER_CPU(unsigned long, cputime_scaled_last_delta);
+ 
+ static inline unsigned long cputime_to_jiffies(const cputime_t ct)
+ {
+ 	return mulhdu(ct, __cputime_jiffies_factor);
+ }
+ 
++/* Estimate the scaled cputime by scaling the real cputime based on
++ * the last scaled to real ratio */
++static inline cputime_t cputime_to_scaled(const cputime_t ct)
++{
++	if (cpu_has_feature(CPU_FTR_SPURR) &&
++	    per_cpu(cputime_last_delta, smp_processor_id()))
++		return ct *
++			per_cpu(cputime_scaled_last_delta, smp_processor_id())/
++			per_cpu(cputime_last_delta, smp_processor_id());
++	return ct;
++}
++
+ static inline cputime_t jiffies_to_cputime(const unsigned long jif)
+ {
+ 	cputime_t ct;
+Index: linux-2.6-ozlabs/include/asm-powerpc/paca.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/paca.h
++++ linux-2.6-ozlabs/include/asm-powerpc/paca.h
+@@ -115,8 +115,6 @@ struct paca_struct {
+ 	u64 system_time;		/* accumulated system TB ticks */
+ 	u64 startpurr;			/* PURR/TB value snapshot */
+ 	u64 startspurr;			/* SPURR value snapshot */
+-	u64 purrdelta;			/* FIXME: document */
+-	u64 spurrdelta;			/* FIXME: document */
+ };
+ 
+ extern struct paca_struct paca[];
+Index: linux-2.6-ozlabs/include/asm-s390/cputime.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-s390/cputime.h
++++ linux-2.6-ozlabs/include/asm-s390/cputime.h
+@@ -54,6 +54,7 @@ __div(unsigned long long n, unsigned int
+ #define cputime_lt(__a, __b)		((__a) <  (__b))
+ #define cputime_le(__a, __b)		((__a) <= (__b))
+ #define cputime_to_jiffies(__ct)	(__div((__ct), 1000000 / HZ))
++#define cputime_to_scaled(__ct)		(__ct)
+ #define jiffies_to_cputime(__hz)	((cputime_t)(__hz) * (1000000 / HZ))
+ 
+ #define cputime64_zero			(0ULL)
+Index: linux-2.6-ozlabs/kernel/timer.c
+===================================================================
+--- linux-2.6-ozlabs.orig/kernel/timer.c
++++ linux-2.6-ozlabs/kernel/timer.c
+@@ -825,14 +825,15 @@ void update_process_times(int user_tick)
+ {
+ 	struct task_struct *p = current;
+ 	int cpu = smp_processor_id();
++	cputime_t one_jiffy = jiffies_to_cputime(1);
+ 
+ 	/* Note: this timer irq context must be accounted for as well. */
+ 	if (user_tick) {
+-		account_user_time(p, jiffies_to_cputime(1));
+-		account_user_time_scaled(p, jiffies_to_cputime(1));
++		account_user_time(p, one_jiffy);
++		account_user_time_scaled(p, cputime_to_scaled(one_jiffy));
+ 	} else {
+-		account_system_time(p, HARDIRQ_OFFSET, jiffies_to_cputime(1));
+-		account_system_time_scaled(p, jiffies_to_cputime(1));
++		account_system_time(p, HARDIRQ_OFFSET, one_jiffy);
++		account_system_time_scaled(p, cputime_to_scaled(one_jiffy));
+ 	}
+ 	run_local_timers();
+ 	if (rcu_pending(cpu))
