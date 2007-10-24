@@ -1,17 +1,20 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 24 Oct 2007 05:08:04 -0700
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH] PowerPC 440EPx Sequoia USB OHCI DTS entry
-Message-ID: <20071024120804.GA1180@xyzzy.farnsworth.org>
-References: <20071008142658.GA15197@ru.mvista.com>
-	<e1b19c12c7006e763a56627fa9a05ec9@kernel.crashing.org>
-	<20071023214000.424.qmail@farnsworth.org>
-	<471F2A32.8030202@ru.mvista.com>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id 9EE6BDDDF4
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 22:56:00 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so185047nfd
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 05:55:58 -0700 (PDT)
+Message-ID: <d120d5000710240555m545a4f95v8bfc1ac790273001@mail.gmail.com>
+Date: Wed, 24 Oct 2007 08:55:58 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: [PATCH] fix appletouch geyser 1 breakage
+In-Reply-To: <1193222676.4510.5.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <471F2A32.8030202@ru.mvista.com>
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1193222676.4510.5.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Anton Ekblad <valderman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Oct 24, 2007 at 03:19:14PM +0400, Valentine Barshak wrote:
-> Dale Farnsworth wrote:
-> >Valentine wrote:
-> >>Actually I also don't see much reason for the 
-> >>USB_OHCI_HCD_PPC_OF_BE/USB_OHCI_HCD_PPC_OF_LE stuff.
-> >>Is this really needed?
-> >
-> >I think so.  The SOC host controllers are BE and the PCI
-> >host controllers are LE.  Or, do you have an alternative
-> >method of handling both types?
-> 
-> Yes, PCI controllers are LE, but do we really need user-selectable 
-> USB_OHCI_HCD_PPC_OF_LE option, since USB_OHCI_LITTLE_ENDIAN is selected
-> by default for USB_OHCI_HCD_PCI?
-> The USB_OHCI_HCD_PPC_OF_LE/BE stuff is related to PPC OF glue only.
-> I think it's useless. We should always enable
-> USB_OHCI_BIG_ENDIAN_DESC and USB_OHCI_BIG_ENDIAN_MMIO for PPC OF
-> and the real LE/BE implementation should be selected by the 
-> corresponding properties in the device tree.
+Hi Johannes,
 
-I agree that they don't need to be user selectable.  It is far preferable
-to deduce their values from existing information, if possible.
+On 10/24/07, Johannes Berg <johannes@sipsolutions.net> wrote:
+> The patch 46249ea60fbb61a72ee6929b831b1f3e6865f024 was obviously done
+> without testing on a Geyser 1,
 
--Dale
+My fault, sorry. However Anton's device has product ID of 90x30B which
+is Geyser 1 as far as I understand... But yes, we should not expect
+other geysers respond to Geyser 3-specific commands.
+
+>  and I'm a very annoyed that it was
+> applied. It causes appletouch to continuously printk:
+>
+> drivers/input/mouse/appletouch.c: Could not do mode read request from device (Geyser 3 mode)
+>
+> because the Geyser 1 doesn't respond to that. The patch description also
+> states:
+>
+> > if we see 10 empty packets the touchpad needs to be reset; good
+> > touchpads should not send empty packets anyway.
+>
+> which is *TOTALLY* bogus since Geyser 1 touchpads have no notion of
+> empty packets, the simply continuously send measurements. One look at
+> the specification would have confirmed that.
+>
+
+Is there a way to "plug" these Geysers? Waking up the kernel
+continuously is not nice.
+
+-- 
+Dmitry
