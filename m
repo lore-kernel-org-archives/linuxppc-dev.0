@@ -1,24 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
-Date: Wed, 24 Oct 2007 09:43:36 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: Audio codec device tree entries
-In-Reply-To: <9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Date: Wed, 24 Oct 2007 17:53:32 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [patch v3] Cell: Wrap master run control bit
+In-Reply-To: <46F6D188.7090201@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0710241750351.17958@pademelon.sonytel.be>
+References: <46DD4783.9040103@am.sony.com> <46F6D188.7090201@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910710221859q6ea54810nba58907d5ddd966d@mail.gmail.com>
-	<471E12C7.8020509@freescale.com>
-	<8416ea754e013a67441aec778c81ad73@kernel.crashing.org>
-	<9e4733910710231529h1089eacdy888306f20af92555@mail.gmail.com>
-	<471F52ED.10007@freescale.com>
-	<9e4733910710240800y24952e70g8c318e35e2e45e2e@mail.gmail.com>
-	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
-	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
-	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1777176617-1193241085=:17958"
+Cc: Masato Noguchi <Masato.Noguchi@jp.sony.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Cell Broadband Engine OSS Development <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,56 +23,294 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/24/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 10/24/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > > Two valid methods have been proposed
-> > > 1. a codec-
-> >
-> > oops
-> >
-> > 1. a codec-handle property in the i2s node
-> > 2. an i2s-handle property in the codec node
-> >
-> > Either are reasonable.  I prefer putting the handle in the i2s node;
-> > but I'm looking at it from the way that ethernet phys are being
-> > described currently.  The other is also perfectly valid.
-> >
-> > I suppose it depends on what point of view you see the system from; either:
-> > a. the codec is supported by the i2s bus, in which case use the
-> > i2s-handle property
-> > b. the i2s bus is supported by the codec; in which case use the
-> > codec-handle property.
->
-> Do you want to pick one and add it to the device tree documentation
-> with an example for i2s and ac97? I'll use which ever one is picked.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Sure, I'll draft something up and post it for review.
+---584337861-1777176617-1193241085=:17958
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.62.0710241751353.17958@pademelon.sonytel.be>
 
-On the device probing front; what about this method:
+On Sun, 23 Sep 2007, Geoff Levand wrote:
+> Subject: Cell: Wrap master run control bit
+> 
+> From: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+> 
+> Add platform specific SPU run control routines to the spufs.  The current
+> spufs implementation uses the SPU master run control bit (MFC_SR1[S]) to
+> control SPE execution, but the PS3 hypervisor does not support the use of
+> this feature.
+> 
+> This change adds the run control wrapper routies spu_enable_spu() and
+> spu_disable_spu().  The bare metal routines use the master run control
+> bit, and the PS3 specific routines use the priv2 run control register.
+> 
+> An outstanding enhancement for the PS3 would be to add a guard to check
+> for incorrect access to the spu problem state when the spu context is
+> disabled.  This check could be implemented with a flag added to the spu
+> context that would inhibit mapping problem state pages, and a routine
+> to unmap spu problem state pages.  When the spu is enabled with
+> ps3_enable_spu() the flag would be set allowing pages to be mapped,
+> and when the spu is disabled with ps3_disable_spu() the flag would be
+> cleared and mapped problem state pages would be unmapped.
+> 
+> Signed-off-by: Masato Noguchi <Masato.Noguchi@jp.sony.com>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> ---
+> 
+> Jeremy,
+> 
+> Here is an updated version for 2.6.24.  Noguchi-san will
 
-Rather than trying to figure things out from the board model, or the
-combination of the codec and i2s bus; add another node to represent
-the sound circuit.  All that node would need is a unique compatible
-property and a phandle to either the i2s bus or the codec (depending
-on which binding approach is used).  It could have additional
-properties to represent optional features, etc.
+As 2.6.24-rc1 is out and Geoff is offline: what's the status of this patch?
 
-For example:
-sound@0 {
-      compatible = "<mfg>,<board>,sound"   // The board might have
-more than one sound i/f which could be wired differently
-      codec-handle = <&codec0>;
-};
+> work on the LS unmapping feature for 2.6.25.
+> 
+> -Geoff
+> 
+> v2:
+>  o Added comments about unmapping PS pages when disabled.
+> v3:
+>  o Changed routines to return void instead of int.
+>  o Rebased to apply to Jeremy's 2.6.23-rc work-around.
+> 
+>  arch/powerpc/platforms/cell/spu_manage.c        |   13 +++++++++++
+>  arch/powerpc/platforms/cell/spufs/backing_ops.c |    6 +++++
+>  arch/powerpc/platforms/cell/spufs/hw_ops.c      |   10 ++++++++
+>  arch/powerpc/platforms/cell/spufs/run.c         |    4 +--
+>  arch/powerpc/platforms/cell/spufs/spufs.h       |    1 
+>  arch/powerpc/platforms/ps3/spu.c                |   27 ++++++++++++++++++++++--
+>  include/asm-powerpc/spu_priv1.h                 |   15 +++++++++++++
+>  7 files changed, 72 insertions(+), 4 deletions(-)
+> 
+> --- a/arch/powerpc/platforms/cell/spu_manage.c
+> +++ b/arch/powerpc/platforms/cell/spu_manage.c
+> @@ -35,6 +35,7 @@
+>  #include <asm/firmware.h>
+>  #include <asm/prom.h>
+>  
+> +#include "spufs/spufs.h"
+>  #include "interrupt.h"
+>  
+>  struct device_node *spu_devnode(struct spu *spu)
+> @@ -369,6 +370,16 @@ static int of_destroy_spu(struct spu *sp
+>  	return 0;
+>  }
+>  
+> +static void enable_spu_by_master_run(struct spu_context *ctx)
+> +{
+> +	ctx->ops->master_start(ctx);
+> +}
+> +
+> +static void disable_spu_by_master_run(struct spu_context *ctx)
+> +{
+> +	ctx->ops->master_stop(ctx);
+> +}
+> +
+>  /* Hardcoded affinity idxs for qs20 */
+>  #define QS20_SPES_PER_BE 8
+>  static int qs20_reg_idxs[QS20_SPES_PER_BE] =   { 0, 2, 4, 6, 7, 5, 3, 1 };
+> @@ -535,5 +546,7 @@ const struct spu_management_ops spu_mana
+>  	.enumerate_spus = of_enumerate_spus,
+>  	.create_spu = of_create_spu,
+>  	.destroy_spu = of_destroy_spu,
+> +	.enable_spu = enable_spu_by_master_run,
+> +	.disable_spu = disable_spu_by_master_run,
+>  	.init_affinity = init_affinity,
+>  };
+> --- a/arch/powerpc/platforms/cell/spufs/backing_ops.c
+> +++ b/arch/powerpc/platforms/cell/spufs/backing_ops.c
+> @@ -285,6 +285,11 @@ static void spu_backing_runcntl_write(st
+>  	spin_unlock(&ctx->csa.register_lock);
+>  }
+>  
+> +static void spu_backing_runcntl_stop(struct spu_context *ctx)
+> +{
+> +	spu_backing_runcntl_write(ctx, SPU_RUNCNTL_STOP);
+> +}
+> +
+>  static void spu_backing_master_start(struct spu_context *ctx)
+>  {
+>  	struct spu_state *csa = &ctx->csa;
+> @@ -381,6 +386,7 @@ struct spu_context_ops spu_backing_ops =
+>  	.get_ls = spu_backing_get_ls,
+>  	.runcntl_read = spu_backing_runcntl_read,
+>  	.runcntl_write = spu_backing_runcntl_write,
+> +	.runcntl_stop = spu_backing_runcntl_stop,
+>  	.master_start = spu_backing_master_start,
+>  	.master_stop = spu_backing_master_stop,
+>  	.set_mfc_query = spu_backing_set_mfc_query,
+> --- a/arch/powerpc/platforms/cell/spufs/hw_ops.c
+> +++ b/arch/powerpc/platforms/cell/spufs/hw_ops.c
+> @@ -220,6 +220,15 @@ static void spu_hw_runcntl_write(struct 
+>  	spin_unlock_irq(&ctx->spu->register_lock);
+>  }
+>  
+> +static void spu_hw_runcntl_stop(struct spu_context *ctx)
+> +{
+> +	spin_lock_irq(&ctx->spu->register_lock);
+> +	out_be32(&ctx->spu->problem->spu_runcntl_RW, SPU_RUNCNTL_STOP);
+> +	while (in_be32(&ctx->spu->problem->spu_status_R) & SPU_STATUS_RUNNING)
+> +		cpu_relax();
+> +	spin_unlock_irq(&ctx->spu->register_lock);
+> +}
+> +
+>  static void spu_hw_master_start(struct spu_context *ctx)
+>  {
+>  	struct spu *spu = ctx->spu;
+> @@ -321,6 +330,7 @@ struct spu_context_ops spu_hw_ops = {
+>  	.get_ls = spu_hw_get_ls,
+>  	.runcntl_read = spu_hw_runcntl_read,
+>  	.runcntl_write = spu_hw_runcntl_write,
+> +	.runcntl_stop = spu_hw_runcntl_stop,
+>  	.master_start = spu_hw_master_start,
+>  	.master_stop = spu_hw_master_stop,
+>  	.set_mfc_query = spu_hw_set_mfc_query,
+> --- a/arch/powerpc/platforms/cell/spufs/run.c
+> +++ b/arch/powerpc/platforms/cell/spufs/run.c
+> @@ -302,7 +302,7 @@ long spufs_run_spu(struct spu_context *c
+>  	if (mutex_lock_interruptible(&ctx->run_mutex))
+>  		return -ERESTARTSYS;
+>  
+> -	ctx->ops->master_start(ctx);
+> +	spu_enable_spu(ctx);
+>  	ctx->event_return = 0;
+>  
+>  	spu_acquire(ctx);
+> @@ -376,7 +376,7 @@ long spufs_run_spu(struct spu_context *c
+>  		ctx->stats.libassist++;
+>  
+>  
+> -	ctx->ops->master_stop(ctx);
+> +	spu_disable_spu(ctx);
+>  	ret = spu_run_fini(ctx, npc, &status);
+>  	spu_yield(ctx);
+>  
+> --- a/arch/powerpc/platforms/cell/spufs/spufs.h
+> +++ b/arch/powerpc/platforms/cell/spufs/spufs.h
+> @@ -170,6 +170,7 @@ struct spu_context_ops {
+>  	char*(*get_ls) (struct spu_context * ctx);
+>  	 u32 (*runcntl_read) (struct spu_context * ctx);
+>  	void (*runcntl_write) (struct spu_context * ctx, u32 data);
+> +	void (*runcntl_stop) (struct spu_context * ctx);
+>  	void (*master_start) (struct spu_context * ctx);
+>  	void (*master_stop) (struct spu_context * ctx);
+>  	int (*set_mfc_query)(struct spu_context * ctx, u32 mask, u32 mode);
+> --- a/arch/powerpc/platforms/ps3/spu.c
+> +++ b/arch/powerpc/platforms/ps3/spu.c
+> @@ -28,6 +28,7 @@
+>  #include <asm/spu_priv1.h>
+>  #include <asm/lv1call.h>
+>  
+> +#include "../cell/spufs/spufs.h"
+>  #include "platform.h"
+>  
+>  /* spu_management_ops */
+> @@ -419,10 +420,34 @@ static int ps3_init_affinity(void)
+>  	return 0;
+>  }
+>  
+> +/**
+> + * ps3_enable_spu - Enable SPU run control.
+> + *
+> + * An outstanding enhancement for the PS3 would be to add a guard to check
+> + * for incorrect access to the spu problem state when the spu context is
+> + * disabled.  This check could be implemented with a flag added to the spu
+> + * context that would inhibit mapping problem state pages, and a routine
+> + * to unmap spu problem state pages.  When the spu is enabled with
+> + * ps3_enable_spu() the flag would be set allowing pages to be mapped,
+> + * and when the spu is disabled with ps3_disable_spu() the flag would be
+> + * cleared and the mapped problem state pages would be unmapped.
+> + */
+> +
+> +static void ps3_enable_spu(struct spu_context *ctx)
+> +{
+> +}
+> +
+> +static void ps3_disable_spu(struct spu_context *ctx)
+> +{
+> +	ctx->ops->runcntl_stop(ctx);
+> +}
+> +
+>  const struct spu_management_ops spu_management_ps3_ops = {
+>  	.enumerate_spus = ps3_enumerate_spus,
+>  	.create_spu = ps3_create_spu,
+>  	.destroy_spu = ps3_destroy_spu,
+> +	.enable_spu = ps3_enable_spu,
+> +	.disable_spu = ps3_disable_spu,
+>  	.init_affinity = ps3_init_affinity,
+>  };
+>  
+> @@ -505,8 +530,6 @@ static void mfc_sr1_set(struct spu *spu,
+>  	static const u64 allowed = ~(MFC_STATE1_LOCAL_STORAGE_DECODE_MASK
+>  		| MFC_STATE1_PROBLEM_STATE_MASK);
+>  
+> -	sr1 |= MFC_STATE1_MASTER_RUN_CONTROL_MASK;
+> -
+>  	BUG_ON((sr1 & allowed) != (spu_pdata(spu)->cache.sr1 & allowed));
+>  
+>  	spu_pdata(spu)->cache.sr1 = sr1;
+> --- a/include/asm-powerpc/spu_priv1.h
+> +++ b/include/asm-powerpc/spu_priv1.h
+> @@ -24,6 +24,7 @@
+>  #include <linux/types.h>
+>  
+>  struct spu;
+> +struct spu_context;
+>  
+>  /* access to priv1 registers */
+>  
+> @@ -178,6 +179,8 @@ struct spu_management_ops {
+>  	int (*enumerate_spus)(int (*fn)(void *data));
+>  	int (*create_spu)(struct spu *spu, void *data);
+>  	int (*destroy_spu)(struct spu *spu);
+> +	void (*enable_spu)(struct spu_context *ctx);
+> +	void (*disable_spu)(struct spu_context *ctx);
+>  	int (*init_affinity)(void);
+>  };
+>  
+> @@ -207,6 +210,18 @@ spu_init_affinity (void)
+>  	return spu_management_ops->init_affinity();
+>  }
+>  
+> +static inline void
+> +spu_enable_spu (struct spu_context *ctx)
+> +{
+> +	spu_management_ops->enable_spu(ctx);
+> +}
+> +
+> +static inline void
+> +spu_disable_spu (struct spu_context *ctx)
+> +{
+> +	spu_management_ops->disable_spu(ctx);
+> +}
+> +
+>  /*
+>   * The declarations folowing are put here for convenience
+>   * and only intended to be used by the platform setup code.
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
 
-This would give your fabric driver something unique to probe on; but
-the i2c, i2s and codec nodes which actually describe interconnects
-will still be present.
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1777176617-1193241085=:17958--
