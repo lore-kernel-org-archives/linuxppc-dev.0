@@ -1,34 +1,33 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 18FDFDDF35
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:54:14 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l9O9s7gm169612
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 09:54:07 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l9O9s79f3047490
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 10:54:07 +0100
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l9O9rpTu021378
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 10:53:51 +0100
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH] ehea: fix port_napi_disable/enable
-Date: Wed, 24 Oct 2007 11:53:34 +0200
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25D51DDF5F
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:54:11 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id l9O9qxlL008787
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:52:59 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9O9uX6Y037400
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:56:33 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9O9qeuj003287
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:52:41 +1000
+Message-ID: <471F15D5.3050100@linux.vnet.ibm.com>
+Date: Wed, 24 Oct 2007 15:22:21 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200710241153.34992.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] taskstats scaled time cleanup
+References: <8789.1193208897@neuling.org>
+In-Reply-To: <8789.1193208897@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, linux390@de.ibm.com,
+	akpm@linux-foundation.org
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,66 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-napi_disable / napi_enable must be applied on all ehea queues.
+Michael Neuling wrote:
+> This moves the ability to scale cputime into generic code.  This
+> allows us to fix the issue in kernel/timer.c (noticed by Balbir) where
+> we could only add an unscaled value to the scaled utime/stime.
+> 
+> This adds a cputime_to_scaled function.  As before, the POWERPC
+> version does the scaling based on the last SPURR/PURR ratio
+> calculated.  The generic and s390 (only other arch to implement
+> asm/cputime.h) versions are both NOPs.
+> 
+> Also moves the SPURR and PURR snapshots closer.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Looks good to me
 
----
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |    7 +++----
- 2 files changed, 4 insertions(+), 5 deletions(-)
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index b557bb4..4b4b74e 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0078"
-+#define DRV_VERSION	"EHEA_0079"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index fe5ffac..a8b05d2 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2329,7 +2329,7 @@ static void port_napi_disable(struct ehea_port *port)
- {
- 	int i;
- 
--	for (i = 0; i < port->num_def_qps; i++)
-+	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
- 		napi_disable(&port->port_res[i].napi);
- }
- 
-@@ -2337,7 +2337,7 @@ static void port_napi_enable(struct ehea_port *port)
- {
- 	int i;
- 
--	for (i = 0; i < port->num_def_qps; i++)
-+	for (i = 0; i < port->num_def_qps + port->num_add_tx_qps; i++)
- 		napi_enable(&port->port_res[i].napi);
- }
- 
-@@ -2373,8 +2373,6 @@ static int ehea_down(struct net_device *dev)
- 	ehea_drop_multicast_list(dev);
- 	ehea_free_interrupts(dev);
- 
--	port_napi_disable(port);
--
- 	port->state = EHEA_PORT_DOWN;
- 
- 	ret = ehea_clean_all_portres(port);
-@@ -2396,6 +2394,7 @@ static int ehea_stop(struct net_device *dev)
- 	flush_scheduled_work();
- 	down(&port->port_lock);
- 	netif_stop_queue(dev);
-+	port_napi_disable(port);
- 	ret = ehea_down(dev);
- 	up(&port->port_lock);
- 	return ret;
 -- 
-1.5.2
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
