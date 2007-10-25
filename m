@@ -1,22 +1,20 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 60A8FDDE16
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 21:49:17 +1000 (EST)
-Message-ID: <47208273.8050601@ru.mvista.com>
-Date: Thu, 25 Oct 2007 15:48:03 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
+Return-Path: <domen.puncer@telargo.com>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id 81C6EDDE32
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 22:29:58 +1000 (EST)
+Date: Thu, 25 Oct 2007 14:29:12 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [linux-usb-devel] [PATCH 1/2] USB: Rework OHCI PPC OF for new
-	bindings
-References: <20071024163412.GA17785@ru.mvista.com>	
-	<471FC191.6020704@genesi-usa.com>	
-	<200710241850.05467.david-b@pacbell.net>
-	<fa686aa40710241941w16fe3e75hb8ede9f9c8464e94@mail.gmail.com>
-In-Reply-To: <fa686aa40710241941w16fe3e75hb8ede9f9c8464e94@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: David Brownell <david-b@pacbell.net>, linux-usb-devel@lists.sourceforge.net,
-	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/2] mpc52xx: stop drivers from accessing clock config
+	directly
+Message-ID: <20071025122912.GF3369@nd47.coderock.org>
+References: <20071024182308.21194.69416.stgit@trillian.cg.shawcable.net>
+	<20071024191206.GD3369@nd47.coderock.org>
+	<fa686aa40710241314w2dbe0863ja15746614cff0dd@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40710241314w2dbe0863ja15746614cff0dd@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 10/24/07, David Brownell <david-b@pacbell.net> wrote:
->> On Wednesday 24 October 2007, Matt Sealey wrote:
->>> Can we just make sure real quickly that the changing of compatibles
->>> doesn't break existing, not-easily-flashable firmwares?
->> Yeah, I'm not keen on such breakage either...
+On 24/10/07 14:14 -0600, Grant Likely wrote:
+> On 10/24/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> > On 24/10/07 12:24 -0600, Grant Likely wrote:
+> > > Domen,
+> > >
+> > > Here's a real solution to the problem.  I've somewhat tested this on
+> > > the lite5200b.  Can you give it a spin on efika and see if SPI still
+> > > works for you?
+> >
+> > My test case was lite5200b too, I don't think I ever tried SPI on
+> > efika.
+> > (Are even the right pins on irda connector, or is a necessary line
+> > missing?)
 > 
-> Add my voice to the chorus.  It's okay to change the binding, but make
-> sure the old binding is still supported.
-> 
-> Cheers,
-> g.
-> 
+> Hmm, I guess that's right.  Can you at least make sure it still boots
+> on Efika?  Some of the clock detection stuff has changed so I want to
+> make sure it still boots.
 
-Actually, I thought that changing the DTS stuff for mpc52xx boards would 
-suffice. Sorry, I was unaware of Efika firmware here. I'll keep old 
-bindings as well.
-Does the device tree have "ohci-bigendian" or "ohci-be" compatible 
-property on Efika?
-Thanks,
-Valentine.
+OK, with the following patch it compiles and boots.
+I don't have any psc configured as spi in device tree though.
+
+
+
+---
+ arch/powerpc/platforms/52xx/efika.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux.git/arch/powerpc/platforms/52xx/efika.c
+===================================================================
+--- linux.git.orig/arch/powerpc/platforms/52xx/efika.c
++++ linux.git/arch/powerpc/platforms/52xx/efika.c
+@@ -180,7 +180,7 @@ static void __init efika_setup_arch(void
+ {
+ 	rtas_initialize();
+ 
+-	mpc52xx_setup_clocks();
++	mpc5200_setup_clocks();
+ 
+ 	efika_pcisetup();
+ 
