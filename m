@@ -1,24 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.179])
-	by ozlabs.org (Postfix) with ESMTP id B90D0DDE2D
+Return-Path: <willis@arlut.utexas.edu>
+Received: from ns4.arlut.utexas.edu (ns4.arlut.utexas.edu [66.162.93.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA24BDDE37
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Oct 2007 02:24:48 +1000 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so739107wag
+	Fri, 26 Oct 2007 07:50:10 +1000 (EST)
+Received: from ns2.arlut.utexas.edu (ns2.arlut.utexas.edu [146.6.211.1])
+	by ns4.arlut.utexas.edu (8.13.7/8.13.7) with ESMTP id l9PLnsVC021639
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Oct 2007 09:24:47 -0700 (PDT)
-Message-ID: <fa686aa40710250924u155d5644u535fc17c56983473@mail.gmail.com>
-Date: Thu, 25 Oct 2007 10:24:46 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wolfgang Grandegger" <wg@grandegger.com>
-Subject: Re: PCI on Lite5200/Icecube, known issues?
-In-Reply-To: <4720C27B.7020408@grandegger.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4720A628.8010108@grandegger.com>
-	<fa686aa40710250745i57f2a88sbc08478738ee382a@mail.gmail.com>
-	<4720B218.80607@grandegger.com> <4720C27B.7020408@grandegger.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Thu, 25 Oct 2007 16:49:54 -0500 (CDT)
+Subject: Re: MPC85xx and linux IDE driver
+From: Michael Brian Willis <willis@arlut.utexas.edu>
+To: Ben Warren <bwarren@qstreams.com>
+In-Reply-To: <471657FB.3040806@qstreams.com>
+References: <1192213784.4862.48.camel@louie> <470FCF8A.1000504@qstreams.com>
+	<1192643237.4929.41.camel@louie>  <471657FB.3040806@qstreams.com>
+Content-Type: text/plain
+Date: Thu, 25 Oct 2007 16:49:24 -0500
+Message-Id: <1193348964.29111.71.camel@louie>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,40 +30,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/25/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> Wolfgang Grandegger wrote:
-> > Grant Likely wrote:
-> >> On 10/25/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
-> >>> Hello,
-> >>>
-> >>> The access to PCI memory space does not to work (I allways read 0xff) on
-> >>> my Icecube-Eval-Board. Are there any known issues/bugs with using the
-> >>> PCI on the Lite5200/Icecube board with 2.6.23? Has it been tested? I
-> >>> realized, that CONFIG_PCI is not set in the default configuration.
-> >> arch/ppc or arch/powerpc?
-> >>
-> >> I'm not a PCI expert, but I just fired up my Lite5200 with a couple of
-> >> eth adapters plugged in and the devices are usable.  This is a
-> >> 2.6.24-rc1 arch/powerpc kernel.
-> >
-> > I'm using a 2.6.23 arch/powerpc kernel. And my eepro100 card does not
-> > work either:
-> >
-> > e100: probe of 0000:00:18.0 failed with error -11
-> >
-> > It looks like that 2.6.23 needs some more patches.
->
-> Indeed, it works with 2.6.24-rc1:
->
-> e100: eth0: e100_probe: addr 0xa0000000, irq 16, MAC addr 00:0e:0c:74:8c:f2
+On Wed, 2007-10-17 at 14:44 -0400, Ben Warren wrote:
 
-Okay, when I get a chance I'll try 2.6.23 on my lite5200
+> This device driver is a platform driver, so you need to register a 
+> platform device somewhere in your board-specific init code that contains 
+> the hardware details (memory mapping and IRQ #).  
 
-Cheers,
-g.
+After modifying your init code and putting it in my board specific ".c"
+file everything is working great. 
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Thanks again for all of your help!
+
+Michael Willis
