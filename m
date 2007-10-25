@@ -1,13 +1,20 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: Test on trees with different block layouts 
-In-Reply-To: Your message of "Thu, 25 Oct 2007 15:05:58 +1000."
-	<20071025050558.GE24856@localhost.localdomain>
-References: <20071025050558.GE24856@localhost.localdomain> 
-Date: Thu, 25 Oct 2007 09:56:52 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Il48i-0000Tg-Rk@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 86C5FDDEC5
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 01:20:15 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: ioctl32 unknown cmds with 2.6.24-rc1
+Date: Thu, 25 Oct 2007 17:19:52 +0200
+References: <1193229045.4510.35.camel@johannes.berg>
+	<200710251620.50218.arnd@arndb.de>
+	<Pine.LNX.4.62.0710251649520.3812@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0710251649520.3812@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200710251719.53285.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,19 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> At present, all the example dtbs we use in the testsuite are version
-> 17 and have reservation map, then structure block then strings block
-> (the natural ordering based on alignment constraints).  However, all
-> libfdt's read-only and in-place write functions should also work on
-> v16 trees, and on trees with other layouts.
-> 
-> This patch adds a testcase / utility function to rearrange the blocks
-> of a dtb and/or regress a v17 tree to v16, and uses it to run tests on
-> trees with different layouts and versions.
-> 
-> Signed-off-by: David Gibson <david@tgibson.dropbear.id.au>
+On Thursday 25 October 2007, Geert Uytterhoeven wrote:
+> In many cases these ioctls can indeed not be handled.
+> E.g. when using `hdparm -tT /dev/ps3da', hdparm issues an ioctl to flush the
+> cache. But this ioctl is not supported, not before and not after 2.6.23.
+> Before 2.6.23, it didn't print the message, in 2.6.23, it does.
 
-Applied.
+What I would expect to happen here is:
 
-jdl
+compat_blkdev_ioctl gets into the BLKFLSBUF case and calls blkdev_ioctl,
+which calls blkdev_driver_ioctl, which returns -ENOTTY because
+ps3disk_fops does not contain an unlocked_ioctl() or ioctl() method.
+
+compat_sys_ioctl then detects that BLKFLSBUF was already handled by
+compat_blkdev_ioctl (it did not return -ENOIOCTLCMD) and propagates
+the error code to user space, without printing the message.
+
+Whatever is different from that description must be what goes wrong.
+
+	Arnd <><
