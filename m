@@ -1,12 +1,9 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 25 Oct 2007 15:05:58 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Test on trees with different block layouts
-Message-ID: <20071025050558.GE24856@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 25 Oct 2007 15:27:44 +1000
+Subject: [RFC/PATCH] powerpc: Cleanup SMT thread handling
+Message-Id: <20071025052756.1CE72DDE9C@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,227 +13,302 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, all the example dtbs we use in the testsuite are version
-17 and have reservation map, then structure block then strings block
-(the natural ordering based on alignment constraints).  However, all
-libfdt's read-only and in-place write functions should also work on
-v16 trees, and on trees with other layouts.
+This patch cleans up the SMT thread handling, removing hard coded
+bits here or there and providing a set of helpers to convert between
+linux cpu numbers, thread numbers and cores.
 
-This patch adds a testcase / utility function to rearrange the blocks
-of a dtb and/or regress a v17 tree to v16, and uses it to run tests on
-trees with different layouts and versions.
+This implementation requires the number of threads per core to be a
+power of 2 and identical on all cores in the system, but it's an
+implementation detail, not an API requirement and so this limitation
+can be lifted in the future if anybody ever needs it.
 
-Signed-off-by: David Gibson <david@tgibson.dropbear.id.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Index: dtc/tests/mangle-layout.c
+I had that taking dust in a pile for some time (I hated all those
+hard coded ^ 1 etc...), please comment on the approach.
+
+I haven't scrubbed for all bits of code that may still be doing
+old style hard coded assumptions.
+
+  
+ arch/powerpc/kernel/setup-common.c   |   78 +++++++++++++++++++++++++++++------
+ arch/powerpc/platforms/cell/smp.c    |    3 -
+ arch/powerpc/platforms/pseries/smp.c |    3 -
+ include/asm-powerpc/cputhreads.h     |   71 +++++++++++++++++++++++++++++++
+ 4 files changed, 140 insertions(+), 15 deletions(-)
+
+Index: linux-work/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/setup-common.c	2007-10-25 13:48:31.000000000 +1000
++++ linux-work/arch/powerpc/kernel/setup-common.c	2007-10-25 13:53:23.000000000 +1000
+@@ -33,6 +33,7 @@
+ #include <linux/serial.h>
+ #include <linux/serial_8250.h>
+ #include <linux/debugfs.h>
++#include <linux/percpu.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/processor.h>
+@@ -57,6 +58,7 @@
+ #include <asm/mmu.h>
+ #include <asm/lmb.h>
+ #include <asm/xmon.h>
++#include <asm/cputhreads.h>
+ 
+ #include "setup.h"
+ 
+@@ -327,6 +329,31 @@ void __init check_for_initrd(void)
+ 
+ #ifdef CONFIG_SMP
+ 
++int threads_per_core, threads_shift;
++cpumask_t threads_core_mask;
++
++static void __init cpu_init_thread_core_maps(int tpc)
++{
++	int i;
++
++	threads_per_core = tpc;
++	threads_core_mask = CPU_MASK_NONE;
++
++	/* This implementation only supports power of 2 number of threads
++	 * for simplicity/performances
++	 */
++	threads_shift = ilog2(tpc);
++	BUG_ON(tpc != (1 << threads_shift));
++
++	for (i = 0; i < tpc; i++)
++		cpu_set(i, threads_core_mask);
++
++	printk(KERN_INFO "CPU maps initialized for %d thread%s per core\n",
++	       tpc, tpc > 1 ? "s" : "");
++	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
++}
++
++
+ /**
+  * setup_cpu_maps - initialize the following cpu maps:
+  *                  cpu_possible_map
+@@ -350,22 +377,32 @@ void __init smp_setup_cpu_maps(void)
+ {
+ 	struct device_node *dn = NULL;
+ 	int cpu = 0;
++	int nthreads = 1;
++
++	DBG("smp_setup_cpu_maps()\n");
+ 
+ 	while ((dn = of_find_node_by_type(dn, "cpu")) && cpu < NR_CPUS) {
+ 		const int *intserv;
+-		int j, len = sizeof(u32), nthreads = 1;
++		int j, len;
++
++		DBG("  * %s...\n", dn->full_name);
+ 
+ 		intserv = of_get_property(dn, "ibm,ppc-interrupt-server#s",
+ 				&len);
+-		if (intserv)
++		if (intserv) {
+ 			nthreads = len / sizeof(int);
+-		else {
++			DBG("    ibm,ppc-interrupt-server#s -> %d threads\n",
++			    nthreads);
++		} else {
++			DBG("    no ibm,ppc-interrupt-server#s -> 1 thread\n");
+ 			intserv = of_get_property(dn, "reg", NULL);
+ 			if (!intserv)
+ 				intserv = &cpu;	/* assume logical == phys */
+ 		}
+ 
+ 		for (j = 0; j < nthreads && cpu < NR_CPUS; j++) {
++			DBG("    thread %d -> cpu %d (hard id %d)\n",
++			    j, cpu, intserv[j]);
+ 			cpu_set(cpu, cpu_present_map);
+ 			set_hard_smp_processor_id(cpu, intserv[j]);
+ 			cpu_set(cpu, cpu_possible_map);
+@@ -373,6 +410,12 @@ void __init smp_setup_cpu_maps(void)
+ 		}
+ 	}
+ 
++	/* If no SMT supported, nthreads is forced to 1 */
++	if (!cpu_has_feature(CPU_FTR_SMT)) {
++		DBG("  SMT disabled ! nthreads forced to 1\n");
++		nthreads = 1;
++	}
++
+ #ifdef CONFIG_PPC64
+ 	/*
+ 	 * On pSeries LPAR, we need to know how many cpus
+@@ -395,7 +438,7 @@ void __init smp_setup_cpu_maps(void)
+ 
+ 		/* Double maxcpus for processors which have SMT capability */
+ 		if (cpu_has_feature(CPU_FTR_SMT))
+-			maxcpus *= 2;
++			maxcpus *= nthreads;
+ 
+ 		if (maxcpus > NR_CPUS) {
+ 			printk(KERN_WARNING
+@@ -412,9 +455,16 @@ void __init smp_setup_cpu_maps(void)
+ 	out:
+ 		of_node_put(dn);
+ 	}
+-
+ 	vdso_data->processorCount = num_present_cpus();
+ #endif /* CONFIG_PPC64 */
++
++        /* Initialize CPU <=> thread mapping/
++	 *
++	 * WARNING: We assume that the number of threads is the same for
++	 * every CPU in the system. If that is not the case, then some code
++	 * here will have to be reworked
++	 */
++	cpu_init_thread_core_maps(nthreads);
+ }
+ 
+ /*
+@@ -424,17 +474,19 @@ void __init smp_setup_cpu_maps(void)
+  */
+ void __init smp_setup_cpu_sibling_map(void)
+ {
+-#if defined(CONFIG_PPC64)
+-	int cpu;
++#ifdef CONFIG_PPC64
++	int i, cpu, base;
+ 
+-	/*
+-	 * Do the sibling map; assume only two threads per processor.
+-	 */
+ 	for_each_possible_cpu(cpu) {
+-		cpu_set(cpu, per_cpu(cpu_sibling_map, cpu));
+-		if (cpu_has_feature(CPU_FTR_SMT))
+-			cpu_set(cpu ^ 0x1, per_cpu(cpu_sibling_map, cpu));
++		DBG("Sibling map for CPU %d:", cpu);
++		base = cpu_first_thread_in_core(cpu);
++		for (i = 0; i < threads_per_core; i++) {
++			cpu_set(base + i, per_cpu(cpu_sibling_map, cpu));
++			DBG(" %d", base + i);
++		}
++		DBG("\n");
+ 	}
++
+ #endif /* CONFIG_PPC64 */
+ }
+ #endif /* CONFIG_SMP */
+Index: linux-work/include/asm-powerpc/cputhreads.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/mangle-layout.c	2007-10-25 14:51:55.000000000 +1000
-@@ -0,0 +1,166 @@
++++ linux-work/include/asm-powerpc/cputhreads.h	2007-10-25 13:49:49.000000000 +1000
+@@ -0,0 +1,71 @@
++#ifndef _ASM_POWERPC_CPUTHREADS_H
++#define _ASM_POWERPC_CPUTHREADS_H
++
++#include <linux/cpumask.h>
++
 +/*
-+ * libfdt - Flat Device Tree manipulation
-+ *	Testcase/tool for rearranging blocks of a dtb
-+ * Copyright (C) 2006 David Gibson, IBM Corporation.
-+ *
-+ * This library is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation; either version 2.1 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This library is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * Lesser General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU Lesser General Public
-+ * License along with this library; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
++ * Mapping of threads to cores
 + */
 +
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <limits.h>
-+#include <stdint.h>
++#ifdef CONFIG_SMP
++extern int threads_per_core;
++extern int threads_shift;
++extern cpumask_t threads_core_mask;
++#else
++#define threads_per_core	1
++#define threads_shift		0
++#define threads_core_mask	(CPU_MASK_CPU0)
++#endif
 +
-+#include <fdt.h>
-+#include <libfdt.h>
-+
-+#include "tests.h"
-+#include "testdata.h"
-+
-+struct bufstate {
-+	void *buf;
-+	int size;
-+};
-+
-+void expand_buf(struct bufstate *buf, int newsize)
++/* cpu_thread_mask_to_cores - Return a cpumask of one per cores
++ *                            hit by the argument
++ *
++ * @threads:	a cpumask of threads
++ *
++ * This function returns a cpumask which will have one "cpu" (or thread)
++ * bit set for each core that has at least one thread set in the argument.
++ *
++ * This can typically be used for things like IPI for tlb invalidations
++ * since those need to be done only once per core/TLB
++ */
++static inline cpumask_t cpu_thread_mask_to_cores(cpumask_t threads)
 +{
-+	buf->buf = realloc(buf->buf, newsize);
-+	if (!buf->buf)
-+		CONFIG("Allocation failure");
-+	buf->size = newsize;
-+}
++	cpumask_t	tmp, res;
++	int		i;
 +
-+void new_header(struct bufstate *buf, int version, const void *fdt)
-+{
-+	int hdrsize;
-+
-+	if (version == 16)
-+		hdrsize = FDT_V16_SIZE;
-+	else if (version == 17)
-+		hdrsize = FDT_V17_SIZE;
-+	else
-+		CONFIG("Bad version %d", version);
-+
-+	expand_buf(buf, hdrsize);
-+	memset(buf->buf, 0, hdrsize);
-+
-+	fdt_set_magic(buf->buf, FDT_MAGIC);
-+	fdt_set_version(buf->buf, version);
-+	fdt_set_last_comp_version(buf->buf, 16);
-+	fdt_set_boot_cpuid_phys(buf->buf, fdt_boot_cpuid_phys(fdt));
-+}
-+
-+void add_block(struct bufstate *buf, int version, char block, const void *fdt)
-+{
-+	int align, size;
-+	const void *src;
-+	int offset;
-+
-+	switch (block) {
-+	case 'm':
-+		/* Memory reserve map */
-+		align = 8;
-+		src = fdt + fdt_off_mem_rsvmap(fdt);
-+		size = (fdt_num_mem_rsv(fdt) + 1)
-+			* sizeof(struct fdt_reserve_entry);
-+		break;
-+
-+	case 't':
-+		/* Structure block */
-+		align = 4;
-+		src = fdt + fdt_off_dt_struct(fdt);
-+		size = fdt_size_dt_struct(fdt);
-+		break;
-+
-+	case 's':
-+		/* Strings block */
-+		align = 1;
-+		src = fdt + fdt_off_dt_strings(fdt);
-+		size = fdt_size_dt_strings(fdt);
-+		break;
-+	default:
-+		CONFIG("Bad block '%c'", block);
++	res = CPU_MASK_NONE;
++	for (i = 0; i < NR_CPUS; i += threads_per_core) {
++		cpus_shift_right(tmp, threads_core_mask, i);
++		if (cpus_intersects(threads, tmp))
++			cpu_set(i, res);
 +	}
-+
-+	offset = ALIGN(buf->size, align);
-+	fprintf(stderr, "Moving block %c from %p, to offset %d, size %d\n",
-+		block, src, offset, size);
-+
-+	expand_buf(buf, offset+size);
-+
-+	memcpy(buf->buf + offset, src, size);
-+
-+	switch (block) {
-+	case 'm':
-+		fdt_set_off_mem_rsvmap(buf->buf, offset);
-+		break;
-+
-+	case 't':
-+		fdt_set_off_dt_struct(buf->buf, offset);
-+		if (version >= 17)
-+			fdt_set_size_dt_struct(buf->buf, size);
-+		break;
-+
-+	case 's':
-+		fdt_set_off_dt_strings(buf->buf, offset);
-+		fdt_set_size_dt_strings(buf->buf, size);
-+		break;
-+	}
++	return res;
 +}
 +
-+int main(int argc, char *argv[])
++static inline int cpu_nr_cores(void)
 +{
-+	void *fdt;
-+	int version;
-+	const char *blockorder;
-+	struct bufstate buf = {NULL, 0};
-+	int err;
-+	const char *inname;
-+	char outname[PATH_MAX];
-+
-+	test_init(argc, argv);
-+	if (argc != 4)
-+		CONFIG("Usage: %s <dtb file> <version> <block order>", argv[0]);
-+
-+	inname = argv[1];
-+	fdt = load_blob(argv[1]);
-+	version = atoi(argv[2]);
-+	blockorder = argv[3];
-+	sprintf(outname, "v%d.%s.%s", version, blockorder, inname);
-+
-+	if ((version != 16) && (version != 17))
-+		CONFIG("Version must be 16 or 17");
-+
-+	if (fdt_version(fdt) < 17)
-+		CONFIG("Input tree must be v17");
-+
-+	new_header(&buf, version, fdt);
-+
-+	while (*blockorder) {
-+		add_block(&buf, version, *blockorder, fdt);
-+		blockorder++;
-+	}
-+
-+	fdt_set_totalsize(buf.buf, buf.size);
-+
-+	err = fdt_check_header(buf.buf);
-+	if (err)
-+		FAIL("Output tree fails check: %s", fdt_strerror(err));
-+
-+	save_blob(outname, buf.buf);
-+
-+	PASS();
++	return NR_CPUS >> threads_shift;
 +}
-Index: dtc/tests/Makefile.tests
++
++static inline cpumask_t cpu_online_cores_map(void)
++{
++	return cpu_thread_mask_to_cores(cpu_online_map);
++}
++
++static inline int cpu_thread_to_core(int cpu)
++{
++	return cpu >> threads_shift;
++}
++
++static inline int cpu_thread_in_core(int cpu)
++{
++	return cpu & (threads_per_core - 1);
++}
++
++static inline int cpu_first_thread_in_core(int cpu)
++{
++	return cpu & ~(threads_per_core - 1);
++}
++
++#endif /* _ASM_POWERPC_CPUTHREADS_H */
++
+Index: linux-work/arch/powerpc/platforms/cell/smp.c
 ===================================================================
---- dtc.orig/tests/Makefile.tests	2007-10-25 13:57:12.000000000 +1000
-+++ dtc/tests/Makefile.tests	2007-10-25 14:49:42.000000000 +1000
-@@ -6,7 +6,7 @@
- 	notfound \
- 	setprop_inplace nop_property nop_node \
- 	sw_tree1 \
--	move_and_save \
-+	move_and_save mangle-layout \
- 	open_pack rw_tree1 setprop del_property del_node \
- 	string_escapes dtbs_equal_ordered
- LIB_TESTS = $(LIB_TESTS_L:%=$(TESTS_PREFIX)%)
-Index: dtc/tests/run_tests.sh
-===================================================================
---- dtc.orig/tests/run_tests.sh	2007-10-25 13:57:12.000000000 +1000
-+++ dtc/tests/run_tests.sh	2007-10-25 14:58:14.000000000 +1000
-@@ -79,6 +79,17 @@
- 	tree1_tests deshunted.$tree
-     done
+--- linux-work.orig/arch/powerpc/platforms/cell/smp.c	2007-10-25 13:48:31.000000000 +1000
++++ linux-work/arch/powerpc/platforms/cell/smp.c	2007-10-25 13:50:56.000000000 +1000
+@@ -42,6 +42,7 @@
+ #include <asm/firmware.h>
+ #include <asm/system.h>
+ #include <asm/rtas.h>
++#include <asm/cputhreads.h>
  
-+    # v16 and alternate layout tests
-+    for tree in test_tree1.dtb; do
-+	for version in 17 16; do
-+	    for layout in mts mst tms tsm smt stm; do
-+		run_test mangle-layout $tree $version $layout
-+		tree1_tests v$version.$layout.$tree
-+		run_test dtbs_equal_ordered $tree v$version.$layout.$tree
-+	    done
-+	done
-+    done
-+
-     # Read-write tests
-     for tree in test_tree1.dtb sw_tree1.test.dtb; do
- 	rm -f opened.$tree repacked.$tree
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ #include "interrupt.h"
+ 
+@@ -181,7 +182,7 @@ static int smp_cell_cpu_bootable(unsigne
+ 	 */
+ 	if (system_state < SYSTEM_RUNNING &&
+ 	    cpu_has_feature(CPU_FTR_SMT) &&
+-	    !smt_enabled_at_boot && nr % 2 != 0)
++	    !smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
+ 		return 0;
+ 
+ 	return 1;
+Index: linux-work/arch/powerpc/platforms/pseries/smp.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/pseries/smp.c	2007-10-25 13:48:31.000000000 +1000
++++ linux-work/arch/powerpc/platforms/pseries/smp.c	2007-10-25 13:50:40.000000000 +1000
+@@ -46,6 +46,7 @@
+ #include <asm/pSeries_reconfig.h>
+ #include <asm/mpic.h>
+ #include <asm/vdso_datapage.h>
++#include <asm/cputhreads.h>
+ 
+ #include "plpar_wrappers.h"
+ #include "pseries.h"
+@@ -202,7 +203,7 @@ static int smp_pSeries_cpu_bootable(unsi
+ 	 */
+ 	if (system_state < SYSTEM_RUNNING &&
+ 	    cpu_has_feature(CPU_FTR_SMT) &&
+-	    !smt_enabled_at_boot && nr % 2 != 0)
++	    !smt_enabled_at_boot && cpu_thread_in_core(nr) != 0)
+ 		return 0;
+ 
+ 	return 1;
