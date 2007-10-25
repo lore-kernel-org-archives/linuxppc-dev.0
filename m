@@ -1,20 +1,30 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 8FB0ADDE48
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 04:57:09 +1000 (EST)
-Date: 25 Oct 2007 11:57:06 -0700
-Message-ID: <20071025185706.29496.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: domen.puncer@telargo.com
-Subject: Re: [PATCH v4] FEC - fast ethernet controller for mpc52xx
-In-Reply-To: <20071025141035.GG3369@nd47.coderock.org>
-References: <20071014075511.GC3000@nd47.coderock.org>
-	<4713BA1C.2050604@pobox.com>
-	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
-	<4717B09B.3060800@pobox.com>
-	<20071019112700.GD27403@nd47.coderock.org>
-	<47206209.8080109@pobox.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <benjamin@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 70A35DDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 05:11:04 +1000 (EST)
+Subject: Re: [PATCH] fix appletouch geyser 1 breakage
+From: Benjamin Berg <benjamin@sipsolutions.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1193318605.6092.11.camel@johannes.berg>
+References: <1193222676.4510.5.camel@johannes.berg>
+	<d120d5000710240555m545a4f95v8bfc1ac790273001@mail.gmail.com>
+	<1193231110.4510.42.camel@johannes.berg>
+	<d120d5000710240634j21d2b660t267ace56bd9d6af6@mail.gmail.com>
+	<1193233015.4510.44.camel@johannes.berg>
+	<d120d5000710240729v2e3faea8u615cfa7f1e489d11@mail.gmail.com>
+	(sfid-20071024_152918_483347_CDA0EBD8)
+	<1193318605.6092.11.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-zJzYqGG0RMkZknj7KsJa"
+Date: Thu, 25 Oct 2007 20:28:01 +0200
+Message-Id: <1193336881.4630.8.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Anton Ekblad <valderman@gmail.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,206 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Domen wrote:
-> > use your platform's dma mapping functions, rather than virt_to_phys()
-> > 
-> > it might be the exact same implementation, inside the platform 
-> > internals, but drivers should not be using this directly.
-> 
-> I've replaced this with dma_map_single(), unmatched with
-> dma_unmap_single(), since bestcomm doesn't have a way to do that
-> and it's blank on ppc32 anyway.
-> 
-> Is this OK? PPC guys?
 
-Even though dma_unmap_single() may be a no-op, calls to
-dma_map_single() must be matched with calls to dma_unmap_single().
+--=-zJzYqGG0RMkZknj7KsJa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps with the additions below:
+On Thu, 2007-25-10 at 15:23 +0200, Johannes Berg wrote:
+> On Wed, 2007-10-24 at 10:29 -0400, Dmitry Torokhov wrote:
+>=20
+> > Do yo know who has powerbooks with older geyser models (0x214, 215,
+> > 216)?=20
+>=20
+> Not sure, Benjamin? We're talking about the touchpad, just lsusb should
+> be enough.
 
-> +static void mpc52xx_fec_free_rx_buffers(struct bcom_task *s)
-> +{
-> +	struct sk_buff *skb;
-> +
-> +	while (!bcom_queue_empty(s)) {
-> +		skb = bcom_retrieve_buffer(s, NULL, NULL);
+lsusb says I have a 0x215
+(Bus 003 Device 002: ID 05ac:0215 Apple Computer, Inc.)
 
-		dma_unmap_single(&skb->dev->dev, skb-data,
-				 FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+Everything is working fine with a 2.6.24-rc1 kernel (ie. no bogus
+messages).
 
-> +		kfree_skb(skb);
-> +	}
-> +}
-> +
-> +static int mpc52xx_fec_alloc_rx_buffers(struct net_device *dev, struct
-> bcom_task *rxtsk)
-> +{
-> +	while (!bcom_queue_full(rxtsk)) {
-> +		struct sk_buff *skb;
-> +		struct bcom_fec_bd *bd;
-> +
-> +		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
-> +		if (skb == NULL)
-> +			return -EAGAIN;
+> > It would be nice to know if they send the data continiously and
+> > whether the geyser 3 reset hack works on them.
+>=20
+> That'd be good, but for fountains it definitely doesn't work.
 
-		skb->dev = dev;
+Benjamin
 
-> +
-> +		/* zero out the initial receive buffers to aid debugging */
-> +		memset(skb->data, 0, FEC_RX_BUFFER_SIZE);
-> +
-> +		bd = (struct bcom_fec_bd *)bcom_prepare_next_buffer(rxtsk);
-> +
-> +		bd->status = FEC_RX_BUFFER_SIZE;
-> +		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
-> +				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-> +
-> +		bcom_submit_next_buffer(rxtsk, skb);
-> +	}
-> +
-> +	return 0;
-> +}
+--=-zJzYqGG0RMkZknj7KsJa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-[...]
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-> +static int mpc52xx_fec_hard_start_xmit(struct sk_buff *skb, struct
-> net_device *dev)
-> +{
-> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-> +	struct bcom_fec_bd *bd;
-> +
-> +	if (bcom_queue_full(priv->tx_dmatsk)) {
-> +		if (net_ratelimit())
-> +			dev_err(&dev->dev, "transmit queue overrun\n");
-> +		return 1;
-> +	}
-> +
-> +	spin_lock_irq(&priv->lock);
-> +	dev->trans_start = jiffies;
-> +
-> +	bd = (struct bcom_fec_bd *)
-> +		bcom_prepare_next_buffer(priv->tx_dmatsk);
-> +
-> +	bd->status = skb->len | BCOM_FEC_TX_BD_TFD | BCOM_FEC_TX_BD_TC;
-> +	bd->skb_pa = dma_map_single(&dev->dev, skb->data, skb->len, DMA_TO_DEVICE);
-> +
-> +	bcom_submit_next_buffer(priv->tx_dmatsk, skb);
-> +
-> +	if (bcom_queue_full(priv->tx_dmatsk)) {
-> +		netif_stop_queue(dev);
-> +	}
-> +
-> +	spin_unlock_irq(&priv->lock);
-> +
-> +	return 0;
-> +}
-> +
-> +/* This handles BestComm transmit task interrupts
-> + */
-> +static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
-> +{
-> +	struct net_device *dev = dev_id;
-> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-> +
-> +	spin_lock(&priv->lock);
-> +
-> +	while (bcom_buffer_done(priv->tx_dmatsk)) {
-> +		struct sk_buff *skb;
-> +		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL, NULL);
-> +		/* Here (and in rx routines) would be a good place for
-> +		 * dma_unmap_single(), but bcom doesn't return bcom_bd of the
-> +		 * finished transfer, and _unmap is empty on this platfrom.
-> +		 */
+iD8DBQBHIOAxJddvdAxOva4RAstpAJ93Zen6p79J0qTjnfUavj0cIMfR5ACfRGgu
+SdTS+/cJKeDQfdzhQ7udKUM=
+=nVjZ
+-----END PGP SIGNATURE-----
 
-Replace the above comment with:
-
-		dma_unmap_single(&dev->dev, skb->data,
-				 skb->len, DMA_TO_DEVICE);
-
-> +
-> +		dev_kfree_skb_irq(skb);
-> +	}
-> +
-> +	netif_wake_queue(dev);
-> +
-> +	spin_unlock(&priv->lock);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
-> +{
-> +	struct net_device *dev = dev_id;
-> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-> +
-> +	while (bcom_buffer_done(priv->rx_dmatsk)) {
-> +		struct sk_buff *skb;
-> +		struct sk_buff *rskb;
-> +		struct bcom_fec_bd *bd;
-> +		u32 status;
-> +
-> +		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status, NULL);
-
-		dma_unmap_single(&dev->dev, rskb->data,
-				 FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-
-> +
-> +		/* Test for errors in received frame */
-> +		if (status & BCOM_FEC_RX_BD_ERRORS) {
-> +			/* Drop packet and reuse the buffer */
-> +			bd = (struct bcom_fec_bd *)
-> +				bcom_prepare_next_buffer(priv->rx_dmatsk);
-> +
-> +			bd->status = FEC_RX_BUFFER_SIZE;
-> +			bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
-> +					FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-> +
-> +			bcom_submit_next_buffer(priv->rx_dmatsk, rskb);
-> +
-> +			dev->stats.rx_dropped++;
-> +
-> +			continue;
-> +		}
-> +
-> +		/* skbs are allocated on open, so now we allocate a new one,
-> +		 * and remove the old (with the packet) */
-> +		skb = dev_alloc_skb(FEC_RX_BUFFER_SIZE);
-> +		if (skb) {
-> +			/* Process the received skb */
-> +			int length = status & BCOM_FEC_RX_BD_LEN_MASK;
-
-			skb->dev = dev;
-
-> +
-> +			skb_put(rskb, length - 4);	/* length without CRC32 */
-> +
-> +			rskb->dev = dev;
-
-Above line is no longer needed since we set rskb->dev on skb allocation.
-
-> +			rskb->protocol = eth_type_trans(rskb, dev);
-> +
-> +			netif_rx(rskb);
-> +			dev->last_rx = jiffies;
-> +		} else {
-> +			/* Can't get a new one : reuse the same & drop pkt */
-> +			dev_notice(&dev->dev, "Memory squeeze, dropping packet.\n");
-> +			dev->stats.rx_dropped++;
-> +
-> +			skb = rskb;
-> +		}
-> +
-> +		bd = (struct bcom_fec_bd *)
-> +			bcom_prepare_next_buffer(priv->rx_dmatsk);
-> +
-> +		bd->status = FEC_RX_BUFFER_SIZE;
-> +		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
-> +				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-> +
-> +		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-
--Dale Farnsworth
+--=-zJzYqGG0RMkZknj7KsJa--
