@@ -1,13 +1,30 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 25 Oct 2007 16:42:35 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc: prpmc2800 - Don't overwrite user FLASH size
-Message-ID: <20071025234235.GA22913@mag.az.mvista.com>
-References: <20071025233948.GA22703@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071025233948.GA22703@mag.az.mvista.com>
+Return-Path: <shemminger@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4D22DDDE34
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 09:50:35 +1000 (EST)
+Date: Thu, 25 Oct 2007 16:50:03 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: "Dale Farnsworth" <dale@farnsworth.org>
+Subject: Re: [PATCH v4] FEC - fast ethernet controller for mpc52xx
+Message-ID: <20071025165003.7972a0b6@freepuppy.rosehill>
+In-Reply-To: <20071025202908.GA2102@xyzzy.farnsworth.org>
+References: <20071014075511.GC3000@nd47.coderock.org>
+	<4713BA1C.2050604@pobox.com>
+	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+	<4717B09B.3060800@pobox.com>
+	<20071019112700.GD27403@nd47.coderock.org>
+	<47206209.8080109@pobox.com>
+	<20071025185706.29496.qmail@farnsworth.org>
+	<20071025194114.GH3369@nd47.coderock.org>
+	<20071025202908.GA2102@xyzzy.farnsworth.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, Domen Puncer <domen.puncer@telargo.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,199 +34,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mark A. Greer <mgreer@mvista.com>
+On Thu, 25 Oct 2007 13:29:08 -0700
+"Dale Farnsworth" <dale@farnsworth.org> wrote:
 
-The prpmc2800 bootwrapper code currently overwrites the DTS' user FLASH
-size with a predetermined value.  Intead make it use whatever is specified
-in the DTS unless the prpmc2800 variant the bootwrapper is running on has
-no user FLASH.  In that case, set the user FLASH size to 0.
+> On Thu, Oct 25, 2007 at 09:41:14PM +0200, Domen Puncer wrote:
+> > On 25/10/07 11:57 -0700, Dale Farnsworth wrote:
+> > > Domen wrote:
+> > > > > use your platform's dma mapping functions, rather than virt_to_phys()
+> > > > > 
+> > > > > it might be the exact same implementation, inside the platform 
+> > > > > internals, but drivers should not be using this directly.
+> > > > 
+> > > > I've replaced this with dma_map_single(), unmatched with
+> > > > dma_unmap_single(), since bestcomm doesn't have a way to do that
+> > > > and it's blank on ppc32 anyway.
+> > > > 
+> > > > Is this OK? PPC guys?
+> > > 
+> > > Even though dma_unmap_single() may be a no-op, calls to
+> > > dma_map_single() must be matched with calls to dma_unmap_single().
+> > > 
+> > > Perhaps with the additions below:
+> > > 
+> > > > +static void mpc52xx_fec_free_rx_buffers(struct bcom_task *s)
+> > > > +{
+> > > > +	struct sk_buff *skb;
+> > > > +
+> > > > +	while (!bcom_queue_empty(s)) {
+> > > > +		skb = bcom_retrieve_buffer(s, NULL, NULL);
+> > > 
+> > > 		dma_unmap_single(&skb->dev->dev, skb-data,
+> > > 				 FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+> > 
+> > It looks to me like dma_unmap_single takes the mapped address
+> > (what dma_map_single returned), and not the address we're mapping
+> > (skb->data).
+> 
+> Yeah.  Sorry.  That won't be so easy.  We'll either need to
+> squirrel away the mapped address, or change the interface to
+> bcom_retrieve_buffers() so we can get the address.
+> 
+> IMO, it's still a requirement that we call dma_unmap_single() for
+> each call to dma_map_single().
+> 
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
- arch/powerpc/boot/prpmc2800.c |   54 ++++++++++++++++----------------
- 1 file changed, 28 insertions(+), 26 deletions(-)
+There exist some macro's for pci stuff to handle the nop case well
+see: pci_unmap_addr(), pci_unmap_len().
 
-diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
-index 9614e1d..a8b3213 100644
---- a/arch/powerpc/boot/prpmc2800.c
-+++ b/arch/powerpc/boot/prpmc2800.c
-@@ -58,7 +58,7 @@ struct prpmc2800_board_info {
- 	u32 core_speed;
- 	u32 mem_size;
- 	u32 boot_flash;
--	u32 user_flash;
-+	u8 has_user_flash;
- };
- 
- static struct prpmc2800_board_info prpmc2800_board_info[] = {
-@@ -73,7 +73,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -86,7 +86,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 0,
--		.user_flash	= 0,
-+		.has_user_flash	= 0,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -99,7 +99,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 733*MHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -112,7 +112,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 1*GB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -125,7 +125,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -138,7 +138,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 733*MHz,
- 		.mem_size	= 128*MB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 0,
-+		.has_user_flash	= 0,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -151,7 +151,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 256*MB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 0,
-+		.has_user_flash	= 0,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC280,
-@@ -164,7 +164,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 1*GB,
- 		.boot_flash	= 1*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -177,7 +177,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -190,7 +190,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 0,
--		.user_flash	= 0,
-+		.has_user_flash	= 0,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -203,7 +203,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 733*MHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -216,7 +216,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 1*GB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -229,7 +229,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 512*MB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -242,7 +242,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 733*MHz,
- 		.mem_size	= 128*MB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 0,
-+		.has_user_flash	= 0,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -255,7 +255,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 1*GHz,
- 		.mem_size	= 2*GB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- 	{
- 		.model		= BOARD_MODEL_PRPMC2800,
-@@ -268,7 +268,7 @@ static struct prpmc2800_board_info prpmc2800_board_info[] = {
- 		.core_speed	= 733*MHz,
- 		.mem_size	= 1*GB,
- 		.boot_flash	= 2*MB,
--		.user_flash	= 64*MB,
-+		.has_user_flash	= 1,
- 	},
- };
- 
-@@ -451,15 +451,17 @@ static void prpmc2800_fixups(void)
- 		setprop(devp, "model", "mv64362", strlen("mv64362") + 1);
- 	}
- 
--	/* Set User FLASH size */
--	devp = finddevice("/mv64x60/flash@a0000000");
--	if (devp == NULL)
--		fatal("Error: Missing User FLASH device tree node\n\r");
--	rc = getprop(devp, "reg", v, sizeof(v));
--	if (rc != sizeof(v))
--		fatal("Error: Can't find User FLASH reg property\n\r");
--	v[1] = bip->user_flash;
--	setprop(devp, "reg", v, sizeof(v));
-+	/* Some PrPMC2800 variants have no User FLASH */
-+	if (!bip->has_user_flash) {
-+		devp = finddevice("/mv64x60/flash@a0000000");
-+		if (devp != NULL) {
-+			rc = getprop(devp, "reg", v, sizeof(v));
-+			if (rc == sizeof(v)) {
-+				v[1] = 0;
-+				setprop(devp, "reg", v, sizeof(v));
-+			}
-+		}
-+	}
- }
- 
- #define MV64x60_MPP_CNTL_0	0xf000
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
