@@ -1,18 +1,18 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
-	by ozlabs.org (Postfix) with ESMTP id CCE0BDDE3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 01:24:03 +1000 (EST)
-Message-ID: <4720B4FA.5050106@semihalf.com>
-Date: Thu, 25 Oct 2007 17:23:38 +0200
+	by ozlabs.org (Postfix) with ESMTP id B1353DDED4
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 01:46:51 +1000 (EST)
+Message-ID: <4720BA4B.5090707@semihalf.com>
+Date: Thu, 25 Oct 2007 17:46:19 +0200
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>,
-	linuxppc-dev@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-	<20071024015115.GK10595@localhost.localdomain>
-In-Reply-To: <20071024015115.GK10595@localhost.localdomain>
+References: <20071023231302.29359.27417.stgit@hekate.izotz.org>	<20071023231333.29359.35252.stgit@hekate.izotz.org>	<13403420.post@talk.nabble.com>
+	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
+In-Reply-To: <fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Oct 24, 2007 at 01:13:33AM +0200, Marian Balakowicz wrote:
+Grant Likely wrote:
+> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
+>>
+>> < +             flash@00000000 {
+>> < +                     compatible = "cfi-flash";
+>> < +                     reg = <00000000 02000000>;
+>> < +                     bank-width = <4>;
+>> < +                     device-width = <2>;
+>> < +                     #size-cells = <1>;
+>> < +                     #address-cells = <1>;
+>> < +                     partition@0 {
+>> < +                             label = "firmware";
+>> < +                             reg = <0 a0000>;
+>> < +                     };
+>> < +                     partition@a0000 {
+>> < +                             label = "dtb";
+>> < +                             reg = <a0000 20000>;
+>> < +                     };
+>> < +                     partition@c0000 {
+>> < +                             label = "kernel";
+>> < +                             reg = <c0000 240000>;
+>> < +                     };
+>> < +                     partition@300000 {
+>> < +                             label = "initrd";
+>> < +                             reg = <300000 200000>;
+>> < +                     };
+>> < +                     partition@500000 {
+>> < +                             label = "small-fs";
+>> < +                             reg = <500000 400000>;
+>> < +                     };
+>> < +                     partition@900000 {
+>> < +                             label = "misc";
+>> < +                             reg = <900000 800000>;
+>> < +                     };
+>> < +                     partition@1100000 {
+>> < +                             label = "big-fs";
+>> < +                             reg = <1100000 f00000>;
+>> < +                     };
+>> < +             };
+>> < +     };
+>>
+>> This MTD layout only works on boards with 32 MiB (or 64 MiB) flash
+>> memory. On TQM5200 boards with smaller Flashes (16 MiB, 8 MiB and 4 MiB)
+>> the MTD partition borders do not match with the physikal memory borders.
 > 
-> [snip]
->> +	lpb@fc000000 {
->> +		model = "fsl,lpb";
->> +		compatible = "lpb";
+> If there is a variant board with a different configuration, then the
+> device tree needs to be changed for that variant board; either by
+> having multiple .dts files in arch/powerpc/boot/dts or by having the
+> bootloader populate the correct information.  A dtb as passed to the
+> kernel must exactly represent the hardware.
 > 
-> Not nearly specific enough.  Must include a vendor prefix at least,
-> and should have a lot more revision information.  You should always be
-> able to pick the right driver with compatible alone, "model" should
-> generally be for human consumption, the driver shouldn't need it.
-> 
->> +		device_type = "lpb";
-> 
-> Drop this.  Again, presence of a device_type property is the
-> exception, not the rule.
-> 
->> +		ranges = <0 fc000000 02000000>;
-> 
-> You need #address-cells and #size-cells properties, too.
-> 
-> [snip]
+> That also means that there is going to be a different flash map for
+> each possible flash size configuration.
 
-OK, will update that. I guess I'll also need to use 'compatible' and
-skip type when passing bus ids to of_platform_bus_probe().
+Agree, that's one particular configuration (I guess I should add
+proper comment), that should be updated if needed. But I'am not sure
+if we should have multiple .dts files if it's only flash layout that
+changes.
+
+>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
+>> partition could not be used. "big-fs", because the memory is too small
+>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
+>> flash border. So only the first 9 MiB of the flash could be used in Linux.
+>> The remaining 7 MiB couldn't be accessed.
+> 
+> Perhaps it would be better to drop the flash layout from the in-kernel
+> dts files entirely since flash layout can be a fluid thing.
+
+Well, but that would not be really user friendly, I'd rather stick
+with some default config.
 
 m.
