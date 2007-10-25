@@ -1,26 +1,27 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8C38DDE22
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 08:00:20 +1000 (EST)
-Message-ID: <47211270.8010606@genesi-usa.com>
-Date: Thu, 25 Oct 2007 23:02:24 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+	by ozlabs.org (Postfix) with ESMTP id 556F2DDE1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 08:46:25 +1000 (EST)
+Message-ID: <47211CBB.5080000@garzik.org>
+Date: Thu, 25 Oct 2007 18:46:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [linux-usb-devel] [PATCH 1/2] USB: Rework OHCI PPC OF for new
-	bindings
-References: <20071024163412.GA17785@ru.mvista.com>	
-	<471FC191.6020704@genesi-usa.com>	
-	<200710241850.05467.david-b@pacbell.net>
-	<fa686aa40710241941w16fe3e75hb8ede9f9c8464e94@mail.gmail.com>
-	<47208273.8050601@ru.mvista.com> <4720DA11.9030103@genesi-usa.com>
-	<4720E560.8060206@ru.mvista.com>
-In-Reply-To: <4720E560.8060206@ru.mvista.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: David Brownell <david-b@pacbell.net>, linux-usb-devel@lists.sourceforge.net,
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH v4] FEC - fast ethernet controller for mpc52xx
+References: <20071014075511.GC3000@nd47.coderock.org>
+	<4713BA1C.2050604@pobox.com>
+	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+	<4717B09B.3060800@pobox.com>
+	<20071019112700.GD27403@nd47.coderock.org>
+	<47206209.8080109@pobox.com>
+	<20071025185706.29496.qmail@farnsworth.org>
+	<20071025194114.GH3369@nd47.coderock.org>
+	<20071025202908.GA2102@xyzzy.farnsworth.org>
+In-Reply-To: <20071025202908.GA2102@xyzzy.farnsworth.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Domen Puncer <domen.puncer@telargo.com>,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,66 +32,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Valentine Barshak wrote:
-> Matt Sealey wrote:
->> Compatible property on /builtin@F0000000/usb@F0001000 is
-> 
-> We should also keep "ohci-bigendian" and "ohci-be" in the match table.
+Dale Farnsworth wrote:
+> IMO, it's still a requirement that we call dma_unmap_single() for
+> each call to dma_map_single().
 
-Eh.. maybe.
-
->> I am currently moving on the assumption that the "correct" device
->> tree for the Efika (notwithstanding the above) would be
->>
->> usb@F0001000 {
->>     device-type = "usb-ohci"
->>     compatible = "mpc5200-ohci,mpc5200-usb-ohci"
-> 
-> It should also have compatible "usb-ohci" entry as a more general one.
-> Others are for device-specific quirks:
-> compatible = "mpc5200-usb-ohci","usb-ohci"
-
-Why? It's in the device_type. You don't need to duplicate it as compatible
-with the same value as in the device_type.
-
->> Using mpc5200-ohci out is by far the safest idea, although it
->> leaves in a rather platform-specific fix, I prefer singling out that
->> platform and potentially causing nasty looks towards the
->> direction of Genesi/bplan, than having ohci-bigendian continue
->> to exist for the sake of it :D
-> 
-> So, do you suggest to use "mpc5200-ohci" instead of "ohci-be" in the 
-> match table?
-
-Yes. I think ohci-be and ohci-bigendian should die. After all, it
-might get mixed with Firewire if you are not being careful.
-
-If we had to start again, device-type of "usb" (that just makes it
-easier all round, it allows a system based on the MPC5200B alone to
-make the assumption of OHCI), compatibles of "usb-ohci" (since this makes
-it very specific that it is not just USB, but the OHCI spec) and big-endian
-property would be all there would be.
-
-Model property would give the "mpc5200-ohci" value. Since nothing checks
-model (and this is not set on the firmware here), figuring on
-"mpc5200-ohci" as a compatible entry is good enough. Device-specific
-quirks should (Segher? Clarify please) never be futzed into compatible
-properties. At least the IEEE 1275 spec makes it clear that the model
-property is meant to clarify the particular device in question and is
-for information, I think defining a device as "USB", then subordinately
-as "OHCI flavor of USB" and particularly "the USB controller on an
-MPC5200 chip" (model) is all we need here, and in fact in any device.
-
-You could say the same about any other device - why is the current
-standard to give each node a unique name based on chip docs? 5200
-device tree spec says, use "gpt" as the name for the MPC5200 general
-purpose timers. Why not "timer" as the name, with "fsl,gpt" in the
-device_type or compatible property, and "mpc5200-gpt" in the model
-property? or "fsl,slt" compatible and "mpc5200-slt" model? Or
-"dma-controller" with a *model* of "bestcomm"?
-
-Some of this makes me grind my teeth so much..
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Yep...
