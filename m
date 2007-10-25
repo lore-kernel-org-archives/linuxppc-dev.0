@@ -1,20 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 86C5FDDEC5
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 01:20:15 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: ioctl32 unknown cmds with 2.6.24-rc1
-Date: Thu, 25 Oct 2007 17:19:52 +0200
-References: <1193229045.4510.35.camel@johannes.berg>
-	<200710251620.50218.arnd@arndb.de>
-	<Pine.LNX.4.62.0710251649520.3812@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0710251649520.3812@pademelon.sonytel.be>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.12.36.68])
+	by ozlabs.org (Postfix) with ESMTP id CCE0BDDE3F
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 01:24:03 +1000 (EST)
+Message-ID: <4720B4FA.5050106@semihalf.com>
+Date: Thu, 25 Oct 2007 17:23:38 +0200
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710251719.53285.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+To: David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
+References: <20071023231302.29359.27417.stgit@hekate.izotz.org>	<20071023231333.29359.35252.stgit@hekate.izotz.org>
+	<20071024015115.GK10595@localhost.localdomain>
+In-Reply-To: <20071024015115.GK10595@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 25 October 2007, Geert Uytterhoeven wrote:
-> In many cases these ioctls can indeed not be handled.
-> E.g. when using `hdparm -tT /dev/ps3da', hdparm issues an ioctl to flush the
-> cache. But this ioctl is not supported, not before and not after 2.6.23.
-> Before 2.6.23, it didn't print the message, in 2.6.23, it does.
+David Gibson wrote:
+> On Wed, Oct 24, 2007 at 01:13:33AM +0200, Marian Balakowicz wrote:
+> 
+> [snip]
+>> +	lpb@fc000000 {
+>> +		model = "fsl,lpb";
+>> +		compatible = "lpb";
+> 
+> Not nearly specific enough.  Must include a vendor prefix at least,
+> and should have a lot more revision information.  You should always be
+> able to pick the right driver with compatible alone, "model" should
+> generally be for human consumption, the driver shouldn't need it.
+> 
+>> +		device_type = "lpb";
+> 
+> Drop this.  Again, presence of a device_type property is the
+> exception, not the rule.
+> 
+>> +		ranges = <0 fc000000 02000000>;
+> 
+> You need #address-cells and #size-cells properties, too.
+> 
+> [snip]
 
-What I would expect to happen here is:
+OK, will update that. I guess I'll also need to use 'compatible' and
+skip type when passing bus ids to of_platform_bus_probe().
 
-compat_blkdev_ioctl gets into the BLKFLSBUF case and calls blkdev_ioctl,
-which calls blkdev_driver_ioctl, which returns -ENOTTY because
-ps3disk_fops does not contain an unlocked_ioctl() or ioctl() method.
-
-compat_sys_ioctl then detects that BLKFLSBUF was already handled by
-compat_blkdev_ioctl (it did not return -ENOIOCTLCMD) and propagates
-the error code to user space, without printing the message.
-
-Whatever is different from that description must be what goes wrong.
-
-	Arnd <><
+m.
