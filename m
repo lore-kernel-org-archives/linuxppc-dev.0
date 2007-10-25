@@ -1,14 +1,15 @@
-Return-Path: <mh@omnisys.se>
-Message-ID: <47203EF9.1070906@omnisys.se>
-Date: Thu, 25 Oct 2007 09:00:09 +0200
-From: Magnus Hjorth <mh@omnisys.se>
+Return-Path: <raul.moreno@telvent.abengoa.com>
+Received: from envio.abengoa.com (envio.abengoa.com [217.15.37.68])
+	by ozlabs.org (Postfix) with ESMTP id 286D5DDEEE
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 25 Oct 2007 23:53:54 +1000 (EST)
+Subject: Re: kernel 2.6.15: cpm_uart driver broken?
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF783A222E.1D5A56A4-ONC125737F.004B8502-C125737F.004C5724@abengoa.com>
+Date: Thu, 25 Oct 2007 15:54:07 +0200
+From: raul.moreno@telvent.abengoa.com
 MIME-Version: 1.0
-To: manu <manuel.pezzin@free.fr>
-Subject: Re: problems to boot 2.6.23 kernel on XILINX ppc with 8Mbytes of RAM
-References: <471FA48B.2020809@free.fr>
-In-Reply-To: <471FA48B.2020809@free.fr>
-Content-Type: multipart/mixed; boundary="------------020004040604050405070001"
-Cc: Linuxppc-embedded@ozlabs.org
+Content-type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,85 +20,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020004040604050405070001
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Hello Manu,
-
-Could you try the attached patch to arch/ppc/mm/4xx_mmu.c and see if it 
-solves your problem?
-
-Best regards,
-Magnus
 
 
-manu wrote:
-> Hello,
-> I work on a custom board based on a virtex 2 pro FPGA and 8Mbytes of SDRAM.
-> Untill now I used a 2.4.31 linux ppc kernel with John Williams patches
-> and uclinux distribution and everything worked perfectly.
-> I've decided to move to the latest 2.6 version from kernel.org
-> (2.6.23.1) with an initramfs containing a busybox.
-> My complete zImage including the initramfs has a size of 900Kbytes.
-> I made some tests with a ML300 board and I managed to get a shell easily.
-> When I migrated to the custom board, I had the "Now booting the kernel"
-> message and then nothing.
-> When I trace the code running on the ppc with the debugger, execution
-> seems to be stuck in some early initialization code.
-> I managed to reproduce the problem on the ML300 using "mem=8m" parameter
-> on the bootline.
-> With "mem=16m" the kernel boots correctly.
-> I'm really surprised by the amount of RAM required to boot the kernel.
-> Is there a way to make it boot with only 8Mbytes of RAM ?
-> Thanks for your help.
->
-> Manu
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
+Hi,
 
+I've found this thread, but I haven't seen the end of the discussion. I=
+ am
+using this kernel version, and I am also having problems with the cpm_u=
+art.
+Only the console (SMC1) is working, the other devices working as uart f=
+ail.
+I've realised that the problem is in the DMA. The system crash when the=
+ Rx
+and Tx buffers are allocated in external memory (in case of allocating =
+in
+the DPRAM of my mpc866, it works properly) and I don't know why. It is
+supposed other devices (as fec) use the same functions
+("dma_alloc_coherent") and they work.
 
--- 
+Moreover I don't find any documentation about the parameters
+"CONFIG_CONSISTENT_START" and "CONFIG_CONSISTENT_SIZE". Does these
+parameters affect to the driver behaviour?
 
-Magnus Hjorth, M.Sc.
-Omnisys Instruments AB
-Gruvgatan 8
-SE-421 30  Västra Frölunda, SWEDEN
-Phone: +46 31 734 34 09
-Fax: +46 31 734 34 29
-http://www.omnisys.se 
+Could anyone help me?
 
+Kind regards,
 
---------------020004040604050405070001
-Content-Type: text/plain;
- name="4xx_mmu.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="4xx_mmu.patch"
+Ra=FAl Moreno
+***********Internet Email Confidentiality Footer*************
+This email and any files transmitted with it are confidential and inten=
+ded
+solely for the use of the organization or individual to whom they are
+addressed.  It is expressly forbidden to retransmit or copy email and/o=
+r
+this  attached files without our permission .  If you are not the
+addressee indicated in this message (or responsible for delivery of the=
 
---- 4xx_mmu_old.c	2007-10-25 08:54:46.000000000 +0200
-+++ 4xx_mmu.c	2007-10-25 08:55:57.000000000 +0200
-@@ -105,7 +105,7 @@
- 		return s;
- 	}
- 
--	while (s <= (total_lowmem - LARGE_PAGE_SIZE_16M)) {
-+	while (s + LARGE_PAGE_SIZE_16M <= total_lowmem) {
- 		pmd_t *pmdp;
- 		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE;
- 
-@@ -120,7 +120,7 @@
- 		s += LARGE_PAGE_SIZE_16M;
- 	}
- 
--	while (s <= (total_lowmem - LARGE_PAGE_SIZE_4M)) {
-+	while (s + LARGE_PAGE_SIZE_4M <= total_lowmem) {
- 		pmd_t *pmdp;
- 		unsigned long val = p | _PMD_SIZE_4M | _PAGE_HWEXEC | _PAGE_HWWRITE;
- 
+message to such person), you may not copy or deliver this message
+to anyone. In such case, you should destroy this message and kindly
+notify the sender by reply email. Please advise immediately if you or
+your employer does not consent to Internet email for messages of this
+kind.  Opinions, conclusions and other information in this message that=
 
---------------020004040604050405070001--
+do not relate to the official business of my firm shall be understood a=
+s
+neither given nor endorsed by it.=
