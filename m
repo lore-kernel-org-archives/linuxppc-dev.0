@@ -1,19 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-	by ozlabs.org (Postfix) with ESMTP id B0CCDDDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 11:46:13 +1000 (EST)
-Subject: Re: [PATCH] Use of_get_parent() in pci_dma_dev_setup_pSeriesLP()
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <b1a6d99a117d0a0027e3f7dcef4a48f8df68893d.1193199823.git.michael@ellerman.id.au>
-References: <b1a6d99a117d0a0027e3f7dcef4a48f8df68893d.1193199823.git.michael@ellerman.id.au>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Dbi/CmzUABJ94mEv4J/3"
-Date: Thu, 25 Oct 2007 11:46:13 +1000
-Message-Id: <1193276773.8053.0.camel@concordia>
-Mime-Version: 1.0
-Reply-To: michael@ellerman.id.au
+Return-Path: <david-b@pacbell.net>
+Received: from smtp123.sbc.mail.sp1.yahoo.com (smtp123.sbc.mail.sp1.yahoo.com
+	[69.147.64.96]) by ozlabs.org (Postfix) with SMTP id 0A799DDE99
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 11:50:08 +1000 (EST)
+From: David Brownell <david-b@pacbell.net>
+To: Matt Sealey <matt@genesi-usa.com>,
+	Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [linux-usb-devel] [PATCH 1/2] USB: Rework OHCI PPC OF for new
+	bindings
+Date: Wed, 24 Oct 2007 18:50:05 -0700
+References: <20071024163412.GA17785@ru.mvista.com>
+	<471FC191.6020704@genesi-usa.com>
+In-Reply-To: <471FC191.6020704@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200710241850.05467.david-b@pacbell.net>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 24 October 2007, Matt Sealey wrote:
+> Can we just make sure real quickly that the changing of compatibles
+> doesn't break existing, not-easily-flashable firmwares?
 
---=-Dbi/CmzUABJ94mEv4J/3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2007-10-24 at 14:24 +1000, Michael Ellerman wrote:
-> The loop to check parent nodes for a dma-window property in
-> pci_dma_dev_setup_pSeriesLP() does not use the of_* accessors and
-> does not properly manage refcounts, fix it to do so.
->=20
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  arch/powerpc/platforms/pseries/iommu.c |   17 ++++++++++++-----
->  1 files changed, 12 insertions(+), 5 deletions(-)
-
-I'm starting to make a habit of this .. but nack.
-
-Stephen points out that there are several other places in this file that
-need fixing up, so I'll do them all as one series.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Dbi/CmzUABJ94mEv4J/3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHH/VldSjSd0sB4dIRAglAAJ9IKtDdIboFdKK1RJBlUvs7hwNzyQCdFVy6
-h+xNTjuzVMisnG3HigEPB+o=
-=rlU0
------END PGP SIGNATURE-----
-
---=-Dbi/CmzUABJ94mEv4J/3--
+Yeah, I'm not keen on such breakage either...
