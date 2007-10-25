@@ -1,21 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 9938BDDE41
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 00:22:12 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <vishnuvaradanr@gmail.com>
+Received: from rn-out-0102.google.com (rn-out-0910.google.com [64.233.170.186])
+	by ozlabs.org (Postfix) with ESMTP id 8C4A5DDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 00:36:55 +1000 (EST)
+Received: by rn-out-0102.google.com with SMTP id e25so185069rng
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 07:36:54 -0700 (PDT)
+Message-ID: <440e0a9b0710250736o52aca0calf3202de451027144@mail.gmail.com>
+Date: Thu, 25 Oct 2007 20:06:53 +0530
+From: "vishnuvaradan vishnuvaradan" <vishnuvaradanr@gmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: ioctl32 unknown cmds with 2.6.24-rc1
-Date: Thu, 25 Oct 2007 16:20:49 +0200
-References: <1193229045.4510.35.camel@johannes.berg>
-	<1193319517.14136.2.camel@johannes.berg>
-	<Pine.LNX.4.62.0710251542500.3812@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0710251542500.3812@pademelon.sonytel.be>
+Subject: RFS for PPC
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200710251620.50218.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Johannes Berg <johannes@sipsolutions.net>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_395_27073852.1193323013293"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 25 October 2007, Geert Uytterhoeven wrote:
-> If you want to look into this, the question is just why these messages are
-> printed now, while they weren't printed before. I don't think any other
-> behavior got changed.
+------=_Part_395_27073852.1193323013293
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'm not so sure about that. The reason that the messages are printed now
-is that there is no fallback handler for these ioctl numbers any more,
-but they are instead expected to be handled by the compat_blkdev_ioctl()
-function, which is only called for block devices.
+Hi
 
-My first idea was that the ioctl numbers are used on files that are
-not block devices, in this case the warning message would be (somewhat)
-appropriate.
+I can able to find RFS for ppc in denx website
+But that RFS does not support X windows
+Any Pre-compiled RFS for ppc is available ?
+or
+Help me to create RFS including X window support for ppc
 
-Whenever we get one of these messages on a real block device, that is
-supposed to mean that an ioctl that was actually valid could not be
-executed, and compat_blkdev_ioctl() returned -ENOIOCTLCMD.
+Regards
+Vishnu
 
-	Arnd <><
+------=_Part_395_27073852.1193323013293
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br>Hi<br><br>I can able to find RFS for ppc in denx website<br>But that RFS does not support X windows <br>Any Pre-compiled RFS for ppc is available ?<br>or<br>Help me to create RFS including X window support for ppc<br><br>
+Regards<br>Vishnu<br>
+
+------=_Part_395_27073852.1193323013293--
