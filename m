@@ -1,15 +1,22 @@
-Return-Path: <khateb@yahoo.com>
-Received: from web55901.mail.re3.yahoo.com (web55901.mail.re3.yahoo.com
-	[216.252.110.62]) by ozlabs.org (Postfix) with SMTP id 5DA2DDDEEE
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
+	by ozlabs.org (Postfix) with ESMTP id 3929CDDECD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Oct 2007 00:38:20 +1000 (EST)
-Date: Thu, 25 Oct 2007 07:38:18 -0700 (PDT)
-From: hamed khateb <khateb@yahoo.com>
-Subject: USB Host Controlle  for MPC855/MPC8xx in linux 2.4?
-To: linuxppc-embedded@ozlabs.org
+	Fri, 26 Oct 2007 00:45:59 +1000 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so702807wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 25 Oct 2007 07:45:58 -0700 (PDT)
+Message-ID: <fa686aa40710250745i57f2a88sbc08478738ee382a@mail.gmail.com>
+Date: Thu, 25 Oct 2007 08:45:58 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfgang Grandegger" <wg@grandegger.com>
+Subject: Re: PCI on Lite5200/Icecube, known issues?
+In-Reply-To: <4720A628.8010108@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <741129.8675.qm@web55901.mail.re3.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4720A628.8010108@grandegger.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi 
+On 10/25/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
+> Hello,
+>
+> The access to PCI memory space does not to work (I allways read 0xff) on
+> my Icecube-Eval-Board. Are there any known issues/bugs with using the
+> PCI on the Lite5200/Icecube board with 2.6.23? Has it been tested? I
+> realized, that CONFIG_PCI is not set in the default configuration.
 
-anyone has driver for USB Host Controlle  for MPC855/MPC8xx in linux 2.4?
+arch/ppc or arch/powerpc?
 
-I read in the Archives mail which was sended by Henrik , Henrink use the driver of Brad Parker's for MPC875 (or MPC8xx) , so any one know how I can contact Henrik or Brad Parker's?
+I'm not a PCI expert, but I just fired up my Lite5200 with a couple of
+eth adapters plugged in and the devices are usable.  This is a
+2.6.24-rc1 arch/powerpc kernel.
 
-this is the link of the email of Henrik : http://ozlabs.org/pipermail/linuxppc-embedded/2007-October/028566.html
+Cheers,
+g.
 
-Best Regards
-Hamid
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
