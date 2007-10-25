@@ -1,23 +1,25 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.189])
-	by ozlabs.org (Postfix) with ESMTP id 50F4CDDE3E
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 12:41:21 +1000 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so312368rvf
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2007 19:41:20 -0700 (PDT)
-Message-ID: <fa686aa40710241941w16fe3e75hb8ede9f9c8464e94@mail.gmail.com>
-Date: Wed, 24 Oct 2007 20:41:20 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [linux-usb-devel] [PATCH 1/2] USB: Rework OHCI PPC OF for new
-	bindings
-In-Reply-To: <200710241850.05467.david-b@pacbell.net>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910710242011y771d5cbbuaa1eb274672ccb48@mail.gmail.com>
+Date: Wed, 24 Oct 2007 23:11:37 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Jon Smirl" <jonsmirl@gmail.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	"PowerPC dev list" <Linuxppc-dev@ozlabs.org>,
+	"Timur Tabi" <timur@freescale.com>
+Subject: Re: Audio codec device tree entries
+In-Reply-To: <20071025003849.GB24382@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <20071024163412.GA17785@ru.mvista.com>
-	<471FC191.6020704@genesi-usa.com>
-	<200710241850.05467.david-b@pacbell.net>
-Cc: linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+References: <471F52ED.10007@freescale.com>
+	<fa686aa40710240816l6187b559l31fb72656ec265c@mail.gmail.com>
+	<fa686aa40710240820l62d5a50ewcd7707fed8f9176f@mail.gmail.com>
+	<9e4733910710240828x412f598dy7fc4a75faa76358d@mail.gmail.com>
+	<fa686aa40710240843r5271c749m33bce043702603b7@mail.gmail.com>
+	<9e4733910710240854y6ac115b6i5e0400eb369fcf7@mail.gmail.com>
+	<fa686aa40710240938l5b8c30b9qe538cc641df5e61b@mail.gmail.com>
+	<20071025000425.GD23694@localhost.localdomain>
+	<9e4733910710241717i3c436e76l48f6c273d7114b94@mail.gmail.com>
+	<20071025003849.GB24382@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +29,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/24/07, David Brownell <david-b@pacbell.net> wrote:
-> On Wednesday 24 October 2007, Matt Sealey wrote:
-> > Can we just make sure real quickly that the changing of compatibles
-> > doesn't break existing, not-easily-flashable firmwares?
+On 10/24/07, David Gibson <david@gibson.dropbear.id.au> wrote:
+> On Wed, Oct 24, 2007 at 08:17:57PM -0400, Jon Smirl wrote:
+> > On 10/24/07, David Gibson <david@gibson.dropbear.id.au> wrote:
+> > > I'm afraid I still don't understand quite what information this
+> > > "fabric" driver is conveying.  Is it really inherently platform
+> > > specific, or is it something that can be encoded directly in a
+> > > sensible way.  If the latter we could have a general "device tree"
+> > > fabric driver that will handle all systems with the layout correctly
+> > > encoded in the device tree.
+> >
+> > Codecs are like GPIOs, all of their pins are programmable. So the same
+> > codec can be wired into various boards quite differently and then
+> > software programmed to work the same. The fabric driver contains the
+> > mapping information.
+> >
+> > People were making a codec driver for each board, but this resulted in
+> > lots of similar codec drivers for the same chips. I believe a common
+> > Wolfson chip had eight drivers in the kernel. In the new model the
+> > codec drivers are generic and the fabric driver describes the mapping.
 >
-> Yeah, I'm not keen on such breakage either...
+> Ok, but the fabric driver is about the wiring of a specific codec
+> chip, yes?  If a board was foolishly designed to have two identical
+> codec chips, but each wired differently, it would need two instances
+> of the same codec driver, plus one instance each of two different
+> fabric drivers?
 
-Add my voice to the chorus.  It's okay to change the binding, but make
-sure the old binding is still supported.
+AFAIK no one has built that case. My target board has two different
+codec chips. I was handling them both in a single fabric driver but
+there is no reason the code couldn't be split.
 
-Cheers,
-g.
+I was thinking that there was a single fabric for the board, but you
+are right in observing that it is per codec chip.
+
+The term fabric is coming from the Apple aoa driver. They only have a
+single fabric per board. But there is no reason the Apple driver
+couldn't also be adjusted.
+
+> If this is so, then the fabric information *must* be per-codec, and
+> should therefore go with the codec node.
+>
+> > A side effect of this is that we need to load the fabric driver which
+> > doesn't have a device associated with it.
+>
+> Well, it does have a device associated with it, it's just a question
+> of how to represent it.  There's not reason a single device node can't
+> cause instantiation of multiple driver instances.  Depending on the
+> complexity of typical fabric arrangements, one of the following
+> options might make sense:
+>         - the device node's compatible has enough information to
+> specify both fabric and codec driver.  The fabric driver is
+> instantiated from this node, and instantiates the codec driver itself
+> (since I gather fabric drivers are frequently codec specific in any
+> case).
+
+This could work. The generic codec is a alsa soc_device_driver, not a
+of_device_driver. The codec node could instantiate the fabric as a
+of_device_driver which could then instantiate the soc_device_driver
+for the generic codec.
+
+The generic codecs are supposed to work cross platform so they can't
+include code that munges the of device tree.
+
+
+>         - both fabric and codec drivers are instantiated from the same
+> device node, and co-ordinate with each other.
+>         - The codec is represented as:
+> codec-fabric@... {
+>         compatible = "...";
+>         <properties describing the fabric>
+>         codec {
+>               compatible = "...";
+>               <properties describing the codec>
+>         }
+> }
+>
+> This is different from a "pseudo" node, because the codec-fabric node
+> represents a real piece of hardware:  specifically the cluster of
+> wires between the sound bus and the codec.
+>
+> Remember: the device tree describes the hardware, how the chooses to
+> structure its driver model to meet the demands of that hardware is up
+> to it.  Don't put the cart before the horse.
+>
+> --
+> David Gibson                    | I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au  | minimalist, thank you.  NOT _the_ _other_
+>                                 | _way_ _around_!
+> http://www.ozlabs.org/~dgibson
+>
+
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
