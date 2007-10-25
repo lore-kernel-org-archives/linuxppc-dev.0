@@ -1,20 +1,18 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 81C6EDDE32
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 22:29:58 +1000 (EST)
-Date: Thu, 25 Oct 2007 14:29:12 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 0/2] mpc52xx: stop drivers from accessing clock config
-	directly
-Message-ID: <20071025122912.GF3369@nd47.coderock.org>
-References: <20071024182308.21194.69416.stgit@trillian.cg.shawcable.net>
-	<20071024191206.GD3369@nd47.coderock.org>
-	<fa686aa40710241314w2dbe0863ja15746614cff0dd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710241314w2dbe0863ja15746614cff0dd@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 934AFDDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 22:46:18 +1000 (EST)
+Message-ID: <47209021.4080501@ru.mvista.com>
+Date: Thu, 25 Oct 2007 16:46:25 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: New time code miscalculates cpu usage
+References: <20071016202525.GA11837@lixom.net>	
+	<471FA875.6080602@ru.mvista.com> <1193262969.6653.32.camel@pasglop>
+In-Reply-To: <1193262969.6653.32.camel@pasglop>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 24/10/07 14:14 -0600, Grant Likely wrote:
-> On 10/24/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > On 24/10/07 12:24 -0600, Grant Likely wrote:
-> > > Domen,
-> > >
-> > > Here's a real solution to the problem.  I've somewhat tested this on
-> > > the lite5200b.  Can you give it a spin on efika and see if SPI still
-> > > works for you?
-> >
-> > My test case was lite5200b too, I don't think I ever tried SPI on
-> > efika.
-> > (Are even the right pins on irda connector, or is a necessary line
-> > missing?)
-> 
-> Hmm, I guess that's right.  Can you at least make sure it still boots
-> on Efika?  Some of the clock detection stuff has changed so I want to
-> make sure it still boots.
+Hello.
 
-OK, with the following patch it compiles and boots.
-I don't have any psc configured as spi in device tree though.
+Benjamin Herrenschmidt wrote:
 
+>>>Not sure when this started happening, but I wanted to report it. I'll
+>>>start bisecting in a day or two if noone else has gotten around to
+>>>looking at it:
 
+>>>$ echo "int main(void) { while(1); }" > test.c ; gcc test.c
+>>>$ time ./a.out & sleep 2 ; killall a.out
+>>>real    0m2.008s
+>>>user    0m4.014s
+>>>sys     0m0.002s
 
----
- arch/powerpc/platforms/52xx/efika.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+>>>Seen on POWER5 and PA6T, haven't tried anything else yet.
 
-Index: linux.git/arch/powerpc/platforms/52xx/efika.c
-===================================================================
---- linux.git.orig/arch/powerpc/platforms/52xx/efika.c
-+++ linux.git/arch/powerpc/platforms/52xx/efika.c
-@@ -180,7 +180,7 @@ static void __init efika_setup_arch(void
- {
- 	rtas_initialize();
- 
--	mpc52xx_setup_clocks();
-+	mpc5200_setup_clocks();
- 
- 	efika_pcisetup();
- 
+>>    I'm not surprised -- the kernel accounts twice for each tick.
+
+> Your input would be much more valuable if you actually pointed out where
+> that happens and why since you seem to know it.
+
+   I've already pointed out the reason, yet it won't hurt to repeat indeed.
+timer_interrupt() calls both account_process_time() and the hrtimers event 
+handler which leads to:
+
+- if determenistic accounting is off, account_process_time() is the same as
+   update_process_times() which gets also calleed by hrtimers via the event
+   handler, so we get each tick accounted for twice;
+
+- if determenistic accounting is on, then timer_interrupt() calls
+   account_process_time() and update_process_times() is still called by
+   hrtimers, so each tick's gets accounted for userspace twice...
+
+> Ben.
+
+WBR, Sergei
