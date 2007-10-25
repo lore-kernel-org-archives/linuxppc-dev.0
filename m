@@ -1,26 +1,19 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 02647DDE2F
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 9AF1CDDE24
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Oct 2007 01:16:07 +1000 (EST)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id C0229CC0C7
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Oct 2007 16:53:05 +0200 (CEST)
-Received: from gja.ulm.sysgo.com (unknown [172.30.5.10])
-	by donald.sysgo.com (Postfix) with ESMTP id 9AC0D2E42C8
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Oct 2007 16:53:05 +0200 (CEST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: USB Host Controlle  for MPC855/MPC8xx in linux 2.4?
-Date: Thu, 25 Oct 2007 16:53:03 +0200
-References: <741129.8675.qm@web55901.mail.re3.yahoo.com>
-In-Reply-To: <741129.8675.qm@web55901.mail.re3.yahoo.com>
+	Fri, 26 Oct 2007 02:21:17 +1000 (EST)
+Message-ID: <4720C27B.7020408@grandegger.com>
+Date: Thu, 25 Oct 2007 18:21:15 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
-Message-Id: <200710251653.04067.g.jaeger@sysgo.com>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: PCI on Lite5200/Icecube, known issues?
+References: <4720A628.8010108@grandegger.com>	<fa686aa40710250745i57f2a88sbc08478738ee382a@mail.gmail.com>
+	<4720B218.80607@grandegger.com>
+In-Reply-To: <4720B218.80607@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,23 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Donnerstag, 25. Oktober 2007, hamed khateb wrote:
-> Hi 
+Wolfgang Grandegger wrote:
+> Grant Likely wrote:
+>> On 10/25/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
+>>> Hello,
+>>>
+>>> The access to PCI memory space does not to work (I allways read 0xff) on
+>>> my Icecube-Eval-Board. Are there any known issues/bugs with using the
+>>> PCI on the Lite5200/Icecube board with 2.6.23? Has it been tested? I
+>>> realized, that CONFIG_PCI is not set in the default configuration.
+>> arch/ppc or arch/powerpc?
+>>
+>> I'm not a PCI expert, but I just fired up my Lite5200 with a couple of
+>> eth adapters plugged in and the devices are usable.  This is a
+>> 2.6.24-rc1 arch/powerpc kernel.
 > 
-> anyone has driver for USB Host Controlle  for MPC855/MPC8xx in linux 2.4?
+> I'm using a 2.6.23 arch/powerpc kernel. And my eepro100 card does not 
+> work either:
 > 
-> I read in the Archives mail which was sended by Henrik , Henrink use the driver of Brad Parker's for MPC875 (or MPC8xx) , so any one know how I can contact Henrik or Brad Parker's?
+> e100: probe of 0000:00:18.0 failed with error -11
 > 
-> this is the link of the email of Henrik : http://ozlabs.org/pipermail/linuxppc-embedded/2007-October/028566.html
-> 
+> It looks like that 2.6.23 needs some more patches.
 
-You might have a look here:
-http://www.heeltoe.com/software/usb/usb.html
+Indeed, it works with 2.6.24-rc1:
 
-HTH 
-Gerhard
+e100: eth0: e100_probe: addr 0xa0000000, irq 16, MAC addr 00:0e:0c:74:8c:f2
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+Wolfgang.
