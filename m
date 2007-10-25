@@ -1,21 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DE9E3DDF2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 10:50:27 +1000 (EST)
-Date: Thu, 25 Oct 2007 10:50:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] mpc52xx: add cdm (clock module) helper function for
-	PSCs
-Message-Id: <20071025105021.1107f717.sfr@canb.auug.org.au>
-In-Reply-To: <20071024182426.21194.57761.stgit@trillian.cg.shawcable.net>
-References: <20071024182308.21194.69416.stgit@trillian.cg.shawcable.net>
-	<20071024182426.21194.57761.stgit@trillian.cg.shawcable.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8A4C6DDF39
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Oct 2007 10:53:20 +1000 (EST)
+Subject: Re: New time code miscalculates cpu usage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18207.57612.61323.888483@cargo.ozlabs.ibm.com>
+References: <20071016202525.GA11837@lixom.net>
+	<471FA875.6080602@ru.mvista.com> <1193262969.6653.32.camel@pasglop>
+	<18207.57612.61323.888483@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 25 Oct 2007 10:53:10 +1000
+Message-Id: <1193273590.7018.0.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__25_Oct_2007_10_50_21_+1000_7tmQ7C1AlZU9SsRi"
-Cc: linuxppc-dev@ozlabs.org, domen.puncer@telargo.com
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__25_Oct_2007_10_50_21_+1000_7tmQ7C1AlZU9SsRi
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 24 Oct 2007 12:24:26 -0600 Grant Likely <grant.likely@secretlab.ca>=
- wrote:
->
-> +static spinlock_t mpc52xx_cdm_lock =3D SPIN_LOCK_UNLOCKED;
+On Thu, 2007-10-25 at 10:19 +1000, Paul Mackerras wrote:
+> Benjamin Herrenschmidt writes:
+> 
+> > Your input would be much more valuable if you actually pointed out where
+> > that happens and why since you seem to know it.
+> 
+> He did already, a couple of messages ago.
 
-static DEFINE_SPINLOCK(mpc52xx_cdm_lock);
+Allright, I missed that.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__25_Oct_2007_10_50_21_+1000_7tmQ7C1AlZU9SsRi
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHH+hRTgG2atn1QN8RArjwAJ0aIy41Hdv6pMTe5NmuV1XYVyZ0vwCgkEnT
-gr+htx4XyjDqHNwAqjHcOtE=
-=1Q5D
------END PGP SIGNATURE-----
-
---Signature=_Thu__25_Oct_2007_10_50_21_+1000_7tmQ7C1AlZU9SsRi--
+Ben.
