@@ -1,18 +1,15 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29510DDDF9
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 02:44:02 +1000 (EST)
-Date: Fri, 26 Oct 2007 20:41:30 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] PowerPC: NDFC entry for PowerPC 440EPx Sequoia DTS
-Message-ID: <20071026164130.GA11812@ru.mvista.com>
-Mime-Version: 1.0
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A5C50DDEFA
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 02:47:36 +1000 (EST)
+Date: Fri, 26 Oct 2007 11:55:10 -0500
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Fix CONFIG_SMP=n build breaks
+Message-ID: <20071026165510.GA2323@lixom.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071026163058.GA11354@ru.mvista.com>
-Cc: tglx@linutronix.de, sr@denx.de, linux-mtd@lists.infradead.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-NDFC (NAND Flash Controller) DTS entry for PowerPC 440EPx Sequoia board.
-The NDFC is relocatable in EBC space.
+Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/boot/dts/sequoia.dts |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+)
+arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
+arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
+arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
+arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
 
-diff -pruN linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts
---- linux-2.6.orig/arch/powerpc/boot/dts/sequoia.dts	2007-10-22 18:33:07.000000000 +0400
-+++ linux-2.6.bld/arch/powerpc/boot/dts/sequoia.dts	2007-10-22 22:19:42.000000000 +0400
- 		POB0: opb {
- 		  	compatible = "ibm,opb-440epx", "ibm,opb";
- 			#address-cells = <1>;
-@@ -141,6 +148,26 @@
- 				interrupts = <5 1>;
- 				interrupt-parent = <&UIC1>;
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 151fd8b..222678f 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -158,6 +158,11 @@ static unsigned int iic_get_irq(void)
+ 	return virq;
+ }
  
-+				ndfc@0,0 {
-+					compatible = "ibm,ndfc-440epx", "ibm,ndfc";
-+					reg = <3 000000 2000>;
-+					bank-width = <1>;
-+					bank-mask = <8>;
-+					#address-cells = <1>;
-+					#size-cells = <1>;
-+					partition@0 {
-+						label = "u-boot-nand";
-+						reg = <0 0080000>;
-+					};
-+					partition@80000 {
-+						label = "kernel-nand";
-+						reg = <0080000 0180000>;
-+					};
-+					partition@200000 {
-+						label = "filesystem";
-+						reg = <0200000 1e00000>;
-+					};
-+				};
- 				nor_flash@0,0 {
- 					compatible = "amd,s29gl256n", "cfi-flash";
- 					bank-width = <2>;
++void iic_setup_cpu(void)
++{
++	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++}
++
+ #ifdef CONFIG_SMP
+ 
+ /* Use the highest interrupt priorities for IPI */
+@@ -166,11 +171,6 @@ static inline int iic_ipi_to_irq(int ipi)
+ 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
+ }
+ 
+-void iic_setup_cpu(void)
+-{
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
+-}
+-
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+ 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
+diff --git a/arch/powerpc/platforms/cell/spu_priv1_mmio.c b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+index 67fa724..e5e08ac 100644
+--- a/arch/powerpc/platforms/cell/spu_priv1_mmio.c
++++ b/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+@@ -75,9 +75,11 @@ static u64 int_stat_get(struct spu *spu, int class)
+ 
+ static void cpu_affinity_set(struct spu *spu, int cpu)
+ {
++#ifdef CONFIG_SMP
+ 	u64 target = iic_get_target_id(cpu);
+ 	u64 route = target << 48 | target << 32 | target << 16;
+ 	out_be64(&spu->priv1->int_route_RW, route);
++#endif
+ }
+ 
+ static u64 mfc_dar_get(struct spu *spu)
