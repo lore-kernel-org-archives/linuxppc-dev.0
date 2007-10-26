@@ -1,19 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id D981BDDDD6
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 21:21:35 +1000 (EST)
-Subject: Re: [i2c] i2c-mpc.c driver issues
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Jean Delvare <khali@linux-fr.org>
-In-Reply-To: <20071026115329.0307e207@hyperion.delvare>
-References: <019001c81681$b5d449c0$5267a8c0@Jocke>
-	<20071026115329.0307e207@hyperion.delvare>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3A24DDD0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 21:25:34 +1000 (EST)
+Subject: Re: [RFC] [PATCH] PowerPC: Workaround for the
+	440EP(x)/GR(x)	processors identical PVR issue.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+In-Reply-To: <4721C9E9.10208@ru.mvista.com>
+References: <20071025181640.GA18933@ru.mvista.com>
+	<1193345051.7018.15.camel@pasglop>  <4721C9E9.10208@ru.mvista.com>
 Content-Type: text/plain
-Date: Fri, 26 Oct 2007 13:21:33 +0200
-Message-Id: <1193397693.11411.13.camel@gentoo-jocke.transmode.se>
+Date: Fri, 26 Oct 2007 21:25:23 +1000
+Message-Id: <1193397923.13638.5.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
-Reply-To: joakim.tjernlund@transmode.se
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-10-26 at 11:53 +0200, Jean Delvare wrote:
-> Hi Jocke,
-> 
-> On Wed, 24 Oct 2007 23:06:13 +0200, Tjernlund wrote:
-> > While browsing the i2c-mpc.c driver I noticed some things that look odd
-> > to me so I figured I report them. Could not find a maintainer in the MAINTANERS file
-> > so I sent here, cc:ed linuxppc-dev as well.
-> > 
-> > 1) There are a lot of return -1 error code that is propagated back to
-> >    userspace. Should be changed to proper -Exxx codes.
-> 
-> This is true of many Linux i2c bus drivers, unfortunately. While nothing
-> actually prevents drivers from returning -1 to userspace on error,
-> meaningful error codes would of course be preferred.
-> 
-> > 2) mpc_read(), according to the comment below it sends a STOP condition here but
-> >    this function does not known if this is the last read or not. mpc_xfer is
-> >    the one that knows when the transaction is over and should send the stop, which it already
-> >    does.
-> > 
-> >  /* Generate stop on last byte */
-> >   if (i == length - 1)
-> >        writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
-> 
-> Probably correct, although I am not familiar with this specific
-> hardware. I guess that the same is true of mpc_write as well, which is
-> even worse because write + read combined transactions are very common
-> (while read + write are not.)
 
-Don't think write is a problem, only read. I would have to look at the
-HW spec to make sure though.
-
+On Fri, 2007-10-26 at 15:05 +0400, Valentine Barshak wrote:
 > 
-> I'm not completely sure that mpc_xfer sends the stop. mpc_i2c_stop
-> doesn't seem to do much.
-> 
-> Now that you've identified these bugs, what about sending patches
-> to fix them?
+> It's not enough. We need to enable APU instruction broadcast for
+> EP(x) 
+> (call __init_fpu_44x in arch/powerpc/kernel/cpu_setup_44x.S).
+> Or do you suggest to or-in FPU feature bit and enable APUIB later,
+> not 
+> in the cpu_setup callback?
 
-Normally I would do that, but I am too busy with other things. Thats
-why I only reported this as I know I won't have time to fix it for some
-time.
+It can be done at any time before the feature fixup. However, on 32
+bits, iirc, the fixup happens very early so it might not be that easy...
+just asking :-) Your patch is allright, we can always find a better way
+to do it later on.
 
- Jocke
+Ben.
