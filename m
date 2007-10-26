@@ -1,10 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
+Message-Id: <a0d6f1f283ef13c53b09ab219eb59d830d501b10.1193381582.git.michael@ellerman.id.au>
+In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
+References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 01/16] Add of_get_next_parent()
-Date: Fri, 26 Oct 2007 16:54:31 +1000 (EST)
-Cc: davem@davemloft.net
+Subject: [PATCH 02/16] Use of_get_next_parent() in pci_dma_bus_setup_pSeries()
+Date: Fri, 26 Oct 2007 16:54:32 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,79 +15,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Iterating through a device node's parents is simple enough, but dealing
-with the refcounts properly is a little ugly, and replicating that logic
-is asking for someone to get it wrong or forget it all together, eg:
-
-while (dn != NULL) {
-	/* loop body */
-	tmp = of_get_parent(dn);
-	of_node_put(dn);
-	dn = tmp;
-}
-
-So add of_get_next_parent(), inspired by of_get_next_child(). The contract
-is that it returns the parent and drops the reference on the current node,
-this makes the loop look like:
-
-while (dn != NULL) {
-	/* loop body */
-	dn = of_get_next_parent(dn);
-}
+pci_dma_bus_setup_pSeries() should use of_get_next_parent() to safely
+iterate through the parent nodes.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- drivers/of/base.c  |   25 +++++++++++++++++++++++++
- include/linux/of.h |    1 +
- 2 files changed, 26 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 9377f3b..e0db2b5 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -138,6 +138,31 @@ struct device_node *of_get_parent(const struct device_node *node)
- EXPORT_SYMBOL(of_get_parent);
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index be17d23..83c0e0f 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -314,7 +314,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ {
+ 	struct device_node *dn;
+ 	struct iommu_table *tbl;
+-	struct device_node *isa_dn, *isa_dn_orig;
++	struct device_node *isa_dn;
+ 	struct device_node *tmp;
+ 	struct pci_dn *pci;
+ 	int children;
+@@ -334,13 +334,13 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	/* Check if the ISA bus on the system is under
+ 	 * this PHB.
+ 	 */
+-	isa_dn = isa_dn_orig = of_find_node_by_type(NULL, "isa");
++	isa_dn = of_find_node_by_type(NULL, "isa");
  
- /**
-+ *	of_get_next_parent - Iterate to a node's parent
-+ *	@node:	Node to get parent of
-+ *
-+ * 	This is like of_get_parent() except that it drops the
-+ * 	refcount on the passed node, making it suitable for iterating
-+ * 	through a node's parents.
-+ *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
-+ */
-+struct device_node *of_get_next_parent(struct device_node *node)
-+{
-+	struct device_node *parent;
-+
-+	if (!node)
-+		return NULL;
-+
-+	read_lock(&devtree_lock);
-+	parent = of_node_get(node->parent);
-+	of_node_put(node);
-+	read_unlock(&devtree_lock);
-+	return parent;
-+}
-+
-+/**
-  *	of_get_next_child - Iterate a node childs
-  *	@node:	parent node
-  *	@prev:	previous child of the parent node, or NULL to get first
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 5c39b92..3557d1e 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -44,6 +44,7 @@ extern struct device_node *of_find_compatible_node(struct device_node *from,
- extern struct device_node *of_find_node_by_path(const char *path);
- extern struct device_node *of_find_node_by_phandle(phandle handle);
- extern struct device_node *of_get_parent(const struct device_node *node);
-+extern struct device_node *of_get_next_parent(struct device_node *node);
- extern struct device_node *of_get_next_child(const struct device_node *node,
- 					     struct device_node *prev);
- extern struct property *of_find_property(const struct device_node *np,
+ 	while (isa_dn && isa_dn != dn)
+-		isa_dn = isa_dn->parent;
++		isa_dn = of_get_next_parent(isa_dn);
+ 
+-	if (isa_dn_orig)
+-		of_node_put(isa_dn_orig);
++	/* Drop our reference, it's still safe to check the pointer below */
++	of_node_put(isa_dn);
+ 
+ 	/* Count number of direct PCI children of the PHB. */
+ 	for (children = 0, tmp = dn->child; tmp; tmp = tmp->sibling)
 -- 
 1.5.2.rc1.1884.g59b20
