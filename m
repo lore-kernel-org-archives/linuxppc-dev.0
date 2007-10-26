@@ -1,17 +1,19 @@
-Return-Path: <khali@linux-fr.org>
-Received: from mallaury.nerim.net (smtp-105-friday.noc.nerim.net [62.4.17.105])
-	by ozlabs.org (Postfix) with ESMTP id 9478FDDE26
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 19:53:32 +1000 (EST)
-Date: Fri, 26 Oct 2007 11:53:29 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Tjernlund" <tjernlund@tjernlund.se>
-Subject: Re: [i2c] i2c-mpc.c driver issues
-Message-ID: <20071026115329.0307e207@hyperion.delvare>
-In-Reply-To: <019001c81681$b5d449c0$5267a8c0@Jocke>
-References: <019001c81681$b5d449c0$5267a8c0@Jocke>
+Return-Path: <davem@davemloft.net>
+Received: from picasso.davemloft.net (unknown [74.93.104.98])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 87786DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 20:38:37 +1000 (EST)
+Date: Fri, 26 Oct 2007 03:38:03 -0700 (PDT)
+Message-Id: <20071026.033803.74739006.davem@davemloft.net>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 01/16] Add of_get_next_parent()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
+References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jocke,
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Fri, 26 Oct 2007 16:54:31 +1000 (EST)
 
-On Wed, 24 Oct 2007 23:06:13 +0200, Tjernlund wrote:
-> While browsing the i2c-mpc.c driver I noticed some things that look odd
-> to me so I figured I report them. Could not find a maintainer in the MAINTANERS file
-> so I sent here, cc:ed linuxppc-dev as well.
+> Iterating through a device node's parents is simple enough, but dealing
+> with the refcounts properly is a little ugly, and replicating that logic
+> is asking for someone to get it wrong or forget it all together, eg:
 > 
-> 1) There are a lot of return -1 error code that is propagated back to
->    userspace. Should be changed to proper -Exxx codes.
-
-This is true of many Linux i2c bus drivers, unfortunately. While nothing
-actually prevents drivers from returning -1 to userspace on error,
-meaningful error codes would of course be preferred.
-
-> 2) mpc_read(), according to the comment below it sends a STOP condition here but
->    this function does not known if this is the last read or not. mpc_xfer is
->    the one that knows when the transaction is over and should send the stop, which it already
->    does.
+> while (dn != NULL) {
+> 	/* loop body */
+> 	tmp = of_get_parent(dn);
+> 	of_node_put(dn);
+> 	dn = tmp;
+> }
 > 
->  /* Generate stop on last byte */
->   if (i == length - 1)
->        writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
+> So add of_get_next_parent(), inspired by of_get_next_child(). The contract
+> is that it returns the parent and drops the reference on the current node,
+> this makes the loop look like:
+> 
+> while (dn != NULL) {
+> 	/* loop body */
+> 	dn = of_get_next_parent(dn);
+> }
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Probably correct, although I am not familiar with this specific
-hardware. I guess that the same is true of mpc_write as well, which is
-even worse because write + read combined transactions are very common
-(while read + write are not.)
+Looks good to me:
 
-I'm not completely sure that mpc_xfer sends the stop. mpc_i2c_stop
-doesn't seem to do much.
-
-Now that you've identified these bugs, what about sending patches
-to fix them?
-
--- 
-Jean Delvare
+Acked-by: David S. Miller <davem@davemloft.net>
