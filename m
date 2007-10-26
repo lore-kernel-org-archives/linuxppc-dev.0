@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 26 Oct 2007 16:19:41 +1000
+Date: Fri, 26 Oct 2007 16:20:29 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: [1/2] dtc: Simplify lexing/parsing of literals vs. node/property names
-Message-ID: <20071026061941.GB6136@localhost.localdomain>
+Subject: [2/2] dtc: Switch dtc to C-style literals
+Message-ID: <20071026062029.GC6136@localhost.localdomain>
 References: <20071026061718.GA6136@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,440 +18,306 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current scheme of having CELLDATA and MEMRESERVE states to
-recognize hex literals instead of node or property names is
-arse-backwards.  The patch switches things around so that literals are
-lexed in normal states, and property/node names are only recognized in
-the special PROPNODENAME state, which is only entered after a { or a
-;, and is left as soon as we scan a property/node name or a keyword.
+This patch introduces a new version of dts file, distinguished from
+older files by starting with the special token /dts-v1/.  dts files in
+the new version take C-style literals instead of the old bare hex or
+OF-style base notation.  In addition, the "range" for of memreserve entries
+(/memreserve/ f0000-fffff) is no longer recognized in the new format.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 ---
- dtc-lexer.l  |  105 +++++++++++---------------------------------------
- dtc-parser.y |  123 ++++++++++++++++++++++++++---------------------------------
- 2 files changed, 80 insertions(+), 148 deletions(-)
+ dtc-lexer.l               |   40 ++++++++++++++++++++++++++++++++--------
+ dtc-parser.y              |   38 ++++++++++++++++++++++++++++++++++++--
+ tests/run_tests.sh        |    4 ++++
+ tests/test_tree1.dts      |   16 +++++++++-------
+ tests/test_tree1_dts0.dts |   27 +++++++++++++++++++++++++++
+ 5 files changed, 108 insertions(+), 17 deletions(-)
 
 Index: dtc/dtc-lexer.l
 ===================================================================
---- dtc.orig/dtc-lexer.l	2007-10-26 12:54:30.000000000 +1000
-+++ dtc/dtc-lexer.l	2007-10-26 15:11:02.000000000 +1000
-@@ -21,9 +21,8 @@
- %option noyywrap nounput yylineno
- 
+--- dtc.orig/dtc-lexer.l	2007-10-26 15:11:02.000000000 +1000
++++ dtc/dtc-lexer.l	2007-10-26 15:36:46.000000000 +1000
+@@ -23,6 +23,7 @@
  %x INCLUDE
--%x CELLDATA
  %x BYTESTRING
--%x MEMRESERVE
-+%x PROPNODENAME
+ %x PROPNODENAME
++%s V1
  
  PROPCHAR	[a-zA-Z0-9,._+*#?-]
  UNITCHAR	[0-9a-f,]
-@@ -51,7 +50,7 @@
+@@ -44,12 +45,18 @@
+ #define DPRINT(fmt, ...)	do { } while (0)
+ #endif
+ 
++static int dts_version; /* = 0 */
+ 
+-
++#define BEGIN_DEFAULT()	if (dts_version == 0) { \
++				DPRINT("<INITIAL>\n"); \
++				BEGIN(INITIAL); \
++			} else { \
++				DPRINT("<V1>\n"); \
++				BEGIN(V1); \
++			}
+ %}
  
  %%
- 
--"/include/"		BEGIN(INCLUDE);
-+<*>"/include/"		BEGIN(INCLUDE);
+-
+ <*>"/include/"		BEGIN(INCLUDE);
  
  <INCLUDE>\"[^"\n]*\"	{
- 			yytext[strlen(yytext) - 1] = 0;
-@@ -63,13 +62,13 @@
- 		}
- 
- 
--<<EOF>>		{
-+<*><<EOF>>		{
- 			if (!pop_input_file()) {
- 				yyterminate();
+@@ -58,7 +65,7 @@
+ 				/* Some unrecoverable error.*/
+ 				exit(1);
  			}
+-			BEGIN(INITIAL);
++			BEGIN_DEFAULT();
  		}
  
--\"([^\\"]|\\.)*\"	{
-+<*>\"([^\\"]|\\.)*\"	{
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
- 			DPRINT("String: %s\n", yytext);
-@@ -79,45 +78,24 @@
+ 
+@@ -78,11 +85,20 @@
  			return DT_STRING;
  		}
  
--"/memreserve/"	{
-+<*>"/memreserve/"	{
++<*>"/dts-v1/"	{
++			yylloc.filenum = srcpos_filenum;
++			yylloc.first_line = yylineno;
++			DPRINT("Keyword: /dts-v1/\n");
++			dts_version = 1;
++			BEGIN_DEFAULT();
++			return DT_V1;
++		}
++
+ <*>"/memreserve/"	{
  			yylloc.filenum = srcpos_filenum;
  			yylloc.first_line = yylineno;
  			DPRINT("Keyword: /memreserve/\n");
--			BEGIN(MEMRESERVE);
--			return DT_MEMRESERVE;
--		}
--
--<MEMRESERVE>[0-9a-fA-F]+ {
--			yylloc.filenum = srcpos_filenum;
--			yylloc.first_line = yylineno;
--			if (yyleng > 2*sizeof(yylval.addr)) {
--				fprintf(stderr, "Address value %s too large\n",
--					yytext);
--			}
--			yylval.addr = (u64) strtoull(yytext, NULL, 16);
--			DPRINT("Addr: %llx\n",
--			       (unsigned long long)yylval.addr);
--			return DT_ADDR;
--		}
--
--<MEMRESERVE>";"	{
--			yylloc.filenum = srcpos_filenum;
--			yylloc.first_line = yylineno;
--			DPRINT("/MEMRESERVE\n");
- 			BEGIN(INITIAL);
--			return ';';
-+			return DT_MEMRESERVE;
+-			BEGIN(INITIAL);
++			BEGIN_DEFAULT();
+ 			return DT_MEMRESERVE;
  		}
  
- <*>[a-zA-Z_][a-zA-Z0-9_]*:	{
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
- 			DPRINT("Label: %s\n", yytext);
--			yylval.str = strdup(yytext);
--			yylval.str[yyleng-1] = '\0';
-+			yylval.labelref = strdup(yytext);
-+			yylval.labelref[yyleng-1] = '\0';
+@@ -95,7 +111,7 @@
  			return DT_LABEL;
  		}
  
--<CELLDATA>[bodh]# {
-+[bodh]# {
+-[bodh]# {
++<INITIAL>[bodh]# {
  			yylloc.filenum = srcpos_filenum;
  			yylloc.first_line = yylineno;
  			if (*yytext == 'b')
-@@ -132,27 +110,19 @@
+@@ -110,7 +126,15 @@
  			return DT_BASE;
  		}
  
--<CELLDATA>[0-9a-fA-F]+	{
--			yylloc.filenum = srcpos_filenum;
--			yylloc.first_line = yylineno;
--			yylval.str = strdup(yytext);
--			DPRINT("Cell: '%s'\n", yylval.str);
--			return DT_CELL;
--		}
--
--<CELLDATA>">"	{
-+[0-9a-fA-F]+	{
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
--			DPRINT("/CELLDATA\n");
--			BEGIN(INITIAL);
--			return '>';
+-[0-9a-fA-F]+	{
++<INITIAL>[0-9a-fA-F]+	{
++			yylloc.filenum = srcpos_filenum;
++			yylloc.first_line = yylineno;
 +			yylval.literal = strdup(yytext);
 +			DPRINT("Literal: '%s'\n", yylval.literal);
-+			return DT_LITERAL;
- 		}
- 
--<CELLDATA>\&{REFCHAR}*	{
-+\&{REFCHAR}*	{
++			return DT_LEGACYLITERAL;
++		}
++
++<V1>[0-9]+|0[xX][0-9a-fA-F]+      {
  			yylloc.filenum = srcpos_filenum;
  			yylloc.first_line = yylineno;
- 			DPRINT("Ref: %s\n", yytext+1);
--			yylval.str = strdup(yytext+1);
-+			yylval.labelref = strdup(yytext+1);
- 			return DT_REF;
- 		}
- 
-@@ -172,30 +142,13 @@
+ 			yylval.literal = strdup(yytext);
+@@ -138,7 +162,7 @@
+ 			yylloc.filenum = srcpos_filenum;
+ 			yylloc.first_line = yylineno;
+ 			DPRINT("/BYTESTRING\n");
+-			BEGIN(INITIAL);
++			BEGIN_DEFAULT();
  			return ']';
  		}
  
--,		{ /* Technically this is a valid property name,
--		     but we'd rather use it as punctuation, so detect it
--		     here in preference */
--			yylloc.filenum = srcpos_filenum;
--			yylloc.first_line = yylineno;
--			DPRINT("Char (propname like): %c (\\x%02x)\n", yytext[0],
--				(unsigned)yytext[0]);
--			return yytext[0];
--		}
--
--{PROPCHAR}+	{
-+<PROPNODENAME>{PROPCHAR}+(@{UNITCHAR}+)? {
- 			yylloc.filenum = srcpos_filenum;
+@@ -147,7 +171,7 @@
  			yylloc.first_line = yylineno;
--			DPRINT("PropName: %s\n", yytext);
--			yylval.str = strdup(yytext);
--			return DT_PROPNAME;
--		}
--
--{PROPCHAR}+(@{UNITCHAR}+)? {
--			yylloc.filenum = srcpos_filenum;
--			yylloc.first_line = yylineno;
--			DPRINT("NodeName: %s\n", yytext);
--			yylval.str = strdup(yytext);
--			return DT_NODENAME;
-+			DPRINT("PropNodeName: %s\n", yytext);
-+			yylval.propnodename = strdup(yytext);
-+			BEGIN(INITIAL);
-+			return DT_PROPNODENAME;
+ 			DPRINT("PropNodeName: %s\n", yytext);
+ 			yylval.propnodename = strdup(yytext);
+-			BEGIN(INITIAL);
++			BEGIN_DEFAULT();
+ 			return DT_PROPNODENAME;
  		}
  
- 
-@@ -213,21 +166,13 @@
- <*>.		{
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
--			switch (yytext[0]) {
--				case '<':
--					DPRINT("CELLDATA\n");
--					BEGIN(CELLDATA);
--					break;
--				case '[':
--					DPRINT("BYTESTRING\n");
--					BEGIN(BYTESTRING);
--					break;
--				default:
--
-+			if ((yytext[0] == '{')
-+			    || (yytext[0] == ';')) {
-+				DPRINT("<PROPNODENAME>\n");
-+				BEGIN(PROPNODENAME);
-+			}
- 			DPRINT("Char: %c (\\x%02x)\n", yytext[0],
- 				(unsigned)yytext[0]);
--					break;
--			}
- 
- 			return yytext[0];
- 		}
 Index: dtc/dtc-parser.y
 ===================================================================
---- dtc.orig/dtc-parser.y	2007-10-26 13:00:21.000000000 +1000
-+++ dtc/dtc-parser.y	2007-10-26 15:11:02.000000000 +1000
-@@ -25,45 +25,46 @@
- #include "srcpos.h"
- 
- int yylex(void);
--cell_t cell_from_string(char *s, unsigned int base);
-+unsigned long long eval_literal(const char *s, int base, int bits);
- 
- extern struct boot_info *the_boot_info;
- 
- %}
- 
- %union {
--	cell_t cval;
-+	char *propnodename;
-+	char *literal;
-+	char *labelref;
- 	unsigned int cbase;
- 	u8 byte;
--	char *str;
- 	struct data data;
-+
-+	u64 addr;
-+	cell_t cell;
- 	struct property *prop;
- 	struct property *proplist;
- 	struct node *node;
- 	struct node *nodelist;
--	int datalen;
--	int hexlen;
--	u64 addr;
+--- dtc.orig/dtc-parser.y	2007-10-26 15:11:02.000000000 +1000
++++ dtc/dtc-parser.y	2007-10-26 15:49:05.000000000 +1000
+@@ -48,9 +48,11 @@
  	struct reserve_info *re;
  }
  
++%token DT_V1
  %token DT_MEMRESERVE
--%token <addr> DT_ADDR
--%token <str> DT_PROPNAME
--%token <str> DT_NODENAME
-+%token <propnodename> DT_PROPNODENAME
-+%token <literal> DT_LITERAL
+ %token <propnodename> DT_PROPNODENAME
+ %token <literal> DT_LITERAL
++%token <literal> DT_LEGACYLITERAL
  %token <cbase> DT_BASE
--%token <str> DT_CELL
  %token <byte> DT_BYTE
  %token <data> DT_STRING
--%token <str> DT_LABEL
--%token <str> DT_REF
-+%token <labelref> DT_LABEL
-+%token <labelref> DT_REF
- 
- %type <data> propdata
+@@ -61,6 +63,8 @@
  %type <data> propdataprefix
  %type <re> memreserve
  %type <re> memreserves
--%type <cbase> opt_cell_base
-+%type <addr> addr
++%type <re> v0_memreserve
++%type <re> v0_memreserves
+ %type <addr> addr
  %type <data> celllist
-+%type <cbase> cellbase
-+%type <cell> cellval
- %type <data> bytestring
- %type <prop> propdef
- %type <proplist> proplist
-@@ -72,8 +73,7 @@
- %type <node> nodedef
- %type <node> subnode
- %type <nodelist> subnodes
--%type <str> label
--%type <str> nodename
-+%type <labelref> label
- 
+ %type <cbase> cellbase
+@@ -78,7 +82,11 @@
  %%
  
-@@ -96,16 +96,23 @@
- 	;
- 
- memreserve:
--	  label DT_MEMRESERVE DT_ADDR DT_ADDR ';'
-+	  label DT_MEMRESERVE addr addr ';'
+ sourcefile:
+-	  memreserves devicetree
++	  DT_V1 ';' memreserves devicetree
++		{
++			the_boot_info = build_boot_info($3, $4);
++		}
++	| v0_memreserves devicetree
+ 		{
+ 			the_boot_info = build_boot_info($1, $2);
+ 		}
+@@ -100,6 +108,24 @@
  		{
  			$$ = build_reserve_entry($3, $4, $1);
  		}
--	| label DT_MEMRESERVE DT_ADDR '-' DT_ADDR ';'
-+	| label DT_MEMRESERVE addr '-' addr ';'
- 		{
- 			$$ = build_reserve_entry($3, $5 - $3 + 1, $1);
- 		}
- 	;
- 
-+addr:
-+	  DT_LITERAL
-+		{
-+			$$ = eval_literal($1, 16, 64);
-+		}
-+	  ;
++	;
 +
- devicetree:
- 	  '/' nodedef
- 		{
-@@ -132,11 +139,11 @@
- 	;
- 
- propdef:
--	  label DT_PROPNAME '=' propdata ';'
-+	  label DT_PROPNODENAME '=' propdata ';'
- 		{
- 			$$ = build_property($2, $4, $1);
- 		}
--	| label DT_PROPNAME ';'
-+	| label DT_PROPNODENAME ';'
- 		{
- 			$$ = build_property($2, empty_data, $1);
- 		}
-@@ -177,23 +184,14 @@
- 		}
- 	;
- 
--opt_cell_base:
--	  /* empty */
--		{
--			$$ = 16;
--		}
--	| DT_BASE
--	;
--
- celllist:
- 	  /* empty */
- 		{
- 			$$ = empty_data;
- 		}
--	| celllist opt_cell_base DT_CELL
-+	| celllist cellval
- 		{
--			$$ = data_append_cell($1,
--					      cell_from_string($3, $2));
-+			$$ = data_append_cell($1, $2);
- 		}
- 	| celllist DT_REF
- 		{
-@@ -205,6 +203,21 @@
- 		}
- 	;
- 
-+cellbase:
++v0_memreserves:
 +	  /* empty */
 +		{
-+			$$ = 16;
++			$$ = NULL;
 +		}
-+	| DT_BASE
-+	;
-+
-+cellval:
-+	  cellbase DT_LITERAL
++	| v0_memreserve v0_memreserves
 +		{
-+			$$ = eval_literal($2, $1, 32);
-+		}
++			$$ = chain_reserve_entry($1, $2);
++		};
 +	;
 +
- bytestring:
- 	  /* empty */
++v0_memreserve:
++	  memreserve
++		{
++			$$ = $1;
++		}
+ 	| label DT_MEMRESERVE addr '-' addr ';'
  		{
-@@ -232,23 +245,12 @@
- 	;
+ 			$$ = build_reserve_entry($3, $5 - $3 + 1, $1);
+@@ -108,6 +134,10 @@
  
- subnode:
--	  label nodename nodedef
-+	  label DT_PROPNODENAME nodedef
+ addr:
+ 	  DT_LITERAL
++	  	{
++			$$ = eval_literal($1, 0, 64);
++		}
++	| DT_LEGACYLITERAL
  		{
- 			$$ = name_node($3, $2, $1);
+ 			$$ = eval_literal($1, 16, 64);
  		}
+@@ -212,7 +242,11 @@
  	;
  
--nodename:
--	  DT_NODENAME
--		{
--			$$ = $1;
--		}
--	| DT_PROPNAME
--		{
--			$$ = $1;
--		}
--	;
--
- label:
- 	  /* empty */
+ cellval:
+-	  cellbase DT_LITERAL
++	  DT_LITERAL
++		{
++			$$ = eval_literal($1, 0, 32);
++		}
++	| cellbase DT_LEGACYLITERAL
  		{
-@@ -273,33 +275,18 @@
- 		fname, yylloc.first_line, s);
- }
+ 			$$ = eval_literal($2, $1, 32);
+ 		}
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2007-10-26 15:11:02.000000000 +1000
++++ dtc/tests/run_tests.sh	2007-10-26 15:18:43.000000000 +1000
+@@ -118,6 +118,10 @@
+     tree1_tests_rw dtc_tree1.test.dtb
+     run_test dtbs_equal_ordered dtc_tree1.test.dtb test_tree1.dtb
  
--
--/*
-- * Convert a string representation of a numeric cell
-- * in the given base into a cell.
-- *
-- * FIXME: should these specification errors be fatal instead?
-- */
--
--cell_t cell_from_string(char *s, unsigned int base)
-+unsigned long long eval_literal(const char *s, int base, int bits)
- {
--	cell_t c;
-+	unsigned long long val;
- 	char *e;
- 
--	c = strtoul(s, &e, base);
--	if (*e) {
--		fprintf(stderr,
--			"Line %d: Invalid cell value '%s' : "
--			"%c is not a base %d digit; %d assumed\n",
--			yylloc.first_line, s, *e, base, c);
--	}
--
--	if (errno == EINVAL || errno == ERANGE) {
--		fprintf(stderr,
--			"Line %d: Invalid cell value '%s'; %d assumed\n",
--			yylloc.first_line, s, c);
--		errno = 0;
--	}
--
--	return c;
-+	errno = 0;
-+	val = strtoull(s, &e, base);
-+	if (*e)
-+		yyerror("bad characters in literal");
-+	else if ((errno == ERANGE) || (val > ((1ULL << bits)-1)))
-+		yyerror("literal out of range");
-+	else if (errno != 0)
-+		yyerror("bad literal");
-+	return val;
++    run_test dtc.sh -I dts -O dtb -o dtc_tree1_dts0.test.dtb test_tree1_dts0.dts
++    tree1_tests dtc_tree1_dts0.test.dtb
++    tree1_tests_rw dtc_tree1_dts0.test.dtb
++
+     run_test dtc.sh -I dts -O dtb -o dtc_escapes.test.dtb escapes.dts
+     run_test string_escapes dtc_escapes.test.dtb
  }
+Index: dtc/tests/test_tree1.dts
+===================================================================
+--- dtc.orig/tests/test_tree1.dts	2007-10-26 15:11:02.000000000 +1000
++++ dtc/tests/test_tree1.dts	2007-10-26 15:18:43.000000000 +1000
+@@ -1,27 +1,29 @@
+-/memreserve/ deadbeef00000000-deadbeef000fffff;
+-/memreserve/ abcd1234 00001234;
++/dts-v1/;
++
++/memreserve/ 0xdeadbeef00000000 0x100000;
++/memreserve/ 0xabcd1234 0x00001234;
+ 
+ / {
+ 	compatible = "test_tree1";
+-	prop-int = <deadbeef>;
++	prop-int = <0xdeadbeef>;
+ 	prop-str = "hello world";
+ 
+ 	subnode@1 {
+ 		compatible = "subnode1";
+-		prop-int = <deadbeef>;
++		prop-int = <0xdeadbeef>;
+ 
+ 		subsubnode {
+ 			compatible = "subsubnode1", "subsubnode";
+-			prop-int = <deadbeef>;
++			prop-int = <0xdeadbeef>;
+ 		};
+ 	};
+ 
+ 	subnode@2 {
+-		prop-int = <abcd1234>;
++		prop-int = <0xabcd1234>;
+ 
+ 		subsubnode@0 {
+ 			compatible = "subsubnode2", "subsubnode";
+-			prop-int = <abcd1234>;
++			prop-int = <0xabcd1234>;
+ 		};
+ 	};
+ };
+Index: dtc/tests/test_tree1_dts0.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/test_tree1_dts0.dts	2007-10-26 15:18:43.000000000 +1000
+@@ -0,0 +1,27 @@
++/memreserve/ deadbeef00000000-deadbeef000fffff;
++/memreserve/ abcd1234 00001234;
++
++/ {
++	compatible = "test_tree1";
++	prop-int = <deadbeef>;
++	prop-str = "hello world";
++
++	subnode@1 {
++		compatible = "subnode1";
++		prop-int = <deadbeef>;
++
++		subsubnode {
++			compatible = "subsubnode1", "subsubnode";
++			prop-int = <deadbeef>;
++		};
++	};
++
++	subnode@2 {
++		prop-int = <abcd1234>;
++
++		subsubnode@0 {
++			compatible = "subsubnode2", "subsubnode";
++			prop-int = <abcd1234>;
++		};
++	};
++};
+
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
