@@ -1,27 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 98067DDE2A
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 00:18:30 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 26 Oct 2007 07:18:28 -0700
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: [PATCH v4.2] FEC - fast ethernet controller for mpc52xx
-Message-ID: <20071026141828.GA14900@xyzzy.farnsworth.org>
-References: <20071014075511.GC3000@nd47.coderock.org>
-	<4713BA1C.2050604@pobox.com>
-	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
-	<4717B09B.3060800@pobox.com>
-	<20071019112700.GD27403@nd47.coderock.org>
-	<47206209.8080109@pobox.com>
-	<20071025185706.29496.qmail@farnsworth.org>
-	<20071025194114.GH3369@nd47.coderock.org>
-	<20071025202908.GA2102@xyzzy.farnsworth.org>
-	<20071026115909.GI3369@nd47.coderock.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071026115909.GI3369@nd47.coderock.org>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CA27CDDE08
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 01:03:25 +1000 (EST)
+In-Reply-To: <4dd2a2ce0710252051pe83a943q48f52d148f5a9603@mail.gmail.com>
+References: <4dd2a2ce0710252051pe83a943q48f52d148f5a9603@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <524E69ED-899B-452F-B593-44499C5181A3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: reg adjust_total_lowmem
+Date: Fri, 26 Oct 2007 10:04:19 -0500
+To: Surya Ravikiran <koduks@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Oct 26, 2007 at 01:59:09PM +0200, Domen Puncer wrote:
-> +static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
-> +{
-> +	struct net_device *dev = dev_id;
-> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
-> +
-> +	spin_lock(&priv->lock);
-> +
-> +	while (bcom_buffer_done(priv->tx_dmatsk)) {
-> +		struct sk_buff *skb;
-> +		struct bcom_fec_bd *bd;
-> +		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL,
-> +				(struct bcom_bd **)&bd);
-> +		/* Here (and in rx routines) would be a good place for
-> +		 * dma_unmap_single(), but bcom doesn't return bcom_bd of the
-> +		 * finished transfer, and _unmap is empty on this platfrom.
-> +		 */
 
-Oops, you forgot to remove the above comment.  :)
+On Oct 25, 2007, at 10:51 PM, Surya Ravikiran wrote:
 
-Otherwise,
-Acked-by: Dale Farnsworth <dale@farnsworth.org>
+> Hi,
+>
+> I am trying to bootup a Linux kernel, on a FS eval board with 256M.
+> I pass the kernel argument mem=252M, and see that the kernel boots up
+> fine, but with much less memory, ~192M (the closes 64M multiple), and
+> I browsed through the code to see that the adjust_total_lowmem
+> function does not add up the residual memory to the total memory.
+> I am trying to understand why I cannot do this reserving of higher end
+> of the RAM during boot up,
+> I would appreciate your comments.
 
-Domen, thanks for all your work on this.  It's good to see it finally go in.
+The reason you have 192M is that lowmem is the total amount of memory  
+that can be covered by up to three CAM entries.  In the case of  
+setting mem=252M that max that three CAM entries can cover is 192M (64 
++64+64).  You should be able to access the other 60M via HIGHMEM.
 
--Dale
+- k
