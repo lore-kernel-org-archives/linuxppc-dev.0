@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <bc0f09818134417c23c120426f3d51a32f37ae8f.1193381582.git.michael@ellerman.id.au>
+Message-Id: <4e749fe7078e2c006cf40921cea904833c75263c.1193381582.git.michael@ellerman.id.au>
 In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 08/16] Use of_get_next_parent() in pseries_mpic_init_IRQ()
-Date: Fri, 26 Oct 2007 16:54:38 +1000 (EST)
+Subject: [PATCH 09/16] Use of_get_next_parent() in axon_msi.c
+Date: Fri, 26 Oct 2007 16:54:41 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,40 +15,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use of_get_next_parent() in pseries_mpic_init_IRQ() to simplify
-the loop logic.
+We can use of_get_next_parent() in two places in axon_msi.c to
+simplify the looping logic.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/cell/axon_msi.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index fdb9b1c..f08dfaf 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -129,7 +129,7 @@ void pseries_8259_cascade(unsigned int irq, struct irq_desc *desc)
- 
- static void __init pseries_mpic_init_IRQ(void)
- {
--	struct device_node *np, *old, *cascade = NULL;
-+	struct device_node *np, *cascade = NULL;
-         const unsigned int *addrp;
- 	unsigned long intack = 0;
- 	const unsigned int *opprop;
-@@ -182,11 +182,8 @@ static void __init pseries_mpic_init_IRQ(void)
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 095988f..76870fe 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -125,7 +125,7 @@ static struct axon_msic *find_msi_translator(struct pci_dev *dev)
+ 		return NULL;
  	}
  
- 	/* Check ACK type */
--	for (old = of_node_get(cascade); old != NULL ; old = np) {
--		np = of_get_parent(old);
--		of_node_put(old);
--		if (np == NULL)
--			break;
-+	np = of_node_get(cascade);
-+	while ((np = of_get_next_parent(np))) {
- 		if (strcmp(np->name, "pci") != 0)
- 			continue;
- 		addrp = of_get_property(np, "8259-interrupt-acknowledge",
+-	for (; dn; tmp = of_get_parent(dn), of_node_put(dn), dn = tmp) {
++	for (; dn; dn = of_get_next_parent(dn)) {
+ 		ph = of_get_property(dn, "msi-translator", NULL);
+ 		if (ph)
+ 			break;
+@@ -171,7 +171,7 @@ static int axon_msi_check_device(struct pci_dev *dev, int nvec, int type)
+ 
+ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
+ {
+-	struct device_node *dn, *tmp;
++	struct device_node *dn;
+ 	struct msi_desc *entry;
+ 	int len;
+ 	const u32 *prop;
+@@ -184,7 +184,7 @@ static int setup_msi_msg_address(struct pci_dev *dev, struct msi_msg *msg)
+ 
+ 	entry = list_first_entry(&dev->msi_list, struct msi_desc, list);
+ 
+-	for (; dn; tmp = of_get_parent(dn), of_node_put(dn), dn = tmp) {
++	for (; dn; dn = of_get_next_parent(dn)) {
+ 		if (entry->msi_attrib.is_64) {
+ 			prop = of_get_property(dn, "msi-address-64", &len);
+ 			if (prop)
 -- 
 1.5.2.rc1.1884.g59b20
