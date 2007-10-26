@@ -1,35 +1,16 @@
-Return-Path: <ossthema@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 715FEDDD0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 22:37:36 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l9QCbUZR442632
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 12:37:30 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id l9QCbTfj2339066
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 14:37:29 +0200
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l9QCbTit009652
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 14:37:29 +0200
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH] ehea: add kexec support
-Date: Fri, 26 Oct 2007 14:37:28 +0200
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200710261437.29117.ossthema@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 4/4] DTC: Begin the path to sane literals and expressions.
+In-Reply-To: Your message of "Fri, 26 Oct 2007 11:28:32 +1000."
+	<20071026012832.GC457@localhost.localdomain>
+References: <E1Iivsg-00078a-Vp@jdl.com>
+	<20071020084737.GG26642@localhost.localdomain>
+	<E1Il7O5-00036T-Iy@jdl.com>
+	<20071026012832.GC457@localhost.localdomain>
+Date: Fri, 26 Oct 2007 08:07:49 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IlOuj-0000lw-7E@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,90 +20,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-eHEA resources that are allocated via H_CALLs have a unique identifier each.
-These identifiers are necessary to free the resources. A reboot notifier
-is used to free all eHEA resources before the indentifiers get lost, i.e
-before kexec starts a new kernel.
+So, like, the other day David Gibson mumbled:
+> 
+> Ah... I think I see the source of our misunderstanding.  Sorry if I
+> was unclear.  I'm not saying that the version token would be
+> invisible to the parser, just that it would be recognized by the lexer
+> first.
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Ah! Right.  OK, I see what you are saying now.
 
----
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |   21 +++++++++++++++++++++
- 2 files changed, 22 insertions(+), 1 deletions(-)
+> The nice thing about having a token, is that if necessary we can
+> completely change the grammar for each version, without having to have
+> tangled rules that have to generate yyerror()s in some circumstances
+> depending on the version variable.  The alternate grammars can be
+> encoded directly into the yacc rules:
+> 	startsymbol : version0_file
+> 		    | V1_TOKEN version1_file
+> 		    | V2_TOKEN version2_file
+> 		    ;
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 4b4b74e..f78e5bf 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0079"
-+#define DRV_VERSION	"EHEA_0080"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 0a7e789..f0319f1 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -33,6 +33,9 @@
- #include <linux/if.h>
- #include <linux/list.h>
- #include <linux/if_ether.h>
-+#include <linux/notifier.h>
-+#include <linux/reboot.h>
-+
- #include <net/ip.h>
- 
- #include "ehea.h"
-@@ -3295,6 +3298,20 @@ static int __devexit ehea_remove(struct of_device *dev)
- 	return 0;
- }
- 
-+static int ehea_reboot_notifier(struct notifier_block *nb,
-+				unsigned long action, void *unused)
-+{
-+	if (action == SYS_RESTART) {
-+		ehea_info("Reboot: freeing all eHEA resources");
-+		ibmebus_unregister_driver(&ehea_driver);
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block ehea_reboot_nb = {
-+        .notifier_call = ehea_reboot_notifier,
-+};
-+
- static int check_module_parm(void)
- {
- 	int ret = 0;
-@@ -3351,6 +3368,8 @@ int __init ehea_module_init(void)
- 	if (ret)
- 		goto out;
- 
-+	register_reboot_notifier(&ehea_reboot_nb);
-+
- 	ret = ibmebus_register_driver(&ehea_driver);
- 	if (ret) {
- 		ehea_error("failed registering eHEA device driver on ebus");
-@@ -3362,6 +3381,7 @@ int __init ehea_module_init(void)
- 	if (ret) {
- 		ehea_error("failed to register capabilities attribute, ret=%d",
- 			   ret);
-+		unregister_reboot_notifier(&ehea_reboot_nb);
- 		ibmebus_unregister_driver(&ehea_driver);
- 		goto out;
- 	}
-@@ -3375,6 +3395,7 @@ static void __exit ehea_module_exit(void)
- 	flush_scheduled_work();
- 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
- 	ibmebus_unregister_driver(&ehea_driver);
-+	unregister_reboot_notifier(&ehea_reboot_nb);
- 	ehea_destroy_busmap();
- }
- 
--- 
-1.5.2
+Hmmm...  Now that I see that your symbol is still in the grammar,
+I can see this part as well.  OK.  I'll buy it.
+
+> > > I'm also inclined to leave the syntax for bytestrings as it is, in
+> > 
+> > Why?  Why not be allowed to form up a series of expressions
+> > that make up a byte string? Am I missing something obvious here?
+> 
+> Because part of the point of bytestrings is to provide representation
+> for binary data.  For a MAC address, say
+> 	[0x00 0x0a 0xe4 0x2c 0x23 0x1f]
+> is way bulkier than
+> 	[000ae42c231f]
+
+No, I think you misuderstand what I was after.  I'm not after the
+the latter [000ae4...].  In that case, there would be multiple
+expressions, each no bigger than 8 bits wide:
+
+    [ expr expr expr    expr  expr      expr ]
+    [ 0x00   10 0x4  0x20+12 '0'+3  0x20 - 1 ]
+
+or whatever seemed appropriate.  It would not be one giant value.
+
+> And in bytestring context, I suspect having every expression result be
+> truncated to bytesize will be way more of a gotcha than in cell
+> context.
+
+Which is why we run a semantic checking as well and warn on
+values not fitting in container sizes.
+
+> I suspect we can get the expression flexibility we want here by
+> providing the right operators to act *on* bytestrings, rather than
+> within bytestrings.
+
+That too.  No problem.  I suspect some may be functional, though.
+Haven't thought about that a bunch yet.  I just want to get
+basis stuff in first.
+
+
+> Hrm.  I think just exprval or intval would be better.  Actually
+> probably intval, since last we spoke I though we were planning on
+> having expressions of string and bytestring types as well.
+
+Except I think we want more generalized than that.
+
+> Incidentally, there's another problem here: we haven't solved the
+> problem about having to allow property names with initial digits.
+
+I know.
+
+> That's a particular problem here, because although we can make
+> literals scanned in preference to propnames of the same length, in
+> this case
+> 	0x1234..0xabcd
+> Will be scanned as one huge propname.
+
+I know.  White space is mandatory right now.
+
+> This might work for you at the moment, if you've still got all the
+> lexer states, but I was really hoping we could ditch most of them with
+> the new literals.
+
+Which is really why they are all still there.  Longer term,
+I want to _quit_ supporting "version 0" and remove the cruft...
+
+> But you haven't actually addressed my concern about this.  Actually
+> it's worse that I said then, because
+> 	<0x10000000 -999>
+> is ambiguous.  Is it a single subtraction expression, or one literal
+> cell followed by an expression cell with a unary '-'?
+
+Gah.
+
+Paren'ed expressions may be the thing to do.
+How do you feel about comma separation?
+
+Anyone else care to chime in?
+
+> > > > +unsigned int dts_version = 0;
+
+> Yeah, I figured this out after.  Youch, an even tighter and harder to
+> follow coupling between lexer and parser execution order.  I can think
+> of at least two better ways to do this.
+
+I'm listening... :-)
+
+> 1) handle d# b# etc. at the lexer lexel, with a regex like
+> (d#{WS}*[0-9]+).  Strictly speaking that changes the language, but I
+> don't think anyone's been insane enough to do something like "d#
+> /*stupid comment*/ 999".  That would remove the whole ugly
+> opt_cell_base tangle from the grammar.
+
+That seems like it could work...
+
+> 2) Have the lexer just pass up literals as strings, and let the parser
+> do the conversion to integer, based on the grammatical context.  I
+> think this is preferable because it has other advantages: we can do
+> the distinction between 64-bit values for memreserve and 32-bit values
+> for cell at the grammatical level.  It can also be used to handle the
+> propname/literal ambiguity without lexer states (I had a patch a while
+> back which removed the MEMRESERVE and CELLDATA lex states using this
+> technique).
+
+I'm not so keen on that approach, I don't think.
+
+> > The same call to set_dts_version() as any other case.
+> 
+> Erm... which same call to set_dts_version()?  Surely not the one in
+> the parser..
+
+I'm clearly not understanding your point, I'm afraid.  There are
+static default values here:
+
+    /*
+     * DTS sourcefile version.
+     */
+    unsigned int dts_version = 0;
+    unsigned int expr_default_base = 10;
+
+And there is a call to set_dts_version() made when any DTS file
+is parsed, which happens before any -O option is even handled.
+
+What am I missing?
+
+jdl
