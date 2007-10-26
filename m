@@ -1,29 +1,23 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 34BD1DDE32
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 06:46:53 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9QKkocd004875
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 16:46:50 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9QKkoWI123824
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 14:46:50 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9QKkoDB030727
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 14:46:50 -0600
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH] [Powerpc] fix switch_slb handling of 1T ESID values
-To: linuxppc-dev@ozlabs.org
-Date: Fri, 26 Oct 2007 15:46:42 -0500
-Message-ID: <20071026204641.25514.45178.stgit@farscape.rchland.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DE5E3DDEBF
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 06:52:27 +1000 (EST)
+Message-ID: <47225327.2070103@freescale.com>
+Date: Fri, 26 Oct 2007 15:50:47 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: reg adjust_total_lowmem
+References: <4dd2a2ce0710252051pe83a943q48f52d148f5a9603@mail.gmail.com>	<524E69ED-899B-452F-B593-44499C5181A3@kernel.crashing.org>
+	<20071026194005.GA4571@loki.buserror.net>
+In-Reply-To: <20071026194005.GA4571@loki.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Surya Ravikiran <koduks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,61 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Scott Wood wrote:
+> On Fri, Oct 26, 2007 at 10:04:19AM -0500, Kumar Gala wrote:
+>> The reason you have 192M is that lowmem is the total amount of memory  
+>> that can be covered by up to three CAM entries.  In the case of  
+>> setting mem=252M that max that three CAM entries can cover is 192M (64 
+>> +64+64).  You should be able to access the other 60M via HIGHMEM.
+> 
+> Why doesn't it just use a 256M mapping, and not access the last 4M?
 
-[Powerpc] fix switch_slb handling of 1T ESID values
+Not to mention, why highmem and not just normal TLB0 mappings for the 
+extra pages?
 
-Now that we have 1TB segment size support, we need to be using the
-GET_ESID_1T macro when comparing ESID values for pc,stack, and
-unmapped_base within switch_slb() when we're on a CPU that supports it.
-
-This also happens to fix a duplicate-slb-entry inspired machine-check
-exception I was seeing when trying to run java on a power6 partition.
-
-Tested on power6 and power5.
-
-Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
-
----
-
-There is a similar bit of code in stab.c switch_stab().  Should this change also be made there?
----
-
- arch/powerpc/mm/slb.c |   19 ++++++++++++++-----
- 1 files changed, 14 insertions(+), 5 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index bbd2c51..0c527d7 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -193,16 +193,25 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		return;
- 	slb_allocate(pc);
- 
--	if (GET_ESID(pc) == GET_ESID(stack))
--		return;
-+	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
-+		if (GET_ESID_1T(pc) == GET_ESID_1T(stack))
-+			return;
-+	} else
-+		if (GET_ESID(pc) == GET_ESID(stack))
-+			return;
- 
- 	if (is_kernel_addr(stack))
- 		return;
- 	slb_allocate(stack);
- 
--	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
--	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
--		return;
-+	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
-+		if ((GET_ESID_1T(pc) == GET_ESID_1T(unmapped_base))
-+		    || (GET_ESID_1T(stack) == GET_ESID_1T(unmapped_base)))
-+			return;
-+	} else
-+		if ((GET_ESID(pc) == GET_ESID(unmapped_base))
-+		    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
-+			return;
- 
- 	if (is_kernel_addr(unmapped_base))
- 		return;
+-Scott
