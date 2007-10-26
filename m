@@ -1,20 +1,23 @@
-Return-Path: <ankur_maheshwari@procsys.com>
-Received: from mailsvr.procsys.com (unknown [61.95.199.26])
+Return-Path: <oxymoron@waste.org>
+Received: from waste.org (waste.org [66.93.16.53])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F28EDDE11
+	(Client CN "waste.org", Issuer "waste.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2A5CCDDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Oct 2007 19:42:39 +1000 (EST)
-Received: from [192.168.1.243] ([192.168.1.243])
-	by mailsvr.procsys.com (8.13.5/8.13.5) with ESMTP id l9Q9Wrkv010693
-	for <linuxppc-embedded@ozlabs.org>; Fri, 26 Oct 2007 15:02:54 +0530
-Message-ID: <4721B3B7.8070602@procsys.com>
-Date: Fri, 26 Oct 2007 15:00:31 +0530
-From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
+	Sat, 27 Oct 2007 00:41:55 +1000 (EST)
+Date: Fri, 26 Oct 2007 09:41:34 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Apparent kernel bug with GDB on ppc405
+Message-ID: <20071026144134.GW19691@waste.org>
+References: <20071024194640.GB19691@waste.org>
+	<1193363202.7018.36.camel@pasglop>
+	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
+	<1193369005.7018.46.camel@pasglop>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: mpc8xx, i2c read DB busy issue
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1193369005.7018.46.camel@pasglop>
+Cc: gdb@sourceware.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Fri, Oct 26, 2007 at 01:23:25PM +1000, Benjamin Herrenschmidt wrote:
+> 
+> > This is actually 405.  Does that have the same issue?
+> 
+> hrm... I don't remember :-) There -is- something fishy about the icache
+> on 405 but I don't remember for sure. Try sticking an iccci in there and
+> tell us if that helps.
 
-I am trying to use mpc860 as i2c-SLAVE. Kernel, I am using is 
-Linux-2.4.4, which I can't change due to some reasons.
+I did. I stuck an iccci -and- a dccci loop in. I threw in the tlbia
+when I ran out of other ideas. And the tlbia + existing
+flush_icache_range appears to be sufficient (tested on a non-trivial
+app).
 
-I am able to do I2C read/write operations on mpc8xx-i2c slave only after 
-re-insmoding my driver module (i2c-algo-8xx.c, and adapter layer drive, 
-code I took form i2c-rpx/r360.c ).
+According to my docs, the 405fx's icache is virtually
+indexed/physically mapped, while the dcache is phys/phys.
 
-The issue I am facing is when I insmod i2c-driver on fresh Linux boot, 
-any i2c-mpc860 as slave read/write operation gives me busy status (which 
-is for Rx BD not available) in Controller's i2c Event Registers. When I 
-get busy status I have to do force_close() and re-init of bd, then only 
-busy status goes off.
-
-I tried calling cpm_iic_init(); twice while __init but with no change in 
-busy status.
-
-After some initial try, i2c slave write works but i2c read gives no data 
-to the master. After re-insmoding driver, read/write works with some 
-times (1 out of 15 times) i2c-read failing.
-
-But still I can't understand why busy is coming....
-
-Any help or suggestions are highly appreciated.
-
-thanks,
-Ankur Maheshwari
-
- 
+-- 
+Mathematics is the supreme nostalgia of our time.
