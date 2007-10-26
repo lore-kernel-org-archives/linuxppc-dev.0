@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <caa14cc9fec7d3c363b79a8f5f9d892a56f27bdd.1193381582.git.michael@ellerman.id.au>
+Message-Id: <296ceb5ddb01c4e93735c6baa32d38a9ae4c39d9.1193381582.git.michael@ellerman.id.au>
 In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 14/16] Use of_get_next_child() in __eeh_clear_slot()
-Date: Fri, 26 Oct 2007 16:54:48 +1000 (EST)
+Subject: [PATCH 15/16] Use of_get_next_child() in eeh_reset_device()
+Date: Fri, 26 Oct 2007 16:54:49 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,53 +15,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We should use of_get_next_child() in __eeh_clear_slot() to safely
+We should use of_get_next_child() in eeh_reset_device() to safely
 traverse the node's children.
 
-To achieve this we need to change __eeh_clear_slot() to take the parent
-node, not the child. This is also safer, as passing anything other than
-node->child to the existing routine will not traverse all peers, only
-those deeper in the sibling list.
-
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/eeh.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index d06ab36..1537597 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -412,16 +412,17 @@ void eeh_mark_slot (struct device_node *dn, int mode_flag)
- 	__eeh_mark_slot(dn, mode_flag);
- }
+---
+
+Linas, I don't grok the logic in here, can you check it's OK. The old code
+would potentially not walk through all siblings if pe_dn->node was not
+equal to pe_dn->node->parent->child, but now it will regardless.
+
+
+ arch/powerpc/platforms/pseries/eeh_driver.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 15e015e..abf1850 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -249,7 +249,7 @@ static void eeh_report_failure(struct pci_dev *dev, void *userdata)
  
--static void __eeh_clear_slot (struct device_node *dn, int mode_flag)
-+static void __eeh_clear_slot(struct device_node *parent, int mode_flag)
+ static int eeh_reset_device (struct pci_dn *pe_dn, struct pci_bus *bus)
  {
+-	struct device_node *dn;
++	struct device_node *dn, *parent;
+ 	int cnt, rc;
+ 
+ 	/* pcibios will clear the counter; save the value */
+@@ -270,15 +270,16 @@ static int eeh_reset_device (struct pci_dn *pe_dn, struct pci_bus *bus)
+ 	if (!pcibios_find_pci_bus(dn) && PCI_DN(dn->parent))
+ 		dn = dn->parent->child;
+ 
 -	while (dn) {
-+	struct device_node *dn;
-+
++	parent = of_node_get(dn->parent);
 +	for (dn = NULL; (dn = of_get_next_child(parent, dn));) {
- 		if (PCI_DN(dn)) {
- 			PCI_DN(dn)->eeh_mode &= ~mode_flag;
- 			PCI_DN(dn)->eeh_check_count = 0;
- 			if (dn->child)
--				__eeh_clear_slot (dn->child, mode_flag);
-+				__eeh_clear_slot(dn, mode_flag);
- 		}
+ 		struct pci_dn *ppe = PCI_DN(dn);
+ 		/* On Power4, always true because eeh_pe_config_addr=0 */
+ 		if (pe_dn->eeh_pe_config_addr == ppe->eeh_pe_config_addr) {
+ 			rtas_configure_bridge(ppe);
+ 			eeh_restore_bars(ppe);
+  		}
 -		dn = dn->sibling;
  	}
- }
++	of_node_put(parent);
  
-@@ -438,7 +439,7 @@ void eeh_clear_slot (struct device_node *dn, int mode_flag)
- 
- 	PCI_DN(dn)->eeh_mode &= ~mode_flag;
- 	PCI_DN(dn)->eeh_check_count = 0;
--	__eeh_clear_slot (dn->child, mode_flag);
-+	__eeh_clear_slot(dn, mode_flag);
- 	spin_unlock_irqrestore(&confirm_error_lock, flags);
- }
- 
+ 	/* Give the system 5 seconds to finish running the user-space
+ 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes, 
 -- 
 1.5.2.rc1.1884.g59b20
