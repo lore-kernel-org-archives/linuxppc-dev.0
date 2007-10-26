@@ -1,11 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <a0d6f1f283ef13c53b09ab219eb59d830d501b10.1193381582.git.michael@ellerman.id.au>
+Message-Id: <b53a672823801d516f8cad9853f3e95914b0c6e4.1193381582.git.michael@ellerman.id.au>
 In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 02/16] Use of_get_next_parent() in pci_dma_bus_setup_pSeries()
-Date: Fri, 26 Oct 2007 16:54:32 +1000 (EST)
+Subject: [PATCH 03/16] Use of_get_next_parent() in
+	pci_dma_bus_setup_pSeriesLP()
+Date: Fri, 26 Oct 2007 16:54:33 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,44 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pci_dma_bus_setup_pSeries() should use of_get_next_parent() to safely
+pci_dma_bus_setup_pSeriesLP() should use of_get_next_parent() to safely
 iterate through the parent nodes.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/iommu.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index be17d23..83c0e0f 100644
+index 83c0e0f..e2b325d 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -314,7 +314,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- {
- 	struct device_node *dn;
- 	struct iommu_table *tbl;
--	struct device_node *isa_dn, *isa_dn_orig;
-+	struct device_node *isa_dn;
- 	struct device_node *tmp;
- 	struct pci_dn *pci;
- 	int children;
-@@ -334,13 +334,13 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	/* Check if the ISA bus on the system is under
- 	 * this PHB.
- 	 */
--	isa_dn = isa_dn_orig = of_find_node_by_type(NULL, "isa");
-+	isa_dn = of_find_node_by_type(NULL, "isa");
+@@ -403,7 +403,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 	DBG("pci_dma_bus_setup_pSeriesLP: setting up bus %s\n", dn->full_name);
  
- 	while (isa_dn && isa_dn != dn)
--		isa_dn = isa_dn->parent;
-+		isa_dn = of_get_next_parent(isa_dn);
+ 	/* Find nearest ibm,dma-window, walking up the device tree */
+-	for (pdn = dn; pdn != NULL; pdn = pdn->parent) {
++	for (pdn = of_node_get(dn); pdn; pdn = of_get_next_parent(pdn)) {
+ 		dma_window = of_get_property(pdn, "ibm,dma-window", NULL);
+ 		if (dma_window != NULL)
+ 			break;
+@@ -411,6 +411,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
  
--	if (isa_dn_orig)
--		of_node_put(isa_dn_orig);
-+	/* Drop our reference, it's still safe to check the pointer below */
-+	of_node_put(isa_dn);
+ 	if (dma_window == NULL) {
+ 		DBG("  no ibm,dma-window property !\n");
++		of_node_put(pdn);
+ 		return;
+ 	}
  
- 	/* Count number of direct PCI children of the PHB. */
- 	for (children = 0, tmp = dn->child; tmp; tmp = tmp->sibling)
+@@ -437,6 +438,8 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 
+ 	if (pdn != dn)
+ 		PCI_DN(dn)->iommu_table = ppci->iommu_table;
++
++	of_node_put(pdn);
+ }
+ 
+ 
 -- 
 1.5.2.rc1.1884.g59b20
