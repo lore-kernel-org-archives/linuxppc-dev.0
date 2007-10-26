@@ -1,19 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from picasso.davemloft.net (unknown [74.93.104.98])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 87786DDDF6
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 20:38:37 +1000 (EST)
-Date: Fri, 26 Oct 2007 03:38:03 -0700 (PDT)
-Message-Id: <20071026.033803.74739006.davem@davemloft.net>
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 01/16] Add of_get_next_parent()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
-References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 80782DDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 21:06:30 +1000 (EST)
+Message-ID: <4721C9E9.10208@ru.mvista.com>
+Date: Fri, 26 Oct 2007 15:05:13 +0400
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+Subject: Re: [RFC] [PATCH] PowerPC: Workaround for the
+	440EP(x)/GR(x)	processors identical PVR issue.
+References: <20071025181640.GA18933@ru.mvista.com>
+	<1193345051.7018.15.camel@pasglop>
+In-Reply-To: <1193345051.7018.15.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 26 Oct 2007 16:54:31 +1000 (EST)
+Benjamin Herrenschmidt wrote:
+> On Thu, 2007-10-25 at 22:16 +0400, Valentine Barshak wrote:
+>> PowerPC 440EP(x) 440GR(x) processors have the same PVR values, since
+>> they have identical cores. However, FPU is not supported on GR(x) and
+>> enabling APU instruction broadcast in the CCR0 register (to enable FPU)
+>> may cause unpredictable results. There's no safe way to detect FPU
+>> support at runtime. This patch provides a workarund for the issue.
+>> We use a POWER6 "logical PVR approach". First, we identify all EP(x)
+>> and GR(x) processors as GR(x) ones (which is safe). Then we check 
+>> the device tree cpu path. If we have a EP(x) processor entry,
+>> we call identify_cpu again with PVR | 0x8. This bit is always 0
+>> in the real PVR. This way we enable FPU only for 440EP(x).
+>>
+>> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> 
+> Why not just or-in the FPU feature bit ?
+> 
+> Ben.
+> 
+> 
 
-> Iterating through a device node's parents is simple enough, but dealing
-> with the refcounts properly is a little ugly, and replicating that logic
-> is asking for someone to get it wrong or forget it all together, eg:
-> 
-> while (dn != NULL) {
-> 	/* loop body */
-> 	tmp = of_get_parent(dn);
-> 	of_node_put(dn);
-> 	dn = tmp;
-> }
-> 
-> So add of_get_next_parent(), inspired by of_get_next_child(). The contract
-> is that it returns the parent and drops the reference on the current node,
-> this makes the loop look like:
-> 
-> while (dn != NULL) {
-> 	/* loop body */
-> 	dn = of_get_next_parent(dn);
-> }
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-
-Looks good to me:
-
-Acked-by: David S. Miller <davem@davemloft.net>
+It's not enough. We need to enable APU instruction broadcast for EP(x) 
+(call __init_fpu_44x in arch/powerpc/kernel/cpu_setup_44x.S).
+Or do you suggest to or-in FPU feature bit and enable APUIB later, not 
+in the cpu_setup callback?
+Thanks,
+Valentine.
