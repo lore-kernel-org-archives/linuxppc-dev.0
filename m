@@ -1,32 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 430CDDDEB6
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 04:50:16 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9QIoCAP027495
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 14:50:12 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9QIoB2E107218
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 12:50:11 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9QIoBc1008275
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 12:50:11 -0600
-Date: Fri, 26 Oct 2007 13:50:03 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 0/2] PowerPC: Add 44x NDFC device-tree aware support
-Message-ID: <20071026135003.257b82bd@weaponx.rchland.ibm.com>
-In-Reply-To: <20071026163058.GA11354@ru.mvista.com>
-References: <20071026163058.GA11354@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, sr@denx.de,
-	linux-mtd@lists.infradead.org
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2D651DDE3B
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 05:39:59 +1000 (EST)
+Date: Fri, 26 Oct 2007 14:40:05 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: reg adjust_total_lowmem
+Message-ID: <20071026194005.GA4571@loki.buserror.net>
+References: <4dd2a2ce0710252051pe83a943q48f52d148f5a9603@mail.gmail.com>
+	<524E69ED-899B-452F-B593-44499C5181A3@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <524E69ED-899B-452F-B593-44499C5181A3@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Surya Ravikiran <koduks@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 26 Oct 2007 20:30:58 +0400
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+On Fri, Oct 26, 2007 at 10:04:19AM -0500, Kumar Gala wrote:
+> 
+> On Oct 25, 2007, at 10:51 PM, Surya Ravikiran wrote:
+> 
+> > Hi,
+> >
+> > I am trying to bootup a Linux kernel, on a FS eval board with 256M.
+> > I pass the kernel argument mem=252M, and see that the kernel boots up
+> > fine, but with much less memory, ~192M (the closes 64M multiple), and
+> > I browsed through the code to see that the adjust_total_lowmem
+> > function does not add up the residual memory to the total memory.
+> > I am trying to understand why I cannot do this reserving of higher end
+> > of the RAM during boot up,
+> > I would appreciate your comments.
+> 
+> The reason you have 192M is that lowmem is the total amount of memory  
+> that can be covered by up to three CAM entries.  In the case of  
+> setting mem=252M that max that three CAM entries can cover is 192M (64 
+> +64+64).  You should be able to access the other 60M via HIGHMEM.
 
-> I've worked in parallel with Stefan Roese on the new OF NDFC support.
-> This version (as well as Stefan's) is based on the original NDFC driver by Thomas Gleixner.
-> The major difference is that the original implements each chip connected NDFC banks as a
-> separate MTD device. Here I try to have one MTD device spread on all chips found.
-> However, the chips should have equal ID's and sizes, but I've never seen several different
-> chips attached to single ndfc. 
+Why doesn't it just use a 256M mapping, and not access the last 4M?
 
-Hm.  Why did you do that?  It adds restrictions to the driver that
-really don't need to be present.  If people want a single MTD device
-across multiple chips, they can use mtdconcat.
-
-Remember, just because you've never seen something, doesn't mean it
-doesn't exist.  Bamboo even has two different sized NAND chips
-hooked to the NDFC, IIRC.
-
-josh
+-Scott
