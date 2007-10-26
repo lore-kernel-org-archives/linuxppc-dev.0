@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C648DDDE1E
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 17:29:16 +1000 (EST)
-Date: Fri, 26 Oct 2007 17:29:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 11/16] Use of_get_next_child() in eeh_restore_bars()
-Message-Id: <20071026172909.f7a085e9.sfr@canb.auug.org.au>
-In-Reply-To: <ef7facd658919117aa7c693b4eeb12241ca859d8.1193381582.git.michael@ellerman.id.au>
-References: <80449d4682309dbf8cf80816be4f381fe875f3d1.1193381582.git.michael@ellerman.id.au>
-	<ef7facd658919117aa7c693b4eeb12241ca859d8.1193381582.git.michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__26_Oct_2007_17_29_09_+1000_XiCUkQD=ysSkH40_"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wangbj@lzu.edu.cn>
+Received: from eyou.net (unknown [202.201.0.146])
+	by ozlabs.org (Postfix) with SMTP id 89AE7DDE1D
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 19:50:48 +1000 (EST)
+Message-ID: <393454580.24977@eyou.net>
+From: "Wang, Baojun" <wangbj@lzu.edu.cn>
+To: benh@kernel.crashing.org,
+ linuxppc-dev@ozlabs.org
+Subject: Re: ppc manual paging question
+Date: Fri, 26 Oct 2007 17:50:51 +0800
+References: <200710221203.24157.wangbj@lzu.edu.cn>
+	<200710221542.10592.wangbj@lzu.edu.cn> <393040796.08064@lzu.edu.cn>
+In-Reply-To: <393040796.08064@lzu.edu.cn>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart6457997.rmyWsQdic4";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200710261750.54221.wangbj@lzu.edu.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +24,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__26_Oct_2007_17_29_09_+1000_XiCUkQD=ysSkH40_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+--nextPart6457997.rmyWsQdic4
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Fri, 26 Oct 2007 16:54:43 +1000 (EST) Michael Ellerman <michael@ellerman=
-.id.au> wrote:
+On Monday 22 October 2007 16:04:14, Benjamin Herrenschmidt wrote=EF=BC=9A
+> > Yup, I've found how does the kernel handle tlbs, I think the most
+> > important thing is I forgot read/write the SPRN_SPRG3 register as _swit=
+ch
+> > does.
 >
-> +++ b/arch/powerpc/platforms/pseries/eeh.c
-> @@ -841,11 +841,8 @@ void eeh_restore_bars(struct pci_dn *pdn)
->  	if ((pdn->eeh_mode & EEH_MODE_SUPPORTED) && !IS_BRIDGE(pdn->class_code))
->  		__restore_bars (pdn);
-> =20
-> -	dn =3D pdn->node->child;
-> -	while (dn) {
-> +	for (dn =3D NULL; (dn =3D of_get_next_child(pdn->node, dn));)
+> SPRG3 is for use by the operating system for whatever you want... if you
+> are copying linux code, then you probably indeed want to get that right
+> but you don't have to use SPRG3.
+>
+> > I've add the _PAGE_PRESENT flag to the related PTE
+>
+> Hrm.. that has nothing ot do with the PTE. Bolting is more a property of
+> your replacement algorithm in the TLB miss handler.
+>
+> Ben.
 
-Just wondering if we need
+Hi,
 
-#define for_each_child_node(dn, parent) \
-	for (dn =3D of_get_next_child(parent, NULL); dn; \
-		dn =3D of_get_next_child(parent, dn))
+  First thanks a lot for your help I've finish the tlb code, now I can=20
+manually translate the virtual address correctly, I verified this by printi=
+ng=20
+out the data within the virtual address and it's fine. now the only thing=20
+left is jump to that address (the address is point to _start function), But=
+ I=20
+got an error about unable to access the stack (0xd100fc60 ...), but it is=20
+valid before the instruction:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+/**
+ * XXX: should not defined here
+ */
+#define EVENTS_USER_ADDR_OFFSET 36
 
---Signature=_Fri__26_Oct_2007_17_29_09_+1000_XiCUkQD=ysSkH40_
-Content-Type: application/pgp-signature
+_GLOBAL(jump_xm_dom)
+        stwu    r1,-INT_FRAME_SIZE(r1)
+        mflr    r0
+        stw     r0,INT_FRAME_SIZE+4(r1)
+
+        stw     r31,INT_FRAME_SIZE+128(r1)
+
+        lwz     r5,EVENTS_USER_ADDR_OFFSET(r4)
+        mr      r31,r5  /* new_domain->events_user_addr */
+
+        cmpwi   r3,0
+        beq     1f
+
+        mtctr   r3      /* jump to entry_point */
+        bctrl
+
+        li      r3,0
+1:
+        lwz     r31,INT_FRAME_SIZE+128(r1)
+
+        lwz     r0,INT_FRAME_SIZE+4(r1)
+        addi    r1,r1,INT_FRAME_SIZE
+        mtlr    r0
+        blr
+
+the SP is valid before `bctrl', while exec bctrl, I got the error said unab=
+le=20
+to access address SP ($r1) from bdigdb, without bdigbd (running directly), =
+an=20
+error is print out while the system is dead:=20
+
+insn: 94 21 ff 40 7c 08 02 a6 90 01 00 c4 7f e3 fb 78 3d 20 10 01 90 69 07 =
+a0=20
+48 00 02 55 80 01 00 c4
+$T0440:10000094;01:d1072e60;#ee
+
+address d1072e60 is the address of SP ($r1) before bctrl.
+
+NOTE entry_point($r3) is address like 0x100000a0 which is loaded from the=20
+userspace by a loader program (it loads all section marked as PT_LOAD, such=
+=20
+as .text, the above insn is the entry of .text section, which is _start), b=
+ut=20
+the above code is from the kernel space. and here is the _start function:
+
+#define INT_FRAME_SIZE  192
+
+=2Eglobl _start
+_start:
+        stwu    1, -INT_FRAME_SIZE(1)
+        mflr    0
+        stw     0, INT_FRAME_SIZE+4(1)
+
+        mr      3,31    /* new_domain->events_user_addr */
+
+        lis     9, event_handling@ha
+        stw     3, event_handling@l(9)
+        bl      kmain
+
+        lwz     0, INT_FRAME_SIZE+4(1);
+        mtlr    0
+        addi    1, 1, INT_FRAME_SIZE
+        blr
+
+=2Esize   _start, .-_start
+
+I'm sorry I'm not very familiar with the ppc assembly, is there something=20
+fundamentally wrong? Thank you very much!
+
+  Regards,
+Wang
+
+=2D-=20
+Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0Lanzhou University
+Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0http://dslab.lzu.edu.cn
+School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
+ngbj@lzu.edu.cn
+Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
+Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
+ =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
+
+--nextPart6457997.rmyWsQdic4
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.7 (GNU/Linux)
 
-iD8DBQFHIZdLTgG2atn1QN8RAh8XAJ9MBXqP2K1tTjiG5gr3ZDSzns4xiQCfd1Ak
-K1AXryAMUFQeTOqh0BwmyPI=
-=X3n8
+iD8DBQBHIbh7IuIOr7tpgg0RAvmxAKCh90t9JrX5Wa6R7HN5rHEVsjMeIgCfXTJg
+tB79e/GXZb0Fy2gGXTHQVVs=
+=JRW3
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__26_Oct_2007_17_29_09_+1000_XiCUkQD=ysSkH40_--
+--nextPart6457997.rmyWsQdic4--
