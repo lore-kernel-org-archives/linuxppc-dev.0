@@ -1,18 +1,15 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29114DDECE
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 03:50:05 +1000 (EST)
-Date: Fri, 26 Oct 2007 21:47:38 +0400
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC: 44x device-tree aware NDFC bindings
-Message-ID: <20071026174738.GA13648@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071026164130.GA11812@ru.mvista.com>
-Cc: tglx@linutronix.de, sr@denx.de, linux-mtd@lists.infradead.org
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 33AD9DDEEA
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 04:01:59 +1000 (EST)
+Message-ID: <472227CD.8080204@mvista.com>
+Date: Fri, 26 Oct 2007 10:45:49 -0700
+From: Randy Vinson <rvinson@mvista.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] Allow sharing of CMOS clock setup.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +19,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PowerPC 44x NAND Flash Controller (NDFC) bindings
+>From 61da8cf1f92043925ea20ffafafaf0874d761b0e Mon Sep 17 00:00:00 2001
+From: Randy Vinson <rvinson@mvista.com>
+Date: Wed, 24 Oct 2007 17:36:59 -0700
+Subject: [PATCH] Allow sharing of CMOS clock setup.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+Move the CMOS RTC clock setup code from arch/powerpc/platforms/fsl_uli1575.c
+to arch/powerpc/sysdev/rtc_cmos_setup.c so it can be used by more platforms.
+
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   43 +++++++++++++++++++++++++++
- 1 files changed, 43 insertions(+)
+ arch/powerpc/platforms/fsl_uli1575.c |   14 --------------
+ arch/powerpc/sysdev/rtc_cmos_setup.c |   13 +++++++++++++
+ 2 files changed, 13 insertions(+), 14 deletions(-)
 
---- linux-2.6.orig/Documentation/powerpc/booting-without-of.txt	2007-10-26 19:01:43.000000000 +0400
-+++ linux-2.6/Documentation/powerpc/booting-without-of.txt	2007-10-26 21:43:33.000000000 +0400
-@@ -52,6 +52,7 @@ Table of Contents
-       i) Freescale QUICC Engine module (QE)
-       j) CFI or JEDEC memory-mapped NOR flash
-       k) Global Utilities Block
-+      l) 44x NanD Flash Controller (NDFC)
+diff --git a/arch/powerpc/platforms/fsl_uli1575.c b/arch/powerpc/platforms/fsl_uli1575.c
+index afc9141..171d04f 100644
+--- a/arch/powerpc/platforms/fsl_uli1575.c
++++ b/arch/powerpc/platforms/fsl_uli1575.c
+@@ -13,7 +13,6 @@
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/interrupt.h>
+-#include <linux/mc146818rtc.h>
  
-   VII - Specifying interrupt information for devices
-     1) interrupts property
-@@ -2242,6 +2243,48 @@ platforms are moved over to use the flat
- 			   available.
- 			   For Axon: 0x0000012a
+ #include <asm/system.h>
+ #include <asm/pci-bridge.h>
+@@ -155,19 +154,6 @@ static void __devinit quirk_final_uli1575(struct pci_dev *dev)
  
-+  l) 44x NanD Flash Controller (NDFC)
-+
-+  Required properties:
-+  - compatible : should be "ibm,ndfc".
-+  - reg : should contain at address and length of the NDFC registers
-+  - bank-width : NAND chip bus width. Should be 1 for 8-bit NAND or 
-+		 2 for 16-bit NAND
-+  - bank-map : The first 4 bits of this property indicate which of the
-+	       4 NDFC banks have chips attached.
-+  - #address-cells, #size-cells : Must be present if the flash has
-+    sub-nodes representing partitions (see below).  In this case
-+    both #address-cells and #size-cells must be equal to 1.
-+  
-+  NDFC can have partition nodes, which are described the same way
-+  as for the CFI or JEDEC memory-mapped NOR flash.
-+
-+   Example (Sequoia 440EPx):
-+   NDFC is relocatable within EBC and should have EBC as a parent node.
-+   Here we have NDFC on EBC CS3 bank:
-+
-+		ndfc@0,0 {
-+			compatible = "ibm,ndfc-440epx", "ibm,ndfc";
-+			reg = <3 000000 2000>;
-+			bank-width = <1>;
-+			bank-mask = <8>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			partition@0 {
-+				label = "u-boot-nand";
-+				reg = <0 0080000>;
-+			};
-+			partition@80000 {
-+				label = "kernel-nand";
-+				reg = <0080000 0180000>;
-+			};
-+			partition@200000 {
-+				label = "filesystem";
-+				reg = <0200000 1e00000>;
-+			};
-+		};
-+
-+
-    More devices will be defined as this spec matures.
+ 	outb(0xfa, 0x4d0);
+ 	outb(0x1e, 0x4d1);
+-
+-	/* setup RTC */
+-	CMOS_WRITE(RTC_SET, RTC_CONTROL);
+-	CMOS_WRITE(RTC_24H, RTC_CONTROL);
+-
+-	/* ensure month, date, and week alarm fields are ignored */
+-	CMOS_WRITE(0, RTC_VALID);
+-
+-	outb_p(0x7c, 0x72);
+-	outb_p(RTC_ALARM_DONT_CARE, 0x73);
+-
+-	outb_p(0x7d, 0x72);
+-	outb_p(RTC_ALARM_DONT_CARE, 0x73);
+ }
  
- VII - Specifying interrupt information for devices
+ /* SATA */
+diff --git a/arch/powerpc/sysdev/rtc_cmos_setup.c b/arch/powerpc/sysdev/rtc_cmos_setup.c
+index 0c9ac7e..4779b0b 100644
+--- a/arch/powerpc/sysdev/rtc_cmos_setup.c
++++ b/arch/powerpc/sysdev/rtc_cmos_setup.c
+@@ -53,6 +53,19 @@ static int  __init add_rtc(void)
+ 	if (IS_ERR(pd))
+ 		return PTR_ERR(pd);
+ 
++	/* setup RTC */
++	CMOS_WRITE(RTC_SET, RTC_CONTROL);
++	CMOS_WRITE(RTC_24H, RTC_CONTROL);
++
++	/* ensure month, date, and week alarm fields are ignored */
++	CMOS_WRITE(0, RTC_VALID);
++
++	outb_p(0x7c, 0x72);
++	outb_p(RTC_ALARM_DONT_CARE, 0x73);
++
++	outb_p(0x7d, 0x72);
++	outb_p(RTC_ALARM_DONT_CARE, 0x73);
++
+ 	return 0;
+ }
+ fs_initcall(add_rtc);
+-- 
+1.5.3.rc2.22.g69a9b
