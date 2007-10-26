@@ -1,19 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8DC24DDDD5
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 01:57:21 +1000 (EST)
-In-Reply-To: <1193405129.29250.2.camel@p60635-ste.ids.de>
-References: <1193405129.29250.2.camel@p60635-ste.ids.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <77CDBB94-A21E-4A84-9818-4622CB2F572C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: compile warning
-Date: Fri, 26 Oct 2007 10:58:15 -0500
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Cc: linux-ppc <linuxppc-dev@ozlabs.org>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 2DC04DDDE4
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 02:05:04 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so775095uge
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Oct 2007 09:05:02 -0700 (PDT)
+Message-ID: <d120d5000710260905k4c6391b2j7c3d8528cc8198b0@mail.gmail.com>
+Date: Fri, 26 Oct 2007 12:05:01 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: [PATCH] fix appletouch geyser 1 breakage
+In-Reply-To: <1193336881.4630.8.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <1193222676.4510.5.camel@johannes.berg>
+	<d120d5000710240555m545a4f95v8bfc1ac790273001@mail.gmail.com>
+	<1193231110.4510.42.camel@johannes.berg>
+	<d120d5000710240634j21d2b660t267ace56bd9d6af6@mail.gmail.com>
+	<1193233015.4510.44.camel@johannes.berg>
+	<d120d5000710240729v2e3faea8u615cfa7f1e489d11@mail.gmail.com>
+	<1193318605.6092.11.camel@johannes.berg>
+	<1193336881.4630.8.camel@localhost>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Berg <benjamin@sipsolutions.net>,
+	Anton Ekblad <valderman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Oct 26, 2007, at 8:25 AM, Sergej Stepanov wrote:
-
-> Hello!
+On 10/25/07, Benjamin Berg <benjamin@sipsolutions.net> wrote:
+> On Thu, 2007-25-10 at 15:23 +0200, Johannes Berg wrote:
+> > On Wed, 2007-10-24 at 10:29 -0400, Dmitry Torokhov wrote:
+> >
+> > > Do yo know who has powerbooks with older geyser models (0x214, 215,
+> > > 216)?
+> >
+> > Not sure, Benjamin? We're talking about the touchpad, just lsusb should
+> > be enough.
 >
-> I have at compile time the following warning:
+> lsusb says I have a 0x215
+> (Bus 003 Device 002: ID 05ac:0215 Apple Computer, Inc.)
 >
-> WARNING: vmlinux.o(.text+0x10f5c): Section mismatch: reference
-> to .init.text:cpm_muram_init (between 'cpm2_reset' and
-> 'cpm2_smc_clk_setup')
+> Everything is working fine with a 2.6.24-rc1 kernel (ie. no bogus
+> messages).
 >
-> Could it make some problem?
+> > > It would be nice to know if they send the data continiously and
+> > > whether the geyser 3 reset hack works on them.
+> >
+> > That'd be good, but for fountains it definitely doesn't work.
+>
+> Benjamin
+>
 
-It should be fixed, but its highly unlikely you'll see a problem  
-unless you start trying to build core parts of the CPM code as modules.
+Johannes, and what is product ID for your touchpad?
 
-- k
+-- 
+Dmitry
