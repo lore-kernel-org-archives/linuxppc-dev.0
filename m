@@ -1,18 +1,13 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 26 Oct 2007 11:33:43 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-Message-ID: <20071026013343.GD457@localhost.localdomain>
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-	<13403420.post@talk.nabble.com>
-	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
-	<4720BA4B.5090707@semihalf.com>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 25 Oct 2007 19:19:15 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2 1/2] powerpc: prpmc2800 - Add MTD support
+Message-ID: <20071026021915.GA2035@mag.az.mvista.com>
+References: <20071025233948.GA22703@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4720BA4B.5090707@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>
+In-Reply-To: <20071025233948.GA22703@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +17,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
-> Grant Likely wrote:
-> > On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
-[snip]
-> >> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
-> >> partition could not be used. "big-fs", because the memory is too small
-> >> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
-> >> flash border. So only the first 9 MiB of the flash could be used in Linux.
-> >> The remaining 7 MiB couldn't be accessed.
-> > 
-> > Perhaps it would be better to drop the flash layout from the in-kernel
-> > dts files entirely since flash layout can be a fluid thing.
-> 
-> Well, but that would not be really user friendly, I'd rather stick
-> with some default config.
+From: Mark A. Greer <mgreer@mvista.com>
 
-Strictly speaking the device-tree is not the right place for flash
-partitioning information.  We put it there because it's preferable to
-having hardcoded per-board flash layouts in the code itself.
+Create necessary device nodes so that the MTD subsystem recognizes
+the MTD entries in the prpmc2800's DTS file.  Also bring MTD section
+of the prpmc2800's DTS file up to the current DTS specification.
 
-It only really works well, though, when there are strong conventions
-(shared with the firmware) about how to partition the flash.
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+With Stephen's comments addressed.  Much nicer.  Thanks again, Stephen.
 
-Where it's really up to the user to determine how they want to lay out
-their flash, putting things in the device tree isn't a really good
-idea.
+ arch/powerpc/boot/dts/prpmc2800.dts            |   39 +++++++++++----
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |   12 ++++
+ 2 files changed, 41 insertions(+), 10 deletions(-)
 
-Incidentally, it's not required that *all* the flash address space be
-in partitions, so it is possible only give partitions for those flash
-chunks which the firmware needs to know about.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+diff --git a/arch/powerpc/boot/dts/prpmc2800.dts b/arch/powerpc/boot/dts/prpmc2800.dts
+index 297dfa5..24944ca 100644
+--- a/arch/powerpc/boot/dts/prpmc2800.dts
++++ b/arch/powerpc/boot/dts/prpmc2800.dts
+@@ -55,17 +55,36 @@
+ 			  f2000000 f2000000 00040000>;	/* Integrated SRAM */
+ 
+ 		flash@a0000000 {
+-			device_type = "rom";
+-			compatible = "direct-mapped";
+-			reg = <a0000000 4000000>; /* Default (64MB) */
+-			probe-type = "CFI";
++			compatible = "cfi-flash";
++			reg = <a0000000 04000000>;
+ 			bank-width = <4>;
+-			partitions = <00000000 00100000 /* RO */
+-				      00100000 00040001 /* RW */
+-				      00140000 00400000 /* RO */
+-				      00540000 039c0000 /* RO */
+-				      03f00000 00100000>; /* RO */
+-			partition-names = "FW Image A", "FW Config Data", "Kernel Image", "Filesystem", "FW Image B";
++			device-width = <2>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++			fw@0 {
++				label = "FW Image A";
++				reg = <00000000 00100000>;
++				read-only;
++			};
++			cfg@100000 {
++				label = "FW Config Data";	/* RW */
++				reg = <00100000 00040000>;
++			};
++			kernel@140000 {
++				label = "Kernel Image";
++				reg = <00140000 00400000>;
++				read-only;
++			};
++			fs@540000 {
++				label = "Filesystem";
++				reg = <00540000 039c0000>;
++				read-only;
++			};
++			fw@3f00000 {
++				label = "FW Image B";
++				reg = <03f00000 00100000>;
++				read-only;
++			};
+ 		};
+ 
+ 		mdio {
+diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+index e484cac..2506f38 100644
+--- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
++++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
+@@ -14,6 +14,7 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/seq_file.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+@@ -68,6 +69,17 @@ static void __init prpmc2800_setup_arch(void)
+ 	printk("Motorola %s\n", prpmc2800_platform_name);
+ }
+ 
++static int __init prpmc2800_register_mtd(void)
++{
++	struct device_node *np;
++
++	for_each_compatible_node(np, NULL, "cfi-flash")
++		of_platform_device_create(np, NULL, NULL);
++
++	return 0;
++}
++device_initcall(prpmc2800_register_mtd);
++
+ static void prpmc2800_reset_board(void)
+ {
+ 	u32 temp;
