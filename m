@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 622FEDDE3F
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 14:19:40 +1000 (EST)
-Subject: Re: [PATCH] [Powerpc] fix switch_slb handling of 1T ESID values
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-In-Reply-To: <20071026204641.25514.45178.stgit@farscape.rchland.ibm.com>
-References: <20071026204641.25514.45178.stgit@farscape.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 14:19:31 +1000
-Message-Id: <1193458771.18243.55.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <SRS0=/0kd=PV=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 781E9DDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 14:49:41 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 0/2] PowerPC: Add 44x NDFC device-tree aware support
+Date: Sat, 27 Oct 2007 06:42:53 +0200
+References: <20071026163058.GA11354@ru.mvista.com>
+	<alpine.LFD.0.9999.0710262316590.3186@localhost.localdomain>
+In-Reply-To: <alpine.LFD.0.9999.0710262316590.3186@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710270642.54171.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,78 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Valentine,
 
-On Fri, 2007-10-26 at 15:46 -0500, Will Schmidt wrote:
-> [Powerpc] fix switch_slb handling of 1T ESID values
-> 
-> Now that we have 1TB segment size support, we need to be using the
-> GET_ESID_1T macro when comparing ESID values for pc,stack, and
-> unmapped_base within switch_slb() when we're on a CPU that supports it.
-> 
-> This also happens to fix a duplicate-slb-entry inspired machine-check
-> exception I was seeing when trying to run java on a power6 partition.
-> 
-> Tested on power6 and power5.
-> 
-> Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
+On Friday 26 October 2007, Thomas Gleixner wrote:
+> On Fri, 26 Oct 2007, Valentine Barshak wrote:
+> > The major difference is that the original implements each chip connected
+> > NDFC banks as a separate MTD device. Here I try to have one MTD device
+> > spread on all chips found. However, the chips should have equal ID's and
+> > sizes, but I've never seen several different chips attached to single
+> > ndfc.
+>
+> Bamboo has 2 different nand chips.
 
-Good catch !
+Right. This was my first thought after seeing your mail too.
 
-A minor comment is maybe you could factor out the code better doing
-something like a ESID_COMPARE() macro ?
+> And I'm aware of another board 
+> which has a 2k-page onboard NAND and sockets for SmartMedia /
+> PictureXd cards, which will simply break with your design.
+>
+> Restricting stuff for no good reason is never a good idea.
 
-> ---
-> 
-> There is a similar bit of code in stab.c switch_stab().  Should this change also be made there?
-> ---
+Add my voice here too.
 
-There is no machine that does stab and 1T segments.
+> mtdconcat can build you a big one if you want, so why adding
+> restrictions to a driver ?
+>
+> > I'm adding ndfc_of as a separate file, since some other changes
+> > have also been made (e.g. all i/o is made with ndfc_readl/writel inline
+> > functions).
+>
+> This should be done in the original ndfc driver and not in a separate
+> incarnation.
 
-Ben.
+Right. And I always thought it would be a good idea to switch to using the 
+in_be32() functions and friends for IO access in this driver too.
 
-> 
->  arch/powerpc/mm/slb.c |   19 ++++++++++++++-----
->  1 files changed, 14 insertions(+), 5 deletions(-)
-> 
-> 
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index bbd2c51..0c527d7 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -193,16 +193,25 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
->  		return;
->  	slb_allocate(pc);
->  
-> -	if (GET_ESID(pc) == GET_ESID(stack))
-> -		return;
-> +	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
-> +		if (GET_ESID_1T(pc) == GET_ESID_1T(stack))
-> +			return;
-> +	} else
-> +		if (GET_ESID(pc) == GET_ESID(stack))
-> +			return;
->  
->  	if (is_kernel_addr(stack))
->  		return;
->  	slb_allocate(stack);
->  
-> -	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
-> -	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
-> -		return;
-> +	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
-> +		if ((GET_ESID_1T(pc) == GET_ESID_1T(unmapped_base))
-> +		    || (GET_ESID_1T(stack) == GET_ESID_1T(unmapped_base)))
-> +			return;
-> +	} else
-> +		if ((GET_ESID(pc) == GET_ESID(unmapped_base))
-> +		    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
-> +			return;
->  
->  	if (is_kernel_addr(unmapped_base))
->  		return;
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Best regards,
+Stefan
