@@ -1,20 +1,18 @@
-Return-Path: <cbou@mail.ru>
-Received: from mx33.mail.ru (mx33.mail.ru [194.67.23.194])
-	by ozlabs.org (Postfix) with ESMTP id AD2AFDDEE4
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 00:39:19 +1000 (EST)
-Date: Sat, 27 Oct 2007 18:37:31 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH] ucc_geth: add support for netpoll
-Message-ID: <20071027143731.GA2616@zarina>
-References: <20071011124842.GB13963@localhost.localdomain>
-	<4723389F.7010109@ru.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 3681FDDEE9
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 04:21:11 +1100 (EST)
+Date: Sat, 27 Oct 2007 12:28:51 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
+Message-ID: <20071027172851.GA11930@lixom.net>
+References: <20071026165510.GA2323@lixom.net>
+	<200710262019.12094.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4723389F.7010109@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
-	linux-kernel@vger.kernel.org
-Reply-To: cbou@mail.ru
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200710262019.12094.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Oct 27, 2007 at 05:09:51PM +0400, Sergei Shtylyov wrote:
-> Hello.
-> 
-> Anton Vorontsov wrote:
-> 
-> > This patch adds netpoll support for the QE UCC Gigabit Ethernet
-> > driver. The approach is very similar to the gianfar driver.
-> 
->     It's rather contrarywise -- this is standard approach and gianfar with its 
-> 3 TSEC IRQs has a quite non-standard poll_controller() implementation.
+Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
 
-Oh.. well, right -- gianfar a bit more comlex in that regard.
+arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
+arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
+arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
+arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
 
-> 
-> > Tested using netconsole.
-> 
->     KGDBoE is considered a better test (I hope you've also tested with it).
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-At the time of posting it was tested using netconsole only, a few
-days later it's was tested using KGDBoE also. So, it works indeed.
+---
 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> > index 18a6f48..06807ce 100644
-> > --- a/drivers/net/ucc_geth.c
-> > +++ b/drivers/net/ucc_geth.c
-> > @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
-> >  	return IRQ_HANDLED;
-> >  }
-> >  
-> > +#ifdef CONFIG_NET_POLL_CONTROLLER
-> > +/*
-> > + * Polling 'interrupt' - used by things like netconsole to send skbs
-> > + * without having to re-enable interrupts. It's not called while
-> > + * the interrupt routine is executing.
-> > + */
-> > +static void ucc_netpoll(struct net_device *dev)
-> > +{
-> > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
-> > +
-> > +	disable_irq(ugeth->ug_info->uf_info.irq);
-> > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
-> > +	enable_irq(ugeth->ug_info->uf_info.irq);
-> 
->     Why not make it less complex (for a reader and gcc too :-) ?
+On Fri, Oct 26, 2007 at 08:19:10PM +0200, Arnd Bergmann wrote:
 
-Yup, I'm agree here but it's too late. Again. ;-)
+> I think here it would be better to move iic_get_target_id out of
+> CONFIG_SMP as well. We might want to kexec from an SMP kernel into
+> a UP kernel, and in that case, cpu_affinity_set() should better
+> reset the routing to CPU 0.
 
-This patch already accepted into the -mm (a week or so after the
-silence), so.. now I'd rather not bother Andrew with such really
-cosmetic changes. But if Jeff would directly apply modfied patch,
-I'll send it. ;-)
+Makes sense. New patch.
 
 
-Anyhow, I'm sincerely appreciate your comments.
+-Olof
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 151fd8b..04f74f9 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -158,6 +158,18 @@ static unsigned int iic_get_irq(void)
+ 	return virq;
+ }
+ 
++void iic_setup_cpu(void)
++{
++	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
++}
++
++u8 iic_get_target_id(int cpu)
++{
++	return per_cpu(iic, cpu).target_id;
++}
++
++EXPORT_SYMBOL_GPL(iic_get_target_id);
++
+ #ifdef CONFIG_SMP
+ 
+ /* Use the highest interrupt priorities for IPI */
+@@ -166,29 +178,17 @@ static inline int iic_ipi_to_irq(int ipi)
+ 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
+ }
+ 
+-void iic_setup_cpu(void)
+-{
+-	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
+-}
+-
+ void iic_cause_IPI(int cpu, int mesg)
+ {
+ 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
+ }
+ 
+-u8 iic_get_target_id(int cpu)
+-{
+-	return per_cpu(iic, cpu).target_id;
+-}
+-EXPORT_SYMBOL_GPL(iic_get_target_id);
+-
+ struct irq_host *iic_get_irq_host(int node)
+ {
+ 	return iic_host;
+ }
+ EXPORT_SYMBOL_GPL(iic_get_irq_host);
+ 
+-
+ static irqreturn_t iic_ipi_action(int irq, void *dev_id)
+ {
+ 	int ipi = (int)(long)dev_id;
