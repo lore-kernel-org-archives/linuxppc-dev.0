@@ -1,22 +1,18 @@
-Return-Path: <mb@bu3sch.de>
-Received: from vs166246.vserver.de
-	(static-ip-62-75-166-246.inaddr.intergenia.de [62.75.166.246])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A9BEADDED9
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 23:02:11 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: arch/powerpc/boot/wrapper broken
-Date: Sat, 27 Oct 2007 15:01:04 +0200
-References: <200710271442.50158.mb@bu3sch.de>
-	<20071027165549.3288d76e@kernel.crashing.org>
-In-Reply-To: <20071027165549.3288d76e@kernel.crashing.org>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 7A0DEDDEE6
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 23:09:45 +1000 (EST)
+Message-ID: <4723389F.7010109@ru.mvista.com>
+Date: Sat, 27 Oct 2007 17:09:51 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Message-Id: <200710271501.04917.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH] ucc_geth: add support for netpoll
+References: <20071011124842.GB13963@localhost.localdomain>
+In-Reply-To: <20071011124842.GB13963@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: netdev@vger.kernel.org, leoli@freescale.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 27 October 2007 14:55:49 Vitaly Bordug wrote:
-> On Sat, 27 Oct 2007 14:42:49 +0200
-> Michael Buesch wrote:
-> 
-> > It calls the "mkimage" command, which does not exist
-> > in my $PATH.
-> > 
-> well, mkImage is a part of u-boot and there was some talk to make it part of kernel too,
-> since it does not take alot of place but still mandatory for a number of platforms to work.
-> 
-> I think, Paul will clarify the details, meanwhile you can install mkImage say building u-boot, and
-> some distros may have such a package.
-> 
+Hello.
 
-Ubuntu doesn't seem to, though.
+Anton Vorontsov wrote:
 
-In any case, I think that the name "mkimage" is bad for a tool installed
-globally in /usr. Does it make a iso9660 image? (No it doesn't, I know :) )
+> This patch adds netpoll support for the QE UCC Gigabit Ethernet
+> driver. The approach is very similar to the gianfar driver.
 
-I'd vote for shipping it with the kernel in /scripts or something like that.
+    It's rather contrarywise -- this is standard approach and gianfar with its 
+3 TSEC IRQs has a quite non-standard poll_controller() implementation.
 
--- 
-Greetings Michael.
+> Tested using netconsole.
+
+    KGDBoE is considered a better test (I hope you've also tested with it).
+
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index 18a6f48..06807ce 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +/*
+> + * Polling 'interrupt' - used by things like netconsole to send skbs
+> + * without having to re-enable interrupts. It's not called while
+> + * the interrupt routine is executing.
+> + */
+> +static void ucc_netpoll(struct net_device *dev)
+> +{
+> +	struct ucc_geth_private *ugeth = netdev_priv(dev);
+> +
+> +	disable_irq(ugeth->ug_info->uf_info.irq);
+> +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
+> +	enable_irq(ugeth->ug_info->uf_info.irq);
+
+    Why not make it less complex (for a reader and gcc too :-) ?
+
+	struct ucc_geth_private *ugeth = netdev_priv(dev);
+	int irq = ugeth->ug_info->uf_info.irq;
+
+	disable_irq(irq);
+	ucc_geth_irq_handler(irq, dev);
+	enable_irq(irq);
+
+> +}
+> +#endif /* CONFIG_NET_POLL_CONTROLLER */
+> +
+>  /* Called when something needs to use the ethernet device */
+>  /* Returns 0 for success. */
+>  static int ucc_geth_open(struct net_device *dev)
+
+WBR, Sergei
