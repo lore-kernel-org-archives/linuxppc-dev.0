@@ -1,40 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 119F6DDEBB
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 74D8FDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Oct 2007 06:41:32 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9QKfT3w013215
-	for <linuxppc-embedded@ozlabs.org>; Fri, 26 Oct 2007 16:41:29 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9QKfSTa062784
-	for <linuxppc-embedded@ozlabs.org>; Fri, 26 Oct 2007 14:41:28 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9QKfRbP011290
-	for <linuxppc-embedded@ozlabs.org>; Fri, 26 Oct 2007 14:41:28 -0600
-Date: Fri, 26 Oct 2007 15:41:26 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
+	Sat, 27 Oct 2007 11:31:02 +1000 (EST)
 Subject: Re: Apparent kernel bug with GDB on ppc405
-Message-ID: <20071026154126.28082129@weaponx.rchland.ibm.com>
-In-Reply-To: <1193363482.7018.41.camel@pasglop>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matt Mackall <mpm@selenic.com>
+In-Reply-To: <20071026144134.GW19691@waste.org>
 References: <20071024194640.GB19691@waste.org>
-	<fa686aa40710241328x77435cc1lf09cac730b0ce5ac@mail.gmail.com>
-	<20071024204215.GC19691@waste.org>
-	<20071024215421.GF19691@waste.org>
-	<fa686aa40710241527j1a316760lf36d512eb625810f@mail.gmail.com>
-	<20071024223250.GI19691@waste.org>
-	<20071024224130.GA30819@caradoc.them.org>
-	<1193363482.7018.41.camel@pasglop>
+	<1193363202.7018.36.camel@pasglop>
+	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
+	<1193369005.7018.46.camel@pasglop> <20071026144134.GW19691@waste.org>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 11:30:53 +1000
+Message-Id: <1193448653.18243.9.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: gdb@sourceware.org, Matt Mackall <mpm@selenic.com>,
-	linuxppc-embedded@ozlabs.org, Daniel Jacobowitz <drow@false.org>
+Cc: gdb@sourceware.org, linuxppc-embedded@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -45,26 +29,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 26 Oct 2007 11:51:22 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> 
-> On Wed, 2007-10-24 at 18:41 -0400, Daniel Jacobowitz wrote:
-> > On Wed, Oct 24, 2007 at 05:32:50PM -0500, Matt Mackall wrote:
-> > > Not completely implausible, but a) why isn't this seen on basically
-> > > every machine with software TLB? b) why does -local- GDB, which is
-> > > presumably doing much less work than gdbserver + network stack, not fail?
+On Fri, 2007-10-26 at 09:41 -0500, Matt Mackall wrote:
+> On Fri, Oct 26, 2007 at 01:23:25PM +1000, Benjamin Herrenschmidt
+> wrote:
 > > 
-> > You said it yourself.  Local gdb does more work -> blows through more
-> > TLB entries.
+> > > This is actually 405.  Does that have the same issue?
 > > 
-> > I can't answer you about the other half, but I'm pretty sure TLB
-> > invalidation is already supposed to be happening... somewhere.
+> > hrm... I don't remember :-) There -is- something fishy about the
+> icache
+> > on 405 but I don't remember for sure. Try sticking an iccci in there
+> and
+> > tell us if that helps.
 > 
-> Yes. do_wp_page() -> ptep_clear_flush() -> flush_tlb_page()
+> I did. I stuck an iccci -and- a dccci loop in. I threw in the tlbia
+> when I ran out of other ideas. And the tlbia + existing
+> flush_icache_range appears to be sufficient (tested on a non-trivial
+> app).
+> 
+> According to my docs, the 405fx's icache is virtually
+> indexed/physically mapped, while the dcache is phys/phys.
 
-Aren't there cases in do_wp_page that don't call ptep_clear_flush?
-Seems anonymous pages, and possibly shared writeable pages skip that
-step if reuse is true.
+I think there is a bug in the 40x/44x support at this stage, it only
+doing invalidations for the current PID. That means that a process
+trying to invalidate TLB entries of another address space will fail to
+do so ... oops.
 
-josh
+That can be fixed by adding a pid argument to to _tlbie, and using it in
+the assembly. In the 40x case, probably by switching SPRN_PID to that
+and then back, in the 44x case, by using that value instead of SPRN_PID
+for the MMUCR register.
+
+It's part of a patche I have around taking dirt that rework signficantly
+the 44x (though not the 40x yet) TLB handling, cleaning things and
+fixing bugs (such as this one, I remember it now). I need to spend a bit
+of time to clean it up, remove some experimental stuff from it, and
+submit it.
+
+I'll try to do that early next week, and maybe come up with a fix for
+that specific bug today or tomorrow.
+
+Ben.
