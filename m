@@ -1,19 +1,17 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5C20DDF56
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 07:02:47 +1100 (EST)
-Date: Sat, 27 Oct 2007 21:02:32 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] fix breakage in pegasos_eth (fallout from commit
-	b45d9147f1582333e180e1023624c003874b7312)
-Message-ID: <20071027200232.GS8181@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	buytenh@wantstofly.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id C7AEDDDEC8
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 07:52:43 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Jean Delvare'" <khali@linux-fr.org>
+Subject: RE: [i2c] i2c-mpc.c driver issues
+Date: Sat, 27 Oct 2007 22:52:32 +0200
+Message-ID: <000a01c818db$4c188940$5267a8c0@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20071026115329.0307e207@hyperion.delvare>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: 
+> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+abs.org] On Behalf Of Jean Delvare
+> Sent: den 26 oktober 2007 11:53
+> To: Tjernlund
+> Cc: linuxppc-dev@ozlabs.org; i2c@lm-sensors.org
+> Subject: Re: [i2c] i2c-mpc.c driver issues
+> 
+> Hi Jocke,
+> 
+> On Wed, 24 Oct 2007 23:06:13 +0200, Tjernlund wrote:
+> > While browsing the i2c-mpc.c driver I noticed some things 
+> that look odd
+> > to me so I figured I report them. Could not find a 
+> maintainer in the MAINTANERS file
+> > so I sent here, cc:ed linuxppc-dev as well.
+> > 
+> > 1) There are a lot of return -1 error code that is 
+> propagated back to
+> >    userspace. Should be changed to proper -Exxx codes.
+> 
+> This is true of many Linux i2c bus drivers, unfortunately. 
+> While nothing
+> actually prevents drivers from returning -1 to userspace on error,
+> meaningful error codes would of course be preferred.
+> 
+> > 2) mpc_read(), according to the comment below it sends a 
+> STOP condition here but
+> >    this function does not known if this is the last read or 
+> not. mpc_xfer is
+> >    the one that knows when the transaction is over and 
+> should send the stop, which it already
+> >    does.
+> > 
+> >  /* Generate stop on last byte */
+> >   if (i == length - 1)
+> >        writeccr(i2c, CCR_MIEN | CCR_MEN | CCR_TXAK);
+> 
+> Probably correct, although I am not familiar with this specific
+> hardware. I guess that the same is true of mpc_write as well, which is
+> even worse because write + read combined transactions are very common
+> (while read + write are not.)
+> 
+> I'm not completely sure that mpc_xfer sends the stop. mpc_i2c_stop
+> doesn't seem to do much.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/include/linux/mv643xx_eth.h b/include/linux/mv643xx_eth.h
-index 3f27239..8df230a 100644
---- a/include/linux/mv643xx_eth.h
-+++ b/include/linux/mv643xx_eth.h
-@@ -8,6 +8,9 @@
- #define MV643XX_ETH_NAME		"mv643xx_eth"
- #define MV643XX_ETH_SHARED_REGS		0x2000
- #define MV643XX_ETH_SHARED_REGS_SIZE	0x2000
-+#define MV643XX_ETH_BAR_4	0x220
-+#define MV643XX_ETH_SIZE_REG_4	0x224
-+#define MV643XX_ETH_BASE_ADDR_ENABLE_REG	0x0290
- 
- struct mv643xx_eth_platform_data {
- 	int		port_number;
+Don't have the manual handy, but there is something bothering me with
+the read function. After reading the last char there is nothing that
+wait for the STOP to complete, instead one just exits and call
+mpc_i2c_stop(). It might be so that the i2c_wait() won't complete until
+the STOP has been sent, but I would not bet on it.
+
+ Jocke
