@@ -1,18 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 7A0DEDDEE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 23:09:45 +1000 (EST)
-Message-ID: <4723389F.7010109@ru.mvista.com>
-Date: Sat, 27 Oct 2007 17:09:51 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Return-Path: <cbou@mail.ru>
+Received: from mx33.mail.ru (mx33.mail.ru [194.67.23.194])
+	by ozlabs.org (Postfix) with ESMTP id AD2AFDDEE4
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 00:39:19 +1000 (EST)
+Date: Sat, 27 Oct 2007 18:37:31 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 Subject: Re: [PATCH] ucc_geth: add support for netpoll
+Message-ID: <20071027143731.GA2616@zarina>
 References: <20071011124842.GB13963@localhost.localdomain>
-In-Reply-To: <20071011124842.GB13963@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: netdev@vger.kernel.org, leoli@freescale.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	<4723389F.7010109@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <4723389F.7010109@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, leoli@freescale.com,
+	linux-kernel@vger.kernel.org
+Reply-To: cbou@mail.ru
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,57 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Sat, Oct 27, 2007 at 05:09:51PM +0400, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Anton Vorontsov wrote:
+> 
+> > This patch adds netpoll support for the QE UCC Gigabit Ethernet
+> > driver. The approach is very similar to the gianfar driver.
+> 
+>     It's rather contrarywise -- this is standard approach and gianfar with its 
+> 3 TSEC IRQs has a quite non-standard poll_controller() implementation.
 
-Anton Vorontsov wrote:
+Oh.. well, right -- gianfar a bit more comlex in that regard.
 
-> This patch adds netpoll support for the QE UCC Gigabit Ethernet
-> driver. The approach is very similar to the gianfar driver.
+> 
+> > Tested using netconsole.
+> 
+>     KGDBoE is considered a better test (I hope you've also tested with it).
 
-    It's rather contrarywise -- this is standard approach and gianfar with its 
-3 TSEC IRQs has a quite non-standard poll_controller() implementation.
+At the time of posting it was tested using netconsole only, a few
+days later it's was tested using KGDBoE also. So, it works indeed.
 
-> Tested using netconsole.
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> > index 18a6f48..06807ce 100644
+> > --- a/drivers/net/ucc_geth.c
+> > +++ b/drivers/net/ucc_geth.c
+> > @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+> >  	return IRQ_HANDLED;
+> >  }
+> >  
+> > +#ifdef CONFIG_NET_POLL_CONTROLLER
+> > +/*
+> > + * Polling 'interrupt' - used by things like netconsole to send skbs
+> > + * without having to re-enable interrupts. It's not called while
+> > + * the interrupt routine is executing.
+> > + */
+> > +static void ucc_netpoll(struct net_device *dev)
+> > +{
+> > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
+> > +
+> > +	disable_irq(ugeth->ug_info->uf_info.irq);
+> > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
+> > +	enable_irq(ugeth->ug_info->uf_info.irq);
+> 
+>     Why not make it less complex (for a reader and gcc too :-) ?
 
-    KGDBoE is considered a better test (I hope you've also tested with it).
+Yup, I'm agree here but it's too late. Again. ;-)
 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-> index 18a6f48..06807ce 100644
-> --- a/drivers/net/ucc_geth.c
-> +++ b/drivers/net/ucc_geth.c
-> @@ -3691,6 +3691,22 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
->  	return IRQ_HANDLED;
->  }
->  
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +/*
-> + * Polling 'interrupt' - used by things like netconsole to send skbs
-> + * without having to re-enable interrupts. It's not called while
-> + * the interrupt routine is executing.
-> + */
-> +static void ucc_netpoll(struct net_device *dev)
-> +{
-> +	struct ucc_geth_private *ugeth = netdev_priv(dev);
-> +
-> +	disable_irq(ugeth->ug_info->uf_info.irq);
-> +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
-> +	enable_irq(ugeth->ug_info->uf_info.irq);
+This patch already accepted into the -mm (a week or so after the
+silence), so.. now I'd rather not bother Andrew with such really
+cosmetic changes. But if Jeff would directly apply modfied patch,
+I'll send it. ;-)
 
-    Why not make it less complex (for a reader and gcc too :-) ?
 
-	struct ucc_geth_private *ugeth = netdev_priv(dev);
-	int irq = ugeth->ug_info->uf_info.irq;
+Anyhow, I'm sincerely appreciate your comments.
 
-	disable_irq(irq);
-	ucc_geth_irq_handler(irq, dev);
-	enable_irq(irq);
+Thanks,
 
-> +}
-> +#endif /* CONFIG_NET_POLL_CONTROLLER */
-> +
->  /* Called when something needs to use the ethernet device */
->  /* Returns 0 for success. */
->  static int ucc_geth_open(struct net_device *dev)
-
-WBR, Sergei
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
