@@ -1,20 +1,22 @@
-Return-Path: <tglx@linutronix.de>
-Received: from www.tglx.de (www.tglx.de [62.245.132.106])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DA866DDE9E
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 18:47:57 +1000 (EST)
-Date: Sat, 27 Oct 2007 10:46:42 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 1/2] PowerPC: Add 44x NDFC device-tree aware support
-In-Reply-To: <200710270653.32459.sr@denx.de>
-Message-ID: <alpine.LFD.0.9999.0710271045400.3186@localhost.localdomain>
-References: <20071026163958.GA11784@ru.mvista.com>
-	<200710270653.32459.sr@denx.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id DCF8FDDE2F
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 19:38:42 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: akpm@linux-foundation.org, linuxppc-dev@ozlabs.org,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH] compat_ioctl: fix block device compat ioctl regression
+Date: Sat, 27 Oct 2007 11:38:05 +0200
+References: <47221F91.60401@overt.org> <200710270051.38748.arnd@arndb.de>
+	<47228A9E.80505@overt.org>
+In-Reply-To: <47228A9E.80505@overt.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710271138.06456.arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Philip Langdale <philipl@overt.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 27 Oct 2007, Stefan Roese wrote:
+From: Philip Langdale <philipl@overt.org>
+The conversion of handlers to compat_blkdev_ioctl accidentally
+disabled handling of most ioctl numbers on block devices because
+of a typo. Fix the one line to enable it all again.
 
-> Hi Valentine,
-> 
-> On Friday 26 October 2007, Valentine Barshak wrote:
-> > This adds device-tree aware PowerPC 44x NDFC (NAND Flash Controller)
-> > driver. The code is based on the original ndfc.c driver by Thomas Gleixner.
-> > The major difference is that here we try to handle all chips found as one
-> > mtd device instead of having a separate one on each chip.
-> > The partition handling code is based on the physmap_of one.
-> > The the first 4 bits of the "bank-mask" property show which of the 4 NDFC
-> > banks have chips attached. The "bank-width" property is 1 for 8-bit flash
-> > and 2 for a 16-bit one.
-> >
-> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> > Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->
-> Are you sure you have the Signed-off-by from Thomas already on this?
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
 
-Definitely not.
+Mea Culpa. This should have been found by my testing, as it's clear
+that most of my big patch never worked at all. Sorry for causing
+problems for everyone involved here.
 
-	tglx
+I'm attributing the patch to Philip, as he's the one who pointed
+out to me what the fix is.
+
+	Arnd <><
+
+--- a/block/compat_ioctl.c
++++ b/block/compat_ioctl.c
+@@ -581,7 +581,7 @@ static int compat_blkdev_driver_ioctl(struct inode *inode, struct file *file,
+ {
+ 	int ret;
+ 
+-	switch (arg) {
++	switch (cmd) {
+ 	case HDIO_GET_UNMASKINTR:
+ 	case HDIO_GET_MULTCOUNT:
+ 	case HDIO_GET_KEEPSETTINGS:
