@@ -1,18 +1,33 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3681FDDEE9
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 04:21:11 +1100 (EST)
-Date: Sat, 27 Oct 2007 12:28:51 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
-Message-ID: <20071027172851.GA11930@lixom.net>
-References: <20071026165510.GA2323@lixom.net>
-	<200710262019.12094.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200710262019.12094.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0FA09DDEF7
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 04:36:28 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9RHaPgZ013994
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 13:36:25 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9RHaPdQ109316
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 11:36:25 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9RHaOFc011655
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 11:36:25 -0600
+Subject: Re: [PATCH] [Powerpc] fix switch_slb handling of 1T ESID values
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1193458771.18243.55.camel@pasglop>
+References: <20071026204641.25514.45178.stgit@farscape.rchland.ibm.com>
+	<1193458771.18243.55.camel@pasglop>
+Content-Type: text/plain
+Date: Sat, 27 Oct 2007 12:36:23 -0500
+Message-Id: <1193506583.11003.50.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +37,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix two build errors on powerpc allyesconfig + CONFIG_SMP=n:
+On Sat, 2007-10-27 at 14:19 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2007-10-26 at 15:46 -0500, Will Schmidt wrote:
+> > [Powerpc] fix switch_slb handling of 1T ESID values
+> > 
+> > Now that we have 1TB segment size support, we need to be using the
+> > GET_ESID_1T macro when comparing ESID values for pc,stack, and
+> > unmapped_base within switch_slb() when we're on a CPU that supports it.
+> > 
+> > This also happens to fix a duplicate-slb-entry inspired machine-check
+> > exception I was seeing when trying to run java on a power6 partition.
+> > 
+> > Tested on power6 and power5.
+> > 
+> > Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
+> 
+> Good catch !
+> 
+> A minor comment is maybe you could factor out the code better doing
+> something like a ESID_COMPARE() macro ?
 
-arch/powerpc/platforms/built-in.o: In function `cpu_affinity_set':
-arch/powerpc/platforms/cell/spu_priv1_mmio.c:78: undefined reference to `.iic_get_target_id'
-arch/powerpc/platforms/built-in.o: In function `iic_init_IRQ':
-arch/powerpc/platforms/cell/interrupt.c:397: undefined reference to `.iic_setup_cpu'
+Yeah, thats a good idea.   I'll spin up a new patch in the next day or
+so.   
+It occurred to me that I should continue to use GET_ESID when the user
+address is < 1T too. 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> > ---
+> > 
+> > There is a similar bit of code in stab.c switch_stab().  Should this change also be made there?
+> > ---
+> 
+> There is no machine that does stab and 1T segments.
 
----
+Ok, thanks for the clarification. 
 
-On Fri, Oct 26, 2007 at 08:19:10PM +0200, Arnd Bergmann wrote:
+-Will
 
-> I think here it would be better to move iic_get_target_id out of
-> CONFIG_SMP as well. We might want to kexec from an SMP kernel into
-> a UP kernel, and in that case, cpu_affinity_set() should better
-> reset the routing to CPU 0.
-
-Makes sense. New patch.
-
-
--Olof
-
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 151fd8b..04f74f9 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -158,6 +158,18 @@ static unsigned int iic_get_irq(void)
- 	return virq;
- }
- 
-+void iic_setup_cpu(void)
-+{
-+	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
-+}
-+
-+u8 iic_get_target_id(int cpu)
-+{
-+	return per_cpu(iic, cpu).target_id;
-+}
-+
-+EXPORT_SYMBOL_GPL(iic_get_target_id);
-+
- #ifdef CONFIG_SMP
- 
- /* Use the highest interrupt priorities for IPI */
-@@ -166,29 +178,17 @@ static inline int iic_ipi_to_irq(int ipi)
- 	return IIC_IRQ_TYPE_IPI + 0xf - ipi;
- }
- 
--void iic_setup_cpu(void)
--{
--	out_be64(&__get_cpu_var(iic).regs->prio, 0xff);
--}
--
- void iic_cause_IPI(int cpu, int mesg)
- {
- 	out_be64(&per_cpu(iic, cpu).regs->generate, (0xf - mesg) << 4);
- }
- 
--u8 iic_get_target_id(int cpu)
--{
--	return per_cpu(iic, cpu).target_id;
--}
--EXPORT_SYMBOL_GPL(iic_get_target_id);
--
- struct irq_host *iic_get_irq_host(int node)
- {
- 	return iic_host;
- }
- EXPORT_SYMBOL_GPL(iic_get_irq_host);
- 
--
- static irqreturn_t iic_ipi_action(int irq, void *dev_id)
- {
- 	int ipi = (int)(long)dev_id;
+> 
+> Ben.
+> 
+> > 
+> >  arch/powerpc/mm/slb.c |   19 ++++++++++++++-----
+> >  1 files changed, 14 insertions(+), 5 deletions(-)
+> > 
+> > 
+> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> > index bbd2c51..0c527d7 100644
+> > --- a/arch/powerpc/mm/slb.c
+> > +++ b/arch/powerpc/mm/slb.c
+> > @@ -193,16 +193,25 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+> >  		return;
+> >  	slb_allocate(pc);
+> >  
+> > -	if (GET_ESID(pc) == GET_ESID(stack))
+> > -		return;
+> > +	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
+> > +		if (GET_ESID_1T(pc) == GET_ESID_1T(stack))
+> > +			return;
+> > +	} else
+> > +		if (GET_ESID(pc) == GET_ESID(stack))
+> > +			return;
+> >  
+> >  	if (is_kernel_addr(stack))
+> >  		return;
+> >  	slb_allocate(stack);
+> >  
+> > -	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
+> > -	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
+> > -		return;
+> > +	if (cpu_has_feature(CPU_FTR_1T_SEGMENT)) {
+> > +		if ((GET_ESID_1T(pc) == GET_ESID_1T(unmapped_base))
+> > +		    || (GET_ESID_1T(stack) == GET_ESID_1T(unmapped_base)))
+> > +			return;
+> > +	} else
+> > +		if ((GET_ESID(pc) == GET_ESID(unmapped_base))
+> > +		    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
+> > +			return;
+> >  
+> >  	if (is_kernel_addr(unmapped_base))
+> >  		return;
+> > 
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
