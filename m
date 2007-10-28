@@ -1,15 +1,12 @@
-Return-Path: <mh@omnisys.se>
-Subject: [PATCH] ppc4xx: mmu_mapin_ram bugfix for booting with mem<16 MB
-From: Magnus Hjorth <mh@omnisys.se>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <fa686aa40710261254r105530d4u2e95d96948030ed7@mail.gmail.com>
-References: <471FA48B.2020809@free.fr> <47203EF9.1070906@omnisys.se>
-	<fa686aa40710261254r105530d4u2e95d96948030ed7@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 27 Oct 2007 10:35:16 +0200
-Message-Id: <1193474116.5412.14.camel@magnus-desktop>
-Mime-Version: 1.0
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <barisa.kisku@gmail.com>
+Message-ID: <80bb1bc60710280758g7646c9d2sfec9f0511528d484@mail.gmail.com>
+Date: Sun, 28 Oct 2007 20:28:29 +0530
+From: "Barisa Kisku" <barisa.kisku@gmail.com>
+To: Linuxppc-embedded@ozlabs.org
+Subject: Whether kernel page table is loaded in exception handler?
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_6167_20842498.1193583509298"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,34 +17,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Magnus Hjorth <mh@omnisys.se>
+------=_Part_6167_20842498.1193583509298
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This patch (for 2.6.23.1) fixes an unsigned arithmetic bug causing the
-kernel to hang when booting with less than 16 MB of memory on ppc4xx.
+Hi,
+Whether kernel page table is loaded during the execution of exception
+handling.I tried to understand that bit code, but could n't find out  during
+the execution of system call exception handling or  external interrupt
+exception handling.
 
-Signed-off-by: Magnus Hjorth <mh@omnisys.se>
 
----
+thanks in advance.
 
-OK, trying to do this by the book now...
+Barisa Kisku
 
---- linux-2.6.23.1/arch/ppc/mm/4xx_mmu.c.orig	2007-10-27 10:14:42.000000000 +0200
-+++ linux-2.6.23.1/arch/ppc/mm/4xx_mmu.c	2007-10-27 10:15:34.000000000 +0200
-@@ -105,7 +105,7 @@ unsigned long __init mmu_mapin_ram(void)
- 		return s;
- 	}
- 
--	while (s <= (total_lowmem - LARGE_PAGE_SIZE_16M)) {
-+	while (s + LARGE_PAGE_SIZE_16M <= total_lowmem) {
- 		pmd_t *pmdp;
- 		unsigned long val = p | _PMD_SIZE_16M | _PAGE_HWEXEC | _PAGE_HWWRITE;
- 
-@@ -120,7 +120,7 @@ unsigned long __init mmu_mapin_ram(void)
- 		s += LARGE_PAGE_SIZE_16M;
- 	}
- 
--	while (s <= (total_lowmem - LARGE_PAGE_SIZE_4M)) {
-+	while (s + LARGE_PAGE_SIZE_4M <= total_lowmem) {
- 		pmd_t *pmdp;
- 		unsigned long val = p | _PMD_SIZE_4M | _PAGE_HWEXEC | _PAGE_HWWRITE;
- 
+------=_Part_6167_20842498.1193583509298
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>Whether kernel page table is loaded during the execution of exception handling.I tried to understand that bit code, but could n&#39;t find out&nbsp; during the execution of system call exception handling or&nbsp; external interrupt exception handling.
+<br><br><br>thanks in advance.<br><br>Barisa Kisku<br>&nbsp;<br><br>
+
+------=_Part_6167_20842498.1193583509298--
