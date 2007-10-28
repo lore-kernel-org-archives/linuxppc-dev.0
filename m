@@ -1,21 +1,22 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out2.tiscali.nl (smtp-out2.tiscali.nl [195.241.79.177])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F368BDDEE1
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 00:27:42 +1000 (EST)
-Received: from [82.171.216.234] (helo=[192.168.1.2])
-	by smtp-out2.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
-	id 1IlmOG-0001Eh-Nb
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2007 16:11:52 +0200
-Message-ID: <47234726.3010809@tiscali.nl>
-Date: Sat, 27 Oct 2007 16:11:50 +0200
-From: Roel Kluin <12o3l@tiscali.nl>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Free when ioremap fails in
-	powerpc/platforms/52xx/mpc52xx_pci.c
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4EC38DDDCA
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 12:38:59 +1100 (EST)
+Date: Sun, 28 Oct 2007 12:38:50 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
+Message-Id: <20071028123850.e5b9c555.sfr@canb.auug.org.au>
+In-Reply-To: <20071027172851.GA11930@lixom.net>
+References: <20071026165510.GA2323@lixom.net>
+	<200710262019.12094.arnd@arndb.de>
+	<20071027172851.GA11930@lixom.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Free hose when ioremap fails
+--Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index 4c6c82a..50f9655 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -395,8 +395,10 @@ mpc52xx_add_bridge(struct device_node *node)
- 	hose->ops = &mpc52xx_pci_ops;
- 
- 	pci_regs = ioremap(rsrc.start, rsrc.end - rsrc.start + 1);
--	if (!pci_regs)
-+	if (!pci_regs) {
-+		pcibios_free_controller(hose);
- 		return -ENOMEM;
-+	}
- 
- 	pci_process_bridge_OF_ranges(hose, node, 1);
- 
+Hi Olof,
+
+Just a trivial thing ...
+
+On Sat, 27 Oct 2007 12:28:51 -0500 Olof Johansson <olof@lixom.net> wrote:
+>
+> +u8 iic_get_target_id(int cpu)
+> +{
+> +	return per_cpu(iic, cpu).target_id;
+> +}
+> +
+> +EXPORT_SYMBOL_GPL(iic_get_target_id);
+
+We don't normally put a blank line between a function and its EXPORT...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD4DBQFHI+gvTgG2atn1QN8RAtViAJMEfDSk9tA6UiVQfyDo3xPKB9C6AJ9rsw63
+mcc5TbsvOgB7NjlfXCgvJg==
+=+olZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+--
