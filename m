@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4EC38DDDCA
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 12:38:59 +1100 (EST)
-Date: Sun, 28 Oct 2007 12:38:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olof Johansson <olof@lixom.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8941BDDF2A
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 12:54:56 +1100 (EST)
+Date: Sat, 27 Oct 2007 21:02:38 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [PATCH v2] [POWERPC] Fix CONFIG_SMP=n build break
-Message-Id: <20071028123850.e5b9c555.sfr@canb.auug.org.au>
-In-Reply-To: <20071027172851.GA11930@lixom.net>
+Message-ID: <20071028020238.GA30892@lixom.net>
 References: <20071026165510.GA2323@lixom.net>
 	<200710262019.12094.arnd@arndb.de>
 	<20071027172851.GA11930@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+"
+	<20071028123850.e5b9c555.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071028123850.e5b9c555.sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
 	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,40 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, Oct 28, 2007 at 12:38:50PM +1100, Stephen Rothwell wrote:
+> Hi Olof,
+> 
+> Just a trivial thing ...
+> 
+> On Sat, 27 Oct 2007 12:28:51 -0500 Olof Johansson <olof@lixom.net> wrote:
+> >
+> > +u8 iic_get_target_id(int cpu)
+> > +{
+> > +	return per_cpu(iic, cpu).target_id;
+> > +}
+> > +
+> > +EXPORT_SYMBOL_GPL(iic_get_target_id);
+> 
+> We don't normally put a blank line between a function and its EXPORT...
 
-Hi Olof,
+Yeah, sloppy of me, I thought I just copied and pasted. Paulus: feel
+free to fix up before applying.
 
-Just a trivial thing ...
 
-On Sat, 27 Oct 2007 12:28:51 -0500 Olof Johansson <olof@lixom.net> wrote:
->
-> +u8 iic_get_target_id(int cpu)
-> +{
-> +	return per_cpu(iic, cpu).target_id;
-> +}
-> +
-> +EXPORT_SYMBOL_GPL(iic_get_target_id);
+Thanks for your feedback,
 
-We don't normally put a blank line between a function and its EXPORT...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQFHI+gvTgG2atn1QN8RAtViAJMEfDSk9tA6UiVQfyDo3xPKB9C6AJ9rsw63
-mcc5TbsvOgB7NjlfXCgvJg==
-=+olZ
------END PGP SIGNATURE-----
-
---Signature=_Sun__28_Oct_2007_12_38_50_+1100_AOw9H7o_ifcB932+--
+-Olof
