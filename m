@@ -1,21 +1,25 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
-	by ozlabs.org (Postfix) with ESMTP id 6800BDDDFB
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 01:54:38 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so2659227pyi
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Oct 2007 07:54:37 -0700 (PDT)
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 40CC6DDFC6
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 02:06:55 +1100 (EST)
 Subject: Re: [PATCH] fix appletouch geyser 1 breakage
-Date: Sun, 28 Oct 2007 10:54:31 -0400
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+In-Reply-To: <200710281054.31303.dmitry.torokhov@gmail.com>
+	(sfid-20071028_145444_780469_27B026AC)
 References: <1193222676.4510.5.camel@johannes.berg>
 	<200710280100.13304.dtor@insightbb.com>
 	<1193567513.3966.9.camel@johannes.berg>
-In-Reply-To: <1193567513.3966.9.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200710281054.31303.dmitry.torokhov@gmail.com>
+	<200710281054.31303.dmitry.torokhov@gmail.com>
+	(sfid-20071028_145444_780469_27B026AC)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Z/o1/2RK1gcWnDu0hcfD"
+Date: Sun, 28 Oct 2007 16:08:01 +0100
+Message-Id: <1193584081.5197.17.camel@johannes.berg>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Benjamin Berg <benjamin@sipsolutions.net>,
 	Dmitry Torokhov <dtor@insightbb.com>, Anton Ekblad <valderman@gmail.com>
@@ -28,51 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 28 October 2007, Johannes Berg wrote:
-> 
-> > OK, then maybe instead of reverting the change outright we could try the
-> > patch below?
-> 
-> That patch works,
 
-Any chance Benjamin could also test it? The behaviour is different
-from 2.6.24-rc1 since we call atp_geyser_init for all geysers now.
- 
-> minor comments: 
-> 
-> > Older models of fountains do not support change mode request and
-> 
-> I think there's only one fountain model.
+--=-Z/o1/2RK1gcWnDu0hcfD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I was hoping that FOUNTAIN_TP_ONLY_PRODUCT_ID (0x30A) behaves similar
-to Geyser in this regard. If you know that this assumption is incorrect
-then we need to rename atp_is_older_fountain() to atp_is_fountain()
-anf add this product ID to it.
 
-> 
-> > therefore shoudl be excluded from idle reset attempts.
-> 
-> typo
+> I was hoping that FOUNTAIN_TP_ONLY_PRODUCT_ID (0x30A) behaves similar
+> to Geyser in this regard. If you know that this assumption is incorrect
+> then we need to rename atp_is_older_fountain() to atp_is_fountain()
+> anf add this product ID to it.
 
-OK
+Ah ok, I forgot about that one. If I were to venture a guess I'd say
+that they renamed it to geyser because of this idle behaviour
+"technology upgrade", but I can't say, nor do I know anybody with such a
+version, sorry.
 
-> 
-> >  /* MacBook Pro (Geyser 3 & 4) initialization constants */
-> 
-> That comment is no longer correct, you should change it.
-> 
+johannes
 
-OK
+--=-Z/o1/2RK1gcWnDu0hcfD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> > -#define ATP_GEYSER3_MODE_READ_REQUEST_ID 1
-> 
-> > + * Reinitialise the device. This usually stops stream of empty packets
-> > + * coming form it.
-> 
-> typo "from"
-> 
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Yep, thanks.
+iQIVAwUARySl0KVg1VMiehFYAQJcgw//TszmDy363LbKPlmsEnlfZ+ldgKw7kAFl
+Li3W1D026wyRmfOeD00MGewpCgkhrJrstigxsZOgH4fkdeF/rOUX12qaweL5Xwm6
++fuw2Qixuhwe0SHRsCnJiu1+4Zxwz/qF+irinaBFPHIz7ZcL7mwMfJEK/91svXoF
+XZuND2j0S9pHvdh0RqcDcX/A5/JsTKY1yNsM/rUVf0O1P1RhXlZaE6Bs7/W5uGt5
+iSaakWw0rrNrYYzmNf4xhncqK2oHljCgomT1j34aIb4COiSdMs0IWpQbRKsFIpKs
+YU+Qnup95iFWsYYRX6IwEixluUic+yBJwgaOGHHdsKumTLe/x0AbTNMvbbkP/2cq
+Zb2TcfkJSGoC5V6vdRjJgNAEEr5bCLE7+zJh/Qi01a29J2YiVYWK83Wsnz2mTo+Z
+ARbPUKrdDEPGhZoEqIdvGX0X/Pwn3QZ9ov5nA/NKKRzWR9mWpjLAh6E/+uO07U30
+8ChyjFLe71YG/gtYpcpgK6FVWlTrtuhBgFmo6QfgeHlCzlr0ILNhqfBZYZ1EAuxV
+RtU+tRimnlfrQLWZwsTd6zRk5pZ3S2TrJ6Tpl0o1KWw3g1/qngAHQBFXZzKefhW7
+wLa2PvuopwVJCA3IpczuBCxUOIYHHrYtafGRjFvc+e2wrjGvZpidJgx9sn/gZV9N
+Jo0iFQcW3WU=
+=1Oqg
+-----END PGP SIGNATURE-----
 
--- 
-Dmitry
+--=-Z/o1/2RK1gcWnDu0hcfD--
