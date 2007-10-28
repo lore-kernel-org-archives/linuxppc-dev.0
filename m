@@ -1,15 +1,16 @@
 Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (unknown [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5066EDDF50
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 07:02:49 +1100 (EST)
-Date: Sun, 28 Oct 2007 15:10:34 -0500
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A8169DDFAD
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 07:11:03 +1100 (EST)
+Date: Sun, 28 Oct 2007 15:18:58 -0500
 From: Olof Johansson <olof@lixom.net>
 To: Christoph Hellwig <hch@lst.de>, Matthew Wilcox <matthew@wil.cx>,
 	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
 	Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] pcmcia: Remove replace kio_addr_t with unsigned int everywhere
-Message-ID: <20071028201034.GB9472@lixom.net>
+Subject: [PATCH v2] pcmcia: Remove replace kio_addr_t with unsigned int
+	everywhere
+Message-ID: <20071028201858.GA10048@lixom.net>
 References: <20070905142742.GA1760@lixom.net>
 	<20070914034854.1658a9cf.akpm@linux-foundation.org>
 	<20070921221516.GA7926@lixom.net>
@@ -17,9 +18,10 @@ References: <20070905142742.GA1760@lixom.net>
 	<20070922062551.GE10625@parisc-linux.org>
 	<20070922091303.GA12525@lst.de> <20071019201720.GA13234@lixom.net>
 	<20071028134414.GF26943@isilmar.linta.de>
+	<20071028201034.GB9472@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071028134414.GF26943@isilmar.linta.de>
+In-Reply-To: <20071028201034.GB9472@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,23 +45,16 @@ Signed-off-by: Olof Johansson <olof@lixom.net>
 
 ---
 
-On Sun, Oct 28, 2007 at 02:44:14PM +0100, Dominik Brodowski wrote:
-> On Fri, Oct 19, 2007 at 03:17:20PM -0500, Olof Johansson wrote:
-> > Convert the io_req_t members to unsigned int, to allow use on machines
-> > with more than 16 bits worth of IO ports (i.e. secondary busses on
-> > ppc64, etc).
-> 
-> Agreed, though I'd prefer if we got rid of kio_addr_t at the same time, and
-> convert its users to unsigned int as well -- as was pointed out earlier in
-> this thread, there's no known usage of IO ports larger than 32 bits.
+On Sun, Oct 28, 2007 at 03:10:34PM -0500, Olof Johansson wrote:
 
-Ok. I prefer to do that as a separate patch though, the former
-is a functional change I need for my platform, the second is just
-janitorial. The first one still applies to mainline git, so I won't
-repost it.
+> This goes on top of the patch switching the io_req_t members from ioaddr_t
+> to unsigned int.
 
+Crap, I had an old version of that patch as base in my local tree when I did
+these edits. Here's a proper version.
 
 -Olof
+
 
 diff --git a/Documentation/pcmcia/driver-changes.txt b/Documentation/pcmcia/driver-changes.txt
 index 4739c5c..96f155e 100644
@@ -102,19 +97,6 @@ index 08f48d5..60376df 100644
  	btuart_info_t *info = link->priv;
  	tuple_t tuple;
  	u_short buf[256];
-diff --git a/drivers/char/pcmcia/cm4000_cs.c b/drivers/char/pcmcia/cm4000_cs.c
-index dd26bc9..ec69df0 100644
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1408,7 +1408,7 @@ static int cmm_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
- 		     unsigned long arg)
- {
- 	struct cm4000_dev *dev = filp->private_data;
--	unsigned in iobase = dev->p_dev->io.BasePort1;
-+	unsigned int iobase = dev->p_dev->io.BasePort1;
- 	struct pcmcia_device *link;
- 	int size;
- 	int rc;
 diff --git a/drivers/net/pcmcia/3c574_cs.c b/drivers/net/pcmcia/3c574_cs.c
 index 73dcbb7..720bc06 100644
 --- a/drivers/net/pcmcia/3c574_cs.c
