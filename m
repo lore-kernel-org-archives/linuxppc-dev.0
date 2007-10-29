@@ -1,17 +1,12 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 6807CDDF95
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 00:56:45 +1100 (EST)
-Message-ID: <4725E6A2.10301@ru.mvista.com>
-Date: Mon, 29 Oct 2007 16:56:50 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 29 Oct 2007 09:07:20 -0500
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: boot/wrap assumes a biarch toolchain?
+Message-ID: <20071029140719.GA17120@kryten>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC] Fix duplicate time accounting
-References: <18213.19066.134475.220466@cargo.ozlabs.ibm.com>
-In-Reply-To: <18213.19066.134475.220466@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: jdittmer@ppp0.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
 
-Paul Mackerras wrote:
+Hi,
 
-> Currently, process user and system times are advancing twice as fast
-> as they should because they are being accounted in two places - in the
-> generic code and in timer_interrupt.  This fixes it by removing the
-> call to account_process_time in timer_interrupt.
+Jan is seeing the following fail:
 
-    But will the deterministic accounting option continue to work with such fix?
+WRAP    arch/powerpc/boot/zImage.pmac
+powerpc-linux-objcopy: vmlinux: File format not recognized
 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 9eb3284..5e253d6 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -599,16 +599,6 @@ void timer_interrupt(struct pt_regs * regs)
->  		get_lppaca()->int_dword.fields.decr_int = 0;
->  #endif
->  
-> -	/*
-> -	 * We cannot disable the decrementer, so in the period
-> -	 * between this cpu's being marked offline in cpu_online_map
-> -	 * and calling stop-self, it is taking timer interrupts.
-> -	 * Avoid calling into the scheduler rebalancing code if this
-> -	 * is the case.
-> -	 */
-> -	if (!cpu_is_offline(cpu))
-> -		account_process_time(regs);
-> -
->  	if (evt->event_handler)
->  		evt->event_handler(evt);
->  	else
+He is using a cross compile toolchain invoked with the following command
+line:
 
-WBR, Sergei
+# make HOSTCC=gcc-4.0 ARCH=powerpc CROSS_COMPILE=powerpc64-linux- CROSS32_COMPILE=powerpc-linux-
+
+It seems like boot/wrap wants to use both 64bit and 32bit tools, however
+it only receives the 32bit path:
+
+ifneq ($(CROSS32_COMPILE),)
+CROSSWRAP := -C "$(CROSS32_COMPILE)"
+else
+ifneq ($(CROSS_COMPILE),)
+CROSSWRAP := -C "$(CROSS_COMPILE)"
+endif
+endif
+
+Thoughts? I guess we have to pass in both cross compile targets.
+
+One way to make this go away would be to build binutils as biarch:
+
+# configure --target=powerpc-linux --enable-targets=powerpc64-linux ...
+
+Anton
