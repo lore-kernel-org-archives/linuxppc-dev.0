@@ -1,29 +1,18 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 02945DE04D
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:24:24 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9TJOLiU006690
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 15:24:21 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9TJOLpb119772
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 13:24:21 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9TJOLaY021780
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 13:24:21 -0600
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH] [Powerpc] include udbg.h when using udbg_printf
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CF328DE0FB
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:25:37 +1100 (EST)
+Date: Mon, 29 Oct 2007 23:22:20 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Date: Mon, 29 Oct 2007 14:24:19 -0500
-Message-ID: <20071029192417.7254.88915.stgit@farscape.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+Subject: [PATCH 2/3] PowerPC: 44x NanD Flash Controller (NDFC) bindings
+Message-ID: <20071029202220.GA2154@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071029201738.GA2022@ru.mvista.com>
+Cc: tglx@linutronix.de, sr@denx.de, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,71 +22,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+PowerPC 44x NanD Flash Controller (NDFC) bindings.
 
-[Powerpc] include udbg.h when using udbg_printf
-
-this fixes the error
-	error: implicit declaration of function ‘udbg_printf’
-
-We have a few spots where we reference udbg_printf() without #including
-udbg.h.  These are within #ifdef DEBUG blocks, so unnoticed until we do
-a #define DEBUG or #define DEBUG_LOW nearby.
-
-Signed-Off-By: Will Schmidt <will_schmidt@vnet.ibm.com>
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
+ Documentation/powerpc/booting-without-of.txt |   64 +++++++++++++++++++++++++++
+ 1 files changed, 64 insertions(+)
 
- arch/powerpc/mm/hash_utils_64.c           |    1 +
- arch/powerpc/mm/slb.c                     |    1 +
- arch/powerpc/platforms/cell/smp.c         |    1 +
- arch/powerpc/platforms/pseries/firmware.c |    1 +
- 4 files changed, 4 insertions(+), 0 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index c78dc91..94b8ca0 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -51,6 +51,7 @@
- #include <asm/cputable.h>
- #include <asm/sections.h>
- #include <asm/spu.h>
-+#include <asm/udbg.h>
+--- linux-2.6.orig/Documentation/powerpc/booting-without-of.txt	2007-10-29 16:02:07.000000000 +0300
++++ linux-2.6/Documentation/powerpc/booting-without-of.txt	2007-10-29 21:34:14.000000000 +0300
+@@ -52,6 +52,7 @@ Table of Contents
+       i) Freescale QUICC Engine module (QE)
+       j) CFI or JEDEC memory-mapped NOR flash
+       k) Global Utilities Block
++      l) 44x NanD Flash Controller (NDFC)
  
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index bbd2c51..637afb2 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -25,6 +25,7 @@
- #include <asm/smp.h>
- #include <asm/firmware.h>
- #include <linux/compiler.h>
-+#include <asm/udbg.h>
+   VII - Specifying interrupt information for devices
+     1) interrupts property
+@@ -2242,6 +2243,69 @@ platforms are moved over to use the flat
+ 			   available.
+ 			   For Axon: 0x0000012a
  
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
-index 1c0acba..e443845 100644
---- a/arch/powerpc/platforms/cell/smp.c
-+++ b/arch/powerpc/platforms/cell/smp.c
-@@ -44,6 +44,7 @@
- #include <asm/rtas.h>
++  l) 44x NanD Flash Controller (NDFC)
++
++  Required properties:
++  - compatible : should be "ibm,ndfc".
++  - reg : should contain address and length of the NDFC registers.
++  
++  ndfc node should contain at least one ndfc-mtd sub-node describing
++  chip properties and bank settings for the chip(s) attached to particular
++  ndfc bank(s).
++
++  Required ndfc-mtd properties:
++  - bank-map : at least one value (less than number of NDFC banks available)
++    identifying bank number the chip is attached to. If we have several
++    identical chips and want to spread a single mtd device across all of them,
++    we need to specify here the bank numbers the chips are attached to.
++    E.g. "bank-map = <0 3>;" means a single mtd device will be created 
++    for 2 identical NAND chips attached to banks 0 and 3 of the NDFC.
++  Optional ndfc-mtd properties:
++  - chip-options : NAND chip options.
++  - chip-delay : NAND chip delay. Default is 50us.
++  - bank-settings : NDFC bank settings for the chip(s). This value is
++    written to the NDFC Bank Configuration Register.
++    If not specified, the default timings (RR=RWH=RWP=CRW=2) and 
++    bank width from the "bank-width" property will be used for the chip.
++  - bank-width : NAND chip bus width. Should be 1 for 8-bit NAND or 
++    2 for 16-bit NAND. By default an 8-bit width is set.
++  - #address-cells, #size-cells : Must be present if the flash has
++    sub-nodes representing partitions (see below).  In this case
++    both #address-cells and #size-cells must be equal to 1.
++  
++  ndfc_mtd can have partition sub-nodes, which are described the same way
++  as for the CFI or JEDEC memory-mapped NOR flash.
++
++   Example (Sequoia 440EPx):
++   NDFC is relocatable within EBC and should have EBC as a parent node.
++   Here we have NDFC on EBC CS3 bank and one NAND chip attached to bank 3
++   of the NanD Flash Controller:
++
++		ndfc@0,0 {
++			compatible = "ibm,ndfc-440epx", "ibm,ndfc";
++			reg = <3 000000 2000>;
++			ndfc-mtd0 {
++				bank-settings = <80002222>;
++				bank-map = <3>;
++				chip-delay = <32>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++				partition@0 {
++					label = "u-boot-nand";
++					reg = <0 0080000>;
++				};
++				partition@80000 {
++					label = "kernel-nand";
++					reg = <0080000 0180000>;
++				};
++				partition@200000 {
++					label = "filesystem";
++					reg = <0200000 1e00000>;
++				};
++			};
++		};
++
++
+    More devices will be defined as this spec matures.
  
- #include "interrupt.h"
-+#include <asm/udbg.h>
- 
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 8b18a1c..b765b7c 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -25,6 +25,7 @@
- 
- #include <asm/firmware.h>
- #include <asm/prom.h>
-+#include <asm/udbg.h>
- 
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
+ VII - Specifying interrupt information for devices
