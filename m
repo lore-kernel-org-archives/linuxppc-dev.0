@@ -1,19 +1,18 @@
-Return-Path: <jdittmer@ppp0.net>
-Received: from rzcomm22.rz.tu-bs.de (rzcomm22.rz.tu-bs.de [134.169.9.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0FF87DE007
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 01:57:53 +1100 (EST)
-Message-ID: <4725F34C.6090904@ppp0.net>
-Date: Mon, 29 Oct 2007 15:50:52 +0100
-From: Jan Dittmer <jdittmer@ppp0.net>
+Return-Path: <mcgrof@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id 0C74CDE194
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 08:26:56 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1641469wxd
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 14:26:55 -0700 (PDT)
+Date: Mon, 29 Oct 2007 17:27:29 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] pegasos_eth.c: Fix compile error over MV643XX_ defines
+Message-ID: <20071029212729.GA4074@pogo>
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
-In-Reply-To: <jesl3udm0e.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: Tzachi Perelstein <tzachi@marvell.com>,
+	Lennert Buytenhek <buytenh@wantstofly.org>, Jeff Garzik <jeff@garzik.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,72 +22,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Anton Blanchard <anton@samba.org> writes:
-> 
->> One way to make this go away would be to build binutils as biarch:
->>
->> # configure --target=powerpc-linux --enable-targets=powerpc64-linux ...
-> 
-> If you configure your toolchain for powerpc64-linux you get a biarch
-> toolchain by default.
+This commit made an incorrect assumption:
+--
+Author: Lennert Buytenhek <buytenh@wantstofly.org>
+ Date:   Fri Oct 19 04:10:10 2007 +0200
 
-Hmm:
+    mv643xx_eth: Move ethernet register definitions into private header
+    
+    Move the mv643xx's ethernet-related register definitions from
+    include/linux/mv643xx.h into drivers/net/mv643xx_eth.h, since
+    they aren't of any use outside the ethernet driver.
+    
+    Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+    Acked-by: Tzachi Perelstein <tzachi@marvell.com>
+    Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+--
 
-$ powerpc64-linux-ld -V
-GNU ld (Linux/GNU Binutils) 2.17.50.0.17.20070615
-   Supported emulations:
-    elf64ppc
-    elf32ppclinux
-    elf32ppc
-    elf32ppcsim
+arch/powerpc/platforms/chrp/pegasos_eth.c made use of a 3 defines there.
 
-$ powerpc64-linux-gcc-4.0.4 -v
-Using built-in specs.
-Target: powerpc64-linux
-Configured with: ../configure --prefix=/usr/cc217 
---exec-prefix=/usr/cc217/powerpc64 --target=powerpc64-linux --disable-shared 
---disable-werror --disable-nls --disable-threads --disable-werror 
---disable-libmudflap --with-newlib --with-gnu-as --with-gnu-ld 
---enable-languages=c
-Thread model: single
-gcc version 4.0.4
+mcgrof@pogo:~/devel/wireless-2.6$ git-describe 
 
-g5_defconfig:
+v2.6.24-rc1-138-g0119130
 
-$ make ARCH=powerpc HOSTCC=gcc-4.0 CROSS_COMPILE=powerpc64-linux- 
-CROSS32_COMPILE=powerpc64-linux-
-...
-   CC      arch/powerpc/kernel/signal.o
-   LDS     arch/powerpc/kernel/vdso32/vdso32.lds
-   VDSO32A arch/powerpc/kernel/vdso32/sigtramp.o
-   VDSO32A arch/powerpc/kernel/vdso32/gettimeofday.o
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S: Assembler 
-messages:
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:33: Error: 
-syntax error; found `@' but expected `,'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:33: Error: 
-junk at end of line: `@local'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:37: Error: 
-syntax error; found `@' but expected `,'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:37: Error: 
-junk at end of line: `@local'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:95: Error: 
-syntax error; found `@' but expected `,'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:95: Error: 
-junk at end of line: `@local'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:103: Error: 
-syntax error; found `@' but expected `,'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:103: Error: 
-junk at end of line: `@local'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:130: Error: 
-syntax error; found `@' but expected `,'
-/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:130: Error: 
-junk at end of line: `@local'
-make[3]: *** [arch/powerpc/kernel/vdso32/gettimeofday.o] Error 1
-make[2]: *** [arch/powerpc/kernel/vdso32] Error 2
-make[1]: *** [arch/powerpc/kernel] Error 2
-make: *** [sub-make] Error 2
+This patch fixes this by internalizing 3 defines onto pegasos which are
+simply no longer available elsewhere. Without this your compile will fail
+whenever you enable 'Common Hardware Reference Platform (CHRP) based machines',
+(CONFIG_PPC_CHRP) as the Makefile for chrp adds it always:
 
+obj-y                           += setup.o time.o pegasos_eth.o pci.o
 
-Jan
+If these defines are platform specific then they should later just be added 
+back to include/linux/mv643xx.h.
+
+Compile error:
+
+  CC      arch/powerpc/platforms/chrp/pegasos_eth.o
+arch/powerpc/platforms/chrp/pegasos_eth.c: In function 'Enable_SRAM':
+arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: 'MV643XX_ETH_BAR_4' 
+undeclared (first use in this function)
+arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: (Each undeclared 
+identifier is reported only once
+arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: for each function it 
+appears in.)
+arch/powerpc/platforms/chrp/pegasos_eth.c:152: error: 
+'MV643XX_ETH_SIZE_REG_4' undeclared (first use in this function)
+arch/powerpc/platforms/chrp/pegasos_eth.c:154: error: 
+'MV643XX_ETH_BASE_ADDR_ENABLE_REG' undeclared (first use in this function)
+make[2]: *** [arch/powerpc/platforms/chrp/pegasos_eth.o] Error 1
+make[1]: *** [arch/powerpc/platforms/chrp] Error 2
+make: *** [arch/powerpc/platforms] Error 2
+
+Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
+---
+
+ arch/powerpc/platforms/chrp/pegasos_eth.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
+index 5bcc58d..1fc9e8c 100644
+--- a/arch/powerpc/platforms/chrp/pegasos_eth.c
++++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+@@ -24,6 +24,9 @@
+ #define PEGASOS2_SRAM_BASE_ETH0			(PEGASOS2_SRAM_BASE)
+ #define PEGASOS2_SRAM_BASE_ETH1			(PEGASOS2_SRAM_BASE_ETH0 + (PEGASOS2_SRAM_SIZE / 2) )
+ 
++#define PEGASOS2_ETH_BAR_4			0x2220
++#define PEGASOS2_ETH_SIZE_REG_4			0x2224
++#define PEGASOS2_ETH_BASE_ADDR_ENABLE_REG	0x2290
+ 
+ #define PEGASOS2_SRAM_RXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
+ #define PEGASOS2_SRAM_TXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
+@@ -147,13 +150,13 @@ static int Enable_SRAM(void)
+ 
+ 	ALong = 0x02;
+ 	ALong |= PEGASOS2_SRAM_BASE & 0xffff0000;
+-	MV_WRITE(MV643XX_ETH_BAR_4, ALong);
++	MV_WRITE(PEGASOS2_ETH_BAR_4, ALong);
+ 
+-	MV_WRITE(MV643XX_ETH_SIZE_REG_4, (PEGASOS2_SRAM_SIZE-1) & 0xffff0000);
++	MV_WRITE(PEGASOS2_ETH_SIZE_REG_4, (PEGASOS2_SRAM_SIZE-1) & 0xffff0000);
+ 
+-	MV_READ(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
++	MV_READ(PEGASOS2_ETH_BASE_ADDR_ENABLE_REG, ALong);
+ 	ALong &= ~(1 << 4);
+-	MV_WRITE(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
++	MV_WRITE(PEGASOS2_ETH_BASE_ADDR_ENABLE_REG, ALong);
+ 
+ #ifdef BE_VERBOSE
+ 	printk("Pegasos II/Marvell MV64361: register unmapped\n");
