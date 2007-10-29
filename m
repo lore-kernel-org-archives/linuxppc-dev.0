@@ -1,20 +1,22 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2106FDE00E
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 01:38:16 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten>
-Date: Mon, 29 Oct 2007 15:38:09 +0100
-In-Reply-To: <20071029140719.GA17120@kryten> (Anton Blanchard's message of
-	"Mon\, 29 Oct 2007 09\:07\:20 -0500")
-Message-ID: <jesl3udm0e.fsf@sykes.suse.de>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 1C0CCDE022
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 01:39:36 +1100 (EST)
+Message-ID: <4725EB9E.1030507@semihalf.com>
+Date: Mon, 29 Oct 2007 15:18:06 +0100
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, jdittmer@ppp0.net
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
+References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
+	<20071023231333.29359.35252.stgit@hekate.izotz.org>
+	<13403420.post@talk.nabble.com>
+	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
+	<4720BA4B.5090707@semihalf.com>
+	<20071026013343.GD457@localhost.localdomain>
+In-Reply-To: <20071026013343.GD457@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> writes:
+David Gibson wrote:
+> On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
+>> Grant Likely wrote:
+>>> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
+> [snip]
+>>>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
+>>>> partition could not be used. "big-fs", because the memory is too small
+>>>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
+>>>> flash border. So only the first 9 MiB of the flash could be used in Linux.
+>>>> The remaining 7 MiB couldn't be accessed.
+>>> Perhaps it would be better to drop the flash layout from the in-kernel
+>>> dts files entirely since flash layout can be a fluid thing.
+>> Well, but that would not be really user friendly, I'd rather stick
+>> with some default config.
+> 
+> Strictly speaking the device-tree is not the right place for flash
+> partitioning information.  We put it there because it's preferable to
+> having hardcoded per-board flash layouts in the code itself.
+> 
+> It only really works well, though, when there are strong conventions
+> (shared with the firmware) about how to partition the flash.
+> 
+> Where it's really up to the user to determine how they want to lay out
+> their flash, putting things in the device tree isn't a really good
+> idea.
 
-> One way to make this go away would be to build binutils as biarch:
->
-> # configure --target=powerpc-linux --enable-targets=powerpc64-linux ...
+In principle, you are right, we should not be putting a user dependent
+configuration into .dts files. But on the other hand, bindings have
+been defined for flash-like devices and their partition layouts and
+physmap_of device driver is expecting to get this information from the
+blob. So, it is the place for it. But if we are not to put partition
+layouts into the default kernel .dts files then we should
+provide/maintain some examples an that may be a even bigger mess.
 
-If you configure your toolchain for powerpc64-linux you get a biarch
-toolchain by default.
+> Incidentally, it's not required that *all* the flash address space be
+> in partitions, so it is possible only give partitions for those flash
+> chunks which the firmware needs to know about.
 
-Andreas.
+That might be nicer solution but different variants of TQM5200 boards
+do not share the same subset of partitions (default u-boot partitions
+at least), so it will not help much.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Cheers,
+m.
