@@ -1,24 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Mon, 29 Oct 2007 15:15:46 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH/RFC] powerpc: Pass PID argument to _tlbie (WAS: Apparent
-	kernel bug with GDB on ppc405)
-Message-ID: <20071029151546.5af0e843@weaponx.rchland.ibm.com>
-In-Reply-To: <20071029070824.72854629@weaponx.rchland.ibm.com>
-References: <20071024194640.GB19691@waste.org>
-	<1193363202.7018.36.camel@pasglop>
-	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
-	<1193369005.7018.46.camel@pasglop>
-	<20071026144134.GW19691@waste.org>
-	<1193448653.18243.9.camel@pasglop>
-	<1193470322.18243.63.camel@pasglop>
-	<20071029070824.72854629@weaponx.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Matt,
-	Mackall <mpm@selenic.com>, Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <stuart.yoder@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Mon, 29 Oct 2007 13:20:35 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F253D@az33exm25.fsl.freescale.net>
+In-Reply-To: <47263800.8020401@freescale.com>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>	<4725FA58.4030505@genesi-usa.com><20071029172724.11354.qmail@farnsworth.org>	<47262E36.4030503@genesi-usa.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA30359FB6A@az33exm25.fsl.freescale.net>
+	<47263800.8020401@freescale.com>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Wood Scott-B07421" <scottwood@freescale.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 29 Oct 2007 07:08:24 -0500
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+=20
 
-> On Sat, 27 Oct 2007 17:32:02 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > Allright, so Matt, let me know if that fixes your problem with gdb, and
-> > I'll clean the patch up a bit and submit it. I want to double check if
-> > something similar may be needed for freescale booke.
-> > 
-> > Basically, the problem is that things like get_user_pages() can cause
-> > COW operations which in turn call _tlbie() to be called for translations
-> > that aren't in the current address space.
-> > 
-> > The current 40x and 44x implementation of _tlbie doesn't handle that
-> > properly as it only invalidates entries in the current PID.
-> > 
-> > This is an attempt at fixing it. Untested, I just checked it builds for
-> > arch/powerpc and arch/ppc. I also haven't looked whether the freescale
-> > BookE _tlbie needs similar treatement (it will get passed the pid in r4
-> > with that patch, so if it needs to do something with it, it can). Kumar,
-> > can you have a look ?
-> 
-> This looks pretty good at first glance.  I'll try to test it out today,
-> but I'd still like to hear if it solves Matt's problem as I doubt I'll
-> be able to duplicate it.
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+> Sent: Monday, October 29, 2007 2:44 PM
+> To: Yoder Stuart-B08248
+> Cc: Matt Sealey; Dale Farnsworth; Linuxppc-dev@ozlabs.org
+> Subject: Re: RFC: replace device_type with new "class" property?
+>=20
+> Yoder Stuart-B08248 wrote:
+> > Here's an example of what I'm trying to get at-- take=20
+> > a node from a FSL device tree.  The ideas I've heard
+> > for expressing the class are like this--
+> >=20
+> > #1  don't express any class at all:
+> >=20
+> >   ucc@2200 {
+> >         compatible =3D "fsl,ucc_geth";
+> >         model =3D "UCC";
+> >         device-id =3D <3>;
+> >         reg =3D <2200 200>;
+> >         interrupts =3D <22>;
+> >         interrupt-parent =3D < &qeic >;
+> >         mac-address =3D [ 00 00 00 00 00 00 ];
+> >         local-mac-address =3D [ 00 00 00 00 00 00 ];
+> >         rx-clock =3D <19>;
+> >         tx-clock =3D <1a>;
+> >         phy-handle =3D < &phy3 >;
+> >         pio-handle =3D < &pio3 >;
+>=20
+> Of course, this should properly be something like
+>=20
+> ethernet@2200 {
+> 	compatible =3D "fsl,mpc8360-qe-enet", "fsl,qe-enet";
+> 	local-mac-address =3D [ 00 00 00 00 00 00 ];
+> 	...
+> };
+>=20
+> With no "mac-address", and a more useful "model" if any at all.
 
-Did a boot test on my ebony board with this patch included.  It seems
-to be happy about things so far.  If Matt gets around to trying this
-out and it works, we should probably look at getting this into 2.6.24.
+That's fine, but as a human reader there is nothing
+that would tell me this node implemented a defined
+binding that specified required properties.
 
-Oh, and I'd need a signed-off-by for it Ben :)
-
-josh
+Stuart
