@@ -1,29 +1,22 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8AA77DDF65
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 20:59:42 +1100 (EST)
-Message-ID: <4725AF08.6030309@garzik.org>
-Date: Mon, 29 Oct 2007 05:59:36 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Domen Puncer <domen.puncer@telargo.com>
-Subject: Re: [PATCH v4.3] FEC - fast ethernet controller for mpc52xx
-References: <4713BA1C.2050604@pobox.com>
-	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
-	<4717B09B.3060800@pobox.com>
-	<20071019112700.GD27403@nd47.coderock.org>
-	<47206209.8080109@pobox.com>
-	<20071025185706.29496.qmail@farnsworth.org>
-	<20071025194114.GH3369@nd47.coderock.org>
-	<20071025202908.GA2102@xyzzy.farnsworth.org>
-	<20071026115909.GI3369@nd47.coderock.org>
-	<20071026141828.GA14900@xyzzy.farnsworth.org>
-	<20071026160749.GA21374@nd47.coderock.org>
-In-Reply-To: <20071026160749.GA21374@nd47.coderock.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Mon, 29 Oct 2007 07:08:24 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH/RFC] powerpc: Pass PID argument to _tlbie (WAS: Apparent
+	kernel bug with GDB on ppc405)
+Message-ID: <20071029070824.72854629@weaponx.rchland.ibm.com>
+In-Reply-To: <1193470322.18243.63.camel@pasglop>
+References: <20071024194640.GB19691@waste.org>
+	<1193363202.7018.36.camel@pasglop>
+	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
+	<1193369005.7018.46.camel@pasglop>
+	<20071026144134.GW19691@waste.org>
+	<1193448653.18243.9.camel@pasglop>
+	<1193470322.18243.63.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org,
+	Kumar Gala <galak@gate.crashing.org>, Matt Mackall <mpm@selenic.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,58 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Domen Puncer wrote:
-> On 26/10/07 07:18 -0700, Dale Farnsworth wrote:
->> On Fri, Oct 26, 2007 at 01:59:09PM +0200, Domen Puncer wrote:
->>> +static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
->>> +{
->>> +	struct net_device *dev = dev_id;
->>> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
->>> +
->>> +	spin_lock(&priv->lock);
->>> +
->>> +	while (bcom_buffer_done(priv->tx_dmatsk)) {
->>> +		struct sk_buff *skb;
->>> +		struct bcom_fec_bd *bd;
->>> +		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL,
->>> +				(struct bcom_bd **)&bd);
->>> +		/* Here (and in rx routines) would be a good place for
->>> +		 * dma_unmap_single(), but bcom doesn't return bcom_bd of the
->>> +		 * finished transfer, and _unmap is empty on this platfrom.
->>> +		 */
->> Oops, you forgot to remove the above comment.  :)
-> 
-> Argh!
-> 
-> Repost w/o the comment.
-> Sorry for receiving all this almost-spam.
-> 
-> 
->> Otherwise,
->> Acked-by: Dale Farnsworth <dale@farnsworth.org>
->>
->> Domen, thanks for all your work on this.  It's good to see it finally go in.
->>
->> -Dale
-> 
-> --- again, use your scisors here ;-) ---
-> 
-> 
-> Driver for ethernet on mpc5200/mpc5200b SoCs (FEC).
-> 
-> 
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-> Acked-by: Dale Farnsworth <dale@farnsworth.org>
-> 
-> ---
->  drivers/net/Kconfig           |   24 
->  drivers/net/Makefile          |    4 
->  drivers/net/fec_mpc52xx.c     | 1112 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/net/fec_mpc52xx.h     |  313 +++++++++++
->  drivers/net/fec_mpc52xx_phy.c |  198 +++++++
->  5 files changed, 1651 insertions(+)
+On Sat, 27 Oct 2007 17:32:02 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-applied to #upstream-fixes
+> Allright, so Matt, let me know if that fixes your problem with gdb, and
+> I'll clean the patch up a bit and submit it. I want to double check if
+> something similar may be needed for freescale booke.
+> 
+> Basically, the problem is that things like get_user_pages() can cause
+> COW operations which in turn call _tlbie() to be called for translations
+> that aren't in the current address space.
+> 
+> The current 40x and 44x implementation of _tlbie doesn't handle that
+> properly as it only invalidates entries in the current PID.
+> 
+> This is an attempt at fixing it. Untested, I just checked it builds for
+> arch/powerpc and arch/ppc. I also haven't looked whether the freescale
+> BookE _tlbie needs similar treatement (it will get passed the pid in r4
+> with that patch, so if it needs to do something with it, it can). Kumar,
+> can you have a look ?
 
-it's not strictly a fix, but I did not want to hold this back until 
-2.6.25 either
+This looks pretty good at first glance.  I'll try to test it out today,
+but I'd still like to hear if it solves Matt's problem as I doubt I'll
+be able to duplicate it.
+
+josh
