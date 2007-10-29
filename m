@@ -1,28 +1,22 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9855ADE004
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 05:32:26 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9TIWMhs002516
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 14:32:22 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9TIWMc6133986
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 14:32:22 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9TIWMcl009239
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 14:32:22 -0400
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH] [Powerpc V2] fix switch_slb handling of 1T ESID values
-To: linuxppc-dev@ozlabs.org
-Date: Mon, 29 Oct 2007 13:32:19 -0500
-Message-ID: <20071029183218.19914.51410.stgit@farscape.rchland.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DED54DE0C3
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 05:53:26 +1100 (EST)
+Message-ID: <47262CA9.3070500@genesi-usa.com>
+Date: Mon, 29 Oct 2007 18:55:37 +0000
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: RFC:  replace device_type with new "class" property?
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<4725FA58.4030505@genesi-usa.com>
+	<20071029161140.GA4358@loki.buserror.net>
+In-Reply-To: <20071029161140.GA4358@loki.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,81 +26,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Scott Wood wrote:
+> On Mon, Oct 29, 2007 at 03:20:56PM +0000, Matt Sealey wrote:
+>> I think device_type, compatible and model properties fulfil
+>> this already, they simply aren't being used correctly.
+> 
+> device_type has a few drawbacks, though:
+> 
+> 1. You can only specify one type, whereas with a new property we could
+> define it as a list (similar to compatible). 
 
-[Powerpc V2] fix switch_slb handling of 1T ESID values
+This is the whole point; device_type and compatible are companion
+properties. You specify the exact thing in device_type and give
+it a list of compatible device_types in compatible.
 
-Now that we have 1TB segment size support, we need to be using the
-GET_ESID_1T macro when comparing ESID values for pc,stack, and
-unmapped_base within switch_slb().    A new helper function called
-esids_match() contains the logic for deciding when to call GET_ESID
-and GET_ESID_1T.
+> 2. We want to avoid any confusion with OF bindings and abused device_type
+> entries that have been allowed to become existing practice.
 
-This also happens to fix a duplicate-slb-entry inspired machine-check
-exception I was seeing when trying to run java on a power6 partition.
+Creating whole new device type bindings that are not OF standards,
+which puts OF vendors at a sort of impass; do they comply to the
+Open Firmware standard or use the Linux Standard?
 
-Tested on power6 and power5.
+Flat device trees are already somewhat of a strange beast, it is
+probably best not to make them much stranger.
 
-Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
----
+> 3. It's the only standard property (AFAIK) with an underscore in it. :-)
 
- arch/powerpc/mm/slb.c |   33 ++++++++++++++++++++++++++++++---
- 1 files changed, 30 insertions(+), 3 deletions(-)
+Petty :D
 
+>> For readability, the name of the device needn't match device_type;
+>> for instance on the 5121E it may be that the 'diu' unit be
+>> called diu, but be of device_type 'display'
+> 
+> I don't think that's more readable than setting the name to display.
+> Something containing "diu" will be in the compatible list.
 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index bbd2c51..152f4cd 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -148,6 +148,34 @@ void slb_vmalloc_update(void)
- 	slb_flush_and_rebolt();
- }
- 
-+/* Helper function to compare esids.  There are four cases to handle.
-+ * 1. The system is not 1T segment size capable.  Use the GET_ESID compare.
-+ * 2. The system is 1T capable, both addresses are < 1T, use the GET_ESID compare.
-+ * 3. The system is 1T capable, only one of the two addresses is > 1T.  This is not a match.
-+ * 4. The system is 1T capable, both addresses are > 1T, use the GET_ESID_1T macro to compare.
-+ */
-+static inline int esids_match(unsigned long addr1, unsigned long addr2)
-+{
-+	int esid_1t_count;
-+
-+	/* System is not 1T segment size capable. */
-+	if (!cpu_has_feature(CPU_FTR_1T_SEGMENT))
-+		return (GET_ESID(addr1) == GET_ESID(addr2));
-+
-+	esid_1t_count = (((addr1>>SID_SHIFT_1T)!=0) + ((addr2>>SID_SHIFT_1T)!=0));
-+
-+	/* both addresses are < 1T */
-+	if (esid_1t_count == 0)
-+		return (GET_ESID(addr1) == GET_ESID(addr2));
-+
-+	/* One address < 1T, the other > 1T.  Not a match */
-+	if (esid_1t_count == 1) 
-+		return 0;
-+
-+	/* Both addresses are > 1T. */
-+	return (GET_ESID_1T(addr1) == GET_ESID_1T(addr2));
-+}
-+
- /* Flush all user entries from the segment table of the current processor. */
- void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- {
-@@ -193,15 +221,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		return;
- 	slb_allocate(pc);
- 
--	if (GET_ESID(pc) == GET_ESID(stack))
-+	if (esids_match(pc,stack))
- 		return;
- 
- 	if (is_kernel_addr(stack))
- 		return;
- 	slb_allocate(stack);
- 
--	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
--	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
-+	if (esids_match(pc,unmapped_base) || esids_match(stack,unmapped_base))
- 		return;
- 
- 	if (is_kernel_addr(unmapped_base))
+It at least makes the device tree far more human readable.
+
+"Name" and "Device Type" are not required to be the same thing. A
+name is just a human readable marker, device_type is what drivers
+need to match on.
+
+While name is derived from device_type on creation of a device (after
+all a display is a display), giving it a human readable name is
+sometimes a boon.
+
+Remember that Open Firmware is not just a text file you compile
+with U-Boot - the console you get on boot needs to be useful to
+users too. In that sense, 8 USB controllers with names usb@f10001000,
+usb@f10002000 going upwards to infinity is not the greatest thing
+in the world.
+
+>> Selecting the "model" would be no different to, for example,
+>> having a list of PCI IDs that will work with a driver.
+> 
+> It's what we currently do with compatible.  Why break it into two
+> properties?
+
+Because encoding human-readable descriptions of devices in the
+compatible property is ridiculously long-winded.
+
+Currently it's being terribly misused, in my opinion (USB especially,
+there is no need to tell that it is "compatible" with mpc5200b-usb,
+USB is a well-defined standard with 3 possible host controllers,
+encoding the specific SoC into it is going way overboard)
+
+> No, you should use compatible for that.
+> 
+> No, that goes in name/compatible according to the OF PCI binding.
+
+This is absolutely contrary to your own request for comments; you want
+to implement a new class property, but.. you can use device_type
+and compatible for it, as is evident everywhere and in two already
+existing bus bindings.
+
+If you need more information in the device tree for each device,
+I simply recommend we take a hint from the PCI and USB bindings
+and add properties of the same names and descriptions (why create
+new standards when old ones work fine).
+
+>> Perhaps it is a solution though; mark each device with a
+>> class property, for instance on the 5200B give it a unique
+>> chip ID (fsl5200 or soc5200?)
+> 
+> No.  That's precisely the sort of device_type abuse we want to get away from
+> with class.
+
+It is not an abuse to give a device_type by some very easily matchable
+device type.
+
+> Personally, I'm fine with just using name and compatible, but others such as
+> Stuart have expressed a desire for something to formally indicate compliance
+> with a standard binding.  I don't think we should expand the use of
+> device_type in any case.
+
+You can formally indicate compliance with a standard binding by using
+the standard bindings.. be they the USB or PCI standard, be your device
+not on USB or PCI, they already exist, and already do what Stuart asks.
+
+For devices which do not have a standard binding you run into a problem;
+who arbitrates what class goes where?
+
+Reusing vendor codes from PCI and USB, class codes from PCI and USB,
+and implementing a few 'non-standard others' is far more efficient
+as there is plenty of code in the Linux tree for parsing and collecting
+this data. It is not so far a leap to go from parsing "pci" or "usb"
+device_types to collecting "fsl" or "soc" data and a selection of appended
+codes.
+
+Therefore, if there is not a standard binding that gives it a neat name
+(i2c would be a good example), I suggest following the route of PCI and
+USB, and encoding that specific device as a set of matchable codes,
+rather than a list of strings.
+
+"soc5121,0c0320" matches a device exactly where "usb" particularly
+does not. As with the specification for PCI where such a device may
+not have a particular device_type name (not a good example with USB)
+simply prefix with the bus type, then vendor code, device code,
+class code etc. gives you an identical match.
+
+Why not;
+
+chickenlittle {
+	device_type = "usb"
+	model = "soc1057,5121,0c0320"
+	compatible = "usb-ehci", "soc1057,8349,*"
+}
+
+bluesky {
+	device_type = "i2c"
+	model = "i2c1057,5121,030000"
+	compatible = "whatever"
+}
+
+ata {
+	device_type = "ide"
+	model = "soc1057,5121,01801f"
+	compatible = "soc1057,5200,01801f"
+}
+
+Maybe that is an incredibly bad idea, now I look at it.
+
+If not, simply whacking in the PCI class-code, vendor-id, device-id
+and suchlike properties is both easy to add to current firmware
+implementations and easy to differentiate a device (far beyond a
+simple "class name"). 99% of names, and device_types already exist
+and have well-known bindings. i2c being our example of where no
+example binding exists, it is easy to report it's existance and
+it's programming interface via these values.
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
