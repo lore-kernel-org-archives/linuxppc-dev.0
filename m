@@ -1,11 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 914A2DDFE8
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 13:58:51 +1100 (EST)
+Date: Sun, 28 Oct 2007 22:06:48 -0500
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix demotion of segments to 4K pages
+Message-ID: <20071029030648.GA14199@lixom.net>
+References: <1193619918.9928.0.camel@pasglop>
+	<20071029015014.GA13687@lixom.net>
+	<1193623229.9928.2.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18213.19469.827909.663373@cargo.ozlabs.ibm.com>
-Date: Mon, 29 Oct 2007 13:57:17 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [POWERPC] Fix off-by-one error in setting decrementer on Book E
+In-Reply-To: <1193623229.9928.2.camel@pasglop>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,61 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The decrementer in Book E and 4xx processors interrupts on the
-transition from 1 to 0, rather than on the 0 to -1 transition as on
-64-bit server and 32-bit "classic" (6xx/7xx/7xxx) processors.
-
-This fixes the problem by making set_dec subtract 1 from the count for
-server and classic processors.  Since set_dec already had a bunch of
-ifdefs to handle different processor types, there is no net increase
-in ugliness. :)
-
-This also removes a redundant call to set the decrementer to
-0x7fffffff - it was already set to that earlier in timer_interrupt.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 9eb3284..5e253d6 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -586,7 +586,7 @@ void timer_interrupt(struct pt_regs * regs)
- 		/* not time for this event yet */
- 		now = per_cpu(decrementer_next_tb, cpu) - now;
- 		if (now <= DECREMENTER_MAX)
--			set_dec((unsigned int)now - 1);
-+			set_dec((int)now);
- 		return;
- 	}
- 	old_regs = set_irq_regs(regs);
-@@ -601,10 +601,8 @@ void timer_interrupt(struct pt_regs * regs)
+On Mon, Oct 29, 2007 at 01:00:29PM +1100, Benjamin Herrenschmidt wrote:
  
- 	if (evt->event_handler)
- 		evt->event_handler(evt);
--	else
--		evt->set_next_event(DECREMENTER_MAX, evt);
- 
- #ifdef CONFIG_PPC_ISERIES
- 	if (firmware_has_feature(FW_FEATURE_ISERIES) && hvlpevent_is_pending())
-@@ -826,9 +824,6 @@ static int decrementer_set_next_event(unsigned long evt,
- 				      struct clock_event_device *dev)
- {
- 	__get_cpu_var(decrementer_next_tb) = get_tb_or_rtc() + evt;
--	/* The decrementer interrupts on the 0 -> -1 transition */
--	if (evt)
--		--evt;
- 	set_dec(evt);
- 	return 0;
- }
-diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
-index f058955..eed64bd 100644
---- a/include/asm-powerpc/time.h
-+++ b/include/asm-powerpc/time.h
-@@ -183,6 +183,7 @@ static inline void set_dec(int val)
- #elif defined(CONFIG_8xx_CPU6)
- 	set_dec_cpu6(val);
- #else
-+	--val;	/* classic decrementer interrupts when dec goes negative */
- #ifdef CONFIG_PPC_ISERIES
- 	int cur_dec;
- 
+> On Sun, 2007-10-28 at 20:50 -0500, Olof Johansson wrote:
+> > Hi Ben,
+> > 
+> > On Mon, Oct 29, 2007 at 12:05:18PM +1100, Benjamin Herrenschmidt wrote:
+> > > @@ -887,6 +886,9 @@ void hash_preload(struct mm_struct *mm, 
+> > >  	local_irq_restore(flags);
+> > >  }
+> > >  
+> > > +/* WARNING: This is called from hash_low_64.S, if you change this prototype,
+> > > + *          do not forget to update the assembly call site !
+> > > + */
+> > 
+> > Since we're already policing whitespace on this list today: We're normally
+> > not using spaces before exclamation marks.
+> 
+> And I don't care, I will continue adding them because the opposite is
+> fugly :-)
+
+Yeah , I know what you mean . This looks so much more natural .
+
+> There is a limit to what I accept from the style police, it's not like
+> Linux has to look like it's written by a single person either.
+
+Good one ! That one goes to the bookmark list . :-)
+
+I agree though , whitespace policing tends to be counter-productive ,
+together with (minor) grammar and spelling errors in comments . Still,
+people love to point them out so I figured I would do it too .
+
+
+- Olof
