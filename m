@@ -1,22 +1,24 @@
-Return-Path: <jdi@l4x.org>
-Received: from mail.trixing.net (mail.trixing.net [87.230.125.58])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 428FCDE152
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 07:13:34 +1100 (EST)
-Message-ID: <47263830.2010009@l4x.org>
-Date: Mon, 29 Oct 2007 20:44:48 +0100
-From: Jan Dittmer <jdi@l4x.org>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten>
-	<jesl3udm0e.fsf@sykes.suse.de>	<4725F34C.6090904@ppp0.net>
-	<jelk9mdj6e.fsf@sykes.suse.de>
-In-Reply-To: <jelk9mdj6e.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Jan Dittmer <jdittmer@ppp0.net>,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Date: Mon, 29 Oct 2007 15:15:46 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH/RFC] powerpc: Pass PID argument to _tlbie (WAS: Apparent
+	kernel bug with GDB on ppc405)
+Message-ID: <20071029151546.5af0e843@weaponx.rchland.ibm.com>
+In-Reply-To: <20071029070824.72854629@weaponx.rchland.ibm.com>
+References: <20071024194640.GB19691@waste.org>
+	<1193363202.7018.36.camel@pasglop>
+	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
+	<1193369005.7018.46.camel@pasglop>
+	<20071026144134.GW19691@waste.org>
+	<1193448653.18243.9.camel@pasglop>
+	<1193470322.18243.63.camel@pasglop>
+	<20071029070824.72854629@weaponx.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Matt,
+	Mackall <mpm@selenic.com>, Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Jan Dittmer <jdittmer@ppp0.net> writes:
-> 
->> $ powerpc64-linux-gcc-4.0.4 -v
->> Using built-in specs.
->> Target: powerpc64-linux
->> Configured with: ../configure --prefix=/usr/cc217
->> --exec-prefix=/usr/cc217/powerpc64 --target=powerpc64-linux
->> --disable-shared --disable-werror --disable-nls --disable-threads
->> --disable-werror --disable-libmudflap --with-newlib --with-gnu-as
->> --with-gnu-ld --enable-languages=c
->> Thread model: single
->> gcc version 4.0.4
->>
->> g5_defconfig:
->>
->> $ make ARCH=powerpc HOSTCC=gcc-4.0 CROSS_COMPILE=powerpc64-linux- 
->> CROSS32_COMPILE=powerpc64-linux-
-> 
-> Your compiler still needs -m32 to generate 32-bit code (or use
-> --with-cpu=default32 to make that the default).
+On Mon, 29 Oct 2007 07:08:24 -0500
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-4.1.2 exhibits the same behavior. When did it start to work without
-additional options? 4.2?
+> On Sat, 27 Oct 2007 17:32:02 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > Allright, so Matt, let me know if that fixes your problem with gdb, and
+> > I'll clean the patch up a bit and submit it. I want to double check if
+> > something similar may be needed for freescale booke.
+> > 
+> > Basically, the problem is that things like get_user_pages() can cause
+> > COW operations which in turn call _tlbie() to be called for translations
+> > that aren't in the current address space.
+> > 
+> > The current 40x and 44x implementation of _tlbie doesn't handle that
+> > properly as it only invalidates entries in the current PID.
+> > 
+> > This is an attempt at fixing it. Untested, I just checked it builds for
+> > arch/powerpc and arch/ppc. I also haven't looked whether the freescale
+> > BookE _tlbie needs similar treatement (it will get passed the pid in r4
+> > with that patch, so if it needs to do something with it, it can). Kumar,
+> > can you have a look ?
+> 
+> This looks pretty good at first glance.  I'll try to test it out today,
+> but I'd still like to hear if it solves Matt's problem as I doubt I'll
+> be able to duplicate it.
 
-Jan
+Did a boot test on my ebony board with this patch included.  It seems
+to be happy about things so far.  If Matt gets around to trying this
+out and it works, we should probably look at getting this into 2.6.24.
+
+Oh, and I'd need a signed-off-by for it Ben :)
+
+josh
