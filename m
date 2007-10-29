@@ -1,22 +1,14 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 1C0CCDE022
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 01:39:36 +1100 (EST)
-Message-ID: <4725EB9E.1030507@semihalf.com>
-Date: Mon, 29 Oct 2007 15:18:06 +0100
-From: Marian Balakowicz <m8@semihalf.com>
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 29 Oct 2007 09:57:10 -0500
+From: Anton Blanchard <anton@samba.org>
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: boot/wrap assumes a biarch toolchain?
+Message-ID: <20071029145710.GB17120@kryten>
+References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-	<13403420.post@talk.nabble.com>
-	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
-	<4720BA4B.5090707@semihalf.com>
-	<20071026013343.GD457@localhost.localdomain>
-In-Reply-To: <20071026013343.GD457@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <jesl3udm0e.fsf@sykes.suse.de>
+Cc: linuxppc-dev@ozlabs.org, jdittmer@ppp0.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
->> Grant Likely wrote:
->>> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
-> [snip]
->>>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
->>>> partition could not be used. "big-fs", because the memory is too small
->>>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
->>>> flash border. So only the first 9 MiB of the flash could be used in Linux.
->>>> The remaining 7 MiB couldn't be accessed.
->>> Perhaps it would be better to drop the flash layout from the in-kernel
->>> dts files entirely since flash layout can be a fluid thing.
->> Well, but that would not be really user friendly, I'd rather stick
->> with some default config.
-> 
-> Strictly speaking the device-tree is not the right place for flash
-> partitioning information.  We put it there because it's preferable to
-> having hardcoded per-board flash layouts in the code itself.
-> 
-> It only really works well, though, when there are strong conventions
-> (shared with the firmware) about how to partition the flash.
-> 
-> Where it's really up to the user to determine how they want to lay out
-> their flash, putting things in the device tree isn't a really good
-> idea.
+ 
+Hi,
 
-In principle, you are right, we should not be putting a user dependent
-configuration into .dts files. But on the other hand, bindings have
-been defined for flash-like devices and their partition layouts and
-physmap_of device driver is expecting to get this information from the
-blob. So, it is the place for it. But if we are not to put partition
-layouts into the default kernel .dts files then we should
-provide/maintain some examples an that may be a even bigger mess.
+> If you configure your toolchain for powerpc64-linux you get a biarch
+> toolchain by default.
 
-> Incidentally, it's not required that *all* the flash address space be
-> in partitions, so it is possible only give partitions for those flash
-> chunks which the firmware needs to know about.
+I was wondering about people using pre biarch gcc toolchains. But I take
+your point - I'm guessing binutils has been biarch for a long time.
+Since we are only calling binutils functions in boot/wrap, maybe we can
+just do:
 
-That might be nicer solution but different variants of TQM5200 boards
-do not share the same subset of partitions (default u-boot partitions
-at least), so it will not help much.
-
-Cheers,
-m.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 18e3271..8961afd 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -121,13 +121,9 @@ wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
+ #############
+ # Bits for building various flavours of zImage
+ 
+-ifneq ($(CROSS32_COMPILE),)
+-CROSSWRAP := -C "$(CROSS32_COMPILE)"
+-else
+ ifneq ($(CROSS_COMPILE),)
+ CROSSWRAP := -C "$(CROSS_COMPILE)"
+ endif
+-endif
+ 
+ # args (to if_changed): 1 = (this rule), 2 = platform, 3 = dts 4=dtb 5=initrd
+ quiet_cmd_wrap	= WRAP    $@
