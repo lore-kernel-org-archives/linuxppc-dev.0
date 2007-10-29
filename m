@@ -1,17 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id ABE8FDE107
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 07:44:50 +1100 (EST)
-Date: Mon, 29 Oct 2007 15:52:54 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH] [powerpc] update xmon slb code
-Message-ID: <20071029205254.GA27544@lixom.net>
-References: <20071029195925.9773.94394.stgit@farscape.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071029195925.9773.94394.stgit@farscape.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH/RFC] powerpc: Pass PID argument to _tlbie (WAS:
+	Apparent kernel bug with GDB on ppc405)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071029151546.5af0e843@weaponx.rchland.ibm.com>
+References: <20071024194640.GB19691@waste.org>
+	<1193363202.7018.36.camel@pasglop>
+	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
+	<1193369005.7018.46.camel@pasglop> <20071026144134.GW19691@waste.org>
+	<1193448653.18243.9.camel@pasglop> <1193470322.18243.63.camel@pasglop>
+	<20071029070824.72854629@weaponx.rchland.ibm.com>
+	<20071029151546.5af0e843@weaponx.rchland.ibm.com>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 07:35:06 +1100
+Message-Id: <1193690106.9928.32.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Matt Mackall <mpm@selenic.com>,
+	Kumar Gala <galak@gate.crashing.org>, linuxppc-embedded@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 02:59:27PM -0500, Will Schmidt wrote:
-> 
-> [powerpc] update xmon slb code
-> 
-> adds a bit more detail to the xmon SLB output.  When the valid bit is
-> set, This displays the ESID and VSID values, as well as decoding the
-> segment size. (1T or 256M).  This supresses the output for any slb entries
-> that contain only zeros.
-> 
-> I debated a bit on whether to check for just (valid) versus checking for
-> (valid|esid|vsid).  By inspection on power5, I do have SLB entries that
-> contain values but without the valid bit set, so opted to display any
-> non-zero values.
 
-Yeah, newer versions of the architecture specify that invalid entries
-must read as 0, while POWER5 doesn't. Printing them doesn't hurt.
-
-> sample output from power6 (1T segment support):
+> Did a boot test on my ebony board with this patch included.  It seems
+> to be happy about things so far.  If Matt gets around to trying this
+> out and it works, we should probably look at getting this into 2.6.24.
 > 
-> 00 c000000008000000 40004f7ca3000500  1T  ESID=c00000  VSID=40004f7ca3
-> 01 d000000008000000 4000eb71b0000400  1T  ESID=d00000  VSID=4000eb71b0
-> 24 cf00000008000000 400011b260000500  1T  ESID=cf0000  VSID=400011b260
-> 25 0000040008000000 4000a9e949000c80  1T  ESID=4  VSID=4000a9e949
-> 26 0000000018000000 00005e93bfd49c80 256M ESID=1  VSID=5e93bfd49
-> 27 00000f0008000000 4000e262a4000c80  1T  ESID=f  VSID=4000e262a4
-> 28 0000000008000000 00005dd45172ec80 256M ESID=0  VSID=5dd45172e
-> 
-> sample output from power5 (notice the non-valid but non-zero entries)
-> 
-> 54 0000000048000000 0000cf33bb059c80 256M ESID=4  VSID=cf33bb059
-> 55 0000000018000000 0000ccf56fe08c80 256M ESID=1  VSID=ccf56fe08
-> 56 0000000010000000 0000dd82ce799c80
-> 57 cf00000008000000 0000d59aca40f500 256M ESID=cf0000000  VSID=d59aca40f
-> 58 c000000078000000 000045cb97751500 256M ESID=c00000007  VSID=45cb97751
-> 59 0000040000000000 000061552db1bc80
-> 
-> Tested on power5 and power6.
+> Oh, and I'd need a signed-off-by for it Ben :)
 
-Nice, I like it! I wonder if it would make sense to (space) pad the
-ESID/VSID fields so they line up, it'd make output just a little tidier.
+Sure, I'll send you a cleaned up version (the version I posted for test
+breaks 64 bits builds :-)
 
-(If you end up changing that, please also break the long printf lines
-in two.)
+But I'm also waiting for Matt to test first.
 
-Beside that it looks good to me! :)
-
-
--Olof
+Cheers,
+Ben.
