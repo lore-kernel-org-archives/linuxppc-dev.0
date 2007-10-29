@@ -1,17 +1,17 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC445DE12E
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:32:07 +1100 (EST)
-Date: Mon, 29 Oct 2007 23:29:02 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] MTD: small physmap_of partition parsing fixes
-Message-ID: <20071029202902.GA2200@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-mtd@lists.infradead.org
+Return-Path: <stuart.yoder@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Mon, 29 Oct 2007 12:34:40 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA30359FB6A@az33exm25.fsl.freescale.net>
+In-Reply-To: <47262E36.4030503@genesi-usa.com>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>	<4725FA58.4030505@genesi-usa.com><20071029172724.11354.qmail@farnsworth.org>
+	<47262E36.4030503@genesi-usa.com>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Matt Sealey" <matt@genesi-usa.com>,
+	"Dale Farnsworth" <dale@farnsworth.org>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use of_get_next_child for proper ref counting as suggested by Stephen Rothwell
-and remove add_mtd_partitions from parse_partitions to avoid duplicate
-mtd device registration for RedBoot partitions.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- drivers/mtd/maps/physmap_of.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+Here's an example of what I'm trying to get at-- take=20
+a node from a FSL device tree.  The ideas I've heard
+for expressing the class are like this--
 
-diff -pruN linux-2.6.orig/drivers/mtd/maps/physmap_of.c linux-2.6/drivers/mtd/maps/physmap_of.c
---- linux-2.6.orig/drivers/mtd/maps/physmap_of.c	2007-10-29 16:02:37.000000000 +0300
-+++ linux-2.6/drivers/mtd/maps/physmap_of.c	2007-10-29 22:41:08.000000000 +0300
-@@ -94,14 +94,13 @@ static int __devinit parse_partitions(st
- 	 * line, these take precedence over device tree information */
- 	nr_parts = parse_mtd_partitions(info->mtd, part_probe_types,
- 					&info->parts, 0);
--	if (nr_parts > 0) {
--		add_mtd_partitions(info->mtd, info->parts, nr_parts);
--		return 0;
--	}
-+	if (nr_parts > 0)
-+		return nr_parts;
- 
- 	/* First count the subnodes */
- 	nr_parts = 0;
--	for (pp = dp->child; pp; pp = pp->sibling)
-+	for (pp = of_get_next_child(dp, NULL); pp;
-+	     pp = of_get_next_child(dp, pp))
- 		nr_parts++;
- 
- 	if (nr_parts == 0)
-@@ -112,12 +111,14 @@ static int __devinit parse_partitions(st
- 	if (!info->parts)
- 		return -ENOMEM;
- 
--	for (pp = dp->child, i = 0; pp; pp = pp->sibling, i++) {
-+	for (pp = of_get_next_child(dp, NULL), i = 0; pp;
-+	     pp = of_get_next_child(dp, pp), i++) {
- 		const u32 *reg;
- 		int len;
- 
- 		reg = of_get_property(pp, "reg", &len);
- 		if (!reg || (len != 2*sizeof(u32))) {
-+			of_node_put(pp);
- 			dev_err(&dev->dev, "Invalid 'reg' on %s\n",
- 				dp->full_name);
- 			kfree(info->parts);
+#1  don't express any class at all:
+
+  ucc@2200 {
+        compatible =3D "fsl,ucc_geth";
+        model =3D "UCC";
+        device-id =3D <3>;
+        reg =3D <2200 200>;
+        interrupts =3D <22>;
+        interrupt-parent =3D < &qeic >;
+        mac-address =3D [ 00 00 00 00 00 00 ];
+        local-mac-address =3D [ 00 00 00 00 00 00 ];
+        rx-clock =3D <19>;
+        tx-clock =3D <1a>;
+        phy-handle =3D < &phy3 >;
+        pio-handle =3D < &pio3 >;
+ =20
+
+  > This is bad IMHO because the human reader has to
+  > infer the class of device.  Can the human reader
+  > tell if it implements a standardized binding or
+  > not??
+
+#2 use device_type
+
+  ucc@2200 {
+        device_type =3D "network";
+        compatible =3D "fsl,ucc_geth";
+        model =3D "UCC";
+        device-id =3D <3>;
+        reg =3D <2200 200>;
+        interrupts =3D <22>;
+        interrupt-parent =3D < &qeic >;
+        mac-address =3D [ 00 00 00 00 00 00 ];
+        local-mac-address =3D [ 00 00 00 00 00 00 ];
+        rx-clock =3D <19>;
+        tx-clock =3D <1a>;
+        phy-handle =3D < &phy3 >;
+        pio-handle =3D < &pio3 >;
+  };
+
+  > This is better...I can tell it implments the network
+  > binding.   The problem is the past abuse and OF
+  > connotations.
+
+#3 use a new "class" property
+
+  ucc@2200 {
+        class =3D "network";
+        compatible =3D "fsl,ucc_geth";
+        model =3D "UCC";
+        device-id =3D <3>;
+        reg =3D <2200 200>;
+        interrupts =3D <22>;
+        interrupt-parent =3D < &qeic >;
+        mac-address =3D [ 00 00 00 00 00 00 ];
+        local-mac-address =3D [ 00 00 00 00 00 00 ];
+        rx-clock =3D <19>;
+        tx-clock =3D <1a>;
+        phy-handle =3D < &phy3 >;
+        pio-handle =3D < &pio3 >;
+  };
+
+  > This is good...I can tell it implments the "network"
+  > binding.   There is no association with the abused
+  > OF device_type.
+
+#4 use "compatible"
+
+  ucc@2200 {
+        compatible =3D "fsl,ucc_geth","[official spec],network";
+        model =3D "UCC";
+        device-id =3D <3>;
+        reg =3D <2200 200>;
+        interrupts =3D <22>;
+        interrupt-parent =3D < &qeic >;
+        mac-address =3D [ 00 00 00 00 00 00 ];
+        local-mac-address =3D [ 00 00 00 00 00 00 ];
+        rx-clock =3D <19>;
+        tx-clock =3D <1a>;
+        phy-handle =3D < &phy3 >;
+        pio-handle =3D < &pio3 >;
+  };
+
+  > I don't like this...we are overloading "compatible" with
+  > stuff that is not specifying a programming interface.  compatible
+  > is supposed to be specifying a programming interface which
+  > the device complies to.
+
+
+Stuart
