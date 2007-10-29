@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B8748DDFA2
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 13:00:39 +1100 (EST)
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4CE03DDFF7
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 13:18:36 +1100 (EST)
+Date: Mon, 29 Oct 2007 13:18:31 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] powerpc: Fix demotion of segments to 4K pages
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071029015014.GA13687@lixom.net>
+Message-Id: <20071029131831.c1901e2c.sfr@canb.auug.org.au>
+In-Reply-To: <1193619918.9928.0.camel@pasglop>
 References: <1193619918.9928.0.camel@pasglop>
-	<20071029015014.GA13687@lixom.net>
-Content-Type: text/plain
-Date: Mon, 29 Oct 2007 13:00:29 +1100
-Message-Id: <1193623229.9928.2.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__29_Oct_2007_13_18_31_+1100_3R3UE/F2rDF3LLkM"
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,27 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Mon__29_Oct_2007_13_18_31_+1100_3R3UE/F2rDF3LLkM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2007-10-28 at 20:50 -0500, Olof Johansson wrote:
-> Hi Ben,
-> 
-> On Mon, Oct 29, 2007 at 12:05:18PM +1100, Benjamin Herrenschmidt wrote:
-> > @@ -887,6 +886,9 @@ void hash_preload(struct mm_struct *mm, 
-> >  	local_irq_restore(flags);
-> >  }
-> >  
-> > +/* WARNING: This is called from hash_low_64.S, if you change this prototype,
-> > + *          do not forget to update the assembly call site !
-> > + */
-> 
-> Since we're already policing whitespace on this list today: We're normally
-> not using spaces before exclamation marks.
+On Mon, 29 Oct 2007 12:05:18 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
 
-And I don't care, I will continue adding them because the opposite is
-fugly :-)
+Just to be fair to Olof, "diffstats are good" ...
 
-There is a limit to what I accept from the style police, it's not like
-Linux has to look like it's written by a single person either.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Ben.
- 
+--Signature=_Mon__29_Oct_2007_13_18_31_+1100_3R3UE/F2rDF3LLkM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHJUL7TgG2atn1QN8RAu6NAJ9xVnIx2f0JNPlT+ZCb5acQpR0L5wCdHuDa
+Dd52Z3SIzUZnwLBpW1csnxc=
+=bjEp
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__29_Oct_2007_13_18_31_+1100_3R3UE/F2rDF3LLkM--
