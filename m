@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8E704DE0A6
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 03:11:47 +1100 (EST)
-Date: Mon, 29 Oct 2007 11:11:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Matt Sealey <matt@genesi-usa.com>
-Subject: Re: RFC:  replace device_type with new "class" property?
-Message-ID: <20071029161140.GA4358@loki.buserror.net>
-References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
-	<4725FA58.4030505@genesi-usa.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 7DD14DE075
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 03:53:00 +1100 (EST)
+Message-ID: <47260FE5.5080107@ru.mvista.com>
+Date: Mon, 29 Oct 2007 19:52:53 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4725FA58.4030505@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [POWERPC] Fix off-by-one error in setting decrementer on Book
+ E
+References: <18213.19469.827909.663373@cargo.ozlabs.ibm.com>
+In-Reply-To: <18213.19469.827909.663373@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,81 +22,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 03:20:56PM +0000, Matt Sealey wrote:
-> I think device_type, compatible and model properties fulfil
-> this already, they simply aren't being used correctly.
+Hello.
 
-device_type has a few drawbacks, though:
+Paul Mackerras wrote:
 
-1. You can only specify one type, whereas with a new property we could
-define it as a list (similar to compatible).  It's possible for one node to
-comply with multiple class bindings, such as when there's a binding for
-clients of the type of bus it's on as well as the type of device it is, or
-when there are multiple levels of detail (such as complying with both
-simple-bus and some specific bus binding).
+> The decrementer in Book E and 4xx processors interrupts on the
+> transition from 1 to 0, rather than on the 0 to -1 transition as on
+> 64-bit server and 32-bit "classic" (6xx/7xx/7xxx) processors.
 
-2. We want to avoid any confusion with OF bindings and abused device_type
-entries that have been allowed to become existing practice.
+> This fixes the problem by making set_dec subtract 1 from the count for
+> server and classic processors.  Since set_dec already had a bunch of
+> ifdefs to handle different processor types, there is no net increase
+> in ugliness. :)
 
-3. It's the only standard property (AFAIK) with an underscore in it. :-)
+> This also removes a redundant call to set the decrementer to
+> 0x7fffffff - it was already set to that earlier in timer_interrupt.
 
-> Remember that, while you may want to make FDTs easier to
-> design, OpenFirmware and the requirement on device interfaces
-> through the client interface still exist and are still
-> implemented (from time to time).
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
-Sure -- and we don't want to risk the code thinking it can call into OF
-based on what we put in a flat device tree, right?
+    Heh, I have alike patch but refrained from posting being busy with other
+stuff and nt having any PPC target at hand... so, I'm late as usual
 
-> For readability, the name of the device needn't match device_type;
-> for instance on the 5121E it may be that the 'diu' unit be
-> called diu, but be of device_type 'display'
+> ---
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 9eb3284..5e253d6 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -586,7 +586,7 @@ void timer_interrupt(struct pt_regs * regs)
+>  		/* not time for this event yet */
+>  		now = per_cpu(decrementer_next_tb, cpu) - now;
+>  		if (now <= DECREMENTER_MAX)
+> -			set_dec((unsigned int)now - 1);
+> +			set_dec((int)now);
+>  		return;
+>  	}
+>  	old_regs = set_irq_regs(regs);
+> @@ -601,10 +601,8 @@ void timer_interrupt(struct pt_regs * regs)
+>  
+>  	if (evt->event_handler)
+>  		evt->event_handler(evt);
+> -	else
+> -		evt->set_next_event(DECREMENTER_MAX, evt);
+>  
+>  #ifdef CONFIG_PPC_ISERIES
+>  	if (firmware_has_feature(FW_FEATURE_ISERIES) && hvlpevent_is_pending())
+> @@ -826,9 +824,6 @@ static int decrementer_set_next_event(unsigned long evt,
+>  				      struct clock_event_device *dev)
+>  {
+>  	__get_cpu_var(decrementer_next_tb) = get_tb_or_rtc() + evt;
+> -	/* The decrementer interrupts on the 0 -> -1 transition */
+> -	if (evt)
+> -		--evt;
+>  	set_dec(evt);
+>  	return 0;
+>  }
+> diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
+> index f058955..eed64bd 100644
+> --- a/include/asm-powerpc/time.h
+> +++ b/include/asm-powerpc/time.h
+> @@ -183,6 +183,7 @@ static inline void set_dec(int val)
+>  #elif defined(CONFIG_8xx_CPU6)
+>  	set_dec_cpu6(val);
+>  #else
+> +	--val;	/* classic decrementer interrupts when dec goes negative */
 
-I don't think that's more readable than setting the name to display.
-Something containing "diu" will be in the compatible list.
+    I got an impression that set_dec_cpu6() needs the decremented val as well.
+Plus for iSeries compiler will complain for iSeries about cur_dec being
+declared after val-- statement, C++ style.  How about such variant (and the 
+same for <asm-ppc/time.h>)?
 
-> Further differentiation should be done through the 'model'
-> property in my opinion. This is optional in the OpenFirmware
-> spec, but that does not mean it should be important. It is
-> currently defined as something to determine the exact model
-> of a chip in order to enable quirks, bugfixes and suchlike,
-> but most implementations switch on something else entirely
-> (like SVR or a heuristic behaviour).
-> 
-> Selecting the "model" would be no different to, for example,
-> having a list of PCI IDs that will work with a driver.
+Index: powerpc/include/asm-powerpc/time.h
+===================================================================
+--- powerpc.orig/include/asm-powerpc/time.h
++++ powerpc/include/asm-powerpc/time.h
+@@ -178,16 +178,24 @@ static inline unsigned int get_dec(void)
 
-It's what we currently do with compatible.  Why break it into two
-properties?
+  static inline void set_dec(int val)
+  {
++       /*
++        * The "classic"  decrementer  interrupts at 0 to -1 transition, while
++        * 40x and book E decrementers interrupt  at 1 to  0 transition.
++        */
+  #if defined(CONFIG_40x)
+         mtspr(SPRN_PIT, val);
+-#elif defined(CONFIG_8xx_CPU6)
++#else
++#if !defined(CONFIG_BOOKE)
++       val = val ? val - 1 : 0;
++#endif
++#if defined(CONFIG_8xx_CPU6)
+         set_dec_cpu6(val);
+-#ifdef CONFIG_PPC_ISERIES
+-       int cur_dec;
+-
++#if defined(CONFIG_PPC_ISERIES)
+         if (firmware_has_feature(FW_FEATURE_ISERIES) &&
+-                       get_lppaca()->shared_proc) {
++           get_lppaca()->shared_proc) {
++               int cur_dec;
++
+                 get_lppaca()->virtual_decr = val;
+                 cur_dec = get_dec();
+                 if (cur_dec > val)
+@@ -195,7 +203,8 @@ static inline void set_dec(int val)
+         } else
+  #endif
+                 mtspr(SPRN_DEC, val);
+-#endif /* not 40x or 8xx_CPU6 */
++#endif /* not 8xx_CPU6 */
++#endif /* not 40x */
+  }
 
-The PCI ID thing can be quite a headache, BTW, when you get a new PCI device
-that won't work with the existing driver, for no reason other than that it
-hasn't been updated with the new ID.
+  static inline unsigned long tb_ticks_since(unsigned long tstamp)
 
-> There was a little discussion at bplan once that it would be
-> easier to implement a kind of vendor/device id system much
-> like PCI, USB etc. implements in hardware in order to match
-> hardware. I suppose you could use a "class" property to
-> implement this -
-
-No, you should use compatible for that.
-
-> but for instance in the case of USB or PCI, this is already encoded in the
-> device_type for anything the firmware cannot work out (pci1106,6062 or
-> so).
-
-No, that goes in name/compatible according to the OF PCI binding.
-
-> Perhaps it is a solution though; mark each device with a
-> class property, for instance on the 5200B give it a unique
-> chip ID (fsl5200 or soc5200?)
-
-No.  That's precisely the sort of device_type abuse we want to get away from
-with class.
-
-Personally, I'm fine with just using name and compatible, but others such as
-Stuart have expressed a desire for something to formally indicate compliance
-with a standard binding.  I don't think we should expand the use of
-device_type in any case.
-
--Scott
+WBR, Sergei
