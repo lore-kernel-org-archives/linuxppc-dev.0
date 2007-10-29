@@ -1,15 +1,17 @@
-Return-Path: <matt@genesi-usa.com>
-Message-ID: <47262E36.4030503@genesi-usa.com>
-Date: Mon, 29 Oct 2007 19:02:14 +0000
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: RFC:  replace device_type with new "class" property?
-References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>	<4725FA58.4030505@genesi-usa.com>
-	<20071029172724.11354.qmail@farnsworth.org>
-In-Reply-To: <20071029172724.11354.qmail@farnsworth.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <vbarshak@ru.mvista.com>
+Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 96583DE08D
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:19:54 +1100 (EST)
+Date: Mon, 29 Oct 2007 23:17:38 +0300
+From: Valentine Barshak <vbarshak@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] Add device-tree aware NDFC driver
+Message-ID: <20071029201738.GA2022@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: tglx@linutronix.de, sr@denx.de, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dale Farnsworth wrote:
-> Scott wrote:
->> Personally, I'm fine with just using name and compatible, but others such as
->> Stuart have expressed a desire for something to formally indicate compliance
->> with a standard binding.  I don't think we should expand the use of
->> device_type in any case.
-> 
-> I agree that the existing compatible property is sufficient to do
-> what Stuart wants.  All that is required is to define some standard
-> bindings and give them well-known names for the compatible property.
-> If needed, we could define a prefix that indicates that a compatible
-> entry refers to a standards-compliant binding.  For example,
-> "standard,network", or "standard,display".  I don't see the benefit
-> of creating a new property similar to device_type.
-
-I don't see how this makes anything any better.
-
-Under Open Firmware, if device_type is "display", then it had better
-act as a display through the client interface, interpose it's framebuffer
-methods properly and suchlike.
-
-In FDT, what is the purpose of the binding but to report devices? It
-does not really define any interface whatsoever. Having it "conform
-to a standards-compliant binding" by reporting standard,display goes
-in the direction of ignoring the simple fact that most displays act
-and are programmed very differently (with the glorious exception of
-potentially giving it a "compatible" of "vga" - on PCI this is
-handled very easily by the PCI class code! Which was exactly my
-point..).
-
-I would say the same for USB, where standard,usb would be really
-glossing over the simple fact that *all usb controllers should by
-default be created equal*. OHCI does not act any different, and
-UHCI doesn't act any different, in the specification. If the chip
-does weird things, you do not go around revoking it's status as an
-OHCI controller, do you?
-
-As an addendum to Scott's other mail I came up with a good reason to
-give users readable names but standard device_types. Consider 802.11g,
-which may have a name of "wifi" but since it is a network adapter,
-have device_type "ethernet". It is ethernet after all, but users
-would like to know which it is compared with the onboard ethernet,
-given a list of devices on the OF console, without knowing the base
-addresses of registers.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+This adds a device-tree aware PowerPC 44x NanD Flash Controller driver
+The code is based on the original NDFC driver by Thomas Gleixner, but
+since it's been changed much and has initialization/clean-up completely
+reworked it's been put into a separate ndfc_of.c file. This version
+supports both separate mtd devices on each chip attached to NDFC banks and
+single mtd device spread across identical chips (not using mtdconcat) as well.
+The choice is selected with device tree settings. This has been tested
+on PowerPC 440EPx Sequoia board.
+Any comments are greatly appreciated.
+Thanks,
+Valentine.
