@@ -1,19 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EA5A0DE158
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 10:33:53 +1100 (EST)
-Date: Tue, 30 Oct 2007 10:33:50 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH] [Powerpc V2] fix switch_slb handling of 1T ESID values
-Message-Id: <20071030103350.20023fef.sfr@canb.auug.org.au>
-In-Reply-To: <20071029183218.19914.51410.stgit@farscape.rchland.ibm.com>
-References: <20071029183218.19914.51410.stgit@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__30_Oct_2007_10_33_50_+1100_X=fJzkL=riTZqp5M"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 926BBDE170
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 10:34:45 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Jan Dittmer <jdi@l4x.org>
+Subject: Re: boot/wrap assumes a biarch toolchain?
+References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
+	<4725F34C.6090904@ppp0.net> <jelk9mdj6e.fsf@sykes.suse.de>
+	<47263830.2010009@l4x.org> <jebqahei70.fsf@sykes.suse.de>
+	<47265586.1050701@l4x.org>
+Date: Tue, 30 Oct 2007 00:34:40 +0100
+In-Reply-To: <47265586.1050701@l4x.org> (Jan Dittmer's message of "Mon\, 29 Oct
+	2007 22\:49\:58 +0100")
+Message-ID: <je640pebqn.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Jan Dittmer <jdittmer@ppp0.net>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__30_Oct_2007_10_33_50_+1100_X=fJzkL=riTZqp5M
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jan Dittmer <jdi@l4x.org> writes:
 
-Hi Will,
+> Same error, you write above that a newer compiler version should
+> not need -m32 or --with-cpu=default32 any more?
 
-Just a trivial comment ...
+??? Where did I say that?
 
-On Mon, 29 Oct 2007 13:32:19 -0500 Will Schmidt <will_schmidt@vnet.ibm.com>=
- wrote:
->
-> +static inline int esids_match(unsigned long addr1, unsigned long addr2)
-> +{
-> +	int esid_1t_count;
-> +
-> +	/* System is not 1T segment size capable. */
-> +	if (!cpu_has_feature(CPU_FTR_1T_SEGMENT))
-> +		return (GET_ESID(addr1) =3D=3D GET_ESID(addr2));
-> +
-> +	esid_1t_count =3D (((addr1>>SID_SHIFT_1T)!=3D0) + ((addr2>>SID_SHIFT_1T=
-)!=3D0));
+Andreas.
 
-Please use spaces around binary operators (as you have elsewhere). Even
-if it pushes the line slightly over 80 characters ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__30_Oct_2007_10_33_50_+1100_X=fJzkL=riTZqp5M
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHJm3jTgG2atn1QN8RAtXSAJ9K7hzJ40tGL7vPf+apAW/DUIH+BgCfSzsj
-AFOYHDanHZLwVfKD2a7IAMI=
-=Xjc5
------END PGP SIGNATURE-----
-
---Signature=_Tue__30_Oct_2007_10_33_50_+1100_X=fJzkL=riTZqp5M--
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
