@@ -1,16 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Mon, 29 Oct 2007 16:03:53 -0700
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-Subject: Re: RFC:  replace device_type with new "class" property?
-Message-ID: <20071029230353.GA11750@xyzzy.farnsworth.org>
-References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
-	<47262E36.4030503@genesi-usa.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA30359FB6A@az33exm25.fsl.freescale.net>
+Return-Path: <jdittmer@ppp0.net>
+Received: from rzcomm22.rz.tu-bs.de (rzcomm22.rz.tu-bs.de [134.169.9.68])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FF87DE007
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 01:57:53 +1100 (EST)
+Message-ID: <4725F34C.6090904@ppp0.net>
+Date: Mon, 29 Oct 2007 15:50:52 +0100
+From: Jan Dittmer <jdittmer@ppp0.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA30359FB6A@az33exm25.fsl.freescale.net>
-Cc: Linuxppc-dev@ozlabs.org
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: boot/wrap assumes a biarch toolchain?
+References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
+In-Reply-To: <jesl3udm0e.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 12:34:40PM -0700, Yoder Stuart-B08248 wrote:
-> #4 use "compatible"
+Andreas Schwab wrote:
+> Anton Blanchard <anton@samba.org> writes:
 > 
->   ucc@2200 {
->         compatible = "fsl,ucc_geth","[official spec],network";
->         model = "UCC";
->         device-id = <3>;
->         reg = <2200 200>;
->         interrupts = <22>;
->         interrupt-parent = < &qeic >;
->         mac-address = [ 00 00 00 00 00 00 ];
->         local-mac-address = [ 00 00 00 00 00 00 ];
->         rx-clock = <19>;
->         tx-clock = <1a>;
->         phy-handle = < &phy3 >;
->         pio-handle = < &pio3 >;
->   };
+>> One way to make this go away would be to build binutils as biarch:
+>>
+>> # configure --target=powerpc-linux --enable-targets=powerpc64-linux ...
 > 
->   > I don't like this...we are overloading "compatible" with
->   > stuff that is not specifying a programming interface.  compatible
->   > is supposed to be specifying a programming interface which
->   > the device complies to.
+> If you configure your toolchain for powerpc64-linux you get a biarch
+> toolchain by default.
 
-If your proposed class property doesn't specify a programming interface,
-then I agree that we shouldn't put that info in compatible.  My point
-was that compatible is the one and only property that a driver should
-look at to find a node with a suitable programming interface.
+Hmm:
 
-But, that begs the question: How will the code use your class property?
-Another post implied that it's for human-readable purposes.  If that's
-all, I'd leave it out, or use a comment instead.
+$ powerpc64-linux-ld -V
+GNU ld (Linux/GNU Binutils) 2.17.50.0.17.20070615
+   Supported emulations:
+    elf64ppc
+    elf32ppclinux
+    elf32ppc
+    elf32ppcsim
 
--Dale
+$ powerpc64-linux-gcc-4.0.4 -v
+Using built-in specs.
+Target: powerpc64-linux
+Configured with: ../configure --prefix=/usr/cc217 
+--exec-prefix=/usr/cc217/powerpc64 --target=powerpc64-linux --disable-shared 
+--disable-werror --disable-nls --disable-threads --disable-werror 
+--disable-libmudflap --with-newlib --with-gnu-as --with-gnu-ld 
+--enable-languages=c
+Thread model: single
+gcc version 4.0.4
+
+g5_defconfig:
+
+$ make ARCH=powerpc HOSTCC=gcc-4.0 CROSS_COMPILE=powerpc64-linux- 
+CROSS32_COMPILE=powerpc64-linux-
+...
+   CC      arch/powerpc/kernel/signal.o
+   LDS     arch/powerpc/kernel/vdso32/vdso32.lds
+   VDSO32A arch/powerpc/kernel/vdso32/sigtramp.o
+   VDSO32A arch/powerpc/kernel/vdso32/gettimeofday.o
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S: Assembler 
+messages:
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:33: Error: 
+syntax error; found `@' but expected `,'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:33: Error: 
+junk at end of line: `@local'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:37: Error: 
+syntax error; found `@' but expected `,'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:37: Error: 
+junk at end of line: `@local'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:95: Error: 
+syntax error; found `@' but expected `,'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:95: Error: 
+junk at end of line: `@local'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:103: Error: 
+syntax error; found `@' but expected `,'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:103: Error: 
+junk at end of line: `@local'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:130: Error: 
+syntax error; found `@' but expected `,'
+/usr/src/xtest/linux-2.6/arch/powerpc/kernel/vdso32/gettimeofday.S:130: Error: 
+junk at end of line: `@local'
+make[3]: *** [arch/powerpc/kernel/vdso32/gettimeofday.o] Error 1
+make[2]: *** [arch/powerpc/kernel/vdso32] Error 2
+make[1]: *** [arch/powerpc/kernel] Error 2
+make: *** [sub-make] Error 2
+
+
+Jan
