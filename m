@@ -2,22 +2,28 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C2BC8DDF9C
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 20:47:46 +1100 (EST)
-Message-ID: <4725AC37.2050903@garzik.org>
-Date: Mon, 29 Oct 2007 05:47:35 -0400
+	by ozlabs.org (Postfix) with ESMTP id 8AA77DDF65
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 20:59:42 +1100 (EST)
+Message-ID: <4725AF08.6030309@garzik.org>
+Date: Mon, 29 Oct 2007 05:59:36 -0400
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: add kexec support
-References: <200710261437.29117.ossthema@de.ibm.com>
-In-Reply-To: <200710261437.29117.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH v4.3] FEC - fast ethernet controller for mpc52xx
+References: <4713BA1C.2050604@pobox.com>
+	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+	<4717B09B.3060800@pobox.com>
+	<20071019112700.GD27403@nd47.coderock.org>
+	<47206209.8080109@pobox.com>
+	<20071025185706.29496.qmail@farnsworth.org>
+	<20071025194114.GH3369@nd47.coderock.org>
+	<20071025202908.GA2102@xyzzy.farnsworth.org>
+	<20071026115909.GI3369@nd47.coderock.org>
+	<20071026141828.GA14900@xyzzy.farnsworth.org>
+	<20071026160749.GA21374@nd47.coderock.org>
+In-Reply-To: <20071026160749.GA21374@nd47.coderock.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,12 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> eHEA resources that are allocated via H_CALLs have a unique identifier each.
-> These identifiers are necessary to free the resources. A reboot notifier
-> is used to free all eHEA resources before the indentifiers get lost, i.e
-> before kexec starts a new kernel.
+Domen Puncer wrote:
+> On 26/10/07 07:18 -0700, Dale Farnsworth wrote:
+>> On Fri, Oct 26, 2007 at 01:59:09PM +0200, Domen Puncer wrote:
+>>> +static irqreturn_t mpc52xx_fec_tx_interrupt(int irq, void *dev_id)
+>>> +{
+>>> +	struct net_device *dev = dev_id;
+>>> +	struct mpc52xx_fec_priv *priv = netdev_priv(dev);
+>>> +
+>>> +	spin_lock(&priv->lock);
+>>> +
+>>> +	while (bcom_buffer_done(priv->tx_dmatsk)) {
+>>> +		struct sk_buff *skb;
+>>> +		struct bcom_fec_bd *bd;
+>>> +		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL,
+>>> +				(struct bcom_bd **)&bd);
+>>> +		/* Here (and in rx routines) would be a good place for
+>>> +		 * dma_unmap_single(), but bcom doesn't return bcom_bd of the
+>>> +		 * finished transfer, and _unmap is empty on this platfrom.
+>>> +		 */
+>> Oops, you forgot to remove the above comment.  :)
 > 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> Argh!
+> 
+> Repost w/o the comment.
+> Sorry for receiving all this almost-spam.
+> 
+> 
+>> Otherwise,
+>> Acked-by: Dale Farnsworth <dale@farnsworth.org>
+>>
+>> Domen, thanks for all your work on this.  It's good to see it finally go in.
+>>
+>> -Dale
+> 
+> --- again, use your scisors here ;-) ---
+> 
+> 
+> Driver for ethernet on mpc5200/mpc5200b SoCs (FEC).
+> 
+> 
+> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> Acked-by: Dale Farnsworth <dale@farnsworth.org>
+> 
+> ---
+>  drivers/net/Kconfig           |   24 
+>  drivers/net/Makefile          |    4 
+>  drivers/net/fec_mpc52xx.c     | 1112 ++++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/fec_mpc52xx.h     |  313 +++++++++++
+>  drivers/net/fec_mpc52xx_phy.c |  198 +++++++
+>  5 files changed, 1651 insertions(+)
 
 applied to #upstream-fixes
+
+it's not strictly a fix, but I did not want to hold this back until 
+2.6.25 either
