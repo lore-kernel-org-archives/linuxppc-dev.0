@@ -1,21 +1,27 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5AAD4DE098
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 02:39:26 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Jan Dittmer <jdittmer@ppp0.net>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
-	<4725F34C.6090904@ppp0.net>
-Date: Mon, 29 Oct 2007 16:39:21 +0100
-In-Reply-To: <4725F34C.6090904@ppp0.net> (Jan Dittmer's message of "Mon\, 29
-	Oct 2007 15\:50\:52 +0100")
-Message-ID: <jelk9mdj6e.fsf@sykes.suse.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 94193DE0C2
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 02:40:25 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so2316519wag
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 08:40:23 -0700 (PDT)
+Message-ID: <fa686aa40710290840w41e2ffeo38b9497ce76e155@mail.gmail.com>
+Date: Mon, 29 Oct 2007 09:40:23 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
+In-Reply-To: <4725EB9E.1030507@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
+	<20071023231333.29359.35252.stgit@hekate.izotz.org>
+	<13403420.post@talk.nabble.com>
+	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
+	<4720BA4B.5090707@semihalf.com>
+	<20071026013343.GD457@localhost.localdomain>
+	<4725EB9E.1030507@semihalf.com>
+Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan Dittmer <jdittmer@ppp0.net> writes:
-
-> $ powerpc64-linux-gcc-4.0.4 -v
-> Using built-in specs.
-> Target: powerpc64-linux
-> Configured with: ../configure --prefix=/usr/cc217
-> --exec-prefix=/usr/cc217/powerpc64 --target=powerpc64-linux
-> --disable-shared --disable-werror --disable-nls --disable-threads
-> --disable-werror --disable-libmudflap --with-newlib --with-gnu-as
-> --with-gnu-ld --enable-languages=c
-> Thread model: single
-> gcc version 4.0.4
+On 10/29/07, Marian Balakowicz <m8@semihalf.com> wrote:
+> David Gibson wrote:
+> > On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
+> >> Grant Likely wrote:
+> >>> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
+> > [snip]
+> >>>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
+> >>>> partition could not be used. "big-fs", because the memory is too small
+> >>>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
+> >>>> flash border. So only the first 9 MiB of the flash could be used in Linux.
+> >>>> The remaining 7 MiB couldn't be accessed.
+> >>> Perhaps it would be better to drop the flash layout from the in-kernel
+> >>> dts files entirely since flash layout can be a fluid thing.
+> >> Well, but that would not be really user friendly, I'd rather stick
+> >> with some default config.
+> >
+> > Strictly speaking the device-tree is not the right place for flash
+> > partitioning information.  We put it there because it's preferable to
+> > having hardcoded per-board flash layouts in the code itself.
+> >
+> > It only really works well, though, when there are strong conventions
+> > (shared with the firmware) about how to partition the flash.
+> >
+> > Where it's really up to the user to determine how they want to lay out
+> > their flash, putting things in the device tree isn't a really good
+> > idea.
 >
-> g5_defconfig:
+> In principle, you are right, we should not be putting a user dependent
+> configuration into .dts files. But on the other hand, bindings have
+> been defined for flash-like devices and their partition layouts and
+> physmap_of device driver is expecting to get this information from the
+> blob. So, it is the place for it. But if we are not to put partition
+> layouts into the default kernel .dts files then we should
+> provide/maintain some examples an that may be a even bigger mess.
 >
-> $ make ARCH=powerpc HOSTCC=gcc-4.0 CROSS_COMPILE=powerpc64-linux- 
-> CROSS32_COMPILE=powerpc64-linux-
+> > Incidentally, it's not required that *all* the flash address space be
+> > in partitions, so it is possible only give partitions for those flash
+> > chunks which the firmware needs to know about.
+>
+> That might be nicer solution but different variants of TQM5200 boards
+> do not share the same subset of partitions (default u-boot partitions
+> at least), so it will not help much.
 
-Your compiler still needs -m32 to generate 32-bit code (or use
---with-cpu=default32 to make that the default).
+It's probably more appropriate to have the flash partition layout in
+the u-boot environment and have u-boot populate the partition
+information in the device tree.
 
-Andreas.
+g.
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
