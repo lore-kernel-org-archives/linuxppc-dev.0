@@ -1,22 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Date: Mon, 29 Oct 2007 07:08:24 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH/RFC] powerpc: Pass PID argument to _tlbie (WAS: Apparent
-	kernel bug with GDB on ppc405)
-Message-ID: <20071029070824.72854629@weaponx.rchland.ibm.com>
-In-Reply-To: <1193470322.18243.63.camel@pasglop>
-References: <20071024194640.GB19691@waste.org>
-	<1193363202.7018.36.camel@pasglop>
-	<fa686aa40710251945l51604c5vdf0b49b03b9a1a57@mail.gmail.com>
-	<1193369005.7018.46.camel@pasglop>
-	<20071026144134.GW19691@waste.org>
-	<1193448653.18243.9.camel@pasglop>
-	<1193470322.18243.63.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linuxppc-embedded@ozlabs.org,
-	Kumar Gala <galak@gate.crashing.org>, Matt Mackall <mpm@selenic.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 41965DDFAD
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 23:19:17 +1100 (EST)
+Date: Mon, 29 Oct 2007 15:17:44 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: [PATCH] ucc_geth: add support for netpoll
+Message-ID: <20071029121744.GA20372@localhost.localdomain>
+References: <20071011124842.GB13963@localhost.localdomain>
+	<4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina>
+	<989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 27 Oct 2007 17:32:02 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-
-> Allright, so Matt, let me know if that fixes your problem with gdb, and
-> I'll clean the patch up a bit and submit it. I want to double check if
-> something similar may be needed for freescale booke.
+On Mon, Oct 29, 2007 at 02:12:07PM +0800, Li Yang-r58472 wrote:
+[...]
+> > > > +#ifdef CONFIG_NET_POLL_CONTROLLER
+> > > > +/*
+> > > > + * Polling 'interrupt' - used by things like netconsole to send 
+> > > > +skbs
+> > > > + * without having to re-enable interrupts. It's not called while
+> > > > + * the interrupt routine is executing.
+> > > > + */
+> > > > +static void ucc_netpoll(struct net_device *dev) {
+> > > > +	struct ucc_geth_private *ugeth = netdev_priv(dev);
+> > > > +
+> > > > +	disable_irq(ugeth->ug_info->uf_info.irq);
+> > > > +	ucc_geth_irq_handler(ugeth->ug_info->uf_info.irq, dev);
+> > > > +	enable_irq(ugeth->ug_info->uf_info.irq);
+> > > 
+> > >     Why not make it less complex (for a reader and gcc too :-) ?
+> > 
+> > Yup, I'm agree here but it's too late. Again. ;-)
+> > 
+> > This patch already accepted into the -mm (a week or so after 
+> > the silence), so.. now I'd rather not bother Andrew with such 
+> > really cosmetic changes. But if Jeff would directly apply 
+> > modfied patch, I'll send it. ;-)
 > 
-> Basically, the problem is that things like get_user_pages() can cause
-> COW operations which in turn call _tlbie() to be called for translations
-> that aren't in the current address space.
-> 
-> The current 40x and 44x implementation of _tlbie doesn't handle that
-> properly as it only invalidates entries in the current PID.
-> 
-> This is an attempt at fixing it. Untested, I just checked it builds for
-> arch/powerpc and arch/ppc. I also haven't looked whether the freescale
-> BookE _tlbie needs similar treatement (it will get passed the pid in r4
-> with that patch, so if it needs to do something with it, it can). Kumar,
-> can you have a look ?
+> Oops.  The original patch happened to hit the Junk mail box. :(
 
-This looks pretty good at first glance.  I'll try to test it out today,
-but I'd still like to hear if it solves Matt's problem as I doubt I'll
-be able to duplicate it.
+That one as well? http://lkml.org/lkml/2007/10/11/128
 
-josh
+> I think
+> the patch is good to merge after the cosmetic change.  I can do it in
+> next pull request to Jeff.
+
+Ok, great. Thanks.
+
+Here it is:
+
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH] ucc_geth: add support for netpoll
+
+This patch adds netpoll support for the QE UCC Gigabit Ethernet
+driver. Tested using netconsole and KGDBoE.
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/ucc_geth.c |   20 ++++++++++++++++++++
+ 1 files changed, 20 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index bec413b..94e78d8 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -3678,6 +3678,23 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+ 	return IRQ_HANDLED;
+ }
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/*
++ * Polling 'interrupt' - used by things like netconsole to send skbs
++ * without having to re-enable interrupts. It's not called while
++ * the interrupt routine is executing.
++ */
++static void ucc_netpoll(struct net_device *dev)
++{
++	struct ucc_geth_private *ugeth = netdev_priv(dev);
++	int irq = ugeth->ug_info->uf_info.irq;
++
++	disable_irq(irq);
++	ucc_geth_irq_handler(irq, dev);
++	enable_irq(irq);
++}
++#endif /* CONFIG_NET_POLL_CONTROLLER */
++
+ /* Called when something needs to use the ethernet device */
+ /* Returns 0 for success. */
+ static int ucc_geth_open(struct net_device *dev)
+@@ -3963,6 +3980,9 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ #ifdef CONFIG_UGETH_NAPI
+ 	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, UCC_GETH_DEV_WEIGHT);
+ #endif				/* CONFIG_UGETH_NAPI */
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = ucc_netpoll;
++#endif
+ 	dev->stop = ucc_geth_close;
+ //    dev->change_mtu = ucc_geth_change_mtu;
+ 	dev->mtu = 1500;
+-- 
+1.5.2.2
