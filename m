@@ -1,26 +1,18 @@
-Return-Path: <olof@lixom.net>
-Date: Sun, 28 Oct 2007 19:16:57 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v2] pcmcia: Remove replace kio_addr_t with unsigned int
-	everywhere
-Message-ID: <20071029001657.GA12709@lixom.net>
-References: <20070914034854.1658a9cf.akpm@linux-foundation.org>
-	<20070921221516.GA7926@lixom.net>
-	<20070921233936.2aeb2504@the-village.bc.nu>
-	<20070922062551.GE10625@parisc-linux.org>
-	<20070922091303.GA12525@lst.de> <20071019201720.GA13234@lixom.net>
-	<20071028134414.GF26943@isilmar.linta.de>
-	<20071028201034.GB9472@lixom.net>
-	<20071028201858.GA10048@lixom.net>
-	<20071029105005.d85e212e.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071029105005.d85e212e.sfr@canb.auug.org.au>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-pcmcia@lists.infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Alan@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>, Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0EAD9DDFAD
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 12:05:28 +1100 (EST)
+Subject: [PATCH] powerpc: Fix demotion of segments to 4K pages
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Mon, 29 Oct 2007 12:05:18 +1100
+Message-Id: <1193619918.9928.0.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 10:50:05AM +1100, Stephen Rothwell wrote:
-> Hi Olof,
-> 
-> diffstat output is very useful - especially for patches like this that
-> touch lots of files.  It makes it easier for potential reviewers to see
-> if they should be potential reviewers.  :-)
+When demoting a process to use 4K HW pages (instead of 64K), which happens
+under various circumstances such as doing cache inhibited mappings on 
+machines that do not support 64K CI pages, the assembly hash code calls
+back into the C function flush_hash_page(). This function prototype was
+recently changed to accomodate for 1T segments but the assembly call site
+was not updated, causing applications that do demotion to hang. In addition,
+when updating the per-CPU PACA for the new sizes, we didn't properly
+update the slice "map", thus causing the SLB miss code to re-insert
+segments for the wrong size.
 
-Hi,
+This fixes both and adds a warning comment next to the C implementation to
+try to avoid it next time someone changes it.
 
-Good point. I'll include it next time if I end up re-posting it. I hope
-I won't have to. :-)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-This is the diffstat from the posted patch:
+Note that the PACA update bug is also present in 2.6.23, I'll do a patch
+for -stable separately, once this one is upstream.
 
- Documentation/pcmcia/driver-changes.txt |    4 +-
- drivers/bluetooth/bt3c_cs.c             |    2 -
- drivers/bluetooth/btuart_cs.c           |    2 -
- drivers/net/pcmcia/3c574_cs.c           |   49 ++++++++++++-------------
- drivers/net/pcmcia/3c589_cs.c           |   30 +++++++--------
- drivers/net/pcmcia/axnet_cs.c           |   26 ++++++-------
- drivers/net/pcmcia/fmvj18x_cs.c         |   23 ++++++-----
- drivers/net/pcmcia/nmclan_cs.c          |   24 ++++++------
- drivers/net/pcmcia/pcnet_cs.c           |   36 +++++++++---------
- drivers/net/pcmcia/smc91c92_cs.c        |   62 ++++++++++++++++----------------
- drivers/net/pcmcia/xirc2ps_cs.c         |   51 +++++++++++++-------------
- drivers/net/wireless/netwave_cs.c       |   24 ++++++------
- drivers/net/wireless/wavelan_cs.c       |   56 ++++++++++++++--------------
- drivers/pcmcia/i82092.c                 |    2 -
- drivers/pcmcia/i82365.c                 |   14 +++----
- drivers/pcmcia/m32r_cfc.c               |    7 ++-
- drivers/pcmcia/m32r_pcc.c               |    5 +-
- drivers/pcmcia/rsrc_nonstatic.c         |    5 +-
- drivers/serial/serial_cs.c              |    6 +--
- include/pcmcia/cs_types.h               |    1 
- include/pcmcia/ss.h                     |    6 +--
- 21 files changed, 220 insertions(+), 215 deletions(-)
-
-
-
--Olof
+Index: linux-work/arch/powerpc/mm/hash_low_64.S
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hash_low_64.S	2007-10-29 10:15:48.000000000 +1100
++++ linux-work/arch/powerpc/mm/hash_low_64.S	2007-10-29 10:22:10.000000000 +1100
+@@ -331,7 +331,7 @@ htab_pte_insert_failure:
+  *****************************************************************************/
+ 
+ /* _hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
+- *		 pte_t *ptep, unsigned long trap, int local)
++ *		 pte_t *ptep, unsigned long trap, int local, int ssize)
+  */
+ 
+ /*
+@@ -557,7 +557,8 @@ htab_inval_old_hpte:
+ 	mr	r4,r31			/* PTE.pte */
+ 	li	r5,0			/* PTE.hidx */
+ 	li	r6,MMU_PAGE_64K		/* psize */
+-	ld	r7,STK_PARM(r8)(r1)	/* local */
++	ld	r7,STK_PARM(r9)(r1)	/* ssize */
++	ld	r8,STK_PARM(r8)(r1)	/* local */
+ 	bl	.flush_hash_page
+ 	b	htab_insert_pte
+ 	
+Index: linux-work/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hash_utils_64.c	2007-10-29 10:21:55.000000000 +1100
++++ linux-work/arch/powerpc/mm/hash_utils_64.c	2007-10-29 11:57:06.000000000 +1100
+@@ -793,8 +793,7 @@ int hash_page(unsigned long ea, unsigned
+ 	}
+ 	if (user_region) {
+ 		if (psize != get_paca()->context.user_psize) {
+-			get_paca()->context.user_psize =
+-				mm->context.user_psize;
++			get_paca()->context = mm->context;
+ 			slb_flush_and_rebolt();
+ 		}
+ 	} else if (get_paca()->vmalloc_sllp !=
+@@ -887,6 +886,9 @@ void hash_preload(struct mm_struct *mm, 
+ 	local_irq_restore(flags);
+ }
+ 
++/* WARNING: This is called from hash_low_64.S, if you change this prototype,
++ *          do not forget to update the assembly call site !
++ */
+ void flush_hash_page(unsigned long va, real_pte_t pte, int psize, int ssize,
+ 		     int local)
+ {
