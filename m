@@ -1,18 +1,22 @@
-Return-Path: <mcgrof@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
-	by ozlabs.org (Postfix) with ESMTP id 0C74CDE194
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 08:26:56 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1641469wxd
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 14:26:55 -0700 (PDT)
-Date: Mon, 29 Oct 2007 17:27:29 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] pegasos_eth.c: Fix compile error over MV643XX_ defines
-Message-ID: <20071029212729.GA4074@pogo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Tzachi Perelstein <tzachi@marvell.com>,
-	Lennert Buytenhek <buytenh@wantstofly.org>, Jeff Garzik <jeff@garzik.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2BB98DE107
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 10:17:25 +1100 (EST)
+Subject: Re: [PATCH] [powerpc] update xmon slb code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20071029205254.GA27544@lixom.net>
+References: <20071029195925.9773.94394.stgit@farscape.rchland.ibm.com>
+	<20071029205254.GA27544@lixom.net>
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 10:17:15 +1100
+Message-Id: <1193699835.9928.45.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	paulus@samba.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,91 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This commit made an incorrect assumption:
---
-Author: Lennert Buytenhek <buytenh@wantstofly.org>
- Date:   Fri Oct 19 04:10:10 2007 +0200
 
-    mv643xx_eth: Move ethernet register definitions into private header
-    
-    Move the mv643xx's ethernet-related register definitions from
-    include/linux/mv643xx.h into drivers/net/mv643xx_eth.h, since
-    they aren't of any use outside the ethernet driver.
-    
-    Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-    Acked-by: Tzachi Perelstein <tzachi@marvell.com>
-    Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
---
+> Nice, I like it! I wonder if it would make sense to (space) pad the
+> ESID/VSID fields so they line up, it'd make output just a little tidier.
+> 
+> (If you end up changing that, please also break the long printf lines
+> in two.)
+> 
+> Beside that it looks good to me! :)
 
-arch/powerpc/platforms/chrp/pegasos_eth.c made use of a 3 defines there.
+Can you also print out the LLP bits ? (I won't ask you to also decode
+the page size though that would be useful :-)
 
-mcgrof@pogo:~/devel/wireless-2.6$ git-describe 
-
-v2.6.24-rc1-138-g0119130
-
-This patch fixes this by internalizing 3 defines onto pegasos which are
-simply no longer available elsewhere. Without this your compile will fail
-whenever you enable 'Common Hardware Reference Platform (CHRP) based machines',
-(CONFIG_PPC_CHRP) as the Makefile for chrp adds it always:
-
-obj-y                           += setup.o time.o pegasos_eth.o pci.o
-
-If these defines are platform specific then they should later just be added 
-back to include/linux/mv643xx.h.
-
-Compile error:
-
-  CC      arch/powerpc/platforms/chrp/pegasos_eth.o
-arch/powerpc/platforms/chrp/pegasos_eth.c: In function 'Enable_SRAM':
-arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: 'MV643XX_ETH_BAR_4' 
-undeclared (first use in this function)
-arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: (Each undeclared 
-identifier is reported only once
-arch/powerpc/platforms/chrp/pegasos_eth.c:150: error: for each function it 
-appears in.)
-arch/powerpc/platforms/chrp/pegasos_eth.c:152: error: 
-'MV643XX_ETH_SIZE_REG_4' undeclared (first use in this function)
-arch/powerpc/platforms/chrp/pegasos_eth.c:154: error: 
-'MV643XX_ETH_BASE_ADDR_ENABLE_REG' undeclared (first use in this function)
-make[2]: *** [arch/powerpc/platforms/chrp/pegasos_eth.o] Error 1
-make[1]: *** [arch/powerpc/platforms/chrp] Error 2
-make: *** [arch/powerpc/platforms] Error 2
-
-Signed-off-by: Luis R. Rodriguez <mcgrof@gmail.com>
----
-
- arch/powerpc/platforms/chrp/pegasos_eth.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
-index 5bcc58d..1fc9e8c 100644
---- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-+++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-@@ -24,6 +24,9 @@
- #define PEGASOS2_SRAM_BASE_ETH0			(PEGASOS2_SRAM_BASE)
- #define PEGASOS2_SRAM_BASE_ETH1			(PEGASOS2_SRAM_BASE_ETH0 + (PEGASOS2_SRAM_SIZE / 2) )
- 
-+#define PEGASOS2_ETH_BAR_4			0x2220
-+#define PEGASOS2_ETH_SIZE_REG_4			0x2224
-+#define PEGASOS2_ETH_BASE_ADDR_ENABLE_REG	0x2290
- 
- #define PEGASOS2_SRAM_RXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
- #define PEGASOS2_SRAM_TXRING_SIZE		(PEGASOS2_SRAM_SIZE/4)
-@@ -147,13 +150,13 @@ static int Enable_SRAM(void)
- 
- 	ALong = 0x02;
- 	ALong |= PEGASOS2_SRAM_BASE & 0xffff0000;
--	MV_WRITE(MV643XX_ETH_BAR_4, ALong);
-+	MV_WRITE(PEGASOS2_ETH_BAR_4, ALong);
- 
--	MV_WRITE(MV643XX_ETH_SIZE_REG_4, (PEGASOS2_SRAM_SIZE-1) & 0xffff0000);
-+	MV_WRITE(PEGASOS2_ETH_SIZE_REG_4, (PEGASOS2_SRAM_SIZE-1) & 0xffff0000);
- 
--	MV_READ(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
-+	MV_READ(PEGASOS2_ETH_BASE_ADDR_ENABLE_REG, ALong);
- 	ALong &= ~(1 << 4);
--	MV_WRITE(MV643XX_ETH_BASE_ADDR_ENABLE_REG, ALong);
-+	MV_WRITE(PEGASOS2_ETH_BASE_ADDR_ENABLE_REG, ALong);
- 
- #ifdef BE_VERBOSE
- 	printk("Pegasos II/Marvell MV64361: register unmapped\n");
+Cheers,
+Ben.
