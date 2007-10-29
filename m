@@ -1,27 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 94193DE0C2
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 02:40:25 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2316519wag
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Oct 2007 08:40:23 -0700 (PDT)
-Message-ID: <fa686aa40710290840w41e2ffeo38b9497ce76e155@mail.gmail.com>
-Date: Mon, 29 Oct 2007 09:40:23 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-In-Reply-To: <4725EB9E.1030507@semihalf.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8E704DE0A6
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 03:11:47 +1100 (EST)
+Date: Mon, 29 Oct 2007 11:11:40 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: RFC:  replace device_type with new "class" property?
+Message-ID: <20071029161140.GA4358@loki.buserror.net>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<4725FA58.4030505@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-	<13403420.post@talk.nabble.com>
-	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
-	<4720BA4B.5090707@semihalf.com>
-	<20071026013343.GD457@localhost.localdomain>
-	<4725EB9E.1030507@semihalf.com>
-Cc: linuxppc-dev@ozlabs.org, Martin Krause <Martin.Krause@tqs.de>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4725FA58.4030505@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,57 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/29/07, Marian Balakowicz <m8@semihalf.com> wrote:
-> David Gibson wrote:
-> > On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
-> >> Grant Likely wrote:
-> >>> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
-> > [snip]
-> >>>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
-> >>>> partition could not be used. "big-fs", because the memory is too small
-> >>>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
-> >>>> flash border. So only the first 9 MiB of the flash could be used in Linux.
-> >>>> The remaining 7 MiB couldn't be accessed.
-> >>> Perhaps it would be better to drop the flash layout from the in-kernel
-> >>> dts files entirely since flash layout can be a fluid thing.
-> >> Well, but that would not be really user friendly, I'd rather stick
-> >> with some default config.
-> >
-> > Strictly speaking the device-tree is not the right place for flash
-> > partitioning information.  We put it there because it's preferable to
-> > having hardcoded per-board flash layouts in the code itself.
-> >
-> > It only really works well, though, when there are strong conventions
-> > (shared with the firmware) about how to partition the flash.
-> >
-> > Where it's really up to the user to determine how they want to lay out
-> > their flash, putting things in the device tree isn't a really good
-> > idea.
->
-> In principle, you are right, we should not be putting a user dependent
-> configuration into .dts files. But on the other hand, bindings have
-> been defined for flash-like devices and their partition layouts and
-> physmap_of device driver is expecting to get this information from the
-> blob. So, it is the place for it. But if we are not to put partition
-> layouts into the default kernel .dts files then we should
-> provide/maintain some examples an that may be a even bigger mess.
->
-> > Incidentally, it's not required that *all* the flash address space be
-> > in partitions, so it is possible only give partitions for those flash
-> > chunks which the firmware needs to know about.
->
-> That might be nicer solution but different variants of TQM5200 boards
-> do not share the same subset of partitions (default u-boot partitions
-> at least), so it will not help much.
+On Mon, Oct 29, 2007 at 03:20:56PM +0000, Matt Sealey wrote:
+> I think device_type, compatible and model properties fulfil
+> this already, they simply aren't being used correctly.
 
-It's probably more appropriate to have the flash partition layout in
-the u-boot environment and have u-boot populate the partition
-information in the device tree.
+device_type has a few drawbacks, though:
 
-g.
+1. You can only specify one type, whereas with a new property we could
+define it as a list (similar to compatible).  It's possible for one node to
+comply with multiple class bindings, such as when there's a binding for
+clients of the type of bus it's on as well as the type of device it is, or
+when there are multiple levels of detail (such as complying with both
+simple-bus and some specific bus binding).
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+2. We want to avoid any confusion with OF bindings and abused device_type
+entries that have been allowed to become existing practice.
+
+3. It's the only standard property (AFAIK) with an underscore in it. :-)
+
+> Remember that, while you may want to make FDTs easier to
+> design, OpenFirmware and the requirement on device interfaces
+> through the client interface still exist and are still
+> implemented (from time to time).
+
+Sure -- and we don't want to risk the code thinking it can call into OF
+based on what we put in a flat device tree, right?
+
+> For readability, the name of the device needn't match device_type;
+> for instance on the 5121E it may be that the 'diu' unit be
+> called diu, but be of device_type 'display'
+
+I don't think that's more readable than setting the name to display.
+Something containing "diu" will be in the compatible list.
+
+> Further differentiation should be done through the 'model'
+> property in my opinion. This is optional in the OpenFirmware
+> spec, but that does not mean it should be important. It is
+> currently defined as something to determine the exact model
+> of a chip in order to enable quirks, bugfixes and suchlike,
+> but most implementations switch on something else entirely
+> (like SVR or a heuristic behaviour).
+> 
+> Selecting the "model" would be no different to, for example,
+> having a list of PCI IDs that will work with a driver.
+
+It's what we currently do with compatible.  Why break it into two
+properties?
+
+The PCI ID thing can be quite a headache, BTW, when you get a new PCI device
+that won't work with the existing driver, for no reason other than that it
+hasn't been updated with the new ID.
+
+> There was a little discussion at bplan once that it would be
+> easier to implement a kind of vendor/device id system much
+> like PCI, USB etc. implements in hardware in order to match
+> hardware. I suppose you could use a "class" property to
+> implement this -
+
+No, you should use compatible for that.
+
+> but for instance in the case of USB or PCI, this is already encoded in the
+> device_type for anything the firmware cannot work out (pci1106,6062 or
+> so).
+
+No, that goes in name/compatible according to the OF PCI binding.
+
+> Perhaps it is a solution though; mark each device with a
+> class property, for instance on the 5200B give it a unique
+> chip ID (fsl5200 or soc5200?)
+
+No.  That's precisely the sort of device_type abuse we want to get away from
+with class.
+
+Personally, I'm fine with just using name and compatible, but others such as
+Stuart have expressed a desire for something to formally indicate compliance
+with a standard binding.  I don't think we should expand the use of
+device_type in any case.
+
+-Scott
