@@ -2,19 +2,19 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E3A08DE373
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:57:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 729CFDE3A7
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:58:14 +1100 (EST)
 Received: from vaxon.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l9UGu6mM022102
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 19:56:06 +0300
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id l9UGupnR022121
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 19:56:51 +0300
 Received: (from vaxon@localhost)
-	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l9UGu6Sn022099
-	for linuxppc-dev@ozlabs.org; Tue, 30 Oct 2007 19:56:06 +0300
-Date: Tue, 30 Oct 2007 19:56:06 +0300
+	by vaxon.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id l9UGuoxd022118
+	for linuxppc-dev@ozlabs.org; Tue, 30 Oct 2007 19:56:50 +0300
+Date: Tue, 30 Oct 2007 19:56:50 +0300
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4] PowerPC: 440GRx Rainier bootwrapper.
-Message-ID: <20071030165606.GA22028@ru.mvista.com>
+Subject: [PATCH 2/4] PowerPC: 440GRx Rainier DTS.
+Message-ID: <20071030165650.GA22107@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071030164511.GA21973@ru.mvista.com>
@@ -27,91 +27,326 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bootwrapper code for PowerPC 440GRx Rainier board.
+PowerPC 440GRx Rainier DTS.
 
 Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 ---
- arch/powerpc/boot/Makefile         |    3 +
- arch/powerpc/boot/cuboot-rainier.c |   56 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 58 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/dts/rainier.dts |  312 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 312 insertions(+)
 
-diff -pruN linux-2.6.orig/arch/powerpc/boot/cuboot-rainier.c linux-2.6/arch/powerpc/boot/cuboot-rainier.c
---- linux-2.6.orig/arch/powerpc/boot/cuboot-rainier.c	1970-01-01 03:00:00.000000000 +0300
-+++ linux-2.6/arch/powerpc/boot/cuboot-rainier.c	2007-10-30 18:00:15.000000000 +0300
-@@ -0,0 +1,56 @@
+diff -pruN linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts linux-2.6/arch/powerpc/boot/dts/rainier.dts
+--- linux-2.6.orig/arch/powerpc/boot/dts/rainier.dts	1970-01-01 03:00:00.000000000 +0300
++++ linux-2.6/arch/powerpc/boot/dts/rainier.dts	2007-10-30 18:00:15.000000000 +0300
+@@ -0,0 +1,312 @@
 +/*
-+ * Old U-boot compatibility for Rainier
++ * Device Tree Source for AMCC Rainier
 + *
-+ * Valentine Barshak <vbarshak@ru.mvista.com>
-+ * Copyright 2007 MontaVista Software, Inc
++ * Based on Sequoia code
++ * Copyright (c) 2007 MontaVista Software, Inc.
 + *
-+ * Based on Ebony code by David Gibson <david@gibson.dropbear.id.au>
-+ * Copyright IBM Corporation, 2007
++ * FIXME: Draft only!
 + *
-+ * Based on Bamboo code by Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ * Copyright IBM Corporation, 2007
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the License
 + */
 +
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+#include "dcr.h"
-+#include "4xx.h"
-+#include "44x.h"
-+#include "cuboot.h"
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "amcc,rainier";
++	compatible = "amcc,rainier";
++	dcr-parent = <&/cpus/PowerPC,440GRx@0>;
 +
-+#define TARGET_4xx
-+#define TARGET_44x
-+#include "ppcboot.h"
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+static bd_t bd;
++		PowerPC,440GRx@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>; /* Filled in by zImage */
++			timebase-frequency = <0>; /* Filled in by zImage */
++			i-cache-line-size = <20>;
++			d-cache-line-size = <20>;
++			i-cache-size = <8000>;
++			d-cache-size = <8000>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
 +
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; /* Filled in by zImage */
++	};
 +
-+static void rainier_fixups(void)
-+{
-+	unsigned long sysclk = 33333333;
++	UIC0: interrupt-controller0 {
++		compatible = "ibm,uic-440grx","ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++	};
 +
-+	ibm440ep_fixup_clocks(sysclk, 11059200);
-+	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-+	ibm4xx_denali_fixup_memsize();
-+	dt_fixup_mac_addresses(&bd.bi_enetaddr, &bd.bi_enet1addr);
-+}
++	UIC1: interrupt-controller1 {
++		compatible = "ibm,uic-440grx","ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
 +
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+                   unsigned long r6, unsigned long r7)
-+{
-+	CUBOOT_INIT();
-+	platform_ops.fixups = rainier_fixups;
-+	platform_ops.exit = ibm44x_dbcr_reset;
-+	ft_init(_dtb_start, 0, 32);
-+	serial_console_init();
-+}
-diff -pruN linux-2.6.orig/arch/powerpc/boot/Makefile linux-2.6/arch/powerpc/boot/Makefile
---- linux-2.6.orig/arch/powerpc/boot/Makefile	2007-10-30 17:44:27.000000000 +0300
-+++ linux-2.6/arch/powerpc/boot/Makefile	2007-10-30 18:00:15.000000000 +0300
-@@ -56,7 +56,7 @@ src-plat := of.c cuboot-52xx.c cuboot-83
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
--		fixed-head.S ep88xc.c cuboot-hpc2.c
-+		fixed-head.S ep88xc.c cuboot-hpc2.c cuboot-rainier.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -158,6 +158,7 @@ image-$(CONFIG_MPC7448HPC2)		+= cuImage.
- image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
- image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
- image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
-+image-$(CONFIG_RAINIER)			+= cuImage.rainier
- image-$(CONFIG_WALNUT)			+= treeImage.walnut
- endif
- 
++	UIC2: interrupt-controller2 {
++		compatible = "ibm,uic-440grx","ibm,uic";
++		interrupt-controller;
++		cell-index = <2>;
++		dcr-reg = <0e0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1c 4 1d 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	SDR0: sdr {
++		compatible = "ibm,sdr-440grx", "ibm,sdr-440ep";
++		dcr-reg = <00e 002>;
++	};
++
++	CPR0: cpr {
++		compatible = "ibm,cpr-440grx", "ibm,cpr-440ep";
++		dcr-reg = <00c 002>;
++	};
++
++	plb {
++		compatible = "ibm,plb-440grx", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; /* Filled in by zImage */
++		
++		SDRAM0: sdram {
++			device_type = "memory-controller";
++			compatible = "ibm,sdram-440grx", "ibm,sdram-44x-ddr2denali";
++			dcr-reg = <010 2>;
++		};
++
++		DMA0: dma {
++			compatible = "ibm,dma-440grx", "ibm,dma-4xx";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			compatible = "ibm,mcmal-440grx", "ibm,mcmal2";
++			dcr-reg = <180 62>;
++			num-tx-chans = <2>;
++			num-rx-chans = <2>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					/*RXEOB*/ 1 &UIC0 b 4
++					/*SERR*/  2 &UIC1 0 4
++					/*TXDE*/  3 &UIC1 1 4
++					/*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb {
++		  	compatible = "ibm,opb-440grx", "ibm,opb";
++			#address-cells = <1>;
++			#size-cells = <1>;
++		  	ranges = <00000000 1 00000000 80000000
++			          80000000 1 80000000 80000000>;
++		  	interrupt-parent = <&UIC1>;
++		  	interrupts = <7 4>;
++		  	clock-frequency = <0>; /* Filled in by zImage */
++
++			EBC0: ebc {
++				compatible = "ibm,ebc-440grx", "ibm,ebc";
++				dcr-reg = <012 2>;
++				#address-cells = <2>;
++				#size-cells = <1>;
++				clock-frequency = <0>; /* Filled in by zImage */
++				interrupts = <5 1>;
++				interrupt-parent = <&UIC1>;
++
++				nor_flash@0,0 {
++					compatible = "amd,s29gl256n", "cfi-flash";
++					bank-width = <2>;
++					reg = <0 000000 4000000>;
++					#address-cells = <1>;
++					#size-cells = <1>;
++					partition@0 {
++						label = "Kernel";
++						reg = <0 180000>;
++					};
++					partition@180000 {
++						label = "ramdisk";
++						reg = <180000 200000>;
++					};
++					partition@380000 {
++						label = "file system";
++						reg = <380000 3aa0000>;
++					};
++					partition@3e20000 {
++						label = "kozio";
++						reg = <3e20000 140000>;
++					};
++					partition@3f60000 {
++						label = "env";
++						reg = <3f60000 40000>;
++					};
++					partition@3fa0000 {
++						label = "u-boot";
++						reg = <3fa0000 60000>;
++					};
++				};
++
++			};
++
++			UART0: serial@ef600300 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600300 8>;
++		   		virtual-reg = <ef600300>;
++		   		clock-frequency = <0>; /* Filled in by zImage */
++		   		current-speed = <1c200>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <0 4>;
++	   		};
++
++			UART1: serial@ef600400 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600400 8>;
++		   		virtual-reg = <ef600400>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC0>;
++		   		interrupts = <1 4>;
++	   		};
++
++			UART2: serial@ef600500 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600500 8>;
++		   		virtual-reg = <ef600500>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC1>;
++		   		interrupts = <3 4>;
++	   		};
++
++			UART3: serial@ef600600 {
++		   		device_type = "serial";
++		   		compatible = "ns16550";
++		   		reg = <ef600600 8>;
++		   		virtual-reg = <ef600600>;
++		   		clock-frequency = <0>;
++		   		current-speed = <0>;
++		   		interrupt-parent = <&UIC1>;
++		   		interrupts = <4 4>;
++	   		};
++
++			IIC0: i2c@ef600700 {
++				device_type = "i2c";
++				compatible = "ibm,iic-440grx", "ibm,iic";
++				reg = <ef600700 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++
++			IIC1: i2c@ef600800 {
++				device_type = "i2c";
++				compatible = "ibm,iic-440grx", "ibm,iic";
++				reg = <ef600800 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <7 4>;
++			};
++
++			ZMII0: emac-zmii@ef600d00 {
++				device_type = "zmii-interface";
++				compatible = "ibm,zmii-440grx", "ibm,zmii";
++				reg = <ef600d00 c>;
++			};
++
++			RGMII0: emac-rgmii@ef601000 {
++				device_type = "rgmii-interface";
++				compatible = "ibm,rgmii-440grx", "ibm,rgmii";
++				reg = <ef601000 8>;
++			};
++
++			EMAC0: ethernet@ef600e00 {
++				linux,network-index = <0>;
++				device_type = "network";
++				compatible = "ibm,emac-440grx", "ibm,emac-440epx", "ibm,emac4";
++				interrupt-parent = <&EMAC0>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC0 18 4
++						/*Wake*/  1 &UIC1 1d 4>;
++				reg = <ef600e00 70>;
++				local-mac-address = [000000000000];
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <0>;
++			};
++
++			EMAC1: ethernet@ef600f00 {
++				linux,network-index = <1>;
++				device_type = "network";
++				compatible = "ibm,emac-440grx", "ibm,emac-440epx", "ibm,emac4";
++				interrupt-parent = <&EMAC1>;
++				interrupts = <0 1>;
++				#interrupt-cells = <1>;
++				#address-cells = <0>;
++				#size-cells = <0>;
++				interrupt-map = </*Status*/ 0 &UIC0 19 4
++						/*Wake*/  1 &UIC1 1f 4>;
++				reg = <ef600f00 70>;
++				local-mac-address = [000000000000];
++				mal-device = <&MAL0>;
++				mal-tx-channel = <1>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rgmii";
++				phy-map = <00000000>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++				rgmii-device = <&RGMII0>;
++				rgmii-channel = <1>;
++			};
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb/serial@ef600300";
++		bootargs = "console=ttyS0,115200";
++	};
++};
