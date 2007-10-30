@@ -1,24 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4E10BDE202
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 20:20:21 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Jan Dittmer <jdi@l4x.org>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
-	<4725F34C.6090904@ppp0.net> <jelk9mdj6e.fsf@sykes.suse.de>
-	<47263830.2010009@l4x.org> <jebqahei70.fsf@sykes.suse.de>
-	<47265586.1050701@l4x.org> <je640pebqn.fsf@sykes.suse.de>
-	<4726DD82.8050200@l4x.org>
-Date: Tue, 30 Oct 2007 10:20:15 +0100
-In-Reply-To: <4726DD82.8050200@l4x.org> (Jan Dittmer's message of "Tue\, 30 Oct
-	2007 08\:30\:10 +0100")
-Message-ID: <jey7dlez74.fsf@sykes.suse.de>
+Return-Path: <sven@powerlinux.fr>
+Received: from archon.plz.fr (archon.plz.fr [194.50.78.210])
+	by ozlabs.org (Postfix) with ESMTP id D3CFEDE1F2
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 20:36:09 +1100 (EST)
+Date: Tue, 30 Oct 2007 10:36:06 +0100
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [PATCH] pegasos_eth.c: Fix compile error over MV643XX_ defines
+Message-ID: <20071030093606.GA20920@powerlinux.fr>
+References: <20071029212729.GA4074@pogo>
+	<20071029223900.GA7097@xyzzy.farnsworth.org>
+	<43e72e890710300044o60bfc46cv8815226e39634996@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43e72e890710300044o60bfc46cv8815226e39634996@mail.gmail.com>
+From: Sven Luther <sven@powerlinux.fr>
+Cc: Tzachi Perelstein <tzachi@marvell.com>, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,21 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan Dittmer <jdi@l4x.org> writes:
+On Tue, Oct 30, 2007 at 03:44:59AM -0400, Luis R. Rodriguez wrote:
+> On 10/29/07, Dale Farnsworth <dale@farnsworth.org> wrote:
+> > On Mon, Oct 29, 2007 at 05:27:29PM -0400, Luis R. Rodriguez wrote:
+> > > This commit made an incorrect assumption:
+> > > --
+> > > Author: Lennert Buytenhek <buytenh@wantstofly.org>
+> > >  Date:   Fri Oct 19 04:10:10 2007 +0200
+> > >
+> > >     mv643xx_eth: Move ethernet register definitions into private header
+> > >
+> > >     Move the mv643xx's ethernet-related register definitions from
+> > >     include/linux/mv643xx.h into drivers/net/mv643xx_eth.h, since
+> > >     they aren't of any use outside the ethernet driver.
+> > >
+> > >     Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+> > >     Acked-by: Tzachi Perelstein <tzachi@marvell.com>
+> > >     Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > > --
+> > >
+> > > arch/powerpc/platforms/chrp/pegasos_eth.c made use of a 3 defines there.
+> > >
+> > > mcgrof@pogo:~/devel/wireless-2.6$ git-describe
+> > >
+> > > v2.6.24-rc1-138-g0119130
+> > >
+> > > This patch fixes this by internalizing 3 defines onto pegasos which are
+> > > simply no longer available elsewhere. Without this your compile will fail
+> >
+> > That compile failure was fixed in commit
+> > 30e69bf4cce16d4c2dcfd629a60fcd8e1aba9fee by Al Viro.
+> >
+> > However, as I examine that commit, I see that it defines offsets from
+> > the eth block in the chip, rather than the full chip registeri block
+> > as the Pegasos 2 code expects.  So, I think it fixes the compile
+> > failure, but leaves the Pegasos 2 broken.
+> >
+> > Luis, do you have Pegasos 2 hardware?  Can you (or anyone) verify that
+> > the following patch is needed for the Pegasos 2?
+> 
+> Nope, sorry.
 
-> Your mail from 2007-10-29 4:39 pm (CET)
->
->>> Your compiler still needs -m32 to generate 32-bit code (or use
->>> --with-cpu=default32 to make that the default).
->
-> See the 'still' ?
+I am busy right now, but have various pegasos machines available for
+testing. What exactly should i test ? 
 
-How would the compiler know whether to generate 64bit or 32bit code??
+Friendly,
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Sven Luther
