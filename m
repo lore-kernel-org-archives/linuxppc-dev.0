@@ -1,28 +1,24 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2D629DE1CE
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 20:14:38 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l9U9DtLn014192
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 02:14:26 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l9U9Dovk006218
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 04:13:54 -0500 (CDT)
-From: Zhang Wei <wei.zhang@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH 2/2 v2] Add DMA engine and SOC device support to mpc8641hpcn
-	board
-Date: Tue, 30 Oct 2007 17:23:49 +0800
-Message-Id: <119373623181-git-send-email-wei.zhang@freescale.com>
-In-Reply-To: <11937362292747-git-send-email-wei.zhang@freescale.com>
-References: <11937362292747-git-send-email-wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4E10BDE202
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 20:20:21 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Jan Dittmer <jdi@l4x.org>
+Subject: Re: boot/wrap assumes a biarch toolchain?
+References: <20071029140719.GA17120@kryten> <jesl3udm0e.fsf@sykes.suse.de>
+	<4725F34C.6090904@ppp0.net> <jelk9mdj6e.fsf@sykes.suse.de>
+	<47263830.2010009@l4x.org> <jebqahei70.fsf@sykes.suse.de>
+	<47265586.1050701@l4x.org> <je640pebqn.fsf@sykes.suse.de>
+	<4726DD82.8050200@l4x.org>
+Date: Tue, 30 Oct 2007 10:20:15 +0100
+In-Reply-To: <4726DD82.8050200@l4x.org> (Jan Dittmer's message of "Tue\, 30 Oct
+	2007 08\:30\:10 +0100")
+Message-ID: <jey7dlez74.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,87 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add DMA engine and SOC device support to mpc8641hpcn board
+Jan Dittmer <jdi@l4x.org> writes:
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Signed-off-by: Ebony Zhu <ebony.zhu@freescale.com>
----
- arch/powerpc/boot/dts/mpc8641_hpcn.dts     |   32 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   16 ++++++++++++++
- 2 files changed, 48 insertions(+), 0 deletions(-)
+> Your mail from 2007-10-29 4:39 pm (CET)
+>
+>>> Your compiler still needs -m32 to generate 32-bit code (or use
+>>> --with-cpu=default32 to make that the default).
+>
+> See the 'still' ?
 
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 3677659..ad6c528 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -380,5 +380,37 @@
- 				  01000000 0 00000000
- 				  0 00100000>;
- 		};
-+
-+		dma@21000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,mpc8540-dma";
-+			reg = <21300 4>;
-+			ranges = <0 21100 200>;
-+			dma-channel@0 {
-+				compatible = "fsl,mpc8540-dma-channel";
-+				reg = <0 80>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <14 2>;
-+			};
-+			dma-channel@80 {
-+				compatible = "fsl,mpc8540-dma-channel";
-+				reg = <80 80>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <15 2>;
-+			};
-+			dma-channel@100 {
-+				compatible = "fsl,mpc8540-dma-channel";
-+				reg = <100 80>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <16 2>;
-+			};
-+			dma-channel@180 {
-+				compatible = "fsl,mpc8540-dma-channel";
-+				reg = <180 80>;
-+				interrupt-parent = <&mpic>;
-+				interrupts = <17 2>;
-+			};
-+		};
- 	};
- };
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 32a531a..92dcc22 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -18,6 +18,7 @@
- #include <linux/kdev_t.h>
- #include <linux/delay.h>
- #include <linux/seq_file.h>
-+#include <linux/of_platform.h>
- 
- #include <asm/system.h>
- #include <asm/time.h>
-@@ -227,3 +228,18 @@ define_machine(mpc86xx_hpcn) {
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
- #endif
- };
-+
-+static struct of_device_id mpc86xx_of_ids[] = {
-+	{ .type = "soc", },
-+	{},
-+};
-+
-+static __init int mpc86xx_of_device_init(void)
-+{
-+	if (!machine_is(mpc86xx_hpcn))
-+		return 0;
-+
-+	return of_platform_bus_probe(NULL, mpc86xx_of_ids, NULL);
-+}
-+
-+device_initcall(mpc86xx_of_device_init);
+How would the compiler know whether to generate 64bit or 32bit code??
+
+Andreas.
+
 -- 
-1.5.2
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
