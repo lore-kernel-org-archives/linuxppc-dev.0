@@ -1,22 +1,38 @@
-Return-Path: <mcgrof@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 326F3DE1BF
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 18:45:00 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so3824733pyi
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 00:44:59 -0700 (PDT)
-Message-ID: <43e72e890710300044o60bfc46cv8815226e39634996@mail.gmail.com>
-Date: Tue, 30 Oct 2007 03:44:59 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Subject: Re: [PATCH] pegasos_eth.c: Fix compile error over MV643XX_ defines
-In-Reply-To: <20071029223900.GA7097@xyzzy.farnsworth.org>
+Return-Path: <RAISCH@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 92C53DE15C
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 19:39:58 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l9U8dqRm110246
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 08:39:52 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id l9U8dqjh1089638
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 09:39:52 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l9U8dpaw003877
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 09:39:52 +0100
+In-Reply-To: <1193610737.9637.1.camel@concordia>
+References: <200710261437.29117.ossthema@de.ibm.com>
+	<1193610737.9637.1.camel@concordia>
+Subject: Re: [PATCH] ehea: add kexec support
+To: michael@ellerman.id.au
+Message-ID: <OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Tue, 30 Oct 2007 09:39:49 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <20071029212729.GA4074@pogo>
-	<20071029223900.GA7097@xyzzy.farnsworth.org>
-Cc: netdev@vger.kernel.org, Tzachi Perelstein <tzachi@marvell.com>,
-	Lennert Buytenhek <buytenh@wantstofly.org>,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +42,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/29/07, Dale Farnsworth <dale@farnsworth.org> wrote:
-> On Mon, Oct 29, 2007 at 05:27:29PM -0400, Luis R. Rodriguez wrote:
-> > This commit made an incorrect assumption:
-> > --
-> > Author: Lennert Buytenhek <buytenh@wantstofly.org>
-> >  Date:   Fri Oct 19 04:10:10 2007 +0200
-> >
-> >     mv643xx_eth: Move ethernet register definitions into private header
-> >
-> >     Move the mv643xx's ethernet-related register definitions from
-> >     include/linux/mv643xx.h into drivers/net/mv643xx_eth.h, since
-> >     they aren't of any use outside the ethernet driver.
-> >
-> >     Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-> >     Acked-by: Tzachi Perelstein <tzachi@marvell.com>
-> >     Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> > --
-> >
-> > arch/powerpc/platforms/chrp/pegasos_eth.c made use of a 3 defines there.
-> >
-> > mcgrof@pogo:~/devel/wireless-2.6$ git-describe
-> >
-> > v2.6.24-rc1-138-g0119130
-> >
-> > This patch fixes this by internalizing 3 defines onto pegasos which are
-> > simply no longer available elsewhere. Without this your compile will fail
->
-> That compile failure was fixed in commit
-> 30e69bf4cce16d4c2dcfd629a60fcd8e1aba9fee by Al Viro.
->
-> However, as I examine that commit, I see that it defines offsets from
-> the eth block in the chip, rather than the full chip registeri block
-> as the Pegasos 2 code expects.  So, I think it fixes the compile
-> failure, but leaves the Pegasos 2 broken.
->
-> Luis, do you have Pegasos 2 hardware?  Can you (or anyone) verify that
-> the following patch is needed for the Pegasos 2?
 
-Nope, sorry.
 
-  Luis
+Michael Ellerman <michael@ellerman.id.au> wrote on 28.10.2007 23:32:17:
+>
+>
+> How do you plan to support kdump?
+>
+
+When kexec is fully supported kdump should work out of the box
+as for any other ethernet card (if you load the right eth driver).
+There's nothing specific to kdump you have to handle in
+ethernet device drivers.
+Hope I didn't miss anything here...
+
+Gruss / Regards
+Christoph R
