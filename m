@@ -1,14 +1,16 @@
 Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 44015DE20D
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:24:03 +1100 (EST)
-Message-ID: <47279CF0.4050600@harris.com>
-Date: Tue, 30 Oct 2007 17:06:56 -0400
+Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
+	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 61FDADE21D
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:41:30 +1100 (EST)
+Message-ID: <4727A507.10309@harris.com>
+Date: Tue, 30 Oct 2007 17:41:27 -0400
 From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: PPC405GP Walnut irq patch
-Content-Type: multipart/mixed; boundary="------------070408000205090000060500"
+Subject: Re: PPC405GP Walnut irq patch
+References: <47279CF0.4050600@harris.com>
+In-Reply-To: <47279CF0.4050600@harris.com>
+Content-Type: multipart/mixed; boundary="------------070109030000010107010708"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +21,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------070408000205090000060500
+--------------070109030000010107010708
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Hi - I have found a bug in the ARCH=powerpc Walnut BSP.  The order of 
-the ethernet interrupts in the walnut.dts file doesn't match the 
-documentation.  I discovered this when porting the BSP to a custom board 
-- the ethernet would not work.  The attached patch corrects that.
-
-This is the first patch I am submitting, so please advise me if there is 
-anything I should do differently.
+I realized that I should have done this from the root level.  So here is 
+the corrected patch.
 
 Signed-off-by: Steve Falco <sfalco at harris.com>
 
 
+Steven A. Falco wrote:
+> Hi - I have found a bug in the ARCH=powerpc Walnut BSP.  The order of 
+> the ethernet interrupts in the walnut.dts file doesn't match the 
+> documentation.  I discovered this when porting the BSP to a custom 
+> board - the ethernet would not work.  The attached patch corrects that.
+>
+> This is the first patch I am submitting, so please advise me if there 
+> is anything I should do differently.
+>
+> Signed-off-by: Steve Falco <sfalco at harris.com>
+>
+>
 
---------------070408000205090000060500
+--------------070109030000010107010708
 Content-Type: text/x-patch;
  name="irq.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline;
  filename="irq.patch"
 
---- walnut.dts.orig	2007-10-30 15:27:49.000000000 -0400
-+++ walnut.dts	2007-10-30 15:29:40.000000000 -0400
+diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
+index 27bef06..dd65115 100644
+--- a/arch/powerpc/boot/dts/walnut.dts
++++ b/arch/powerpc/boot/dts/walnut.dts
 @@ -67,7 +67,7 @@
  			num-tx-chans = <2>;
  			num-rx-chans = <1>;
@@ -63,4 +74,4 @@ Content-Disposition: inline;
  				mal-device = <&MAL>;
  				mal-tx-channel = <0 1>;
 
---------------070408000205090000060500--
+--------------070109030000010107010708--
