@@ -1,35 +1,29 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <fubar@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1F7BDDEF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:06:38 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l9UJ6XWT021076
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:06:33 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9UJ6XuE008379
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:06:33 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: RFC:  replace device_type with new "class" property?
-Date: Tue, 30 Oct 2007 12:06:33 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2872@az33exm25.fsl.freescale.net>
-In-Reply-To: <20071030163343.GA4517@loki.buserror.net>
-References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
-	<20071029212213.GA28073@lixom.net>
-	<20071030005146.GF29263@localhost.localdomain>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3035F278B@az33exm25.fsl.freescale.net>
-	<20071030163343.GA4517@loki.buserror.net>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Wood Scott-B07421" <scottwood@freescale.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	David Gibson <david@gibson.dropbear.id.au>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9ECB5DE2D7
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:07:18 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UJ7FIJ005519
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:07:15 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9UJ77hS104358
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:07:07 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9UJ76xF012254
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:07:07 -0600
+To: "Demke Torsten-atd012" <torsten.demke@motorola.com>
+Subject: Re: Gianfar skb panic when bonding a VLAN interface 
+In-reply-to: <67194FEE6056B947B4EF756C9E497A2E01DB237A@zuk35exm60.ds.mot.com> 
+References: <67194FEE6056B947B4EF756C9E497A2E01DB237A@zuk35exm60.ds.mot.com>
+Date: Tue, 30 Oct 2007 12:07:04 -0700
+Message-ID: <28345.1193771224@death>
+From: Jay Vosburgh <fubar@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,44 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Demke Torsten-atd012 <torsten.demke@motorola.com> wrote:
 
-> -----Original Message-----
-> From: Wood Scott-B07421=20
-> Sent: Tuesday, October 30, 2007 11:34 AM
-> To: Yoder Stuart-B08248
-> Cc: David Gibson; Olof Johansson; linuxppc-dev@ozlabs.org
-> Subject: Re: RFC: replace device_type with new "class" property?
->=20
-> On Tue, Oct 30, 2007 at 09:23:14AM -0700, Yoder Stuart-B08248 wrote:
-> >   mpic: pic@40000 {
-> >      clock-frequency =3D <0>;
-> >      interrupt-controller;
-> >      #address-cells =3D <0>;
-> >      #interrupt-cells =3D <2>;
-> >      reg =3D <40000 40000>;
-> >      compatible =3D "fsl,xyz";
-> >      big-endian;
-> > }
-> >=20
-> > Note-- I removed the device_type property and changed
-> > compatible somewhat.  How are you going to find where
-> > the meaning interrupt controller's interrupt cells are
-> > defined?   What spec will you look at?
->=20
-> The binding for fsl,xyz.
+>I tried to ping over a bonded VLAN tagged interface.
+>(e.g  -> ifenslave bond0 eth3.24)
+[...]
+>It seems that the skb headroom is to small. How can I solve this?
+>I could insert skb_realloc_headroom() call, but where it's the best
+>place then?
+>What about alignement?
 
-Not every string listed in compatible has a spec=20
-backing it (or should be required to).  You would
-have to go look at the source code and cross your
-fingers that the comments were sufficient.
+	What kernel are you using?  There was a fix applied to the
+bonding driver about a year ago to resolve this problem with gianfar:
 
-Another good reason for device_type-- it helps=20
-distinguish between two similar classes of devices.
-Both "open-pic" and "isa-pic" look very similar but
-have different encodings of their interrupt cells.
-Without a device_type it may be difficult or impossible
-to distinguish them unless the "name" and
-"compatible" are luckily clear enough.
+commit 54ef313714070b397d3857289f0fd099b7643631
+Author: Jay Vosburgh <fubar@us.ibm.com>
+Date:   Fri Sep 22 21:53:39 2006 -0700
 
-Stuart
+    [PATCH] bonding: Handle large hard_header_len
+    
+    The bonding driver fails to adjust its hard_header_len when enslaving
+    interfaces.  Whenever an interface with a hard_header_len greater than the
+    ETH_HLEN default is enslaved, the potential for an oops exists, and if the
+    oops happens while responding to an arp request, for example, the system
+    panics.  GIANFAR devices may use an extended hard_header for VLAN or
+    hardware checksumming.  Enslaving such a device and then transmitting over
+    it causes a kernel panic.
+    
+    Patch modified from submitter's original, but submitter agreed with this
+    patch in private email.
+    
+    Signed-off-by: Mark Huth <mhuth@mvista.com>
+    Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+	-J
+
+---
+	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
