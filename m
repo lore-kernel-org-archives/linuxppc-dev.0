@@ -1,11 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 30 Oct 2007 13:22:12 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Correctly handle versions > 17
-Message-ID: <20071030022212.GB30041@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5D6D2DE135
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:20:53 +1100 (EST)
+In-Reply-To: <20071029224624.68205DE157@ozlabs.org>
+References: <20071029224624.68205DE157@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <94E7B69E-5ED0-4805-AD31-DB98119A3DC7@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix 4xx flush_tlb_page()
+Date: Mon, 29 Oct 2007 22:22:01 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,42 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If future dtb version > 17 are defined, that are still backwards
-compatible with v16, libfdt will of course be able to read and
-understand them.  However, when modifying such a tree, it can't
-guarantee that it won't clobber additional structure from the new
-version which it doesn't know about.  Therefore, before making
-modifications to a tree of version >17, we must change it's version to
-be exactly 17.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Oct 29, 2007, at 5:46 PM, Benjamin Herrenschmidt wrote:
 
-Index: dtc/libfdt/fdt_rw.c
-===================================================================
---- dtc.orig/libfdt/fdt_rw.c	2007-10-29 16:09:23.000000000 +1100
-+++ dtc/libfdt/fdt_rw.c	2007-10-29 16:34:37.000000000 +1100
-@@ -61,7 +61,7 @@ static int rw_check_header(void *fdt)
- 
- 	if ((err = fdt_check_header(fdt)))
- 		return err;
--	if (fdt_version(fdt) < 0x11)
-+	if (fdt_version(fdt) < 17)
- 		return -FDT_ERR_BADVERSION;
- 	if (fdt_off_mem_rsvmap(fdt) < ALIGN(sizeof(struct fdt_header), 8))
- 		return -FDT_ERR_BADLAYOUT;
-@@ -74,6 +74,9 @@ static int rw_check_header(void *fdt)
- 	if (fdt_totalsize(fdt) <
- 	    (fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt)))
- 		return -FDT_ERR_BADLAYOUT;
-+	if (fdt_version(fdt) > 17)
-+		fdt_set_version(fdt, 17);
-+
- 	return 0;
- }
- 
+> On 4xx CPUs, the current implementation of flush_tlb_page() uses
+> a low level _tlbie() assembly function that only works for the
+> current PID. Thus, invalidations caused by, for example, a COW
+> fault triggered by get_user_pages() from a different context will
+> not work properly, causing among other things, gdb breakpoints
+> to fail.
+>
+> This patch adds a "pid" argument to _tlbie() on 4xx processors,
+> and uses it to flush entries in the right context. FSL BookE
+> also gets the argument but it seems they don't need it (their
+> tlbivax form ignores the PID when invalidating according to the
+> document I have).
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>
+>  arch/powerpc/kernel/misc_32.S    |   23 ++++++++++++++++-------
+>  arch/powerpc/mm/fault.c          |    2 +-
+>  arch/powerpc/mm/mmu_decl.h       |    4 ++--
+>  arch/ppc/kernel/misc.S           |   22 +++++++++++++++-------
+>  arch/ppc/mm/fault.c              |    2 +-
+>  arch/ppc/mm/mmu_decl.h           |    4 ++--
+>  arch/ppc/platforms/4xx/ebony.c   |    2 +-
+>  arch/ppc/platforms/4xx/ocotea.c  |    2 +-
+>  arch/ppc/platforms/4xx/taishan.c |    2 +-
+>  include/asm-powerpc/tlbflush.h   |   12 ++++++------
+>  10 files changed, 46 insertions(+), 29 deletions(-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Acked-by: Kumar Gala <galak@kernel.crashing.org>
+
+- k
