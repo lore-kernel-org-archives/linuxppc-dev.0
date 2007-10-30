@@ -1,24 +1,33 @@
-Return-Path: <jdi@l4x.org>
-Received: from rzcomm22.rz.tu-bs.de (rzcomm22.rz.tu-bs.de [134.169.9.68])
+Return-Path: <stuart.yoder@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A4BBDE36A
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:18:33 +1100 (EST)
-Message-ID: <47275954.2000000@l4x.org>
-Date: Tue, 30 Oct 2007 17:18:28 +0100
-From: Jan Dittmer <jdi@l4x.org>
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2536ADE338
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:23:26 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l9UGNE5J002560
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 09:23:15 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9UGNDnj014394
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 11:23:14 -0500 (CDT)
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten>
-	<jesl3udm0e.fsf@sykes.suse.de>	<4725F34C.6090904@ppp0.net>
-	<jelk9mdj6e.fsf@sykes.suse.de>	<47263830.2010009@l4x.org>
-	<jebqahei70.fsf@sykes.suse.de>	<47265586.1050701@l4x.org>
-	<je640pebqn.fsf@sykes.suse.de>	<4726DD82.8050200@l4x.org>
-	<jey7dlez74.fsf@sykes.suse.de>
-In-Reply-To: <jey7dlez74.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Tue, 30 Oct 2007 09:23:14 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F278B@az33exm25.fsl.freescale.net>
+In-Reply-To: <20071030005146.GF29263@localhost.localdomain>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<20071029212213.GA28073@lixom.net>
+	<20071030005146.GF29263@localhost.localdomain>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>,
+	"Olof Johansson" <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Jan Dittmer <jdi@l4x.org> writes:
-> 
->> Your mail from 2007-10-29 4:39 pm (CET)
->>
->>>> Your compiler still needs -m32 to generate 32-bit code (or use
->>>> --with-cpu=default32 to make that the default).
->> See the 'still' ?
-> 
-> How would the compiler know whether to generate 64bit or 32bit code??
 
-... and it works again with .24-rc1-git6. So whatever the problem
-was. Consider it resolved.
+> Explicitly specifying what device class bindings / conventions the
+> node complies with is cute, but not actually all that useful in
+> practice.  If it looks like a "duck" class device node, and it
+> quacks^Whas the properties of a "duck" class device node, it's "duck"
+> class compliant.
 
-Jan
+Don't know how cute it is, but I think it is practically=20
+helpful.   Take another example:
+
+Say you-- a human reader-- see this in a device
+tree:
+
+...
+interrupts =3D <b 8>;
+interrupt-parent =3D < &mpic >;
+...
+
+What does the 'b' and '8' mean?  You look
+at the interrupt controller node--
+
+  mpic: pic@40000 {
+     clock-frequency =3D <0>;
+     interrupt-controller;
+     #address-cells =3D <0>;
+     #interrupt-cells =3D <2>;
+     reg =3D <40000 40000>;
+     compatible =3D "fsl,xyz";
+     big-endian;
+}
+
+Note-- I removed the device_type property and changed
+compatible somewhat.  How are you going to find where
+the meaning interrupt controller's interrupt cells are
+defined?   What spec will you look at?
+
+device_type =3D "open-pic"; makes it perfectly clear.
+It's an open-pic type controller and follows that
+binding.
+
+Stuart
