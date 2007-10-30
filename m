@@ -1,29 +1,26 @@
-Return-Path: <fubar@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9ECB5DE2D7
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:07:18 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UJ7FIJ005519
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:07:15 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9UJ77hS104358
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:07:07 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9UJ76xF012254
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:07:07 -0600
-To: "Demke Torsten-atd012" <torsten.demke@motorola.com>
-Subject: Re: Gianfar skb panic when bonding a VLAN interface 
-In-reply-to: <67194FEE6056B947B4EF756C9E497A2E01DB237A@zuk35exm60.ds.mot.com> 
-References: <67194FEE6056B947B4EF756C9E497A2E01DB237A@zuk35exm60.ds.mot.com>
-Date: Tue, 30 Oct 2007 12:07:04 -0700
-Message-ID: <28345.1193771224@death>
-From: Jay Vosburgh <fubar@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
+	by ozlabs.org (Postfix) with ESMTP id E5651DE261
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:38:52 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d23so304017and
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:38:51 -0700 (PDT)
+Message-ID: <fa686aa40710301238o32d211e6h5c1ffc05abf09b82@mail.gmail.com>
+Date: Tue, 30 Oct 2007 13:38:50 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Subject: Re: RFC: replace device_type with new "class" property?
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2872@az33exm25.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<20071029212213.GA28073@lixom.net>
+	<20071030005146.GF29263@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F278B@az33exm25.fsl.freescale.net>
+	<20071030163343.GA4517@loki.buserror.net>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F2872@az33exm25.fsl.freescale.net>
+Cc: Olof Johansson <olof@lixom.net>, David Gibson <david@gibson.dropbear.id.au>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Demke Torsten-atd012 <torsten.demke@motorola.com> wrote:
+On 10/30/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
+> Another good reason for device_type-- it helps
+> distinguish between two similar classes of devices.
+> Both "open-pic" and "isa-pic" look very similar but
+> have different encodings of their interrupt cells.
+> Without a device_type it may be difficult or impossible
+> to distinguish them unless the "name" and
+> "compatible" are luckily clear enough.
 
->I tried to ping over a bonded VLAN tagged interface.
->(e.g  -> ifenslave bond0 eth3.24)
-[...]
->It seems that the skb headroom is to small. How can I solve this?
->I could insert skb_realloc_headroom() call, but where it's the best
->place then?
->What about alignement?
+I don't think you want to go down that path.  If your compatible list
+does not uniquely describe what the device is (followed by a list of
+devices it is compatible with); then it is not specific enough.  It's
+fine for a device driver to go looking at other properties to get more
+details; but drivers should primarily bind on the compatible list.
 
-	What kernel are you using?  There was a fix applied to the
-bonding driver about a year ago to resolve this problem with gianfar:
+In other words; device_type and/or class are a coarser grained
+description of the device than the compatible list.  If you match on
+compatible; why would there be any need at all to look at 'name',
+'device_type' or the proposed 'class' properties?
 
-commit 54ef313714070b397d3857289f0fd099b7643631
-Author: Jay Vosburgh <fubar@us.ibm.com>
-Date:   Fri Sep 22 21:53:39 2006 -0700
+Cheers,
+g.
 
-    [PATCH] bonding: Handle large hard_header_len
-    
-    The bonding driver fails to adjust its hard_header_len when enslaving
-    interfaces.  Whenever an interface with a hard_header_len greater than the
-    ETH_HLEN default is enslaved, the potential for an oops exists, and if the
-    oops happens while responding to an arp request, for example, the system
-    panics.  GIANFAR devices may use an extended hard_header for VLAN or
-    hardware checksumming.  Enslaving such a device and then transmitting over
-    it causes a kernel panic.
-    
-    Patch modified from submitter's original, but submitter agreed with this
-    patch in private email.
-    
-    Signed-off-by: Mark Huth <mhuth@mvista.com>
-    Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
