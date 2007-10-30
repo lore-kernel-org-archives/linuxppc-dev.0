@@ -1,23 +1,20 @@
-Return-Path: <jdi@l4x.org>
-Received: from rzcomm22.rz.tu-bs.de (rzcomm22.rz.tu-bs.de [134.169.9.68])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E8692DE117
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 18:35:22 +1100 (EST)
-Message-ID: <4726DD82.8050200@l4x.org>
-Date: Tue, 30 Oct 2007 08:30:10 +0100
-From: Jan Dittmer <jdi@l4x.org>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: boot/wrap assumes a biarch toolchain?
-References: <20071029140719.GA17120@kryten>
-	<jesl3udm0e.fsf@sykes.suse.de>	<4725F34C.6090904@ppp0.net>
-	<jelk9mdj6e.fsf@sykes.suse.de>	<47263830.2010009@l4x.org>
-	<jebqahei70.fsf@sykes.suse.de>	<47265586.1050701@l4x.org>
-	<je640pebqn.fsf@sykes.suse.de>
-In-Reply-To: <je640pebqn.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id D5CF2DE04C
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 18:43:47 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id 17415F49151
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 08:43:45 +0100 (CET)
+Subject: Re: compile warning
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: linux-ppc <linuxppc-dev@ozlabs.org>, Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <77CDBB94-A21E-4A84-9818-4622CB2F572C@kernel.crashing.org>
+References: <1193405129.29250.2.camel@p60635-ste.ids.de>
+	<77CDBB94-A21E-4A84-9818-4622CB2F572C@kernel.crashing.org>
+Date: Tue, 30 Oct 2007 08:43:44 +0100
+Message-Id: <1193730224.4997.13.camel@p60635-ste.ids.de>
+Mime-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> Jan Dittmer <jdi@l4x.org> writes:
+thanks for your reply.
+> >
+> > WARNING: vmlinux.o(.text+0x10f5c): Section mismatch: reference
+> > to .init.text:cpm_muram_init (between 'cpm2_reset' and
+> > 'cpm2_smc_clk_setup')
+> >
+> It should be fixed, but its highly unlikely you'll see a problem  
+> unless you start trying to build core parts of the CPM code as modules.
 > 
->> Same error, you write above that a newer compiler version should
->> not need -m32 or --with-cpu=default32 any more?
-> 
-> ??? Where did I say that?
+> - k
+we have no modules for CPM.
+Fix it i could with :
 
-Your mail from 2007-10-29 4:39 pm (CET)
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index f8a621e..f507ada 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -61,7 +61,7 @@ cpm2_map_t __iomem *cpm2_immr;
+ 					   of space for CPM as it is larger
+ 					   than on PQ2 */
+ 
+-void
++void __init
+ cpm2_reset(void)
+ {
+ #ifdef CONFIG_PPC_85xx
 
- >> Your compiler still needs -m32 to generate 32-bit code (or use
- >> --with-cpu=default32 to make that the default).
+------------------
+I am not sure it is ok.
 
-See the 'still' ? I just assumed that it must have been changed
-in newer versions.
+But i have other 2 warnings (no modules).
 
-But to sum up. I've to compile with '--with-cpu=default32' and all
-should be fine? Because I have no idea how to pass the -m32 flag
-just to the 32-bit code generation. Passing it via CFLAGS obviously
-does not work as it also passes it to the 64 bit code generation.
-
-Jan
+WARNING: vmlinux.o(.exit.text+0x5da): Section mismatch: reference to .init.data:of_platform_serial_driver (between 'of_platform_serial_exit' and 'phy_exit')
+WARNING: vmlinux.o(.exit.text+0x5e2): Section mismatch: reference to .init.data:of_platform_serial_driver (between 'of_platform_serial_exit' and 'phy_exit')
+ 
+Regards.
+-- 
+Sergej Stepanov
+IDS GmbH
+Nobelstr. 18, Zim. 2.1.05
+D-76275 Ettlingen
+T +49 (0) 72 43/2 18-615
+F +49 (0) 72 43/2 18-400
+http://www.ids.de
+Email: Sergej.Stepanov@ids.de
