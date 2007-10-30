@@ -1,16 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 30 Oct 2007 11:23:45 +1100
+Date: Tue, 30 Oct 2007 11:26:19 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
+To: Dale Farnsworth <dale@farnsworth.org>
 Subject: Re: RFC:  replace device_type with new "class" property?
-Message-ID: <20071030002345.GB29263@localhost.localdomain>
+Message-ID: <20071030002619.GC29263@localhost.localdomain>
 References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
 	<4725FA58.4030505@genesi-usa.com>
-	<20071029161140.GA4358@loki.buserror.net>
+	<20071029172724.11354.qmail@farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071029161140.GA4358@loki.buserror.net>
-Cc: Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071029172724.11354.qmail@farnsworth.org>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,72 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 11:11:40AM -0500, Scott Wood wrote:
-> On Mon, Oct 29, 2007 at 03:20:56PM +0000, Matt Sealey wrote:
-> > I think device_type, compatible and model properties fulfil
-> > this already, they simply aren't being used correctly.
+On Mon, Oct 29, 2007 at 10:27:24AM -0700, Dale Farnsworth wrote:
+> Scott wrote:
+> > Personally, I'm fine with just using name and compatible, but others such as
+> > Stuart have expressed a desire for something to formally indicate compliance
+> > with a standard binding.  I don't think we should expand the use of
+> > device_type in any case.
 > 
-> device_type has a few drawbacks, though:
-> 
-> 1. You can only specify one type, whereas with a new property we could
-> define it as a list (similar to compatible).  It's possible for one node to
-> comply with multiple class bindings, such as when there's a binding for
-> clients of the type of bus it's on as well as the type of device it is, or
-> when there are multiple levels of detail (such as complying with both
-> simple-bus and some specific bus binding).
-> 
-> 2. We want to avoid any confusion with OF bindings and abused device_type
-> entries that have been allowed to become existing practice.
-> 
-> 3. It's the only standard property (AFAIK) with an underscore in it. :-)
-> 
-> > Remember that, while you may want to make FDTs easier to
-> > design, OpenFirmware and the requirement on device interfaces
-> > through the client interface still exist and are still
-> > implemented (from time to time).
-> 
-> Sure -- and we don't want to risk the code thinking it can call into OF
-> based on what we put in a flat device tree, right?
-> 
-> > For readability, the name of the device needn't match device_type;
-> > for instance on the 5121E it may be that the 'diu' unit be
-> > called diu, but be of device_type 'display'
-> 
-> I don't think that's more readable than setting the name to display.
-> Something containing "diu" will be in the compatible list.
-> 
-> > Further differentiation should be done through the 'model'
-> > property in my opinion. This is optional in the OpenFirmware
-> > spec, but that does not mean it should be important. It is
-> > currently defined as something to determine the exact model
-> > of a chip in order to enable quirks, bugfixes and suchlike,
-> > but most implementations switch on something else entirely
-> > (like SVR or a heuristic behaviour).
-> > 
-> > Selecting the "model" would be no different to, for example,
-> > having a list of PCI IDs that will work with a driver.
-> 
-> It's what we currently do with compatible.  Why break it into two
-> properties?
-> 
-> The PCI ID thing can be quite a headache, BTW, when you get a new PCI device
-> that won't work with the existing driver, for no reason other than that it
-> hasn't been updated with the new ID.
+> I agree that the existing compatible property is sufficient to do
+> what Stuart wants.  All that is required is to define some standard
+> bindings and give them well-known names for the compatible property.
+> If needed, we could define a prefix that indicates that a compatible
+> entry refers to a standards-compliant binding.  For example,
+> "standard,network", or "standard,display".  I don't see the benefit
+> of creating a new property similar to device_type.
 
-Indeed.  Replacing the flexible string based matching we have already,
-with a limited ID based matching is just silly.
+That would overload the meaning of compatible.  A driver which matches
+any compatible entry should be able to drive the device, even if it
+can't use all the devices features.  You can't do that if all you know
+is that something is a display.
 
-> > There was a little discussion at bplan once that it would be
-> > easier to implement a kind of vendor/device id system much
-> > like PCI, USB etc. implements in hardware in order to match
-> > hardware. I suppose you could use a "class" property to
-> > implement this -
-> 
-> No, you should use compatible for that.
-
-Yes.  Driver binding should be based on compatible.  Period.  Drivers
-can enable quirks based on 'model' or any other information available
-to them (either from the device tree or direct from the hardware).
+So, standardised or defacto-standard hardware-level interfaces belong
+in compatible, e.g. ohci, uhci, ns16550.  The mere fact that something
+is a display or network interface (and has *general* properties
+related to such devices) doesn't let you drive it.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
