@@ -1,33 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9507EDE1D3
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:07:42 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UL7dxY028010
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 17:07:39 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9UL7btp103348
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:07:38 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9UL7bwn023352
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:07:37 -0600
-Date: Tue, 30 Oct 2007 16:07:36 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC/PATCH] powerpc: Deal with 44x virtually tagged icache
-Message-ID: <20071030160736.26afae6c@weaponx.rchland.ibm.com>
-In-Reply-To: <1193775391.9928.78.camel@pasglop>
-References: <20071030051713.5B8B9DE174@ozlabs.org>
-	<20071030072310.51870c65@weaponx.rchland.ibm.com>
-	<1193775391.9928.78.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 0AD8BDE20D
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:23:16 +1100 (EST)
+To: Stefan Roese <stefan.roese@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Bootup support for watchdog with short timeout
+	(touch_nmi_watchdog()?)
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 30 Oct 2007 12:16:14 +0100."
+	<200710301216.15033.stefan.roese@gmail.com>
+Date: Tue, 30 Oct 2007 22:23:13 +0100
+Sender: wd@denx.de
+Message-Id: <20071030212313.D4CB8247F3@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,46 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 31 Oct 2007 07:16:31 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hello Stefan,
 
+In message <200710301216.15033.stefan.roese@gmail.com> you wrote:
+>
+> I already have it running on my system using a quick hack (see patch below) in 
+> include/asm-ppc/nmi.h (yes, still arch/ppc for now :-( ). But for a clean 
+> implementation, that has chances for upstream merge (in arch/powerpc later), 
+> I would really like to hear if I should move on further this way. 
 > 
-> > > Fortunately, we don't support SMP on these or this solution wouldn't
-> > > work.
-> > 
-> > We should mark 44x BROKEN on SMP in Kconfig.
-> 
-> Can we enable SMP on 44x at all currently ?
+> My impression is, that changing the name from touch_nmi_watchdog() to 
+> something like touch_watchdog(), and therefore touching lots of files, makes 
+> it more unlikely that this resulting patch will get accepted. But 
+> implementing this bootup watchdog support in asm-ppc(asm-powerpc)/nmi.h 
+> header seems also not totally correct, since it's not really an NMI in this 
+> case.
 
-Not without editing the Kconfig.cputypes file.  I was thinking of being
-a bit proactive so people didn't just add || 44x to it and think it
-would work.  But it's minor.
+Indeed. Using the header file <asm/nmi.h> is seriously misleading for
+the PowerPC version, as is the function name touch_nmi_watchdog() -
+thius has nothing to do with NMIs on PowerPC, and most probably not on
+any other non-x86 architecture as well. 
 
-> > No arch/ppc fix?  I know we all want it to die as soon as possible, but
-> > still... :)
-> 
-> Yeah, I didn't do it yet, which is one reason this patch is marked
-> RFC :-)
+To make this mechanism generally usable (which is a good idea IMO) the
+names should be changed to get rid of the "nmi" reference.
 
-Fair enough.
+Best regards,
 
-> > >  	/* interrupts are hard-disabled at this point */
-> > >  restore:
-> > > +#ifdef CONFIG_44x
-> > > +	lis	r4,icache_44x_need_flush@ha
-> > > +	lwz	r5,icache_44x_need_flush@l(r4)
-> > > +	cmplwi	cr0,r5,0
-> > > +	beq+	1f
-> > > +	iccci	r0,r0
-> > > +	li	r6,0
-> > > +	iccci	r0,r0
-> > > +	stw	r6,icache_44x_need_flush@l(r4)
-> > > +1:
-> > 
-> > Why two iccci's here?
-> 
-> No idea... thinko/typo.
+Wolfgang Denk
 
-And here I thought you were being extra careful ;)
-
-josh
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It may be that your whole purpose in life is simply  to  serve  as  a
+warning to others.
