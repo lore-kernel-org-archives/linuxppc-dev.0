@@ -1,24 +1,18 @@
-Return-Path: <torsten.demke@motorola.com>
-Received: from mail153.messagelabs.com (mail153.messagelabs.com
-	[216.82.253.51]) by ozlabs.org (Postfix) with SMTP id E35EBDE366
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 04:28:16 +1100 (EST)
-Received: from az33exr02.mot.com (az33exr02.mot.com [10.64.251.232])
-	by motgate2.mot.com (8.12.11/Motorola) with ESMTP id l9UHSDHn022380
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 10:28:13 -0700 (MST)
-Received: from az10vts01 (az10vts01.mot.com [10.64.251.242])
-	by az33exr02.mot.com (8.13.1/Vontu) with SMTP id l9UHSCNF014614
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:28:13 -0500 (CDT)
-Received: from zuk35exm60.ds.mot.com (zuk35exm60.ea.mot.com [10.178.4.13])
-	by az33exr02.mot.com (8.13.1/8.13.0) with ESMTP id l9UHSBWe014601
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:28:12 -0500 (CDT)
+Return-Path: <alan@akb.net>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.231])
+	by ozlabs.org (Postfix) with ESMTP id 4CD93DE032
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 04:42:12 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1470819nzh
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 10:42:10 -0700 (PDT)
+Message-ID: <bfa0697f0710301042j5d899790k753050f22079f3d6@mail.gmail.com>
+Date: Tue, 30 Oct 2007 11:42:09 -0600
+From: "Alan Bennett" <embedded@akb.net>
+Sender: alan@akb.net
+To: "Scott Wood" <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Continued serial headaches
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Gianfar skb panic when bonding a VLAN interface
-Date: Tue, 30 Oct 2007 17:28:09 -0000
-Message-ID: <67194FEE6056B947B4EF756C9E497A2E01DB237A@zuk35exm60.ds.mot.com>
-From: "Demke Torsten-atd012" <torsten.demke@motorola.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_3726_10052004.1193766129740"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,73 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+------=_Part_3726_10052004.1193766129740
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I tried to ping over a bonded VLAN tagged interface.
-(e.g  -> ifenslave bond0 eth3.24)
+Well, now that I've got IRQs requestable, I'm back to battling SCC1 / SCC4
+initialization,
 
-This fails with following output:
-root@myBoard:/root> ping 192.168.24.101
-PING 192.168.24.skb_under_panic: text:c01bbdf8 len:50 put:8
-head:dd27a3a0 data:dd27a39a tail:dd27a3cc end:dd27a3e0 dev:eth3
-Oops: Exception in kernel mode, sig: 5 [#1]
-NIP: C01E9110 LR: C01E9110 SP: C03479F0 REGS: c0347940 TRAP: 0700
-Tainted: PF   =20
-MSR: 00021000 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
-TASK =3D c03031a0[0] 'swapper' THREAD: c0346000
-Last syscall: 120=20
-GPR00: C01E9110 C03479F0 C03031A0 00000072 00002D03 FFFFFFFF 00000030
-00003FFF=20
-GPR08: C037D0AC C0340000 FFFFFFFF 00000000 65F51C00 60000000 0FFE3900
-C0347A7C=20
-GPR16: DFC1FD60 C0347DD0 C0B94800 0FFF3D0C C0347A80 00000000 007FD890
-00000000=20
-GPR24: 00000000 C0A81865 C0A81805 00000000 C0B94800 DFC1FD60 C0B94A40
-DF10C128=20
-NIP [c01e9110] skb_under_panic+0x50/0x64
-LR [c01e9110] skb_under_panic+0x50/0x64
-Call trace:
- [c01bbe0c] gfar_add_fcb+0x7c/0xb4
- [c01bbfc0] gfar_start_xmit+0x160/0x268
- [c01ffffc] qdisc_restart+0x100/0x1fc
- [c01f04c4] dev_queue_xmit+0xc88/0xde0
- [c02a9684] vlan_dev_hwaccel_hard_start_xmit+0x9c/0xb0
- [c01f054c] dev_queue_xmit+0xd10/0xde0
- [c01afaa8] bond_dev_queue_xmit+0x2a8/0x2c4
- [c01b4464] bond_xmit_roundrobin+0x94/0x108
- [c01f054c] dev_queue_xmit+0xd10/0xde0
- [c022f6cc] arp_xmit+0x5c/0x6c
- [c022f704] arp_send+0x28/0x38
- [c022ef48] arp_solicit+0x1a0/0x1c0
- [c01f81b0] neigh_timer_handler+0x294/0x31c
- [c0043310] run_timer_softirq+0xa7c/0xaec
- [c0039b68] __do_softirq+0xabc/0x15a0
-101 (192.168.24.Kernel panic - not syncing: Aiee, killing interrupt
-handler!
-101) 56(84) byte s of data.
-Call trace:
- [c0008258] dump_stack+0x18/0x28
- [c002fa50] panic+0xa8/0x190
- [c0033690] do_exit+0x3c/0xdec
- [c0002fb4] _exception+0x0/0x1558
- [c0002ff0] _exception+0x3c/0x1558
- [c0004d70] ProgramCheckException+0x11c/0x1c4
- [c00029ac] ret_from_except_full+0x0/0x4c
- [c01e9110] skb_under_panic+0x50/0x64
- [c01bbe0c] gfar_add_fcb+0x7c/0xb4
- [c01bbfc0] gfar_start_xmit+0x160/0x268
- [c01ffffc] qdisc_restart+0x100/0x1fc
- [c01f04c4] dev_queue_xmit+0xc88/0xde0
- [c02a9684] vlan_dev_hwaccel_hard_start_xmit+0x9c/0xb0
- [c01f054c] dev_queue_xmit+0xd10/0xde0
- [c01afaa8] bond_dev_queue_xmit+0x2a8/0x2c4
-Rebooting in 180 seconds..
+I've verified the iop structures, and things look set-up correctly.
+    /* SCC1 */
+    {2, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+    {2, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+    {3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+    {3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},
+    {3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
+    /* SCC4 */
+    {3, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
+    {3, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
 
-It seems that the skb headroom is to small. How can I solve this?
-I could insert skb_realloc_headroom() call, but where it's the best
-place then?
-What about alignement?
+I've also verified that upon first use (echo "test" > /dev/ttyCPM[12] the
+brgs are configured)
+
+SCC1
+  cpm_uart_startup:417
+  CPM uart[1]:startup on IRQ: 40 - request returned 0
+  cpm_uart_startup:432 CPM uart[1] is scc
+  CPM uart[1]:set_termios
+  cpm_setbrg [cpm2_common.c:106] e00119f0:00010140
+  CPM uart[1]:shutdown
+SCC4
+  cpm_uart_startup:417
+  CPM uart[2]:startup on IRQ: 43 - request returned 0
+  cpm_uart_startup:432 CPM uart[2] is scc
+  CPM uart[2]:set_termios
+  cpm_setbrg [cpm2_common.c:106] e00119fc:00010140
+  CPM uart[2]:shutdown
+  CPM uart[2]:initbd
+
+However, SCC1 continues to get locked.
+
+Am I missing something in the PRAM areas?
+SMC1 (ttyCPM0...)
+  e0008000 : 00c000e0 30300020 00000000 eefe3e7a
+  e0008010 : 00c07331 11b6b05f 30440000 07f4d082
+  e0008020 : 00e00003 746562ec d98ceffd 0dec67e3
+  e0008030 : df7b2db5 5f0bf2dc 00205ce8 00010000
+  e0008040 : 00000000 0000fc9d 00000000 d08a0000
+  e0008050 : 80008000 80008000 80008000 80008000
+SCC1
+  e0008000 : 00c000e0 30300020 00000000 eefe3e7a
+  e0008010 : 00c07331 11b6b05f 30440000 07f4d082
+  e0008020 : 00e00003 746562ec d98ceffd 0dec67e3
+  e0008030 : df7b2db5 5f0bf2dc 00205ce8 00010000
+  e0008040 : 00000000 0000fc9d 00000000 d08a0000
+  e0008050 : 80008000 80008000 80008000 80008000
+SCC4
+  e0008300 : 01000120 30300020 30401000 07f4e001
+  e0008310 : 0100001f 993fb24d 30004000 07f4e0a2
+  e0008320 : 01300000 0d0a8379 fedddfdc 94a967eb
+  e0008330 : 5d2b06bd 4708b3ce 0020001f 00010000
+  e0008340 : 00000000 00002804 00000000 e8a60000
+  e0008350 : 80008000 80008000 80008000 80008000
 
 
-Regards,
-Torsten
+
+-Alan
+
+------=_Part_3726_10052004.1193766129740
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Well, now that I&#39;ve got IRQs requestable, I&#39;m back to battling SCC1 / SCC4 initialization, <br><br>I&#39;ve verified the iop structures, and things look set-up correctly. <br>&nbsp;&nbsp;&nbsp; /* SCC1 */ <br>&nbsp;&nbsp;&nbsp; {2, 14, CPM_PIN_INPUT | CPM_PIN_PRIMARY}, 
+<br>&nbsp;&nbsp;&nbsp; {2, 15, CPM_PIN_INPUT | CPM_PIN_PRIMARY},&nbsp; <br>&nbsp;&nbsp;&nbsp; {3, 29, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY}, <br>&nbsp;&nbsp;&nbsp; {3, 30, CPM_PIN_OUTPUT | CPM_PIN_SECONDARY},<br>&nbsp;&nbsp;&nbsp; {3, 31, CPM_PIN_INPUT | CPM_PIN_PRIMARY},<br>&nbsp;&nbsp;&nbsp; /* SCC4 */
+<br>&nbsp;&nbsp;&nbsp; {3, 21, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},<br>&nbsp;&nbsp;&nbsp; {3, 22, CPM_PIN_INPUT | CPM_PIN_PRIMARY},<br><br> I&#39;ve also verified that upon first use (echo &quot;test&quot; &gt; /dev/ttyCPM[12] the brgs are configured)<br>
+<br>SCC1<br>&nbsp; cpm_uart_startup:417<br>&nbsp; CPM uart[1]:startup on IRQ: 40 - request returned 0<br>&nbsp; cpm_uart_startup:432 CPM uart[1] is scc<br>&nbsp; CPM uart[1]:set_termios<br>&nbsp; cpm_setbrg [cpm2_common.c:106] e00119f0:00010140<br>
+&nbsp; CPM uart[1]:shutdown<br>SCC4<br>&nbsp; cpm_uart_startup:417<br>&nbsp; CPM uart[2]:startup on IRQ: 43 - request returned 0<br>&nbsp; cpm_uart_startup:432 CPM uart[2] is scc<br>&nbsp; CPM uart[2]:set_termios<br>&nbsp; cpm_setbrg [cpm2_common.c:106] e00119fc:00010140
+<br>&nbsp; CPM uart[2]:shutdown<br>&nbsp; CPM uart[2]:initbd<br><br>However, SCC1 continues to get locked.&nbsp; <br><br>Am I missing something in the PRAM areas?<br>SMC1 (ttyCPM0...)<br>&nbsp; e0008000 : 00c000e0 30300020 00000000 eefe3e7a<br>
+&nbsp; e0008010 : 00c07331 11b6b05f 30440000 07f4d082<br>&nbsp; e0008020 : 00e00003 746562ec d98ceffd 0dec67e3<br>&nbsp; e0008030 : df7b2db5 5f0bf2dc 00205ce8 00010000<br>&nbsp; e0008040 : 00000000 0000fc9d 00000000 d08a0000<br>&nbsp; e0008050 : 80008000 80008000 80008000 80008000
+<br>SCC1<br>&nbsp; e0008000 : 00c000e0 30300020 00000000 eefe3e7a<br>&nbsp; e0008010 : 00c07331 11b6b05f 30440000 07f4d082<br>&nbsp; e0008020 : 00e00003 746562ec d98ceffd 0dec67e3<br>&nbsp; e0008030 : df7b2db5 5f0bf2dc 00205ce8 00010000<br>&nbsp; e0008040 : 00000000 0000fc9d 00000000 d08a0000
+<br>&nbsp; e0008050 : 80008000 80008000 80008000 80008000<br>SCC4<br>&nbsp; e0008300 : 01000120 30300020 30401000 07f4e001<br>&nbsp; e0008310 : 0100001f 993fb24d 30004000 07f4e0a2<br>&nbsp; e0008320 : 01300000 0d0a8379 fedddfdc 94a967eb<br>&nbsp; e0008330 : 5d2b06bd 4708b3ce 0020001f 00010000
+<br>&nbsp; e0008340 : 00000000 00002804 00000000 e8a60000<br>&nbsp; e0008350 : 80008000 80008000 80008000 80008000<br><br><br><br>-Alan<br>
+
+------=_Part_3726_10052004.1193766129740--
