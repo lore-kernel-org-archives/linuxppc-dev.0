@@ -1,16 +1,29 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 61FDADE21D
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:41:30 +1100 (EST)
-Message-ID: <4727A507.10309@harris.com>
-Date: Tue, 30 Oct 2007 17:41:27 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0F32EDDFED
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:50:45 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9ULogmV021621
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 17:50:42 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9ULofDn032252
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:50:41 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9ULofWs006851
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 15:50:41 -0600
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [PATCH] [powerpc v2] update xmon slb code
 To: linuxppc-dev@ozlabs.org
-Subject: Re: PPC405GP Walnut irq patch
-References: <47279CF0.4050600@harris.com>
-In-Reply-To: <47279CF0.4050600@harris.com>
-Content-Type: multipart/mixed; boundary="------------070109030000010107010708"
+Date: Tue, 30 Oct 2007 16:50:39 -0500
+Message-ID: <20071030215037.12776.73871.stgit@farscape.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,58 +33,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070109030000010107010708
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-I realized that I should have done this from the root level.  So here is 
-the corrected patch.
+[powerpc] update xmon slb code
 
-Signed-off-by: Steve Falco <sfalco at harris.com>
+This adds a bit more detail to the xmon SLB output.  When the valid bit is
+set, This displays the ESID and VSID values, as well as decoding the
+segment size. (1T or 256M).  This supresses the output for any slb entries
+that contain only zeros.
+
+sample output from power6 (1T segment support):
+
+00 c000000008000000 40004f7ca3000500  1T  ESID=   c00000  VSID=40004f7ca3 LLP bits:100
+01 d000000008000000 4000eb71b0000400  1T  ESID=   d00000  VSID=4000eb71b0 LLP bits:  0
+03 0000000008000000 0000628021c6ac80 256M ESID=        0  VSID= 628021c6a LLP bits:  0
+04 00000f0008000000 400095c1e8000c80  1T  ESID=        f  VSID=400095c1e8 LLP bits:  0
+22 cf00000008000000 400011b260000500  1T  ESID=   cf0000  VSID=400011b260 LLP bits:100
+62 0000040008000000 40005d488d000c80  1T  ESID=        4  VSID=40005d488d LLP bits:  0
+63 0000000018000000 0000633f90285c80 256M ESID=        1  VSID= 633f90285 LLP bits:  0
+
+sample output from power5 (notice the non-valid but non-zero entries)
+
+00 c000000008000000 0000408f92c94500 256M ESID=c00000000  VSID= 408f92c94 LLP bits:100
+01 d000000008000000 0000f09b89af5400 256M ESID=d00000000  VSID= f09b89af5 LLP bits:  0
+03 0000000010000000 0000136eafb0bc80
+11 0000000008000000 00005928811f2c80 256M ESID=        0  VSID= 5928811f2 LLP bits:  0
+12 00000000f8000000 0000645ff8d87c80 256M ESID=        f  VSID= 645ff8d87 LLP bits:  0
+13 0000000048000000 00005c263aa5ec80 256M ESID=        4  VSID= 5c263aa5e LLP bits:  0
+14 0000000018000000 000059e7ef80dc80 256M ESID=        1  VSID= 59e7ef80d LLP bits:  0
+15 0000000010000000 000059e7ef80dc80
+
+Tested on power5 and power6.
+
+Signed-Off-By: Will Schmidt <will_schmidt@vnet.ibm.com>
+
+---
+This version adds padding around the ESID and VSID fields, and the LLP bits
+are displayed too.  (Per request from Olof and Ben).
+I'll try to follow up sometime later with code that will handle decoding page
+sizes.  I dont have a testcase handy to properly exercise that yet. :-)
+---
+
+ arch/powerpc/xmon/xmon.c |   27 +++++++++++++++++++++------
+ 1 files changed, 21 insertions(+), 6 deletions(-)
 
 
-Steven A. Falco wrote:
-> Hi - I have found a bug in the ARCH=powerpc Walnut BSP.  The order of 
-> the ethernet interrupts in the walnut.dts file doesn't match the 
-> documentation.  I discovered this when porting the BSP to a custom 
-> board - the ethernet would not work.  The attached patch corrects that.
->
-> This is the first patch I am submitting, so please advise me if there 
-> is anything I should do differently.
->
-> Signed-off-by: Steve Falco <sfalco at harris.com>
->
->
-
---------------070109030000010107010708
-Content-Type: text/x-patch;
- name="irq.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="irq.patch"
-
-diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
-index 27bef06..dd65115 100644
---- a/arch/powerpc/boot/dts/walnut.dts
-+++ b/arch/powerpc/boot/dts/walnut.dts
-@@ -67,7 +67,7 @@
- 			num-tx-chans = <2>;
- 			num-rx-chans = <1>;
- 			interrupt-parent = <&UIC0>;
--			interrupts = <a 4 b 4 c 4 d 4 e 4>;
-+			interrupts = <b 4 c 4 a 4 d 4 e 4>;
- 		};
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 121b04d..93c26c3 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2527,16 +2527,31 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
+ static void dump_slb(void)
+ {
+ 	int i;
+-	unsigned long tmp;
++	unsigned long esid,vsid,valid;
++	unsigned long llp_bits;
  
- 		POB0: opb {
-@@ -117,7 +117,7 @@
- 				device_type = "network";
- 				compatible = "ibm,emac-405gp", "ibm,emac";
- 				interrupt-parent = <&UIC0>;
--				interrupts = <9 4 f 4>;
-+				interrupts = <f 4 9 4>;
- 				reg = <ef600800 70>;
- 				mal-device = <&MAL>;
- 				mal-tx-channel = <0 1>;
-
---------------070109030000010107010708--
+ 	printf("SLB contents of cpu %x\n", smp_processor_id());
+ 
+ 	for (i = 0; i < SLB_NUM_ENTRIES; i++) {
+-		asm volatile("slbmfee  %0,%1" : "=r" (tmp) : "r" (i));
+-		printf("%02d %016lx ", i, tmp);
+-
+-		asm volatile("slbmfev  %0,%1" : "=r" (tmp) : "r" (i));
+-		printf("%016lx\n", tmp);
++		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (i));
++		asm volatile("slbmfev  %0,%1" : "=r" (vsid) : "r" (i));
++		valid = (esid & SLB_ESID_V);
++		if (valid | esid | vsid) {
++			printf("%02d %016lx %016lx", i, esid, vsid);
++			if (valid) {
++				llp_bits = vsid & SLB_VSID_LLP;
++				if (vsid & SLB_VSID_B_1T) {
++					printf("  1T  ESID=%9lx  VSID=%10lx LLP bits:%3lx \n",
++						GET_ESID_1T(esid),vsid >> SLB_VSID_SHIFT_1T,
++						llp_bits);
++				} else {
++					printf(" 256M ESID=%9lx  VSID=%10lx LLP bits:%3lx \n",
++						GET_ESID(esid),vsid >> SLB_VSID_SHIFT,
++						llp_bits);
++				}
++			} else
++				printf("\n");
++		}
+ 	}
+ }
+ 
