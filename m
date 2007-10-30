@@ -1,16 +1,31 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (unknown [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id 9EFCBDE1E8
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 22:45:26 +1100 (EST)
-Message-ID: <393807068.14207@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: linuxppc-dev@ozlabs.org
-Subject: Execute user program in kernel mode?
-Date: Tue, 30 Oct 2007 19:45:22 +0800
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart11163784.ou6BJbypvC";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200710301945.25313.wangbj@lzu.edu.cn>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 97CC2DE10E
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 23:23:17 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UCNCoC019913
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 08:23:12 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9UCNBaB087958
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:23:11 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9UCNB8j008624
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 06:23:11 -0600
+Date: Tue, 30 Oct 2007 07:23:10 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: Deal with 44x virtually tagged icache
+Message-ID: <20071030072310.51870c65@weaponx.rchland.ibm.com>
+In-Reply-To: <20071030051713.5B8B9DE174@ozlabs.org>
+References: <20071030051713.5B8B9DE174@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,92 +35,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart11163784.ou6BJbypvC
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 30 Oct 2007 16:16:54 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-hi,
+> The 44x family has an interesting "feature" which is a virtually
+> tagged instruction cache (yuck !). So far, we haven't dealt with
+> it properly, which means we've been mostly lucky or people didn't
+> report the problems, unless people have been running custom patches
+> in their distro...
+> 
+> This is an attempt at fixing it properly. I chose to do it by
+> setting a global flag whenever we change a PTE that was previously
+> marked executable, and flush the entire instruction cache upon
+> return to user space when that happens.
+> 
+> This is a bit heavy handed, but it's hard to do more fine grained
+> flushes as the icbi instruction, on those processor, for some very
+> strange reasons (since the cache is virtually mapped) still requires
+> a valid TLB entry for reading in the target address space, which
+> isn't something I want to deal with.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Fortunately, we don't support SMP on these or this solution wouldn't
+> work.
 
-  Is it possible to run user program (statically linked) in kernel mode? fo=
-r=20
-example the user program entry is 0x10000000, can we call it directly from=
-=20
-kernel? I've tried many times, but I got the following Error(Oops):
+We should mark 44x BROKEN on SMP in Kconfig.
 
-Oops: Exception in kernel mode, sig: 5 [#1]
-NIP: 10000094 LR: 10000094 CTR: C001CBF4
-REGS: d1072e90 TRAP: 0700   Not tainted  (2.6.19.2-eldk-xm.1.0)
-MSR: 00021000 <ME>  CR: 00000000  XER: 00000000
-TASK =3D cf31dc70[809385534] '=EF=BF=BD1=EF=BF=BD =EF=BF=BD=CB=B8' THREAD: =
-c001ca38
-GPR00: 00000000 D1072F40 C0555B70 10000094 C02C41C0 D1066000 10000094 D106C=
-000
-GPR08: C02CCAE4 D106A000 28000022 00021000 00000000 00000000 00000000 00000=
-000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000=
-000
-GPR24: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000=
-000
-NIP [10000094] 0x10000094
-LR [10000094] 0x10000094
-Call Trace:
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-Oops: kernel access of bad area, sig: 11 [#2]
-NIP: C00598C8 LR: C000A108 CTR: C001C2A4
-REGS: d1072060 TRAP: 0300   Not tainted  (2.6.19.2-eldk-xm.1.0)
-MSR: 00021000 <ME>  CR: 84000044  XER: 00000000
-DAR: 3E20736D, DSISR: 00000000
-TASK =3D cf31dc70[809385534] '=EF=BF=BD1=EF=BF=BD =EF=BF=BD=CB=B8' THREAD: =
-c001ca38
-GPR00: C000A0FC D1072110 CF31DC70 3E207365 3E20736D 00000000 00000000 C0240=
-000
-GPR08: CF31DD14 D1072000 00021002 C0002038 C001CBE8 00000000 00000000 00000=
-000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000=
-000
-GPR24: CF31DD48 00000000 D10721E0 3E20736D 00000000 CF31DD14 CF31DD48 00000=
-000
-NIP [C00598C8] find_vma+0x24/0x90
-LR [C000A108] do_page_fault+0x50/0x3e0
-Call Trace:
-Instruction dump:
-4c9d0020 91230020 4e800020 7c681b79 38600000 4d820020 4800000c 7d2a4b78
-48000070 80680008 2f830000 419e001c <80030008> 7f802040 409d0010 80030004
-Kernel panic - not syncing: Aiee, killing interrupt handler!
- <0>Rebooting in 180 seconds..
+> 
+> It does mean we do a bit of over-flushing on swap but on the
+> other hand, the code is simple. Another option would have been
+> to do the iccci after any syscall that potentially unmaps or
+> changes a mapping, like sys_munmap, sys_mremap, sys_sbrk, but
+> also the shmem stuff etc... I decided there was just too many
+> and was worried I would miss one.
+> 
+> This not very tested as I don't have a test case at hand showing the
+> problem and didn't feel like writing one today :-) It boots though.
+> 
+> Careful eyes will notice I didn't do the flush on fast_exception_return,
+> which shouldn't be necessary.
+> 
+>  arch/powerpc/kernel/entry_32.S      |   25 +++++++++++++++++++++++++
+>  arch/powerpc/kernel/misc_32.S       |    9 +++++++++
+>  arch/powerpc/mm/44x_mmu.c           |    1 +
+>  include/asm-powerpc/pgtable-ppc32.h |   13 +++++++++++++
+>  4 files changed, 48 insertions(+)
 
+No arch/ppc fix?  I know we all want it to die as soon as possible, but
+still... :)
 
-  Does that mean we can not call user space entry code directly, can we?=20
+> Index: linux-work/arch/powerpc/kernel/entry_32.S
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/entry_32.S	2007-10-15 11:19:35.000000000 +1000
+> +++ linux-work/arch/powerpc/kernel/entry_32.S	2007-10-30 16:09:51.000000000 +1100
+> @@ -244,6 +244,13 @@ syscall_exit_cont:
+>  	andis.	r10,r0,DBCR0_IC@h
+>  	bnel-	load_dbcr0
+>  #endif
+> +#ifdef CONFIG_44x
+> +	lis	r4,icache_44x_need_flush@ha
+> +	lwz	r5,icache_44x_need_flush@l(r4)
+> +	cmplwi	cr0,r5,0
+> +	bne-	2f
+> +1:
+> +#endif /* CONFIG_44x */
+>  	stwcx.	r0,0,r1			/* to clear the reservation */
+>  	lwz	r4,_LINK(r1)
+>  	lwz	r5,_CCR(r1)
+> @@ -259,6 +266,13 @@ syscall_exit_cont:
+>  	SYNC
+>  	RFI
+> 
+> +#ifdef CONFIG_44x
+> +2:	li	r7,0
+> +	iccci	r0,r0
+> +	stw	r7,icache_44x_need_flush@l(r4)
+> +	b	1b
+> +#endif  /* CONFIG_44x */
+> +
+>  66:	li	r3,-ENOSYS
+>  	b	ret_from_syscall
+> 
+> @@ -683,6 +697,17 @@ resume_kernel:
+> 
+>  	/* interrupts are hard-disabled at this point */
+>  restore:
+> +#ifdef CONFIG_44x
+> +	lis	r4,icache_44x_need_flush@ha
+> +	lwz	r5,icache_44x_need_flush@l(r4)
+> +	cmplwi	cr0,r5,0
+> +	beq+	1f
+> +	iccci	r0,r0
+> +	li	r6,0
+> +	iccci	r0,r0
+> +	stw	r6,icache_44x_need_flush@l(r4)
+> +1:
 
-  Regards,
-Wang
-=2D-=20
-Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0Lanzhou University
-Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0http://dslab.lzu.edu.cn
-School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
-ngbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
-Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
+Why two iccci's here?
 
---nextPart11163784.ou6BJbypvC
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHJxlTIuIOr7tpgg0RAgGmAJ9tzMfl4FUalZ/gtrX3DRFw5B6+9ACdGRns
-olCiWUaFYdgzj2Bo9cZbYuE=
-=ez2X
------END PGP SIGNATURE-----
-
---nextPart11163784.ou6BJbypvC--
+> +#endif  /* CONFIG_44x */
+>  	lwz	r0,GPR0(r1)
+>  	lwz	r2,GPR2(r1)
+>  	REST_4GPRS(3, r1)
+> Index: linux-work/arch/powerpc/mm/44x_mmu.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/mm/44x_mmu.c	2007-09-28 11:42:05.000000000 +1000
+> +++ linux-work/arch/powerpc/mm/44x_mmu.c	2007-10-30 15:30:50.000000000 +1100
+> @@ -35,6 +35,7 @@
+>   */
+>  unsigned int tlb_44x_index; /* = 0 */
+>  unsigned int tlb_44x_hwater = PPC44x_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
+> +int icache_44x_need_flush;
+> 
+>  /*
+>   * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
+> Index: linux-work/include/asm-powerpc/pgtable-ppc32.h
+> ===================================================================
+> --- linux-work.orig/include/asm-powerpc/pgtable-ppc32.h	2007-09-28 11:42:10.000000000 +1000
+> +++ linux-work/include/asm-powerpc/pgtable-ppc32.h	2007-10-30 15:30:50.000000000 +1100
+> @@ -11,6 +11,11 @@
+>  extern unsigned long va_to_phys(unsigned long address);
+>  extern pte_t *va_to_pte(unsigned long address);
+>  extern unsigned long ioremap_bot, ioremap_base;
+> +
+> +#ifdef CONFIG_44x
+> +extern int icache_44x_need_flush;
+> +#endif
+> +
+>  #endif /* __ASSEMBLY__ */
+> 
+>  /*
+> @@ -562,6 +567,10 @@ static inline unsigned long pte_update(p
+>  	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+>  	: "r" (p), "r" (clr), "r" (set), "m" (*p)
+>  	: "cc" );
+> +#ifdef CONFIG_44x
+> +	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> +		icache_44x_need_flush = 1;
+> +#endif
+>  	return old;
+>  }
+>  #else
+> @@ -582,6 +591,10 @@ static inline unsigned long long pte_upd
+>  	: "=&r" (old), "=&r" (tmp), "=m" (*p)
+>  	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), "m" (*p)
+>  	: "cc" );
+> +#ifdef CONFIG_44x
+> +	if ((old & _PAGE_USER) && (old & _PAGE_HWEXEC))
+> +		icache_44x_need_flush = 1;
+> +#endif
+>  	return old;
+>  }
+>  #endif
+> Index: linux-work/arch/powerpc/kernel/misc_32.S
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/misc_32.S	2007-10-30 15:15:03.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/misc_32.S	2007-10-30 15:30:50.000000000 +1100
+> @@ -543,12 +543,21 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_I
+>  	addi	r3,r3,L1_CACHE_BYTES
+>  	bdnz	0b
+>  	sync
+> +#ifndef CONFIG_44x
+> +	/* We don't flush the icache on 44x. Those have a virtual icache
+> +	 * and we don't have access to the virtual address here (it's
+> +	 * not the page vaddr but where it's mapped in user space). The
+> +	 * flushing of the icache on these is handled elsewhere, when
+> +	 * a change in the address space occurs, before returning to
+> +	 * user space
+> +	 */
+>  	mtctr	r4
+>  1:	icbi	0,r6
+>  	addi	r6,r6,L1_CACHE_BYTES
+>  	bdnz	1b
+>  	sync
+>  	isync
+> +#endif /* CONFIG_44x */
+>  	blr
+> 
+>  /*
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
