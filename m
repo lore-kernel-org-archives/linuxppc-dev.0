@@ -1,17 +1,24 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [213.144.29.131])
-	by ozlabs.org (Postfix) with ESMTP id 5029CDE23C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:09:21 +1100 (EST)
-Received: from ares.ids.de (ares.ids.de [127.0.0.1])
-	by ares.ids.de (PGP Universal) with ESMTP id 5EB40F49148
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 17:09:20 +0100 (CET)
-Subject: [PATCH] using mii-bitbang on different processor ports
-From: Sergej Stepanov <Sergej.Stepanov@ids.de>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Tue, 30 Oct 2007 17:09:19 +0100
-Message-Id: <1193760559.6244.25.camel@p60635-ste.ids.de>
-Mime-Version: 1.0
-Content-Type: text/plain
+Return-Path: <jdi@l4x.org>
+Received: from rzcomm22.rz.tu-bs.de (rzcomm22.rz.tu-bs.de [134.169.9.68])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CC8EADE007
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 03:15:51 +1100 (EST)
+Message-ID: <472758AE.70207@l4x.org>
+Date: Tue, 30 Oct 2007 17:15:42 +0100
+From: Jan Dittmer <jdi@l4x.org>
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: boot/wrap assumes a biarch toolchain?
+References: <20071029140719.GA17120@kryten>
+	<jesl3udm0e.fsf@sykes.suse.de>	<4725F34C.6090904@ppp0.net>
+	<jelk9mdj6e.fsf@sykes.suse.de>	<47263830.2010009@l4x.org>
+	<jebqahei70.fsf@sykes.suse.de>	<47265586.1050701@l4x.org>
+	<je640pebqn.fsf@sykes.suse.de>	<4726DD82.8050200@l4x.org>
+	<jey7dlez74.fsf@sykes.suse.de>
+In-Reply-To: <jey7dlez74.fsf@sykes.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,175 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch makes possible to have mdio and mdc pins on different physical ports
-also for CONFIG_PPC_CPM_NEW_BINDING.
-To setup it in the device tree:
-reg = <10d40 14 10d60 14>; // mdc-offset: 0x10d40, mdio-offset: 0x10d60
-or
-reg = <10d40 14>; // mdc and mdio have the same offset 0x10d40
-The approach was taken from older version.
+Andreas Schwab wrote:
+> Jan Dittmer <jdi@l4x.org> writes:
+> 
+>> Your mail from 2007-10-29 4:39 pm (CET)
+>>
+>>>> Your compiler still needs -m32 to generate 32-bit code (or use
+>>>> --with-cpu=default32 to make that the default).
+>> See the 'still' ?
+> 
+> How would the compiler know whether to generate 64bit or 32bit code??
 
-Signed-off-by: Sergej Stepanov <Sergej.Stepanov@ids.de>
---
-diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-index b8e4a73..86b73ea 100644
---- a/drivers/net/fs_enet/mii-bitbang.c
-+++ b/drivers/net/fs_enet/mii-bitbang.c
-@@ -29,12 +29,16 @@
- 
- #include "fs_enet.h"
- 
--struct bb_info {
--	struct mdiobb_ctrl ctrl;
-+struct bb_port {
- 	__be32 __iomem *dir;
- 	__be32 __iomem *dat;
--	u32 mdio_msk;
--	u32 mdc_msk;
-+	u32 msk;
-+};
-+
-+struct bb_info {
-+	struct mdiobb_ctrl ctrl;
-+	struct bb_port mdc;
-+	struct bb_port mdio;
- };
- 
- /* FIXME: If any other users of GPIO crop up, then these will have to
-@@ -62,18 +66,18 @@ static inline void mdio_dir(struct mdiobb_ctrl *ctrl, int dir)
- 	struct bb_info *bitbang = container_of(ctrl, struct bb_info, ctrl);
- 
- 	if (dir)
--		bb_set(bitbang->dir, bitbang->mdio_msk);
-+		bb_set(bitbang->mdio.dir, bitbang->mdio.msk);
- 	else
--		bb_clr(bitbang->dir, bitbang->mdio_msk);
-+		bb_clr(bitbang->mdio.dir, bitbang->mdio.msk);
- 
- 	/* Read back to flush the write. */
--	in_be32(bitbang->dir);
-+	in_be32(bitbang->mdio.dir);
- }
- 
- static inline int mdio_read(struct mdiobb_ctrl *ctrl)
- {
- 	struct bb_info *bitbang = container_of(ctrl, struct bb_info, ctrl);
--	return bb_read(bitbang->dat, bitbang->mdio_msk);
-+	return bb_read(bitbang->mdio.dat, bitbang->mdio.msk);
- }
- 
- static inline void mdio(struct mdiobb_ctrl *ctrl, int what)
-@@ -81,12 +85,12 @@ static inline void mdio(struct mdiobb_ctrl *ctrl, int what)
- 	struct bb_info *bitbang = container_of(ctrl, struct bb_info, ctrl);
- 
- 	if (what)
--		bb_set(bitbang->dat, bitbang->mdio_msk);
-+		bb_set(bitbang->mdio.dat, bitbang->mdio.msk);
- 	else
--		bb_clr(bitbang->dat, bitbang->mdio_msk);
-+		bb_clr(bitbang->mdio.dat, bitbang->mdio.msk);
- 
- 	/* Read back to flush the write. */
--	in_be32(bitbang->dat);
-+	in_be32(bitbang->mdio.dat);
- }
- 
- static inline void mdc(struct mdiobb_ctrl *ctrl, int what)
-@@ -94,12 +98,12 @@ static inline void mdc(struct mdiobb_ctrl *ctrl, int what)
- 	struct bb_info *bitbang = container_of(ctrl, struct bb_info, ctrl);
- 
- 	if (what)
--		bb_set(bitbang->dat, bitbang->mdc_msk);
-+		bb_set(bitbang->mdc.dat, bitbang->mdc.msk);
- 	else
--		bb_clr(bitbang->dat, bitbang->mdc_msk);
-+		bb_clr(bitbang->mdc.dat, bitbang->mdc.msk);
- 
- 	/* Read back to flush the write. */
--	in_be32(bitbang->dat);
-+	in_be32(bitbang->mdc.dat);
- }
- 
- static struct mdiobb_ops bb_ops = {
-@@ -114,23 +118,23 @@ static struct mdiobb_ops bb_ops = {
- static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
-                                          struct device_node *np)
- {
--	struct resource res;
-+	struct resource res[2];
- 	const u32 *data;
- 	int mdio_pin, mdc_pin, len;
- 	struct bb_info *bitbang = bus->priv;
- 
--	int ret = of_address_to_resource(np, 0, &res);
-+	int ret = of_address_to_resource(np, 0, &res[0]);
- 	if (ret)
- 		return ret;
- 
--	if (res.end - res.start < 13)
-+	if (res[0].end - res[0].start < 13)
- 		return -ENODEV;
- 
- 	/* This should really encode the pin number as well, but all
- 	 * we get is an int, and the odds of multiple bitbang mdio buses
- 	 * is low enough that it's not worth going too crazy.
- 	 */
--	bus->id = res.start;
-+	bus->id = res[0].start;
- 
- 	data = of_get_property(np, "fsl,mdio-pin", &len);
- 	if (!data || len != 4)
-@@ -142,13 +146,27 @@ static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
- 		return -ENODEV;
- 	mdc_pin = *data;
- 
--	bitbang->dir = ioremap(res.start, res.end - res.start + 1);
--	if (!bitbang->dir)
-+	bitbang->mdc.dir = ioremap(res[0].start, res[0].end - res[0].start + 1);
-+	if (!bitbang->mdc.dir)
- 		return -ENOMEM;
- 
--	bitbang->dat = bitbang->dir + 4;
--	bitbang->mdio_msk = 1 << (31 - mdio_pin);
--	bitbang->mdc_msk = 1 << (31 - mdc_pin);
-+	bitbang->mdc.dat = bitbang->mdc.dir + 4;
-+	if( !of_address_to_resource(np, 1, &res[1]))
-+	{
-+		bitbang->mdio.dir = ioremap(res[1].start, res[1].end - res[1].start + 1);
-+		if (!bitbang->mdio.dir)
-+		{
-+			iounmap(bitbang->mdc.dir);
-+			return -ENOMEM;
-+		}
-+		bitbang->mdio.dat = bitbang->mdio.dir + 4;
-+	}
-+	else{
-+		bitbang->mdio.dir = bitbang->mdc.dir;
-+		bitbang->mdio.dat = bitbang->mdc.dat;
-+	}
-+	bitbang->mdio.msk = 1 << (31 - mdio_pin);
-+	bitbang->mdc.msk = 1 << (31 - mdc_pin);
- 
- 	return 0;
- }
-@@ -220,7 +238,9 @@ out_free_irqs:
- 	dev_set_drvdata(&ofdev->dev, NULL);
- 	kfree(new_bus->irq);
- out_unmap_regs:
--	iounmap(bitbang->dir);
-+	if ( bitbang->mdio.dir != bitbang->mdc.dir)
-+		iounmap(bitbang->mdio.dir);
-+	iounmap(bitbang->mdc.dir);
- out_free_bus:
- 	kfree(new_bus);
- out_free_priv:
-@@ -238,7 +258,9 @@ static int fs_enet_mdio_remove(struct of_device *ofdev)
- 	free_mdio_bitbang(bus);
- 	dev_set_drvdata(&ofdev->dev, NULL);
- 	kfree(bus->irq);
--	iounmap(bitbang->dir);
-+	if ( bitbang->mdio.dir != bitbang->mdc.dir)
-+		iounmap(bitbang->mdio.dir);
-+	iounmap(bitbang->mdc.dir);
- 	kfree(bitbang);
- 	kfree(bus);
+Andreas, I think we both got a bit lost. Lets take a step back.
+
+The original problem was that after 2.6.23 cross compiling
+powerpc/g5_defconfig broke (Regression). Using gcc 4.0.4, powerpc64
+target as cross compiler and powerpc target as 32-bit cross compiler.
+
+Since 2.6.23-git1 it is now broken. Using gcc 4.1.2 didn't fix this. Neither
+with "--with-cpu=default32" present nor without. So could you please
+explain to me how I'm supposed to cross compile powerpc/g5_defconfig now?
+Passing CFLAGS=-m32 didn't help too.
+
+Or is it just a new bug in the kernel make system?
+
+Just for reference up till 2.6.23 I used the following command:
+make ARCH=powerpc HOSTCC=gcc-4.0 CROSS_COMPILE=powerpc64-linux-  \
+	CROSS32_COMPILE=powerpc-linux-
+
+Thanks,
+
+Jan
