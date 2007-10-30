@@ -1,22 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 30 Oct 2007 11:58:33 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 05/11] [POWERPC] TQM5200 DTS
-Message-ID: <20071030005833.GI29263@localhost.localdomain>
-References: <20071023231302.29359.27417.stgit@hekate.izotz.org>
-	<20071023231333.29359.35252.stgit@hekate.izotz.org>
-	<13403420.post@talk.nabble.com>
-	<fa686aa40710250653o6e7df26y1890d5c485a6d508@mail.gmail.com>
-	<4720BA4B.5090707@semihalf.com>
-	<20071026013343.GD457@localhost.localdomain>
-	<4725EB9E.1030507@semihalf.com>
-	<fa686aa40710290840w41e2ffeo38b9497ce76e155@mail.gmail.com>
+Return-Path: <tglx@linutronix.de>
+Received: from www.tglx.de (www.tglx.de [62.245.132.106])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F1CE9DE0BB
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:50:26 +1100 (EST)
+Date: Tue, 30 Oct 2007 02:49:34 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 0/3] Add device-tree aware NDFC driver
+In-Reply-To: <20071029201738.GA2022@ru.mvista.com>
+Message-ID: <alpine.LFD.0.9999.0710300235580.3186@localhost.localdomain>
+References: <20071029201738.GA2022@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40710290840w41e2ffeo38b9497ce76e155@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>,
-	Martin Krause <Martin.Krause@tqs.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Oct 29, 2007 at 09:40:23AM -0600, Grant Likely wrote:
-> On 10/29/07, Marian Balakowicz <m8@semihalf.com> wrote:
-> > David Gibson wrote:
-> > > On Thu, Oct 25, 2007 at 05:46:19PM +0200, Marian Balakowicz wrote:
-> > >> Grant Likely wrote:
-> > >>> On 10/25/07, Martin Krause <Martin.Krause@tqs.de> wrote:
-> > > [snip]
-> > >>>> On a board with 16 MiB FLASH for example the "big-fs" _and_ the "misc"
-> > >>>> partition could not be used. "big-fs", because the memory is too small
-> > >>>> (which is OK) and "misc", because it overlaps 1 MiB over the physikal
-> > >>>> flash border. So only the first 9 MiB of the flash could be used in Linux.
-> > >>>> The remaining 7 MiB couldn't be accessed.
-> > >>> Perhaps it would be better to drop the flash layout from the in-kernel
-> > >>> dts files entirely since flash layout can be a fluid thing.
-> > >> Well, but that would not be really user friendly, I'd rather stick
-> > >> with some default config.
-> > >
-> > > Strictly speaking the device-tree is not the right place for flash
-> > > partitioning information.  We put it there because it's preferable to
-> > > having hardcoded per-board flash layouts in the code itself.
-> > >
-> > > It only really works well, though, when there are strong conventions
-> > > (shared with the firmware) about how to partition the flash.
-> > >
-> > > Where it's really up to the user to determine how they want to lay out
-> > > their flash, putting things in the device tree isn't a really good
-> > > idea.
-> >
-> > In principle, you are right, we should not be putting a user dependent
-> > configuration into .dts files. But on the other hand, bindings have
-> > been defined for flash-like devices and their partition layouts and
-> > physmap_of device driver is expecting to get this information from the
-> > blob. So, it is the place for it. But if we are not to put partition
-> > layouts into the default kernel .dts files then we should
-> > provide/maintain some examples an that may be a even bigger mess.
-> >
-> > > Incidentally, it's not required that *all* the flash address space be
-> > > in partitions, so it is possible only give partitions for those flash
-> > > chunks which the firmware needs to know about.
-> >
-> > That might be nicer solution but different variants of TQM5200 boards
-> > do not share the same subset of partitions (default u-boot partitions
-> > at least), so it will not help much.
-> 
-> It's probably more appropriate to have the flash partition layout in
-> the u-boot environment and have u-boot populate the partition
-> information in the device tree.
+On Mon, 29 Oct 2007, Valentine Barshak wrote:
 
-That sounds like a reasonable idea.
+> This adds a device-tree aware PowerPC 44x NanD Flash Controller driver
+> The code is based on the original NDFC driver by Thomas Gleixner, but
+> since it's been changed much and has initialization/clean-up completely
+> reworked it's been put into a separate ndfc_of.c file. This version
+> supports both separate mtd devices on each chip attached to NDFC banks and
+> single mtd device spread across identical chips (not using mtdconcat) as well.
+> The choice is selected with device tree settings. This has been tested
+> on PowerPC 440EPx Sequoia board.
+> Any comments are greatly appreciated.
 
-But if the flash partition layout is *not* fixed - but selectable by
-the board installer, then it should certainly not be hardcoded into a
-fixed dts.
+Did I express myself not clear enough in my first reply or is this
+just a repeated epiphany in my inbox ? 
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+You got plenty of comments to your patches, but you decided to ignore
+them silently.
+
+Darn, fix it the right way once and forever and please don't try to
+tell me another heartrending "why I did it my way" story.
+
+This all can be done with a nice series of incremental patches
+including a fixup to the existing users.
+
+We have enough dump and run shit in the kernel already.
+
+No thanks,
+
+   tglx
