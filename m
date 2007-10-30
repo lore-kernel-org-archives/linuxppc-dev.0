@@ -1,20 +1,20 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (unknown [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id C259FDDF66
+Return-Path: <ankur_maheshwari@procsys.com>
+Received: from mailsvr.procsys.com (unknown [61.95.199.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 482A5DE11B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Oct 2007 03:04:20 +1100 (EST)
-Message-ID: <393649804.05275@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: linuxppc-embedded@ozlabs.org,
- "Barisa Kisku" <barisa.kisku@gmail.com>
-Subject: Re: Whether kernel page table is loaded in exception handler?
-Date: Mon, 29 Oct 2007 00:04:28 +0800
-References: <393584094.25173@lzu.edu.cn>
-In-Reply-To: <393584094.25173@lzu.edu.cn>
+	Tue, 30 Oct 2007 16:55:50 +1100 (EST)
+Received: from [192.168.1.243] ([192.168.1.243])
+	by mailsvr.procsys.com (8.13.5/8.13.5) with ESMTP id l9U5voar024818
+	for <linuxppc-embedded@ozlabs.org>; Tue, 30 Oct 2007 11:27:50 +0530
+Message-ID: <4726C743.9070809@procsys.com>
+Date: Tue, 30 Oct 2007 11:25:15 +0530
+From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1202101.878DJtlOqr";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200710290004.30586.wangbj@lzu.edu.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: [Fwd: mpc8xx, i2c read DB busy issue]
+Content-Type: multipart/mixed; boundary="------------030609030005020502090508"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,65 +25,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1202101.878DJtlOqr
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+--------------030609030005020502090508
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sunday 28 October 2007 22:58:29, Barisa Kisku wrote=EF=BC=9A
-> Hi,
-> Whether kernel page table is loaded during the execution of exception
-> handling.I tried to understand that bit code, but could n't find out=20
-> during the execution of system call exception handling or  external
-> interrupt exception handling.
->
->
-> thanks in advance.
->
-> Barisa Kisku
 
-the external interrupt / syscall exception is not responsible for loading p=
-age=20
-tables. Depending on the type of exception, probably no more exception is=20
-allowed if the exception have disabled the MSR EE bit. Otherwise it's=20
-depending on the powerpc model, normally the kernel will search tlb first, =
-if=20
-there is a (Data/Insn) miss, the kernel will search the page table=20
-entry(PTEs), if the PTE is founded, the kernel will reload tlb, otherwise i=
-t=20
-will raise a page fault exception, this may ask the kernel to load the page=
-=20
-on demand, if the kernel could not load the requested the page, then we got=
- a=20
-double fault (page fault). I'm not sure this is 100% corrent, but help it=20
-will help
 
-Wang
+--------------030609030005020502090508
+Content-Type: message/rfc822;
+ name="mpc8xx, i2c read DB busy issue.eml"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mpc8xx, i2c read DB busy issue.eml"
 
-=2D-=20
-Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0Lanzhou University
-Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0http://dslab.lzu.edu.cn
-School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
-ngbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
-Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
+X-Mozilla-Keys: 
+Message-ID: <4721B3B7.8070602@procsys.com>
+Date: Fri, 26 Oct 2007 15:00:31 +0530
+From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: mpc8xx, i2c read DB busy issue
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---nextPart1202101.878DJtlOqr
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Hi all,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+I am trying to use mpc860 as i2c-SLAVE. Kernel, I am using is 
+Linux-2.4.4, which I can't change due to some reasons.
 
-iD8DBQBHJLMMIuIOr7tpgg0RAicTAJ40SyGw1bDcPQRIJNz30cR71MGE+QCfW3z9
-vaKKlufGmaZb0ru4Exa84DU=
-=oDZY
------END PGP SIGNATURE-----
+I am able to do I2C read/write operations on mpc8xx-i2c slave only after 
+re-insmoding my driver module (i2c-algo-8xx.c, and adapter layer drive, 
+code I took form i2c-rpx/r360.c ).
 
---nextPart1202101.878DJtlOqr--
+The issue I am facing is when I insmod i2c-driver on fresh Linux boot, 
+any i2c-mpc860 as slave read/write operation gives me busy status (which 
+is for Rx BD not available) in Controller's i2c Event Registers. When I 
+get busy status I have to do force_close() and re-init of bd, then only 
+busy status goes off.
+
+I tried calling cpm_iic_init(); twice while __init but with no change in 
+busy status.
+
+After some initial try, i2c slave write works but i2c read gives no data 
+to the master. After re-insmoding driver, read/write works with some 
+times (1 out of 15 times) i2c-read failing.
+
+But still I can't understand why busy is coming....
+
+Any help or suggestions are highly appreciated.
+
+thanks,
+Ankur Maheshwari
+
+ 
+
+
+--------------030609030005020502090508--
