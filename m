@@ -1,19 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B8131DDF82
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 13:50:17 +1100 (EST)
-Date: Wed, 31 Oct 2007 13:50:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sergej Stepanov <Sergej.Stepanov@ids.de>
-Subject: Re: [PATCH] using mii-bitbang on different processor ports
-Message-Id: <20071031135012.557228f2.sfr@canb.auug.org.au>
-In-Reply-To: <1193760559.6244.25.camel@p60635-ste.ids.de>
-References: <1193760559.6244.25.camel@p60635-ste.ids.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <Gerald.VanBaren@ge.com>
+Received: from ext-nj2ut-12.online-age.net (ext-nj2ut-12.online-age.net
+	[64.14.54.245])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ext-nj2ut.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8F424DE332
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 04:20:17 +1100 (EST)
+Received: from int-nj2ut-5.online-age.net (int-nj2ut-5.online-age.net
+	[3.159.237.74])
+	by ext-nj2ut-12.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
+	with ESMTP id l9UHE81l030426
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:14:08 -0400
+Received: from cinmlef03.e2k.ad.ge.com (int-nj2ut-5.online-age.net
+	[3.159.237.74])
+	by int-nj2ut-5.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id l9UHE7Ow012753
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:14:08 -0400
+Message-ID: <4727665E.1070109@ge.com>
+Date: Tue, 30 Oct 2007 13:14:06 -0400
+From: Jerry Van Baren <gerald.vanbaren@ge.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: libfdt as its own repo and submodule of dtc?
+References: <C98039BC-92DE-4398-B198-EDAD12A3670C@kernel.crashing.org>
+	<E1ImtSB-0003vC-0j@jdl.com>
+In-Reply-To: <E1ImtSB-0003vC-0j@jdl.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jon Loeliger wrote:
+> So, like, the other day Kumar Gala mumbled:
+>> Jon,
+>>
+>> It seems like have libfdt as a unique git repo that is a submodule of  
+>> the things that need it (dtc, u-boot, etc.) might make some sense and  
+>> it easier for the projects that need to pull it in.
+>>
+>> Is this something you can take a look at? (or have other ideas on).
+> 
+> I would be fine with making libfdt a git repository separate
+> from the DTC repository if that makes it easier to integrate
+> it with other projects.
+> 
+> jdl
 
-On Tue, 30 Oct 2007 17:09:19 +0100 Sergej Stepanov <Sergej.Stepanov@ids.de>=
- wrote:
->
->  static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
->                                           struct device_node *np)
->  {
-> -	struct resource res;
-> +	struct resource res[2];
+That sounds like a good idea to me.  I would really prefer pulling 
+patches out of a libfdt repo into the u-boot repo rather than trying to 
+kerchunk upgrade lumps.  While we can do this with a dtc repo, it 
+potentially makes it a lot more difficult.
 
-Why not just reuse the same resource structure?  You don't seem to need
-them both at the same time.
-
-> +	if( !of_address_to_resource(np, 1, &res[1]))
-> +	{
-> +		bitbang->mdio.dir =3D ioremap(res[1].start, res[1].end - res[1].start =
-+ 1);
-> +		if (!bitbang->mdio.dir)
-> +		{
-> +			iounmap(bitbang->mdc.dir);
-> +			return -ENOMEM;
-> +		}
-> +		bitbang->mdio.dat =3D bitbang->mdio.dir + 4;
-> +	}
-> +	else{
-
-Formatting:
-	if () {
-	} else {
-	}
-> +	if ( bitbang->mdio.dir !=3D bitbang->mdc.dir)
-
-No spaces after (, please.  Here and elsewhere.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHJ+1pTgG2atn1QN8RAj8LAJ9gdYNJG76d7KAoyU07nKf6Gb7AKwCgh6tG
-YsTO3SmXUMHtgGV/atqJqdY=
-=/nCS
------END PGP SIGNATURE-----
-
---Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y--
+gvb
