@@ -1,17 +1,31 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3ED7CDE236
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:59:24 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/4] PowerPC: 440GRx Rainier board support.
-Date: Tue, 30 Oct 2007 20:59:17 +0100
-References: <20071030165739.GA22126@ru.mvista.com>
-In-Reply-To: <20071030165739.GA22126@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200710302059.17831.arnd@arndb.de>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A48BADE2A4
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:18:15 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UKIB0Z021324
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 16:18:11 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9UKGI3t117454
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:18:10 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9UKG922021970
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:16:09 -0600
+Date: Tue, 30 Oct 2007 15:16:08 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 0/4] PowerPC: 440GRx Rainier board support.
+Message-ID: <20071030151608.28a2d706@weaponx.rchland.ibm.com>
+In-Reply-To: <20071030164511.GA21973@ru.mvista.com>
+References: <20071030164511.GA21973@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gVHVlc2RheSAzMCBPY3RvYmVyIDIwMDcsIFZhbGVudGluZSBCYXJzaGFrIHdyb3RlOgo+ICtz
-dGF0aWMgc3RydWN0IG9mX2RldmljZV9pZCByYWluaWVyX29mX2J1c1tdID0gewo+ICugoKCgoKCg
-eyAuY29tcGF0aWJsZSA9ICJpYm0scGxiNCIsIH0sCj4gK6CgoKCgoKB7IC5jb21wYXRpYmxlID0g
-ImlibSxvcGIiLCB9LAo+ICugoKCgoKCgeyAuY29tcGF0aWJsZSA9ICJpYm0sZWJjIiwgfSwKPiAr
-oKCgoKCgoHt9LAo+ICt9Owo+ICsKPiArc3RhdGljIGludCBfX2luaXQgcmFpbmllcl9kZXZpY2Vf
-cHJvYmUodm9pZCkKPiArewo+ICugoKCgoKCgaWYgKCFtYWNoaW5lX2lzKHJhaW5pZXIpKQo+ICug
-oKCgoKCgoKCgoKCgoKByZXR1cm4gMDsKPiArCj4gK6CgoKCgoKBvZl9wbGF0Zm9ybV9idXNfcHJv
-YmUoTlVMTCwgcmFpbmllcl9vZl9idXMsIE5VTEwpOwo+ICsKPiAroKCgoKCgoHJldHVybiAwOwo+
-ICt9Cj4gK2RldmljZV9pbml0Y2FsbChyYWluaWVyX2RldmljZV9wcm9iZSk7Cj4gKwo+ICtzdGF0
-aWMgaW50IF9faW5pdCByYWluaWVyX3Byb2JlKHZvaWQpCj4gK3sKPiAroKCgoKCgoHVuc2lnbmVk
-IGxvbmcgcm9vdCA9IG9mX2dldF9mbGF0X2R0X3Jvb3QoKTsKPiArCj4gK6CgoKCgoKBpZiAoIW9m
-X2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiYW1jYyxyYWluaWVyIikpCj4gK6CgoKCgoKCg
-oKCgoKCgoHJldHVybiAwOwo+ICsKPiAroKCgoKCgoHJldHVybiAxOwo+ICt9Cj4gKwo+ICtkZWZp
-bmVfbWFjaGluZShyYWluaWVyKSB7Cj4gK6CgoKCgoKAubmFtZSCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoD0gIlJhaW5pZXIiLAo+ICugoKCgoKCgLnByb2JlIKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoKA9IHJhaW5pZXJfcHJvYmUsCj4gK6CgoKCgoKAucHJvZ3Jlc3MgoKCgoKCgoKCgoKCgoKCg
-oKCgoKCgoD0gdWRiZ19wcm9ncmVzcywKPiAroKCgoKCgoC5pbml0X0lSUSCgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgPSB1aWNfaW5pdF90cmVlLAo+ICugoKCgoKCgLmdldF9pcnEgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKA9IHVpY19nZXRfaXJxLAo+ICugoKCgoKCgLnJlc3RhcnSgoKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKA9IHBwYzQ0eF9yZXNldF9zeXN0ZW0sCj4gK6CgoKCgoKAuY2FsaWJyYXRlX2Rl
-Y3KgoKCgoKCgoKCgoKCgoKCgoD0gZ2VuZXJpY19jYWxpYnJhdGVfZGVjciwKPiArfTsKCldvdywg
-dGhpcyBpcyBnZXR0aW5nIHJlYWxseSBzbWFsbCB0aGVzZSBkYXlzLiBJIHdvbmRlciBpZiB3ZSBz
-aG91bGQgYWRkIHR3bwptb3JlIGdlbmVyaWMgaGVscGVycyB0byB0dXJuIHRoaXMgaW50byBqdXN0
-CgpkZWZpbmVfbWFjaGluZShyYWluaWVyKSB7CiAgICAgICAubmFtZSAgICAgICAgICAgICAgICAg
-ICAgICAgICAgID0gIlJhaW5pZXIiLAogICAgICAgLmNvbXBhdGlibGUgICAgICAgICAgICAgICAg
-ICAgICA9ICJhbWNjLHJhaW5pZXIiLCAgICAgICAgIC8qIG5ldyAqLwogICAgICAgLnByb2JlX2J1
-c2VzCQkgICAgICAgPSAmNHh4X2dlbmVyaWNfYnVzX3Byb2JlLCAvKiBuZXcgKi8KICAgICAgIC5w
-cm9ncmVzcyAgICAgICAgICAgICAgICAgICAgICAgPSB1ZGJnX3Byb2dyZXNzLAogICAgICAgLmlu
-aXRfSVJRICAgICAgICAgICAgICAgICAgICAgICA9IHVpY19pbml0X3RyZWUsCiAgICAgICAuZ2V0
-X2lycSAgICAgICAgICAgICAgICAgICAgICAgID0gdWljX2dldF9pcnEsCiAgICAgICAucmVzdGFy
-dCAgICAgICAgICAgICAgICAgICAgICAgID0gcHBjNDR4X3Jlc2V0X3N5c3RlbSwKICAgICAgIC5j
-YWxpYnJhdGVfZGVjciAgICAgICAgICAgICAgICAgPSBnZW5lcmljX2NhbGlicmF0ZV9kZWNyLAp9
-OwoKCUFybmQgPD48Cg==
+On Tue, 30 Oct 2007 19:45:11 +0300
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+
+> The following patches add PowerPC 440GRx Rainier board support.
+> The board is almost identical to Sequoia, but doesn't have USB
+> and FPU is not supported.
+
+So why do we need anything other than the DTS and the defconfig?  I
+would think the sequoia wrapper and platform files would suffice
+completely for this.
+
+josh
