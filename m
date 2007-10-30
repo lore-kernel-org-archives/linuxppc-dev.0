@@ -1,28 +1,35 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <stuart.yoder@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7E578DE29F
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 05:59:40 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UIxauo028360
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9UIxaEF481142
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9UIxapB003364
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH] [Powerpc V2.1] fix switch_slb handling of 1T ESID values
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 30 Oct 2007 13:59:33 -0500
-Message-ID: <20071030185932.6368.7796.stgit@farscape.rchland.ibm.com>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A1F7BDDEF2
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:06:38 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l9UJ6XWT021076
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 12:06:33 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9UJ6XuE008379
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:06:33 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulus@samba.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Tue, 30 Oct 2007 12:06:33 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2872@az33exm25.fsl.freescale.net>
+In-Reply-To: <20071030163343.GA4517@loki.buserror.net>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<20071029212213.GA28073@lixom.net>
+	<20071030005146.GF29263@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F278B@az33exm25.fsl.freescale.net>
+	<20071030163343.GA4517@loki.buserror.net>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Wood Scott-B07421" <scottwood@freescale.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,87 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+=20
 
-[Powerpc] fix switch_slb handling of 1T ESID values
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+> Sent: Tuesday, October 30, 2007 11:34 AM
+> To: Yoder Stuart-B08248
+> Cc: David Gibson; Olof Johansson; linuxppc-dev@ozlabs.org
+> Subject: Re: RFC: replace device_type with new "class" property?
+>=20
+> On Tue, Oct 30, 2007 at 09:23:14AM -0700, Yoder Stuart-B08248 wrote:
+> >   mpic: pic@40000 {
+> >      clock-frequency =3D <0>;
+> >      interrupt-controller;
+> >      #address-cells =3D <0>;
+> >      #interrupt-cells =3D <2>;
+> >      reg =3D <40000 40000>;
+> >      compatible =3D "fsl,xyz";
+> >      big-endian;
+> > }
+> >=20
+> > Note-- I removed the device_type property and changed
+> > compatible somewhat.  How are you going to find where
+> > the meaning interrupt controller's interrupt cells are
+> > defined?   What spec will you look at?
+>=20
+> The binding for fsl,xyz.
 
-Now that we have 1TB segment size support, we need to be using the
-GET_ESID_1T macro when comparing ESID values for pc,stack, and
-unmapped_base within switch_slb().    A new helper function called
-esids_match() contains the logic for deciding when to call GET_ESID
-and GET_ESID_1T.
+Not every string listed in compatible has a spec=20
+backing it (or should be required to).  You would
+have to go look at the source code and cross your
+fingers that the comments were sufficient.
 
-This also happens to fix a duplicate-slb-entry inspired machine-check
-exception I was seeing when trying to run java on a power6 partition.
+Another good reason for device_type-- it helps=20
+distinguish between two similar classes of devices.
+Both "open-pic" and "isa-pic" look very similar but
+have different encodings of their interrupt cells.
+Without a device_type it may be difficult or impossible
+to distinguish them unless the "name" and
+"compatible" are luckily clear enough.
 
-Tested on power6 and power5.
-
-Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
-
----
-
-Just a bit of whitespace cosmetic touchup in this version, as suggested
-by Stephen Rothwell.
----
-
- arch/powerpc/mm/slb.c |   34 +++++++++++++++++++++++++++++++---
- 1 files changed, 31 insertions(+), 3 deletions(-)
-
-
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index bbd2c51..8cbbfab 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -148,6 +148,35 @@ void slb_vmalloc_update(void)
- 	slb_flush_and_rebolt();
- }
- 
-+/* Helper function to compare esids.  There are four cases to handle.
-+ * 1. The system is not 1T segment size capable.  Use the GET_ESID compare.
-+ * 2. The system is 1T capable, both addresses are < 1T, use the GET_ESID compare.
-+ * 3. The system is 1T capable, only one of the two addresses is > 1T.  This is not a match.
-+ * 4. The system is 1T capable, both addresses are > 1T, use the GET_ESID_1T macro to compare.
-+ */
-+static inline int esids_match(unsigned long addr1, unsigned long addr2)
-+{
-+	int esid_1t_count;
-+
-+	/* System is not 1T segment size capable. */
-+	if (!cpu_has_feature(CPU_FTR_1T_SEGMENT))
-+		return (GET_ESID(addr1) == GET_ESID(addr2));
-+
-+	esid_1t_count = (((addr1 >> SID_SHIFT_1T) != 0) +
-+				((addr2 >> SID_SHIFT_1T) != 0));
-+
-+	/* both addresses are < 1T */
-+	if (esid_1t_count == 0)
-+		return (GET_ESID(addr1) == GET_ESID(addr2));
-+
-+	/* One address < 1T, the other > 1T.  Not a match */
-+	if (esid_1t_count == 1)
-+		return 0;
-+
-+	/* Both addresses are > 1T. */
-+	return (GET_ESID_1T(addr1) == GET_ESID_1T(addr2));
-+}
-+
- /* Flush all user entries from the segment table of the current processor. */
- void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- {
-@@ -193,15 +222,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
- 		return;
- 	slb_allocate(pc);
- 
--	if (GET_ESID(pc) == GET_ESID(stack))
-+	if (esids_match(pc,stack))
- 		return;
- 
- 	if (is_kernel_addr(stack))
- 		return;
- 	slb_allocate(stack);
- 
--	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
--	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
-+	if (esids_match(pc,unmapped_base) || esids_match(stack,unmapped_base))
- 		return;
- 
- 	if (is_kernel_addr(unmapped_base))
+Stuart
