@@ -1,19 +1,17 @@
-Return-Path: <mathieu.desnoyers@polymtl.ca>
-Received: from smtp.polymtl.ca (smtp.polymtl.ca [132.207.4.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.polymtl.ca", Issuer "Ca_Cert_Smtp_Poly" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 58086DE2B8
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:46:32 +1100 (EST)
-Message-Id: <20071030192102.985443792@polymtl.ca>
-References: <20071030191557.947156623@polymtl.ca>
-Date: Tue, 30 Oct 2007 15:16:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, matthew@wil.cx,
-	linux-arch@vger.kernel.org, penberg@cs.helsinki.fi, linux-mm@kvack.org,
-	Christoph Lameter <clameter@sgi.com>
-Subject: [patch 05/28] Add cmpxchg64 and cmpxchg64_local to powerpc
-Cc: Paul Mackerras <paulus@samba.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3ED7CDE236
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 06:59:24 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/4] PowerPC: 440GRx Rainier board support.
+Date: Tue, 30 Oct 2007 20:59:17 +0100
+References: <20071030165739.GA22126@ru.mvista.com>
+In-Reply-To: <20071030165739.GA22126@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200710302059.17831.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make sure that at least cmpxchg64_local is available on all architectures to use
-for unsigned long long values.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Paul Mackerras <paulus@samba.org>
-CC: linuxppc-dev@ozlabs.org
----
- include/asm-powerpc/system.h |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux-2.6-lttng/include/asm-powerpc/system.h
-===================================================================
---- linux-2.6-lttng.orig/include/asm-powerpc/system.h	2007-09-24 10:50:11.000000000 -0400
-+++ linux-2.6-lttng/include/asm-powerpc/system.h	2007-09-24 11:01:04.000000000 -0400
-@@ -488,6 +488,12 @@ __cmpxchg_local(volatile void *ptr, unsi
-  */
- #define NET_IP_ALIGN	0
- #define NET_SKB_PAD	L1_CACHE_BYTES
-+
-+#define cmpxchg64	cmpxchg
-+#define cmpxchg64_local	cmpxchg_local
-+#else
-+#include <asm-generic/cmpxchg-local.h>
-+#define cmpxchg64_local(ptr,o,n) __cmpxchg64_local_generic((ptr), (o), (n))
- #endif
- 
- #define arch_align_stack(x) (x)
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+T24gVHVlc2RheSAzMCBPY3RvYmVyIDIwMDcsIFZhbGVudGluZSBCYXJzaGFrIHdyb3RlOgo+ICtz
+dGF0aWMgc3RydWN0IG9mX2RldmljZV9pZCByYWluaWVyX29mX2J1c1tdID0gewo+ICugoKCgoKCg
+eyAuY29tcGF0aWJsZSA9ICJpYm0scGxiNCIsIH0sCj4gK6CgoKCgoKB7IC5jb21wYXRpYmxlID0g
+ImlibSxvcGIiLCB9LAo+ICugoKCgoKCgeyAuY29tcGF0aWJsZSA9ICJpYm0sZWJjIiwgfSwKPiAr
+oKCgoKCgoHt9LAo+ICt9Owo+ICsKPiArc3RhdGljIGludCBfX2luaXQgcmFpbmllcl9kZXZpY2Vf
+cHJvYmUodm9pZCkKPiArewo+ICugoKCgoKCgaWYgKCFtYWNoaW5lX2lzKHJhaW5pZXIpKQo+ICug
+oKCgoKCgoKCgoKCgoKByZXR1cm4gMDsKPiArCj4gK6CgoKCgoKBvZl9wbGF0Zm9ybV9idXNfcHJv
+YmUoTlVMTCwgcmFpbmllcl9vZl9idXMsIE5VTEwpOwo+ICsKPiAroKCgoKCgoHJldHVybiAwOwo+
+ICt9Cj4gK2RldmljZV9pbml0Y2FsbChyYWluaWVyX2RldmljZV9wcm9iZSk7Cj4gKwo+ICtzdGF0
+aWMgaW50IF9faW5pdCByYWluaWVyX3Byb2JlKHZvaWQpCj4gK3sKPiAroKCgoKCgoHVuc2lnbmVk
+IGxvbmcgcm9vdCA9IG9mX2dldF9mbGF0X2R0X3Jvb3QoKTsKPiArCj4gK6CgoKCgoKBpZiAoIW9m
+X2ZsYXRfZHRfaXNfY29tcGF0aWJsZShyb290LCAiYW1jYyxyYWluaWVyIikpCj4gK6CgoKCgoKCg
+oKCgoKCgoHJldHVybiAwOwo+ICsKPiAroKCgoKCgoHJldHVybiAxOwo+ICt9Cj4gKwo+ICtkZWZp
+bmVfbWFjaGluZShyYWluaWVyKSB7Cj4gK6CgoKCgoKAubmFtZSCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoD0gIlJhaW5pZXIiLAo+ICugoKCgoKCgLnByb2JlIKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgoKA9IHJhaW5pZXJfcHJvYmUsCj4gK6CgoKCgoKAucHJvZ3Jlc3MgoKCgoKCgoKCgoKCgoKCg
+oKCgoKCgoD0gdWRiZ19wcm9ncmVzcywKPiAroKCgoKCgoC5pbml0X0lSUSCgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgPSB1aWNfaW5pdF90cmVlLAo+ICugoKCgoKCgLmdldF9pcnEgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKA9IHVpY19nZXRfaXJxLAo+ICugoKCgoKCgLnJlc3RhcnSgoKCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKA9IHBwYzQ0eF9yZXNldF9zeXN0ZW0sCj4gK6CgoKCgoKAuY2FsaWJyYXRlX2Rl
+Y3KgoKCgoKCgoKCgoKCgoKCgoD0gZ2VuZXJpY19jYWxpYnJhdGVfZGVjciwKPiArfTsKCldvdywg
+dGhpcyBpcyBnZXR0aW5nIHJlYWxseSBzbWFsbCB0aGVzZSBkYXlzLiBJIHdvbmRlciBpZiB3ZSBz
+aG91bGQgYWRkIHR3bwptb3JlIGdlbmVyaWMgaGVscGVycyB0byB0dXJuIHRoaXMgaW50byBqdXN0
+CgpkZWZpbmVfbWFjaGluZShyYWluaWVyKSB7CiAgICAgICAubmFtZSAgICAgICAgICAgICAgICAg
+ICAgICAgICAgID0gIlJhaW5pZXIiLAogICAgICAgLmNvbXBhdGlibGUgICAgICAgICAgICAgICAg
+ICAgICA9ICJhbWNjLHJhaW5pZXIiLCAgICAgICAgIC8qIG5ldyAqLwogICAgICAgLnByb2JlX2J1
+c2VzCQkgICAgICAgPSAmNHh4X2dlbmVyaWNfYnVzX3Byb2JlLCAvKiBuZXcgKi8KICAgICAgIC5w
+cm9ncmVzcyAgICAgICAgICAgICAgICAgICAgICAgPSB1ZGJnX3Byb2dyZXNzLAogICAgICAgLmlu
+aXRfSVJRICAgICAgICAgICAgICAgICAgICAgICA9IHVpY19pbml0X3RyZWUsCiAgICAgICAuZ2V0
+X2lycSAgICAgICAgICAgICAgICAgICAgICAgID0gdWljX2dldF9pcnEsCiAgICAgICAucmVzdGFy
+dCAgICAgICAgICAgICAgICAgICAgICAgID0gcHBjNDR4X3Jlc2V0X3N5c3RlbSwKICAgICAgIC5j
+YWxpYnJhdGVfZGVjciAgICAgICAgICAgICAgICAgPSBnZW5lcmljX2NhbGlicmF0ZV9kZWNyLAp9
+OwoKCUFybmQgPD48Cg==
