@@ -1,22 +1,28 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3394DDE2EF
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 05:33:06 +1100 (EST)
-Message-ID: <472778D7.6050805@garzik.org>
-Date: Tue, 30 Oct 2007 14:32:55 -0400
-From: Jeff Garzik <jeff@garzik.org>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7E578DE29F
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 05:59:40 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9UIxauo028360
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9UIxaEF481142
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9UIxapB003364
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 14:59:36 -0400
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [PATCH] [Powerpc V2.1] fix switch_slb handling of 1T ESID values
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 30 Oct 2007 13:59:33 -0500
+Message-ID: <20071030185932.6368.7796.stgit@farscape.rchland.ibm.com>
 MIME-Version: 1.0
-To: Dale Farnsworth <dale@farnsworth.org>
-Subject: Re: [PATCH] pegasos_eth.c: Fix compile error over MV643XX_ defines
-References: <20071029212729.GA4074@pogo>
-	<20071029223900.GA7097@xyzzy.farnsworth.org>
-In-Reply-To: <20071029223900.GA7097@xyzzy.farnsworth.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tzachi Perelstein <tzachi@marvell.com>, netdev@vger.kernel.org,
-	"Luis R. Rodriguez" <mcgrof@gmail.com>,
-	Lennert Buytenhek <buytenh@wantstofly.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,73 +32,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dale Farnsworth wrote:
-> On Mon, Oct 29, 2007 at 05:27:29PM -0400, Luis R. Rodriguez wrote:
->> This commit made an incorrect assumption:
->> --
->> Author: Lennert Buytenhek <buytenh@wantstofly.org>
->>  Date:   Fri Oct 19 04:10:10 2007 +0200
->>
->>     mv643xx_eth: Move ethernet register definitions into private header
->>     
->>     Move the mv643xx's ethernet-related register definitions from
->>     include/linux/mv643xx.h into drivers/net/mv643xx_eth.h, since
->>     they aren't of any use outside the ethernet driver.
->>     
->>     Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
->>     Acked-by: Tzachi Perelstein <tzachi@marvell.com>
->>     Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
->> --
->>
->> arch/powerpc/platforms/chrp/pegasos_eth.c made use of a 3 defines there.
->>
->> mcgrof@pogo:~/devel/wireless-2.6$ git-describe 
->>
->> v2.6.24-rc1-138-g0119130
->>
->> This patch fixes this by internalizing 3 defines onto pegasos which are
->> simply no longer available elsewhere. Without this your compile will fail
-> 
-> That compile failure was fixed in commit
-> 30e69bf4cce16d4c2dcfd629a60fcd8e1aba9fee by Al Viro.
-> 
-> However, as I examine that commit, I see that it defines offsets from
-> the eth block in the chip, rather than the full chip registeri block
-> as the Pegasos 2 code expects.  So, I think it fixes the compile
-> failure, but leaves the Pegasos 2 broken.
-> 
-> Luis, do you have Pegasos 2 hardware?  Can you (or anyone) verify that
-> the following patch is needed for the Pegasos 2?
-> 
-> Thanks,
-> -Dale
-> 
-> ---------------------------------
-> 
-> mv643xx_eth: Fix MV643XX_ETH offsets used by Pegasos 2
-> 
-> In the mv643xx_eth driver, we now use offsets from the ethernet
-> register block within the chip, but the pegasos 2 platform still
-> needs offsets from the full chip's register base address.
-> 
-> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> ---
->  include/linux/mv643xx_eth.h |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/mv643xx_eth.h b/include/linux/mv643xx_eth.h
-> index 8df230a..30e11aa 100644
-> --- a/include/linux/mv643xx_eth.h
-> +++ b/include/linux/mv643xx_eth.h
-> @@ -8,9 +8,9 @@
->  #define MV643XX_ETH_NAME		"mv643xx_eth"
->  #define MV643XX_ETH_SHARED_REGS		0x2000
->  #define MV643XX_ETH_SHARED_REGS_SIZE	0x2000
-> -#define MV643XX_ETH_BAR_4	0x220
-> -#define MV643XX_ETH_SIZE_REG_4	0x224
-> -#define MV643XX_ETH_BASE_ADDR_ENABLE_REG	0x0290
-> +#define MV643XX_ETH_BAR_4		0x2220
-> +#define MV643XX_ETH_SIZE_REG_4		0x2224
-> +#define MV643XX_ETH_BASE_ADDR_ENABLE_REG	0x2290
 
-applied
+[Powerpc] fix switch_slb handling of 1T ESID values
+
+Now that we have 1TB segment size support, we need to be using the
+GET_ESID_1T macro when comparing ESID values for pc,stack, and
+unmapped_base within switch_slb().    A new helper function called
+esids_match() contains the logic for deciding when to call GET_ESID
+and GET_ESID_1T.
+
+This also happens to fix a duplicate-slb-entry inspired machine-check
+exception I was seeing when trying to run java on a power6 partition.
+
+Tested on power6 and power5.
+
+Signed-Off-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+---
+
+Just a bit of whitespace cosmetic touchup in this version, as suggested
+by Stephen Rothwell.
+---
+
+ arch/powerpc/mm/slb.c |   34 +++++++++++++++++++++++++++++++---
+ 1 files changed, 31 insertions(+), 3 deletions(-)
+
+
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index bbd2c51..8cbbfab 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -148,6 +148,35 @@ void slb_vmalloc_update(void)
+ 	slb_flush_and_rebolt();
+ }
+ 
++/* Helper function to compare esids.  There are four cases to handle.
++ * 1. The system is not 1T segment size capable.  Use the GET_ESID compare.
++ * 2. The system is 1T capable, both addresses are < 1T, use the GET_ESID compare.
++ * 3. The system is 1T capable, only one of the two addresses is > 1T.  This is not a match.
++ * 4. The system is 1T capable, both addresses are > 1T, use the GET_ESID_1T macro to compare.
++ */
++static inline int esids_match(unsigned long addr1, unsigned long addr2)
++{
++	int esid_1t_count;
++
++	/* System is not 1T segment size capable. */
++	if (!cpu_has_feature(CPU_FTR_1T_SEGMENT))
++		return (GET_ESID(addr1) == GET_ESID(addr2));
++
++	esid_1t_count = (((addr1 >> SID_SHIFT_1T) != 0) +
++				((addr2 >> SID_SHIFT_1T) != 0));
++
++	/* both addresses are < 1T */
++	if (esid_1t_count == 0)
++		return (GET_ESID(addr1) == GET_ESID(addr2));
++
++	/* One address < 1T, the other > 1T.  Not a match */
++	if (esid_1t_count == 1)
++		return 0;
++
++	/* Both addresses are > 1T. */
++	return (GET_ESID_1T(addr1) == GET_ESID_1T(addr2));
++}
++
+ /* Flush all user entries from the segment table of the current processor. */
+ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ {
+@@ -193,15 +222,14 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 		return;
+ 	slb_allocate(pc);
+ 
+-	if (GET_ESID(pc) == GET_ESID(stack))
++	if (esids_match(pc,stack))
+ 		return;
+ 
+ 	if (is_kernel_addr(stack))
+ 		return;
+ 	slb_allocate(stack);
+ 
+-	if ((GET_ESID(pc) == GET_ESID(unmapped_base))
+-	    || (GET_ESID(stack) == GET_ESID(unmapped_base)))
++	if (esids_match(pc,unmapped_base) || esids_match(stack,unmapped_base))
+ 		return;
+ 
+ 	if (is_kernel_addr(unmapped_base))
