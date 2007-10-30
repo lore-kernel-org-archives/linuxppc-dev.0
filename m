@@ -1,19 +1,22 @@
-Return-Path: <SEW_S@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
-	by ozlabs.org (Postfix) with ESMTP id 8DADCDE1DA
+Return-Path: <rwoodworth@securics.com>
+Received: from securics.com (unknown [128.198.58.14])
+	by ozlabs.org (Postfix) with ESMTP id 8C7D0DE203
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Oct 2007 20:19:27 +1100 (EST)
-Received: from tq-mailsrv.tq-net.de (tq-mailsrv.tqs.de [172.20.1.2])
-	by mail.tqs.de (Postfix) with ESMTP id 18322A71B
+	Wed, 31 Oct 2007 02:55:49 +1100 (EST)
+Received: from [192.168.1.125] (c-75-70-32-46.hsd1.co.comcast.net
+	[75.70.32.46])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by securics.com (Postfix) with ESMTP id 5D7C6B8C0B9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Oct 2007 09:50:45 +0100 (CET)
-Message-ID: <4726F065.5050702@tqs.de>
-Date: Tue, 30 Oct 2007 09:50:45 +0100
-From: Jens Gehrlein <sew_s@tqs.de>
-MIME-Version: 1.0
-To: linuxppc-embedded Mailinglist <linuxppc-embedded@ozlabs.org>
-Subject: MPC8360: Support for two SDRAM banks in the Kernel memory management?
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 30 Oct 2007 09:28:59 -0600 (MDT)
+Subject: videobuf
+From: Robert Woodworth <rwoodworth@securics.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 30 Oct 2007 09:28:58 -0600
+Message-Id: <1193758138.4606.7.camel@PisteOff>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +27,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I'm  working on building a v4l2 driver for an FPGA module on a Xilinx
+Virtex4 PPC.
 
-the MPC8360 has two DDR SDRAM controllers. In the 2x32 bit mode
-data transfers from/to the SDRAM can be handled by the MPC and the
-QUICC Engine independently. For instance, the core can access one
-bank and the QUICC Engine can access the other bank via DMA for
-lookup tables, temporary buffers, etc. in the same time.
+Question:
+Why does the v4l2 videobuf *depend* on PCI?
 
-IMHO the Linux Kernel supports only one linear virtual address space.
-So how could the kernel memory management (DMA, alloc, etc.) ensure,
-that data transfers go from/to the QUICC Engine to/from the second
-SDRAM bank?
 
-Does anybody know if bank-separated memory management is supported
-by the Linux Kernel, especially for the MPC8360?
 
-Thanks in advance
-   Jens
+
+Rob.
+
+ 
