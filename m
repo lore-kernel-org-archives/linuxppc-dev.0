@@ -1,11 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 31 Oct 2007 14:24:01 +1100
+Date: Wed, 31 Oct 2007 14:26:12 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [0/2] Embed a copy of dtc in the kernel source
-Message-ID: <20071031032401.GD7772@localhost.localdomain>
+Subject: [1/2] Merge dtc
+Message-ID: <20071031032612.GE7772@localhost.localdomain>
+References: <20071031032401.GD7772@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071031032401.GD7772@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,16 +17,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These two patches are a respin of my previous patch to merge a copy of
-dtc into the kernel tree, so that kernel builds no longer depend on an
-externally installed copy of dtc.
+This very large patch incorporates a copy of dtc into the kernel
+source, in arch/powerpc/boot/dtc-src.  This patch only imports the dtc
+sources verbatim, another patch coming to actually link it into the
+kernel Makefiles and use the embedded copy of dtc for kernel builds.
 
-This respin embeds a newer revision of dtc, and incorporates Sam
-Ravnborg's preferred approach to Makefile integration.  Also, since so
-many people whinged about it last time, I've split the patch into two
-parts, the first is the too-large-for-the-list patch just verbatim
-adding files and the second has the changes to existing kernel files
-to build and use the embedded code.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Too big for this list.  Full patch at:
+	http://ozlabs.org/~dgibson/home/merge-dtc.patch
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
