@@ -1,14 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 8 Nov 2007 14:38:56 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [1/4] Merge dtc and libfdt upstream source
-Message-ID: <20071108033856.GB11695@localhost.localdomain>
-References: <20071108033241.GA11695@localhost.localdomain>
+Date: Wed, 31 Oct 2007 13:45:08 +1100
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Merge dtc
+Message-ID: <20071031024508.GB7772@localhost.localdomain>
+References: <9a3f3582990ad94feb76770e82c50bdd@bga.com>
+	<20071018195926.GA22887@uranus.ravnborg.org>
+	<20071019014510.GD30283@localhost.localdomain>
+	<1b5c57d93e45d94d007b543ea5e2de02@bga.com>
+	<20071019065530.GA27017@localhost.localdomain>
+	<20071019070718.GA28099@uranus.ravnborg.org>
+	<20071019071033.GB27017@localhost.localdomain>
+	<20071019184249.GA32015@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071108033241.GA11695@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20071019184249.GA32015@uranus.ravnborg.org>
+From: dgibson@ozlabs.org (David Gibson)
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,46 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This very large patch incorporates a copy of dtc (including libfdt)
-into the kernel source, in arch/powerpc/boot/dtc-src.  This patch only
-imports the upstream sources verbatim, later patches are needed to
-actually link it into the kernel Makefiles and use the embedded code
-during the kernel build.
+On Fri, Oct 19, 2007 at 08:42:49PM +0200, Sam Ravnborg wrote:
+> Hi David.
+> 
+> > > Give me a day or two then I shall give it a try and see what I can
+> > > do about it.  I will use the previsous posted URL as basis if you do
+> > > not tell me otherwise.
+> > 
+> > Thank you.  The previous URL should be fine, I've made no changes
+> > since then.
+> 
+> I decided to go for a kbuild specific version integrated
+> in boot/Makefile.
+> This is much more readable because this syntax is explicit.
+> We do not favour 3 levels of variabls to avoid rewriting the same
+> filename two times.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Well, yes, on consideration the substitutions in Makefile.dtc are a
+bit over-involved.  Although I still find describing its dozen or so
+lines as unreadable when set next to the intricate wonders of Kbuild a
+little...  bemusing.
 
----
- arch/powerpc/boot/dtc-src/Makefile.dtc             |   25 
- arch/powerpc/boot/dtc-src/checks.c                 |  460 ++++
- arch/powerpc/boot/dtc-src/data.c                   |  351 +++
- arch/powerpc/boot/dtc-src/dtc-lexer.l              |  341 +++
- arch/powerpc/boot/dtc-src/dtc-lexer.lex.c_shipped  | 2184 +++++++++++++++++++++
- arch/powerpc/boot/dtc-src/dtc-parser.tab.c_shipped | 1925 ++++++++++++++++++
- arch/powerpc/boot/dtc-src/dtc-parser.tab.h_shipped |  110 +
- arch/powerpc/boot/dtc-src/dtc-parser.y             |  304 ++
- arch/powerpc/boot/dtc-src/dtc.c                    |  240 ++
- arch/powerpc/boot/dtc-src/dtc.h                    |  253 ++
- arch/powerpc/boot/dtc-src/flattree.c               |  959 +++++++++
- arch/powerpc/boot/dtc-src/fstree.c                 |   94 
- arch/powerpc/boot/dtc-src/libfdt/Makefile.libfdt   |   14 
- arch/powerpc/boot/dtc-src/libfdt/fdt.c             |  156 +
- arch/powerpc/boot/dtc-src/libfdt/fdt.h             |   60 
- arch/powerpc/boot/dtc-src/libfdt/fdt_ro.c          |  562 +++++
- arch/powerpc/boot/dtc-src/libfdt/fdt_rw.c          |  447 ++++
- arch/powerpc/boot/dtc-src/libfdt/fdt_strerror.c    |   96 
- arch/powerpc/boot/dtc-src/libfdt/fdt_sw.c          |  258 ++
- arch/powerpc/boot/dtc-src/libfdt/fdt_wip.c         |  144 +
- arch/powerpc/boot/dtc-src/libfdt/libfdt.h          |  593 +++++
- arch/powerpc/boot/dtc-src/libfdt/libfdt_internal.h |   89 
- arch/powerpc/boot/dtc-src/livetree.c               |  350 +++
- arch/powerpc/boot/dtc-src/srcpos.c                 |  105 +
- arch/powerpc/boot/dtc-src/srcpos.h                 |   75 
- arch/powerpc/boot/dtc-src/treesource.c             |  236 ++
- arch/powerpc/boot/dtc-src/version_gen.h            |    1 
- 27 files changed, 10432 insertions(+)
+> I have tested the change only with a O=.. crosscompile build.
+> 
+> I have tested the patch with and without DTC_GENPARSER=1.
+> It does not rebuild if not needed and is OK with -j10 builds.
+> 
+> Please consider this version in favour of your old version.
 
-Much too big for the list.  Full patch at
-	http://ozlabs.org/~dgibson/home/merge-dtc.patch
+Ok.  I'll use this version in my next spin; except for adding one
+dependency you missed, and removing one which should never have been
+there (unneccessary #include, which I've already fixed in dtc
+upstream).
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
