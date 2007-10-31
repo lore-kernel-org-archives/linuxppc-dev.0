@@ -1,33 +1,18 @@
-Return-Path: <Gerald.VanBaren@ge.com>
-Received: from ext-nj2ut-12.online-age.net (ext-nj2ut-12.online-age.net
-	[64.14.54.245])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-nj2ut.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8F424DE332
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 04:20:17 +1100 (EST)
-Received: from int-nj2ut-5.online-age.net (int-nj2ut-5.online-age.net
-	[3.159.237.74])
-	by ext-nj2ut-12.online-age.net (8.13.6/8.13.6/20051114-SVVS-TLS-DNSBL)
-	with ESMTP id l9UHE81l030426
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:14:08 -0400
-Received: from cinmlef03.e2k.ad.ge.com (int-nj2ut-5.online-age.net
-	[3.159.237.74])
-	by int-nj2ut-5.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id l9UHE7Ow012753
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 13:14:08 -0400
-Message-ID: <4727665E.1070109@ge.com>
-Date: Tue, 30 Oct 2007 13:14:06 -0400
-From: Jerry Van Baren <gerald.vanbaren@ge.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 31 Oct 2007 13:56:13 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH 2/4] PowerPC: 440GRx Rainier DTS.
+Message-ID: <20071031025613.GC7772@localhost.localdomain>
+References: <20071030164511.GA21973@ru.mvista.com>
+	<20071030165650.GA22107@ru.mvista.com>
+	<20071030230805.GC2784@localhost.localdomain>
+	<20071031015651.GB19318@lixom.net>
+	<20071030210917.42cfb88b@vader.jdub.homelinux.org>
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: libfdt as its own repo and submodule of dtc?
-References: <C98039BC-92DE-4398-B198-EDAD12A3670C@kernel.crashing.org>
-	<E1ImtSB-0003vC-0j@jdl.com>
-In-Reply-To: <E1ImtSB-0003vC-0j@jdl.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071030210917.42cfb88b@vader.jdub.homelinux.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
-> So, like, the other day Kumar Gala mumbled:
->> Jon,
->>
->> It seems like have libfdt as a unique git repo that is a submodule of  
->> the things that need it (dtc, u-boot, etc.) might make some sense and  
->> it easier for the projects that need to pull it in.
->>
->> Is this something you can take a look at? (or have other ideas on).
+On Tue, Oct 30, 2007 at 09:09:17PM -0500, Josh Boyer wrote:
+> On Tue, 30 Oct 2007 20:56:51 -0500
+> Olof Johansson <olof@lixom.net> wrote:
 > 
-> I would be fine with making libfdt a git repository separate
-> from the DTC repository if that makes it easier to integrate
-> it with other projects.
+> > On Wed, Oct 31, 2007 at 10:08:05AM +1100, David Gibson wrote:
+> > > On Tue, Oct 30, 2007 at 07:56:50PM +0300, Valentine Barshak wrote:
+> > > > PowerPC 440GRx Rainier DTS.
+> > > [snip]
+> > > > +		SDRAM0: sdram {
+> > > > +			device_type = "memory-controller";
+> > > 
+> > > How many times do we need to say it...
+> > > 
+> > > Don't make up random device_type values.  This does not belong here.
+> > 
+> > Maybe there should be something like checkpatch.pl that warns about
+> > these kinds of things so people can check for it without getting flamed
+> > first. :-)
+
+I'd be gentler; except that I know Valentine has been active on this
+list recently, so has almost certainly seen similar comments before.
+
+> That's actually a decent idea.  We could even have this thing that
+> takes DTS files and processes them...  oh wait.
 > 
-> jdl
+> So why can't we make a whitelist of "allowed" device_types in DTC and
+> make it whine about anything outside of that?
 
-That sounds like a good idea to me.  I would really prefer pulling 
-patches out of a libfdt repo into the u-boot repo rather than trying to 
-kerchunk upgrade lumps.  While we can do this with a dtc repo, it 
-potentially makes it a lot more difficult.
+Well, that sort of thing is the idea for dtc to check, when it has
+checks enabled anyway.  Getting it so that it doesn't have too many
+false positives is the tricky bit, as we've seen with some of the
+existing checks (where "too many" is "almost any").
 
-gvb
+Patches welcome...
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
