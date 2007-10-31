@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 31 Oct 2007 14:26:12 +1100
+Date: Wed, 31 Oct 2007 14:26:37 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [1/2] Merge dtc
-Message-ID: <20071031032612.GE7772@localhost.localdomain>
+Subject: [2/2] Use embedded dtc in kernel builds
+Message-ID: <20071031032637.GF7772@localhost.localdomain>
 References: <20071031032401.GD7772@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -17,15 +17,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This very large patch incorporates a copy of dtc into the kernel
-source, in arch/powerpc/boot/dtc-src.  This patch only imports the dtc
-sources verbatim, another patch coming to actually link it into the
-kernel Makefiles and use the embedded copy of dtc for kernel builds.
+This patch alters the kernel makefiles to build dtc from the sources
+embedded in the previous patch.  It also changes the
+arch/powerpc/boot/wrapper script to use the embedded dtc, rather than
+expecting a copy of dtc already installed on the system.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Too big for this list.  Full patch at:
-	http://ozlabs.org/~dgibson/home/merge-dtc.patch
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-10-31 14:02:40.000000000 +1100
+@@ -108,17 +108,52 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+ 	$(call if_changed,bootar)
+ 
+-hostprogs-y	:= addnote addRamDisk hack-coff mktree
++hostprogs-y	:= addnote addRamDisk hack-coff mktree dtc
+ 
+ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+ extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+ 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
+ 
+ wrapper		:=$(srctree)/$(src)/wrapper
+-wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
++wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree dtc) \
+ 			$(wrapper) FORCE
+ 
+ #############
++# Bits for building dtc
++# DTC_GENPARSER      := 1    # Uncomment to rebuild flex/bison output
++
++dtc-objs := dtc.o flattree.o fstree.o data.o livetree.o treesource.o srcpos.o
++dtc-objs += dtc-lexer.lex.o dtc-parser.tab.o
++dtc-objs := $(addprefix dtc-src/, $(dtc-objs))
++
++# prerequisites on generated files needs to be explicit
++$(obj)/dtc-src/dtc-parser.tab.o: $(obj)/dtc-src/dtc-parser.tab.c $(obj)/dtc-src/dtc-parser.tab.h
++$(obj)/dtc-src/dtc-lexer.lex.o:  $(obj)/dtc-src/dtc-lexer.lex.c $(obj)/dtc-src/dtc-parser.tab.h
++
++HOSTCFLAGS += -I$(src)/dtc-src/
++
++targets += dtc-src/dtc-parser.tab.c
++targets += dtc-src/dtc-lexer.lex.c
++
++ifdef DTC_GENPARSER
++BISON = bison
++FLEX = flex
++
++quiet_cmd_bison = BISON   $@
++      cmd_bison = $(BISON) -o$@ -d $<; cp $@ $@_shipped
++quiet_cmd_flex = FLEX    $@
++      cmd_flex = $(FLEX) -o$@ $<; cp $@ $@_shipped
++
++$(obj)/dtc-src/dtc-parser.tab.c: $(src)/dtc-src/dtc-parser.y FORCE
++     $(call if_changed,bison)
++
++$(obj)/dtc-src/dtc-parser.tab.h: $(obj)/dtc-src/dtc-parser.tab.c
++
++$(obj)/dtc-src/dtc-lexer.lex.c: $(src)/dtc-src/dtc-lexer.l FORCE
++     $(call if_changed,flex)
++endif
++
++#############
+ # Bits for building various flavours of zImage
+ 
+ ifneq ($(CROSS32_COMPILE),)
+@@ -236,7 +271,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
+ 
+ # anything not in $(targets)
+ clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.* \
+-	otheros.bld
++	otheros.bld $(dtc-clean-files)
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin
+Index: working-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/wrapper	2007-10-22 13:55:50.000000000 +1000
++++ working-2.6/arch/powerpc/boot/wrapper	2007-10-31 14:02:40.000000000 +1100
+@@ -111,7 +111,7 @@ if [ -n "$dts" ]; then
+     if [ -z "$dtb" ]; then
+ 	dtb="$platform.dtb"
+     fi
+-    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
++    $object/dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
+ fi
+ 
+ if [ -z "$kernel" ]; then
+
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
