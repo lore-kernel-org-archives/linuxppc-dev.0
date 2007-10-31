@@ -1,18 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 31 Oct 2007 13:56:13 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH 2/4] PowerPC: 440GRx Rainier DTS.
-Message-ID: <20071031025613.GC7772@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 73145DDF97
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 14:11:52 +1100 (EST)
+Date: Wed, 31 Oct 2007 14:11:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 3/4] PowerPC: 440GRx Rainier board support.
+Message-Id: <20071031141149.a1c85909.sfr@canb.auug.org.au>
+In-Reply-To: <20071030165739.GA22126@ru.mvista.com>
 References: <20071030164511.GA21973@ru.mvista.com>
-	<20071030165650.GA22107@ru.mvista.com>
-	<20071030230805.GC2784@localhost.localdomain>
-	<20071031015651.GB19318@lixom.net>
-	<20071030210917.42cfb88b@vader.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071030210917.42cfb88b@vader.jdub.homelinux.org>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+	<20071030165739.GA22126@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__31_Oct_2007_14_11_49_+1100__boP+ZQYYT.j=xal"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 30, 2007 at 09:09:17PM -0500, Josh Boyer wrote:
-> On Tue, 30 Oct 2007 20:56:51 -0500
-> Olof Johansson <olof@lixom.net> wrote:
-> 
-> > On Wed, Oct 31, 2007 at 10:08:05AM +1100, David Gibson wrote:
-> > > On Tue, Oct 30, 2007 at 07:56:50PM +0300, Valentine Barshak wrote:
-> > > > PowerPC 440GRx Rainier DTS.
-> > > [snip]
-> > > > +		SDRAM0: sdram {
-> > > > +			device_type = "memory-controller";
-> > > 
-> > > How many times do we need to say it...
-> > > 
-> > > Don't make up random device_type values.  This does not belong here.
-> > 
-> > Maybe there should be something like checkpatch.pl that warns about
-> > these kinds of things so people can check for it without getting flamed
-> > first. :-)
+--Signature=_Wed__31_Oct_2007_14_11_49_+1100__boP+ZQYYT.j=xal
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'd be gentler; except that I know Valentine has been active on this
-list recently, so has almost certainly seen similar comments before.
+On Tue, 30 Oct 2007 19:57:39 +0300 Valentine Barshak <vbarshak@ru.mvista.co=
+m> wrote:
+>
+> +++ linux-2.6/arch/powerpc/platforms/44x/rainier.c	2007-10-30 18:00:15.00=
+0000000 +0300
+> +#include <linux/init.h>
+> +#include <asm/machdep.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/time.h>
+> +#include <asm/uic.h>
+> +#include <asm/of_platform.h>
 
-> That's actually a decent idea.  We could even have this thing that
-> takes DTS files and processes them...  oh wait.
-> 
-> So why can't we make a whitelist of "allowed" device_types in DTC and
-> make it whine about anything outside of that?
+You want <linux/of_platform.h>
 
-Well, that sort of thing is the idea for dtc to check, when it has
-checks enabled anyway.  Getting it so that it doesn't have too many
-false positives is the tricky bit, as we've seen with some of the
-existing checks (where "too many" is "almost any").
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Patches welcome...
+--Signature=_Wed__31_Oct_2007_14_11_49_+1100__boP+ZQYYT.j=xal
+Content-Type: application/pgp-signature
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHJ/J5TgG2atn1QN8RAiKCAJ9KTE5Wc+lZDr8El3kVg0UsdXfCfwCdGR8y
+XqJo2N2D0h/T+GFT1x4PfGg=
+=dpwF
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__31_Oct_2007_14_11_49_+1100__boP+ZQYYT.j=xal--
