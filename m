@@ -1,19 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1F9EDDDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 01:12:26 +1100 (EST)
-Message-ID: <47288D4F.2090504@ru.mvista.com>
-Date: Wed, 31 Oct 2007 17:12:31 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <jacmet@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 2E1ECDDD0D
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 01:45:41 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d23so19844and
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:45:40 -0700 (PDT)
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 4/4] Uartlite: speed up console output
+References: <20071023042353.30309.93118.stgit@trillian.cg.shawcable.net>
+	<20071023042746.30309.15188.stgit@trillian.cg.shawcable.net>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Wed, 31 Oct 2007 15:45:02 +0100
+In-Reply-To: <20071023042746.30309.15188.stgit@trillian.cg.shawcable.net>
+	(Grant Likely's message of "Mon\, 22 Oct 2007 22\:27\:46 -0600")
+Message-ID: <87mytz4a35.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC] Fix off-by-one error in setting decrementer on Book
- E
-References: <18213.19469.827909.663373@cargo.ozlabs.ibm.com>	<47260FE5.5080107@ru.mvista.com>
-	<18216.19826.611308.659235@cargo.ozlabs.ibm.com>
-In-Reply-To: <18216.19826.611308.659235@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Sender: Peter Korsgaard <jacmet@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+>>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-Paul Mackerras wrote:
+Hi,
 
-> If I take out the removed lines in the rest of your patch, I get:
+ Grant> From: Grant Likely <grant.likely@secretlab.ca>
+ Grant> Change the wait_tx routine to call cpu_relax() instead of udelay() to
+ Grant> reduce console output latency and test for the TXFULL bit instead of
+ Grant> TXEMPTY.  That way the FIFO doesn't need to by 100% flushed before
+ Grant> writing the next character.
 
->>+        */
->>  #if defined(CONFIG_40x)
->>         mtspr(SPRN_PIT, val);
->>+#else
->>+#if !defined(CONFIG_BOOKE)
->>+       val = val ? val - 1 : 0;
->>+#endif
->>+#if defined(CONFIG_8xx_CPU6)
->>         set_dec_cpu6(val);
->>+#if defined(CONFIG_PPC_ISERIES)
+Sorry for the slow response - I had a misunderstanding with the
+phone company, and I'm now without inet :/
 
-> I think you're missing a #else here.
+Looks good to me. I gave it a quick spin to check the speed
+difference:
 
-    You've cut off #endif's at the end.  But yes, you are correct -- I've lost 
-it while pasting this hunk into mail. :-/
+Old:
+[    0.453101] Freeing unused kernel memory: 52k init
 
-> Paul.
+New:
+[    0.433686] Freeing unused kernel memory: 52k init
 
-WBR, Sergei
+So it shaves off ~20ms (~4%) of bootup.
+
+It ofcause means that the console routines return before the data is
+actually transmitted on the wire, but I guess you have to screw
+seriously up for the UART to die before emptying it's FIFO.
+
+ Grant> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+
+Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
+
+-- 
+Bye, Peter Korsgaard
