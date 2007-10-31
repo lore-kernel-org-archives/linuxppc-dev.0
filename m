@@ -1,17 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 45545DE05A
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 12:18:33 +1100 (EST)
-Date: Tue, 30 Oct 2007 20:26:47 -0500
-From: Olof Johansson <olof@lixom.net>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH] [powerpc v2] update xmon slb code
-Message-ID: <20071031012647.GA19318@lixom.net>
-References: <20071030215037.12776.73871.stgit@farscape.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071030215037.12776.73871.stgit@farscape.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jwboyer@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id 3853DDDE16
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 12:40:24 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1969842wxd
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 18:40:23 -0700 (PDT)
+Date: Tue, 30 Oct 2007 20:40:15 -0500
+From: Josh Boyer <jwboyer@gmail.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: PPC405GP Walnut irq patch
+Message-ID: <20071030204015.06a699d7@vader.jdub.homelinux.org>
+In-Reply-To: <4727A507.10309@harris.com>
+References: <47279CF0.4050600@harris.com>
+	<4727A507.10309@harris.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 30, 2007 at 04:50:39PM -0500, Will Schmidt wrote:
-> 
-> [powerpc] update xmon slb code
-> 
-> This adds a bit more detail to the xmon SLB output.  When the valid bit is
-> set, This displays the ESID and VSID values, as well as decoding the
-> segment size. (1T or 256M).  This supresses the output for any slb entries
-> that contain only zeros.
-> 
-> sample output from power6 (1T segment support):
-> 
-> 00 c000000008000000 40004f7ca3000500  1T  ESID=   c00000  VSID=40004f7ca3 LLP bits:100
-> 01 d000000008000000 4000eb71b0000400  1T  ESID=   d00000  VSID=4000eb71b0 LLP bits:  0
-> 03 0000000008000000 0000628021c6ac80 256M ESID=        0  VSID= 628021c6a LLP bits:  0
-> 04 00000f0008000000 400095c1e8000c80  1T  ESID=        f  VSID=400095c1e8 LLP bits:  0
-> 22 cf00000008000000 400011b260000500  1T  ESID=   cf0000  VSID=400011b260 LLP bits:100
-> 62 0000040008000000 40005d488d000c80  1T  ESID=        4  VSID=40005d488d LLP bits:  0
-> 63 0000000018000000 0000633f90285c80 256M ESID=        1  VSID= 633f90285 LLP bits:  0
-> 
-> sample output from power5 (notice the non-valid but non-zero entries)
-> 
-> 00 c000000008000000 0000408f92c94500 256M ESID=c00000000  VSID= 408f92c94 LLP bits:100
-> 01 d000000008000000 0000f09b89af5400 256M ESID=d00000000  VSID= f09b89af5 LLP bits:  0
-> 03 0000000010000000 0000136eafb0bc80
-> 11 0000000008000000 00005928811f2c80 256M ESID=        0  VSID= 5928811f2 LLP bits:  0
-> 12 00000000f8000000 0000645ff8d87c80 256M ESID=        f  VSID= 645ff8d87 LLP bits:  0
-> 13 0000000048000000 00005c263aa5ec80 256M ESID=        4  VSID= 5c263aa5e LLP bits:  0
-> 14 0000000018000000 000059e7ef80dc80 256M ESID=        1  VSID= 59e7ef80d LLP bits:  0
-> 15 0000000010000000 000059e7ef80dc80
-> 
-> Tested on power5 and power6.
-> 
-> Signed-Off-By: Will Schmidt <will_schmidt@vnet.ibm.com>
+On Tue, 30 Oct 2007 17:41:27 -0400
+"Steven A. Falco" <sfalco@harris.com> wrote:
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> From: "Steven A. Falco" <sfalco@harris.com>
+> To: linuxppc-dev@ozlabs.org
+> Subject: Re: PPC405GP Walnut irq patch
+> Date: Tue, 30 Oct 2007 17:41:27 -0400
+> Sender: linuxppc-dev-bounces+jwboyer=gmail.com@ozlabs.org
+> User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+> 
+> I realized that I should have done this from the root level.  So here is 
+> the corrected patch.
+> 
+> Signed-off-by: Steve Falco <sfalco at harris.com>
+> 
+> 
+> Steven A. Falco wrote:
+> > Hi - I have found a bug in the ARCH=powerpc Walnut BSP.  The order of 
+> > the ethernet interrupts in the walnut.dts file doesn't match the 
+> > documentation.  I discovered this when porting the BSP to a custom 
+> > board - the ethernet would not work.  The attached patch corrects that.
+> >
+> > This is the first patch I am submitting, so please advise me if there 
+> > is anything I should do differently.
+> >
+> > Signed-off-by: Steve Falco <sfalco at harris.com>
+> >
+> >  
+> 
+> diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
+> index 27bef06..dd65115 100644
+> --- a/arch/powerpc/boot/dts/walnut.dts
+> +++ b/arch/powerpc/boot/dts/walnut.dts
+> @@ -67,7 +67,7 @@
+>  			num-tx-chans = <2>;
+>  			num-rx-chans = <1>;
+>  			interrupt-parent = <&UIC0>;
+> -			interrupts = <a 4 b 4 c 4 d 4 e 4>;
+> +			interrupts = <b 4 c 4 a 4 d 4 e 4>;
+>  		};
 
-This makes the output wider than 80 characters, but that's fine with me.
+I fixed this part already.  Seems your tree is slightly old.
 
+>  
+>  		POB0: opb {
+> @@ -117,7 +117,7 @@
+>  				device_type = "network";
+>  				compatible = "ibm,emac-405gp", "ibm,emac";
+>  				interrupt-parent = <&UIC0>;
+> -				interrupts = <9 4 f 4>;
+> +				interrupts = <f 4 9 4>;
 
+Could you redo the patch with just this bit and send it again?
 
-Thanks!
-
--Olof
+josh
