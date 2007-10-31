@@ -1,35 +1,34 @@
-Return-Path: <pbadari@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <stuart.yoder@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E22E6DDEAB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 02:27:56 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VFRru1003967
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 11:27:53 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9VFGDlw112324
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:27:52 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9VF6qil011672
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:06:54 -0600
-Subject: Re: [RFC] hotplug memory remove - walk_memory_resource for ppc64
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
-	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
-	<1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
-	<20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 31 Oct 2007 08:10:12 -0800
-Message-Id: <1193847012.17412.10.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
-	Paul Mackerras <paulus@samba.org>, linux-mm <linux-mm@kvack.org>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7FAEBDDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 02:31:08 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l9VFV2jM008804
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:31:03 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l9VFV20s016358
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 10:31:02 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Wed, 31 Oct 2007 08:31:02 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2AC3@az33exm25.fsl.freescale.net>
+In-Reply-To: <20071030232730.GD2784@localhost.localdomain>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<20071029212213.GA28073@lixom.net>
+	<20071030005146.GF29263@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F26EE@az33exm25.fsl.freescale.net>
+	<20071030232730.GD2784@localhost.localdomain>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,65 +38,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-10-31 at 14:28 +0900, KAMEZAWA Hiroyuki wrote:
-> On Tue, 30 Oct 2007 11:19:11 -0800
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> 
-> > Hi KAME,
-> > 
-> > As I mentioned while ago, ppc64 does not export information about
-> > "system RAM" in /proc/iomem. Looking at the code and usage
-> > scenerios I am not sure what its really serving. Could you 
-> > explain what its purpose & how the range can be invalid ?
-> > 
-> Hm, I added walk_memory_resource() for hot-add, at first.
-> 
-> Size of memory section is fixed and just depend on architecture, but
-> any machine can have any memory-hole within continuous memory-section-size
-> range of physical memory. Then we have to detect which page can be
-> target of online_page() and which are leaved as Reserved.
-> 
-> ioresource was good structure for remembering "which memory is conventional
-> memory" and i386/x86_64/ia64 registered conventional memory as "System RAM",
-> when I posted patch. (just say "System Ram" is not for memory hotplug.)
-> 
-> I used walk_memory_resource() again in memory hotremove.
+=20
+> > I think what we should do is keep device_type, including
+> > permitting new uses of it in a limited way-- only permitting
+> > the use of device_type when there is an official binding
+> > (like in the power.org ePAPR) defined.   =20
+>=20
+> That's what I was thinking when we first started defining flat tree
+> bindings.  But the more time I've spent thinking about it, and the
+> more time I've spent reviewing people's proposed bindings, the less
+> useful I think it is.
+>=20
+> The *only* reason I'm suggesting leaving device_type values for
+> IEEE1275 defined classes is so that flat trees written as flat trees
+> look more similar to OF derived trees.
+>=20
+> > > Explicitly specifying what device class bindings / conventions the
+> > > node complies with is cute, but not actually all that useful in
+> > > practice.  If it looks like a "duck" class device node, and it
+> > > quacks^Whas the properties of a "duck" class device node,=20
+> it's "duck"
+> > > class compliant.
+> > >=20
+> > > Or to look at it another way, "class bindings" aren't=20
+> really bindings,
+> > > but rather a set of conventions that device bindings for specific
+> > > devices in that class ought to follow.
+> >=20
+> > I tend to think of a 'binding' as a 'set of conventions'.
+>=20
+> Well, whatever.  My point is that conventions are most flexible if you
+> don't have to explicitly announce that you're following them - you
+> just go ahead and follow as many conventions as make sense for your
+> device.
 
-Agreed. On PPC64, within a memblock represented in /sysfs are pretty
-small (16MB) and there can not be any holes. And you can add/remove
-memory only on 16MB multiple chunks. 
+Let me repeat what I think you are advocating--  we should
+treat the collection of properties for 'established' device
+classes like like "network", "serial", etc as a set of useful=20
+conventions.  That is, there are no set of _required_ properties
+per se, but the device tree creator picks from the established
+properties plus supplementing with "company,xyz" properties
+in whatever way they think makes sense for them.
 
-> 
-> (If I rememember correctly, walk_memory_resouce() helps x86_64 memory hot-add.
->  than our ia64 box.
->  In our ia64 box, we do node-hotadd. Section size is 1GiB and it has some
->  "for firmware" area in newly-added node.)
+This works...but certainly is weaker with respect to
+standardization.  My previous argument had the assumption
+that something like "mac-address" in a network node was
+_required_, and thus needed a class id of some sort to tie
+the standardized node to.
 
-> 
-> > At least on ppc64, all the memory ranges we get passed comes from
-> > /sysfs memblock information and they are guaranteed to match 
-> > device-tree entries. On ppc64, each 16MB chunk has a /sysfs entry
-> > and it will be part of the /proc/device-tree entry. Since we do
-> > "online" or "offline" to /sysfs entries to add/remove pages - 
-> > these ranges are guaranteed to be valid.
-> > 
-> ok.
-> 
-> > Since this check is redundant for ppc64, I propose following patch.
-> > Is this acceptable ? If some one really really wants, I can code
-> > up this to walk lmb or /proc/device-tree and verify the range &
-> > adjust the entries for overlap (I don't see how that can happen).
-> > 
-> ok. If ppc64 guarantees "there is no memory hole in section", please try.
-> I have no objection.
-> I just would like to ask to add some text to explain
-> "ppc64 doesn't need to care memory hole in a section."
+If we relax things so there are no required properties for
+device nodes, then I agree that a device class property
+has limited or no value.
 
-Yes. I would like to go with this approach, rather than adding the
-information to /proc/iomem (as per Paul's suggestion). If I find
-cases where sections (16MB) *could* contain holes -OR- overlaps -
-I can easily add code to verify against lmb/proc-device-tree information
-easily without affecting arch-neutral code.
+However, maybe we do want to keep device_type in=20
+a very limited way to define requirements for what you
+call 'fundamental' types of nodes.  It may be that certain
+properties in a "cpu" node (like cache-size?) should be
+_required_ so that an OS that consumes the device tree
+can really count on certain properties being there.  Or,
+I guess we could use "compatible" for that...?
 
-Thanks,
-Badari
+Stuart
