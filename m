@@ -1,31 +1,38 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <pbadari@us.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A2D1DDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 02:44:45 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l9VFiasu014844
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:44:37 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9VFiapq010651
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 10:44:36 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Refactor booting-without-of.txt
-Date: Wed, 31 Oct 2007 08:44:36 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2AD8@az33exm25.fsl.freescale.net>
-In-Reply-To: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
-References: <fa686aa40710150908o55d1f5d2t264cbb8ed800a12f@mail.gmail.com>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"linuxppc-dev" <linuxppc-dev@ozlabs.org>,
-	<microblaze-uclinux@itee.uq.edu.au>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 14960DDDEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 02:44:48 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VFij3p006781
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 11:44:45 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9VFijfq064436
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:44:45 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9VFiiWd025353
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:44:45 -0600
+Subject: [PATCH 0/3] hotplug memory remove support for PPC64
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20071031143423.586498c3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
+	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
+	<1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
+	<20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071031143423.586498c3.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 08:48:10 -0800
+Message-Id: <1193849290.17412.29.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	linux-mm <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,61 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Hi Paul/Andrew,
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Grant Likely
-> Sent: Monday, October 15, 2007 11:09 AM
-> To: linuxppc-dev; microblaze-uclinux@itee.uq.edu.au
-> Subject: Refactor booting-without-of.txt
->=20
-> Adding the Linux expected device tree bindings to
-> booting-without-of.txt seems to be getting a little unwieldy.  Plus
-> with more than one arch using the device tree (powerpc, sparc &
-> microblaze) the device tree bindings aren't necessarily powerpc only
-> (the Xilinx devices certainly fall in this category).
->=20
-> Anyone have comments about splitting the expected device tree bindings
-> out of booting-without-of.txt into a separate directory?
->=20
-> Perhaps something like this; each file contains common bindings for
-> the type of device and device specific properties:
->=20
-> Documentation/of/
-> Documentation/of/README - Description of the purpose and layout of
-> this directory
-> Documentation/of/net.txt - network device bindings (eth,=20
-> MDIO, phy, etc)
-> Documentation/of/serial.txt - serial device bindings
-> Documentation/of/misc.txt - anything that doesn't fit=20
-> anywhere else yet.
-> Documentation/of/soc/* - System on chip stuff that doesn't fit will
-> into established device types; possibly a separate file for each chip.
-> Documentation/of/usb.txt - usb blah blah blah
-> Documentation/of/whatever - you get the picture.
->=20
+Here are few minor fixes needed to get hotplug memory remove working
+on ppc64. Could you please consider them for -mm ?
 
-I agree in principle with what your are proposing.
+	[PATCH 1/3] Add remove_memory() for ppc64
+	[PATCH 2/3] Enable hotplug memory remove for ppc64
+	[PATCH 3/3] Add arch-specific walk_memory_remove() for ppc64
 
-One other thing to consider-- as has been publicly=20
-announced in several forums, a committee in power.org
-(including several folks on this thread) is working
-on a standard called the ePAPR which in general is
-attempting to standardize the base set of requirements
-and boot conventions that apply to the flat device tree.
-There will not be much device specific stuff to=20
-start with.
+I am able to successfully add/remove memory on ppc64 with these patches.
+ZONE_MOVABLE guarantees the success, if we really really want to be able
+to remove memory.
 
-The ePAPR document is actually quite far a long
-and is well beyond the 'idea' stage.
+Thanks to Mel and KAME for doing all the real work :) 
 
-The one point is that we hope that the device tree
-with be useful for other embedded OSes beyond Linux.
-So long term, I think this documentation should
-be pulled out of the kernel source and put
-on a public wiki that is not tied directly to Linux.
-What you are proposing is a good start...
+TODO:
+	- I am running into migrate_pages() issues on reiserfs backed
+files. Nothing to do with ppc64.
 
-Stuart
+Thanks,
+Badari
