@@ -1,22 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.179])
-	by ozlabs.org (Postfix) with ESMTP id B6E9DDE122
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 13:09:26 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so4424943pyi
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 19:09:25 -0700 (PDT)
-Date: Tue, 30 Oct 2007 21:09:17 -0500
-From: Josh Boyer <jwboyer@gmail.com>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 2/4] PowerPC: 440GRx Rainier DTS.
-Message-ID: <20071030210917.42cfb88b@vader.jdub.homelinux.org>
-In-Reply-To: <20071031015651.GB19318@lixom.net>
-References: <20071030164511.GA21973@ru.mvista.com>
-	<20071030165650.GA22107@ru.mvista.com>
-	<20071030230805.GC2784@localhost.localdomain>
-	<20071031015651.GB19318@lixom.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B8131DDF82
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 13:50:17 +1100 (EST)
+Date: Wed, 31 Oct 2007 13:50:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sergej Stepanov <Sergej.Stepanov@ids.de>
+Subject: Re: [PATCH] using mii-bitbang on different processor ports
+Message-Id: <20071031135012.557228f2.sfr@canb.auug.org.au>
+In-Reply-To: <1193760559.6244.25.camel@p60635-ste.ids.de>
+References: <1193760559.6244.25.camel@p60635-ste.ids.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,28 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 30 Oct 2007 20:56:51 -0500
-Olof Johansson <olof@lixom.net> wrote:
+--Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, Oct 31, 2007 at 10:08:05AM +1100, David Gibson wrote:
-> > On Tue, Oct 30, 2007 at 07:56:50PM +0300, Valentine Barshak wrote:
-> > > PowerPC 440GRx Rainier DTS.
-> > [snip]
-> > > +		SDRAM0: sdram {
-> > > +			device_type = "memory-controller";
-> > 
-> > How many times do we need to say it...
-> > 
-> > Don't make up random device_type values.  This does not belong here.
-> 
-> Maybe there should be something like checkpatch.pl that warns about
-> these kinds of things so people can check for it without getting flamed
-> first. :-)
+On Tue, 30 Oct 2007 17:09:19 +0100 Sergej Stepanov <Sergej.Stepanov@ids.de>=
+ wrote:
+>
+>  static int __devinit fs_mii_bitbang_init(struct mii_bus *bus,
+>                                           struct device_node *np)
+>  {
+> -	struct resource res;
+> +	struct resource res[2];
 
-That's actually a decent idea.  We could even have this thing that
-takes DTS files and processes them...  oh wait.
+Why not just reuse the same resource structure?  You don't seem to need
+them both at the same time.
 
-So why can't we make a whitelist of "allowed" device_types in DTC and
-make it whine about anything outside of that?
+> +	if( !of_address_to_resource(np, 1, &res[1]))
+> +	{
+> +		bitbang->mdio.dir =3D ioremap(res[1].start, res[1].end - res[1].start =
++ 1);
+> +		if (!bitbang->mdio.dir)
+> +		{
+> +			iounmap(bitbang->mdc.dir);
+> +			return -ENOMEM;
+> +		}
+> +		bitbang->mdio.dat =3D bitbang->mdio.dir + 4;
+> +	}
+> +	else{
 
-josh
+Formatting:
+	if () {
+	} else {
+	}
+> +	if ( bitbang->mdio.dir !=3D bitbang->mdc.dir)
+
+No spaces after (, please.  Here and elsewhere.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHJ+1pTgG2atn1QN8RAj8LAJ9gdYNJG76d7KAoyU07nKf6Gb7AKwCgh6tG
+YsTO3SmXUMHtgGV/atqJqdY=
+=/nCS
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__31_Oct_2007_13_50_12_+1100_dJHpJE4GgDJlTX0Y--
