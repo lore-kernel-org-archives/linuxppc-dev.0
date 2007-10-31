@@ -1,36 +1,22 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0CE02DDD0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 08:55:14 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VLtCWh011083
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 17:55:12 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9VLtBiA090832
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 15:55:11 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9VLtAee013281
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 15:55:11 -0600
-Subject: Re: [PATCH 1/3] Add remove_memory() for ppc64
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <1193868715.17412.55.camel@dyn9047017100.beaverton.ibm.com>
-References: <1193849375.17412.34.camel@dyn9047017100.beaverton.ibm.com>
-	<1193863502.6271.38.camel@localhost>
-	<1193868715.17412.55.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain
-Date: Wed, 31 Oct 2007 14:55:03 -0700
-Message-Id: <1193867703.6271.42.camel@localhost>
-Mime-Version: 1.0
-Cc: linux-mm <linux-mm@kvack.org>, anton@au1.ibm.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <cbou@mail.ru>
+Received: from mx3.mail.ru (mx3.mail.ru [194.67.23.149])
+	by ozlabs.org (Postfix) with ESMTP id 7A624DDE3D
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 09:01:37 +1100 (EST)
+Date: Thu, 1 Nov 2007 00:59:03 +0300
+From: Anton Vorontsov <cbou@mail.ru>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: [PATCH] ucc_geth: add support for netpoll
+Message-ID: <20071031215903.GA1287@zarina>
+References: <20071011124842.GB13963@localhost.localdomain>
+	<4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina>
+	<989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net>
+	<20071029121744.GA20372@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071029121744.GA20372@localhost.localdomain>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: cbou@mail.ru
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,14 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-10-31 at 14:11 -0800, Badari Pulavarty wrote:
+On Mon, Oct 29, 2007 at 03:17:44PM +0300, Anton Vorontsov wrote:
+[...]
+> > Oops.  The original patch happened to hit the Junk mail box. :(
 > 
-> Well, We don't need arch-specific remove_memory() for ia64 and ppc64.
-> x86_64, I don't know. We will know, only when some one does the
-> verification. I don't need arch_remove_memory() hook also at this
-> time.
+> That one as well? http://lkml.org/lkml/2007/10/11/128
+> 
+> > I think
+> > the patch is good to merge after the cosmetic change.  I can do it in
+> > next pull request to Jeff.
+> 
+> Ok, great. Thanks.
 
-I wasn't being very clear.  I say, add the arch hook only if you need
-it.  But, for now, just take the ia64 code and make it generic.  
+I'm wondering if you missed that email again. Maybe your mail
+client/server doing weird things with emails from @ru.mvista.com?
 
--- Dave
+Thanks.
+
+> Here it is:
+> 
+> - - - -
+> From: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Subject: [PATCH] ucc_geth: add support for netpoll
+> 
+> This patch adds netpoll support for the QE UCC Gigabit Ethernet
+> driver. Tested using netconsole and KGDBoE.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  drivers/net/ucc_geth.c |   20 ++++++++++++++++++++
+>  1 files changed, 20 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> index bec413b..94e78d8 100644
+> --- a/drivers/net/ucc_geth.c
+> +++ b/drivers/net/ucc_geth.c
+> @@ -3678,6 +3678,23 @@ static irqreturn_t ucc_geth_irq_handler(int irq, void *info)
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +/*
+> + * Polling 'interrupt' - used by things like netconsole to send skbs
+> + * without having to re-enable interrupts. It's not called while
+> + * the interrupt routine is executing.
+> + */
+> +static void ucc_netpoll(struct net_device *dev)
+> +{
+> +	struct ucc_geth_private *ugeth = netdev_priv(dev);
+> +	int irq = ugeth->ug_info->uf_info.irq;
+> +
+> +	disable_irq(irq);
+> +	ucc_geth_irq_handler(irq, dev);
+> +	enable_irq(irq);
+> +}
+> +#endif /* CONFIG_NET_POLL_CONTROLLER */
+> +
+>  /* Called when something needs to use the ethernet device */
+>  /* Returns 0 for success. */
+>  static int ucc_geth_open(struct net_device *dev)
+> @@ -3963,6 +3980,9 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+>  #ifdef CONFIG_UGETH_NAPI
+>  	netif_napi_add(dev, &ugeth->napi, ucc_geth_poll, UCC_GETH_DEV_WEIGHT);
+>  #endif				/* CONFIG_UGETH_NAPI */
+> +#ifdef CONFIG_NET_POLL_CONTROLLER
+> +	dev->poll_controller = ucc_netpoll;
+> +#endif
+>  	dev->stop = ucc_geth_close;
+>  //    dev->change_mtu = ucc_geth_change_mtu;
+>  	dev->mtu = 1500;
+> -- 
+> 1.5.2.2
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
