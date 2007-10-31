@@ -1,18 +1,37 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 7FE3ADDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 04:52:57 +1100 (EST)
-Message-ID: <4728C0F5.80304@harris.com>
-Date: Wed, 31 Oct 2007 13:52:53 -0400
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <stuart.yoder@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3019FDDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 05:05:51 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l9VI5k75029085
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 11:05:46 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l9VI5kbx000776
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 13:05:46 -0500 (CDT)
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: PPC405GP Walnut irq patch
-References: <47279CF0.4050600@harris.com>	<4727A507.10309@harris.com>
-	<20071030204015.06a699d7@vader.jdub.homelinux.org>
-In-Reply-To: <20071030204015.06a699d7@vader.jdub.homelinux.org>
-Content-Type: multipart/mixed; boundary="------------040809010809040106080506"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: RFC:  replace device_type with new "class" property?
+Date: Wed, 31 Oct 2007 11:05:45 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3035F2B93@az33exm25.fsl.freescale.net>
+In-Reply-To: <20071031170610.GA4444@loki.buserror.net>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA30359F9BB@az33exm25.fsl.freescale.net>
+	<20071029212213.GA28073@lixom.net>
+	<20071030005146.GF29263@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F26EE@az33exm25.fsl.freescale.net>
+	<20071030232730.GD2784@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3035F2AC3@az33exm25.fsl.freescale.net>
+	<20071031170610.GA4444@loki.buserror.net>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Wood Scott-B07421" <scottwood@freescale.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,45 +41,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040809010809040106080506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+=20
 
+> -----Original Message-----
+> From: Wood Scott-B07421=20
+> Sent: Wednesday, October 31, 2007 12:06 PM
+> To: Yoder Stuart-B08248
+> Cc: David Gibson; Olof Johansson; linuxppc-dev@ozlabs.org
+> Subject: Re: RFC: replace device_type with new "class" property?
+>=20
+> On Wed, Oct 31, 2007 at 08:31:02AM -0700, Yoder Stuart-B08248 wrote:
+> > This works...but certainly is weaker with respect to
+> > standardization.  My previous argument had the assumption
+> > that something like "mac-address" in a network node was
+> > _required_, and thus needed a class id of some sort to tie
+> > the standardized node to.
+>=20
+> It is certainly not required -- the device could have an=20
+> eeprom, or it might
+> not be ethernet at all.
 
-> Could you redo the patch with just this bit and send it again?
->
-> josh
->   
+Fine, I picked a bad example. My point was that if a
+property was _required_ that it should have a class id
+of some sort that ties it back to the standard that
+required it.
 
-Ok - this one is based off the Linus tree, and follows your style of one 
-interrupt per line, with a comment indicating which one it is.
-
-Signed-off-by: Steve Falco <sfalco at harris.com>
-
-
-
---------------040809010809040106080506
-Content-Type: text/x-patch;
- name="irq.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="irq.patch"
-
-diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
-index fa681f5..754fa39 100644
---- a/arch/powerpc/boot/dts/walnut.dts
-+++ b/arch/powerpc/boot/dts/walnut.dts
-@@ -122,7 +122,9 @@
- 				device_type = "network";
- 				compatible = "ibm,emac-405gp", "ibm,emac";
- 				interrupt-parent = <&UIC0>;
--				interrupts = <9 4 f 4>;
-+				interrupts = <
-+					f 4 /* Ethernet */
-+					9 4 /* Ethernet Wake Up */>;
- 				local-mac-address = [000000000000]; /* Filled in by zImage */
- 				reg = <ef600800 70>;
- 				mal-device = <&MAL>;
-
---------------040809010809040106080506--
+Stuart
