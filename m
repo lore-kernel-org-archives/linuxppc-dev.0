@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.236])
-	by ozlabs.org (Postfix) with ESMTP id 29252DE0DC
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 16:18:18 +1100 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so23768nzh
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Oct 2007 22:18:17 -0700 (PDT)
-Message-ID: <fa686aa40710302218s3dfe4d42red589fc5692e4c1@mail.gmail.com>
-Date: Tue, 30 Oct 2007 23:18:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Bai Shuwei" <baishuwei@gmail.com>
-Subject: Re: ring on PowerPC
-In-Reply-To: <f3566d60710302205g2dd867bbk8a3494ceeda569f0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <f3566d60710302205g2dd867bbk8a3494ceeda569f0@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+	by ozlabs.org (Postfix) with ESMTP id 11492DE206
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 16:27:41 +1100 (EST)
+Date: Wed, 31 Oct 2007 14:28:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [RFC] hotplug memory remove - walk_memory_resource for ppc64
+Message-Id: <20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
+References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
+	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
+	<1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
+	Paul Mackerras <paulus@samba.org>, linux-mm <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 10/30/07, Bai Shuwei <baishuwei@gmail.com> wrote:
-> Hi, everyone
->    As we know, the program on the X86 can run on the differnt ring(0, 1, 2,
-> 3) and the linux kernel run in the ring 0 and user program in the ring 3.
-> And now I want to know wether there is a simple mechanism on the PowerPC
-> architecture? thx all!
+On Tue, 30 Oct 2007 11:19:11 -0800
+Badari Pulavarty <pbadari@us.ibm.com> wrote:
 
-Powerpc has 2 privilege levels; user and supervisor.  The kernel runs
-in supervisor mode, and user-space runs in user mode.
+> Hi KAME,
+> 
+> As I mentioned while ago, ppc64 does not export information about
+> "system RAM" in /proc/iomem. Looking at the code and usage
+> scenerios I am not sure what its really serving. Could you 
+> explain what its purpose & how the range can be invalid ?
+> 
+Hm, I added walk_memory_resource() for hot-add, at first.
 
-g.
+Size of memory section is fixed and just depend on architecture, but
+any machine can have any memory-hole within continuous memory-section-size
+range of physical memory. Then we have to detect which page can be
+target of online_page() and which are leaved as Reserved.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+ioresource was good structure for remembering "which memory is conventional
+memory" and i386/x86_64/ia64 registered conventional memory as "System RAM",
+when I posted patch. (just say "System Ram" is not for memory hotplug.)
+
+I used walk_memory_resource() again in memory hotremove.
+
+(If I rememember correctly, walk_memory_resouce() helps x86_64 memory hot-add.
+ than our ia64 box.
+ In our ia64 box, we do node-hotadd. Section size is 1GiB and it has some
+ "for firmware" area in newly-added node.)
+
+> At least on ppc64, all the memory ranges we get passed comes from
+> /sysfs memblock information and they are guaranteed to match 
+> device-tree entries. On ppc64, each 16MB chunk has a /sysfs entry
+> and it will be part of the /proc/device-tree entry. Since we do
+> "online" or "offline" to /sysfs entries to add/remove pages - 
+> these ranges are guaranteed to be valid.
+> 
+ok.
+
+> Since this check is redundant for ppc64, I propose following patch.
+> Is this acceptable ? If some one really really wants, I can code
+> up this to walk lmb or /proc/device-tree and verify the range &
+> adjust the entries for overlap (I don't see how that can happen).
+> 
+ok. If ppc64 guarantees "there is no memory hole in section", please try.
+I have no objection.
+I just would like to ask to add some text to explain
+"ppc64 doesn't need to care memory hole in a section."
+
+
+Thanks,
+-Kame
