@@ -1,22 +1,16 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
-	by ozlabs.org (Postfix) with ESMTP id 92C59DE239
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 16:32:19 +1100 (EST)
-Date: Wed, 31 Oct 2007 14:34:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [RFC] hotplug memory remove - walk_memory_resource for ppc64
-Message-Id: <20071031143423.586498c3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
-	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
-	<1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
-	<20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: ring on PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40710302218s3dfe4d42red589fc5692e4c1@mail.gmail.com>
+References: <f3566d60710302205g2dd867bbk8a3494ceeda569f0@mail.gmail.com>
+	<fa686aa40710302218s3dfe4d42red589fc5692e4c1@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 16:36:36 +1100
+Message-Id: <1193808996.9928.112.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
-	anton@au1.ibm.com, Badari Pulavarty <pbadari@us.ibm.com>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +20,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 31 Oct 2007 14:28:46 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> ioresource was good structure for remembering "which memory is conventional
-> memory" and i386/x86_64/ia64 registered conventional memory as "System RAM",
-> when I posted patch. (just say "System Ram" is not for memory hotplug.)
+On Tue, 2007-10-30 at 23:18 -0600, Grant Likely wrote:
+> On 10/30/07, Bai Shuwei <baishuwei@gmail.com> wrote:
+> > Hi, everyone
+> >    As we know, the program on the X86 can run on the differnt ring(0, 1, 2,
+> > 3) and the linux kernel run in the ring 0 and user program in the ring 3.
+> > And now I want to know wether there is a simple mechanism on the PowerPC
+> > architecture? thx all!
 > 
-If I remember correctly, System RAM is for kdump (to know which memory should
-be dumped.) Then, memory-hotadd/remove has to modify it anyway.
+> Powerpc has 2 privilege levels; user and supervisor.  The kernel runs
+> in supervisor mode, and user-space runs in user mode.
 
-Thanks,
--Kame
+To be complete here, some implementations have 3 :-) Don't forget
+hypervisor mode !
+
+Ben.
