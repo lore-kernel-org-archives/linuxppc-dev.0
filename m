@@ -1,20 +1,22 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (unknown [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id 57034DE18E
+Return-Path: <baishuwei@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 3E70DDE00B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Oct 2007 17:12:26 +1100 (EST)
-Message-ID: <393873503.24962@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: linuxppc-embedded@ozlabs.org,
- "Bai Shuwei" <baishuwei@gmail.com>
+	Wed, 31 Oct 2007 18:09:30 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so47061nfd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 Oct 2007 00:09:29 -0700 (PDT)
+Message-ID: <f3566d60710310009g4fb46df2t1f854827561a21ac@mail.gmail.com>
+Date: Wed, 31 Oct 2007 15:09:28 +0800
+From: "Bai Shuwei" <baishuwei@gmail.com>
+To: "Wang, Baojun" <wangbj@lzu.edu.cn>
 Subject: Re: ring on PowerPC
-Date: Wed, 31 Oct 2007 14:12:34 +0800
-References: <393807697.25590@lzu.edu.cn>
-In-Reply-To: <393807697.25590@lzu.edu.cn>
+In-Reply-To: <393873503.24962@eyou.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2678156.JkQ5VmEuQ0";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200710311412.36584.wangbj@lzu.edu.cn>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_6916_17117476.1193814568501"
+References: <393807697.25590@lzu.edu.cn> <393873503.24962@eyou.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,57 +27,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart2678156.JkQ5VmEuQ0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+------=_Part_6916_17117476.1193814568501
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 Content-Disposition: inline
 
-On Wednesday 31 October 2007 13:05:16, Bai Shuwei wrote=EF=BC=9A
-> Hi, everyone
->    As we know, the program on the X86 can run on the differnt ring(0, 1, =
-2,
-> 3) and the linux kernel run in the ring 0 and user program in the ring 3.
-> And now I want to know wether there is a simple mechanism on the PowerPC
-> architecture? thx all!
->
-> best regards!
->
-> Buroc
+dGhhbmtzIGFsbAoKT24gMTAvMzEvMDcsIFdhbmcsIEJhb2p1biA8d2FuZ2JqQGx6dS5lZHUuY24+
+IHdyb3RlOgo+Cj4gT24gV2VkbmVzZGF5IDMxIE9jdG9iZXIgMjAwNyAxMzowNToxNiwgQmFpIFNo
+dXdlaSB3cm90Ze+8mgo+ID4gSGksIGV2ZXJ5b25lCj4gPiAgICBBcyB3ZSBrbm93LCB0aGUgcHJv
+Z3JhbSBvbiB0aGUgWDg2IGNhbiBydW4gb24gdGhlIGRpZmZlcm50IHJpbmcoMCwgMSwKPiAyLAo+
+ID4gMykgYW5kIHRoZSBsaW51eCBrZXJuZWwgcnVuIGluIHRoZSByaW5nIDAgYW5kIHVzZXIgcHJv
+Z3JhbSBpbiB0aGUgcmluZwo+IDMuCj4gPiBBbmQgbm93IEkgd2FudCB0byBrbm93IHdldGhlciB0
+aGVyZSBpcyBhIHNpbXBsZSBtZWNoYW5pc20gb24gdGhlIFBvd2VyUEMKPiA+IGFyY2hpdGVjdHVy
+ZT8gdGh4IGFsbCEKPiA+Cj4gPiBiZXN0IHJlZ2FyZHMhCj4gPgo+ID4gQnVyb2MKPgo+IHBvd2Vy
+cGMgaGFzIGEgbWFjaGluZSBzdGF0ZSByZWdpc3RlcihNU1IpLCBiaXQgTVNSX1BSIHByZXNlbnQg
+dGhlIGN1cnJlbnQKPiBwcml2aWxlZ2UgbGV2ZWwsIGlmIG1zciAmIE1TUl9QUiwgdGhlbiBpdCdz
+IGZyb20gdXNlciBzcGFjZSwgb3RoZXJ3aXNlKG1zcgo+ICYKPiBNU1JfUFIgPT0gMCkgaXQncyBr
+ZXJuZWwgc3BhY2UuCj4KPiBiZXNpZGVzLCB0aGUgbGludXggaW1wbGVtZW50YXRpb24gb25seSB1
+c2UgcmluZzAgYW5kIHJpbmczIHVuZGVyIGkzODYsCj4gcmluZzAKPiBpcyBoaWdoZXN0KGtlcm5l
+bCBzcGFjZSksIHJpbmczIGlzIGxvd2VzdCAodXNlcnNwYWNlKQo+Cj4gV2FuZwo+IC0tCj4gV2Fu
+ZywgQmFvanVuIExhbnpob3UgVW5pdmVyc2l0eQo+IERpc3RyaWJ1dGVkICYgRW1iZWRkZWQgU3lz
+dGVtIExhYiBodHRwOi8vZHNsYWIubHp1LmVkdS5jbgo+IFNjaG9vbCBvZiBJbmZvcm1hdGlvbiBT
+Y2llbmNlIGFuZCBFbmdlbmVlcmluZyB3YW5nYmpAbHp1LmVkdS5jbgo+IFRpYW5zaHVpIFNvdXRo
+IFJvYWQgMjIyLiBMYW56aG91IDczMDAwMCAuUC5SLkNoaW5hCj4gVGVsOis4Ni05MzEtODkxMjAy
+NSBGYXg6Kzg2LTkzMS04OTEyMDIyCj4KPgoKCi0tIAoKQWRkOiBUaWFuc2h1aSBTb3V0aCBSb2Fk
+IDIyMiwgTGFuemhvdSwgUC5SLkNoaW5hClRlbDogKzg2LTkzMS04OTEyMDI1ClppcCBDb2RlOiA3
+MzAwMDAKVVJMOiBvc3MubHp1LmVkdS5jbgpFbWFpbDogYmFpc2h1d2VpQGdtYWlsLmNvbSwgYnVy
+b2NAMTI2LmNvbQo=
+------=_Part_6916_17117476.1193814568501
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-powerpc has a machine state register(MSR), bit MSR_PR present the current=20
-privilege level, if msr & MSR_PR, then it's from user space, otherwise(msr =
-&=20
-MSR_PR =3D=3D 0) it's kernel space.
-
-besides, the linux implementation only use ring0 and ring3 under i386, ring=
-0=20
-is highest(kernel space), ring3 is lowest (userspace)
-
-Wang
-=2D-=20
-Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0Lanzhou University
-Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0http://dslab.lzu.edu.cn
-School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
-ngbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
-Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
-
---nextPart2678156.JkQ5VmEuQ0
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHKBzSIuIOr7tpgg0RAv1pAJ4k0CMnqPqUDOSKOH7CIdQ+pvgOZQCfR7KF
-zNgZnFp2NnFAzql0A3bdjoA=
-=XFw7
------END PGP SIGNATURE-----
-
---nextPart2678156.JkQ5VmEuQ0--
+dGhhbmtzIGFsbDxicj48YnI+CjxkaXY+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiAxMC8z
+MS8wNywgPGIgY2xhc3M9ImdtYWlsX3NlbmRlcm5hbWUiPldhbmcsIEJhb2p1bjwvYj4gJmx0Ozxh
+IGhyZWY9Im1haWx0bzp3YW5nYmpAbHp1LmVkdS5jbiI+d2FuZ2JqQGx6dS5lZHUuY248L2E+Jmd0
+OyB3cm90ZTo8L3NwYW4+CjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9IlBB
+RERJTkctTEVGVDogMWV4OyBNQVJHSU46IDBweCAwcHggMHB4IDAuOGV4OyBCT1JERVItTEVGVDog
+I2NjYyAxcHggc29saWQiPk9uIFdlZG5lc2RheSAzMSBPY3RvYmVyIDIwMDcgMTM6MDU6MTYsIEJh
+aSBTaHV3ZWkgd3JvdGXvvJo8YnI+Jmd0OyBIaSwgZXZlcnlvbmU8YnI+Jmd0OyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwO0FzIHdlIGtub3csIHRoZSBwcm9ncmFtIG9uIHRoZSBYODYgY2FuIHJ1biBv
+biB0aGUgZGlmZmVybnQgcmluZygwLCAxLCAyLAo8YnI+Jmd0OyAzKSBhbmQgdGhlIGxpbnV4IGtl
+cm5lbCBydW4gaW4gdGhlIHJpbmcgMCBhbmQgdXNlciBwcm9ncmFtIGluIHRoZSByaW5nIDMuPGJy
+PiZndDsgQW5kIG5vdyBJIHdhbnQgdG8ga25vdyB3ZXRoZXIgdGhlcmUgaXMgYSBzaW1wbGUgbWVj
+aGFuaXNtIG9uIHRoZSBQb3dlclBDPGJyPiZndDsgYXJjaGl0ZWN0dXJlPyB0aHggYWxsITxicj4m
+Z3Q7PGJyPiZndDsgYmVzdCByZWdhcmRzIQo8YnI+Jmd0Ozxicj4mZ3Q7IEJ1cm9jPGJyPjxicj5w
+b3dlcnBjIGhhcyBhIG1hY2hpbmUgc3RhdGUgcmVnaXN0ZXIoTVNSKSwgYml0IE1TUl9QUiBwcmVz
+ZW50IHRoZSBjdXJyZW50PGJyPnByaXZpbGVnZSBsZXZlbCwgaWYgbXNyICZhbXA7IE1TUl9QUiwg
+dGhlbiBpdCYjMzk7cyBmcm9tIHVzZXIgc3BhY2UsIG90aGVyd2lzZShtc3IgJmFtcDs8YnI+TVNS
+X1BSID09IDApIGl0JiMzOTtzIGtlcm5lbCBzcGFjZS4KPGJyPjxicj5iZXNpZGVzLCB0aGUgbGlu
+dXggaW1wbGVtZW50YXRpb24gb25seSB1c2UgcmluZzAgYW5kIHJpbmczIHVuZGVyIGkzODYsIHJp
+bmcwPGJyPmlzIGhpZ2hlc3Qoa2VybmVsIHNwYWNlKSwgcmluZzMgaXMgbG93ZXN0ICh1c2Vyc3Bh
+Y2UpPGJyPjxicj5XYW5nPGJyPi0tPGJyPldhbmcsIEJhb2p1biBMYW56aG91IFVuaXZlcnNpdHk8
+YnI+RGlzdHJpYnV0ZWQgJmFtcDsgRW1iZWRkZWQgU3lzdGVtIExhYiAKPGEgaHJlZj0iaHR0cDov
+L2RzbGFiLmx6dS5lZHUuY24iPmh0dHA6Ly9kc2xhYi5senUuZWR1LmNuPC9hPjxicj5TY2hvb2wg
+b2YgSW5mb3JtYXRpb24gU2NpZW5jZSBhbmQgRW5nZW5lZXJpbmcgPGEgaHJlZj0ibWFpbHRvOndh
+bmdiakBsenUuZWR1LmNuIj53YW5nYmpAbHp1LmVkdS5jbjwvYT48YnI+VGlhbnNodWkgU291dGgg
+Um9hZCAyMjIuIExhbnpob3UgNzMwMDAwIC5QLlIuQ2hpbmEKPGJyPlRlbDorODYtOTMxLTg5MTIw
+MjUgRmF4Ois4Ni05MzEtODkxMjAyMjxicj48YnI+PC9ibG9ja3F1b3RlPjwvZGl2Pjxicj48YnIg
+Y2xlYXI9ImFsbCI+PGJyPi0tIDxicj48YnI+QWRkOiBUaWFuc2h1aSBTb3V0aCBSb2FkIDIyMiwg
+TGFuemhvdSwgUC5SLkNoaW5hPGJyPlRlbDogKzg2LTkzMS04OTEyMDI1PGJyPlppcCBDb2RlOiA3
+MzAwMDA8YnI+VVJMOiA8YSBocmVmPSJodHRwOi8vb3NzLmx6dS5lZHUuY24iPgpvc3MubHp1LmVk
+dS5jbjwvYT48YnI+RW1haWw6IDxhIGhyZWY9Im1haWx0bzpiYWlzaHV3ZWlAZ21haWwuY29tIj5i
+YWlzaHV3ZWlAZ21haWwuY29tPC9hPiwgPGEgaHJlZj0ibWFpbHRvOmJ1cm9jQDEyNi5jb20iPmJ1
+cm9jQDEyNi5jb208L2E+IAo=
+------=_Part_6916_17117476.1193814568501--
