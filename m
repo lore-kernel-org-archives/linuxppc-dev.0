@@ -1,33 +1,33 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <Gerald.VanBaren@ge.com>
+Received: from ext-ch1gw-5.online-age.net (ext-ch1gw-5.online-age.net
+	[64.37.194.13])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9B527DDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 00:02:16 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VD28nc032332
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:02:08 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	l9VD28uu094020
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:02:08 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l9VD28uO019453
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:02:08 -0600
-Date: Wed, 31 Oct 2007 07:59:19 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH 0/4] PowerPC: 440GRx Rainier board support.
-Message-ID: <20071031075919.16a4ed14@zod.rchland.ibm.com>
-In-Reply-To: <47287339.6040404@ru.mvista.com>
-References: <20071030164511.GA21973@ru.mvista.com>
-	<20071030151608.28a2d706@weaponx.rchland.ibm.com>
-	<47287339.6040404@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "ext-ch1gw.online-age.net",
+	Issuer "Savvis Communications Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 418FBDDDFB
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 00:48:50 +1100 (EST)
+Received: from int-ch1gw-6.online-age.net (int-ch1gw-6 [3.159.232.70])
+	by ext-ch1gw-5.online-age.net (8.13.6/8.13.6/20051111-SVVS-TLS-DNSBL)
+	with ESMTP id l9VCocPO024580
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:50:43 -0400 (EDT)
+Received: from alpmlef01.e2k.ad.ge.com (int-ch1gw-6 [3.159.232.70])
+	by int-ch1gw-6.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
+	id l9VCn8Pp026194
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:49:13 -0400
+Message-ID: <47287A10.2030304@ge.com>
+Date: Wed, 31 Oct 2007 08:50:24 -0400
+From: Jerry Van Baren <gerald.vanbaren@ge.com>
+MIME-Version: 1.0
+To: Jerry Van Baren <gerald.vanbaren@ge.com>, Jon Loeliger <jdl@jdl.com>,
+	Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: libfdt as its own repo and submodule of dtc?
+References: <C98039BC-92DE-4398-B198-EDAD12A3670C@kernel.crashing.org>
+	<E1ImtSB-0003vC-0j@jdl.com> <4727665E.1070109@ge.com>
+	<20071030234011.GE2784@localhost.localdomain>
+In-Reply-To: <20071030234011.GE2784@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	u-boot-users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,29 +37,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 31 Oct 2007 15:21:13 +0300
-Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-
-> Josh Boyer wrote:
-> > On Tue, 30 Oct 2007 19:45:11 +0300
-> > Valentine Barshak <vbarshak@ru.mvista.com> wrote:
-> > 
-> >> The following patches add PowerPC 440GRx Rainier board support.
-> >> The board is almost identical to Sequoia, but doesn't have USB
-> >> and FPU is not supported.
-> > 
-> > So why do we need anything other than the DTS and the defconfig?  I
-> > would think the sequoia wrapper and platform files would suffice
-> > completely for this.
+David Gibson wrote:
+> On Tue, Oct 30, 2007 at 01:14:06PM -0400, Jerry Van Baren wrote:
+>> Jon Loeliger wrote:
+>>> So, like, the other day Kumar Gala mumbled:
+>>>> Jon,
+>>>>
+>>>> It seems like have libfdt as a unique git repo that is a submodule of  
+>>>> the things that need it (dtc, u-boot, etc.) might make some sense and  it 
+>>>> easier for the projects that need to pull it in.
+>>>>
+>>>> Is this something you can take a look at? (or have other ideas on).
+>>> I would be fine with making libfdt a git repository separate
+>>> from the DTC repository if that makes it easier to integrate
+>>> it with other projects.
 > 
-> Yes, they would, but how to handle the board name in this case?
-> I mean the resulting image would be cuImage.sequoia for rainier and the 
-> DTS board name has to be sequoia for rainier too.
-> I don't now, may be it's not a big deal to call rainier a sequoia though.
-> What do you think?
+> I don't think it's a good idea to make dtc and libfdt entirely
+> seperate repositories (again).  Being able to use both together in
+> their combined testsuite is very useful (libfdt is used to check trees
+> generated by dtc, dtc is used to generate example trees for libfdt
+> testing).
+> 
+> I'm not sure how submodules/subrepositories work so I don't know if
+> that makes sense.
+> 
+>> That sounds like a good idea to me.  I would really prefer pulling patches 
+>> out of a libfdt repo into the u-boot repo rather than trying to kerchunk 
+>> upgrade lumps.  While we can do this with a dtc repo, it potentially makes 
+>> it a lot more difficult.
+> 
+> I don't think upgrading embedded copies by diff is a good way to go.
+> The upgrade method I had in mind was to pull out a whole new copy of
+> libfdt, drop that into the embedding project verbatim and generate a
+> new diff there in whatever their source tracking system is.  I set out
+> the repository to make this easy.
 
-Let me think about this for a bit.  Theoretically, there should be a
-way to have a common code base between these two boards and have the
-images use the right names.
+I looked at this some more last night and thought about it a bit and 
+still am conflicted...
 
-josh
+Pros for pulling/applying diffs/patches
+----
+* History is preserved, including "signed-off-by" lines.  This is a 
+*major* positive.
+
+* Individual patches are small, allowing better publishing and 
+reviewing.  This is a double-edged sword (see Cons).
+
+Cons
+----
+* Uninteresting files may be touched by the patches, causing patch 
+breakage.  An example of this is the original libfdt had a test 
+subdirectory (subsequently promoted to the same level as ./libfdt and 
+generalized to be a dtc+libfdt test suite).  When I grabbed the original 
+snapshot of libfdt, I did not pick up the test suite, so any patches 
+that include the test suite (many older ones) will have problems.
+
+* Tracking patches in a different repository and applying them is a lot 
+of WORK.
+
+* Publishing patches for review on the u-boot list has marginal benefit. 
+If someone on the u-boot list has a problem with a patch, *I'm* not at 
+all interested in being an intermediary carrying the flames across two 
+mail lists between David, who isn't on the u-boot list, and Joe Uboot, 
+who isn't on the linuxppc-dev list.  Hoo boy, would that be an untenable 
+situation!  <http://en.wikipedia.org/wiki/Prometheus>  (I prefer to have 
+alcohol eat my liver, not an eagle, thankyouverymuch.)
+
+----
+
+At this point, I'm inclined to do a "big bang" update to the (nearly) 
+current state, thanks to Kumar, and see how it works to apply patches to 
+incrementally move it forward.
+
+Hmmm, I need to get back to the topic... the bottom line is, at this 
+point I don't see any major benefit of having libfdt in a separate git 
+repo.  I don't see it as making my task significantly easier and would 
+just add hassle to Jon and David's life.
+
+Best regards,
+gvb
