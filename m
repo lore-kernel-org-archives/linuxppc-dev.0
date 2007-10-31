@@ -1,94 +1,65 @@
-Return-Path: <baishuwei@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id 3E70DDE00B
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Oct 2007 18:09:30 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so47061nfd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Oct 2007 00:09:29 -0700 (PDT)
-Message-ID: <f3566d60710310009g4fb46df2t1f854827561a21ac@mail.gmail.com>
-Date: Wed, 31 Oct 2007 15:09:28 +0800
-From: "Bai Shuwei" <baishuwei@gmail.com>
-To: "Wang, Baojun" <wangbj@lzu.edu.cn>
-Subject: Re: ring on PowerPC
-In-Reply-To: <393873503.24962@eyou.net>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6916_17117476.1193814568501"
-References: <393807697.25590@lzu.edu.cn> <393873503.24962@eyou.net>
-Cc: linuxppc-embedded@ozlabs.org
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9B527DDD0D
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 00:02:16 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VD28nc032332
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:02:08 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9VD28uu094020
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:02:08 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9VD28uO019453
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:02:08 -0600
+Date: Wed, 31 Oct 2007 07:59:19 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH 0/4] PowerPC: 440GRx Rainier board support.
+Message-ID: <20071031075919.16a4ed14@zod.rchland.ibm.com>
+In-Reply-To: <47287339.6040404@ru.mvista.com>
+References: <20071030164511.GA21973@ru.mvista.com>
+	<20071030151608.28a2d706@weaponx.rchland.ibm.com>
+	<47287339.6040404@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6916_17117476.1193814568501
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+On Wed, 31 Oct 2007 15:21:13 +0300
+Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 
-dGhhbmtzIGFsbAoKT24gMTAvMzEvMDcsIFdhbmcsIEJhb2p1biA8d2FuZ2JqQGx6dS5lZHUuY24+
-IHdyb3RlOgo+Cj4gT24gV2VkbmVzZGF5IDMxIE9jdG9iZXIgMjAwNyAxMzowNToxNiwgQmFpIFNo
-dXdlaSB3cm90Ze+8mgo+ID4gSGksIGV2ZXJ5b25lCj4gPiAgICBBcyB3ZSBrbm93LCB0aGUgcHJv
-Z3JhbSBvbiB0aGUgWDg2IGNhbiBydW4gb24gdGhlIGRpZmZlcm50IHJpbmcoMCwgMSwKPiAyLAo+
-ID4gMykgYW5kIHRoZSBsaW51eCBrZXJuZWwgcnVuIGluIHRoZSByaW5nIDAgYW5kIHVzZXIgcHJv
-Z3JhbSBpbiB0aGUgcmluZwo+IDMuCj4gPiBBbmQgbm93IEkgd2FudCB0byBrbm93IHdldGhlciB0
-aGVyZSBpcyBhIHNpbXBsZSBtZWNoYW5pc20gb24gdGhlIFBvd2VyUEMKPiA+IGFyY2hpdGVjdHVy
-ZT8gdGh4IGFsbCEKPiA+Cj4gPiBiZXN0IHJlZ2FyZHMhCj4gPgo+ID4gQnVyb2MKPgo+IHBvd2Vy
-cGMgaGFzIGEgbWFjaGluZSBzdGF0ZSByZWdpc3RlcihNU1IpLCBiaXQgTVNSX1BSIHByZXNlbnQg
-dGhlIGN1cnJlbnQKPiBwcml2aWxlZ2UgbGV2ZWwsIGlmIG1zciAmIE1TUl9QUiwgdGhlbiBpdCdz
-IGZyb20gdXNlciBzcGFjZSwgb3RoZXJ3aXNlKG1zcgo+ICYKPiBNU1JfUFIgPT0gMCkgaXQncyBr
-ZXJuZWwgc3BhY2UuCj4KPiBiZXNpZGVzLCB0aGUgbGludXggaW1wbGVtZW50YXRpb24gb25seSB1
-c2UgcmluZzAgYW5kIHJpbmczIHVuZGVyIGkzODYsCj4gcmluZzAKPiBpcyBoaWdoZXN0KGtlcm5l
-bCBzcGFjZSksIHJpbmczIGlzIGxvd2VzdCAodXNlcnNwYWNlKQo+Cj4gV2FuZwo+IC0tCj4gV2Fu
-ZywgQmFvanVuIExhbnpob3UgVW5pdmVyc2l0eQo+IERpc3RyaWJ1dGVkICYgRW1iZWRkZWQgU3lz
-dGVtIExhYiBodHRwOi8vZHNsYWIubHp1LmVkdS5jbgo+IFNjaG9vbCBvZiBJbmZvcm1hdGlvbiBT
-Y2llbmNlIGFuZCBFbmdlbmVlcmluZyB3YW5nYmpAbHp1LmVkdS5jbgo+IFRpYW5zaHVpIFNvdXRo
-IFJvYWQgMjIyLiBMYW56aG91IDczMDAwMCAuUC5SLkNoaW5hCj4gVGVsOis4Ni05MzEtODkxMjAy
-NSBGYXg6Kzg2LTkzMS04OTEyMDIyCj4KPgoKCi0tIAoKQWRkOiBUaWFuc2h1aSBTb3V0aCBSb2Fk
-IDIyMiwgTGFuemhvdSwgUC5SLkNoaW5hClRlbDogKzg2LTkzMS04OTEyMDI1ClppcCBDb2RlOiA3
-MzAwMDAKVVJMOiBvc3MubHp1LmVkdS5jbgpFbWFpbDogYmFpc2h1d2VpQGdtYWlsLmNvbSwgYnVy
-b2NAMTI2LmNvbQo=
-------=_Part_6916_17117476.1193814568501
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+> Josh Boyer wrote:
+> > On Tue, 30 Oct 2007 19:45:11 +0300
+> > Valentine Barshak <vbarshak@ru.mvista.com> wrote:
+> > 
+> >> The following patches add PowerPC 440GRx Rainier board support.
+> >> The board is almost identical to Sequoia, but doesn't have USB
+> >> and FPU is not supported.
+> > 
+> > So why do we need anything other than the DTS and the defconfig?  I
+> > would think the sequoia wrapper and platform files would suffice
+> > completely for this.
+> 
+> Yes, they would, but how to handle the board name in this case?
+> I mean the resulting image would be cuImage.sequoia for rainier and the 
+> DTS board name has to be sequoia for rainier too.
+> I don't now, may be it's not a big deal to call rainier a sequoia though.
+> What do you think?
 
-dGhhbmtzIGFsbDxicj48YnI+CjxkaXY+PHNwYW4gY2xhc3M9ImdtYWlsX3F1b3RlIj5PbiAxMC8z
-MS8wNywgPGIgY2xhc3M9ImdtYWlsX3NlbmRlcm5hbWUiPldhbmcsIEJhb2p1bjwvYj4gJmx0Ozxh
-IGhyZWY9Im1haWx0bzp3YW5nYmpAbHp1LmVkdS5jbiI+d2FuZ2JqQGx6dS5lZHUuY248L2E+Jmd0
-OyB3cm90ZTo8L3NwYW4+CjxibG9ja3F1b3RlIGNsYXNzPSJnbWFpbF9xdW90ZSIgc3R5bGU9IlBB
-RERJTkctTEVGVDogMWV4OyBNQVJHSU46IDBweCAwcHggMHB4IDAuOGV4OyBCT1JERVItTEVGVDog
-I2NjYyAxcHggc29saWQiPk9uIFdlZG5lc2RheSAzMSBPY3RvYmVyIDIwMDcgMTM6MDU6MTYsIEJh
-aSBTaHV3ZWkgd3JvdGXvvJo8YnI+Jmd0OyBIaSwgZXZlcnlvbmU8YnI+Jmd0OyZuYnNwOyZuYnNw
-OyZuYnNwOyZuYnNwO0FzIHdlIGtub3csIHRoZSBwcm9ncmFtIG9uIHRoZSBYODYgY2FuIHJ1biBv
-biB0aGUgZGlmZmVybnQgcmluZygwLCAxLCAyLAo8YnI+Jmd0OyAzKSBhbmQgdGhlIGxpbnV4IGtl
-cm5lbCBydW4gaW4gdGhlIHJpbmcgMCBhbmQgdXNlciBwcm9ncmFtIGluIHRoZSByaW5nIDMuPGJy
-PiZndDsgQW5kIG5vdyBJIHdhbnQgdG8ga25vdyB3ZXRoZXIgdGhlcmUgaXMgYSBzaW1wbGUgbWVj
-aGFuaXNtIG9uIHRoZSBQb3dlclBDPGJyPiZndDsgYXJjaGl0ZWN0dXJlPyB0aHggYWxsITxicj4m
-Z3Q7PGJyPiZndDsgYmVzdCByZWdhcmRzIQo8YnI+Jmd0Ozxicj4mZ3Q7IEJ1cm9jPGJyPjxicj5w
-b3dlcnBjIGhhcyBhIG1hY2hpbmUgc3RhdGUgcmVnaXN0ZXIoTVNSKSwgYml0IE1TUl9QUiBwcmVz
-ZW50IHRoZSBjdXJyZW50PGJyPnByaXZpbGVnZSBsZXZlbCwgaWYgbXNyICZhbXA7IE1TUl9QUiwg
-dGhlbiBpdCYjMzk7cyBmcm9tIHVzZXIgc3BhY2UsIG90aGVyd2lzZShtc3IgJmFtcDs8YnI+TVNS
-X1BSID09IDApIGl0JiMzOTtzIGtlcm5lbCBzcGFjZS4KPGJyPjxicj5iZXNpZGVzLCB0aGUgbGlu
-dXggaW1wbGVtZW50YXRpb24gb25seSB1c2UgcmluZzAgYW5kIHJpbmczIHVuZGVyIGkzODYsIHJp
-bmcwPGJyPmlzIGhpZ2hlc3Qoa2VybmVsIHNwYWNlKSwgcmluZzMgaXMgbG93ZXN0ICh1c2Vyc3Bh
-Y2UpPGJyPjxicj5XYW5nPGJyPi0tPGJyPldhbmcsIEJhb2p1biBMYW56aG91IFVuaXZlcnNpdHk8
-YnI+RGlzdHJpYnV0ZWQgJmFtcDsgRW1iZWRkZWQgU3lzdGVtIExhYiAKPGEgaHJlZj0iaHR0cDov
-L2RzbGFiLmx6dS5lZHUuY24iPmh0dHA6Ly9kc2xhYi5senUuZWR1LmNuPC9hPjxicj5TY2hvb2wg
-b2YgSW5mb3JtYXRpb24gU2NpZW5jZSBhbmQgRW5nZW5lZXJpbmcgPGEgaHJlZj0ibWFpbHRvOndh
-bmdiakBsenUuZWR1LmNuIj53YW5nYmpAbHp1LmVkdS5jbjwvYT48YnI+VGlhbnNodWkgU291dGgg
-Um9hZCAyMjIuIExhbnpob3UgNzMwMDAwIC5QLlIuQ2hpbmEKPGJyPlRlbDorODYtOTMxLTg5MTIw
-MjUgRmF4Ois4Ni05MzEtODkxMjAyMjxicj48YnI+PC9ibG9ja3F1b3RlPjwvZGl2Pjxicj48YnIg
-Y2xlYXI9ImFsbCI+PGJyPi0tIDxicj48YnI+QWRkOiBUaWFuc2h1aSBTb3V0aCBSb2FkIDIyMiwg
-TGFuemhvdSwgUC5SLkNoaW5hPGJyPlRlbDogKzg2LTkzMS04OTEyMDI1PGJyPlppcCBDb2RlOiA3
-MzAwMDA8YnI+VVJMOiA8YSBocmVmPSJodHRwOi8vb3NzLmx6dS5lZHUuY24iPgpvc3MubHp1LmVk
-dS5jbjwvYT48YnI+RW1haWw6IDxhIGhyZWY9Im1haWx0bzpiYWlzaHV3ZWlAZ21haWwuY29tIj5i
-YWlzaHV3ZWlAZ21haWwuY29tPC9hPiwgPGEgaHJlZj0ibWFpbHRvOmJ1cm9jQDEyNi5jb20iPmJ1
-cm9jQDEyNi5jb208L2E+IAo=
-------=_Part_6916_17117476.1193814568501--
+Let me think about this for a bit.  Theoretically, there should be a
+way to have a common code base between these two boards and have the
+images use the right names.
+
+josh
