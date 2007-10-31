@@ -1,23 +1,36 @@
-Return-Path: <jacmet@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
-	by ozlabs.org (Postfix) with ESMTP id 2E1ECDDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 01:45:41 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d23so19844and
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 07:45:40 -0700 (PDT)
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 4/4] Uartlite: speed up console output
-References: <20071023042353.30309.93118.stgit@trillian.cg.shawcable.net>
-	<20071023042746.30309.15188.stgit@trillian.cg.shawcable.net>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Wed, 31 Oct 2007 15:45:02 +0100
-In-Reply-To: <20071023042746.30309.15188.stgit@trillian.cg.shawcable.net>
-	(Grant Likely's message of "Mon\, 22 Oct 2007 22\:27\:46 -0600")
-Message-ID: <87mytz4a35.fsf@macbook.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <pbadari@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 99EF7DDDFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 02:21:08 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l9VFL2xx031505
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 11:21:02 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	l9VFGDcU112324
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 09:21:02 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l9VExBTC028910
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2007 08:59:11 -0600
+Subject: Re: [RFC] hotplug memory remove - walk_memory_resource for ppc64
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20071031143423.586498c3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <1191346196.6106.20.camel@dyn9047017100.beaverton.ibm.com>
+	<18178.52359.953289.638736@cargo.ozlabs.ibm.com>
+	<1193771951.8904.22.camel@dyn9047017100.beaverton.ibm.com>
+	<20071031142846.aef9c545.kamezawa.hiroyu@jp.fujitsu.com>
+	<20071031143423.586498c3.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 31 Oct 2007 08:02:40 -0800
+Message-Id: <1193846560.17412.3.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
+	Paul Mackerras <paulus@samba.org>, linux-mm <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +40,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+On Wed, 2007-10-31 at 14:34 +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 31 Oct 2007 14:28:46 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > ioresource was good structure for remembering "which memory is conventional
+> > memory" and i386/x86_64/ia64 registered conventional memory as "System RAM",
+> > when I posted patch. (just say "System Ram" is not for memory hotplug.)
+> > 
+> If I remember correctly, System RAM is for kdump (to know which memory should
+> be dumped.) Then, memory-hotadd/remove has to modify it anyway.
 
-Hi,
+Yes. kdump uses it for finding memory holes on x86/x86-64 (not sure
+about ia64). On PPC64, since its not represented in /proc/iomem, we
+end up reading /proc/device-tree/memory* nodes to construct the 
+memory map.
 
- Grant> From: Grant Likely <grant.likely@secretlab.ca>
- Grant> Change the wait_tx routine to call cpu_relax() instead of udelay() to
- Grant> reduce console output latency and test for the TXFULL bit instead of
- Grant> TXEMPTY.  That way the FIFO doesn't need to by 100% flushed before
- Grant> writing the next character.
+Paul's concern is, since we didn't need it so far - why we need this
+for hotplug memory remove to work ? It might break API for *unknown*
+applications. Its unfortunate that, hotplug memory add updates 
+/proc/iomem. We can deal with it later, as a separate patch.
 
-Sorry for the slow response - I had a misunderstanding with the
-phone company, and I'm now without inet :/
-
-Looks good to me. I gave it a quick spin to check the speed
-difference:
-
-Old:
-[    0.453101] Freeing unused kernel memory: 52k init
-
-New:
-[    0.433686] Freeing unused kernel memory: 52k init
-
-So it shaves off ~20ms (~4%) of bootup.
-
-It ofcause means that the console routines return before the data is
-actually transmitted on the wire, but I guess you have to screw
-seriously up for the UART to die before emptying it's FIFO.
-
- Grant> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+Thanks,
+Badari
