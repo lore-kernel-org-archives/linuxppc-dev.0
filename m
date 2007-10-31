@@ -1,13 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 31 Oct 2007 14:26:37 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [2/2] Use embedded dtc in kernel builds
-Message-ID: <20071031032637.GF7772@localhost.localdomain>
-References: <20071031032401.GD7772@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <galak@kernel.crashing.org>
 In-Reply-To: <20071031032401.GD7772@localhost.localdomain>
+References: <20071031032401.GD7772@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <DFBF9FAC-012A-47C6-9EC0-CDD365F67A97@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [0/2] Embed a copy of dtc in the kernel source
+Date: Tue, 30 Oct 2007 23:37:15 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,98 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch alters the kernel makefiles to build dtc from the sources
-embedded in the previous patch.  It also changes the
-arch/powerpc/boot/wrapper script to use the embedded dtc, rather than
-expecting a copy of dtc already installed on the system.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Oct 30, 2007, at 10:24 PM, David Gibson wrote:
 
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-10-22 13:55:49.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-10-31 14:02:40.000000000 +1100
-@@ -108,17 +108,52 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
- $(obj)/wrapper.a: $(obj-wlib) FORCE
- 	$(call if_changed,bootar)
- 
--hostprogs-y	:= addnote addRamDisk hack-coff mktree
-+hostprogs-y	:= addnote addRamDisk hack-coff mktree dtc
- 
- targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
- extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
- 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
- 
- wrapper		:=$(srctree)/$(src)/wrapper
--wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
-+wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree dtc) \
- 			$(wrapper) FORCE
- 
- #############
-+# Bits for building dtc
-+# DTC_GENPARSER      := 1    # Uncomment to rebuild flex/bison output
-+
-+dtc-objs := dtc.o flattree.o fstree.o data.o livetree.o treesource.o srcpos.o
-+dtc-objs += dtc-lexer.lex.o dtc-parser.tab.o
-+dtc-objs := $(addprefix dtc-src/, $(dtc-objs))
-+
-+# prerequisites on generated files needs to be explicit
-+$(obj)/dtc-src/dtc-parser.tab.o: $(obj)/dtc-src/dtc-parser.tab.c $(obj)/dtc-src/dtc-parser.tab.h
-+$(obj)/dtc-src/dtc-lexer.lex.o:  $(obj)/dtc-src/dtc-lexer.lex.c $(obj)/dtc-src/dtc-parser.tab.h
-+
-+HOSTCFLAGS += -I$(src)/dtc-src/
-+
-+targets += dtc-src/dtc-parser.tab.c
-+targets += dtc-src/dtc-lexer.lex.c
-+
-+ifdef DTC_GENPARSER
-+BISON = bison
-+FLEX = flex
-+
-+quiet_cmd_bison = BISON   $@
-+      cmd_bison = $(BISON) -o$@ -d $<; cp $@ $@_shipped
-+quiet_cmd_flex = FLEX    $@
-+      cmd_flex = $(FLEX) -o$@ $<; cp $@ $@_shipped
-+
-+$(obj)/dtc-src/dtc-parser.tab.c: $(src)/dtc-src/dtc-parser.y FORCE
-+     $(call if_changed,bison)
-+
-+$(obj)/dtc-src/dtc-parser.tab.h: $(obj)/dtc-src/dtc-parser.tab.c
-+
-+$(obj)/dtc-src/dtc-lexer.lex.c: $(src)/dtc-src/dtc-lexer.l FORCE
-+     $(call if_changed,flex)
-+endif
-+
-+#############
- # Bits for building various flavours of zImage
- 
- ifneq ($(CROSS32_COMPILE),)
-@@ -236,7 +271,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
- 
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.* treeImage.* \
--	otheros.bld
-+	otheros.bld $(dtc-clean-files)
- 
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
-Index: working-2.6/arch/powerpc/boot/wrapper
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/wrapper	2007-10-22 13:55:50.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/wrapper	2007-10-31 14:02:40.000000000 +1100
-@@ -111,7 +111,7 @@ if [ -n "$dts" ]; then
-     if [ -z "$dtb" ]; then
- 	dtb="$platform.dtb"
-     fi
--    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
-+    $object/dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
- fi
- 
- if [ -z "$kernel" ]; then
+> These two patches are a respin of my previous patch to merge a copy of
+> dtc into the kernel tree, so that kernel builds no longer depend on an
+> externally installed copy of dtc.
+>
+> This respin embeds a newer revision of dtc, and incorporates Sam
+> Ravnborg's preferred approach to Makefile integration.  Also, since so
+> many people whinged about it last time, I've split the patch into two
+> parts, the first is the too-large-for-the-list patch just verbatim
+> adding files and the second has the changes to existing kernel files
+> to build and use the embedded code.
 
+What about doing part of this via git-submodule?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+- k
