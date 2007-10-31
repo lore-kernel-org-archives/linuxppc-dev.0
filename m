@@ -1,22 +1,18 @@
 Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
-	by ozlabs.org (Postfix) with ESMTP id 0B301DDE3D
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id EB31FDDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Nov 2007 06:49:47 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so543946pyi
+	Thu,  1 Nov 2007 07:14:17 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so557237pyi
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Oct 2007 12:49:45 -0700 (PDT)
-Message-ID: <8496f91a0710311249p5841d66elc6ae5183df9b043f@mail.gmail.com>
-Date: Wed, 31 Oct 2007 22:49:45 +0300
+	Wed, 31 Oct 2007 13:14:16 -0700 (PDT)
+Message-ID: <8496f91a0710311314k3dd90e12t670e2405fcaa0725@mail.gmail.com>
+Date: Wed, 31 Oct 2007 23:14:15 +0300
 From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: "Theo Gjaltema" <gjalt007@chello.nl>
-Subject: Re: Too many spurious interrupts on mpc82xx with linux-2.4.35.5
-In-Reply-To: <4728C35B.7000709@chello.nl>
+To: linuxppc-embedded@ozlabs.org, "Theo Gjaltema" <gjalt007@chello.nl>
+Subject: Re: reboot of mpc8270 sometimes fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <8496f91a0707032251m6fea386cu2405899d2945fd07@mail.gmail.com>
-	<4728C35B.7000709@chello.nl>
-Cc: linuxppc-embedded@ozlabs.org
 Reply-To: matvejchikov@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,47 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm glad to hear it! :)
+Hi!
 
-2007/10/31, Theo Gjaltema <gjalt007@chello.nl>:
-> Matvejchikov,
->
-> I've tried this on 2.4.25 kernel from the denx eldk3.1.1 distribution
-> and it works here fine as well.
-> Thanks,
->   Theo.
->
-> Matvejchikov Ilya schreef:
-> > Hi all!
-> >
-> > If you still have this problem, try this patch. It helps :)
-> >
-> > Signed-off-by : Matvejchikov Ilya <matvejchikov@gmail.com>
-> > ---
-> > diff -purN linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c
-> > linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c
-> > --- linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c 2007-06-06
-> > 23:20:53.000000000 +0400
-> > +++ linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c 2007-06-28
-> > 12:17:42.000000000 +0400
-> > @@ -79,6 +79,12 @@ static void cpm2_mask_and_ack(unsigned i
-> >       ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
-> >       simr[word] = ppc_cached_irq_mask[word];
-> >       sipnr[word] = 1 << (31 - bit);
-> > +
-> > +     /*
-> > +      * Work around large numbers of spurious IRQs on PowerPC 82xx
-> > +      * systems.
-> > +      */
-> > +     mb();
-> >  }
-> >
-> >  static void cpm2_end_irq(unsigned int irq_nr)
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->
->
+I thik that m8260_restart in 2.4 kernel is broken. Try to get it from
+the 2.6 kernel, or look at this.
+
+ /* The 8260 has an internal 1-second timer update register that
+@@ -112,21 +123,16 @@ m8260_get_rtc_time(void)
+ static void
+ m8260_restart(char *cmd)
+ {
+-	extern void m8260_gorom(bd_t *bi, uint addr);
+-	uint	startaddr;
+-
+-	/* Most boot roms have a warmstart as the second instruction
+-	 * of the reset vector.  If that doesn't work for you, change this
+-	 * or the reboot program to send a proper address.
+-	 */
+-	startaddr = 0xff000104;
+-
+-	if (cmd != NULL) {
+-		if (!strncmp(cmd, "startaddr=", 10))
+-			startaddr = simple_strtoul(&cmd[10], NULL, 0);
+-	}
+-
+-	m8260_gorom((unsigned int)__pa(__res), startaddr);
++	__volatile__ unsigned char dummy;
++	
++	local_irq_disable();
++	((cpm2_map_t *) cpm2_immr)->im_clkrst.car_rmr |= 0x00000001;
++
++	/* Clear the ME,EE,IR & DR bits in MSR to cause checkstop */
++	mtmsr(mfmsr() & ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR));
++	dummy = ((cpm2_map_t *) cpm2_immr)->im_clkrst.res[0];
++	printk("Restart failed\n");
++	while (1) ;
+ }
