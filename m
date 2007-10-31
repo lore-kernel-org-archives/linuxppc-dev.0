@@ -1,56 +1,74 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 994BFDDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 23:43:30 +1100 (EST)
-Date: Fri, 30 Nov 2007 15:48:01 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Subject: Re: CPM2 USB host driver
-Message-ID: <20071130124801.GA13141@localhost.localdomain>
-References: <200711301145.52926.laurentp@cse-semaphore.com>
-	<20071130141638.4e00258d@kernel.crashing.org>
-	<200711301330.25100.laurentp@cse-semaphore.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <200711301330.25100.laurentp@cse-semaphore.com>
-Cc: mike@compulab.co.il, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <matvejchikov@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id 0B301DDE3D
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Nov 2007 06:49:47 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so543946pyi
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 Oct 2007 12:49:45 -0700 (PDT)
+Message-ID: <8496f91a0710311249p5841d66elc6ae5183df9b043f@mail.gmail.com>
+Date: Wed, 31 Oct 2007 22:49:45 +0300
+From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
+To: "Theo Gjaltema" <gjalt007@chello.nl>
+Subject: Re: Too many spurious interrupts on mpc82xx with linux-2.4.35.5
+In-Reply-To: <4728C35B.7000709@chello.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <8496f91a0707032251m6fea386cu2405899d2945fd07@mail.gmail.com>
+	<4728C35B.7000709@chello.nl>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: matvejchikov@gmail.com
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 30, 2007 at 01:30:18PM +0100, Laurent Pinchart wrote:
-> On Friday 30 November 2007 12:16, Vitaly Bordug wrote:
-> > On Fri, 30 Nov 2007 11:45:49 +0100
+I'm glad to hear it! :)
+
+2007/10/31, Theo Gjaltema <gjalt007@chello.nl>:
+> Matvejchikov,
+>
+> I've tried this on 2.4.25 kernel from the denx eldk3.1.1 distribution
+> and it works here fine as well.
+> Thanks,
+>   Theo.
+>
+> Matvejchikov Ilya schreef:
+> > Hi all!
 > >
-> > Laurent Pinchart wrote:
-> > > Hi everybody,
-> > >
-> > > Linux USB host support for the CPM, CPM2 and CPM2 pro is far from
-> > > complete. Many people showed interest on this list (and on
-> > > linuxppc-embedded) in the past, but nobody managed to complete a
-> > > driver and get it merged.
+> > If you still have this problem, try this patch. It helps :)
 > >
-> > that is mainly because of its semi-software nature. However, any approach
-> > would be helpful I beleive.
-> 
-> The CPM/CPM2 USB host controller does indeed put some pressure on the CPU. The 
-> PowerQuick III family is much better in that respect as its USB host 
-> controller is EHCI compliant.
-
-I didn't yet compare with CPM/CPM2, but I wonder if PQIIPro (MPC8360E)
-USB controller is similar to cpms?..
-
-I tried to forward-port FHCI from Freescale 2.6.11 kernels. Twice.
-But these efforts always stumbled over more important tasks.
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> > Signed-off-by : Matvejchikov Ilya <matvejchikov@gmail.com>
+> > ---
+> > diff -purN linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c
+> > linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c
+> > --- linux-2.4.34.5-vanilla/arch/ppc/kernel/cpm2_pic.c 2007-06-06
+> > 23:20:53.000000000 +0400
+> > +++ linux-2.4.34.5/arch/ppc/kernel/cpm2_pic.c 2007-06-28
+> > 12:17:42.000000000 +0400
+> > @@ -79,6 +79,12 @@ static void cpm2_mask_and_ack(unsigned i
+> >       ppc_cached_irq_mask[word] &= ~(1 << (31 - bit));
+> >       simr[word] = ppc_cached_irq_mask[word];
+> >       sipnr[word] = 1 << (31 - bit);
+> > +
+> > +     /*
+> > +      * Work around large numbers of spurious IRQs on PowerPC 82xx
+> > +      * systems.
+> > +      */
+> > +     mb();
+> >  }
+> >
+> >  static void cpm2_end_irq(unsigned int irq_nr)
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >
+> >
+>
+>
