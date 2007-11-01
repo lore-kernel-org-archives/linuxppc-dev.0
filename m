@@ -1,30 +1,18 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A319DDE09
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 21:28:18 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id lA1ASc6F007664
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:28:38 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lA1AUZPJ185152
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:30:35 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA1AQIkI018559
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:26:36 +1100
-Date: Thu, 1 Nov 2007 14:05:27 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] 2.6.24-rc1-git9 - Missing include file in kallsyms.h
-Message-ID: <20071101083527.GB8350@linux.vnet.ibm.com>
+Return-Path: <tnt@blacksnow.net>
+Received: from leia.blacksnow.net (leia.blacksnow.net [213.251.174.139])
+	by ozlabs.org (Postfix) with ESMTP id C912FDDDEB
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 23:20:28 +1100 (EST)
+Message-ID: <52304.213.186.37.16.1193915988.squirrel@www.opensources.be>
+In-Reply-To: <471FC191.6020704@genesi-usa.com>
+References: <20071024163412.GA17785@ru.mvista.com>
+	<471FC191.6020704@genesi-usa.com>
+Date: Thu, 1 Nov 2007 12:19:48 +0100 (CET)
+Subject: Re: [PATCH 1/2] USB: Rework OHCI PPC OF for new bindings
+From: tnt@blacksnow.net
+To: "Matt Sealey" <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, rusty@rustcorp.com.au,
-	torvalds@linux-foundation.org
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,35 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Build with randconfig fails with following error with the
-2.6.24-rc4-git9
+> Valentine Barshak wrote:
+>> Rework ohci-ppc-of driver to use big-endian property instead of
+>> ohci-be/ohci-le compatible strings. Also remove unnecessary
+>> user-selectable USB_OHCI_HCD_PPC_OF_LE/BE stuff, because
+>> USB_OHCI_BIG_ENDIAN_DESC/MMIO should always be enabled for ppc
+>> and USB_OHCI_LITTLE_ENDIAN is selected for USB_OHCI_HCD_PCI by default.
 
-include/linux/kallsyms.h:56: error: ‘NULL’ undeclared (first use in this
-function)
-include/linux/kallsyms.h:56: error: (Each undeclared identifier is
-reported only once
-include/linux/kallsyms.h:56: error: for each function it appears in.)
-make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
-make[1]: *** [arch/powerpc/platforms/cell] Error 2
-make: *** [arch/powerpc/platforms] Error 2
+I don't find those options useless. If you think the defauts are not the
+best change them but I find these options relevant. You don't always want
+the support for BE on PPC ... if the only controller you have is pci ...
+or if you're on a soc that use little endian ...
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index f73de6f..82de2fb 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -6,6 +6,7 @@
- #define _LINUX_KALLSYMS_H
- 
- #include <linux/errno.h>
-+#include <linux/stddef.h>
- 
- #define KSYM_NAME_LEN 128
- #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1) + \
 
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> Can we just make sure real quickly that the changing of compatibles
+> doesn't break existing, not-easily-flashable firmwares?
+
+I tend to agree with Matt here.
+
+Do we really need to stop supporting the old values right now ?
+
+IMHO, Changing to the usb-ohci with a property sounds fine to me if you
+really want to but don't drop support for the old values. They are not
+"bad". Change the dts to reflect the fact that the new "way" is preferred
+and a comment somewhere in the code and that should be fine.
+
+
+
+    Sylvain
