@@ -1,24 +1,30 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 978BADDE03
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 21:07:25 +1100 (EST)
-Date: Thu, 1 Nov 2007 13:05:39 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH] ucc_geth: add support for netpoll
-Message-ID: <20071101100539.GA24088@localhost.localdomain>
-References: <20071011124842.GB13963@localhost.localdomain>
-	<4723389F.7010109@ru.mvista.com> <20071027143731.GA2616@zarina>
-	<989B956029373F45A0B8AF0297081890019B61BF@zch01exm26.fsl.freescale.net>
-	<20071029121744.GA20372@localhost.localdomain>
-	<20071031215903.GA1287@zarina>
-	<989B956029373F45A0B8AF0297081890019B642A@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <989B956029373F45A0B8AF0297081890019B642A@zch01exm26.fsl.freescale.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7A319DDE09
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 21:28:18 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id lA1ASc6F007664
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:28:38 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lA1AUZPJ185152
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:30:35 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lA1AQIkI018559
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 21:26:36 +1100
+Date: Thu, 1 Nov 2007 14:05:27 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] 2.6.24-rc1-git9 - Missing include file in kallsyms.h
+Message-ID: <20071101083527.GB8350@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, rusty@rustcorp.com.au,
+	torvalds@linux-foundation.org
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,49 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 01, 2007 at 10:33:24AM +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Anton Vorontsov [mailto:cbou@mail.ru] 
-> > Sent: Thursday, November 01, 2007 5:59 AM
-> > To: Li Yang-r58472
-> > Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; 
-> > linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH] ucc_geth: add support for netpoll
-> > 
-> > On Mon, Oct 29, 2007 at 03:17:44PM +0300, Anton Vorontsov wrote:
-> > [...]
-> > > > Oops.  The original patch happened to hit the Junk mail box. :(
-> > > 
-> > > That one as well? http://lkml.org/lkml/2007/10/11/128
-> > > 
-> > > > I think
-> > > > the patch is good to merge after the cosmetic change.  I 
-> > can do it 
-> > > > in next pull request to Jeff.
-> > > 
-> > > Ok, great. Thanks.
-> > 
-> > I'm wondering if you missed that email again. Maybe your mail 
-> > client/server doing weird things with emails from @ru.mvista.com?
-> 
-> No.  I have explicitly add you to the whitelist. :)
+The Build with randconfig fails with following error with the
+2.6.24-rc4-git9
 
-Hehe, thanks. ;-)
+include/linux/kallsyms.h:56: error: ‘NULL’ undeclared (first use in this
+function)
+include/linux/kallsyms.h:56: error: (Each undeclared identifier is
+reported only once
+include/linux/kallsyms.h:56: error: for each function it appears in.)
+make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
+make[1]: *** [arch/powerpc/platforms/cell] Error 2
+make: *** [arch/powerpc/platforms] Error 2
 
-> Please be patient,
-> isn't this patch a new feature which can only be integrated in the merge
-> window?
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index f73de6f..82de2fb 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -6,6 +6,7 @@
+ #define _LINUX_KALLSYMS_H
+ 
+ #include <linux/errno.h>
++#include <linux/stddef.h>
+ 
+ #define KSYM_NAME_LEN 128
+ #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1) + \
 
-Sure it is. I didn't mean to "hurry up" you, of course not.
-
-Just wondered if you've solved issues with getting my emails. Such
-wonders are quite normal if there was a precedent lately. ;-)
-
-
-Sorry for troubling you,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
