@@ -1,17 +1,26 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 9E453DDF27
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 00:46:44 +1100 (EST)
-Date: 1 Nov 2007 06:46:42 -0700
-Message-ID: <20071101134642.6257.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: tnt@blacksnow.net
-Subject: Re: [linux-usb-devel] [PATCH 1/2] USB: Rework OHCI PPC OF for new
-	bindings
-In-Reply-To: <52304.213.186.37.16.1193915988.squirrel@www.opensources.be>
-References: <20071024163412.GA17785@ru.mvista.com>
-	<471FC191.6020704@genesi-usa.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 13AB7DDE35
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 01:08:42 +1100 (EST)
+Subject: Re: libfdt as its own repo and submodule of dtc?
+From: Jon Loeliger <jdl@freescale.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071031225624.GB16119@localhost.localdomain>
+References: <C98039BC-92DE-4398-B198-EDAD12A3670C@kernel.crashing.org>
+	<E1ImtSB-0003vC-0j@jdl.com> <4727665E.1070109@ge.com>
+	<20071030234011.GE2784@localhost.localdomain>
+	<F940E9CC-1F15-4EC5-94DC-A600FD702380@kernel.crashing.org>
+	<20071031225624.GB16119@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1193925881.15380.8.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 01 Nov 2007 09:04:42 -0500
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	Jerry Van Baren <gerald.vanbaren@ge.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sylvain Munaut wrote:
-> > Valentine Barshak wrote:
-> >> Rework ohci-ppc-of driver to use big-endian property instead of
-> >> ohci-be/ohci-le compatible strings. Also remove unnecessary
-> >> user-selectable USB_OHCI_HCD_PPC_OF_LE/BE stuff, because
-> >> USB_OHCI_BIG_ENDIAN_DESC/MMIO should always be enabled for ppc
-> >> and USB_OHCI_LITTLE_ENDIAN is selected for USB_OHCI_HCD_PCI by default.
-> 
-> I don't find those options useless. If you think the defauts are not the
-> best change them but I find these options relevant. You don't always want
-> the support for BE on PPC ... if the only controller you have is pci ...
-> or if you're on a soc that use little endian ...
+On Wed, 2007-10-31 at 17:56, David Gibson wrote:
 
-USB_OHCI_LITTLE_ENDIAN and USB_OHCI_BIG_ENDIAN are useful and I
-don't see anyone wanting to remove them.  However, if all of the
-chips supported by the ohci-ppc-of driver are big-endian, then
-USB_OHCI_HCD_PPC_OF_LE and USB_OHCI_HCD_PPC_OF_BE are not needed.
-Just select USB_OHCI_BIG_ENDIAN when the ohci-ppc-of driver is
-selected, in the same way that we always select USB_OHCI_LITTLE_ENDIAN
-when the ohci-pci driver is selected.
+> I'm not too keen on using a git feature that's more recent than the
+> git in most distros.
 
--Dale
+I'm going to consider this argument null and void on two fronts:
+
+You don't use git for patch generation and submission anyway.
+
+The Linux Community happily embraced and used early
+versions of git, installing it themselves if needed,
+long before it was available in _any_ distro.
+
+Thanks,
+jdl
