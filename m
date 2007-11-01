@@ -1,33 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 41DA9DDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 23:23:51 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA1CNlOp009805
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 08:23:47 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA1CNlFk118038
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 06:23:47 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA1CNlvJ001179
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 06:23:47 -0600
-Date: Thu, 1 Nov 2007 07:23:44 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: PPC405GP Walnut irq patch
-Message-ID: <20071101072344.42e31913@weaponx.rchland.ibm.com>
-In-Reply-To: <4728C0F5.80304@harris.com>
-References: <47279CF0.4050600@harris.com> <4727A507.10309@harris.com>
-	<20071030204015.06a699d7@vader.jdub.homelinux.org>
-	<4728C0F5.80304@harris.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tnt@blacksnow.net>
+Received: from leia.blacksnow.net (leia.blacksnow.net [213.251.174.139])
+	by ozlabs.org (Postfix) with ESMTP id 90133DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 23:32:04 +1100 (EST)
+Message-ID: <41915.213.186.37.16.1193916684.squirrel@www.opensources.be>
+In-Reply-To: <20071025141035.GG3369@nd47.coderock.org>
+References: <20071014075511.GC3000@nd47.coderock.org>
+	<4713BA1C.2050604@pobox.com>
+	<fa686aa40710180715u23d81adfy83ff65837725fb80@mail.gmail.com>
+	<4717B09B.3060800@pobox.com> <20071019112700.GD27403@nd47.coderock.org>
+	<47206209.8080109@pobox.com>
+	<20071025141035.GG3369@nd47.coderock.org>
+Date: Thu, 1 Nov 2007 12:31:24 +0100 (CET)
+Subject: Re: [PATCH v4] FEC - fast ethernet controller for mpc52xx
+From: tnt@blacksnow.net
+To: "Domen Puncer" <domen.puncer@telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,38 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 31 Oct 2007 13:52:53 -0400
-"Steven A. Falco" <sfalco@harris.com> wrote:
+> +	while (bcom_buffer_done(priv->tx_dmatsk)) {
+> +		struct sk_buff *skb;
+> +		skb = bcom_retrieve_buffer(priv->tx_dmatsk, NULL, NULL);
+> +		/* Here (and in rx routines) would be a good place for
+> +		 * dma_unmap_single(), but bcom doesn't return bcom_bd of the
+> +		 * finished transfer, and _unmap is empty on this platfrom.
+> +		 */
+> +
 
-> > Could you redo the patch with just this bit and send it again?
-> >
-> > josh
-> >     
-> 
-> Ok - this one is based off the Linus tree, and follows your style of one 
-> interrupt per line, with a comment indicating which one it is.
+Of course bestcomm let's you get back the bcom_bd ... What do you think
+your second NULL parameter is for ?
+Give it a pointer to a bcom_bd * and it will fill your pointer for you to
+point to the bd you just got back.
 
-Looks good.  Thanks!
 
-josh
-
-> 
-> Signed-off-by: Steve Falco <sfalco at harris.com>
-> 
-> 
-> 
-> diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
-> index fa681f5..754fa39 100644
-> --- a/arch/powerpc/boot/dts/walnut.dts
-> +++ b/arch/powerpc/boot/dts/walnut.dts
-> @@ -122,7 +122,9 @@
->  				device_type = "network";
->  				compatible = "ibm,emac-405gp", "ibm,emac";
->  				interrupt-parent = <&UIC0>;
-> -				interrupts = <9 4 f 4>;
-> +				interrupts = <
-> +					f 4 /* Ethernet */
-> +					9 4 /* Ethernet Wake Up */>;
->  				local-mac-address = [000000000000]; /* Filled in by zImage */
->  				reg = <ef600800 70>;
->  				mal-device = <&MAL>;
+   Sylvain
