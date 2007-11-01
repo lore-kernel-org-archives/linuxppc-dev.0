@@ -1,18 +1,33 @@
-Return-Path: <tnt@blacksnow.net>
-Received: from leia.blacksnow.net (leia.blacksnow.net [213.251.174.139])
-	by ozlabs.org (Postfix) with ESMTP id C912FDDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 23:20:28 +1100 (EST)
-Message-ID: <52304.213.186.37.16.1193915988.squirrel@www.opensources.be>
-In-Reply-To: <471FC191.6020704@genesi-usa.com>
-References: <20071024163412.GA17785@ru.mvista.com>
-	<471FC191.6020704@genesi-usa.com>
-Date: Thu, 1 Nov 2007 12:19:48 +0100 (CET)
-Subject: Re: [PATCH 1/2] USB: Rework OHCI PPC OF for new bindings
-From: tnt@blacksnow.net
-To: "Matt Sealey" <matt@genesi-usa.com>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 41DA9DDDFE
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 23:23:51 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA1CNlOp009805
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 08:23:47 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	lA1CNlFk118038
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 06:23:47 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lA1CNlvJ001179
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 06:23:47 -0600
+Date: Thu, 1 Nov 2007 07:23:44 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: "Steven A. Falco" <sfalco@harris.com>
+Subject: Re: PPC405GP Walnut irq patch
+Message-ID: <20071101072344.42e31913@weaponx.rchland.ibm.com>
+In-Reply-To: <4728C0F5.80304@harris.com>
+References: <47279CF0.4050600@harris.com> <4727A507.10309@harris.com>
+	<20071030204015.06a699d7@vader.jdub.homelinux.org>
+	<4728C0F5.80304@harris.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Valentine Barshak wrote:
->> Rework ohci-ppc-of driver to use big-endian property instead of
->> ohci-be/ohci-le compatible strings. Also remove unnecessary
->> user-selectable USB_OHCI_HCD_PPC_OF_LE/BE stuff, because
->> USB_OHCI_BIG_ENDIAN_DESC/MMIO should always be enabled for ppc
->> and USB_OHCI_LITTLE_ENDIAN is selected for USB_OHCI_HCD_PCI by default.
+On Wed, 31 Oct 2007 13:52:53 -0400
+"Steven A. Falco" <sfalco@harris.com> wrote:
 
-I don't find those options useless. If you think the defauts are not the
-best change them but I find these options relevant. You don't always want
-the support for BE on PPC ... if the only controller you have is pci ...
-or if you're on a soc that use little endian ...
+> > Could you redo the patch with just this bit and send it again?
+> >
+> > josh
+> >     
+> 
+> Ok - this one is based off the Linus tree, and follows your style of one 
+> interrupt per line, with a comment indicating which one it is.
 
+Looks good.  Thanks!
 
-> Can we just make sure real quickly that the changing of compatibles
-> doesn't break existing, not-easily-flashable firmwares?
+josh
 
-I tend to agree with Matt here.
-
-Do we really need to stop supporting the old values right now ?
-
-IMHO, Changing to the usb-ohci with a property sounds fine to me if you
-really want to but don't drop support for the old values. They are not
-"bad". Change the dts to reflect the fact that the new "way" is preferred
-and a comment somewhere in the code and that should be fine.
-
-
-
-    Sylvain
+> 
+> Signed-off-by: Steve Falco <sfalco at harris.com>
+> 
+> 
+> 
+> diff --git a/arch/powerpc/boot/dts/walnut.dts b/arch/powerpc/boot/dts/walnut.dts
+> index fa681f5..754fa39 100644
+> --- a/arch/powerpc/boot/dts/walnut.dts
+> +++ b/arch/powerpc/boot/dts/walnut.dts
+> @@ -122,7 +122,9 @@
+>  				device_type = "network";
+>  				compatible = "ibm,emac-405gp", "ibm,emac";
+>  				interrupt-parent = <&UIC0>;
+> -				interrupts = <9 4 f 4>;
+> +				interrupts = <
+> +					f 4 /* Ethernet */
+> +					9 4 /* Ethernet Wake Up */>;
+>  				local-mac-address = [000000000000]; /* Filled in by zImage */
+>  				reg = <ef600800 70>;
+>  				mal-device = <&MAL>;
