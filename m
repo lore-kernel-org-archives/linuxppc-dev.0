@@ -1,22 +1,16 @@
 Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A4A6DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Nov 2007 05:27:19 +1100 (EST)
-In-Reply-To: <1193849375.17412.34.camel@dyn9047017100.beaverton.ibm.com>
-References: <1193849375.17412.34.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <20071031044953.GG7772@localhost.localdomain>
+References: <20071031032401.GD7772@localhost.localdomain>
+	<DFBF9FAC-012A-47C6-9EC0-CDD365F67A97@kernel.crashing.org>
+	<20071031044953.GG7772@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <46434BBD-7656-41B1-BED0-3A3E212032B5@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9188C941-1A81-4F88-B9AE-ACA71B41B093@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] Add remove_memory() for ppc64
-Date: Thu, 1 Nov 2007 01:26:48 -0500
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: linux-mm <linux-mm@kvack.org>, anton@au1.ibm.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [0/2] Embed a copy of dtc in the kernel source
+Date: Thu, 1 Nov 2007 01:54:51 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +21,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Oct 31, 2007, at 11:49 AM, Badari Pulavarty wrote:
+On Oct 30, 2007, at 11:49 PM, David Gibson wrote:
 
-> Supply arch specific remove_memory() for PPC64. There is nothing
-> ppc specific code here and its exactly same as ia64 version.
-> For now, lets keep it arch specific - so each arch can add
-> its own special things if needed.
+> On Tue, Oct 30, 2007 at 11:37:15PM -0500, Kumar Gala wrote:
+>>
+>> On Oct 30, 2007, at 10:24 PM, David Gibson wrote:
+>>
+>>> These two patches are a respin of my previous patch to merge a  
+>>> copy of
+>>> dtc into the kernel tree, so that kernel builds no longer depend  
+>>> on an
+>>> externally installed copy of dtc.
+>>>
+>>> This respin embeds a newer revision of dtc, and incorporates Sam
+>>> Ravnborg's preferred approach to Makefile integration.  Also,  
+>>> since so
+>>> many people whinged about it last time, I've split the patch into  
+>>> two
+>>> parts, the first is the too-large-for-the-list patch just verbatim
+>>> adding files and the second has the changes to existing kernel files
+>>> to build and use the embedded code.
+>>
+>> What about doing part of this via git-submodule?
 >
-> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> ---
+> Uh.. where do I find out what that does?  My version of git (Ubuntu
+> gutsy) doesn't seem to know anything about it...
 
-What's ppc64 specific about these patches?
+Take a look at:
+
+http://www.kernel.org/pub/software/scm/git/docs/git-submodule.html
 
 - k
