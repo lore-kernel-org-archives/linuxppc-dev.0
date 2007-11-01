@@ -1,26 +1,15 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13AB7DDE35
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 01:08:42 +1100 (EST)
-Subject: Re: libfdt as its own repo and submodule of dtc?
-From: Jon Loeliger <jdl@freescale.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20071031225624.GB16119@localhost.localdomain>
-References: <C98039BC-92DE-4398-B198-EDAD12A3670C@kernel.crashing.org>
-	<E1ImtSB-0003vC-0j@jdl.com> <4727665E.1070109@ge.com>
-	<20071030234011.GE2784@localhost.localdomain>
-	<F940E9CC-1F15-4EC5-94DC-A600FD702380@kernel.crashing.org>
-	<20071031225624.GB16119@localhost.localdomain>
-Content-Type: text/plain
-Message-Id: <1193925881.15380.8.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Thu, 01 Nov 2007 09:04:42 -0500
-Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
-	Jerry Van Baren <gerald.vanbaren@ge.com>
+Return-Path: <SRS0=RRnR=P2=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 2FDBEDDDD5
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 01:50:38 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] 4xx: Add 405EX CPU type needed for EMAC support on Kilauea
+Date: Thu, 1 Nov 2007 15:50:33 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200711011550.33690.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-10-31 at 17:56, David Gibson wrote:
+For EMAC support, 405EX needs to be defined to enable the corresponding
+EMAC features (IBM_NEW_EMAC_EMAC4, etc.).
 
-> I'm not too keen on using a git feature that's more recent than the
-> git in most distros.
+Signed-off-by: Stefan Roese <sr@denx.de>
+---
+A small new EMAC patch will follow in a short while, to enable
+405EX support in the driver.
 
-I'm going to consider this argument null and void on two fronts:
+ arch/powerpc/platforms/40x/Kconfig |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-You don't use git for patch generation and submission anyway.
-
-The Linux Community happily embraced and used early
-versions of git, installing it themselves if needed,
-long before it was available in _any_ distro.
-
-Thanks,
-jdl
+diff --git a/arch/powerpc/platforms/40x/Kconfig b/arch/powerpc/platforms/40x/Kconfig
+index 8f6699f..3ece0fd 100644
+--- a/arch/powerpc/platforms/40x/Kconfig
++++ b/arch/powerpc/platforms/40x/Kconfig
+@@ -33,6 +33,7 @@ config KILAUEA
+ 	bool "Kilauea"
+ 	depends on 40x
+ 	default n
++	select 405EX
+ 	help
+ 	  This option enables support for the AMCC PPC405EX evaluation board.
+ 
+@@ -105,6 +106,11 @@ config 405GP
+ config 405EP
+ 	bool
+ 
++config 405EX
++	bool
++	select IBM_NEW_EMAC_EMAC4
++	select IBM_NEW_EMAC_RGMII
++
+ config 405GPR
+ 	bool
+ 
+-- 
+1.5.3.4.498.g9c514
