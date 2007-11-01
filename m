@@ -1,19 +1,27 @@
-Return-Path: <SRS0=RRnR=P2=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id BBA30DDDFE
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 08:31:31 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] net: Add 405EX support to new EMAC driver
-Date: Thu, 1 Nov 2007 22:31:11 +0100
-References: <200711011554.04935.sr@denx.de> <1193949421.6541.10.camel@pasglop>
-	<20071101160709.7e7c0181@weaponx.rchland.ibm.com>
-In-Reply-To: <20071101160709.7e7c0181@weaponx.rchland.ibm.com>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 21248DDDE4
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 10:35:01 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	lA1NYtZS023148
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 16:34:56 -0700 (MST)
+Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
+	[10.64.32.14])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id lA1NYtae006248
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Nov 2007 18:34:55 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711012231.11385.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+	charset="US-ASCII"
+Subject: Module with 36K relocation entries
+Date: Thu, 1 Nov 2007 16:34:54 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E270174CC98@az33exm24.fsl.freescale.net>
+From: "Medve Emilian-EMMEDVE1" <Emilian.Medve@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 November 2007, Josh Boyer wrote:
-> > > -	if (dev->type != RGMII_AXON)
-> > > -		return;
-> > > -
-> > >  	mutex_lock(&dev->lock);
-> >
-> > That will break 440GX boards that need to use the RGMII for data and the
-> > ZMII for MDIO.
-> >
-> > You may want to change the name RGMII_AXON something like RGMII_HAS_MDIO
-> > instead and set that for 405EX as well instead.
->
-> And perhaps adding a comment about that since the meaning of that code
-> isn't very obvious. That way people that aren't the original author
-> of the driver don't get confused again.
+Hello,
 
-Will do. I'll send a fixed version tomorrow.
 
-Best regards,
-Stefan
+I have module with 36K relocation entries (I know, I know, how could
+that be...) and the count_relocs() function takes ~17 seconds to crunch
+through the relocation table from the .rela.text section. I don't think
+I can reduce the number of entries in the relocation table (can I?) so
+I'm thinking at improving the performance of count_relocs() (currently
+O(n^2)). Does anybody have a simpler idea? Does anyone have any
+constructive suggestion on how to improve the situation?
+
+
+Thank you,
+Emil.
