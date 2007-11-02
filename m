@@ -1,12 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 2 Nov 2007 16:54:26 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Don't force alignment of cell list data
-Message-ID: <20071102055426.GN19839@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] ehea: add kexec support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+In-Reply-To: <OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com>
+References: <200710261437.29117.ossthema@de.ibm.com>
+	<1193610737.9637.1.camel@concordia>
+	<OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com>
+	<1193784636.32504.4.camel@concordia>
+	<OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-y5rS4QiXPITsc4bYsb2F"
+Date: Fri, 02 Nov 2007 17:30:08 +1100
+Message-Id: <1193985008.1782.7.camel@concordia>
+Mime-Version: 1.0
+Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+	Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,46 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, defining a property as, say:
-	foo = [abcd], <ffffffff>;
 
-Will cause dtc to insert 2 bytes of zeros between the abcd and the
-ffffffff, to align the cell form data.
+--=-y5rS4QiXPITsc4bYsb2F
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Doing so seemed like a good idea at the time, but I don't believe
-there are any users who actually rely on this behaviour.  Segher
-claims that OF has some defined bindings which include properties an
-unaligned subsection of which is interpreted as 32-bit ints (i.e. like
-cell data).
+On Wed, 2007-10-31 at 20:48 +0100, Christoph Raisch wrote:
+> Michael Ellerman <michael@ellerman.id.au> wrote on 30.10.2007 23:50:36:
+> >
+> > On Tue, 2007-10-30 at 09:39 +0100, Christoph Raisch wrote:
+> > >
+> > > Michael Ellerman <michael@ellerman.id.au> wrote on 28.10.2007 23:32:1=
+7:
+> > > Hope I didn't miss anything here...
+> >
+> > Perhaps. When we kdump the kernel does not call the reboot notifiers, s=
+o
+> > the code Jan-Bernd just added won't get called. So the eHEA resources
+> > won't be freed. When the kdump kernel tries to load the eHEA driver wha=
+t
+> > will happen?
+> >
+> Good point.
+>=20
+> If the device driver tries to allocate resources again (in the kdump
+> kernel),
+> which have been allocated before (in the crashed kernel) the hcalls will
+> fail because from the hypervisor view the resources are still in use.
+> Currently there's no method to find out the resource handles for these
+> HEA resources allocated by the crashed kernel within the hypervisor...
 
-Worse, this alignment will cause nothing but pain when we add
-expression support to dtc (when celldata is included in a larger
-bytestring expession, we won't know the size of the preceding chunk of
-the expression until it's evaluated, so we would have to carry
-alignment fixup information right through the expression evaluation
-process).
+So the hypervisor can't allocate more resources, because they're already
+allocated, but it can't free the ones that are allocated because it
+doesn't know what they are? I don't think I understand.
 
-Therefore, this patch kills off this alignment behaviour.
+If that's really the way it works then eHEA is more or less broken for
+kdump I'm afraid.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+cheers
 
-Index: dtc/dtc-parser.y
-===================================================================
---- dtc.orig/dtc-parser.y	2007-11-02 16:45:00.000000000 +1100
-+++ dtc/dtc-parser.y	2007-11-02 16:45:42.000000000 +1100
-@@ -149,8 +149,7 @@ propdata:
- 		}
- 	| propdataprefix '<' celllist '>'
- 		{
--			$$ = data_merge(data_append_align($1,
--							  sizeof(cell_t)), $3);
-+			$$ = data_merge($1, $3);
- 		}
- 	| propdataprefix '[' bytestring ']'
- 		{
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-y5rS4QiXPITsc4bYsb2F
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHKsPwdSjSd0sB4dIRAh3iAJ9/4vrJwKDDsiW94b+10eQT3MKwTACgkTu4
+PT5eL1afNH+NriyRW+7COPY=
+=qa+e
+-----END PGP SIGNATURE-----
+
+--=-y5rS4QiXPITsc4bYsb2F--
