@@ -1,22 +1,15 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
-	by ozlabs.org (Postfix) with ESMTP id 020C3DDDF9
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (mail.tsinghua.org.cn [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id 69539DDDFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Nov 2007 14:01:12 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 71so486419wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 01 Nov 2007 20:01:11 -0700 (PDT)
-Message-ID: <fa686aa40711012001s194851f5y49e83214317edc41@mail.gmail.com>
-Date: Thu, 1 Nov 2007 21:01:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Wang, Baojun" <wangbj@lzu.edu.cn>
-Subject: Re: serial GDBServer PPC405 problems
-In-Reply-To: <394030244.20640@eyou.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-References: <393936343.10887@lzu.edu.cn> <394030244.20640@eyou.net>
-Cc: khollan <khollan@daktronics.com>, linuxppc-embedded@ozlabs.org
+	Fri,  2 Nov 2007 14:26:18 +1100 (EST)
+Message-ID: <393972917.10298@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+To: linuxppc-embedded@ozlabs.org
+Date: Fri, 02 Nov 2007 11:08:37 +0800
+Subject: The question about the fail at the begin of linux on MPC8360E.
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,37 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/1/07, Wang, Baojun <wangbj@lzu.edu.cn> wrote:
-> On Friday 02 November 2007 00:49:16, khollan wrote：
-> > Hi everyone
-> > I want to thank everyone for helping with all of my problems so far, you
-> > have been a great help.
-> >
-> > Im trying to get a debug session with gdbserver over a serial connection on
-> > my Xilinx ML410 using a uartlite set at Baud 115200.  When I issue the
-> > command on the target "./gdbserver /dev/ttyUL1 test" I get this error:
-> > Remote debugging using /dev/ttyUL1
-> > readchar: Socet operation on non-socket
-> > Remote Side has terminated connection.  GDBserver will reopen connection.
-> >
-> > This error just repeats until I kill the process.  I know that gdbserver
-> > works because debugging over TCP works fine.
-> > Thanks for your help
->
-> Your kernel don't have kgdb support? then you need a debugger like bdi2000 to
-> debug the kernel.
+Hi,friends,
+Thanks.
 
-It sounds like he is trying to debug userspace.  Neither kgdb nor the
-bdi2000 are the best tool for that.
+We boot the linux-2.6.22 on MPC8360 board, it failed, follow is the output
+information. we just only success on linux-2.6.11, but fail on linux-2.6.19 and
+linux-2.6.22. Both 2.6.19 and 2.6.22 are failed on same position,please see follow
+information. linux-2.6.19 and linux-2.6.22 are come from BSP of freescale. I used
+the u-boot-1.2.0 that compiled by myself. We guess that maybe we did not setup the
+bootargs parameter on u-boot rightly or maybe the DDR-I hardware circuit design is
+not good enough.
 
-Khollan; I haven't seen that problem before.  I don't know what could
-be the issue there, but I'm not a gdbserver expert either.
+If the reason is the bootargs parameter, could you tell me what is the right
+bootargs for linux-2.6.19 and linux-2.6.22?
 
-Cheers,
-g.
+If the reason is the DDR, I want to boot the linux on my SDRAM chip,kick off the
+DDR, my SDRAM located on the address of F0000000~F3FFFFFF, total 64MB. How can I
+modify the source code of linux to re-map it and ramdisk and others to my SDRAM
+chip space?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+
+Follow is the fail information:
+=> bootm 0c000000 0e000000
+## Booting image at 0c000000 ...
+   Image Name:   Linux-2.6.22
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1333681 Bytes =  1.3 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 0e000000 ...
+   Image Name:   uboot ext2 ramdisk rootfs
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    3589813 Bytes =  3.4 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 0fc3e000, end 0ffaa6b5 ... OK    
