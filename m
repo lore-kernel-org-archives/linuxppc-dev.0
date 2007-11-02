@@ -1,42 +1,24 @@
-Return-Path: <RAISCH@de.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2A456DDDE4
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 21:19:28 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id lA2AJOeB495532
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 10:19:24 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
-	ESMTP id lA2AJNJw2257096
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 11:19:23 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id lA2AJLFQ026793
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 11:19:23 +0100
-In-Reply-To: <1193985008.1782.7.camel@concordia>
-References: <200710261437.29117.ossthema@de.ibm.com>	
-	<1193610737.9637.1.camel@concordia>
-	<OF79E7ACE7.5D0488CE-ONC1257384.002E58C0-C1257384.002F8561@de.ibm.com>	
-	<1193784636.32504.4.camel@concordia>
-	<OF59B5FFD2.0294206F-ONC1257385.006A802D-C1257385.006CB6BB@de.ibm.com>
-	<1193985008.1782.7.camel@concordia>
-Subject: Re: [PATCH] ehea: add kexec support
-To: michael@ellerman.id.au
-Message-ID: <OF3FAFDB41.AF236738-ONC1257387.00376233-C1257387.00389861@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Fri, 2 Nov 2007 11:19:12 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: Thomas Q Klein <TKLEIN@de.ibm.com>, ossthema@linux.vnet.ibm.com,
-	Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <MEDER@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 25947DDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 21:31:05 +1100 (EST)
+Subject: Re: [PATCH 3/3] Add arch-specific walk_memory_remove() for ppc64
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+In-Reply-To: <1193849335.17412.33.camel@dyn9047017100.beaverton.ibm.com>
+References: <1193849335.17412.33.camel@dyn9047017100.beaverton.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cAlWIPTGfxae2J1IDv6p"
+Date: Fri, 02 Nov 2007 10:32:10 +0000
+Message-Id: <1193999530.25744.3.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linux-mm <linux-mm@kvack.org>, anton@au1.ibm.com, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -47,32 +29,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Michael Ellerman <michael@ellerman.id.au> wrote on 02.11.2007 07:30:08:
+--=-cAlWIPTGfxae2J1IDv6p
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, 2007-10-31 at 20:48 +0100, Christoph Raisch wrote:
-> > Michael Ellerman <michael@ellerman.id.au> wrote on 30.10.2007 23:50:36:
-> If that's really the way it works then eHEA is more or less broken for
-> kdump I'm afraid.
 
-We think we have a way to workaround this, but let me first try to
-explain the base problem.
+> This patch provides a way for an architecture to provide its
+> own walk_memory_resource()
 
-DD allocates HEA resources and gets firmware_handles for these resources.
-To free the resources DD needs to use exactly these handles.
-There's no generic firmware call "clean out all resources".
-Allocating the same resources twice does not work.
+It seems that the patch description "walk_memory_remove()" is wrong?
 
-So a new kernel can't free the resources allocated by an old kernel,
-because the numeric values of the handles aren't known anymore.
+johannes
 
-Potential Solution:
-Hea driver cleanup function hooks into ppc_md.machine_crash_shutdown
-and frees all firmware resources at shutdown time of the crashed kernel.
-crash_kexec continues and loads new kernel.
-The new kernel restarts the HEA driver within kdump kernel, which will work
-because resources have been freed before.
+--=-cAlWIPTGfxae2J1IDv6p
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Michael, would this work?
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Gruss / Regards
-Christoph R.
+iQIVAwUARyr8qaVg1VMiehFYAQIq2A//SUYdZ2Kox7TSLno9s1odL3iQqXat3DTo
+IWYDX0ErgzWM+i6sVE1hMyZtvGv2fuUOioAnzMEj8nui8Qp4n3Rvr1aiPuUZcV5X
+c6wQ8BNqFhXcoIZjaJH3efhOQ673AHLcgyyWl48n+uSOQXFaE1Ljw8s7/IF/OLlZ
+SpGy3E7LTbGHD5liOTIHXAphIQtWTuATKg9brjW88SwGzoe8pkBBRhSpet93Lfrh
+S5IbR23u8QKlD5g7J6wLiMQ76A/VZg14DK8gUi8DX2ebZG6bBYmxjWf4uOW1qvuE
+ZNQa71QNrPenInCc1KlvYRbiGYQ4Rdfc5ENsEBtgFc80KLpMVC+ILL0DNwk2jk5H
+2snGA3wSeYANZCuxlrxLH+IhI413Dy7ckjnIC4pZ4RTMWhYn1xDye6rumhBrFAbX
+dlSOkOntctUHCNcagJE7Rg6jOJGjuuoz+MRrlvpMFzuV2avpy3/BJSCSoGUQVJLk
+02w0TSlyLnIEaNXrTIz2UpA4THgpe0Ynnl9DhNGfPhmrZDlMtf1wONf0VIx3S1Zj
+18qbazsMxrMxo0VwVjGdHAOnGmefVGYLr86K7elqrpOtQGrgcxXpQ0jF4FuAv9ak
+tkLcb4RZZTA1HLT+nt+SEwRcatmWatUB2G1M1dDrUd4Me/9MwWNxIlckKvTE/pS2
+CizlORweXsc=
+=RYg6
+-----END PGP SIGNATURE-----
+
+--=-cAlWIPTGfxae2J1IDv6p--
