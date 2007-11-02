@@ -1,16 +1,36 @@
-Return-Path: <SRS0=QBjm=P3=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 91B66DDDCA
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 18:16:54 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: netdev@vger.kernel.org
-Subject: [PATCH] net: Add 405EX support to new EMAC driver
-Date: Fri, 2 Nov 2007 08:14:43 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200711020814.43524.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <schwidefsky@de.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 309BFDDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 18:50:04 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id lA27nwCq415282
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 07:49:58 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id lA27nwJR1806568
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 08:49:58 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lA27nv1j005157
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 08:49:58 +0100
+Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
+References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 02 Nov 2007 08:49:56 +0100
+Message-Id: <1193989796.10694.2.camel@localhost>
+Mime-Version: 1.0
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Reply-To: schwidefsky@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,92 +40,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for the 405EX to the new EMAC driver. Some as on
-AXON, the 405EX handles the MDIO via the RGMII bridge.
+On Fri, 2007-11-02 at 15:48 +1100, Paul Mackerras wrote:
+> This also lets us simplify the s390 code a bit; it means that the s390
+> timer interrupt can now call update_process_times even when
+> CONFIG_VIRT_CPU_ACCOUNTING is turned on, and can just implement a
+> suitable account_process_tick().
 
-Tested on AMCC Kilauea.
+Just tested on s390 with CONFIG_VIRT_CPU_ACCOUNTING=y. Works fine and it
+is a nice cleanup of the s390 timer code. Thanks Paul.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- drivers/net/ibm_newemac/core.c  |    3 ++-
- drivers/net/ibm_newemac/rgmii.c |   16 +++++++++++-----
- drivers/net/ibm_newemac/rgmii.h |    2 +-
- 3 files changed, 14 insertions(+), 7 deletions(-)
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-diff --git a/drivers/net/ibm_newemac/core.c b/drivers/net/ibm_newemac/core.c
-index 0de3aa2..fd0a585 100644
---- a/drivers/net/ibm_newemac/core.c
-+++ b/drivers/net/ibm_newemac/core.c
-@@ -2466,7 +2466,8 @@ static int __devinit emac_init_config(struct emac_instance *dev)
- 	if (of_device_is_compatible(np, "ibm,emac4"))
- 		dev->features |= EMAC_FTR_EMAC4;
- 	if (of_device_is_compatible(np, "ibm,emac-axon")
--	    || of_device_is_compatible(np, "ibm,emac-440epx"))
-+	    || of_device_is_compatible(np, "ibm,emac-440epx")
-+	    || of_device_is_compatible(np, "ibm,emac-405ex"))
- 		dev->features |= EMAC_FTR_HAS_AXON_STACR
- 			| EMAC_FTR_STACR_OC_INVERT;
- 	if (of_device_is_compatible(np, "ibm,emac-440spe"))
-diff --git a/drivers/net/ibm_newemac/rgmii.c b/drivers/net/ibm_newemac/rgmii.c
-index de41695..b9a4ce7 100644
---- a/drivers/net/ibm_newemac/rgmii.c
-+++ b/drivers/net/ibm_newemac/rgmii.c
-@@ -140,7 +140,12 @@ void rgmii_get_mdio(struct of_device *ofdev, int input)
- 
- 	RGMII_DBG2(dev, "get_mdio(%d)" NL, input);
- 
--	if (dev->type != RGMII_AXON)
-+	/*
-+	 * Some platforms (e.g. 440GX) have RGMII support but don't use it for
-+	 * MDIO access. Only continue if platforms is using MDIO over the RGMII
-+	 * interface (e.g. AXON, 405EX).
-+	 */
-+	if (dev->type != RGMII_HAS_MDIO)
- 		return;
- 
- 	mutex_lock(&dev->lock);
-@@ -161,7 +166,7 @@ void rgmii_put_mdio(struct of_device *ofdev, int input)
- 
- 	RGMII_DBG2(dev, "put_mdio(%d)" NL, input);
- 
--	if (dev->type != RGMII_AXON)
-+	if (dev->type != RGMII_HAS_MDIO)
- 		return;
- 
- 	fer = in_be32(&p->fer);
-@@ -251,8 +256,9 @@ static int __devinit rgmii_probe(struct of_device *ofdev,
- 	}
- 
- 	/* Check for RGMII type */
--	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
--		dev->type = RGMII_AXON;
-+	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon") ||
-+	    of_device_is_compatible(ofdev->node, "ibm,rgmii-405ex"))
-+		dev->type = RGMII_HAS_MDIO;
- 	else
- 		dev->type = RGMII_STANDARD;
- 
-@@ -264,7 +270,7 @@ static int __devinit rgmii_probe(struct of_device *ofdev,
- 
- 	printk(KERN_INFO
- 	       "RGMII %s %s initialized\n",
--	       dev->type == RGMII_STANDARD ? "standard" : "axon",
-+	       dev->type == RGMII_STANDARD ? "standard" : "has-mdio",
- 	       ofdev->node->full_name);
- 
- 	wmb();
-diff --git a/drivers/net/ibm_newemac/rgmii.h b/drivers/net/ibm_newemac/rgmii.h
-index 5780683..f1b0ef5 100644
---- a/drivers/net/ibm_newemac/rgmii.h
-+++ b/drivers/net/ibm_newemac/rgmii.h
-@@ -23,7 +23,7 @@
- 
- /* RGMII bridge type */
- #define RGMII_STANDARD		0
--#define RGMII_AXON		1
-+#define RGMII_HAS_MDIO		1
- 
- /* RGMII bridge */
- struct rgmii_regs {
 -- 
-1.5.3.4.498.g9c514
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
