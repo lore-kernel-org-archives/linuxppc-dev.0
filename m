@@ -1,15 +1,19 @@
-Return-Path: <guojin02@tsinghua.org.cn>
-Received: from tsinghua.org.cn (mail.tsinghua.org.cn [210.77.143.232])
-	by ozlabs.org (Postfix) with SMTP id 69539DDDFD
+Return-Path: <barisa.kisku@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.230])
+	by ozlabs.org (Postfix) with ESMTP id 725B7DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Nov 2007 14:26:18 +1100 (EST)
-Message-ID: <393972917.10298@tsinghua.org.cn>
-From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+	Fri,  2 Nov 2007 17:11:52 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so586319nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 01 Nov 2007 23:11:50 -0700 (PDT)
+Message-ID: <80bb1bc60711012311v772a509di616e9190d7be391a@mail.gmail.com>
+Date: Fri, 2 Nov 2007 11:41:49 +0530
+From: "Barisa Kisku" <barisa.kisku@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Fri, 02 Nov 2007 11:08:37 +0800
-Subject: The question about the fail at the begin of linux on MPC8360E.
-Content-Type: text/plain
-Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
+Subject: what is difference between interrupt context and process context?
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2124_31371683.1193983910009"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,41 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,friends,
-Thanks.
+------=_Part_2124_31371683.1193983910009
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-We boot the linux-2.6.22 on MPC8360 board, it failed, follow is the output
-information. we just only success on linux-2.6.11, but fail on linux-2.6.19 and
-linux-2.6.22. Both 2.6.19 and 2.6.22 are failed on same position,please see follow
-information. linux-2.6.19 and linux-2.6.22 are come from BSP of freescale. I used
-the u-boot-1.2.0 that compiled by myself. We guess that maybe we did not setup the
-bootargs parameter on u-boot rightly or maybe the DDR-I hardware circuit design is
-not good enough.
+Hi,
 
-If the reason is the bootargs parameter, could you tell me what is the right
-bootargs for linux-2.6.19 and linux-2.6.22?
+What is difference between interrupt context and process
+context.Fromhardware(register context) view
+how they are different.In linux-2.6 interrupt stack is separate from kernel
+stack.How interrupt stack pointer
+is retrieved?How is the implementation in freescale ppc/powerpc.
 
-If the reason is the DDR, I want to boot the linux on my SDRAM chip,kick off the
-DDR, my SDRAM located on the address of F0000000~F3FFFFFF, total 64MB. How can I
-modify the source code of linux to re-map it and ramdisk and others to my SDRAM
-chip space?
+please comment.
 
+thanks in advance.
 
-Follow is the fail information:
-=> bootm 0c000000 0e000000
-## Booting image at 0c000000 ...
-   Image Name:   Linux-2.6.22
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1333681 Bytes =  1.3 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at 0e000000 ...
-   Image Name:   uboot ext2 ramdisk rootfs
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    3589813 Bytes =  3.4 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 0fc3e000, end 0ffaa6b5 ... OK    
+Barisa Kisku
+
+------=_Part_2124_31371683.1193983910009
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi,<br>
+<br>
+What is difference between interrupt context and process context.From hardware(register context) view <br>
+how they are different.In linux-2.6 interrupt stack is separate from kernel stack.How interrupt stack pointer <br>
+is retrieved?How is the implementation in freescale ppc/powerpc.<br>
+<br>
+please comment.<br>
+<br>
+thanks in advance.<br>
+<br>
+Barisa Kisku<br>
+
+------=_Part_2124_31371683.1193983910009--
