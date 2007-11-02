@@ -1,24 +1,36 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25947DDDFE
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 21:31:05 +1100 (EST)
-Subject: Re: [PATCH 3/3] Add arch-specific walk_memory_remove() for ppc64
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-In-Reply-To: <1193849335.17412.33.camel@dyn9047017100.beaverton.ibm.com>
-References: <1193849335.17412.33.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-cAlWIPTGfxae2J1IDv6p"
-Date: Fri, 02 Nov 2007 10:32:10 +0000
-Message-Id: <1193999530.25744.3.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linux-mm <linux-mm@kvack.org>, anton@au1.ibm.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C5EA8DDDE6
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Nov 2007 00:32:55 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id lA2DWp1L060038
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 13:32:51 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.5) with
+	ESMTP id lA2DWp2V2310332
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 14:32:51 +0100
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lA2DWoPN018228
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 14:32:51 +0100
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH 0/2] IB/ehca: Return physical link information,
+	fix static rate calculation
+MIME-Version: 1.0
+Date: Fri, 2 Nov 2007 15:32:49 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711021432.50203.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patchset will fix static rate calculation for the new link speeds
+supported by eHCA2. Also, it enables query_port() to return physical link
+information instead of constant values, which is needed for the static rate
+fix.
 
---=-cAlWIPTGfxae2J1IDv6p
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[1/2] makes query_port() return actual physical link info where supported
+[2/2] fixes static rate calculation based on that info
 
+The patches will apply, in order, on top of Roland's for-2.6.24 branch.
+Please review them and apply for 2.6.24-rc2 if you think they're okay.
 
-> This patch provides a way for an architecture to provide its
-> own walk_memory_resource()
+Thanks and regards,
+  Joachim
 
-It seems that the patch description "walk_memory_remove()" is wrong?
-
-johannes
-
---=-cAlWIPTGfxae2J1IDv6p
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARyr8qaVg1VMiehFYAQIq2A//SUYdZ2Kox7TSLno9s1odL3iQqXat3DTo
-IWYDX0ErgzWM+i6sVE1hMyZtvGv2fuUOioAnzMEj8nui8Qp4n3Rvr1aiPuUZcV5X
-c6wQ8BNqFhXcoIZjaJH3efhOQ673AHLcgyyWl48n+uSOQXFaE1Ljw8s7/IF/OLlZ
-SpGy3E7LTbGHD5liOTIHXAphIQtWTuATKg9brjW88SwGzoe8pkBBRhSpet93Lfrh
-S5IbR23u8QKlD5g7J6wLiMQ76A/VZg14DK8gUi8DX2ebZG6bBYmxjWf4uOW1qvuE
-ZNQa71QNrPenInCc1KlvYRbiGYQ4Rdfc5ENsEBtgFc80KLpMVC+ILL0DNwk2jk5H
-2snGA3wSeYANZCuxlrxLH+IhI413Dy7ckjnIC4pZ4RTMWhYn1xDye6rumhBrFAbX
-dlSOkOntctUHCNcagJE7Rg6jOJGjuuoz+MRrlvpMFzuV2avpy3/BJSCSoGUQVJLk
-02w0TSlyLnIEaNXrTIz2UpA4THgpe0Ynnl9DhNGfPhmrZDlMtf1wONf0VIx3S1Zj
-18qbazsMxrMxo0VwVjGdHAOnGmefVGYLr86K7elqrpOtQGrgcxXpQ0jF4FuAv9ak
-tkLcb4RZZTA1HLT+nt+SEwRcatmWatUB2G1M1dDrUd4Me/9MwWNxIlckKvTE/pS2
-CizlORweXsc=
-=RYg6
------END PGP SIGNATURE-----
-
---=-cAlWIPTGfxae2J1IDv6p--
+-- 
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com
