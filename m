@@ -1,33 +1,21 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F82EDDE03
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Nov 2007 07:29:05 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA2KT2NR019578
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 16:29:02 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA2KT2q3116460
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 14:29:02 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA2KT2ri007869
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Nov 2007 14:29:02 -0600
-Date: Fri, 2 Nov 2007 15:29:01 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/3]: powerpc eeh: avoid crash on null device.
-Message-ID: <20071102202901.GC13828@austin.ibm.com>
-References: <20071102201957.GU2183@austin.ibm.com>
-	<20071102202555.GA13828@austin.ibm.com>
-	<20071102202750.GB13828@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071102202750.GB13828@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
+	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id C480BDDD01
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Nov 2007 09:12:50 +1100 (EST)
+Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id E858327E18
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Nov 2007 23:12:38 +0100 (CET)
+Date: Fri, 2 Nov 2007 23:12:43 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] the scheduled I2C RTC driver removal
+Message-ID: <20071102231243.61c39d23@hyperion.delvare>
+In-Reply-To: <20071031230357.GW7227@stusta.de>
+References: <20071031230357.GW7227@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	rtc-linux@googlegroups.com, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,55 +25,347 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Adrian,
 
-Bugfix: avoid crash if there's no pci device for a given
-openfirmware node.
+On Thu, 1 Nov 2007 00:03:58 +0100, Adrian Bunk wrote:
+> This patch contains the scheduled removal of legacy I2C RTC drivers with 
+> replacement drivers.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-----
- arch/powerpc/platforms/pseries/eeh.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+I'm adding the rtc list in Cc.
 
-Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-10-16 13:55:03.000000000 -0500
-+++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c	2007-10-16 14:04:39.000000000 -0500
-@@ -186,6 +186,11 @@ static size_t gather_pci_data(struct pci
- 	n += scnprintf(buf+n, len-n, "cmd/stat:%x\n", cfg);
- 	printk(KERN_WARNING "EEH: PCI cmd/status register: %08x\n", cfg);
- 
-+	if (!dev) {
-+		printk(KERN_WARNING "EEH: no PCI device for this of node\n");
-+		return n;
-+	}
-+
- 	/* Gather bridge-specific registers */
- 	if (dev->class >> 16 == PCI_BASE_CLASS_BRIDGE) {
- 		rtas_read_config(pdn, PCI_SEC_STATUS, 2, &cfg);
-@@ -198,7 +203,7 @@ static size_t gather_pci_data(struct pci
- 	}
- 
- 	/* Dump out the PCI-X command and status regs */
--	cap = pci_find_capability(pdn->pcidev, PCI_CAP_ID_PCIX);
-+	cap = pci_find_capability(dev, PCI_CAP_ID_PCIX);
- 	if (cap) {
- 		rtas_read_config(pdn, cap, 4, &cfg);
- 		n += scnprintf(buf+n, len-n, "pcix-cmd:%x\n", cfg);
-@@ -210,7 +215,7 @@ static size_t gather_pci_data(struct pci
- 	}
- 
- 	/* If PCI-E capable, dump PCI-E cap 10, and the AER */
--	cap = pci_find_capability(pdn->pcidev, PCI_CAP_ID_EXP);
-+	cap = pci_find_capability(dev, PCI_CAP_ID_EXP);
- 	if (cap) {
- 		n += scnprintf(buf+n, len-n, "pci-e cap10:\n");
- 		printk(KERN_WARNING
-@@ -222,7 +227,7 @@ static size_t gather_pci_data(struct pci
- 			printk(KERN_WARNING "EEH: PCI-E %02x: %08x\n", i, cfg);
- 		}
- 
--		cap = pci_find_ext_capability(pdn->pcidev, PCI_EXT_CAP_ID_ERR);
-+		cap = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
- 		if (cap) {
- 			n += scnprintf(buf+n, len-n, "pci-e AER:\n");
- 			printk(KERN_WARNING
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+>  Documentation/feature-removal-schedule.txt |    7 
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c  |   24 -
+>  arch/powerpc/platforms/83xx/mpc834x_mds.c  |   24 -
+>  arch/powerpc/platforms/83xx/mpc836x_mds.c  |   24 -
+>  arch/ppc/platforms/83xx/mpc834x_sys.c      |   20 -
+>  arch/ppc/platforms/85xx/tqm85xx.c          |   21 -
+>  arch/ppc/platforms/katana.c                |   21 -
+>  drivers/i2c/chips/Kconfig                  |   38 -
+>  drivers/i2c/chips/Makefile                 |    3 
+>  drivers/i2c/chips/ds1337.c                 |  410 --------------------
+>  drivers/i2c/chips/ds1374.c                 |  267 -------------
+>  drivers/i2c/chips/m41t00.c                 |  413 ---------------------
+>  include/linux/m41t00.h                     |   50 --
+>  13 files changed, 1322 deletions(-)
+
+Obviously we're not yet ready to remove the drivers, as some platforms
+still use them! The remaining platforms need to be updated to use the
+new RTC drivers first. The mapping is as follows:
+
+chip       | old driver | new driver   |
+-----------+------------+--------------+
+DS1337     | ds1337     | rtc-ds1307   |
+DS1339     | ds1337     | rtc-ds1307   |
+DS1374     | ds1374     | rtc-ds1374   |
+M41T00     | m41t00     | rtc-ds1307   |
+M41T81     | m41t00     | rtc-m41t80   |
+M41ST85    | m41t00     | rtc-m41t80   |
+
+So, PPC people, please update your platform code to make use of the new
+drivers now, and let me know when you're done. As soon as all platforms
+are converted, I'll apply Adrian's patch.
+
+Thanks.
+
+> 
+> bf858b44b3071082be3aaf71e2d46ddb26415247 
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 6bb9be5..391f2d1 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -275,13 +275,6 @@ Who:  Tejun Heo <htejun@gmail.com>
+>  
+>  ---------------------------
+>  
+> -What:	Legacy RTC drivers (under drivers/i2c/chips)
+> -When:	November 2007
+> -Why:	Obsolete. We have a RTC subsystem with better drivers.
+> -Who:	Jean Delvare <khali@linux-fr.org>
+> -
+> ----------------------------
+> -
+>  What:	iptables SAME target
+>  When:	1.1. 2008
+>  Files:	net/ipv4/netfilter/ipt_SAME.c, include/linux/netfilter_ipv4/ipt_SAME.h
+> diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> index 972fa85..66382df 100644
+> --- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+> @@ -145,30 +145,6 @@ static void __init mpc832x_sys_init_IRQ(void)
+>  #endif				/* CONFIG_QUICC_ENGINE */
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc832x_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc832x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc832x_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> index 00aed7c..a81bb3c 100644
+> --- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> @@ -106,30 +106,6 @@ static void __init mpc834x_mds_init_IRQ(void)
+>  	ipic_set_default_priority();
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc834x_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc834x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc834x_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> index 0f3855c..8d87b9c 100644
+> --- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+> @@ -152,30 +152,6 @@ static void __init mpc836x_mds_init_IRQ(void)
+>  #endif				/* CONFIG_QUICC_ENGINE */
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong ds1374_get_rtc_time(void);
+> -extern int ds1374_set_rtc_time(ulong);
+> -
+> -static int __init mpc8360_rtc_hookup(void)
+> -{
+> -	struct timespec tv;
+> -
+> -	if (!machine_is(mpc836x_mds))
+> -		return 0;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time) ();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -
+> -late_initcall(mpc8360_rtc_hookup);
+> -#endif
+> -
+>  /*
+>   * Called very early, MMU is off, device-tree isn't unflattened
+>   */
+> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> index b84f8df..cb0a749 100644
+> --- a/arch/ppc/platforms/83xx/mpc834x_sys.c
+> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> @@ -224,26 +224,6 @@ mpc834x_sys_init_IRQ(void)
+>  	ipic_set_default_priority();
+>  }
+>  
+> -#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+> -extern ulong	ds1374_get_rtc_time(void);
+> -extern int	ds1374_set_rtc_time(ulong);
+> -
+> -static int __init
+> -mpc834x_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+> -	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(mpc834x_rtc_hookup);
+> -#endif
+>  static __inline__ void
+>  mpc834x_sys_set_bat(void)
+>  {
+> diff --git a/arch/ppc/platforms/85xx/tqm85xx.c b/arch/ppc/platforms/85xx/tqm85xx.c
+> index 4ee2bd1..27ce389 100644
+> --- a/arch/ppc/platforms/85xx/tqm85xx.c
+> +++ b/arch/ppc/platforms/85xx/tqm85xx.c
+> @@ -258,27 +258,6 @@ int tqm85xx_show_cpuinfo(struct seq_file *m)
+>  	return 0;
+>  }
+>  
+> -#if defined(CONFIG_I2C) && defined(CONFIG_SENSORS_DS1337)
+> -extern ulong ds1337_get_rtc_time(void);
+> -extern int ds1337_set_rtc_time(unsigned long nowtime);
+> -
+> -static int __init
+> -tqm85xx_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -        ppc_md.set_rtc_time = ds1337_set_rtc_time;
+> -        ppc_md.get_rtc_time = ds1337_get_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(tqm85xx_rtc_hookup);
+> -#endif
+> -
+>  #ifdef CONFIG_PCI
+>  /*
+>   * interrupt routing
+> diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
+> index 52f63e6..fe6e88c 100644
+> --- a/arch/ppc/platforms/katana.c
+> +++ b/arch/ppc/platforms/katana.c
+> @@ -838,27 +838,6 @@ katana_find_end_of_memory(void)
+>  	return bdp->bi_memsize;
+>  }
+>  
+> -#if defined(CONFIG_I2C_MV64XXX) && defined(CONFIG_SENSORS_M41T00)
+> -extern ulong	m41t00_get_rtc_time(void);
+> -extern int	m41t00_set_rtc_time(ulong);
+> -
+> -static int __init
+> -katana_rtc_hookup(void)
+> -{
+> -	struct timespec	tv;
+> -
+> -	ppc_md.get_rtc_time = m41t00_get_rtc_time;
+> -	ppc_md.set_rtc_time = m41t00_set_rtc_time;
+> -
+> -	tv.tv_nsec = 0;
+> -	tv.tv_sec = (ppc_md.get_rtc_time)();
+> -	do_settimeofday(&tv);
+> -
+> -	return 0;
+> -}
+> -late_initcall(katana_rtc_hookup);
+> -#endif
+> -
+>  #if defined(CONFIG_SERIAL_TEXT_DEBUG) && defined(CONFIG_SERIAL_MPSC_CONSOLE)
+>  static void __init
+>  katana_map_io(void)
+> diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
+> index 2e1c24f..5b8eb02 100644
+> --- a/drivers/i2c/chips/Kconfig
+> +++ b/drivers/i2c/chips/Kconfig
+> @@ -4,32 +4,6 @@
+>  
+>  menu "Miscellaneous I2C Chip support"
+>  
+> -config SENSORS_DS1337
+> -	tristate "Dallas DS1337 and DS1339 Real Time Clock (DEPRECATED)"
+> -	depends on EXPERIMENTAL
+> -	help
+> -	  If you say yes here you get support for Dallas Semiconductor
+> -	  DS1337 and DS1339 real-time clock chips.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called ds1337.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1307 instead.
+> -
+> -config SENSORS_DS1374
+> -	tristate "Dallas DS1374 Real Time Clock (DEPRECATED)"
+> -	depends on EXPERIMENTAL
+> -	help
+> -	  If you say yes here you get support for Dallas Semiconductor
+> -	  DS1374 real-time clock chips.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called ds1374.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1374 instead.
+> -
+>  config DS1682
+>  	tristate "Dallas DS1682 Total Elapsed Time Recorder with Alarm"
+>  	depends on EXPERIMENTAL
+> @@ -116,18 +90,6 @@ config TPS65010
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called tps65010.
+>  
+> -config SENSORS_M41T00
+> -	tristate "ST M41T00 RTC chip (DEPRECATED)"
+> -	depends on PPC32
+> -	help
+> -	  If you say yes here you get support for the ST M41T00 RTC chip.
+> -
+> -	  This driver can also be built as a module.  If so, the module
+> -	  will be called m41t00.
+> -
+> -	  This driver is deprecated and will be dropped soon. Use
+> -	  rtc-ds1307 or rtc-m41t80 instead.
+> -
+>  config SENSORS_MAX6875
+>  	tristate "Maxim MAX6875 Power supply supervisor"
+>  	depends on EXPERIMENTAL
+> diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
+> index ca924e1..1d5d1a5 100644
+> --- a/drivers/i2c/chips/Makefile
+> +++ b/drivers/i2c/chips/Makefile
+> @@ -2,12 +2,9 @@
+>  # Makefile for miscellaneous I2C chip drivers.
+>  #
+>  
+> -obj-$(CONFIG_SENSORS_DS1337)	+= ds1337.o
+> -obj-$(CONFIG_SENSORS_DS1374)	+= ds1374.o
+>  obj-$(CONFIG_DS1682)		+= ds1682.o
+>  obj-$(CONFIG_SENSORS_EEPROM)	+= eeprom.o
+>  obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
+> -obj-$(CONFIG_SENSORS_M41T00)	+= m41t00.o
+>  obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
+>  obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
+>  obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
+> (...)
+
+-- 
+Jean Delvare
