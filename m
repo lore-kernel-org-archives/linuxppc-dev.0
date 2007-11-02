@@ -1,23 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D4F3DDE0A
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 80D48DDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Nov 2007 00:56:06 +1100 (EST)
-Message-ID: <472B2C31.3090806@freescale.com>
-Date: Fri, 02 Nov 2007 08:54:57 -0500
-From: Timur Tabi <timur@freescale.com>
+	Sat,  3 Nov 2007 01:37:29 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1InxeI-0003iz-It
+	for linuxppc-embedded@ozlabs.org; Fri, 02 Nov 2007 07:37:26 -0700
+Message-ID: <13548781.post@talk.nabble.com>
+Date: Fri, 2 Nov 2007 07:37:26 -0700 (PDT)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: serial GDBServer PPC405  problems
+In-Reply-To: <200711020944.53077.wangbj@lzu.edu.cn>
 MIME-Version: 1.0
-To: =?windows-1252?Q?=3F=3F?= <guojin02@tsinghua.org.cn>
-Subject: Re: The question about the fail at the begin of linux on MPC8360E.
-References: <393972917.10298@tsinghua.org.cn>
-	<598D5675D34BE349929AF5EDE9B03E270174CCE3@az33exm24.fsl.freescale.net>
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E270174CCE3@az33exm24.fsl.freescale.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <13532592.post@talk.nabble.com>
+	<200711020944.53077.wangbj@lzu.edu.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,15 +29,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Medve Emilian-EMMEDVE1 wrote:
-> Hi there,
+
+
+Wang, Baojun wrote:
 > 
 > 
-> You need a device tree. The defaut one is arch/powerpc/boot/dts/mpc836x_mds.dts. You need the DTC (Device Tree Compiler) from here http://jdl.com/git_repos/?p=dtc.git;a=summary. This should be enough to give you some reading pointers.
-
-And if your U-Boot doesn't support device trees, you'll need to enable cuImage 
-support in the kernel as well.
-
+> 
+> Your kernel don't have kgdb support? then you need a debugger like bdi2000
+> to 
+> debug the kernel.
+> 
+> Wang
+> 
+> 
+Do I need to add kgdb even if I just want to debug a user application over
+serial?
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+View this message in context: http://www.nabble.com/serial-GDBServer-PPC405--problems-tf4732593.html#a13548781
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
