@@ -1,27 +1,24 @@
-Return-Path: <patmans@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 420F4DDDFE
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 04:42:21 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA3HhdYu010103
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:43:39 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA3Hg43H136912
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:42:04 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA3Hg44n028563
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:42:04 -0400
-Date: Sat, 3 Nov 2007 10:42:03 -0700
-From: Patrick Mansfield <patmans@us.ibm.com>
-To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, anton@samba.org
-Subject: [PATCH] change fallocate to match unistd.h on powerpc
-Message-ID: <20071103174203.GA25823@us.ibm.com>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 2AC46DDE1A
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 10:52:18 +1100 (EST)
+Received: from localhost (unknown [127.0.0.1])
+	by mail.semihalf.com (Postfix) with ESMTP id 000401432E
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 00:52:52 +0100 (CET)
+Received: from mail.semihalf.com ([127.0.0.1])
+	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 02340-10 for <linuxppc-dev@ozlabs.org>;
+	Sun,  4 Nov 2007 00:52:52 +0100 (CET)
+Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
+	by mail.semihalf.com (Postfix) with ESMTP id 4BE7D142CC
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 00:52:52 +0100 (CET)
+From: Marian Balakowicz <m8@semihalf.com>
+Subject: [PATCH v2 00/12] [POWERPC] Add TQM5200/CM5200/Motion-PRO board support
+To: linuxppc-dev@ozlabs.org
+Date: Sun, 04 Nov 2007 00:52:10 +0100
+Message-ID: <20071103235210.31906.83423.stgit@hekate.izotz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,32 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix the fallocate system call on powerpc to match its unistd.h.
+This is a secon respin of the patches that add arch/powerpc support for
+three MPC5200 based boards: TQ-Components TQM5200, Schindler CM5200
+and Promess Motion-PRO. Please review.
 
-This implies none of these system calls are currently working with the
-unistd.h sys call values:
-	fallocate
-	signalfd
-	timerfd 
-	eventfd 
-	sync_file_range2
+[POWERPC] Promess Motion-PRO defconfig
+[POWERPC] Promess Motion-PRO DTS
+[POWERPC] Motion-PRO: Add LED support.
+[POWERPC] CM5200 defconfig
+[POWERPC] CM5200 DTS
+[POWERPC] TQM5200 defconfig
+[POWERPC] TQM5200 DTS
+[POWERPC] Export mpc52xx_map_node() routine symbol
+[POWERPC] Add generic support for simple MPC5200 based boards
+[POWERPC] Add common mpc52xx_setup_pci() routine
+[POWERPC] Add 'fsl,lpb' bus type for MPC5200 LocalPlus Bus
+[POWERPC] Add 'model: ...' line to common show_cpuinfo()
 
-Signed-off-by: Patrick Mansfield <patmans@us.ibm.com>
-Acked-by: Anton Blanchard <anton@samba.org>
-
-diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
-index cc6d872..11d5383 100644
---- a/include/asm-powerpc/systbl.h
-+++ b/include/asm-powerpc/systbl.h
-@@ -308,8 +308,8 @@ COMPAT_SYS_SPU(move_pages)
- SYSCALL_SPU(getcpu)
- COMPAT_SYS(epoll_pwait)
- COMPAT_SYS_SPU(utimensat)
--COMPAT_SYS(fallocate)
- COMPAT_SYS_SPU(signalfd)
- COMPAT_SYS_SPU(timerfd)
- SYSCALL_SPU(eventfd)
- COMPAT_SYS_SPU(sync_file_range2)
-+COMPAT_SYS(fallocate)
-
--- Patrick Mansfield
+Cheers,
+m.
