@@ -1,38 +1,27 @@
-Return-Path: <balbir@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <patmans@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E9A50DDE07
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 03:48:12 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA3Gm2A1015690
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 12:48:02 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA3Gm2mJ072318
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 10:48:02 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA3Gm1ZX020009
-	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 10:48:02 -0600
-Message-ID: <472CA62D.8050205@linux.vnet.ibm.com>
-Date: Sat, 03 Nov 2007 22:17:41 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 420F4DDDFE
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 04:42:21 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA3HhdYu010103
+	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:43:39 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	lA3Hg43H136912
+	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:42:04 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lA3Hg44n028563
+	for <linuxppc-dev@ozlabs.org>; Sat, 3 Nov 2007 13:42:04 -0400
+Date: Sat, 3 Nov 2007 10:42:03 -0700
+From: Patrick Mansfield <patmans@us.ibm.com>
+To: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, anton@samba.org
+Subject: [PATCH] change fallocate to match unistd.h on powerpc
+Message-ID: <20071103174203.GA25823@us.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Restore deterministic CPU accounting on powerpc
-References: <18218.44089.274628.680088@cargo.ozlabs.ibm.com>
-	<661de9470711030202x24d0186cuc96a70156ecfa23f@mail.gmail.com>
-	<18220.24362.604297.53633@cargo.ozlabs.ibm.com>
-In-Reply-To: <18220.24362.604297.53633@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>
-Reply-To: balbir@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,26 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Balbir Singh writes:
-> 
->> So, scaled accounting will not be available if
->> CONFIG_VIRT_CPU_ACCOUNTING is defined? Am I reading this correctly
-> 
-> No, what makes you think that?  If VIRT_CPU_ACCOUNTING=y it is the
-> responsibility of the arch's account_process_tick to update the scaled
-> stats.  And the powerpc version does that by calling
-> account_user_time_scaled().
-> 
-> Paul.
+Fix the fallocate system call on powerpc to match its unistd.h.
 
-I looked at the diff's and could just see the reversal of scaled
-accounting. I looked at account_process_vtime(), now
-account_process_tick() and things seem fine. I was mislead by the
-diff.
+This implies none of these system calls are currently working with the
+unistd.h sys call values:
+	fallocate
+	signalfd
+	timerfd 
+	eventfd 
+	sync_file_range2
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Signed-off-by: Patrick Mansfield <patmans@us.ibm.com>
+Acked-by: Anton Blanchard <anton@samba.org>
+
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index cc6d872..11d5383 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -308,8 +308,8 @@ COMPAT_SYS_SPU(move_pages)
+ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
+ COMPAT_SYS_SPU(utimensat)
+-COMPAT_SYS(fallocate)
+ COMPAT_SYS_SPU(signalfd)
+ COMPAT_SYS_SPU(timerfd)
+ SYSCALL_SPU(eventfd)
+ COMPAT_SYS_SPU(sync_file_range2)
++COMPAT_SYS(fallocate)
+
+-- Patrick Mansfield
