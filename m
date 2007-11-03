@@ -1,20 +1,19 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from eyou.net (unknown [202.201.0.146])
-	by ozlabs.org (Postfix) with SMTP id 1ACEEDDDFC
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 91F4DDDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Nov 2007 14:40:19 +1100 (EST)
-Message-ID: <394123578.13658@eyou.net>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: Stuart Hodgson <stuart@quadrics.com>
-Subject: Re: GDB bdi2000 and mpc85xx
-Date: Sat, 3 Nov 2007 11:40:17 +0800
-References: <394028554.26200@lzu.edu.cn>
-In-Reply-To: <394028554.26200@lzu.edu.cn>
+	Sun,  4 Nov 2007 06:01:11 +1100 (EST)
+Message-ID: <472CC572.9050508@scram.de>
+Date: Sat, 03 Nov 2007 20:01:06 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart54282908.afRgL8PG6y";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200711031140.20213.wangbj@lzu.edu.cn>
-Cc: linuxppc-embedded@ozlabs.org
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH1/2] [POWERPC] Kill non-existant symbols from ksyms and
+	commproc.h
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,129 +24,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart54282908.afRgL8PG6y
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Remove exports of __res and cpm_install_handler/cpm_free_handler.
+Remove cpm_install_handler/cpm_free_handler from the commproc.h as well.
+Both were used for ARCH=ppc and aren't defined for ARCH=powerpc.
 
-On Saturday 03 November 2007 01:17:48, Stuart Hodgson wrote=EF=BC=9A
-> Hi,
->
-> I am attempting to get Kernel debugging working on our mpc8541 based
-> board via a BDI2000. The various components in use are
->
-> kernel - 2.6.19.2
-> BDI firmware - 1.08
-> U-Boot - 1.2.0
-> ppc_85xx-gdb - from eldk4.1 (6.3.0.0-1.21_3rh)
->
->
-> Kernel is configured with `-g` in CFLAGS and not with CONFIG_BDI_SWITCH,
-> from the information I have read around the subject this seem to be
-> correct. I also have `MMU  XLAT`, and `PTBASE 0xF0` set in by BDI
-> configuration file. The default value for XLAT of `0xc0000000` matches
-> the kernel our kernel config.
->
-> Steps that I done so far
->
-> 1. Power on BDI
-> 2. Power on the board
-> 3. BDI> reset run
-> 4. Enter u-boot environment to stop linux booting immediately.
-> 5. BDI> HALT
-> 6. BDI> BREAK HARD
-> 7. BDI> BI 0xc025a51c   (this is the address of start_kernel for my build)
-> 8. BDI> GO
-> 9. From U-boot prompt `bootm`, kernel is copied from flash and loading
-> begins
-> 10. Kernel does not halt at start_kernel and continues to the login
->
-> If I attempt to break at an address later in the boot sequence, such as
-> qmx19_ata_input_data (this is the area that I am trying to investigate)
-> I get
->
-> - TARGET: core #0 has entered debug mode
->
-> So from here I attempt to connect to the BDI from gdb
->
-> linux> cd ~/linux-2.6.19.2
-> linux> ppc_85xx-gdb vmlimux
-Most of the operation could be done within gdb
+CC      arch/powerpc/kernel/ppc_ksyms.o
+arch/powerpc/kernel/ppc_ksyms.c:180: error: '__res' undeclared here (not in a function)
+arch/powerpc/kernel/ppc_ksyms.c:180: warning: type defaults to 'int' in declaration of '__res'
+make[1]: *** [arch/powerpc/kernel/ppc_ksyms.o] Error 1
+make: *** [arch/powerpc/kernel] Error 2
 
-BDI> reset
+LD      .tmp_vmlinux1
+arch/powerpc/kernel/built-in.o:(__ksymtab+0x198): undefined reference to `cpm_free_handler'
+arch/powerpc/kernel/built-in.o:(__ksymtab+0x1a0): undefined reference to `cpm_install_handler'
+make: *** [.tmp_vmlinux1] Error 1
 
-powerpc-unknown-linux-gnu-gdb vmlinux
-(gdb) target remote bdi:2001
-(gdb) ^C
-(gdb) b *0x12345678
-(gdb) c
-=2E..
-> "
-> GNU gdb Red Hat Linux (6.3.0.0-1.21_3rh)
-> Copyright 2004 Free Software Foundation, Inc.
-> GDB is free software, covered by the GNU General Public License, and you
-> are welcome to change it and/or distribute copies of it under certain
-> conditions.
-> Type "show copying" to see the conditions.
-> There is absolutely no warranty for GDB.  Type "show warranty" for detail=
-s.
-> This GDB was configured as "--host=3Di386-redhat-linux --target=3Dppc-lin=
-ux".
-> The target architecture is set automatically (currently powerpc:603)
-> "
->
-> I noticed here that the last line does not match the e500 core I am
-> using, but there does not seem to a change if I change this using `set
-> architecture powerpc:e500`
->
->
-> (gdb) tar rem <bdi_ip>:2001
-> Remote debugging using <bdi_ip>:2001
-> 0x00000000 in ?? ()
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+arch/powerpc/kernel/ppc_ksyms.c |   12 ------------
+include/asm-powerpc/commproc.h  |    3 ---
+2 files changed, 0 insertions(+), 15 deletions(-)
 
-Which configuration file do you use for mpc85xx? probably is the config fil=
-e=20
-problem?
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index c6b1aa3..13ebeb2 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -45,10 +45,6 @@
+#include <asm/signal.h>
+#include <asm/dcr.h>
 
-> What I don't understand here is why 0x00000000 is shown as the address,
-> further on the BDI the following error is shown then the connection is ma=
-de
->
-> "
-> *** MMU: address translation for 0x00000000 failed
+-#ifdef  CONFIG_8xx
+-#include <asm/commproc.h>
+-#endif
+-
+#ifdef CONFIG_PPC64
+EXPORT_SYMBOL(local_irq_restore);
+#endif
+@@ -172,14 +168,6 @@ EXPORT_SYMBOL(console_drivers);
+EXPORT_SYMBOL(cacheable_memcpy);
+#endif
 
-> Stuart Hodgson
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-#ifdef  CONFIG_8xx
+-EXPORT_SYMBOL(cpm_install_handler);
+-EXPORT_SYMBOL(cpm_free_handler);
+-#endif /* CONFIG_8xx */
+-#if defined(CONFIG_8xx)
+-EXPORT_SYMBOL(__res);
+-#endif
+-
+#ifdef CONFIG_PPC32
+EXPORT_SYMBOL(next_mmu_context);
+EXPORT_SYMBOL(set_context);
+diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
+index 0307c84..5dff922 100644
+--- a/include/asm-powerpc/commproc.h
++++ b/include/asm-powerpc/commproc.h
+@@ -698,9 +698,6 @@ typedef struct risc_timer_pram {
+#define CICR_IEN		((uint)0x00000080)	/* Int. enable */
+#define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
 
-Wang
+-extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
+-extern void cpm_free_handler(int vec);
+-
+#define IMAP_ADDR		(get_immrbase())
 
-=2D-=20
-Wang, Baojun =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0Lanzhou University
-Distributed & Embedded System Lab =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0http://dslab.lzu.edu.cn
-School of Information Science and Engeneering =C2=A0 =C2=A0 =C2=A0 =C2=A0wa=
-ngbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 .P.R.China
-Tel:+86-931-8912025 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0Fax:+86-931-8912022
-
---nextPart54282908.afRgL8PG6y
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBHK+2hIuIOr7tpgg0RAm0PAKCueMJpbJ4NiudBEI70a3GiyXXepgCgjOlN
-JhlW1BcBBbaKhFmNH4V657g=
-=J6oW
------END PGP SIGNATURE-----
-
---nextPart54282908.afRgL8PG6y--
+#define CPM_PIN_INPUT     0
+-- 
+1.5.3.4
