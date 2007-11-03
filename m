@@ -2,15 +2,15 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9F455DDF3D
+	by ozlabs.org (Postfix) with ESMTP id 4F7EEDDE18
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  4 Nov 2007 06:01:19 +1100 (EST)
-Message-ID: <472CC579.6050008@scram.de>
-Date: Sat, 03 Nov 2007 20:01:13 +0100
+	Sun,  4 Nov 2007 06:16:49 +1100 (EST)
+Message-ID: <472CC914.3030709@scram.de>
+Date: Sat, 03 Nov 2007 20:16:36 +0100
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH2/2] [POWERPC] fs_enet: select PHYLIB as the driver needs it.
+Subject: [PATCH] [POWERPC] Fix typo #ifdef -> #ifndef
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
 	netdev <netdev@vger.kernel.org>
@@ -24,31 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add a select PHYLIB to config FS_ENET as the driver uses functions of
-libphy.
-
-LD      .tmp_vmlinux1
-drivers/built-in.o: In function `fs_ioctl':
-drivers/net/fs_enet/fs_enet-main.c:952: undefined reference to `phy_mii_ioctl'
-[...]
-make: *** [.tmp_vmlinux1] Error 1
+fpi->cp_command should be overwritten only if CONFIG_PPC_CPM_NEW_BINDING
+is NOT set. Otherwise it is already set from the device tree.
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
 ---
-drivers/net/fs_enet/Kconfig |    1 +
-1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
-index 2765e49..24502d2 100644
---- a/drivers/net/fs_enet/Kconfig
-+++ b/drivers/net/fs_enet/Kconfig
-@@ -2,6 +2,7 @@ config FS_ENET
-     tristate "Freescale Ethernet Driver"
-     depends on CPM1 || CPM2
-     select MII
-+       select PHYLIB
+This can be pulled from git://git.bocc.de/dbox2.git for-2.6.24
 
-config FS_ENET_HAS_SCC
-	bool "Chip has an SCC usable for ethernet"
+ drivers/net/fs_enet/mac-scc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 03134f4..48f2f30 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -158,7 +158,7 @@ static int setup_data(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
+ 
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
++#ifndef CONFIG_PPC_CPM_NEW_BINDING
+ 	struct fs_platform_info *fpi = fep->fpi;
+ 
+ 	fep->scc.idx = fs_get_scc_index(fpi->fs_no);
 -- 
 1.5.3.4
