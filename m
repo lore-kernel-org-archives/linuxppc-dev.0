@@ -1,17 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 50DE9DDE3B
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 12:02:49 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DD2A9B2C-5D35-4F53-8542-3470C6FA5265@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: use of aliases in device trees
-Date: Sat, 3 Nov 2007 20:02:39 -0500
-To: linux-ppc list <linuxppc-dev@ozlabs.org>
-Cc: U-Boot Users List <u-boot-users@lists.sourceforge.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 6144FDDE20
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 13:22:44 +1100 (EST)
+Date: Sun, 4 Nov 2007 13:22:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] iSeries_init_IRQ non-PCI tidy
+Message-Id: <20071104132246.c748dcea.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In some discussion on the u-boot dev list it became clear that having  
-aliases in the device tree might be useful as a common way to deal  
-with finding specific nodes that need fixing up by the firmware.   
-This problem also exists in the kernel bootwrappers.
+ppc_md.init_IRQ is not called if it is NULL, so we don't need an empty
+routine in the non PCI case.
 
-The common example is how to associate a given MAC address with the  
-proper ethernet node.  In u-boot an explicit path is hard coded into  
-the u-boot build for each ethernet device.  In the bootwrapper we use  
-"linux,network-index = <N>" in the given ethernet node.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/iseries/irq.h   |    4 ++++
+ arch/powerpc/platforms/iseries/setup.c |    4 ----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-One common solution would be having a top level aliases like the pmac  
-tree's have:
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-aliases {
-	enet0 = "...";
-	enet1 = "...";
-	pci0 = "...";
-	pci1 = "...";
-};
-
-I wanted to see what people think of this idea and about trying to  
-use common names for the aliases?  If nothing else I believe we will  
-look at doing this on the FSL boards/parts.
-
-- k
+diff --git a/arch/powerpc/platforms/iseries/irq.h b/arch/powerpc/platforms/iseries/irq.h
+index 69f1b43..a1c2360 100644
+--- a/arch/powerpc/platforms/iseries/irq.h
++++ b/arch/powerpc/platforms/iseries/irq.h
+@@ -1,9 +1,13 @@
+ #ifndef	_ISERIES_IRQ_H
+ #define	_ISERIES_IRQ_H
+ 
++#ifdef CONFIG_PCI
+ extern void iSeries_init_IRQ(void);
+ extern int  iSeries_allocate_IRQ(HvBusNumber, HvSubBusNumber, u32);
+ extern void iSeries_activate_IRQs(void);
++#else
++#define iSeries_init_IRQ	NULL
++#endif
+ extern unsigned int iSeries_get_irq(void);
+ 
+ #endif /* _ISERIES_IRQ_H */
+diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
+index 37ae07e..0877a88 100644
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -617,10 +617,6 @@ static void iseries_dedicated_idle(void)
+ 	}
+ }
+ 
+-#ifndef CONFIG_PCI
+-void __init iSeries_init_IRQ(void) { }
+-#endif
+-
+ static void __iomem *iseries_ioremap(phys_addr_t address, unsigned long size,
+ 				     unsigned long flags)
+ {
+-- 
+1.5.3.5
