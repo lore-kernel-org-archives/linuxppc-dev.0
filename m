@@ -1,15 +1,21 @@
-Return-Path: <kugel@163.com>
-Received: from m12-14.163.com (m12-14.163.com [220.181.12.14])
-	by ozlabs.org (Postfix) with SMTP id 5886CDDDF4
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 03:33:30 +1100 (EST)
-From: "Kugel" <kugel@163.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: mpc852t boot question!
-Date: Mon, 5 Nov 2007 00:18:11 +0800
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out3.tiscali.nl (smtp-out3.tiscali.nl [195.241.79.178])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6FF1DDED6
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 03:53:46 +1100 (EST)
+Received: from [82.171.216.234] (helo=[192.168.1.2])
+	by smtp-out3.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
+	id 1IoijF-0007jO-Fb
+	for <linuxppc-dev@ozlabs.org>; Sun, 04 Nov 2007 17:53:41 +0100
+Message-ID: <472DF914.7020601@tiscali.nl>
+Date: Sun, 04 Nov 2007 17:53:40 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0015_01C81F41.5A04D2E0"
-Message-Id: <472DF45A.29BBA2.01664@m12-14.163.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Balance alloc/free and ioremap/iounmap in gpio_mdio_probe
+	(powerpc/platforms/pasemi/gpio_mdio.c)
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,58 +25,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+I think this is how it should be done, but
+please review: it was not tested.
+--
+Balance alloc/free and ioremap/iounmap
 
-------=_NextPart_000_0015_01C81F41.5A04D2E0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
- I made a MPC852T board. I set the HW config word to 0x04600000(D5,D9,D10
-pulled up).So the [ISB]=00, 
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
+index dae9f65..f250ba4 100644
+--- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
++++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
+@@ -208,95 +208,116 @@ static int gpio_mdio_write(struct mii_bus *bus, int phy_id, int location, u16 va
+ }
  
-and the IMMR = 0x00000000. 
+ static int gpio_mdio_reset(struct mii_bus *bus)
+ {
+ 	/*nothing here - dunno how to reset it*/
+ 	return 0;
+ }
  
- When the CPU is power up, can it boot from external boot flash(39vf040)? Or
-just run from internal 
+-
+-static int __devinit gpio_mdio_probe(struct of_device *ofdev,
+-				     const struct of_device_id *match)
++static int __devinit __gpio_mdio_register_bus(struct of_device *ofdev,
++					const struct of_device_id *match)
+ {
+ 	struct device *dev = &ofdev->dev;
+ 	struct device_node *np = ofdev->node;
+-	struct device_node *gpio_np;
+ 	struct mii_bus *new_bus;
+ 	struct resource res;
+ 	struct gpio_priv *priv;
+ 	const unsigned int *prop;
+-	int err = 0;
+ 	int i;
  
-memory space(because the IMMR=0x0)? 
+-	gpio_np = of_find_compatible_node(NULL, "gpio", "1682m-gpio");
+-
+-	if (!gpio_np)
+-		return -ENODEV;
+-
+-	err = of_address_to_resource(gpio_np, 0, &res);
+-	of_node_put(gpio_np);
+-
+-	if (err)
+-		return -EINVAL;
+-
+-	if (!gpio_regs)
+-		gpio_regs = ioremap(res.start, 0x100);
+-
+-	if (!gpio_regs)
+-		return -EPERM;
+-
+ 	priv = kzalloc(sizeof(struct gpio_priv), GFP_KERNEL);
+-	if (priv == NULL)
++	if (unlikely(priv == NULL))
+ 		return -ENOMEM;
  
-
-------=_NextPart_000_0015_01C81F41.5A04D2E0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.6000.16544" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN =
-class=3D909420516-04112007>&nbsp;I made a MPC852T=20
-board. I set the HW config word to 0x04600000(D5,D9,D10 pulled up).So =
-the=20
-[ISB]=3D00, </SPAN></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN=20
-class=3D909420516-04112007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN =
-class=3D909420516-04112007>and the IMMR =3D=20
-0x00000000. </SPAN></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN=20
-class=3D909420516-04112007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN =
-class=3D909420516-04112007>&nbsp;When the CPU is=20
-power up, can it boot from external boot flash(39vf040)? Or =
-just&nbsp;run from=20
-internal </SPAN></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN=20
-class=3D909420516-04112007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN =
-class=3D909420516-04112007>memory space(because=20
-the IMMR=3D0x0)?&nbsp;</SPAN></FONT></DIV>
-<DIV><FONT face=3D&#23435;&#20307; size=3D2><SPAN=20
-class=3D909420516-04112007></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
-
-------=_NextPart_000_0015_01C81F41.5A04D2E0--
+ 	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
+ 
+-	if (new_bus == NULL)
+-		return -ENOMEM;
++	if (unlikely(new_bus == NULL))
++		goto free_priv;
+ 
+ 	new_bus->name = "pasemi gpio mdio bus",
+ 	new_bus->read = &gpio_mdio_read,
+ 	new_bus->write = &gpio_mdio_write,
+ 	new_bus->reset = &gpio_mdio_reset,
+ 
+ 	prop = of_get_property(np, "reg", NULL);
+ 	new_bus->id = *prop;
+ 	new_bus->priv = priv;
+ 
+ 	new_bus->phy_mask = 0;
+ 
+ 	new_bus->irq = kmalloc(sizeof(int)*PHY_MAX_ADDR, GFP_KERNEL);
++	if (unlikely(new_bus->irq == NULL))
++		goto free_new_bus;
++
+ 	for(i = 0; i < PHY_MAX_ADDR; ++i)
+ 		new_bus->irq[i] = irq_create_mapping(NULL, 10);
+ 
+ 
+ 	prop = of_get_property(np, "mdc-pin", NULL);
+ 	priv->mdc_pin = *prop;
+ 
+ 	prop = of_get_property(np, "mdio-pin", NULL);
+ 	priv->mdio_pin = *prop;
+ 
+ 	new_bus->dev = dev;
+ 	dev_set_drvdata(dev, new_bus);
+ 
+ 	err = mdiobus_register(new_bus);
+ 
+-	if (0 != err) {
++	if (unlikely(0 != err)) {
+ 		printk(KERN_ERR "%s: Cannot register as MDIO bus, err %d\n",
+ 				new_bus->name, err);
+ 		goto bus_register_fail;
+ 	}
+ 
+ 	return 0;
+ 
+ bus_register_fail:
++	kfree(new_bus->irq);
++free_new_bus:
+ 	kfree(new_bus);
++free_priv:
++	kfree(priv);
++
++	return -ENOMEM;
++}
++
++
++static int __devinit gpio_mdio_probe(struct of_device *ofdev,
++				     const struct of_device_id *match)
++{
++	struct device_node *gpio_np;
++	int err;
++
++	gpio_np = of_find_compatible_node(NULL, "gpio", "1682m-gpio");
++
++	if (!gpio_np)
++		return -ENODEV;
++
++	err = of_address_to_resource(gpio_np, 0, &res);
++	of_node_put(gpio_np);
++
++	if (err)
++		return -EINVAL;
++
++	if (!gpio_regs) {
++
++		gpio_regs = ioremap(res.start, 0x100);
++		if (unlikely(!gpio_regs))
++			return -EPERM;
++
++		err = __gpio_mdio_register_bus(ofdev, match);
++		if (err < 0)
++			iounmap(gpio_regs);
++	} else
++		err = __gpio_mdio_register_bus(ofdev, match);
+ 
+ 	return err;
++
+ }
+ 
+ 
+ static int gpio_mdio_remove(struct of_device *dev)
+ {
+ 	struct mii_bus *bus = dev_get_drvdata(&dev->dev);
+ 
+ 	mdiobus_unregister(bus);
