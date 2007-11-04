@@ -1,15 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2A3D7DDE49
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 13:28:37 +1100 (EST)
-Date: Sun, 4 Nov 2007 13:28:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix link errors for allyesconfig
-Message-Id: <20071104132839.ea04cf6b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Return-Path: <ntl@pobox.com>
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by ozlabs.org (Postfix) with ESMTP id E701FDDE20
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 14:20:20 +1100 (EST)
+Date: Sat, 3 Nov 2007 22:20:06 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Elimar Riesebieter <riesebie@lxtec.de>
+Subject: Re: 2.6.24-rc1 freezes on powerbook at first boot stage
+Message-ID: <20071104032006.GG9695@localdomain>
+References: <20071024120739.GA4897@aragorn.home.lxtec.de>
+	<20071024124109.GA9442@frodo.home.lxtec.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071024124109.GA9442@frodo.home.lxtec.de>
+Cc: linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-An allyesconfig build creates a .text section that is so big that the
-.text.init.refok and .fixup sections are too far away for the relocations
-to be fixed up correctly. This patch fixes that by linking all the
-relevent text sections for each file together.
+(cc'ing linuxppc-dev, see
+http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg221770.html
+for original post and .config)
 
-Suggested by Paul Mackerras.
+Elimar Riesebieter wrote:
+> On Wed, 24 Oct 2007 the mental interface of
+> Elimar Riesebieter told:
+> 
+> [...]
+> > The kernel is loaded from firmware but freezes at the moment to load
+> > the radeon framebuffer. I can't get any debug info (don't know
+> > how?).
+> 
+> Screen dump till freeze:
+> 
+> Using PowerMac machine description
+> Total memory = 1024MB; using 2048kB for hash table (at cfe00000)
+> Linux version 2.6.24-rc1-aragorn (riesebie@aragorn) (gcc version 4.2.3 20071014 (prelelease) (Debian 4.2.2-3)) #1 Wed Oct 24 12:48:27 CEST 2007
+> Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd2
+> Mapped at 0xfdfc0000
+> Found a Intrepid mac-io controller, rev: 0, mapped at 0xfdf40000
+> PowerMac motherboard: PowerBook G4 15"
+> console [udbg0] enabled
+> setup_arch: bootmem
+> Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
+> Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->1
+> Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->1
+> via-pmu: Server Mode is disabled
+> PMU driver v2 initialized for Core99, firmware: 0c
+> nvram: Checking bank 0...
+> nvram: gen0=741, gen1=740
+> nvram: Active bank is: 0
+> nvram: OF partition at 0x410
+> nvram: XP partition at 0x1020
+> nvram: NR partition at 0x1120
+> arch: exit
+> Zone PFN ranges:
+>   DMA             0 ->   196608
+>   Normal     196608 ->   196608
+>   HighMem    196608 ->   262144
+> Movable zone start PFN for each node
+> early_node_map[1] active PFN ranges
+>     0:        0 ->   262144
+> Built 1 zonelists in Zone order.  Total pages: 260096
+> Kernel command line: root=/pci@f4000000/ata-6@d/disk@0:5 root=/dev/hda5
+> mpic: Setting up MPIC " MPIC 1   " version 1.2 at 80040000, max 4 CPUs
+> mpic: ISU size: 64, shift: 6, mask: 3f
+> mpic: Initializing for 64 sources
+> PID hash table entries: 4096 (order: 12, 16384 bytes)
+> GMT Delta read from XPRAM: 0 minutes, DST: off
+> clocksource: timebase mult[d9038e4] shift [22] registered
+> clockevent: decremeter mult[4b7] shift[16] cpu[0]
+> Console: colour dummy device 80x25
+> console handover: boot [udbg0] -> real [tty0]
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/vmlinux.lds.S |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-This still leaves us with the problem that the TOC overflows.
-
-Dave, would something like this help as an alternative to the .fixup
-change you committed recently?
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 823a8cb..f66fa5d 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -37,11 +37,10 @@ SECTIONS
- 		ALIGN_FUNCTION();
- 		*(.text.head)
- 		_text = .;
--		TEXT_TEXT
-+		*(.text .fixup .text.init.refok .exit.text.refok)
- 		SCHED_TEXT
- 		LOCK_TEXT
- 		KPROBES_TEXT
--		*(.fixup)
- 
- #ifdef CONFIG_PPC32
- 		*(.got1)
--- 
-1.5.3.5
+Does 2.6.23 (or any earlier kernel) work?
