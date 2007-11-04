@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CE619DDE18
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 15:27:18 +1100 (EST)
-Date: Sun, 4 Nov 2007 15:27:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH v2 10/12] [POWERPC] Motion-PRO: Add LED support.
-Message-Id: <20071104152716.a38dc9f7.sfr@canb.auug.org.au>
-In-Reply-To: <20071103235311.31906.23754.stgit@hekate.izotz.org>
-References: <20071103235210.31906.83423.stgit@hekate.izotz.org>
-	<20071103235311.31906.23754.stgit@hekate.izotz.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__4_Nov_2007_15_27_16_+1100_hv33tocqA28QVsIH"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43209DDE2E
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 20:24:48 +1100 (EST)
+In-Reply-To: <DD2A9B2C-5D35-4F53-8542-3470C6FA5265@kernel.crashing.org>
+References: <DD2A9B2C-5D35-4F53-8542-3470C6FA5265@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6eabf485a3aae685b1847bbb3d5a2dd0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: use of aliases in device trees
+Date: Sun, 4 Nov 2007 10:24:37 +0100
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	U-Boot Users List <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,96 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__4_Nov_2007_15_27_16_+1100_hv33tocqA28QVsIH
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> In some discussion on the u-boot dev list it became clear that having
+> aliases in the device tree might be useful as a common way to deal
+> with finding specific nodes that need fixing up by the firmware.
 
-Hi Marian,
-
-On Sun, 04 Nov 2007 00:53:11 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
-e:
+> One common solution would be having a top level aliases like the pmac
+> tree's have:
 >
-> +++ b/drivers/leds/leds-motionpro.c
-> @@ -0,0 +1,240 @@
-> +
-> +#include <linux/module.h>
-> +#include <linux/types.h>
-> +#include <linux/kernel.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/leds.h>
-> +#include <linux/vmalloc.h>
-> +
-> +#include <asm/mpc52xx.h>
-> +#include <asm/io.h>
-> +#include <asm/of_platform.h>
+> aliases {
+> 	enet0 = "...";
+> 	enet1 = "...";
+> 	pci0 = "...";
+> 	pci1 = "...";
+> };
 
-You want <linux/of_platform.h> instead of <asm/..> and probably not
-<linux/platform_device.h> above.
+It's not just Apple that uses this; this is standard OF stuff.
 
-> +static void mpled_timer_toggle(unsigned long data)
-> +{
-> +	struct motionpro_led *mpled =3D (struct motionpro_led *) data;
-                                                              ^
-Unnecessary space.
+> I wanted to see what people think of this idea and about trying to
+> use common names for the aliases?
 
-> +static int __devinit mpled_probe(struct of_device *op, const struct of_d=
-evice_id *match)
+I'm obviously all for it, having suggested it myself a few times.
 
-Split this line.
+For common names, I think a good starting point would be to use
+the generic names (as defined in the "generic names" recommended
+practice; this should be the name of the nodes pointed to as well),
+followed by a number; and/or a generic name without any suffix,
+which points to the "main" device of that type.
 
-> +{
-> +	struct motionpro_led *mpled;
-> +	const unsigned int *of_blink_delay =3D NULL;
+This is a lot like your example, except that "enet" isn't a generic
+name (that would be "network" I believe).  It is perfectly fine to
+have to or more aliases pointing to the same node though.
 
-You don't need to initialise this as you assign it before you use it.
+This won't solve all identification problems of course, it only gives
+an ordering per class of devices, but in most cases this will be enough,
+esp. when platform code uses this.  We'll likely need a few extra names
+for special cases, but let's use some restraint there, and esp. not
+define something as a generic solution when it isn't.
 
-> +	int err =3D 0;
 
-Same here.
-
-> +	if ((err =3D led_classdev_register(NULL, &mpled->mpled_cdev))) {
-
-We would normally do the assignment separately from the check, so:
-
-	err =3D led_classdev_register(NULL, &mpled->mpled_cdev);
-	if (err) {
-
-> +static struct of_platform_driver mpled_driver =3D {
-> +	.owner		=3D THIS_MODULE,
-> +	.name		=3D "leds-motionpro",
-> +	.match_table	=3D mpled_match,
-> +	.probe		=3D mpled_probe,
-> +	.remove		=3D mpled_remove,
-> +};
-
-You should now use the name and owner fields of the embedded struct
-device_driver, so:
-
-static struct of_platform_driver mpled_driver =3D {
-	.match_table	=3D mpled_match,
-	.probe		=3D mpled_probe,
-	.remove		=3D mpled_remove,
-	.driver		=3D {
-		.owner		=3D THIS_MODULE,
-		.name		=3D "leds-motionpro",
-	},
-};
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__4_Nov_2007_15_27_16_+1100_hv33tocqA28QVsIH
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHLUopTgG2atn1QN8RAqEUAJoDitIY66EOa8qpzuX2aKL9ZpQsawCeLA+k
-dVqKUvHNoADKwJ+E3twr+mc=
-=5CdL
------END PGP SIGNATURE-----
-
---Signature=_Sun__4_Nov_2007_15_27_16_+1100_hv33tocqA28QVsIH--
+Segher
