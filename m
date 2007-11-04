@@ -1,19 +1,22 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id E701FDDE20
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 14:20:20 +1100 (EST)
-Date: Sat, 3 Nov 2007 22:20:06 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Elimar Riesebieter <riesebie@lxtec.de>
-Subject: Re: 2.6.24-rc1 freezes on powerbook at first boot stage
-Message-ID: <20071104032006.GG9695@localdomain>
-References: <20071024120739.GA4897@aragorn.home.lxtec.de>
-	<20071024124109.GA9442@frodo.home.lxtec.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
+	by ozlabs.org (Postfix) with ESMTP id 16C51DDE41
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 14:29:49 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1002876rvf
+	for <linuxppc-dev@ozlabs.org>; Sat, 03 Nov 2007 20:29:48 -0700 (PDT)
+Message-ID: <fa686aa40711032029x3871b76m5b44a6e93d8d7217@mail.gmail.com>
+Date: Sat, 3 Nov 2007 21:29:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: [U-Boot-Users] use of aliases in device trees
+In-Reply-To: <DD2A9B2C-5D35-4F53-8542-3470C6FA5265@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071024124109.GA9442@frodo.home.lxtec.de>
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <DD2A9B2C-5D35-4F53-8542-3470C6FA5265@kernel.crashing.org>
+Cc: linux-ppc list <linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>,
+	U-Boot Users List <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(cc'ing linuxppc-dev, see
-http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg221770.html
-for original post and .config)
+On 11/3/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> In some discussion on the u-boot dev list it became clear that having
+> aliases in the device tree might be useful as a common way to deal
+> with finding specific nodes that need fixing up by the firmware.
+> This problem also exists in the kernel bootwrappers.
+>
+> The common example is how to associate a given MAC address with the
+> proper ethernet node.  In u-boot an explicit path is hard coded into
+> the u-boot build for each ethernet device.  In the bootwrapper we use
+> "linux,network-index = <N>" in the given ethernet node.
+>
+> One common solution would be having a top level aliases like the pmac
+> tree's have:
+>
+> aliases {
+>         enet0 = "...";
+>         enet1 = "...";
+>         pci0 = "...";
+>         pci1 = "...";
+> };
 
-Elimar Riesebieter wrote:
-> On Wed, 24 Oct 2007 the mental interface of
-> Elimar Riesebieter told:
-> 
-> [...]
-> > The kernel is loaded from firmware but freezes at the moment to load
-> > the radeon framebuffer. I can't get any debug info (don't know
-> > how?).
-> 
-> Screen dump till freeze:
-> 
-> Using PowerMac machine description
-> Total memory = 1024MB; using 2048kB for hash table (at cfe00000)
-> Linux version 2.6.24-rc1-aragorn (riesebie@aragorn) (gcc version 4.2.3 20071014 (prelelease) (Debian 4.2.2-3)) #1 Wed Oct 24 12:48:27 CEST 2007
-> Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xd2
-> Mapped at 0xfdfc0000
-> Found a Intrepid mac-io controller, rev: 0, mapped at 0xfdf40000
-> PowerMac motherboard: PowerBook G4 15"
-> console [udbg0] enabled
-> setup_arch: bootmem
-> Found UniNorth PCI host bridge at 0x00000000f0000000. Firmware bus number: 0->1
-> Found UniNorth PCI host bridge at 0x00000000f2000000. Firmware bus number: 0->1
-> Found UniNorth PCI host bridge at 0x00000000f4000000. Firmware bus number: 0->1
-> via-pmu: Server Mode is disabled
-> PMU driver v2 initialized for Core99, firmware: 0c
-> nvram: Checking bank 0...
-> nvram: gen0=741, gen1=740
-> nvram: Active bank is: 0
-> nvram: OF partition at 0x410
-> nvram: XP partition at 0x1020
-> nvram: NR partition at 0x1120
-> arch: exit
-> Zone PFN ranges:
->   DMA             0 ->   196608
->   Normal     196608 ->   196608
->   HighMem    196608 ->   262144
-> Movable zone start PFN for each node
-> early_node_map[1] active PFN ranges
->     0:        0 ->   262144
-> Built 1 zonelists in Zone order.  Total pages: 260096
-> Kernel command line: root=/pci@f4000000/ata-6@d/disk@0:5 root=/dev/hda5
-> mpic: Setting up MPIC " MPIC 1   " version 1.2 at 80040000, max 4 CPUs
-> mpic: ISU size: 64, shift: 6, mask: 3f
-> mpic: Initializing for 64 sources
-> PID hash table entries: 4096 (order: 12, 16384 bytes)
-> GMT Delta read from XPRAM: 0 minutes, DST: off
-> clocksource: timebase mult[d9038e4] shift [22] registered
-> clockevent: decremeter mult[4b7] shift[16] cpu[0]
-> Console: colour dummy device 80x25
-> console handover: boot [udbg0] -> real [tty0]
+One question to ask is do we use full paths or phandles to point at nodes?
 
-Does 2.6.23 (or any earlier kernel) work?
+OF, of course, uses full paths, but that does require more memory and
+processing power, but it might not be significant enough to worry
+about.
+
+If we use phandles, then we should use names that don't conflict with
+full path alias names.  It would also be desirable to be able to
+generate a phandle alias from the full path alias in order to maintain
+some level of compatibility with OF.  It also think it will make
+maintaining aliases in .dts files simpler because trivial changes to
+node paths won't break the phandle alias.
+
+Maybe something like:
+aliases {
+      enet0,phandle = <&enet0>;
+      enet1,phandle = <&enet1>;
+      ...
+};
+
+Cheers,
+g.
+
+>
+> I wanted to see what people think of this idea and about trying to
+> use common names for the aliases?  If nothing else I believe we will
+> look at doing this on the FSL boards/parts.
+>
+> - k
+>
+> -------------------------------------------------------------------------
+> This SF.net email is sponsored by: Splunk Inc.
+> Still grepping through log files to find problems?  Stop.
+> Now Search log events and configuration files using AJAX and a browser.
+> Download your FREE copy of Splunk now >> http://get.splunk.com/
+> _______________________________________________
+> U-Boot-Users mailing list
+> U-Boot-Users@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/u-boot-users
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
