@@ -1,23 +1,29 @@
-Return-Path: <mingo@elte.hu>
-Received: from mx2.mail.elte.hu (mx2.mail.elte.hu [157.181.151.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A40BDDE39
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 20:55:33 +1100 (EST)
-Date: Sun, 4 Nov 2007 10:55:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] Restore deterministic CPU accounting on powerpc
-Message-ID: <20071104095509.GA11570@elte.hu>
-References: <18220.26005.778223.84644@cargo.ozlabs.ibm.com>
+Return-Path: <hqa02330@nifty.com>
+Received: from pxy2nd.nifty.com (pxy2nd.nifty.com [202.248.175.14])
+	by ozlabs.org (Postfix) with SMTP id 58074DDE08
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Nov 2007 20:18:26 +1100 (EST)
+Message-ID: <24697997.78131194167504382.hqa02330@nifty.com>
+Date: Sun, 4 Nov 2007 18:11:44 +0900 (JST)
+From: Komuro <hqa02330@nifty.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v2] pcmcia: Remove replace kio_addr_t with unsigned int
+	everywhere
+In-Reply-To: <20071028201858.GA10048@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18220.26005.778223.84644@cargo.ozlabs.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="iso-2022-jp"
+References: <20071028201858.GA10048@lixom.net>
+	<20070905142742.GA1760@lixom.net>
+	<20070914034854.1658a9cf.akpm@linux-foundation.org>
+	<20070921221516.GA7926@lixom.net>
+	<20070921233936.2aeb2504@the-village.bc.nu>
+	<20070922062551.GE10625@parisc-linux.org>
+	<20070922091303.GA12525@lst.de> <20071019201720.GA13234@lixom.net>
+	<20071028134414.GF26943@isilmar.linta.de>
+	<20071028201034.GB9472@lixom.net>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-pcmcia@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +34,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+Hi, 
 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
-> account_process_tick now takes the task_struct * as an argument.
-> Tested both with and without CONFIG_VIRT_CPU_ACCOUNTING.
+It should be "unsigned long" instead of "unsigned int".
 
-thanks, applied.
+64bit architecture uses 64bit-Memory-mapped-IO.
 
-	Ingo
+
+
+Best Regards
+Komuro
+
+
+>
+>
+>pcmcia: Remove replace kio_addr_t with unsigned int everywhere
+>
+>Remove kio_addr_t, and replace it with unsigned int. No known architecture
+>needs more than 32 bits for IO addresses and ports and having a separate
+>type for it is just messy.
+>
+>This goes on top of the patch switching the io_req_t members from ioaddr_t
+>to unsigned int.
+>
+>
+>Signed-off-by: Olof Johansson <olof@lixom.net>
+>
+>---
+>
+>On Sun, Oct 28, 2007 at 03:10:34PM -0500, Olof Johansson wrote:
+>
+>> This goes on top of the patch switching the io_req_t members from ioaddr_t
+>> to unsigned int.
+>
+>Crap, I had an old version of that patch as base in my local tree when I did
+>these edits. Here's a proper version.
+>
+>-Olof
+>
