@@ -1,30 +1,23 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 340E6DDDD8
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 21:51:30 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id lA5AoccH015006
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:38 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lA5AoeAx2633940
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:40 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA5AoXDk000370
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:34 +1100
-Date: Mon, 5 Nov 2007 16:11:12 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] cpm_load_patch() - declartion conflict
-Message-ID: <20071105104112.GA18347@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org,
-	torvalds@linux-foundation.org
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16DD6DDDD6
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 22:05:36 +1100 (EST)
+Subject: Re: [PATCH] net: Add 405EX support to new EMAC driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200711051019.04287.sr@denx.de>
+References: <200711020814.43524.sr@denx.de>
+	<20071102160304.GA5277@lixom.net> <1194147479.6511.11.camel@pasglop>
+	<200711051019.04287.sr@denx.de>
+Content-Type: text/plain
+Date: Mon, 05 Nov 2007 22:04:11 +1100
+Message-Id: <1194260652.6511.70.camel@pasglop>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,43 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-The build fails with following error
+On Mon, 2007-11-05 at 10:19 +0100, Stefan Roese wrote:
+> 
+> > Somewhat yeah. There are subtle variations here or there we haven't
+> > totally indenfified... It might be a better option in our case here
+> to
+> > add "has-mdio" to the rgmii nodes indeed.
+> 
+> So how exactly do you want me to handle this (I'm still new to this
+> device 
+> tree stuff, so please bear with me)? Like this?
+> 
+>                         RGMII0: emac-rgmii@ef601000 {
+>                                 device_type = "rgmii-interface";
+>                                 compatible = "ibm,rgmii-405ex",
+> "ibm,rgmii";
+>                                 reg = <ef601000 8>;
+>                                 has-mdio;
+>                         };
+> 
 
-  CC      arch/powerpc/sysdev/micropatch.o
-arch/powerpc/sysdev/micropatch.c:625: error: conflicting types for ‘cpm_load_patch’
-include/asm/commproc.h:94: error: previous declaration of ‘cpm_load_patch’ was here
-arch/powerpc/sysdev/micropatch.c: In function ‘cpm_load_patch’:
-arch/powerpc/sysdev/micropatch.c:630: warning: unused variable ‘smp’
-arch/powerpc/sysdev/micropatch.c:629: warning: unused variable ‘spp’
-arch/powerpc/sysdev/micropatch.c:628: warning: unused variable ‘iip’
-make[1]: *** [arch/powerpc/sysdev/micropatch.o] Error 1
-make: *** [arch/powerpc/sysdev] Error 2
+The above.
 
-The commit f2a0bd3753dad7ea4605ebd5435716b39e9f92bb defines the function
-with void cpm_load_patch(cpm8xx_t *cp) prtotype and is declared as 
-extern void cpm_load_patch(volatile immap_t *immr) in the header file.
+Properties without values are typically used for such "flags". I'll
+fixup the driver to also take that for the inverted STACR and will post
+a patch fixing that up asap.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
-diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
-index 0307c84..a2328b8 100644
---- a/include/asm-powerpc/commproc.h
-+++ b/include/asm-powerpc/commproc.h
-@@ -91,7 +91,7 @@ extern uint m8xx_cpm_hostalloc(uint size);
- extern int  m8xx_cpm_hostfree(uint start);
- extern void m8xx_cpm_hostdump(void);
- 
--extern void cpm_load_patch(volatile immap_t *immr);
-+extern void cpm_load_patch(cpm8xx_t *cp);
- 
- /* Buffer descriptors used by many of the CPM protocols.
- */
+> It's not only the OC bit-flip on AXON, but also the different STACR
+> register 
+> layout for read/write op-codes (STAOPC). This seems to be the same on
+> all new 
+> EMAC core's like on AXON, 440EPx/GRx and 405EX. So "stacr-oc-inverted"
+> is not 
+> enough here. This is what is needed for 440SPe, which "only" has the
+> bit-flip 
+> and the "old" STAOPC layout.
 
+Ok.
 
---
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> So perhaps most flexible would be to add individual properties, 
+> like "stacr-oc-inverted" and "stacr-staopc-19-20". What do you think?
+> And 
+> again the additional question: Should the be added as an new property
+> or 
+> added to the compatible property?
+
+That's always the main question imho ... When it gets nasty like that I
+tend to think the compatible property is a good compromise. It's mostly
+a matter of taste. Unless you can come up with some more pleasant way to
+do it... maybe a stacr-type property with multiple values but it's
+really not worth complicating things when a compatible property will do
+the job just fine. In that case, it's not really a "feature" of a given
+implementation, but more about subtle differences between
+implementations.
+
+Ben.
