@@ -1,20 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C9D37DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 06:50:49 +1100 (EST)
-Message-ID: <472F7247.9070106@freescale.com>
-Date: Mon, 05 Nov 2007 13:43:03 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.191])
+	by ozlabs.org (Postfix) with ESMTP id BEE1FDDE29
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 06:51:23 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1405469rvf
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 Nov 2007 11:51:22 -0800 (PST)
+Message-ID: <9e4733910711051151p18311586h133ac70917714466@mail.gmail.com>
+Date: Mon, 5 Nov 2007 14:51:22 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Matt Sealey" <matt@genesi-usa.com>
 Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+In-Reply-To: <472F6D5D.3030804@genesi-usa.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
-In-Reply-To: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	<472F6D5D.3030804@genesi-usa.com>
 Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
 	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,243 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
-> This is my first pass at reworking the Freescale i2c driver. It
-> switches the driver from being a platform driver to an open firmware
-> one. I've checked it out on my hardware and it is working.
+On 11/5/07, Matt Sealey <matt@genesi-usa.com> wrote:
+> Jon Smirl wrote:
+>
+> > i2c@3d40 {
+> >       device_type = "i2c";
+> >       compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+> >       cell-index = <1>;
+> >       reg = <3d40 40>;
+> >       interrupts = <2 10 0>;
+> >       interrupt-parent = <&mpc5200_pic>;
+> >       fsl5200-clocking;
+> >
+> >       rtc@32 {
+> >               device_type = "rtc";
+> >               compatible = "epson,pcf8564";
+> >               reg = <51>;
+> >       };
+> > };
+>
+> My only comment would be that the fsl5200-clocking property is
+> totally redundant.
+>
+> Drivers can look at the compatible property (mpc5200b-i2c and
+> mpc5200-i2c) to match up what special needs the driver may need.
+> Even if it was just fsl-i2c, it could/should be implicit that
+> this device is the onboard i2c and the parent node is ostensibly
+> going to be marked as an MPC52xx SoC.. or it can look for the
+> mpc5200-cdm node. There is no reason to invent a property just
+> so you can do a property search when it replaces code of the
+> same size to do a node or compatible search..
 
-We may want to hold off on this until arch/ppc goes away (or at least 
-all users of this driver in arch/ppc).
+fsl5200-clocking is used to set FSL_I2C_DEV_CLOCK_5200
 
-> You can specific i2c devices on a bus by adding child nodes for them
-> in the device tree. It does not know how to autoload the i2c chip
-> driver modules.
-> 
-> i2c@3d40 {
-> 	device_type = "i2c";
-> 	compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+	} else if (i2c->flags & FSL_I2C_DEV_CLOCK_5200)
+		writeb(0x3f, i2c->base + MPC_I2C_FDR);
+	else
+		writel(0x1031, i2c->base + MPC_I2C_FDR);
 
-dtc supports the "mpc5200b-i2c", "mpc5200-i2c", "fsl-i2c" syntax.
+I can change it to remove fsl5200-clocking if someone can tell me if
+this is only needed on the mpc5200b. This driver also supports the
+MPC107/Tsi107/MPC8240/MPC8245 and           MPC85xx/MPC8641. Do any of
+these other chips need fsl5200-clocking?
 
-> 	cell-index = <1>;
-
-What is cell-index for?
-
-> 	fsl5200-clocking;
-
-As Matt pointed out, this is redundant.
-
-> 	rtc@32 {
-> 		device_type = "rtc";
-
-This isn't really necessary.
-
-> One side effect is that legacy style i2c drivers won't work anymore.
-
-If you mean legacy-style client drivers, why not?
-
-> The driver contains a table for mapping device tree style names to
-> linux kernel ones.
-
-Can we please put this in common code instead?
-
-> +static struct i2c_driver_device i2c_devices[] = {
-> +	{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
-> +	{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
-> +	{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
-> +	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
-> +	{"epson,pcf8564", "rtc-pcf8563", "pcf8564",},
-> +};
-
-At the very least, include the entries that are already being used with 
-this driver in fsl_soc.c.
-
-> I'd like to get rid of this table.  There are two obvious solutions,
-> use names in the device tree that match up with the linux device
-> driver names.
-
-This was proposed and rejected a while ago.  For one thing, some drivers 
-handle multiple chips, and we shouldn't base device tree bindings on 
-what groupings Linux happens to make in what driver supports what.
-
-> Or push these strings into the chip drivers and modify
-> i2c-core to also match on the device tree style names.
-
-That would be ideal; it just hasn't been done yet.
-
-A middle ground for now would be to keep one table in drivers/of or 
-something.
-
-> Without one of
-> these changes the table is going to need a mapping for every i2c
-> device on the market.
-
-Nah, only one for every i2c device Linux supports. :-)
-
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 1cf29c9..6f80216 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -306,122 +306,6 @@ err:
-> 
->  arch_initcall(gfar_of_init);
-> 
-> -#ifdef CONFIG_I2C_BOARDINFO
-> -#include <linux/i2c.h>
-> -struct i2c_driver_device {
-> -	char	*of_device;
-> -	char	*i2c_driver;
-> -	char	*i2c_type;
-> -};
-> -
-> -static struct i2c_driver_device i2c_devices[] __initdata = {
-> -	{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
-> -	{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
-> -	{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
-> -	{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
-> -};
-
-This is obviously not based on head-of-tree -- there are several more 
-entries in this table.
-
-> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
-> index d8de4ac..5ceb936 100644
-> --- a/drivers/i2c/busses/i2c-mpc.c
-> +++ b/drivers/i2c/busses/i2c-mpc.c
-> @@ -17,7 +17,7 @@
->  #include <linux/module.h>
->  #include <linux/sched.h>
->  #include <linux/init.h>
-> -#include <linux/platform_device.h>
-> +#include <asm/of_platform.h>
-
-Should be linux/of_platform.h
-
-> @@ -180,7 +182,7 @@ static void mpc_i2c_stop(struct mpc_i2c *i2c)
->  static int mpc_write(struct mpc_i2c *i2c, int target,
->  		     const u8 * data, int length, int restart)
->  {
-> -	int i;
-> +	int i, result;
->  	unsigned timeout = i2c->adap.timeout;
->  	u32 flags = restart ? CCR_RSTA : 0;
-> 
-> @@ -192,15 +194,15 @@ static int mpc_write(struct mpc_i2c *i2c, int target,
->  	/* Write target byte */
->  	writeb((target << 1), i2c->base + MPC_I2C_DR);
-> 
-> -	if (i2c_wait(i2c, timeout, 1) < 0)
-> -		return -1;
-> +	if ((result = i2c_wait(i2c, timeout, 1)) < 0)
-> +		return result;
-> 
->  	for (i = 0; i < length; i++) {
->  		/* Write data byte */
->  		writeb(data[i], i2c->base + MPC_I2C_DR);
-> 
-> -		if (i2c_wait(i2c, timeout, 1) < 0)
-> -			return -1;
-> +		if ((result = i2c_wait(i2c, timeout, 1)) < 0)
-> +			return result;
->  	}
-> 
->  	return 0;
-
-This is a separate change from the OF-ization -- at least note it in the 
-changelog.
-
-> +	for (i = 0; i < ARRAY_SIZE(i2c_devices); i++) {
-> +		if (!of_device_is_compatible(node, i2c_devices[i].of_device))
-> +			continue;
-> +		strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN);
-> +		strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
-> +		printk("i2c driver is %s\n", info->driver_name);
-
-Should be KERN_DEBUG, if it stays at all.
-
-> +static void of_register_i2c_devices(struct i2c_adapter *adap, struct
-> device_node *adap_node)
-> +{
-> +	struct device_node *node = NULL;
-> +
-> +	while ((node = of_get_next_child(adap_node, node))) {
-> +		struct i2c_board_info info;
-> +		const u32 *addr;
-> +		int len;
-> +
-> +		addr = of_get_property(node, "reg", &len);
-> +		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-> +			printk(KERN_WARNING "i2c-mpc.c: invalid i2c device entry\n");
-> +			continue;
-> +		}
-> +
-> +		info.irq = irq_of_parse_and_map(node, 0);
-> +		if (info.irq == NO_IRQ)
-> +			info.irq = -1;
-> +
-> +		if (of_find_i2c_driver(node, &info) < 0)
-> +			continue;
-> +
-> +		info.platform_data = NULL;
-> +		info.addr = *addr;
-> +
-> +		i2c_new_device(adap, &info);
-> +	}
-> +}
-
-Most of this code should be made generic and placed in drivers/of.
-
-> +	index = of_get_property(op->node, "cell-index", NULL);
-> +    if (!index || *index > 5) {
-> +            printk(KERN_ERR "mpc_i2c_probe: Device node %s has invalid "
-> +                            "cell-index property\n", op->node->full_name);
-> +            return -EINVAL;
-> +    }
-> +
-
-We might as well just use i2c_new_device() instead of messing around 
-with bus numbers.  Note that this is technically no longer platform 
-code, so it's harder to justify claiming the static numberspace.
-
-> +	i2c->base = ioremap((phys_addr_t)mem.start, MPC_I2C_REGION);
->  	if (!i2c->base) {
->  		printk(KERN_ERR "i2c-mpc - failed to map controller\n");
-
-Use of_iomap().
-
->  	if (i2c->irq != 0)
-
-if (i2c->irq != NO_IRQ)
-
-> +static struct of_device_id mpc_i2c_of_match[] = {
-> +	{
-> +		.type		= "i2c",
-> +		.compatible	= "fsl-i2c",
-> +	},
-> +};
-> +MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
-
-Let's take this opportunity to stop matching on device_type here 
-(including updating booting-without-of.txt).
-
-> +static struct of_platform_driver mpc_i2c_driver = {
-> +	.owner		= THIS_MODULE,
-> +	.name		= DRV_NAME,
-> +	.match_table	= mpc_i2c_of_match,
-> +	.probe		= mpc_i2c_probe,
-> +	.remove		= __devexit_p(mpc_i2c_remove),
-> +	.driver		= {
-> +		.name	= DRV_NAME,
->  	},
->  };
-
-Do we still need .name if we have .driver.name?
-
-> diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
-> index 0242d80..b778d35 100644
-> --- a/drivers/rtc/rtc-pcf8563.c
-> +++ b/drivers/rtc/rtc-pcf8563.c
-
-This should be a separate patch.
-
--Scott
+-- 
+Jon Smirl
+jonsmirl@gmail.com
