@@ -1,12 +1,17 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Don't force alignment of cell list data 
-In-Reply-To: Your message of "Fri, 02 Nov 2007 16:54:26 +1100."
-	<20071102055426.GN19839@localhost.localdomain>
-References: <20071102055426.GN19839@localhost.localdomain> 
-Date: Mon, 05 Nov 2007 08:59:44 -0600
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DDF41DDDF3
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 02:01:18 +1100 (EST)
+To: Emil Medve <Emilian.Medve@Freescale.com>
+Subject: Re: [PATCH] dtc: Fix the install target 
+In-Reply-To: Your message of "Fri, 02 Nov 2007 10:26:15 CDT."
+	<1194017175-25610-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1194017175-25610-1-git-send-email-Emilian.Medve@Freescale.com> 
+Date: Mon, 05 Nov 2007 09:01:10 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ip3QW-0007lf-72@jdl.com>
+Message-Id: <E1Ip3Ru-00087J-EJ@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,29 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> At present, defining a property as, say:
-> 	foo = [abcd], <ffffffff>;
+So, like, the other day Emil Medve mumbled:
+> /usr/bin/install: cannot stat `fdt.h': No such file or directory
+> /usr/bin/install: cannot stat `libfdt.h': No such file or directory
 > 
-> Will cause dtc to insert 2 bytes of zeros between the abcd and the
-> ffffffff, to align the cell form data.
-> 
-> Doing so seemed like a good idea at the time, but I don't believe
-> there are any users who actually rely on this behaviour.  Segher
-> claims that OF has some defined bindings which include properties an
-> unaligned subsection of which is interpreted as 32-bit ints (i.e. like
-> cell data).
-> 
-> Worse, this alignment will cause nothing but pain when we add
-> expression support to dtc (when celldata is included in a larger
-> bytestring expession, we won't know the size of the preceding chunk of
-> the expression until it's evaluated, so we would have to carry
-> alignment fixup information right through the expression evaluation
-> process).
-> 
-> Therefore, this patch kills off this alignment behaviour.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 
 Applied.
 
