@@ -1,23 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 35204DDDFA
+	by ozlabs.org (Postfix) with ESMTP id 9CFFEDDE27
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Nov 2007 03:19:47 +1100 (EST)
-Message-ID: <472F4298.60005@freescale.com>
-Date: Mon, 05 Nov 2007 10:19:36 -0600
+	Tue,  6 Nov 2007 06:04:36 +1100 (EST)
+Message-ID: <472F6941.1040302@freescale.com>
+Date: Mon, 05 Nov 2007 13:04:33 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] [POWERPC] Fix fs_enet module build
-References: <472CDE02.1020804@scram.de>
-In-Reply-To: <472CDE02.1020804@scram.de>
+Subject: Re: [RFC] [POWERPC] Add support for PHY-less fs_enet operation
+References: <472CCA98.4000808@scram.de>
+In-Reply-To: <472CCA98.4000808@scram.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>,
+Cc: Jeff Garzik <jeff@garzik.org>,
 	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,31 +29,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Jochen Friedrich wrote:
-> diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-> index 02d4dc1..2f7563a 100644
-> --- a/drivers/net/fs_enet/Makefile
-> +++ b/drivers/net/fs_enet/Makefile
-> @@ -4,7 +4,15 @@
+> diff --git a/drivers/net/fs_enet/fs_enet-main.c 
+> b/drivers/net/fs_enet/fs_enet-main.c
+> index f2a4d39..e142eff 100644
+> --- a/drivers/net/fs_enet/fs_enet-main.c
+> +++ b/drivers/net/fs_enet/fs_enet-main.c
+> @@ -702,13 +702,16 @@ static void fs_timeout(struct net_device *dev)
+>     spin_lock_irqsave(&fep->lock, flags);
 > 
-> obj-$(CONFIG_FS_ENET) += fs_enet.o
-> 
-> -obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
-> -obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
-> +fs_enet-$(CONFIG_8xx) += mac-fec.o mac-scc.o
-> +fs_enet-$(CONFIG_CPM2) += mac-fcc.o
-> +
-> +ifeq ($(CONFIG_8xx),y)
-> +        obj-$(CONFIG_FS_ENET) += mii-fec.o
-> +endif
-> +
-> +ifeq ($(CONFIG_CPM2),y)
-> +        obj-$(CONFIG_FS_ENET) += mii-bitbang.o
-> +endif
-> 
-> fs_enet-objs := fs_enet-main.o
+>     if (dev->flags & IFF_UP) {
+> -        phy_stop(fep->phydev);
+> +        if (fep->phydev)
+> +            phy_stop(fep->phydev);
+>         (*fep->ops->stop)(dev);
+>         (*fep->ops->restart)(dev);
+> -        phy_start(fep->phydev);
+> +        if (fep->phydev)
+> +            phy_start(fep->phydev);
+>     }
 
-If we're going to mess with this, we should probably just make 
-CONFIG_FS_ENET_SCC, CONFIG_FS_ENET_FCC, and CONFIG_FS_ENET_FEC, and have 
-them depend on CONFIG_FS_ENET.
+It might be nice if phy_stop/phy_start/etc. were made to accept NULL 
+parameters as no-ops to make things easier on drivers that support 
+phyless operation...
 
 -Scott
