@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 660F9DDDF8
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 16:36:19 +1100 (EST)
-Subject: Re: [PATCH 3/6]] POWERPC: fix memset size error
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zefan <lizf@cn.fujitsu.com>
-In-Reply-To: <472E7E44.6000807@cn.fujitsu.com>
-References: <472E7E44.6000807@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Mon, 05 Nov 2007 16:35:57 +1100
-Message-Id: <1194240957.6511.44.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	paulus@samba.org, LKML <linux-kernel@vger.kernel.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 5 Nov 2007 16:38:44 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: libfdt: Fix sw_tree1 testcase
+Message-ID: <20071105053844.GC21064@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +16,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There is a bug in the sw_tree1 testcase / utility which puts two
+"compatible" properties in one node in the output tree.  This patch
+fixes the bug, and also adds a new test checking that the sw_tree1
+output is equal to test_tree1.dtb as its supposed to be, which should
+catch future errors of this type.
 
-On Mon, 2007-11-05 at 10:21 +0800, Li Zefan wrote:
-> The size passing to memset is wrong.
-> 
-> Signed-off-by Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Good catch, looks like a remain of when path was an array on the stack.
+Index: dtc/tests/run_tests.sh
+===================================================================
+--- dtc.orig/tests/run_tests.sh	2007-11-05 16:33:05.000000000 +1100
++++ dtc/tests/run_tests.sh	2007-11-05 16:33:37.000000000 +1100
+@@ -71,6 +71,7 @@ libfdt_tests () {
+     run_test sw_tree1
+     tree1_tests sw_tree1.test.dtb
+     tree1_tests unfinished_tree1.test.dtb
++    run_test dtbs_equal_ordered test_tree1.dtb sw_tree1.test.dtb
+ 
+     # fdt_move tests
+     for tree in test_tree1.dtb sw_tree1.test.dtb unfinished_tree1.test.dtb; do
+@@ -112,6 +113,7 @@ libfdt_tests () {
+     run_test rw_tree1
+     tree1_tests rw_tree1.test.dtb
+     tree1_tests_rw rw_tree1.test.dtb
++    run_test dtbs_equal_ordered test_tree1.dtb rw_tree1.test.dtb
+ 
+     # Tests for behaviour on various sorts of corrupted trees
+     run_test truncated_property
+Index: dtc/tests/sw_tree1.c
+===================================================================
+--- dtc.orig/tests/sw_tree1.c	2007-11-05 16:33:57.000000000 +1100
++++ dtc/tests/sw_tree1.c	2007-11-05 16:34:03.000000000 +1100
+@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
+ 	CHECK(fdt_begin_node(fdt, "subsubnode"));
+ 	CHECK(fdt_property(fdt, "compatible", "subsubnode1\0subsubnode",
+ 			   23));
+-	CHECK(fdt_property_string(fdt, "compatible", "subsubnode1\0"));
+ 	CHECK(fdt_property_typed(fdt, "prop-int", TEST_VALUE_1));
+ 	CHECK(fdt_end_node(fdt));
+ 	CHECK(fdt_end_node(fdt));
 
-Thanks !
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> 
-> ---
->  arch/powerpc/kernel/prom_init.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 1db10f7..1add6ef 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -1244,7 +1244,7 @@ static void __init prom_initialize_tce_table(void)
->  			local_alloc_bottom = base;
->  
->  		/* It seems OF doesn't null-terminate the path :-( */
-> -		memset(path, 0, sizeof(path));
-> +		memset(path, 0, PROM_SCRATCH_SIZE);
->  		/* Call OF to setup the TCE hardware */
->  		if (call_prom("package-to-path", 3, 1, node,
->  			      path, PROM_SCRATCH_SIZE-1) == PROM_ERROR) {
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
