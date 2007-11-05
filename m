@@ -1,14 +1,26 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 1C2E2DDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 08:03:08 +1100 (EST)
-Message-ID: <472F8503.2080705@harris.com>
-Date: Mon, 05 Nov 2007 16:02:59 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: mmap question on ppc440
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DAC83DDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 08:05:15 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	lA5L56Y6020457
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 14:05:11 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lA5L56YS029192
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 15:05:06 -0600 (CST)
+Subject: [PATCH] Replace some #includes of asm/of_platform.h with
+	linux/of_platform.h.
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1194296705.7158.45.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Mon, 05 Nov 2007 15:05:06 -0600
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,47 +30,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am attempting to access the CPLD on the AMCC Sequoia board from 
-user-land.  I open /dev/mem, and mmap it, then try to access the 
-resulting pointer.  That works fine when accessing physical addresses 
-that correspond to RAM, but as soon as I try to access the CPLD at 
-physical address 0xc0000000, I get an infinite machine check.
+From: Jon Loeliger <jdl@freescale.com>
 
-I've done this successfully on the ARM architecture, and I've found 
-examples where people do this on PPC, so I would expect this to work.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+Chip away at some janitor work.
 
-Here are a few successful reads:
+ arch/powerpc/platforms/82xx/pq2fads.c     |    2 +-
+ arch/powerpc/platforms/83xx/mpc832x_mds.c |    2 +-
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c |    2 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-bash-3.00# ./mm -r -a 0
-paddr 00000000, map_base 0x30018000
-00000000: c0348200
-
-bash-3.00# ./mm -r -a 100
-paddr 00000000, map_base 0x30018100
-00000100: 7c0004ac
-
-And here is the machine check:
-
-bash-3.00# ./mm -r -a c0000000
-paddr c0000000, Machine check in kernel mode.
-Machine check in kernel mode.
-Machine check in kernel mode.
-Machine check in kernel mode.
-
-My code looks like this (I'll post the whole program if anybody wants to 
-see it:
-
-        if((fd = open("/dev/mem", O_RDWR | O_SYNC)) == -1) {
-                fprintf(stderr, "cannot open\n");
-                exit(1);
-        }
-        offset = addr & MAP_MASK;
-        paddr = addr & ~MAP_MASK;
-        map_base = (unsigned long *)mmap(NULL, MAP_SIZE,
-                        PROT_READ | PROT_WRITE, MAP_SHARED, fd, paddr);
-
-Is it possible to access devices like this from user-land?  If so, what 
-am I doing wrong?
-
-    Thanks,
-    Steve
+diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
+index 4f457a9..1be5005 100644
+--- a/arch/powerpc/platforms/82xx/pq2fads.c
++++ b/arch/powerpc/platforms/82xx/pq2fads.c
+@@ -15,12 +15,12 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ #include <asm/cpm2.h>
+ #include <asm/udbg.h>
+ #include <asm/machdep.h>
+-#include <asm/of_platform.h>
+ #include <asm/time.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index 972fa85..3ea59af 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -23,9 +23,9 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/initrd.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index fbca336..24e6ce6 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -16,8 +16,8 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/spi/spi.h>
++#include <linux/of_platform.h>
+ 
+-#include <asm/of_platform.h>
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+ #include <asm/udbg.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 0f3855c..ec1b03b 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -29,9 +29,9 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/initrd.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 61b3eed..1d81d22 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -30,9 +30,9 @@
+ #include <linux/initrd.h>
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+-- 
+1.5.3
