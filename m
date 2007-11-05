@@ -1,20 +1,30 @@
-Return-Path: <SRS0=2sc5=P6=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 63897DDDE6
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 20:19:04 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] net: Add 405EX support to new EMAC driver
-Date: Mon, 5 Nov 2007 10:19:03 +0100
-References: <200711020814.43524.sr@denx.de> <20071102160304.GA5277@lixom.net>
-	<1194147479.6511.11.camel@pasglop>
-In-Reply-To: <1194147479.6511.11.camel@pasglop>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 340E6DDDD8
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Nov 2007 21:51:30 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id lA5AoccH015006
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:38 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lA5AoeAx2633940
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:40 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lA5AoXDk000370
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Nov 2007 21:50:34 +1100
+Date: Mon, 5 Nov 2007 16:11:12 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] cpm_load_patch() - declartion conflict
+Message-ID: <20071105104112.GA18347@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200711051019.04287.sr@denx.de>
-Cc: Olof Johansson <olof@lixom.net>, netdev@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org,
+	torvalds@linux-foundation.org
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 04 November 2007, Benjamin Herrenschmidt wrote:
-> > Isn't this the case where there should really be device tree properties
-> > instead? If you had an "ibm,emac-has-axon-stacr" property in the device
-> > node, then you don't have to modify the driver for every new board out
-> > there. Same for the other device properties, of course.
-> >
-> > I thought this was what having the device tree was all about. :(
->
-> Somewhat yeah. There are subtle variations here or there we haven't
-> totally indenfified... It might be a better option in our case here to
-> add "has-mdio" to the rgmii nodes indeed.
+Hi,
 
-So how exactly do you want me to handle this (I'm still new to this device 
-tree stuff, so please bear with me)? Like this?
+The build fails with following error
 
-			RGMII0: emac-rgmii@ef601000 {
-				device_type = "rgmii-interface";
-				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
-				reg = <ef601000 8>;
-				has-mdio;
-			};
+  CC      arch/powerpc/sysdev/micropatch.o
+arch/powerpc/sysdev/micropatch.c:625: error: conflicting types for ‘cpm_load_patch’
+include/asm/commproc.h:94: error: previous declaration of ‘cpm_load_patch’ was here
+arch/powerpc/sysdev/micropatch.c: In function ‘cpm_load_patch’:
+arch/powerpc/sysdev/micropatch.c:630: warning: unused variable ‘smp’
+arch/powerpc/sysdev/micropatch.c:629: warning: unused variable ‘spp’
+arch/powerpc/sysdev/micropatch.c:628: warning: unused variable ‘iip’
+make[1]: *** [arch/powerpc/sysdev/micropatch.o] Error 1
+make: *** [arch/powerpc/sysdev] Error 2
 
-Or add this to the compatible property?
+The commit f2a0bd3753dad7ea4605ebd5435716b39e9f92bb defines the function
+with void cpm_load_patch(cpm8xx_t *cp) prtotype and is declared as 
+extern void cpm_load_patch(volatile immap_t *immr) in the header file.
 
-			RGMII0: emac-rgmii@ef601000 {
-				device_type = "rgmii-interface";
-				compatible = "ibm,rgmii-405ex", "ibm,rgmii", "ibm,has-mdio";
-				reg = <ef601000 8>;
-			};
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
+index 0307c84..a2328b8 100644
+--- a/include/asm-powerpc/commproc.h
++++ b/include/asm-powerpc/commproc.h
+@@ -91,7 +91,7 @@ extern uint m8xx_cpm_hostalloc(uint size);
+ extern int  m8xx_cpm_hostfree(uint start);
+ extern void m8xx_cpm_hostdump(void);
+ 
+-extern void cpm_load_patch(volatile immap_t *immr);
++extern void cpm_load_patch(cpm8xx_t *cp);
+ 
+ /* Buffer descriptors used by many of the CPM protocols.
+ */
 
-> Part of the problem with those cells is that the chip folks keep
-> changing things subtly from one rev to another though, it's not even
-> totally clear to me yet whether the RGMII registers are totally
-> compatible betwee axon and 405ex, which is why I've pretty much stuck to
-> "compatible" properties to identify the variants.
->
-> The device-tree can do both. It's still better than no device-tree since
-> at least you know what cell variant is in there.
->
-> As for the STACR, Axon isn't the first one to have that bit flipped, I
-> think we should name the property differently, something like
-> "stacr-oc-inverted".
 
-It's not only the OC bit-flip on AXON, but also the different STACR register 
-layout for read/write op-codes (STAOPC). This seems to be the same on all new 
-EMAC core's like on AXON, 440EPx/GRx and 405EX. So "stacr-oc-inverted" is not 
-enough here. This is what is needed for 440SPe, which "only" has the bit-flip 
-and the "old" STAOPC layout.
-
-So perhaps most flexible would be to add individual properties, 
-like "stacr-oc-inverted" and "stacr-staopc-19-20". What do you think? And 
-again the additional question: Should the be added as an new property or 
-added to the compatible property?
-
-Please advise. Thanks.
-
-Best regards,
-Stefan
+--
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
