@@ -1,16 +1,30 @@
-Return-Path: <sensantanu_82@yahoo.com>
-Received: from web53605.mail.re2.yahoo.com (web53605.mail.re2.yahoo.com
-	[206.190.37.38]) by ozlabs.org (Postfix) with SMTP id BD413DDE42
+Return-Path: <stuart@quadrics.com>
+Received: from quadbrsmgw.quadrics.com (quadmail.quadrics.com
+	[194.202.174.130]) by ozlabs.org (Postfix) with ESMTP id 6C116DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Nov 2007 01:41:33 +1100 (EST)
-Date: Sun, 4 Nov 2007 06:34:50 -0800 (PST)
-From: Santanu Sen <sensantanu_82@yahoo.com>
-Subject: Problem replacing a Samsung K9F1208U0M NAND flash chip with ST
-	NAND512W3A
-To: linuxppc-embedded@ozlabs.org
+	Mon,  5 Nov 2007 19:38:53 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by quadbrsmgw.quadrics.com (Postfix) with ESMTP id 06964356723
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  5 Nov 2007 08:38:52 +0000 (GMT)
+Received: from quadbrsmgw.quadrics.com ([127.0.0.1])
+	by localhost (quadbrsmgw.quadrics.com [127.0.0.1]) (amavisd-new,
+	port 10024)
+	with ESMTP id QD7mc7-tH2s2 for <linuxppc-embedded@ozlabs.org>;
+	Mon,  5 Nov 2007 08:38:39 +0000 (GMT)
+Received: from exch01.quadrics.com (owa.quadrics.com [194.202.174.9])
+	by quadbrsmgw.quadrics.com (Postfix) with ESMTP id 58AB7356A04
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  5 Nov 2007 08:38:39 +0000 (GMT)
+Message-ID: <472ED67B.2080205@quadrics.com>
+Date: Mon, 05 Nov 2007 08:38:19 +0000
+From: Stuart Hodgson <stuart@quadrics.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-838696621-1194186890=:98294"
-Message-ID: <964605.98294.qm@web53605.mail.re2.yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: GDB bdi2000 and mpc85xx
+References: <394028554.26200@lzu.edu.cn> <394123578.13658@eyou.net>
+In-Reply-To: <394123578.13658@eyou.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,232 +35,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-838696621-1194186890=:98294
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Content-Id: 
-Content-Disposition: inline
+Wang,
 
-Facing some trouble replacing a SAMSUNG K9F1208U0M
-with an ST NAND512W3A. I know it is criminal, but we
-are still using the 2.4 kernel. The excuse is, it is
-impossible to port all our code/drivers to 2.6 within
-the project deadline.  
+I had a closer look at all the configuration file options to see what we 
+had set up. We were missing
 
+REGLIST E500
 
-Here is the story. We could successfully install JFFS2
-on a Samsung  K9F1208U0M NAND chip mounted on a board
-running linux-2.4.20 on a ppc852 processor. But when
-we replaced the Samsung chip with an ST NAND512W3A,
-creating a JFFS2 partition will no longer work. Raw
-read/write to the device is fine. We could even copy a
-squashfs image to one of the partitions and mount it
-without trouble. But whenever we create a JFFS2
-partition, mount it, create a file on it, unmount it
-and mount it again the file goes missing. Attaching a
-screen-shot of the entire procedure. Note that, the
-same steps work fine with Samsung chips. Also, neither
-"eraseall" nor "eraseall --jffs2" is of much help in
-case of ST. We found some document on the ST site
-stating what to do to replace a Samsung chip with an
-ST one. The chips are claimed to be equivalent except
-that Samsung supports some additional multi-plane
-commands. But we could not see those commands being
-used anywhere in the mtd code.   
+in the [TARGET] Section.
 
-Are there anything special to be done for ST NAND
-chips? 
+Thanks again
 
-Any help will be appreciated.  
+Stuart
 
-Thanks and Regards, 
-Santanu
+Adding this solved the translation problem
 
-NB: Posting this message here afetr several
-unsuccessful attempts to post it on the "jffs2-dev"
-mailing list. 
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
---0-838696621-1194186890=:98294
-Content-Type: application/octet-stream; name=st_jffs2_error
-Content-Transfer-Encoding: base64
-Content-Description: 1173074946-st_jffs2_error
-Content-Disposition: attachment; filename=st_jffs2_error
-
-VGVqYXMgVS1Cb290IFByaXZhdGVCdWlsZDpzYW50YW51IChPY3QgMTAgMjAw
-NyAtIDAwOjM1OjU1KQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCkNQVTogICBY
-UEM4NTJUeHhaUG5uLVZSNjYgYXQgNTAgTUh6OiA0IGtCIEktQ2FjaGUgNCBr
-QiBELUNhY2hlIEZFQyBwcmVzZW50CkRSQU06ICAoNjQgTUIgU0RSQU0pIDY0
-IE1CCkkyQzogICByZWFkeQpFZXByb20gaGVhZGVyIG1pc21hdGNoIC4uLgpC
-b2FyZDogLi4/ICAwMDorMHgKRXRoZXJuZXQgQWRkcmVzczogMDA6MDQ6OTU6
-MDA6MDA6MDEKRGF0ZTogIDAvMDAvMjAwMCAgMDowMDowMApSZXNlcnZpbmcg
-NDA5NmsgZm9yIHByb3RlY3RlZCBSQU0gYXQgMDNjMDAwMDAKVG9wIG9mIFJB
-TSB1c2FibGUgZm9yIFUtQm9vdCBhdDogMDNjMDAwMDAKUmVzZXJ2aW5nIDE3
-OGsgZm9yIFUtQm9vdCBhdDogMDNiZDMwMDAKUmVzZXJ2aW5nIDIwNjRrIGZv
-ciBtYWxsb2MoKSBhdDogMDM5Y2YwMDAKUmVzZXJ2aW5nIDQ0NCBCeXRlcyBm
-b3IgQm9hcmQgSW5mbyBhdDogMDM5Y2VlNDQKUmVzZXJ2aW5nIDQ4IEJ5dGVz
-IGZvciBHbG9iYWwgRGF0YSBhdDogMDM5Y2VkZjAKU3RhY2sgUG9pbnRlciBh
-dDogMDM5Y2VkZDgKRWVwcm9tIGhlYWRlciBtaXNtYXRjaCAuLi4KTmV3IFN0
-YWNrIFBvaW50ZXIgaXM6IDAzOWNlZGQ4Ck5vdyBydW5uaW5nIGluIFJBTSAt
-IFUtQm9vdCBhdDogMDNiZDMwMDAKRkxBU0g6ICAyIE1CClVzaW5nIGRlZmF1
-bHQgZW52aXJvbm1lbnQKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIApJbjogICAg
-c2VyaWFsCk91dDogICBzZXJpYWwKRXJyOiAgIHNlcmlhbApVLUJvb3QgcmVs
-b2NhdGVkIHRvIDAzYmQzMDAwCk5BTkQ6ICBQcm9iaW5nIGF0IDB4ZjgwMDAw
-MDAKRmxhc2ggY2hpcCBmb3VuZDoKICAgICAgICAgTWFudWZhY3R1cmVyIElE
-OiAweDIwLCBDaGlwIElEOiAweDc2IChTVCBNaWNybyA1MTJXM0EyQk42KQox
-IGZsYXNoIGNoaXBzIGZvdW5kLiBUb3RhbCBuYW5kX2NoaXAgc2l6ZTogNjQg
-TUIKTkFORCBGbGFzaDogICA2NCBNQgpOZXQ6ICAgRkVDIEVUSEVSTkVUCkhp
-dCdhJyB0byBzdG9wLCBhbnkgb3RoZXIga2V5IHRvIGF1dG9ib290OiAgMApU
-ZWphcy1weGF0LXVib290PiBib290IGluaXRyZAogICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgCkxvYWRpbmcgZnJvbSBkZXZpY2UgMDogPE5VTEw+IGF0IDB4Zjgw
-MDAwMDAgKG9mZnNldCAweDApCiAgIEltYWdlIE5hbWU6ICAgTGludXggTXVs
-dGlib290LUltYWdlCiAgIEltYWdlIFR5cGU6ICAgUG93ZXJQQyBMaW51eCBN
-dWx0aS1GaWxlIEltYWdlIChnemlwIGNvbXByZXNzZWQpCiAgIERhdGEgU2l6
-ZTogICAgMTUwOTU5MCBCeXRlcyA9ICAxLjQgTUIKICAgTG9hZCBBZGRyZXNz
-OiAwMDAwMDAwMAogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwCiAgIENvbnRl
-bnRzOgogICBJbWFnZSAwOiAgIDcwMDEwOCBCeXRlcyA9IDY4My43IGtCCiAg
-IEltYWdlIDE6ICAgODA5NDcwIEJ5dGVzID0gNzkwLjUga0IKQXV0b21hdGlj
-IGJvb3Qgb2YgaW1hZ2UgYXQgYWRkciAweDAwMjAwMDAwIC4uLgojIyBCb290
-aW5nIGltYWdlIGF0IDAwMjAwMDAwIC4uLgogICBJbWFnZSBOYW1lOiAgIExp
-bnV4IE11bHRpYm9vdC1JbWFnZQogICBJbWFnZSBUeXBlOiAgIFBvd2VyUEMg
-TGludXggTXVsdGktRmlsZSBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQogICBE
-YXRhIFNpemU6ICAgIDE1MDk1OTAgQnl0ZXMgPSAgMS40IE1CCiAgIExvYWQg
-QWRkcmVzczogMDAwMDAwMDAKICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMAog
-ICBDb250ZW50czoKICAgSW1hZ2UgMDogICA3MDAxMDggQnl0ZXMgPSA2ODMu
-NyBrQgogICBJbWFnZSAxOiAgIDgwOTQ3MCBCeXRlcyA9IDc5MC41IGtCCiAg
-IFZlcmlmeWluZyBDaGVja3N1bSAuLi4gT0sKICAgVW5jb21wcmVzc2luZyBN
-dWx0aS1GaWxlIEltYWdlIC4uLiBPSwogICBMb2FkaW5nIFJhbWRpc2sgdG8g
-MDM5MDgwMDAsIGVuZCAwMzljZDlmZSAuLi4gT0sKTGludXggdmVyc2lvbiAy
-LjQuMjAtZGVueC1Qcml2YXRlQnVpbGQ6c2FudGFudSAgKHNhbnRhbnVAc2Vw
-aGlhKSAoZ2NjIHZlcnNpb24gMi45NS40IDIwMDEwMzE5IChwcmVyZWxlYXNl
-L2ZyYW56by8yMDAxMTIwNCkpICMyIFR1ZSBPY3QgOSAyMDo1MDo1MSBJU1Qg
-MjAwNwpPbiBub2RlIDAgdG90YWxwYWdlczogMTUzNTkKem9uZSgwKTogMTUz
-NTkgcGFnZXMuCnpvbmUoMSk6IDAgcGFnZXMuCnpvbmUoMik6IDAgcGFnZXMu
-Cktlcm5lbCBjb21tYW5kIGxpbmU6IHNscmFtPW10ZF90anJhbTAxLDB4M0Mw
-MDAwMCwrMHg0MDAwMDAgY29uc29sZT10dHlTMCw1NzYwMCBpbml0PS9ldGMv
-cmMuc2ggcm9vdD0vZGV2L3JhbSBydyBtdGRzaXplMD0weDAwMDQwMDAwIG10
-ZHBhcnRzPWEgaW5pdHJkCkRlY3JlbWVudGVyIEZyZXF1ZW5jeSA9IDE4NzUw
-MDAwMC82MApXYXJuaW5nOiByZWFsIHRpbWUgY2xvY2sgc2VlbXMgc3R1Y2sh
-CkNhbGlicmF0aW5nIGRlbGF5IGxvb3AuLi4gNDkuNjYgQm9nb01JUFMKTWVt
-b3J5OiA1NzU4NGsgYXZhaWxhYmxlICgxMzMyayBrZXJuZWwgY29kZSwgNDMy
-ayBkYXRhLCA1NmsgaW5pdCwgMGsgaGlnaG1lbSkKRGVudHJ5IGNhY2hlIGhh
-c2ggdGFibGUgZW50cmllczogODE5MiAob3JkZXI6IDQsIDY1NTM2IGJ5dGVz
-KQpJbm9kZSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDQwOTYgKG9yZGVy
-OiAzLCAzMjc2OCBieXRlcykKTW91bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRy
-aWVzOiAxMDI0IChvcmRlcjogMSwgODE5MiBieXRlcykKQnVmZmVyLWNhY2hl
-IGhhc2ggdGFibGUgZW50cmllczogMTAyNCAob3JkZXI6IDAsIDQwOTYgYnl0
-ZXMpClBhZ2UtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3Jk
-ZXI6IDQsIDY1NTM2IGJ5dGVzKQpQT1NJWCBjb25mb3JtYW5jZSB0ZXN0aW5n
-IGJ5IFVOSUZJWApXRFRfOHh4OiBTV1Qgbm90IGVuYWJsZWQgYnkgZmlybXdh
-cmUsIFNZUENSPTB4ZmZmZmZmODkKTGludXggTkVUNC4wIGZvciBMaW51eCAy
-LjQKQmFzZWQgdXBvbiBTd2Fuc2VhIFVuaXZlcnNpdHkgQ29tcHV0ZXIgU29j
-aWV0eSBORVQzLjAzOQpJbml0aWFsaXppbmcgUlQgbmV0bGluayBzb2NrZXQK
-U3RhcnRpbmcga3N3YXBkCkpvdXJuYWxsZWQgQmxvY2sgRGV2aWNlIGRyaXZl
-ciBsb2FkZWQKSkZGUzIgdmVyc2lvbiAyLjEuIChDKSAyMDAxLCAyMDAyIFJl
-ZCBIYXQsIEluYy4sIGRlc2lnbmVkIGJ5IEF4aXMgQ29tbXVuaWNhdGlvbnMg
-QUIuCnNxdWFzaGZzOiB2ZXJzaW9uIDMuMSAoMjAwNi8wOC8xOSkgUGhpbGxp
-cCBMb3VnaGVyCkNQTSBVQVJUIGRyaXZlciB2ZXJzaW9uIDAuMDQKdHR5UzAg
-b24gU01DMSBhdCAweDAyODAsIEJSRzEKcHR5OiAyNTYgVW5peDk4IHB0eXMg
-Y29uZmlndXJlZApldGgwOiBGRUMgRU5FVCBWZXJzaW9uIDAuMywgRkVDIGly
-cSAxMSwgd2l0aCBNRElPLCBhZGRyIDAwOjA0Ojk1OjAwOjAwOjAxCmV0aDA6
-IFBoeSBAIDB4MCwgdHlwZSBSVEw4MjAxICgweDAwMDA4MjAxKQpSQU1ESVNL
-IGRyaXZlciBpbml0aWFsaXplZDogMTYgUkFNIGRpc2tzIG9mIDE2Mzg0SyBz
-aXplIDEwMjQgYmxvY2tzaXplCmxvb3A6IGxvYWRlZCAobWF4IDggZGV2aWNl
-cykKUFBQIGdlbmVyaWMgZHJpdmVyIHZlcnNpb24gMi40LjIKUFBQIERlZmxh
-dGUgQ29tcHJlc3Npb24gbW9kdWxlIHJlZ2lzdGVyZWQKdG4xMDBtYXAgZmxh
-c2ggZGV2aWNlOiAwMDIwMDAwMCBhdCA0MDAwMDAwMAogQW1kL0Z1aml0c3Ug
-RXh0ZW5kZWQgUXVlcnkgVGFibGUgdjEuMCBhdCAweDAwNDAKUGh5c2ljYWxs
-eSBtYXBwZWQgZmxhc2g6IEpFREVDIERldmljZSBJRCBpcyAweEM0LiBBc3N1
-bWluZyBicm9rZW4gQ0ZJIHRhYmxlLgpQaHlzaWNhbGx5IG1hcHBlZCBmbGFz
-aDogU3dhcHBpbmcgZXJhc2UgcmVnaW9ucyBmb3IgYnJva2VuIENGSSB0YWJs
-ZS4KbnVtYmVyIG9mIENGSSBjaGlwczogMQpjZmlfY21kc2V0XzAwMDI6IERp
-c2FibGluZyBmYXN0IHByb2dyYW1taW5nIGR1ZSB0byBjb2RlIGJyb2tlbm5l
-c3MuClVzaW5nIHRuMTAwX21hcCBwYXJ0aXRpb24gZGVmaW5pdGlvbgpDcmVh
-dGluZyAxIE1URCBwYXJ0aXRpb25zIG9uICJQaHlzaWNhbGx5IG1hcHBlZCBm
-bGFzaCI6CjB4MDAwMDAwMDAtMHgwMDA0MDAwMCA6ICJ1Ym9vdCIKTkFORCBk
-ZXZpY2U6IE1hbnVmYWN0dXJlIElEOiAweDIwLCBDaGlwIElEOiAweDc2IChT
-VCBNaWNybyBOQU5EIDY0TWlCIDMsM1YpCkNyZWF0aW5nIDEwIE1URCBwYXJ0
-aXRpb25zIG9uICJOQU5EIDY0TWlCIDMsM1YiOgoweDAwMDAwMDAwLTB4MDAy
-MDAwMDAgOiAibGludXhfaW5pdHJkIgoweDAwMjAwMDAwLTB4MDA2MDAwMDAg
-OiAicm9vdGZzIgoweDAwNjAwMDAwLTB4MDBhMDAwMDAgOiAiYmFja3Jvb3Qi
-CjB4MDBhMDAwMDAtMHgwMWUwMDAwMCA6ICJzb2Z0d2FyZSIKMHgwMWUwMDAw
-MC0weDAzMjAwMDAwIDogImJhY2tzb2Z0IgoweDAzMjAwMDAwLTB4MDM2MDAw
-MDAgOiAidGVqYXMiCjB4MDM2MDAwMDAtMHgwM2UwMDAwMCA6ICJsb2ciCjB4
-MDNlMDAwMDAtMHgwM2YwMDAwMCA6ICJkaWFnIgoweDAzZjAwMDAwLTB4MDNm
-NDAwMDAgOiAibWFwcGVyIgoweDAzZjQwMDAwLTB4MDNmYzAwMDAgOiAidG9t
-ZnBnYSIKTkVUNDogTGludXggVENQL0lQIDEuMCBmb3IgTkVUNC4wCklQIFBy
-b3RvY29sczogSUNNUCwgVURQLCBUQ1AsIElHTVAKSVA6IHJvdXRpbmcgY2Fj
-aGUgaGFzaCB0YWJsZSBvZiA1MTIgYnVja2V0cywgNEtieXRlcwpUQ1A6IEhh
-c2ggdGFibGVzIGNvbmZpZ3VyZWQgKGVzdGFibGlzaGVkIDQwOTYgYmluZCA0
-MDk2KQpJUHY0IG92ZXIgSVB2NCB0dW5uZWxpbmcgZHJpdmVyCkxpbnV4IElQ
-IG11bHRpY2FzdCByb3V0ZXIgMC4wNiBwbHVzIFBJTS1TTQppcF9jb25udHJh
-Y2sgdmVyc2lvbiAyLjEgKDQ3OSBidWNrZXRzLCAzODMyIG1heCkgLSAyOTIg
-Ynl0ZXMgcGVyIGNvbm50cmFjawppcF90YWJsZXM6IChDKSAyMDAwLTIwMDIg
-TmV0ZmlsdGVyIGNvcmUgdGVhbQphcnBfdGFibGVzOiAoQykgMjAwMiBEYXZp
-ZCBTLiBNaWxsZXIKTkVUNDogVW5peCBkb21haW4gc29ja2V0cyAxLjAvU01Q
-IGZvciBMaW51eCBORVQ0LjAuClJBTURJU0s6IENvbXByZXNzZWQgaW1hZ2Ug
-Zm91bmQgYXQgYmxvY2sgMApGcmVlaW5nIGluaXRyZCBtZW1vcnk6IDc5MGsg
-ZnJlZWQKVkZTOiBNb3VudGVkIHJvb3QgKGV4dDIgZmlsZXN5c3RlbSkuCkZy
-ZWVpbmcgdW51c2VkIGtlcm5lbCBtZW1vcnk6IDU2ayBpbml0Ci9iaW4vbW91
-bnQgLXQgcHJvYyBwcm9jIC9wcm9jCm1vdW50IC10IHJhbWZzIG5vbmUgL3Zh
-ciAmJiBta2RpciAvdmFyL2Nyb24gL3Zhci9sb2NrIC92YXIvbG9jay9zdWJz
-eXMgL3Zhci9sb2cgL3Zhci9ydW4gL3Zhci90bXAgL3Zhci9kdW1wcyAmJiB0
-b3VjaCAvdmFyL2xvZy93dG1wIC92YXIvcnVuL3V0bXAKY3AgLWEgL2Rldi8q
-IC90bXAgJiYgbW91bnQgLXQgcmFtZnMgbm9uZSAvZGV2ICYmIG12IC90bXAv
-KiAvZGV2CmV0aDA6IGNvbmZpZzogYXV0by1uZWdvdGlhdGlvbiBvbiwgMTAw
-SERYLCAxMEhEWC4Kc2xyYW09bXRkX3RqcmFtMDEsMHgzQzAwMDAwLCsweDQw
-MDAwMCBjb25zb2xlPXR0eVMwLDU3NjAwIGluaXQ9L2V0Yy9yYy5zaCByb290
-PS9kZXYvcmFtIHJ3IG10ZHNpemUwPTB4MDAwNDAwMDAgbXRkcGFydHM9YSBp
-bml0cmQKaW5pdCBzdGFydGVkOiAgQnVzeUJveCB2MC42MC41ICgyMDA2LjA1
-LjE1LTExOjU1KzAwMDApIG11bHRpLWNhbGwKICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIApCdXN5Qm94IHYwLjYwLjUgKDIwMDYuMDYuMDItMDY6MzErMDAwMCkg
-QnVpbHQtaW4gc2hlbGwgKG1zaCkKRW50ZXIgJ2hlbHAnIGZvciBhIGxpc3Qg
-b2YgYnVpbHQtaW4gY29tbWFuZHMuCiAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAK
-c291cmNlOiBub3QgZm91bmQKKG5vbmUpPiBldGgwOiBzdGF0dXM6IGxpbmsg
-dXAsIDEwMCBNYnBzIEhhbGYgRHVwbGV4LCBhdXRvLW5lZ290aWF0aW9uIGNv
-bXBsZXRlLgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCihub25lKT4KKG5vbmUp
-PiBlcmFzZWFsbCAvZGV2L210ZDgKRXJhc2luZyAxNiBLaWJ5dGUgQCA3ZmMw
-MDAgLS0gOTkgJSBjb21wbGV0ZS4KKG5vbmUpPiBtb3VudCAtdCBqZmZzMiAv
-ZGV2L210ZGJsb2NrOCAvdG1wL2RyaXZlMQoobm9uZSk+IGNkIC90bXAvZHJp
-dmUxCihub25lKT4gZWNobyAiYWEiID4gdHh0Cihub25lKT4gY2F0IHR4dAph
-YQoobm9uZSk+IHN5bmMKKG5vbmUpPiBjZCAuLgoobm9uZSk+IHVtb3VudCBk
-cml2ZTEKKG5vbmUpPiBtb3VudCAtdCBqZmZzMiAvZGV2L210ZGJsb2NrOCBk
-cml2ZTEKTm9kZSBoZWFkZXIgQ1JDIGZhaWxlZCBhdCAwMDdmODI0NC4gQnV0
-IGl0IG11c3QgaGF2ZSBiZWVuIE9LIGVhcmxpZXIuCk5vZGUgd2FzOiB7IGZm
-ZmYsIGZmZmYsIGZmZmZmZmZmLCBmZmZmZmZmZiB9CkVlcC4gVW5rbm93biBu
-b2RlIHR5cGUgZmZmZiBhdCAwMDdmODI3MCB3YXMgbWFya2VkIFJFRl9VTkNI
-RUNLRUQKTm9kZSBoZWFkZXIgQ1JDIGZhaWxlZCBhdCAwMDdmODI3MC4gQnV0
-IGl0IG11c3QgaGF2ZSBiZWVuIE9LIGVhcmxpZXIuCk5vZGUgd2FzOiB7IGZm
-ZmYsIGZmZmYsIGZmZmZmZmZmLCBmZmZmZmZmZiB9Cihub25lKT4gRWVwLiBV
-bmtub3duIG5vZGUgdHlwZSBmZmZmIGF0IDAwN2Y4MjAwIHdhcyBtYXJrZWQg
-UkVGX1VOQ0hFQ0tFRApOb2RlIGhlYWRlciBDUkMgZmFpbGVkIGF0IDAwN2Y4
-MjAwLiBCdXQgaXQgbXVzdCBoYXZlIGJlZW4gT0sgZWFybGllci4KTm9kZSB3
-YXM6IHsgZmZmZiwgZmZmZiwgZmZmZmZmZmYsIGZmZmZmZmZmIH0KICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIAoobm9uZSk+IGNkIGRyaXZlMQoobm9uZSk+IGxz
-Cihub25lKT4KCg==
-
---0-838696621-1194186890=:98294--
+Wang, Baojun wrote:
+> On Saturday 03 November 2007 01:17:48, Stuart Hodgson wrote:
+>   
+>> Hi,
+>>
+>> I am attempting to get Kernel debugging working on our mpc8541 based
+>> board via a BDI2000. The various components in use are
+>>
+>> kernel - 2.6.19.2
+>> BDI firmware - 1.08
+>> U-Boot - 1.2.0
+>> ppc_85xx-gdb - from eldk4.1 (6.3.0.0-1.21_3rh)
+>>
+>>
+>> Kernel is configured with `-g` in CFLAGS and not with CONFIG_BDI_SWITCH,
+>> from the information I have read around the subject this seem to be
+>> correct. I also have `MMU  XLAT`, and `PTBASE 0xF0` set in by BDI
+>> configuration file. The default value for XLAT of `0xc0000000` matches
+>> the kernel our kernel config.
+>>
+>> Steps that I done so far
+>>
+>> 1. Power on BDI
+>> 2. Power on the board
+>> 3. BDI> reset run
+>> 4. Enter u-boot environment to stop linux booting immediately.
+>> 5. BDI> HALT
+>> 6. BDI> BREAK HARD
+>> 7. BDI> BI 0xc025a51c   (this is the address of start_kernel for my build)
+>> 8. BDI> GO
+>> 9. From U-boot prompt `bootm`, kernel is copied from flash and loading
+>> begins
+>> 10. Kernel does not halt at start_kernel and continues to the login
+>>
+>> If I attempt to break at an address later in the boot sequence, such as
+>> qmx19_ata_input_data (this is the area that I am trying to investigate)
+>> I get
+>>
+>> - TARGET: core #0 has entered debug mode
+>>
+>> So from here I attempt to connect to the BDI from gdb
+>>
+>> linux> cd ~/linux-2.6.19.2
+>> linux> ppc_85xx-gdb vmlimux
+>>     
+> Most of the operation could be done within gdb
+>
+> BDI> reset
+>
+> powerpc-unknown-linux-gnu-gdb vmlinux
+> (gdb) target remote bdi:2001
+> (gdb) ^C
+> (gdb) b *0x12345678
+> (gdb) c
+> ...
+>   
+>> "
+>> GNU gdb Red Hat Linux (6.3.0.0-1.21_3rh)
+>> Copyright 2004 Free Software Foundation, Inc.
+>> GDB is free software, covered by the GNU General Public License, and you
+>> are welcome to change it and/or distribute copies of it under certain
+>> conditions.
+>> Type "show copying" to see the conditions.
+>> There is absolutely no warranty for GDB.  Type "show warranty" for details.
+>> This GDB was configured as "--host=i386-redhat-linux --target=ppc-linux".
+>> The target architecture is set automatically (currently powerpc:603)
+>> "
+>>
+>> I noticed here that the last line does not match the e500 core I am
+>> using, but there does not seem to a change if I change this using `set
+>> architecture powerpc:e500`
+>>
+>>
+>> (gdb) tar rem <bdi_ip>:2001
+>> Remote debugging using <bdi_ip>:2001
+>> 0x00000000 in ?? ()
+>>     
+>
+> Which configuration file do you use for mpc85xx? probably is the config file 
+> problem?
+>
+>   
+>> What I don't understand here is why 0x00000000 is shown as the address,
+>> further on the BDI the following error is shown then the connection is made
+>>
+>> "
+>> *** MMU: address translation for 0x00000000 failed
+>>     
+>
+>   
+>> Stuart Hodgson
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>     
+>
+> Wang
+>
+>   
