@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Don't include libfdt in global LDFLAGS 
-In-Reply-To: Your message of "Fri, 02 Nov 2007 15:15:17 +1100."
-	<20071102041517.GJ19839@localhost.localdomain>
-References: <20071102041517.GJ19839@localhost.localdomain> 
-Date: Mon, 05 Nov 2007 08:54:20 -0600
+Subject: Re: dtc: Make -Idts -Odts preserve node/property labels 
+In-Reply-To: Your message of "Fri, 02 Nov 2007 16:10:30 +1100."
+	<20071102051030.GM19839@localhost.localdomain>
+References: <20071102051030.GM19839@localhost.localdomain> 
+Date: Mon, 05 Nov 2007 08:55:58 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ip3LI-00072J-Si@jdl.com>
+Message-Id: <E1Ip3Ms-0007OE-7b@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,9 +18,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> Remove the uneccessary LDFLAGS from the top-level makefile.  It only
-> added libfdt/ to the link path.  dtc doesn't need libfdt at all, and
-> the testcases which do, already link libfdt.a by explicit path.
+> This patch changes -Odts mode output so that labels on properties,
+> nodes and memreserve entries in input source are preserved in the
+> output.
+> 
+> Preserving labels within property values is trickier - another patch
+> coming later.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
