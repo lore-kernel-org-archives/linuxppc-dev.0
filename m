@@ -1,31 +1,20 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D4653DDDD6
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 05:09:46 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id lA5I9hvV018028
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 05:09:43 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lA5I9jZI2437298
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 05:09:45 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA5I9dc9010180
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 05:09:39 +1100
-Message-ID: <472F5C5E.4030607@linux.vnet.ibm.com>
-Date: Mon, 05 Nov 2007 23:39:34 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: 2.6.24-rc1 on PPC64: machine check exception
-References: <472F1F4C.3010507@linux.vnet.ibm.com>
-	<20071105154055.GA4746@kryten>
-In-Reply-To: <20071105154055.GA4746@kryten>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DF937DDDFB
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 05:15:41 +1100 (EST)
+Date: Mon, 5 Nov 2007 12:15:30 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Li Yang <leoli@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
+	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
+Message-Id: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,21 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
-> Hi
-> 
->> I got the following exception on a 128-way PPC64 machine while running
->> ebizzy-0.2 benchmark.
-> 
-> Is it a 64bit application? Im guessing its fixed by this:
+Hello all,
 
-Hi Anton,
+the following patches fix RGMII timing for rev. 2.1 of the mpc8360,
+according to erratum #2 (erratum text included below).  Basically the
+most intrusive part is the addition of two new RGMII Internal Delay
+modes; one for TX delay only, and the other for RX delay only (i.e, not
+both at the same time).
 
-The ebizzy application I tried is 64-bit.
+Please review, and since this affects both netdev and powerpc trees,
+one maintainer should ack them for the other to push upstream (i.e,
+Kumar acks them, and Leo picks them up to go through netdev or the
+other way around; either way is fine with me).  I'm hoping they're
+trivial enough to go in 2.6.24.
 
-> http://patchwork.ozlabs.org/linuxppc/patch?id=14475
+Depending on how the review goes, a follow-on patch to u-boot will be
+sent out that fixes up the phy-connection-type in the device tree (from
+"rgmii-id" to "rgmii-rxid" iff on mpc8360rev2.1).
 
-Thanks for pointing me to this patch.  I will try out and let you know if
-this fixed the problem.
+Thanks,
 
---Vaidy
+Kim
+
+mpc8360 rev 2.1 erratum #2:
+-----------
+Recommended AC timings for chip 8360Rev2.1 UCC ETH RGMII  when working
+with Rev Pilot MDS for proper RGMII operation:
+
+IMMR_BASE + 0x14A8[4:5] = 11 (clk delay for UCC 2)
+IMMR_BASE + 0x14A8[18:19] = 11 (clk delay for UCC 1)
+IMMR_BASE + 0x14AC[20:27] = 10101010 (data delay for both UCC's)
+
+The Phy (Marvell 88e1111) should be configured NOT to work with RGMII
+delay for TxD.
