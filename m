@@ -1,14 +1,14 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 5 Nov 2007 11:47:39 +1100
+Date: Mon, 5 Nov 2007 11:50:07 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH v2 06/12] [POWERPC] TQM5200 DTS
-Message-ID: <20071105004739.GG19867@localhost.localdomain>
+Subject: Re: [PATCH v2 08/12] [POWERPC] CM5200 DTS
+Message-ID: <20071105005007.GH19867@localhost.localdomain>
 References: <20071103235210.31906.83423.stgit@hekate.izotz.org>
-	<20071103235247.31906.76777.stgit@hekate.izotz.org>
+	<20071103235259.31906.54116.stgit@hekate.izotz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071103235247.31906.76777.stgit@hekate.izotz.org>
+In-Reply-To: <20071103235259.31906.54116.stgit@hekate.izotz.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,62 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Nov 04, 2007 at 12:52:47AM +0100, Marian Balakowicz wrote:
-> Add device tree source file for TQM5200 board.
+On Sun, Nov 04, 2007 at 12:52:59AM +0100, Marian Balakowicz wrote:
+> Add device tree source file for CM5200 board.
 > 
 > Signed-off-by: Marian Balakowicz <m8@semihalf.com>
 
-[snip]
-> +	soc5200@f0000000 {
-
-soc@address is the new convention, I believe, but I guess you need
-compatibility with older bootstraps.
-
-> +		model = "fsl,mpc5200";
-> +		compatible = "mpc5200";
-
-This compatible looks bogus; it should have the "fsl," at least.
+Same comments as the TQM device tree, plus those below.
 
 [snip]
-> +		mpc5200_pic: pic@500 {
-> +			// 5200 interrupts are encoded into two levels;
-> +			interrupt-controller;
-> +			#interrupt-cells = <3>;
-> +			device_type = "interrupt-controller";
+> +		rtc@800 {	// Real time clock
+> +			compatible = "mpc5200b-rtc","mpc5200-rtc";
+> +			device_type = "rtc";
 
 No device_type here.
 
-> +			compatible = "mpc5200-pic";
-> +			reg = <500 80>;
-> +		};
-> +
-> +		gpt@600 {	// General Purpose Timer
-> +			compatible = "fsl,mpc5200-gpt";
-> +			cell-index = <0>;
+[snip]
+> +		spi@f00 {
+> +			device_type = "spi";
 
-Ok, is this actually a suitable usage for cell-index?  It should only
-be used when the cell-index number is used to program some soc-global
-register.  It should not be used just for ordering or logical-indexing
-purposes.
+Definitely no device_type here.
+
+> +			compatible = "mpc5200b-spi","mpc5200-spi";
+> +			reg = <f00 20>;
+> +			interrupts = <2 d 0 2 e 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +		};
 
 [snip]
-> +		serial@2000 {		// PSC1
-> +			device_type = "serial";
-> +			compatible = "mpc5200-psc-uart";
-> +			port-number = <0>;  // Logical port assignment
-> +			cell-index = <0>;
+> +		i2c@3d40 {
+> +			device_type = "i2c";
 
-Ditto w.r.t. cell-index.
+No device_type here.
 
-port-number also looks bogus - the device tree should not generally
-contain logical numbering information in this manner.  How and what
-uses the port-number property?
 
+> +			compatible = "mpc5200b-i2c","mpc5200-i2c","fsl-i2c";
+> +			reg = <3d40 40>;
+> +			interrupts = <2 10 0>;
+> +			interrupt-parent = <&mpc5200_pic>;
+> +			fsl5200-clocking;
+> +		};
+> +
 > +		sram@8000 {
-> +			compatible = "mpc5200-sram","sram";
-
-Uh.. is there an "sram" binding?  "sram" doesn't look specific enough
-for a compatible property.
+> +			compatible = "mpc5200b-sram","mpc5200-sram","sram";
+> +			reg = <8000 4000>;
+> +		};
+> +	};
+> +};
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
