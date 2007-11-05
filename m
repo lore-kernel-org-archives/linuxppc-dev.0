@@ -1,13 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: libfdt: Add more documentation (patch the third) 
-In-Reply-To: Your message of "Mon, 05 Nov 2007 14:29:18 +1100."
-	<20071105032918.GA21064@localhost.localdomain>
-References: <20071102044716.GK19839@localhost.localdomain>
-	<20071105032918.GA21064@localhost.localdomain>
-Date: Mon, 05 Nov 2007 09:05:18 -0600
+Subject: Re: libfdt: Add more documentation (patch the fourth) 
+In-Reply-To: Your message of "Mon, 05 Nov 2007 14:29:37 +1100."
+	<20071105032937.GB21064@localhost.localdomain>
+References: <20071105032937.GB21064@localhost.localdomain> 
+Date: Mon, 05 Nov 2007 09:05:40 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ip3Vu-0000ku-Ts@jdl.com>
+Message-Id: <E1Ip3WG-0000lE-BA@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,11 +18,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> libfdt: Add more documentation (patch the third)
-> 
-> This patch adds documentation in libfdt.h for a few more libfdt
-> functions.  It also makes a slight update to the documentation of
-> fdt_get_name().
+> This patch documents a few more functions in libfdt.h.  It also makes
+> a slight update to the description of the FDT_ERR_INTERNAL error code.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
