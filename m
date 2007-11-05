@@ -4,14 +4,15 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DF937DDDFB
+	by ozlabs.org (Postfix) with ESMTP id 39E6EDDDFC
 	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 05:15:41 +1100 (EST)
-Date: Mon, 5 Nov 2007 12:15:30 -0600
+Date: Mon, 5 Nov 2007 12:15:35 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
 To: Li Yang <leoli@freescale.com>, Kumar Gala <galak@kernel.crashing.org>,
 	netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
-Message-Id: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+Subject: [PATCH 1/5] powerpc: document rgmii-rxid and rgmii-txid
+	phy-connection-types
+Message-Id: <20071105121535.c423d095.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: paulus@samba.org, jgarzik@pobox.com
@@ -24,36 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+A h/w bug requires we program the PHY in RGMII mode for internal delay
+on the receive or transmit side only; document the new property values.
 
-the following patches fix RGMII timing for rev. 2.1 of the mpc8360,
-according to erratum #2 (erratum text included below).  Basically the
-most intrusive part is the addition of two new RGMII Internal Delay
-modes; one for TX delay only, and the other for RX delay only (i.e, not
-both at the same time).
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Please review, and since this affects both netdev and powerpc trees,
-one maintainer should ack them for the other to push upstream (i.e,
-Kumar acks them, and Leo picks them up to go through netdev or the
-other way around; either way is fine with me).  I'm hoping they're
-trivial enough to go in 2.6.24.
-
-Depending on how the review goes, a follow-on patch to u-boot will be
-sent out that fixes up the phy-connection-type in the device tree (from
-"rgmii-id" to "rgmii-rxid" iff on mpc8360rev2.1).
-
-Thanks,
-
-Kim
-
-mpc8360 rev 2.1 erratum #2:
------------
-Recommended AC timings for chip 8360Rev2.1 UCC ETH RGMII  when working
-with Rev Pilot MDS for proper RGMII operation:
-
-IMMR_BASE + 0x14A8[4:5] = 11 (clk delay for UCC 2)
-IMMR_BASE + 0x14A8[18:19] = 11 (clk delay for UCC 1)
-IMMR_BASE + 0x14AC[20:27] = 10101010 (data delay for both UCC's)
-
-The Phy (Marvell 88e1111) should be configured NOT to work with RGMII
-delay for TxD.
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index a96e853..b97721c 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1634,8 +1634,9 @@ platforms are moved over to use the flattened-device-tree model.
+      MAC addresses passed by the firmware when no information other
+      than indices is available to associate an address with a device.
+    - phy-connection-type : a string naming the controller/PHY interface type,
+-     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "tbi",
+-     or "rtbi".
++     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id" (Internal
++     Delay), "rgmii-txid" (delay on TX only), "rgmii-rxid" (delay on RX only),
++     "tbi", or "rtbi".
+ 
+    Example:
+ 	ucc@2000 {
+-- 
+1.5.2.2
