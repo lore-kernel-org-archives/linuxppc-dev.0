@@ -1,23 +1,18 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kraid.nerim.net (smtp-102-tuesday.nerim.net [62.4.16.102])
-	by ozlabs.org (Postfix) with ESMTP id C52E6DDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:10:41 +1100 (EST)
-Date: Tue, 6 Nov 2007 19:10:39 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
-Message-ID: <20071106191039.37cd7053@hyperion.delvare>
-In-Reply-To: <4730A617.9040502@freescale.com>
-References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
-	<472F7247.9070106@freescale.com>
-	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
-	<472F8267.8070106@freescale.com>
-	<20071106182953.3c1a57e3@hyperion.delvare>
-	<4730A617.9040502@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2A649DDE09
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:11:19 +1100 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
+	(envelope-from <jdl@jdl.com>) id 1IpStN-0003li-2G
+	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:11:14 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH Rev 2] 8xxx: Convert #include of asm/of_{platform,
+	device}.h into linux/of_{platform, device}.h.
+Date: Tue, 06 Nov 2007 12:11:13 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IpStN-0003li-2G@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +22,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Scott,
+From: Jon Loeliger <jdl@freescale.com>
 
-On Tue, 06 Nov 2007 11:36:23 -0600, Scott Wood wrote:
-> Jean Delvare wrote:
-> >>>> We might as well just use i2c_new_device() instead of messing around
-> >>>> with bus numbers.  Note that this is technically no longer platform
-> >>>> code, so it's harder to justify claiming the static numberspace.
-> >>> I was allowing control of the bus number with "cell-index" and
-> >>> i2c_add_numbered_adapter().
-> >>> Should I get rid of this and switch to i2c_add_adapter()?
-> >> Yes.
-> > 
-> > No! If you don't call i2c_add_numbered_adapter() then new-style i2c
-> > clients will never work on your i2c adapter.
-> 
-> I thought that was what i2c_new_device() was for?
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-Sorry, I've not been completely clear. Yes, you can use
-i2c_new_device() on an adapter that has been added with
-i2c_add_adapter(). However, this requires that you have a reference to
-that i2c_adapter, which is usually not the case with system-wide I2C
-buses. Embedded platforms would rather use i2c_add_numbered_adapter(),
-give a list of chips to i2c_register_board_info() and let i2c-core
-instantiate them. i2c_new_device was primarily meant for multimedia
-adapters.
+Chip away at some janitor work.
+Catch both asm/of_platform.h and asm/of_device.h this time.
+Add sfr's ACK.
 
-> By handling all the device tree stuff in the driver, it acts more like 
-> an add-on adapter than a platform device.
+ arch/powerpc/platforms/82xx/pq2fads.c     |    2 +-
+ arch/powerpc/platforms/83xx/mpc832x_mds.c |    4 ++--
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c |    2 +-
+ arch/powerpc/platforms/83xx/mpc836x_mds.c |    4 ++--
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 ++--
+ 5 files changed, 8 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
+index 4f457a9..1be5005 100644
+--- a/arch/powerpc/platforms/82xx/pq2fads.c
++++ b/arch/powerpc/platforms/82xx/pq2fads.c
+@@ -15,12 +15,12 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/io.h>
+ #include <asm/cpm2.h>
+ #include <asm/udbg.h>
+ #include <asm/machdep.h>
+-#include <asm/of_platform.h>
+ #include <asm/time.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index 972fa85..4ea1989 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -23,9 +23,9 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/initrd.h>
++#include <linux/of_platform.h>
++#include <linux/of_device.h>
+ 
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+index fbca336..24e6ce6 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
+@@ -16,8 +16,8 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/spi/spi.h>
++#include <linux/of_platform.h>
+ 
+-#include <asm/of_platform.h>
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+ #include <asm/udbg.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+index 0f3855c..3781e3d 100644
+--- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
+@@ -29,9 +29,9 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/initrd.h>
++#include <linux/of_platform.h>
++#include <linux/of_device.h>
+ 
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 61b3eed..e6c63a5 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -30,9 +30,9 @@
+ #include <linux/initrd.h>
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
++#include <linux/of_platform.h>
++#include <linux/of_device.h>
+ 
+-#include <asm/of_device.h>
+-#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
 -- 
-Jean Delvare
+1.5.3.1.139.g9346b
