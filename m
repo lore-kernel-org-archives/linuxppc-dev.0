@@ -1,19 +1,20 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id A3B43DDDE9
+Return-Path: <lokowich@acdstar.com>
+Received: from g2host.com (mailfront1.g2host.com [208.42.176.212])
+	by ozlabs.org (Postfix) with ESMTP id 7C298DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Nov 2007 00:14:08 +1100 (EST)
-Message-ID: <473066A6.4070803@anagramm.de>
-Date: Tue, 06 Nov 2007 14:05:42 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed,  7 Nov 2007 01:31:07 +1100 (EST)
+Received: from [74.95.143.41] (account lokowich@acdstar.com HELO
+	[192.168.2.105])
+	by mailfront1.g2host.com (CommuniGate Pro SMTP 5.1.10)
+	with ESMTPA id 24220256 for linuxppc-embedded@ozlabs.org;
+	Tue, 06 Nov 2007 07:31:00 -0600
+Message-ID: <47306C92.10205@acdstar.com>
+Date: Tue, 06 Nov 2007 07:30:58 -0600
+From: lokowich <lokowich@acdstar.com>
 MIME-Version: 1.0
-To: Misbah khan <misbah_khan@engineer.com>
-Subject: Re: While booting montavista kernel for PPC sometimes Kernel Panic
-	occurs
-References: <13604112.post@talk.nabble.com>
-In-Reply-To: <13604112.post@talk.nabble.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: JTAG init of MPC5200B
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +25,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Misbah khan schrieb:
-> Hi all...
-> Please find the print message when kernel panic occured while booting the
-> Montavista kernel for PPC. This happens rarely and i am not able to find the
-> real cause of it ....
-> Please do suggest me how to debug it and the cause of it .
+I've been unable to properly initialize my MPC5200B from a GDB session 
+or OCD Commander using a OCDemon JTAG emulator unless the device is 
+first initialized by U-Boot.  I've used same register setup as defined 
+in the U-Boot startup code.  This prevents me from loading a RAM-based 
+U-Boot onto a bare board over the JTAG interface.  Any guidance?
 
-I suggest you to ask Montavista support about their kernels
-or use a standard vanilla kernel.
-
-Regards,
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+-- 
+Mark Lokowich
+Systems Engineer
+Advanced Communication Design
