@@ -1,19 +1,22 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 8EED5DDE19
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:02:25 +1100 (EST)
-Message-ID: <4730C842.9020601@semihalf.com>
-Date: Tue, 06 Nov 2007 21:02:10 +0100
-From: Marian Balakowicz <m8@semihalf.com>
+Return-Path: <rpjday@crashcourse.ca>
+Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
+	[64.235.106.9])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5EC99DDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:01:12 +1100 (EST)
+Received: from [99.236.101.138] (helo=crashcourse.ca)
+	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.68) (envelope-from <rpjday@crashcourse.ca>)
+	id 1IpRzQ-0007qG-Kv
+	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:13:24 -0500
+Date: Tue, 6 Nov 2007 12:11:42 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] POWERPC: Use "is_power_of_2" macro for simplicity.
+Message-ID: <Pine.LNX.4.64.0711061210520.25269@localhost.localdomain>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v2 11/12] [POWERPC] Promess Motion-PRO DTS
-References: <20071103235210.31906.83423.stgit@hekate.izotz.org>
-	<20071103235317.31906.46911.stgit@hekate.izotz.org>
-	<20071105005626.GI19867@localhost.localdomain>
-In-Reply-To: <20071105005626.GI19867@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,77 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Sun, Nov 04, 2007 at 12:53:17AM +0100, Marian Balakowicz wrote:
->> Add device tree source file for Motion-PRO board.
-> [snip]
->> +		motionpro-statusled@660 {	// Motion-PRO status LED
->> +			compatible = "promess,motionpro-statusled";
->> +			cell-index = <6>;
->> +			reg = <660 10>;
->> +			interrupts = <1 f 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +			blink-delay = <64>; // 100 msec
->> +		};
->> +
->> +		motionpro-readyled@670 {	// Motion-PRO ready LED
->> +			compatible = "promess,motionpro-readyled";
->> +			cell-index = <7>;
-> 
-> These cell-index values for the LEDs look very strange.  How are they
-> used?
-[snip]
->> +
->> +		mscan@980 {
->> +			compatible = "mpc5200b-mscan","mpc5200-mscan";
->> +			cell-index = <1>;
-> 
-> As for serial and gpt, is cell-index really suitable here?
 
-Ok, removed those unused "cell-index" properties.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> [snip]
->> +		spi@f00 {
->> +			device_type = "spi";
->> +			compatible = "mpc5200b-spi","mpc5200-spi";
->> +			reg = <f00 20>;
->> +			interrupts = <2 d 0 2 e 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
-> [snip]
->> +		// PSC2 in spi master mode 
->> +		spi@2200 {		// PSC2
->> +			device_type = "spi";
->> +			compatible = "mpc5200b-psc-spi","mpc5200-psc-spi";
->> +			cell-index = <1>;
-> 
-> cell-index present for one spi, but not the other makes be even more
-> suspicious about it's applicability here...
+---
 
-These are two different SPIs, both are part of the SoC but first one
-is dedicated SPI interface while the second one is PSC port in a SPI
-mode. Driver for the second one (mpc52xx_psc_spi.c) is actually using
-cell-index to get the PSC port number it's controlling.
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index 22c3b4f..53b4e91 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -19,6 +19,7 @@
+ #include <linux/mm.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
++#include <linux/log2.h>
 
-> [snip]
->> +	lpb {
->> +		model = "fsl,lpb";
->> +		compatible = "fsl,lpb";
-> 
-> Is lpb another one of these chipselect/offset configurable bus bridge
-> things?  If so, you should use a 2-cell addressing convention for the
-> subnodes like fsl localbus and 4xx EBC.
+ #include <asm/rheap.h>
 
-Yes, it is, so I have switched to 2-cell addressing. Please see the v3
-respin of the patches.
+@@ -254,8 +255,7 @@ rh_info_t *rh_create(unsigned int alignment)
+ {
+ 	rh_info_t *info;
 
+-	/* Alignment must be a power of two */
+-	if ((alignment & (alignment - 1)) != 0)
++	if (!is_power_of_2(alignment))
+ 		return ERR_PTR(-EINVAL);
 
->> +		// 8-bit custom Anybus Module on LocalPlus Bus CS3
->> +		anybus50020000 {
-> 
-> Missing '@'.
+ 	info = kmalloc(sizeof(*info), GFP_KERNEL);
+@@ -303,8 +303,7 @@ void rh_init(rh_info_t * info, unsigned int alignment, int max_blocks,
+ 	int i;
+ 	rh_block_t *blk;
 
-Fixed.
+-	/* Alignment must be a power of two */
+-	if ((alignment & (alignment - 1)) != 0)
++	if (!is_power_of_2(alignment))
+ 		return;
 
-Thanks,
-m.
+ 	info->alignment = alignment;
+@@ -446,8 +445,7 @@ unsigned long rh_alloc_align(rh_info_t * info, int size, int alignment, const ch
+ 	rh_block_t *newblk;
+ 	unsigned long start, sp_size;
+
+-	/* Validate size, and alignment must be power of two */
+-	if (size <= 0 || (alignment & (alignment - 1)) != 0)
++	if (size <= 0 || !is_power_of_2(alignment))
+ 		return (unsigned long) -EINVAL;
+
+ 	/* Align to configured alignment */
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://crashcourse.ca
+========================================================================
