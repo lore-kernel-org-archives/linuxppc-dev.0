@@ -1,14 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Nov 2007 10:22:25 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: [2/2] dtc: Make -Idts -Odts preserve property-internal labels
-Message-ID: <20071106232225.GI31367@localhost.localdomain>
-References: <20071106232120.GH31367@localhost.localdomain>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
+	by ozlabs.org (Postfix) with ESMTP id DF0C1DDE17
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 10:25:22 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d23so316969and
+	for <linuxppc-dev@ozlabs.org>; Tue, 06 Nov 2007 15:25:21 -0800 (PST)
+Message-ID: <fa686aa40711061525y79f9f99eneda32b09a77ddcd5@mail.gmail.com>
+Date: Tue, 6 Nov 2007 16:25:21 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Wolfgang Denk" <wd@denx.de>
+Subject: Re: [PATCH v3 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+In-Reply-To: <20071106222224.D67BA2479C@gemini.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071106232120.GH31367@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com>
+	<20071106222224.D67BA2479C@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,188 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch changes -Odts mode output so that labels within property
-values in the input are preserved in the output.  Applied on top of
-the earlier patch to preserve node and property labels in -Odts mode,
-this means that dtc in -Idts -Odts mode will transfer all labels in
-the input to the output.
+On 11/6/07, Wolfgang Denk <wd@denx.de> wrote:
+> Dear Grant,
+>
+> in message <fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com> you wrote:
+> >
+> > In other words; make the assumption that it is easier to change the
+> > kernel than it is to change the device tree.
+>
+> Are you serious about this?
+>
+> Reading this from someone with your experience with device trees if
+> feeding my worst fears...
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+I think I better clarify.
 
----
- tests/label01.dts |    7 +++--
- treesource.c      |   66 +++++++++++++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 65 insertions(+), 8 deletions(-)
+Once a device tree is written and shipped on a deployed board, it may
+never change again.  Or, the kernel version may be updated more
+frequently than the device tree.
 
-Index: dtc/treesource.c
-===================================================================
---- dtc.orig/treesource.c	2007-11-07 10:19:13.000000000 +1100
-+++ dtc/treesource.c	2007-11-07 10:19:42.000000000 +1100
-@@ -60,13 +60,24 @@
- {
- 	char *str = val.val;
- 	int i;
-+	int newchunk = 1;
-+	struct fixup *l = val.labels;
- 
- 	assert(str[val.len-1] == '\0');
- 
--	fprintf(f, "\"");
- 	for (i = 0; i < (val.len-1); i++) {
- 		char c = str[i];
- 
-+		if (newchunk) {
-+			while (l && (l->offset <= i)) {
-+				assert(l->offset == i);
-+				fprintf(f, "%s: ", l->ref);
-+				l = l->next;
-+			}
-+			fprintf(f, "\"");
-+			newchunk = 0;
-+		}
-+
- 		switch (c) {
- 		case '\a':
- 			fprintf(f, "\\a");
-@@ -96,7 +107,8 @@
- 			fprintf(f, "\\\"");
- 			break;
- 		case '\0':
--			fprintf(f, "\", \"");
-+			fprintf(f, "\", ");
-+			newchunk = 1;
- 			break;
- 		default:
- 			if (isprint(c))
-@@ -106,20 +118,41 @@
- 		}
- 	}
- 	fprintf(f, "\"");
-+
-+	/* Wrap up any labels at the end of the value */
-+	while (l) {
-+		assert (l->offset == val.len);
-+		fprintf(f, " %s:", l->ref);
-+		l = l->next;
-+	}
- }
- 
- static void write_propval_cells(FILE *f, struct data val)
- {
- 	void *propend = val.val + val.len;
- 	cell_t *cp = (cell_t *)val.val;
-+	struct fixup *l = val.labels;
- 
- 	fprintf(f, "<");
- 	for (;;) {
-+		while (l && (l->offset <= ((char *)cp - val.val))) {
-+			assert(l->offset == ((char *)cp - val.val));
-+			fprintf(f, "%s: ", l->ref);
-+			l = l->next;
-+		}
-+
- 		fprintf(f, "%x", be32_to_cpu(*cp++));
- 		if ((void *)cp >= propend)
- 			break;
- 		fprintf(f, " ");
- 	}
-+
-+	/* Wrap up any labels at the end of the value */
-+	while (l) {
-+		assert (l->offset == val.len);
-+		fprintf(f, " %s:", l->ref);
-+		l = l->next;
-+	}
- 	fprintf(f, ">");
- }
- 
-@@ -127,14 +160,27 @@
- {
- 	void *propend = val.val + val.len;
- 	char *bp = val.val;
-+	struct fixup *l = val.labels;
- 
- 	fprintf(f, "[");
- 	for (;;) {
-+		while (l && (l->offset == (bp-val.val))) {
-+			fprintf(f, "%s: ", l->ref);
-+			l = l->next;
-+		}
-+
- 		fprintf(f, "%02hhx", *bp++);
- 		if ((void *)bp >= propend)
- 			break;
- 		fprintf(f, " ");
- 	}
-+
-+	/* Wrap up any labels at the end of the value */
-+	while (l) {
-+		assert (l->offset == val.len);
-+		fprintf(f, " %s:", l->ref);
-+		l = l->next;
-+	}
- 	fprintf(f, "]");
- }
- 
-@@ -142,7 +188,9 @@
- {
- 	int len = prop->val.len;
- 	char *p = prop->val.val;
-+	struct fixup *l;
- 	int nnotstring = 0, nnul = 0;
-+	int nnotstringlbl = 0, nnotcelllbl = 0;
- 	int i;
- 
- 	if (len == 0) {
-@@ -157,15 +205,23 @@
- 			nnul++;
- 	}
- 
--	fprintf(f, " = ");
-+	for (l = prop->val.labels; l; l = l->next) {
-+		if ((l->offset > 0) && (prop->val.val[l->offset - 1] != '\0'))
-+			nnotstringlbl++;
-+		if ((l->offset % sizeof(cell_t)) != 0)
-+			nnotcelllbl++;
-+	}
- 
--	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul))) {
-+	fprintf(f, " = ");
-+	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul))
-+	    && (nnotstringlbl == 0)) {
- 		write_propval_string(f, prop->val);
--	} else if (((len % sizeof(cell_t)) == 0)) {
-+	} else if (((len % sizeof(cell_t)) == 0) && (nnotcelllbl == 0)) {
- 		write_propval_cells(f, prop->val);
- 	} else {
- 		write_propval_bytes(f, prop->val);
- 	}
-+
- 	fprintf(f, ";\n");
- }
- 
-Index: dtc/tests/label01.dts
-===================================================================
---- dtc.orig/tests/label01.dts	2007-11-07 09:55:03.000000000 +1100
-+++ dtc/tests/label01.dts	2007-11-07 10:19:42.000000000 +1100
-@@ -36,10 +36,11 @@
- 	};
- 
- 	node: randomnode {
--		prop: string = data: "\xff\0stuffstuff\t\t\t\n\n\n" data_end: ;
--		blob = [byte: 0a 0b 0c 0d de ea ad be ef byte_end: ];
--		ref = < cell: &/memory@0 cell_end: >;
-+		prop: string = str: "foo", str_mid: "stuffstuff\t\t\t\n\n\n" str_end: ;
-+		blob = [byte: 0a 0b 0c 0d byte_mid: de ea ad be ef byte_end: ];
-+		ref = < cell: &/memory@0 0 cell_mid: ffffffff cell_end: >;
- 		mixed = "abc", pre: [1234] post: , gap: < aligned: a b c>;
-+		tricky1 = [61 lt1: 62 63 00];
- 		subnode: child {
- 		};
- 		/* subnode_end: is auto-generated by node emit */
+Say, for example, that in kernel 2.6.25 tqm5200 and cm5200 are both
+handled by the same platform code.  And lets say that in 2.6.26 we
+decide that they really need to have separate platform code (perhaps
+due to a firmware bug that needs to be worked around on one board).
+In this case, "mpc5200-simple-platform" has suddenly become useless.
+Or, does mpc5200-simple-platform now describe the cm5200 or the
+tqm5200?  (an assumption which cannot be made due to deployed boards
+of both types claiming "mpc5200-simple-platform").
+
+Trying to claim "compatible" at the board level is far more difficult
+than claiming it at the device level.
+
+Segher suggested on IRC: "for boards it is pretty much useless most of
+the time, i think -- use "model" instead"
+
+Cheers,
+g.
+
+
+
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> "Text processing has made it possible to right-justify any idea, even
+> one which cannot be justified on any other grounds."
+>                                                  -- J. Finnegan, USC.
+>
+
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
