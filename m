@@ -2,14 +2,14 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58A0BDDE05
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 09:40:28 +1100 (EST)
-Date: Wed, 7 Nov 2007 01:40:28 +0300
+	by ozlabs.org (Postfix) with ESMTP id 894C0DDE42
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 09:40:38 +1100 (EST)
+Date: Wed, 7 Nov 2007 01:40:41 +0300
 From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <1078030427.20071107014028@emcraft.com>
+Message-ID: <1416528026.20071107014041@emcraft.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range() implementation for
-	ppc44x
+Subject: [PATCH 2/2] [PPC 44x] enable L2-cache for ALPR, Katmai, Ocotea,
+	and Taishan
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: sr@denx.de, dzu@denx.de
@@ -23,125 +23,139 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- Support for L2-cache coherency synchronization routines in ppc44x
-processors.
-
+ This patch introduces the L2_CACHE configuration option available
+for the ppc44x-based boards with L2-cache enabled.
 
 Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 Signed-off-by: Pavel Kolesnikov <concord@emcraft.com>
 
 --
-diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
-index 1947380..593a425 100644
---- a/arch/powerpc/lib/dma-noncoherent.c
-+++ b/arch/powerpc/lib/dma-noncoherent.c
-@@ -351,12 +351,18 @@ void __dma_sync(void *vaddr, size_t size, int direction)
-                BUG();
-        case DMA_FROM_DEVICE:   /* invalidate only */
-                invalidate_dcache_range(start, end);
-+#ifdef CONFIG_L2_CACHE
-+               invalidate_l2cache_range(__pa(start), __pa(end));
-+#endif
-                break;
-        case DMA_TO_DEVICE:             /* writeback only */
-                clean_dcache_range(start, end);
-                break;
-        case DMA_BIDIRECTIONAL: /* writeback and invalidate */
-                flush_dcache_range(start, end);
-+#ifdef CONFIG_L2_CACHE
-+               invalidate_l2cache_range(__pa(start), __pa(end));
-+#endif
-                break;
-        }
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 1d2ca42..ad6b581 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -396,4 +396,12 @@ config SERIAL_SICC_CONSOLE
+        bool
+        depends on SERIAL_SICC && UART0_TTYS1
+        default y
++
++config L2_CACHE
++       bool "Enable Level-2 Cache"
++       depends on NOT_COHERENT_CACHE && (KATMAI || TAISHAN || OCOTEA || ALPR)
++       default y
++       help
++         This option enables L2-cache on ppc44x controllers.
++         If unsure, say Y.
+ endmenu
+diff --git a/arch/ppc/platforms/4xx/alpr.c b/arch/ppc/platforms/4xx/alpr.c
+index 3b6519f..0623801 100644
+--- a/arch/ppc/platforms/4xx/alpr.c
++++ b/arch/ppc/platforms/4xx/alpr.c
+@@ -537,10 +537,12 @@ static void __init alpr_setup_arch(void)
+        printk("Prodrive ALPR port (DENX Software Engineering <sr@denx.de>)\n");
  }
-diff --git a/arch/ppc/kernel/misc.S b/arch/ppc/kernel/misc.S
-index 46cf8fa..de62f85 100644
---- a/arch/ppc/kernel/misc.S
-+++ b/arch/ppc/kernel/misc.S
-@@ -386,6 +386,36 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
-        sync                            /* additional sync needed on g4 */
-        isync
-        blr
-+
+ 
 +#ifdef CONFIG_L2_CACHE
-+/*
-+ * Invalidate the Level-2 cache lines corresponded to the address
-+ * range.
-+ *
-+ * invalidate_l2cache_range(unsigned long start, unsigned long stop)
-+ */
-+#include <asm/ibm4xx.h>
-+_GLOBAL(invalidate_l2cache_range)
-+       li      r5,L2_CACHE_BYTES-1     /* do l2-cache line alignment */
-+       andc    r3,r3,r5
-+       subf    r4,r3,r4
-+       add     r4,r4,r5
-+       srwi.   r4,r4,L2_CACHE_SHIFT
-+       mtctr   r4
-+
-+       lis     r4, L2C_CMD_INV>>16
-+1:     mtdcr   DCRN_L2C0_ADDR,r3       /* write address to invalidate */
-+       mtdcr   DCRN_L2C0_CMD,r4        /* issue the Invalidate cmd */
-+
-+2:     mfdcr   r5,DCRN_L2C0_SR         /* wait for complete */
-+       andis.  r5,r5,L2C_CMD_CLR>>16
-+        beq    2b
-+
-+       addi    r3,r3,L2_CACHE_BYTES    /* next address to invalidate */
-+       bdnz    1b
-+       blr
+ static void __init alpr_init(void)
+ {
+        ibm440gx_l2c_setup(&clocks);
+ }
++#endif
+ 
+ static void alpr_progress(char *buf, unsigned short val)
+ {
+@@ -567,7 +569,9 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+ #ifdef CONFIG_KGDB
+        ppc_md.early_serial_map = alpr_early_serial_map;
+ #endif
++#ifdef CONFIG_L2_CACHE
+        ppc_md.init = alpr_init;
++#endif
+        ppc_md.restart = alpr_restart;
+ }
+ 
+diff --git a/arch/ppc/platforms/4xx/katmai.c b/arch/ppc/platforms/4xx/katmai.c
+index d29ebf6..01f1baf 100644
+--- a/arch/ppc/platforms/4xx/katmai.c
++++ b/arch/ppc/platforms/4xx/katmai.c
+@@ -219,6 +219,7 @@ katmai_show_cpuinfo(struct seq_file *m)
+ {
+        seq_printf(m, "vendor\t\t: AMCC\n");
+        seq_printf(m, "machine\t\t: PPC440SPe EVB (Katmai)\n");
++       ibm440gx_show_cpuinfo(m);
+ 
+        return 0;
+ }
+@@ -584,6 +585,13 @@ static void katmai_restart(char *cmd)
+        mtspr(SPRN_DBCR0, DBCR0_RST_CHIP);
+ }
+ 
++#ifdef CONFIG_L2_CACHE
++static void __init katmai_init(void)
++{
++       ibm440gx_l2c_setup(&clocks);
++}
 +#endif
 +
- /*
-  * Write any modified data cache blocks out to memory.
-  * Does not invalidate the corresponding cache lines (especially for
-diff --git a/include/asm-powerpc/cache.h b/include/asm-powerpc/cache.h
-index 5350704..8a2f9e6 100644
---- a/include/asm-powerpc/cache.h
-+++ b/include/asm-powerpc/cache.h
-@@ -10,12 +10,14 @@
- #define MAX_COPY_PREFETCH      1
- #elif defined(CONFIG_PPC32)
- #define L1_CACHE_SHIFT         5
-+#define L2_CACHE_SHIFT         5
- #define MAX_COPY_PREFETCH      4
- #else /* CONFIG_PPC64 */
- #define L1_CACHE_SHIFT         7
+ void __init platform_init(unsigned long r3, unsigned long r4,
+                          unsigned long r5, unsigned long r6, unsigned long r7)
+ {
+@@ -599,4 +607,7 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+        ppc_md.early_serial_map = katmai_early_serial_map;
  #endif
+        ppc_md.restart = katmai_restart;
++#ifdef CONFIG_L2_CACHE
++       ppc_md.init = katmai_init;
++#endif
+ }
+diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
+index a7435aa..8b13811 100644
+--- a/arch/ppc/platforms/4xx/ocotea.c
++++ b/arch/ppc/platforms/4xx/ocotea.c
+@@ -321,10 +321,12 @@ ocotea_setup_arch(void)
+        printk("IBM Ocotea port (MontaVista Software, Inc. <source@mvista.com>)\n");
+ }
  
- #define        L1_CACHE_BYTES          (1 << L1_CACHE_SHIFT)
-+#define        L2_CACHE_BYTES          (1 << L2_CACHE_SHIFT)
++#ifdef CONFIG_L2_CACHE
+ static void __init ocotea_init(void)
+ {
+        ibm440gx_l2c_setup(&clocks);
+ }
++#endif
  
- #define        SMP_CACHE_BYTES         L1_CACHE_BYTES
+ void __init platform_init(unsigned long r3, unsigned long r4,
+                unsigned long r5, unsigned long r6, unsigned long r7)
+@@ -345,5 +347,7 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+ #ifdef CONFIG_KGDB
+        ppc_md.early_serial_map = ocotea_early_serial_map;
+ #endif
++#ifdef CONFIG_L2_CACHE
+        ppc_md.init = ocotea_init;
++#endif
+ }
+diff --git a/arch/ppc/platforms/4xx/taishan.c b/arch/ppc/platforms/4xx/taishan.c
+index f4b9435..8bb6f15 100644
+--- a/arch/ppc/platforms/4xx/taishan.c
++++ b/arch/ppc/platforms/4xx/taishan.c
+@@ -370,10 +370,12 @@ taishan_setup_arch(void)
+        printk("AMCC PowerPC 440GX Taishan Platform\n");
+ }
  
-diff --git a/include/asm-powerpc/cacheflush.h b/include/asm-powerpc/cacheflush.h
-index ba667a3..bdebfaa 100644
---- a/include/asm-powerpc/cacheflush.h
-+++ b/include/asm-powerpc/cacheflush.h
-@@ -49,6 +49,7 @@ extern void flush_dcache_range(unsigned long start, unsigned long stop);
- #ifdef CONFIG_PPC32
- extern void clean_dcache_range(unsigned long start, unsigned long stop);
- extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
-+extern void invalidate_l2cache_range(unsigned long start, unsigned long stop);
- #endif /* CONFIG_PPC32 */
- #ifdef CONFIG_PPC64
- extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
-diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
-index 8078a58..782909a 100644
---- a/include/asm-ppc/ibm44x.h
-+++ b/include/asm-ppc/ibm44x.h
-@@ -138,7 +138,6 @@
-  * The "residual" board information structure the boot loader passes
-  * into the kernel.
-  */
--#ifndef __ASSEMBLY__
++#ifdef CONFIG_L2_CACHE
+ static void __init taishan_init(void)
+ {
+        ibm440gx_l2c_setup(&clocks);
+ }
++#endif
  
- /*
-  * DCRN definitions
-@@ -814,6 +813,5 @@
- 
- #include <asm/ibm4xx.h>
- 
--#endif /* __ASSEMBLY__ */
- #endif /* __ASM_IBM44x_H__ */
- #endif /* __KERNEL__ */ 
+ void __init platform_init(unsigned long r3, unsigned long r4,
+                unsigned long r5, unsigned long r6, unsigned long r7)
+@@ -389,6 +391,8 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+ #ifdef CONFIG_KGDB
+        ppc_md.early_serial_map = taishan_early_serial_map;
+ #endif
++#ifdef CONFIG_L2_CACHE
+        ppc_md.init = taishan_init;
++#endif
+ }
+   
