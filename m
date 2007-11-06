@@ -1,29 +1,13 @@
-Return-Path: <jschopp@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DC934DDE07
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 10:08:46 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA6NAJeH013433
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 18:10:19 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA6N8hLg135184
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 18:08:43 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA6N8hk2025785
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Nov 2007 18:08:43 -0500
-Message-ID: <4730F3FA.7060602@austin.ibm.com>
-Date: Tue, 06 Nov 2007 17:08:42 -0600
-From: jschopp <jschopp@austin.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 7 Nov 2007 10:11:20 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] DTC: Polish up the DTS Version 1 implementation.
+Message-ID: <20071106231120.GG31367@localhost.localdomain>
+References: <E1IpWlT-0007Qd-IX@jdl.com>
 MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [RFC/PATCH] Fix rtas_ibm_suspend_me bugs
-References: <20071106044309.GK9695@localdomain>
-In-Reply-To: <20071106044309.GK9695@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IpWlT-0007Qd-IX@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,184 +18,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > -		for_each_possible_cpu(i)
- > -			plpar_hcall_norets(H_PROD,i);
+On Tue, Nov 06, 2007 at 04:19:19PM -0600, Jon Loeliger wrote:
+> From: Jon Loeliger <jdl@freescale.com>
+> 
+> Fixes BYTESTRING lexing.
+> Allows -O dts output to be emitted in a given (1) format version.
 
-...
+Ok... I'd actually be more inclined to remove the option and just have
+-Odts *always* use the newer version.
 
- > +	for_each_online_cpu(i)
- > +		plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(i));
+Having dtc be able to convert dts versions forward is easy and
+useful.  Coverting backwards is far more complicated, because as well
+as the actualy incompatible version changes, there's the question of
+which dtc version supported which dts features.  Not worth it, I
+think.
 
-I assume this bit would be non-contriversial and could be sent up for 
-immediate upstream inclusion.
-
-Nathan Lynch wrote:
-> (very rfc for now, no sign-off, needs more testing)
+> Skirts around a range check problem in eval_literal() for now.
 > 
-> There are a couple of bugs in the rtas_ibm_suspend_me() and
-> rtas_percpu_suspend_me() functions:
-> 
-> 1.  rtas_ibm_suspend_me() uses on_each_cpu() to invoke
-> rtas_percpu_suspend_me() via IPI:
-> 
-> if (on_each_cpu(rtas_percpu_suspend_me, &data, 1, 0))
-> ...
-> 
-> 'data' is on the stack, and rtas_ibm_suspend_me() takes no measures to
-> ensure that all instances of rtas_percpu_suspend_me() are finished
-> accessing 'data' before returning.  This can result in the IPI'd cpus
-> accessing random stack data and getting stuck in H_JOIN.
-> 
-> Fix this by moving rtas_suspend_me_data off the stack, and protect it
-> with a mutex.  Use a completion to ensure that all cpus are done
-> accessing the data before unlocking.
-> 
-> 2.  rtas_percpu_suspend_me passes the Linux logical cpu id to the
-> H_PROD hypervisor method, when it should be using the platform
-> interrupt server value for that cpu (hard_smp_processor_id).  In
-> practice, this probably causes problems only on partitions where
-> processors have been removed and added in a particular order.
-> 
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
 > ---
->  arch/powerpc/kernel/rtas.c |   64 ++++++++++++++++++++++++++++++++-----------
->  1 files changed, 47 insertions(+), 17 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index 2147807..24faaea 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -19,6 +19,9 @@
->  #include <linux/init.h>
->  #include <linux/capability.h>
->  #include <linux/delay.h>
-> +#include <linux/mutex.h>
-> +#include <linux/completion.h>
-> +#include <linux/smp.h>
+> David,
+> 
+> This patch is directly on top of your prior two patches.
+> Lemme know what you think.
+
+On top of my two dts-v1 patches that is, I assume?
+
+> diff --git a/dtc-lexer.l b/dtc-lexer.l
+> index 1c262d2..b18c0d1 100644
+> --- a/dtc-lexer.l
+> +++ b/dtc-lexer.l
+> @@ -190,6 +190,10 @@ static int dts_version; /* = 0 */
+>  <*>.		{
+>  			yylloc.filenum = srcpos_filenum;
+>  			yylloc.first_line = yylineno;
+> +			if (yytext[0] == '[') {
+> +				DPRINT("BYTESTRING\n");
+> +				BEGIN(BYTESTRING);
+> +			}
+
+Ow... that's rather embarrassing, that I didn't even notice I'd
+totally broken bytestrings.  Really must add some bytestrings to
+test_tree1.dts so this actually gets checked by the testsuite.
+
+>  			if ((yytext[0] == '{')
+>  			    || (yytext[0] == ';')) {
+>  				DPRINT("<PROPNODENAME>\n");
+> diff --git a/dtc-parser.y b/dtc-parser.y
+> index ffb2299..652199f 100644
+> --- a/dtc-parser.y
+> +++ b/dtc-parser.y
+> @@ -297,17 +297,23 @@ label:
 >  
->  #include <asm/prom.h>
->  #include <asm/rtas.h>
-> @@ -34,6 +37,7 @@
->  #include <asm/lmb.h>
->  #include <asm/udbg.h>
->  #include <asm/syscalls.h>
-> +#include <asm/atomic.h>
+>  %%
 >  
->  struct rtas_t rtas = {
->  	.lock = SPIN_LOCK_UNLOCKED
-> @@ -41,10 +45,21 @@ struct rtas_t rtas = {
->  EXPORT_SYMBOL(rtas);
->  
->  struct rtas_suspend_me_data {
-> +	atomic_t working; /* number of cpus accessing rtas_suspend_me_data */
->  	long waiting;
->  	struct rtas_args *args;
-> +	struct completion done; /* wait on this until working == 0 */
->  };
->  
-> +static void rtas_suspend_me_data_init(struct rtas_suspend_me_data *rsmd,
-> +				      struct rtas_args *args)
-> +{
-> +	atomic_set(&rsmd->working, 0);
-> +	rsmd->waiting = 1;
-> +	rsmd->args = args;
-> +	init_completion(&rsmd->done);
-> +}
-> +
->  DEFINE_SPINLOCK(rtas_data_buf_lock);
->  EXPORT_SYMBOL(rtas_data_buf_lock);
->  
-> @@ -671,36 +686,49 @@ static void rtas_percpu_suspend_me(void *info)
->  	 * we set it to <0.
->  	 */
->  	local_irq_save(flags);
-> +	atomic_inc(&data->working);
->  	do {
->  		rc = plpar_hcall_norets(H_JOIN);
->  		smp_rmb();
->  	} while (rc == H_SUCCESS && data->waiting > 0);
->  	if (rc == H_SUCCESS)
-> +		/* join is complete (or there was an error) and this
-> +		 * cpu was prodded
-> +		 */
->  		goto out;
->  
->  	if (rc == H_CONTINUE) {
-> +		/* this cpu does the join */
->  		data->waiting = 0;
->  		data->args->args[data->args->nargs] =
->  			rtas_call(ibm_suspend_me_token, 0, 1, NULL);
-> -		for_each_possible_cpu(i)
-> -			plpar_hcall_norets(H_PROD,i);
->  	} else {
->  		data->waiting = -EBUSY;
->  		printk(KERN_ERR "Error on H_JOIN hypervisor call\n");
->  	}
->  
-> +	/* This cpu did the join or got an error, so we need to prod
-> +	 * everyone else.  Extra prods are harmless.
-> +	 */
-> +	for_each_online_cpu(i)
-> +		plpar_hcall_norets(H_PROD, get_hard_smp_processor_id(i));
-> +
->  out:
-> +	if (atomic_dec_return(&data->working) == 0)
-> +		complete(&data->done);
->  	local_irq_restore(flags);
->  	return;
->  }
->  
-> +static DEFINE_MUTEX(rsm_lock); /* protects rsm_data */
-> +static struct rtas_suspend_me_data rsm_data;
-> +
->  static int rtas_ibm_suspend_me(struct rtas_args *args)
+> -void yyerror (char const *s)
+> +void yyerror(char const *s)
 >  {
-> -	int i;
-> +	int err;
->  	long state;
->  	long rc;
->  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
-> -	struct rtas_suspend_me_data data;
+>  	const char *fname = srcpos_filename_for_num(yylloc.filenum);
 >  
->  	/* Make sure the state is valid */
->  	rc = plpar_hcall(H_VASI_STATE, retbuf,
-> @@ -721,25 +749,27 @@ static int rtas_ibm_suspend_me(struct rtas_args *args)
->  		return 0;
+>  	if (strcmp(fname, "-") == 0)
+>  		fname = "stdin";
+>  
+> -	fprintf(stderr, "%s:%d %s\n",
+> +	fprintf(stderr, "%s:%d Error: %s\n",
+>  		fname, yylloc.first_line, s);
+
+Not really related changes, but whatever..
+
+>  }
+>  
+> +/*
+> + * bits is unused, but it should be 32 or 64 as needed.
+> + *
+> + * FIXME: However, with bits == 64, ((1ULL << bits) - 1)
+> + * overflows before you can actually do the range test.
+> + */
+>  unsigned long long eval_literal(const char *s, int base, int bits)
+>  {
+>  	unsigned long long val;
+> @@ -317,9 +323,10 @@ unsigned long long eval_literal(const char *s, int base, int bits)
+>  	val = strtoull(s, &e, base);
+>  	if (*e)
+>  		yyerror("bad characters in literal");
+> -	else if ((errno == ERANGE) || (val > ((1ULL << bits)-1)))
+> +	else if (errno == ERANGE)
+>  		yyerror("literal out of range");
+>  	else if (errno != 0)
+>  		yyerror("bad literal");
+> +
+
+Ok.. I don't understand why you've pulled out the range checking
+against bits here.
+
+>  	return val;
+>  }
+> diff --git a/dtc.c b/dtc.c
+> index bbef829..38313f5 100644
+> --- a/dtc.c
+> +++ b/dtc.c
+> @@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 >  	}
 >  
-> -	data.waiting = 1;
-> -	data.args = args;
-> +	mutex_lock(&rsm_lock);
-> +
-> +	rtas_suspend_me_data_init(&rsm_data, args);
+>  	if (streq(outform, "dts")) {
+> -		dt_to_source(outf, bi);
+> +		dt_to_source(outf, bi, 1);
+>  	} else if (streq(outform, "dtb")) {
+>  		dt_to_blob(outf, bi, outversion, boot_cpuid_phys);
+>  	} else if (streq(outform, "asm")) {
+> diff --git a/dtc.h b/dtc.h
+> index d080153..ba2027b 100644
+> --- a/dtc.h
+> +++ b/dtc.h
+> @@ -238,7 +238,7 @@ struct boot_info *dt_from_blob(FILE *f);
 >  
-> -	/* Call function on all CPUs.  One of us will make the
-> -	 * rtas call
-> +	/* Call function on all CPUs.  One of us (but not necessarily
-> +	 * this one) will make the ibm,suspend-me call.
->  	 */
-> -	if (on_each_cpu(rtas_percpu_suspend_me, &data, 1, 0))
-> -		data.waiting = -EINVAL;
-> +	if (on_each_cpu(rtas_percpu_suspend_me, &rsm_data, 1, 0))
-> +		rsm_data.waiting = -EINVAL;
-> +
-> +	/* Must wait for all IPIs to complete before unlocking */
-> +	wait_for_completion(&rsm_data.done);
+>  /* Tree source */
 >  
-> -	if (data.waiting != 0)
-> +	if (rsm_data.waiting != 0)
->  		printk(KERN_ERR "Error doing global join\n");
+> -void dt_to_source(FILE *f, struct boot_info *bi);
+> +void dt_to_source(FILE *f, struct boot_info *bi, int dts_version);
+>  struct boot_info *dt_from_source(const char *f);
 >  
-> -	/* Prod each CPU.  This won't hurt, and will wake
-> -	 * anyone we successfully put to sleep with H_JOIN.
-> -	 */
-> -	for_each_possible_cpu(i)
-> -		plpar_hcall_norets(H_PROD, i);
-> +	err = rsm_data.waiting;
-> +
-> +	mutex_unlock(&rsm_lock);
->  
-> -	return data.waiting;
-> +	return err;
+>  /* FS trees */
+> diff --git a/treesource.c b/treesource.c
+> index 376ebc8..ac0c777 100644
+> --- a/treesource.c
+> +++ b/treesource.c
+> @@ -140,14 +140,18 @@ static void write_propval_string(FILE *f, struct data val)
+>  	fprintf(f, "\";\n");
 >  }
->  #else /* CONFIG_PPC_PSERIES */
->  static int rtas_ibm_suspend_me(struct rtas_args *args)
+>  
+> -static void write_propval_cells(FILE *f, struct data val)
+> +static void write_propval_cells(FILE *f, struct data val, int dts_version)
+>  {
+>  	void *propend = val.val + val.len;
+>  	cell_t *cp = (cell_t *)val.val;
+>  
+>  	fprintf(f, " = <");
+>  	for (;;) {
+> -		fprintf(f, "%x", be32_to_cpu(*cp++));
+> +		if (dts_version == 0) {
+> +			fprintf(f, "%x", be32_to_cpu(*cp++));
+> +		} else {
+> +			fprintf(f, "0x%x", be32_to_cpu(*cp++));
+> +		}
+>  		if ((void *)cp >= propend)
+>  			break;
+>  		fprintf(f, " ");
+> @@ -155,14 +159,18 @@ static void write_propval_cells(FILE *f, struct data val)
+>  	fprintf(f, ">;\n");
+>  }
+>  
+> -static void write_propval_bytes(FILE *f, struct data val)
+> +static void write_propval_bytes(FILE *f, struct data val, int dts_version)
+>  {
+>  	void *propend = val.val + val.len;
+>  	char *bp = val.val;
+>  
+>  	fprintf(f, " = [");
+>  	for (;;) {
+> -		fprintf(f, "%02hhx", *bp++);
+> +		if (dts_version == 0) {
+> +			fprintf(f, "%02hhx", *bp++);
+> +		} else {
+> +			fprintf(f, "0x%02hhx", *bp++);
+> +		}
+
+Uh.. not quite right.  My patch (intentionally) leaves bytestrings as
+pure hex, without 0x.  We can argue about whether that's a good idea,
+if you like, but in any case input and output should match.
+
+To avoid this sort of problem, I suggest before we apply the dts-v1
+transition, we apply the patch I'm working on (I'll try to get it out
+today), which adds a bunch of extra testcases checking that using dtc
+to go dtb->dts->dtb preserves everything.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
