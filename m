@@ -1,21 +1,24 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AB643DDE06
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 15:30:00 +1100 (EST)
-Date: Tue, 6 Nov 2007 15:29:57 +1100
+	by ozlabs.org (Postfix) with ESMTP id B3D10DDDFE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 15:40:12 +1100 (EST)
+Date: Tue, 6 Nov 2007 15:40:04 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [RFC/PATCH] reduce load time for modules with lots of relocs
-Message-Id: <20071106152957.63fcbf9f.sfr@canb.auug.org.au>
-In-Reply-To: <20071106023355.GJ9695@localdomain>
-References: <598D5675D34BE349929AF5EDE9B03E270174CC98@az33exm24.fsl.freescale.net>
-	<20071101235728.GE9695@localdomain>
-	<20071106023355.GJ9695@localdomain>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+Message-Id: <20071106154004.4f01a536.sfr@canb.auug.org.au>
+In-Reply-To: <9e4733910711052025m7905efb6ja3e4b6a022e6aa81@mail.gmail.com>
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
+	<472F8267.8070106@freescale.com>
+	<9e4733910711052025m7905efb6ja3e4b6a022e6aa81@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Nov_2007_15_29_57_+1100_t.pSumkLq+kNv+fx"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Tue__6_Nov_2007_15_40_04_+1100_XQ15B7KIkqM30+nh"
+Cc: Tjernlund <tjernlund@tjernlund.se>, Jean Delvare <khali@linux-fr.org>,
+	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,59 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Nov_2007_15_29_57_+1100_t.pSumkLq+kNv+fx
-Content-Type: text/plain; charset=US-ASCII
+--Signature=_Tue__6_Nov_2007_15_40_04_+1100_XQ15B7KIkqM30+nh
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 5 Nov 2007 20:33:55 -0600 Nathan Lynch <ntl@pobox.com> wrote:
+Hi Jon,
+
+On Mon, 5 Nov 2007 23:25:35 -0500 "Jon Smirl" <jonsmirl@gmail.com> wrote:
 >
->  static unsigned int count_relocs(const Elf32_Rela *rela, unsigned int nu=
-m)
->  {
-> -	unsigned int i, j, ret =3D 0;
-> +	unsigned int i, sorted_count =3D 0;
-> +	Elf32_Word last_info;
-> +	Elf32_Sword last_addend;
-> +	Elf32_Rela **sortbuf =3D NULL;
+> +		compatible =3D of_get_property(node, "compatible", &len);
+> +		strlcpy(info.driver_name, compatible, len);
 
-You don't need to initialise sortbuf and f you make it a "const
-Elf32_Rela **" ...
+Of course, you will check len against sizeof(info.driver_name), right?
 
-> +	sortbuf =3D vmalloc(num * sizeof(*sortbuf));
-> +	if (!sortbuf)
-> +		return -ENOMEM;
-> +
-> +	for (i =3D 0; i < num; i++)
-> +		sortbuf[i] =3D (Elf32_Rela *)&rela[i];
+> -/* With some changes from Ky=C3=B6sti M=C3=A4lkki <kmalkki@cc.hut.fi>.
+> +/* With some changes from Ky=C3=AF=C2=BF=C5=93sti M=C3=AF=C2=BF=C5=93lkk=
+i <kmalkki@cc.hut.fi>.
 
-You shouldn't need that cast.
+Did you mean to change this?
 
-> -static unsigned int count_relocs(const Elf64_Rela *rela, unsigned int nu=
-m)
-> +static int count_relocs(const Elf64_Rela *rela, unsigned int num)
->  {
->  	unsigned int i, j, ret =3D 0;
-> +	Elf64_Xword last_info;
-> +	Elf64_Sxword last_addend;
-> +	Elf64_Rela **sortbuf =3D NULL;
+> +	char **alias;
 
-Same here.
+const char ** would be nicer.
+
+>  struct i2c_driver {
+>  	int id;
+>  	unsigned int class;
+> +=09
+> +	/* Alias name for the driver. Used to support device trees on
+> +	 * the PowerPC architecture. Device tree names take the form of
+> +	 * vendor,chip. For example "epson,pcf8564". Alias is a list of
+> +	 * strings terminated by a zero entry.
+> +	 */
+> +	char **alias;
+
+const char ** would be nicer;
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__6_Nov_2007_15_29_57_+1100_t.pSumkLq+kNv+fx
+--Signature=_Tue__6_Nov_2007_15_40_04_+1100_XQ15B7KIkqM30+nh
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHL+3LTgG2atn1QN8RAu+gAJwNHYatzuWPphCI6Sb/Ht8U8NfmYQCbBuMz
-fUM6RCnAH4uiomhY26abawA=
-=xhT7
+iD8DBQFHL/AqTgG2atn1QN8RAsReAJ4xV61dcluWiI8bgdI3MIts0AqM4ACaArrT
+7XPfCglCBis3khgEXKbaoPk=
+=g2Qc
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__6_Nov_2007_15_29_57_+1100_t.pSumkLq+kNv+fx--
+--Signature=_Tue__6_Nov_2007_15_40_04_+1100_XQ15B7KIkqM30+nh--
