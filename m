@@ -2,17 +2,17 @@ Return-Path: <jdl@jdl.com>
 Received: from jdl.com (jdl.com [208.123.74.7])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A649DDE09
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:11:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 973B2DDDF8
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:13:09 +1100 (EST)
 Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1IpStN-0003li-2G
-	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:11:14 -0600
+	(envelope-from <jdl@jdl.com>) id 1IpSvA-0003m2-1v
+	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:13:05 -0600
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH Rev 2] 8xxx: Convert #include of asm/of_{platform,
-	device}.h into linux/of_{platform, device}.h.
-Date: Tue, 06 Nov 2007 12:11:13 -0600
+Subject: [PATCH Rev 2] 4xx: Replace #includes of asm/of_platform.h with
+	linux/of_platform.h.
+Date: Tue, 06 Nov 2007 12:13:04 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IpStN-0003li-2G@jdl.com>
+Message-Id: <E1IpSvA-0003m2-1v@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,97 +27,90 @@ From: Jon Loeliger <jdl@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-
 Chip away at some janitor work.
-Catch both asm/of_platform.h and asm/of_device.h this time.
 Add sfr's ACK.
 
- arch/powerpc/platforms/82xx/pq2fads.c     |    2 +-
- arch/powerpc/platforms/83xx/mpc832x_mds.c |    4 ++--
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |    2 +-
- arch/powerpc/platforms/83xx/mpc836x_mds.c |    4 ++--
- arch/powerpc/platforms/85xx/mpc85xx_mds.c |    4 ++--
- 5 files changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/40x/walnut.c  |    3 ++-
+ arch/powerpc/platforms/44x/bamboo.c  |    3 ++-
+ arch/powerpc/platforms/44x/ebony.c   |    3 ++-
+ arch/powerpc/platforms/44x/sequoia.c |    3 ++-
+ 4 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/pq2fads.c b/arch/powerpc/platforms/82xx/pq2fads.c
-index 4f457a9..1be5005 100644
---- a/arch/powerpc/platforms/82xx/pq2fads.c
-+++ b/arch/powerpc/platforms/82xx/pq2fads.c
-@@ -15,12 +15,12 @@
+diff --git a/arch/powerpc/platforms/40x/walnut.c b/arch/powerpc/platforms/40x/walnut.c
+index eb0c136..ff6db24 100644
+--- a/arch/powerpc/platforms/40x/walnut.c
++++ b/arch/powerpc/platforms/40x/walnut.c
+@@ -17,12 +17,13 @@
+  */
+ 
  #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/fsl_devices.h>
 +#include <linux/of_platform.h>
- 
- #include <asm/io.h>
- #include <asm/cpm2.h>
- #include <asm/udbg.h>
++
  #include <asm/machdep.h>
--#include <asm/of_platform.h>
- #include <asm/time.h>
- 
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 972fa85..4ea1989 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -23,9 +23,9 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/initrd.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_device.h>
- 
--#include <asm/of_device.h>
--#include <asm/of_platform.h>
- #include <asm/system.h>
- #include <asm/atomic.h>
- #include <asm/time.h>
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index fbca336..24e6ce6 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -16,8 +16,8 @@
- 
- #include <linux/pci.h>
- #include <linux/spi/spi.h>
-+#include <linux/of_platform.h>
- 
--#include <asm/of_platform.h>
- #include <asm/time.h>
- #include <asm/ipic.h>
+ #include <asm/prom.h>
  #include <asm/udbg.h>
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 0f3855c..3781e3d 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -29,9 +29,9 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/initrd.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_device.h>
- 
--#include <asm/of_device.h>
--#include <asm/of_platform.h>
- #include <asm/system.h>
- #include <asm/atomic.h>
  #include <asm/time.h>
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 61b3eed..e6c63a5 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -30,9 +30,9 @@
- #include <linux/initrd.h>
- #include <linux/module.h>
- #include <linux/fsl_devices.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_device.h>
- 
--#include <asm/of_device.h>
+ #include <asm/uic.h>
 -#include <asm/of_platform.h>
- #include <asm/system.h>
- #include <asm/atomic.h>
+ 
+ static struct of_device_id walnut_of_bus[] = {
+ 	{ .compatible = "ibm,plb3", },
+diff --git a/arch/powerpc/platforms/44x/bamboo.c b/arch/powerpc/platforms/44x/bamboo.c
+index 470e1a3..be23f11 100644
+--- a/arch/powerpc/platforms/44x/bamboo.c
++++ b/arch/powerpc/platforms/44x/bamboo.c
+@@ -14,12 +14,13 @@
+  * option) any later version.
+  */
+ #include <linux/init.h>
++#include <linux/of_platform.h>
++
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
  #include <asm/time.h>
+ #include <asm/uic.h>
+-#include <asm/of_platform.h>
+ #include "44x.h"
+ 
+ static struct of_device_id bamboo_of_bus[] = {
+diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
+index 40e18fc..6cd3476 100644
+--- a/arch/powerpc/platforms/44x/ebony.c
++++ b/arch/powerpc/platforms/44x/ebony.c
+@@ -17,12 +17,13 @@
+  */
+ 
+ #include <linux/init.h>
++#include <linux/of_platform.h>
++
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/time.h>
+ #include <asm/uic.h>
+-#include <asm/of_platform.h>
+ 
+ #include "44x.h"
+ 
+diff --git a/arch/powerpc/platforms/44x/sequoia.c b/arch/powerpc/platforms/44x/sequoia.c
+index 30700b3..21a9dd1 100644
+--- a/arch/powerpc/platforms/44x/sequoia.c
++++ b/arch/powerpc/platforms/44x/sequoia.c
+@@ -14,12 +14,13 @@
+  * option) any later version.
+  */
+ #include <linux/init.h>
++#include <linux/of_platform.h>
++
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/time.h>
+ #include <asm/uic.h>
+-#include <asm/of_platform.h>
+ #include "44x.h"
+ 
+ static struct of_device_id sequoia_of_bus[] = {
 -- 
 1.5.3.1.139.g9346b
