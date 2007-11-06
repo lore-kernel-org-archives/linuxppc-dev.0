@@ -1,23 +1,22 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
-	by ozlabs.org (Postfix) with ESMTP id 87736DDDE7
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 11:41:40 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1474105rvf
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Nov 2007 16:41:39 -0800 (PST)
-Message-ID: <9e4733910711051641m5ff0e651ke9a43daa51fd14b@mail.gmail.com>
-Date: Mon, 5 Nov 2007 19:41:39 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
-In-Reply-To: <472F8267.8070106@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
-	<472F7247.9070106@freescale.com>
-	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
-	<472F8267.8070106@freescale.com>
-Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
-	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 494C8DDD0C
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 12:10:33 +1100 (EST)
+Date: Tue, 6 Nov 2007 12:10:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Josh Boyer <jwboyer@gmail.com>
+Subject: Re: [PATCH] 4xx; Replace #includes of asm/of_platform.h with
+	linux/of_platform.h.
+Message-Id: <20071106121027.d7d34f0b.sfr@canb.auug.org.au>
+In-Reply-To: <20071105175341.6ee15106@vader.jdub.homelinux.org>
+References: <1194299023.7158.59.camel@ld0161-tx32>
+	<20071106094014.cd429711.sfr@canb.auug.org.au>
+	<20071105175341.6ee15106@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/5/07, Scott Wood <scottwood@freescale.com> wrote:
-> >>> One side effect is that legacy style i2c drivers won't work anymore.
-> >> If you mean legacy-style client drivers, why not?
-> >
-> > i2c_new_device() doesn't work with legacy-style client drivers.
+--Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 5 Nov 2007 17:53:41 -0600 Josh Boyer <jwboyer@gmail.com> wrote:
 >
-> No, but they should still work the old way.
+> Yeah, this is fine with me too.  But why haven't we put a #warning in
+> asm/of_platform.h and asm/prom.h?
 
-I'm not in favor trying to support both legacy and new style i2c
-drivers.  It took me all of five minutes to convert an existing legacy
-driver to the new style. Pretty much all you need to do is delete code
-(about 100 lines). So I'd recommend converting the drivers we are
-interest in instead of trying to support both types.
+Because thee are way to many places to be fixed yet.  And asm/prom.h needs =
+to be explicitly included if you want to use the flattened device tree acce=
+ssors.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHL78JTgG2atn1QN8RAvb5AJ9CYERrG65H1dQveYWNq2yyMAIi9gCgkkys
+5hxZi2pNxJcS0AorisKbInE=
+=B4QJ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5--
