@@ -1,15 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Nov 2007 09:36:46 +1100
+Date: Wed, 7 Nov 2007 09:22:43 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH v3 07/13] [POWERPC] TQM5200 DTS
-Message-ID: <20071106223646.GD31367@localhost.localdomain>
-References: <20071106200446.10913.29338.stgit@hekate.izotz.org>
-	<20071106200548.10913.42168.stgit@hekate.izotz.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+Message-ID: <20071106222243.GB31367@localhost.localdomain>
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
+	<472F8267.8070106@freescale.com>
+	<9e4733910711052025m7905efb6ja3e4b6a022e6aa81@mail.gmail.com>
+	<20071106154004.4f01a536.sfr@canb.auug.org.au>
+	<9e4733910711061102w710f670ey48a0cca72883084@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071106200548.10913.42168.stgit@hekate.izotz.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <9e4733910711061102w710f670ey48a0cca72883084@mail.gmail.com>
+Cc: Tjernlund <tjernlund@tjernlund.se>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,48 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 06, 2007 at 09:05:48PM +0100, Marian Balakowicz wrote:
-> Add device tree source file for TQM5200 board.
-> 
-> Signed-off-by: Marian Balakowicz <m8@semihalf.com>
-
+On Tue, Nov 06, 2007 at 02:02:12PM -0500, Jon Smirl wrote:
+> Second pass at extending i2c core to accept strings of aliases for
+> the
 [snip]
-> +		usb@1000 {
-> +			device_type = "usb-ohci-be";
 
-This device_type is bogus.  Remember having a valid device_type is the
-exception not the rule.  Really the only common device_type values are
-"cpu", "memory", "network" and "serial".
+> -/* With some changes from Kyösti Mälkki <kmalkki@cc.hut.fi>.
+> +/* With some changes from KyÃ¶sti MÃ€lkki <kmalkki@cc.hut.fi>.
 
-> +			compatible = "mpc5200-ohci","ohci-be";
-> +			reg = <1000 ff>;
-> +			interrupts = <2 6 0>;
-> +			interrupt-parent = <&mpc5200_pic>;
-> +		};
-> +
-> +		dma-controller@1200 {
-> +			compatible = "mpc5200-bestcomm";
-> +			reg = <1200 80>;
-> +			interrupts = <3 0 0  3 1 0  3 2 0  3 3 0
-> +			              3 4 0  3 5 0  3 6 0  3 7 0
-> +			              3 8 0  3 9 0  3 a 0  3 b 0
-> +			              3 c 0  3 d 0  3 e 0  3 f 0>;
-> +			interrupt-parent = <&mpc5200_pic>;
-> +		};
-> +
-> +		xlb@1f00 {
-> +			compatible = "mpc5200-xlb";
-> +			reg = <1f00 100>;
-> +		};
-> +
-> +		serial@2000 {		// PSC1
-> +			device_type = "serial";
-> +			compatible = "mpc5200-psc-uart";
-> +			port-number = <0>;  // Logical port assignment
-
-I know you said this is still needed, but the driver really needs to
-be fixed.  This is not a proper way of using the device tree for
-logical numbering.
+This looks like an unrelated change of character encoding has slipped
+in here.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
