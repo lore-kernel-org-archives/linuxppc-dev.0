@@ -1,22 +1,25 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 1C631DDECC
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:04:58 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 15999DDF35
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:05:09 +1100 (EST)
 Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 09C7714399
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:05:49 +0100 (CET)
+	by mail.semihalf.com (Postfix) with ESMTP id 2E51A1439B
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:06:00 +0100 (CET)
 Received: from mail.semihalf.com ([127.0.0.1])
 	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 09143-07 for <linuxppc-dev@ozlabs.org>;
-	Tue,  6 Nov 2007 21:05:48 +0100 (CET)
+	with ESMTP id 09143-08 for <linuxppc-dev@ozlabs.org>;
+	Tue,  6 Nov 2007 21:05:58 +0100 (CET)
 Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
-	by mail.semihalf.com (Postfix) with ESMTP id B7C7814377
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:05:46 +0100 (CET)
+	by mail.semihalf.com (Postfix) with ESMTP id 99E9E14399
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:05:58 +0100 (CET)
 From: Marian Balakowicz <m8@semihalf.com>
-Subject: [PATCH v3 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board support
+Subject: [PATCH v3 01/13] [POWERPC] Add 'model: ...' line to common
+	show_cpuinfo()
 To: linuxppc-dev@ozlabs.org
-Date: Tue, 06 Nov 2007 21:04:47 +0100
-Message-ID: <20071106200446.10913.29338.stgit@hekate.izotz.org>
+Date: Tue, 06 Nov 2007 21:04:55 +0100
+Message-ID: <20071106200455.10913.40738.stgit@hekate.izotz.org>
+In-Reply-To: <20071106200446.10913.29338.stgit@hekate.izotz.org>
+References: <20071106200446.10913.29338.stgit@hekate.izotz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,25 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a third version of the patches that add arch/powerpc support for
-three MPC5200 based boards: TQ-Components TQM5200, Schindler CM5200
-and Promess Motion-PRO.
+Print out 'model' property of '/' node as a machine name
+in generic show_cpuinfo() routine.
 
-[POWERPC] Promess Motion-PRO defconfig
-[POWERPC] Promess Motion-PRO DTS
-[POWERPC] Motion-PRO: Add LED support.
-[POWERPC] CM5200 defconfig
-[POWERPC] CM5200 DTS
-[POWERPC] TQM5200 defconfig
-[POWERPC] TQM5200 DTS
-[POWERPC] Use EXPORT_SYMBOL_GPL for 52xx common routines symbol export
-[POWERPC] Export mpc52xx_map_node() routine symbol
-[POWERPC] Add generic support for simple MPC5200 based boards
-[POWERPC] Add common mpc52xx_setup_pci() routine
-[POWERPC] Add 'fsl,lpb' bus type for MPC5200 LocalPlus Bus
-[POWERPC] Add 'model: ...' line to common show_cpuinfo()
+Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Acked-by: Olof Johansson <olof@lixom.net>
+---
 
-Please review them and schedule for 2.6.24-rc2 if you are ok with them.
+ arch/powerpc/kernel/setup-common.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-Cheers,
-m.
+
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 2de00f8..cb291f1 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -165,6 +165,8 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 	unsigned short min;
+ 
+ 	if (cpu_id == NR_CPUS) {
++		struct device_node *root;
++		const char *model = NULL;
+ #if defined(CONFIG_SMP) && defined(CONFIG_PPC32)
+ 		unsigned long bogosum = 0;
+ 		int i;
+@@ -176,6 +178,13 @@ static int show_cpuinfo(struct seq_file *m, void *v)
+ 		seq_printf(m, "timebase\t: %lu\n", ppc_tb_freq);
+ 		if (ppc_md.name)
+ 			seq_printf(m, "platform\t: %s\n", ppc_md.name);
++		root = of_find_node_by_path("/");
++		if (root)
++			model = of_get_property(root, "model", NULL);
++		of_node_put(root);
++		if (model)
++			seq_printf(m, "model\t\t: %s\n", model);
++
+ 		if (ppc_md.show_cpuinfo != NULL)
+ 			ppc_md.show_cpuinfo(m);
+ 
