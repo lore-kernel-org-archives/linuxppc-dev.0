@@ -1,15 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9EC6FDDE08
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 17:26:39 +1100 (EST)
-Date: Tue, 6 Nov 2007 17:26:42 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] iSeries: fix ref counting in vio setup.
-Message-Id: <20071106172642.c794f5cd.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <SRS0=kYWG=P7=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id BD2ECDDD0D
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 17:50:32 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: mmap question on ppc440
+Date: Tue, 6 Nov 2007 07:50:21 +0100
+References: <472F8503.2080705@harris.com> <20071105151659.3ea601e4@weaponx>
+In-Reply-To: <20071105151659.3ea601e4@weaponx>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711060750.21750.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,52 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 05 November 2007, Josh Boyer wrote:
+> > I am attempting to access the CPLD on the AMCC Sequoia board from
+> > user-land.  I open /dev/mem, and mmap it, then try to access the
+> > resulting pointer.  That works fine when accessing physical addresses
+> > that correspond to RAM, but as soon as I try to access the CPLD at
+> > physical address 0xc0000000, I get an infinite machine check.
+>
+> That's because the CPLD is actually at physical address 0x1C0000000.
+> Yay for 36-bit physical addresses.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/iseries/vio.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+Right. Are you using arch/ppc or arch/powerpc? If it's arch/ppc you could
+give the following patch a try:
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
-index d6435b0..be06cfd 100644
---- a/arch/powerpc/platforms/iseries/vio.c
-+++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -523,15 +523,16 @@ static void __init get_viotape_info(struct device_node *vio_root)
- static int __init iseries_vio_init(void)
+@@ -275,6 +275,14 @@
  {
- 	struct device_node *vio_root;
-+	int ret = -ENODEV;
- 
- 	if (!firmware_has_feature(FW_FEATURE_ISERIES))
--		return -ENODEV;
-+		goto out;
- 
- 	iommu_vio_init();
- 
- 	vio_root = of_find_node_by_path("/vdevice");
- 	if (!vio_root)
--		return -ENODEV;
-+		goto out;
- 
- 	if (viopath_hostLp == HvLpIndexInvalid) {
- 		vio_set_hostlp();
-@@ -544,10 +545,11 @@ static int __init iseries_vio_init(void)
- 	get_viocd_info(vio_root);
- 	get_viotape_info(vio_root);
- 
--	return 0;
-+	ret = 0;
- 
-  put_node:
- 	of_node_put(vio_root);
--	return -ENODEV;
-+ out:
-+	return ret;
- }
- arch_initcall(iseries_vio_init);
--- 
-1.5.3.5
+        size_t size = vma->vm_end - vma->vm_start;
+
++#if defined(CONFIG_44x) && !defined(CONFIG_PPC_MERGE)
++       /*
++        * 2006-08-07: sr
++        * Needed on 44x-er systems for 36bit addresses (like pci on 440gx)
++        */
++       vma->vm_pgoff = (fixup_bigphys_addr(vma->vm_pgoff << PAGE_SHIFT, size) >> PAGE_SHIFT);
++#endif
++
+        if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
+                return -EINVAL;
+
+
+Best regards,
+Stefan
