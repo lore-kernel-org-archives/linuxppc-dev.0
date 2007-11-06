@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Nov 2007 10:34:06 +1100
+Date: Wed, 7 Nov 2007 10:58:22 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Add testcases exercising -Odts mode
-Message-ID: <20071106233406.GJ31367@localhost.localdomain>
+Subject: dtc: Better exercise dtc base and bytestring features
+Message-ID: <20071106235822.GK31367@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,70 +16,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a batch of testcases exercising dtc's -Odts mode.
-Specifically it checks that using dtc to convert dtb->dts->dtb
-preserves the original dtb for a number of example dtb files.
+This patch alters the main testcase, and the dts file corresponding to
+it so that we at least trivially exercise dtc's bytestring and base
+conversion features.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/tests/run_tests.sh
+Index: dtc/tests/test_tree1.dts
 ===================================================================
---- dtc.orig/tests/run_tests.sh	2007-11-07 10:23:04.000000000 +1100
-+++ dtc/tests/run_tests.sh	2007-11-07 10:27:30.000000000 +1100
-@@ -83,7 +83,7 @@
-     done
+--- dtc.orig/tests/test_tree1.dts	2007-11-07 10:37:38.000000000 +1100
++++ dtc/tests/test_tree1.dts	2007-11-07 10:39:32.000000000 +1100
+@@ -1,5 +1,5 @@
+ /memreserve/ deadbeef00000000-deadbeef000fffff;
+-/memreserve/ abcd1234 00001234;
++/memreserve/ 75bcd15 1000;
  
-     # v16 and alternate layout tests
--    for tree in test_tree1.dtb; do
-+    for tree in test_tree1.dtb sw_tree1.test.dtb; do
- 	for version in 17 16; do
- 	    for layout in $ALL_LAYOUTS; do
- 		run_test mangle-layout $tree $version $layout
-@@ -94,7 +94,7 @@
-     done
+ / {
+ 	compatible = "test_tree1";
+@@ -8,20 +8,20 @@
  
-     # Read-write tests
--    for basetree in test_tree1.dtb; do
-+    for basetree in test_tree1.dtb sw_tree1.test.dtb; do
- 	for version in 17 16; do
- 	    for layout in $ALL_LAYOUTS; do
- 		tree=v$version.$layout.$basetree
-@@ -126,6 +126,13 @@
+ 	subnode@1 {
+ 		compatible = "subnode1";
+-		prop-int = <deadbeef>;
++		prop-int = [deadbeef];
  
-     run_test dtc.sh -I dts -O dtb -o dtc_escapes.test.dtb escapes.dts
-     run_test string_escapes dtc_escapes.test.dtb
-+
-+    # Check -Odts mode preserve all dtb information
-+    for tree in test_tree1.dtb dtc_tree1.test.dtb dtc_escapes.test.dtb ; do
-+	run_test dtc.sh -I dtb -O dts -o odts_$tree.test.dts $tree
-+	run_test dtc.sh -I dts -O dtb -o odts_$tree.test.dtb odts_$tree.test.dts
-+	run_test dtbs_equal_ordered $tree odts_$tree.test.dtb
-+    done
- }
+ 		subsubnode {
+ 			compatible = "subsubnode1", "subsubnode";
+-			prop-int = <deadbeef>;
++			prop-int = <h# deadbeef>;
+ 		};
+ 	};
  
- while getopts "vdt:" ARG ; do
-@@ -144,7 +151,7 @@
- fi
+ 	subnode@2 {
+-		prop-int = <abcd1234>;
++		prop-int = <d# 123456789>;
  
- # Make sure we don't have stale blobs lying around
--rm -f *.test.dtb
-+rm -f *.test.dtb *.test.dts
- 
- for set in $TESTSETS; do
-     case $set in
-Index: dtc/tests/Makefile.tests
+ 		subsubnode@0 {
+ 			compatible = "subsubnode2", "subsubnode";
+-			prop-int = <abcd1234>;
++			prop-int = <o# 0726746425>;
+ 		};
+ 	};
+ };
+Index: dtc/tests/testdata.h
 ===================================================================
---- dtc.orig/tests/Makefile.tests	2007-11-07 10:24:34.000000000 +1100
-+++ dtc/tests/Makefile.tests	2007-11-07 10:24:38.000000000 +1100
-@@ -23,7 +23,7 @@
+--- dtc.orig/tests/testdata.h	2007-11-07 10:36:40.000000000 +1100
++++ dtc/tests/testdata.h	2007-11-07 10:37:01.000000000 +1100
+@@ -17,11 +17,11 @@
  
- TESTS_DEPFILES = $(TESTS:%=%.d) $(TESTS_PREFIX)testutils.d
+ #define TEST_ADDR_1	ASM_CONST_LL(0xdeadbeef00000000)
+ #define TEST_SIZE_1	ASM_CONST_LL(0x100000)
+-#define TEST_ADDR_2	ASM_CONST_LL(0xabcd1234)
+-#define TEST_SIZE_2	ASM_CONST_LL(0x1234)
++#define TEST_ADDR_2	ASM_CONST_LL(123456789)
++#define TEST_SIZE_2	ASM_CONST_LL(010000)
  
--TESTS_CLEANFILES_L =  *.output vgcore.* *.dtb
-+TESTS_CLEANFILES_L =  *.output vgcore.* *.dtb *.test.dts
- TESTS_CLEANFILES = $(TESTS_CLEANFILES_L:%=$(TESTS_PREFIX)%)
+ #define TEST_VALUE_1	cell_to_fdt(0xdeadbeef)
+-#define TEST_VALUE_2	cell_to_fdt(0xabcd1234)
++#define TEST_VALUE_2	cell_to_fdt(123456789)
  
- BIN += $(TESTS) $(TESTS_PREFIX)dumptrees
+ #define TEST_STRING_1	"hello world"
+ #define TEST_STRING_2	"nastystring: \a\b\t\n\v\f\r\\\""
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
