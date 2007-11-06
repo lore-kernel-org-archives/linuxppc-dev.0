@@ -1,19 +1,25 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 4BF7FDDE49
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 06:19:03 +1100 (EST)
-Message-ID: <4730BE1A.8060502@semihalf.com>
-Date: Tue, 06 Nov 2007 20:18:50 +0100
-From: Marian Balakowicz <m8@semihalf.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v2 08/12] [POWERPC] CM5200 DTS
-References: <20071103235210.31906.83423.stgit@hekate.izotz.org>
-	<20071103235259.31906.54116.stgit@hekate.izotz.org>
-	<20071105005007.GH19867@localhost.localdomain>
-In-Reply-To: <20071105005007.GH19867@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from mallaury.nerim.net (smtp-102-tuesday.noc.nerim.net
+	[62.4.17.102]) by ozlabs.org (Postfix) with ESMTP id D9B53DDE16
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 06:34:56 +1100 (EST)
+Date: Tue, 6 Nov 2007 20:34:53 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+Message-ID: <20071106203453.21220468@hyperion.delvare>
+In-Reply-To: <fa686aa40711061026i64f3022eh3bb820f645b9220e@mail.gmail.com>
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
+	<472F8267.8070106@freescale.com>
+	<20071106182953.3c1a57e3@hyperion.delvare>
+	<4730A617.9040502@freescale.com>
+	<20071106191039.37cd7053@hyperion.delvare>
+	<fa686aa40711061026i64f3022eh3bb820f645b9220e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Tjernlund <tjernlund@tjernlund.se>, i2c@lm-sensors.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Sun, Nov 04, 2007 at 12:52:59AM +0100, Marian Balakowicz wrote:
->> Add device tree source file for CM5200 board.
-> [snip]
->> +		rtc@800 {	// Real time clock
->> +			compatible = "mpc5200b-rtc","mpc5200-rtc";
->> +			device_type = "rtc";
+On Tue, 6 Nov 2007 11:26:14 -0700, Grant Likely wrote:
+> On 11/6/07, Jean Delvare <khali@linux-fr.org> wrote:
+> > Sorry, I've not been completely clear. Yes, you can use
+> > i2c_new_device() on an adapter that has been added with
+> > i2c_add_adapter(). However, this requires that you have a reference to
+> > that i2c_adapter, which is usually not the case with system-wide I2C
+> > buses. Embedded platforms would rather use i2c_add_numbered_adapter(),
+> > give a list of chips to i2c_register_board_info() and let i2c-core
+> > instantiate them. i2c_new_device was primarily meant for multimedia
+> > adapters.
 > 
-> No device_type here.
+> *Some* embedded platforms would rather use i2c_add_numbered_adapter().  :-)
 > 
-> [snip]
->> +		spi@f00 {
->> +			device_type = "spi";
+> On powerpc, and other platforms which have a device tree, we don't
+> need to define a table of devices in the platform code because we've
+> already got a rich structure for describing such things.  The i2c
+> busses and i2c devices are grouped together in the device tree, so
+> when the i2c bus is probed, it should call out to common i2c device
+> tree parsing code to instantiate all the devices described in the
+> tree.
 > 
-> Definitely no device_type here.
-> 
->> +			compatible = "mpc5200b-spi","mpc5200-spi";
->> +			reg = <f00 20>;
->> +			interrupts = <2 d 0 2 e 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
-> 
-> [snip]
->> +		i2c@3d40 {
->> +			device_type = "i2c";
-> 
-> No device_type here.
+> It would be awkward to describe the i2c bus in the device tree but
+> still have to use a static structure to describe the devices on that
+> bus.
 
-OK, device_type removed for the above devices.
+Ah, OK, thanks for the clarification. Then indeed using
+i2c_add_adapter() will work fine, agreed.
 
-Thanks
-m.
+-- 
+Jean Delvare
