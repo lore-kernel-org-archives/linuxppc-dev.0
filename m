@@ -1,22 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 494C8DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 12:10:33 +1100 (EST)
-Date: Tue, 6 Nov 2007 12:10:27 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: [PATCH] 4xx; Replace #includes of asm/of_platform.h with
-	linux/of_platform.h.
-Message-Id: <20071106121027.d7d34f0b.sfr@canb.auug.org.au>
-In-Reply-To: <20071105175341.6ee15106@vader.jdub.homelinux.org>
-References: <1194299023.7158.59.camel@ld0161-tx32>
-	<20071106094014.cd429711.sfr@canb.auug.org.au>
-	<20071105175341.6ee15106@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 5 Nov 2007 18:28:05 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: prpmc2800 - Don't trust documented memory size
+Message-ID: <20071106012805.GA20909@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +15,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It turns out that the firmware on some PrPMC2800 processor modules
+initializes the memory controller for 512 MB even when there is more
+memory.  As a simple work around, set the amount of memory in the
+device tree passed to the kernel to the lesser of what the memory
+controller is set up for and the actual amount of memory.
 
-On Mon, 5 Nov 2007 17:53:41 -0600 Josh Boyer <jwboyer@gmail.com> wrote:
->
-> Yeah, this is fine with me too.  But why haven't we put a #warning in
-> asm/of_platform.h and asm/prom.h?
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
+ arch/powerpc/boot/prpmc2800.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Because thee are way to many places to be fixed yet.  And asm/prom.h needs =
-to be explicitly included if you want to use the flattened device tree acce=
-ssors.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHL78JTgG2atn1QN8RAvb5AJ9CYERrG65H1dQveYWNq2yyMAIi9gCgkkys
-5hxZi2pNxJcS0AorisKbInE=
-=B4QJ
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Nov_2007_12_10_27_+1100_rhX2v82BOrucnCZ5--
+diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
+index 9614e1d..559c45e 100644
+--- a/arch/powerpc/boot/prpmc2800.c
++++ b/arch/powerpc/boot/prpmc2800.c
+@@ -405,7 +405,10 @@ static void prpmc2800_fixups(void)
+ 
+ 	bip = prpmc2800_get_bip(); /* Get board info based on VPD */
+ 
+-	mem_size = (bip) ? bip->mem_size : mv64x60_get_mem_size(bridge_base);
++	mem_size = mv64x60_get_mem_size(bridge_base);
++	if (bip)
++		mem_size = min(mem_size, bip->mem_size);
++
+ 	prpmc2800_bridge_setup(mem_size); /* Do necessary bridge setup */
+ 
+ 	/* If the VPD doesn't match what we know about, just use the
