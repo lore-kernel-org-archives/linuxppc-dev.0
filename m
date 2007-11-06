@@ -1,17 +1,18 @@
-Return-Path: <SRS0=kYWG=P7=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id BD2ECDDD0D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 17:50:32 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: mmap question on ppc440
-Date: Tue, 6 Nov 2007 07:50:21 +0100
-References: <472F8503.2080705@harris.com> <20071105151659.3ea601e4@weaponx>
-In-Reply-To: <20071105151659.3ea601e4@weaponx>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711060750.21750.sr@denx.de>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 1E745DDDE7
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 19:52:00 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id CDD0BF4919C
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 09:51:57 +0100 (CET)
+Subject: [PATCH] using mii-bitbang on different processor ports - update
+	the booting-without-of.txt-file
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Date: Tue, 06 Nov 2007 09:51:57 +0100
+Message-Id: <1194339117.3467.8.camel@p60635-ste.ids.de>
+Mime-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 05 November 2007, Josh Boyer wrote:
-> > I am attempting to access the CPLD on the AMCC Sequoia board from
-> > user-land.  I open /dev/mem, and mmap it, then try to access the
-> > resulting pointer.  That works fine when accessing physical addresses
-> > that correspond to RAM, but as soon as I try to access the CPLD at
-> > physical address 0xc0000000, I get an infinite machine check.
->
-> That's because the CPLD is actually at physical address 0x1C0000000.
-> Yay for 36-bit physical addresses.
+The patch updates the booting-without-of.txt-file.
+There is a description for the case
+if mdio data and clock pins are on different processor ports.
+It is a extending for e-mail "[PATCH v3] using mii-bitbang on different processor ports".
 
-Right. Are you using arch/ppc or arch/powerpc? If it's arch/ppc you could
-give the following patch a try:
+Signed-off-by: Sergej Stepanov <Sergej.Stepanov@ids.de>
+--
 
-@@ -275,6 +275,14 @@
- {
-        size_t size = vma->vm_end - vma->vm_start;
-
-+#if defined(CONFIG_44x) && !defined(CONFIG_PPC_MERGE)
-+       /*
-+        * 2006-08-07: sr
-+        * Needed on 44x-er systems for 36bit addresses (like pci on 440gx)
-+        */
-+       vma->vm_pgoff = (fixup_bigphys_addr(vma->vm_pgoff << PAGE_SHIFT, size) >> PAGE_SHIFT);
-+#endif
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index a96e853..497d8d8 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1956,6 +1956,12 @@ platforms are moved over to use the flattened-device-tree model.
+ 		fsl,mdc-pin = <13>;
+ 	};
+ 
++   The "reg"-property may have also depending on board design
++   the following form:
++	reg = <10d40 14 10d60 14>;
++   In that case the pin for mdio data controlling is on the port C,
++   and the pin for mdio clock controlling is on the port D.
 +
-        if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
-                return -EINVAL;
-
-
-Best regards,
-Stefan
+    v) Baud Rate Generators
+ 
+    Currently defined compatibles:
