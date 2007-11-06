@@ -1,18 +1,23 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id 95635DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 13:34:09 +1100 (EST)
-Date: Mon, 5 Nov 2007 20:33:55 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Medve Emilian-EMMEDVE1 <Emilian.Medve@freescale.com>
-Subject: [RFC/PATCH] reduce load time for modules with lots of relocs
-Message-ID: <20071106023355.GJ9695@localdomain>
-References: <598D5675D34BE349929AF5EDE9B03E270174CC98@az33exm24.fsl.freescale.net>
-	<20071101235728.GE9695@localdomain>
+Return-Path: <jonsmirl@gmail.com>
+Received: from ro-out-1112.google.com (ro-out-1112.google.com [72.14.202.177])
+	by ozlabs.org (Postfix) with ESMTP id 98EB6DDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 15:25:38 +1100 (EST)
+Received: by ro-out-1112.google.com with SMTP id p7so2347303roc
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 Nov 2007 20:25:37 -0800 (PST)
+Message-ID: <9e4733910711052025m7905efb6ja3e4b6a022e6aa81@mail.gmail.com>
+Date: Mon, 5 Nov 2007 23:25:35 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+In-Reply-To: <472F8267.8070106@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071101235728.GE9695@localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=WINDOWS-1252
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
+	<472F8267.8070106@freescale.com>
+Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
+	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,305 +27,215 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch wrote:
-> Medve Emilian-EMMEDVE1 wrote:
-> > 
-> > I have module with 36K relocation entries (I know, I know, how could
-> > that be...) and the count_relocs() function takes ~17 seconds to crunch
-> > through the relocation table from the .rela.text section. I don't think
-> > I can reduce the number of entries in the relocation table (can I?) so
-> > I'm thinking at improving the performance of count_relocs() (currently
-> > O(n^2)). Does anybody have a simpler idea? Does anyone have any
-> > constructive suggestion on how to improve the situation?
-> 
-> This seems to come up every few months.  There was a patch submitted
-> here:
-> 
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037641.html
+On 11/5/07, Scott Wood <scottwood@freescale.com> wrote:
+> >>> Or push these strings into the chip drivers and modify
+> >>> i2c-core to also match on the device tree style names.
+> >> That would be ideal; it just hasn't been done yet.
+> >
+> > This is not hard to do but the i2c people will have to agree. I need
+> > to change the i2c_driver structure to include the additional names.
+>
+> I got a fair bit of resistance from them on the topic of multiple match
+> names for i2c clients.
 
-I think this comes up often enough for us to fix it (IIRC unionfs
-people complained about it long ago too), and it's kind of lame to
-spend 17 seconds in the kernel without scheduling.  So I dug up some
-old patches that should reduce the complexity to O(n logn), using the
-sort() function, which IMO is preferable to doing our own hash thing
-as that patch from June does.  Only the 64-bit code is tested.  Does
-this help your situation?
+Here's a first pass at pushing the strings back into the i2c drivers.
+If this looks reasonable it can be optimized a lot more.  A more
+advanced version of this code would combine the alias, name, and
+driver_name fields. The existing pairing of driver_name/name could be
+merged into the concept of alias names for the driver.
 
- arch/powerpc/kernel/module_32.c |   85 +++++++++++++++++++++++++++++++---------
- arch/powerpc/kernel/module_64.c |   80 ++++++++++++++++++++++++++++++-------
- 2 files changed, 132 insertions(+), 33 deletions(-)
+Extend i2c-core to support lists of device tree compatible names when
+matching drivers
+
+From: Jon Smirl <jonsmirl@gmail.com>
 
 
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 07a89a3..001b941 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -24,6 +24,7 @@
- #include <linux/kernel.h>
- #include <linux/cache.h>
- #include <linux/bug.h>
-+#include <linux/sort.h>
- 
- #include "setup.h"
- 
-@@ -50,26 +51,64 @@ void module_free(struct module *mod, void *module_region)
-            table entries. */
- }
- 
-+static int reloc_cmp(const void *_a, const void *_b)
-+{
-+	const Elf32_Rela *a = *(Elf32_Rela **)_a, *b = *(Elf32_Rela **)_b;
-+
-+	if (a->r_info < b->r_info)
-+		return -1;
-+	else if (a->r_info > b->r_info)
-+		return 1;
-+	else if (a->r_addend < b->r_addend)
-+		return -1;
-+	else if (a->r_addend > b->r_addend)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+
- /* Count how many different relocations (different symbol, different
-    addend) */
- static unsigned int count_relocs(const Elf32_Rela *rela, unsigned int num)
+---
+
+ drivers/i2c/busses/i2c-mpc.c |   35 ++++-------------------------------
+ drivers/i2c/i2c-core.c       |   17 +++++++++++++++--
+ drivers/rtc/rtc-pcf8563.c    |    1 +
+ drivers/rtc/rtc-rs5c372.c    |    1 +
+ include/linux/i2c.h          |   11 +++++++++--
+ 5 files changed, 30 insertions(+), 35 deletions(-)
+
+
+diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+index 4ddebe4..6313631 100644
+--- a/drivers/i2c/busses/i2c-mpc.c
++++ b/drivers/i2c/busses/i2c-mpc.c
+@@ -312,34 +312,6 @@ static struct i2c_adapter mpc_ops =3D {
+ =09.retries =3D 1
+ };
+
+-struct i2c_driver_device {
+-=09char=09*of_device;
+-=09char=09*i2c_driver;
+-=09char=09*i2c_type;
+-};
+-
+-static struct i2c_driver_device i2c_devices[] =3D {
+-=09{"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
+-=09{"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
+-=09{"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
+-=09{"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
+-=09{"epson,pcf8564", "rtc-pcf8563", "pcf8564",},
+-};
+-
+-static int of_find_i2c_driver(struct device_node *node, struct
+i2c_board_info *info)
+-{
+-=09int i;
+-
+-=09for (i =3D 0; i < ARRAY_SIZE(i2c_devices); i++) {
+-=09=09if (!of_device_is_compatible(node, i2c_devices[i].of_device))
+-=09=09=09continue;
+-=09=09strncpy(info->driver_name, i2c_devices[i].i2c_driver, KOBJ_NAME_LEN)=
+;
+-=09=09strncpy(info->type, i2c_devices[i].i2c_type, I2C_NAME_SIZE);
+-=09=09return 0;
+-=09}
+-=09return -ENODEV;
+-}
+-
+ static void of_register_i2c_devices(struct i2c_adapter *adap, struct
+device_node *adap_node)
  {
--	unsigned int i, j, ret = 0;
-+	unsigned int i, sorted_count = 0;
-+	Elf32_Word last_info;
-+	Elf32_Sword last_addend;
-+	Elf32_Rela **sortbuf = NULL;
-+
-+	if (num == 0)
-+		return 0;
-+
-+	sortbuf = vmalloc(num * sizeof(*sortbuf));
-+
-+	if (!sortbuf)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num; i++)
-+		sortbuf[i] = (Elf32_Rela *)&rela[i];
-+
-+	sort(sortbuf, i, sizeof(sortbuf[0]), reloc_cmp, NULL);
-+
-+	last_info = sortbuf[0]->r_info;
-+	last_addend = sortbuf[0]->r_addend;
-+	sorted_count = 1;
- 
--	/* Sure, this is order(n^2), but it's usually short, and not
--           time critical */
- 	for (i = 0; i < num; i++) {
--		for (j = 0; j < i; j++) {
--			/* If this addend appeared before, it's
--                           already been counted */
--			if (ELF32_R_SYM(rela[i].r_info)
--			    == ELF32_R_SYM(rela[j].r_info)
--			    && rela[i].r_addend == rela[j].r_addend)
--				break;
--		}
--		if (j == i) ret++;
-+		/* If this r_info,r_addend tuple matches the previous
-+		 * entry, don't count it again
-+		 */
-+		if (sortbuf[i]->r_info == last_info &&
-+		    sortbuf[i]->r_addend == last_addend)
-+			continue;
-+
-+		last_info = sortbuf[i]->r_info;
-+		last_addend = sortbuf[i]->r_addend;
-+		sorted_count++;
- 	}
--	return ret;
-+
-+	vfree(sortbuf);
-+	return sorted_count;
- }
- 
- /* Get the potential trampolines size required of the init and
-@@ -96,15 +135,19 @@ static unsigned long get_plt_size(const Elf32_Ehdr *hdr,
- 			continue;
- 
- 		if (sechdrs[i].sh_type == SHT_RELA) {
-+			int count;
- 			DEBUGP("Found relocations in section %u\n", i);
- 			DEBUGP("Ptr: %p.  Number: %u\n",
- 			       (void *)hdr + sechdrs[i].sh_offset,
- 			       sechdrs[i].sh_size / sizeof(Elf32_Rela));
--			ret += count_relocs((void *)hdr
-+			count = count_relocs((void *)hdr
- 					     + sechdrs[i].sh_offset,
- 					     sechdrs[i].sh_size
- 					     / sizeof(Elf32_Rela))
- 				* sizeof(struct ppc_plt_entry);
-+			if (count < 0)
-+				return count;
-+			ret += count;
- 		}
- 	}
- 
-@@ -117,6 +160,7 @@ int module_frob_arch_sections(Elf32_Ehdr *hdr,
- 			      struct module *me)
+ =09struct device_node *node =3D NULL;
+@@ -347,6 +319,7 @@ static void of_register_i2c_devices(struct
+i2c_adapter *adap, struct device_node
+ =09while ((node =3D of_get_next_child(adap_node, node))) {
+ =09=09struct i2c_board_info info;
+ =09=09const u32 *addr;
++=09=09const char *compatible;
+ =09=09int len;
+
+ =09=09addr =3D of_get_property(node, "reg", &len);
+@@ -359,9 +332,9 @@ static void of_register_i2c_devices(struct
+i2c_adapter *adap, struct device_node
+ =09=09if (info.irq =3D=3D NO_IRQ)
+ =09=09=09info.irq =3D -1;
+
+-=09=09if (of_find_i2c_driver(node, &info) < 0)
+-=09=09=09continue;
+-
++=09=09compatible =3D of_get_property(node, "compatible", &len);
++=09=09strlcpy(info.driver_name, compatible, len);
++=09=09info.type[0] =3D '\0';
+ =09=09info.platform_data =3D NULL;
+ =09=09info.addr =3D *addr;
+
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index d663e69..4128cd1 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -17,7 +17,7 @@
+     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.=09=09     */
+ /* -----------------------------------------------------------------------=
+-- */
+
+-/* With some changes from Ky=F6sti M=E4lkki <kmalkki@cc.hut.fi>.
++/* With some changes from Ky=EF=BF=9Csti M=EF=BF=9Clkki <kmalkki@cc.hut.fi=
+>.
+    All SMBus-related things are written by Frodo Looijaard <frodol@dds.nl>
+    SMBus 2.0 support by Mark Studebaker <mdsxyz123@yahoo.com> and
+    Jean Delvare <khali@linux-fr.org> */
+@@ -51,6 +51,7 @@ static int i2c_device_match(struct device *dev,
+struct device_driver *drv)
  {
- 	unsigned int i;
-+	int ret;
- 
- 	/* Find .plt and .init.plt sections */
- 	for (i = 0; i < hdr->e_shnum; i++) {
-@@ -131,10 +175,15 @@ int module_frob_arch_sections(Elf32_Ehdr *hdr,
- 	}
- 
- 	/* Override their sizes */
--	sechdrs[me->arch.core_plt_section].sh_size
--		= get_plt_size(hdr, sechdrs, secstrings, 0);
--	sechdrs[me->arch.init_plt_section].sh_size
--		= get_plt_size(hdr, sechdrs, secstrings, 1);
-+	ret = get_plt_size(hdr, sechdrs, secstrings, 0);
-+	if (ret < 0)
-+		return ret;
-+	sechdrs[me->arch.core_plt_section].sh_size = ret;
+ =09struct i2c_client=09*client =3D to_i2c_client(dev);
+ =09struct i2c_driver=09*driver =3D to_i2c_driver(drv);
++=09char **alias;
+
+ =09/* make legacy i2c drivers bypass driver model probing entirely;
+ =09 * such drivers scan each i2c adapter/bus themselves.
+@@ -61,7 +62,19 @@ static int i2c_device_match(struct device *dev,
+struct device_driver *drv)
+ =09/* new style drivers use the same kind of driver matching policy
+ =09 * as platform devices or SPI:  compare device and driver IDs.
+ =09 */
+-=09return strcmp(client->driver_name, drv->name) =3D=3D 0;
++=09if (strcmp(client->driver_name, drv->name) =3D=3D 0)
++=09=09return true;
 +
-+	ret = get_plt_size(hdr, sechdrs, secstrings, 1);
-+	if (ret < 0)
-+		return ret;
-+	sechdrs[me->arch.init_plt_section].sh_size = ret;
- 	return 0;
++=09/* Match against alias device tree names */
++=09if (!driver->alias)
++=09=09return 0;
++=09alias =3D driver->alias;
++=09while (*alias) {
++=09=09if (strcmp(client->driver_name, *alias) =3D=3D 0)
++=09=09=09return true;
++=09=09alias++;
++=09}
++=09return 0;
  }
- 
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 75c7c4f..bfc5b98 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -21,6 +21,7 @@
- #include <linux/err.h>
- #include <linux/vmalloc.h>
- #include <linux/bug.h>
-+#include <linux/sort.h>
- #include <asm/module.h>
- #include <asm/uaccess.h>
- #include <asm/firmware.h>
-@@ -77,28 +78,68 @@ static struct ppc64_stub_entry ppc64_stub =
- 	0x4e, 0x80, 0x04, 0x20  /* bctr */
- } };
- 
-+static int reloc_cmp(const void *_a, const void *_b)
-+{
-+	const Elf64_Rela *a = *(Elf64_Rela **)_a, *b = *(Elf64_Rela **)_b;
-+
-+	if (a->r_info < b->r_info)
-+		return -1;
-+	else if (a->r_info > b->r_info)
-+		return 1;
-+	else if (a->r_addend < b->r_addend)
-+		return -1;
-+	else if (a->r_addend > b->r_addend)
-+		return 1;
-+
-+	return 0;
-+}
-+
- /* Count how many different 24-bit relocations (different symbol,
-    different addend) */
--static unsigned int count_relocs(const Elf64_Rela *rela, unsigned int num)
-+static int count_relocs(const Elf64_Rela *rela, unsigned int num)
- {
- 	unsigned int i, j, ret = 0;
-+	Elf64_Xword last_info;
-+	Elf64_Sxword last_addend;
-+	Elf64_Rela **sortbuf = NULL;
-+
-+	if (num == 0)
-+		return 0;
-+
-+	sortbuf = vmalloc(num * sizeof(*sortbuf));
- 
--	/* FIXME: Only count external ones --RR */
--	/* Sure, this is order(n^2), but it's usually short, and not
--           time critical */
--	for (i = 0; i < num; i++) {
-+	if (!sortbuf)
-+		return -ENOMEM;
-+
-+	for (j = 0, i = 0; i < num; i++) {
- 		/* Only count 24-bit relocs, others don't need stubs */
- 		if (ELF64_R_TYPE(rela[i].r_info) != R_PPC_REL24)
- 			continue;
--		for (j = 0; j < i; j++) {
--			/* If this addend appeared before, it's
--                           already been counted */
--			if (rela[i].r_info == rela[j].r_info
--			    && rela[i].r_addend == rela[j].r_addend)
--				break;
--		}
--		if (j == i) ret++;
-+		sortbuf[j++] = (Elf64_Rela *)&rela[i];
- 	}
-+
-+	if (j == 0)
-+		goto out;
-+
-+	sort(sortbuf, j, sizeof(sortbuf[0]), reloc_cmp, NULL);
-+
-+	last_info = sortbuf[0]->r_info;
-+	last_addend = sortbuf[0]->r_addend;
-+	ret = 1;
-+	for (i = 0; i < j; i++) {
-+		/* If this r_info,r_addend tuple matches the previous
-+		 * entry, don't count it again
-+		 */
-+		if (sortbuf[i]->r_info == last_info &&
-+		    sortbuf[i]->r_addend == last_addend)
-+			continue;
-+
-+		last_info = sortbuf[i]->r_info;
-+		last_addend = sortbuf[i]->r_addend;
-+		ret++;
-+	}
-+out:
-+	vfree(sortbuf);
- 	return ret;
- }
- 
-@@ -129,13 +170,17 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
- 	/* Every relocated section... */
- 	for (i = 1; i < hdr->e_shnum; i++) {
- 		if (sechdrs[i].sh_type == SHT_RELA) {
-+			int count;
- 			DEBUGP("Found relocations in section %u\n", i);
- 			DEBUGP("Ptr: %p.  Number: %lu\n",
- 			       (void *)sechdrs[i].sh_addr,
- 			       sechdrs[i].sh_size / sizeof(Elf64_Rela));
--			relocs += count_relocs((void *)sechdrs[i].sh_addr,
-+			count = count_relocs((void *)sechdrs[i].sh_addr,
- 					       sechdrs[i].sh_size
- 					       / sizeof(Elf64_Rela));
-+			if (count < 0)
-+				return count;
-+			relocs += count;
- 		}
- 	}
- 
-@@ -173,6 +218,7 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
- 			      struct module *me)
- {
- 	unsigned int i;
-+	int stubs_size;
- 
- 	/* Find .toc and .stubs sections, symtab and strtab */
- 	for (i = 1; i < hdr->e_shnum; i++) {
-@@ -209,7 +255,11 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
- 		me->arch.toc_section = me->arch.stubs_section;
- 
- 	/* Override the stubs size */
--	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
-+	stubs_size = get_stubs_size(hdr, sechdrs);
-+	if (stubs_size < 0)
-+		return stubs_size;
-+
-+	sechdrs[me->arch.stubs_section].sh_size = stubs_size;
- 	return 0;
- }
- 
+
+ #ifdef=09CONFIG_HOTPLUG
+diff --git a/drivers/rtc/rtc-pcf8563.c b/drivers/rtc/rtc-pcf8563.c
+index b778d35..7c8caf5 100644
+--- a/drivers/rtc/rtc-pcf8563.c
++++ b/drivers/rtc/rtc-pcf8563.c
+@@ -266,6 +266,7 @@ static struct i2c_driver pcf8563_driver =3D {
+ =09.driver=09=09=3D {
+ =09=09.name=09=3D "rtc-pcf8563",
+ =09},
++=09.alias=09=3D (char *[]){"epson,pcf8564", 0},
+ =09.id=09=09=3D I2C_DRIVERID_PCF8563,
+ =09.probe =3D &pcf8563_probe,
+ =09.remove =3D &pcf8563_remove,
+diff --git a/drivers/rtc/rtc-rs5c372.c b/drivers/rtc/rtc-rs5c372.c
+index 6b67b50..0f37d04 100644
+--- a/drivers/rtc/rtc-rs5c372.c
++++ b/drivers/rtc/rtc-rs5c372.c
+@@ -649,6 +649,7 @@ static struct i2c_driver rs5c372_driver =3D {
+ =09.driver=09=09=3D {
+ =09=09.name=09=3D "rtc-rs5c372",
+ =09},
++=09.alias=09=3D (char
+*[]){"ricoh,rs5c372a","ricoh,rs5c372b","ricoh,rv5c386","ricoh,rv5c387a",0},
+ =09.probe=09=09=3D rs5c372_probe,
+ =09.remove=09=09=3D rs5c372_remove,
+ };
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 2a32f2f..d55748c 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -107,6 +107,13 @@ extern s32 i2c_smbus_write_i2c_block_data(struct
+i2c_client * client,
+ struct i2c_driver {
+ =09int id;
+ =09unsigned int class;
++=09
++=09/* Alias name for the driver. Used to support device trees on
++=09 * the PowerPC architecture. Device tree names take the form of
++=09 * vendor,chip. For example "epson,pcf8564". Alias is a list of
++=09 * strings terminated by a zero entry.
++=09 */
++=09char **alias;
+
+ =09/* Notifies the driver that a new bus has appeared. This routine
+ =09 * can be used by the driver to test if the bus meets its conditions
+@@ -146,7 +153,7 @@ struct i2c_driver {
+ };
+ #define to_i2c_driver(d) container_of(d, struct i2c_driver, driver)
+
+-#define I2C_NAME_SIZE=0920
++#define I2C_NAME_SIZE=0940
+
+ /**
+  * struct i2c_client - represent an I2C slave device
+@@ -225,7 +232,7 @@ static inline void i2c_set_clientdata (struct
+i2c_client *dev, void *data)
+  * with the adapter already known.
+  */
+ struct i2c_board_info {
+-=09char=09=09driver_name[KOBJ_NAME_LEN];
++=09char=09=09driver_name[I2C_NAME_SIZE];
+ =09char=09=09type[I2C_NAME_SIZE];
+ =09unsigned short=09flags;
+ =09unsigned short=09addr;
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
