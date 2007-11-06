@@ -1,21 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
-	by ozlabs.org (Postfix) with ESMTP id 1832FDDE0D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 12:34:52 +1100 (EST)
-Received: by rv-out-0910.google.com with SMTP id c27so1482840rvf
-	for <linuxppc-dev@ozlabs.org>; Mon, 05 Nov 2007 17:34:51 -0800 (PST)
-Message-ID: <9e4733910711051734m7cf1fac0y5fb39feb37bad548@mail.gmail.com>
-Date: Mon, 5 Nov 2007 20:34:51 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
-In-Reply-To: <472F7247.9070106@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
-	<472F7247.9070106@freescale.com>
-Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
-	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BFB41DDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 12:42:15 +1100 (EST)
+In-Reply-To: <20071105032802.GA16613@lixom.net>
+References: <20071105032802.GA16613@lixom.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <cd9a9e67893406e486d2ffc7599e28b7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] pasemi: Broaden specific references to 1682M
+Date: Tue, 6 Nov 2007 02:42:08 +0100
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Doug Thompson <dougthompson@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/5/07, Scott Wood <scottwood@freescale.com> wrote:
-> > +static struct of_platform_driver mpc_i2c_driver = {
-> > +     .owner          = THIS_MODULE,
-> > +     .name           = DRV_NAME,
-> > +     .match_table    = mpc_i2c_of_match,
-> > +     .probe          = mpc_i2c_probe,
-> > +     .remove         = __devexit_p(mpc_i2c_remove),
-> > +     .driver         = {
-> > +             .name   = DRV_NAME,
-> >       },
-> >  };
->
-> Do we still need .name if we have .driver.name?
+Hi Olof,
 
-This is a general question, if of_platform_driver doesn't need .name
-it should be removed from the structure.
+Nice cleanup!  One minor thing...
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+>  static struct of_device_id pasemi_bus_ids[] = {
+> +	/* Unfortunately needed for legacy firmwares */
+>  	{ .type = "localbus", },
+>  	{ .type = "sdc", },
+> +	{ .compatible = "pasemi,localbus", },
+> +	{ .compatible = "pasemi,sdc", },
+
+The new comment is for the device_type entries only, right?  You
+might want to make that more clear.
+
+
+Segher
