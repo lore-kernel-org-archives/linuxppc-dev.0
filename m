@@ -1,22 +1,24 @@
-Return-Path: <rpjday@crashcourse.ca>
-Received: from astoria.ccjclearline.com (astoria.ccjclearline.com
-	[64.235.106.9])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5EC99DDE0A
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:01:12 +1100 (EST)
-Received: from [99.236.101.138] (helo=crashcourse.ca)
-	by astoria.ccjclearline.com with esmtpsa (TLSv1:AES256-SHA:256)
-	(Exim 4.68) (envelope-from <rpjday@crashcourse.ca>)
-	id 1IpRzQ-0007qG-Kv
-	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:13:24 -0500
-Date: Tue, 6 Nov 2007 12:11:42 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-To: Linux PPC Mailing List <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] POWERPC: Use "is_power_of_2" macro for simplicity.
-Message-ID: <Pine.LNX.4.64.0711061210520.25269@localhost.localdomain>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 1C631DDECC
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:04:58 +1100 (EST)
+Received: from localhost (unknown [127.0.0.1])
+	by mail.semihalf.com (Postfix) with ESMTP id 09C7714399
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:05:49 +0100 (CET)
+Received: from mail.semihalf.com ([127.0.0.1])
+	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 09143-07 for <linuxppc-dev@ozlabs.org>;
+	Tue,  6 Nov 2007 21:05:48 +0100 (CET)
+Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
+	by mail.semihalf.com (Postfix) with ESMTP id B7C7814377
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 21:05:46 +0100 (CET)
+From: Marian Balakowicz <m8@semihalf.com>
+Subject: [PATCH v3 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board support
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 06 Nov 2007 21:04:47 +0100
+Message-ID: <20071106200446.10913.29338.stgit@hekate.izotz.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,58 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a third version of the patches that add arch/powerpc support for
+three MPC5200 based boards: TQ-Components TQM5200, Schindler CM5200
+and Promess Motion-PRO.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+[POWERPC] Promess Motion-PRO defconfig
+[POWERPC] Promess Motion-PRO DTS
+[POWERPC] Motion-PRO: Add LED support.
+[POWERPC] CM5200 defconfig
+[POWERPC] CM5200 DTS
+[POWERPC] TQM5200 defconfig
+[POWERPC] TQM5200 DTS
+[POWERPC] Use EXPORT_SYMBOL_GPL for 52xx common routines symbol export
+[POWERPC] Export mpc52xx_map_node() routine symbol
+[POWERPC] Add generic support for simple MPC5200 based boards
+[POWERPC] Add common mpc52xx_setup_pci() routine
+[POWERPC] Add 'fsl,lpb' bus type for MPC5200 LocalPlus Bus
+[POWERPC] Add 'model: ...' line to common show_cpuinfo()
 
----
+Please review them and schedule for 2.6.24-rc2 if you are ok with them.
 
-diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
-index 22c3b4f..53b4e91 100644
---- a/arch/powerpc/lib/rheap.c
-+++ b/arch/powerpc/lib/rheap.c
-@@ -19,6 +19,7 @@
- #include <linux/mm.h>
- #include <linux/err.h>
- #include <linux/slab.h>
-+#include <linux/log2.h>
-
- #include <asm/rheap.h>
-
-@@ -254,8 +255,7 @@ rh_info_t *rh_create(unsigned int alignment)
- {
- 	rh_info_t *info;
-
--	/* Alignment must be a power of two */
--	if ((alignment & (alignment - 1)) != 0)
-+	if (!is_power_of_2(alignment))
- 		return ERR_PTR(-EINVAL);
-
- 	info = kmalloc(sizeof(*info), GFP_KERNEL);
-@@ -303,8 +303,7 @@ void rh_init(rh_info_t * info, unsigned int alignment, int max_blocks,
- 	int i;
- 	rh_block_t *blk;
-
--	/* Alignment must be a power of two */
--	if ((alignment & (alignment - 1)) != 0)
-+	if (!is_power_of_2(alignment))
- 		return;
-
- 	info->alignment = alignment;
-@@ -446,8 +445,7 @@ unsigned long rh_alloc_align(rh_info_t * info, int size, int alignment, const ch
- 	rh_block_t *newblk;
- 	unsigned long start, sp_size;
-
--	/* Validate size, and alignment must be power of two */
--	if (size <= 0 || (alignment & (alignment - 1)) != 0)
-+	if (size <= 0 || !is_power_of_2(alignment))
- 		return (unsigned long) -EINVAL;
-
- 	/* Align to configured alignment */
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://crashcourse.ca
-========================================================================
+Cheers,
+m.
