@@ -1,13 +1,11 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Nov 2007 10:11:20 +1100
+Date: Wed, 7 Nov 2007 10:21:20 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] DTC: Polish up the DTS Version 1 implementation.
-Message-ID: <20071106231120.GG31367@localhost.localdomain>
-References: <E1IpWlT-0007Qd-IX@jdl.com>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: [1/2] dtc: Refactor printing of property values in -Odts mode
+Message-ID: <20071106232120.GH31367@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IpWlT-0007Qd-IX@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,180 +16,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 06, 2007 at 04:19:19PM -0600, Jon Loeliger wrote:
-> From: Jon Loeliger <jdl@freescale.com>
-> 
-> Fixes BYTESTRING lexing.
-> Allows -O dts output to be emitted in a given (1) format version.
+Currently the main recursive tree printing function,
+write_tree_source_node(), calls guess_type() to apply heuristics to
+see how to print a property value, then calls the appropriate
+write_propval_*() function to print it.
 
-Ok... I'd actually be more inclined to remove the option and just have
--Odts *always* use the newer version.
+However, future heuristics for handling internal labels and the like
+don't work well this way.  Therefore, this patch refactors things to
+have write_tree_source_node() call a new write_propval() function,
+which incorporates the heurstic logic from guess_type() and also calls
+the right function to do the actual printing.
 
-Having dtc be able to convert dts versions forward is easy and
-useful.  Coverting backwards is far more complicated, because as well
-as the actualy incompatible version changes, there's the question of
-which dtc version supported which dts features.  Not worth it, I
-think.
+No behavioural change.
 
-> Skirts around a range check problem in eval_literal() for now.
-> 
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> ---
-> 
-> David,
-> 
-> This patch is directly on top of your prior two patches.
-> Lemme know what you think.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-On top of my two dts-v1 patches that is, I assume?
+---
+ treesource.c |   97 +++++++++++++++++++++++------------------------------------
+ 1 file changed, 38 insertions(+), 59 deletions(-)
 
-> diff --git a/dtc-lexer.l b/dtc-lexer.l
-> index 1c262d2..b18c0d1 100644
-> --- a/dtc-lexer.l
-> +++ b/dtc-lexer.l
-> @@ -190,6 +190,10 @@ static int dts_version; /* = 0 */
->  <*>.		{
->  			yylloc.filenum = srcpos_filenum;
->  			yylloc.first_line = yylineno;
-> +			if (yytext[0] == '[') {
-> +				DPRINT("BYTESTRING\n");
-> +				BEGIN(BYTESTRING);
-> +			}
-
-Ow... that's rather embarrassing, that I didn't even notice I'd
-totally broken bytestrings.  Really must add some bytestrings to
-test_tree1.dts so this actually gets checked by the testsuite.
-
->  			if ((yytext[0] == '{')
->  			    || (yytext[0] == ';')) {
->  				DPRINT("<PROPNODENAME>\n");
-> diff --git a/dtc-parser.y b/dtc-parser.y
-> index ffb2299..652199f 100644
-> --- a/dtc-parser.y
-> +++ b/dtc-parser.y
-> @@ -297,17 +297,23 @@ label:
->  
->  %%
->  
-> -void yyerror (char const *s)
-> +void yyerror(char const *s)
->  {
->  	const char *fname = srcpos_filename_for_num(yylloc.filenum);
->  
->  	if (strcmp(fname, "-") == 0)
->  		fname = "stdin";
->  
-> -	fprintf(stderr, "%s:%d %s\n",
-> +	fprintf(stderr, "%s:%d Error: %s\n",
->  		fname, yylloc.first_line, s);
-
-Not really related changes, but whatever..
-
->  }
->  
-> +/*
-> + * bits is unused, but it should be 32 or 64 as needed.
-> + *
-> + * FIXME: However, with bits == 64, ((1ULL << bits) - 1)
-> + * overflows before you can actually do the range test.
-> + */
->  unsigned long long eval_literal(const char *s, int base, int bits)
->  {
->  	unsigned long long val;
-> @@ -317,9 +323,10 @@ unsigned long long eval_literal(const char *s, int base, int bits)
->  	val = strtoull(s, &e, base);
->  	if (*e)
->  		yyerror("bad characters in literal");
-> -	else if ((errno == ERANGE) || (val > ((1ULL << bits)-1)))
-> +	else if (errno == ERANGE)
->  		yyerror("literal out of range");
->  	else if (errno != 0)
->  		yyerror("bad literal");
-> +
-
-Ok.. I don't understand why you've pulled out the range checking
-against bits here.
-
->  	return val;
->  }
-> diff --git a/dtc.c b/dtc.c
-> index bbef829..38313f5 100644
-> --- a/dtc.c
-> +++ b/dtc.c
-> @@ -225,7 +225,7 @@ int main(int argc, char *argv[])
->  	}
->  
->  	if (streq(outform, "dts")) {
-> -		dt_to_source(outf, bi);
-> +		dt_to_source(outf, bi, 1);
->  	} else if (streq(outform, "dtb")) {
->  		dt_to_blob(outf, bi, outversion, boot_cpuid_phys);
->  	} else if (streq(outform, "asm")) {
-> diff --git a/dtc.h b/dtc.h
-> index d080153..ba2027b 100644
-> --- a/dtc.h
-> +++ b/dtc.h
-> @@ -238,7 +238,7 @@ struct boot_info *dt_from_blob(FILE *f);
->  
->  /* Tree source */
->  
-> -void dt_to_source(FILE *f, struct boot_info *bi);
-> +void dt_to_source(FILE *f, struct boot_info *bi, int dts_version);
->  struct boot_info *dt_from_source(const char *f);
->  
->  /* FS trees */
-> diff --git a/treesource.c b/treesource.c
-> index 376ebc8..ac0c777 100644
-> --- a/treesource.c
-> +++ b/treesource.c
-> @@ -140,14 +140,18 @@ static void write_propval_string(FILE *f, struct data val)
->  	fprintf(f, "\";\n");
->  }
->  
-> -static void write_propval_cells(FILE *f, struct data val)
-> +static void write_propval_cells(FILE *f, struct data val, int dts_version)
->  {
->  	void *propend = val.val + val.len;
->  	cell_t *cp = (cell_t *)val.val;
->  
->  	fprintf(f, " = <");
->  	for (;;) {
-> -		fprintf(f, "%x", be32_to_cpu(*cp++));
-> +		if (dts_version == 0) {
-> +			fprintf(f, "%x", be32_to_cpu(*cp++));
-> +		} else {
-> +			fprintf(f, "0x%x", be32_to_cpu(*cp++));
-> +		}
->  		if ((void *)cp >= propend)
->  			break;
->  		fprintf(f, " ");
-> @@ -155,14 +159,18 @@ static void write_propval_cells(FILE *f, struct data val)
->  	fprintf(f, ">;\n");
->  }
->  
-> -static void write_propval_bytes(FILE *f, struct data val)
-> +static void write_propval_bytes(FILE *f, struct data val, int dts_version)
->  {
->  	void *propend = val.val + val.len;
->  	char *bp = val.val;
->  
->  	fprintf(f, " = [");
->  	for (;;) {
-> -		fprintf(f, "%02hhx", *bp++);
-> +		if (dts_version == 0) {
-> +			fprintf(f, "%02hhx", *bp++);
-> +		} else {
-> +			fprintf(f, "0x%02hhx", *bp++);
-> +		}
-
-Uh.. not quite right.  My patch (intentionally) leaves bytestrings as
-pure hex, without 0x.  We can argue about whether that's a good idea,
-if you like, but in any case input and output should match.
-
-To avoid this sort of problem, I suggest before we apply the dts-v1
-transition, we apply the patch I'm working on (I'll try to get it out
-today), which adds a bunch of extra testcases checking that using dtc
-to go dtb->dts->dtb preserves everything.
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2007-11-07 09:55:03.000000000 +1100
++++ dtc/treesource.c	2007-11-07 10:19:13.000000000 +1100
+@@ -49,13 +49,6 @@
+ 		fputc('\t', f);
+ }
+ 
+-enum proptype {
+-	PROP_EMPTY,
+-	PROP_STRING,
+-	PROP_CELLS,
+-	PROP_BYTES,
+-};
+-
+ int isstring(char c)
+ {
+ 	return (isprint(c)
+@@ -63,31 +56,6 @@
+ 		|| strchr("\a\b\t\n\v\f\r", c));
+ }
+ 
+-static enum proptype guess_type(struct property *prop)
+-{
+-	int len = prop->val.len;
+-	char *p = prop->val.val;
+-	int nnotstring = 0, nnul = 0;
+-	int i;
+-
+-	if (len == 0)
+-		return PROP_EMPTY;
+-
+-	for (i = 0; i < len; i++) {
+-		if (! isstring(p[i]))
+-			nnotstring++;
+-		if (p[i] == '\0')
+-			nnul++;
+-	}
+-
+-	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul)))
+-		return PROP_STRING;
+-	else if ((len % sizeof(cell_t)) == 0)
+-		return PROP_CELLS;
+-	else
+-		return PROP_BYTES;
+-}
+-
+ static void write_propval_string(FILE *f, struct data val)
+ {
+ 	char *str = val.val;
+@@ -95,7 +63,7 @@
+ 
+ 	assert(str[val.len-1] == '\0');
+ 
+-	fprintf(f, " = \"");
++	fprintf(f, "\"");
+ 	for (i = 0; i < (val.len-1); i++) {
+ 		char c = str[i];
+ 
+@@ -137,7 +105,7 @@
+ 				fprintf(f, "\\x%02hhx", c);
+ 		}
+ 	}
+-	fprintf(f, "\";\n");
++	fprintf(f, "\"");
+ }
+ 
+ static void write_propval_cells(FILE *f, struct data val)
+@@ -145,14 +113,14 @@
+ 	void *propend = val.val + val.len;
+ 	cell_t *cp = (cell_t *)val.val;
+ 
+-	fprintf(f, " = <");
++	fprintf(f, "<");
+ 	for (;;) {
+ 		fprintf(f, "%x", be32_to_cpu(*cp++));
+ 		if ((void *)cp >= propend)
+ 			break;
+ 		fprintf(f, " ");
+ 	}
+-	fprintf(f, ">;\n");
++	fprintf(f, ">");
+ }
+ 
+ static void write_propval_bytes(FILE *f, struct data val)
+@@ -160,14 +128,45 @@
+ 	void *propend = val.val + val.len;
+ 	char *bp = val.val;
+ 
+-	fprintf(f, " = [");
++	fprintf(f, "[");
+ 	for (;;) {
+ 		fprintf(f, "%02hhx", *bp++);
+ 		if ((void *)bp >= propend)
+ 			break;
+ 		fprintf(f, " ");
+ 	}
+-	fprintf(f, "];\n");
++	fprintf(f, "]");
++}
++
++static void write_propval(FILE *f, struct property *prop)
++{
++	int len = prop->val.len;
++	char *p = prop->val.val;
++	int nnotstring = 0, nnul = 0;
++	int i;
++
++	if (len == 0) {
++		fprintf(f, ";\n");
++		return;
++	}
++
++	for (i = 0; i < len; i++) {
++		if (! isstring(p[i]))
++			nnotstring++;
++		if (p[i] == '\0')
++			nnul++;
++	}
++
++	fprintf(f, " = ");
++
++	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul))) {
++		write_propval_string(f, prop->val);
++	} else if (((len % sizeof(cell_t)) == 0)) {
++		write_propval_cells(f, prop->val);
++	} else {
++		write_propval_bytes(f, prop->val);
++	}
++	fprintf(f, ";\n");
+ }
+ 
+ static void write_tree_source_node(FILE *f, struct node *tree, int level)
+@@ -184,31 +183,11 @@
+ 		fprintf(f, "/ {\n");
+ 
+ 	for_each_property(tree, prop) {
+-		enum proptype type;
+-
+ 		write_prefix(f, level+1);
+ 		if (prop->label)
+ 			fprintf(f, "%s: ", prop->label);
+ 		fprintf(f, "%s", prop->name);
+-		type = guess_type(prop);
+-
+-		switch (type) {
+-		case PROP_EMPTY:
+-			fprintf(f, ";\n");
+-			break;
+-
+-		case PROP_STRING:
+-			write_propval_string(f, prop->val);
+-			break;
+-
+-		case PROP_CELLS:
+-			write_propval_cells(f, prop->val);
+-			break;
+-
+-		case PROP_BYTES:
+-			write_propval_bytes(f, prop->val);
+-			break;
+-		}
++		write_propval(f, prop);
+ 	}
+ 	for_each_child(tree, child) {
+ 		fprintf(f, "\n");
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
