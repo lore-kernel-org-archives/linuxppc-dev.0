@@ -1,17 +1,17 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 2C83FDDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 06:51:00 +1100 (EST)
-Message-ID: <4730C595.4040707@semihalf.com>
-Date: Tue, 06 Nov 2007 20:50:45 +0100
+	by ozlabs.org (Postfix) with ESMTP id 8EED5DDE19
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 07:02:25 +1100 (EST)
+Message-ID: <4730C842.9020601@semihalf.com>
+Date: Tue, 06 Nov 2007 21:02:10 +0100
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v2 06/12] [POWERPC] TQM5200 DTS
+Subject: Re: [PATCH v2 11/12] [POWERPC] Promess Motion-PRO DTS
 References: <20071103235210.31906.83423.stgit@hekate.izotz.org>
-	<20071103235247.31906.76777.stgit@hekate.izotz.org>
-	<20071105004739.GG19867@localhost.localdomain>
-In-Reply-To: <20071105004739.GG19867@localhost.localdomain>
+	<20071103235317.31906.46911.stgit@hekate.izotz.org>
+	<20071105005626.GI19867@localhost.localdomain>
+In-Reply-To: <20071105005626.GI19867@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-2
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,77 +24,76 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 David Gibson wrote:
-> On Sun, Nov 04, 2007 at 12:52:47AM +0100, Marian Balakowicz wrote:
->> Add device tree source file for TQM5200 board.
+> On Sun, Nov 04, 2007 at 12:53:17AM +0100, Marian Balakowicz wrote:
+>> Add device tree source file for Motion-PRO board.
 > [snip]
->> +	soc5200@f0000000 {
-> 
-> soc@address is the new convention, I believe, but I guess you need
-> compatibility with older bootstraps.
-
-Correct, we stick with 'soc5200' due to hardcoded paths in U-boot.
-
-> 
->> +		model = "fsl,mpc5200";
->> +		compatible = "mpc5200";
-> 
-> This compatible looks bogus; it should have the "fsl," at least.
-
-Added 'fsl,'.
-
-> [snip]
->> +		mpc5200_pic: pic@500 {
->> +			// 5200 interrupts are encoded into two levels;
->> +			interrupt-controller;
->> +			#interrupt-cells = <3>;
->> +			device_type = "interrupt-controller";
-> 
-> No device_type here.
-
-Removed it.
-
-> 
->> +			compatible = "mpc5200-pic";
->> +			reg = <500 80>;
+>> +		motionpro-statusled@660 {	// Motion-PRO status LED
+>> +			compatible = "promess,motionpro-statusled";
+>> +			cell-index = <6>;
+>> +			reg = <660 10>;
+>> +			interrupts = <1 f 0>;
+>> +			interrupt-parent = <&mpc5200_pic>;
+>> +			blink-delay = <64>; // 100 msec
 >> +		};
 >> +
->> +		gpt@600 {	// General Purpose Timer
->> +			compatible = "fsl,mpc5200-gpt";
->> +			cell-index = <0>;
+>> +		motionpro-readyled@670 {	// Motion-PRO ready LED
+>> +			compatible = "promess,motionpro-readyled";
+>> +			cell-index = <7>;
 > 
-> Ok, is this actually a suitable usage for cell-index?  It should only
-> be used when the cell-index number is used to program some soc-global
-> register.  It should not be used just for ordering or logical-indexing
-> purposes.
+> These cell-index values for the LEDs look very strange.  How are they
+> used?
+[snip]
+>> +
+>> +		mscan@980 {
+>> +			compatible = "mpc5200b-mscan","mpc5200-mscan";
+>> +			cell-index = <1>;
+> 
+> As for serial and gpt, is cell-index really suitable here?
 
-Rechecked that and it's not being used anywhere. Removed.
+Ok, removed those unused "cell-index" properties.
 
 > [snip]
->> +		serial@2000 {		// PSC1
->> +			device_type = "serial";
->> +			compatible = "mpc5200-psc-uart";
->> +			port-number = <0>;  // Logical port assignment
->> +			cell-index = <0>;
+>> +		spi@f00 {
+>> +			device_type = "spi";
+>> +			compatible = "mpc5200b-spi","mpc5200-spi";
+>> +			reg = <f00 20>;
+>> +			interrupts = <2 d 0 2 e 0>;
+>> +			interrupt-parent = <&mpc5200_pic>;
+>> +		};
+> [snip]
+>> +		// PSC2 in spi master mode 
+>> +		spi@2200 {		// PSC2
+>> +			device_type = "spi";
+>> +			compatible = "mpc5200b-psc-spi","mpc5200-psc-spi";
+>> +			cell-index = <1>;
 > 
-> Ditto w.r.t. cell-index.
+> cell-index present for one spi, but not the other makes be even more
+> suspicious about it's applicability here...
 
-Not used, removed.
+These are two different SPIs, both are part of the SoC but first one
+is dedicated SPI interface while the second one is PSC port in a SPI
+mode. Driver for the second one (mpc52xx_psc_spi.c) is actually using
+cell-index to get the PSC port number it's controlling.
 
-> port-number also looks bogus - the device tree should not generally
-> contain logical numbering information in this manner.  How and what
-> uses the port-number property?
-
-'port-number' is used by serial driver (mpc52xx_uart.c), if present it
- assigns a device number (/dev/PSC<port-number>) for given serial port.
-That allows to override default auto-numbering.
-
->> +		sram@8000 {
->> +			compatible = "mpc5200-sram","sram";
+> [snip]
+>> +	lpb {
+>> +		model = "fsl,lpb";
+>> +		compatible = "fsl,lpb";
 > 
-> Uh.. is there an "sram" binding?  "sram" doesn't look specific enough
-> for a compatible property.
+> Is lpb another one of these chipselect/offset configurable bus bridge
+> things?  If so, you should use a 2-cell addressing convention for the
+> subnodes like fsl localbus and 4xx EBC.
 
-Right, removed "sram".
+Yes, it is, so I have switched to 2-cell addressing. Please see the v3
+respin of the patches.
+
+
+>> +		// 8-bit custom Anybus Module on LocalPlus Bus CS3
+>> +		anybus50020000 {
+> 
+> Missing '@'.
+
+Fixed.
 
 Thanks,
 m.
