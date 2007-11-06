@@ -1,23 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 14EC6DDE0D
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:36:58 +1100 (EST)
-Message-ID: <4730B27B.8000505@freescale.com>
-Date: Tue, 06 Nov 2007 12:29:15 -0600
+	by ozlabs.org (Postfix) with ESMTP id 249F5DDDF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:46:53 +1100 (EST)
+Date: Tue, 6 Nov 2007 12:46:49 -0600
 From: Scott Wood <scottwood@freescale.com>
+To: Sergej Stepanov <Sergej.Stepanov@ids.de>
+Subject: Re: [PATCH] using mii-bitbang on different processor ports -
+	update the booting-without-of.txt-file
+Message-ID: <20071106184649.GA5283@loki.buserror.net>
+References: <1194339117.3467.8.camel@p60635-ste.ids.de>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
-References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>	<472F7247.9070106@freescale.com>	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>	<472F8267.8070106@freescale.com>	<20071106182953.3c1a57e3@hyperion.delvare>	<4730A617.9040502@freescale.com>
-	<20071106191039.37cd7053@hyperion.delvare>
-In-Reply-To: <20071106191039.37cd7053@hyperion.delvare>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
-	i2c@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1194339117.3467.8.camel@p60635-ste.ids.de>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jean Delvare wrote:
-> Sorry, I've not been completely clear. Yes, you can use
-> i2c_new_device() on an adapter that has been added with
-> i2c_add_adapter(). However, this requires that you have a reference to
-> that i2c_adapter, which is usually not the case with system-wide I2C
-> buses.
+On Tue, Nov 06, 2007 at 09:51:57AM +0100, Sergej Stepanov wrote:
+> The patch updates the booting-without-of.txt-file.
+> There is a description for the case
+> if mdio data and clock pins are on different processor ports.
+> It is a extending for e-mail "[PATCH v3] using mii-bitbang on different processor ports".
+> 
+> Signed-off-by: Sergej Stepanov <Sergej.Stepanov@ids.de>
+> --
+> 
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index a96e853..497d8d8 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1956,6 +1956,12 @@ platforms are moved over to use the flattened-device-tree model.
+>  		fsl,mdc-pin = <13>;
+>  	};
+>  
+> +   The "reg"-property may have also depending on board design
+> +   the following form:
+> +	reg = <10d40 14 10d60 14>;
+> +   In that case the pin for mdio data controlling is on the port C,
+> +   and the pin for mdio clock controlling is on the port D.
 
-But it is the case here, because the i2c driver knows about the device 
-tree, and thus can pass the device tree node and the adapter struct to 
-the enumeration function.
-
-The driver should still do i2c_add_numbered_adapter() when using the 
-non-OF platform device binding, in which case it gets the bus number 
-from the platform data.
+It'd be better to explicitly say that the first resource is mdio, and the
+second resource is mdc, rather than require the reader to know/look up which
+corresponds to 10d40 and which to 10d60.
 
 -Scott
