@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 7D189DDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 09:22:27 +1100 (EST)
-To: "Grant Likely" <grant.likely@secretlab.ca>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v3 04/13] [POWERPC] Add generic support for simple MPC5200
-	based boards
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 06 Nov 2007 14:04:44 MST."
-	<fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com>
-Date: Tue, 06 Nov 2007 23:22:24 +0100
-Sender: wd@denx.de
-Message-Id: <20071106222224.D67BA2479C@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, Marian Balakowicz <m8@semihalf.com>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7AB63DDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 09:40:07 +1100 (EST)
+Date: Wed, 7 Nov 2007 01:40:10 +0300
+From: Yuri Tikhonov <yur@emcraft.com>
+Message-ID: <7310408706.20071107014010@emcraft.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: sr@denx.de, dzu@denx.de
+Reply-To: Yuri Tikhonov <yur@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Grant,
 
-in message <fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com> you wrote:
->
-> In other words; make the assumption that it is easier to change the
-> kernel than it is to change the device tree.
+ Hello all,
 
-Are you serious about this?
+ Here is a patch-set for support L2-cache synchronization routines for
+the ppc44x processors family. I know that the "ppc" branch is for bug-fixing only, thus
+the patch-set is just FYI [though enabled but non-coherent L2-cache may appear as a bug for
+someone who uses one of the boards listed below :)].
 
-Reading this from someone with your experience with device trees if
-feeding my worst fears...
+[PATCH 1/2] [PPC 4xx] invalidate_l2cache_range() implementation for ppc44x;
+[PATCH 2/2] [PPC 44x] enable L2-cache for the following ppc44x-based boards: ALPR,
+Katmai, Ocotea, and Taishan.
 
-Best regards,
-
-Wolfgang Denk
+ Regards, Yuri
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Text processing has made it possible to right-justify any idea, even
-one which cannot be justified on any other grounds."
-                                                 -- J. Finnegan, USC.
+Yuri Tikhonov, Senior Software Engineer
+Emcraft Systems, www.emcraft.com
