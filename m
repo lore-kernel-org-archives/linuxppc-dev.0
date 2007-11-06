@@ -1,11 +1,21 @@
-Return-Path: <mgreer@mvista.com>
-Date: Mon, 5 Nov 2007 18:28:05 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: prpmc2800 - Don't trust documented memory size
-Message-ID: <20071106012805.GA20909@mag.az.mvista.com>
+Return-Path: <jonsmirl@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.187])
+	by ozlabs.org (Postfix) with ESMTP id 1832FDDE0D
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Nov 2007 12:34:52 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so1482840rvf
+	for <linuxppc-dev@ozlabs.org>; Mon, 05 Nov 2007 17:34:51 -0800 (PST)
+Message-ID: <9e4733910711051734m7cf1fac0y5fb39feb37bad548@mail.gmail.com>
+Date: Mon, 5 Nov 2007 20:34:51 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+In-Reply-To: <472F7247.9070106@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+Cc: Tjernlund <tjernlund@tjernlund.se>, linuxppc-dev@ozlabs.org,
+	Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,30 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It turns out that the firmware on some PrPMC2800 processor modules
-initializes the memory controller for 512 MB even when there is more
-memory.  As a simple work around, set the amount of memory in the
-device tree passed to the kernel to the lesser of what the memory
-controller is set up for and the actual amount of memory.
+On 11/5/07, Scott Wood <scottwood@freescale.com> wrote:
+> > +static struct of_platform_driver mpc_i2c_driver = {
+> > +     .owner          = THIS_MODULE,
+> > +     .name           = DRV_NAME,
+> > +     .match_table    = mpc_i2c_of_match,
+> > +     .probe          = mpc_i2c_probe,
+> > +     .remove         = __devexit_p(mpc_i2c_remove),
+> > +     .driver         = {
+> > +             .name   = DRV_NAME,
+> >       },
+> >  };
+>
+> Do we still need .name if we have .driver.name?
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
- arch/powerpc/boot/prpmc2800.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+This is a general question, if of_platform_driver doesn't need .name
+it should be removed from the structure.
 
-diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
-index 9614e1d..559c45e 100644
---- a/arch/powerpc/boot/prpmc2800.c
-+++ b/arch/powerpc/boot/prpmc2800.c
-@@ -405,7 +405,10 @@ static void prpmc2800_fixups(void)
- 
- 	bip = prpmc2800_get_bip(); /* Get board info based on VPD */
- 
--	mem_size = (bip) ? bip->mem_size : mv64x60_get_mem_size(bridge_base);
-+	mem_size = mv64x60_get_mem_size(bridge_base);
-+	if (bip)
-+		mem_size = min(mem_size, bip->mem_size);
-+
- 	prpmc2800_bridge_setup(mem_size); /* Do necessary bridge setup */
- 
- 	/* If the VPD doesn't match what we know about, just use the
+-- 
+Jon Smirl
+jonsmirl@gmail.com
