@@ -1,20 +1,26 @@
-Return-Path: <lokowich@acdstar.com>
-Received: from g2host.com (mailfront1.g2host.com [208.42.176.212])
-	by ozlabs.org (Postfix) with ESMTP id 7C298DDDFC
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E2294DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Nov 2007 01:31:07 +1100 (EST)
-Received: from [74.95.143.41] (account lokowich@acdstar.com HELO
-	[192.168.2.105])
-	by mailfront1.g2host.com (CommuniGate Pro SMTP 5.1.10)
-	with ESMTPA id 24220256 for linuxppc-embedded@ozlabs.org;
-	Tue, 06 Nov 2007 07:31:00 -0600
-Message-ID: <47306C92.10205@acdstar.com>
-Date: Tue, 06 Nov 2007 07:30:58 -0600
-From: lokowich <lokowich@acdstar.com>
-MIME-Version: 1.0
+	Wed,  7 Nov 2007 03:46:36 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IpRZQ-00058k-Tr
+	for linuxppc-embedded@ozlabs.org; Tue, 06 Nov 2007 08:46:32 -0800
+Message-ID: <13610744.post@talk.nabble.com>
+Date: Tue, 6 Nov 2007 08:46:32 -0800 (PST)
+From: khollan <khollan@daktronics.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: JTAG init of MPC5200B
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: serial GDBServer PPC405 problems
+In-Reply-To: <fa686aa40711020757y7591ce1eh3902f1856f254e3e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <13532592.post@talk.nabble.com>
+	<200711020944.53077.wangbj@lzu.edu.cn>
+	<13548781.post@talk.nabble.com>
+	<fa686aa40711020757y7591ce1eh3902f1856f254e3e@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +31,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've been unable to properly initialize my MPC5200B from a GDB session 
-or OCD Commander using a OCDemon JTAG emulator unless the device is 
-first initialized by U-Boot.  I've used same register setup as defined 
-in the U-Boot startup code.  This prevents me from loading a RAM-based 
-U-Boot onto a bare board over the JTAG interface.  Any guidance?
 
+
+Grant Likely-2 wrote:
+> 
+> 
+>> Do I need to add kgdb even if I just want to debug a user application
+>> over
+>> serial?
+> 
+> No you don't.  gdbserver is the right tool.
+> 
+> -- 
+> 
+> 
+So has anyone seen this problem before?
 -- 
-Mark Lokowich
-Systems Engineer
-Advanced Communication Design
+View this message in context: http://www.nabble.com/serial-GDBServer-PPC405--problems-tf4732593.html#a13610744
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
