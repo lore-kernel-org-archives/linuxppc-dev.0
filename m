@@ -1,18 +1,23 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 973B2DDDF8
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:13:09 +1100 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1IpSvA-0003m2-1v
-	for linuxppc-dev@ozlabs.org; Tue, 06 Nov 2007 12:13:05 -0600
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH Rev 2] 4xx: Replace #includes of asm/of_platform.h with
-	linux/of_platform.h.
-Date: Tue, 06 Nov 2007 12:13:04 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IpSvA-0003m2-1v@jdl.com>
+Return-Path: <khali@linux-fr.org>
+Received: from kraid.nerim.net (smtp-102-tuesday.nerim.net [62.4.16.102])
+	by ozlabs.org (Postfix) with ESMTP id 8BA2CDDE33
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 05:17:56 +1100 (EST)
+Date: Tue, 6 Nov 2007 19:17:54 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [RFC] Rework of i2c-mpc.c - Freescale i2c driver
+Message-ID: <20071106191754.6ad2569c@hyperion.delvare>
+In-Reply-To: <9e4733910711060945t35284f8atb36c0d6ed35abf71@mail.gmail.com>
+References: <9e4733910711050714l2aa3a5eeqf5327c3e0d8ca490@mail.gmail.com>
+	<472F7247.9070106@freescale.com>
+	<9e4733910711051230w2d90a710idec3dcfc2e0f5c16@mail.gmail.com>
+	<472F8267.8070106@freescale.com>
+	<20071106182953.3c1a57e3@hyperion.delvare>
+	<9e4733910711060945t35284f8atb36c0d6ed35abf71@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Tjernlund <tjernlund@tjernlund.se>,
+	i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,95 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jon Loeliger <jdl@freescale.com>
+Hi Jon,
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
-Chip away at some janitor work.
-Add sfr's ACK.
+On Tue, 6 Nov 2007 12:45:24 -0500, Jon Smirl wrote:
+> On 11/6/07, Jean Delvare wrote:
+> > I agree with Scott here, I don't want to fork the drivers. It is
+> > possible (and easy) to support both methods in the same module, let's
+> > just to that. See for example David Brownell's work on the lm75 driver:
+> > http://lists.lm-sensors.org/pipermail/lm-sensors/2007-September/021270.html
+> 
+> I agree that it is easy to make make a chip driver support both new
+> and old style.
+> 
+> But when I call i2c_new_device() on an old style chip driver it exits
+> saying that it doesn't work for the old style adapters. Checks for
+> is_newstyle_driver() are in the i2c_new_device code. That's what
+> caused me to rewrite the rtc-pcf8563 driver for the new style. This
+> probably related to probing, I have to pass the address in struct
+> i2c_board_info. The old style drivers don't support having their
+> address passed in.
 
- arch/powerpc/platforms/40x/walnut.c  |    3 ++-
- arch/powerpc/platforms/44x/bamboo.c  |    3 ++-
- arch/powerpc/platforms/44x/ebony.c   |    3 ++-
- arch/powerpc/platforms/44x/sequoia.c |    3 ++-
- 4 files changed, 8 insertions(+), 4 deletions(-)
+I know that. The trick is to register two struct i2c_driver (again see
+the lm75 example), one old-style, one new-style. I agree it's not very
+elegant, but it works. Hopefully we can get rid of the old-style one
+after some time, and it allows for a smooth transition.
 
-diff --git a/arch/powerpc/platforms/40x/walnut.c b/arch/powerpc/platforms/40x/walnut.c
-index eb0c136..ff6db24 100644
---- a/arch/powerpc/platforms/40x/walnut.c
-+++ b/arch/powerpc/platforms/40x/walnut.c
-@@ -17,12 +17,13 @@
-  */
- 
- #include <linux/init.h>
-+#include <linux/of_platform.h>
-+
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/time.h>
- #include <asm/uic.h>
--#include <asm/of_platform.h>
- 
- static struct of_device_id walnut_of_bus[] = {
- 	{ .compatible = "ibm,plb3", },
-diff --git a/arch/powerpc/platforms/44x/bamboo.c b/arch/powerpc/platforms/44x/bamboo.c
-index 470e1a3..be23f11 100644
---- a/arch/powerpc/platforms/44x/bamboo.c
-+++ b/arch/powerpc/platforms/44x/bamboo.c
-@@ -14,12 +14,13 @@
-  * option) any later version.
-  */
- #include <linux/init.h>
-+#include <linux/of_platform.h>
-+
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/time.h>
- #include <asm/uic.h>
--#include <asm/of_platform.h>
- #include "44x.h"
- 
- static struct of_device_id bamboo_of_bus[] = {
-diff --git a/arch/powerpc/platforms/44x/ebony.c b/arch/powerpc/platforms/44x/ebony.c
-index 40e18fc..6cd3476 100644
---- a/arch/powerpc/platforms/44x/ebony.c
-+++ b/arch/powerpc/platforms/44x/ebony.c
-@@ -17,12 +17,13 @@
-  */
- 
- #include <linux/init.h>
-+#include <linux/of_platform.h>
-+
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/time.h>
- #include <asm/uic.h>
--#include <asm/of_platform.h>
- 
- #include "44x.h"
- 
-diff --git a/arch/powerpc/platforms/44x/sequoia.c b/arch/powerpc/platforms/44x/sequoia.c
-index 30700b3..21a9dd1 100644
---- a/arch/powerpc/platforms/44x/sequoia.c
-+++ b/arch/powerpc/platforms/44x/sequoia.c
-@@ -14,12 +14,13 @@
-  * option) any later version.
-  */
- #include <linux/init.h>
-+#include <linux/of_platform.h>
-+
- #include <asm/machdep.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/time.h>
- #include <asm/uic.h>
--#include <asm/of_platform.h>
- #include "44x.h"
- 
- static struct of_device_id sequoia_of_bus[] = {
+> This may be complicated by the fact that the rtc drivers I'm working
+> on are not probable. That's why I want to add device tree support for
+> them.
+> 
+> If this is going to work on an old style driver, how do I get the
+> address to it?
+
+Old-style drivers probe for supported chips on all possible addresses
+(for the chip in question). If the chip can't be probed, then module
+parameters must be used. That's not terribly convenient, and new-style
+drivers are much preferred in this case.
+
 -- 
-1.5.3.1.139.g9346b
+Jean Delvare
