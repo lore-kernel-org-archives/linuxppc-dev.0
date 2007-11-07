@@ -1,27 +1,21 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 6AAF5DDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 01:42:33 +1100 (EST)
-Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 9400B2232C8
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 15:42:31 +0100 (CET)
-Received: from localhost (unknown [192.168.1.157])
-	by mail.m-online.net (Postfix) with ESMTP id 8736D9009A
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 15:42:31 +0100 (CET)
-Received: from localhost ([192.168.3.149])
-	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
-	port 10024) with ESMTP id mYhaGKs4TDZp for <linuxppc-dev@ozlabs.org>;
-	Wed,  7 Nov 2007 15:42:25 +0100 (CET)
-Received: from ibook.aepfle.de (DSL01.83.171.165.156.ip-pool.NEFkom.net
-	[83.171.165.156]) by mail.mnet-online.de (Postfix) with ESMTP
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 15:42:25 +0100 (CET)
-Date: Wed, 7 Nov 2007 15:43:54 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] autoload snd-powermac via modalias
-Message-ID: <20071107144354.GA4961@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA115DDE1D
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 02:04:36 +1100 (EST)
+Subject: Re: [PATCH 4/3] Make swsusp_32.S usable for suspend-to-RAM.
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20070905220846.GA11400@ld0162-tx32.am.freescale.net>
+References: <20070905220846.GA11400@ld0162-tx32.am.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-uCxdasW+FQzbYWf5zI6C"
+Date: Wed, 07 Nov 2007 13:25:45 +0100
+Message-Id: <1194438345.4470.4.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,37 +26,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Autoload snd-powermac on systems without i2s bus by creating a fake
-modalias entry. udev/modprobe will use the 'modalias' file from
-/sys/devices/pci*/*/*/*:mac-io/*:davbus/ to find a matching module.
-Newer systems use snd-aoa, which provides the required modalias already.
-
-Some systems with i2s bus, but without a 'layout-id' property, will not work
-with this patch because an fake i2s alias will conflict with snd-aoa.
+--=-uCxdasW+FQzbYWf5zI6C
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> +config PPC32_SUSPEND
 
----
- sound/ppc/powermac.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+> +config PPC32_SWSUSP
 
---- a/sound/ppc/powermac.c
-+++ b/sound/ppc/powermac.c
-@@ -174,6 +174,16 @@ static struct platform_driver snd_pmac_d
- 	},
- };
- 
-+/* for NewWorld AGP (Pismo, CRT iMac) */
-+MODULE_ALIAS("of:NdavbusTsoundbusCdavbus");
-+/* for OldWorld beige G3 */
-+/* for NewWorld PCI (G3 and early G4) */
-+MODULE_ALIAS("of:NdavbusTdavbus");
-+/* for OldWorld ohare based */
-+MODULE_ALIAS("of:NdavbusTsoundbus");
-+/* for OldWorld bandit based */
-+MODULE_ALIAS("of:NawacsTsound");
-+
- static int __init alsa_card_pmac_init(void)
- {
- 	int err;
+> -obj32-$(CONFIG_HIBERNATION) +=3D swsusp_32.o
+> +obj32-$(CONFIG_PPC32_SUSPEND)	+=3D swsusp_32.o
+
+I think that's overkill, couldn't it just use CONFIG_PM_SLEEP here? I'm
+not sure that was available at the time you posted this patchset though,
+so that may well be the reason you didn't use it.
+
+For reference, kernel/power/Kconfig has:
+
+config PM_SLEEP
+        bool  =20
+        depends on SUSPEND || HIBERNATION
+        default y
+
+
+johannes
+
+--=-uCxdasW+FQzbYWf5zI6C
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARzGuyKVg1VMiehFYAQLYyBAAkIJ85V/JkmeMm+Al5aTsc7kpIl+JX4ss
+XUQMco2Edma0g8lSzviWUfSBJ+GbYonTgcaBND8hx31vd7P5VaGgzlyvVd7EB4EM
+ar3rb+AaEdkZagMg5EQV1vKwq4Lqa2/odaesNByB8dThERSFKZtE20B0D5kvC3Hb
+19fjCg9J4DzvEtT21BKKBsJ2dxieNA+ZdJtiSw/uLgOXP6SWgJaL5a9LQIVry9hG
+YQsTZ74hR0KjqHV6uJfIYL8J1bM8Q00pxuZDBOBslZoIeT52FnLRpVcUT5FGaUBy
+j3WMQ7QYQ7cmEoInq3YBJmCjuVlhL3/xqhNIGoFjkfrev9SJXeca9VKrMpyFkyg2
+SalmlM/veatfsBminf9O+eyPZ1S/MDbf8jhGujBUQgSD0+7u5iTx8dTP4HLl3fpd
+e6p7V0DHfTUVoYHN6MQ0rRJX6RT9bfJlFX2mk6CrJl8h2MT6O/afA4mK8EgY7gTx
+dfnzD5yCR/tOHHzJBsvuzHZ90b5ZKxZB8xskxu4KkkG20JVqOJW8g0+is/lelabW
+OuNut33lJolq4HUav2wKXAG9n1CMjcjrE+4n8M9amzBxOzen3oaApejy08uPtS1v
+JVAN/0hXGB2ISFTJw1BwE6nKlNROQ8gmNYcK9GySnd8dehB17eZuOJ0NPAMmvG2E
+LRz/vWoywew=
+=RWIY
+-----END PGP SIGNATURE-----
+
+--=-uCxdasW+FQzbYWf5zI6C--
