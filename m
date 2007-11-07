@@ -2,31 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09D26DDE01
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 20:37:31 +1100 (EST)
-Subject: Re: 2.6.24-rc1-git15 Kernel build fails on powerpc - Unrecognized
-	opcode: `dssall'
+	by ozlabs.org (Postfix) with ESMTP id 5B63DDDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 21:16:51 +1100 (EST)
+Subject: [PATCH (resend, for 2.6.24)] windfarm: fix windfarm thread freezer
+	interaction
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <20071106154439.GK5080@shadowen.org>
-References: <47304343.2010709@linux.vnet.ibm.com>
-	<661de9470711060246s3040f68drf0a6310aeec4e1e8@mail.gmail.com>
-	<1194346486.4066.13.camel@johannes.berg>
-	<20071106.031001.189578769.davem@davemloft.net>
-	<47304FE5.2010309@linux.vnet.ibm.com>
-	<47306E9C.4090202@linux.vnet.ibm.com>
-	<20071106154439.GK5080@shadowen.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-yyWM7j9Zq7eK+k39kw1Q"
-Date: Wed, 07 Nov 2007 10:38:43 +0100
-Message-Id: <1194428323.4055.3.camel@johannes.berg>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 07 Nov 2007 11:18:02 +0100
+Message-Id: <1194430682.4055.12.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, sam@ravnborg.org,
-	David Miller <davem@davemloft.net>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+When I fixed the windfarm freezer interaction first in commit
+1ed2ddf380e19dafeec2150ca709ef7f4a67cd21, an earlier patch than the one
+I came up with after comments was committed. This has come back to haunt
+us now because commit d5d8c5976d6adeddb8208c240460411e2198b393 changed
+the freezer to no long send signals. Fix it by removing the windfarm
+thread's signal logic and restoring the original try_to_freeze().
 
---=-yyWM7j9Zq7eK+k39kw1Q
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+We could simply revert 1ed2ddf380e19dafeec2150ca709ef7f4a67cd21 now
+but I feel that the assertion that no signal is delivered to the
+windfarm thread needs not be there.
 
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+This fixes a regression: with 2.6.24 hibernation can no longer work
+because the windfarm thread never freezes.
 
+ drivers/macintosh/windfarm_core.c |   10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-> So that sounds like a Kconfig problem then?  That HIBERATION requires
-> ALITIVEC and yet does not depend on it or set it.
-
-Yes. I'm guessing that it broke with Rafael's hibernation/suspend
-Kconfig changes but will take a look. I think it used to depend on
-powermac.
-
-johannes
-
---=-yyWM7j9Zq7eK+k39kw1Q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzGHoqVg1VMiehFYAQJYNA/+Mx3H4kj3FC7hYVt24kvlgrUPQR7JnR7B
-9gBirtakOE3Zjq/GhQiX3z5JxYDMIjIeWkAZdPmZ2uIE+sqb6nzA+7gJcdq8/0vs
-QcJfwa0QZiQU3OCflFK/gTiNHNNLCVBDIOZgpIlwG7tWtNo1MJ/FFJltndkOnqpf
-gxnB5TDKRio4c6K7L9L6IQSZiLsPmHnbP/ez7r7i6JKq8EoKkm/ZXehaeVjU0DwE
-rM4ySRmsQhsMBMqLtymLy06AS8vSMfiZvFLZh54KTGo6kDbMqWf6lI/W6LtL59nD
-EBjTlNkML8xLGswEQTo/IWgUFdGO0vhfriqICM2zfbOi8NmQIwBLqOO6CfZOgXFV
-e6vO+vdrHOlyjTpwoXdfPoC68PNmdASappPIl5718kTRzJ78jcPkQhJJ0PxA382T
-SvFzDXjs6xPgOvWYDuVsqROkrzTAAzv6XlHul7KDi4yK4EvBMqbDZHeB7RAWeP+l
-ibLuyb7KjHTfSD5NOWgKJay2/mykqKYWW9SQhakN4Rw7v3NLpnKq9DNza3PJ7M5Y
-VN1S2FmIVpNiWjqdqD7SReKfigkOC+8JZp3SZvJYq2cC9TzA6mzBn7MQyQukJzr2
-aE5M+LEyaetvLFwjdrfkKN4ePH1m6NsdLB+LgyRDM8uXLt3IPwtSwcoS5Q3jy05x
-D/bTbZCUliM=
-=EVAc
------END PGP SIGNATURE-----
-
---=-yyWM7j9Zq7eK+k39kw1Q--
+--- linux-2.6-git.orig/drivers/macintosh/windfarm_core.c	2007-10-23 14:23:02.406437623 +0200
++++ linux-2.6-git/drivers/macintosh/windfarm_core.c	2007-10-23 14:25:28.745447695 +0200
+@@ -94,7 +94,9 @@ static int wf_thread_func(void *data)
+ 	DBG("wf: thread started\n");
+ 
+ 	set_freezable();
+-	while(!kthread_should_stop()) {
++	while (!kthread_should_stop()) {
++		try_to_freeze();
++
+ 		if (time_after_eq(jiffies, next)) {
+ 			wf_notify(WF_EVENT_TICK, NULL);
+ 			if (wf_overtemp) {
+@@ -116,12 +118,6 @@ static int wf_thread_func(void *data)
+ 		delay = next - jiffies;
+ 		if (delay <= HZ)
+ 			schedule_timeout_interruptible(delay);
+-
+-		/* there should be no non-suspend signal, but oh well */
+-		if (signal_pending(current) && !try_to_freeze()) {
+-			printk(KERN_WARNING "windfarm: thread got sigl !\n");
+-			break;
+-		}
+ 	}
+ 
+ 	DBG("wf: thread stopped\n");
