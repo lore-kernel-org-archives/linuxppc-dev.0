@@ -1,11 +1,12 @@
-Return-Path: <j.borkhuis@dutchspace.nl>
-Message-ID: <473167E4.8070407@dutchspace.nl>
-Date: Wed, 07 Nov 2007 08:23:16 +0100
-From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
+Return-Path: <g.schardt@fz-juelich.de>
+Message-ID: <4731A8E3.4020909@fz-juelich.de>
+Date: Wed, 07 Nov 2007 13:00:35 +0100
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
 To: Linuxppc-embedded@ozlabs.org
-Subject: PCI speed
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Bootloader & Flash
+Content-Type: text/plain;
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,20 +17,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Hi,
 
-I an having some throughput problems with my PCI. I am using a MVME3100 
-board with on board PMC slots. I use a card with a large amount of 
-memory on board (64 MB Reflective Memory card) and try to transfer data 
-from the card to main memory using the DMA engine on the card.
+i use the AVnet Xilinx4 FX12 Minimodule and until now, i use system-ace
+to configure the fpga and boot the linux kernel.
+But now, i want to boot from the on board flash memory and have no idea
+where to start.
 
-When using standard memcpy I get a throughput of around 17 MB/s. When I 
-use the DMA engine on the PCI card it improves to around 30 MB/s, but 
-when I run the same test on an Intel machine the memcpy is the same, but 
-the DMA increases to 200 MB/s. Is there some configuration that we can 
-change to improve the speed on the PPC board?
+I think i have to:
+- save the fpga configuration in the fpga-prom
+- use/program some kind of bootloader store in fpga block ram to jump to
+the flash-adress where the executable linux kernel resist
+- use the mtd-device driver to mount  root fs on the same flash some
+address later
 
-I use the same driver code and the same test application on both platforms.
+Is this the right way ?
 
-Kind regards,
-    Johan Borkhuis
+
+Regards
+Georg
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
