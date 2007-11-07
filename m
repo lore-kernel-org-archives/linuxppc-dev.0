@@ -1,17 +1,17 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 46791DDD0A
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 14:55:15 +1100 (EST)
-Date: Tue, 6 Nov 2007 22:04:28 -0600
+	by ozlabs.org (Postfix) with ESMTP id 96908DDDE6
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 14:56:49 +1100 (EST)
+Date: Tue, 6 Nov 2007 22:06:08 -0600
 From: Olof Johansson <olof@lixom.net>
 To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range()
-	implementation for ppc44x
-Message-ID: <20071107040428.GA22637@lixom.net>
-References: <1078030427.20071107014028@emcraft.com>
+Subject: Re: [PATCH 2/2] [PPC 44x] enable L2-cache for ALPR, Katmai,
+	Ocotea, and Taishan
+Message-ID: <20071107040608.GB22637@lixom.net>
+References: <1416528026.20071107014041@emcraft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1078030427.20071107014028@emcraft.com>
+In-Reply-To: <1416528026.20071107014041@emcraft.com>
 Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,150 +24,168 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi,
 
-Some comments below. In general this patch adds #ifdefs in common code,
-that's normally frowned upon.
-
-It would maybe be better to add a new call to ppc_machdeps and call it
-if set.
+See comments below.
 
 
 -Olof
 
-
-On Wed, Nov 07, 2007 at 01:40:28AM +0300, Yuri Tikhonov wrote:
->  Support for L2-cache coherency synchronization routines in ppc44x
-> processors.
-> 
+On Wed, Nov 07, 2007 at 01:40:41AM +0300, Yuri Tikhonov wrote:
+>  This patch introduces the L2_CACHE configuration option available
+> for the ppc44x-based boards with L2-cache enabled.
 > 
 > Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
 > Signed-off-by: Pavel Kolesnikov <concord@emcraft.com>
 > 
 > --
-> diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
-> index 1947380..593a425 100644
-> --- a/arch/powerpc/lib/dma-noncoherent.c
-> +++ b/arch/powerpc/lib/dma-noncoherent.c
-> @@ -351,12 +351,18 @@ void __dma_sync(void *vaddr, size_t size, int direction)
->                 BUG();
->         case DMA_FROM_DEVICE:   /* invalidate only */
->                 invalidate_dcache_range(start, end);
-> +#ifdef CONFIG_L2_CACHE
-> +               invalidate_l2cache_range(__pa(start), __pa(end));
-> +#endif
->                 break;
->         case DMA_TO_DEVICE:             /* writeback only */
->                 clean_dcache_range(start, end);
->                 break;
->         case DMA_BIDIRECTIONAL: /* writeback and invalidate */
->                 flush_dcache_range(start, end);
-> +#ifdef CONFIG_L2_CACHE
-> +               invalidate_l2cache_range(__pa(start), __pa(end));
-> +#endif
->                 break;
->         }
+> diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+> index 1d2ca42..ad6b581 100644
+> --- a/arch/ppc/platforms/4xx/Kconfig
+> +++ b/arch/ppc/platforms/4xx/Kconfig
+> @@ -396,4 +396,12 @@ config SERIAL_SICC_CONSOLE
+>         bool
+>         depends on SERIAL_SICC && UART0_TTYS1
+>         default y
+> +
+> +config L2_CACHE
+> +       bool "Enable Level-2 Cache"
+> +       depends on NOT_COHERENT_CACHE && (KATMAI || TAISHAN || OCOTEA || ALPR)
+> +       default y
+> +       help
+> +         This option enables L2-cache on ppc44x controllers.
+> +         If unsure, say Y.
+
+That's a very generic config name. Maybe something like PPC_4XX_L2_CACHE?
+
+Is there ever a case where a user would NOT want l2 cache enabled (and
+disabled permanently enough to rebuild the kernel instead of giving a
+kernel command line option?)
+
+>  endmenu
+> diff --git a/arch/ppc/platforms/4xx/alpr.c b/arch/ppc/platforms/4xx/alpr.c
+> index 3b6519f..0623801 100644
+> --- a/arch/ppc/platforms/4xx/alpr.c
+> +++ b/arch/ppc/platforms/4xx/alpr.c
+> @@ -537,10 +537,12 @@ static void __init alpr_setup_arch(void)
+>         printk("Prodrive ALPR port (DENX Software Engineering <sr@denx.de>)\n");
 >  }
-> diff --git a/arch/ppc/kernel/misc.S b/arch/ppc/kernel/misc.S
-> index 46cf8fa..de62f85 100644
-> --- a/arch/ppc/kernel/misc.S
-> +++ b/arch/ppc/kernel/misc.S
-> @@ -386,6 +386,36 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
->         sync                            /* additional sync needed on g4 */
->         isync
->         blr
-> +
+>  
 > +#ifdef CONFIG_L2_CACHE
-> +/*
-> + * Invalidate the Level-2 cache lines corresponded to the address
-> + * range.
-> + *
-> + * invalidate_l2cache_range(unsigned long start, unsigned long stop)
-> + */
-> +#include <asm/ibm4xx.h>
-
-PLease don't add includes to the middle of a file.
-
-> +_GLOBAL(invalidate_l2cache_range)
-> +       li      r5,L2_CACHE_BYTES-1     /* do l2-cache line alignment */
-> +       andc    r3,r3,r5
-> +       subf    r4,r3,r4
-> +       add     r4,r4,r5
-> +       srwi.   r4,r4,L2_CACHE_SHIFT
-> +       mtctr   r4
-> +
-> +       lis     r4, L2C_CMD_INV>>16
-> +1:     mtdcr   DCRN_L2C0_ADDR,r3       /* write address to invalidate */
-> +       mtdcr   DCRN_L2C0_CMD,r4        /* issue the Invalidate cmd */
-> +
-> +2:     mfdcr   r5,DCRN_L2C0_SR         /* wait for complete */
-> +       andis.  r5,r5,L2C_CMD_CLR>>16
-> +        beq    2b
-> +
-> +       addi    r3,r3,L2_CACHE_BYTES    /* next address to invalidate */
-> +       bdnz    1b
-> +       blr
+>  static void __init alpr_init(void)
+>  {
+>         ibm440gx_l2c_setup(&clocks);
+>  }
+> +#endif
+>  
+>  static void alpr_progress(char *buf, unsigned short val)
+>  {
+> @@ -567,7 +569,9 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>  #ifdef CONFIG_KGDB
+>         ppc_md.early_serial_map = alpr_early_serial_map;
+>  #endif
+> +#ifdef CONFIG_L2_CACHE
+>         ppc_md.init = alpr_init;
 > +#endif
 
-The whole function above has bad whitespace (spaces instead of tabs)
+Why do you take out the above calls if the new option is selected? Seems
+odd to remove something that worked(?) before.
 
+>         ppc_md.restart = alpr_restart;
+>  }
+>  
+> diff --git a/arch/ppc/platforms/4xx/katmai.c b/arch/ppc/platforms/4xx/katmai.c
+> index d29ebf6..01f1baf 100644
+> --- a/arch/ppc/platforms/4xx/katmai.c
+> +++ b/arch/ppc/platforms/4xx/katmai.c
+> @@ -219,6 +219,7 @@ katmai_show_cpuinfo(struct seq_file *m)
+>  {
+>         seq_printf(m, "vendor\t\t: AMCC\n");
+>         seq_printf(m, "machine\t\t: PPC440SPe EVB (Katmai)\n");
+> +       ibm440gx_show_cpuinfo(m);
+
+This seems unrelated to this patch.
+
+>         return 0;
+>  }
+> @@ -584,6 +585,13 @@ static void katmai_restart(char *cmd)
+>         mtspr(SPRN_DBCR0, DBCR0_RST_CHIP);
+>  }
+>  
+> +#ifdef CONFIG_L2_CACHE
+> +static void __init katmai_init(void)
+> +{
+> +       ibm440gx_l2c_setup(&clocks);
+> +}
+> +#endif
 > +
->  /*
->   * Write any modified data cache blocks out to memory.
->   * Does not invalidate the corresponding cache lines (especially for
-> diff --git a/include/asm-powerpc/cache.h b/include/asm-powerpc/cache.h
-> index 5350704..8a2f9e6 100644
-> --- a/include/asm-powerpc/cache.h
-> +++ b/include/asm-powerpc/cache.h
-> @@ -10,12 +10,14 @@
->  #define MAX_COPY_PREFETCH      1
->  #elif defined(CONFIG_PPC32)
->  #define L1_CACHE_SHIFT         5
-> +#define L2_CACHE_SHIFT         5
->  #define MAX_COPY_PREFETCH      4
->  #else /* CONFIG_PPC64 */
->  #define L1_CACHE_SHIFT         7
+>  void __init platform_init(unsigned long r3, unsigned long r4,
+>                           unsigned long r5, unsigned long r6, unsigned long r7)
+>  {
+> @@ -599,4 +607,7 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>         ppc_md.early_serial_map = katmai_early_serial_map;
 >  #endif
->  
->  #define        L1_CACHE_BYTES          (1 << L1_CACHE_SHIFT)
-> +#define        L2_CACHE_BYTES          (1 << L2_CACHE_SHIFT)
+>         ppc_md.restart = katmai_restart;
+> +#ifdef CONFIG_L2_CACHE
+> +       ppc_md.init = katmai_init;
+> +#endif
 
-The above looks highly system dependent to me. Should maybe be a part
-of the cache info structures instead, and filled in from the device tree?
+See comment above. Should the above init be called for all configs, not just
+when L2_CACHE is enabled?
 
+Also, it looks like the init function is the same on every board. It would
+be better to make a common function instead of duplicating it everywhere.
 
+>  }
+> diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
+> index a7435aa..8b13811 100644
+> --- a/arch/ppc/platforms/4xx/ocotea.c
+> +++ b/arch/ppc/platforms/4xx/ocotea.c
+> @@ -321,10 +321,12 @@ ocotea_setup_arch(void)
+>         printk("IBM Ocotea port (MontaVista Software, Inc. <source@mvista.com>)\n");
+>  }
 >  
->  #define        SMP_CACHE_BYTES         L1_CACHE_BYTES
+> +#ifdef CONFIG_L2_CACHE
+>  static void __init ocotea_init(void)
+>  {
+>         ibm440gx_l2c_setup(&clocks);
+>  }
+> +#endif
 >  
-> diff --git a/include/asm-powerpc/cacheflush.h b/include/asm-powerpc/cacheflush.h
-> index ba667a3..bdebfaa 100644
-> --- a/include/asm-powerpc/cacheflush.h
-> +++ b/include/asm-powerpc/cacheflush.h
-> @@ -49,6 +49,7 @@ extern void flush_dcache_range(unsigned long start, unsigned long stop);
->  #ifdef CONFIG_PPC32
->  extern void clean_dcache_range(unsigned long start, unsigned long stop);
->  extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
-> +extern void invalidate_l2cache_range(unsigned long start, unsigned long stop);
->  #endif /* CONFIG_PPC32 */
->  #ifdef CONFIG_PPC64
->  extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
-> diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
-> index 8078a58..782909a 100644
-> --- a/include/asm-ppc/ibm44x.h
-> +++ b/include/asm-ppc/ibm44x.h
-> @@ -138,7 +138,6 @@
->   * The "residual" board information structure the boot loader passes
->   * into the kernel.
->   */
-> -#ifndef __ASSEMBLY__
+>  void __init platform_init(unsigned long r3, unsigned long r4,
+>                 unsigned long r5, unsigned long r6, unsigned long r7)
+> @@ -345,5 +347,7 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>  #ifdef CONFIG_KGDB
+>         ppc_md.early_serial_map = ocotea_early_serial_map;
+>  #endif
+> +#ifdef CONFIG_L2_CACHE
+>         ppc_md.init = ocotea_init;
+> +#endif
+>  }
+> diff --git a/arch/ppc/platforms/4xx/taishan.c b/arch/ppc/platforms/4xx/taishan.c
+> index f4b9435..8bb6f15 100644
+> --- a/arch/ppc/platforms/4xx/taishan.c
+> +++ b/arch/ppc/platforms/4xx/taishan.c
+> @@ -370,10 +370,12 @@ taishan_setup_arch(void)
+>         printk("AMCC PowerPC 440GX Taishan Platform\n");
+>  }
 >  
->  /*
->   * DCRN definitions
-> @@ -814,6 +813,5 @@
+> +#ifdef CONFIG_L2_CACHE
+>  static void __init taishan_init(void)
+>  {
+>         ibm440gx_l2c_setup(&clocks);
+>  }
+> +#endif
 >  
->  #include <asm/ibm4xx.h>
->  
-> -#endif /* __ASSEMBLY__ */
->  #endif /* __ASM_IBM44x_H__ */
->  #endif /* __KERNEL__ */ 
+>  void __init platform_init(unsigned long r3, unsigned long r4,
+>                 unsigned long r5, unsigned long r6, unsigned long r7)
+> @@ -389,6 +391,8 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>  #ifdef CONFIG_KGDB
+>         ppc_md.early_serial_map = taishan_early_serial_map;
+>  #endif
+> +#ifdef CONFIG_L2_CACHE
+>         ppc_md.init = taishan_init;
+> +#endif
+>  }
+>    
 > 
 > _______________________________________________
 > Linuxppc-dev mailing list
