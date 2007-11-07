@@ -1,22 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2928FDDDF7
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 21:21:02 +1100 (EST)
-Subject: Re: [RFC/PATCH 0/2] powerpc: 64 bits irqtrace / lockdep support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tim Pepper <lnxninja@us.ibm.com>
-In-Reply-To: <eada2a070711061136l18ac7651h85bf3da19a79b669@mail.gmail.com>
-References: <1192433296.924212.737979117370.qpush@grosgo>
-	<eada2a070711061136l18ac7651h85bf3da19a79b669@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-qrzV0vxRsiBVv57nNwDf"
-Date: Wed, 07 Nov 2007 11:22:20 +0100
-Message-Id: <1194430940.4055.14.camel@johannes.berg>
+Return-Path: <Sergej.Stepanov@ids.de>
+Received: from ares.ids.de (ares.ids.de [213.144.29.131])
+	by ozlabs.org (Postfix) with ESMTP id 4A2A9DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 00:40:47 +1100 (EST)
+Received: from ares.ids.de (ares.ids.de [127.0.0.1])
+	by ares.ids.de (PGP Universal) with ESMTP id B6745F491A9
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 14:40:44 +0100 (CET)
+Subject: Re: [PATCH] using mii-bitbang on different processor ports -
+	update the booting-without-of.txt-file
+From: Sergej Stepanov <Sergej.Stepanov@ids.de>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20071106184649.GA5283@loki.buserror.net>
+References: <1194339117.3467.8.camel@p60635-ste.ids.de>
+	<20071106184649.GA5283@loki.buserror.net>
+Date: Wed, 07 Nov 2007 14:40:44 +0100
+Message-Id: <1194442844.3571.14.camel@p60635-ste.ids.de>
 Mime-Version: 1.0
-Cc: External List <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Am Dienstag, den 06.11.2007, 12:46 -0600 schrieb Scott Wood:
+> >  
+> > +   The "reg"-property may have also depending on board design
+> > +   the following form:
+> > +	reg = <10d40 14 10d60 14>;
+> > +   In that case the pin for mdio data controlling is on the port C,
+> > +   and the pin for mdio clock controlling is on the port D.
+> 
+> It'd be better to explicitly say that the first resource is mdio, and the
+> second resource is mdc, rather than require the reader to know/look up which
+> corresponds to 10d40 and which to 10d60.
+> 
+> -Scott
 
---=-qrzV0vxRsiBVv57nNwDf
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ok. What would you say about something like that:
+--
+If both mdio and mdc controlling pins are on the same processor port,
+one resource should be used.
+Otherwise, two resources are used: the 1-st - mdio, the 2-nd - mdc.
+--
+Please, correct me, if it sounds bad.
 
-
-On Tue, 2007-11-06 at 11:36 -0800, Tim Pepper wrote:
-> On 10/14/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > This is 2 patches, one from Christoph Hellwig that adds the backtrace s=
-upport,
-> > and one from Johannes Berg modified by me that adds the irq tracing sup=
-port.
-> >
-> > This successfully boots a POWER5 pSeries machine. I'm going to run some=
- more
-> > tests in the upcoming few days, so this is not an official submission (=
-and it's
-> > too late for .24 merge window anyway) but it's looking good so far.
->=20
-> FYI: Boots and survives watching /proc/lock_stat during a kernel build
-> for me (on a 970 based blade).
-
-Hmm. I should give it another try and see why it breaks for me. Could be
-CONFIG_HIBERNATION related maybe.
-
-johannes
-
---=-qrzV0vxRsiBVv57nNwDf
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARzGR26Vg1VMiehFYAQKYZQ//crgj9tT4Udqq9qwIzvP3MgybE9WHgMg3
-KEWeYRQVJFTYfXAoGRLFC2v1LB+4f65oea52+w/aCI2QH3Xb5Fu2XZNcnSykXvgN
-s0TTjkOo4hH1K3otm2lweaZLMjm4wHFD+SSsPpBfsk01kAgyNa1bWbczYEDGG4Lk
-AflnNzRjZhdeiu2eBaa9zmjtbW2t9jVxqH1S7d59ytkfv9qKciRLisV2LIU17hJX
-bCpoW/j9oMXy1Q7byse+bVrTgntB0eqKHYNhi0wURdd3BRDZ7/oZj0HNJOJ7y+8Y
-m2G5kTbZPldxqrPilb+qEYDwthcyE8KeA7hkwaj+HB/fWWoPTjBYyf3Si5Q+TRwb
-xc3FOwjrhD0BUT1twonYTF3rKYiZS5u7jg7J8k07ePgZanhOTq0b9J0FP8JmUDAO
-xVP4fYJ+w4uEj+Jl9vAVMDKuV3bN+bLlXOkz049LEXvcp23DOiUOBBTQLaqP7RlE
-53KCMItVZYSZXzMqVwBj/9CIPnzvG9o8nxhoU2D7zJ/RnhqddKD2DwpGm1wtg5nT
-swsaRPyu2X9yXA0oo8m8bDcZompGO+bQDVhKEXh9r0AIM811SZNZLDg6Yi4qYRTt
-PvBQ2dvb9ma6Ohi7CpGu1/DBAbO9ha+OObf4G55NkQmWA6VysuqSrAsabbShL/jn
-v7VZzTsv+Fo=
-=Gv9y
------END PGP SIGNATURE-----
-
---=-qrzV0vxRsiBVv57nNwDf--
+Thanks and regards
+Sergej. 
