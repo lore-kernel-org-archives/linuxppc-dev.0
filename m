@@ -2,17 +2,17 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA279DDE01
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 10:09:59 +1100 (EST)
-Date: Thu, 8 Nov 2007 02:10:03 +0300
+	by ozlabs.org (Postfix) with ESMTP id D9812DDEBB
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 10:10:18 +1100 (EST)
+Date: Thu, 8 Nov 2007 02:10:23 +0300
 From: Yuri Tikhonov <yur@emcraft.com>
-Message-ID: <936845819.20071108021003@emcraft.com>
+Message-ID: <1789464912.20071108021023@emcraft.com>
 To: Olof Johansson <olof@lixom.net>
-Subject: Re[2]: [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range()
-	implementation for ppc44x
-In-Reply-To: <20071107040428.GA22637@lixom.net>
-References: <1078030427.20071107014028@emcraft.com>
-	<20071107040428.GA22637@lixom.net>
+Subject: Re[2]: [PATCH 2/2] [PPC 44x] enable L2-cache for ALPR, Katmai, Ocotea,
+	and Taishan
+In-Reply-To: <20071107040608.GB22637@lixom.net>
+References: <1416528026.20071107014041@emcraft.com>
+	<20071107040608.GB22637@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -29,52 +29,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
  Hi Olof,
 
- Thanks a lot for the feedbacks. Comments below.
+On 07.11.2007, 7:06:08 you wrote:
+...
+>> +
+>> +config L2_CACHE
+>> +       bool "Enable Level-2 Cache"
+>> +       depends on NOT_COHERENT_CACHE && (KATMAI || TAISHAN || OCOTEA || ALPR)
+>> +       default y
+>> +       help
+>> +         This option enables L2-cache on ppc44x controllers.
+>> +         If unsure, say Y.
 
-On 07.11.2007, 7:04:28 you wrote:
+> That's a very generic config name. Maybe something like PPC_4XX_L2_CACHE?
 
-> Hi,
+ Having the ppc_machdep for invalidating L2-cache lines we can avoid introducing the new configuration options at all. See below.
 
-> Some comments below. In general this patch adds #ifdefs in common code,
-> that's normally frowned upon.
-> It would maybe be better to add a new call to ppc_machdeps and call it
-> if set.
+> Is there ever a case where a user would NOT want l2 cache enabled (and
+> disabled permanently enough to rebuild the kernel instead of giving a
+> kernel command line option?)
 
- Agree; this looks better indeed. 
+ Theoretically - yes. Internal SRAM of ppc44x may be used for something else than L2 cache. 
 
-> On Wed, Nov 07, 2007 at 01:40:28AM +0300, Yuri Tikhonov wrote:
+ Admittedly, the configuration option was necessary for me to enable or disable my L2-cache synchronization routine in the generic dma_sync() function. Per your suggestion, now, instead of introducing the new kernel option I initialize the L2-cache sync ppc_machdep right in the L2-cache enable routine: thus if the user will not enable L2-cache (will not want internal SRAM to act as L2-cache and will not call the L2-cache enabling routine) then my new ppc_machdep will remain set to zero and will not affect on SRAM used for some specific purposes.
 
 ...
 
->> +
->>  /*
->>   * Write any modified data cache blocks out to memory.
->>   * Does not invalidate the corresponding cache lines (especially for
->> diff --git a/include/asm-powerpc/cache.h b/include/asm-powerpc/cache.h
->> index 5350704..8a2f9e6 100644
->> --- a/include/asm-powerpc/cache.h
->> +++ b/include/asm-powerpc/cache.h
->> @@ -10,12 +10,14 @@
->>  #define MAX_COPY_PREFETCH      1
->>  #elif defined(CONFIG_PPC32)
->>  #define L1_CACHE_SHIFT         5
->> +#define L2_CACHE_SHIFT         5
->>  #define MAX_COPY_PREFETCH      4
->>  #else /* CONFIG_PPC64 */
->>  #define L1_CACHE_SHIFT         7
+>> @@ -567,7 +569,9 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>>  #ifdef CONFIG_KGDB
+>>         ppc_md.early_serial_map = alpr_early_serial_map;
 >>  #endif
+>> +#ifdef CONFIG_L2_CACHE
+>>         ppc_md.init = alpr_init;
+>> +#endif
+
+> Why do you take out the above calls if the new option is selected? Seems
+> odd to remove something that worked(?) before.
+
+ Umm.. Quite the contrary, the option selected made these calls avaiable. Though it doesn't matter anymore since there is no CONFIG_L2_CACHE option anymore (i.e. all the four boards dealt with in this patch-set now have L2-cache enabled regardless of configuration, as it was initially).
+
+>>         ppc_md.restart = alpr_restart;
+>>  }
 >>  
->>  #define        L1_CACHE_BYTES          (1 << L1_CACHE_SHIFT)
->> +#define        L2_CACHE_BYTES          (1 << L2_CACHE_SHIFT)
 
-> The above looks highly system dependent to me. Should maybe be a part
-> of the cache info structures instead, and filled in from the device tree?
+...
 
- This is the Level-2 cache line parameter. I'll see what can be made here. For now I've just renamed these definitions and moved them into the PPC44x-specific header.
+>> +#ifdef CONFIG_L2_CACHE
+>> +static void __init katmai_init(void)
+>> +{
+>> +       ibm440gx_l2c_setup(&clocks);
+>> +}
+>> +#endif
+>> +
+>>  void __init platform_init(unsigned long r3, unsigned long r4,
+>>                           unsigned long r5, unsigned long r6, unsigned long r7)
+>>  {
+>> @@ -599,4 +607,7 @@ void __init platform_init(unsigned long r3, unsigned long r4,
+>>         ppc_md.early_serial_map = katmai_early_serial_map;
+>>  #endif
+>>         ppc_md.restart = katmai_restart;
+>> +#ifdef CONFIG_L2_CACHE
+>> +       ppc_md.init = katmai_init;
+>> +#endif
 
+> See comment above. Should the above init be called for all configs, not just
+> when L2_CACHE is enabled?
 
- Regards,
-  Yuri 
+> Also, it looks like the init function is the same on every board. It would
+> be better to make a common function instead of duplicating it everywhere.
+
+ Agree, but perhaps it's not the case for the ppc branch. Will do this in the powerpc branch as soon as support for these boards will be ported there.. by someone :)
+
+Regards,
+ Yuri 
 
 -- 
 Yuri Tikhonov, Senior Software Engineer
