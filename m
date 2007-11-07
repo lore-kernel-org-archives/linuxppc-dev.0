@@ -1,12 +1,17 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Message-ID: <4731A8E3.4020909@fz-juelich.de>
-Date: Wed, 07 Nov 2007 13:00:35 +0100
-From: schardt <g.schardt@fz-juelich.de>
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s36.bay0.hotmail.com (bay0-omc2-s36.bay0.hotmail.com
+	[65.54.246.172]) by ozlabs.org (Postfix) with ESMTP id C4A87DDFAB
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  8 Nov 2007 07:39:08 +1100 (EST)
+Message-ID: <BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
+From: MingLiu <eemingliu@hotmail.com>
+To: schardt <g.schardt@fz-juelich.de>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: Bootloader & Flash
+Date: Wed, 7 Nov 2007 20:39:06 +0000
+In-Reply-To: <4731A8E3.4020909@fz-juelich.de>
+References: <4731A8E3.4020909@fz-juelich.de>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Linuxppc-embedded@ozlabs.org
-Subject: Bootloader & Flash
-Content-Type: text/plain;
-	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,40 +22,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-i use the AVnet Xilinx4 FX12 Minimodule and until now, i use system-ace
-to configure the fpga and boot the linux kernel.
-But now, i want to boot from the on board flash memory and have no idea
-where to start.
-
-I think i have to:
-- save the fpga configuration in the fpga-prom
-- use/program some kind of bootloader store in fpga block ram to jump to
-the flash-adress where the executable linux kernel resist
-- use the mtd-device driver to mount  root fs on the same flash some
-address later
-
-Is this the right way ?
-
-
-Regards
-Georg
-
-
-
-
-
-
------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------
-Forschungszentrum Jülich GmbH
-52425 Jülich
-
-Sitz der Gesellschaft: Jülich
-Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
-Vorsitzender)
------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------
+DQpEZWFyIEdlb3JnLA0KSSBndWVzcyB5b3Ugd2VyZSB0YWxraW5nIGFib3V0IHRoZSBib290aW5n
+IHByb2Nlc3Mgb2YgdGhlIHN5c3RlbSwgYm90aCBIVyBhbmQgdGhlIFNXLCBmcm9tIHRoZSBmbGFz
+aCBtZW1vcnkuIFRoaXMgcHJvY2VzcyBzaG91bGQgYmUgbGlrZSB0aGlzOg0KDQoxLiBTdG9yZSB5
+b3VyIEhXIGJpdHN0cmVhbSBhbmQgTGludXgga2VybmVsIGluIGZsYXNoIG1lbW9yaWVzLiBJZiBu
+ZWVkZWQsIHBlcmhhcHMgeW91IHdhbnQgYW5vdGhlciBib290bG9hZGVyIHByb2dyYW0sIHN1Y2gg
+YXMgVS1ib290IGFsc28gaW5zaWRlLiANCg0KMi4gSW4geW91ciBIVyBiaXRzdHJlYW0sIHlvdSBu
+ZWVkIG9uZSBib290bG9hZGVyIHdoaWNoIGhlbHBzIHlvdSB0byBsb2FkIHRoZSBzb2Z0d2FyZSBh
+bmQgZXhlY3V0ZSBpdCBpbiBERFItcmFtLiBFREsgaGVscHMgeW91IHRvIGdlbmVyYXRlIHN1Y2gg
+YSBib290bG9hZGVyIHdoZW4geW91IGRlc2lnbi4gDQoNCjMuIER1cm9uZyBQb3dlciBvbiwgSFcg
+Yml0c3RyZWFtICh3aXRoIGFuIEVESyBib290bG9hZGVyIGluY2x1ZGVkKSB3aWxsIGJlIGxvYWRl
+ZCBpbnRvIEZQR0EgYW5kIGNvbmZpZ3VyZSB0aGUgRlBHQSwgdGhlbiB0aGUgRURLIGJvb3Rsb2Fk
+ZXIgd2lsbCBsb2FkIHlvdXIgTGludXgga2VybmVsIGludG8gRERSLVJhbSBhbmQgZXhlY3V0ZSBp
+dCB0aGVyZS4gVGh1cyB5b3VyIGxpbnV4IGNvdWxkIHJ1bi4gDQoNClRoaXMgaXMgYSBub3JtYWwg
+cHJvY2Vzcy4gSWYgeW91IHdhbnQgdG8gZXhlY3V0ZSB0aGUgcHJvZ3JhbSBpbiBmbGFzaCBkaXJl
+Y3RseSwgdGhhdCdzIGFub3RoZXIgc3RvcnkuIEFsc28geW91IHNob3VsZCBrbm93LCBmb3IgdGhl
+IGJvb3RpbmcgcHJvY2VzcywgTVREIGRyaXZlciBpcyBub3QgbmVjZXNzYXJ5LiBUaGUgZHJpdmVy
+IGlzIG9ubHkgdXNlZCB3aGVuIHlvdSB3YW50IHRvIGFjY2VzcyBmbGFzaCBtZW1vcmllcyB3aGVu
+IHlvdSBib290ZWQgeW91ciBMaW51eCBrZXJuZWwuDQoNCkNsZWFyIG9yIG5vdD8gOikNCg0KQmVz
+dCBSZWdhcmRzDQpNaW5nDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0+IERhdGU6IFdlZCwgNyBOb3YgMjAwNyAxMzowMDozNSArMDEwMD4gRnJvbTogZy5zY2hhcmR0
+QGZ6LWp1ZWxpY2guZGU+IFRvOiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnPiBTdWJqZWN0
+OiBCb290bG9hZGVyICYgRmxhc2g+PiBIaSw+PiBpIHVzZSB0aGUgQVZuZXQgWGlsaW54NCBGWDEy
+IE1pbmltb2R1bGUgYW5kIHVudGlsIG5vdywgaSB1c2Ugc3lzdGVtLWFjZT4gdG8gY29uZmlndXJl
+IHRoZSBmcGdhIGFuZCBib290IHRoZSBsaW51eCBrZXJuZWwuPiBCdXQgbm93LCBpIHdhbnQgdG8g
+Ym9vdCBmcm9tIHRoZSBvbiBib2FyZCBmbGFzaCBtZW1vcnkgYW5kIGhhdmUgbm8gaWRlYT4gd2hl
+cmUgdG8gc3RhcnQuPj4gSSB0aGluayBpIGhhdmUgdG86PiAtIHNhdmUgdGhlIGZwZ2EgY29uZmln
+dXJhdGlvbiBpbiB0aGUgZnBnYS1wcm9tPiAtIHVzZS9wcm9ncmFtIHNvbWUga2luZCBvZiBib290
+bG9hZGVyIHN0b3JlIGluIGZwZ2EgYmxvY2sgcmFtIHRvIGp1bXAgdG8+IHRoZSBmbGFzaC1hZHJl
+c3Mgd2hlcmUgdGhlIGV4ZWN1dGFibGUgbGludXgga2VybmVsIHJlc2lzdD4gLSB1c2UgdGhlIG10
+ZC1kZXZpY2UgZHJpdmVyIHRvIG1vdW50IHJvb3QgZnMgb24gdGhlIHNhbWUgZmxhc2ggc29tZT4g
+YWRkcmVzcyBsYXRlcj4+IElzIHRoaXMgdGhlIHJpZ2h0IHdheSA/Pj4+IFJlZ2FyZHM+IEdlb3Jn
+Pj4+Pj4+PiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLT4gLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0+IEZvcnNjaHVuZ3N6ZW50cnVtIErDvGxpY2ggR21iSD4gNTI0MjUg
+SsO8bGljaD4+IFNpdHogZGVyIEdlc2VsbHNjaGFmdDogSsO8bGljaD4gRWluZ2V0cmFnZW4gaW0g
+SGFuZGVsc3JlZ2lzdGVyIGRlcyBBbXRzZ2VyaWNodHMgRMO8cmVuIE5yLiBIUiBCIDM0OTg+IFZv
+cnNpdHplbmRlIGRlcyBBdWZzaWNodHNyYXRzOiBNaW5EaXJpZydpbiBCw6RyYmVsIEJydW1tZS1C
+b3RoZT4gR2VzY2jDpGZ0c2bDvGhydW5nOiBQcm9mLiBEci4gQWNoaW0gQmFjaGVtIChWb3JzaXR6
+ZW5kZXIpLCBEci4gVWxyaWNoIEtyYWZmdCAoc3RlbGx2Lj4gVm9yc2l0emVuZGVyKT4gLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXz4gTGlu
+dXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0PiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3Jn
+PiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA0K
+DQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXw0KTVNOIOS4reaWh+e9ke+8jOacgOaWsOaXtuWwmueUn+a0u+i1hOiur++8jOeZ
+vemihuiBmumbhumXqOaIt+OAgg0KaHR0cDovL2NuLm1zbi5jb20=
