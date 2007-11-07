@@ -1,33 +1,21 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87C57DDE41
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 08:30:13 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA7LToqq017158
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Nov 2007 16:29:50 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lA7LToUl124934
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Nov 2007 16:29:50 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lA7LTnQs014498
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Nov 2007 16:29:50 -0500
-Date: Wed, 7 Nov 2007 15:29:49 -0600
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Read back MSI message in rtas_setup_msi_irqs() so restore
-	works
-Message-ID: <20071107212949.GI4239@austin.ibm.com>
-References: <5f47235ce3542c80e043f7f183400ab3d576f1dd.1193113342.git.michael@ellerman.id.au>
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3A389DDEC0
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 09:01:49 +1100 (EST)
+Received: from [82.171.216.234] (helo=[192.168.1.2])
+	by smtp-out1.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
+	id 1Ipsy0-0002B4-MI
+	for <linuxppc-dev@ozlabs.org>; Wed, 07 Nov 2007 23:01:44 +0100
+Message-ID: <473235C6.2050104@tiscali.nl>
+Date: Wed, 07 Nov 2007 23:01:42 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5f47235ce3542c80e043f7f183400ab3d576f1dd.1193113342.git.michael@ellerman.id.au>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, mcarlson@broadcom.com, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, mchan@broadcom.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+To: linuxppc-dev@ozlabs.org
+Subject: inbalanced ioremap/iounmap? in cpm_pic_init();
+	arch/powerpc/sysdev/commproc.c
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 23, 2007 at 02:23:44PM +1000, Michael Ellerman wrote:
-> There are plans afoot to use pci_restore_msi_state() to restore MSI
-> state after a device reset. In order for this to work for the RTAS MSI
-> backend, we need to read back the MSI message from config space after
-> it has been setup by firmware.
-> 
-> This should be sufficient for restoring the MSI state after a device
-> reset, however we will need to revisit this for suspend to disk if that
-> is ever implemented on pseries.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> 
-> Linas, can you test this on your setup with your EEH stuff? I haven't got
-> any MSI supporting hardware/firmware combination.
+It appears to me that ioremap/iounmap in cpm_pic_init() is imbalanced. I am not
+certain about this, nor was the patch tested. please review.
+--
+fix ioremap/iounmap imbalance
 
-Acked-by: Linas Vepstas <linas@austin.ibm.com>
-
-I *finally* was able to get onto some hardware long enough to run this.
-And that took a lot of work. Sigh. Yes, this is exactly what I'd wanted.
-
---linas
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..7b1dd9c 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -152,13 +152,13 @@ unsigned int cpm_pic_init(void)
+ 	cpic_reg = ioremap(res.start, res.end - res.start + 1);
+ 	if (cpic_reg == NULL)
+ 		goto end;
+ 
+ 	sirq = irq_of_parse_and_map(np, 0);
+ 	if (sirq == NO_IRQ)
+-		goto end;
++		goto io_out;
+ 
+ 	/* Initialize the CPM interrupt controller. */
+ 	hwirq = (unsigned int)irq_map[sirq].hwirq;
+ 	out_be32(&cpic_reg->cpic_cicr,
+ 	    (CICR_SCD_SCC4 | CICR_SCC_SCC3 | CICR_SCB_SCC2 | CICR_SCA_SCC1) |
+ 		((hwirq/2) << 13) | CICR_HP_MASK);
+@@ -167,13 +167,13 @@ unsigned int cpm_pic_init(void)
+ 
+ 	cpm_pic_host = irq_alloc_host(of_node_get(np), IRQ_HOST_MAP_LINEAR,
+ 				      64, &cpm_pic_host_ops, 64);
+ 	if (cpm_pic_host == NULL) {
+ 		printk(KERN_ERR "CPM2 PIC: failed to allocate irq host!\n");
+ 		sirq = NO_IRQ;
+-		goto end;
++		goto io_out;
+ 	}
+ 
+ 	/* Install our own error handler. */
+ 	np = of_find_compatible_node(NULL, NULL, "fsl,cpm1");
+ 	if (np == NULL)
+ 		np = of_find_node_by_type(NULL, "cpm");
+@@ -187,13 +187,15 @@ unsigned int cpm_pic_init(void)
+ 		goto end;
+ 
+ 	if (setup_irq(eirq, &cpm_error_irqaction))
+ 		printk(KERN_ERR "Could not allocate CPM error IRQ!");
+ 
+ 	setbits32(&cpic_reg->cpic_cicr, CICR_IEN);
+-
++	goto end;
++io_out:
++	iounmap(cpic_reg);
+ end:
+ 	of_node_put(np);
+ 	return sirq;
+ }
+ 
+ void __init cpm_reset(void)
