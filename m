@@ -1,15 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id E8479DDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 15:45:12 +1100 (EST)
-Date: Tue, 6 Nov 2007 22:54:31 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Remove sysctl warning about writable directory
-Message-ID: <20071107045431.GA24266@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 3B1B3DDDF5
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2007 16:13:26 +1100 (EST)
+Date: Wed, 7 Nov 2007 16:13:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] [POWERPC] Stop the TOC overflowing for large builds.
+Message-Id: <20071107161329.ec078635.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Getting this when booting 2.6.24-rc2:
 
-sysctl table check failed: /kernel .1 Writable sysctl directory
-Call Trace:
-[c000000002047b60] [c00000000000e204] .show_stack+0x54/0x1f0 (unreliable)
-[c000000002047c10] [c00000000006ea50] .set_fail+0x60/0x90
-[c000000002047ca0] [c00000000006ef64] .sysctl_check_table+0x4e4/0x730
-[c000000002047d80] [c000000000055860] .register_sysctl_table+0x80/0x120
-[c000000002047e20] [c0000000005de924] .register_powersave_nap_sysctl+0x14/0x30
-[c000000002047e90] [c0000000005d58c8] .kernel_init+0x1f8/0x450
-[c000000002047f90] [c000000000023bac] .kernel_thread+0x4c/0x68
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+With this patch and my patch "Fix link errors for allyesconfig", the
+allyesconfig will build again.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+I am not sure of the performance effects (if any) of this patch.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index abd2957..c3cf0e8 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -122,7 +122,7 @@ static ctl_table powersave_nap_sysctl_root[] = {
- 	{
- 		.ctl_name	= CTL_KERN,
- 		.procname	= "kernel",
--		.mode		= 0755,
-+		.mode		= 0555,
- 		.child		= powersave_nap_ctl_table,
- 	},
- 	{}
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ca51f0c..9374bc9 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -3,7 +3,7 @@
+ #
+ 
+ ifeq ($(CONFIG_PPC64),y)
+-EXTRA_CFLAGS	+= -mno-minimal-toc
++CFLAGS_prom_init.o	+= -mno-minimal-toc
+ endif
+ ifeq ($(CONFIG_PPC32),y)
+ CFLAGS_prom_init.o      += -fPIC
+-- 
+1.5.3.5
