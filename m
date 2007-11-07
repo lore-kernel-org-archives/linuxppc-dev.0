@@ -1,21 +1,21 @@
-Return-Path: <12o3l@tiscali.nl>
-Received: from smtp-out1.tiscali.nl (smtp-out1.tiscali.nl [195.241.79.176])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3A389DDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 09:01:49 +1100 (EST)
-Received: from [82.171.216.234] (helo=[192.168.1.2])
-	by smtp-out1.tiscali.nl with esmtp (Tiscali http://www.tiscali.nl)
-	id 1Ipsy0-0002B4-MI
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 Nov 2007 23:01:44 +0100
-Message-ID: <473235C6.2050104@tiscali.nl>
-Date: Wed, 07 Nov 2007 23:01:42 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
+	by ozlabs.org (Postfix) with ESMTP id C81F2DDEF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 09:02:18 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH (2.6.25) 1/2] hibernation: clean up Kconfig
+Date: Wed, 7 Nov 2007 23:18:32 +0100
+References: <20071107135758.100171000@sipsolutions.net>
+	<20071107135848.417344000@sipsolutions.net>
+In-Reply-To: <20071107135848.417344000@sipsolutions.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: inbalanced ioremap/iounmap? in cpm_pic_init();
-	arch/powerpc/sysdev/commproc.c
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200711072318.33384.rjw@sisk.pl>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.linux-foundation.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +25,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It appears to me that ioremap/iounmap in cpm_pic_init() is imbalanced. I am not
-certain about this, nor was the patch tested. please review.
---
-fix ioremap/iounmap imbalance
+On Wednesday, 7 of November 2007, Johannes Berg wrote:
+> This cleans up the hibernation Kconfig and removes the need to
+> declare centrally which architectures support hibernation. All
+> architectures that currently support hibernation are modified
+> accordingly.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index f6a6378..7b1dd9c 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -152,13 +152,13 @@ unsigned int cpm_pic_init(void)
- 	cpic_reg = ioremap(res.start, res.end - res.start + 1);
- 	if (cpic_reg == NULL)
- 		goto end;
- 
- 	sirq = irq_of_parse_and_map(np, 0);
- 	if (sirq == NO_IRQ)
--		goto end;
-+		goto io_out;
- 
- 	/* Initialize the CPM interrupt controller. */
- 	hwirq = (unsigned int)irq_map[sirq].hwirq;
- 	out_be32(&cpic_reg->cpic_cicr,
- 	    (CICR_SCD_SCC4 | CICR_SCC_SCC3 | CICR_SCB_SCC2 | CICR_SCA_SCC1) |
- 		((hwirq/2) << 13) | CICR_HP_MASK);
-@@ -167,13 +167,13 @@ unsigned int cpm_pic_init(void)
- 
- 	cpm_pic_host = irq_alloc_host(of_node_get(np), IRQ_HOST_MAP_LINEAR,
- 				      64, &cpm_pic_host_ops, 64);
- 	if (cpm_pic_host == NULL) {
- 		printk(KERN_ERR "CPM2 PIC: failed to allocate irq host!\n");
- 		sirq = NO_IRQ;
--		goto end;
-+		goto io_out;
- 	}
- 
- 	/* Install our own error handler. */
- 	np = of_find_compatible_node(NULL, NULL, "fsl,cpm1");
- 	if (np == NULL)
- 		np = of_find_node_by_type(NULL, "cpm");
-@@ -187,13 +187,15 @@ unsigned int cpm_pic_init(void)
- 		goto end;
- 
- 	if (setup_irq(eirq, &cpm_error_irqaction))
- 		printk(KERN_ERR "Could not allocate CPM error IRQ!");
- 
- 	setbits32(&cpic_reg->cpic_cicr, CICR_IEN);
--
-+	goto end;
-+io_out:
-+	iounmap(cpic_reg);
- end:
- 	of_node_put(np);
- 	return sirq;
- }
- 
- void __init cpm_reset(void)
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+> Cc: linuxppc-dev@ozlabs.org
+> Cc: linux-pm@lists.linux-foundation.org
+> 
+> ---
+>  arch/i386/Kconfig    |    4 ++++
+>  arch/powerpc/Kconfig |   14 ++++++++++++--
+>  arch/x86_64/Kconfig  |    3 +++
+>  kernel/power/Kconfig |   18 +++---------------
+>  4 files changed, 22 insertions(+), 17 deletions(-)
+> 
+> --- everything.orig/arch/powerpc/Kconfig	2007-11-07 13:52:14.641523382 +0100
+> +++ everything/arch/powerpc/Kconfig	2007-11-07 14:29:17.251530543 +0100
+> @@ -140,9 +140,19 @@ config DEFAULT_UIMAGE
+>  	  Used to allow a board to specify it wants a uImage built by default
+>  	default n
+>  
+> -config PPC64_SWSUSP
+> +config HIBERNATE_32
+>  	bool
+> -	depends on PPC64 && (BROKEN || (PPC_PMAC64 && EXPERIMENTAL))
+> +	depends on (PPC_PMAC && !SMP) || BROKEN
+> +	default y
+> +
+> +config HIBERNATE_64
+> +	bool
+> +	depends on BROKEN || (PPC_PMAC64 && EXPERIMENTAL)
+> +	default y
+> +
+> +config ARCH_HIBERNATION_POSSIBLE
+> +	bool
+> +	depends on (PPC64 && HIBERNATE_64) || (PPC32 && HIBERNATE_32)
+>  	default y
+>  
+>  config PPC_DCR_NATIVE
+> --- everything.orig/kernel/power/Kconfig	2007-11-07 13:52:14.731524087 +0100
+> +++ everything/kernel/power/Kconfig	2007-11-07 14:29:17.351531628 +0100
+> @@ -63,7 +63,8 @@ config PM_TRACE
+>  
+>  config PM_SLEEP_SMP
+>  	bool
+> -	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+> +	depends on SMP
+> +	depends on SUSPEND_SMP_POSSIBLE || ARCH_HIBERNATION_POSSIBLE
+>  	depends on PM_SLEEP
+>  	select HOTPLUG_CPU
+>  	default y
+> @@ -97,22 +98,9 @@ config SUSPEND
+>  	  powered and thus its contents are preserved, such as the
+>  	  suspend-to-RAM state (i.e. the ACPI S3 state).
+>  
+> -config HIBERNATION_UP_POSSIBLE
+> -	bool
+> -	depends on X86 || PPC64_SWSUSP || PPC32
+> -	depends on !SMP
+> -	default y
+> -
+> -config HIBERNATION_SMP_POSSIBLE
+> -	bool
+> -	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
+> -	depends on SMP
+> -	default y
+> -
+>  config HIBERNATION
+>  	bool "Hibernation (aka 'suspend to disk')"
+> -	depends on PM && SWAP
+> -	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+> +	depends on PM && SWAP && ARCH_HIBERNATION_POSSIBLE
+>  	---help---
+>  	  Enable the suspend to disk (STD) functionality, which is usually
+>  	  called "hibernation" in user interfaces.  STD checkpoints the
+> --- everything.orig/arch/i386/Kconfig	2007-11-07 13:54:07.811521157 +0100
+> +++ everything/arch/i386/Kconfig	2007-11-07 14:29:16.631526474 +0100
+> @@ -1319,3 +1319,7 @@ config X86_TRAMPOLINE
+>  config KTIME_SCALAR
+>  	bool
+>  	default y
+> +
+> +config ARCH_HIBERNATION_POSSIBLE
+> +	def_bool y
+> +	depends on !SMP || !X86_VOYAGER
+> --- everything.orig/arch/x86_64/Kconfig	2007-11-07 13:57:35.091520777 +0100
+> +++ everything/arch/x86_64/Kconfig	2007-11-07 14:29:16.721529458 +0100
+> @@ -716,6 +716,9 @@ menu "Power management options"
+>  
+>  source kernel/power/Kconfig
+>  
+> +config ARCH_HIBERNATION_POSSIBLE
+> +	def_bool y
+> +
+>  config ARCH_HIBERNATION_HEADER
+>  	bool
+>  	depends on HIBERNATION
+> 
+
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
