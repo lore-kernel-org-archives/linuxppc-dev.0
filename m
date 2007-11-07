@@ -1,17 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s36.bay0.hotmail.com (bay0-omc2-s36.bay0.hotmail.com
-	[65.54.246.172]) by ozlabs.org (Postfix) with ESMTP id C4A87DDFAB
+Return-Path: <jonsmirl@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.225])
+	by ozlabs.org (Postfix) with ESMTP id 1F08ADDEEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 07:39:08 +1100 (EST)
-Message-ID: <BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
-From: MingLiu <eemingliu@hotmail.com>
-To: schardt <g.schardt@fz-juelich.de>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: Bootloader & Flash
-Date: Wed, 7 Nov 2007 20:39:06 +0000
-In-Reply-To: <4731A8E3.4020909@fz-juelich.de>
-References: <4731A8E3.4020909@fz-juelich.de>
-Content-Type: text/plain; charset="utf-8"
+	Thu,  8 Nov 2007 08:55:26 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1747609nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 07 Nov 2007 13:55:25 -0800 (PST)
+Message-ID: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>
+Date: Wed, 7 Nov 2007 16:55:23 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: use of fsl, in lite5200b.dts in git current
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,52 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-DQpEZWFyIEdlb3JnLA0KSSBndWVzcyB5b3Ugd2VyZSB0YWxraW5nIGFib3V0IHRoZSBib290aW5n
-IHByb2Nlc3Mgb2YgdGhlIHN5c3RlbSwgYm90aCBIVyBhbmQgdGhlIFNXLCBmcm9tIHRoZSBmbGFz
-aCBtZW1vcnkuIFRoaXMgcHJvY2VzcyBzaG91bGQgYmUgbGlrZSB0aGlzOg0KDQoxLiBTdG9yZSB5
-b3VyIEhXIGJpdHN0cmVhbSBhbmQgTGludXgga2VybmVsIGluIGZsYXNoIG1lbW9yaWVzLiBJZiBu
-ZWVkZWQsIHBlcmhhcHMgeW91IHdhbnQgYW5vdGhlciBib290bG9hZGVyIHByb2dyYW0sIHN1Y2gg
-YXMgVS1ib290IGFsc28gaW5zaWRlLiANCg0KMi4gSW4geW91ciBIVyBiaXRzdHJlYW0sIHlvdSBu
-ZWVkIG9uZSBib290bG9hZGVyIHdoaWNoIGhlbHBzIHlvdSB0byBsb2FkIHRoZSBzb2Z0d2FyZSBh
-bmQgZXhlY3V0ZSBpdCBpbiBERFItcmFtLiBFREsgaGVscHMgeW91IHRvIGdlbmVyYXRlIHN1Y2gg
-YSBib290bG9hZGVyIHdoZW4geW91IGRlc2lnbi4gDQoNCjMuIER1cm9uZyBQb3dlciBvbiwgSFcg
-Yml0c3RyZWFtICh3aXRoIGFuIEVESyBib290bG9hZGVyIGluY2x1ZGVkKSB3aWxsIGJlIGxvYWRl
-ZCBpbnRvIEZQR0EgYW5kIGNvbmZpZ3VyZSB0aGUgRlBHQSwgdGhlbiB0aGUgRURLIGJvb3Rsb2Fk
-ZXIgd2lsbCBsb2FkIHlvdXIgTGludXgga2VybmVsIGludG8gRERSLVJhbSBhbmQgZXhlY3V0ZSBp
-dCB0aGVyZS4gVGh1cyB5b3VyIGxpbnV4IGNvdWxkIHJ1bi4gDQoNClRoaXMgaXMgYSBub3JtYWwg
-cHJvY2Vzcy4gSWYgeW91IHdhbnQgdG8gZXhlY3V0ZSB0aGUgcHJvZ3JhbSBpbiBmbGFzaCBkaXJl
-Y3RseSwgdGhhdCdzIGFub3RoZXIgc3RvcnkuIEFsc28geW91IHNob3VsZCBrbm93LCBmb3IgdGhl
-IGJvb3RpbmcgcHJvY2VzcywgTVREIGRyaXZlciBpcyBub3QgbmVjZXNzYXJ5LiBUaGUgZHJpdmVy
-IGlzIG9ubHkgdXNlZCB3aGVuIHlvdSB3YW50IHRvIGFjY2VzcyBmbGFzaCBtZW1vcmllcyB3aGVu
-IHlvdSBib290ZWQgeW91ciBMaW51eCBrZXJuZWwuDQoNCkNsZWFyIG9yIG5vdD8gOikNCg0KQmVz
-dCBSZWdhcmRzDQpNaW5nDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0+IERhdGU6IFdlZCwgNyBOb3YgMjAwNyAxMzowMDozNSArMDEwMD4gRnJvbTogZy5zY2hhcmR0
-QGZ6LWp1ZWxpY2guZGU+IFRvOiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnPiBTdWJqZWN0
-OiBCb290bG9hZGVyICYgRmxhc2g+PiBIaSw+PiBpIHVzZSB0aGUgQVZuZXQgWGlsaW54NCBGWDEy
-IE1pbmltb2R1bGUgYW5kIHVudGlsIG5vdywgaSB1c2Ugc3lzdGVtLWFjZT4gdG8gY29uZmlndXJl
-IHRoZSBmcGdhIGFuZCBib290IHRoZSBsaW51eCBrZXJuZWwuPiBCdXQgbm93LCBpIHdhbnQgdG8g
-Ym9vdCBmcm9tIHRoZSBvbiBib2FyZCBmbGFzaCBtZW1vcnkgYW5kIGhhdmUgbm8gaWRlYT4gd2hl
-cmUgdG8gc3RhcnQuPj4gSSB0aGluayBpIGhhdmUgdG86PiAtIHNhdmUgdGhlIGZwZ2EgY29uZmln
-dXJhdGlvbiBpbiB0aGUgZnBnYS1wcm9tPiAtIHVzZS9wcm9ncmFtIHNvbWUga2luZCBvZiBib290
-bG9hZGVyIHN0b3JlIGluIGZwZ2EgYmxvY2sgcmFtIHRvIGp1bXAgdG8+IHRoZSBmbGFzaC1hZHJl
-c3Mgd2hlcmUgdGhlIGV4ZWN1dGFibGUgbGludXgga2VybmVsIHJlc2lzdD4gLSB1c2UgdGhlIG10
-ZC1kZXZpY2UgZHJpdmVyIHRvIG1vdW50IHJvb3QgZnMgb24gdGhlIHNhbWUgZmxhc2ggc29tZT4g
-YWRkcmVzcyBsYXRlcj4+IElzIHRoaXMgdGhlIHJpZ2h0IHdheSA/Pj4+IFJlZ2FyZHM+IEdlb3Jn
-Pj4+Pj4+PiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLT4gLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0+IEZvcnNjaHVuZ3N6ZW50cnVtIErDvGxpY2ggR21iSD4gNTI0MjUg
-SsO8bGljaD4+IFNpdHogZGVyIEdlc2VsbHNjaGFmdDogSsO8bGljaD4gRWluZ2V0cmFnZW4gaW0g
-SGFuZGVsc3JlZ2lzdGVyIGRlcyBBbXRzZ2VyaWNodHMgRMO8cmVuIE5yLiBIUiBCIDM0OTg+IFZv
-cnNpdHplbmRlIGRlcyBBdWZzaWNodHNyYXRzOiBNaW5EaXJpZydpbiBCw6RyYmVsIEJydW1tZS1C
-b3RoZT4gR2VzY2jDpGZ0c2bDvGhydW5nOiBQcm9mLiBEci4gQWNoaW0gQmFjaGVtIChWb3JzaXR6
-ZW5kZXIpLCBEci4gVWxyaWNoIEtyYWZmdCAoc3RlbGx2Lj4gVm9yc2l0emVuZGVyKT4gLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXz4gTGlu
-dXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0PiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3Jn
-PiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA0K
-DQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXw0KTVNOIOS4reaWh+e9ke+8jOacgOaWsOaXtuWwmueUn+a0u+i1hOiur++8jOeZ
-vemihuiBmumbhumXqOaIt+OAgg0KaHR0cDovL2NuLm1zbi5jb20=
+Sometimes the fsl prefix is being used and sometimes it isn't. Look at
+the two compatible strings. Which way is it going to be? Is
+fsl,has-wdt right?
+
+                mpc5200_pic: pic@500 {
+                        // 5200 interrupts are encoded into two levels;
+                        interrupt-controller;
+                        #interrupt-cells = <3>;
+                        device_type = "interrupt-controller";
+                        compatible = "mpc5200b-pic","mpc5200-pic";
+                        reg = <500 80>;
+                };
+
+                gpt@600 {       // General Purpose Timer
+                        compatible = "fsl,mpc5200b-gpt","fsl,mpc5200-gpt";
+                        cell-index = <0>;
+                        reg = <600 10>;
+                        interrupts = <1 9 0>;
+                        interrupt-parent = <&mpc5200_pic>;
+                        fsl,has-wdt;
+                };
+                rtc@800 {       // Real time clock
+                        compatible = "mpc5200b-rtc","mpc5200-rtc";
+                        device_type = "rtc";
+                        reg = <800 100>;
+                        interrupts = <1 5 0 1 6 0>;
+                        interrupt-parent = <&mpc5200_pic>;
+                };
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
