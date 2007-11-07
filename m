@@ -1,21 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id DB3BADDEDA
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2FC57DDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 09:21:20 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3344372wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 07 Nov 2007 14:21:19 -0800 (PST)
-Message-ID: <9e4733910711071421i347a6a0bu99cbf062cc152aca@mail.gmail.com>
-Date: Wed, 7 Nov 2007 17:21:19 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: use of fsl, in lite5200b.dts in git current
-In-Reply-To: <4732396D.4040904@genesi-usa.com>
+	Thu,  8 Nov 2007 09:37:50 +1100 (EST)
+Message-ID: <4732396D.4040904@genesi-usa.com>
+Date: Wed, 07 Nov 2007 22:17:17 +0000
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: use of fsl, in lite5200b.dts in git current
 References: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>
-	<4732396D.4040904@genesi-usa.com>
+In-Reply-To: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,12 +26,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm not in favor of all these fsl prefixes. These chip families do get
-sold. What would we have done with intel,pxa320 all over the place
-when they sold it to marvell? mass changes to marvell,pxa320?
+Jon Smirl wrote:
+> Sometimes the fsl prefix is being used and sometimes it isn't. Look at
+> the two compatible strings. Which way is it going to be? Is
+> fsl,has-wdt right?
 
-The mpc/pxa parts numbers don't get changes when chip families get sold.
+fsl,has-wdt is right, at least since someone changed it.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
