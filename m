@@ -1,11 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 10352DDD01
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 19:42:35 +1100 (EST)
+Subject: Re: [PATCH 2/6] ibm_newemac: Add ET1011c PHY support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 08 Nov 2007 19:07:01 +1100
-Subject: [PATCH 6/6] ibm_newemac: Cleanup/fix support for STACR register
-	variants
-In-Reply-To: <1194509217.421165.545980042680.qpush@grosgo>
-Message-Id: <20071108080733.06584DDEA0@ozlabs.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200711080941.46894.sr@denx.de>
+References: <20071108080729.E09F7DDDFB@ozlabs.org>
+	<200711080941.46894.sr@denx.de>
+Content-Type: text/plain
+Date: Thu, 08 Nov 2007 19:42:24 +1100
+Message-Id: <1194511344.6561.0.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,112 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There are a few variants of the STACR register that affect more than
-just the "AXON" version of EMAC. Replace the current test of various
-chip models with tests for generic properties in the device-tree.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> > +static struct mii_phy_def et1011c_phy_def = {
+> > +        .phy_id         = 0x0282f000,
+> > +        .phy_id_mask    = 0x0fffff00,
+> > +        .name           = "ET1011C Gigabit Ethernet",
+> > +        .ops            = &et1011c_phy_ops
+> > +};
+> > +
+> > +
+> > +
+> > +
+> > +
+> 
+> Nitpicking: Too many empty lines for my taste.
 
- arch/powerpc/boot/dts/sequoia.dts |    4 ++++
- drivers/net/ibm_newemac/core.c    |   23 +++++++++++++----------
- drivers/net/ibm_newemac/core.h    |    6 +++---
- 3 files changed, 20 insertions(+), 13 deletions(-)
+Agreed, I though I had removed them, looks like I didn't. Will fix that
+before submitting.
 
-Index: linux-work/arch/powerpc/boot/dts/sequoia.dts
-===================================================================
---- linux-work.orig/arch/powerpc/boot/dts/sequoia.dts	2007-11-08 18:49:53.000000000 +1100
-+++ linux-work/arch/powerpc/boot/dts/sequoia.dts	2007-11-08 18:49:59.000000000 +1100
-@@ -273,6 +273,8 @@
- 				zmii-channel = <0>;
- 				rgmii-device = <&RGMII0>;
- 				rgmii-channel = <0>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
- 			};
- 
- 			EMAC1: ethernet@ef600f00 {
-@@ -301,6 +303,8 @@
- 				zmii-channel = <1>;
- 				rgmii-device = <&RGMII0>;
- 				rgmii-channel = <1>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
- 			};
- 		};
- 	};
-Index: linux-work/drivers/net/ibm_newemac/core.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-08 18:49:53.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-08 18:50:17.000000000 +1100
-@@ -709,7 +709,7 @@ static int __emac_mdio_read(struct emac_
- 		r = EMAC_STACR_BASE(dev->opb_bus_freq);
- 	if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
- 		r |= EMAC_STACR_OC;
--	if (emac_has_feature(dev, EMAC_FTR_HAS_AXON_STACR))
-+	if (emac_has_feature(dev, EMAC_FTR_HAS_NEW_STACR))
- 		r |= EMACX_STACR_STAC_READ;
- 	else
- 		r |= EMAC_STACR_STAC_READ;
-@@ -781,7 +781,7 @@ static void __emac_mdio_write(struct ema
- 		r = EMAC_STACR_BASE(dev->opb_bus_freq);
- 	if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
- 		r |= EMAC_STACR_OC;
--	if (emac_has_feature(dev, EMAC_FTR_HAS_AXON_STACR))
-+	if (emac_has_feature(dev, EMAC_FTR_HAS_NEW_STACR))
- 		r |= EMACX_STACR_STAC_WRITE;
- 	else
- 		r |= EMAC_STACR_STAC_WRITE;
-@@ -2473,16 +2473,19 @@ static int __devinit emac_init_config(st
- 	/* Check EMAC version */
- 	if (of_device_is_compatible(np, "ibm,emac4"))
- 		dev->features |= EMAC_FTR_EMAC4;
--	if (of_device_is_compatible(np, "ibm,emac-axon")
--	    || of_device_is_compatible(np, "ibm,emac-440epx"))
--		dev->features |= EMAC_FTR_HAS_AXON_STACR
--			| EMAC_FTR_STACR_OC_INVERT;
--	if (of_device_is_compatible(np, "ibm,emac-440spe"))
-+
-+	/* Fixup some feature bits based on the device tree */
-+	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
- 		dev->features |= EMAC_FTR_STACR_OC_INVERT;
-+	if (of_get_property(np, "has-new-stacr-staopc", NULL))
-+		dev->features |= EMAC_FTR_HAS_NEW_STACR;
- 
--	/* Fixup some feature bits based on the device tree and verify
--	 * we have support for them compiled in
--	 */
-+	/* CAB lacks the appropriate properties */
-+	if (of_device_is_compatible(np, "ibm,emac-axon"))
-+		dev->features |= EMAC_FTR_HAS_NEW_STACR |
-+			EMAC_FTR_STACR_OC_INVERT;
-+
-+	/* Enable TAH/ZMII/RGMII features as found */
- 	if (dev->tah_ph != 0) {
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
- 		dev->features |= EMAC_FTR_HAS_TAH;
-Index: linux-work/drivers/net/ibm_newemac/core.h
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.h	2007-11-08 18:49:53.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.h	2007-11-08 18:49:59.000000000 +1100
-@@ -292,9 +292,9 @@ struct emac_instance {
-  */
- #define EMAC_FTR_HAS_RGMII		0x00000020
- /*
-- * Set if we have axon-type STACR
-+ * Set if we have new type STACR with STAOPC
-  */
--#define EMAC_FTR_HAS_AXON_STACR		0x00000040
-+#define EMAC_FTR_HAS_NEW_STACR		0x00000040
- 
- 
- /* Right now, we don't quite handle the always/possible masks on the
-@@ -306,7 +306,7 @@ enum {
- 
- 	EMAC_FTRS_POSSIBLE	=
- #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
--	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_AXON_STACR	|
-+	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
- 	    EMAC_FTR_STACR_OC_INVERT	|
- #endif
- #ifdef CONFIG_IBM_NEW_EMAC_TAH
+Thanks,
+Ben.
