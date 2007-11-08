@@ -1,23 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <Rick.Moleres@xilinx.com>
+Received: from mail15-dub-R.bigfish.com (mail-dub.bigfish.com [213.199.154.10])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB1CBDDEE1
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 91E41DDF0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Nov 2007 03:28:56 +1100 (EST)
-Message-ID: <47333939.6050106@freescale.com>
-Date: Thu, 08 Nov 2007 10:28:41 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Fri,  9 Nov 2007 03:30:12 +1100 (EST)
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: use of fsl, in lite5200b.dts in git current
-References: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>	<4732396D.4040904@genesi-usa.com>	<9e4733910711071421i347a6a0bu99cbf062cc152aca@mail.gmail.com>	<473258B8.4060905@genesi-usa.com>
-	<9e4733910711071815x344319ebye89168320dd53c0@mail.gmail.com>
-In-Reply-To: <9e4733910711071815x344319ebye89168320dd53c0@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C82224.9936303F"
+Subject: RE: ML405 gigabit ethernet with kernel 2.6.23
+Date: Thu, 8 Nov 2007 09:29:52 -0700
+In-Reply-To: <BAY138-W3232BA0AE8C193E22B5011B28B0@phx.gbl>
+References: <4732719A.20707@triumf.ca>
+	<BAY138-W3232BA0AE8C193E22B5011B28B0@phx.gbl>
+From: "Rick Moleres" <Rick.Moleres@xilinx.com>
+To: "MingLiu" <eemingliu@hotmail.com>, "kentaro" <kentaro@triumf.ca>,
+	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20071108162959.3AA52DD8066@mail15-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,64 +27,227 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
-> On 11/7/07, Matt Sealey <matt@genesi-usa.com> wrote:
->> Jon Smirl wrote:
->>> I'm not in favor of all these fsl prefixes. These chip families
->>> do get sold. What would we have done with intel,pxa320 all over
->>> the place when they sold it to marvell? mass changes to
->>> marvell,pxa320?
->> That's the idea, and there'd be a compatible entry for
->> intel,pxa320.
-> 
-> The vendor part really isn't needed and it is going to be a source of
->  trouble. The vendors are smart enough not to create two chips with
-> the same part number. Adding a vendor qualifier complicates things 
-> needlessly.
+This is a multi-part message in MIME format.
 
-I think you may be placing too much faith in the vendors.
-Is a 7400 a Freescale powerpc chip, or a quad 2-input NAND gate? :-)
+------_=_NextPart_001_01C82224.9936303F
+Content-Type: text/plain;
+	charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
 
-If you want to argue that the "MPC" part differentiates them, that's
-just a less readable and more obsolete vendor prefix.
+Hi,
 
-And not all compatible entries are part numbers; many are descriptions
-of programming interfaces (such as cpm2 or gianfar).  I'm not inclined
-to bet that there will never be a conflict in such a namespace.
+ 
 
->> Actually the spec says you should use the stock ticker (IBM, FSL,
->> INTC, JAVA, MRVL) if they have one and if not, the company name in
->> lower case.
->> 
->> Freescale are a funny one because they used to have a stock ticker
->> as MOT and then FSL but now they're privately owned, so it's gonna
->> have to be lower case :]
+Yes, for 1500 MTU these aren’t too bad.  One thing to note, using the TCP_STREAM option does not take advantage of zero-copy and possibly checksum offload on the transmit side.  You should use the TCP_SENDFILE option for that.  We typically use options such as:
 
-Well, technically the recommended prefix is an OUI number, and those are
-less likely to change due to corporate shuffling, but they suck from a
-readability perspective.
+ 
 
-> Another example of how these vendor prefixes can change. The chip 
-> numbers are never going to change. Just use them and drop these
-> vendor prefixes.
+            netperf -c -C -H 192.168.1.1 -t TCP_STREAM -- -s131072 -S131072 -m65536
 
-No. :-)
+            netperf -c -C -H 192.168.1.1 -t UDP_STREAM -- -s131072 -S131072 -m8192 (if using jumbo frames of 8982)
 
->> functionality. fsl,has-wdt differs from has-wdt ideally because
-> 
-> This one I can buy, but it should be fsl-has-wdt. Drop the vendor
-> prefixes.
+ 
 
-How is fsl-has-wdt any better, other than it obscures namespace issues?
+-Rick
 
-Vendor prefixes on properties are useful in that it might not mean
-exactly the same thing as a similar property that gets standardized
-later on.
+________________________________
 
-> That's life in the Linux world, no backwards binary compatibility.
+From: linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org [mailto:linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org] On Behalf Of MingLiu
+Sent: Thursday, November 08, 2007 2:32 AM
+To: kentaro; linuxppc-embedded@ozlabs.org
+Subject: RE: ML405 gigabit ethernet with kernel 2.6.23
 
-There's a huge difference between compatibility of kernel interfaces and
-compatibility of interfaces between the kernel and something else --
-whether it be userspace or firmware.
+ 
 
--Scott
+Dear Kentaro,
+
+> -------------------------------------------------------------
+> "netperf -H 192.168.1.1 -t TCP_STREAM" 110 Mbps
+> "netperf -H 192.168.1.1 -t UDP_STREAM" 210 Mbps
+> -------------------------------------------------------------
+
+Are these results the ones with or without Jumbo-frame enabled? If no, they are quite good I think. The results from Montavista probably are the ones with Jumbo-frame enabled. 
+ 
+For anybody who has interest on this topic, I have recently an accepted paper which has part of the content on this. The link is http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf and in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details and detailed configurations on our case. So these results are only for your reference.
+ 
+BR
+Ming
+
+________________________________
+
+用 Windows Live Spaces 展示个性自我，与好友分享生活！ 了解更多信息！ <http://spaces.live.com/?page=HP> 
+
+
+------_=_NextPart_001_01C82224.9936303F
+Content-Type: text/html;
+	charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-2022-jp">
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+
+<meta name=Generator content="Microsoft Word 11 (filtered medium)">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:SimSun;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:"\@SimSun";
+	panose-1:0 0 0 0 0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:SimSun;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:blue;
+	text-decoration:underline;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:SimSun;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=EN-US link=blue vlink=blue>
+
+<div class=Section1>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'>Hi,<o:p></o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'>Yes, for 1500 MTU these aren’t too
+bad.&nbsp; One thing to note, using the TCP_STREAM option does not take
+advantage of zero-copy and possibly checksum offload on the transmit
+side.&nbsp; You should use the TCP_SENDFILE option for that.&nbsp; We typically
+use options such as:<o:p></o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; netperf
+&#8211;c &#8211;C &#8211;H 192.168.1.1 &#8211;t TCP_STREAM -- -s131072 &#8211;S131072 &#8211;m65536<o:p></o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; netperf
+&#8211;c &#8211;C &#8211;H 192.168.1.1 &#8211;t UDP_STREAM -- -s131072 &#8211;S131072 &#8211;m8192 (if using jumbo
+frames of 8982)<o:p></o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=MsoNormal><font size=2 color=navy face=Arial><span style='font-size:
+10.0pt;font-family:Arial;color:navy'>-Rick<o:p></o:p></span></font></p>
+
+<div>
+
+<div class=MsoNormal align=center style='margin-left:.5in;text-align:center'><font
+size=3 face=SimSun><span style='font-size:12.0pt'>
+
+<hr size=2 width="100%" align=center tabindex=-1>
+
+</span></font></div>
+
+<p class=MsoNormal style='margin-left:.5in'><b><font size=2 face=Tahoma><span
+style='font-size:10.0pt;font-family:Tahoma;font-weight:bold'>From:</span></font></b><font
+size=2 face=Tahoma><span style='font-size:10.0pt;font-family:Tahoma'>
+linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+moleres=xilinx.com@ozlabs.org] <b><span
+style='font-weight:bold'>On Behalf Of </span></b>MingLiu<br>
+<b><span style='font-weight:bold'>Sent:</span></b> Thursday, November 08, 2007
+2:32 AM<br>
+<b><span style='font-weight:bold'>To:</span></b> kentaro;
+linuxppc-embedded@ozlabs.org<br>
+<b><span style='font-weight:bold'>Subject:</span></b> RE: ML405 gigabit
+ethernet with kernel 2.6.23</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=MsoNormal style='margin-left:.5in'><font size=3 face=SimSun><span
+style='font-size:12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=MsoNormal style='mso-margin-top-alt:0in;margin-right:0in;margin-bottom:
+12.0pt;margin-left:.5in'><font size=1 face=Tahoma><span style='font-size:9.0pt;
+font-family:Tahoma'>Dear Kentaro,<br>
+<br>
+&gt; -------------------------------------------------------------<br>
+&gt; &quot;netperf -H 192.168.1.1 -t TCP_STREAM&quot; 110 Mbps<br>
+&gt; &quot;netperf -H 192.168.1.1 -t UDP_STREAM&quot; 210 Mbps<br>
+&gt; -------------------------------------------------------------<br>
+<br>
+Are these results the ones with or without Jumbo-frame enabled? If no, they are
+quite good I think. The results from Montavista probably are the ones with
+Jumbo-frame enabled. <br>
+&nbsp;<br>
+For anybody who has interest on this topic, I have recently an accepted paper
+which has part of the content on this. The link is <a
+href="http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf">http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf</a>&nbsp;and
+in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps
+for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details
+and detailed configurations on our case. So these results are only for your
+reference.<br>
+&nbsp;<br>
+BR<br>
+Ming<o:p></o:p></span></font></p>
+
+<div class=MsoNormal align=center style='margin-left:.5in;text-align:center'><font
+size=1 face=Tahoma><span style='font-size:9.0pt;font-family:Tahoma'>
+
+<hr size=2 width="100%" align=center>
+
+</span></font></div>
+
+<p class=MsoNormal style='margin-left:.5in'><font size=1 face=SimSun><span
+lang=ZH-CN style='font-size:9.0pt'>用</span></font><font size=1 face=Tahoma><span
+style='font-size:9.0pt;font-family:Tahoma'> Windows Live Spaces </span></font><font
+size=1><span lang=ZH-CN style='font-size:9.0pt'>展示个性自我，与好友分享生活！</span></font><font
+size=1 face=Tahoma><span lang=ZH-CN style='font-size:9.0pt;font-family:Tahoma'>
+</span></font><font size=1 face=Tahoma><span style='font-size:9.0pt;font-family:
+Tahoma'><a href="http://spaces.live.com/?page=HP" target="_new"><font
+face=SimSun><span lang=ZH-CN style='font-family:SimSun'>了解更多信息！</span></font></a><o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C82224.9936303F--
