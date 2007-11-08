@@ -1,16 +1,22 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 8 Nov 2007 09:28:21 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: mpc5200, sysctl table check failed
-Message-ID: <20071108152821.GA24851@lixom.net>
-References: <9e4733910711071224v7bf643bahba0fd23eb2d16ee1@mail.gmail.com>
-	<20071107204138.GA7066@lixom.net>
-	<1194534579.6294.46.camel@johannes.berg>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B20C1DDE9E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 02:56:37 +1100 (EST)
+Message-ID: <473331B0.4040702@freescale.com>
+Date: Thu, 08 Nov 2007 09:56:32 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1194534579.6294.46.camel@johannes.berg>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 4/3] Make swsusp_32.S usable for suspend-to-RAM.
+References: <20070905220846.GA11400@ld0162-tx32.am.freescale.net>
+	<1194438345.4470.4.camel@johannes.berg>
+In-Reply-To: <1194438345.4470.4.camel@johannes.berg>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,15 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 08, 2007 at 04:09:39PM +0100, Johannes Berg wrote:
+Johannes Berg wrote:
+>> +config PPC32_SUSPEND
 > 
+>> +config PPC32_SWSUSP
 > 
-> > I posted a patch for this yesterday, it's harmless, just a warning.
+>> -obj32-$(CONFIG_HIBERNATION) += swsusp_32.o
+>> +obj32-$(CONFIG_PPC32_SUSPEND)	+= swsusp_32.o
 > 
-> That's not actually true, if the sysctl check code warns in any way the
-> sysctl file doesn't show up in /proc/sys/
+> I think that's overkill, couldn't it just use CONFIG_PM_SLEEP here?
 
-Oh, you're right. Well, it's been fixed now anyway. :-)
+This file is specific to 32-bit classic PPC chips.
 
+It doesn't matter, though, as I've redone the 83xx suspend to not need 
+that file.
 
--Olof
+-Scott
