@@ -1,14 +1,15 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
-	by ozlabs.org (Postfix) with ESMTP id 3CB06DDDFD
+Return-Path: <glikely@secretlab.ca>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
+	by ozlabs.org (Postfix) with ESMTP id 45372DDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 13:15:07 +1100 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so10228nzh
+	Thu,  8 Nov 2007 14:14:11 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so37228wag
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 07 Nov 2007 18:15:06 -0800 (PST)
-Message-ID: <9e4733910711071815x344319ebye89168320dd53c0@mail.gmail.com>
-Date: Wed, 7 Nov 2007 21:15:04 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
+	Wed, 07 Nov 2007 19:14:10 -0800 (PST)
+Message-ID: <fa686aa40711071914w1e0a483sfc3b1f61010cc667@mail.gmail.com>
+Date: Wed, 7 Nov 2007 20:14:10 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
 To: "Matt Sealey" <matt@genesi-usa.com>
 Subject: Re: use of fsl, in lite5200b.dts in git current
 In-Reply-To: <473258B8.4060905@genesi-usa.com>
@@ -36,12 +37,6 @@ On 11/7/07, Matt Sealey <matt@genesi-usa.com> wrote:
 > > when they sold it to marvell? mass changes to marvell,pxa320?
 >
 > That's the idea, and there'd be a compatible entry for intel,pxa320.
-
-The vendor part really isn't needed and it is going to be a source of
-trouble. The vendors are smart enough not to create two chips with the
-same part number. Adding a vendor qualifier complicates things
-needlessly.
-
 >
 > Actually the spec says you should use the stock ticker (IBM, FSL, INTC,
 > JAVA, MRVL) if they have one and if not, the company name in lower case.
@@ -50,21 +45,21 @@ needlessly.
 > MOT and then FSL but now they're privately owned, so it's gonna have to
 > be lower case :]
 
-Another example of how these vendor prefixes can change. The chip
-numbers are never going to change. Just use them and drop these vendor
-prefixes.
+And really, this doesn't even matter.  So what if 'mot,' --> 'fsl,'
+--> 'freescale,'?  Even if an older name is used, it is still
+unambiguous and therefore a useful property.
 
+Besides, If you're designing a device tree for a board, and Linux or
+some other OS already has support for a similar board, it would be
+madness to use property values different from what the OS already uses
+just to make the values "more correct".
 
-> It's just to separate out the fact that sometimes you get chips with
+ie. even if Marvell sells the pxa255 for then next 5 years, it is
+still correct to call it an "intel,pxa255".
+
+> It's just to seperate out the fact that sometimes you get chips with
 > very similar or identical names, or to mark out vendor-specific
-
-You don't get chips with identical names. If they had identical names
-you couldn't order them from a distributor. Similar yes, identical no.
-
 > functionality. fsl,has-wdt differs from has-wdt ideally because
-
-This one I can buy, but it should be fsl-has-wdt. Drop the vendor prefixes.
-
 > Freescale watchdog timers aren't the same as other watchdog timers -
 > the term is pretty pliable, Freescale's GPT on the MPC52xx isn't
 > always a watchdog (it can be a normal, non-watchdog timer too..)
@@ -72,27 +67,22 @@ This one I can buy, but it should be fsl-has-wdt. Drop the vendor prefixes.
 > > The mpc/pxa parts numbers don't get changes when chip families get sold.
 >
 > There is a case that between selling chips, some of them get updated
-> or bug fixed, and you can tell which one you have by the name.
-
-You can always tell which one you have. The vendors add suffixes to
-the part numbers so that you can identify the steppings.
-
+> or bugfixed, and you can tell which one you have by the name.
 >
-> There has to be some standardization on the first implementation of
+> There has to be some standardisation on the first implementation of
 > the device tree for the chip, otherwise the chopping and changing
 > gets rather tedious.
 >
 > I'm sure you can see why we don't release firmware updates every time
 > some Linux guy changes some lousy, hacky tree definition for yet another
-> 6 times a year, until it finally stabilizes and the product is usually
+> 6 times a year, until it finally stabilises and the product is usually
 > discontinued anyway :D
 
-That's life in the Linux world, no backwards binary compatibility. I'm
-in favor of the model since we can fix things until with get the right
-instead of piling hacks upon hacks trying to keep ancient, broken
-interfaces working (I used to work on the Windows kernel. it is major
-ugly).
+Oh come on; I've hardly changed the mpc5200 bindings at all since we
+last talked about them...  :-P   (Totally joking, see comment and
+eating-of-crow below).
 
+>
 > However in the current situation it just means you need to flash new
 > FDT blobs to your U-Boots which are more clean, and keep your kernel
 > in sync, because Linux only handles what it currently thinks is the
@@ -100,14 +90,53 @@ ugly).
 >
 > The real loser is the real Open Firmware implementation, but nobody
 > seems to think about that, the device trees on OF devices get more
-> cluttered.
+> cluttered..
 
-Open Firmware lost when it initially came out closed source and people
-charged for it. uBoot/redboot/etc took the market because they were
-open and free. If Open Firmware had been a free implementation from
-day one things would have ended up differently.
+Not quite true; I personally am now quite loath to changing
+conventions without maintaining compatibility with the old.  I also
+tend to make the assumption that upgrading the kernel should not
+always require a device tree upgrade also.
 
+In other words:
+Changing conventions to better match the OF guidelines: possibly a
+good thing, especially if it results in more clarity.
+ --- but ---
+Breaking boards with trees that follow older conventions: Bad!
+
+This is probably a good time for me to apologize for the pain that
+I've caused in the past on this issue.  My stance in the past on
+designing mpc5200 device trees was wrong headed on a couple of points.
+ First, insisting that the Efika device tree should exactly match what
+was currently in vogue was wrong.  Second, assuming that it was even
+possible to define a 'perfect' and 'exact' mpc5200 device tree binding
+was pure hubris.
+
+So, I'm sorry and I apologize.  Experience has taught me better over
+the past year.
+
+I'm now of the opinion that device trees are *never* perfect, and
+that's not even the point.  The point is that a device tree should
+uniquely and unambiguously describe the platform.  If the device tree
+isn't quite unambiguous in one aspect, other aspects of the tree will
+provide enough information to work around what is lacking.  Every
+device driver may have a current-as-of-now idea on what those
+properties should look like, but that should not cause platforms with
+device trees which differ from that to be punted as unsupportable.
+
+I do not think that means that vendors can put whatever they want into
+a device tree without regard to current conventions (at the time of
+designing their tree).  Doing so generally causes friction with the
+folks who are writing software for it (and I'm not directing this
+comment at bPlan either).  But I do think that changing conventions
+must always be done with care and without breaking earlier users;
+either by modifying the tree at platform setup time or retaining
+compatibility with the old property name.
+
+Cheers,
+g.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
