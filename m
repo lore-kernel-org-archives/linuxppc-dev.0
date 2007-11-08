@@ -1,22 +1,20 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.180])
-	by ozlabs.org (Postfix) with ESMTP id 9D718DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 13:18:10 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so21812wag
-	for <linuxppc-dev@ozlabs.org>; Wed, 07 Nov 2007 18:18:09 -0800 (PST)
-Message-ID: <9e4733910711071818r23f2f739n6edbba3e0576870a@mail.gmail.com>
-Date: Wed, 7 Nov 2007 21:18:09 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [RFC] Modifying i2c-core to support alias driver names compatible
-	with device trees
-In-Reply-To: <20071108120535.769e4d73.sfr@canb.auug.org.au>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 5D0C6DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 13:27:38 +1100 (EST)
+Date: Thu, 8 Nov 2007 13:27:37 +1100
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: mm snapshot broken-out-2007-11-06-02-32 build failure -
+	!CONFIG_PPC_ISERIES
+Message-ID: <20071108022737.GQ24243@bakeyournoodle.com>
+References: <200711061033.lA6AXrhT018804@imap1.linux-foundation.org>
+	<473226A3.7090704@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711061239g22b06863rbec37fcef138c869@mail.gmail.com>
-	<20071108120535.769e4d73.sfr@canb.auug.org.au>
-Cc: Jean Delvare <khali@linux-fr.org>, Tjernlund <tjernlund@tjernlund.se>,
-	i2c@lm-sensors.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <473226A3.7090704@linux.vnet.ibm.com>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+	mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/7/07, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> On Tue, 6 Nov 2007 15:39:42 -0500 "Jon Smirl" <jonsmirl@gmail.com> wrote:
-> >
-> > It was requested to split this code out into a separate thread....
-> >
-> > This code modifies the i2c-core to support lists of alias names in the
-> > chip drivers.
-> > For example: .aliases = (char const
-> > *[]){"ricoh,rs5c372a","ricoh,rs5c372b","ricoh,rv5c386","ricoh,rv5c387a",
-> > 0},
->
-> You should not need the (char const *[]) casts at all.
+On Thu, Nov 08, 2007 at 02:27:07AM +0530, Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The kernel build fails with randconfig, with following error
+> 
+>   CC      arch/powerpc/platforms/celleb/setup.o
+> arch/powerpc/platforms/celleb/setup.c:151: error: ‘generic_calibrate_decr’ undeclared here (not in a function)
+> make[2]: *** [arch/powerpc/platforms/celleb/setup.o] Error 1
+> make[1]: *** [arch/powerpc/platforms/celleb] Error 2
+> make: *** [arch/powerpc/platforms] Error 2
 
-That is what I thought but the compiler complains without it. I tried
-everything I could think of to get rid of it.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+I think you need this patch:
+	http://patchwork.ozlabs.org/linuxppc/patch?q=Tony%20Breeds&id=14462
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
