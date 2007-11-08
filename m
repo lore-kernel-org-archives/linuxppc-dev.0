@@ -1,18 +1,26 @@
-Return-Path: <SRS0=zNDV=QB=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 09B5EDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 20:38:44 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/6] ibm_newemac: Cleanup/fix support for STACR register
-	variants
-Date: Thu, 8 Nov 2007 10:38:58 +0100
-References: <20071108080733.06584DDEA0@ozlabs.org>
-In-Reply-To: <20071108080733.06584DDEA0@ozlabs.org>
+Return-Path: <ralf@linux-mips.org>
+Received: from ftp.linux-mips.org (ftp.linux-mips.org [194.74.144.162])
+	by ozlabs.org (Postfix) with ESMTP id 25A11DDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 20:53:36 +1100 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:13471 "EHLO
+	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
+	id S20022405AbXKHJsd (ORCPT <rfc822;linuxppc-dev@ozlabs.org>);
+	Thu, 8 Nov 2007 09:48:33 +0000
+Date: Thu, 8 Nov 2007 09:48:25 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH (2.6.25) 2/2] suspend: clean up Kconfig
+Message-ID: <20071108094825.GB10665@linux-mips.org>
+References: <20071107135758.100171000@sipsolutions.net>
+	<20071107135849.207149000@sipsolutions.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711081038.59184.sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071107135849.207149000@sipsolutions.net>
+Cc: Bryan Wu <bryan.wu@analog.com>, linux-mips@linux-mips.org,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	Paul Mundt <lethal@linux-sh.org>, linux-pm@lists.linux-foundation.org,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 08 November 2007, Benjamin Herrenschmidt wrote:
-> There are a few variants of the STACR register that affect more than
-> just the "AXON" version of EMAC. Replace the current test of various
-> chip models with tests for generic properties in the device-tree.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Wed, Nov 07, 2007 at 02:58:00PM +0100, Johannes Berg wrote:
 
-Acked-by: Stefan Roese <sr@denx.de>
+> This cleans up the suspend Kconfig and removes the need to
+> declare centrally which architectures support suspend. All
+> architectures that currently support suspend are modified
+> accordingly.
 
-Best regards,
-Stefan
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
+
+Cheers,
+
+  Ralf
