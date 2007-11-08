@@ -1,21 +1,19 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CDF9DDDE2B
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 01:17:18 +1100 (EST)
-Message-ID: <47331979.7030803@freescale.com>
-Date: Thu, 08 Nov 2007 08:13:13 -0600
-From: Jon Loeliger <jdl@freescale.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] DTC: Polish up the DTS Version 1 implementation.
-References: <E1IpWlT-0007Qd-IX@jdl.com>	<20071106231120.GG31367@localhost.localdomain>	<E1Iplfp-0003WY-MB@jdl.com>
-	<20071107231942.GA8835@localhost.localdomain>
-In-Reply-To: <20071107231942.GA8835@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id DAB07DDE48
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 01:18:38 +1100 (EST)
+Date: Thu, 8 Nov 2007 17:16:11 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
+Message-ID: <20071108141611.GA5770@localhost.localdomain>
+References: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Li Yang <leoli@freescale.com>, jgarzik@pobox.com
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Mon, Nov 05, 2007 at 12:15:30PM -0600, Kim Phillips wrote:
+> Hello all,
 > 
-> Yes, I know, but I don't think it's even worth having the unused
-> internal parameterization.
-
-OK.  We can eliminate it then; no problem.
-
->
->> I ran my "old versus new DTC" comparison script and found it. :-)
+> the following patches fix RGMII timing for rev. 2.1 of the mpc8360,
+> according to erratum #2 (erratum text included below).  Basically the
+> most intrusive part is the addition of two new RGMII Internal Delay
+> modes; one for TX delay only, and the other for RX delay only (i.e, not
+> both at the same time).
 > 
-> Heh, we should fold that into the testsuite, too.
-
-I'll start by simply adding the script to the test directory then.
-
-
-
->> Because it wasn't working, as explained in the comment I added.
->> Specifically, (1<<bits), with bits==64 overflowed and yielded
->> the value 0.
+> Please review, and since this affects both netdev and powerpc trees,
+> one maintainer should ack them for the other to push upstream (i.e,
+> Kumar acks them, and Leo picks them up to go through netdev or the
+> other way around; either way is fine with me).  I'm hoping they're
+> trivial enough to go in 2.6.24.
 > 
-> Ah...
+> Depending on how the review goes, a follow-on patch to u-boot will be
+> sent out that fixes up the phy-connection-type in the device tree (from
+> "rgmii-id" to "rgmii-rxid" iff on mpc8360rev2.1).
+
+I've upgraded CPU to rev2.1, board rev0.3.
+
+Applied 5/5 patches onto paulus/powerpc.git at e403149c92a. Here is
+the results:
+
+If I use -rxid, then geth not able to transmit anything.
+With -txid geth not able to receive anything.
+
+With just -id everything works fine though...
+
+
+Maybe there should be another condition, in addition to cpu rev2.1?
+
+> Thanks,
 > 
-> Well, I assumed (1ULL << 64) would equal 0, which is why the
-> comparison has the (-1) - I was expecting for bits == 64 it would end
-> up being against -1, i.e. 0xffffffffffffffff.  This appears to work on
-> the systems I've been using.
-
-But not on an x86 system.
-
-> But I just remembered that (x << n) has undefined behaviour in C when
-> n >= word size. 
-
-Exactly.  In fact, I think x86 takes the shift value, bit-wise
-ANDs it with 63 internally, and then shifts left by that value.
-
- So I guess (1 << 64) is just returning garbage - I
-
-In fact, it is yielding 1 on an x86 machine.
-
-> suspect I didn't catch it because I've been building with -O0 for
-> gdb-ability, which might change the behaviour of corner cases like
-> that.
-
-Or works on a PPC machine? :-)
-
-> So I guess we need
-> 	else if ((errno == ERANGE)
-> 		 || ((bits < 64) && (val >= (1ULL << bits))))
-
-Sounds good.  I'll commit --amend that into the patch!
-
-
->> And in the blue corner, touting consistent hex forms, ...
+> Kim
 > 
-> And in the red, compact bytestring representations.
+> mpc8360 rev 2.1 erratum #2:
+> -----------
+> Recommended AC timings for chip 8360Rev2.1 UCC ETH RGMII  when working
+> with Rev Pilot MDS for proper RGMII operation:
+> 
+> IMMR_BASE + 0x14A8[4:5] = 11 (clk delay for UCC 2)
+> IMMR_BASE + 0x14A8[18:19] = 11 (clk delay for UCC 1)
+> IMMR_BASE + 0x14AC[20:27] = 10101010 (data delay for both UCC's)
+> 
+> The Phy (Marvell 88e1111) should be configured NOT to work with RGMII
+> delay for TxD.
 
-> No, seriously, the inconsistency bothers me too.  But so does the fact
-> that using 0x in the bytestring would double the minimum size for
-> representing bytestrings, somewhat changing the flavour of [] as well
-> (because spaces are no longer optional).  I'm looking for a killer
-> argument one way or the other, but I haven't found it yet.
+Thanks,
 
-But why does it even have to be hex numbers at all?
-I guess my point is that they could just be expressions.
-You could use 0x31 or 49 or '1' or 061, whichever made
-more sense in some application.  You don't necessarily take
-a representational size hit.
-
-jdl
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
