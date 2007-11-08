@@ -1,23 +1,31 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0F43BDDDE9
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 21:03:12 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [RFC] Modifying i2c-core to support alias driver names compatible
-	with device trees
-References: <9e4733910711061239g22b06863rbec37fcef138c869@mail.gmail.com>
-	<20071108120535.769e4d73.sfr@canb.auug.org.au>
-Date: Thu, 08 Nov 2007 11:03:04 +0100
-In-Reply-To: <20071108120535.769e4d73.sfr@canb.auug.org.au> (Stephen
-	Rothwell's message of "Thu\, 8 Nov 2007 12\:05\:35 +1100")
-Message-ID: <jey7d9t5pj.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Jean Delvare <khali@linux-fr.org>, Tjernlund <tjernlund@tjernlund.se>,
-	linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 73280DDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 23:12:42 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lA8CECjm022834
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Nov 2007 07:14:12 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
+	lA8CCZm8111230
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Nov 2007 07:12:35 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lA8CCZ9r029862
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Nov 2007 07:12:35 -0500
+Date: Thu, 8 Nov 2007 06:08:05 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2/6] ibm_newemac: Add ET1011c PHY support
+Message-ID: <20071108060805.4c59b579@zod.rchland.ibm.com>
+In-Reply-To: <1194511344.6561.0.camel@pasglop>
+References: <20071108080729.E09F7DDDFB@ozlabs.org>
+	<200711080941.46894.sr@denx.de> <1194511344.6561.0.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+On Thu, 08 Nov 2007 19:42:24 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Tue, 6 Nov 2007 15:39:42 -0500 "Jon Smirl" <jonsmirl@gmail.com> wrote:
->>
->> It was requested to split this code out into a separate thread....
->> 
->> This code modifies the i2c-core to support lists of alias names in the
->> chip drivers.
->> For example: .aliases	= (char const
->> *[]){"ricoh,rs5c372a","ricoh,rs5c372b","ricoh,rv5c386","ricoh,rv5c387a",
->> 0},
->
-> You should not need the (char const *[]) casts at all.
+> 
+> > > +static struct mii_phy_def et1011c_phy_def = {
+> > > +        .phy_id         = 0x0282f000,
+> > > +        .phy_id_mask    = 0x0fffff00,
+> > > +        .name           = "ET1011C Gigabit Ethernet",
+> > > +        .ops            = &et1011c_phy_ops
+> > > +};
+> > > +
+> > > +
+> > > +
+> > > +
+> > > +
+> > 
+> > Nitpicking: Too many empty lines for my taste.
+> 
+> Agreed, I though I had removed them, looks like I didn't. Will fix that
+> before submitting.
 
-It's not a cast, it's a compound literal.  What it does is to create an
-anonymous object, the address of which is the initializer for the
-aliases pointer.  Note that the anonymous object is not const qualified.
+DENX is pretty good about having Signed-off-by lines in their tree...
+maybe you should add the original authors as well if it's there.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+josh
