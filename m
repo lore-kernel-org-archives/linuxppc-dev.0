@@ -2,18 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F984DDE1E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 10:20:30 +1100 (EST)
-Subject: Re: Kernel locks up after calling kernel_execve()
+	by ozlabs.org (Postfix) with ESMTP id 6FD20DDE1E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 10:20:33 +1100 (EST)
+Subject: Re: [RFC] powermac: proper sleep management
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20071108214723.135260@gmx.net>
-References: <20071108214723.135260@gmx.net>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <47336035.4020609@freescale.com>
+References: <1194523729.6294.18.camel@johannes.berg>
+	<47336035.4020609@freescale.com>
 Content-Type: text/plain
-Date: Fri, 09 Nov 2007 10:20:17 +1100
-Message-Id: <1194564017.6561.21.camel@pasglop>
+Date: Fri, 09 Nov 2007 10:19:16 +1100
+Message-Id: <1194563956.6561.20.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	David Woodhouse <dwmw2@infradead.org>,
+	linux-pm <linux-pm@lists.linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,20 +30,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2007-11-08 at 22:47 +0100, Gerhard Pircher wrote:
-> Hi,
+On Thu, 2007-11-08 at 13:15 -0600, Scott Wood wrote:
+> Johannes Berg wrote:
+> > +/*
+> > + * overrides the weak arch_suspend_disable_irqs in kernel/power/main.c
+> > + *
+> > + * XXX: Once Scott Wood's patch is merged, this needs to use the ppc_md
+> > + *	hooks that patch adds!
+> > + */
+> > +void arch_suspend_disable_irqs(void)
+> > +{
+> > +#ifdef CONFIG_PMAC_BACKLIGHT
+> > +	/* Tell backlight code not to muck around with the chip anymore */
+> > +	pmu_backlight_set_sleep(1);
+> > +#endif
+>  > +
+> > +	/* Call platform functions marked "on sleep" */
+> > +	pmac_pfunc_i2c_suspend();
+> > +	pmac_pfunc_base_suspend();
 > 
-> I tested my patches for the AmigaOne platform with the lastest 2.6.24-rc2
-> kernel snapshot. The kernel runs through all initcalls, but locks up
-> completely after calling INIT (/sbin/init) by kernel_execve(). Thus I
-> couldn't capture any kernel oops or panic output. Also the magic sysrq
-> key doesn't work. Enabling debug code for soft lockups and spinlock
-> debugging didn't reveal any information.
-> I'm not sure, but I think it is the same problem I had with all kernels
-> >= 2.6.17. All of these kernels lock up shortly before or right at calling
-> the init program (resp. as soon as the kernel forks some kernel theads).
-> Any suggestions on how to track down this problem?
+> Shouldn't these be done from suspend methods of the relevant drivers?
+> I don't understand why this needs to go in the disable IRQ hook.
 
-You don't have a HW debugger or anything like that ?
+The pmac_pfunc thing is low level platform stuff, no driver involved
+there, this is the right place to do it.
+
+As for the backlight bits, that could indeed be moved around I suppose,
+I'd keep it there for now and look at cleaning the PMU driver
+suspend/resume path in a second step.
 
 Ben.
