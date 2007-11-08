@@ -1,10 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 7 Nov 2007 18:57:00 -0700
+Date: Wed, 7 Nov 2007 18:58:22 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3] powerpc: prpmc2800 - Use new mv64x60_config_pci_windows()
-	interface
-Message-ID: <20071108015700.GA15174@mag.az.mvista.com>
+Subject: [PATCH 3/3] powerpc: mv64x60 - Aesthetic fixups for bootwrapper code
+Message-ID: <20071108015822.GB15174@mag.az.mvista.com>
 References: <20071108015415.GA14900@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -20,73 +19,248 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Mark A. Greer <mgreer@mvista.com>
 
-Make the prpmc2800 bootwrapper code use the new interface to
-mv64x60_config_pci_windows().  With that change, some minor code
-rearrangement is possible to make things neater.
+Specify locations when initializing arrays.  This has already been done
+for one array so may as well do it for them all.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 
 ---
- arch/powerpc/boot/prpmc2800.c |   20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+I don't know if this one is worth the bother (it is a little anal)
+but it keeps things consistent.  I'm happy with or without it.
 
-diff --git a/arch/powerpc/boot/prpmc2800.c b/arch/powerpc/boot/prpmc2800.c
-index 9614e1d..d72400d 100644
---- a/arch/powerpc/boot/prpmc2800.c
-+++ b/arch/powerpc/boot/prpmc2800.c
-@@ -315,7 +315,7 @@ static struct prpmc2800_board_info *prpmc2800_get_bip(void)
- 	return bip;
- }
+ arch/powerpc/boot/mv64x60.c |   72 +++++++++++++++++-----------------
+ 1 file changed, 36 insertions(+), 36 deletions(-)
+
+diff --git a/arch/powerpc/boot/mv64x60.c b/arch/powerpc/boot/mv64x60.c
+index ddddc3f..d207a0b 100644
+--- a/arch/powerpc/boot/mv64x60.c
++++ b/arch/powerpc/boot/mv64x60.c
+@@ -174,11 +174,11 @@ struct {
+ 	u32 addr;
+ 	u32 data;
+ } static mv64x60_pci_cfgio[2] = {
+-	{ /* hose 0 */
++	[0] = { /* hose 0 */
+ 		.addr	= 0xcf8,
+ 		.data	= 0xcfc,
+ 	},
+-	{ /* hose 1 */
++	[1] = { /* hose 1 */
+ 		.addr	= 0xc78,
+ 		.data	= 0xc7c,
+ 	}
+@@ -201,76 +201,76 @@ void mv64x60_cfg_write(u8 *bridge_base, u8 hose, u8 bus, u8 devfn, u8 offset,
  
--static void prpmc2800_bridge_setup(u32 mem_size)
-+static void prpmc2800_bridge_setup(void)
- {
- 	u32 i, v[12], enables, acc_bits;
- 	u32 pci_base_hi, pci_base_lo, size, buf[2];
-@@ -340,8 +340,7 @@ static void prpmc2800_bridge_setup(u32 mem_size)
- 			| MV64x60_PCI_ACC_CNTL_RDSIZE_256_BYTES;
+ /* I/O ctlr -> system memory setup */
+ static struct mv64x60_mem_win mv64x60_cpu2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
++	[0] = {
+ 		.lo	= MV64x60_CPU2MEM_0_BASE,
+ 		.size	= MV64x60_CPU2MEM_0_SIZE,
+ 	},
+-	{
++	[1] = {
+ 		.lo	= MV64x60_CPU2MEM_1_BASE,
+ 		.size	= MV64x60_CPU2MEM_1_SIZE,
+ 	},
+-	{
++	[2] = {
+ 		.lo	= MV64x60_CPU2MEM_2_BASE,
+ 		.size	= MV64x60_CPU2MEM_2_SIZE,
+ 	},
+-	{
++	[3] = {
+ 		.lo	= MV64x60_CPU2MEM_3_BASE,
+ 		.size	= MV64x60_CPU2MEM_3_SIZE,
+ 	},
+ };
  
- 	mv64x60_config_ctlr_windows(bridge_base, bridge_pbase, is_coherent);
--	mv64x60_config_pci_windows(bridge_base, bridge_pbase, 0, 0, mem_size,
--			acc_bits);
-+	mv64x60_config_pci_windows(bridge_base, bridge_pbase, 0, 0, acc_bits);
+ static struct mv64x60_mem_win mv64x60_enet2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
++	[0] = {
+ 		.lo	= MV64x60_ENET2MEM_0_BASE,
+ 		.size	= MV64x60_ENET2MEM_0_SIZE,
+ 	},
+-	{
++	[1] = {
+ 		.lo	= MV64x60_ENET2MEM_1_BASE,
+ 		.size	= MV64x60_ENET2MEM_1_SIZE,
+ 	},
+-	{
++	[2] = {
+ 		.lo	= MV64x60_ENET2MEM_2_BASE,
+ 		.size	= MV64x60_ENET2MEM_2_SIZE,
+ 	},
+-	{
++	[3] = {
+ 		.lo	= MV64x60_ENET2MEM_3_BASE,
+ 		.size	= MV64x60_ENET2MEM_3_SIZE,
+ 	},
+ };
  
- 	/* Get the cpu -> pci i/o & mem mappings from the device tree */
- 	devp = finddevice("/mv64x60/pci@80000000");
-@@ -397,20 +396,19 @@ static void prpmc2800_bridge_setup(u32 mem_size)
+ static struct mv64x60_mem_win mv64x60_mpsc2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
++	[0] = {
+ 		.lo	= MV64x60_MPSC2MEM_0_BASE,
+ 		.size	= MV64x60_MPSC2MEM_0_SIZE,
+ 	},
+-	{
++	[1] = {
+ 		.lo	= MV64x60_MPSC2MEM_1_BASE,
+ 		.size	= MV64x60_MPSC2MEM_1_SIZE,
+ 	},
+-	{
++	[2] = {
+ 		.lo	= MV64x60_MPSC2MEM_2_BASE,
+ 		.size	= MV64x60_MPSC2MEM_2_SIZE,
+ 	},
+-	{
++	[3] = {
+ 		.lo	= MV64x60_MPSC2MEM_3_BASE,
+ 		.size	= MV64x60_MPSC2MEM_3_SIZE,
+ 	},
+ };
  
- static void prpmc2800_fixups(void)
- {
--	u32 v[2], l, mem_size;
-+	u32 v[2], l;
- 	int rc;
- 	void *devp;
- 	char model[BOARD_MODEL_MAX];
- 	struct prpmc2800_board_info *bip;
+ static struct mv64x60_mem_win mv64x60_idma2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
++	[0] = {
+ 		.lo	= MV64x60_IDMA2MEM_0_BASE,
+ 		.size	= MV64x60_IDMA2MEM_0_SIZE,
+ 	},
+-	{
++	[1] = {
+ 		.lo	= MV64x60_IDMA2MEM_1_BASE,
+ 		.size	= MV64x60_IDMA2MEM_1_SIZE,
+ 	},
+-	{
++	[2] = {
+ 		.lo	= MV64x60_IDMA2MEM_2_BASE,
+ 		.size	= MV64x60_IDMA2MEM_2_SIZE,
+ 	},
+-	{
++	[3] = {
+ 		.lo	= MV64x60_IDMA2MEM_3_BASE,
+ 		.size	= MV64x60_IDMA2MEM_3_SIZE,
+ 	},
+@@ -338,7 +338,7 @@ void mv64x60_config_ctlr_windows(u8 *bridge_base, u8 *bridge_pbase,
  
--	bip = prpmc2800_get_bip(); /* Get board info based on VPD */
--
--	mem_size = (bip) ? bip->mem_size : mv64x60_get_mem_size(bridge_base);
--	prpmc2800_bridge_setup(mem_size); /* Do necessary bridge setup */
-+	prpmc2800_bridge_setup(); /* Do necessary bridge setup */
+ /* PCI MEM -> system memory, et. al. setup */
+ static struct mv64x60_pci_win mv64x60_pci2mem[2][MV64x60_CPU2MEM_WINDOWS] = {
+-	{ /* hose 0 */
++	[0] = { /* hose 0 */
+ 		[0] = {
+ 			.fcn	= 0,
+ 			.hi	= 0x14,
+@@ -364,7 +364,7 @@ static struct mv64x60_pci_win mv64x60_pci2mem[2][MV64x60_CPU2MEM_WINDOWS] = {
+ 			.size	= MV64x60_PCI02MEM_3_SIZE,
+ 		},
+ 	},
+-	{ /* hose 1 */
++	[1] = { /* hose 1 */
+ 		[0] = {
+ 			.fcn	= 0,
+ 			.hi	= 0x94,
+@@ -394,45 +394,45 @@ static struct mv64x60_pci_win mv64x60_pci2mem[2][MV64x60_CPU2MEM_WINDOWS] = {
  
--	/* If the VPD doesn't match what we know about, just use the
-+	/*
-+	 * If the VPD doesn't match what we know about, just use the
- 	 * defaults already in the device tree.
- 	 */
-+	bip = prpmc2800_get_bip(); /* Get board info based on VPD */
- 	if (!bip)
- 		return;
+ static struct
+ mv64x60_mem_win mv64x60_pci_acc[2][MV64x60_PCI_ACC_CNTL_WINDOWS] = {
+-	{ /* hose 0 */
+-		{
++	[0] = { /* hose 0 */
++		[0] = {
+ 			.hi	= MV64x60_PCI0_ACC_CNTL_0_BASE_HI,
+ 			.lo	= MV64x60_PCI0_ACC_CNTL_0_BASE_LO,
+ 			.size	= MV64x60_PCI0_ACC_CNTL_0_SIZE,
+ 		},
+-		{
++		[1] = {
+ 			.hi	= MV64x60_PCI0_ACC_CNTL_1_BASE_HI,
+ 			.lo	= MV64x60_PCI0_ACC_CNTL_1_BASE_LO,
+ 			.size	= MV64x60_PCI0_ACC_CNTL_1_SIZE,
+ 		},
+-		{
++		[2] = {
+ 			.hi	= MV64x60_PCI0_ACC_CNTL_2_BASE_HI,
+ 			.lo	= MV64x60_PCI0_ACC_CNTL_2_BASE_LO,
+ 			.size	= MV64x60_PCI0_ACC_CNTL_2_SIZE,
+ 		},
+-		{
++		[3] = {
+ 			.hi	= MV64x60_PCI0_ACC_CNTL_3_BASE_HI,
+ 			.lo	= MV64x60_PCI0_ACC_CNTL_3_BASE_LO,
+ 			.size	= MV64x60_PCI0_ACC_CNTL_3_SIZE,
+ 		},
+ 	},
+-	{ /* hose 1 */
+-		{
++	[1] = { /* hose 1 */
++		[0] = {
+ 			.hi	= MV64x60_PCI1_ACC_CNTL_0_BASE_HI,
+ 			.lo	= MV64x60_PCI1_ACC_CNTL_0_BASE_LO,
+ 			.size	= MV64x60_PCI1_ACC_CNTL_0_SIZE,
+ 		},
+-		{
++		[1] = {
+ 			.hi	= MV64x60_PCI1_ACC_CNTL_1_BASE_HI,
+ 			.lo	= MV64x60_PCI1_ACC_CNTL_1_BASE_LO,
+ 			.size	= MV64x60_PCI1_ACC_CNTL_1_SIZE,
+ 		},
+-		{
++		[2] = {
+ 			.hi	= MV64x60_PCI1_ACC_CNTL_2_BASE_HI,
+ 			.lo	= MV64x60_PCI1_ACC_CNTL_2_BASE_LO,
+ 			.size	= MV64x60_PCI1_ACC_CNTL_2_SIZE,
+ 		},
+-		{
++		[3] = {
+ 			.hi	= MV64x60_PCI1_ACC_CNTL_3_BASE_HI,
+ 			.lo	= MV64x60_PCI1_ACC_CNTL_3_BASE_LO,
+ 			.size	= MV64x60_PCI1_ACC_CNTL_3_SIZE,
+@@ -441,13 +441,13 @@ mv64x60_mem_win mv64x60_pci_acc[2][MV64x60_PCI_ACC_CNTL_WINDOWS] = {
+ };
  
-@@ -439,8 +437,8 @@ static void prpmc2800_fixups(void)
- 	devp = finddevice("/memory");
- 	if (devp == NULL)
- 		fatal("Error: Missing /memory device tree node\n\r");
--	v[0] = 0;
--	v[1] = bip->mem_size;
-+	v[0] = 0; /* Take min of DT's mem size and what mem ctlr is setup for */
-+	v[1] = min(mv64x60_get_mem_size(bridge_base), bip->mem_size);
- 	setprop(devp, "reg", v, sizeof(v));
+ static struct mv64x60_pci_win mv64x60_pci2reg[2] = {
+-	{ /* hose 0 */
++	[0] = { /* hose 0 */
+ 		.fcn	= 0,
+ 		.hi	= 0x24,
+ 		.lo	= 0x20,
+ 		.size	= 0,
+ 	},
+-	{ /* hose 1 */
++	[1] = { /* hose 1 */
+ 		.fcn	= 0,
+ 		.hi	= 0xa4,
+ 		.lo	= 0xa0,
+@@ -519,13 +519,13 @@ void mv64x60_config_pci_windows(u8 *bridge_base, u8 *bridge_pbase, u8 hose,
  
- 	/* Update /mv64x60/model, if this is a mv64362 */
+ /* CPU -> PCI I/O & MEM setup */
+ struct mv64x60_cpu2pci_win mv64x60_cpu2pci_io[2] = {
+-	{ /* hose 0 */
++	[0] = { /* hose 0 */
+ 		.lo		= MV64x60_CPU2PCI0_IO_BASE,
+ 		.size		= MV64x60_CPU2PCI0_IO_SIZE,
+ 		.remap_hi	= 0,
+ 		.remap_lo	= MV64x60_CPU2PCI0_IO_REMAP,
+ 	},
+-	{ /* hose 1 */
++	[1] = { /* hose 1 */
+ 		.lo		= MV64x60_CPU2PCI1_IO_BASE,
+ 		.size		= MV64x60_CPU2PCI1_IO_SIZE,
+ 		.remap_hi	= 0,
+@@ -534,13 +534,13 @@ struct mv64x60_cpu2pci_win mv64x60_cpu2pci_io[2] = {
+ };
+ 
+ struct mv64x60_cpu2pci_win mv64x60_cpu2pci_mem[2] = {
+-	{ /* hose 0 */
++	[0] = { /* hose 0 */
+ 		.lo		= MV64x60_CPU2PCI0_MEM_0_BASE,
+ 		.size		= MV64x60_CPU2PCI0_MEM_0_SIZE,
+ 		.remap_hi	= MV64x60_CPU2PCI0_MEM_0_REMAP_HI,
+ 		.remap_lo	= MV64x60_CPU2PCI0_MEM_0_REMAP_LO,
+ 	},
+-	{ /* hose 1 */
++	[1] = { /* hose 1 */
+ 		.lo		= MV64x60_CPU2PCI1_MEM_0_BASE,
+ 		.size		= MV64x60_CPU2PCI1_MEM_0_SIZE,
+ 		.remap_hi	= MV64x60_CPU2PCI1_MEM_0_REMAP_HI,
