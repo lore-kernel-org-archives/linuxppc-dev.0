@@ -1,22 +1,22 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DDFF2DDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 07:33:30 +1100 (EST)
-Date: Thu, 8 Nov 2007 14:33:23 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: mpc8xxx MDS board RTC fixes
-Message-Id: <20071108143323.85e8e1e3.kim.phillips@freescale.com>
-In-Reply-To: <F67D40A1-D8C9-4F96-A526-E848FDFDEA0B@kernel.crashing.org>
-References: <20071108133706.961af8d2.kim.phillips@freescale.com>
-	<F67D40A1-D8C9-4F96-A526-E848FDFDEA0B@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CC818DDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 07:55:42 +1100 (EST)
+Subject: Re: [PATCH 2/6] ibm_newemac: Add ET1011c PHY support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071108060805.4c59b579@zod.rchland.ibm.com>
+References: <20071108080729.E09F7DDDFB@ozlabs.org>
+	<200711080941.46894.sr@denx.de> <1194511344.6561.0.camel@pasglop>
+	<20071108060805.4c59b579@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 09 Nov 2007 07:55:21 +1100
+Message-Id: <1194555321.6561.4.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 8 Nov 2007 13:57:59 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
 
+On Thu, 2007-11-08 at 06:08 -0600, Josh Boyer wrote:
+> > Agreed, I though I had removed them, looks like I didn't. Will fix
+> that
+> > before submitting.
 > 
-> On Nov 8, 2007, at 1:37 PM, Kim Phillips wrote:
-> 
-> > Now the rtc class ds1374 driver has been added,
-> > remove the old rtc driver hookup code, add rtc node
-> > to device trees, and turn on the new driver in the defconfigs.
-> >
-> > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> > ---
-> >  arch/powerpc/boot/dts/mpc832x_mds.dts      |    7 ++++
-> >  arch/powerpc/boot/dts/mpc834x_mds.dts      |    9 +++++
-> >  arch/powerpc/boot/dts/mpc836x_mds.dts      |    9 +++++
-> >  arch/powerpc/configs/mpc832x_mds_defconfig |   48 +++++++++++++++++ 
-> > ++++++++++-
-> >  arch/powerpc/configs/mpc834x_mds_defconfig |   48 +++++++++++++++++ 
-> > ++++++++++-
-> >  arch/powerpc/configs/mpc836x_mds_defconfig |   48 +++++++++++++++++ 
-> > ++++++++++-
-> >  arch/powerpc/configs/mpc8568mds_defconfig  |   48 +++++++++++++++++ 
-> > ++++++++++-
-> >  arch/powerpc/platforms/83xx/mpc832x_mds.c  |   24 --------------
-> >  arch/powerpc/platforms/83xx/mpc834x_mds.c  |   24 --------------
-> >  arch/powerpc/platforms/83xx/mpc836x_mds.c  |   24 --------------
-> >  10 files changed, 213 insertions(+), 76 deletions(-)
-> 
-> should the mpc8568mds.dts be updated?
+> DENX is pretty good about having Signed-off-by lines in their tree...
+> maybe you should add the original authors as well if it's there.
 
-it already has the rtc node.
+I picked it up from an already patched tree. Stefan, can you provide me
+the proper SOB ?
 
-> Also, what code is parsing the device tree for the rtc node?
-> 
-the i2c code in fsl_soc.c.
-
-Kim
+Thanks,
+Ben.
