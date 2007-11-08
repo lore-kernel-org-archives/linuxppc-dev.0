@@ -1,25 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.183])
-	by ozlabs.org (Postfix) with ESMTP id 45372DDDE7
+Return-Path: <kentaro@triumf.ca>
+Received: from trshare.triumf.ca (trshare.triumf.ca [142.90.100.191])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C7EBBDDDD5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 14:14:11 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so37228wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 07 Nov 2007 19:14:10 -0800 (PST)
-Message-ID: <fa686aa40711071914w1e0a483sfc3b1f61010cc667@mail.gmail.com>
-Date: Wed, 7 Nov 2007 20:14:10 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: use of fsl, in lite5200b.dts in git current
-In-Reply-To: <473258B8.4060905@genesi-usa.com>
+	Thu,  8 Nov 2007 14:19:13 +1100 (EST)
+Message-ID: <4732719A.20707@triumf.ca>
+Date: Thu, 08 Nov 2007 11:16:58 +0900
+From: kentaro <kentaro@triumf.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>
-	<4732396D.4040904@genesi-usa.com>
-	<9e4733910711071421i347a6a0bu99cbf062cc152aca@mail.gmail.com>
-	<473258B8.4060905@genesi-usa.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: ML405 gigabit ethernet with kernel 2.6.23
+Content-Type: text/plain; charset=ISO-2022-JP
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,113 +22,136 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/7/07, Matt Sealey <matt@genesi-usa.com> wrote:
-> Jon Smirl wrote:
-> > I'm not in favor of all these fsl prefixes. These chip families do get
-> > sold. What would we have done with intel,pxa320 all over the place
-> > when they sold it to marvell? mass changes to marvell,pxa320?
->
-> That's the idea, and there'd be a compatible entry for intel,pxa320.
->
-> Actually the spec says you should use the stock ticker (IBM, FSL, INTC,
-> JAVA, MRVL) if they have one and if not, the company name in lower case.
->
-> Freescale are a funny one because they used to have a stock ticker as
-> MOT and then FSL but now they're privately owned, so it's gonna have to
-> be lower case :]
+Dear all,
 
-And really, this doesn't even matter.  So what if 'mot,' --> 'fsl,'
---> 'freescale,'?  Even if an older name is used, it is still
-unambiguous and therefore a useful property.
+I have measured ethernet performance on ML405 with linux
+kernel 2.6.23-rc2 which I obtained from the secreatlab.ca
+git tree. I will post this e-mail because I would like to
+share the data and besides I would like to ask something
+about the performance.
 
-Besides, If you're designing a device tree for a board, and Linux or
-some other OS already has support for a similar board, it would be
-madness to use property values different from what the OS already uses
-just to make the values "more correct".
+In the past, similar e-mails are also posted to this mailing list;
+http://ozlabs.org/pipermail/linuxppc-embedded/2007-June/027328.html
+They are also helpful.
 
-ie. even if Marvell sells the pxa255 for then next 5 years, it is
-still correct to call it an "intel,pxa255".
+My hardware configuration :
+-------------------------------------------------------------
+ISE, EDK      : 9.1SP3(IP update-3) 9.1SP2
+-------------------------------------------------------------
+Board         : ML405
+PPC frequency : 300 MHz
+TEMAC         : SG-DMA, TX/RX checksum offload
+                TX/RX FIFO depth = 131072
+                MAC length and Status FIFO Depth = 64
+                TX/RX DRE = 2
+DDR Memory    : Support PLB Bursts and Cache = TRUE
+-------------------------------------------------------------
 
-> It's just to seperate out the fact that sometimes you get chips with
-> very similar or identical names, or to mark out vendor-specific
-> functionality. fsl,has-wdt differs from has-wdt ideally because
-> Freescale watchdog timers aren't the same as other watchdog timers -
-> the term is pretty pliable, Freescale's GPT on the MPC52xx isn't
-> always a watchdog (it can be a normal, non-watchdog timer too..)
->
-> > The mpc/pxa parts numbers don't get changes when chip families get sold.
->
-> There is a case that between selling chips, some of them get updated
-> or bugfixed, and you can tell which one you have by the name.
->
-> There has to be some standardisation on the first implementation of
-> the device tree for the chip, otherwise the chopping and changing
-> gets rather tedious.
->
-> I'm sure you can see why we don't release firmware updates every time
-> some Linux guy changes some lousy, hacky tree definition for yet another
-> 6 times a year, until it finally stabilises and the product is usually
-> discontinued anyway :D
+Basically, this configuration is exactly same as XAPP1023
+except for BRAM. (I used 64k BRAM.) And with this configuration,
+Xilinx achieved 400 Mbps ~ 500Mbps throughput with MontaVista
+Linux 4.0. However, my results were
+~110 Mbps (TCP) and ~200 Mbps (UDP). I guess the differences
+came from linux configuration. Here are my linux setup.
 
-Oh come on; I've hardly changed the mpc5200 bindings at all since we
-last talked about them...  :-P   (Totally joking, see comment and
-eating-of-crow below).
+-------------------------------------------------------------
+kernel     : 2.6.23-rc2 (from linux-2.6-virtex.git)
+gcc, glibc : 4.0.2,  2.3.6
+TX,RX threshold = 32, 8 and waitbound = 1, 1
+-------------------------------------------------------------
 
->
-> However in the current situation it just means you need to flash new
-> FDT blobs to your U-Boots which are more clean, and keep your kernel
-> in sync, because Linux only handles what it currently thinks is the
-> standard.
->
-> The real loser is the real Open Firmware implementation, but nobody
-> seems to think about that, the device trees on OF devices get more
-> cluttered..
+Before compiling the kernel, I needed to modify a checksum
+code in adapter.c because the checksum insert address was wrong.
 
-Not quite true; I personally am now quite loath to changing
-conventions without maintaining compatibility with the old.  I also
-tend to make the assumption that upgrading the kernel should not
-always require a device tree upgrade also.
+Original (line 1076):
+XTemac_mSgSendBdCsumSetup(bd_ptr, skb->transport_header
+  - skb->data, (skb->transport_header - skb->data) + skb->csum);
 
-In other words:
-Changing conventions to better match the OF guidelines: possibly a
-good thing, especially if it results in more clarity.
- --- but ---
-Breaking boards with trees that follow older conventions: Bad!
+Modified :
+XTemac_mSgSendBdCsumSetup(bd_ptr, skb_transport_offset(skb),
+            skb_transport_offset(skb) + skb->csum_offset);
 
-This is probably a good time for me to apologize for the pain that
-I've caused in the past on this issue.  My stance in the past on
-designing mpc5200 device trees was wrong headed on a couple of points.
- First, insisting that the Efika device tree should exactly match what
-was currently in vogue was wrong.  Second, assuming that it was even
-possible to define a 'perfect' and 'exact' mpc5200 device tree binding
-was pure hubris.
+I used "nerperf" to measure performance on the built kernel.
+The results were
+-------------------------------------------------------------
+"netperf -H 192.168.1.1 -t TCP_STREAM"		110 Mbps
+"netperf -H 192.168.1.1 -t UDP_STREAM"          210 Mbps
+-------------------------------------------------------------
+I have changed some netperf parameters but the results
+didn't change so much. It seemed to me that the performance
+was limited by CPU because "top" command told CPU usage was
+99% (71% SYSTEM, 27% IRQ). If I lower the TX threshold down
+to 16, the score becomes (~50% SYSTEM, ~40% IRQ).
 
-So, I'm sorry and I apologize.  Experience has taught me better over
-the past year.
+Then, I changed MTU to 8000 (on both PC and ML405).
+This made everything upset. Network became very unstable
+and I couldn't run netperf successfully.
 
-I'm now of the opinion that device trees are *never* perfect, and
-that's not even the point.  The point is that a device tree should
-uniquely and unambiguously describe the platform.  If the device tree
-isn't quite unambiguous in one aspect, other aspects of the tree will
-provide enough information to work around what is lacking.  Every
-device driver may have a current-as-of-now idea on what those
-properties should look like, but that should not cause platforms with
-device trees which differ from that to be punted as unsupportable.
+So, my question is
+(1) Do I need to apply some optimization to the kernel sources
+    in order to achieve ~400 Mbps ? It seems to me the difference
+    comes from the kernel part.
+(2) Does anyone have some MTU problem ? I'm very glad if I could
+    have advices.
 
-I do not think that means that vendors can put whatever they want into
-a device tree without regard to current conventions (at the time of
-designing their tree).  Doing so generally causes friction with the
-folks who are writing software for it (and I'm not directing this
-comment at bPlan either).  But I do think that changing conventions
-must always be done with care and without breaking earlier users;
-either by modifying the tree at platform setup time or retaining
-compatibility with the old property name.
+Any suggestion is welcome.
 
-Cheers,
-g.
+Best regards,
+Kentaro.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+--------------------------------------------------------------------
+PS:
+For your interest, here I attach my /proc/profile info
+obtained while running netperf.
+
+=============== Netperf Test (TCP STREAM) ====================
+   394 __copy_tofrom_user                         0.6888
+   208 invalidate_dcache_range                    4.3333
+   196 clean_dcache_range                         4.0833
+   173 XDmaV3_SgBdToHw                            0.5149
+   152 tcp_sendmsg                                0.0485
+   105 skb_clone                                  0.1862
+    71 tcp_transmit_skb                           0.0380
+    71 ip_queue_xmit                              0.0870
+    67 cpu_idle                                   0.3102
+    59 kfree                                      0.2588
+    57 tcp_cwnd_validate                          0.4191
+    49 tcp_push_one                               0.1551
+    49 kmem_cache_alloc                           0.3063
+    45 ip_output                                  0.0622
+    44 tcp_ack                                    0.0067
+    42 xenet_SgSend_internal                      0.0587
+    38 __alloc_skb                                0.1418
+    36 pfifo_fast_enqueue                         0.1579
+    33 __kmalloc                                  0.1375
+    30 memset                                     0.3261
+    28 _xenet_SgSetupRecvBuffers                  0.0493
+    27 XTemac_IntrSgEnable                        0.0938
+    23 skb_release_data                           0.1150
+    22 tcp_rcv_established                        0.0097
+
+=============== Netperf Test (UDP STREAM) ====================
+  1426 csum_partial_copy_generic                  6.4818
+   961 cpu_idle                                   4.4491
+   126 ip_fragment                                0.0754
+    63 xenet_SgSend_internal                      0.0880
+    58 memcpy                                     0.3718
+    50 memset                                     0.5435
+    48 XDmaV3_SgBdToHw                            0.1429
+    48 __kmalloc                                  0.2000
+    46 ip_push_pending_frames                     0.0451
+    38 kfree                                      0.1667
+    37 clean_dcache_range                         0.7708
+    36 dev_queue_xmit                             0.0536
+    33 __alloc_skb                                0.1231
+    32 udp_push_pending_frames                    0.0452
+    29 local_bh_enable                            0.2071
+    29 ace_fsm_tasklet                            0.3295
+    24 ip_append_data                             0.0100
+    23 XTemac_SgCommit                            0.1027
+    22 XDmaV3_SgBdAlloc                           0.1964
+    21 skb_release_data                           0.1050
+    21 kmem_cache_alloc                           0.1313
+    20 ip_finish_output2                          0.0365
+    19 XTemac_SgAlloc                             0.0679
+    19 pfifo_fast_dequeue                         0.1532
