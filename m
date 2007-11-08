@@ -1,17 +1,18 @@
 Return-Path: <SRS0=zNDV=QB=denx.de=sr@srs.kundenserver.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 22490DDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 20:24:41 +1100 (EST)
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 09B5EDDE01
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2007 20:38:44 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 5/6] ibm_newemac: Cleanup/Fix RGMII MDIO support detection
-Date: Thu, 8 Nov 2007 10:24:53 +0100
-References: <20071108080732.0C355DDE21@ozlabs.org>
-In-Reply-To: <20071108080732.0C355DDE21@ozlabs.org>
+Subject: Re: [PATCH 6/6] ibm_newemac: Cleanup/fix support for STACR register
+	variants
+Date: Thu, 8 Nov 2007 10:38:58 +0100
+References: <20071108080733.06584DDEA0@ozlabs.org>
+In-Reply-To: <20071108080733.06584DDEA0@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200711081024.53336.sr@denx.de>
+Message-Id: <200711081038.59184.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +23,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 08 November 2007, Benjamin Herrenschmidt wrote:
-> More than just "AXON" version of EMAC RGMII supports MDIO, so replace
-> the current test with a generic property in the device-tree that
-> indicates such support.
+> There are a few variants of the STACR register that affect more than
+> just the "AXON" version of EMAC. Replace the current test of various
+> chip models with tests for generic properties in the device-tree.
 >
 > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Acked-by: Stefan Roese <sr@denx.de>
-
-> Should we set that in Sequoia DTS ?
-
-I suppose yes. 440EPx support MDIO over ZMII and RGMII, but Sequoia uses RGMII 
-so we should enable it.
-
-I tested it with your patches and has-mdio set on Sequoia and it works (though 
-it also works without this property in the RGMII node).
-
-Thanks.
 
 Best regards,
 Stefan
