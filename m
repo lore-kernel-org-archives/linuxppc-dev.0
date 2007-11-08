@@ -1,14 +1,16 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 9DFA3DDE35
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 08:47:25 +1100 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 08 Nov 2007 22:47:23 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Message-ID: <20071108214723.135260@gmx.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 9 Nov 2007 09:30:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: mpc8xxx MDS board RTC fixes
+Message-ID: <20071108223003.GA18592@localhost.localdomain>
+References: <20071108133706.961af8d2.kim.phillips@freescale.com>
+	<F67D40A1-D8C9-4F96-A526-E848FDFDEA0B@kernel.crashing.org>
+	<47336CE7.5070807@freescale.com>
 MIME-Version: 1.0
-Subject: Kernel locks up after calling kernel_execve()
-To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <47336CE7.5070807@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Nov 08, 2007 at 02:09:11PM -0600, Scott Wood wrote:
+> Kumar Gala wrote:
+> > should the mpc8568mds.dts be updated?
+> 
+> It already has been.
+> 
+> > Also, what code is parsing the device tree for the rtc node?
+> 
+> There's code in fsl_soc.c (which should be made more generic).
 
-I tested my patches for the AmigaOne platform with the lastest 2.6.24-rc2
-kernel snapshot. The kernel runs through all initcalls, but locks up
-completely after calling INIT (/sbin/init) by kernel_execve(). Thus I
-couldn't capture any kernel oops or panic output. Also the magic sysrq
-key doesn't work. Enabling debug code for soft lockups and spinlock
-debugging didn't reveal any information.
-I'm not sure, but I think it is the same problem I had with all kernels
->= 2.6.17. All of these kernels lock up shortly before or right at calling
-the init program (resp. as soon as the kernel forks some kernel theads).
-Any suggestions on how to track down this problem?
-
-regards,
-
-Gerhard
+Indeed.  I guess we're going to want a library function which any
+device tree aware i2c-bridge driver can use to instantiate the right
+i2c-layer data structures for all the bridge's subnodes.
 
 -- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
