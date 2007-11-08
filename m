@@ -1,21 +1,18 @@
 Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s26.bay0.hotmail.com (bay0-omc2-s26.bay0.hotmail.com
-	[65.54.246.162]) by ozlabs.org (Postfix) with ESMTP id 80477DDDFD
+Received: from bay0-omc1-s27.bay0.hotmail.com (unknown [65.54.246.99])
+	by ozlabs.org (Postfix) with ESMTP id 7CB1FDDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 20:43:17 +1100 (EST)
-Message-ID: <BAY138-W14E797CEC95B3B3375024DB28B0@phx.gbl>
+	Thu,  8 Nov 2007 21:32:19 +1100 (EST)
+Message-ID: <BAY138-W3232BA0AE8C193E22B5011B28B0@phx.gbl>
 Content-Type: multipart/alternative;
-	boundary="_c672c47b-ab80-4af1-b0e3-d6ad9cdab64b_"
+	boundary="_b41d1478-4732-4d4d-9a4e-1128ead6936c_"
 From: MingLiu <eemingliu@hotmail.com>
-To: schardt <g.schardt@fz-juelich.de>
-Subject: RE: Bootloader & Flash
-Date: Thu, 8 Nov 2007 09:43:15 +0000
-In-Reply-To: <4732B492.5010604@fz-juelich.de>
-References: <4731A8E3.4020909@fz-juelich.de>
-	<BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
-	<4732B492.5010604@fz-juelich.de>
+To: kentaro <kentaro@triumf.ca>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: ML405 gigabit ethernet with kernel 2.6.23
+Date: Thu, 8 Nov 2007 10:32:17 +0000
+In-Reply-To: <4732719A.20707@triumf.ca>
+References: <4732719A.20707@triumf.ca>
 MIME-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,26 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_c672c47b-ab80-4af1-b0e3-d6ad9cdab64b_
+--_b41d1478-4732-4d4d-9a4e-1128ead6936c_
 Content-Type: text/plain; charset="gb2312"
 Content-Transfer-Encoding: 8bit
 
 
-Hi,
- > Could I store both, hw bitstream and kernel, in the xilinx platform> flash ? i think its not bit enough. I want to store the hw bitstream in> the platform flash as usual and the kernel in the additional flash.> I don't know how to store the kernel in the flash until know. This why I> try with the MTD devices.
+Dear Kentaro,
+> -------------------------------------------------------------> "netperf -H 192.168.1.1 -t TCP_STREAM" 110 Mbps> "netperf -H 192.168.1.1 -t UDP_STREAM" 210 Mbps> -------------------------------------------------------------
+Are these results the ones with or without Jumbo-frame enabled? If no, they are quite good I think. The results from Montavista probably are the ones with Jumbo-frame enabled. 
  
-You can store HW with EDK bootloader on either of the flashes. But you can only store kernel in linear flash because it is accessible through opb bus. 
-> I want the root-fs on flash, but this is future :) First i try to boot> the kernel
-I do not have experience to set up a file system in flash memory. What I have done is to put it in the CF card or via NFS. But I guess with MTD driver's support, it will not be difficult to do that. 
- 
-Good luck.
+For anybody who has interest on this topic, I have recently an accepted paper which has part of the content on this. The link is http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf and in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details and detailed configurations on our case. So these results are only for your reference.
  
 BR
 Ming
 _________________________________________________________________
-手机也能上 MSN 聊天了，快来试试吧！
-http://mobile.msn.com.cn/
---_c672c47b-ab80-4af1-b0e3-d6ad9cdab64b_
+Windows Live Spaces 中最年轻的成员！
+http://miaomiaogarden2007.spaces.live.com/
+--_b41d1478-4732-4d4d-9a4e-1128ead6936c_
 Content-Type: text/html; charset="gb2312"
 Content-Transfer-Encoding: 8bit
 
@@ -65,16 +59,13 @@ FONT-FAMILY:Tahoma
 </style>
 </head>
 <body class='hmmessage'>
-Hi,<BR>
-&nbsp;<BR>&gt; Could I store both, hw bitstream and kernel, in the xilinx platform<BR>&gt; flash ? i think its not bit enough. I want to store the hw bitstream in<BR>&gt; the platform flash as usual and the kernel in the additional flash.<BR>&gt; I don't know how to store the kernel in the flash until know. This why I<BR>&gt; try with the MTD devices.<BR>
+Dear Kentaro,<BR>
+<BR>&gt; -------------------------------------------------------------<BR>&gt; "netperf -H 192.168.1.1 -t TCP_STREAM" 110 Mbps<BR>&gt; "netperf -H 192.168.1.1 -t UDP_STREAM" 210 Mbps<BR>&gt; -------------------------------------------------------------<BR><BR>
+Are these results the ones with or without Jumbo-frame enabled? If no, they are quite good I think. The results from Montavista probably are the ones with Jumbo-frame enabled. <BR>
 &nbsp;<BR>
-You can store HW with EDK bootloader on either of the flashes. But you can only store kernel in linear flash because it is accessible through opb bus. <BR>
-<BR>&gt; I want the root-fs on flash, but this is future :) First i try to boot<BR>&gt; the kernel<BR><BR>
-I do not have experience to set up a file system in flash memory. What I have done is to put it in the CF card or via NFS. But I guess with MTD driver's support, it will not be difficult to do that. <BR>
-&nbsp;<BR>
-Good luck.<BR>
+For anybody who has interest on this topic, I have recently an accepted paper which has part of the content on this. The link is <A href="http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf">http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf</A>&nbsp;and in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details and detailed configurations on our case. So these results are only for your reference.<BR>
 &nbsp;<BR>
 BR<BR>
-Ming<BR><br /><hr />Windows Live Writer 让您告别龟速网络，轻松写日志！ <a href='http://writer.live.com/' target='_new'>立即使用！</a></body>
+Ming<BR><br /><hr />用 Windows Live Spaces 展示个性自我，与好友分享生活！  <a href='http://spaces.live.com/?page=HP' target='_new'>了解更多信息！</a></body>
 </html>
---_c672c47b-ab80-4af1-b0e3-d6ad9cdab64b_--
+--_b41d1478-4732-4d4d-9a4e-1128ead6936c_--
