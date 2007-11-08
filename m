@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 08 Nov 2007 19:07:00 +1100
-Subject: [PATCH 5/6] ibm_newemac: Cleanup/Fix RGMII MDIO support detection
+Date: Thu, 08 Nov 2007 19:07:01 +1100
+Subject: [PATCH 6/6] ibm_newemac: Cleanup/fix support for STACR register
+	variants
 In-Reply-To: <1194509217.421165.545980042680.qpush@grosgo>
-Message-Id: <20071108080732.0C355DDE21@ozlabs.org>
+Message-Id: <20071108080733.06584DDEA0@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,85 +15,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-More than just "AXON" version of EMAC RGMII supports MDIO, so replace
-the current test with a generic property in the device-tree that
-indicates such support.
+There are a few variants of the STACR register that affect more than
+just the "AXON" version of EMAC. Replace the current test of various
+chip models with tests for generic properties in the device-tree.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Should we set that in Sequoia DTS ?
+ arch/powerpc/boot/dts/sequoia.dts |    4 ++++
+ drivers/net/ibm_newemac/core.c    |   23 +++++++++++++----------
+ drivers/net/ibm_newemac/core.h    |    6 +++---
+ 3 files changed, 20 insertions(+), 13 deletions(-)
 
- drivers/net/ibm_newemac/rgmii.c |   20 +++++++++++---------
- drivers/net/ibm_newemac/rgmii.h |    5 +++--
- 2 files changed, 14 insertions(+), 11 deletions(-)
-
-Index: linux-work/drivers/net/ibm_newemac/rgmii.c
+Index: linux-work/arch/powerpc/boot/dts/sequoia.dts
 ===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/rgmii.c	2007-11-08 18:46:06.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/rgmii.c	2007-11-08 18:51:00.000000000 +1100
-@@ -140,7 +140,7 @@ void rgmii_get_mdio(struct of_device *of
+--- linux-work.orig/arch/powerpc/boot/dts/sequoia.dts	2007-11-08 18:49:53.000000000 +1100
++++ linux-work/arch/powerpc/boot/dts/sequoia.dts	2007-11-08 18:49:59.000000000 +1100
+@@ -273,6 +273,8 @@
+ 				zmii-channel = <0>;
+ 				rgmii-device = <&RGMII0>;
+ 				rgmii-channel = <0>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
+ 			};
  
- 	RGMII_DBG2(dev, "get_mdio(%d)" NL, input);
- 
--	if (dev->type != RGMII_AXON)
-+	if (!(dev->flags & EMAC_RGMII_FLAG_HAS_MDIO))
- 		return;
- 
- 	mutex_lock(&dev->lock);
-@@ -161,7 +161,7 @@ void rgmii_put_mdio(struct of_device *of
- 
- 	RGMII_DBG2(dev, "put_mdio(%d)" NL, input);
- 
--	if (dev->type != RGMII_AXON)
-+	if (!(dev->flags & EMAC_RGMII_FLAG_HAS_MDIO))
- 		return;
- 
- 	fer = in_be32(&p->fer);
-@@ -250,11 +250,13 @@ static int __devinit rgmii_probe(struct 
- 		goto err_free;
- 	}
- 
--	/* Check for RGMII type */
-+	/* Check for RGMII flags */
-+	if (of_get_property(ofdev->node, "has-mdio", NULL))
-+		dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
+ 			EMAC1: ethernet@ef600f00 {
+@@ -301,6 +303,8 @@
+ 				zmii-channel = <1>;
+ 				rgmii-device = <&RGMII0>;
+ 				rgmii-channel = <1>;
++				has-inverted-stacr-oc;
++				has-new-stacr-staopc;
+ 			};
+ 		};
+ 	};
+Index: linux-work/drivers/net/ibm_newemac/core.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-08 18:49:53.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-08 18:50:17.000000000 +1100
+@@ -709,7 +709,7 @@ static int __emac_mdio_read(struct emac_
+ 		r = EMAC_STACR_BASE(dev->opb_bus_freq);
+ 	if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+ 		r |= EMAC_STACR_OC;
+-	if (emac_has_feature(dev, EMAC_FTR_HAS_AXON_STACR))
++	if (emac_has_feature(dev, EMAC_FTR_HAS_NEW_STACR))
+ 		r |= EMACX_STACR_STAC_READ;
+ 	else
+ 		r |= EMAC_STACR_STAC_READ;
+@@ -781,7 +781,7 @@ static void __emac_mdio_write(struct ema
+ 		r = EMAC_STACR_BASE(dev->opb_bus_freq);
+ 	if (emac_has_feature(dev, EMAC_FTR_STACR_OC_INVERT))
+ 		r |= EMAC_STACR_OC;
+-	if (emac_has_feature(dev, EMAC_FTR_HAS_AXON_STACR))
++	if (emac_has_feature(dev, EMAC_FTR_HAS_NEW_STACR))
+ 		r |= EMACX_STACR_STAC_WRITE;
+ 	else
+ 		r |= EMAC_STACR_STAC_WRITE;
+@@ -2473,16 +2473,19 @@ static int __devinit emac_init_config(st
+ 	/* Check EMAC version */
+ 	if (of_device_is_compatible(np, "ibm,emac4"))
+ 		dev->features |= EMAC_FTR_EMAC4;
+-	if (of_device_is_compatible(np, "ibm,emac-axon")
+-	    || of_device_is_compatible(np, "ibm,emac-440epx"))
+-		dev->features |= EMAC_FTR_HAS_AXON_STACR
+-			| EMAC_FTR_STACR_OC_INVERT;
+-	if (of_device_is_compatible(np, "ibm,emac-440spe"))
 +
-+	/* CAB lacks the right properties, fix this up */
- 	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
--		dev->type = RGMII_AXON;
--	else
--		dev->type = RGMII_STANDARD;
-+		dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
++	/* Fixup some feature bits based on the device tree */
++	if (of_get_property(np, "has-inverted-stacr-oc", NULL))
+ 		dev->features |= EMAC_FTR_STACR_OC_INVERT;
++	if (of_get_property(np, "has-new-stacr-staopc", NULL))
++		dev->features |= EMAC_FTR_HAS_NEW_STACR;
  
- 	DBG2(dev, " Boot FER = 0x%08x, SSR = 0x%08x\n",
- 	     in_be32(&dev->base->fer), in_be32(&dev->base->ssr));
-@@ -263,9 +265,9 @@ static int __devinit rgmii_probe(struct 
- 	out_be32(&dev->base->fer, 0);
- 
- 	printk(KERN_INFO
--	       "RGMII %s %s initialized\n",
--	       dev->type == RGMII_STANDARD ? "standard" : "axon",
--	       ofdev->node->full_name);
-+	       "RGMII %s initialized with%s MDIO support\n",
-+	       ofdev->node->full_name,
-+	       (dev->flags & EMAC_RGMII_FLAG_HAS_MDIO) ? "" : "out");
- 
- 	wmb();
- 	dev_set_drvdata(&ofdev->dev, dev);
-Index: linux-work/drivers/net/ibm_newemac/rgmii.h
+-	/* Fixup some feature bits based on the device tree and verify
+-	 * we have support for them compiled in
+-	 */
++	/* CAB lacks the appropriate properties */
++	if (of_device_is_compatible(np, "ibm,emac-axon"))
++		dev->features |= EMAC_FTR_HAS_NEW_STACR |
++			EMAC_FTR_STACR_OC_INVERT;
++
++	/* Enable TAH/ZMII/RGMII features as found */
+ 	if (dev->tah_ph != 0) {
+ #ifdef CONFIG_IBM_NEW_EMAC_TAH
+ 		dev->features |= EMAC_FTR_HAS_TAH;
+Index: linux-work/drivers/net/ibm_newemac/core.h
 ===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/rgmii.h	2007-11-08 18:46:06.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/rgmii.h	2007-11-08 18:47:32.000000000 +1100
-@@ -35,8 +35,9 @@ struct rgmii_regs {
- struct rgmii_instance {
- 	struct rgmii_regs __iomem	*base;
+--- linux-work.orig/drivers/net/ibm_newemac/core.h	2007-11-08 18:49:53.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/core.h	2007-11-08 18:49:59.000000000 +1100
+@@ -292,9 +292,9 @@ struct emac_instance {
+  */
+ #define EMAC_FTR_HAS_RGMII		0x00000020
+ /*
+- * Set if we have axon-type STACR
++ * Set if we have new type STACR with STAOPC
+  */
+-#define EMAC_FTR_HAS_AXON_STACR		0x00000040
++#define EMAC_FTR_HAS_NEW_STACR		0x00000040
  
--	/* Type of RGMII bridge */
--	int				type;
-+	/* RGMII bridge flags */
-+	int				flags;
-+#define EMAC_RGMII_FLAG_HAS_MDIO	0x00000001
  
- 	/* Only one EMAC whacks us at a time */
- 	struct mutex			lock;
+ /* Right now, we don't quite handle the always/possible masks on the
+@@ -306,7 +306,7 @@ enum {
+ 
+ 	EMAC_FTRS_POSSIBLE	=
+ #ifdef CONFIG_IBM_NEW_EMAC_EMAC4
+-	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_AXON_STACR	|
++	    EMAC_FTR_EMAC4	| EMAC_FTR_HAS_NEW_STACR	|
+ 	    EMAC_FTR_STACR_OC_INVERT	|
+ #endif
+ #ifdef CONFIG_IBM_NEW_EMAC_TAH
