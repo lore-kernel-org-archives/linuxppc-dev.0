@@ -1,24 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.251])
-	by ozlabs.org (Postfix) with ESMTP id 8DADDDDE36
+Return-Path: <jonsmirl@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.227])
+	by ozlabs.org (Postfix) with ESMTP id 3011BDDE9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Nov 2007 07:50:37 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id b2so48679ana
+	Fri,  9 Nov 2007 07:51:11 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so262841nzh
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 08 Nov 2007 12:50:36 -0800 (PST)
-Message-ID: <fa686aa40711081250r6b5c4590h19ba04ec44b3eaf1@mail.gmail.com>
-Date: Thu, 8 Nov 2007 13:50:36 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
+	Thu, 08 Nov 2007 12:51:10 -0800 (PST)
+Message-ID: <9e4733910711081251w392b4a84m8e81d902305bf395@mail.gmail.com>
+Date: Thu, 8 Nov 2007 15:51:09 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Scott Wood" <scottwood@freescale.com>
 Subject: Re: use of fsl, in lite5200b.dts in git current
-In-Reply-To: <9e4733910711081240l458a5e7h4898fb12e511f29a@mail.gmail.com>
+In-Reply-To: <473375E6.5080503@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>
 	<4732396D.4040904@genesi-usa.com>
 	<9e4733910711071418u5914f188nffc7ab50e62cc88e@mail.gmail.com>
 	<9e4733910711081240l458a5e7h4898fb12e511f29a@mail.gmail.com>
+	<473375E6.5080503@freescale.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,20 +30,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/8/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> No one has answered this yet. It makes no sense at all to mix use of
-> the vendor prefix on some compatible entries and not on others. The
-> syntax of compatible entries needs to be consistent.
+On 11/8/07, Scott Wood <scottwood@freescale.com> wrote:
+> Jon Smirl wrote:
+> > No one has answered this yet. It makes no sense at all to mix use of
+> > the vendor prefix on some compatible entries and not on others. The
+> > syntax of compatible entries needs to be consistent.
+>
+> Right, the vendor prefix should always be used.  Not all of the existing
+> trees are perfect, however, so sometimes the code needs to stay
+> compatible, especially when the device tree is difficult to change.
 
-The 5200 binding is poorly done on this point.  I've got a patch that
-adds the 'fsl,' prefix so that future 5200 device trees are consistent
-with the recommended practices (while not breaking older boards of
-course)
+A bunch of patches are going to have to go into the kernel. Code
+expecting tree attributes without vendor prefixes is all over the
+kernel. All of the dts file need to be patched up, etc.
 
-g.
+As far as I know the only dts using vendor prefixes in the compatible
+attributes is 5200lite one for the gpt entries. Everything else will
+need to be changed.
+
+
+>
+> -Scott
+>
+
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
