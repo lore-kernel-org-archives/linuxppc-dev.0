@@ -1,18 +1,23 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s27.bay0.hotmail.com (unknown [65.54.246.99])
-	by ozlabs.org (Postfix) with ESMTP id 7CB1FDDE09
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AB1CBDDEE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Nov 2007 21:32:19 +1100 (EST)
-Message-ID: <BAY138-W3232BA0AE8C193E22B5011B28B0@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_b41d1478-4732-4d4d-9a4e-1128ead6936c_"
-From: MingLiu <eemingliu@hotmail.com>
-To: kentaro <kentaro@triumf.ca>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: ML405 gigabit ethernet with kernel 2.6.23
-Date: Thu, 8 Nov 2007 10:32:17 +0000
-In-Reply-To: <4732719A.20707@triumf.ca>
-References: <4732719A.20707@triumf.ca>
+	Fri,  9 Nov 2007 03:28:56 +1100 (EST)
+Message-ID: <47333939.6050106@freescale.com>
+Date: Thu, 08 Nov 2007 10:28:41 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: use of fsl, in lite5200b.dts in git current
+References: <9e4733910711071355l75da5444kb7082692f1bdc0@mail.gmail.com>	<4732396D.4040904@genesi-usa.com>	<9e4733910711071421i347a6a0bu99cbf062cc152aca@mail.gmail.com>	<473258B8.4060905@genesi-usa.com>
+	<9e4733910711071815x344319ebye89168320dd53c0@mail.gmail.com>
+In-Reply-To: <9e4733910711071815x344319ebye89168320dd53c0@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,49 +28,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_b41d1478-4732-4d4d-9a4e-1128ead6936c_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Jon Smirl wrote:
+> On 11/7/07, Matt Sealey <matt@genesi-usa.com> wrote:
+>> Jon Smirl wrote:
+>>> I'm not in favor of all these fsl prefixes. These chip families
+>>> do get sold. What would we have done with intel,pxa320 all over
+>>> the place when they sold it to marvell? mass changes to
+>>> marvell,pxa320?
+>> That's the idea, and there'd be a compatible entry for
+>> intel,pxa320.
+> 
+> The vendor part really isn't needed and it is going to be a source of
+>  trouble. The vendors are smart enough not to create two chips with
+> the same part number. Adding a vendor qualifier complicates things 
+> needlessly.
 
+I think you may be placing too much faith in the vendors.
+Is a 7400 a Freescale powerpc chip, or a quad 2-input NAND gate? :-)
 
-Dear Kentaro,
-> -------------------------------------------------------------> "netperf -H 192.168.1.1 -t TCP_STREAM" 110 Mbps> "netperf -H 192.168.1.1 -t UDP_STREAM" 210 Mbps> -------------------------------------------------------------
-Are these results the ones with or without Jumbo-frame enabled? If no, they are quite good I think. The results from Montavista probably are the ones with Jumbo-frame enabled. 
- 
-For anybody who has interest on this topic, I have recently an accepted paper which has part of the content on this. The link is http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf and in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details and detailed configurations on our case. So these results are only for your reference.
- 
-BR
-Ming
-_________________________________________________________________
-Windows Live Spaces 中最年轻的成员！
-http://miaomiaogarden2007.spaces.live.com/
---_b41d1478-4732-4d4d-9a4e-1128ead6936c_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+If you want to argue that the "MPC" part differentiates them, that's
+just a less readable and more obsolete vendor prefix.
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Dear Kentaro,<BR>
-<BR>&gt; -------------------------------------------------------------<BR>&gt; "netperf -H 192.168.1.1 -t TCP_STREAM" 110 Mbps<BR>&gt; "netperf -H 192.168.1.1 -t UDP_STREAM" 210 Mbps<BR>&gt; -------------------------------------------------------------<BR><BR>
-Are these results the ones with or without Jumbo-frame enabled? If no, they are quite good I think. The results from Montavista probably are the ones with Jumbo-frame enabled. <BR>
-&nbsp;<BR>
-For anybody who has interest on this topic, I have recently an accepted paper which has part of the content on this. The link is <A href="http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf">http://web.it.kth.se/~mingliu/publications/co_design(icfpt07).pdf</A>&nbsp;and in 6.2 section, I listed our measurement results. 300Mbps for TCP and 400Mbps for UDP, with Jumbo-frame enabled. Unfortunately I did not explain the details and detailed configurations on our case. So these results are only for your reference.<BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR><br /><hr />用 Windows Live Spaces 展示个性自我，与好友分享生活！  <a href='http://spaces.live.com/?page=HP' target='_new'>了解更多信息！</a></body>
-</html>
---_b41d1478-4732-4d4d-9a4e-1128ead6936c_--
+And not all compatible entries are part numbers; many are descriptions
+of programming interfaces (such as cpm2 or gianfar).  I'm not inclined
+to bet that there will never be a conflict in such a namespace.
+
+>> Actually the spec says you should use the stock ticker (IBM, FSL,
+>> INTC, JAVA, MRVL) if they have one and if not, the company name in
+>> lower case.
+>> 
+>> Freescale are a funny one because they used to have a stock ticker
+>> as MOT and then FSL but now they're privately owned, so it's gonna
+>> have to be lower case :]
+
+Well, technically the recommended prefix is an OUI number, and those are
+less likely to change due to corporate shuffling, but they suck from a
+readability perspective.
+
+> Another example of how these vendor prefixes can change. The chip 
+> numbers are never going to change. Just use them and drop these
+> vendor prefixes.
+
+No. :-)
+
+>> functionality. fsl,has-wdt differs from has-wdt ideally because
+> 
+> This one I can buy, but it should be fsl-has-wdt. Drop the vendor
+> prefixes.
+
+How is fsl-has-wdt any better, other than it obscures namespace issues?
+
+Vendor prefixes on properties are useful in that it might not mean
+exactly the same thing as a similar property that gets standardized
+later on.
+
+> That's life in the Linux world, no backwards binary compatibility.
+
+There's a huge difference between compatibility of kernel interfaces and
+compatibility of interfaces between the kernel and something else --
+whether it be userspace or firmware.
+
+-Scott
