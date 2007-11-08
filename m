@@ -1,22 +1,17 @@
 Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A470DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 01:38:25 +1100 (EST)
-Subject: Re: [PATCH] powerpc: fix powersave-nap sysctl registration
+Subject: Re: mpc5200, sysctl table check failed
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1194462703.5996.0.camel@johannes.berg>
-References: <1194462703.5996.0.camel@johannes.berg>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20071107204138.GA7066@lixom.net>
+References: <9e4733910711071224v7bf643bahba0fd23eb2d16ee1@mail.gmail.com>
+	<20071107204138.GA7066@lixom.net>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-fNS2c6NjjopT3vI31yH/"
-Date: Thu, 08 Nov 2007 15:39:44 +0100
-Message-Id: <1194532784.6294.36.camel@johannes.berg>
+	boundary="=-/HbObaIcyM86iIDLlegN"
+Date: Thu, 08 Nov 2007 16:09:39 +0100
+Message-Id: <1194534579.6294.46.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +22,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-fNS2c6NjjopT3vI31yH/
+--=-/HbObaIcyM86iIDLlegN
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
 
-On Wed, 2007-11-07 at 20:11 +0100, Johannes Berg wrote:
-> The sysctl check code complains about a writable directory,
-> fix it.
 
-Sorry, I missed that patch that fixed it already, please ignore.
+> I posted a patch for this yesterday, it's harmless, just a warning.
+
+That's not actually true, if the sysctl check code warns in any way the
+sysctl file doesn't show up in /proc/sys/
 
 johannes
 
---=-fNS2c6NjjopT3vI31yH/
+--=-/HbObaIcyM86iIDLlegN
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUARzMfrqVg1VMiehFYAQKW5g//XxZsZlZY556pPcm3tTEeuAQMuRqlLuDj
-E+scgymiMfNPkB1kxuv8dJPncdMH/KpIA5a9hyz5WOnkAkvkrin98qsMqY5gjQ3w
-/ppqVP0kFC5RyAowHA+wuJpTI70Flkt4JWtcEhrZmY5AJ+KzmNW88rrpiYP+QiwO
-Xernqg9MiaYZULs+5k8iBFLHFiyaACg3Q0ozOV1r+GGBrKT5/tA0xFcyG9OLvKsS
-z+ccz83JUktQd3F8f9qUJivc0SK101ig7L1Yiko+mx8UARj0GjolJmhGTnn9Yr4M
-dKtWQcm3ziqB+BIkjrn4T9wYWuPiQREDCf3J4dVP7I8/k2eArOzy+ArXGM6YTr3z
-CUoXpQJS5/yrFnIlUEpP2y/woLBzFSXmHt8SYC9py+TdJ21EOMSWIVSuOkvdmtqZ
-5hR/IMqSdOsIvMMgO2diIDSxvgpOgrphoysVRHDx+XTxLT5s6gqiVBGsOBu7/naX
-qKMUiFUqoWUI7nJzEYAyiWOHSLWb8i2SENZUSBCj1o4Wyk7kNi7udUgTFEGzLVJR
-PwMcEegr8uRsycqqt+8wTfiLchWlrHiDcPi/no0N+QkWHEPIfT07Bc7DdKRvH2sA
-b1tG7/Xml6V5AJpZnLECQW1JeYCNJ9UNf0Cs1jCzdcniIZ9KF7nj/2BNOygu3qO/
-NiZWxgVUlO0=
-=ByCH
+iQIVAwUARzMmsqVg1VMiehFYAQIsWw/9GPqdldsJfwkpz2EIKNpzlU7+liqUjNWI
+Ly2XoofgJc3B4JqtoGayQKyc2j5pdNBPTVx7tZbxoK/o4587HUbff/K0NCGaJ4ww
+oVDPFP0cqnh1ryWFnAkaVr9QNzGZvItB32FjJX4/A7YjENFHVlnSOE3eFVV5vZVo
+RSwDIsw/l7hEZBcUM0dirGT1rOV46KBR3KhhrG7OWdsZGsx1StN+yj/Yo751YsOP
+JbaDcSBbhzJhUBHp7mheDJaIXbzcWYXU0er6c7Lt9nQMnV8/XIf9GWh4JAGR5UlY
+bQZnrCdQLdNWl7kDAwMR/pnPrBThbwYpr/ipP5gW6b///MiHBenKxGeugQLvSFa7
+/KRjO41+MNrcRZuwi2N57ihyWQTj97hvufRfqZHLMpxG+tOOvg6mfYb7r5PEkQwx
+KdLqRHGOjz+HcWYpQRZ4hX3y7kHkdyzPCovr9qu9Kiydwb3ZgAFiowHVQVYlUpjc
+TDa/zP27CotozBugLDKzVWKnodiecrdnwt0umMbMVloH8sZE7xBzuscQMNXI8gu6
+BkDmn3u35EGi2m8xVzJxixjtNheoEOkjxkXd/CszRGrzChr7n8Ino6KUr8NgfACX
+qggYHwaH1tQl3EwOzws4Aqkbk2pMo9xZpx6NhYtjEoK112jAExC7ifKtqPPsHzXL
+EjLToql823s=
+=aIaW
 -----END PGP SIGNATURE-----
 
---=-fNS2c6NjjopT3vI31yH/--
+--=-/HbObaIcyM86iIDLlegN--
