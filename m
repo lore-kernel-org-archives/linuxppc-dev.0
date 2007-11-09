@@ -1,23 +1,21 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s38.bay0.hotmail.com (bay0-omc2-s38.bay0.hotmail.com
-	[65.54.246.174]) by ozlabs.org (Postfix) with ESMTP id E093EDDF0D
+Return-Path: <robertlazarski@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.237])
+	by ozlabs.org (Postfix) with ESMTP id 03557DDE27
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Nov 2007 01:19:51 +1100 (EST)
-Message-ID: <BAY138-W2395532B79F11BC1C09BD3B2840@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_475126ae-ba7f-4077-9a46-2c8fdc6aff60_"
-From: MingLiu <eemingliu@hotmail.com>
-To: schardt <g.schardt@fz-juelich.de>
-Subject: RE: Bootloader & Flash
-Date: Fri, 9 Nov 2007 14:19:50 +0000
-In-Reply-To: <47346BB7.2000009@fz-juelich.de>
-References: <4731A8E3.4020909@fz-juelich.de>
-	<BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
-	<47344D70.4050308@fz-juelich.de>
-	<BAY138-W21A6D92355C81BE1341628B2840@phx.gbl>
-	<47346BB7.2000009@fz-juelich.de>
+	Sat, 10 Nov 2007 03:54:56 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so488043nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 09 Nov 2007 08:54:55 -0800 (PST)
+Message-ID: <f87675ee0711090854u27951a2dx1fb020a104720b82@mail.gmail.com>
+Date: Fri, 9 Nov 2007 11:54:54 -0500
+From: "robert lazarski" <robertlazarski@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Problems booting custom kernel and device tree on custom 85xx
+	board
+In-Reply-To: <f87675ee0711080832g75c748adjc4f35aa73aefe202@mail.gmail.com>
 MIME-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <f87675ee0711080832g75c748adjc4f35aa73aefe202@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +26,469 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_475126ae-ba7f-4077-9a46-2c8fdc6aff60_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+On Nov 8, 2007 11:32 AM, robert lazarski <robertlazarski@gmail.com> wrote:
+> Hi all,
+>
+> I finished the main part of porting u-boot 1.3 rc3 to our custon 8548
+> board and am now trying to boot our 2.6.22 kernel and device tree:
+>
 
+I know its bad form to comment to myself, but I moved to a later
+kernel - 2.6.23.2 - and I can get much further along. I'm hesitant to
+move to 2.6.24 RC2 since we are about to ship the first board as soon
+as I can get a bash shell - though I will if it'd attract more
+interest in helping me. Its been often suggested here that its either
+a serial port issue - seems unlikely here - or a kernel IMAP_ADDR /
+u-boot CFG_IMMR mismatch. In the latter case I'm unsure how to confirm
+those when using a device tree instead of bd_info.
 
-Sometimes the simplest error is the most diffucult one to be found. :)
- 
-Have fun.
- 
-BR
-Ming
- 
-> Date: Fri, 9 Nov 2007 15:16:23 +0100> From: g.schardt@fz-juelich.de> To: eemingliu@hotmail.com> CC: linuxppc-embedded@ozlabs.org> Subject: Re: Bootloader & Flash> > Argl :)> > The error was so ... simple.> The Flash device is broken. I take a new MiniModul and all things are> running.> > Thanks a lot> Georg> > MingLiu wrote:> > Hi,> >> > > - I have download the zImage.elf via the EDK flash loader> > > - The flash loader creates a bootloader, this is also running on> > start up :)> >> > What you need to store in flash memory, is not the .elf file. Before> > you use EDK flash loader to burn your linux kernel in flash, .elf file> > should be transfered into .srec file, just like the below reminds you:> > SREC line is corrupted.> >> >> > > But ... It stops with an error-message after a few seconds:> > >> > > EDK Bootloader:> > > Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is> > corrupted> > >> > > What now ?> >> > Hopefully it helps.> >> > BR> > Ming> >> > ------------------------------------------------------------------------> > 用 Windows Live Spaces 展示个性自我，与好友分享生活！ 了解更多信息！> > <http://spaces.live.com/?page=HP>> > > > -----------------------------------------------------------------------------------------> -----------------------------------------------------------------------------------------> Forschungszentrum Jülich GmbH> 52425 Jülich> > Sitz der Gesellschaft: Jülich> Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498> Vorsitzende des Aufsichtsrats: MinDirig'in B"arbel Brumme-Bothe> Gesch"aftsführung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. > Vorsitzender)> -----------------------------------------------------------------------------------------> -----------------------------------------------------------------------------------------
-_________________________________________________________________
-Windows Live Spaces 中最年轻的成员！
-http://miaomiaogarden2007.spaces.live.com/
---_475126ae-ba7f-4077-9a46-2c8fdc6aff60_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Here's the new 2.6.23.1 output.
 
-<html>
-<head>
-<style>
-.hmmessage P
-{
-margin:0px;
-padding:0px
-}
-body.hmmessage
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body class='hmmessage'>
-Sometimes the simplest error is the most diffucult one to be found. :)<BR>
-&nbsp;<BR>
-Have fun.<BR>
-&nbsp;<BR>
-BR<BR>
-Ming<BR>
-&nbsp;<BR>
-<BR><BR>&gt; Date: Fri, 9 Nov 2007 15:16:23 +0100<BR>&gt; From: g.schardt@fz-juelich.de<BR>&gt; To: eemingliu@hotmail.com<BR>&gt; CC: linuxppc-embedded@ozlabs.org<BR>&gt; Subject: Re: Bootloader &amp; Flash<BR>&gt; <BR>&gt; Argl :)<BR>&gt; <BR>&gt; The error was so ... simple.<BR>&gt; The Flash device is broken. I take a new MiniModul and all things are<BR>&gt; running.<BR>&gt; <BR>&gt; Thanks a lot<BR>&gt; Georg<BR>&gt; <BR>&gt; MingLiu wrote:<BR>&gt; &gt; Hi,<BR>&gt; &gt;<BR>&gt; &gt; &gt; - I have download the zImage.elf via the EDK flash loader<BR>&gt; &gt; &gt; - The flash loader creates a bootloader, this is also running on<BR>&gt; &gt; start up :)<BR>&gt; &gt;<BR>&gt; &gt; What you need to store in flash memory, is not the .elf file. Before<BR>&gt; &gt; you use EDK flash loader to burn your linux kernel in flash, .elf file<BR>&gt; &gt; should be transfered into .srec file, just like the below reminds you:<BR>&gt; &gt; SREC line is corrupted.<BR>&gt; &gt;<BR>&gt; &gt;<BR>&gt; &gt; &gt; But ... It stops with an error-message after a few seconds:<BR>&gt; &gt; &gt;<BR>&gt; &gt; &gt; EDK Bootloader:<BR>&gt; &gt; &gt; Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is<BR>&gt; &gt; corrupted<BR>&gt; &gt; &gt;<BR>&gt; &gt; &gt; What now ?<BR>&gt; &gt;<BR>&gt; &gt; Hopefully it helps.<BR>&gt; &gt;<BR>&gt; &gt; BR<BR>&gt; &gt; Ming<BR>&gt; &gt;<BR>&gt; &gt; ------------------------------------------------------------------------<BR>&gt; &gt; 用 Windows Live Spaces 展示个性自我，与好友分享生活！ 了解更多信息！<BR>&gt; &gt; &lt;http://spaces.live.com/?page=HP&gt;<BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; -----------------------------------------------------------------------------------------<BR>&gt; -----------------------------------------------------------------------------------------<BR>&gt; Forschungszentrum Jülich GmbH<BR>&gt; 52425 Jülich<BR>&gt; <BR>&gt; Sitz der Gesellschaft: Jülich<BR>&gt; Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498<BR>&gt; Vorsitzende des Aufsichtsrats: MinDirig'in B"arbel Brumme-Bothe<BR>&gt; Gesch"aftsführung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. <BR>&gt; Vorsitzender)<BR>&gt; -----------------------------------------------------------------------------------------<BR>&gt; -----------------------------------------------------------------------------------------<BR><BR><br /><hr />用 Windows Live Spaces 展示个性自我，与好友分享生活！  <a href='http://spaces.live.com/?page=HP' target='_new'>了解更多信息！</a></body>
-</html>
---_475126ae-ba7f-4077-9a46-2c8fdc6aff60_--
+=> md 2acf24 700
+002acf24: 3c363e55 73696e67 204d5043 38357878    <6>Using MPC85xx
+002acf34: 20415455 4d206d61 6368696e 65206465     ATUM machine de
+002acf44: 73637269 7074696f 6e0a3c36 3e4d656d    scription.<6>Mem
+002acf54: 6f727920 43414d20 6d617070 696e673a    ory CAM mapping:
+002acf64: 2043414d 303d3235 364d622c 2043414d     CAM0=256Mb, CAM
+002acf74: 313d3235 364d622c 2043414d 323d304d    1=256Mb, CAM2=0M
+002acf84: 62207265 73696475 616c3a20 304d620a    b residual: 0Mb.
+002acf94: 3c353e4c 696e7578 20766572 73696f6e    <5>Linux version
+002acfa4: 20322e36 2e32332e 31202869 6b737261     2.6.23.1 (iksra
+002acfb4: 7a616c40 6c696e75 782d726f 62657274    zal@linux-robert
+002acfc4: 29202867 63632076 65727369 6f6e2034    ) (gcc version 4
+002acfd4: 2e302e30 20284445 4e582045 4c444b20    .0.0 (DENX ELDK
+002acfe4: 342e3120 342e302e 30292920 23322054    4.1 4.0.0)) #2 T
+002acff4: 6875204e 6f762038 2031383a 34323a35    hu Nov 8 18:42:5
+002ad004: 38204553 54203230 30370a3c 373e466f    8 EST 2007.<7>Fo
+002ad014: 756e6420 6c656761 63792073 65726961    und legacy seria
+002ad024: 6c20706f 72742030 20666f72 202f736f    l port 0 for /so
+002ad034: 63383534 38406530 30303030 30302f73    c8548@e0000000/s
+002ad044: 65726961 6c403435 30300a3c 373e2020    erial@4500.<7>
+002ad054: 6d656d3d 65303030 34353030 2c207461    mem=e0004500, ta
+002ad064: 6464723d 65303030 34353030 2c206972    ddr=e0004500, ir
+002ad074: 713d302c 20636c6b 3d333535 35353535    q=0, clk=3555555
+002ad084: 34302c20 73706565 643d300a 3c373e46    40, speed=0.<7>F
+002ad094: 6f756e64 206c6567 61637920 73657269    ound legacy seri
+002ad0a4: 616c2070 6f727420 3120666f 72202f73    al port 1 for /s
+002ad0b4: 6f633835 34384065 30303030 3030302f    oc8548@e0000000/
+002ad0c4: 73657269 616c4034 3630300a 3c373e20    serial@4600.<7>
+002ad0d4: 206d656d 3d653030 30343630 302c2074     mem=e0004600, t
+002ad0e4: 61646472 3d653030 30343630 302c2069    addr=e0004600, i
+002ad0f4: 72713d30 2c20636c 6b3d3335 35353535    rq=0, clk=355555
+002ad104: 3534302c 20737065 65643d30 0a3c363e    540, speed=0.<6>
+002ad114: 636f6e73 6f6c6520 5b756462 67305d20    console [udbg0]
+002ad124: 656e6162 6c65640a 3c373e45 6e746572    enabled.<7>Enter
+002ad134: 696e6720 6164645f 61637469 76655f72    ing add_active_r
+002ad144: 616e6765 28302c20 302c2031 33313037    ange(0, 0, 13107
+002ad154: 32292030 20656e74 72696573 206f6620    2) 0 entries of
+002ad164: 32353620 75736564 0a3c363e 6d706963    256 used.<6>mpic
+002ad174: 3a205365 7474696e 67207570 204d5049    : Setting up MPI
+002ad184: 43202220 4f70656e 50494320 20222076    C " OpenPIC  " v
+002ad194: 65727369 6f6e2031 2e322061 74206530    ersion 1.2 at e0
+002ad1a4: 30343030 30302c20 6d617820 31204350    040000, max 1 CP
+002ad1b4: 55730a3c 363e6d70 69633a20 49535520    Us.<6>mpic: ISU
+002ad1c4: 73697a65 3a203830 2c207368 6966743a    size: 80, shift:
+002ad1d4: 20372c20 6d61736b 3a203766 0a3c363e     7, mask: 7f.<6>
+002ad1e4: 6d706963 3a20496e 69746961 6c697a69    mpic: Initializi
+002ad1f4: 6e672066 6f722038 3020736f 75726365    ng for 80 source
+002ad204: 730a3c37 3e546f70 206f6620 52414d3a    s.<7>Top of RAM:
+002ad214: 20307832 30303030 3030302c 20546f74     0x20000000, Tot
+002ad224: 616c2052 414d3a20 30783230 30303030    al RAM: 0x200000
+002ad234: 30300a3c 373e4d65 6d6f7279 20686f6c    00.<7>Memory hol
+002ad244: 65207369 7a653a20 304d420a 3c343e5a    e size: 0MB.<4>Z
+002ad254: 6f6e6520 50464e20 72616e67 65733a0a    one PFN ranges:.
+002ad264: 3c343e20 20444d41 20202020 20202020    <4>  DMA
+002ad274: 20202020 2030202d 3e202020 31333130         0 ->   1310
+002ad284: 37320a3c 343e2020 4e6f726d 616c2020    72.<4>  Normal
+002ad294: 20202031 33313037 32202d3e 20202031       131072 ->   1
+002ad2a4: 33313037 320a3c34 3e4d6f76 61626c65    31072.<4>Movable
+002ad2b4: 207a6f6e 65207374 61727420 50464e20     zone start PFN
+002ad2c4: 666f7220 65616368 206e6f64 650a3c34    for each node.<4
+002ad2d4: 3e656172 6c795f6e 6f64655f 6d61705b    >early_node_map[
+002ad2e4: 315d2061 63746976 65205046 4e207261    1] active PFN ra
+002ad2f4: 6e676573 0a3c343e 20202020 303a2020    nges.<4>    0:
+002ad304: 20202020 20203020 2d3e2020 20313331          0 ->   131
+002ad314: 3037320a 3c373e4f 6e206e6f 64652030    072.<7>On node 0
+002ad324: 20746f74 616c7061 6765733a 20313331     totalpages: 131
+002ad334: 3037320a 3c373e20 20444d41 207a6f6e    072.<7>  DMA zon
+002ad344: 653a2031 30323420 70616765 73207573    e: 1024 pages us
+002ad354: 65642066 6f72206d 656d6d61 700a3c37    ed for memmap.<7
+002ad364: 3e202044 4d41207a 6f6e653a 20302070    >  DMA zone: 0 p
+002ad374: 61676573 20726573 65727665 640a3c37    ages reserved.<7
+002ad384: 3e202044 4d41207a 6f6e653a 20313330    >  DMA zone: 130
+002ad394: 30343820 70616765 732c204c 49464f20    048 pages, LIFO
+002ad3a4: 62617463 683a3331 0a3c373e 20204e6f    batch:31.<7>  No
+002ad3b4: 726d616c 207a6f6e 653a2030 20706167    rmal zone: 0 pag
+002ad3c4: 65732075 73656420 666f7220 6d656d6d    es used for memm
+002ad3d4: 61700a3c 373e2020 4d6f7661 626c6520    ap.<7>  Movable
+002ad3e4: 7a6f6e65 3a203020 70616765 73207573    zone: 0 pages us
+002ad3f4: 65642066 6f72206d 656d6d61 700a3c34    ed for memmap.<4
+002ad404: 3e427569 6c742031 207a6f6e 656c6973    >Built 1 zonelis
+002ad414: 74732069 6e205a6f 6e65206f 72646572    ts in Zone order
+002ad424: 2e202054 6f74616c 20706167 65733a20    .  Total pages:
+002ad434: 31333030 34380a3c 353e4b65 726e656c    130048.<5>Kernel
+002ad444: 20636f6d 6d616e64 206c696e 653a2060     command line: `
+002ad454: 0a3c343e 50494420 68617368 20746162    .<4>PID hash tab
+002ad464: 6c652065 6e747269 65733a20 32303438    le entries: 2048
+002ad474: 20286f72 6465723a 2031312c 20383139     (order: 11, 819
+002ad484: 32206279 74657329 0a3c373e 74696d65    2 bytes).<7>time
+002ad494: 5f696e69 743a2064 65637265 6d656e74    _init: decrement
+002ad4a4: 65722066 72657175 656e6379 203d2034    er frequency = 4
+002ad4b4: 342e3434 34343432 204d487a 0a3c373e    4.444442 MHz.<7>
+002ad4c4: 74696d65 5f696e69 743a2070 726f6365    time_init: proce
+002ad4d4: 73736f72 20667265 7175656e 63792020    ssor frequency
+002ad4e4: 203d2038 38382e38 38383835 30204d48     = 888.888850 MH
+002ad4f4: 7a0a3c36 3e44656e 74727920 63616368    z.<6>Dentry cach
+002ad504: 65206861 73682074 61626c65 20656e74    e hash table ent
+002ad514: 72696573 3a203635 35333620 286f7264    ries: 65536 (ord
+002ad524: 65723a20 362c2032 36323134 34206279    er: 6, 262144 by
+002ad534: 74657329 0a3c363e 496e6f64 652d6361    tes).<6>Inode-ca
+002ad544: 63686520 68617368 20746162 6c652065    che hash table e
+002ad554: 6e747269 65733a20 33323736 3820286f    ntries: 32768 (o
+002ad564: 72646572 3a20352c 20313331 30373220    rder: 5, 131072
+002ad574: 62797465 73290a3c 363e4d65 6d6f7279    bytes).<6>Memory
+002ad584: 3a203531 36343830 6b2f3532 34323838    : 516480k/524288
+002ad594: 6b206176 61696c61 626c6520 28323537    k available (257
+002ad5a4: 326b206b 65726e65 6c20636f 64652c20    2k kernel code,
+002ad5b4: 37333238 6b207265 73657276 65642c20    7328k reserved,
+002ad5c4: 3131366b 20646174 612c2031 30356b20    116k data, 105k
+002ad5d4: 6273732c 20313430 6b20696e 6974290a    bss, 140k init).
+002ad5e4: 3c373e43 616c6962 72617469 6e672064    <7>Calibrating d
+002ad5f4: 656c6179 206c6f6f 702e2e2e 2038382e    elay loop... 88.
+002ad604: 38332042 6f676f4d 49505320 286c706a    83 BogoMIPS (lpj
+002ad614: 3d313737 36363429 0a3c343e 4d6f756e    =177664).<4>Moun
+002ad624: 742d6361 63686520 68617368 20746162    t-cache hash tab
+002ad634: 6c652065 6e747269 65733a20 3531320a    le entries: 512.
+002ad644: 3c373e6b 6f626a65 63742066 733a2072    <7>kobject fs: r
+002ad654: 65676973 74657269 6e672e20 70617265    egistering. pare
+002ad664: 6e743a20 3c4e554c 4c3e2c20 7365743a    nt: <NULL>, set:
+002ad674: 203c4e55 4c4c3e0a 3c373e6b 6f626a65     <NULL>.<7>kobje
+002ad684: 63745f75 6576656e 745f656e 760a3c37    ct_uevent_env.<7
+002ad694: 3e6b6f62 6a656374 20617474 656d7074    >kobject attempt
+002ad6a4: 65642074 6f207365 6e642075 6576656e    ed to send ueven
+002ad6b4: 74207769 74686f75 74206b73 6574210a    t without kset!.
+002ad6c4: 3c373e6b 6f626a65 63742064 65766963    <7>kobject devic
+002ad6d4: 65733a20 72656769 73746572 696e672e    es: registering.
+002ad6e4: 20706172 656e743a 203c4e55 4c4c3e2c     parent: <NULL>,
+002ad6f4: 20736574 3a203c4e 554c4c3e 0a3c373e     set: <NULL>.<7>
+002ad704: 6b6f626a 6563745f 75657665 6e745f65    kobject_uevent_e
+002ad714: 6e760a3c 373e6b6f 626a6563 74206174    nv.<7>kobject at
+002ad724: 74656d70 74656420 746f2073 656e6420    tempted to send
+002ad734: 75657665 6e742077 6974686f 7574206b    uevent without k
+002ad744: 73657421 0a3c373e 6b6f626a 65637420    set!.<7>kobject
+002ad754: 6275733a 20726567 69737465 72696e67    bus: registering
+002ad764: 2e207061 72656e74 3a203c4e 554c4c3e    . parent: <NULL>
+002ad774: 2c207365 743a203c 4e554c4c 3e0a3c37    , set: <NULL>.<7
+002ad784: 3e6b6f62 6a656374 5f756576 656e745f    >kobject_uevent_
+002ad794: 656e760a 3c373e6b 6f626a65 63742061    env.<7>kobject a
+002ad7a4: 7474656d 70746564 20746f20 73656e64    ttempted to send
+002ad7b4: 20756576 656e7420 77697468 6f757420     uevent without
+002ad7c4: 6b736574 210a3c37 3e6b6f62 6a656374    kset!.<7>kobject
+002ad7d4: 20636c61 73733a20 72656769 73746572     class: register
+002ad7e4: 696e672e 20706172 656e743a 203c4e55    ing. parent: <NU
+002ad7f4: 4c4c3e2c 20736574 3a203c4e 554c4c3e    LL>, set: <NULL>
+002ad804: 0a3c373e 6b6f626a 6563745f 75657665    .<7>kobject_ueve
+002ad814: 6e745f65 6e760a3c 373e6b6f 626a6563    nt_env.<7>kobjec
+002ad824: 74206174 74656d70 74656420 746f2073    t attempted to s
+002ad834: 656e6420 75657665 6e742077 6974686f    end uevent witho
+002ad844: 7574206b 73657421 0a3c373e 6b6f626a    ut kset!.<7>kobj
+002ad854: 65637420 6669726d 77617265 3a207265    ect firmware: re
+002ad864: 67697374 6572696e 672e2070 6172656e    gistering. paren
+002ad874: 743a203c 4e554c4c 3e2c2073 65743a20    t: <NULL>, set:
+002ad884: 3c4e554c 4c3e0a3c 373e6b6f 626a6563    <NULL>.<7>kobjec
+002ad894: 745f7565 76656e74 5f656e76 0a3c373e    t_uevent_env.<7>
+002ad8a4: 6b6f626a 65637420 61747465 6d707465    kobject attempte
+002ad8b4: 6420746f 2073656e 64207565 76656e74    d to send uevent
+002ad8c4: 20776974 686f7574 206b7365 74210a3c     without kset!.<
+002ad8d4: 373e6b6f 626a6563 7420706c 6174666f    7>kobject platfo
+002ad8e4: 726d3a20 72656769 73746572 696e672e    rm: registering.
+002ad8f4: 20706172 656e743a 203c4e55 4c4c3e2c     parent: <NULL>,
+002ad904: 20736574 3a206465 76696365 730a3c37     set: devices.<7
+002ad914: 3e6b6f62 6a656374 5f756576 656e745f    >kobject_uevent_
+002ad924: 656e760a 3c373e6b 6f626a65 63742066    env.<7>kobject f
+002ad934: 696c7465 72206675 6e637469 6f6e2063    ilter function c
+002ad944: 61757365 64207468 65206576 656e7420    aused the event
+002ad954: 746f2064 726f7021 0a3c373e 6b6f626a    to drop!.<7>kobj
+002ad964: 65637420 706c6174 666f726d 3a207265    ect platform: re
+002ad974: 67697374 6572696e 672e2070 6172656e    gistering. paren
+002ad984: 743a203c 4e554c4c 3e2c2073 65743a20    t: <NULL>, set:
+002ad994: 6275730a 3c373e6b 6f626a65 63745f75    bus.<7>kobject_u
+002ad9a4: 6576656e 745f656e 760a3c37 3e66696c    event_env.<7>fil
+002ad9b4: 6c5f6b6f 626a5f70 6174683a 20706174    l_kobj_path: pat
+002ad9c4: 68203d20 272f6275 732f706c 6174666f    h = '/bus/platfo
+002ad9d4: 726d270a 3c373e6b 6f626a65 63742064    rm'.<7>kobject d
+002ad9e4: 65766963 65733a20 72656769 73746572    evices: register
+002ad9f4: 696e672e 20706172 656e743a 20706c61    ing. parent: pla
+002ada04: 74666f72 6d2c2073 65743a20 3c4e554c    tform, set: <NUL
+002ada14: 4c3e0a3c 373e6b6f 626a6563 745f7565    L>.<7>kobject_ue
+002ada24: 76656e74 5f656e76 0a3c373e 6b6f626a    vent_env.<7>kobj
+002ada34: 65637420 66696c74 65722066 756e6374    ect filter funct
+002ada44: 696f6e20 63617573 65642074 68652065    ion caused the e
+002ada54: 76656e74 20746f20 64726f70 210a3c37    vent to drop!.<7
+002ada64: 3e6b6f62 6a656374 20647269 76657273    >kobject drivers
+002ada74: 3a207265 67697374 6572696e 672e2070    : registering. p
+002ada84: 6172656e 743a2070 6c617466 6f726d2c    arent: platform,
+002ada94: 20736574 3a203c4e 554c4c3e 0a3c373e     set: <NULL>.<7>
+002adaa4: 6b6f626a 6563745f 75657665 6e745f65    kobject_uevent_e
+002adab4: 6e760a3c 373e6b6f 626a6563 74206669    nv.<7>kobject fi
+002adac4: 6c746572 2066756e 6374696f 6e206361    lter function ca
+002adad4: 75736564 20746865 20657665 6e742074    used the event t
+002adae4: 6f206472 6f70210a 3c373e6b 6f626a65    o drop!.<7>kobje
+002adaf4: 63742073 79737465 6d3a2072 65676973    ct system: regis
+002adb04: 74657269 6e672e20 70617265 6e743a20    tering. parent:
+002adb14: 64657669 6365732c 20736574 3a203c4e    devices, set: <N
+002adb24: 554c4c3e 0a3c373e 6b6f626a 6563745f    ULL>.<7>kobject_
+002adb34: 75657665 6e745f65 6e760a3c 373e6b6f    uevent_env.<7>ko
+002adb44: 626a6563 74206174 74656d70 74656420    bject attempted
+002adb54: 746f2073 656e6420 75657665 6e742077    to send uevent w
+002adb64: 6974686f 7574206b 73657421 0a3c373e    ithout kset!.<7>
+002adb74: 6b6f626a 65637420 6370753a 20726567    kobject cpu: reg
+002adb84: 69737465 72696e67 2e207061 72656e74    istering. parent
+002adb94: 3a207379 7374656d 2c207365 743a2073    : system, set: s
+002adba4: 79737465 6d0a3c37 3e6b6f62 6a656374    ystem.<7>kobject
+002adbb4: 5f756576 656e745f 656e760a 3c373e66    _uevent_env.<7>f
+002adbc4: 696c6c5f 6b6f626a 5f706174 683a2070    ill_kobj_path: p
+002adbd4: 61746820 3d20272f 64657669 6365732f    ath = '/devices/
+002adbe4: 73797374 656d2f63 7075270a 3c373e6b    system/cpu'.<7>k
+002adbf4: 6f626a65 6374206b 65726e65 6c3a2072    object kernel: r
+002adc04: 65676973 74657269 6e672e20 70617265    egistering. pare
+002adc14: 6e743a20 3c4e554c 4c3e2c20 7365743a    nt: <NULL>, set:
+002adc24: 203c4e55 4c4c3e0a 3c373e6b 6f626a65     <NULL>.<7>kobje
+002adc34: 63745f75 6576656e 745f656e 760a3c37    ct_uevent_env.<7
+002adc44: 3e6b6f62 6a656374 20617474 656d7074    >kobject attempt
+002adc54: 65642074 6f207365 6e642075 6576656e    ed to send ueven
+002adc64: 74207769 74686f75 74206b73 6574210a    t without kset!.
+002adc74: 3c363e4e 45543a20 52656769 73746572    <6>NET: Register
+002adc84: 65642070 726f746f 636f6c20 66616d69    ed protocol fami
+002adc94: 6c792031 360a3c37 3e6b6f62 6a656374    ly 16.<7>kobject
+002adca4: 206f665f 706c6174 666f726d 3a207265     of_platform: re
+002adcb4: 67697374 6572696e 672e2070 6172656e    gistering. paren
+002adcc4: 743a203c 4e554c4c 3e2c2073 65743a20    t: <NULL>, set:
+002adcd4: 6275730a 3c373e6b 6f626a65 63745f75    bus.<7>kobject_u
+002adce4: 6576656e 745f656e 760a3c37 3e66696c    event_env.<7>fil
+002adcf4: 6c5f6b6f 626a5f70 6174683a 20706174    l_kobj_path: pat
+002add04: 68203d20 272f6275 732f6f66 5f706c61    h = '/bus/of_pla
+002add14: 74666f72 6d270a3c 373e6b6f 626a6563    tform'.<7>kobjec
+002add24: 74206465 76696365 733a2072 65676973    t devices: regis
+002add34: 74657269 6e672e20 70617265 6e743a20    tering. parent:
+002add44: 6f665f70 6c617466 6f726d2c 20736574    of_platform, set
+002add54: 3a203c4e 554c4c3e 0a3c373e 6b6f626a    : <NULL>.<7>kobj
+002add64: 6563745f 75657665 6e745f65 6e760a3c    ect_uevent_env.<
+002add74: 373e6b6f 626a6563 74206669 6c746572    7>kobject filter
+002add84: 2066756e 6374696f 6e206361 75736564     function caused
+002add94: 20746865 20657665 6e742074 6f206472     the event to dr
+002adda4: 6f70210a 3c373e6b 6f626a65 63742064    op!.<7>kobject d
+002addb4: 72697665 72733a20 72656769 73746572    rivers: register
+002addc4: 696e672e 20706172 656e743a 206f665f    ing. parent: of_
+002addd4: 706c6174 666f726d 2c207365 743a203c    platform, set: <
+002adde4: 4e554c4c 3e0a3c37 3e6b6f62 6a656374    NULL>.<7>kobject
+002addf4: 5f756576 656e745f 656e760a 3c373e6b    _uevent_env.<7>k
+002ade04: 6f626a65 63742066 696c7465 72206675    object filter fu
+002ade14: 6e637469 6f6e2063 61757365 64207468    nction caused th
+002ade24: 65206576 656e7420 746f2064 726f7021    e event to drop!
+002ade34: 0a3c373e 6b6f626a 65637420 7063695f    .<7>kobject pci_
+002ade44: 6275733a 20726567 69737465 72696e67    bus: registering
+002ade54: 2e207061 72656e74 3a203c4e 554c4c3e    . parent: <NULL>
+002ade64: 2c207365 743a2063 6c617373 0a3c373e    , set: class.<7>
+002ade74: 6b6f626a 6563745f 75657665 6e745f65    kobject_uevent_e
+002ade84: 6e760a3c 373e6669 6c6c5f6b 6f626a5f    nv.<7>fill_kobj_
+002ade94: 70617468 3a207061 7468203d 20272f63    path: path = '/c
+002adea4: 6c617373 2f706369 5f627573 270a3c37    lass/pci_bus'.<7
+002adeb4: 3e6b6f62 6a656374 20706369 3a207265    >kobject pci: re
+002adec4: 67697374 6572696e 672e2070 6172656e    gistering. paren
+002aded4: 743a203c 4e554c4c 3e2c2073 65743a20    t: <NULL>, set:
+002adee4: 6275730a 3c373e6b 6f626a65 63745f75    bus.<7>kobject_u
+002adef4: 6576656e 745f656e 760a3c37 3e66696c    event_env.<7>fil
+002adf04: 6c5f6b6f 626a5f70 6174683a 20706174    l_kobj_path: pat
+002adf14: 68203d20 272f6275 732f7063 69270a3c    h = '/bus/pci'.<
+002adf24: 373e6b6f 626a6563 74206465 76696365    7>kobject device
+002adf34: 733a2072 65676973 74657269 6e672e20    s: registering.
+002adf44: 70617265 6e743a20 7063692c 20736574    parent: pci, set
+002adf54: 3a203c4e 554c4c3e 0a3c373e 6b6f626a    : <NULL>.<7>kobj
+002adf64: 6563745f 75657665 6e745f65 6e760a3c    ect_uevent_env.<
+002adf74: 373e6b6f 626a6563 74206669 6c746572    7>kobject filter
+002adf84: 2066756e 6374696f 6e206361 75736564     function caused
+002adf94: 20746865 20657665 6e742074 6f206472     the event to dr
+002adfa4: 6f70210a 3c373e6b 6f626a65 63742064    op!.<7>kobject d
+002adfb4: 72697665 72733a20 72656769 73746572    rivers: register
+002adfc4: 696e672e 20706172 656e743a 20706369    ing. parent: pci
+002adfd4: 2c207365 743a203c 4e554c4c 3e0a3c37    , set: <NULL>.<7
+002adfe4: 3e6b6f62 6a656374 5f756576 656e745f    >kobject_uevent_
+002adff4: 656e760a 3c373e6b 6f626a65 63742066    env.<7>kobject f
+002ae004: 696c7465 72206675 6e637469 6f6e2063    ilter function c
+002ae014: 61757365 64207468 65206576 656e7420    aused the event
+002ae024: 746f2064 726f7021 0a3c373e 6b6f626a    to drop!.<7>kobj
+002ae034: 65637420 76696465 6f5f6f75 74707574    ect video_output
+002ae044: 3a207265 67697374 6572696e 672e2070    : registering. p
+002ae054: 6172656e 743a203c 4e554c4c 3e2c2073    arent: <NULL>, s
+002ae064: 65743a20 636c6173 730a3c37 3e6b6f62    et: class.<7>kob
+002ae074: 6a656374 5f756576 656e745f 656e760a    ject_uevent_env.
+002ae084: 3c373e66 696c6c5f 6b6f626a 5f706174    <7>fill_kobj_pat
+002ae094: 683a2070 61746820 3d20272f 636c6173    h: path = '/clas
+002ae0a4: 732f7669 64656f5f 6f757470 7574270a    s/video_output'.
+002ae0b4: 3c373e6b 6f626a65 63742074 74793a20    <7>kobject tty:
+002ae0c4: 72656769 73746572 696e672e 20706172    registering. par
+002ae0d4: 656e743a 203c4e55 4c4c3e2c 20736574    ent: <NULL>, set
+002ae0e4: 3a20636c 6173730a 3c373e6b 6f626a65    : class.<7>kobje
+002ae0f4: 63745f75 6576656e 745f656e 760a3c37    ct_uevent_env.<7
+002ae104: 3e66696c 6c5f6b6f 626a5f70 6174683a    >fill_kobj_path:
+002ae114: 20706174 68203d20 272f636c 6173732f     path = '/class/
+002ae124: 74747927 0a3c373e 6b6f626a 65637420    tty'.<7>kobject
+002ae134: 63707530 3a207265 67697374 6572696e    cpu0: registerin
+002ae144: 672e2070 6172656e 743a203c 4e554c4c    g. parent: <NULL
+002ae154: 3e2c2073 65743a20 6370750a 3c373e6b    >, set: cpu.<7>k
+002ae164: 6f626a65 63745f75 6576656e 745f656e    object_uevent_en
+002ae174: 760a3c37 3e66696c 6c5f6b6f 626a5f70    v.<7>fill_kobj_p
+002ae184: 6174683a 20706174 68203d20 272f6465    ath: path = '/de
+002ae194: 76696365 732f7379 7374656d 2f637075    vices/system/cpu
+002ae1a4: 2f637075 30270a3c 373e6b6f 626a6563    /cpu0'.<7>kobjec
+002ae1b4: 74206673 6c2d6769 616e6661 722e303a    t fsl-gianfar.0:
+002ae1c4: 20726567 69737465 72696e67 2e207061     registering. pa
+002ae1d4: 72656e74 3a20706c 6174666f 726d2c20    rent: platform,
+002ae1e4: 7365743a 20646576 69636573 0a3c373e    set: devices.<7>
+002ae1f4: 6b6f626a 6563745f 75657665 6e745f65    kobject_uevent_e
+002ae204: 6e760a3c 373e6b6f 626a6563 74206669    nv.<7>kobject fi
+002ae214: 6c746572 2066756e 6374696f 6e206361    lter function ca
+002ae224: 75736564 20746865 20657665 6e742074    used the event t
+002ae234: 6f206472 6f70210a 3c373e6b 6f626a65    o drop!.<7>kobje
+002ae244: 63742066 736c2d67 69616e66 61722e31    ct fsl-gianfar.1
+002ae254: 3a207265 67697374 6572696e 672e2070    : registering. p
+002ae264: 6172656e 743a2070 6c617466 6f726d2c    arent: platform,
+002ae274: 20736574 3a206465 76696365 730a3c37     set: devices.<7
+002ae284: 3e6b6f62 6a656374 5f756576 656e745f    >kobject_uevent_
+002ae294: 656e760a 3c373e6b 6f626a65 63742066    env.<7>kobject f
+002ae2a4: 696c7465 72206675 6e637469 6f6e2063    ilter function c
+002ae2b4: 61757365 64207468 65206576 656e7420    aused the event
+002ae2c4: 746f2064 726f7021 0a3c373e 6b6f626a    to drop!.<7>kobj
+002ae2d4: 65637420 66736c2d 6769616e 6661722e    ect fsl-gianfar.
+002ae2e4: 323a2072 65676973 74657269 6e672e20    2: registering.
+002ae2f4: 70617265 6e743a20 706c6174 666f726d    parent: platform
+002ae304: 2c207365 743a2064 65766963 65730a3c    , set: devices.<
+002ae314: 373e6b6f 626a6563 745f7565 00000000    7>kobject_ue....
+002ae324: 00000000 00000000 00000000 00000000    ................
+002ae334: 00000000 00000000 00000000 00000000    ................
+002ae344: 00000000 00000000 00000000 00000000    ................
+002ae354: 00000000 00000000 00000000 3e6b6f62    ............>kob
+002ae364: 6a656374 2066736c 2d676961 6e666172    ject fsl-gianfar
+002ae374: 2e333a20 72656769 73746572 696e672e    .3: registering.
+002ae384: 20706172 656e743a 20706c61 74666f72     parent: platfor
+002ae394: 6d2c2073 65743a20 64657669 6365730a    m, set: devices.
+002ae3a4: 3c373e6b 6f626a65 63745f75 6576656e    <7>kobject_ueven
+002ae3b4: 745f656e 760a3c37 3e6b6f62 6a656374    t_env.<7>kobject
+002ae3c4: 2066696c 74657220 66756e63 74696f6e     filter function
+002ae3d4: 20636175 73656420 74686520 6576656e     caused the even
+002ae3e4: 7420746f 2064726f 70210a3c 373e6b6f    t to drop!.<7>ko
+002ae3f4: 626a6563 74206673 6c2d6769 616e6661    bject fsl-gianfa
+002ae404: 725f6d64 696f2e33 373a2072 65676973    r_mdio.37: regis
+002ae414: 74657269 6e672e20 70617265 6e743a20    tering. parent:
+002ae424: 706c6174 666f726d 2c207365 743a2064    platform, set: d
+002ae434: 65766963 65730a3c 373e6b6f 626a6563    evices.<7>kobjec
+002ae444: 745f7565 76656e74 5f656e76 0a3c373e    t_uevent_env.<7>
+002ae454: 6b6f626a 65637420 66696c74 65722066    kobject filter f
+002ae464: 756e6374 696f6e20 63617573 65642074    unction caused t
+002ae474: 68652065 76656e74 20746f20 64726f70    he event to drop
+002ae484: 210a3c36 3e727374 63722063 6f6d7061    !.<6>rstcr compa
+002ae494: 7469626c 65207265 67697374 65722064    tible register d
+002ae4a4: 6f657320 6e6f7420 65786973 74210a3c    oes not exist!.<
+002ae4b4: 363e5043 493a2050 726f6269 6e672050    6>PCI: Probing P
+002ae4c4: 43492068 61726477 6172650a 3c373e6b    CI hardware.<7>k
+002ae4d4: 6f626a65 6374206d 6f64756c 653a2072    object module: r
+002ae4e4: 65676973 74657269 6e672e20 70617265    egistering. pare
+002ae4f4: 6e743a20 3c4e554c 4c3e2c20 7365743a    nt: <NULL>, set:
+002ae504: 203c4e55 4c4c3e0a 3c373e6b 6f626a65     <NULL>.<7>kobje
+002ae514: 63745f75 6576656e 745f656e 760a3c37    ct_uevent_env.<7
+002ae524: 3e6b6f62 6a656374 20617474 656d7074    >kobject attempt
+002ae534: 65642074 6f207365 6e642075 6576656e    ed to send ueven
+002ae544: 74207769 74686f75 74206b73 6574210a    t without kset!.
+002ae554: 3c373e6b 6f626a65 63742070 72696e74    <7>kobject print
+002ae564: 6b3a2072 65676973 74657269 6e672e20    k: registering.
+002ae574: 70617265 6e743a20 3c4e554c 4c3e2c20    parent: <NULL>,
+002ae584: 7365743a 206d6f64 756c650a 3c373e6b    set: module.<7>k
+002ae594: 6f626a65 63745f75 6576656e 745f656e    object_uevent_en
+002ae5a4: 760a3c37 3e66696c 6c5f6b6f 626a5f70    v.<7>fill_kobj_p
+002ae5b4: 6174683a 20706174 68203d20 272f6d6f    ath: path = '/mo
+002ae5c4: 64756c65 2f707269 6e746b27 0a3c373e    dule/printk'.<7>
+002ae5d4: 6b6f626a 65637420 72637570 64617465    kobject rcupdate
+002ae5e4: 3a207265 67697374 6572696e 672e2070    : registering. p
+002ae5f4: 6172656e 743a203c 4e554c4c 3e2c2073    arent: <NULL>, s
+002ae604: 65743a20 6d6f6475 6c650a3c 373e6b6f    et: module.<7>ko
+002ae614: 626a6563 745f7565 76656e74 5f656e76    bject_uevent_env
+002ae624: 0a3c373e 66696c6c 5f6b6f62 6a5f7061    .<7>fill_kobj_pa
+002ae634: 74683a20 70617468 203d2027 2f6d6f64    th: path = '/mod
+002ae644: 756c652f 72637570 64617465 270a3c37    ule/rcupdate'.<7
+002ae654: 3e6b6f62 6a656374 206c6f63 6b643a20    >kobject lockd:
+002ae664: 72656769 73746572 696e672e 20706172    registering. par
+002ae674: 656e743a 203c4e55 4c4c3e2c 20736574    ent: <NULL>, set
+002ae684: 3a206d6f 64756c65 0a3c373e 6b6f626a    : module.<7>kobj
+002ae694: 6563745f 75657665 6e745f65 6e760a3c    ect_uevent_env.<
+002ae6a4: 373e6669 6c6c5f6b 6f626a5f 70617468    7>fill_kobj_path
+002ae6b4: 3a207061 7468203d 20272f6d 6f64756c    : path = '/modul
+002ae6c4: 652f6c6f 636b6427 0a3c373e 6b6f626a    e/lockd'.<7>kobj
+002ae6d4: 65637420 38323530 3a207265 67697374    ect 8250: regist
+002ae6e4: 6572696e 672e2070 6172656e 743a203c    ering. parent: <
+002ae6f4: 4e554c4c 3e2c2073 65743a20 6d6f6475    NULL>, set: modu
+002ae704: 6c650a3c 373e6b6f 626a6563 745f7565    le.<7>kobject_ue
+002ae714: 76656e74 5f656e76 0a3c373e 66696c6c    vent_env.<7>fill
+002ae724: 5f6b6f62 6a5f7061 74683a20 70617468    _kobj_path: path
+002ae734: 203d2027 2f6d6f64 756c652f 38323530     = '/module/8250
+002ae744: 270a3c37 3e6b6f62 6a656374 2072643a    '.<7>kobject rd:
+002ae754: 20726567 69737465 72696e67 2e207061     registering. pa
+002ae764: 72656e74 3a203c4e 554c4c3e 2c207365    rent: <NULL>, se
+002ae774: 743a206d 6f64756c 650a3c37 3e6b6f62    t: module.<7>kob
+002ae784: 6a656374 5f756576 656e745f 656e760a    ject_uevent_env.
+002ae794: 3c373e66 696c6c5f 6b6f626a 5f706174    <7>fill_kobj_pat
+002ae7a4: 683a2070 61746820 3d20272f 6d6f6475    h: path = '/modu
+002ae7b4: 6c652f72 64270a3c 373e6b6f 626a6563    le/rd'.<7>kobjec
+002ae7c4: 74206c6f 6f703a20 72656769 73746572    t loop: register
+002ae7d4: 696e672e 20706172 656e743a 203c4e55    ing. parent: <NU
+002ae7e4: 4c4c3e2c 20736574 3a206d6f 64756c65    LL>, set: module
+002ae7f4: 0a3c373e 6b6f626a 6563745f 75657665    .<7>kobject_ueve
+002ae804: 6e745f65 6e760a3c 373e6669 6c6c5f6b    nt_env.<7>fill_k
+002ae814: 6f626a5f 70617468 3a207061 7468203d    obj_path: path =
+002ae824: 20272f6d 6f64756c 652f6c6f 6f70270a     '/module/loop'.
+002ae834: 3c373e6b 6f626a65 63742065 31303030    <7>kobject e1000
+002ae844: 3a207265 67697374 6572696e 672e2070    : registering. p
+002ae854: 6172656e 743a203c 4e554c4c 3e2c2073    arent: <NULL>, s
+002ae864: 65743a20 6d6f6475 6c650a3c 373e6b6f    et: module.<7>ko
+002ae874: 626a6563 745f7565 76656e74 5f656e76    bject_uevent_env
+002ae884: 0a3c373e 66696c6c 5f6b6f62 6a5f7061    .<7>fill_kobj_pa
+002ae894: 74683a20 70617468 203d2027 2f6d6f64    th: path = '/mod
+002ae8a4: 756c652f 65313030 30270a3c 373e6b6f    ule/e1000'.<7>ko
+002ae8b4: 626a6563 74206765 6e657269 633a2072    bject generic: r
+002ae8c4: 65676973 74657269 6e672e20 70617265    egistering. pare
+002ae8d4: 6e743a20 3c4e554c 4c3e2c20 7365743a    nt: <NULL>, set:
+002ae8e4: 206d6f64 756c650a 3c373e6b 6f626a65     module.<7>kobje
+002ae8f4: 63745f75 6576656e 745f656e 760a3c37    ct_uevent_env.<7
+002ae904: 3e66696c 6c5f6b6f 626a5f70 6174683a    >fill_kobj_path:
+002ae914: 20706174 68203d20 272f6d6f 64756c65     path = '/module
+002ae924: 2f67656e 65726963 270a3c37 3e6b6f62    /generic'.<7>kob
+002ae934: 6a656374 20757362 636f7265 3a207265    ject usbcore: re
+002ae944: 67697374 6572696e 672e2070 6172656e    gistering. paren
+002ae954: 743a203c 4e554c4c 3e2c2073 65743a20    t: <NULL>, set:
+002ae964: 6d6f6475 6c650a3c 373e6b6f 626a6563    module.<7>kobjec
+002ae974: 745f7565 76656e74 5f656e76 0a3c373e    t_uevent_env.<7>
+002ae984: 66696c6c 5f6b6f62 6a5f7061 74683a20    fill_kobj_path:
+002ae994: 70617468 203d2027 2f6d6f64 756c652f    path = '/module/
+002ae9a4: 75736263 6f726527 0a3c373e 6b6f626a    usbcore'.<7>kobj
+002ae9b4: 65637420 6869643a 20726567 69737465    ect hid: registe
+002ae9c4: 72696e67 2e207061 72656e74 3a203c4e    ring. parent: <N
+002ae9d4: 554c4c3e 2c207365 743a206d 6f64756c    ULL>, set: modul
+002ae9e4: 650a3c37 3e6b6f62 6a656374 5f756576    e.<7>kobject_uev
+002ae9f4: 656e745f 656e760a 3c373e66 696c6c5f    ent_env.<7>fill_
+002aea04: 6b6f626a 5f706174 683a2070 61746820    kobj_path: path
+002aea14: 3d20272f 6d6f6475 6c652f68 6964270a    = '/module/hid'.
+002aea24: 3c373e6b 6f626a65 63742075 73626869    <7>kobject usbhi
+002aea34: 643a2072 65676973 74657269 6e672e20    d: registering.
+002aea44: 70617265 6e743a20 3c4e554c 4c3e2c20    parent: <NULL>,
+002aea54: 7365743a 206d6f64 756c650a 3c373e6b    set: module.<7>k
+002aea64: 6f626a65 63745f75 6576656e 745f656e    object_uevent_en
+002aea74: 760a3c37 3e66696c 6c5f6b6f 626a5f70    v.<7>fill_kobj_p
+002aea84: 6174683a 20706174 68203d20 272f6d6f    ath: path = '/mo
+002aea94: 64756c65 2f757362 68696427 0a3c373e    dule/usbhid'.<7>
+002aeaa4: 6b6f626a 65637420 7463705f 63756269    kobject tcp_cubi
+002aeab4: 633a2072 65676973 74657269 6e672e20    c: registering.
+002aeac4: 70617265 6e743a20 3c4e554c 4c3e2c20    parent: <NULL>,
+002aead4: 7365743a 206d6f64 756c650a 00000000    set: module.....
+002aeae4: 00000000 00000000 00000000 00000000    ................
+002aeaf4: 00000000 00000000 00000000 00000000    ................
+002aeb04: 00000000 00000000 00000000 00000000    ................
