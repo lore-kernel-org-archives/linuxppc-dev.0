@@ -1,16 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 9 Nov 2007 11:21:38 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: DTS Bytestrings Representation in /dts-v1/ files
-Message-ID: <20071109002138.GE18592@localhost.localdomain>
-References: <E1IpWlT-0007Qd-IX@jdl.com>
-	<20071106231120.GG31367@localhost.localdomain>
-	<E1Iplfp-0003WY-MB@jdl.com> <E1IqCtu-0000ZE-Vi@jdl.com>
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA05.westchester.pa.mail.comcast.net
+	(qmta05.westchester.pa.mail.comcast.net [76.96.62.48])
+	by ozlabs.org (Postfix) with ESMTP id 741E9DDE25
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 11:57:58 +1100 (EST)
+Message-ID: <4733AF6B.60807@gmail.com>
+Date: Thu, 08 Nov 2007 19:52:59 -0500
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IqCtu-0000ZE-Vi@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4] Use embedded libfdt in the bootwrapper
+References: <20071108033241.GA11695@localhost.localdomain>	<20071108033603.8A29FDDE0F@ozlabs.org>	<20071108160839.GA4356@loki.buserror.net>	<20071108224051.GB18592@localhost.localdomain>
+	<473392A3.4010203@freescale.com>
+In-Reply-To: <473392A3.4010203@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 08, 2007 at 01:18:50PM -0600, Jon Loeliger wrote:
+Scott Wood wrote:
+> David Gibson wrote:
+>>> How hard would it be to get libfdt to dynamically allocate any extra space
+>>> it needs?  This is a regression from the current flat device tree code...
+>> Uh.. it already does.  Or rather, the shims in libfdt-wrapper.c do so,
+>> when libfdt functions which can expand the tree report that they've
+>> run out of room.
 > 
-> Folks,
+> Ah, good -- I was looking in libfdt itself, not the wrapper.  Now if 
+> only we could get something similar into u-boot... maybe libfdt proper 
+> could accept an optional realloc() function pointer in fdt_init(), and 
+> eliminate the need for the caller to provide such a wrapper?
 > 
-> When the new DTS /dts-v1/ support is released Real Soon Now,
-> it will support C-like literal constants.  Hex values will be
-> prefixed with 0x, binary with 0b, and bare numbers will be
-> decimal unless they start with a leading 0.
-> 
-> One outstanding question on which I'd like some feedback
-> is the issue of bytestring value representation.
-> 
-> Currently they look like this:
-> 
->     stuff = [ 0b 31 22 de ea ad be ef ];
+> -Scott
 
-Or, equivalently, like this:
-	stuff = [0b3122deeaadbeef];
+Hi Scott,
 
-I think it's important to be aware of the more compact form when
-considering whether to change the representation.
+My concern from the u-boot side is that u-boot has to know exactly 
+*where* to put the expanded blob because it has to pass it to linux and 
+keep it out of linux' way so it doesn't get "stepped on."  Linux has an 
+advantage in that it "owns" all of memory and can allocate and 
+deallocate whatever and wherever and it won't step on itself (hopefully).
 
-> One opinion is to have them continue to look like that
-> and be in hex only.
-> 
-> Another opinion is to allow the new, consistent  C-style
-> literals and expressions so that one could have:
-> 
->     new_stuff = [ 0x31 49 '1' 23 17 ];
-> 
-> Opinions?
-> 
-> Thanks,
-> jdl
+I'm assuming your boot wedge has the advantage of being able to use 
+linux's malloc() and thus don't have to worry about coordinating with 
+linux on memory allocation.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+With the current u-boot fdt command, you can resize the blob, and this 
+can be done in a script with all the (somewhat limited) capabilities of 
+the u-boot shell (an adaptation of hush).
+
+In the u-boot world, we fixate on memory maps and putting things in 
+specific places.  Maybe I'm making a problem where one doesn't exist, 
+but an arbitrary malloc() in u-boot (as opposed to linux's malloc) seems 
+like a Bad Thing[tm] because it is uncontrolled and may end up in a very 
+bad place when linux starts (e.g. the linux start up script expands 
+linux on top of the blob).
+
+Best regards,
+gvb
