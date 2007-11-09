@@ -1,21 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E3293DDE43
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 18:50:41 +1100 (EST)
-Subject: Re: Kernel locks up after calling kernel_execve()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20071109074155.266120@gmx.net>
-References: <20071108214723.135260@gmx.net>
-	<1194564017.6561.21.camel@pasglop>  <20071109074155.266120@gmx.net>
-Content-Type: text/plain
-Date: Fri, 09 Nov 2007 18:50:29 +1100
-Message-Id: <1194594629.6561.34.camel@pasglop>
+Return-Path: <domen.puncer@telargo.com>
+Date: Fri, 9 Nov 2007 10:12:45 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting
+	memory.
+Message-ID: <20071109091245.GA3148@nd47.coderock.org>
+References: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +19,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 09/11/07 00:31 -0500, Jon Smirl wrote:
+> This is the reason I couldn't get user space started or connect to my
+> nfs server. Patch is against current linus git.
+> 
+> mpc5200 fec driver is corrupting memory. This patch fixes two bugs
+> where the wrong skb buffer was being referenced.
+> 
+> Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 
-> I tried to use /bin/sh as init program and was able to enter a command,
-> but then the machine locked up, too.
-> Could that be a problem with a CPU sleeping/idle code?
+Acked-by: Domen Puncer <domen.puncer@telargo.com>
 
-That's possibly an issue, try disabling power save if any for that CPU
-type. If it worked and broke, you may have to bisect tho.
+I can't test it at the moment, but the patch is obviously correct,
+mapped buffer should be the _same_ as submitted.
 
-Ben.
+> 
+> ---
+> 
+>  drivers/net/fec_mpc52xx.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> index a8a0ee2..ddfcc0b 100644
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+> irq, void *dev_id)
+> 
+>  		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
+>  				(struct bcom_bd **)&bd);
+> -		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
+> +		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
+> 
+>  		/* Test for errors in received frame */
+>  		if (status & BCOM_FEC_RX_BD_ERRORS) {
+> @@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+> irq, void *dev_id)
+>  			bcom_prepare_next_buffer(priv->rx_dmatsk);
+> 
+>  		bd->status = FEC_RX_BUFFER_SIZE;
+> -		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
+> +		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
+>  				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+> 
+>  		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
+> 
+> 
+> -- 
+> Jon Smirl
+> jonsmirl@gmail.com
+
+-- 
+Domen Puncer | Research & Development
+.............................................................................................
+Telargo d.o.o. | Zagrebška cesta 20 | 2000 Maribor | Slovenia
+.............................................................................................
+www.telargo.com
