@@ -1,22 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2EECDDE34
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 04:19:11 +1100 (EST)
-Date: Fri, 9 Nov 2007 11:15:03 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: "vincent.liu" <vincent.liu@bmrtech.com>
-Subject: Re: help  linux for linux2.6
-Message-ID: <20071109171503.GA4479@loki.buserror.net>
-References: <200711091434079212507@bmrtech.com>
-	<200711091439036094772@bmrtech.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 78E59DDFBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 04:20:45 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id b2so91788ana
+	for <linuxppc-dev@ozlabs.org>; Fri, 09 Nov 2007 09:20:44 -0800 (PST)
+Message-ID: <fa686aa40711090920n3e931cbbwf63a66cedd5504de@mail.gmail.com>
+Date: Fri, 9 Nov 2007 10:20:44 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Marian Balakowicz" <m8@semihalf.com>
+Subject: Re: [PATCH v4 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board
+	support
+In-Reply-To: <20071109171137.16289.39575.stgit@hekate.izotz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200711091439036094772@bmrtech.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071109171137.16289.39575.stgit@hekate.izotz.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 09, 2007 at 02:39:04PM +0800, vincent.liu wrote:
-> These days I am working on a MPC8270 based board with linux 2.6.10 kernel.
-> When I use the default kernel and load the uImage to the target board.
-> The kernel hangs after uncompressing kernel image ... ok .
+On 11/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
+> This is a yet another version of the patches that add arch/powerpc support for
+> three MPC5200 based boards: TQ-Components TQM5200, Schindler CM5200
+> and Promess Motion-PRO.
+>
+> Updates include modifications to mpc5200_simple_probe() routine in the
+> generic support for simple MPC5200 based boards, changes to
+> leds-motionpro driver - using common compatility property for both LEDs,
+> and few other .dts cleanups.
+>
+> [POWERPC] Promess Motion-PRO defconfig
+> [POWERPC] Promess Motion-PRO DTS
+> [POWERPC] Motion-PRO: Add LED support.
+> [POWERPC] CM5200 defconfig
+> [POWERPC] CM5200 DTS
+> [POWERPC] TQM5200 defconfig
+> [POWERPC] TQM5200 DTS
+> [POWERPC] Use EXPORT_SYMBOL_GPL for 52xx common routines symbol export
+> [POWERPC] Export mpc52xx_map_node() routine symbol
+> [POWERPC] Add generic support for simple MPC5200 based boards
+> [POWERPC] Add common mpc52xx_setup_pci() routine
+> [POWERPC] Add 'fsl,lpb' bus type for MPC5200 LocalPlus Bus
+> [POWERPC] Add 'model: ...' line to common show_cpuinfo()
+>
+> Please review, and if everything is ok schedule for 2.6.24-rc3.
 
-The "default kernel" for what board?
+Just to be clear, I won't be picking up these changes until the 2.6.25
+merge window.
 
-> I am freshman in the embedded linux area,So I do not know how to go on this project.
-> From internet , I searched many articles,and no gain.
+The .24 tree is closed for new board support patches and is in bug fix
+only mode.
 
-I suggest trying head-of-tree (with arch/powerpc, not arch/ppc) rather than
-very old kernels, and making sure that the kernel you're building actually
-supports your hardware.
+Thanks,
+g.
 
--Scott
+>
+> Cheers,
+> m.
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
