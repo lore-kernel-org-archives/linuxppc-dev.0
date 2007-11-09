@@ -1,18 +1,30 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k2.cs.myharris.net (mlbe2k2.cs.myharris.net
-	[137.237.90.89]) by ozlabs.org (Postfix) with ESMTP id 1497FDDEDA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 05:46:28 +1100 (EST)
-Message-ID: <4734AAFC.8080907@harris.com>
-Date: Fri, 09 Nov 2007 13:46:20 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <uweigand@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ACD20DDEDC
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 05:54:24 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id lA9IsKl2185016
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 18:54:20 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.6) with
+	ESMTP id lA9IsKuw2314488
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 19:54:20 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lA9IsKU0027044
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 19:54:20 +0100
+Message-Id: <200711091854.lA9IsJEB027041@d12av02.megacenter.de.ibm.com>
+Subject: Hardware watchpoints on Cell/B.E. broken
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 9 Nov 2007 19:54:19 +0100 (CET)
+From: "Ulrich Weigand" <uweigand@de.ibm.com>
 MIME-Version: 1.0
-To: Josh Boyer <jwboyer@gmail.com>
-Subject: Re: PPC440EPx on Sequoia: /proc/iomem acts weird
-References: <4734A72B.2070104@harris.com> <20071109123522.072bc1d8@weaponx>
-In-Reply-To: <20071109123522.072bc1d8@weaponx>
-Content-Type: multipart/alternative;
-	boundary="------------060007080804050701080105"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,109 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060007080804050701080105
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hello,
 
-I am using the Denx 2.6.32 kernel, which does have powerpc/sequoia.  
-Xenomai is a real-time kernel built on Adeos/Ipipe.  I'll dig into it 
-further.
+I've noticed that GDB hardware watchpoints do not work at all on Cell/B.E.
+(when running without hypervisor); the kernel accepts the PTRACE_SET_DEBUGREG
+call without error, but watchpoints never trigger.
 
-    Steve
+This turns out to be caused by a new hardware feature in the PowerPC 2.02
+architecture level: the DABRX register.  This register controls in which
+modes of operation (problem state, privileged state, hypervisor state)
+the DABR register takes effect.  (See Book III v 2.02 page 40.)
+
+The default setting of that register on Cell/B.E. (at least on IBM blades),
+which the Linux kernel currently never modifies, is to ignore DABR in all
+modes -- thus watchpoints do not work at all.
+
+The following hack sets the bit in the DABRX that enables the DABR for
+problem state, whenever the DABR is set.  With this patch on top of the
+current Fedora 8 update kernel (kernel-2.6.23.1-48.fc8) watchpoints work
+again -- all relevant test cases in the GDB test suite now pass.
+
+Obviously, the patch cannot be applied as-is; we need to make sure we are
+on a machine that supports the DABRX feature.  Arnd asked me to post this
+anyway as a heads-up on that problem ...
+
+Bye,
+Ulrich
 
 
-Josh Boyer wrote:
-> On Fri, 09 Nov 2007 13:30:03 -0500
-> "Steven A. Falco" <sfalco@harris.com> wrote:
->
->   
->> If I cat /proc/iomem on a Sequoia board, it never stops printing.  Here 
->> are the first 10 lines:
->>
->> bash-3.00# head -10 /proc/iomem
->> e0000100-e000017f : usb
->>   e0000100-e000017f : musbhsfc_udc
->> e0000300-e000038f : ehci_hcd
->> 180000000-18fffffff : /plb/pci@1eec00000
->>           1d0000000-1d0001fff : ndfc
->>           1d0000000-1d0001fff : ndfc
->>           1d0000000-1d0001fff : ndfc
->>           1d0000000-1d0001fff : ndfc
->>           1d0000000-1d0001fff : ndfc
->>           1d0000000-1d0001fff : ndfc
->>
->> Basically, the last line (regarding the nand flash) keeps repeating 
->> "forever".
->>
->> Is anyone else seeing this behavior?  My kernel is 2.6.23 with Xenomai 
->> patched in.
->>     
->
-> Erm.. 2.6.23?  There is no Sequoia support in arch/ppc or arch/powerpc
-> for 2.6.23 in the official trees.  What is Xenomai?  You should
-> probably talk to them.
->
-> josh
->
->   
-
---------------060007080804050701080105
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-<tt>I am using the Denx 2.6.32 kernel, which does have
-powerpc/sequoia.&nbsp; Xenomai is a real-time kernel built on Adeos/Ipipe.&nbsp;
-I'll dig into it further.<br>
-<br>
-&nbsp;&nbsp;&nbsp; Steve<br>
-<br>
-</tt><br>
-Josh Boyer wrote:
-<blockquote cite="mid:20071109123522.072bc1d8@weaponx" type="cite">
-  <pre wrap="">On Fri, 09 Nov 2007 13:30:03 -0500
-"Steven A. Falco" <a class="moz-txt-link-rfc2396E" href="mailto:sfalco@harris.com">&lt;sfalco@harris.com&gt;</a> wrote:
-
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">If I cat /proc/iomem on a Sequoia board, it never stops printing.  Here 
-are the first 10 lines:
-
-bash-3.00# head -10 /proc/iomem
-e0000100-e000017f : usb
-  e0000100-e000017f : musbhsfc_udc
-e0000300-e000038f : ehci_hcd
-180000000-18fffffff : /plb/pci@1eec00000
-          1d0000000-1d0001fff : ndfc
-          1d0000000-1d0001fff : ndfc
-          1d0000000-1d0001fff : ndfc
-          1d0000000-1d0001fff : ndfc
-          1d0000000-1d0001fff : ndfc
-          1d0000000-1d0001fff : ndfc
-
-Basically, the last line (regarding the nand flash) keeps repeating 
-"forever".
-
-Is anyone else seeing this behavior?  My kernel is 2.6.23 with Xenomai 
-patched in.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Erm.. 2.6.23?  There is no Sequoia support in arch/ppc or arch/powerpc
-for 2.6.23 in the official trees.  What is Xenomai?  You should
-probably talk to them.
-
-josh
-
-  </pre>
-</blockquote>
-</body>
-</html>
-
---------------060007080804050701080105--
+--- linux-2.6.23.ppc64/arch/powerpc/kernel/process.c.orig
++++ linux-2.6.23.ppc64/arch/powerpc/kernel/process.c
+@@ -229,6 +229,7 @@
+ 	/* XXX should we have a CPU_FTR_HAS_DABR ? */
+ #if defined(CONFIG_PPC64) || defined(CONFIG_6xx)
+ 	mtspr(SPRN_DABR, dabr);
++	mtspr(1015, 1);  /* enable DABR for user space */
+ #endif
+ 	return 0;
+ }
+-- 
+  Dr. Ulrich Weigand
+  GNU Toolchain for Linux on System z and Cell BE
+  Ulrich.Weigand@de.ibm.com
