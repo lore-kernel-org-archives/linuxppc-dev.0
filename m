@@ -1,21 +1,19 @@
-Return-Path: <vincent.liu@bmrtech.com>
-Received: from smtp01.east.net (smtp01.east.net [211.100.61.140])
-	by ozlabs.org (Postfix) with ESMTP id A3516DDE22
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 17:45:59 +1100 (EST)
-Received: from unknown (HELO bmr-4fc38f2cc50)
-	(Authenticated?user:?vincent.liu@bmrtech.com@[218.242.144.211])
-	(envelope-sender <vincent.liu@bmrtech.com>)
-	by 0 (qmail-ldap-1.03) with SMTP
-	for <linuxppc-dev@ozlabs.org>; 9 Nov 2007 14:31:24 +0800
-Date: Fri, 9 Nov 2007 14:39:04 +0800
-From: "vincent.liu" <vincent.liu@bmrtech.com>
-To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
-References: <200711091434079212507@bmrtech.com>
-Subject: help  linux for linux2.6
-Message-ID: <200711091439036094772@bmrtech.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Return-Path: <12o3l@tiscali.nl>
+Received: from smtp-out2.tiscali.nl (smtp-out2.tiscali.nl [195.241.79.177])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E017DDE0A
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 23:32:27 +1100 (EST)
+Message-ID: <47345350.6090400@tiscali.nl>
+Date: Fri, 09 Nov 2007 13:32:16 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+MIME-Version: 1.0
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+Subject: Re: [PATCH] balance ioremap/iounmap in {sycamore, walnut}_setup_arch()
+References: <47333A69.3030606@tiscali.nl> <47333EDA.4080907@ru.mvista.com>
+In-Reply-To: <47333EDA.4080907@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi 
-These days I am working on a MPC8270 based board with linux 2.6.10 kernel.
-When I use the default kernel and load the uImage to the target board.
-The kernel hangs after uncompressing kernel image ... ok .
-I am freshman in the embedded linux area,So I do not know how to go on this project.
->From internet , I searched many articles,and no gain.
-Please help me .
-Thanks a lot.
- 				
---------------
-vincent.liu
-2007-11-09
+Valentine Barshak wrote:
+> Roel Kluin wrote:
+>> I guess it should be done after the last usage of kb_data or fpga_status?
+> 
+> I think no iounmap(kb_data) needed. Looks like the pointer kn_cs (kb_cs
+> = kb_data + 1) is used by the serio driver
+> (drivers/input/serio/i8042-ppcio.h).
+> Please note that we just ioremap and assign pointers here, not actually
+> reading the registers.
+> Also, looks like you unmap the fpga registers too early.
+> Thanks,
+> Valentine.
+
+Thanks for your pointers. I'm new, so I'm not sure how this should be done. I
+have removed the iounmap(kb_data), and moved the iounmap(fpga_status) lower.
+possibly the latter could be done before the sycamore_rtc_base assignment?
+--
+Balance ioremap/iounmap
+
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/arch/ppc/platforms/4xx/sycamore.c b/arch/ppc/platforms/4xx/sycamore.c
+index 8689f3e..6ce4815 100644
+--- a/arch/ppc/platforms/4xx/sycamore.c
++++ b/arch/ppc/platforms/4xx/sycamore.c
+@@ -132,6 +132,7 @@ sycamore_setup_arch(void)
+ 	sycamore_rtc_base = (void *) SYCAMORE_RTC_VADDR;
+ 	TODC_INIT(TODC_TYPE_DS1743, sycamore_rtc_base, sycamore_rtc_base,
+ 		  sycamore_rtc_base, 8);
++	iounmap(fpga_status);
+ 
+ 	/* Identify the system */
+ 	printk(KERN_INFO "IBM Sycamore (IBM405GPr) Platform\n");
