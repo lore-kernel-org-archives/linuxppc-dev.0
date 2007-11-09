@@ -4,17 +4,17 @@ Received: from de01egw01.freescale.net (de01egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 37A2FDDE29
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 09:08:15 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8CC0ADDDD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 09:17:58 +1100 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	lA9M89Y6004734
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 15:08:10 -0700 (MST)
+	lA9MHqGA009017
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 15:17:53 -0700 (MST)
 From: Becky Bruce <becky.bruce@freescale.com>
 To: linuxppc-dev@ozlabs.org
 Subject: [PATCH] Avoid unpaired stwcx. on some processors
-Date: Fri,  9 Nov 2007 16:08:06 -0600
-Message-Id: <11946460863124-git-send-email-becky.bruce@freescale.com>
+Date: Fri,  9 Nov 2007 16:17:49 -0600
+Message-Id: <11946466691682-git-send-email-becky.bruce@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,8 +34,10 @@ This patch adds the dummy lwarx, and creates a cpu feature bit to indicate
 which cpus are affected. Tested on mpc8641_hpcn_defconfig in arch/powerpc;
 build tested in arch/ppc.
 
-<Signed-off-by> Becky Bruce <becky.bruce@freescale.com>
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 ---
+Resend with correct signed-off-by line!
+
  arch/powerpc/kernel/entry_32.S |    6 ++++++
  arch/ppc/kernel/entry.S        |    6 ++++++
  include/asm-powerpc/cputable.h |   22 ++++++++++++----------
