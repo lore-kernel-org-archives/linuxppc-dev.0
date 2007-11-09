@@ -1,19 +1,14 @@
-Return-Path: <gvb.linuxppc.dev@gmail.com>
-Received: from QMTA05.westchester.pa.mail.comcast.net
-	(qmta05.westchester.pa.mail.comcast.net [76.96.62.48])
-	by ozlabs.org (Postfix) with ESMTP id 741E9DDE25
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 11:57:58 +1100 (EST)
-Message-ID: <4733AF6B.60807@gmail.com>
-Date: Thu, 08 Nov 2007 19:52:59 -0500
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
+Date: Fri, 9 Nov 2007 00:31:35 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>,
+	"Domen Puncer" <domen.puncer@telargo.com>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	netdev <netdev@vger.kernel.org>
+Subject: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting memory.
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] Use embedded libfdt in the bootwrapper
-References: <20071108033241.GA11695@localhost.localdomain>	<20071108033603.8A29FDDE0F@ozlabs.org>	<20071108160839.GA4356@loki.buserror.net>	<20071108224051.GB18592@localhost.localdomain>
-	<473392A3.4010203@freescale.com>
-In-Reply-To: <473392A3.4010203@freescale.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +18,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> David Gibson wrote:
->>> How hard would it be to get libfdt to dynamically allocate any extra space
->>> it needs?  This is a regression from the current flat device tree code...
->> Uh.. it already does.  Or rather, the shims in libfdt-wrapper.c do so,
->> when libfdt functions which can expand the tree report that they've
->> run out of room.
-> 
-> Ah, good -- I was looking in libfdt itself, not the wrapper.  Now if 
-> only we could get something similar into u-boot... maybe libfdt proper 
-> could accept an optional realloc() function pointer in fdt_init(), and 
-> eliminate the need for the caller to provide such a wrapper?
-> 
-> -Scott
+This is the reason I couldn't get user space started or connect to my
+nfs server. Patch is against current linus git.
 
-Hi Scott,
+mpc5200 fec driver is corrupting memory. This patch fixes two bugs
+where the wrong skb buffer was being referenced.
 
-My concern from the u-boot side is that u-boot has to know exactly 
-*where* to put the expanded blob because it has to pass it to linux and 
-keep it out of linux' way so it doesn't get "stepped on."  Linux has an 
-advantage in that it "owns" all of memory and can allocate and 
-deallocate whatever and wherever and it won't step on itself (hopefully).
+Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 
-I'm assuming your boot wedge has the advantage of being able to use 
-linux's malloc() and thus don't have to worry about coordinating with 
-linux on memory allocation.
+---
 
-With the current u-boot fdt command, you can resize the blob, and this 
-can be done in a script with all the (somewhat limited) capabilities of 
-the u-boot shell (an adaptation of hush).
+ drivers/net/fec_mpc52xx.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-In the u-boot world, we fixate on memory maps and putting things in 
-specific places.  Maybe I'm making a problem where one doesn't exist, 
-but an arbitrary malloc() in u-boot (as opposed to linux's malloc) seems 
-like a Bad Thing[tm] because it is uncontrolled and may end up in a very 
-bad place when linux starts (e.g. the linux start up script expands 
-linux on top of the blob).
 
-Best regards,
-gvb
+diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+index a8a0ee2..ddfcc0b 100644
+--- a/drivers/net/fec_mpc52xx.c
++++ b/drivers/net/fec_mpc52xx.c
+@@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+irq, void *dev_id)
+
+ 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
+ 				(struct bcom_bd **)&bd);
+-		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
++		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
+
+ 		/* Test for errors in received frame */
+ 		if (status & BCOM_FEC_RX_BD_ERRORS) {
+@@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+irq, void *dev_id)
+ 			bcom_prepare_next_buffer(priv->rx_dmatsk);
+
+ 		bd->status = FEC_RX_BUFFER_SIZE;
+-		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
++		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
+ 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+
+ 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
