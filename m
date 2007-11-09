@@ -1,18 +1,22 @@
-Return-Path: <robertlazarski@gmail.com>
-Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.234])
-	by ozlabs.org (Postfix) with ESMTP id 203C2DDE2F
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 6103EDDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Nov 2007 00:25:33 +1100 (EST)
-Received: by nz-out-0506.google.com with SMTP id i1so435583nzh
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Nov 2007 05:25:31 -0800 (PST)
-Message-ID: <f87675ee0711090525n5687201fs102054f761cec20b@mail.gmail.com>
-Date: Fri, 9 Nov 2007 08:25:31 -0500
-From: "robert lazarski" <robertlazarski@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: auto soft reset after kernel crash?
+	Sat, 10 Nov 2007 01:16:27 +1100 (EST)
+Message-ID: <47346BB7.2000009@fz-juelich.de>
+Date: Fri, 09 Nov 2007 15:16:23 +0100
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: MingLiu <eemingliu@hotmail.com>
+Subject: Re: Bootloader & Flash
+References: <4731A8E3.4020909@fz-juelich.de>
+	<BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
+	<47344D70.4050308@fz-juelich.de>
+	<BAY138-W21A6D92355C81BE1341628B2840@phx.gbl>
+In-Reply-To: <BAY138-W21A6D92355C81BE1341628B2840@phx.gbl>
+Content-Type: text/plain;
+	charset=GB2312
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +27,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Argl :)
 
-I'm trying to read the __log_buf after a kernel crash on a custom
-board via a software reset. While I'm waiting for the hardware guys to
-give me a sw reset button, I've noticed that the particular 2.6.22
-kernel I'm using software resets itself around 7 minutes after a
-crash. I tried a 2.6.23 kernel to see if my problem was related to
-kernel version and it doesn't reset itself. Is this reset indeed a
-kernel feature? How do I enable / disable it and set the amount of
-time it waits before it resets? I went thru the menuconfig features
-and couldn't enable a sw reset. Any ideas?
+The error was so ... simple.
+The Flash device is broken. I take a new MiniModul and all things are
+running.
 
-Thanks,
-Robert
+Thanks a lot
+Georg
+
+MingLiu wrote:
+> Hi,
+>
+> > - I have download the zImage.elf via the EDK flash loader
+> > - The flash loader creates a bootloader, this is also running on
+> start up :)
+>
+> What you need to store in flash memory, is not the .elf file. Before
+> you use EDK flash loader to burn your linux kernel in flash, .elf file
+> should be transfered into .srec file, just like the below reminds you:
+> SREC line is corrupted.
+>
+>
+> > But ... It stops with an error-message after a few seconds:
+> >
+> > EDK Bootloader:
+> > Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is
+> corrupted
+> >
+> > What now ?
+>
+> Hopefully it helps.
+>
+> BR
+> Ming
+>
+> -----------------------------------------------------------------------=
+-
+> =D3=C3 Windows Live Spaces =D5=B9=CA=BE=B8=F6=D0=D4=D7=D4=CE=D2=A3=AC=D3=
+=EB=BA=C3=D3=D1=B7=D6=CF=ED=C9=FA=BB=EE=A3=A1 =C1=CB=BD=E2=B8=FC=B6=E0=D0=
+=C5=CF=A2=A3=A1
+> <http://spaces.live.com/?page=3DHP>
+
+
+
+-------------------------------------------------------------------------=
+----------------
+-------------------------------------------------------------------------=
+----------------
+Forschungszentrum J=A8=B9lich GmbH
+52425 J=A8=B9lich
+
+Sitz der Gesellschaft: J=A8=B9lich
+Eingetragen im Handelsregister des Amtsgerichts D=A8=B9ren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in B"arbel Brumme-Bothe
+Gesch"aftsf=A8=B9hrung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich=
+ Krafft (stellv.=20
+Vorsitzender)
+-------------------------------------------------------------------------=
+----------------
+-------------------------------------------------------------------------=
+----------------
