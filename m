@@ -1,17 +1,19 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] DTC: Polish up the DTS Version 1 implementation. 
-In-Reply-To: Your message of "Fri, 09 Nov 2007 11:13:45 +1100."
-	<20071109001345.GD18592@localhost.localdomain>
-References: <E1IpWlT-0007Qd-IX@jdl.com>
-	<20071106231120.GG31367@localhost.localdomain>
-	<E1Iplfp-0003WY-MB@jdl.com>
-	<20071107231942.GA8835@localhost.localdomain>
-	<47331979.7030803@freescale.com>
-	<20071109001345.GD18592@localhost.localdomain>
-Date: Fri, 09 Nov 2007 08:32:57 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IqUun-00063a-7g@jdl.com>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 334F2DDEBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 01:43:52 +1100 (EST)
+Message-ID: <4734721A.6030603@semihalf.com>
+Date: Fri, 09 Nov 2007 15:43:38 +0100
+From: Marian Balakowicz <m8@semihalf.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v3 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+References: <fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com>	
+	<20071106222224.D67BA2479C@gemini.denx.de>
+	<fa686aa40711061525y79f9f99eneda32b09a77ddcd5@mail.gmail.com>
+In-Reply-To: <fa686aa40711061525y79f9f99eneda32b09a77ddcd5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,65 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
+
+Hi Grant,
+
+Grant Likely wrote:
+> On 11/6/07, Wolfgang Denk <wd@denx.de> wrote:
+>>
+>> in message <fa686aa40711061304k4779d01cu7fd1b17d1d34e5a2@mail.gmail.com> you wrote:
+>>> In other words; make the assumption that it is easier to change the
+>>> kernel than it is to change the device tree.
+>> Are you serious about this?
+>>
+>> Reading this from someone with your experience with device trees if
+>> feeding my worst fears...
 > 
-> But you do take a hit w.r.t. *minimum* representation size - there's
-> no form amongst all the possibilities here more compact than pure hex.
-> Especially since spaces are optional in the old form.  The fact that
-> [ab cd 00] and [abcd00] are equivalent was a deliberate choice in the
-> original form.
+> I think I better clarify.
 > 
-> The point of [] is for random binary data which is neither strings
-> (even with the odd strange character) nor sensibly organized into
-> 32-bit (or larger) integers.  Wanting something other than hex here is
-> much rarer than in the < > case.
+> Once a device tree is written and shipped on a deployed board, it may
+> never change again.  Or, the kernel version may be updated more
+> frequently than the device tree.
 > 
-> You're seeing < > and [ ] as basically the same thing - a list of
-> values - with the only difference being the size of those values.
-> That's not wrong, but it's not the only way to look at it - and it's
-> not the way I was thinking of [ ] when I invented it.  Your proposal
-> makes perfect sense while you think of [] as a list of values - but
-> not so much when it's thought of as a direct binary representation.
+> Say, for example, that in kernel 2.6.25 tqm5200 and cm5200 are both
+> handled by the same platform code.  And lets say that in 2.6.26 we
+> decide that they really need to have separate platform code (perhaps
+> due to a firmware bug that needs to be worked around on one board).
+> In this case, "mpc5200-simple-platform" has suddenly become useless.
+> Or, does mpc5200-simple-platform now describe the cm5200 or the
+> tqm5200?  (an assumption which cannot be made due to deployed boards
+> of both types claiming "mpc5200-simple-platform").
 > 
-> So I'm thinking perhaps we need two different things here: a "list of
-> values" representation, which can accomodate expressions and can also
-> have multiple sizes (because expressions which are evaluated to a
-> 16-bit or 64-bit value could also be useful under the right
-> circumstances), and the [ ] "bytestring
-> literal" representation.  Perhaps something like:
+> Trying to claim "compatible" at the board level is far more difficult
+> than claiming it at the device level.
 > 
-> (32-bit values)
-> 	<0xdeadbeef (1+1)>
-> or	<.32 0xdeadbeef (1+1)>
-> 
-> (64-bit values)
-> 	<.64 (0xdeadbeef << 32) (-1)>
-> (8-bit values)
-> 	<.8 0x00 0x0a 0xe4 0x2c 0x23 (0x10 + n)>
-> 
-> i.e. < > is list of values form, with size of each value as a sort of
-> parameter (defaulting to 32-bit, of course).  I'm not sure I like that
-> particular syntax, it's just the first thing I came up with to
-> demonstrate the idea.
+> Segher suggested on IRC: "for boards it is pretty much useless most of
+> the time, i think -- use "model" instead"
 
+I can imagine that we may get into various trouble (or at least the
+situation is less flexible) if we are unable to update .dts file along
+with the kernel image on a deployed board. If so, then in fact there
+is little sens in using "mpc5200-simple-platform" compatible.
 
-Ah ha!  I see.  You want this, then:
+But how serious is that, does such situation frequently happen in
+field? If we are able to update kernel image than what prevents .dts
+file update?
 
-    x = <.srec 0000 C001C0DEGE75BABE F1>
-
-OK.  That was entirely joking.  We all know that
-the cool code does NOT get the babe.
-
-Seriously though, I see your point, and I don't really
-have a strong opinion here, so in the interest of making
-some headway, we can just leave it as is for now.
-
-If it turns out to be a bad decision later, we'll fix it. :-)
-
-And with that issue behind us....
-
-I'm going to post these patches to introduce the new DTS format!
-Any last straggler comments?
-
-Thanks,
-jdl
+Cheers,
+m.
