@@ -1,17 +1,23 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 16A51DDE39
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 23:58:58 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: linux-input@vger.kernel.org
-Subject: Appletouch going wild
-Date: Fri, 09 Nov 2007 13:58:52 +0100
-Message-ID: <je640ba837.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 312AEDDE43
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 00:27:39 +1100 (EST)
+Date: Fri, 9 Nov 2007 16:25:07 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
+Message-ID: <20071109132507.GA21232@localhost.localdomain>
+References: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+	<20071108141611.GA5770@localhost.localdomain>
+	<20071108121508.39a65c33.kim.phillips@freescale.com>
+	<20071108183952.GA18117@localhost.localdomain>
+	<20071108131135.e16a2f9a.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071108131135.e16a2f9a.kim.phillips@freescale.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Li Yang <leoli@freescale.com>, jgarzik@pobox.com
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Every once in a while the touchpad in my iBook G4 (geyser1, 030B) is
-going wild, emitting random movement events even when not being touched.
-That started only with 2.6.24-rc1.  The only way to stop it is to reload
-the appletouch module.  My guess would be that reinitializing the
-touchpad can result in some kind of race condition.
+On Thu, Nov 08, 2007 at 01:11:35PM -0600, Kim Phillips wrote:
+[...]
+> right, but whether it does or not doesn't affect your failure outcome
+> either I'm assuming.
+> 
+> > > If it's something like 0x03, the u-boot patch will probably look like:
+> > > 
+> > > if ((bcsr[12] == 0x10) &&
+> > >     (immr->sysconf.spridr == SPR_8360_REV21 ||
+> > >      immr->sysconf.spridr == SPR_8360E_REV21))
+> > > 	/* if phy-connection-type is "rgmii-id", set it to "rgmii-rxid" */
+> > >         ...
+> > > 
+> > > but these linux patches would remain the same (the clk and data delay
+> > > settings for the UCC's are still valid; it's just the PHY config
+> > > that is triggering your problem from what I can tell).
+> > 
+> > Yup, most likely this is not UCC specific, but PHY. For some reason
+> > delays making harm here...
 
-Andreas.
+And today I was unable to reproduce yesterday's behaviour. Your
+patches works fine, with sixth patch and without it. With -rxid
+and with just -id.
+
+Though, after few resets I hit on that:
+
+- - - -
+U-Boot 1.3.0-rc3-g281df457-dirty (Nov  6 2007 - 18:19:35) MPC83XX
+
+Reset Status: External/Internal Soft, External/Internal Hard
+
+CPU:   e300c1, MPC8360E, Rev: 21 at 528 MHz, CSB:  264 MHz
+Board: Freescale MPC8360EMDS
+I2C:   ready
+DRAM:  256 MB (DDR2, 64-bit, ECC on)
+SDRAM: 64 MB (local bus)
+FLASH: 32 MB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   UEC: PHY is Marvell 88E11x1 (1410cc2)
+FSL UEC0: Full Duplex
+switching to rgmii 100
+FSL UEC0: Speed 100BT
+FSL UEC0: Link is up
+read wrong value : mii_id 1,mii_reg 2, base e0103120
+read wrong value : mii_id 1,mii_reg 3, base e0103120
+UEC: PHY is Generic MII (ffffffff)
+read wrong value : mii_id 1,mii_reg 1, base e0103120
+read wrong value : mii_id 1,mii_reg 1, base e0103120
+read wrong value : mii_id 1,mii_reg 5, base e0103120
+FSL UEC1: Full Duplex
+switching to rgmii 100
+FSL UEC1: Speed 100BT
+FSL UEC1: Link is up
+FSL UEC0, FSL UEC1
+- - - -
+
+And UCC1 does not work at all. After another reset that message
+disappears and it does work again.
+
+
+So, I think hardware is tricking me in various ways, not your
+patches fault.
+
+:-(
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
