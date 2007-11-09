@@ -1,18 +1,17 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 383EFDDECF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 01:22:59 +1100 (EST)
-Message-ID: <47346D35.1090303@semihalf.com>
-Date: Fri, 09 Nov 2007 15:22:45 +0100
-From: Marian Balakowicz <m8@semihalf.com>
-MIME-Version: 1.0
+Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH v3 12/13] [POWERPC] Promess Motion-PRO DTS
-References: <20071106200446.10913.29338.stgit@hekate.izotz.org>
-	<20071106200634.10913.6248.stgit@hekate.izotz.org>
-	<20071106224200.GE31367@localhost.localdomain>
-In-Reply-To: <20071106224200.GE31367@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-2
+Subject: Re: [PATCH] DTC: Polish up the DTS Version 1 implementation. 
+In-Reply-To: Your message of "Fri, 09 Nov 2007 11:13:45 +1100."
+	<20071109001345.GD18592@localhost.localdomain>
+References: <E1IpWlT-0007Qd-IX@jdl.com>
+	<20071106231120.GG31367@localhost.localdomain>
+	<E1Iplfp-0003WY-MB@jdl.com>
+	<20071107231942.GA8835@localhost.localdomain>
+	<47331979.7030803@freescale.com>
+	<20071109001345.GD18592@localhost.localdomain>
+Date: Fri, 09 Nov 2007 08:32:57 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IqUun-00063a-7g@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,67 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Nov 06, 2007 at 09:06:34PM +0100, Marian Balakowicz wrote:
->> Add device tree source file for Motion-PRO board.
-> [snip]
->> +		motionpro-statusled@660 {	// Motion-PRO status LED
->> +			compatible = "promess,motionpro-statusled";
->> +			reg = <660 10>;
->> +			interrupts = <1 f 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +			blink-delay = <64>; // 100 msec
->> +		};
->> +
->> +		motionpro-readyled@670 {	// Motion-PRO ready LED
->> +			compatible = "promess,motionpro-readyled";
->> +			reg = <670 10>;
->> +			interrupts = <1 10 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
+So, like, the other day David Gibson mumbled:
 > 
-> Is there actually any difference in behaviour betweeen the two LEDs?
-> If not, they should probably have the same compatible value, and
-> perhaps a "label" property or some such to associate them with a
-> particular LED.
-
-In fact they are identical, so I have used the same compatible
-property and added label property do distinguish them.
-
-> [snip]
->> +		spi@f00 {
->> +			device_type = "spi";
+> But you do take a hit w.r.t. *minimum* representation size - there's
+> no form amongst all the possibilities here more compact than pure hex.
+> Especially since spaces are optional in the old form.  The fact that
+> [ab cd 00] and [abcd00] are equivalent was a deliberate choice in the
+> original form.
 > 
-> No device_type!
-
-Removed.
-
->> +			compatible = "mpc5200b-spi","mpc5200-spi";
->> +			reg = <f00 20>;
->> +			interrupts = <2 d 0 2 e 0>;
->> +			interrupt-parent = <&mpc5200_pic>;
->> +		};
->> +
->> +		usb@1000 {
->> +			device_type = "usb-ohci-be";
+> The point of [] is for random binary data which is neither strings
+> (even with the odd strange character) nor sensibly organized into
+> 32-bit (or larger) integers.  Wanting something other than hex here is
+> much rarer than in the < > case.
 > 
-> Nor here.
-
-Removed.
-
-
-> [snip]
->> +		// PSC2 in spi master mode 
->> +		spi@2200 {		// PSC2
->> +			compatible = "mpc5200b-psc-spi","mpc5200-psc-spi";
->> +			cell-index = <1>;
+> You're seeing < > and [ ] as basically the same thing - a list of
+> values - with the only difference being the size of those values.
+> That's not wrong, but it's not the only way to look at it - and it's
+> not the way I was thinking of [ ] when I invented it.  Your proposal
+> makes perfect sense while you think of [] as a list of values - but
+> not so much when it's thought of as a direct binary representation.
 > 
->>From your description, this is an incorrect usage of cell-index - it
-> should *only* be used to index into SoC shared registers; never for
-> logical numbering.
+> So I'm thinking perhaps we need two different things here: a "list of
+> values" representation, which can accomodate expressions and can also
+> have multiple sizes (because expressions which are evaluated to a
+> 16-bit or 64-bit value could also be useful under the right
+> circumstances), and the [ ] "bytestring
+> literal" representation.  Perhaps something like:
+> 
+> (32-bit values)
+> 	<0xdeadbeef (1+1)>
+> or	<.32 0xdeadbeef (1+1)>
+> 
+> (64-bit values)
+> 	<.64 (0xdeadbeef << 32) (-1)>
+> (8-bit values)
+> 	<.8 0x00 0x0a 0xe4 0x2c 0x23 (0x10 + n)>
+> 
+> i.e. < > is list of values form, with size of each value as a sort of
+> parameter (defaulting to 32-bit, of course).  I'm not sure I like that
+> particular syntax, it's just the first thing I came up with to
+> demonstrate the idea.
 
-Again true, but the situation is similar to the one with the "serial"
-node.
 
-Cheers,
-m.
+Ah ha!  I see.  You want this, then:
+
+    x = <.srec 0000 C001C0DEGE75BABE F1>
+
+OK.  That was entirely joking.  We all know that
+the cool code does NOT get the babe.
+
+Seriously though, I see your point, and I don't really
+have a strong opinion here, so in the interest of making
+some headway, we can just leave it as is for now.
+
+If it turns out to be a bad decision later, we'll fix it. :-)
+
+And with that issue behind us....
+
+I'm going to post these patches to introduce the new DTS format!
+Any last straggler comments?
+
+Thanks,
+jdl
