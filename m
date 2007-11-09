@@ -1,24 +1,21 @@
-Return-Path: <Sergej.Stepanov@ids.de>
-Received: from ares.ids.de (ares.ids.de [213.144.29.131])
-	by ozlabs.org (Postfix) with ESMTP id C555ADDE07
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 22:38:06 +1100 (EST)
-Received: from ares.ids.de (ares.ids.de [127.0.0.1])
-	by ares.ids.de (PGP Universal) with ESMTP id 74DAFF491A9
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 12:38:03 +0100 (CET)
-Subject: Re: [PATCH] using mii-bitbang on different processor ports
-	-	update the booting-without-of.txt-file
-From: Sergej Stepanov <Sergej.Stepanov@ids.de>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <47336F9D.8060405@freescale.com>
-References: <1194339117.3467.8.camel@p60635-ste.ids.de>
-	<20071106184649.GA5283@loki.buserror.net>
-	<1194442844.3571.14.camel@p60635-ste.ids.de>
-	<47336F9D.8060405@freescale.com>
-Date: Fri, 09 Nov 2007 12:38:03 +0100
-Message-Id: <1194608283.8755.10.camel@p60635-ste.ids.de>
+Return-Path: <vincent.liu@bmrtech.com>
+Received: from smtp01.east.net (smtp01.east.net [211.100.61.140])
+	by ozlabs.org (Postfix) with ESMTP id A3516DDE22
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2007 17:45:59 +1100 (EST)
+Received: from unknown (HELO bmr-4fc38f2cc50)
+	(Authenticated?user:?vincent.liu@bmrtech.com@[218.242.144.211])
+	(envelope-sender <vincent.liu@bmrtech.com>)
+	by 0 (qmail-ldap-1.03) with SMTP
+	for <linuxppc-dev@ozlabs.org>; 9 Nov 2007 14:31:24 +0800
+Date: Fri, 9 Nov 2007 14:39:04 +0800
+From: "vincent.liu" <vincent.liu@bmrtech.com>
+To: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+References: <200711091434079212507@bmrtech.com>
+Subject: help  linux for linux2.6
+Message-ID: <200711091439036094772@bmrtech.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Content-Type: text/plain;
+	charset="gb2312"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,63 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Donnerstag, den 08.11.2007, 14:20 -0600 schrieb Scott Wood: 
-> Sergej Stepanov wrote:
-> > If both mdio and mdc controlling pins are on the same processor port,
-> > one resource should be used.
-> > Otherwise, two resources are used: the 1-st - mdio, the 2-nd - mdc.
-> 
-> How about:
-> The first reg resource is the I/O port register block on which MDIO 
-> resides.  The second reg resource is the I/O port register block on 
-> which MDC resides.  If there is only one reg resource, it is used for 
-> both MDIO and MDC.
-> 
-Ok.
-
-> We also need to change the reference to port C in fsl,mdio-pin and 
-> fsl,mdc-pin.
-Do you mean this:
-   Currently defined compatibles:
-   fsl,pq1-fec-mdio (reg is same as first resource of FEC device)
--> fsl,cpm2-mdio-bitbang (reg is port C registers)
-
-   Properties for fsl,cpm2-mdio-bitbang:
--> fsl,mdio-pin : pin of port C controlling mdio data
--> fsl,mdc-pin : pin of port C controlling mdio clock
-
-Right. But i thought it would be related to the example,
-and than the reader gets the short comment about I/O ports.
-
-Or the other variant would be:
---------------------
-   iv) MDIO
-
-   Currently defined compatibles:
-   fsl,pq1-fec-mdio (reg is same as first resource of FEC device)
-   fsl,cpm2-mdio-bitbang (reg is the I/O port register block(s))
-
-   Properties for fsl,cpm2-mdio-bitbang:
-   The first reg resource is the I/O port register block on which MDIO
-   resides.  The second reg resource is the I/O port register block on
-   which MDC resides.  If there is only one reg resource, it is used for
-   both MDIO and MDC.
-   fsl,mdio-pin : pin of chosen port for controlling mdio data
-   fsl,mdc-pin : pin of chosen port for controlling mdio clock
-
-   Example:
-	mdio@10d40 {
-	device_type = "mdio";
-	compatible = "fsl,mpc8272ads-mdio-bitbang",
-        	     "fsl,mpc8272-mdio-bitbang",
-       		     "fsl,cpm2-mdio-bitbang";
-	reg = <10d40 14>;
-	#address-cells = <1>;
-	#size-cells = <0>;
-	fsl,mdio-pin = <12>;
-	fsl,mdc-pin = <13>;
-	};
------------------
-
-Regards
-Sergej.
+Hi 
+These days I am working on a MPC8270 based board with linux 2.6.10 kernel.
+When I use the default kernel and load the uImage to the target board.
+The kernel hangs after uncompressing kernel image ... ok .
+I am freshman in the embedded linux area,So I do not know how to go on this project.
+>From internet , I searched many articles,and no gain.
+Please help me .
+Thanks a lot.
+ 				
+--------------
+vincent.liu
+2007-11-09
