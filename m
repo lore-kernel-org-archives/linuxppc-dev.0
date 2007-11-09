@@ -1,19 +1,20 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 05ED0DDE3E
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s20.bay0.hotmail.com (bay0-omc2-s20.bay0.hotmail.com
+	[65.54.246.156]) by ozlabs.org (Postfix) with ESMTP id 42BF4DDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Nov 2007 23:07:17 +1100 (EST)
-Message-ID: <47344D70.4050308@fz-juelich.de>
-Date: Fri, 09 Nov 2007 13:07:12 +0100
-From: schardt <g.schardt@fz-juelich.de>
-MIME-Version: 1.0
-To: MingLiu <eemingliu@hotmail.com>
-Subject: Re: Bootloader & Flash
+	Fri,  9 Nov 2007 23:51:19 +1100 (EST)
+Message-ID: <BAY138-W21A6D92355C81BE1341628B2840@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_39306f19-d6e5-46ad-a562-9f4dfddc2424_"
+From: MingLiu <eemingliu@hotmail.com>
+To: schardt <g.schardt@fz-juelich.de>
+Subject: RE: Bootloader & Flash
+Date: Fri, 9 Nov 2007 12:51:18 +0000
+In-Reply-To: <47344D70.4050308@fz-juelich.de>
 References: <4731A8E3.4020909@fz-juelich.de>
 	<BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
-In-Reply-To: <BAY138-W14EEE9667CD669878D3BD0B28A0@phx.gbl>
-Content-Type: text/plain;
-	charset=UTF-8
+	<47344D70.4050308@fz-juelich.de>
+MIME-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,97 +26,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi again,
-
-i've learned a little bit :)
-
-- I have download the zImage.elf via the EDK flash loader
-- The flash loader creates a bootloader, this is also running on start up=
- :)
-
-But ... It stops with an error-message after a few seconds:
-
-EDK Bootloader:
-Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is corrupted=
+--_39306f19-d6e5-46ad-a562-9f4dfddc2424_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
 
-What now ?
+Hi,
+> - I have download the zImage.elf via the EDK flash loader> - The flash loader creates a bootloader, this is also running on start up :)
+What you need to store in flash memory, is not the .elf file. Before you use EDK flash loader to burn your linux kernel in flash, .elf file should be transfered into .srec file, just like the below reminds you: SREC line is corrupted. 
+ 
+> But ... It stops with an error-message after a few seconds:> > EDK Bootloader:> Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is corrupted> > What now ?
+Hopefully it helps. 
+ 
+BR
+Ming
+_________________________________________________________________
+Windows Live Spaces 中最年轻的成员！
+http://miaomiaogarden2007.spaces.live.com/
+--_39306f19-d6e5-46ad-a562-9f4dfddc2424_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-Georg
-
-
-MingLiu wrote:
-> Dear Georg,
-> I guess you were talking about the booting process of the system, both =
-HW and the SW, from the flash memory. This process should be like this:
->
-> 1. Store your HW bitstream and Linux kernel in flash memories. If neede=
-d, perhaps you want another bootloader program, such as U-boot also insid=
-e.=20
->
-> 2. In your HW bitstream, you need one bootloader which helps you to loa=
-d the software and execute it in DDR-ram. EDK helps you to generate such =
-a bootloader when you design.=20
->
-> 3. Durong Power on, HW bitstream (with an EDK bootloader included) will=
- be loaded into FPGA and configure the FPGA, then the EDK bootloader will=
- load your Linux kernel into DDR-Ram and execute it there. Thus your linu=
-x could run.=20
->
-> This is a normal process. If you want to execute the program in flash d=
-irectly, that's another story. Also you should know, for the booting proc=
-ess, MTD driver is not necessary. The driver is only used when you want t=
-o access flash memories when you booted your Linux kernel.
->
-> Clear or not? :)
->
-> Best Regards
-> Ming
->
-> ----------------------------------------> Date: Wed, 7 Nov 2007 13:00:3=
-5 +0100> From: g.schardt@fz-juelich.de> To: Linuxppc-embedded@ozlabs.org>=
- Subject: Bootloader & Flash>> Hi,>> i use the AVnet Xilinx4 FX12 Minimod=
-ule and until now, i use system-ace> to configure the fpga and boot the l=
-inux kernel.> But now, i want to boot from the on board flash memory and =
-have no idea> where to start.>> I think i have to:> - save the fpga confi=
-guration in the fpga-prom> - use/program some kind of bootloader store in=
- fpga block ram to jump to> the flash-adress where the executable linux k=
-ernel resist> - use the mtd-device driver to mount root fs on the same fl=
-ash some> address later>> Is this the right way ?>>> Regards> Georg>>>>>>=
-> -----------------------------------------------------------------------=
-------------------> -----------------------------------------------------=
-------------------------------------> Forschungszentrum J=C3=BClich GmbH>=
- 52425 J=C3=BClich>> Sitz der Gesellschaft: J=C3=BClich> Eingetragen im H=
-andelsregister des Amtsgerichts D=C3=BCren Nr. HR B 3498> Vorsitzende des=
- Aufsichtsrats: MinDirig'in B=C3=A4rbel Brumme-Bothe> Gesch=C3=A4ftsf=C3=BC=
-hrung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv.>=
- Vorsitzender)> ---------------------------------------------------------=
---------------------------------> ---------------------------------------=
---------------------------------------------------> _____________________=
-__________________________> Linuxppc-embedded mailing list> Linuxppc-embe=
-dded@ozlabs.org> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-> _________________________________________________________________
-> MSN =E4=B8=AD=E6=96=87=E7=BD=91=EF=BC=8C=E6=9C=80=E6=96=B0=E6=97=B6=E5=B0=
-=9A=E7=94=9F=E6=B4=BB=E8=B5=84=E8=AE=AF=EF=BC=8C=E7=99=BD=E9=A2=86=E8=81=9A=
-=E9=9B=86=E9=97=A8=E6=88=B7=E3=80=82
-> http://cn.msn.com
-
-
-=0A=0A-------------------------------------------------------------------------=
-
-----------------=0A-----------------------------------------------------------=
-
-------------------------------=0AForschungszentrum J=C3=BClich GmbH=0A52425 J=C3=BClich=
-
-=0A=0ASitz der Gesellschaft: J=C3=BClich=0AEingetragen im Handelsregister des Amtsgeri=
-
-chts D=C3=BCren Nr. HR B 3498=0AVorsitzende des Aufsichtsrats: MinDirig'in B=C3=A4rbel=
-
- Brumme-Bothe=0AGesch=C3=A4ftsf=C3=BChrung: Prof. Dr. Achim Bachem (Vorsitzender), Dr.=
-
- Ulrich Krafft (stellv. =0AVorsitzender)=0A-------------------------------------=
-
-----------------------------------------------------=0A-----------------------=
-
-------------------------------------------------------------------=0A
+<html>
+<head>
+<style>
+.hmmessage P
+{
+margin:0px;
+padding:0px
+}
+body.hmmessage
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body class='hmmessage'>
+Hi,<BR>
+<BR>&gt; - I have download the zImage.elf via the EDK flash loader<BR>&gt; - The flash loader creates a bootloader, this is also running on start up :)<BR><BR>
+What you need to store in flash memory, is not the .elf file. Before you use EDK flash loader to burn your linux kernel in flash, .elf file should be transfered into .srec file, just like the below reminds you: SREC line is corrupted. <BR>
+&nbsp;<BR>
+<BR>&gt; But ... It stops with an error-message after a few seconds:<BR>&gt; <BR>&gt; EDK Bootloader:<BR>&gt; Bootloader: Processed (0x)000000b2 S-recordsERROR: SREC line is corrupted<BR>&gt; <BR>&gt; What now ?<BR><BR>
+Hopefully it helps. <BR>
+&nbsp;<BR>
+BR<BR>
+Ming<BR><br /><hr />用 Windows Live Spaces 展示个性自我，与好友分享生活！  <a href='http://spaces.live.com/?page=HP' target='_new'>了解更多信息！</a></body>
+</html>
+--_39306f19-d6e5-46ad-a562-9f4dfddc2424_--
