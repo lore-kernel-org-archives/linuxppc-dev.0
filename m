@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94232DDE0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 08:07:56 +1100 (EST)
-Subject: Re: Using PVR value after boot?
+	by ozlabs.org (Postfix) with ESMTP id 3016CDDE00
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 08:08:58 +1100 (EST)
+Subject: Re: Hardware watchpoints on Cell/B.E. broken
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mike Nuss <nmx@fromtheshadows.net>
-In-Reply-To: <a340dd0e0711091239mdf1b772l1d5a8208f7def4f5@mail.gmail.com>
-References: <a340dd0e0711091239mdf1b772l1d5a8208f7def4f5@mail.gmail.com>
+To: Ulrich Weigand <uweigand@de.ibm.com>
+In-Reply-To: <200711091854.lA9IsJEB027041@d12av02.megacenter.de.ibm.com>
+References: <200711091854.lA9IsJEB027041@d12av02.megacenter.de.ibm.com>
 Content-Type: text/plain
-Date: Sat, 10 Nov 2007 08:07:24 +1100
-Message-Id: <1194642444.21340.16.camel@pasglop>
+Date: Sat, 10 Nov 2007 08:08:40 +1100
+Message-Id: <1194642520.21340.18.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,14 +25,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-11-09 at 15:39 -0500, Mike Nuss wrote:
-> I'm writing a module for the Security/KASUMI function on the
-> PPC440EPx-S and PPC440GRx-S. This relies on checking the PVR value at
-> runtime, which is done early on in the boot process.  What would be
-> the correct way to check which CPU is present during module
-> initialization?
+On Fri, 2007-11-09 at 19:54 +0100, Ulrich Weigand wrote:
+> Hello,
+> 
+> I've noticed that GDB hardware watchpoints do not work at all on Cell/B.E.
+> (when running without hypervisor); the kernel accepts the PTRACE_SET_DEBUGREG
+> call without error, but watchpoints never trigger.
+> 
+> This turns out to be caused by a new hardware feature in the PowerPC 2.02
+> architecture level: the DABRX register.  This register controls in which
+> modes of operation (problem state, privileged state, hypervisor state)
+> the DABR register takes effect.  (See Book III v 2.02 page 40.)
+> 
+> The default setting of that register on Cell/B.E. (at least on IBM blades),
+> which the Linux kernel currently never modifies, is to ignore DABR in all
+> modes -- thus watchpoints do not work at all.
+> 
+> The following hack sets the bit in the DABRX that enables the DABR for
+> problem state, whenever the DABR is set.  With this patch on top of the
+> current Fedora 8 update kernel (kernel-2.6.23.1-48.fc8) watchpoints work
+> again -- all relevant test cases in the GDB test suite now pass.
+> 
+> Obviously, the patch cannot be applied as-is; we need to make sure we are
+> on a machine that supports the DABRX feature.  Arnd asked me to post this
+> anyway as a heads-up on that problem ...
 
-Checking the PVR can be done at any time, though a better option would
-be to put something in device-tree of course :-)
+Hrm, ok, something we missed, I'll have a look. The whole DABR / debug
+register handling need work anyway.
 
 Ben.
