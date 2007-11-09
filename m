@@ -1,16 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5B5CBDDE34
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 10:19:09 +1100 (EST)
-Date: Fri, 9 Nov 2007 17:19:27 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Becky Bruce <becky.bruce@freescale.com>
-Subject: Re: [PATCH] Avoid unpaired stwcx. on some processors
-Message-ID: <20071109231927.GA19415@lixom.net>
-References: <11946460863124-git-send-email-becky.bruce@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11946460863124-git-send-email-becky.bruce@freescale.com>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 93E77DDE20
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 10:49:23 +1100 (EST)
+Date: Sat, 10 Nov 2007 02:48:13 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: On-going 4xx porting
+Message-ID: <20071110024813.5cada553@kernel.crashing.org>
+In-Reply-To: <1194645701.3207.17.camel@localhost.localdomain>
+References: <1194645701.3207.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,31 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 09, 2007 at 04:08:06PM -0600, Becky Bruce wrote:
-> The context switch code in the kernel issues a dummy stwcx. to clear the
-> reservation, as recommended by the architecture. However, some processors
-> can have issues if this stwcx to address A occurs while the reservation
-> is already held to a different address B.  To avoid this problem, the dummy
-> stwcx. needs to be paired with a dummy lwarx to the same address.
+On Fri, 09 Nov 2007 16:01:41 -0600
+Josh Boyer wrote:
+
+> Hi All,
 > 
-> This patch adds the dummy lwarx, and creates a cpu feature bit to indicate
-> which cpus are affected. Tested on mpc8641_hpcn_defconfig in arch/powerpc;
-> build tested in arch/ppc.
+> For those interested, I have a few things I'd like to focus on for
+> 2.6.25 in regards to the current arch/powerpc 4xx porting effort.
+> Below is a brief list of drivers in no particular order:
+> 
+> PCI support
+I'll look at that stuff once again. maybe it worths to head fir compromise solution in favor of replacing 32/64 
+ranges parsing func + a bunch of other things in one single step.
 
-You're still exposed even with this patch. The stwcx is there to protect
-from the cases where process 1 does lwarx and get context switched
-out to process 2 that by pure random chance does a stwcx. to the same
-reservation granule and succeeds, in spite of not having done the lwarx
-(on this side of the context switch).
+> USB (440EP(x), etc)
+looks like we have code ready for that...
 
-In exactly that case, process 2 will instead of doing a store to a
-reservation it didn't take on it's own, do a dangling stwcx, which is
-your erratum. Right?
+> I2C
+Stefan's approach seems pretty close
 
-Seems like a "better" (but still ugly) workaround would be to create a
-_new_ reservation to a RA that's unavailable to any userspace process,
-so that they could never do a successful store to it. That way you would
-have stray reservations, but never dangling stwcx:es. No?
+> GPIO
+> NDFC
+I'd rather follow platform device wrapper way.. Big NDFC of_device rework can be done anytime later.
+
+> RTC
+> 
+> I'd also like to try and get the larger page size patches ported and
+> merged.  If another hugetlbfs type patch shows up, that would be good
+> too.  There is also the HW watchpoint support patch, and of course new
+> board ports.
+> 
+> At some point we should really be able to have a single vmlinux be
+> wrapped with different zImage wrappers and .dts files and have it boot
+> on those various boards just fine.  So I'll be looking at
+> accomplishing that as well.  That should make new board ports fairly
+> easy to do.
+> 
+
+just my $0.02...
+
+> josh
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 
--Olof
+-- 
+Sincerely, Vitaly
