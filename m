@@ -1,18 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40711090557u1b6cb29ex388b82efcbad7c18@mail.gmail.com>
-Date: Fri, 9 Nov 2007 06:57:58 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Domen Puncer" <domen.puncer@telargo.com>,
-	"Jeff Garzik" <jgarzik@pobox.com>
-Subject: Re: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting
-	memory.
-In-Reply-To: <20071109091245.GA3148@nd47.coderock.org>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 4140CDDEDD
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 01:11:21 +1100 (EST)
+Message-ID: <47346A7B.4030701@semihalf.com>
+Date: Fri, 09 Nov 2007 15:11:07 +0100
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-References: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
-	<20071109091245.GA3148@nd47.coderock.org>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>, netdev <netdev@vger.kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v3 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+References: <20071106200446.10913.29338.stgit@hekate.izotz.org>	<20071106200520.10913.47002.stgit@hekate.izotz.org>
+	<20071107133426.63593b98.sfr@canb.auug.org.au>
+In-Reply-To: <20071107133426.63593b98.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,81 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/9/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> On 09/11/07 00:31 -0500, Jon Smirl wrote:
-> > This is the reason I couldn't get user space started or connect to my
-> > nfs server. Patch is against current linus git.
-> >
-> > mpc5200 fec driver is corrupting memory. This patch fixes two bugs
-> > where the wrong skb buffer was being referenced.
-> >
-> > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
->
-> Acked-by: Domen Puncer <domen.puncer@telargo.com>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Hi Stephen,
 
-Jeff, can you please pick this up for .24?
+Stephen Rothwell wrote:
+> 
+> On Tue, 06 Nov 2007 21:05:20 +0100 Marian Balakowicz <m8@semihalf.com> wrote:
+>> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+>> +
+>> +#include <linux/pci.h>
+>> +#include <linux/of.h>
+>> +#include <asm/time.h>
+>> +#include <asm/io.h>
+> 
+> Its not clear to me that you need any of the above four includes.
 
-Thanks,
-g.
+#include <asm/time.h> is needed for generic_calibrate_decr() but other
+few includes are in fact not necessary. Thanks.
 
->
-> I can't test it at the moment, but the patch is obviously correct,
-> mapped buffer should be the _same_ as submitted.
->
-> >
-> > ---
-> >
-> >  drivers/net/fec_mpc52xx.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> >
-> >
-> > diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-> > index a8a0ee2..ddfcc0b 100644
-> > --- a/drivers/net/fec_mpc52xx.c
-> > +++ b/drivers/net/fec_mpc52xx.c
-> > @@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
-> > irq, void *dev_id)
-> >
-> >               rskb =3D bcom_retrieve_buffer(priv->rx_dmatsk, &status,
-> >                               (struct bcom_bd **)&bd);
-> > -             dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FRO=
-M_DEVICE);
-> > +             dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FR=
-OM_DEVICE);
-> >
-> >               /* Test for errors in received frame */
-> >               if (status & BCOM_FEC_RX_BD_ERRORS) {
-> > @@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
-> > irq, void *dev_id)
-> >                       bcom_prepare_next_buffer(priv->rx_dmatsk);
-> >
-> >               bd->status =3D FEC_RX_BUFFER_SIZE;
-> > -             bd->skb_pa =3D dma_map_single(&dev->dev, rskb->data,
-> > +             bd->skb_pa =3D dma_map_single(&dev->dev, skb->data,
-> >                               FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-> >
-> >               bcom_submit_next_buffer(priv->rx_dmatsk, skb);
-> >
-> >
-> > --
-> > Jon Smirl
-> > jonsmirl@gmail.com
->
-> --
-> Domen Puncer | Research & Development
-> .........................................................................=
-....................
-> Telargo d.o.o. | Zagreb=9Aka cesta 20 | 2000 Maribor | Slovenia
-> .........................................................................=
-....................
-> www.telargo.com
->
-
-
---=20
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Cheers,
+m.
