@@ -1,23 +1,36 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 312AEDDE43
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 00:27:39 +1100 (EST)
-Date: Fri, 9 Nov 2007 16:25:07 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
-Message-ID: <20071109132507.GA21232@localhost.localdomain>
-References: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
-	<20071108141611.GA5770@localhost.localdomain>
-	<20071108121508.39a65c33.kim.phillips@freescale.com>
-	<20071108183952.GA18117@localhost.localdomain>
-	<20071108131135.e16a2f9a.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071108131135.e16a2f9a.kim.phillips@freescale.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Li Yang <leoli@freescale.com>, jgarzik@pobox.com
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <osstklei@de.ibm.com>
+Received: from mtagate4.uk.ibm.com (mtagate4.uk.ibm.com [195.212.29.137])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate4.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B9514DDECF
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 00:35:10 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate4.uk.ibm.com (8.13.8/8.13.8) with ESMTP id lA9DZ58m087832
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 13:35:05 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+	[9.149.37.213])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.6) with
+	ESMTP id lA9DZ4lM2515166
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 13:35:04 GMT
+Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lA9DYv3Z013540
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 13:34:57 GMT
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Add kdump support
+Date: Fri, 9 Nov 2007 14:33:50 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200711091433.51259.osstklei@de.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,75 +40,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 08, 2007 at 01:11:35PM -0600, Kim Phillips wrote:
-[...]
-> right, but whether it does or not doesn't affect your failure outcome
-> either I'm assuming.
-> 
-> > > If it's something like 0x03, the u-boot patch will probably look like:
-> > > 
-> > > if ((bcsr[12] == 0x10) &&
-> > >     (immr->sysconf.spridr == SPR_8360_REV21 ||
-> > >      immr->sysconf.spridr == SPR_8360E_REV21))
-> > > 	/* if phy-connection-type is "rgmii-id", set it to "rgmii-rxid" */
-> > >         ...
-> > > 
-> > > but these linux patches would remain the same (the clk and data delay
-> > > settings for the UCC's are still valid; it's just the PHY config
-> > > that is triggering your problem from what I can tell).
-> > 
-> > Yup, most likely this is not UCC specific, but PHY. For some reason
-> > delays making harm here...
+To support ehea driver reloading in a kdump kernel the driver has to perform
+firmware handle deregistrations when the original kernel crashes. As there's
+currently no notifier chain for machine crashes this patch enables kdump support
+in the ehea driver by bending the ppc_md.machine_crash_shutdown hook to its own
+machine crash handler. The original machine_crash_shutdown() fn is called
+afterwards. This works fine as long as the ehea driver is the only one which
+does so. Problems may occur if other drivers do the same and unload regularly.
+This patch enables 2.6.24-rc2 to use kdump with ehea and only puts a very
+low risk on base kernel. In 2.6.24 we know ehea is the only user of this
+mechanism. The next step for 2.6.25 would be to add a proper notifier chain.
+The full solution might be that register_reboot_notifier() provides sth
+like a SYS_CRASH action. Please apply.
 
-And today I was unable to reproduce yesterday's behaviour. Your
-patches works fine, with sixth patch and without it. With -rxid
-and with just -id.
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-Though, after few resets I hit on that:
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 29 insertions(+), 1 deletions(-)
 
-- - - -
-U-Boot 1.3.0-rc3-g281df457-dirty (Nov  6 2007 - 18:19:35) MPC83XX
-
-Reset Status: External/Internal Soft, External/Internal Hard
-
-CPU:   e300c1, MPC8360E, Rev: 21 at 528 MHz, CSB:  264 MHz
-Board: Freescale MPC8360EMDS
-I2C:   ready
-DRAM:  256 MB (DDR2, 64-bit, ECC on)
-SDRAM: 64 MB (local bus)
-FLASH: 32 MB
-In:    serial
-Out:   serial
-Err:   serial
-Net:   UEC: PHY is Marvell 88E11x1 (1410cc2)
-FSL UEC0: Full Duplex
-switching to rgmii 100
-FSL UEC0: Speed 100BT
-FSL UEC0: Link is up
-read wrong value : mii_id 1,mii_reg 2, base e0103120
-read wrong value : mii_id 1,mii_reg 3, base e0103120
-UEC: PHY is Generic MII (ffffffff)
-read wrong value : mii_id 1,mii_reg 1, base e0103120
-read wrong value : mii_id 1,mii_reg 1, base e0103120
-read wrong value : mii_id 1,mii_reg 5, base e0103120
-FSL UEC1: Full Duplex
-switching to rgmii 100
-FSL UEC1: Speed 100BT
-FSL UEC1: Link is up
-FSL UEC0, FSL UEC1
-- - - -
-
-And UCC1 does not work at all. After another reset that message
-disappears and it does work again.
-
-
-So, I think hardware is tricking me in various ways, not your
-patches fault.
-
-:-(
-
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index f78e5bf..5935899 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0080"
++#define DRV_VERSION	"EHEA_0081"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index f0319f1..40a732e 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -37,6 +37,7 @@
+ #include <linux/reboot.h>
+ 
+ #include <net/ip.h>
++#include <asm-powerpc/machdep.h>
+ 
+ #include "ehea.h"
+ #include "ehea_qmr.h"
+@@ -98,6 +99,7 @@ static int port_name_cnt = 0;
+ static LIST_HEAD(adapter_list);
+ u64 ehea_driver_flags = 0;
+ struct work_struct ehea_rereg_mr_task;
++static void (*orig_machine_crash_shutdown)(struct pt_regs *regs);
+ 
+ struct semaphore dlpar_mem_lock;
+ 
+@@ -3312,6 +3314,29 @@ static struct notifier_block ehea_reboot_nb = {
+         .notifier_call = ehea_reboot_notifier,
+ };
+ 
++void ehea_crash_notifier(struct pt_regs *regs)
++{
++	ehea_info("Machine crash: freeing all eHEA resources");
++	ibmebus_unregister_driver(&ehea_driver);
++	orig_machine_crash_shutdown(regs);
++}
++
++void ehea_register_crash_notifier(void)
++{
++#ifdef CONFIG_KEXEC
++	orig_machine_crash_shutdown =
++               (void*)__xchg_u64((unsigned long*)&ppc_md.machine_crash_shutdown,
++				 (unsigned long)ehea_crash_notifier);
++#endif
++}
++
++void ehea_unregister_crash_notifier(void)
++{
++#ifdef CONFIG_KEXEC
++	ppc_md.machine_crash_shutdown = orig_machine_crash_shutdown;
++#endif
++}
++
+ static int check_module_parm(void)
+ {
+ 	int ret = 0;
+@@ -3369,6 +3394,7 @@ int __init ehea_module_init(void)
+ 		goto out;
+ 
+ 	register_reboot_notifier(&ehea_reboot_nb);
++	ehea_register_crash_notifier();
+ 
+ 	ret = ibmebus_register_driver(&ehea_driver);
+ 	if (ret) {
+@@ -3382,6 +3408,7 @@ int __init ehea_module_init(void)
+ 		ehea_error("failed to register capabilities attribute, ret=%d",
+ 			   ret);
+ 		unregister_reboot_notifier(&ehea_reboot_nb);
++		ehea_unregister_crash_notifier();
+ 		ibmebus_unregister_driver(&ehea_driver);
+ 		goto out;
+ 	}
+@@ -3396,6 +3423,7 @@ static void __exit ehea_module_exit(void)
+ 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
+ 	unregister_reboot_notifier(&ehea_reboot_nb);
++	ehea_unregister_crash_notifier();
+ 	ehea_destroy_busmap();
+ }
+ 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+1.5.2
