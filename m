@@ -1,21 +1,14 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id DFB16DDEDF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 04:49:28 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id b2so93312ana
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Nov 2007 09:49:27 -0800 (PST)
-Message-ID: <fa686aa40711090949n3fbb78dax59379c4c42293552@mail.gmail.com>
-Date: Fri, 9 Nov 2007 10:49:27 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3 12/13] [POWERPC] Promess Motion-PRO DTS
-In-Reply-To: <20071106224200.GE31367@localhost.localdomain>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id 3D6E7DDE10
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 05:30:10 +1100 (EST)
+Message-ID: <4734A72B.2070104@harris.com>
+Date: Fri, 09 Nov 2007 13:30:03 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071106200446.10913.29338.stgit@hekate.izotz.org>
-	<20071106200634.10913.6248.stgit@hekate.izotz.org>
-	<20071106224200.GE31367@localhost.localdomain>
+To: linuxppc-dev@ozlabs.org
+Subject: PPC440EPx on Sequoia: /proc/iomem acts weird
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/6/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Tue, Nov 06, 2007 at 09:06:34PM +0100, Marian Balakowicz wrote:
-> [snip]
-> > +             // PSC2 in spi master mode
-> > +             spi@2200 {              // PSC2
-> > +                     compatible = "mpc5200b-psc-spi","mpc5200-psc-spi";
-> > +                     cell-index = <1>;
->
-> From your description, this is an incorrect usage of cell-index - it
-> should *only* be used to index into SoC shared registers; never for
-> logical numbering.
+If I cat /proc/iomem on a Sequoia board, it never stops printing.  Here 
+are the first 10 lines:
 
-Actually, this one is correct.  PSCs are numbered in the data sheet
-from PSC1 to PSC6; so cell-index = <0> for PSC1, cell-index = <1> for
-PSC2, etc.
+bash-3.00# head -10 /proc/iomem
+e0000100-e000017f : usb
+  e0000100-e000017f : musbhsfc_udc
+e0000300-e000038f : ehci_hcd
+180000000-18fffffff : /plb/pci@1eec00000
+          1d0000000-1d0001fff : ndfc
+          1d0000000-1d0001fff : ndfc
+          1d0000000-1d0001fff : ndfc
+          1d0000000-1d0001fff : ndfc
+          1d0000000-1d0001fff : ndfc
+          1d0000000-1d0001fff : ndfc
 
-Cheers,
-g.
+Basically, the last line (regarding the nand flash) keeps repeating 
+"forever".
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Is anyone else seeing this behavior?  My kernel is 2.6.23 with Xenomai 
+patched in.
+
+    Steve
