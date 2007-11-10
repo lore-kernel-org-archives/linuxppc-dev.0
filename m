@@ -1,22 +1,21 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 9C30FDDE11
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 13:52:46 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id d23so105369and
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Nov 2007 18:52:45 -0800 (PST)
-Message-ID: <fa686aa40711091852wa1210d3t3c44d4e43f5ee40d@mail.gmail.com>
-Date: Fri, 9 Nov 2007 19:52:45 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Marian Balakowicz" <m8@semihalf.com>
-Subject: Re: [PATCH v4 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board
-	support
-In-Reply-To: <fa686aa40711090920n3e931cbbwf63a66cedd5504de@mail.gmail.com>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 994A9DDE49
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 21:35:34 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Appletouch going wild
+References: <je640ba837.fsf@sykes.suse.de>
+	<1194659997.7258.25.camel@johannes.berg>
+Date: Sat, 10 Nov 2007 11:35:28 +0100
+In-Reply-To: <1194659997.7258.25.camel@johannes.berg> (Johannes Berg's message
+	of "Sat\, 10 Nov 2007 02\:59\:57 +0100")
+Message-ID: <je7ikq9ymn.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071109171137.16289.39575.stgit@hekate.izotz.org>
-	<fa686aa40711090920n3e931cbbwf63a66cedd5504de@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 11/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
-> > Please review, and if everything is ok schedule for 2.6.24-rc3.
+Johannes Berg <johannes@sipsolutions.net> writes:
+
+> On Fri, 2007-11-09 at 13:58 +0100, Andreas Schwab wrote:
+>> Every once in a while the touchpad in my iBook G4 (geyser1, 030B) is
+>> going wild, emitting random movement events even when not being touched.
+>> That started only with 2.6.24-rc1.  The only way to stop it is to reload
+>> the appletouch module.  My guess would be that reinitializing the
+>> touchpad can result in some kind of race condition.
 >
-> Just to be clear, I won't be picking up these changes until the 2.6.25
-> merge window.
->
-> The .24 tree is closed for new board support patches and is in bug fix
-> only mode.
+> Is it the same in -rc2?
 
-Ummm; on rereading this (after getting gently nudged on IRC) I realize
-my reply was both inaccurate and just plain rude.  Sorry about that,
-it was unintentional.
+Yes.
 
-Yes, I'll be picking up your patches into my tree fairly soon (before
-the .25 merge window opens), but I cannot ask Paul to pick it up for
-2.6.24 because .24 is only open for bug fixes.
+> The bad patch that broke fountains was fixed later, but you do have a
+> geyser.
 
-Cheers,
-g.
+I don't see the messages you were seeing with your fountain, geyser1
+does understand the geyser mode request, although it apparently uses raw
+mode by default.  The reinit does help shutting up the stream of zero
+moves, so it is not bad per se.
+
+Andreas.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
