@@ -1,31 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B615DDF40
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 11:17:54 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAA0HoKP021891
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 19:17:50 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAA0Ho22075224
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 19:17:50 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAA0HnK6011616
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Nov 2007 19:17:49 -0500
-Subject: Re: On-going 4xx porting
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-In-Reply-To: <20071110024813.5cada553@kernel.crashing.org>
-References: <1194645701.3207.17.camel@localhost.localdomain>
-	<20071110024813.5cada553@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 09 Nov 2007 18:17:22 -0600
-Message-Id: <1194653842.3207.20.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Thomas Klein <osstklei@de.ibm.com>, paulus@samba.org
+Subject: Re: [PATCH] ehea: Add kdump support 
+In-reply-to: <200711091433.51259.osstklei@de.ibm.com> 
+References: <200711091433.51259.osstklei@de.ibm.com>
+Date: Sat, 10 Nov 2007 11:20:22 +1100
+Message-ID: <24258.1194654022@neuling.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,37 +20,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-11-10 at 02:48 +0300, Vitaly Bordug wrote:
-> On Fri, 09 Nov 2007 16:01:41 -0600
-> Josh Boyer wrote:
+> To support ehea driver reloading in a kdump kernel the driver has to
+> perform firmware handle deregistrations when the original kernel
+> crashes. As there's currently no notifier chain for machine crashes
+> this patch enables kdump support in the ehea driver by bending the
+> ppc_md.machine_crash_shutdown hook to its own machine crash
+> handler. The original machine_crash_shutdown() fn is called
+> afterwards. This works fine as long as the ehea driver is the only one
+> which does so. Problems may occur if other drivers do the same and
+> unload regularly .  This patch enables 2.6.24-rc2 to use kdump with
+> ehea and only puts a very low risk on base kernel. In 2.6.24 we know
+> ehea is the only user of this mechanism. The next step for 2.6.25
+> would be to add a proper notifier chain.  The full solution might be
+> that register_reboot_notifier() provides sth like a SYS_CRASH
+> action. Please apply.
+
+If we are going to do this workaround, I'd prefer the notifier chain be
+done correctly now.  The way it's hacked in here, it's more likely to
+cause even more issues.  
+
+Either way, if this is going to go in, it at least needs to be acked by
+Paulus.
+
 > 
-> > Hi All,
-> > 
-> > For those interested, I have a few things I'd like to focus on for
-> > 2.6.25 in regards to the current arch/powerpc 4xx porting effort.
-> > Below is a brief list of drivers in no particular order:
-> > 
-> > PCI support
-> I'll look at that stuff once again. maybe it worths to head fir compromise solution in favor of replacing 32/64 
-> ranges parsing func + a bunch of other things in one single step.
-
-Sure, that's fine.  You and Ben were working on it at one point, so I
-figured you would look at it again.
-
-> > USB (440EP(x), etc)
-> looks like we have code ready for that...
-
-It's mostly there, yes.  Should be pretty easy to get in :).
-
-> > I2C
-> Stefan's approach seems pretty close
-
-Agreed.
-
-> > GPIO
-> > NDFC
-> I'd rather follow platform device wrapper way.. Big NDFC of_device rework can be done anytime later.
-
-I would seriously consider that too.
-
-josh
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> 
+> ---
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
+>  2 files changed, 29 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+> index f78e5bf..5935899 100644
+> --- a/drivers/net/ehea/ehea.h
+> +++ b/drivers/net/ehea/ehea.h
+> @@ -40,7 +40,7 @@
+>  #include <asm/io.h>
+>  
+>  #define DRV_NAME	"ehea"
+> -#define DRV_VERSION	"EHEA_0080"
+> +#define DRV_VERSION	"EHEA_0081"
+>  
+>  /* eHEA capability flags */
+>  #define DLPAR_PORT_ADD_REM 1
+> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+> index f0319f1..40a732e 100644
+> --- a/drivers/net/ehea/ehea_main.c
+> +++ b/drivers/net/ehea/ehea_main.c
+> @@ -37,6 +37,7 @@
+>  #include <linux/reboot.h>
+>  
+>  #include <net/ip.h>
+> +#include <asm-powerpc/machdep.h>
+>  
+>  #include "ehea.h"
+>  #include "ehea_qmr.h"
+> @@ -98,6 +99,7 @@ static int port_name_cnt = 0;
+>  static LIST_HEAD(adapter_list);
+>  u64 ehea_driver_flags = 0;
+>  struct work_struct ehea_rereg_mr_task;
+> +static void (*orig_machine_crash_shutdown)(struct pt_regs *regs);
+>  
+>  struct semaphore dlpar_mem_lock;
+>  
+> @@ -3312,6 +3314,29 @@ static struct notifier_block ehea_reboot_nb = {
+>          .notifier_call = ehea_reboot_notifier,
+>  };
+>  
+> +void ehea_crash_notifier(struct pt_regs *regs)
+> +{
+> +	ehea_info("Machine crash: freeing all eHEA resources");
+> +	ibmebus_unregister_driver(&ehea_driver);
+> +	orig_machine_crash_shutdown(regs);
+> +}
+> +
+> +void ehea_register_crash_notifier(void)
+> +{
+> +#ifdef CONFIG_KEXEC
+> +	orig_machine_crash_shutdown =
+> +               (void*)__xchg_u64((unsigned long*)&ppc_md.machine_crash_shutd
+own,
+> +				 (unsigned long)ehea_crash_notifier);
+> +#endif
+> +}
+> +
+> +void ehea_unregister_crash_notifier(void)
+> +{
+> +#ifdef CONFIG_KEXEC
+> +	ppc_md.machine_crash_shutdown = orig_machine_crash_shutdown;
+> +#endif
+> +}
+> +
+>  static int check_module_parm(void)
+>  {
+>  	int ret = 0;
+> @@ -3369,6 +3394,7 @@ int __init ehea_module_init(void)
+>  		goto out;
+>  
+>  	register_reboot_notifier(&ehea_reboot_nb);
+> +	ehea_register_crash_notifier();
+>  
+>  	ret = ibmebus_register_driver(&ehea_driver);
+>  	if (ret) {
+> @@ -3382,6 +3408,7 @@ int __init ehea_module_init(void)
+>  		ehea_error("failed to register capabilities attribute, ret=%d",
+>  			   ret);
+>  		unregister_reboot_notifier(&ehea_reboot_nb);
+> +		ehea_unregister_crash_notifier();
+>  		ibmebus_unregister_driver(&ehea_driver);
+>  		goto out;
+>  	}
+> @@ -3396,6 +3423,7 @@ static void __exit ehea_module_exit(void)
+>  	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+>  	ibmebus_unregister_driver(&ehea_driver);
+>  	unregister_reboot_notifier(&ehea_reboot_nb);
+> +	ehea_unregister_crash_notifier();
+>  	ehea_destroy_busmap();
+>  }
+>  
+> -- 
+> 1.5.2
+> 
