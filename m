@@ -1,21 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 994A9DDE49
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 21:35:34 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Appletouch going wild
-References: <je640ba837.fsf@sykes.suse.de>
-	<1194659997.7258.25.camel@johannes.berg>
-Date: Sat, 10 Nov 2007 11:35:28 +0100
-In-Reply-To: <1194659997.7258.25.camel@johannes.berg> (Johannes Berg's message
-	of "Sat\, 10 Nov 2007 02\:59\:57 +0100")
-Message-ID: <je7ikq9ymn.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-input@vger.kernel.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+	by ozlabs.org (Postfix) with ESMTP id 76A1DDDE19
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 23:43:30 +1100 (EST)
+To: Marian Balakowicz <m8@semihalf.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 09 Nov 2007 18:12:02 +0100."
+	<20071109171202.16289.2618.stgit@hekate.izotz.org>
+Date: Sat, 10 Nov 2007 13:43:27 +0100
+Sender: wd@denx.de
+Message-Id: <20071110124327.1C46A248D3@gemini.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+In message <20071109171202.16289.2618.stgit@hekate.izotz.org> you wrote:
+> This patch adds support for 'mpc5200-simple-platform' compatible
+> boards which do not need a platform specific setup. Such boards
+> are supported assuming the following:
+...
+> +	const char *board[] = {	
+> +		"tqc,tqm5200",
+> +		"promess,motionpro",
+> +		"schindler,cm5200",
+> +		NULL
+> +	};
 
-> On Fri, 2007-11-09 at 13:58 +0100, Andreas Schwab wrote:
->> Every once in a while the touchpad in my iBook G4 (geyser1, 030B) is
->> going wild, emitting random movement events even when not being touched.
->> That started only with 2.6.24-rc1.  The only way to stop it is to reload
->> the appletouch module.  My guess would be that reinitializing the
->> touchpad can result in some kind of race condition.
->
-> Is it the same in -rc2?
+would it make sense to sort this list alphabetiacally? At the moment
+we can setill easily find each board, but assume that list grows to 50
+boards names...
 
-Yes.
+Best regards,
 
-> The bad patch that broke fountains was fixed later, but you do have a
-> geyser.
-
-I don't see the messages you were seeing with your fountain, geyser1
-does understand the geyser mode request, although it apparently uses raw
-mode by default.  The reinit does help shutting up the stream of zero
-moves, so it is not bad per se.
-
-Andreas.
+Wolfgang Denk
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+       There is enough for the need of everyone in this world,
+       but not for the greed of everyone.     - Mahatma Gandhi
