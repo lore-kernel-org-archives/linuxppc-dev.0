@@ -1,16 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Thomas Klein <osstklei@de.ibm.com>, paulus@samba.org
-Subject: Re: [PATCH] ehea: Add kdump support 
-In-reply-to: <200711091433.51259.osstklei@de.ibm.com> 
-References: <200711091433.51259.osstklei@de.ibm.com>
-Date: Sat, 10 Nov 2007 11:20:22 +1100
-Message-ID: <24258.1194654022@neuling.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 399A7DDEC6
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Nov 2007 11:31:34 +1100 (EST)
+Date: Sat, 10 Nov 2007 11:31:33 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple
+	MPC5200 based boards
+Message-Id: <20071110113133.86aa3de2.sfr@canb.auug.org.au>
+In-Reply-To: <20071109171202.16289.2618.stgit@hekate.izotz.org>
+References: <20071109171137.16289.39575.stgit@hekate.izotz.org>
+	<20071109171202.16289.2618.stgit@hekate.izotz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__10_Nov_2007_11_31_33_+1100_mFav9cNvW3/T5e36"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,124 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> To support ehea driver reloading in a kdump kernel the driver has to
-> perform firmware handle deregistrations when the original kernel
-> crashes. As there's currently no notifier chain for machine crashes
-> this patch enables kdump support in the ehea driver by bending the
-> ppc_md.machine_crash_shutdown hook to its own machine crash
-> handler. The original machine_crash_shutdown() fn is called
-> afterwards. This works fine as long as the ehea driver is the only one
-> which does so. Problems may occur if other drivers do the same and
-> unload regularly .  This patch enables 2.6.24-rc2 to use kdump with
-> ehea and only puts a very low risk on base kernel. In 2.6.24 we know
-> ehea is the only user of this mechanism. The next step for 2.6.25
-> would be to add a proper notifier chain.  The full solution might be
-> that register_reboot_notifier() provides sth like a SYS_CRASH
-> action. Please apply.
+--Signature=_Sat__10_Nov_2007_11_31_33_+1100_mFav9cNvW3/T5e36
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If we are going to do this workaround, I'd prefer the notifier chain be
-done correctly now.  The way it's hacked in here, it's more likely to
-cause even more issues.  
+On Fri, 09 Nov 2007 18:12:02 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
+>
+> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+>
+> +static int __init mpc5200_simple_probe(void)
+> +{
+> +	unsigned long node =3D of_get_flat_dt_root();
 
-Either way, if this is going to go in, it at least needs to be acked by
-Paulus.
+You need to include asm/prom.h to use the flattened device tree accessors.
 
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
-> ---
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
->  2 files changed, 29 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-> index f78e5bf..5935899 100644
-> --- a/drivers/net/ehea/ehea.h
-> +++ b/drivers/net/ehea/ehea.h
-> @@ -40,7 +40,7 @@
->  #include <asm/io.h>
->  
->  #define DRV_NAME	"ehea"
-> -#define DRV_VERSION	"EHEA_0080"
-> +#define DRV_VERSION	"EHEA_0081"
->  
->  /* eHEA capability flags */
->  #define DLPAR_PORT_ADD_REM 1
-> diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-> index f0319f1..40a732e 100644
-> --- a/drivers/net/ehea/ehea_main.c
-> +++ b/drivers/net/ehea/ehea_main.c
-> @@ -37,6 +37,7 @@
->  #include <linux/reboot.h>
->  
->  #include <net/ip.h>
-> +#include <asm-powerpc/machdep.h>
->  
->  #include "ehea.h"
->  #include "ehea_qmr.h"
-> @@ -98,6 +99,7 @@ static int port_name_cnt = 0;
->  static LIST_HEAD(adapter_list);
->  u64 ehea_driver_flags = 0;
->  struct work_struct ehea_rereg_mr_task;
-> +static void (*orig_machine_crash_shutdown)(struct pt_regs *regs);
->  
->  struct semaphore dlpar_mem_lock;
->  
-> @@ -3312,6 +3314,29 @@ static struct notifier_block ehea_reboot_nb = {
->          .notifier_call = ehea_reboot_notifier,
->  };
->  
-> +void ehea_crash_notifier(struct pt_regs *regs)
-> +{
-> +	ehea_info("Machine crash: freeing all eHEA resources");
-> +	ibmebus_unregister_driver(&ehea_driver);
-> +	orig_machine_crash_shutdown(regs);
-> +}
-> +
-> +void ehea_register_crash_notifier(void)
-> +{
-> +#ifdef CONFIG_KEXEC
-> +	orig_machine_crash_shutdown =
-> +               (void*)__xchg_u64((unsigned long*)&ppc_md.machine_crash_shutd
-own,
-> +				 (unsigned long)ehea_crash_notifier);
-> +#endif
-> +}
-> +
-> +void ehea_unregister_crash_notifier(void)
-> +{
-> +#ifdef CONFIG_KEXEC
-> +	ppc_md.machine_crash_shutdown = orig_machine_crash_shutdown;
-> +#endif
-> +}
-> +
->  static int check_module_parm(void)
->  {
->  	int ret = 0;
-> @@ -3369,6 +3394,7 @@ int __init ehea_module_init(void)
->  		goto out;
->  
->  	register_reboot_notifier(&ehea_reboot_nb);
-> +	ehea_register_crash_notifier();
->  
->  	ret = ibmebus_register_driver(&ehea_driver);
->  	if (ret) {
-> @@ -3382,6 +3408,7 @@ int __init ehea_module_init(void)
->  		ehea_error("failed to register capabilities attribute, ret=%d",
->  			   ret);
->  		unregister_reboot_notifier(&ehea_reboot_nb);
-> +		ehea_unregister_crash_notifier();
->  		ibmebus_unregister_driver(&ehea_driver);
->  		goto out;
->  	}
-> @@ -3396,6 +3423,7 @@ static void __exit ehea_module_exit(void)
->  	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
->  	ibmebus_unregister_driver(&ehea_driver);
->  	unregister_reboot_notifier(&ehea_reboot_nb);
-> +	ehea_unregister_crash_notifier();
->  	ehea_destroy_busmap();
->  }
->  
-> -- 
-> 1.5.2
-> 
+> +	/* list of the supported boards */
+> +	const char *board[] =3D {=09
+> +		"tqc,tqm5200",
+> +		"promess,motionpro",
+> +		"schindler,cm5200",
+> +		NULL
+> +	};
+
+Make that static.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sat__10_Nov_2007_11_31_33_+1100_mFav9cNvW3/T5e36
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD4DBQFHNPvrTgG2atn1QN8RAnCzAJiCL/q5+0BT/RZcB/3dqprS1zkgAJ4zyCkl
+XZCb1nPijb/z6LrUadYZwg==
+=4f89
+-----END PGP SIGNATURE-----
+
+--Signature=_Sat__10_Nov_2007_11_31_33_+1100_mFav9cNvW3/T5e36--
