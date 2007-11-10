@@ -1,18 +1,11 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 09153DDE08
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 04:11:32 +1100 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Sat, 10 Nov 2007 18:11:30 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1194594629.6561.34.camel@pasglop>
-Message-ID: <20071110171130.254580@gmx.net>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910711101144r3f8745dbs572aefa8658e1312@mail.gmail.com>
+Date: Sat, 10 Nov 2007 14:44:28 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
+Subject: IRQs in i2c-mpc.c
 MIME-Version: 1.0
-References: <20071108214723.135260@gmx.net>	 <1194564017.6561.21.camel@pasglop>
-	<20071109074155.266120@gmx.net> <1194594629.6561.34.camel@pasglop>
-Subject: Re: Kernel locks up after calling kernel_execve()
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +15,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm doing final clean up the i2c open firmware support. What is the
+intention of this code? Is it meant for a missing IRQ attribute to
+return a zero and not get an IRQ for the device? Does the device
+function without an IRQ? If so, it needs a comment explaining things.
+Otherwise IRQ of zero should be an error.
 
--------- Original-Nachricht --------
-> Datum: Fri, 09 Nov 2007 18:50:29 +1100
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: Kernel locks up after calling kernel_execve()
+	i2c->irq = irq_of_parse_and_map(op->node, 0);
+	if (i2c->irq <= 0) {
+		result = -ENXIO;
+		goto fail_irq;
+	}
+	
+	if (i2c->irq != 0)
+		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+					  	IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+			printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
+			goto fail_irq;
+		}
 
-> 
-> > I tried to use /bin/sh as init program and was able to enter a command,
-> > but then the machine locked up, too.
-> > Could that be a problem with a CPU sleeping/idle code?
-> 
-> That's possibly an issue, try disabling power save if any for that CPU
-> type. If it worked and broke, you may have to bisect tho.
-I disabled the powersaving code by adding powersave=off to the kernel's
-command line, but it didn't help. It seems to lockup whenever it tries to
-access a filesystem.
-Is there a way to debug it without a hardware debugger or can you
-recommend a cheap hardware debugger?
-
-Gerhard
 -- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Jon Smirl
+jonsmirl@gmail.com
