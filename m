@@ -1,17 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 81109DDEA2
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 07:59:05 +1100 (EST)
-Date: Sat, 10 Nov 2007 14:59:29 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Fix CONFIG_SMP=n build error on ppc64
-Message-ID: <20071110205929.GA4845@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <9e4733910711101144r3f8745dbs572aefa8658e1312@mail.gmail.com>
+References: <9e4733910711101144r3f8745dbs572aefa8658e1312@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3DBBAC12-579B-4C1F-9C9E-D085FB22B687@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: IRQs in i2c-mpc.c
+Date: Sat, 10 Nov 2007 17:09:56 -0600
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[POWERPC] Fix CONFIG_SMP=n build error
 
-The patch "KVM: fix !SMP build error" change the way smp_call_function()
-actually uses the passed in function names on non-SMP builds. So
-previously it was never caught that the function passed in was never
-actually defined.
+On Nov 10, 2007, at 1:44 PM, Jon Smirl wrote:
 
-This causes a build error on ppc64_defconfig + CONFIG_SMP=n:
+> I'm doing final clean up the i2c open firmware support. What is the
+> intention of this code? Is it meant for a missing IRQ attribute to
+> return a zero and not get an IRQ for the device? Does the device
+> function without an IRQ? If so, it needs a comment explaining things.
+> Otherwise IRQ of zero should be an error.
+>
+> 	i2c->irq = irq_of_parse_and_map(op->node, 0);
+> 	if (i2c->irq <= 0) {
+> 		result = -ENXIO;
+> 		goto fail_irq;
+> 	}
+> 	
+> 	if (i2c->irq != 0)
+> 		if ((result = request_irq(i2c->irq, mpc_i2c_isr,
+> 					  	IRQF_SHARED, "i2c-mpc", i2c)) < 0) {
+> 			printk(KERN_ERR "i2c-mpc - failed to attach interrupt\n");
+> 			goto fail_irq;
+> 		}
 
-arch/powerpc/mm/tlb_64.c: In function 'pgtable_free_now':
-arch/powerpc/mm/tlb_64.c:71: error: 'pte_free_smp_sync' undeclared (first use in this function)
-arch/powerpc/mm/tlb_64.c:71: error: (Each undeclared identifier is reported only once
-arch/powerpc/mm/tlb_64.c:71: error: for each function it appears in.)
+Looking at the current driver it looks like we could get ride of if  
+check since the previous code checked the return of platform_get_irq().
 
-So we need to define it even if CONFIG_SMP is off. Either that or ifdef
-out the smp_call_function() call, but that's ugly.
-
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-diff --git a/arch/powerpc/mm/tlb_64.c b/arch/powerpc/mm/tlb_64.c
-index eafbca5..e2d867c 100644
---- a/arch/powerpc/mm/tlb_64.c
-+++ b/arch/powerpc/mm/tlb_64.c
-@@ -54,12 +54,10 @@ unsigned long pte_freelist_forced_free;
- 	((PAGE_SIZE - sizeof(struct pte_freelist_batch)) \
- 	  / sizeof(pgtable_free_t))
- 
--#ifdef CONFIG_SMP
- static void pte_free_smp_sync(void *arg)
- {
- 	/* Do nothing, just ensure we sync with all CPUs */
- }
--#endif
- 
- /* This is only called when we are critically out of memory
-  * (and fail to get a page in pte_free_tlb).
+- k
