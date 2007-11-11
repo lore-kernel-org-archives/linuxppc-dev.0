@@ -1,20 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 8750CDDEC9
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E0B61DDE2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 11 Nov 2007 11:00:13 +1100 (EST)
-To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: mpc8xx_wdt.c : piscr is 16bit in linux2.4 but 32bit in linux2.6
-	?!?!?!
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 11 Nov 2007 00:03:23 +0100."
-	<F1F6EC0C8B75034F9E3A79FC85122E8E2649ED@aquib01a>
-Date: Sun, 11 Nov 2007 01:00:10 +0100
-Sender: wd@denx.de
-Message-Id: <20071111000010.E51B3248D3@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 12 Nov 2007 04:02:01 +1100 (EST)
+Message-ID: <47373571.3070605@scram.de>
+Date: Sun, 11 Nov 2007 18:01:37 +0100
+From: Jochen Friedrich <jochen@scram.de>
+MIME-Version: 1.0
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] powerpc: Add EXPORT_SYMBOL for symbols required by fs_enet
+	and cpm_uart
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +24,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <F1F6EC0C8B75034F9E3A79FC85122E8E2649ED@aquib01a> you wrote:
-> 
-> in mpc8xx_wdt.c in linux2.4 (denx distribution) piscr is 16bit long but
+fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
+cpm2_common.c. Add EXPORT_SYMBOL for cpmp, cpm_setbrg and cpm2_immr, so
+the drivers can be compiled as modules.
 
-According the UM, the PISCR is indeed a 16 bit register.
+  Building modules, stage 2.
+  MODPOST 5 modules
+ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
+ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-The current header files also declare a 16 bit register:
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c    |    3 +++
+ arch/powerpc/sysdev/cpm2_common.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-include/asm-ppc/8xx_immap.h:    ushort  sit_piscr;
-
-> in the same file in linux 2.6.19-2 (denx distribution) is read and
-> written with in_be32 and out_be32. It's strange.
-
-We don't support MPC8xx in the 2.6 kernel  tree  yet.  What  you  see
-there,  is  original kernel.org code - the code in question is commit
-ID 398f6858.
-
-I think you are right - this is a bug in the code.  Please  submit  a
-patch.
-
-Best regards,
-
-Wolfgang Denk
-
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..d5a0dcf 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
+ static uint host_buffer; /* One page of host buffer */
+ static uint host_end;    /* end + 1 */
+ cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
++EXPORT_SYMBOL(cpmp);
++
+ immap_t __iomem *mpc8xx_immr;
+ static cpic8xx_t __iomem *cpic_reg;
+ 
+@@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
+ 		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
+ 		             CPM_BRG_EN | CPM_BRG_DIV16);
+ }
++EXPORT_SYMBOL(cpm_setbrg);
+ 
+ #ifndef CONFIG_PPC_CPM_NEW_BINDING
+ /*
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..4ed5df6 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
+ #endif
+ 
+ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
++EXPORT_SYMBOL(cpmp);
+ 
+ /* We allocate this here because it is used almost exclusively for
+  * the communication processor devices.
+  */
+ cpm2_map_t __iomem *cpm2_immr;
++EXPORT_SYMBOL(cpm2_immr);
+ 
+ #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
+ 					   of space for CPM as it is larger
+@@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
+ 
+ 	cpm2_unmap(bp);
+ }
++EXPORT_SYMBOL(cpm_setbrg);
+ 
+ /* This function is used to set high speed synchronous baud rate
+  * clocks.
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Question: How does one get fresh air into a Russian church?
-Answer:   One clicks on an icon, and a window opens!
+1.5.3.5
