@@ -1,19 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711110734m7d36a235t72f5112e59cbe0d5@mail.gmail.com>
-Date: Sun, 11 Nov 2007 10:34:13 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: IRQs in i2c-mpc.c
-In-Reply-To: <1194762471.21340.39.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711101144r3f8745dbs572aefa8658e1312@mail.gmail.com>
-	<3DBBAC12-579B-4C1F-9C9E-D085FB22B687@kernel.crashing.org>
-	<9e4733910711101516n64870e40rbd1fcbe3d123fcc3@mail.gmail.com>
-	<A4797E92-9FCF-484A-B6AA-9385913AD465@kernel.crashing.org>
-	<9e4733910711101544v178e29cer4e53577c011e89f7@mail.gmail.com>
-	<1194762471.21340.39.camel@pasglop>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <root@ucw.cz>
+Received: from spitz.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id C5843DDEEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Nov 2007 04:21:14 +1100 (EST)
+Date: Sun, 11 Nov 2007 13:35:48 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [linux-pm] [RFC] powermac: proper sleep management
+Message-ID: <20071111133548.GA5997@ucw.cz>
+References: <1194523729.6294.18.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1194523729.6294.18.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pm <linux-pm@lists.linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/11/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> > irq_of_parse_and_map() returns NO_IRQ when the irq parameter is missing.
-> >
-> > This API appears to be broken. In asm-powerpc/irq.h NO_IRQ is defined
-> > as (0). There is no way to tell an error in the attribute from a valid
-> > attribute selecting interrupt zero.
->
-> No, it is not broken. Interrupt numbers in arch/powerpc are virtually
-> mapped and 0 is never a legal value, thus NO_IRQ is 0. This was done in
-> part because Linus wanted it that way.
->
-> The hardware number can perfectly be 0 though, that's a different thing,
-> and has nothing to do with what you pass to request_irq().
+Hi!
 
-Is the only error return from irq_of_parse_and_map() NO_IRQ? or can we
-get standard negative returns? I started tracing out the returns from
-irq_of_parse_and_map() but there are a lot of them.
+> This adds platform_suspend_ops for PMU based machines, directly in
+> the PMU driver. This finally allows suspending via /sys/power/state
+> on powerbooks.
+
+Thanks for doing this!
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
