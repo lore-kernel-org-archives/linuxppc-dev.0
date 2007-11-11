@@ -1,20 +1,17 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D81ECDDEDE
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 15:46:23 +1100 (EST)
-Subject: Re: [PATCH] Avoid unpaired stwcx. on some processors
+Subject: Re: IRQs in i2c-mpc.c
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071109231927.GA19415@lixom.net>
-References: <11946460863124-git-send-email-becky.bruce@freescale.com>
-	<20071109231927.GA19415@lixom.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <A4797E92-9FCF-484A-B6AA-9385913AD465@kernel.crashing.org>
+References: <9e4733910711101144r3f8745dbs572aefa8658e1312@mail.gmail.com>
+	<3DBBAC12-579B-4C1F-9C9E-D085FB22B687@kernel.crashing.org>
+	<9e4733910711101516n64870e40rbd1fcbe3d123fcc3@mail.gmail.com>
+	<A4797E92-9FCF-484A-B6AA-9385913AD465@kernel.crashing.org>
 Content-Type: text/plain
-Date: Sun, 11 Nov 2007 15:46:05 +1100
-Message-Id: <1194756365.21340.32.camel@pasglop>
+Date: Sun, 11 Nov 2007 17:26:20 +1100
+Message-Id: <1194762380.21340.36.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,13 +23,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Seems like a "better" (but still ugly) workaround would be to create a
-> _new_ reservation to a RA that's unavailable to any userspace process,
-> so that they could never do a successful store to it. That way you would
-> have stray reservations, but never dangling stwcx:es. No?
+On Sat, 2007-11-10 at 17:18 -0600, Kumar Gala wrote:
+> On Nov 10, 2007, at 5:16 PM, Jon Smirl wrote:
+> 
+> > On 11/10/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> >> Looking at the current driver it looks like we could get ride of if
+> >> check since the previous code checked the return of  
+> >> platform_get_irq().
+> >
+> > The code was a snippet from the larger patch that is converting i2c
+> > from being a platform driver to a of_platform driver.
+> >
+> > The question is, what to do about a missing IRQ tag in the device tree
+> > or a IRQ of zero. What is an error and what should be ignored, etc.
+> 
+> I think the lack of an IRQ in the device tree should be an error.  If  
+> the IRQ value is zero, than its zero.
 
-Many processors don't compare the reservation address locally. If
-there's any valid reservation held by that processor, a subsequent
-stwcx. will always succeed. That would make you scheme dangerous :-)
+virq 0 is always illegal so if platform_get_irq() returns 0, it can be
+safely treated as an error or the absence of irq, on both powerpc and
+x86.
 
 Ben.
