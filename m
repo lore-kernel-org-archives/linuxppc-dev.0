@@ -1,22 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DAD6DDEC4
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 14:55:52 +1100 (EST)
-Subject: Re: Kernel locks up after calling kernel_execve()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <20071110171130.254580@gmx.net>
-References: <20071108214723.135260@gmx.net>
-	<1194564017.6561.21.camel@pasglop> <20071109074155.266120@gmx.net>
-	<1194594629.6561.34.camel@pasglop>  <20071110171130.254580@gmx.net>
-Content-Type: text/plain
-Date: Sun, 11 Nov 2007 14:55:40 +1100
-Message-Id: <1194753340.21340.24.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6A889DDEC8
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 15:25:41 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id lAB4Pxr5021266
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 15:25:59 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lAB4PbBY2011384
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 15:25:38 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAB4PLTk029629
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 15:25:21 +1100
+Date: Sun, 11 Nov 2007 09:55:10 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] Fix CONFIG_SMP=n build error on ppc64
+Message-ID: <20071111042510.GA9597@linux.vnet.ibm.com>
+References: <20071110205929.GA4845@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071110205929.GA4845@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>, paulus@samba.org,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sat, 2007-11-10 at 18:11 +0100, Gerhard Pircher wrote:
-> -------- Original-Nachricht --------
-> > Datum: Fri, 09 Nov 2007 18:50:29 +1100
-> > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > CC: linuxppc-dev@ozlabs.org
-> > Betreff: Re: Kernel locks up after calling kernel_execve()
+On Sat, Nov 10, 2007 at 02:59:29PM -0600, Olof Johansson wrote:
+> [POWERPC] Fix CONFIG_SMP=n build error
 > 
-> > 
-> > > I tried to use /bin/sh as init program and was able to enter a command,
-> > > but then the machine locked up, too.
-> > > Could that be a problem with a CPU sleeping/idle code?
-> > 
-> > That's possibly an issue, try disabling power save if any for that CPU
-> > type. If it worked and broke, you may have to bisect tho.
-> I disabled the powersaving code by adding powersave=off to the kernel's
-> command line, but it didn't help. It seems to lockup whenever it tries to
-> access a filesystem.
-> Is there a way to debug it without a hardware debugger or can you
-> recommend a cheap hardware debugger?
+> The patch "KVM: fix !SMP build error" change the way smp_call_function()
+> actually uses the passed in function names on non-SMP builds. So
+> previously it was never caught that the function passed in was never
+> actually defined.
+> 
+> This causes a build error on ppc64_defconfig + CONFIG_SMP=n:
+> 
+> arch/powerpc/mm/tlb_64.c: In function 'pgtable_free_now':
+> arch/powerpc/mm/tlb_64.c:71: error: 'pte_free_smp_sync' undeclared (first use in this function)
+> arch/powerpc/mm/tlb_64.c:71: error: (Each undeclared identifier is reported only once
+> arch/powerpc/mm/tlb_64.c:71: error: for each function it appears in.)
+> 
+> So we need to define it even if CONFIG_SMP is off. Either that or ifdef
+> out the smp_call_function() call, but that's ugly.
+Hi,
 
-There are ways, sure, which probably involve adding prink's all over the
-place to figure it out... could be some DMA issue for example, could be
-pretty much anything. Have you tried booting an initrd with no disk
-access ?
+Thanks, the patch fixes the build failure.
 
-Ben.
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+diff --git a/arch/powerpc/mm/tlb_64.c b/arch/powerpc/mm/tlb_64.c
+index eafbca5..e2d867c 100644
+--- a/arch/powerpc/mm/tlb_64.c
++++ b/arch/powerpc/mm/tlb_64.c
+@@ -54,12 +54,10 @@ unsigned long pte_freelist_forced_free;
+      ((PAGE_SIZE - sizeof(struct pte_freelist_batch)) \ 
+        / sizeof(pgtable_free_t))
+
+-#ifdef CONFIG_SMP
+ static void pte_free_smp_sync(void *arg)
+ { 
+      /* Do nothing, just ensure we sync with all CPUs */
+ } 
+-#endif
+
+ /* This is only called when we are critically out of memory
+  * (and fail to get a page in pte_free_tlb).
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
