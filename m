@@ -1,16 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Gianfar ethernet device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Smirl <jonsmirl@gmail.com>
-In-Reply-To: <9e4733910711111530g1f50d6e6hfaa76b4f051b5887@mail.gmail.com>
-References: <9e4733910711111511v36aa3504s3b55438698a4b4a8@mail.gmail.com>
-	<9e4733910711111530g1f50d6e6hfaa76b4f051b5887@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 12 Nov 2007 11:04:36 +1100
-Message-Id: <1194825876.18185.3.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910711111607i35294d3ja43e1c616a3427bd@mail.gmail.com>
+Date: Sun, 11 Nov 2007 19:07:23 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: pcspkr device, pnpPNP,100
+In-Reply-To: <1194825784.18185.0.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910711111535w6ffdfa97x4bed07eb84d4ab13@mail.gmail.com>
+	<1194825784.18185.0.camel@pasglop>
 Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 11/11/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Sun, 2007-11-11 at 18:35 -0500, Jon Smirl wrote:
+> > Which platform does pcspkr device, pnpPNP,100 belong to, amiga? I'd
+> > like to IFDEF add_pcspkr(void) in setup-common.c for the right
+> > platform.
+>
+> #ifdef is evil. What about multiplatform kernels ? Just test for the
+> presence of the device in the device-tree (use a platform driver maybe)
 
-On Sun, 2007-11-11 at 18:30 -0500, Jon Smirl wrote:
-> Does this patch add the right ifdefs in fsl_soc.c to make these
-> drivers build on their proper platforms? As an experiment I have
-> disabled platform bus on the mpc5200 and I'm only using of_platform
-> bus. Turning off platform bus is exposing a lot of code that is
-> getting built into my mpc5200 kernel that is supporting devices not
-> available on the platform.
-> 
-> A few more fixups in some other drivers and I should have mpc5200
-> working without platform bus.
+This code should be in a device driver so that it can be selected with
+Kconfig. Can we #ifdef it now as a hint? I could make it a device
+driver but I don't have any hardware to test it on.
 
-That sort of per-platform ifdefs is just WRONG.
+I'm trying to get the mpc5200 kernel to build with platform bus turned
+off (only of_platform bus). I'm almost there, just a couple more odd
+places to patch up.
 
-On the other hand, if you feel that such common code deserves not being
-built on all platforms, then what you can do is define a Kconfig option,
-such as CONFIG_PPC_CAN_HAVE_GIANFAR, that gets select'ed by the
-platforms that can have a Gianfar and use -that- for the ifdef.
 
-Ben.
+>
+> Ben.
+>
+>
+>
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
