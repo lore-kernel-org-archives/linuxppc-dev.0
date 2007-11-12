@@ -1,19 +1,19 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711121325k6006d7a5p99906971aa66e972@mail.gmail.com>
-Date: Mon, 12 Nov 2007 16:25:55 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: Gianfar ethernet device
-In-Reply-To: <9e4733910711111716oea3572fq9bc42221f805e11@mail.gmail.com>
+Return-Path: <stern@rowland.harvard.edu>
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+	by ozlabs.org (Postfix) with SMTP id D5978DDE2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 08:52:21 +1100 (EST)
+Date: Mon, 12 Nov 2007 16:52:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [linux-pm] Re: [RFC] powermac: proper sleep management
+In-Reply-To: <1194900998.18185.57.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0711121641320.5531-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711111511v36aa3504s3b55438698a4b4a8@mail.gmail.com>
-	<9e4733910711111530g1f50d6e6hfaa76b4f051b5887@mail.gmail.com>
-	<1194825876.18185.3.camel@pasglop>
-	<9e4733910711111622v5ad6fdd2jd30989819d05615d@mail.gmail.com>
-	<1194829680.18185.10.camel@pasglop>
-	<9e4733910711111716oea3572fq9bc42221f805e11@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	David Woodhouse <dwmw2@infradead.org>,
+	linux-pm <linux-pm@lists.linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,84 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/11/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 11/11/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > > The real solution is that gianfar support belongs in a device driver,
-> > > not in a common file. That whole fsl_soc.c file is a catch-all of
-> > > things that belong in device drivers. I haven't looked at every line
-> > > in it, but 90%+ of the code should be moved into device drivers.
-> > >
-> > > I'm preparing a patch that moves the i2c driver out of fsl_soc.c and
-> > > into i2c_mpc.c.
-> >
-> > The problem is how do you instantiate it. I'm working on some solution
-> > for that but it's not there yet.
+On Tue, 13 Nov 2007, Benjamin Herrenschmidt wrote:
 
-What's an example of a device that can't be instantiated?
+> I remember fixing various issues so that khubd would be safe when non
+> frozen (among other things) a while ago. Did you guys break it all
+> again ?
 
->
-> Are there powerpc platforms without device trees?
->
-> Standard of_platform driver works fine to instantiate the i2c driver
-> on mpc5200.
->
-> static struct of_device_id mpc_i2c_of_match[] = {
->         {
->                 .compatible     = "fsl-i2c",
->         },
-> };
-> MODULE_DEVICE_TABLE(of, mpc_i2c_of_match);
->
-> /* Structure for a device driver */
-> static struct of_platform_driver mpc_i2c_driver = {
->         .match_table    = mpc_i2c_of_match,
->         .probe          = mpc_i2c_probe,
->         .remove         = __devexit_p(mpc_i2c_remove),
->         .driver         = {
->                 .owner  = THIS_MODULE,
->                 .name   = DRV_NAME,
->         },
-> };
->
-> static int __init mpc_i2c_init(void)
-> {
->         int rv;
->
->         rv = of_register_platform_driver(&mpc_i2c_driver);
->         if (rv) {
->                 printk(KERN_ERR DRV_NAME " of_register_platform_driver failed (%i)\n", rv);
->                 return rv;
->         }
->         return 0;
-> }
->
-> module_init(mpc_i2c_init);
->
-> ----------------------------------------------------------------------------------------------
->
-> i2c and alsa soc core instantiate like this, asoc v2 is not in tree
-> yet. These cores used to create platform drivers, but that was wrong,
-> they don't have any hardware associated with them.
->
-> static int __init i2c_init(void)
-> {
->         int retval;
->
->         retval = bus_register(&i2c_bus_type);
->         if (retval)
->                 return retval;
->         return class_register(&i2c_adapter_class);
-> }
->
-> subsys_initcall(i2c_init);
->
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
->
+Sorry, I don't know what fixes you're referring to.  But come to 
+think of it, some changes I added to the PM core a few months ago 
+(locking every device prior to system sleep) would also make khubd 
+and ksuspend_usbd safe, since they acquire the device lock before 
+trying to resume anything.
 
+So I take back what I said.  It's no longer true that those two USB 
+kernel threads need to be frozen for system sleep.  (I should test and 
+make sure that really works...)
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+But aren't there other kernel threads scattered around that still 
+want to be frozen?  For instance, drivers/misc/tifm_core.c calls 
+create_freezeable_workqueue().  And set_freezable() gets called in lots 
+of places.
+
+Alan Stern
