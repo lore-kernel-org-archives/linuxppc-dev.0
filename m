@@ -1,22 +1,19 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 12 Nov 2007 15:50:02 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <Pine.LNX.4.62.0711121456120.4731@pademelon.sonytel.be>
-Message-ID: <20071112145002.63960@gmx.net>
+Return-Path: <sfalco@harris.com>
+Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
+	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id AA4CADDE18
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 02:36:36 +1100 (EST)
+Message-ID: <473872FF.4090109@harris.com>
+Date: Mon, 12 Nov 2007 10:36:31 -0500
+From: "Steven A. Falco" <sfalco@harris.com>
 MIME-Version: 1.0
-References: <9e4733910711111535w6ffdfa97x4bed07eb84d4ab13@mail.gmail.com>
-	<1194825784.18185.0.camel@pasglop>
-	<9e4733910711111607i35294d3ja43e1c616a3427bd@mail.gmail.com>
-	<1194826191.18185.6.camel@pasglop>
-	<9e4733910711111618l5190dee3jd8e0aa8f9b78ebf4@mail.gmail.com>
-	<1194829646.18185.8.camel@pasglop>
-	<Pine.LNX.4.62.0711121147480.4731@pademelon.sonytel.be>
-	<9e4733910711120551y2285003bw7be4d5aedbd25e96@mail.gmail.com>
-	<Pine.LNX.4.62.0711121456120.4731@pademelon.sonytel.be>
-Subject: Re: pcspkr device, pnpPNP,100
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, jonsmirl@gmail.com
-Cc: Linuxppc-dev@ozlabs.org
+To: Stefan Roese <sr@denx.de>
+Subject: Re: PPC440EPx on Sequoia: /proc/iomem acts weird
+References: <4734A72B.2070104@harris.com> <20071109123522.072bc1d8@weaponx>
+	<4734AAFC.8080907@harris.com> <200711101403.48792.sr@denx.de>
+In-Reply-To: <200711101403.48792.sr@denx.de>
+Content-Type: multipart/alternative;
+	boundary="------------030105020801060607070101"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,36 +23,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------030105020801060607070101
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
--------- Original-Nachricht --------
-> Datum: Mon, 12 Nov 2007 14:57:13 +0100 (CET)
-> Von: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> An: Jon Smirl <jonsmirl@gmail.com>
-> CC: PowerPC dev list <Linuxppc-dev@ozlabs.org>
-> Betreff: Re: pcspkr device, pnpPNP,100
+This is on arch/powerpc.  I traced through the linked lists in 
+resource.c.  Here is a partial list, with the addresses changed to 
+single upper-case letters for readability.  Also "N" is a null pointer:
 
-> On Mon, 12 Nov 2007, Jon Smirl wrote:
-> > On 11/12/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > On Mon, 12 Nov 2007, Benjamin Herrenschmidt wrote:
-> > > > On Sun, 2007-11-11 at 19:18 -0500, Jon Smirl wrote:
-> > > >
-> > > > Run a poll :-) I suppose at least chrp/prep/pegasos
-> > >
-> > > And definitely not Amiga/APUS ;-)
-> > 
-> > I found this device tree that has the pnpPNP,100 device for an Amiga.
-> >
-> http://www.nabble.com/Re:-Problem-with-OF-interrupt-parsing-code-p12988017.html
-> 
-> Ah yes, the AmigaOne. That's more a rebranded CHRP box...
-> Has nothing to do with CONFIG_AMIGA.
-Right. And it's not even officially supported in the kernel yet
-(unfortunately).
+r=A p=N s=N c=K
+r=K p=A s=M c=P
+r=M p=A s=R c=N
+r=R p=A s=B c=N
+r=B p=B s=J c=B
+r=J p=A s=C c=N
+r=C p=A s=D c=N
+r=D p=A s=E c=N
+r=E p=A s=F c=N
+r=F p=A s=G c=N
+r=G p=A s=H c=N
+r=H p=A s=N c=N
+r=B p=B s=J c=B
+r=J p=A s=C c=N
+r=C p=A s=D c=N
 
-regards,
+r is the resource itself, p is the parent, s is the sibling, and c is 
+the child.  As you can see, most nodes point back to parent "A", and 
+have null children.  But one node, "B", points to itself both as parent 
+and child.  I believe this is the problem, but I haven't confirmed that, 
+nor have I determined how the list gets into this state.
 
-Gerhard
+    Steve
 
--- 
-Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
-Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
+
+Stefan Roese wrote:
+> Hi Steve,
+>
+> On Friday 09 November 2007, Steven A. Falco wrote:
+>   
+>> I am using the Denx 2.6.32 kernel, which does have powerpc/sequoia.
+>> Xenomai is a real-time kernel built on Adeos/Ipipe.  I'll dig into it
+>> further.
+>>     
+>
+> Is this arch/ppc or arch/powerpc? I remember fixing this a while ago in 
+> arch/ppc:
+>
+> commit 67a35ce785b1d11d09bf528c166ea26d489a4bd6
+> Author: Stefan Roese <sr@denx.de>
+> Date:   Thu Aug 2 14:15:22 2007 +0200
+>
+>     ppc: Fix problem with recursive NDFC platform_device resource management
+>
+>     This change fixes a problem with a resursive platform_device resource
+>     management of the AMCC 4xx NDFC. Without this fix a "cat /proc/iomem"
+>     leads to an infinite loop of printing the "ndfc-nand.0" resource.
+>
+>     Signed-off-by: Stefan Roese <sr@denx.de>
+>
+> Best regards,
+> Stefan
+>
+>   
+
+--------------030105020801060607070101
+Content-Type: text/html; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-15"
+ http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<tt>This is on arch/powerpc.  I traced through the linked lists in
+resource.c.  Here is a partial list, with the addresses changed to
+single upper-case letters for readability.  Also "N" is a null pointer:<br>
+<br>
+r=A p=N s=N c=K<br>
+r=K p=A s=M c=P<br>
+r=M p=A s=R c=N<br>
+r=R p=A s=B c=N<br>
+r=B p=B s=J c=B<br>
+r=J p=A s=C c=N<br>
+r=C p=A s=D c=N<br>
+r=D p=A s=E c=N<br>
+r=E p=A s=F c=N<br>
+r=F p=A s=G c=N<br>
+r=G p=A s=H c=N<br>
+r=H p=A s=N c=N<br>
+r=B p=B s=J c=B<br>
+r=J p=A s=C c=N<br>
+r=C p=A s=D c=N<br>
+<br>
+r is the resource itself, p is the parent, s is the sibling, and c is
+the child.  As you can see, most nodes point back to parent "A", and
+have null children.  But one node, "B", points to itself both as parent
+and child.  I believe this is the problem, but I haven't confirmed
+that, nor have I determined how the list gets into this state.<br>
+<br>
+    Steve<br>
+<br>
+</tt><br>
+Stefan Roese wrote:
+<blockquote cite="mid:200711101403.48792.sr@denx.de" type="cite">
+  <pre wrap="">Hi Steve,
+
+On Friday 09 November 2007, Steven A. Falco wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">I am using the Denx 2.6.32 kernel, which does have powerpc/sequoia.
+Xenomai is a real-time kernel built on Adeos/Ipipe.  I'll dig into it
+further.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Is this arch/ppc or arch/powerpc? I remember fixing this a while ago in 
+arch/ppc:
+
+commit 67a35ce785b1d11d09bf528c166ea26d489a4bd6
+Author: Stefan Roese <a class="moz-txt-link-rfc2396E" href="mailto:sr@denx.de">&lt;sr@denx.de&gt;</a>
+Date:   Thu Aug 2 14:15:22 2007 +0200
+
+    ppc: Fix problem with recursive NDFC platform_device resource management
+
+    This change fixes a problem with a resursive platform_device resource
+    management of the AMCC 4xx NDFC. Without this fix a "cat /proc/iomem"
+    leads to an infinite loop of printing the "ndfc-nand.0" resource.
+
+    Signed-off-by: Stefan Roese <a class="moz-txt-link-rfc2396E" href="mailto:sr@denx.de">&lt;sr@denx.de&gt;</a>
+
+Best regards,
+Stefan
+
+  </pre>
+</blockquote>
+</body>
+</html>
+
+--------------030105020801060607070101--
