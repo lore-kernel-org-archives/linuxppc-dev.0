@@ -1,19 +1,19 @@
-Return-Path: <stern@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
-	by ozlabs.org (Postfix) with SMTP id D5978DDE2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 08:52:21 +1100 (EST)
-Date: Mon, 12 Nov 2007 16:52:20 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [linux-pm] Re: [RFC] powermac: proper sleep management
-In-Reply-To: <1194900998.18185.57.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0711121641320.5531-100000@netrider.rowland.org>
+Return-Path: <m8@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
+	by ozlabs.org (Postfix) with ESMTP id 76EF2DDE37
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:22:31 +1100 (EST)
+Message-ID: <4738D218.9060503@semihalf.com>
+Date: Mon, 12 Nov 2007 23:22:16 +0100
+From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	David Woodhouse <dwmw2@infradead.org>,
-	linux-pm <linux-pm@lists.linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+References: <20071109171137.16289.39575.stgit@hekate.izotz.org>	<20071109171202.16289.2618.stgit@hekate.izotz.org>
+	<20071110113133.86aa3de2.sfr@canb.auug.org.au>
+In-Reply-To: <20071110113133.86aa3de2.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-2
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 13 Nov 2007, Benjamin Herrenschmidt wrote:
+Stephen Rothwell wrote:
+> On Fri, 09 Nov 2007 18:12:02 +0100 Marian Balakowicz <m8@semihalf.com> wrote:
+>> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+>>
+>> +static int __init mpc5200_simple_probe(void)
+>> +{
+>> +	unsigned long node = of_get_flat_dt_root();
+> 
+> You need to include asm/prom.h to use the flattened device tree accessors.
 
-> I remember fixing various issues so that khubd would be safe when non
-> frozen (among other things) a while ago. Did you guys break it all
-> again ?
+Right, but this one is already included in mpc52xx.h.
 
-Sorry, I don't know what fixes you're referring to.  But come to 
-think of it, some changes I added to the PM core a few months ago 
-(locking every device prior to system sleep) would also make khubd 
-and ksuspend_usbd safe, since they acquire the device lock before 
-trying to resume anything.
+>> +	/* list of the supported boards */
+>> +	const char *board[] = {	
+>> +		"tqc,tqm5200",
+>> +		"promess,motionpro",
+>> +		"schindler,cm5200",
+>> +		NULL
+>> +	};
+> 
+> Make that static.
 
-So I take back what I said.  It's no longer true that those two USB 
-kernel threads need to be frozen for system sleep.  (I should test and 
-make sure that really works...)
+Board table is no longer needed after kernel is initialized, it would
+be nice to declare it static and __initdata, but that would be quite
+ugly as it's a table of pointers and each string would require
+separate statement too. If we don't do it then what's the benefit of
+making it static?
 
-But aren't there other kernel threads scattered around that still 
-want to be frozen?  For instance, drivers/misc/tifm_core.c calls 
-create_freezeable_workqueue().  And set_freezable() gets called in lots 
-of places.
-
-Alan Stern
+Cheers,
+m.
