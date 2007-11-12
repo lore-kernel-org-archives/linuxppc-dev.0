@@ -1,19 +1,19 @@
-Return-Path: <sfalco@harris.com>
-Received: from mlbe2k1.cs.myharris.net (mlbe2k1.cs.myharris.net
-	[137.237.90.88]) by ozlabs.org (Postfix) with ESMTP id AA4CADDE18
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 02:36:36 +1100 (EST)
-Message-ID: <473872FF.4090109@harris.com>
-Date: Mon, 12 Nov 2007 10:36:31 -0500
-From: "Steven A. Falco" <sfalco@harris.com>
+Return-Path: <mel@skynet.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B201DDE02
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 03:13:45 +1100 (EST)
+Date: Mon, 12 Nov 2007 15:54:53 +0000
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Do not depend on MAX_ORDER when grouping pages by mobility
+Message-ID: <20071112155452.GB6653@skynet.ie>
+References: <20071112132108.7c98f011.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: PPC440EPx on Sequoia: /proc/iomem acts weird
-References: <4734A72B.2070104@harris.com> <20071109123522.072bc1d8@weaponx>
-	<4734AAFC.8080907@harris.com> <200711101403.48792.sr@denx.de>
-In-Reply-To: <200711101403.48792.sr@denx.de>
-Content-Type: multipart/alternative;
-	boundary="------------030105020801060607070101"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20071112132108.7c98f011.sfr@canb.auug.org.au>
+From: mel@skynet.ie (Mel Gorman)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,144 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030105020801060607070101
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On (12/11/07 13:21), Stephen Rothwell didst pronounce:
 
-This is on arch/powerpc.  I traced through the linked lists in 
-resource.c.  Here is a partial list, with the addresses changed to 
-single upper-case letters for readability.  Also "N" is a null pointer:
+> I discovered recently that a kernel built with ppc64_defconfig no longer
+> boots on legacy iSeries.  It did in 2.6.23.  I bisected down the commit
+> d9c2340052278d8eb2ffb16b0484f8f794def4de ("Do not depend on MAX_ORDER
+> when grouping pages by mobility") which fails while its parent is ok.
+> Also, an iseries_defconfig kernel will boot.  The reason it seem is
+> because on PowerPC 64 with CONFIG_HUGETLB_PAGE, HPAGE_SHIFT is not
+> constant and its value is determined at runtime early.
+> 
 
-r=A p=N s=N c=K
-r=K p=A s=M c=P
-r=M p=A s=R c=N
-r=R p=A s=B c=N
-r=B p=B s=J c=B
-r=J p=A s=C c=N
-r=C p=A s=D c=N
-r=D p=A s=E c=N
-r=E p=A s=F c=N
-r=F p=A s=G c=N
-r=G p=A s=H c=N
-r=H p=A s=N c=N
-r=B p=B s=J c=B
-r=J p=A s=C c=N
-r=C p=A s=D c=N
+Ok, that in itself is ok. IA-64 does something similar.
 
-r is the resource itself, p is the parent, s is the sibling, and c is 
-the child.  As you can see, most nodes point back to parent "A", and 
-have null children.  But one node, "B", points to itself both as parent 
-and child.  I believe this is the problem, but I haven't confirmed that, 
-nor have I determined how the list gets into this state.
+> For legacy iSeries HPAGE_SHIFT remains 0 which means that
+> HUGETLB_PAGE_ORDER becomes -PAGE_SHIFT and things degenerate badly.
+> 
 
-    Steve
+D'oh. That would have problems for sure.
 
+> I can enable CONFIG_HUGETLB_PAGE_SIZE_VARIABLE for PowerPC 64, but I
+> still need to know a good value for HPAGE_SHIFT.  Do you have a
+> suggestion? Is there a better way to fix this problem?  There are places
+> in the PowerPC code that assume that HPAGE_SHIFT == 0 means that we have
+> no huge pages.
+> 
 
-Stefan Roese wrote:
-> Hi Steve,
->
-> On Friday 09 November 2007, Steven A. Falco wrote:
->   
->> I am using the Denx 2.6.32 kernel, which does have powerpc/sequoia.
->> Xenomai is a real-time kernel built on Adeos/Ipipe.  I'll dig into it
->> further.
->>     
->
-> Is this arch/ppc or arch/powerpc? I remember fixing this a while ago in 
-> arch/ppc:
->
-> commit 67a35ce785b1d11d09bf528c166ea26d489a4bd6
-> Author: Stefan Roese <sr@denx.de>
-> Date:   Thu Aug 2 14:15:22 2007 +0200
->
->     ppc: Fix problem with recursive NDFC platform_device resource management
->
->     This change fixes a problem with a resursive platform_device resource
->     management of the AMCC 4xx NDFC. Without this fix a "cat /proc/iomem"
->     leads to an infinite loop of printing the "ndfc-nand.0" resource.
->
->     Signed-off-by: Stefan Roese <sr@denx.de>
->
-> Best regards,
-> Stefan
->
->   
+How about the following both in terms of taste and whether it works or
+not?
 
---------------030105020801060607070101
-Content-Type: text/html; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+===
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-15"
- http-equiv="Content-Type">
-</head>
-<body bgcolor="#ffffff" text="#000000">
-<tt>This is on arch/powerpc.  I traced through the linked lists in
-resource.c.  Here is a partial list, with the addresses changed to
-single upper-case letters for readability.  Also "N" is a null pointer:<br>
-<br>
-r=A p=N s=N c=K<br>
-r=K p=A s=M c=P<br>
-r=M p=A s=R c=N<br>
-r=R p=A s=B c=N<br>
-r=B p=B s=J c=B<br>
-r=J p=A s=C c=N<br>
-r=C p=A s=D c=N<br>
-r=D p=A s=E c=N<br>
-r=E p=A s=F c=N<br>
-r=F p=A s=G c=N<br>
-r=G p=A s=H c=N<br>
-r=H p=A s=N c=N<br>
-r=B p=B s=J c=B<br>
-r=J p=A s=C c=N<br>
-r=C p=A s=D c=N<br>
-<br>
-r is the resource itself, p is the parent, s is the sibling, and c is
-the child.  As you can see, most nodes point back to parent "A", and
-have null children.  But one node, "B", points to itself both as parent
-and child.  I believe this is the problem, but I haven't confirmed
-that, nor have I determined how the list gets into this state.<br>
-<br>
-    Steve<br>
-<br>
-</tt><br>
-Stefan Roese wrote:
-<blockquote cite="mid:200711101403.48792.sr@denx.de" type="cite">
-  <pre wrap="">Hi Steve,
+Ordinarily, the size of a pageblock is determined from the hugepage size.
+On PPC64, the hugepage size is determined at runtime based on the ability
+of the machine. If the machine does not support hugepages, HPAGE_SHIFT is
+0. This results in pageblock_order being set to -PAGE_SHIFT and a crash
+results shortly afterwards.
 
-On Friday 09 November 2007, Steven A. Falco wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap="">I am using the Denx 2.6.32 kernel, which does have powerpc/sequoia.
-Xenomai is a real-time kernel built on Adeos/Ipipe.  I'll dig into it
-further.
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-Is this arch/ppc or arch/powerpc? I remember fixing this a while ago in 
-arch/ppc:
+This patch checks that HPAGE_SHIFT is a sensible value before using the
+hugepage size. If it is 0, MAX_ORDER-1 is used instead as this is a sensible
+value of pageblock_order.
 
-commit 67a35ce785b1d11d09bf528c166ea26d489a4bd6
-Author: Stefan Roese <a class="moz-txt-link-rfc2396E" href="mailto:sr@denx.de">&lt;sr@denx.de&gt;</a>
-Date:   Thu Aug 2 14:15:22 2007 +0200
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
 
-    ppc: Fix problem with recursive NDFC platform_device resource management
-
-    This change fixes a problem with a resursive platform_device resource
-    management of the AMCC 4xx NDFC. Without this fix a "cat /proc/iomem"
-    leads to an infinite loop of printing the "ndfc-nand.0" resource.
-
-    Signed-off-by: Stefan Roese <a class="moz-txt-link-rfc2396E" href="mailto:sr@denx.de">&lt;sr@denx.de&gt;</a>
-
-Best regards,
-Stefan
-
-  </pre>
-</blockquote>
-</body>
-</html>
-
---------------030105020801060607070101--
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 18f397c..232c298 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -187,6 +187,11 @@ config FORCE_MAX_ZONEORDER
+ 	default "9" if PPC_64K_PAGES
+ 	default "13"
+ 
++config HUGETLB_PAGE_SIZE_VARIABLE
++	bool
++	depends on HUGETLB_PAGE
++	default y
++
+ config MATH_EMULATION
+ 	bool "Math emulation"
+ 	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index da69d83..14e0ac3 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3386,7 +3386,16 @@ static void __meminit free_area_init_core(struct pglist_data *pgdat,
+ 		if (!size)
+ 			continue;
+ 
+-		set_pageblock_order(HUGETLB_PAGE_ORDER);
++		/*
++		 * If HPAGE_SHIFT is a sensible value, base the size of a
++		 * pageblock on the hugepage size. Otherwise MAX_ORDER-1
++		 * is a sensible choice
++		 */
++		if (HPAGE_SHIFT > PAGE_SHIFT)
++			set_pageblock_order(HUGETLB_PAGE_ORDER);
++		else
++			set_pageblock_order(MAX_ORDER-1);
++
+ 		setup_usemap(pgdat, zone, size);
+ 		ret = init_currently_empty_zone(zone, zone_start_pfn,
+ 						size, MEMMAP_EARLY);
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
