@@ -1,18 +1,16 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id D56C7DDE1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:26:32 +1100 (EST)
-Message-ID: <4738D30B.9040306@semihalf.com>
-Date: Mon, 12 Nov 2007 23:26:19 +0100
+	by ozlabs.org (Postfix) with ESMTP id BA1F9DDE98
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:28:31 +1100 (EST)
+Message-ID: <4738D380.8050209@semihalf.com>
+Date: Mon, 12 Nov 2007 23:28:16 +0100
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v4 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board
-	support
-References: <20071109171137.16289.39575.stgit@hekate.izotz.org>	
-	<fa686aa40711090920n3e931cbbwf63a66cedd5504de@mail.gmail.com>
-	<fa686aa40711091852wa1210d3t3c44d4e43f5ee40d@mail.gmail.com>
-In-Reply-To: <fa686aa40711091852wa1210d3t3c44d4e43f5ee40d@mail.gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple MPC5200
+	based boards
+References: <20071110124327.1C46A248D3@gemini.denx.de>
+In-Reply-To: <20071110124327.1C46A248D3@gemini.denx.de>
 Content-Type: text/plain; charset=ISO-8859-2
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,27 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 11/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
->> On 11/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
->>> Please review, and if everything is ok schedule for 2.6.24-rc3.
->> Just to be clear, I won't be picking up these changes until the 2.6.25
->> merge window.
->>
->> The .24 tree is closed for new board support patches and is in bug fix
->> only mode.
+Wolfgang Denk wrote:
+> In message <20071109171202.16289.2618.stgit@hekate.izotz.org> you wrote:
+>> This patch adds support for 'mpc5200-simple-platform' compatible
+>> boards which do not need a platform specific setup. Such boards
+>> are supported assuming the following:
+> ...
+>> +	const char *board[] = {	
+>> +		"tqc,tqm5200",
+>> +		"promess,motionpro",
+>> +		"schindler,cm5200",
+>> +		NULL
+>> +	};
 > 
-> Ummm; on rereading this (after getting gently nudged on IRC) I realize
-> my reply was both inaccurate and just plain rude.  Sorry about that,
-> it was unintentional.
+> would it make sense to sort this list alphabetiacally? At the moment
+> we can setill easily find each board, but assume that list grows to 50
+> boards names...
 
-Not a problem, really, no worries.
-
-> Yes, I'll be picking up your patches into my tree fairly soon (before
-> the .25 merge window opens), but I cannot ask Paul to pick it up for
-> 2.6.24 because .24 is only open for bug fixes.
-
-Understand, thanks!
+Yes, that may be helpful, will change that.
 
 Cheers,
 Marian
