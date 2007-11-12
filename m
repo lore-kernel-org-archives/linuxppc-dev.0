@@ -1,17 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 61665DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 01:11:00 +1100 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1Ira05-0007cM-Vd
-	for linuxppc-dev@ozlabs.org; Mon, 12 Nov 2007 08:10:55 -0600
-To: linuxppc-dev@ozlabs.org
-Subject: DTC Update: New /dts-v1/ support!
-Date: Mon, 12 Nov 2007 08:10:53 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ira05-0007cM-Vd@jdl.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 12 Nov 2007 15:50:02 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <Pine.LNX.4.62.0711121456120.4731@pademelon.sonytel.be>
+Message-ID: <20071112145002.63960@gmx.net>
+MIME-Version: 1.0
+References: <9e4733910711111535w6ffdfa97x4bed07eb84d4ab13@mail.gmail.com>
+	<1194825784.18185.0.camel@pasglop>
+	<9e4733910711111607i35294d3ja43e1c616a3427bd@mail.gmail.com>
+	<1194826191.18185.6.camel@pasglop>
+	<9e4733910711111618l5190dee3jd8e0aa8f9b78ebf4@mail.gmail.com>
+	<1194829646.18185.8.camel@pasglop>
+	<Pine.LNX.4.62.0711121147480.4731@pademelon.sonytel.be>
+	<9e4733910711120551y2285003bw7be4d5aedbd25e96@mail.gmail.com>
+	<Pine.LNX.4.62.0711121456120.4731@pademelon.sonytel.be>
+Subject: Re: pcspkr device, pnpPNP,100
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, jonsmirl@gmail.com
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Folks,
 
-Dave and I have finally comes to an agreement [*1*] about
-the new format for some literals in DTS files as supported
-by the Device Tree Compiler.
+-------- Original-Nachricht --------
+> Datum: Mon, 12 Nov 2007 14:57:13 +0100 (CET)
+> Von: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> An: Jon Smirl <jonsmirl@gmail.com>
+> CC: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+> Betreff: Re: pcspkr device, pnpPNP,100
 
-With that, I have just pushed out some changes to the DTC
-repository on jdl.com [*2*] that supports the new /dts-v1/
-formatted files with C-like literal support.
+> On Mon, 12 Nov 2007, Jon Smirl wrote:
+> > On 11/12/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > On Mon, 12 Nov 2007, Benjamin Herrenschmidt wrote:
+> > > > On Sun, 2007-11-11 at 19:18 -0500, Jon Smirl wrote:
+> > > >
+> > > > Run a poll :-) I suppose at least chrp/prep/pegasos
+> > >
+> > > And definitely not Amiga/APUS ;-)
+> > 
+> > I found this device tree that has the pnpPNP,100 device for an Amiga.
+> >
+> http://www.nabble.com/Re:-Problem-with-OF-interrupt-parsing-code-p12988017.html
+> 
+> Ah yes, the AmigaOne. That's more a rebranded CHRP box...
+> Has nothing to do with CONFIG_AMIGA.
+Right. And it's not even officially supported in the kernel yet
+(unfortunately).
 
-I encourage everyone to upgrade to this version of the DTC
-as soon as they can.  Log messages for the three relevant
-commits implementing it are below [*3*].
+regards,
 
-Please let me know if you have any problems with it!
+Gerhard
 
-Thanks,
-jdl
-
-
-[*1*] He beat me senseless until I relented.
-
-[*2*] git://jdl.com/software/dtc.git
-
-[*3*]
-
-commit 91967acabdfbff8b44fd3a19f432bc6e690df8cc
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Wed Nov 7 11:17:37 2007 +1100
-
-    dtc: -Odts produces v1 output
-    
-    This patch alters the -Odts mode output so that it uses dts-v1 format.
-    This means that dtc -Idts -Odts used on a v0 dts file will convert
-    that file to v1.
-    
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Signed-off-by: Jon Loeliger <jdl@freescale.com>
-
-commit 9138db565adeb2fbba3181fb589f1c9a3f818dde
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Wed Nov 7 11:17:17 2007 +1100
-
-    dtc: Switch dtc to C-style literals
-    
-    dtc: Switch dtc to C-style literals
-    
-    This patch introduces a new version of dts file, distinguished from
-    older files by starting with the special token /dts-v1/.  dts files in
-    the new version take C-style literals instead of the old bare hex or
-    OF-style base notation.  In addition, the "range" for of memreserve entries
-    (/memreserve/ f0000-fffff) is no longer recognized in the new format.
-    
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Signed-off-by: Jon Loeliger <jdl@freescale.com>
-
-commit 9ed27a2aac6f7bbbb16d48854763a6d79f6a9857
-Author: David Gibson <david@gibson.dropbear.id.au>
-Date:   Wed Nov 7 11:16:19 2007 +1100
-
-    dtc: Simplify lexing/parsing of literals vs. node/property names
-    
-    The current scheme of having CELLDATA and MEMRESERVE states to
-    recognize hex literals instead of node or property names is
-    arse-backwards.  The patch switches things around so that literals are
-    lexed in normal states, and property/node names are only recognized in
-    the special PROPNODENAME state, which is only entered after a { or a
-    ;, and is left as soon as we scan a property/node name or a keyword.
-    
-    Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-    Signed-off-by: Jon Loeliger <jdl@freescale.com>
+-- 
+Ist Ihr Browser Vista-kompatibel? Jetzt die neuesten 
+Browser-Versionen downloaden: http://www.gmx.net/de/go/browser
