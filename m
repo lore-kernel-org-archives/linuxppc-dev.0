@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA6BBDDE0F
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD5E1DDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 06:34:12 +1100 (EST)
-Message-ID: <4738909C.6030407@freescale.com>
-Date: Mon, 12 Nov 2007 11:42:52 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Tue, 13 Nov 2007 06:54:23 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IrfMR-0006It-WA
+	for linuxppc-embedded@ozlabs.org; Mon, 12 Nov 2007 11:54:19 -0800
+Message-ID: <13712778.post@talk.nabble.com>
+Date: Mon, 12 Nov 2007 11:54:19 -0800 (PST)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: small bootloader that passes arguments
 MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH] powerpc: Add support for PORTA sor and PORTB odr registers
-References: <473736FB.7090609@scram.de>
-In-Reply-To: <473736FB.7090609@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org,
-	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,11 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jochen Friedrich wrote:
-> PORTA has an so register and PORTB had an odr register, as well.
-> However, the PORTB odr register is only 16bit.
 
-Which 8xx chip has a so register on port A?  I checked the 860, 866, 
-885, and 823 manuals and didn't see one.
+Hi,
 
--Scott
+I would like to create a small bootloader that is able to pass kernel
+arguments and boot a linux kernel.  Im using a xilinx PPC, and have already
+booted a working kernel with a Xilinx provided XMD bootloader over USB.  My
+main question is how does a bootloader pass these arguments to the kernel
+before booting it?  Most specifically the root=/dev/xsa1 command so I can
+tell it to either boot from compact flash or NFS.
+
+I really don't want to try and port U-boot since I don't need the bells and
+whistles and I want it to fit in the BRAM of the FPGA so it will load when I
+load the hardware configuration.
+-- 
+View this message in context: http://www.nabble.com/small-bootloader-that-passes-arguments-tf4793411.html#a13712778
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
