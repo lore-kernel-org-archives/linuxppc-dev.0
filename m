@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11175DDDE7
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Nov 2007 16:07:26 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id lAC57Kj3014198
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Nov 2007 23:07:21 -0600
-Subject: of_iomap confusion
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 12 Nov 2007 16:07:18 +1100
-Message-Id: <1194844038.18185.23.camel@pasglop>
-Mime-Version: 1.0
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 49113DDEB9
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Nov 2007 16:14:55 +1100 (EST)
+Date: Sun, 11 Nov 2007 23:15:32 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] Silence an annoying boot message
+Message-ID: <20071112051532.GA28394@lixom.net>
+References: <20071112135339.9a01b115.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071112135339.9a01b115.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just noticed this of_iomap() helper thing we have in prom_parse.c
-nowadays.
+Hi Stephen,
 
-It's a bit confusing as "iomap" is generally what we use to name the new
-iomap interface (ioport_map, pci_iomap, ...) and that requires
--different- accessors than memory obtained from ioremap.
+On Mon, Nov 12, 2007 at 01:53:39PM +1100, Stephen Rothwell wrote:
+> vmemmap_populate will printk (with KERN_WARNING) for a lot of pages
+> if CONFIG_SPARSEMEM_VMEMMAP is enabled (at least it does on iSeries).
+> Turn it into a DEBUG message.
+[...]
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index d9c82d3..ee0e0cc 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -239,7 +239,7 @@ int __meminit vmemmap_populate(struct page *start_page,
+>  		if (!p)
+>  			return -ENOMEM;
+>  
+> -		printk(KERN_WARNING "vmemmap %08lx allocated at %p, "
+> +		DBG(KERN_DEBUG "vmemmap %08lx allocated at %p, "
+>  		                    "physical %08lx.\n", start, p, __pa(p));
 
-This I think this needs to be changed.
+Please use pr_debug() instead.
 
-We should call it of_ioremap() or of_map_resource() and if we want an
-of_iomap(), it should provide an iomap token, not an ioremap address
-(they look the same on powerpc, but they shouldn't be mixed up).
+Feel free to change the only other DBG() user in the file as well,
+and take out the define of it
 
-Ben.
+
+-Olof
