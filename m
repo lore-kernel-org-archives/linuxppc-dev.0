@@ -1,22 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58D95DDE49
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 03:32:20 +1100 (EST)
-Subject: Re: [RFC] PMU: replace information ioctls and schedule for removal
-From: Johannes Berg <johannes@sipsolutions.net>
-To: benh@kernel.crashing.org
-In-Reply-To: <1194814546.6510.20.camel@pasglop>
-References: <1194523351.6294.11.camel@johannes.berg>
-	<1194814546.6510.20.camel@pasglop>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-o39N7FPBn/qhqxr/8jA2"
-Date: Mon, 12 Nov 2007 17:33:38 +0100
-Message-Id: <1194885218.5229.47.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <Emilian.Medve@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Optimize counting distinct entries in the
+	relocation sections
+Date: Mon, 12 Nov 2007 09:50:45 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
+In-Reply-To: <18231.60427.229658.485287@cargo.ozlabs.ibm.com>
+References: <1194564963-15626-1-git-send-email-Emilian.Medve@Freescale.com>
+	<18231.60427.229658.485287@cargo.ozlabs.ibm.com>
+From: "Medve Emilian" <Emilian.Medve@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Cc: sfr@canb.auug.org.au, rusty@rustcorp.com.au, linuxppc-dev@ozlabs.org,
+	ntl@pobox.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-o39N7FPBn/qhqxr/8jA2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hello Paul,
 
 
-On Mon, 2007-11-12 at 07:55 +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-11-08 at 13:02 +0100, Johannes Berg wrote:
-> > This patch adds sysfs attributes to the PMU to allow getting
-> > the information on the PMU type and whether adb is present from
-> > there instead of via the ioctl. The ioctl is made optional and
-> > scheduled for removal.
->=20
-> Acked-by:  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->=20
-> While there, maybe also expose the PMU version ?
+> Actually I notice that count_relocs is counting all relocs, not just
+> the R_PPC_REL24 ones, which are all that we actually care about in
+> sizing the PLT.  And I would be willing to bet that every single
+> R_PPC_REL24 reloc has r_addend =3D=3D 0.
 
-Does anybody need that? I'm not against adding it but we never showed it
-and I haven't seen anyone ask for it.
+I'll count only the R_PPC_REL24 and I'll validate if they have r_addend
+=3D=3D 0.
 
-johannes
+> Also I notice that even with your patch, the actual process of doing
+> the relocations will take time proportional to the product of the
+> number of PLT entries times the number of R_PPC_REL24 relocations,
+> since we do a linear search through the PLT entries each time.
 
---=-o39N7FPBn/qhqxr/8jA2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+The reason I started working on this patch was because the kernel
+detected a soft lockup in count_relocs(). It didn't complain about other
+parts so I did nothing about them.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> So, two approaches suggest themselves.  Both optimize the r_addend=3D0
+> case and fall back to something like the current code if r_addend is
+> not zero.  The first is to use the st_other field in the symbol to
+> record whether we have seen a R_PPC_REL24 reloc referring to the
+> symbol with r_addend=3D0.  That would make count_relocs of complexity
+> O(N) for N relocs.
 
-iQIVAwUARziAYaVg1VMiehFYAQI7ig/+LaG7h73c8tFS6svCNEGMbvdlJ8Xdf8Hh
-mrglM9ogzrA+XDOpUFZun9iLbNNlM/aBb1KFMShn2meUYckwWgUANHdtdjDqEdFS
-HkZbyj/S0Y8/rx8yAaCuBb98SzUgYI6ikpGEovFmoPa17kdG5p/2SE62I56mZ42i
-9DEl8z+pqEa1YvZhbaG9cRTJaUCG8LKN4Wp17ojIiiZcJ4Tkmy9eNUFbdkdEeNnT
-H5R55OXj4fipA5y8/HFMwkTFi7dPFcZa/23ctQc0KTmdvfbuC5f1c7q1hYJ/9bub
-p3ADTnq+B5RPp5qDkgbUm/tzScF92VOdUI98Z7lys5puJraS6JhhxMLdVpK0CgVi
-gxvJwv4Z3Cv6+w1X9/S4NIi8IdNXziZRi8vFVaPkukqyaeMg/OsWCrDmC8rhhQzc
-NlF5+bKUC6wclEqr8iAZIRLLYzq+9RfjH0ArtUFN/TVapaCtmhxJ0bKPAHcsgt7p
-4X04317BzqcByeF8/qoHRERSTu6f42jC14lnXn9SigduQCFw722mYAq/Oroze1+i
-MmJqkw5ekQuNsteadRf5W0PlZa48oEF7wOIL04DEPYjvtE6E05Ss0RRE8ilV9o9Q
-/pJIlYtEeEjZKXtC8JGzKJ1ye/DEBdXdUoTOOe9ctvk0PYeSoeBbagg8Y9i12QOQ
-vQ3KHfqRV3s=
-=y5MO
------END PGP SIGNATURE-----
+Will look into it.
 
---=-o39N7FPBn/qhqxr/8jA2--
+> The second is to allocate an array with 1 pointer per symbol that
+> points to the PLT entry (if any) for the symbol.  The count_relocs
+> scan can then use that array to store a 'seen before' flag to make its
+> scan O(N), and do_plt_call can then later use the same array to find
+> PLT entries without needing the linear scan.
+
+This uses extra memory (which could be 'significant' for small boards)
+and I was trying to avoid that.
+
+
+> As far as your proposed patch is concerned, I don't like having a
+> function called "count_relocs" changing the array of relocations.  At
+> the very least it needs a different name.  But I also think we can do
+> better than O(N * log N), as I have explained above, if my assertion
+> that r_addend=3D0 in all the cases we care about is correct.
+
+The array of relocations is not changed in count_relocs() but in
+get_plt_size().
+
+
+Thanks for your time and patience,
+Emil.
