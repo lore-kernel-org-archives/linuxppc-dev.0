@@ -1,18 +1,18 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id BA1F9DDE98
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:28:31 +1100 (EST)
-Message-ID: <4738D380.8050209@semihalf.com>
-Date: Mon, 12 Nov 2007 23:28:16 +0100
-From: Marian Balakowicz <m8@semihalf.com>
+Return-Path: <Emilian.Medve@freescale.com>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple MPC5200
-	based boards
-References: <20071110124327.1C46A248D3@gemini.denx.de>
-In-Reply-To: <20071110124327.1C46A248D3@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-2
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] [POWERPC] Optimize counting distinct entries in
+	therelocation sections
+Date: Mon, 12 Nov 2007 15:31:53 -0700
+Message-ID: <598D5675D34BE349929AF5EDE9B03E27017BC13C@az33exm24.fsl.freescale.net>
+In-Reply-To: <598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
+References: <1194564963-15626-1-git-send-email-Emilian.Medve@Freescale.com><18231.60427.229658.485287@cargo.ozlabs.ibm.com>
+	<598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
+From: "Medve Emilian" <Emilian.Medve@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Cc: sfr@canb.auug.org.au, rusty@rustcorp.com.au, linuxppc-embedded@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <20071109171202.16289.2618.stgit@hekate.izotz.org> you wrote:
->> This patch adds support for 'mpc5200-simple-platform' compatible
->> boards which do not need a platform specific setup. Such boards
->> are supported assuming the following:
-> ...
->> +	const char *board[] = {	
->> +		"tqc,tqm5200",
->> +		"promess,motionpro",
->> +		"schindler,cm5200",
->> +		NULL
->> +	};
-> 
-> would it make sense to sort this list alphabetiacally? At the moment
-> we can setill easily find each board, but assume that list grows to 50
-> boards names...
+Hello Paul,
 
-Yes, that may be helpful, will change that.
+
+> > Actually I notice that count_relocs is counting all relocs, not just
+> > the R_PPC_REL24 ones, which are all that we actually care about in
+> > sizing the PLT.  And I would be willing to bet that every single
+> > R_PPC_REL24 reloc has r_addend =3D=3D 0.
+>=20
+> I'll count only the R_PPC_REL24 and I'll validate if they=20
+> have r_addend
+> =3D=3D 0.
+
+Seems like there are R_PPC_REL24 with r_addend !=3D 0. Within a set of =
+41
+modules (featuring 5457 R_PPC_REL24 relocations) already included within
+the kernel tree I found 37 such relocations (R_PPC_REL24) with r_addend
+!=3D 0. In my test case, from 35K relocations, 7K are R_PPC_REL24 and =
+from
+those only 8 have r_addend !=3D 0.
+
+> > Also I notice that even with your patch, the actual process of doing
+> > the relocations will take time proportional to the product of the
+> > number of PLT entries times the number of R_PPC_REL24 relocations,
+> > since we do a linear search through the PLT entries each time.
+>=20
+> The reason I started working on this patch was because the kernel
+> detected a soft lockup in count_relocs(). It didn't complain=20
+> about other
+> parts so I did nothing about them.
+
+Since the time hog in my case (and other's cases, reflected by the
+previous patches) seems to be count_relocs(), would it be acceptable as
+an incremental improvement to fix this now and address the relocation
+process performance (later) if needed?
+
+I'll resubmit the patch incorporating some of the feedback from you and
+Rusty.
+
 
 Cheers,
-Marian
+Emil.
