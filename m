@@ -1,17 +1,18 @@
 Return-Path: <m8@semihalf.com>
 Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id 76EF2DDE37
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:22:31 +1100 (EST)
-Message-ID: <4738D218.9060503@semihalf.com>
-Date: Mon, 12 Nov 2007 23:22:16 +0100
+	by ozlabs.org (Postfix) with ESMTP id D56C7DDE1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:26:32 +1100 (EST)
+Message-ID: <4738D30B.9040306@semihalf.com>
+Date: Mon, 12 Nov 2007 23:26:19 +0100
 From: Marian Balakowicz <m8@semihalf.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH v4 04/13] [POWERPC] Add generic support for simple MPC5200
-	based boards
-References: <20071109171137.16289.39575.stgit@hekate.izotz.org>	<20071109171202.16289.2618.stgit@hekate.izotz.org>
-	<20071110113133.86aa3de2.sfr@canb.auug.org.au>
-In-Reply-To: <20071110113133.86aa3de2.sfr@canb.auug.org.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v4 00/13] [POWERPC] Add TQM5200/CM5200/Motion-PRO board
+	support
+References: <20071109171137.16289.39575.stgit@hekate.izotz.org>	
+	<fa686aa40711090920n3e931cbbwf63a66cedd5504de@mail.gmail.com>
+	<fa686aa40711091852wa1210d3t3c44d4e43f5ee40d@mail.gmail.com>
+In-Reply-To: <fa686aa40711091852wa1210d3t3c44d4e43f5ee40d@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-2
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,33 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell wrote:
-> On Fri, 09 Nov 2007 18:12:02 +0100 Marian Balakowicz <m8@semihalf.com> wrote:
->> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+Grant Likely wrote:
+> On 11/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+>> On 11/9/07, Marian Balakowicz <m8@semihalf.com> wrote:
+>>> Please review, and if everything is ok schedule for 2.6.24-rc3.
+>> Just to be clear, I won't be picking up these changes until the 2.6.25
+>> merge window.
 >>
->> +static int __init mpc5200_simple_probe(void)
->> +{
->> +	unsigned long node = of_get_flat_dt_root();
+>> The .24 tree is closed for new board support patches and is in bug fix
+>> only mode.
 > 
-> You need to include asm/prom.h to use the flattened device tree accessors.
+> Ummm; on rereading this (after getting gently nudged on IRC) I realize
+> my reply was both inaccurate and just plain rude.  Sorry about that,
+> it was unintentional.
 
-Right, but this one is already included in mpc52xx.h.
+Not a problem, really, no worries.
 
->> +	/* list of the supported boards */
->> +	const char *board[] = {	
->> +		"tqc,tqm5200",
->> +		"promess,motionpro",
->> +		"schindler,cm5200",
->> +		NULL
->> +	};
-> 
-> Make that static.
+> Yes, I'll be picking up your patches into my tree fairly soon (before
+> the .25 merge window opens), but I cannot ask Paul to pick it up for
+> 2.6.24 because .24 is only open for bug fixes.
 
-Board table is no longer needed after kernel is initialized, it would
-be nice to declare it static and __initdata, but that would be quite
-ugly as it's a table of pointers and each string would require
-separate statement too. If we don't do it then what's the benefit of
-making it static?
+Understand, thanks!
 
 Cheers,
-m.
+Marian
