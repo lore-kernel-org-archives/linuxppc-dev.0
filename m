@@ -1,18 +1,23 @@
-Return-Path: <Emilian.Medve@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] [POWERPC] Optimize counting distinct entries in
-	therelocation sections
-Date: Mon, 12 Nov 2007 15:31:53 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E27017BC13C@az33exm24.fsl.freescale.net>
-In-Reply-To: <598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
-References: <1194564963-15626-1-git-send-email-Emilian.Medve@Freescale.com><18231.60427.229658.485287@cargo.ozlabs.ibm.com>
-	<598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
-From: "Medve Emilian" <Emilian.Medve@freescale.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Cc: sfr@canb.auug.org.au, rusty@rustcorp.com.au, linuxppc-embedded@ozlabs.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 477E0DDDF4
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 09:33:01 +1100 (EST)
+Subject: Re: [PATCH] sungem: fix suspend regression due to NAPI changes
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1194889547.4456.4.camel@johannes.berg>
+References: <1194889547.4456.4.camel@johannes.berg>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 09:32:46 +1100
+Message-Id: <1194906766.18185.79.camel@pasglop>
+Mime-Version: 1.0
+Cc: netdev <netdev@vger.kernel.org>,
+	Stephen Hemminger <shemminger@linux-foundation.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,44 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Paul,
 
+On Mon, 2007-11-12 at 18:45 +0100, Johannes Berg wrote:
+> Commit bea3348e (the NAPI changes) made sungem unconditionally enable
+> NAPI when resuming and unconditionally disable when suspending, this,
+> however, makes napi_disable() hang when suspending when the interface
+> was taken down before suspend because taking the interface down also
+> disables NAPI. This patch makes touching the napi struct in
+> suspend/resume code paths depend on having the interface up, thereby
+> fixing the hang on suspend.
+> 
+> The patch also moves the napi_disable() in gem_close() under the lock so
+> that the NAPI state is always modified atomically together with the
+> "opened" variable.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-> > Actually I notice that count_relocs is counting all relocs, not just
-> > the R_PPC_REL24 ones, which are all that we actually care about in
-> > sizing the PLT.  And I would be willing to bet that every single
-> > R_PPC_REL24 reloc has r_addend =3D=3D 0.
->=20
-> I'll count only the R_PPC_REL24 and I'll validate if they=20
-> have r_addend
-> =3D=3D 0.
+Thanks for fixing that !
 
-Seems like there are R_PPC_REL24 with r_addend !=3D 0. Within a set of =
-41
-modules (featuring 5457 R_PPC_REL24 relocations) already included within
-the kernel tree I found 37 such relocations (R_PPC_REL24) with r_addend
-!=3D 0. In my test case, from 35K relocations, 7K are R_PPC_REL24 and =
-from
-those only 8 have r_addend !=3D 0.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-> > Also I notice that even with your patch, the actual process of doing
-> > the relocations will take time proportional to the product of the
-> > number of PLT entries times the number of R_PPC_REL24 relocations,
-> > since we do a linear search through the PLT entries each time.
->=20
-> The reason I started working on this patch was because the kernel
-> detected a soft lockup in count_relocs(). It didn't complain=20
-> about other
-> parts so I did nothing about them.
-
-Since the time hog in my case (and other's cases, reflected by the
-previous patches) seems to be count_relocs(), would it be acceptable as
-an incremental improvement to fix this now and address the relocation
-process performance (later) if needed?
-
-I'll resubmit the patch incorporating some of the feedback from you and
-Rusty.
-
-
-Cheers,
-Emil.
+> ---
+>  drivers/net/sungem.c |   11 +++++------
+>  1 file changed, 5 insertions(+), 6 deletions(-)
+> 
+> --- everything.orig/drivers/net/sungem.c	2007-11-12 18:22:49.948748047 +0100
+> +++ everything/drivers/net/sungem.c	2007-11-12 18:24:30.708748481 +0100
+> @@ -2333,10 +2333,10 @@ static int gem_close(struct net_device *
+>  {
+>  	struct gem *gp = dev->priv;
+>  
+> -	napi_disable(&gp->napi);
+> -
+>  	mutex_lock(&gp->pm_mutex);
+>  
+> +	napi_disable(&gp->napi);
+> +
+>  	gp->opened = 0;
+>  	if (!gp->asleep)
+>  		gem_do_stop(dev, 0);
+> @@ -2355,8 +2355,6 @@ static int gem_suspend(struct pci_dev *p
+>  
+>  	mutex_lock(&gp->pm_mutex);
+>  
+> -	napi_disable(&gp->napi);
+> -
+>  	printk(KERN_INFO "%s: suspending, WakeOnLan %s\n",
+>  	       dev->name,
+>  	       (gp->wake_on_lan && gp->opened) ? "enabled" : "disabled");
+> @@ -2370,6 +2368,8 @@ static int gem_suspend(struct pci_dev *p
+>  
+>  	/* If the driver is opened, we stop the MAC */
+>  	if (gp->opened) {
+> +		napi_disable(&gp->napi);
+> +
+>  		/* Stop traffic, mark us closed */
+>  		netif_device_detach(dev);
+>  
+> @@ -2460,6 +2460,7 @@ static int gem_resume(struct pci_dev *pd
+>  		/* Re-attach net device */
+>  		netif_device_attach(dev);
+>  
+> +		napi_enable(&gp->napi);
+>  	}
+>  
+>  	spin_lock_irqsave(&gp->lock, flags);
+> @@ -2479,8 +2480,6 @@ static int gem_resume(struct pci_dev *pd
+>  	spin_unlock(&gp->tx_lock);
+>  	spin_unlock_irqrestore(&gp->lock, flags);
+>  
+> -	napi_enable(&gp->napi);
+> -
+>  	mutex_unlock(&gp->pm_mutex);
+>  
+>  	return 0;
+> 
