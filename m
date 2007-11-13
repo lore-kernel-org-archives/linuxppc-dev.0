@@ -1,23 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB3C0DDE3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 04:00:54 +1100 (EST)
-Subject: Re: [PATCH] cell: Convert #include of asm/of_{platform, device}.h
-	into linux/of_{platform, device}.h.
-From: Jon Loeliger <jdl@freescale.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20071113120224.de390904.sfr@canb.auug.org.au>
-References: <1194899211.3396.15.camel@ld0161-tx32>
-	<20071113120224.de390904.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Message-Id: <1194973242.12888.9.camel@ld0161-tx32>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 58CE2DDE48
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 04:01:22 +1100 (EST)
+Received: from localhost (unknown [10.150.0.9])
+	by buildserver.ru.mvista.com (Postfix) with ESMTP id B0C258810
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 21:01:19 +0400 (SAMT)
+Date: Tue, 13 Nov 2007 19:58:25 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] MPC8323E-RDB now using MMC-over-SPI
+Message-ID: <20071113165825.GA23739@localhost.localdomain>
 Mime-Version: 1.0
-Date: Tue, 13 Nov 2007 11:00:42 -0600
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=utf8
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,21 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-11-12 at 19:02, Stephen Rothwell wrote:
-> Hi Jon,
-> 
-> Thanks for this.
-> 
-> On Mon, 12 Nov 2007 14:26:51 -0600 Jon Loeliger <jdl@freescale.com> wrote:
-> >
-> > From: Jon Loeliger <jdl@freescale.com>
-> > 
-> > Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> 
-> Acked-by: Stephen Rothwell <sfr@canb.auug.org.au> Built a ppc64_defconfig
+Hi all,
 
-Feh.  I'll respin this particular patch to 
-include the platforms/celleb pair of files too.
+Here are three well-split patches for the easier review. I can fold
+them into one for the merge, if you like.
 
-Sorry,
-jdl
+I've tested the functionality using SD 128MB Kingston (MMC SanDisk
+16MB refused to work, but it's definitely not a powerpc issue. Also
+I'm not sure that that particular card worked at all ;-).
+
+Patches should apply cleanly on paulus/powerpc.git and/or
+galak/powerpc.git, master branches.
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
