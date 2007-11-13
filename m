@@ -1,17 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 41621DDE21
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 09:06:20 +1100 (EST)
-Date: Wed, 14 Nov 2007 09:06:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc2-git3 powerpc link failure
-Message-Id: <20071114090624.2a6aef50.sfr@canb.auug.org.au>
-In-Reply-To: <473984E2.1040006@linux.vnet.ibm.com>
-References: <473984E2.1040006@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andy, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id E01FBDDE2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 09:06:58 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Tue, 13 Nov 2007 23:06:55 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1194990218.28865.1.camel@pasglop>
+Message-ID: <20071113220655.85840@gmx.net>
+MIME-Version: 1.0
+References: <20071108214723.135260@gmx.net>	 <1194564017.6561.21.camel@pasglop>
+	<20071109074155.266120@gmx.net>	 <1194594629.6561.34.camel@pasglop>
+	<20071110171130.254580@gmx.net>	 <1194753340.21340.24.camel@pasglop>
+	<20071113212320.85840@gmx.net> <1194990218.28865.1.camel@pasglop>
+Subject: Re: Kernel locks up after calling kernel_execve()
+To: benh@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kamalesh,
 
-On Tue, 13 Nov 2007 16:35:06 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->
-> The 2.6.24-rc2-git3 kernel build fails during linking 
+-------- Original-Nachricht --------
+> Datum: Wed, 14 Nov 2007 08:43:38 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@ozlabs.org
+> Betreff: Re: Kernel locks up after calling kernel_execve()
+
+> Well, at least the above tells is it's not DMA related.
 > 
->   KSYM    .tmp_kallsyms1.S
->   AS      .tmp_kallsyms1.o
->   LD      .tmp_vmlinux2
->   KSYM    .tmp_kallsyms2.S
->   AS      .tmp_kallsyms2.o
->   LD      .tmp_vmlinux3
->   KSYM    .tmp_kallsyms3.S
->   AS      .tmp_kallsyms3.o
->   LD      vmlinux.o
-> ld: TOC section size exceeds 64k
-> make: *** [vmlinux.o] Error 1
+> I don't know of any deeply hidden problem, so you are probably hitting
+> something else ... if you have disabled idle, then it may be useful to
+> try instrumenting locks or irq enable/disable.
+Well, I only disabled power saving with powersave=off. Are there any other
+ways to disable idle? What do you mean with instrumenting locks or
+irq enable/disable?
 
-You need the following patch.
+> Also, did you try booting with all kernel debug options enabled ?
+I compiled in almost all kernel debugging options and booted the kernel
+with driver_debug, initcall_debug and debug. I didn't notice any serious
+error messages so far. Not sure however, if I missed a debug option.
 
+> Finally, since the problem seem to have started around a specific kernel
+> version, can you try to bisect the patch that causes it ?
+Hmm, I'm not sure how to do this (only worked on platform code so far).
+I guess you think about checking out a kernel version from the git
+repository, which doesn't contain the patch for kernel_execve().
+I still suspect the kernel_execve() function (which was introduced in
+2.6.17) because the kernel locks up after starting the first user program.
+AFAIK kernel threads should be running much earlier.
+
+Thanks!
+
+regards,
+
+Gerhard
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Wed, 7 Nov 2007 11:56:48 +1100
-Subject: [PATCH] [POWERPC] Stop the TOC overflowing for large builds.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index ca51f0c..9374bc9 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -3,7 +3,7 @@
- #
- 
- ifeq ($(CONFIG_PPC64),y)
--EXTRA_CFLAGS	+= -mno-minimal-toc
-+CFLAGS_prom_init.o	+= -mno-minimal-toc
- endif
- ifeq ($(CONFIG_PPC32),y)
- CFLAGS_prom_init.o      += -fPIC
--- 
-1.5.3.5
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
