@@ -1,18 +1,22 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 3AE24DDE1D
+Return-Path: <lokowich@acdstar.com>
+Received: from g2host.com (mailfront1.g2host.com [208.42.176.212])
+	by ozlabs.org (Postfix) with ESMTP id C8A36DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 22:32:05 +1100 (EST)
-Message-ID: <47398B44.2070902@anagramm.de>
-Date: Tue, 13 Nov 2007 12:32:20 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed, 14 Nov 2007 00:59:59 +1100 (EST)
+Received: from [74.95.143.41] (account lokowich@acdstar.com HELO
+	[192.168.2.105])
+	by mailfront1.g2host.com (CommuniGate Pro SMTP 5.1.10)
+	with ESMTPA id 25093316 for linuxppc-embedded@ozlabs.org;
+	Tue, 13 Nov 2007 07:59:54 -0600
+Message-ID: <4739ADDC.8010402@acdstar.com>
+Date: Tue, 13 Nov 2007 07:59:56 -0600
+From: lokowich <lokowich@acdstar.com>
 MIME-Version: 1.0
-To: huangyun@coship.com
-Subject: Re: how to improve linux tcp/ip(UDP) efficiency on mpc8541 833Mhz.
-References: <OF406A1338.BB8E4414-ON48257392.000CFC61-48257392.000F90D1@coship.com>
-In-Reply-To: <OF406A1338.BB8E4414-ON48257392.000CFC61-48257392.000F90D1@coship.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: SDRAM failures on MPC5200B
+References: <46A0D76E.4030101@acdstar.com>
+In-Reply-To: <46A0D76E.4030101@acdstar.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +27,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-huangyun@coship.com schrieb:
- > hi,everbody:
- >       I have run linux-2.6.15 on my mpc8541 custom board. but when i test
- > TSEC use UDP, i found it's efficinecy is lower.
- > my test enviroment: i only run a UDP recieve program and not to handle data
- > recieved. when i recevie 400Mbps data, 79% of MPC8541 have be consumed.
- > so i think tcp/ip protocal have consume my mpc8541 resource.  i dont know
- > how to improve tcp/ip code or TSEC driver(gianfar.c).
- >       can somebody help me ?
+A follow-up:  The first version of our termination network was based on 
+the Lite5200 reference design, but was confirmed by Freescale to be 
+inadequate.  We revised the hardware per their errata, terminating both 
+ends of the data bus.  This fixed the problem.  Thanks for the helpful 
+feedback.
 
-Hmm... you should first try one of the current kernels and check the
-performance there.
-For further details about linux networking, I recommend you to contact
-the guys at the netdev list, giving lots of details how you do your
-benchmarking and how your workload looks like.
+Mark
 
-Regards,
-
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+lokowich wrote:
+> We're working on bringing up a MPC5200B version of our original 
+> MPC5200 board using U-Boot 1.1.4 configured for Icecube/Lite5200B.  
+> Other than the CPU, the board is identical.  The bootloader crashes 
+> just after relocation to RAM, often with a Program Check Exception, 
+> typically a memory corruption issue.  I noticed failures at different 
+> stages after relocation based on content, suggesting problems with 
+> upper SDRAM.  If I force the initram to 1/2 the determined size (64MB 
+> instead of 128MB), then everything works well through kernel load and 
+> initialization.  We've added termination resistors to improve AD 
+> signals, to no avail.  Memory tests work fine too.  Any help is 
+> appreciated.
+>
+> Thanks,
+> Mark Lokowich
+> Systems Engineer
+> Advanced Communication Design
+> 7901 12th Ave. So.
+> Bloomington, MN 55425
+> 952-854-4000
+> lokowich@acdstar.com
+> This email was Anti Virus checked by Astaro Security Gateway. http://www.astaro.com
+> This email was Anti Virus checked by Astaro Security Gateway. http://www.astaro.com
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
