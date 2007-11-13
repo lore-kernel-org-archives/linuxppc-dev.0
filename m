@@ -1,15 +1,23 @@
-Return-Path: <huangyun@coship.com>
-Received: from omail.coship.com (unknown [58.61.30.13])
-	by ozlabs.org (Postfix) with ESMTP id 8D6D9DDDF7
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 7DD99DDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 14:10:08 +1100 (EST)
-Subject: how to improve linux tcp/ip(UDP) efficiency on mpc8541 833Mhz.
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF406A1338.BB8E4414-ON48257392.000CFC61-48257392.000F90D1@coship.com>
-From: huangyun@coship.com
-Date: Tue, 13 Nov 2007 10:48:47 +0800
+	Tue, 13 Nov 2007 14:50:46 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id d23so245874and
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Nov 2007 19:50:45 -0800 (PST)
+Message-ID: <fa686aa40711121950p1d18cc76sb5fdb93e4a6fbf8f@mail.gmail.com>
+Date: Mon, 12 Nov 2007 20:50:45 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Sri nava kala devi Valteti, TLS-Chennai" <srinavakalav@hcl.in>
+Subject: Re: MPC5200B - Mapping Micrel Ethernet Controller Chip
+In-Reply-To: <66E8AEE9980BB44CA5FCAD39EBA56AC602D55576@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+References: <66E8AEE9980BB44CA5FCAD39EBA56AC602D55576@CHN-HCLT-EVS02.HCLT.CORP.HCL.IN>
+Cc: "Prakash Palanisamy, TLS-Chennai" <prakashp@hcl.in>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,16 +28,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 11/12/07, Sri nava kala devi Valteti, TLS-Chennai
+<srinavakalav@hcl.in> wrote:
+>
+> We are using MPC5200B based custom board. In that we have an external Micrel's ethernet controller mapped at 0xE0000000.
+>
+> We have taken Lite5200 code as a reference to port linux to our new board. We have integrated the ethernet driver given by the vendor (Micrel).
+>
+> Unfortunately, we are not able to access the chip mapped at 0xE0000000.
 
-hi,everbody:
-      I have run linux-2.6.15 on my mpc8541 custom board. but when i test
-TSEC use UDP, i found it's efficinecy is lower.
-my test enviroment: i only run a UDP recieve program and not to handle data
-recieved. when i recevie 400Mbps data, 79% of MPC8541 have be consumed.
-so i think tcp/ip protocal have consume my mpc8541 resource.  i dont know
-how to improve tcp/ip code or TSEC driver(gianfar.c).
-      can somebody help me ?
+Are you *sure* it's mapped at physical address 0xe0000000? (ie. have
+you verified that you can access the device registers via u-boot or a
+debugger?)  The chip selects on the 5200 are programmable so you need
+to make sure that the chip select wired to the Micrel device is
+actually configured for base address 0xe0000000.
 
+There are up to 8 CS pins on the MPC5200B; LP_CS0 through LP_CS7.  See
+section 9.7.1 in the MPC5200B user manual for details on how to
+configure them.
 
+> We performed the following steps to access the chip:
+>
+> i) We mapped this address range of the Ethernet Controller Chip in function "mpc52xx_map_io" as
+>
+> "io_block_mapping(0xE0000000, 0xE0000000, 0x10000000, _PAGE_IO)"
 
- lucky.huang
+You don't want to call this.  ioremap is the only function you should
+need to call.  But *first*, you must make sure the CS pin is
+configured correctly.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
