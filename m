@@ -1,19 +1,20 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7736ADDE24
+Return-Path: <alan@nishioka.com>
+Received: from elasmtp-junco.atl.sa.earthlink.net
+	(elasmtp-junco.atl.sa.earthlink.net [209.86.89.63])
+	by ozlabs.org (Postfix) with ESMTP id BD2D6DDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Nov 2007 05:32:50 +1100 (EST)
-Message-ID: <4739EDA8.6020800@scram.de>
-Date: Tue, 13 Nov 2007 19:32:08 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	Wed, 14 Nov 2007 05:48:18 +1100 (EST)
+Received: from [68.122.118.126] (helo=[192.168.1.64])
+	by elasmtp-junco.atl.sa.earthlink.net with asmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.34) id 1Is0Y0-0008Ns-DS
+	for linuxppc-embedded@ozlabs.org; Tue, 13 Nov 2007 13:31:41 -0500
+Message-ID: <4739ED7D.5060001@nishioka.com>
+Date: Tue, 13 Nov 2007 10:31:25 -0800
+From: Alan Nishioka <alan@nishioka.com>
 MIME-Version: 1.0
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH] powerpc: Fix fs_enet module build
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Jeff Garzik <jeff@garzik.org>, netdev <netdev@vger.kernel.org>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+To: linuxppc-embedded@ozlabs.org
+Subject: inflate returned FFFFFFFB
+Content-Type: multipart/mixed; boundary="------------040101050409040601030601"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,84 +25,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-If fs_enet is build as module, on PPC_CPM_NEW_BINDING platforms
-mii-fec/mii-bitbang should be build as module, as well. On other
-platforms, mii-fec/mii-bitbang must be included into the main module.
-Otherwise some symbols remain undefined. Additionally, fs_enet uses
-libphy, so add a select PHYLIB.
+This is a multi-part message in MIME format.
+--------------040101050409040601030601
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-  Building modules, stage 2.
-  MODPOST 5 modules
-ERROR: "fs_scc_ops" [drivers/net/fs_enet/fs_enet.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+After adding files to initramfs, I get the following error:
+Uncompressing Linux...inflate returned FFFFFFFB
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
+This is caused by zlib_inflate returning -5 or Z_BUF_ERROR.
 
-This patch replaces powerpc-fs_enet-select-phylib-as-the-driver-needs-it.patch
-from -mm.
+The attached patch fixes this problem for me.
+It is also available at
+http://www.nishioka.com/misc/ppc-gunzip.patch
 
- drivers/net/fs_enet/Kconfig  |   11 ++++++++++-
- drivers/net/fs_enet/Makefile |   15 ++++++++++++---
- 2 files changed, 22 insertions(+), 4 deletions(-)
+It probably also fixes the problem at
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-August/023851.html
+and only 15 months too late.
 
-diff --git a/drivers/net/fs_enet/Kconfig b/drivers/net/fs_enet/Kconfig
-index 2765e49..562ea68 100644
---- a/drivers/net/fs_enet/Kconfig
-+++ b/drivers/net/fs_enet/Kconfig
-@@ -2,6 +2,7 @@ config FS_ENET
-        tristate "Freescale Ethernet Driver"
-        depends on CPM1 || CPM2
-        select MII
-+       select PHYLIB
+It moves the link/load address higher in memory and tells gunzip it has 
+more space to uncompress.
+You need to change the address in .config
+
+make menuconfig
+Advanced setup -->
+[*] Prompt for advanced configuration options
+[*]   Set the boot link/load address
+(0x00800000) Link/load address for booting
+
+This is my first post to this list.
+Please tell me if I am missing anything.
+
+Alan Nishioka
+alan@nishioka.com
+
+
+--------------040101050409040601030601
+Content-Type: text/plain;
+ name="ppc-gunzip.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ppc-gunzip.patch"
+
+diff -ur linux-2.6.23.1-orig/arch/ppc/boot/simple/misc-embedded.c linux-2.6.23.1/arch/ppc/boot/simple/misc-embedded.c
+--- linux-2.6.23.1-orig/arch/ppc/boot/simple/misc-embedded.c	2007-10-12 12:43:44.000000000 -0400
++++ linux-2.6.23.1/arch/ppc/boot/simple/misc-embedded.c	2007-11-08 12:06:12.000000000 -0500
+@@ -212,7 +212,7 @@
+ 	*cp = 0;
+ 	puts("\nUncompressing Linux...");
  
- config FS_ENET_HAS_SCC
- 	bool "Chip has an SCC usable for ethernet"
-@@ -11,11 +12,19 @@ config FS_ENET_HAS_SCC
- config FS_ENET_HAS_FCC
- 	bool "Chip has an FCC usable for ethernet"
- 	depends on FS_ENET && CPM2
--	select MDIO_BITBANG
- 	default y
+-	gunzip(0, 0x400000, zimage_start, &zimage_size);
++	gunzip(0, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
+ 	flush_instruction_cache();
+ 	puts("done.\n");
+ 	{
+diff -ur linux-2.6.23.1-orig/arch/ppc/boot/simple/misc.c linux-2.6.23.1/arch/ppc/boot/simple/misc.c
+--- linux-2.6.23.1-orig/arch/ppc/boot/simple/misc.c	2007-10-12 12:43:44.000000000 -0400
++++ linux-2.6.23.1/arch/ppc/boot/simple/misc.c	2007-11-08 13:08:34.000000000 -0500
+@@ -216,7 +216,7 @@
+ 	puts("\n");
  
- config FS_ENET_HAS_FEC
- 	bool "Chip has an FEC usable for ethernet"
- 	depends on FS_ENET && CPM1
-+	select FS_ENET_MDIO_FEC
- 	default y
+ 	puts("Uncompressing Linux...");
+-	gunzip(NULL, 0x400000, zimage_start, &zimage_size);
++	gunzip(NULL, CONFIG_BOOT_LOAD, zimage_start, &zimage_size);
+ 	puts("done.\n");
  
-+config FS_ENET_MDIO_FEC
-+	tristate "MDIO driver for FEC"
-+	depends on FS_ENET && CPM1
-+
-+config FS_ENET_MDIO_FCC
-+	tristate "MDIO driver for FCC"
-+	depends on FS_ENET && CPM2
-+	select MDIO_BITBANG
-diff --git a/drivers/net/fs_enet/Makefile b/drivers/net/fs_enet/Makefile
-index 02d4dc1..1ffbe07 100644
---- a/drivers/net/fs_enet/Makefile
-+++ b/drivers/net/fs_enet/Makefile
-@@ -4,7 +4,16 @@
- 
- obj-$(CONFIG_FS_ENET) += fs_enet.o
- 
--obj-$(CONFIG_8xx) += mac-fec.o mac-scc.o mii-fec.o
--obj-$(CONFIG_CPM2) += mac-fcc.o mii-bitbang.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_SCC) += mac-scc.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_FEC) += mac-fec.o
-+fs_enet-$(CONFIG_FS_ENET_HAS_FCC) += mac-fcc.o
- 
--fs_enet-objs := fs_enet-main.o
-+ifeq ($(CONFIG_PPC_CPM_NEW_BINDING),y)
-+obj-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
-+obj-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
-+else
-+fs_enet-$(CONFIG_FS_ENET_MDIO_FEC) += mii-fec.o
-+fs_enet-$(CONFIG_FS_ENET_MDIO_FCC) += mii-bitbang.o
-+endif
-+
-+fs_enet-objs := fs_enet-main.o $(fs_enet-m)
--- 
-1.5.3.5
+ 	/* get the bi_rec address */
+
+--------------040101050409040601030601--
