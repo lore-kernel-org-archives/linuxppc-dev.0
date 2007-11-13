@@ -2,23 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E368DDDDD5
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 00:20:24 +1100 (EST)
-Subject: Re: [RFC] PMU: replace information ioctls and schedule for removal
+	by ozlabs.org (Postfix) with ESMTP id ED31BDDEFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 00:20:34 +1100 (EST)
+Subject: Re: [linux-pm] Re: [RFC] powermac: proper sleep management
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <18232.56988.723620.912943@cargo.ozlabs.ibm.com>
-References: <1194523351.6294.11.camel@johannes.berg>
-	<1194814546.6510.20.camel@pasglop>
-	<1194885218.5229.47.camel@johannes.berg>
-	<18232.56988.723620.912943@cargo.ozlabs.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <Pine.LNX.4.44L0.0711121451210.1567-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0711121451210.1567-100000@netrider.rowland.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-Ws1qcSMkbWtuhh3yeEaM"
-Date: Tue, 13 Nov 2007 14:20:43 +0100
-Message-Id: <1194960043.9116.55.camel@johannes.berg>
+	boundary="=-u3clj905cFmWbHu2HCOw"
+Date: Tue, 13 Nov 2007 14:19:32 +0100
+Message-Id: <1194959972.9116.53.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +28,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-Ws1qcSMkbWtuhh3yeEaM
+--=-u3clj905cFmWbHu2HCOw
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
 
-On Tue, 2007-11-13 at 10:15 +1100, Paul Mackerras wrote:
-> Johannes Berg writes:
->=20
-> > Does anybody need that? I'm not against adding it but we never showed i=
-t
-> > and I haven't seen anyone ask for it.
->=20
-> pmud uses the PMU version, but I think it gets it by issuing a PMU
-> command.
+> Isn't it true that the freezer _already_ isn't enabled on PPC?  So=20
+> leaving it off wouldn't break anything more than it is broken now.
 
-Yeah, it probably has to since I don't see us exporting it anywhere. Do
-we want to change pmud to read it from elsewhere? I guess I'll just add
-it to sysfs and it can use it if it wants.
+Indeed.
 
 johannes
 
---=-Ws1qcSMkbWtuhh3yeEaM
+--=-u3clj905cFmWbHu2HCOw
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUARzmkqqVg1VMiehFYAQJ7BA/+LDMUYjMhxQqgY5CEZ5hQ+Cx7QhO8S8gN
-Ssf+9kDVnLgjSwb5Ij49c2o4aQQ1eHWnhTnpYjSPZaeXisiCDkkkXQG5J5uAOVZ1
-wq7kkOE5zPdkeTRMJYDG9Kj5gtL/3DcN2maa2dHkQaGsA1A8qn4qz8SzpnJSxZV2
-pfWEq3E12Xn90L06oWij+hG4qa7IuBBYtWnMnmcDXV6Zl4TEUigXpilE4eeJi26g
-0V7nZZR9rT72Bcdi28oHADx1HPlzX+FE4GmKxPJmhWZC7TuFDNao/2ekIiKvKIoY
-VCd6/3QOlttXSA3i+3NfV/yU1B6Ao0D3MKtkXA9+3tcZ9GTuCJ2Ftwf9UCTQ9Ma0
-u7xxUXQwx8c6er1KI2cIWJgIuRFaOjk5KNdrGayP46dpI2eZ8TjixlWhV6Kat3CD
-BLBd0eOyQMS8o0FrIaKd/8zVYx9eLHwo4DbnwNFkP+wacggHr1E0jkZ/mUuNZ2nr
-5S1FYh/3TeH7aktXh4sLbq4WubKAp27TctLiePm7gObFlvle2GxUavUwkVjxrxdm
-GhDuoIr0YsGddIDa0SrNnW31UXhFqtb98WYnnuAvGNemn9+nhVKCBM2bu61mqlVS
-gB9Rk4awgG23Dkm5zXTf06/EWALPYgthPd8tebR/j4g7ju8eQIpCo1ktV1GYZ3fq
-YOUn6SlOGWE=
-=amsF
+iQIVAwUARzmkY6Vg1VMiehFYAQKbPw//ZXimYLALTNAsOcsx05PrbrJA8buus3zp
+gQebR5YK+YPq2jKuC/g6//FLdrPJC4D5RFYHPHmDtwXbRlyms2A529nfctiVL9fM
+CbCpLFp+SPurO31s3T63bfcblyPalQe8MSUFbjz/lphmFporsEatLl2YAW1NxoIp
+/F9xMdZ91b3RNZSgYjYRnm90buHOV0ec1YKvX3ZkQDEuQinKPwi9cFqwwqvLJ8Xx
+hDnSJAA42Gdhr0bxPIfPJNmBjRiQuvLgY8emzsrO0Hfy5x92ktXNbFokkJnjFsAX
+fKLOlWvX25/bNsogKLA08sT0KJZjt0rvFMRR31cz7HUDa8rbwmrwGBxG/IImrGFx
+4yK9A3kfxsvcQFqjXumlNOHL6uqHg2d1qXBX6aeQpxUCnDdK7mBhw2n5gAA+Gv4w
+bI39zlKvwcGMiJEAQ3PQxEellGzZdTAzuXO359BOtthV8WQgkYJJf6NoYFyiOLf4
+yLQ+HCQLe/5829wpnTOTO25EMU1fy+3pivQqVhgLIUYynHlPynx3UMlTUVkrwbEA
+xa9iL1H6b7SFGE4oyHC97CFHHLY+9XjWTTLUjUAIsIi9nyyBdbHHlmHF4+53k2cS
+HK+j9D15DVNN6fG7bXet0JLSwDkdQvK/wu5MNa0wpE9sBGcM+xlVG5z6QdKrbJEh
+itSX48i6oNg=
+=Il8e
 -----END PGP SIGNATURE-----
 
---=-Ws1qcSMkbWtuhh3yeEaM--
+--=-u3clj905cFmWbHu2HCOw--
