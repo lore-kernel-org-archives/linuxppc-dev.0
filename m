@@ -1,17 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id E207CDDE06
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 1D33FDDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Nov 2007 07:33:23 +1100 (EST)
-Message-ID: <473A0A1B.3020302@anagramm.de>
-Date: Tue, 13 Nov 2007 21:33:31 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed, 14 Nov 2007 07:48:30 +1100 (EST)
 MIME-Version: 1.0
-To: robert lazarski <robertlazarski@gmail.com>
-Subject: Re: 85xx Device tree problems: e0024520:02 not found
-References: <f87675ee0711131217q6bb54e06q74f7d16e79b94f19@mail.gmail.com>
-In-Reply-To: <f87675ee0711131217q6bb54e06q74f7d16e79b94f19@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linuxppc-embedded Digest, Vol 39, Issue 19
+Date: Tue, 13 Nov 2007 12:45:08 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73C9D@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.2590.1194951904.3099.linuxppc-embedded@ozlabs.org>
+References: <mailman.2590.1194951904.3099.linuxppc-embedded@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <fabien.fb@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,36 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-robert lazarski schrieb:
- > Hi all,
- >
- > I'm trying to bring up a new 8548 board on 2.6.23.1 . When booting,
- > Some times I can get as far mounting over nfs. However, it gets stuck
- > here:
- >
- > NET: Registered protocol family 1
- > NET: Registered protocol family 17
- > e0024520:02 not found
- > eth2: Could not attach to PHY
- > IP-Config: Failed to open eth2
- > IP-Config: Device `eth2' not found.
+Hi,=20
 
-As already written in the u-boot-users list,
-you could give the pauilis.git tree a try.
+Some thing similar happened for me before. After I set the IRQ enable
+bits, it resulted in an exception. After analyzing the exception and
+SRR1 bits set, I was able to take care of it.
 
-There have been recently (last month) several
-PHY related changes. 2.6.23.1 seems to be too
-"old".
+Other reason can be...
+Immediately after you enable interrupts, any interrupt (which are
+already enabled) can cause the system to take a different path of
+servicing those interrupts. If some thing happens in that service
+routine, you are in for a surprise.
 
-Regards,
+If you have a JTAG emulator, after system hangs, just halt it and see
+where it is executing. That may give a clue of what might have happened.
+Or, you can look at the stack, based on the register contents, to see
+the call back (difficult, but possible).
 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Good Luck.
+
+- Siva
+
+
+------------------------------
+
+Date: Tue, 13 Nov 2007 12:04:59 +0100
+From: fabien <fabien.fb@gmail.com>
+Subject: (beginner) Kernel fail during local_irq_enable()
+To: linuxppc-embedded@ozlabs.org
+
+I work on a custom board based on MPC8xx.
+
+The bootloader on it is a ppcboot 1.1.5. I'm a beginner with Linux port
+
+and ppc.
+ I'm trying to pass the board working with a 2.4.4 kernel to a 2.6.19
+kernel
+
+from denx.
+ The kernel hang when trying to enable interrupt in local_irq_enable()
+
+in init/main.c.
+ Nothing happened after. Look at the printk log dumped from __log_buf
+adresse with md ppcboot command.
