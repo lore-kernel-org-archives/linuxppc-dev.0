@@ -1,20 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B29FADDEA3
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 15:50:46 +1100 (EST)
-Date: Mon, 12 Nov 2007 22:51:32 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [POWERPC] Silence an annoying boot message
-Message-ID: <20071113045132.GA15180@lixom.net>
-References: <20071112135339.9a01b115.sfr@canb.auug.org.au>
-	<20071112051532.GA28394@lixom.net>
-	<1194857556.18185.33.camel@pasglop>
-	<20071113154149.ef77d37f.sfr@canb.auug.org.au>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071113154149.ef77d37f.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Content-Type: text/plain; charset=iso-2022-jp
+Message-ID: <18233.12821.992452.841806@cargo.ozlabs.ibm.com>
+Date: Tue, 13 Nov 2007 16:11:49 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [PATCH v2] fix multiple bugs in rtas_ibm_suspend_me code
+In-Reply-To: <20071109204408.GS9695@localdomain>
+References: <20071106044309.GK9695@localdomain>
+	<20071109204408.GS9695@localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 13, 2007 at 03:41:49PM +1100, Stephen Rothwell wrote:
-> vmemmap_populate will printk (with KERN_WARNING) for a lot of pages
-> if CONFIG_SPARSEMEM_VMEMMAP is enabled (at least it does on iSeries).
-> Use pr_debug for it instead.
-> 
-> Replace the only other use of DBG in this file with pr_debug as well.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Nathan Lynch writes:
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> There are several issues with the rtas_ibm_suspend_me code, which
+> enables platform-assisted suspension of an LPAR for migration or
+> hibernation as covered in PAPR 2.2.
 
+On a uniprocessor configuration, with this patch I get:
 
--Olof
+  CC      arch/powerpc/kernel/rtas.o
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/rtas.c: In function ‘rtas_percpu_suspend_me’:
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/rtas.c:702: error: implicit declaration of function ‘get_hard_smp_processor_id’
+make[2]: *** [arch/powerpc/kernel/rtas.o] Error 1
+
+I think you need to #include <asm/smp.h> in rtas.c.
+
+Paul.
