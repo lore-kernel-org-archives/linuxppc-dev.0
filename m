@@ -1,19 +1,9 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B2B60DDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 15:41:44 +1100 (EST)
-Date: Tue, 13 Nov 2007 15:41:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Silence an annoying boot message
-Message-Id: <20071113154149.ef77d37f.sfr@canb.auug.org.au>
-In-Reply-To: <1194857556.18185.33.camel@pasglop>
-References: <20071112135339.9a01b115.sfr@canb.auug.org.au>
-	<20071112051532.GA28394@lixom.net>
-	<1194857556.18185.33.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Olof Johansson <olof@lixom.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 13 Nov 2007 15:43:51 +1100
+Subject: [PATCH 1/2] powerpc: Make isa_mem_base common to 32 and 64 bits
+Message-Id: <20071113044429.461B1DDE2E@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +13,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-vmemmap_populate will printk (with KERN_WARNING) for a lot of pages
-if CONFIG_SPARSEMEM_VMEMMAP is enabled (at least it does on iSeries).
-Use pr_debug for it instead.
+This defines isa_mem_base on both 32 and 64 bits (it used to be 32 bits
+only). This avoids a few ifdef's in later patches and potentially can
+allow support for VGA text mode on 64 bits powerpc.
 
-Replace the only other use of DBG in this file with pr_debug as well.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/mm/init_64.c |   16 ++++------------
- 1 files changed, 4 insertions(+), 12 deletions(-)
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Small cleanup pre-requisite for my next patch
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index d9c82d3..c0f5cff 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -19,8 +19,6 @@
-  *
+ arch/powerpc/kernel/pci-common.c |    4 ++++
+ arch/powerpc/kernel/pci_32.c     |    1 -
+ include/asm-powerpc/io.h         |    5 +++--
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-work/arch/powerpc/kernel/pci-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-11-13 14:11:11.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2007-11-13 14:15:43.000000000 +1100
+@@ -52,6 +52,10 @@ int global_phb_number;		/* Global phb co
+ 
+ extern struct list_head hose_list;
+ 
++/* ISA Memory physical address (or 0 if none) */
++resource_size_t isa_mem_base    = 0;
++
++
+ /*
+  * pci_controller(phb) initialized common variables.
   */
- 
--#undef DEBUG
--
- #include <linux/signal.h>
- #include <linux/sched.h>
- #include <linux/kernel.h>
-@@ -66,12 +64,6 @@
- 
- #include "mmu_decl.h"
- 
--#ifdef DEBUG
--#define DBG(fmt...) printk(fmt)
--#else
--#define DBG(fmt...)
--#endif
--
- #if PGTABLE_RANGE > USER_VSID_RANGE
- #warning Limited user VSID range means pagetable space is wasted
+Index: linux-work/include/asm-powerpc/io.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/io.h	2007-11-13 14:12:01.000000000 +1100
++++ linux-work/include/asm-powerpc/io.h	2007-11-13 14:12:48.000000000 +1100
+@@ -50,15 +50,16 @@ extern int check_legacy_ioport(unsigned 
+ #define PCI_DRAM_OFFSET	pci_dram_offset
+ #else
+ #define _IO_BASE	pci_io_base
+-#define _ISA_MEM_BASE	0
++#define _ISA_MEM_BASE	isa_mem_base
+ #define PCI_DRAM_OFFSET	0
  #endif
-@@ -175,8 +167,8 @@ void pgtable_cache_init(void)
- 		int size = pgtable_cache_size[i];
- 		const char *name = pgtable_cache_name[i];
  
--		DBG("Allocating page table cache %s (#%d) "
--		    "for size: %08x...\n", name, i, size);
-+		pr_debug("Allocating page table cache %s (#%d) "
-+			"for size: %08x...\n", name, i, size);
- 		pgtable_cache[i] = kmem_cache_create(name,
- 						     size, size,
- 						     SLAB_PANIC,
-@@ -239,8 +231,8 @@ int __meminit vmemmap_populate(struct page *start_page,
- 		if (!p)
- 			return -ENOMEM;
+ extern unsigned long isa_io_base;
+-extern unsigned long isa_mem_base;
+ extern unsigned long pci_io_base;
+ extern unsigned long pci_dram_offset;
  
--		printk(KERN_WARNING "vmemmap %08lx allocated at %p, "
--		                    "physical %08lx.\n", start, p, __pa(p));
-+		pr_debug("vmemmap %08lx allocated at %p, physical %08lx.\n",
-+			start, p, __pa(p));
++extern resource_size_t isa_mem_base;
++
+ #if defined(CONFIG_PPC32) && defined(CONFIG_PPC_INDIRECT_IO)
+ #error CONFIG_PPC_INDIRECT_IO is not yet supported on 32 bits
+ #endif
+Index: linux-work/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-13 14:16:15.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-13 14:16:17.000000000 +1100
+@@ -32,7 +32,6 @@
+ #endif
  
- 		mapped = htab_bolt_mapping(start, start + page_size,
- 					__pa(p), mode_rw, mmu_linear_psize,
--- 
-1.5.3.5
+ unsigned long isa_io_base     = 0;
+-unsigned long isa_mem_base    = 0;
+ unsigned long pci_dram_offset = 0;
+ int pcibios_assign_bus_offset = 1;
+ 
