@@ -1,18 +1,19 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 48E69DDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 10:26:42 +1100 (EST)
-Date: Tue, 13 Nov 2007 17:26:31 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc: fix 2nd UCC entry in mpc832x_mds.dts
-Message-Id: <20071113172631.7b42e1e1.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp109.biz.mail.mud.yahoo.com (smtp109.biz.mail.mud.yahoo.com
+	[68.142.201.178]) by ozlabs.org (Postfix) with SMTP id 7526FDDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 10:32:51 +1100 (EST)
+In-Reply-To: <fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>
+References: <20071113214845.85820@gmx.net>
+	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>
+	<fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FA44C867-4933-40F2-8EBA-5C9967005223@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+Date: Tue, 13 Nov 2007 15:23:29 -0800
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,58 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-correct the reg property, remove duplicate io port entry, whitespace fixes.
 
-Thanks to Peter Van Ackeren for pointing this out.
+On Nov 13, 2007, at 1:59 PM, Grant Likely wrote:
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/boot/dts/mpc832x_mds.dts |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+>> Abatron BDI-2000.
+>
+> Oops, but that's not all that cheap.  ($2750USD).
 
-diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
-index fcd333c..eeafa8b 100644
---- a/arch/powerpc/boot/dts/mpc832x_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
-@@ -104,7 +104,7 @@
- 			reg = <700 100>;
- 			device_type = "ipic";
- 		};
--		
-+
- 		par_io@1400 {
- 			reg = <1400 100>;
- 			device_type = "par_io";
-@@ -117,7 +117,6 @@
- 					3  5  1  0  2  0  /* MDC */
- 					0  d  2  0  1  0 	/* RX_CLK (CLK9) */
- 					3 18  2  0  1  0 	/* TX_CLK (CLK10) */
--					1  1  1  0  1  0 	/* TxD1 */
- 					1  0  1  0  1  0 	/* TxD0 */
- 					1  1  1  0  1  0 	/* TxD1 */
- 					1  2  1  0  1  0 	/* TxD2 */
-@@ -165,11 +164,11 @@
- 		reg = <e0100000 480>;
- 		brg-frequency = <0>;
- 		bus-frequency = <BCD3D80>;
--		
-+
- 		muram@10000 {
- 			device_type = "muram";
- 			ranges = <0 00010000 00004000>;
--	
-+
- 			data-only@0 {
- 				reg = <0 4000>;
- 			};
-@@ -228,7 +227,7 @@
- 			compatible = "ucc_geth";
- 			model = "UCC";
- 			device-id = <4>;
--			reg = <3000 200>;
-+			reg = <3200 200>;
- 			interrupts = <23>;
- 			interrupt-parent = < &qeic >;
- 			/*
--- 
-1.5.2.2
+If you place any value on your time or development
+schedule, it's a bargain.  Just plug it in, and it works.
+Choose any of your favorite debugger front ends,
+from none with just a telnet interface, to remote gdb,
+ddd, or several Eclipse options.  Several choices
+of host OS.  It will pay you back in development and
+debugging time savings over and over.
+
+	-- Dan
