@@ -1,18 +1,23 @@
-Return-Path: <alan@akb.net>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.178])
-	by ozlabs.org (Postfix) with ESMTP id 0C5A1DDE04
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 10:39:07 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id r27so633712ele
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 15:39:06 -0800 (PST)
-Message-ID: <bfa0697f0711131539n228f9f21q7b2acc896499b80d@mail.gmail.com>
-Date: Tue, 13 Nov 2007 16:39:05 -0700
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: "Scott Wood" <scottwood@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: I2C on mpc8248 / device tree
+Return-Path: <jonsmirl@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.225])
+	by ozlabs.org (Postfix) with ESMTP id 2DEDEDDDF7
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 10:53:46 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1334657nzh
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 15:53:45 -0800 (PST)
+Message-ID: <9e4733910711131553ked87330ubc0c439c42e51ace@mail.gmail.com>
+Date: Tue, 13 Nov 2007 18:53:44 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Olof Johansson" <olof@lixom.net>
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+In-Reply-To: <20071113233906.GA32689@lixom.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_21228_31249243.1194997145893"
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071113214845.85820@gmx.net>
+	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>
+	<fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>
+	<FA44C867-4933-40F2-8EBA-5C9967005223@embeddedalley.com>
+	<20071113233906.GA32689@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,58 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_21228_31249243.1194997145893
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On 11/13/07, Olof Johansson <olof@lixom.net> wrote:
+> On Tue, Nov 13, 2007 at 03:23:29PM -0800, Dan Malek wrote:
+> >
+> > On Nov 13, 2007, at 1:59 PM, Grant Likely wrote:
+> >
+> > >> Abatron BDI-2000.
+> > >
+> > > Oops, but that's not all that cheap.  ($2750USD).
+> >
+> > If you place any value on your time or development
+> > schedule, it's a bargain.
+>
+> That only applies for cases where time means money, i.e. professional
+> work. Spending three thousand dollars to debug a board that you spent
+> a few hundred dollars buying just for a hobby is pretty crazy.
 
-I've got four devices on i2c that I need to read.  Simple thermal and
-voltage monitors.  I2c works fine in uboot, and now I'm trying to get things
-to work in linux.
+That's why Dominic wants to get OpenOCD running on the PowerPC. All we
+need is the programming documentation for controlling the CPU via the
+debug hardware.
 
-In the kernel .config I enable
-  I2C
-and
-  I2C_MPC
+Obviously this documentation exist, all of the commercial vendors had
+to have it to develop their debuggers. Maybe it is already out there
+and we just don't know where to look.
 
-During the platform boot code:
-I init the IO ports for i2c, (same as ep8248e code)
-    {3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-    {3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY},
-
-__Do I need to configure a brg for the i2c along with the other devices ?
-i.e. cpm2_clk_setup ?
-
-
-Next, I'm sure my device tree needs work, but my first stab adds i2c onto
-the SOC @ 11860  (immr+11860= I2c mode register) and interrupt 1.
-       soc@e0000000 {
-               ...
-               cpm@119c0 {
-               ...
-               i2c@11860 {
-                   device_type = "i2c";
-                   compatible = "fsl-i2c";
-                   reg = <11860 18>;
-                   interrupts = <1 3>;
-                   interrupt-parent = <&PIC>;
-               };
-
-After Cleaning up these routines and descriptions, would I be expected to
-continue using the /dev/i2c- entries?
-
--Alan
-
-------=_Part_21228_31249243.1194997145893
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-I&#39;ve got four devices on i2c that I need to read.&nbsp; Simple thermal and voltage monitors.&nbsp; I2c works fine in uboot, and now I&#39;m trying to get things to work in linux.<br><br>In the kernel .config I enable <br>&nbsp; I2C<br>
-and<br>&nbsp; I2C_MPC<br><br>During the platform boot code:<br>I init the IO ports for i2c, (same as ep8248e code)<br>&nbsp;&nbsp;&nbsp; {3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY},<br>&nbsp;&nbsp;&nbsp; {3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY},<br><br>__Do I need to configure a brg for the i2c along with the other devices ?&nbsp; 
-i.e. cpm2_clk_setup ?<br><br><br>Next, I&#39;m sure my device tree needs work, but my first stab adds i2c onto the SOC @ 11860&nbsp; (immr+11860= I2c mode register) and interrupt 1.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; soc@e0000000 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cpm@119c0 {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i2c@11860 {&nbsp; <br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type = &quot;i2c&quot;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible = &quot;fsl-i2c&quot;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg = &lt;11860 18&gt;;
-<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts = &lt;1 3&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent = &lt;&amp;PIC&gt;;<br>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; };<br><br>After Cleaning up these routines and descriptions, would I be expected to continue using the /dev/i2c- entries?
-<br><br>-Alan<br><br>
-
-------=_Part_21228_31249243.1194997145893--
+-- 
+Jon Smirl
+jonsmirl@gmail.com
