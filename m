@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 376BCDDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 23:39:47 +1100 (EST)
-Subject: [PATCH] powermac: fix warning in time.c
+	by ozlabs.org (Postfix) with ESMTP id BBD54DDE3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 23:42:40 +1100 (EST)
+Subject: [PATCH] PMU: don't lock_kernel()
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 13 Nov 2007 19:17:20 +0100
-Message-Id: <1194977840.4299.2.camel@johannes.berg>
+Content-Type: text/plain
+Date: Tue, 13 Nov 2007 20:07:56 +0100
+Message-Id: <1194980876.6695.4.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,33 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/powermac/time.c:88: warning: =E2=80=98to_rtc_time=E2=
-=80=99 defined but not used
-
-Somehow this warning has always bothered me. This patch fixes it by
-making the relevant code depend on the users.
+I see nothing that this lock_kernel() actually protects against
+so remove it.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powermac/time.c |    2 ++
- 1 file changed, 2 insertions(+)
+Please queue to whatever branch you feel appropriate.
 
---- linux-2.6-git.orig/arch/powerpc/platforms/powermac/time.c	2007-11-13 19=
-:07:32.243563123 +0100
-+++ linux-2.6-git/arch/powerpc/platforms/powermac/time.c	2007-11-13 19:08:2=
-7.154561404 +0100
-@@ -84,12 +84,14 @@ long __init pmac_time_init(void)
- 	return delta;
+ drivers/macintosh/via-pmu.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+--- everything.orig/drivers/macintosh/via-pmu.c	2007-11-13 19:32:01.728726509 +0100
++++ everything/drivers/macintosh/via-pmu.c	2007-11-13 19:32:03.058713543 +0100
+@@ -33,7 +33,6 @@
+ #include <linux/adb.h>
+ #include <linux/pmu.h>
+ #include <linux/cuda.h>
+-#include <linux/smp_lock.h>
+ #include <linux/module.h>
+ #include <linux/spinlock.h>
+ #include <linux/pm.h>
+@@ -2547,7 +2546,6 @@ pmu_release(struct inode *inode, struct 
+ 	struct pmu_private *pp = file->private_data;
+ 	unsigned long flags;
+ 
+-	lock_kernel();
+ 	if (pp != 0) {
+ 		file->private_data = NULL;
+ 		spin_lock_irqsave(&all_pvt_lock, flags);
+@@ -2561,7 +2559,6 @@ pmu_release(struct inode *inode, struct 
+ 
+ 		kfree(pp);
+ 	}
+-	unlock_kernel();
+ 	return 0;
  }
-=20
-+#if defined(CONFIG_ADB_CUDA) || defined(CONFIG_ADB_PMU)
- static void to_rtc_time(unsigned long now, struct rtc_time *tm)
- {
- 	to_tm(now, tm);
- 	tm->tm_year -=3D 1900;
- 	tm->tm_mon -=3D 1;
- }
-+#endif
-=20
- static unsigned long from_rtc_time(struct rtc_time *tm)
- {
+ 
