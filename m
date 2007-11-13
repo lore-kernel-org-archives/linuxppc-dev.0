@@ -1,19 +1,10 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 9EA84DDE0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 13:09:47 +1100 (EST)
-Date: Mon, 12 Nov 2007 18:09:46 -0800 (PST)
-Message-Id: <20071112.180946.150182058.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] sungem: fix suspend regression due to NAPI changes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1194906766.18185.79.camel@pasglop>
-References: <1194889547.4456.4.camel@johannes.berg>
-	<1194906766.18185.79.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, johannes@sipsolutions.net,
-	shemminger@linux-foundation.org, linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 13 Nov 2007 13:46:52 +1100
+Subject: [PATCH] powerpc: Fix early btext debug on PowerMac
+Message-Id: <20071113024730.C7DC4DDE23@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +14,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 13 Nov 2007 09:32:46 +1100
+The early btext debug wouldn't work on PowerMac when booted from BootX
+due to the code looking for the wrong property name.
 
-> 
-> On Mon, 2007-11-12 at 18:45 +0100, Johannes Berg wrote:
-> > Commit bea3348e (the NAPI changes) made sungem unconditionally enable
-> > NAPI when resuming and unconditionally disable when suspending, this,
-> > however, makes napi_disable() hang when suspending when the interface
-> > was taken down before suspend because taking the interface down also
-> > disables NAPI. This patch makes touching the napi struct in
-> > suspend/resume code paths depend on having the interface up, thereby
-> > fixing the hang on suspend.
-> > 
-> > The patch also moves the napi_disable() in gem_close() under the lock so
-> > that the NAPI state is always modified atomically together with the
-> > "opened" variable.
-> > 
-> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> 
-> Thanks for fixing that !
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Indeed, thanks a lot Johannes.
+ arch/powerpc/kernel/btext.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Patch applied.
+Index: linux-work/arch/powerpc/kernel/btext.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/btext.c	2007-11-13 13:39:09.000000000 +1100
++++ linux-work/arch/powerpc/kernel/btext.c	2007-11-13 13:43:23.000000000 +1100
+@@ -186,7 +186,9 @@ int btext_initialize(struct device_node 
+ 		pitch = *prop;
+ 	if (pitch == 1)
+ 		pitch = 0x1000;
+-	prop = of_get_property(np, "address", NULL);
++	prop = of_get_property(np, "linux,bootx-addr", NULL);
++	if (prop == NULL)
++		prop = of_get_property(np, "address", NULL);
+ 	if (prop)
+ 		address = *prop;
+ 
