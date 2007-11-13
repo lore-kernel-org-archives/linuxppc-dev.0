@@ -1,23 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F203EDDE16
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 0E470DDE39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 18:35:46 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IrqJD-0000GE-V3
-	for linuxppc-embedded@ozlabs.org; Mon, 12 Nov 2007 23:35:43 -0800
-Message-ID: <13721038.post@talk.nabble.com>
-Date: Mon, 12 Nov 2007 23:35:43 -0800 (PST)
-From: Lorenz Kolb <linuxppcemb@lkmail.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: small bootloader that passes arguments
-In-Reply-To: <13712778.post@talk.nabble.com>
+	Tue, 13 Nov 2007 21:29:16 +1100 (EST)
+Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
+	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
+	C4F7D1000A16for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Nov 2007 11:29:06 +0100 (CET)
+Message-ID: <47397C70.9000106@fz-juelich.de>
+Date: Tue, 13 Nov 2007 11:29:04 +0100
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <13712778.post@talk.nabble.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: MTD Devices
+Content-Type: text/plain;
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,46 +25,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi again,
 
-Hi,
+i have some problems to copy a cramfs image to flash.  the situation as
+follows:
 
-the normal operation of a bootloader is: 
+cat /proc/mtd:
+dev:    size   erasesize  name
+mtd0: 00180000 00010000 "kernel"
+mtd1: 00280000 00010000 "rootfs"
 
-memcpy() -- copy the programme to boot to some new location maybe some
-decoding done here, too
-jump_to_addr() -- the easiest way to jump to some address in a higher level
-language is to make a function call to some pointer. You can pass arguments
-to this function, that is what bootloaders like u-boot do.
+cat /proc/partitions:
+major minor  #blocks  name
 
-Personally I would recommand you to use some small first-stage-loader
-loading U-Boot and make U-Boot do the rest. There is a U-Boot 1.1.4 port on
-Xilinx' website for some Xilinx boards that can easily be adapted to Your
-board (if it is no yet supported), I guess.
-You can find Xilinx' U-Boot-"tree" here:
-http://www.xilinx.com/ml410-p/81i_19.5/designs/u-boot.zip
+ 254     0      62720 xsa
+ 254     1       9840 xsa1
+ 254     2      52864 xsa2
+  31     0       1536 mtdblock0
+  31     1       2560 mtdblock1
 
-Regards,
-
-Lorenz Kolb
+ls -l /dev/mtd*:
+crw-r--r--    1 root     root      90,   0 Jan  1 00:14 /dev/mtd0
+crw-r--r--    1 root     root      90,   2 Jan  1 00:21 /dev/mtd1
+brw-r--r--    1 root     root      31,   0 Jan  1 00:01 /dev/mtdblock0
+brw-r--r--    1 root     root      31,   1 Jan  1 00:08 /dev/mtdblock1
 
 
+now, imho it is possible to make a
 
-khollan wrote:
-> 
-> Hi,
-> 
-> I would like to create a small bootloader that is able to pass kernel
-> arguments and boot a linux kernel.  Im using a xilinx PPC, and have
-> already booted a working kernel with a Xilinx provided XMD bootloader over
-> USB.  My main question is how does a bootloader pass these arguments to
-> the kernel before booting it?  Most specifically the root=/dev/xsa1
-> command so I can tell it to either boot from compact flash or NFS.
-> 
-> I really don't want to try and port U-boot since I don't need the bells
-> and whistles and I want it to fit in the BRAM of the FPGA so it will load
-> when I load the hardware configuration.
-> 
+- eraseall /dev/mtd1 to erase the flash
+- dd if=cramfs.img of=/dev/mtd1 to copy image to flash
 
--- 
-View this message in context: http://www.nabble.com/small-bootloader-that-passes-arguments-tf4793411.html#a13721038
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+but if i read the mtd1 device back, the flash is emtpy :(((
+
+what is my mistake ?
+
+Georg
+
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Jülich GmbH
+52425 Jülich
+
+Sitz der Gesellschaft: Jülich
+Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
