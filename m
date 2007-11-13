@@ -1,19 +1,11 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 5CACDDDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 08:23:23 +1100 (EST)
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 13 Nov 2007 22:23:20 +0100
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1194753340.21340.24.camel@pasglop>
-Message-ID: <20071113212320.85840@gmx.net>
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910711131324g418b7764vc84ece40d78658d@mail.gmail.com>
+Date: Tue, 13 Nov 2007 16:24:58 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
+Subject: Makefile and COMMON_UIMAGE target
 MIME-Version: 1.0
-References: <20071108214723.135260@gmx.net>	 <1194564017.6561.21.camel@pasglop>
-	<20071109074155.266120@gmx.net>	 <1194594629.6561.34.camel@pasglop>
-	<20071110171130.254580@gmx.net> <1194753340.21340.24.camel@pasglop>
-Subject: Re: Kernel locks up after calling kernel_execve()
-To: benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +15,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+If I select Efika (zImage.chrp) and my target (uImage, COMMON_UIMAGE)
+at the same time. The chrp image doesn't get built.
 
--------- Original-Nachricht --------
-> Datum: Sun, 11 Nov 2007 14:55:40 +1100
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@ozlabs.org
-> Betreff: Re: Kernel locks up after calling kernel_execve()
+This fixes it, but is it the right fix?
+What the right to compare CONFIG_DEVICE_TREE to "" if it isn't defined?
 
-> 
-> On Sat, 2007-11-10 at 18:11 +0100, Gerhard Pircher wrote:
-> > -------- Original-Nachricht --------
-> > > Datum: Fri, 09 Nov 2007 18:50:29 +1100
-> > > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> > > CC: linuxppc-dev@ozlabs.org
-> > > Betreff: Re: Kernel locks up after calling kernel_execve()
-> >
-> > Is there a way to debug it without a hardware debugger or can you
-> > recommend a cheap hardware debugger?
-> 
-> There are ways, sure, which probably involve adding prink's all over the
-> place to figure it out... could be some DMA issue for example, could be
-> pretty much anything. Have you tried booting an initrd with no disk
-> access ?
-I tried to boot with a ramdisk, but that didn't help much. I still locks up
-while loading an init program or after entering some commands in
-sh shell. Looks like the problem is hidden deep in the kernel.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 4e16534..b291f53 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -149,7 +149,7 @@ drivers-$(CONFIG_OPROFILE)  += arch/powerpc/oprofile/
 
-Thanks!
+ # Default to zImage, override when needed
+ defaultimage-y                 := zImage
+-defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
++#defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
+ KBUILD_IMAGE := $(defaultimage-y)
+ all: $(KBUILD_IMAGE)
 
-Gerhard
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 18e3271..cbbc4ab 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -147,6 +147,7 @@ image-$(CONFIG_PPC_PRPMC2800)               +=
+zImage.prpmc2800
+ image-$(CONFIG_PPC_ISERIES)            += zImage.iseries
+ image-$(CONFIG_DEFAULT_UIMAGE)         += uImage
+
++ifdef CONFIG_DEVICE_TREE
+ ifneq ($(CONFIG_DEVICE_TREE),"")
+ image-$(CONFIG_PPC_8xx)                        += cuImage.8xx
+ image-$(CONFIG_PPC_EP88XC)             += zImage.ep88xc
+@@ -160,6 +161,7 @@ image-$(CONFIG_BAMBOO)                      +=
+treeImage.bamboo cuImage.bamboo
+ image-$(CONFIG_SEQUOIA)                        += cuImage.sequoia
+ image-$(CONFIG_WALNUT)                 += treeImage.walnut
+ endif
++endif
+
+ # For 32-bit powermacs, build the COFF and miboot images
+ # as well as the ELF images.
+
 
 -- 
-GMX FreeMail: 1 GB Postfach, 5 E-Mail-Adressen, 10 Free SMS.
-Alle Infos und kostenlose Anmeldung: http://www.gmx.net/de/go/freemail
+Jon Smirl
+jonsmirl@gmail.com
