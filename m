@@ -1,16 +1,15 @@
 Return-Path: <sprasad@bivio.net>
 Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 1D33FDDE25
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 6F307DDE1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Nov 2007 07:48:30 +1100 (EST)
+	Wed, 14 Nov 2007 07:49:36 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: Linuxppc-embedded Digest, Vol 39, Issue 19
-Date: Tue, 13 Nov 2007 12:45:08 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73C9D@corpexc01.corp.networkrobots.com>
-In-Reply-To: <mailman.2590.1194951904.3099.linuxppc-embedded@ozlabs.org>
-References: <mailman.2590.1194951904.3099.linuxppc-embedded@ozlabs.org>
+Subject: Re: (beginner) Kernel fail during local_irq_enable()
+Date: Tue, 13 Nov 2007 12:46:14 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73C9F@corpexc01.corp.networkrobots.com>
+References: <mailman.2590.1194951904.3099.linuxppc-embedded@ozlabs.org> 
 From: "Siva Prasad" <sprasad@bivio.net>
 To: <fabien.fb@gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
@@ -23,6 +22,7 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
 
 Hi,=20
 
