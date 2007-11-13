@@ -1,20 +1,17 @@
-Return-Path: <jonsmirl@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id EDCE8DDE19
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 09:03:41 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so2309365wag
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 14:03:41 -0800 (PST)
-Message-ID: <9e4733910711131403o51e6d3fbk8be141ca67119a65@mail.gmail.com>
-Date: Tue, 13 Nov 2007 17:03:41 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
-In-Reply-To: <fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071113214845.85820@gmx.net>
-	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 41621DDE21
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 09:06:20 +1100 (EST)
+Date: Wed, 14 Nov 2007 09:06:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc2-git3 powerpc link failure
+Message-Id: <20071114090624.2a6aef50.sfr@canb.auug.org.au>
+In-Reply-To: <473984E2.1040006@linux.vnet.ibm.com>
+References: <473984E2.1040006@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Andy, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/13/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 11/13/07, Gerhard Pircher <gerhard_pircher@gmx.net> wrote:
-> > I'm trying to debug a kernel lockup that occurs on my machine with all kernel
-> > versions >2.6.16. I don't have a clue what the root cause of this lockup is,
-> > thus I'm thinking about using a hardware debugger. Can anybody recommend a
-> > reasonably cheap hardware debugger that works with G4 CPUs and can interact
-> > with GDB/DDD?
+Hi Kamalesh,
+
+On Tue, 13 Nov 2007 16:35:06 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 >
-> Abatron BDI-2000.
+> The 2.6.24-rc2-git3 kernel build fails during linking 
+> 
+>   KSYM    .tmp_kallsyms1.S
+>   AS      .tmp_kallsyms1.o
+>   LD      .tmp_vmlinux2
+>   KSYM    .tmp_kallsyms2.S
+>   AS      .tmp_kallsyms2.o
+>   LD      .tmp_vmlinux3
+>   KSYM    .tmp_kallsyms3.S
+>   AS      .tmp_kallsyms3.o
+>   LD      vmlinux.o
+> ld: TOC section size exceeds 64k
+> make: *** [vmlinux.o] Error 1
 
-Does anyone have the detailed doc needed to implement the software for
-a PPC hardware debugger? Dominic, the author of OpenOCD, has said he
-will take a look at adding PPC support if someone can supply him with
-the right doc.
-
-I've requested it from my Freescale rep. They sent me all of the
-hardware info but none of the software info. They can't seem to figure
-out what I'm asking for.
+You need the following patch.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 7 Nov 2007 11:56:48 +1100
+Subject: [PATCH] [POWERPC] Stop the TOC overflowing for large builds.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index ca51f0c..9374bc9 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -3,7 +3,7 @@
+ #
+ 
+ ifeq ($(CONFIG_PPC64),y)
+-EXTRA_CFLAGS	+= -mno-minimal-toc
++CFLAGS_prom_init.o	+= -mno-minimal-toc
+ endif
+ ifeq ($(CONFIG_PPC32),y)
+ CFLAGS_prom_init.o      += -fPIC
+-- 
+1.5.3.5
