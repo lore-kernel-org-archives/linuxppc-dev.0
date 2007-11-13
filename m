@@ -1,10 +1,19 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 13 Nov 2007 13:46:52 +1100
-Subject: [PATCH] powerpc: Fix early btext debug on PowerMac
-Message-Id: <20071113024730.C7DC4DDE23@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18233.4267.193447.339119@cargo.ozlabs.ibm.com>
+Date: Tue, 13 Nov 2007 13:49:15 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Medve Emilian" <Emilian.Medve@freescale.com>
+Subject: RE: [PATCH] [POWERPC] Optimize counting distinct entries in
+	therelocation sections
+In-Reply-To: <598D5675D34BE349929AF5EDE9B03E27017BC13C@az33exm24.fsl.freescale.net>
+References: <1194564963-15626-1-git-send-email-Emilian.Medve@Freescale.com>
+	<18231.60427.229658.485287@cargo.ozlabs.ibm.com>
+	<598D5675D34BE349929AF5EDE9B03E270174DB3E@az33exm24.fsl.freescale.net>
+	<598D5675D34BE349929AF5EDE9B03E27017BC13C@az33exm24.fsl.freescale.net>
+Cc: sfr@canb.auug.org.au, rusty@rustcorp.com.au, linuxppc-embedded@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,27 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The early btext debug wouldn't work on PowerMac when booted from BootX
-due to the code looking for the wrong property name.
+Medve Emilian writes:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> Seems like there are R_PPC_REL24 with r_addend != 0. Within a set of 41
+> modules (featuring 5457 R_PPC_REL24 relocations) already included within
+> the kernel tree I found 37 such relocations (R_PPC_REL24) with r_addend
+> != 0. In my test case, from 35K relocations, 7K are R_PPC_REL24 and from
+> those only 8 have r_addend != 0.
 
- arch/powerpc/kernel/btext.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+I did a quick scan and the ones with r_addend != 0 all seem to be
+references to .text from the .init.text, .exit.text or .fixup
+sections.  Assuming we can get those allocated near each other they
+shouldn't need trampolines.
 
-Index: linux-work/arch/powerpc/kernel/btext.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/btext.c	2007-11-13 13:39:09.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/btext.c	2007-11-13 13:43:23.000000000 +1100
-@@ -186,7 +186,9 @@ int btext_initialize(struct device_node 
- 		pitch = *prop;
- 	if (pitch == 1)
- 		pitch = 0x1000;
--	prop = of_get_property(np, "address", NULL);
-+	prop = of_get_property(np, "linux,bootx-addr", NULL);
-+	if (prop == NULL)
-+		prop = of_get_property(np, "address", NULL);
- 	if (prop)
- 		address = *prop;
- 
+Rusty, do we manage to put .init.text and .fixup near .text?
+
+Also, do you know what we see in r_info for a relocation that is
+relative to a section rather than a symbol?
+
+Paul.
