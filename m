@@ -1,20 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D83DBDDE18
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 20:56:51 +1100 (EST)
-Subject: Re: [PATCH 2/2] powerpc: Merge pci_process_bridge_OF_ranges()
+Subject: Re: printk/console_init
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071113070604.GA16842@lixom.net>
-References: <20071113044432.F1389DDE2E@ozlabs.org>
-	<20071113070604.GA16842@lixom.net>
+To: Siva Prasad <sprasad@bivio.net>
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73BF1@corpexc01.corp.networkrobots.com>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73BF1@corpexc01.corp.networkrobots.com>
 Content-Type: text/plain
-Date: Tue, 13 Nov 2007 20:56:41 +1100
-Message-Id: <1194947801.18185.99.camel@pasglop>
+Date: Tue, 13 Nov 2007 21:01:47 +1100
+Message-Id: <1194948107.18185.101.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,19 +20,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-11-13 at 01:06 -0600, Olof Johansson wrote:
-> On Tue, Nov 13, 2007 at 03:43:51PM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > ---
-> > 
-> > Tested on a few pSeries, PowerMac G5, and a 32 bits PowerMacs and
-> > a BriQ. Please let me know if it misbehaves anywhere else.
+On Mon, 2007-11-12 at 18:54 -0800, Siva Prasad wrote:
+> Hi,
 > 
-> Looks good on the eval boards I tested here.
+> I am using 2.6.19 Linux on 8641D based system.
 > 
-> Acked-by: Olof Johansson <olof@lixom.net>
+> I am using early printk's and it works fine until console_init() is
+> executed. After that it does not, as the early printk's get disabled,
+> which is fine. However, I don't see any prints after that at all, that
+> are based on regular printk statements. I looked directly into the
+> memory at __log_buf and found all the print messages. It is just not
+> coming out to the serial port properly.
+> 
+> It would be great if some one can tell me various parameters that I need
+> to consider changing, to successfully port the serial driver for a new
+> board.
+> 
+> Based on the early printk's, I am getting the following messages...
 
-Thanks for testing.
+You can use udbg-immortal to force the udbg early printk to stay around,
+and then use printk to see what's going on with your serial driver.
 
 Ben.
