@@ -1,14 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
-Message-ID: <18233.12821.992452.841806@cargo.ozlabs.ibm.com>
-Date: Tue, 13 Nov 2007 16:11:49 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH v2] fix multiple bugs in rtas_ibm_suspend_me code
-In-Reply-To: <20071109204408.GS9695@localdomain>
-References: <20071106044309.GK9695@localdomain>
-	<20071109204408.GS9695@localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D9E8FDDE47
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 16:23:39 +1100 (EST)
+Date: Tue, 13 Nov 2007 16:23:41 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc: Merge pci_process_bridge_OF_ranges()
+Message-Id: <20071113162341.31d9d09b.sfr@canb.auug.org.au>
+In-Reply-To: <20071113044432.F1389DDE2E@ozlabs.org>
+References: <20071113044432.F1389DDE2E@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__13_Nov_2007_16_23_41_+1100_HSufeiUQMX4/RDtu"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,19 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch writes:
+--Signature=_Tue__13_Nov_2007_16_23_41_+1100_HSufeiUQMX4/RDtu
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> There are several issues with the rtas_ibm_suspend_me code, which
-> enables platform-assisted suspension of an LPAR for migration or
-> hibernation as covered in PAPR 2.2.
+On Tue, 13 Nov 2007 15:43:51 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> Tested on a few pSeries, PowerMac G5, and a 32 bits PowerMacs and
+> a BriQ. Please let me know if it misbehaves anywhere else.
 
-On a uniprocessor configuration, with this patch I get:
+It seems to work fine on my legacy iSeries (iseries_defconfig and
+ppc64_defconfig), though I only have one PCI device.
 
-  CC      arch/powerpc/kernel/rtas.o
-/home/paulus/kernel/powerpc/arch/powerpc/kernel/rtas.c: In function ‘rtas_percpu_suspend_me’:
-/home/paulus/kernel/powerpc/arch/powerpc/kernel/rtas.c:702: error: implicit declaration of function ‘get_hard_smp_processor_id’
-make[2]: *** [arch/powerpc/kernel/rtas.o] Error 1
+Due to another patch I have, I changed pci_io_size to be a
+reasource_size_t on 64 bit as well which should be a noop as it was
+unsigned long.
 
-I think you need to #include <asm/smp.h> in rtas.c.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Paul.
+--Signature=_Tue__13_Nov_2007_16_23_41_+1100_HSufeiUQMX4/RDtu
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHOTTiTgG2atn1QN8RAuOtAJ9HLCW/1I0HUQgc2v0jzVoJ06+VVQCgktMB
+OhZGWxGQbWKdeH1pxMjU7uc=
+=BgeV
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__13_Nov_2007_16_23_41_+1100_HSufeiUQMX4/RDtu--
