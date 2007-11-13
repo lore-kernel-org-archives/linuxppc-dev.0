@@ -1,35 +1,17 @@
-Return-Path: <euphoria@arcor.de>
-Received: from mail-in-14.arcor-online.net (mail-in-14.arcor-online.net
-	[151.189.21.54])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B6EBDDDFC
+Return-Path: <robertlazarski@gmail.com>
+Received: from rn-out-0102.google.com (rn-out-0910.google.com [64.233.170.188])
+	by ozlabs.org (Postfix) with ESMTP id 01C56DDE09
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Nov 2007 07:14:50 +1100 (EST)
-Received: from mail-in-04-z2.arcor-online.net (mail-in-04-z2.arcor-online.net
-	[151.189.8.16])
-	by mail-in-14.arcor-online.net (Postfix) with ESMTP id 90FE51879F9
+	Wed, 14 Nov 2007 07:17:40 +1100 (EST)
+Received: by rn-out-0102.google.com with SMTP id e25so950251rng
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 21:14:32 +0100 (CET)
-Received: from mail-in-17.arcor-online.net (mail-in-17.arcor-online.net
-	[151.189.21.57])
-	by mail-in-04-z2.arcor-online.net (Postfix) with ESMTP id 8056DABAE7
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 21:14:32 +0100 (CET)
-Received: from [192.168.100.2] (e181025151.adsl.alicedsl.de [85.181.25.151])
-	(Authenticated sender: florian.boelstler@arcor.de)
-	by mail-in-17.arcor-online.net (Postfix) with ESMTP id 5659A2BB4EB
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Nov 2007 21:14:32 +0100 (CET)
-Message-ID: <473A05A5.5090800@arcor.de>
-Date: Tue, 13 Nov 2007 21:14:29 +0100
-From: Florian Boelstler <euphoria@arcor.de>
-MIME-Version: 1.0
+	Tue, 13 Nov 2007 12:17:39 -0800 (PST)
+Message-ID: <f87675ee0711131217q6bb54e06q74f7d16e79b94f19@mail.gmail.com>
+Date: Tue, 13 Nov 2007 15:17:37 -0500
+From: "robert lazarski" <robertlazarski@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: OT: Strange delays / what usually happens every 10 min?
-References: <47339E23.70806@arcor.de>
-In-Reply-To: <47339E23.70806@arcor.de>
+Subject: 85xx Device tree problems: e0024520:02 not found
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -41,10 +23,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-For the sake of completeness: It is related to a flush operation of the
-IP route cache, please see
-http://thread.gmane.org/gmane.linux.kernel/602382.
+Hi all,
 
-Cheers,
+I'm trying to bring up a new 8548 board on 2.6.23.1 . When booting,
+Some times I can get as far mounting over nfs. However, it gets stuck
+here:
 
-  Florian
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+e0024520:02 not found
+eth2: Could not attach to PHY
+IP-Config: Failed to open eth2
+IP-Config: Device `eth2' not found.
+
+I can ping and tftp via u-boot just fine over eth2 - which runs
+marvells 88E1111 . Here's the relavent part of my device tree:
+
+               mdio@24520 {
+                       #address-cells = <1>;
+                       #size-cells = <0>;
+                       device_type = "mdio";
+                       compatible = "gianfar";
+                       reg = <24520 20>;
+                       phy0: ethernet-phy@0 {
+                               interrupt-parent = <&mpic>;
+                               interrupts = <0 1>;
+                               reg = <0>;
+                               device_type = "ethernet-phy";
+                       };
+                       phy1: ethernet-phy@1 {
+                               interrupt-parent = <&mpic>;
+                               interrupts = <1 1>;
+                               reg = <1>;
+                               device_type = "ethernet-phy";
+                       };
+                       phy2: ethernet-phy@2 {
+                               interrupt-parent = <&mpic>;
+                               interrupts = <2 1>;
+                               reg = <2>;
+                               device_type = "ethernet-phy";
+                       };
+                       phy3: ethernet-phy@3 {
+                               interrupt-parent = <&mpic>;
+                               interrupts = <3 1>;
+                               reg = <3>;
+                               device_type = "ethernet-phy";
+                       };
+               };
+               ethernet@24000 {
+                       #address-cells = <1>;
+                       #size-cells = <0>;
+                       device_type = "network";
+                       model = "eTSEC";
+                       compatible = "gianfar";
+                       reg = <24000 1000>;
+                       local-mac-address = [ 00 E0 0C 00 73 00 ];
+                       interrupts = <d 2 e 2 12 2>;
+                       interrupt-parent = <&mpic>;
+                       phy-handle = <&phy0>;
+               };
+
+               ethernet@25000 {
+                       #address-cells = <1>;
+                       #size-cells = <0>;
+                       device_type = "network";
+                       model = "eTSEC";
+                       compatible = "gianfar";
+                       reg = <25000 1000>;
+                       local-mac-address = [ 00 E0 0C 00 73 01 ];
+                       interrupts = <13 2 14 2 18 2>;
+                       interrupt-parent = <&mpic>;
+                       phy-handle = <&phy1>;
+               };
+
+               ethernet@26000 {
+                       #address-cells = <1>;
+                       #size-cells = <0>;
+                       device_type = "network";
+                       model = "eTSEC";
+                       compatible = "gianfar";
+                       reg = <26000 1000>;
+                       local-mac-address = [ 00 E0 0C 00 73 02 ];
+                       interrupts = <f 2 10 2 11 2>;
+                       interrupt-parent = <&mpic>;
+                       phy-handle = <&phy2>;
+               };
+
+               ethernet@27000 {
+                       #address-cells = <1>;
+                       #size-cells = <0>;
+                       device_type = "network";
+                       model = "eTSEC";
+                       compatible = "gianfar";
+                       reg = <27000 1000>;
+                       local-mac-address = [ 00 E0 0C 00 73 03 ];
+                       interrupts = <15 2 16 2 17 2>;
+                       interrupt-parent = <&mpic>;
+                       phy-handle = <&phy3>;
+               };
+
+
+Any ideas?
+Robert
