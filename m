@@ -1,16 +1,19 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Date: Tue, 13 Nov 2007 09:16:35 +0100 (CET)
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B662FDDE05
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Nov 2007 19:18:12 +1100 (EST)
+Date: Tue, 13 Nov 2007 09:18:11 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Siva Prasad <sprasad@bivio.net>
-Subject: Re: printk/console_init
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73BF1@corpexc01.corp.networkrobots.com>
-Message-ID: <Pine.LNX.4.62.0711130915480.31003@pademelon.sonytel.be>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73BF1@corpexc01.corp.networkrobots.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] powerpc: Make isa_mem_base common to 32 and 64 bits
+In-Reply-To: <20071113044429.461B1DDE2E@ozlabs.org>
+Message-ID: <Pine.LNX.4.62.0711130917350.31003@pademelon.sonytel.be>
+References: <20071113044429.461B1DDE2E@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-676486446-1194941795=:31003"
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+	BOUNDARY="-584337861-892745891-1194941891=:31003"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,56 +26,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-676486446-1194941795=:31003
+---584337861-892745891-1194941891=:31003
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 
-On Mon, 12 Nov 2007, Siva Prasad wrote:
-> I am using 2.6.19 Linux on 8641D based system.
+On Tue, 13 Nov 2007, Benjamin Herrenschmidt wrote:
+> This defines isa_mem_base on both 32 and 64 bits (it used to be 32 bits
+> only). This avoids a few ifdef's in later patches and potentially can
+> allow support for VGA text mode on 64 bits powerpc.
 > 
-> I am using early printk's and it works fine until console_init() is
-> executed. After that it does not, as the early printk's get disabled,
-> which is fine. However, I don't see any prints after that at all, that
-> are based on regular printk statements. I looked directly into the
-> memory at __log_buf and found all the print messages. It is just not
-> coming out to the serial port properly.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
 > 
-> It would be great if some one can tell me various parameters that I need
-> to consider changing, to successfully port the serial driver for a new
-> board.
+> Small cleanup pre-requisite for my next patch
 > 
-> Based on the early printk's, I am getting the following messages...
+>  arch/powerpc/kernel/pci-common.c |    4 ++++
+>  arch/powerpc/kernel/pci_32.c     |    1 -
+>  include/asm-powerpc/io.h         |    5 +++--
+>  3 files changed, 7 insertions(+), 3 deletions(-)
 > 
-> Using MPC86xx HPCN machine description
-> Total memory = 1024MB; using 2048kB for hash table (at cfe00000)
-> Linux version 2.6.19 (sprasad@cider.bivio.net) (gcc version 4.1.1
-> 20060525 (Red Hat 4.1.1-1)) #115 SMP Mon Nov 12 18:21:43 PST 2007
-> Found legacy serial port 0 for /soc8641@ff700000/serial@4500
->   mem=ff704500, taddr=ff704500, irq=1a, clk=1496250, speed=0
-> Found MPC86xx PCIE host bridge at 0x00000000ff708000. Firmware bus
-> number: 0->254
-> Found MPC86xx PCIE host bridge at 0x00000000ff709000. Firmware bus
-> number: 0->255
-> MPC86xx HPCN board from Freescale Semiconductor
-> Zone PFN ranges:
->   DMA             0 ->   196608
->   Normal     196608 ->   196608
->   HighMem    196608 ->   262144
-> early_node_map[1] active PFN ranges
->     0:        0 ->   262144
-> start_kernel: 8 22000000.
-> Built 1 zonelists.  Total pages: 260096
-> Kernel command line: console=ttyS0,115200 root=/dev/sda8
-                               ^^^^^^^^^^^^
-> mpic: Setting up MPIC " MPIC     " version 1.2 at ff740000, max 2 CPUs
-> mpic: ISU size: 16, shift: 4, mask: f
-> mpic: Initializing for 80 sources
-> PID hash table entries: 4096 (order: 12, 16384 bytes)
-> time_init: decrementer frequency = 150.000000 MHz
-> time_init: processor frequency   = 1496.250000 MHz
-> <........ Nothing gets printed after this .......>
+> Index: linux-work/arch/powerpc/kernel/pci-common.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-11-13 14:11:11.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/pci-common.c	2007-11-13 14:15:43.000000000 +1100
+> @@ -52,6 +52,10 @@ int global_phb_number;		/* Global phb co
+>  
+>  extern struct list_head hose_list;
+>  
+> +/* ISA Memory physical address (or 0 if none) */
+                                   ^^^^^^^^^^^^
+> +resource_size_t isa_mem_base    = 0;
 
-Did your serial driver (a) call register_console() (b) using the correct name?
+Let's hope this doesn't confuse too many people, as 0 is the valid value on
+legacy PC hardware ;-)
 
 With kind regards,
  
@@ -92,4 +78,4 @@ A division of Sony Service Centre (Europe) N.V.
 Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
 VAT BE 0413.825.160 · RPR Brussels	
 Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-676486446-1194941795=:31003--
+---584337861-892745891-1194941891=:31003--
