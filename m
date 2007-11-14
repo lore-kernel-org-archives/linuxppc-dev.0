@@ -1,16 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 22FEDDDDFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 15:07:33 +1100 (EST)
-Date: Wed, 14 Nov 2007 15:07:39 +1100
+	by ozlabs.org (Postfix) with ESMTP id B8B13DDE07
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 15:11:16 +1100 (EST)
+Date: Wed, 14 Nov 2007 15:11:16 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] pSeries: make pseries_defconfig minus PCI build
-	again
-Message-Id: <20071114150739.ec6a0cff.sfr@canb.auug.org.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] cell: Convert #include of asm/of_{platform, device}.h
+	into linux/of_{platform, device}.h.
+Message-Id: <20071114151116.2e0b8e0e.sfr@canb.auug.org.au>
+In-Reply-To: <E1Irw8I-0000b4-5e@jdl.com>
+References: <1194899211.3396.15.camel@ld0161-tx32>
+	<20071113120224.de390904.sfr@canb.auug.org.au>
+	<E1Irw8I-0000b4-5e@jdl.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr"
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,28 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/pseries/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Tue, 13 Nov 2007 07:48:50 -0600 Jon Loeliger <jdl@jdl.com> wrote:
+>
+> I'm assuming I can chip away at _all_ of these,
+> including the ones in the drivers/ directories as well.
 
--- 
+Knock yourself out!  :-)
+
+> I haven't a clue who will really pick all these up.
+> We could arrange for Paul to grab the arch/powerpc.
+> But the rest?  Mr Morton perhaps?
+
+Just keep in mind that some of these changes may affect Sparc and
+Sparc64, so Dave Miller is you man for those.
+
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 16e4e40..306a9d0 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -21,7 +21,7 @@ config PPC_SPLPAR
- 
- config EEH
- 	bool "PCI Extended Error Handling (EEH)" if EMBEDDED
--	depends on PPC_PSERIES
-+	depends on PPC_PSERIES && PCI
- 	default y if !EMBEDDED
- 
- config SCANLOG
--- 
-1.5.3.5
+--Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHOnVqTgG2atn1QN8RAuqQAJ9NckjEwa3SZIrohaDQsVKAOv09KwCdG98w
+Be2aJ/Ntj9SllAoHPNParB0=
+=2Oof
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr--
