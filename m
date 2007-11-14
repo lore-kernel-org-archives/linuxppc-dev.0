@@ -1,19 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <linda.zhangwei@gmail.com>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.179])
+	by ozlabs.org (Postfix) with ESMTP id A2774DDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 02:06:46 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id r27so103587ele
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 07:06:45 -0800 (PST)
+Message-ID: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
+Date: Wed, 14 Nov 2007 15:06:42 +0000
+From: "zhangwei zhang" <linda.zhangwei@gmail.com>
+To: info@denx.de, linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: about uImage-DENX-v2.6.14 config
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18235.28312.88899.861687@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Nov 2007 08:54:32 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-Subject: Re: Kernel locks up after calling kernel_execve()
-In-Reply-To: <20071114093939.297890@gmx.net>
-References: <20071108214723.135260@gmx.net> <1194564017.6561.21.camel@pasglop>
-	<20071109074155.266120@gmx.net> <1194594629.6561.34.camel@pasglop>
-	<20071110171130.254580@gmx.net> <1194753340.21340.24.camel@pasglop>
-	<20071113212320.85840@gmx.net> <1194990218.28865.1.camel@pasglop>
-	<20071113220655.85840@gmx.net> <1194997072.28865.5.camel@pasglop>
-	<20071114093939.297890@gmx.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Gerhard Pircher writes:
+Hello, I have a problem when using linux-2.6.14(download from
+ftp.denx.de) for RTAI on ppc440EP. I use the ELDK4.1 and when boot the
+uImage I compiled , I always have the problem as following:
 
-> Yeah, the northbridge hates the M bit! Thus the AmigaOne platform code
+## Booting image at 00500000 ...
+   Image Name:   Linux-2.6.14
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1155686 Bytes =  1.1 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
 
-Wow.
+then it stopped . I am afraid that maybe the problem comes from the
+config. I have ever use the uImage-DENX-v2.6.14 you offered in
+ftp.denx.de/pub/linux/amcc/image/yosemite/ and it works. So can you
+send me a config file for 2.6.14 to me? Thank you.
 
-> masks out the CPU_FTR_NEED_COHERENT flag and disables the L2 cache
-> prefetch engines (I don't care about the performance loss).
-> I couldn't find any other code that sets the M bit, except for huge TLB
-> page support, but isn't that only for PPC64?
-
-No it's not just for ppc64.  We had a patch that went in some time ago
-to ensure that the M bit was set on various 32-bit platforms because
-otherwise we got data corruption (due to a small cache in the
-northbridge not being kept coherent with the processor cache).
-
-Look for CPU_FTR_NEED_COHERENT in include/asm-powerpc/cputable.h and
-arch/powerpc/mm/*.
-
-Paul.
+Best wishes
+kyla
