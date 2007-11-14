@@ -1,17 +1,17 @@
 Return-Path: <clemens.koller@anagramm.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B0BF0DDE0C
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 2FAAEDDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Nov 2007 07:23:31 +1100 (EST)
-Message-ID: <473B5940.2090306@anagramm.de>
-Date: Wed, 14 Nov 2007 21:23:28 +0100
+	Thu, 15 Nov 2007 08:33:23 +1100 (EST)
+Message-ID: <473B699C.5040700@anagramm.de>
+Date: Wed, 14 Nov 2007 22:33:16 +0100
 From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
 To: robert lazarski <robertlazarski@gmail.com>
 Subject: Re: 85xx Device tree problems: e0024520:02 not found
-References: <f87675ee0711131217q6bb54e06q74f7d16e79b94f19@mail.gmail.com>	<473A0A1B.3020302@anagramm.de>
-	<f87675ee0711141118h3281b79dpaa49c6da7d57d891@mail.gmail.com>
-In-Reply-To: <f87675ee0711141118h3281b79dpaa49c6da7d57d891@mail.gmail.com>
+References: <f87675ee0711131217q6bb54e06q74f7d16e79b94f19@mail.gmail.com>	<473A0A1B.3020302@anagramm.de>	<f87675ee0711141118h3281b79dpaa49c6da7d57d891@mail.gmail.com>
+	<473B5940.2090306@anagramm.de>
+In-Reply-To: <473B5940.2090306@anagramm.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,36 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-robert lazarski schrieb:
- > I'm now running pauilis.git and 2.6.24rc2, along with a new custom
- > board. I still can't attach to the phy though. I know the phy works
- > because it works fine in u-boot. Clemens, IIRC you are using the
- > 88e1111 - is that with the gianfar driver?
+Hi, Robert!
 
-Yes, yes.
+Just one more short note...
+My good - vs. - bad dmesg output:
 
-(I still have to check my PHY addresses.)
+good 2.6.21-rc5-git:
+ > Gianfar MII Bus: probed
+ > eth0: Gianfar Ethernet Controller Version 1.2, 00:ww:xx:yy:zz:dd
+ > eth0: Running with NAPI enabled
+ > eth0: 256/256 RX/TX BD ring size
+ > eth1: Gianfar Ethernet Controller Version 1.2, 00:ww:xx:yy:zz:dd
+ > eth1: Running with NAPI enabled
+ > eth1: 256/256 RX/TX BD ring size
+ > eth2: Gianfar Ethernet Controller Version 1.2, 00:ww:xx:yy:zz:dd
+ > eth2: Running with NAPI enabled
+ > eth2: 256/256 RX/TX BD ring size
+ > Marvell 88E1101: Registered new driver
+ > Marvell 88E1111: Registered new driver
+ > Marvell 88E1145: Registered new driver
+(I've wiped out my MAC)
 
- > I'm having problems getting
- > soft reboot to work with paulus.git from some reason so debugging is
- > slow going - might someone have some hints?
+bad 2.6.24-rc2-git:
+< Gianfar MII Bus: probed
+< eth0: Gianfar Ethernet Controller Version 1.2, 00:00:00:00:00:00
+< eth0: Running with NAPI enabled
+< eth0: 256/256 RX/TX BD ring size
+< eth1: Gianfar Ethernet Controller Version 1.2, 00:00:00:00:00:00
+< eth1: Running with NAPI enabled
+< eth1: 256/256 RX/TX BD ring size
+< eth2: Gianfar Ethernet Controller Version 1.2, 00:00:00:00:00:00
+< eth2: Running with NAPI enabled
+< eth2: 256/256 RX/TX BD ring size
 
-I can also ACK your reboot-problem.
-$ shutdown -r now
-stops here at:
-Restarting system.
+The MACs are all 00 here.
+The PHY drivers don't get registered.
+(What happened to CONFIG_NETDEV_1000 in the newer kernels?)
 
-IIRC, there were some patches some time ago changing some powerpc
-reboot stuff...
-
-Propably, git-bisect will be our friend.
-The latest working kernel over here was:
-Linux-2.6.21-rc5-g9a5ee4cc with ARCH=ppc
-I think it was also from paulus.
-
-Now I am at ARCH=powerpc.
-
-Regards,
+How is your mileage?
+Next round... tomorrow,
+regards,
 
 Clemens Koller
 __________________________________
