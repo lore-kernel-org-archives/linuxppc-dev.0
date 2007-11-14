@@ -1,19 +1,19 @@
 Return-Path: <gerhard_pircher@gmx.net>
 Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DECDCDDDF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 20:20:29 +1100 (EST)
+	by ozlabs.org (Postfix) with SMTP id 433B3DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 20:39:41 +1100 (EST)
 Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 14 Nov 2007 10:20:28 +0100
+Date: Wed, 14 Nov 2007 10:39:39 +0100
 From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1195003029.28865.16.camel@pasglop>
-Message-ID: <20071114092028.297900@gmx.net>
+In-Reply-To: <1194997072.28865.5.camel@pasglop>
+Message-ID: <20071114093939.297890@gmx.net>
 MIME-Version: 1.0
-References: <20071113214845.85820@gmx.net>	
-	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>	
-	<fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>	
-	<9e4733910711131410r3b955fe7me20defb36d646939@mail.gmail.com>	
-	<20071113222149.271610@gmx.net> <1195003029.28865.16.camel@pasglop>
-Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+References: <20071108214723.135260@gmx.net>	 <1194564017.6561.21.camel@pasglop>
+	<20071109074155.266120@gmx.net>	 <1194594629.6561.34.camel@pasglop>
+	<20071110171130.254580@gmx.net>	 <1194753340.21340.24.camel@pasglop>
+	<20071113212320.85840@gmx.net>	 <1194990218.28865.1.camel@pasglop>
+	<20071113220655.85840@gmx.net> <1194997072.28865.5.camel@pasglop>
+Subject: Re: Kernel locks up after calling kernel_execve()
 To: benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,34 +27,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 -------- Original-Nachricht --------
-> Datum: Wed, 14 Nov 2007 12:17:09 +1100
+> Datum: Wed, 14 Nov 2007 10:37:52 +1100
 > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: Jon Smirl <jonsmirl@gmail.com>, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
-> Betreff: Re: Hardware debuggers for PPC74xx G4 CPUs
+> CC: linuxppc-dev@ozlabs.org
+> Betreff: Re: Kernel locks up after calling kernel_execve()
 
+> Add printk's to things :-) It's a UP kernel so there should be no
+> spinlocks anyway.
 > 
-> On Tue, 2007-11-13 at 23:21 +0100, Gerhard Pircher wrote:
-> > -------- Original-Nachricht --------
-> > > Datum: Tue, 13 Nov 2007 17:10:29 -0500
-> > > Von: "Jon Smirl" <jonsmirl@gmail.com>
-> > > An: "Grant Likely" <grant.likely@secretlab.ca>
-> > > CC: "Gerhard Pircher" <gerhard_pircher@gmx.net>,
-> linuxppc-dev@ozlabs.org
-> > > Betreff: Re: Hardware debuggers for PPC74xx G4 CPUs
-> > > 
-> > > Here are the choices:
-> > > http://www.macraigor.com/cpus.htm
-> > Looks like the Abatron BDI-2000 is the cheapest hardware debugger that
-> > supports 74xx G4 CPUs. :-(
-> 
-> Do you have the appropriate connector for it on the motherboard as
-> well ? If not, then you are out of luck...
-> 
-> Ben.
-Yes, the connector is on the CPU module.
+> Best is to try to get a 100% reprocase and printk your way toward the
+> origin of the problem if you don't have a HW debugger. Unless you manage
+> to sneak in an irq to xmon but if you are totally locked up, you
+> probably can't.
+Also xmon seems to lockup the machine. I was able to active it through the
+magic sysrq key, but the machine died afterwards.
+
+> Could also be something you do that your buggy northbridge doesn't like.
+> For example, maybe it dislikes M bit in the hash table and you end up
+> with it set due to other reasons (I know we had changes in this area).
+Yeah, the northbridge hates the M bit! Thus the AmigaOne platform code
+masks out the CPU_FTR_NEED_COHERENT flag and disables the L2 cache
+prefetch engines (I don't care about the performance loss).
+I couldn't find any other code that sets the M bit, except for huge TLB
+page support, but isn't that only for PPC64?
 
 Gerhard
 -- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört?
-Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
