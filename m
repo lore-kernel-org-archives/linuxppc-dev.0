@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5EFA1DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 14:43:30 +1100 (EST)
-Subject: Re: [PATCH 2/2] PowerPC: make 4xx uic use generic edge and level
-	irq handlers
+	by ozlabs.org (Postfix) with ESMTP id 3446BDDE09
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 14:46:54 +1100 (EST)
+Subject: Re: [PATCH 0/2] PowerPC: 4xx uic updates
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20071114021326.GB19378@localhost.localdomain>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071113200514.72d03792@zod.rchland.ibm.com>
 References: <20071113201559.GA26172@ru.mvista.com>
-	<20071113202731.GA26319@ru.mvista.com>
-	<20071114021326.GB19378@localhost.localdomain>
+	<20071113200514.72d03792@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Wed, 14 Nov 2007 14:43:16 +1100
-Message-Id: <1195011796.28865.28.camel@pasglop>
+Date: Wed, 14 Nov 2007 14:40:53 +1100
+Message-Id: <1195011653.28865.25.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, dwg@au1.ibm.com
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,29 +26,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2007-11-14 at 13:13 +1100, David Gibson wrote:
-> Hrm.  I *think* I'm convinced this is safe, although acking in a
-> callback which doesn't say it acks is rather yucky.  Essentially this
-> code is trading flow readability (because just reading
-> handle_level_irq will tell you something other than what it does in
-> our case) for smaller code size.  I'm not sure if this is a good trade
-> or not.
+On Tue, 2007-11-13 at 20:05 -0600, Josh Boyer wrote:
+> On Tue, 13 Nov 2007 23:15:59 +0300
+> Valentine Barshak <vbarshak@ru.mvista.com> wrote:
 > 
-> There's also one definite problem: according to the discussions I had
-> with Thomas Gleixner when I wrote uic.c, handle_edge_irq is not what
-> we want for edge interrupts.
+> > These patches update 4xx uic code. The first one
+> > fixes a minor issue with edge-triggered interrupts,
+> > while the second one makes it use generic level and edge irq
+> > handlers. I've added irq ack'ing to the unmask callback for
+> > level-triggered interrupts, because to de-assert them we have
+> > to do 2 things is the exact order as below:
+> > 1. de-assert the external source in the ISR.
+> > 2. ack the IRQ on the UIC.
+> > So, ack'ing level interrupts before unmasking them makes possible
+> > to use generic level irq handler and it doesn't hurt, cause
+> > we can never miss a level-triggered interrupt. It always stays
+> > asserted untill the external source is removed and ack'ed on UIC.
+> > 
+> > These have been tested on Sequoia PowerPC 440EPx board.
 > 
-> Apparently handle_edge_irq is only for edge interrupts on "broken"
-> PICs which won't latch new interrupts while the irq is masked.  UIC is
-> not in this category, so handle_level_irq is actually what we want,
-> even for an edge irq.
-> 
-> Yes, I thought the naming was more than a little confusing, too.
+> Is my mail server slow, or did patch 2 of 2 never make it out?
 
-Hrm... handle_edge_irq works for both and you have a small performance
-benefit in not masking, and thus using handle_edge_irq, so I don't
-totally agree here. Basically, what handle_edge_irq() does is lazy
-masking. Now there -is- an issue here is that if you do lazy masking,
-you need to be able to re-emit in some convenient way.
+It never reached me neither.
 
-Ben.
+Ben
