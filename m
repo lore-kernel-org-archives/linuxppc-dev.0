@@ -1,16 +1,20 @@
-Return-Path: <linda.zhangwei@gmail.com>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.179])
-	by ozlabs.org (Postfix) with ESMTP id A2774DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 02:06:46 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id r27so103587ele
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 07:06:45 -0800 (PST)
-Message-ID: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
-Date: Wed, 14 Nov 2007 15:06:42 +0000
-From: "zhangwei zhang" <linda.zhangwei@gmail.com>
-To: info@denx.de, linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: about uImage-DENX-v2.6.14 config
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8E3CADDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 10:21:50 +1100 (EST)
+Date: Thu, 15 Nov 2007 10:21:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marian Balakowicz <m8@semihalf.com>
+Subject: Re: [PATCH v5 04/13] [POWERPC] Add generic support for simple
+	MPC5200 based boards
+Message-Id: <20071115102149.898061fb.sfr@canb.auug.org.au>
+In-Reply-To: <20071114102115.31052.67271.stgit@hekate.izotz.org>
+References: <20071114102115.31052.67271.stgit@hekate.izotz.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I have a problem when using linux-2.6.14(download from
-ftp.denx.de) for RTAI on ppc440EP. I use the ELDK4.1 and when boot the
-uImage I compiled , I always have the problem as following:
+--Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-## Booting image at 00500000 ...
-   Image Name:   Linux-2.6.14
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1155686 Bytes =  1.1 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
+Hi Marian,
 
-then it stopped . I am afraid that maybe the problem comes from the
-config. I have ever use the uImage-DENX-v2.6.14 you offered in
-ftp.denx.de/pub/linux/amcc/image/yosemite/ and it works. So can you
-send me a config file for 2.6.14 to me? Thank you.
+On Wed, 14 Nov 2007 11:21:37 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
+e:
+>
+> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/mpc52xx.h>
 
-Best wishes
-kyla
+You still need asm/prom.h because you use of_get_flat_dt_root() and
+of_flat_dt_is_compatible().
+
+> +/* list of the supported boards */
+> +static const char *board[] __initdata =3D {
+
+Unfortunately you can't use "const" and "__initdata", so just remove the
+"const".  (const changes the attributes on the section that __initdata is
+stored in.)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHO4MSTgG2atn1QN8RAmGZAKCMEp29ElecIii92gKo9BjG1gth9QCfUe1K
+tU6C5jzvQlRGcsf2otxHWGc=
+=dMB7
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k--
