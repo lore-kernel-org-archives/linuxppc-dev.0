@@ -1,17 +1,16 @@
-Return-Path: <w.reissnegger@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 539A6DDDFD
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 98A18DDE02
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Nov 2007 03:06:21 +1100 (EST)
-Message-ID: <473B1CF4.4000506@gmx.net>
-Date: Wed, 14 Nov 2007 08:06:12 -0800
-From: Wolfgang Reissnegger <w.reissnegger@gmx.net>
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Petr_Z=28ejdl?= <zejdlp1@fel.cvut.cz>
-Subject: Re: Xilinx EMAC Lite driver
-References: <473AEADC.9030603@fel.cvut.cz>
-In-Reply-To: <473AEADC.9030603@fel.cvut.cz>
-Content-Type: text/plain; charset=us-ascii
+	Thu, 15 Nov 2007 03:36:33 +1100 (EST)
+Date: Wed, 14 Nov 2007 17:36:31 +0100
+From: g.schardt@fz-juelich.de
+Subject: Re: Virtex TEMAC 1000Mb/s trouble, but 100b/s is working
+To: alex_snippet <alex.snippet@gmail.com>
+Message-id: <32948332c393.32c393329483@fz-juelich.de>
+MIME-version: 1.0
+Content-type: text/plain;
+	charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,28 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Petr,
+can you tell me, how to add this parameters to the kernel boot parameter ? or do you mount after booting ?
 
-you can clone the Xilinx Linux git tree at:
- 
-   git://git.xilinx.com/linux-2.6-xlnx.git
+G
 
-The lin26-xlnx branch in the repository is based on 2.6.23 and contains support for the EMACLITE.
 
-Hope this helps,
-     Wolfgang
 
-Petr Z(ejdl wrote:
-> Hi All,
+----- Original Message -----
+From: alex_snippet <alex.snippet@gmail.com>
+Date: Wednesday, November 14, 2007 4:44 pm
+Subject: Re: Virtex TEMAC 1000Mb/s trouble, but 100b/s is working
+
 > 
-> I'm running vanilla kernel 2.6.23.1 on Memec board (ppc405, ML300
-> compatible) with ethernet Xilinx EMAC Lite. What I need is the driver
-> for EMAC Lite. I was looking around without any luck. Do You know any
-> solution? Or should I write a new one?
+> Hi All
 > 
-> Thanks,
-> Petr
+> Thanks a lot
+> 
+> Trouble solved by adding tcp,no_lock !!!
+> 
+> Regards, Alex
+> -- 
+> View this message in context: http://www.nabble.com/Virtex-TEMAC-
+> 1000Mb-s-trouble%2C-but-100b-s-is-working-tf4803823.html#a13749163
+> Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+> 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+
+
+
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
+Forschungszentrum Juelich GmbH
+52425 Juelich
+
+Sitz der Gesellschaft: Juelich
+Eingetragen im Handelsregister des Amtsgerichts Dueren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in Baerbel Brumme-Bothe
+Geschaeftsfuehrung: Prof. Dr. Achim Bachem (Vorsitzender), Dr. Ulrich Krafft (stellv. 
+Vorsitzender)
+-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
