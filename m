@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF90EDDDF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 18:17:34 +1100 (EST)
-In-Reply-To: <bfa0697f0711131539n228f9f21q7b2acc896499b80d@mail.gmail.com>
-References: <bfa0697f0711131539n228f9f21q7b2acc896499b80d@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AAE52A58-3C84-4996-A533-63DFB95E780E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: I2C on mpc8248 / device tree
-Date: Wed, 14 Nov 2007 01:17:23 -0600
-To: Alan Bennett <embedded@akb.net>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id DECDCDDDF2
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 20:20:29 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Wed, 14 Nov 2007 10:20:28 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1195003029.28865.16.camel@pasglop>
+Message-ID: <20071114092028.297900@gmx.net>
+MIME-Version: 1.0
+References: <20071113214845.85820@gmx.net>	
+	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>	
+	<fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>	
+	<9e4733910711131410r3b955fe7me20defb36d646939@mail.gmail.com>	
+	<20071113222149.271610@gmx.net> <1195003029.28865.16.camel@pasglop>
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+To: benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,18 +26,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 13, 2007, at 5:39 PM, Alan Bennett wrote:
+-------- Original-Nachricht --------
+> Datum: Wed, 14 Nov 2007 12:17:09 +1100
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: Jon Smirl <jonsmirl@gmail.com>, grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org
+> Betreff: Re: Hardware debuggers for PPC74xx G4 CPUs
 
-> I've got four devices on i2c that I need to read.  Simple thermal  
-> and voltage monitors.  I2c works fine in uboot, and now I'm trying  
-> to get things to work in linux.
->
-> In the kernel .config I enable
->   I2C
-> and
->   I2C_MPC
+> 
+> On Tue, 2007-11-13 at 23:21 +0100, Gerhard Pircher wrote:
+> > -------- Original-Nachricht --------
+> > > Datum: Tue, 13 Nov 2007 17:10:29 -0500
+> > > Von: "Jon Smirl" <jonsmirl@gmail.com>
+> > > An: "Grant Likely" <grant.likely@secretlab.ca>
+> > > CC: "Gerhard Pircher" <gerhard_pircher@gmx.net>,
+> linuxppc-dev@ozlabs.org
+> > > Betreff: Re: Hardware debuggers for PPC74xx G4 CPUs
+> > > 
+> > > Here are the choices:
+> > > http://www.macraigor.com/cpus.htm
+> > Looks like the Abatron BDI-2000 is the cheapest hardware debugger that
+> > supports 74xx G4 CPUs. :-(
+> 
+> Do you have the appropriate connector for it on the motherboard as
+> well ? If not, then you are out of luck...
+> 
+> Ben.
+Yes, the connector is on the CPU module.
 
-This driver isn't for the I2C on 8248.  You need a cpm2 i2c driver  
-for that controller.
-
-- k
+Gerhard
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
