@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B8B13DDE07
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 15:11:16 +1100 (EST)
-Date: Wed, 14 Nov 2007 15:11:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] cell: Convert #include of asm/of_{platform, device}.h
-	into linux/of_{platform, device}.h.
-Message-Id: <20071114151116.2e0b8e0e.sfr@canb.auug.org.au>
-In-Reply-To: <E1Irw8I-0000b4-5e@jdl.com>
-References: <1194899211.3396.15.camel@ld0161-tx32>
-	<20071113120224.de390904.sfr@canb.auug.org.au>
-	<E1Irw8I-0000b4-5e@jdl.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr"
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BF90EDDDF8
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2007 18:17:34 +1100 (EST)
+In-Reply-To: <bfa0697f0711131539n228f9f21q7b2acc896499b80d@mail.gmail.com>
+References: <bfa0697f0711131539n228f9f21q7b2acc896499b80d@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AAE52A58-3C84-4996-A533-63DFB95E780E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: I2C on mpc8248 / device tree
+Date: Wed, 14 Nov 2007 01:17:23 -0600
+To: Alan Bennett <embedded@akb.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 13 Nov 2007 07:48:50 -0600 Jon Loeliger <jdl@jdl.com> wrote:
+On Nov 13, 2007, at 5:39 PM, Alan Bennett wrote:
+
+> I've got four devices on i2c that I need to read.  Simple thermal  
+> and voltage monitors.  I2c works fine in uboot, and now I'm trying  
+> to get things to work in linux.
 >
-> I'm assuming I can chip away at _all_ of these,
-> including the ones in the drivers/ directories as well.
+> In the kernel .config I enable
+>   I2C
+> and
+>   I2C_MPC
 
-Knock yourself out!  :-)
+This driver isn't for the I2C on 8248.  You need a cpm2 i2c driver  
+for that controller.
 
-> I haven't a clue who will really pick all these up.
-> We could arrange for Paul to grab the arch/powerpc.
-> But the rest?  Mr Morton perhaps?
-
-Just keep in mind that some of these changes may affect Sparc and
-Sparc64, so Dave Miller is you man for those.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHOnVqTgG2atn1QN8RAuqQAJ9NckjEwa3SZIrohaDQsVKAOv09KwCdG98w
-Be2aJ/Ntj9SllAoHPNParB0=
-=2Oof
------END PGP SIGNATURE-----
-
---Signature=_Wed__14_Nov_2007_15_11_16_+1100_tHINbkPjRCvLB6xr--
+- k
