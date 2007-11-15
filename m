@@ -1,24 +1,24 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B1FB8DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:57:31 +1100 (EST)
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 490B7DDE1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:58:40 +1100 (EST)
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFIvShn012069
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFJ0EvW026224
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 14:00:14 -0500
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
 	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAFIvSHa111908
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
+	lAFIwaNw091758
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:58:36 -0500
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
 	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAFIvSNl028215
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
-Date: Thu, 15 Nov 2007 12:57:27 -0600
+	lAFIwair031240
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:58:36 -0500
+Date: Thu, 15 Nov 2007 12:58:36 -0600
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/3] powerpc: EEH: careful when identifying "empty" slots.
-Message-ID: <20071115185727.GB24772@austin.ibm.com>
+Subject: [PATCH 3/3]: powerpc/eeh: report errors as soon as possible.
+Message-ID: <20071115185836.GC24772@austin.ibm.com>
 References: <20071115185420.GF18745@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,25 +36,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-If an "empty" slot is failing, make sure its a permanent failure;
-else process the error normally.
+Do not wait for the pci slot status before reporting an error
+to the device driver. Some systems may take many seconds to
+report the slot status, and this can confuse unsuspecting 
+device drivers.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/platforms/pseries/eeh.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/eeh_driver.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c
+Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh_driver.c
 ===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 16:56:39.000000000 -0600
-+++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 17:02:39.000000000 -0600
-@@ -548,7 +548,7 @@ int eeh_dn_check_failure(struct device_n
+--- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-11-09 17:28:58.000000000 -0600
++++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh_driver.c	2007-11-09 17:36:51.000000000 -0600
+@@ -354,13 +354,6 @@ struct pci_dn * handle_eeh_events (struc
+ 	if (frozen_pdn->eeh_freeze_count > EEH_MAX_ALLOWED_FREEZES)
+ 		goto excess_failures;
  
- 	/* Note that config-io to empty slots may fail;
- 	 * they are empty when they don't have children. */
--	if ((rets[0] == 5) && (dn->child == NULL)) {
-+	if ((rets[0] == 5) && (rets[2] == 0) && (dn->child == NULL)) {
- 		false_positives++;
- 		pdn->eeh_false_positives ++;
- 		rc = 0;
+-	/* Get the current PCI slot state. */
+-	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
+-	if (rc < 0) {
+-		printk(KERN_WARNING "EEH: Permanent failure\n");
+-		goto hard_fail;
+-	}
+-
+ 	printk(KERN_WARNING
+ 	   "EEH: This PCI device has failed %d times in the last hour:\n",
+ 		frozen_pdn->eeh_freeze_count);
+@@ -376,6 +369,14 @@ struct pci_dn * handle_eeh_events (struc
+ 	 */
+ 	pci_walk_bus(frozen_bus, eeh_report_error, &result);
+ 
++	/* Get the current PCI slot state. This can take a long time,
++	 * sometimes over 3 seconds for certain systems. */
++	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
++	if (rc < 0) {
++		printk(KERN_WARNING "EEH: Permanent failure\n");
++		goto hard_fail;
++	}
++
+ 	/* Since rtas may enable MMIO when posting the error log,
+ 	 * don't post the error log until after all dev drivers
+ 	 * have been informed.
