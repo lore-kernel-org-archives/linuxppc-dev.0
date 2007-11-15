@@ -1,31 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <sbrabec@suse.cz>
+Received: from mail.suse.cz (styx.suse.cz [82.119.242.94])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 490B7DDE1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:58:40 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFJ0EvW026224
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 14:00:14 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAFIwaNw091758
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:58:36 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAFIwair031240
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:58:36 -0500
-Date: Thu, 15 Nov 2007 12:58:36 -0600
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/3]: powerpc/eeh: report errors as soon as possible.
-Message-ID: <20071115185836.GC24772@austin.ibm.com>
-References: <20071115185420.GF18745@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071115185420.GF18745@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: munsone@us.ibm.com, linuxppc-dev@ozlabs.org,
-	Sandra Rhodes <sdrhodes@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BE475DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:14:15 +1100 (EST)
+Subject: [PATCH] remove dead MAC_ADBKEYCODES
+From: Stanislav Brabec <sbrabec@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Date: Thu, 15 Nov 2007 16:53:29 +0100
+Message-Id: <1195142010.14001.21.camel@hammer.suse.cz>
+Mime-Version: 1.0
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,48 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It seems, that current kernel source code contains no traces of
+MAC_ADBKEYCODES and no reference to keyboard_sends_linux_keycodes any
+more.
 
-Do not wait for the pci slot status before reporting an error
-to the device driver. Some systems may take many seconds to
-report the slot status, and this can confuse unsuspecting 
-device drivers.
+Attached patch removes them from configuration files.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
 
-----
- arch/powerpc/platforms/pseries/eeh_driver.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
-
-Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh_driver.c
-===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-11-09 17:28:58.000000000 -0600
-+++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh_driver.c	2007-11-09 17:36:51.000000000 -0600
-@@ -354,13 +354,6 @@ struct pci_dn * handle_eeh_events (struc
- 	if (frozen_pdn->eeh_freeze_count > EEH_MAX_ALLOWED_FREEZES)
- 		goto excess_failures;
+--- a/arch/m68k/Kconfig
++++ b/arch/m68k/Kconfig
+@@ -582,20 +582,6 @@ config MAC_HID
+ 	depends on INPUT_ADBHID
+ 	default y
  
--	/* Get the current PCI slot state. */
--	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
--	if (rc < 0) {
--		printk(KERN_WARNING "EEH: Permanent failure\n");
--		goto hard_fail;
--	}
+-config MAC_ADBKEYCODES
+-	bool "Support for ADB raw keycodes"
+-	depends on INPUT_ADBHID
+-	help
+-	  This provides support for sending raw ADB keycodes to console
+-	  devices.  This is the default up to 2.4.0, but in future this may be
+-	  phased out in favor of generic Linux keycodes.  If you say Y here,
+-	  you can dynamically switch via the
+-	  /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
+-	  sysctl and with the "keyboard_sends_linux_keycodes=" kernel
+-	  argument.
 -
- 	printk(KERN_WARNING
- 	   "EEH: This PCI device has failed %d times in the last hour:\n",
- 		frozen_pdn->eeh_freeze_count);
-@@ -376,6 +369,14 @@ struct pci_dn * handle_eeh_events (struc
- 	 */
- 	pci_walk_bus(frozen_bus, eeh_report_error, &result);
+-	  If unsure, say Y here.
+-
+ config ADB_KEYBOARD
+ 	bool "Support for ADB keyboard (old driver)"
+ 	depends on MAC && !INPUT_ADBHID
+--- a/arch/m68k/configs/mac_defconfig
++++ b/arch/m68k/configs/mac_defconfig
+@@ -678,7 +678,6 @@ CONFIG_LOGO_MAC_CLUT224=y
+ #
+ CONFIG_MAC_SCC=y
+ CONFIG_MAC_HID=y
+-CONFIG_MAC_ADBKEYCODES=y
+ CONFIG_SERIAL_CONSOLE=y
  
-+	/* Get the current PCI slot state. This can take a long time,
-+	 * sometimes over 3 seconds for certain systems. */
-+	rc = eeh_wait_for_slot_status (frozen_pdn, MAX_WAIT_FOR_RECOVERY*1000);
-+	if (rc < 0) {
-+		printk(KERN_WARNING "EEH: Permanent failure\n");
-+		goto hard_fail;
-+	}
-+
- 	/* Since rtas may enable MMIO when posting the error log,
- 	 * don't post the error log until after all dev drivers
- 	 * have been informed.
+ #
+
+
+-- 
+Best Regards / S pozdravem,
+
+Stanislav Brabec
+software developer
+---------------------------------------------------------------------
+SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
+Lihovarská 1060/12                            tel: +420 284 028 966
+190 00 Praha 9                                fax: +420 284 028 951
+Czech Republic                                http://www.suse.cz/
