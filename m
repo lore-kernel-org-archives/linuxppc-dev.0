@@ -1,17 +1,18 @@
-Return-Path: <sbrabec@suse.cz>
-Received: from mail.suse.cz (styx.suse.cz [82.119.242.94])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE475DDD01
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:14:15 +1100 (EST)
-Subject: [PATCH] remove dead MAC_ADBKEYCODES
-From: Stanislav Brabec <sbrabec@suse.cz>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Date: Thu, 15 Nov 2007 16:53:29 +0100
-Message-Id: <1195142010.14001.21.camel@hammer.suse.cz>
-Mime-Version: 1.0
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18236.55874.204068.358524@cargo.ozlabs.ibm.com>
+Date: Fri, 16 Nov 2007 10:46:10 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc1 on PPC64: machine check exception
+In-Reply-To: <473C7B16.3050700@linux.vnet.ibm.com>
+References: <472F1F4C.3010507@linux.vnet.ibm.com>
+	<20071105154055.GA4746@kryten>
+	<472F5C5E.4030607@linux.vnet.ibm.com>
+	<473C7B16.3050700@linux.vnet.ibm.com>
+Cc: linuxppc <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,56 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It seems, that current kernel source code contains no traces of
-MAC_ADBKEYCODES and no reference to keyboard_sends_linux_keycodes any
-more.
+Vaidyanathan Srinivasan writes:
 
-Attached patch removes them from configuration files.
+> This patch fixed the problem.  I am able to run and profile ebizzy on 128-way
+> PPC64.  However this fix is not included in 2.6.24-rc2 as well.
+> I will watch for inclusion of this fix in 2.6.24.
 
-Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
+It's upstream in Linus' tree now, so it will be in -rc3.
 
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -582,20 +582,6 @@ config MAC_HID
- 	depends on INPUT_ADBHID
- 	default y
- 
--config MAC_ADBKEYCODES
--	bool "Support for ADB raw keycodes"
--	depends on INPUT_ADBHID
--	help
--	  This provides support for sending raw ADB keycodes to console
--	  devices.  This is the default up to 2.4.0, but in future this may be
--	  phased out in favor of generic Linux keycodes.  If you say Y here,
--	  you can dynamically switch via the
--	  /proc/sys/dev/mac_hid/keyboard_sends_linux_keycodes
--	  sysctl and with the "keyboard_sends_linux_keycodes=" kernel
--	  argument.
--
--	  If unsure, say Y here.
--
- config ADB_KEYBOARD
- 	bool "Support for ADB keyboard (old driver)"
- 	depends on MAC && !INPUT_ADBHID
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -678,7 +678,6 @@ CONFIG_LOGO_MAC_CLUT224=y
- #
- CONFIG_MAC_SCC=y
- CONFIG_MAC_HID=y
--CONFIG_MAC_ADBKEYCODES=y
- CONFIG_SERIAL_CONSOLE=y
- 
- #
-
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12                            tel: +420 284 028 966
-190 00 Praha 9                                fax: +420 284 028 951
-Czech Republic                                http://www.suse.cz/
+Paul.
