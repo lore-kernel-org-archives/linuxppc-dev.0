@@ -1,32 +1,21 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33788DDDEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:53:30 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id lAFGrQST018574
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:53:26 +1100
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAFGrTFV618660
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:53:29 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAFGrT8v030891
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 03:53:29 +1100
-Message-ID: <473C7B16.3050700@linux.vnet.ibm.com>
-Date: Thu, 15 Nov 2007 22:30:06 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 343FFDDDFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 04:30:47 +1100 (EST)
+Message-ID: <473C8249.8090206@freescale.com>
+Date: Thu, 15 Nov 2007 11:30:49 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: 2.6.24-rc1 on PPC64: machine check exception
-References: <472F1F4C.3010507@linux.vnet.ibm.com>
-	<20071105154055.GA4746@kryten>
-	<472F5C5E.4030607@linux.vnet.ibm.com>
-In-Reply-To: <472F5C5E.4030607@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
+To: Alan Bennett <embedded@akb.net>
+Subject: Re: kernel update on mpc8248 muram definition?
+References: <bfa0697f0711150743t440298cfsbce6f10b6fa39d73@mail.gmail.com>
+In-Reply-To: <bfa0697f0711150743t440298cfsbce6f10b6fa39d73@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,16 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Alan Bennett wrote:
+>   While working on i2c support, I've decided to update to a new kernel.  
+> In the process of doing this, I'm not sure I've properly configured the 
+> MURAM node to my device tree (i.e. serial is broken again).
+
+You haven't -- you copied muram/data/reg from some other tree, rather 
+than from resource 2 of cpm/reg in your old tree.
+
+>  Also, does 
+> this, in any way, change the way I offset the early debug transmit 
+> descriptor address?
+
+No.
+
+>             muram@0 {
+>                 #address-cells = <1>;
+>                 #size-cells = <1>;
+>                 ranges = <0 0 10000>;
 > 
->> http://patchwork.ozlabs.org/linuxppc/patch?id=14475
-> 
-> Thanks for pointing me to this patch.  I will try out and let you know if
-> this fixed the problem.
+>                 data@0 {
+>                     compatible = "fsl,cpm-muram-data";
+>                     reg = <0 2000 9800 800>;
+>                 };
+>             };
 
-Hi Anton,
+muram/data/reg should be <80 1f80 9800 800> for your board.
 
-This patch fixed the problem.  I am able to run and profile ebizzy on 128-way
-PPC64.  However this fix is not included in 2.6.24-rc2 as well.
-I will watch for inclusion of this fix in 2.6.24.
-
---Vaidy
+-Scott
