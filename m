@@ -1,25 +1,19 @@
-Return-Path: <m8@semihalf.com>
-Received: from mail.semihalf.com (mail.semihalf.com [83.15.139.206])
-	by ozlabs.org (Postfix) with ESMTP id A3596DDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 22:40:36 +1100 (EST)
-Received: from localhost (unknown [127.0.0.1])
-	by mail.semihalf.com (Postfix) with ESMTP id 1E06C1439B
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 12:41:15 +0100 (CET)
-Received: from mail.semihalf.com ([127.0.0.1])
-	by localhost (mail.semihalf.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 07331-07 for <linuxppc-dev@ozlabs.org>;
-	Thu, 15 Nov 2007 12:41:14 +0100 (CET)
-Received: from hekate.izotz.org (frozen.izotz.org [83.175.187.135])
-	by mail.semihalf.com (Postfix) with ESMTP id 3116C142CE
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 12:41:14 +0100 (CET)
-From: Marian Balakowicz <m8@semihalf.com>
-Subject: [PATCH v6 04/13] [POWERPC] Add generic support for simple MPC5200
-	based boards
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 15 Nov 2007 12:40:21 +0100
-Message-ID: <20071115113956.9984.14022.stgit@hekate.izotz.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E89AFDDDF2
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 23:00:19 +1100 (EST)
+Date: Thu, 15 Nov 2007 13:00:18 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2] ps3fb: video memory size cleanups
+In-Reply-To: <Pine.LNX.4.62.0711151152290.19455@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0711151259430.19655@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0711151152290.19455@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-2041588535-1195128018=:19655"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,202 +23,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for 'mpc5200-simple-platform' compatible
-boards which do not need a platform specific setup. Such boards
-are supported assuming the following:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-- GPIO pins are configured by the firmware,
-- CDM configuration (clocking) is setup correctly by firmware,
-- if the 'fsl,has-wdt' property is present in one of the
-  gpt nodes, then it is safe to use such gpt to reset the board,
-- PCI is supported if enabled in the kernel configuration
-and if there is a PCI bus node defined in the device tree.
+---584337861-2041588535-1195128018=:19655
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Signed-off-by: Marian Balakowicz <m8@semihalf.com>
+ps3fb: video memory size cleanups:
+  - Limit video memory size to avoid crossing a 256 MiB boundary in IOIF space.
+  - Pass the actual amount of video memory used to lv1_gpu_memory_allocate().
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
+FIXME Booting with `ps3fb=49M' should work now. Except that on recent
+      kernels the system goes out of memory before you get there :-(
 
-Once more, this is a updated version of the patch 04/13 from
-the patchset that adds arch/powerpc support for three MPC5200 based boards:
-TQ-Components TQM5200, Schindler CM5200 and Promess Motion-PRO.
+ drivers/video/ps3fb.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-Thanks to Stephen Rothwell for catching inconsistencies that
-sneaked in.
-
-Cheers,
-Marian Balakowicz
-
- arch/powerpc/boot/dts/lite5200.dts           |    2 -
- arch/powerpc/boot/dts/lite5200b.dts          |    2 -
- arch/powerpc/platforms/52xx/Kconfig          |   22 ++++++-
- arch/powerpc/platforms/52xx/Makefile         |    1 
- arch/powerpc/platforms/52xx/mpc5200_simple.c |   85 ++++++++++++++++++++++++++
- 5 files changed, 108 insertions(+), 4 deletions(-)
- create mode 100644 arch/powerpc/platforms/52xx/mpc5200_simple.c
-
-
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index 6731763..5902362 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -19,7 +19,7 @@
- / {
- 	model = "fsl,lite5200";
- 	// revision = "1.0";
--	compatible = "fsl,lite5200","generic-mpc5200";
-+	compatible = "fsl,lite5200";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -51,7 +51,6 @@
+ #define L1GPU_DISPLAY_SYNC_HSYNC		1
+ #define L1GPU_DISPLAY_SYNC_VSYNC		2
  
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-index b540388..b509129 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -19,7 +19,7 @@
- / {
- 	model = "fsl,lite5200b";
- 	// revision = "1.0";
--	compatible = "fsl,lite5200b","generic-mpc5200";
-+	compatible = "fsl,lite5200b";
- 	#address-cells = <1>;
- 	#size-cells = <1>;
+-#define DDR_SIZE				(0)	/* used no ddr */
+ #define GPU_CMD_BUF_SIZE			(64 * 1024)
+ #define GPU_IOIF				(0x0d000000UL)
+ #define GPU_ALIGN_UP(x)				_ALIGN_UP((x), 64)
+@@ -1060,6 +1059,7 @@ static int __devinit ps3fb_probe(struct 
+ 	u64 xdr_lpar;
+ 	int status, res_index;
+ 	struct task_struct *task;
++	unsigned long max_ps3fb_size;
  
-diff --git a/arch/powerpc/platforms/52xx/Kconfig b/arch/powerpc/platforms/52xx/Kconfig
-index 2938d49..36e880b 100644
---- a/arch/powerpc/platforms/52xx/Kconfig
-+++ b/arch/powerpc/platforms/52xx/Kconfig
-@@ -19,6 +19,26 @@ config PPC_MPC5200_BUGFIX
+ 	status = ps3_open_hv_device(dev);
+ 	if (status) {
+@@ -1085,8 +1085,15 @@ static int __devinit ps3fb_probe(struct 
  
- 	  It is safe to say 'Y' here
+ 	ps3fb_set_sync(&dev->core);
  
-+config PPC_MPC5200_SIMPLE
-+	bool "Generic support for simple MPC5200 based boards"
-+	depends on PPC_MULTIPLATFORM && PPC32
-+	select PPC_MPC5200
-+	default n
-+	help
-+	  This option enables support for a simple MPC52xx based boards which
-+	  do not need a custom platform specific setup. Such boards are
-+	  supported assuming the following:
-+
-+	  - GPIO pins are configured by the firmware,
-+	  - CDM configuration (clocking) is setup correctly by firmware,
-+	  - if the 'fsl,has-wdt' property is present in one of the
-+	    gpt nodes, then it is safe to use such gpt to reset the board,
-+	  - PCI is supported if enabled in the kernel configuration
-+	    and if there is a PCI bus node defined in the device tree.
-+
-+	  Boards that are compatible with this generic platform support
-+	  are: 'tqc,tqm5200', 'promess,motionpro', 'schindler,cm5200'.
-+
- config PPC_EFIKA
- 	bool "bPlan Efika 5k2. MPC5200B based computer"
- 	depends on PPC_MULTIPLATFORM && PPC32
-@@ -34,5 +54,3 @@ config PPC_LITE5200
- 	select WANT_DEVICE_TREE
- 	select PPC_MPC5200
- 	default n
--
--
-diff --git a/arch/powerpc/platforms/52xx/Makefile b/arch/powerpc/platforms/52xx/Makefile
-index 307dbc1..fe1b81b 100644
---- a/arch/powerpc/platforms/52xx/Makefile
-+++ b/arch/powerpc/platforms/52xx/Makefile
-@@ -6,6 +6,7 @@ obj-y				+= mpc52xx_pic.o mpc52xx_common.o
- obj-$(CONFIG_PCI)		+= mpc52xx_pci.o
- endif
- 
-+obj-$(CONFIG_PPC_MPC5200_SIMPLE) += mpc5200_simple.o
- obj-$(CONFIG_PPC_EFIKA)		+= efika.o
- obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
- 
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-new file mode 100644
-index 0000000..754aa93
---- /dev/null
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -0,0 +1,85 @@
-+/*
-+ * Support for 'mpc5200-simple-platform' compatible boards.
-+ *
-+ * Written by Marian Balakowicz <m8@semihalf.com>
-+ * Copyright (C) 2007 Semihalf
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ * Description:
-+ * This code implements support for a simple MPC52xx based boards which
-+ * do not need a custom platform specific setup. Such boards are
-+ * supported assuming the following:
-+ *
-+ * - GPIO pins are configured by the firmware,
-+ * - CDM configuration (clocking) is setup correctly by firmware,
-+ * - if the 'fsl,has-wdt' property is present in one of the
-+ *   gpt nodes, then it is safe to use such gpt to reset the board,
-+ * - PCI is supported if enabled in the kernel configuration
-+ *   and if there is a PCI bus node defined in the device tree.
-+ *
-+ * Boards that are compatible with this generic platform support
-+ * are listed in a 'board' table.
-+ */
-+
-+#undef DEBUG
-+#include <asm/time.h>
-+#include <asm/prom.h>
-+#include <asm/machdep.h>
-+#include <asm/mpc52xx.h>
-+
-+/*
-+ * Setup the architecture
-+ */
-+static void __init mpc5200_simple_setup_arch(void)
-+{
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc5200_simple_setup_arch()", 0);
-+
-+	/* Some mpc5200 & mpc5200b related configuration */
-+	mpc5200_setup_xlb_arbiter();
-+
-+	/* Map wdt for mpc52xx_restart() */
-+	mpc52xx_map_wdt();
-+
-+	mpc52xx_setup_pci();
-+}
-+
-+/* list of the supported boards */
-+static char *board[] __initdata = {
-+	"promess,motionpro",
-+	"schindler,cm5200",
-+	"tqc,tqm5200",
-+	NULL
-+};
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init mpc5200_simple_probe(void)
-+{
-+	unsigned long node = of_get_flat_dt_root();
-+	int i = 0;
-+
-+	while (board[i]) {
-+		if (of_flat_dt_is_compatible(node, board[i]))
-+			break;
-+		i++;
++	max_ps3fb_size = _ALIGN_UP(GPU_IOIF, 256*1024*1024) - GPU_IOIF;
++	if (ps3fb_videomemory.size > max_ps3fb_size) {
++		dev_info(&dev->core, "Limiting ps3fb mem size to %lu bytes\n",
++			 max_ps3fb_size);
++		ps3fb_videomemory.size = max_ps3fb_size;
 +	}
-+	
-+	return (board[i] != NULL);
-+}
 +
-+define_machine(mpc5200_simple_platform) {
-+	.name		= "mpc5200-simple-platform",
-+	.probe		= mpc5200_simple_probe,
-+	.setup_arch	= mpc5200_simple_setup_arch,
-+	.init		= mpc52xx_declare_of_platform_devices,
-+	.init_IRQ	= mpc52xx_init_irq,
-+	.get_irq	= mpc52xx_get_irq,
-+	.restart	= mpc52xx_restart,
-+	.calibrate_decr	= generic_calibrate_decr,
-+};
+ 	/* get gpu context handle */
+-	status = lv1_gpu_memory_allocate(DDR_SIZE, 0, 0, 0, 0,
++	status = lv1_gpu_memory_allocate(ps3fb_videomemory.size, 0, 0, 0, 0,
+ 					 &ps3fb.memory_handle, &ddr_lpar);
+ 	if (status) {
+ 		dev_err(&dev->core, "%s: lv1_gpu_memory_allocate failed: %d\n",
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-2041588535-1195128018=:19655--
