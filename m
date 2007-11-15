@@ -1,20 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8E3CADDDFD
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 10:21:50 +1100 (EST)
-Date: Thu, 15 Nov 2007 10:21:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Marian Balakowicz <m8@semihalf.com>
-Subject: Re: [PATCH v5 04/13] [POWERPC] Add generic support for simple
-	MPC5200 based boards
-Message-Id: <20071115102149.898061fb.sfr@canb.auug.org.au>
-In-Reply-To: <20071114102115.31052.67271.stgit@hekate.izotz.org>
-References: <20071114102115.31052.67271.stgit@hekate.izotz.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gvb.linuxppc.dev@gmail.com>
+Received: from QMTA03.westchester.pa.mail.comcast.net
+	(qmta03.westchester.pa.mail.comcast.net [76.96.62.32])
+	by ozlabs.org (Postfix) with ESMTP id 93396DDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 12:33:39 +1100 (EST)
+Message-ID: <473BA278.2000402@gmail.com>
+Date: Wed, 14 Nov 2007 20:35:52 -0500
+From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
+MIME-Version: 1.0
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+References: <20071113214845.85820@gmx.net>	<fa686aa40711131357r6b072f4cgcd43c5cb8e73abdb@mail.gmail.com>	<fa686aa40711131359l43f289e7j48b0df3ff57ea7c7@mail.gmail.com>	<FA44C867-4933-40F2-8EBA-5C9967005223@embeddedalley.com>	<20071113233906.GA32689@lixom.net>	<9e4733910711131553ked87330ubc0c439c42e51ace@mail.gmail.com>	<1195003078.28865.18.camel@pasglop>
+	<9e4733910711131732i5ec5d226r4037e42399c38f59@mail.gmail.com>
+In-Reply-To: <9e4733910711131732i5ec5d226r4037e42399c38f59@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Jon Smirl wrote:
+> On 11/13/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>>> That's why Dominic wants to get OpenOCD running on the PowerPC. All we
+>>> need is the programming documentation for controlling the CPU via the
+>>> debug hardware.
+>> Note that this is basically different for every CPU around.
+> 
+> I'd like to get it for the MPC5200 because of the project I am working
+> on, an open source audio device. It would be nice if there was a cheap
+> hardware debugger available for hackers to use on it. Maybe one of the
+> Freescale developers will see this and send me the right docs.
+> 
+> Is it radically different? Dominic has been able to support every ARM
+> 7/9 chip he can get his hands on without too much trouble once the
+> core support was written. I don't think he has ARM 11 working yet.
+> 
+>>> Obviously this documentation exist, all of the commercial vendors had
+>>> to have it to develop their debuggers. Maybe it is already out there
+>>> and we just don't know where to look.
+>> Ben.
 
-Hi Marian,
+DISCLAIMER: Extrapolating grossly from almost no knowledge!
 
-On Wed, 14 Nov 2007 11:21:37 +0100 Marian Balakowicz <m8@semihalf.com> wrot=
-e:
->
-> +++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-> +#include <asm/time.h>
-> +#include <asm/machdep.h>
-> +#include <asm/mpc52xx.h>
+My understanding is that the Freescale PPC debugger interface is based 
+on the JTAG interface using a proprietary command set.  Basically, if 
+you do their magic BDM (JTAG extension) command, you get into an 
+internal scan chain that allows you to read/write the processor 
+internals (registers).
 
-You still need asm/prom.h because you use of_get_flat_dt_root() and
-of_flat_dt_is_compatible().
+The problems are many...
+* The documentation is only available under NDA, a problem for open 
+source debuggers.
+* The scan chain is different on every processor, and may be different 
+on different revisions of the same processor.
+* If you mess up with JTAG, you will probably burn up the CPU.  Very 
+literally.  I've seen it done.  Twice.  (Thankfully not my screwup, and 
+it wasn't a PPC so it deserved to die. ;-)  The internal scan chain is 
+probably safer, but YMMV.
 
-> +/* list of the supported boards */
-> +static const char *board[] __initdata =3D {
-
-Unfortunately you can't use "const" and "__initdata", so just remove the
-"const".  (const changes the attributes on the section that __initdata is
-stored in.)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHO4MSTgG2atn1QN8RAmGZAKCMEp29ElecIii92gKo9BjG1gth9QCfUe1K
-tU6C5jzvQlRGcsf2otxHWGc=
-=dMB7
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_Nov_2007_10_21_49_+1100_sI1mhVNd9kC8re9k--
+gvb
