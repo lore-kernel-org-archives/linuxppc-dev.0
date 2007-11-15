@@ -1,27 +1,28 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D2393DDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:55:02 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFIsu5a012450
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:54:56 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.5) with ESMTP id
-	lAFIsn2N069300
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 11:54:51 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAFIsmkj015397
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 11:54:49 -0700
-Date: Thu, 15 Nov 2007 12:54:20 -0600
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 706BCDDDFD
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:56:46 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFIuOhI030507
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:24 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lAFIuOXw112722
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:24 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAFIuN1E003610
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:23 -0500
+Date: Thu, 15 Nov 2007 12:56:23 -0600
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] powerpc: EEH: work with device endpoint, always
-Message-ID: <20071115185420.GF18745@austin.ibm.com>
+Subject: [PATCH 1/3 v2] powerpc: EEH: work with device endpoint, always
+Message-ID: <20071115185623.GA24772@austin.ibm.com>
+References: <20071115185420.GF18745@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071115185420.GF18745@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: munsone@us.ibm.com, linuxppc-dev@ozlabs.org,
 	Sandra Rhodes <sdrhodes@us.ibm.com>
@@ -40,6 +41,8 @@ of the device.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 ----
+version 2: I still can't get whitespace right the first time ...
+
  arch/powerpc/platforms/pseries/eeh.c |    1 +
  1 file changed, 1 insertion(+)
 
@@ -51,7 +54,7 @@ Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c
  		no_dn++;
  		return 0;
  	}
-+	dn = find_device_pe (dn);
++	dn = find_device_pe(dn);
  	pdn = PCI_DN(dn);
  
  	/* Access to IO BARs might get this far and still not want checking. */
