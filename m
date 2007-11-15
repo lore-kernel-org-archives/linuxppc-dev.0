@@ -1,24 +1,24 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 706BCDDDFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:56:46 +1100 (EST)
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B1FB8DDE00
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 05:57:31 +1100 (EST)
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFIuOhI030507
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:24 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAFIvShn012069
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
 	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAFIuOXw112722
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:24 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAFIuN1E003610
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:56:23 -0500
-Date: Thu, 15 Nov 2007 12:56:23 -0600
+	lAFIvSHa111908
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAFIvSNl028215
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 13:57:28 -0500
+Date: Thu, 15 Nov 2007 12:57:27 -0600
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3 v2] powerpc: EEH: work with device endpoint, always
-Message-ID: <20071115185623.GA24772@austin.ibm.com>
+Subject: [PATCH 2/3] powerpc: EEH: careful when identifying "empty" slots.
+Message-ID: <20071115185727.GB24772@austin.ibm.com>
 References: <20071115185420.GF18745@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,25 +36,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Perform all error checking at the "partitonable endpoint" 
-of the device.
+If an "empty" slot is failing, make sure its a permanent failure;
+else process the error normally.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-----
-version 2: I still can't get whitespace right the first time ...
 
- arch/powerpc/platforms/pseries/eeh.c |    1 +
- 1 file changed, 1 insertion(+)
+----
+ arch/powerpc/platforms/pseries/eeh.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 Index: linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c
 ===================================================================
---- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 16:54:04.000000000 -0600
-+++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 16:56:39.000000000 -0600
-@@ -482,6 +482,7 @@ int eeh_dn_check_failure(struct device_n
- 		no_dn++;
- 		return 0;
- 	}
-+	dn = find_device_pe(dn);
- 	pdn = PCI_DN(dn);
+--- linux-2.6.23-rc8-mm1.orig/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 16:56:39.000000000 -0600
++++ linux-2.6.23-rc8-mm1/arch/powerpc/platforms/pseries/eeh.c	2007-11-09 17:02:39.000000000 -0600
+@@ -548,7 +548,7 @@ int eeh_dn_check_failure(struct device_n
  
- 	/* Access to IO BARs might get this far and still not want checking. */
+ 	/* Note that config-io to empty slots may fail;
+ 	 * they are empty when they don't have children. */
+-	if ((rets[0] == 5) && (dn->child == NULL)) {
++	if ((rets[0] == 5) && (rets[2] == 0) && (dn->child == NULL)) {
+ 		false_positives++;
+ 		pdn->eeh_false_positives ++;
+ 		rc = 0;
