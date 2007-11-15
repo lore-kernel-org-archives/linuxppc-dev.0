@@ -1,16 +1,23 @@
-Return-Path: <SRS0=XYxR=QI=denx.de=sr@srs.kundenserver.de>
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: about uImage-DENX-v2.6.14 config
-Date: Thu, 15 Nov 2007 07:13:27 +0100
-References: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
-In-Reply-To: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7D0B8DDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 19:48:21 +1100 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 15 Nov 2007 09:48:19 +0100
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <18235.28312.88899.861687@cargo.ozlabs.ibm.com>
+Message-ID: <20071115084819.162500@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711150713.28211.sr@denx.de>
-Cc: info@denx.de, zhangwei zhang <linda.zhangwei@gmail.com>,
-	linuxppc-embedded@ozlabs.org
+References: <20071108214723.135260@gmx.net>	<1194564017.6561.21.camel@pasglop>
+	<20071109074155.266120@gmx.net>	<1194594629.6561.34.camel@pasglop>
+	<20071110171130.254580@gmx.net>	<1194753340.21340.24.camel@pasglop>
+	<20071113212320.85840@gmx.net>	<1194990218.28865.1.camel@pasglop>
+	<20071113220655.85840@gmx.net>	<1194997072.28865.5.camel@pasglop>
+	<20071114093939.297890@gmx.net>
+	<18235.28312.88899.861687@cargo.ozlabs.ibm.com>
+Subject: Re: Kernel locks up after calling kernel_execve()
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,44 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 14 November 2007, zhangwei zhang wrote:
-> Hello, I have a problem when using linux-2.6.14(download from
-> ftp.denx.de) for RTAI on ppc440EP.
 
-RTAI on PPC? I thought RTAI was dead for anything other than X86.
+-------- Original-Nachricht --------
+> Datum: Thu, 15 Nov 2007 08:54:32 +1100
+> Von: Paul Mackerras <paulus@samba.org>
+> An: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+> CC: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+> Betreff: Re: Kernel locks up after calling kernel_execve()
 
-And 2.6.14 is quite old. I suggest you use a newer binary version or compile a 
-the image from the current kernel source.
+> No it's not just for ppc64.  We had a patch that went in some time ago
+> to ensure that the M bit was set on various 32-bit platforms because
+> otherwise we got data corruption (due to a small cache in the
+> northbridge not being kept coherent with the processor cache).
+Ah, I thought this was due to a CPU errata, where L2 cache prefetching
+causes data corruption with the coherent bit set to 0.
 
-> I use the ELDK4.1 and when boot the 
-> uImage I compiled , I always have the problem as following:
->
-> ## Booting image at 00500000 ...
->    Image Name:   Linux-2.6.14
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    1155686 Bytes =  1.1 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
->
-> then it stopped . I am afraid that maybe the problem comes from the
-> config. I have ever use the uImage-DENX-v2.6.14 you offered in
-> ftp.denx.de/pub/linux/amcc/image/yosemite/ and it works. So can you
-> send me a config file for 2.6.14 to me? Thank you.
-
-Please don't stick with 2.6.14. Download the current kernel:
-
-http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git;a=summary
-
-and there you will find the .config for the Yosemite 
-(arch/ppc/configs/yosemite_defconfig).
-
-Best regards,
-Stefan
-
-=====================================================================
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-=====================================================================
+Gerhard
+-- 
+Psssst! Schon vom neuen GMX MultiMessenger gehört?
+Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
