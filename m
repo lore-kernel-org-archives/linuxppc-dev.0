@@ -1,21 +1,19 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A8B53DDDE7
+Return-Path: <leo.hendrawan@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.235])
+	by ozlabs.org (Postfix) with ESMTP id 08B2BDDDCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Nov 2007 10:51:13 +1100 (EST)
-Date: Wed, 14 Nov 2007 15:51:12 -0800 (PST)
-Message-Id: <20071114.155112.34106808.davem@davemloft.net>
-To: jochen@scram.de
-Subject: Re: [PATCH] powerpc: Fix fs_enet module build
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <473AE325.8070901@scram.de>
-References: <4739EDA8.6020800@scram.de>
-	<20071113.210926.97725854.davem@davemloft.net>
-	<473AE325.8070901@scram.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org, akpm@linux-foundation.org
+	Thu, 15 Nov 2007 20:14:51 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 71so472070wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 15 Nov 2007 01:14:50 -0800 (PST)
+Message-ID: <6b461e5b0711150114h26624cacq3cad2629912c60ea@mail.gmail.com>
+Date: Thu, 15 Nov 2007 10:14:50 +0100
+From: "Leo Hendrawan" <leo.hendrawan@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem with uboot on lite5200
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_8749_33065339.1195118090266"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,16 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Jochen Friedrich <jochen@scram.de>
-Date: Wed, 14 Nov 2007 12:59:33 +0100
+------=_Part_8749_33065339.1195118090266
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> I know it's ugly, however, module building is completely
-> broken right now and I just want to provide a quick and
-> ugly fix until both that ppc->powerpc transition and the
-> new binding transition are over. Noone wants to touch the
-> old stuff any more as it's a pita and it's already scheduled
-> for removal in a couple of months.
+Hi all,
 
-Fair enough, I'll apply the patch.
+i am newbee in Linux PPC. i have problem with my lite5200 board. previously
+it has been installed with uboot. but now i dont receive any message from
+uboot in the serial line (serial line is ok with 115200 bps - tested).
 
-Thanks for the explanation.
+how can i re-flash the uboot inside the MPC5200? i use bdi2000, compiled the
+new uboot version 1.1.6 but didnt find out anyway to flash it inside the
+controller.
+
+thanks for the hint,
+
+------=_Part_8749_33065339.1195118090266
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi all,<br><br>i am newbee in Linux PPC. i have problem with my lite5200 board. previously it has been installed with uboot. but now i dont receive any message from uboot in the serial line (serial line is ok with 115200 bps - tested).
+<br><br>how can i re-flash the uboot inside the MPC5200? i use bdi2000, compiled the new uboot version 1.1.6 but didnt find out anyway to flash it inside the controller.<br><br>thanks for the hint,<br>
+
+------=_Part_8749_33065339.1195118090266--
