@@ -1,21 +1,17 @@
-Return-Path: <mel@skynet.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B0DFDDE20
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 21:52:43 +1100 (EST)
-Date: Thu, 15 Nov 2007 10:52:38 +0000
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id DBD84DDE00
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 21:56:13 +1100 (EST)
+Date: Thu, 15 Nov 2007 11:56:08 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix boot problem with iSeries lacking hugepage support
-Message-ID: <20071115105237.GD5128@skynet.ie>
-References: <20071115101322.GA5128@skynet.ie>
-	<20071115023943.a54b0464.akpm@linux-foundation.org>
+Subject: [PATCH 0/2] PS3 patches for 2.6.24
+Message-ID: <Pine.LNX.4.62.0711151152290.19455@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20071115023943.a54b0464.akpm@linux-foundation.org>
-From: mel@skynet.ie (Mel Gorman)
-Cc: linux-mm@kvack.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	sfr@canb.auug.org.au
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-808724739-1195124168=:19455"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,117 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (15/11/07 02:39), Andrew Morton didst pronounce:
-> On Thu, 15 Nov 2007 10:13:22 +0000 mel@skynet.ie (Mel Gorman) wrote:
-> 
-> > This patch is a fix for 2.6.24.
-> > 
-> > Ordinarily the size of a pageblock is determined at compile-time based on the
-> > hugepage size. On PPC64, the hugepage size is determined at runtime based on
-> > what is supported by the machine. With legacy machines such as iSeries that do
-> > not support hugepages, HPAGE_SHIFT becomes 0. This results in pageblock_order
-> > being set to -PAGE_SHIFT and a crash results shortly afterwards.
-> > 
-> > This patch sets HUGETLB_PAGE_SIZE_VARIABLE for PPC64 and adds a function
-> > to select a sensible value for pageblock order by default.  It checks that
-> > HPAGE_SHIFT is a sensible value before using the hugepage size; if it is
-> > not MAX_ORDER-1 is used.
-> > 
-> > Credit goes to Stephen Rothwell for identifying the bug and testing candidate
-> > patches.  Additional credit goes to Andy Whitcroft for spotting a problem
-> > with respects to IA-64 before releasing. Additional credit to David Gibson
-> > for testing with the libhugetlbfs test suite.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> > 
-> > --- 
-> >  arch/powerpc/Kconfig |    5 +++++
-> >  mm/page_alloc.c      |   14 ++++++++++++--
-> >  2 files changed, 17 insertions(+), 2 deletions(-)
-> > 
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig
-> > --- linux-2.6.24-rc2-mm1-clean/arch/powerpc/Kconfig	2007-11-14 11:38:05.000000000 +0000
-> > +++ linux-2.6.24-rc2-005_iSeries_fix/arch/powerpc/Kconfig	2007-11-14 11:39:12.000000000 +0000
-> > @@ -187,6 +187,11 @@ config FORCE_MAX_ZONEORDER
-> >  	default "9" if PPC_64K_PAGES
-> >  	default "13"
-> >  
-> > +config HUGETLB_PAGE_SIZE_VARIABLE
-> > +	bool
-> > +	depends on HUGETLB_PAGE
-> > +	default y
-> > +
-> >  config MATH_EMULATION
-> >  	bool "Math emulation"
-> >  	depends on 4xx || 8xx || E200 || PPC_MPC832x || E500
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c
-> > --- linux-2.6.24-rc2-mm1-clean/mm/page_alloc.c	2007-11-14 11:38:08.000000000 +0000
-> > +++ linux-2.6.24-rc2-005_iSeries_fix/mm/page_alloc.c	2007-11-14 13:45:19.000000000 +0000
-> > @@ -3342,6 +3342,16 @@ static void inline setup_usemap(struct p
-> >  #endif /* CONFIG_SPARSEMEM */
-> >  
-> >  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
-> > +
-> > +/* Return a sensible default order for the pageblock size. */
-> > +static inline int __init pageblock_default_order(void)
-> > +{
-> > +	if (HPAGE_SHIFT > PAGE_SHIFT)
-> > +		return HUGETLB_PAGE_ORDER;
-> > +
-> > +	return MAX_ORDER-1;
-> > +}
-> > +
-> >  /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
-> >  static inline void __init set_pageblock_order(unsigned int order)
-> >  {
-> > @@ -3357,7 +3367,7 @@ static inline void __init set_pageblock_
-> >  }
-> >  #else /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-> >  
-> > -/* Defined this way to avoid accidently referencing HUGETLB_PAGE_ORDER */
-> > +#define pageblock_default_order(x) (0)
-> 
-> Shouldn't this have been HUGETLB_PAGE_ORDER?
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-As a #define, possibly but as a static inline - definitly not.
+---584337861-808724739-1195124168=:19455
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-In this context, the define is not used because set_pageblock_order()
-is a no-op when CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is unset.
-pageblock_default_order() is only defined for symmetry as set_pageblock_order()
-is defined in both contexts. However, as a #define it might make more sense
-to a casual reader to see HUGETLB_PAGE_ORDER even if it has no effect. I
-can send a version of the patch that does this with a comment explaining
-what is going on with set_pageblock_order() if you like.
+	Hi Andrew,
 
-However, in a follow-up fix, you make pageblock_default_order() a static
-inline. If it tries to return HUGETLB_PAGE_ORDER, it will fail to compile
-when CONFIG_HUGETLB_PAGE is not set.
+Here are 2 more patches for PS3 we would like to get in 2.6.24:
+  [1] ps3: Prefix all ps3-specific kernel modules with `ps3'
+  [2] ps3fb: video memory size cleanups
 
-Which would you prefer?
+The first one fixes 2 PS3-specific modules having generic names.
+The second one fixes a possible system lock up.
 
-> >  #define set_pageblock_order(x)	do {} while (0)
-> >  
-> >  #endif /* CONFIG_HUGETLB_PAGE_SIZE_VARIABLE */
-> > @@ -3442,7 +3452,7 @@ static void __meminit free_area_init_cor
-> >  		if (!size)
-> >  			continue;
-> >  
-> > -		set_pageblock_order(HUGETLB_PAGE_ORDER);
-> > +		set_pageblock_order(pageblock_default_order());
-> >  		setup_usemap(pgdat, zone, size);
-> >  		ret = init_currently_empty_zone(zone, zone_start_pfn,
-> >  						size, MEMMAP_EARLY);
-> > -- 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> 
+Please apply and forward to Linus, thanks!
 
--- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-808724739-1195124168=:19455--
