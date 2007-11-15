@@ -1,22 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E78D1DDDFF
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 14:17:43 +1100 (EST)
-Date: Thu, 15 Nov 2007 14:17:40 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: mel@skynet.ie (Mel Gorman)
-Subject: Re: Do not depend on MAX_ORDER when grouping pages by mobility
-Message-Id: <20071115141740.d22acb0e.sfr@canb.auug.org.au>
-In-Reply-To: <20071114181044.GB773@skynet.ie>
-References: <20071112132108.7c98f011.sfr@canb.auug.org.au>
-	<20071112155452.GB6653@skynet.ie>
-	<20071113114401.73d81ce2.sfr@canb.auug.org.au>
-	<20071114181044.GB773@skynet.ie>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__15_Nov_2007_14_17_40_+1100_cVg65ctFvwxy8YUM"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <SRS0=XYxR=QI=denx.de=sr@srs.kundenserver.de>
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: about uImage-DENX-v2.6.14 config
+Date: Thu, 15 Nov 2007 07:13:27 +0100
+References: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
+In-Reply-To: <4b7912400711140706i3c96456bua42dc01c6cb5467b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711150713.28211.sr@denx.de>
+Cc: info@denx.de, zhangwei zhang <linda.zhangwei@gmail.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__15_Nov_2007_14_17_40_+1100_cVg65ctFvwxy8YUM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 14 November 2007, zhangwei zhang wrote:
+> Hello, I have a problem when using linux-2.6.14(download from
+> ftp.denx.de) for RTAI on ppc440EP.
 
-Hi Mel,
+RTAI on PPC? I thought RTAI was dead for anything other than X86.
 
-On Wed, 14 Nov 2007 18:10:45 +0000 mel@skynet.ie (Mel Gorman) wrote:
+And 2.6.14 is quite old. I suggest you use a newer binary version or compile a 
+the image from the current kernel source.
+
+> I use the ELDK4.1 and when boot the 
+> uImage I compiled , I always have the problem as following:
 >
-> libhugetlbfs test suite and boot test on iSeries is sufficient in this
-> case. However, the version I sent would break on IA-64 due to the lack of
-> a definition for HPAGE_SHIFT when CONFIG_HUGETLB_PAGE is not set. Can you
-> confirm this patch still fixes the problem please? If it does, I'll send
-> it to Andrew as a fix for 2.6.24. Whether iSeries is legacy or not, this =
-is
-> breakage and should be fixed.
+> ## Booting image at 00500000 ...
+>    Image Name:   Linux-2.6.14
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>    Data Size:    1155686 Bytes =  1.1 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+>
+> then it stopped . I am afraid that maybe the problem comes from the
+> config. I have ever use the uImage-DENX-v2.6.14 you offered in
+> ftp.denx.de/pub/linux/amcc/image/yosemite/ and it works. So can you
+> send me a config file for 2.6.14 to me? Thank you.
 
-The new patch works fine.  I reran the libhugetlbfs tests on a Power5+
-machine and the ppc64_defconfig boots on legacy iSeries.
+Please don't stick with 2.6.14. Download the current kernel:
 
-So
+http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git;a=summary
 
-Tested-by: Stephen Rothwell <sfr@canb.auug.org.au> iSeries boot test and
-		hugetlb tests on PPC64
+and there you will find the .config for the Yosemite 
+(arch/ppc/configs/yosemite_defconfig).
 
-Thanks.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Best regards,
+Stefan
 
---Signature=_Thu__15_Nov_2007_14_17_40_+1100_cVg65ctFvwxy8YUM
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHO7peTgG2atn1QN8RAnefAJ9lKYLMuDpiRxlfqmFtRwFAnFamKgCgh+0m
-7FGAULfcV8PFdIFH/XGpLzw=
-=JTBY
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_Nov_2007_14_17_40_+1100_cVg65ctFvwxy8YUM--
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
