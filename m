@@ -1,24 +1,22 @@
-Return-Path: <silvio.fricke@googlemail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id 2C4D0DDE05
+Return-Path: <jbe@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 73A47DDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Nov 2007 23:52:32 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so576869nfd
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Nov 2007 04:52:31 -0800 (PST)
-Date: Thu, 15 Nov 2007 13:52:26 +0100
+	Fri, 16 Nov 2007 00:30:20 +1100 (EST)
+Received: from themisto.extern.pengutronix.de ([83.236.181.29] helo=localhost)
+	by metis.extern.pengutronix.de with esmtp (Exim 4.63)
+	(envelope-from <jbe@pengutronix.de>) id 1IsenI-0003Mh-2c
+	for linuxppc-embedded@ozlabs.org; Thu, 15 Nov 2007 14:30:16 +0100
+From: Juergen Beisert <jbe@pengutronix.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: /sbin/init: error while loading shared libraries:
-	libm.so.6:cannot open shared object file: No such file or directory
-	[Scanned]
-Message-ID: <20071115125225.GC6019@sfrouter>
-References: <1195129440.10980.7.camel@linux-2drc.site>
+Date: Thu, 15 Nov 2007 14:30:05 +0100
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mvpLiMfbWzRoNl4x"
-In-Reply-To: <1195129440.10980.7.camel@linux-2drc.site>
-From: "S. Fricke" <silvio.fricke@googlemail.com>
-Reply-To: "S. Fricke" <silvio.fricke@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200711151430.05943.jbe@pengutronix.de>
+Subject: MPC5200B: Linux does not recognise the external PCI card
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,56 +27,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---mvpLiMfbWzRoNl4x
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+currently I'm trying to activate the PCI bus of my MPC5200B based card. U-Boot 
+outputs:
 
-Hello,
+[...]
+PCI:   Bus Dev VenId DevId Class Int
+        00  18  1033  0035  0c03  00
+        00  18  1033  0035  0c03  00
+        00  18  1033  00e0  00e0  00
+        00  1a  1057  5809  0680  00
+[...]
 
-> I have a problem with booting the uRamdisk image from eldk 4.1 on an
-> TQM5200 (MPC5200 CPU) board.
-> I have taken the uRamdisk image from the "/eldk/ppc_6xx/images" folder
-> and copied it to the flash. After booting the following output came
-> after the Kernel boot:
->=20
-> Freeing unused kernel memory: 64k init
-> /sbin/init: error while loading shared libraries: libm.so.6: cannot open
-> shared object file: No such file or directory
-> Kernel panic: Attempted to kill init!
->  <0>Rebooting in 1 seconds..
->=20
->=20
-> An image from eldk 3.1.1 is working fine with the Kernel 2.4.25.
-> The files libm.so.6 and libm-2.3.5.so are available in the /lib folder.
->=20
-> Does anyone has an idea, what this could be?
+When I start Linux it outputs:
 
-This is a problem of handling the eldk. Please contact the eldk-ml on [1].
+[...]
+PCI: Probing PCI hardware
+PCI: device 0000:00:18.0 has unknown header type 7f, ignoring.
+mpc52xx_pci_fixup_resources() 1057:5809
+[...]
 
-[1] http://lists.denx.de/mailman/listinfo/eldk
+and does not show the external card:
 
-Bye!
-eS.eF.
+# lspci -v
+00:1a.0 Bridge: Motorola Unknown device 5809
+        Flags: bus master, 66MHz, medium devsel, latency 248
+        Memory at a0000000 (32-bit, non-prefetchable) [size=256K]
+        Memory at <unassigned> (32-bit, prefetchable)
 
---=20
--- S. Fricke ----------------------------- MAILTO:silvio.fricke@gmail.com --
-   Diplom-Informatiker (FH)
-   Linux-Entwicklung                       JABBER:   silvio@jabber.ccc.de
-----------------------------------------------------------------------------
+Any idea what could cause this behavior?
+Could this be an oftree related issue? Or something hardware only related?
+The external slot is of 3.3V only type, running at 33 1/3 MHz.
 
+If it is an oftree issue, can someone point me to some kind of documentation, 
+what data I must provide in the
+	pci@0d00 {
+		....
+	}
+section?
 
---mvpLiMfbWzRoNl4x
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHPEEJ8WEBxatmn40RAmaDAJsEMdkqUyoyLkNVSV8tJ4sSwOz1BQCcDAnS
-cMgKj5lIixvW4WFYtc8LbpE=
-=xMJb
------END PGP SIGNATURE-----
-
---mvpLiMfbWzRoNl4x--
+Juergen
