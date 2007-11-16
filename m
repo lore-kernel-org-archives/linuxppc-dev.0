@@ -1,10 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3543ADDE37
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 18:46:13 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 16 Nov 2007 18:42:18 +1100
-Subject: [PATCH] powerpc: Fix declaration of pcibios_free_controller
-Message-Id: <20071116074301.01917DDE02@ozlabs.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <1195198868.28865.142.camel@pasglop>
+References: <20071116072149.350ADDDDF4@ozlabs.org>
+	<20071116074025.GA4741@lixom.net> <1195198868.28865.142.camel@pasglop>
+Content-Type: text/plain
+Date: Fri, 16 Nov 2007 18:45:41 +1100
+Message-Id: <1195199141.28865.144.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,38 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pcibios_free_controller() is now available for both 32 and 64 bits
-but the header only declares it for 64 bits. This moves the
-declaration down next to the pcibios_alloc_controller() one.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+On Fri, 2007-11-16 at 18:41 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2007-11-16 at 01:40 -0600, Olof Johansson wrote:
+> > I'm not sure I like this. It introduces another cpu feature flag,
+> > that we'll soon run out of if it's used to signify version info per
+> > implementation like this.
+> > 
+> > 1) The SET_IVOR could be done from the cpu_setups for 440A instead
+> > (i.e. introduce one).
+> > 
+> > 2) Please just move the machine check handlers out to individual ones
+> > instead of using the generic one. That way you don't need runtime checks
+> > between the two (they don't seem to share much of it as-is anyway).
+> > 
+> > With the above two changes, you shouldn't need the feature bit any more.
+> 
+> We can easily make the cpu features bigger ... But ok, I'll have a look
+> at doing it the way you suggest.
 
- include/asm-powerpc/pci-bridge.h |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Note that first, I'd like to figure out if there are other relevant
+differences with 440A ... arch/ppc didn't list any and diff'ing PDFs is
+not fun but if people around here know, please speak up
 
-Index: linux-work/include/asm-powerpc/pci-bridge.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-11-16 13:44:32.000000000 +1100
-+++ linux-work/include/asm-powerpc/pci-bridge.h	2007-11-16 13:46:40.000000000 +1100
-@@ -247,7 +247,6 @@ static inline struct pci_controller *pci
- 	return PCI_DN(busdn)->phb;
- }
- 
--extern void pcibios_free_controller(struct pci_controller *phb);
- 
- extern void isa_bridge_find_early(struct pci_controller *hose);
- 
-@@ -283,9 +282,11 @@ extern void
- pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			   struct device_node *dev, int primary);
- 
--/* Allocate a new PCI host bridge structure */
-+/* Allocate & free a PCI host bridge structure */
- extern struct pci_controller *
- pcibios_alloc_controller(struct device_node *dev);
-+extern void pcibios_free_controller(struct pci_controller *phb);
-+
- #ifdef CONFIG_PCI
- extern unsigned long pci_address_to_pio(phys_addr_t address);
- extern int pcibios_vaddr_is_ioport(void __iomem *address);
+Ben.
