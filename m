@@ -2,22 +2,21 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25988DDE09
+	by ozlabs.org (Postfix) with ESMTP id CB4E3DDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Nov 2007 08:45:39 +1100 (EST)
-Message-Id: <E7601164-DDA3-4CF5-AC52-BDE40C5F210B@kernel.crashing.org>
+	Sat, 17 Nov 2007 08:46:47 +1100 (EST)
+Message-Id: <0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1195247357.28865.178.camel@pasglop>
+To: robert lazarski <robertlazarski@gmail.com>
+In-Reply-To: <f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Latest paulus.git PCI broken on mpc8540?
-Date: Fri, 16 Nov 2007 15:45:30 -0600
-References: <473C7FCC.7050307@anagramm.de>
-	<4E0EFED3-8697-4768-9D89-A2443AEC82A5@kernel.crashing.org>
-	<1195191333.28865.140.camel@pasglop>
-	<A4E1A594-5A31-4EFE-B4F9-E4B24F9207F7@kernel.crashing.org>
-	<1195247357.28865.178.camel@pasglop>
+Subject: Re: 85xx software reset problems from paulus.git
+Date: Fri, 16 Nov 2007 15:46:26 -0600
+References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>
+	<473DB6DF.9010804@anagramm.de>
+	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>
+	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,23 +29,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 16, 2007, at 3:09 PM, Benjamin Herrenschmidt wrote:
+On Nov 16, 2007, at 3:28 PM, robert lazarski wrote:
 
+> On Nov 16, 2007 3:44 PM, robert lazarski <robertlazarski@gmail.com>  
+> wrote:
+>> On Nov 16, 2007 10:27 AM, Clemens Koller  
+>> <clemens.koller@anagramm.de> wrote:
+>>> The SRESET# (pin AF20) is the soft reset input, causes
+>>> an mcp assertion to the core.... (RTFM)
+>>>
+>>
+>> That's what we are doing. The 85xx docs say "Soft reset. Causes a
+>> machine check interrupt to the e500 core. Note that if the e500 core
+>> is not configured to process machine check interrupts, the assertion
+>> of SRESET causes a core checkstop. SRESET need not be asserted during
+>> a hard reset."
+>>
 >
-> On Fri, 2007-11-16 at 13:18 -0600, Kumar Gala wrote:
->>
->>
->> Well, for one the generic pci code will complain if its not able to
->> allocate the resource which is the true failure.
->>
->> I'm thinking maybe we just make these pr_debug() instead of standard
->> printk?
->
-> I was thinking about changing the message to "cannot allocate initial
-> resource, will reallocate" or something like that. That is, make it
-> clear it's non fatal.
+> Sorry for replying to myself, but thought I'd mention SRESET works
+> fine on 85xx 2.6.23 , ie, the board resets after kernel panic. It
+> doesn't work for me on 2.6.24rc2 .
 
-Yeah, something that on those lines would be good, and maybe mark them  
-KERN_WARNING instead of KERN_ERR.
+What actual 85xx are you using?
 
 - k
