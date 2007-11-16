@@ -1,16 +1,9 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6A24DDDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 18:39:11 +1100 (EST)
-Date: Fri, 16 Nov 2007 01:40:25 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
-Message-ID: <20071116074025.GA4741@lixom.net>
-References: <20071116072149.350ADDDDF4@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071116072149.350ADDDDF4@ozlabs.org>
+Return-Path: <benh@ozlabs.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 16 Nov 2007 18:42:18 +1100
+Subject: [PATCH] powerpc: Fix declaration of pcibios_free_controller
+Message-Id: <20071116074301.01917DDE02@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,24 +14,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 16, 2007 at 06:21:06PM +1100, Benjamin Herrenschmidt wrote:
-> This removes the old CONFIG_440A which was a pain for multiplatform
-> kernel and wasn't set properly by default and replaces it with a
-> CPU feature. This makes Machine Check reporting work correctly on
-> my Ebony (440GP) board.
+pcibios_free_controller() is now available for both 32 and 64 bits
+but the header only declares it for 64 bits. This moves the
+declaration down next to the pcibios_alloc_controller() one.
 
-I'm not sure I like this. It introduces another cpu feature flag,
-that we'll soon run out of if it's used to signify version info per
-implementation like this.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-1) The SET_IVOR could be done from the cpu_setups for 440A instead
-(i.e. introduce one).
+ include/asm-powerpc/pci-bridge.h |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-2) Please just move the machine check handlers out to individual ones
-instead of using the generic one. That way you don't need runtime checks
-between the two (they don't seem to share much of it as-is anyway).
-
-With the above two changes, you shouldn't need the feature bit any more.
-
-
--Olof
+Index: linux-work/include/asm-powerpc/pci-bridge.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-11-16 13:44:32.000000000 +1100
++++ linux-work/include/asm-powerpc/pci-bridge.h	2007-11-16 13:46:40.000000000 +1100
+@@ -247,7 +247,6 @@ static inline struct pci_controller *pci
+ 	return PCI_DN(busdn)->phb;
+ }
+ 
+-extern void pcibios_free_controller(struct pci_controller *phb);
+ 
+ extern void isa_bridge_find_early(struct pci_controller *hose);
+ 
+@@ -283,9 +282,11 @@ extern void
+ pci_process_bridge_OF_ranges(struct pci_controller *hose,
+ 			   struct device_node *dev, int primary);
+ 
+-/* Allocate a new PCI host bridge structure */
++/* Allocate & free a PCI host bridge structure */
+ extern struct pci_controller *
+ pcibios_alloc_controller(struct device_node *dev);
++extern void pcibios_free_controller(struct pci_controller *phb);
++
+ #ifdef CONFIG_PCI
+ extern unsigned long pci_address_to_pio(phys_addr_t address);
+ extern int pcibios_vaddr_is_ioport(void __iomem *address);
