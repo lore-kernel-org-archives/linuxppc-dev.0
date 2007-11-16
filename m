@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 23D70DDDE4
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 08:55:31 +1100 (EST)
-Message-Id: <BC413657-C715-44E3-B5B5-D173E33E862F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1195199141.28865.144.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
-Date: Fri, 16 Nov 2007 15:55:25 -0600
-References: <20071116072149.350ADDDDF4@ozlabs.org>
-	<20071116074025.GA4741@lixom.net>
-	<1195198868.28865.142.camel@pasglop>
-	<1195199141.28865.144.camel@pasglop>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id BBBFFDDE0D
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 09:37:00 +1100 (EST)
+Date: Sat, 17 Nov 2007 01:36:49 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: Fix powerpc 32 bits resource fixup for 64
+	bits resources
+Message-ID: <20071117013649.7c5ef3f8@kernel.crashing.org>
+In-Reply-To: <20071116072916.ECE2FDDDFE@ozlabs.org>
+References: <20071116072916.ECE2FDDDFE@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +24,166 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 16 Nov 2007 18:28:34 +1100
+Benjamin Herrenschmidt wrote:
 
-On Nov 16, 2007, at 1:45 AM, Benjamin Herrenschmidt wrote:
+> The 32bits powerpc resource fixup code uses unsigned longs to do the
+> offseting of resources which overflows on platforms such as 4xx where
+> resources can be 64 bits.
+> 
+> This fixes it by using resource_size_t instead.
+> 
+> However, the IO stuff does rely on some 32 bits arithmetic, so we hack
+> by cropping the result of the fixups for IO resources with a 32 bits
+> mask.
+> 
+> This isn't the prettiest but should work for now until we change the
+> 32 bits PCI code to do IO mappings like 64 bits does, within a
+> reserved are of the kernel address space.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> DO NOT MERGE YET ! This has only been tested with some preliminary PCI
+> support code I have for Ebony, I haven't yet verified that the masking
+> stuff works fine on 32 bits machines with multiple busses and negative
+> offsets.
+> 
+I can give it a try with some FSL boxes... This approach makes sense sense I think.
 
->
-> On Fri, 2007-11-16 at 18:41 +1100, Benjamin Herrenschmidt wrote:
->> On Fri, 2007-11-16 at 01:40 -0600, Olof Johansson wrote:
->>> I'm not sure I like this. It introduces another cpu feature flag,
->>> that we'll soon run out of if it's used to signify version info per
->>> implementation like this.
->>>
->>> 1) The SET_IVOR could be done from the cpu_setups for 440A instead
->>> (i.e. introduce one).
->>>
->>> 2) Please just move the machine check handlers out to individual  
->>> ones
->>> instead of using the generic one. That way you don't need runtime  
->>> checks
->>> between the two (they don't seem to share much of it as-is anyway).
->>>
->>> With the above two changes, you shouldn't need the feature bit any  
->>> more.
->>
->> We can easily make the cpu features bigger ... But ok, I'll have a  
->> look
->> at doing it the way you suggest.
->
-> Note that first, I'd like to figure out if there are other relevant
-> differences with 440A ... arch/ppc didn't list any and diff'ing PDFs  
-> is
-> not fun but if people around here know, please speak up
+-V
+>  arch/powerpc/kernel/pci_32.c |   44
+> +++++++++++++++++++++++-------------------- 1 file changed, 24
+> insertions(+), 20 deletions(-)
+> 
+> Index: linux-work/arch/powerpc/kernel/pci_32.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-16
+> 15:48:27.000000000 +1100 +++
+> linux-work/arch/powerpc/kernel/pci_32.c	2007-11-16
+> 15:55:54.000000000 +1100 @@ -104,7 +104,7 @@
+> pcibios_fixup_resources(struct pci_dev * { struct pci_controller*
+> hose = (struct pci_controller *)dev->sysdata; int i;
+> -	unsigned long offset;
+> +	resource_size_t offset, mask;
+>  
+>  	if (!hose) {
+>  		printk(KERN_ERR "No hose for PCI dev %s!\n",
+> pci_name(dev)); @@ -123,15 +123,17 @@ pcibios_fixup_resources(struct
+> pci_dev * continue;
+>  		}
+>  		offset = 0;
+> +		mask = (resource_size_t)-1;
+>  		if (res->flags & IORESOURCE_MEM) {
+>  			offset = hose->pci_mem_offset;
+>  		} else if (res->flags & IORESOURCE_IO) {
+>  			offset = (unsigned long) hose->io_base_virt
+>  				- isa_io_base;
+> +			mask = 0xffffffffu;
+>  		}
+>  		if (offset != 0) {
+> -			res->start += offset;
+> -			res->end += offset;
+> +			res->start = (res->start + offset) & mask;
+> +			res->end = (res->end + offset) & mask;
+>  			DBG("Fixup res %d (%lx) of dev %s: %llx ->
+> %llx\n", i, res->flags, pci_name(dev),
+>  			    (u64)res->start - offset,
+> (u64)res->start); @@ -147,30 +149,32 @@
+> DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PC void
+> pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region
+> *region, struct resource *res) {
+> -	unsigned long offset = 0;
+> +	resource_size_t offset = 0, mask = (resource_size_t)-1;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+> -	if (hose && res->flags & IORESOURCE_IO)
+> +	if (hose && res->flags & IORESOURCE_IO) {
+>  		offset = (unsigned long)hose->io_base_virt -
+> isa_io_base;
+> -	else if (hose && res->flags & IORESOURCE_MEM)
+> +		mask = 0xffffffffu;
+> +	} else if (hose && res->flags & IORESOURCE_MEM)
+>  		offset = hose->pci_mem_offset;
+> -	region->start = res->start - offset;
+> -	region->end = res->end - offset;
+> +	region->start = (res->start - offset) & mask;
+> +	region->end = (res->end - offset) & mask;
+>  }
+>  EXPORT_SYMBOL(pcibios_resource_to_bus);
+>  
+>  void pcibios_bus_to_resource(struct pci_dev *dev, struct resource
+> *res, struct pci_bus_region *region)
+>  {
+> -	unsigned long offset = 0;
+> +	resource_size_t offset = 0, mask = (resource_size_t)-1;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+> -	if (hose && res->flags & IORESOURCE_IO)
+> +	if (hose && res->flags & IORESOURCE_IO) {
+>  		offset = (unsigned long)hose->io_base_virt -
+> isa_io_base;
+> -	else if (hose && res->flags & IORESOURCE_MEM)
+> +		mask = 0xffffffffu;
+> +	} else if (hose && res->flags & IORESOURCE_MEM)
+>  		offset = hose->pci_mem_offset;
+> -	res->start = region->start + offset;
+> -	res->end = region->end + offset;
+> +	res->start = (region->start + offset) & mask;
+> +	res->end = (region->end + offset) & mask;
+>  }
+>  EXPORT_SYMBOL(pcibios_bus_to_resource);
+>  
+> @@ -334,9 +338,9 @@ static int __init
+>  pci_relocate_bridge_resource(struct pci_bus *bus, int i)
+>  {
+>  	struct resource *res, *pr, *conflict;
+> -	unsigned long try, size;
+> -	int j;
+> +	resource_size_t try, size;
+>  	struct pci_bus *parent = bus->parent;
+> +	int j;
+>  
+>  	if (parent == NULL) {
+>  		/* shouldn't ever happen */
+> @@ -438,7 +442,7 @@ update_bridge_resource(struct pci_dev *d
+>  	u8 io_base_lo, io_limit_lo;
+>  	u16 mem_base, mem_limit;
+>  	u16 cmd;
+> -	unsigned long start, end, off;
+> +	resource_size_t start, end, off;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+>  	if (!hose) {
+> @@ -1157,8 +1161,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+>  			res->end = IO_SPACE_LIMIT;
+>  			res->flags = IORESOURCE_IO;
+>  		}
+> -		res->start += io_offset;
+> -		res->end += io_offset;
+> +		res->start = (res->start + io_offset) & 0xffffffffu;
+> +		res->end = (res->end + io_offset) & 0xffffffffu;
+>  
+>  		for (i = 0; i < 3; ++i) {
+>  			res = &hose->mem_resources[i];
+> @@ -1183,8 +1187,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+>  			if (!res->flags || bus->self->transparent)
+>  				continue;
+>  			if (io_offset && (res->flags &
+> IORESOURCE_IO)) {
+> -				res->start += io_offset;
+> -				res->end += io_offset;
+> +				res->start = (res->start +
+> io_offset) & 0xffffffffu;
+> +				res->end = (res->end + io_offset) &
+> 0xffffffffu; } else if (hose->pci_mem_offset
+>  				   && (res->flags & IORESOURCE_MEM))
+> { res->start += hose->pci_mem_offset;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 
-I think it added isel support.
-
-- k
+-- 
+Sincerely, Vitaly
