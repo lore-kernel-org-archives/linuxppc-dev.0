@@ -1,18 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <sprasad@bivio.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18236.55874.204068.358524@cargo.ozlabs.ibm.com>
-Date: Fri, 16 Nov 2007 10:46:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: 2.6.24-rc1 on PPC64: machine check exception
-In-Reply-To: <473C7B16.3050700@linux.vnet.ibm.com>
-References: <472F1F4C.3010507@linux.vnet.ibm.com>
-	<20071105154055.GA4746@kryten>
-	<472F5C5E.4030607@linux.vnet.ibm.com>
-	<473C7B16.3050700@linux.vnet.ibm.com>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>,
-	lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: hangs after "Freeing unused kernel memory"
+Date: Thu, 15 Nov 2007 16:00:09 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73FC8@corpexc01.corp.networkrobots.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-embedded@ozlabs.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,12 +17,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vaidyanathan Srinivasan writes:
+Hi,
 
-> This patch fixed the problem.  I am able to run and profile ebizzy on 128-way
-> PPC64.  However this fix is not included in 2.6.24-rc2 as well.
-> I will watch for inclusion of this fix in 2.6.24.
+This sounds like a familiar problem, but could not get answers in posts
+that came up in google search.
 
-It's upstream in Linus' tree now, so it will be in -rc3.
+My system hangs after printing the message "Freeing unused kernel
+memory". It should execute init after that, but not sure what exactly is
+happening. Appreciate if some one can throw few ideas to try out.
 
-Paul.
+Seems it is actually hanging when it makes the call "
+run_init_process(ramdisk_execute_command)" in init/main.c
+
+System: 8641D
+Kernel: 2.6.19
+
+Vitesse VSC8244: Registered new driver
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with
+idebus=3Dxx
+bus pci: add driver ALI15x3_IDE
+bus ide: add driver ide-disk
+bus ide: add driver ide-cdrom
+bus scsi: add driver sd
+bus pci: add driver ahci
+bus platform: add driver fsl-i2c
+bus i2c: add driver eeprom
+TCP cubic registered
+Initializing XFRM netlink socket
+NET: Registered protocol family 1
+NET: Registered protocol family 10
+IPv6 over IPv4 tunneling driver
+NET: Registered protocol family 17
+Freeing unused kernel memory: 140k init
+
+Thanks
+Siva
