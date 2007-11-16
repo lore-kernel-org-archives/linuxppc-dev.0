@@ -1,33 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 68A27DDE36
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 06:23:16 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAGJNCGs031017
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 14:23:13 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAGJNB6X079980
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 12:23:12 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAGJN9O3012050
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 12:23:09 -0700
-Date: Fri, 16 Nov 2007 13:23:08 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 4xx: Use virtual PVR value to init FPU on
-	arch/ppc 440EP
-Message-ID: <20071116132308.2201e235@weaponx>
-In-Reply-To: <96AAE1CB-3F7F-4231-AD52-01F358E01594@kernel.crashing.org>
-References: <20071116112956.0f1ca5b1@weaponx>
-	<96AAE1CB-3F7F-4231-AD52-01F358E01594@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 73350DDDDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 07:00:21 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id lAGK0Gcv031433
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 14:00:17 -0600
+Date: Fri, 16 Nov 2007 13:59:03 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Add SPRN for Embedded registers specified in
+	PowerISA 2.04
+Message-ID: <Pine.LNX.4.64.0711161358280.24588@blarg.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,42 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 Nov 2007 13:20:09 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+* Added SPRN for new architectural features added for embedded:
+	- Alternate Time Base (ATB, ATBL, ATBU)
+	- Doorbell Interrupts (IVOR36, IVOR37)
+	- SPRG8/9
+	- External Proxy (EPR)
+	- External PID load/store (EPLC, EPSC)
 
-> 
-> On Nov 16, 2007, at 11:29 AM, Josh Boyer wrote:
-> 
-> > This fixes arch/ppc 440EP platforms to setup the FPU correctly.  A  
-> > virtual
-> > PVR is used, as 440GR platforms share an identical hardware PVR  
-> > value and do
-> > not have an FPU.
-> >
-> > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-> > Index: linux-2.6/arch/ppc/kernel/setup.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/ppc/kernel/setup.c
-> > +++ linux-2.6/arch/ppc/kernel/setup.c
-> > @@ -312,7 +312,14 @@ early_init(int r3, int r4, int r5)
-> > 	 * Identify the CPU type and fix up code sections
-> > 	 * that depend on which cpu we have.
-> > 	 */
-> > +#if defined(CONFIG_440EP) && defined(CONFIG_PPC_FPU)
-> > +	/* We pass the virtual PVR here for 440EP as 440EP and 440GR have
-> > +	 * identical PVRs and there is no reliable way to check for the FPU
-> > +	 */
-> > +	spec = identify_cpu(offset, (mfspr(SPRN_PVR) | 0x8));
-> > +#else
-> > 	spec = identify_cpu(offset, mfspr(SPRN_PVR));
-> > +#endif
-> > 	do_feature_fixups(spec->cpu_features,
-> > 			  PTRRELOC(&__start___ftr_fixup),
-> > 			  PTRRELOC(&__stop___ftr_fixup));
-> 
-> Are we really adding support for new processors to arch/ppc?
+* Added BUCSR for Freescale Embedded Processors
+* Moved around MAS7 so its in numeric order
 
-No.  This is to continue to support 440EP FPU in arch/ppc.  Commit
-d1dfc35d3a62 switched the cputable around for EP(x)/GR(x) and arch/ppc wasn't fixed up.  So without the above patch, 440EP gets detected as 440GR and the FPU isn't initialized properly.
+---
 
-josh
+as normal, this is my git tree for 2.6.25
+
+ include/asm-powerpc/reg_booke.h |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-powerpc/reg_booke.h b/include/asm-powerpc/reg_booke.h
+index 8fdc2b4..d596439 100644
+--- a/include/asm-powerpc/reg_booke.h
++++ b/include/asm-powerpc/reg_booke.h
+@@ -123,16 +123,23 @@
+ #define SPRN_SPEFSCR	0x200	/* SPE & Embedded FP Status & Control */
+ #define SPRN_BBEAR	0x201	/* Branch Buffer Entry Address Register */
+ #define SPRN_BBTAR	0x202	/* Branch Buffer Target Address Register */
++#define SPRN_ATB	0x20E	/* Alternate Time Base */
++#define SPRN_ATBL	0x20E	/* Alternate Time Base Lower */
++#define SPRN_ATBU	0x20F	/* Alternate Time Base Upper */
+ #define SPRN_IVOR32	0x210	/* Interrupt Vector Offset Register 32 */
+ #define SPRN_IVOR33	0x211	/* Interrupt Vector Offset Register 33 */
+ #define SPRN_IVOR34	0x212	/* Interrupt Vector Offset Register 34 */
+ #define SPRN_IVOR35	0x213	/* Interrupt Vector Offset Register 35 */
++#define SPRN_IVOR36	0x214	/* Interrupt Vector Offset Register 36 */
++#define SPRN_IVOR37	0x215	/* Interrupt Vector Offset Register 37 */
+ #define SPRN_MCSRR0	0x23A	/* Machine Check Save and Restore Register 0 */
+ #define SPRN_MCSRR1	0x23B	/* Machine Check Save and Restore Register 1 */
+ #define SPRN_MCSR	0x23C	/* Machine Check Status Register */
+ #define SPRN_MCAR	0x23D	/* Machine Check Address Register */
+ #define SPRN_DSRR0	0x23E	/* Debug Save and Restore Register 0 */
+ #define SPRN_DSRR1	0x23F	/* Debug Save and Restore Register 1 */
++#define SPRN_SPRG8	0x25C	/* Special Purpose Register General 8 */
++#define SPRN_SPRG9	0x25D	/* Special Purpose Register General 8 */
+ #define SPRN_MAS0	0x270	/* MMU Assist Register 0 */
+ #define SPRN_MAS1	0x271	/* MMU Assist Register 1 */
+ #define SPRN_MAS2	0x272	/* MMU Assist Register 2 */
+@@ -140,15 +147,18 @@
+ #define SPRN_MAS4	0x274	/* MMU Assist Register 4 */
+ #define SPRN_MAS5	0x275	/* MMU Assist Register 5 */
+ #define SPRN_MAS6	0x276	/* MMU Assist Register 6 */
+-#define SPRN_MAS7	0x3b0	/* MMU Assist Register 7 */
+ #define SPRN_PID1	0x279	/* Process ID Register 1 */
+ #define SPRN_PID2	0x27A	/* Process ID Register 2 */
+ #define SPRN_TLB0CFG	0x2B0	/* TLB 0 Config Register */
+ #define SPRN_TLB1CFG	0x2B1	/* TLB 1 Config Register */
++#define SPRN_EPR	0x2BE	/* External Proxy Register */
+ #define SPRN_CCR1	0x378	/* Core Configuration Register 1 */
+ #define SPRN_ZPR	0x3B0	/* Zone Protection Register (40x) */
++#define SPRN_MAS7	0x3B0	/* MMU Assist Register 7 */
+ #define SPRN_MMUCR	0x3B2	/* MMU Control Register */
+ #define SPRN_CCR0	0x3B3	/* Core Configuration Register 0 */
++#define SPRN_EPLC	0x3B3	/* External Process ID Load Context */
++#define SPRN_EPSC	0x3B4	/* External Process ID Store Context */
+ #define SPRN_SGR	0x3B9	/* Storage Guarded Register */
+ #define SPRN_DCWR	0x3BA	/* Data Cache Write-thru Register */
+ #define SPRN_SLER	0x3BB	/* Little-endian real mode */
+@@ -159,6 +169,7 @@
+ #define SPRN_L1CSR0	0x3F2	/* L1 Cache Control and Status Register 0 */
+ #define SPRN_L1CSR1	0x3F3	/* L1 Cache Control and Status Register 1 */
+ #define SPRN_PIT	0x3DB	/* Programmable Interval Timer */
++#define SPRN_BUCSR	0x3F5	/* Branch Unit Control and Status */
+ #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
+ #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
+ #define SPRN_SVR	0x3FF	/* System Version Register */
+-- 
+1.5.3.4
