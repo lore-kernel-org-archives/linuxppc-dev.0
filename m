@@ -1,10 +1,17 @@
-Return-Path: <benh@ozlabs.org>
-To: auke-jan.h.kok@intel.com
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 16 Nov 2007 18:37:38 +1100
-Subject: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
-Message-Id: <20071116073821.548CCDDDF4@ozlabs.org>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 6A24DDDDF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 18:39:11 +1100 (EST)
+Date: Fri, 16 Nov 2007 01:40:25 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
+Message-ID: <20071116074025.GA4741@lixom.net>
+References: <20071116072149.350ADDDDF4@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071116072149.350ADDDDF4@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,71 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The e1000 driver stores the content of the PCI resources into
-unsigned long's before ioremapping. This breaks on 32 bits
-platforms that support 64 bits MMIO resources such as ppc 44x.
+On Fri, Nov 16, 2007 at 06:21:06PM +1100, Benjamin Herrenschmidt wrote:
+> This removes the old CONFIG_440A which was a pain for multiplatform
+> kernel and wasn't set properly by default and replaces it with a
+> CPU feature. This makes Machine Check reporting work correctly on
+> my Ebony (440GP) board.
 
-This fixes it by removing those temporary variables and passing
-directly the result of pci_resource_start/len to ioremap.
+I'm not sure I like this. It introduces another cpu feature flag,
+that we'll soon run out of if it's used to signify version info per
+implementation like this.
 
-The side effect is that I removed the assignments to the netdev
-fields mem_start, mem_end and base_addr, which are totally useless
-for PCI devices.
+1) The SET_IVOR could be done from the cpu_setups for 440A instead
+(i.e. introduce one).
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---
+2) Please just move the machine check handlers out to individual ones
+instead of using the generic one. That way you don't need runtime checks
+between the two (they don't seem to share much of it as-is anyway).
 
- drivers/net/e1000/e1000_main.c |   18 +++++-------------
- 1 file changed, 5 insertions(+), 13 deletions(-)
+With the above two changes, you shouldn't need the feature bit any more.
 
-Index: linux-work/drivers/net/e1000/e1000_main.c
-===================================================================
---- linux-work.orig/drivers/net/e1000/e1000_main.c	2007-11-16 17:14:32.000000000 +1100
-+++ linux-work/drivers/net/e1000/e1000_main.c	2007-11-16 18:32:07.000000000 +1100
-@@ -861,8 +861,6 @@ e1000_probe(struct pci_dev *pdev,
- {
- 	struct net_device *netdev;
- 	struct e1000_adapter *adapter;
--	unsigned long mmio_start, mmio_len;
--	unsigned long flash_start, flash_len;
- 
- 	static int cards_found = 0;
- 	static int global_quad_port_a = 0; /* global ksp3 port a indication */
-@@ -905,11 +903,9 @@ e1000_probe(struct pci_dev *pdev,
- 	adapter->hw.back = adapter;
- 	adapter->msg_enable = (1 << debug) - 1;
- 
--	mmio_start = pci_resource_start(pdev, BAR_0);
--	mmio_len = pci_resource_len(pdev, BAR_0);
--
- 	err = -EIO;
--	adapter->hw.hw_addr = ioremap(mmio_start, mmio_len);
-+	adapter->hw.hw_addr = ioremap(pci_resource_start(pdev, BAR_0),
-+				      pci_resource_len(pdev, BAR_0));
- 	if (!adapter->hw.hw_addr)
- 		goto err_ioremap;
- 
-@@ -944,10 +940,6 @@ e1000_probe(struct pci_dev *pdev,
- #endif
- 	strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
- 
--	netdev->mem_start = mmio_start;
--	netdev->mem_end = mmio_start + mmio_len;
--	netdev->base_addr = adapter->hw.io_base;
--
- 	adapter->bd_number = cards_found;
- 
- 	/* setup the private structure */
-@@ -960,9 +952,9 @@ e1000_probe(struct pci_dev *pdev,
- 	 * because it depends on mac_type */
- 	if ((adapter->hw.mac_type == e1000_ich8lan) &&
- 	   (pci_resource_flags(pdev, 1) & IORESOURCE_MEM)) {
--		flash_start = pci_resource_start(pdev, 1);
--		flash_len = pci_resource_len(pdev, 1);
--		adapter->hw.flash_address = ioremap(flash_start, flash_len);
-+		adapter->hw.flash_address =
-+			ioremap(pci_resource_start(pdev, 1),
-+				pci_resource_len(pdev, 1));
- 		if (!adapter->hw.flash_address)
- 			goto err_flashmap;
- 	}
+
+-Olof
