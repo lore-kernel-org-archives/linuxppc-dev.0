@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5D399DDDF2
+	by ozlabs.org (Postfix) with ESMTP id 7B74ADDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Nov 2007 16:35:44 +1100 (EST)
-Subject: Re: Latest paulus.git PCI broken on mpc8540?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <4E0EFED3-8697-4768-9D89-A2443AEC82A5@kernel.crashing.org>
-References: <473C7FCC.7050307@anagramm.de>
-	<4E0EFED3-8697-4768-9D89-A2443AEC82A5@kernel.crashing.org>
-Content-Type: text/plain
-Date: Fri, 16 Nov 2007 16:35:33 +1100
-Message-Id: <1195191333.28865.140.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	Fri, 16 Nov 2007 21:30:11 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IsySe-0008Sh-5s
+	for linuxppc-embedded@ozlabs.org; Fri, 16 Nov 2007 02:30:08 -0800
+Message-ID: <13790720.post@talk.nabble.com>
+Date: Fri, 16 Nov 2007 02:30:08 -0800 (PST)
+From: Lorenz Kolb <linuxppcemb@lkmail.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Virtex TEMAC ping -s 10000 host, is it working?
+In-Reply-To: <13770288.post@talk.nabble.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <13770288.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,24 +29,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Thu, 2007-11-15 at 22:37 -0600, Kumar Gala wrote:
-> > PCI: Probing PCI hardware
-> > PCI: Cannot allocate resource region 0 of device 0000:00:12.0
-> > PCI: Cannot allocate resource region 1 of device 0000:00:12.0
-> > PCI: Cannot allocate resource region 2 of device 0000:00:12.0
-> > PCI: Cannot allocate resource region 3 of device 0000:00:12.0
-> > PCI: Cannot allocate resource region 4 of device 0000:00:12.0
-> > PCI: Cannot allocate resource region 0 of device 0000:00:14.0
-> > PCI: Cannot allocate resource region 2 of device 0000:00:14.0
-> 
-> this isn't really an error.  Its more of a warning, the kernel will  
-> try and allocate these later and I'm guessing based on what you are  
-> seeing it succeeded.
-> 
-> Benh, can we possibly change these messages in pci_32.c?
 
-Heh, well, I've been working on 44x PCI lately and got annoyed by the
-exact same messages, though I'm still pondering what would be a better
-replacement.
 
-Ben
+alex_snippet wrote:
+> 
+> Hi All!
+> 
+> On Virtex 4FX board with TEMAC core, Linux ping working fine, but if s -
+> parameter set to big values it freezes for ever...
+> 
+> Colleagues please share your experience with ping -s 10000 host.
+> 
+> Do you know what parameters in core or in Linux kernel must be changed to
+> improve it.
+> 
+> My customer is too hypercritical, he likes to ping :(
+> 
+> I tried to  increase LX/TX buffers in core, it increased dead line but
+> there is no desirable result.
+> 
+> 
+> 
+
+
+Hey, I can understand that customer, I like pinging as well.
+And it works for me. Our design is based on ML403.
+We use PLB_TEMAC (with minimum Fifos (4kB each)) and HardTEMAC
+
+
+> .
+> .
+> .
+> 10008 bytes from 192.168.0.206: icmp_seq=733 ttl=64 time=2.42 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=734 ttl=64 time=2.50 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=735 ttl=64 time=2.43 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=736 ttl=64 time=2.43 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=737 ttl=64 time=2.44 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=738 ttl=64 time=2.42 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=739 ttl=64 time=2.51 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=740 ttl=64 time=2.42 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=741 ttl=64 time=2.50 ms
+> 10008 bytes from 192.168.0.206: icmp_seq=742 ttl=64 time=2.43 ms
+> .
+> .
+> .
+> 
+
+And so on...
+
+
+> --- 192.168.0.206 ping statistics ---
+> 850 packets transmitted, 850 received, 0% packet loss, time 849010ms
+> rtt min/avg/max/mdev = 2.399/11.623/1001.859/92.782 ms, pipe 3
+> 
+-- 
+View this message in context: http://www.nabble.com/Virtex-TEMAC-ping--s-10000-host%2C-is-it-working--tf4812989.html#a13790720
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
