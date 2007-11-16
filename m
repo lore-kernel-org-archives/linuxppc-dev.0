@@ -1,25 +1,20 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from dike.telenet-ops.be (dike.telenet-ops.be [195.130.132.36])
-	by ozlabs.org (Postfix) with ESMTP id D9DA8DDE00
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 06:11:48 +1100 (EST)
-Received: from agave.telenet-ops.be (agave.telenet-ops.be [195.130.137.77])
-	by dike.telenet-ops.be (Postfix) with ESMTP id 6B32B4F87BC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 16:09:37 +0100 (CET)
-Date: Fri, 16 Nov 2007 16:09:34 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] remove dead MAC_ADBKEYCODES
-In-Reply-To: <d120d5000711160525p225f4b4o30eab6d01b289cda@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0711161609180.23728@anakin>
-References: <1195142010.14001.21.camel@hammer.suse.cz>
-	<Pine.LNX.4.62.0711161043560.29012@pademelon.sonytel.be>
-	<d120d5000711160525p225f4b4o30eab6d01b289cda@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stanislav Brabec <sbrabec@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz,
-	Linux/m68k <linux-m68k@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B8161DDE33
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 06:20:18 +1100 (EST)
+Message-Id: <96AAE1CB-3F7F-4231-AD52-01F358E01594@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071116112956.0f1ca5b1@weaponx>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] 4xx: Use virtual PVR value to init FPU on
+	arch/ppc 440EP
+Date: Fri, 16 Nov 2007 13:20:09 -0600
+References: <20071116112956.0f1ca5b1@weaponx>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,33 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 Nov 2007, Dmitry Torokhov wrote:
-> On Nov 16, 2007 4:44 AM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > Wrong mailing list ;-)
-> >
-> > On Thu, 15 Nov 2007, Stanislav Brabec wrote:
-> > > It seems, that current kernel source code contains no traces of
-> > > MAC_ADBKEYCODES and no reference to keyboard_sends_linux_keycodes any
-> > > more.
-> > >
-> > > Attached patch removes them from configuration files.
-> > >
-> > > Signed-off-by: Stanislav Brabec <sbrabec@suse.cz>
-> >
-> > Acked-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> >
-> 
-> Geert, are you going to push it through your tree?
 
-Yes, I'll add it to my queue for 2.6.25.
+On Nov 16, 2007, at 11:29 AM, Josh Boyer wrote:
 
-Gr{oetje,eeting}s,
+> This fixes arch/ppc 440EP platforms to setup the FPU correctly.  A  
+> virtual
+> PVR is used, as 440GR platforms share an identical hardware PVR  
+> value and do
+> not have an FPU.
+>
+> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> Index: linux-2.6/arch/ppc/kernel/setup.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ppc/kernel/setup.c
+> +++ linux-2.6/arch/ppc/kernel/setup.c
+> @@ -312,7 +312,14 @@ early_init(int r3, int r4, int r5)
+> 	 * Identify the CPU type and fix up code sections
+> 	 * that depend on which cpu we have.
+> 	 */
+> +#if defined(CONFIG_440EP) && defined(CONFIG_PPC_FPU)
+> +	/* We pass the virtual PVR here for 440EP as 440EP and 440GR have
+> +	 * identical PVRs and there is no reliable way to check for the FPU
+> +	 */
+> +	spec = identify_cpu(offset, (mfspr(SPRN_PVR) | 0x8));
+> +#else
+> 	spec = identify_cpu(offset, mfspr(SPRN_PVR));
+> +#endif
+> 	do_feature_fixups(spec->cpu_features,
+> 			  PTRRELOC(&__start___ftr_fixup),
+> 			  PTRRELOC(&__stop___ftr_fixup));
 
-						Geert
+Are we really adding support for new processors to arch/ppc?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+- k
