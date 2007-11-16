@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
+To: auke-jan.h.kok@intel.com
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 16 Nov 2007 18:28:34 +1100
-Subject: [RFC/PATCH] powerpc: Fix powerpc 32 bits resource fixup for 64 bits
-	resources
-Message-Id: <20071116072916.ECE2FDDDFE@ozlabs.org>
+Date: Fri, 16 Nov 2007 18:37:38 +1100
+Subject: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
+Message-Id: <20071116073821.548CCDDDF4@ozlabs.org>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,147 +14,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 32bits powerpc resource fixup code uses unsigned longs to do the
-offseting of resources which overflows on platforms such as 4xx where
-resources can be 64 bits.
+The e1000 driver stores the content of the PCI resources into
+unsigned long's before ioremapping. This breaks on 32 bits
+platforms that support 64 bits MMIO resources such as ppc 44x.
 
-This fixes it by using resource_size_t instead.
+This fixes it by removing those temporary variables and passing
+directly the result of pci_resource_start/len to ioremap.
 
-However, the IO stuff does rely on some 32 bits arithmetic, so we hack
-by cropping the result of the fixups for IO resources with a 32 bits
-mask.
-
-This isn't the prettiest but should work for now until we change the
-32 bits PCI code to do IO mappings like 64 bits does, within a reserved
-are of the kernel address space.
+The side effect is that I removed the assignments to the netdev
+fields mem_start, mem_end and base_addr, which are totally useless
+for PCI devices.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+--
 
-DO NOT MERGE YET ! This has only been tested with some preliminary PCI
-support code I have for Ebony, I haven't yet verified that the masking
-stuff works fine on 32 bits machines with multiple busses and negative
-offsets.
+ drivers/net/e1000/e1000_main.c |   18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
- arch/powerpc/kernel/pci_32.c |   44 +++++++++++++++++++++++--------------------
- 1 file changed, 24 insertions(+), 20 deletions(-)
-
-Index: linux-work/arch/powerpc/kernel/pci_32.c
+Index: linux-work/drivers/net/e1000/e1000_main.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-16 15:48:27.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-16 15:55:54.000000000 +1100
-@@ -104,7 +104,7 @@ pcibios_fixup_resources(struct pci_dev *
+--- linux-work.orig/drivers/net/e1000/e1000_main.c	2007-11-16 17:14:32.000000000 +1100
++++ linux-work/drivers/net/e1000/e1000_main.c	2007-11-16 18:32:07.000000000 +1100
+@@ -861,8 +861,6 @@ e1000_probe(struct pci_dev *pdev,
  {
- 	struct pci_controller* hose = (struct pci_controller *)dev->sysdata;
- 	int i;
--	unsigned long offset;
-+	resource_size_t offset, mask;
+ 	struct net_device *netdev;
+ 	struct e1000_adapter *adapter;
+-	unsigned long mmio_start, mmio_len;
+-	unsigned long flash_start, flash_len;
  
- 	if (!hose) {
- 		printk(KERN_ERR "No hose for PCI dev %s!\n", pci_name(dev));
-@@ -123,15 +123,17 @@ pcibios_fixup_resources(struct pci_dev *
- 			continue;
- 		}
- 		offset = 0;
-+		mask = (resource_size_t)-1;
- 		if (res->flags & IORESOURCE_MEM) {
- 			offset = hose->pci_mem_offset;
- 		} else if (res->flags & IORESOURCE_IO) {
- 			offset = (unsigned long) hose->io_base_virt
- 				- isa_io_base;
-+			mask = 0xffffffffu;
- 		}
- 		if (offset != 0) {
--			res->start += offset;
--			res->end += offset;
-+			res->start = (res->start + offset) & mask;
-+			res->end = (res->end + offset) & mask;
- 			DBG("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
- 			    i, res->flags, pci_name(dev),
- 			    (u64)res->start - offset, (u64)res->start);
-@@ -147,30 +149,32 @@ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PC
- void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
- 			struct resource *res)
- {
--	unsigned long offset = 0;
-+	resource_size_t offset = 0, mask = (resource_size_t)-1;
- 	struct pci_controller *hose = dev->sysdata;
+ 	static int cards_found = 0;
+ 	static int global_quad_port_a = 0; /* global ksp3 port a indication */
+@@ -905,11 +903,9 @@ e1000_probe(struct pci_dev *pdev,
+ 	adapter->hw.back = adapter;
+ 	adapter->msg_enable = (1 << debug) - 1;
  
--	if (hose && res->flags & IORESOURCE_IO)
-+	if (hose && res->flags & IORESOURCE_IO) {
- 		offset = (unsigned long)hose->io_base_virt - isa_io_base;
--	else if (hose && res->flags & IORESOURCE_MEM)
-+		mask = 0xffffffffu;
-+	} else if (hose && res->flags & IORESOURCE_MEM)
- 		offset = hose->pci_mem_offset;
--	region->start = res->start - offset;
--	region->end = res->end - offset;
-+	region->start = (res->start - offset) & mask;
-+	region->end = (res->end - offset) & mask;
- }
- EXPORT_SYMBOL(pcibios_resource_to_bus);
+-	mmio_start = pci_resource_start(pdev, BAR_0);
+-	mmio_len = pci_resource_len(pdev, BAR_0);
+-
+ 	err = -EIO;
+-	adapter->hw.hw_addr = ioremap(mmio_start, mmio_len);
++	adapter->hw.hw_addr = ioremap(pci_resource_start(pdev, BAR_0),
++				      pci_resource_len(pdev, BAR_0));
+ 	if (!adapter->hw.hw_addr)
+ 		goto err_ioremap;
  
- void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
- 			     struct pci_bus_region *region)
- {
--	unsigned long offset = 0;
-+	resource_size_t offset = 0, mask = (resource_size_t)-1;
- 	struct pci_controller *hose = dev->sysdata;
+@@ -944,10 +940,6 @@ e1000_probe(struct pci_dev *pdev,
+ #endif
+ 	strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
  
--	if (hose && res->flags & IORESOURCE_IO)
-+	if (hose && res->flags & IORESOURCE_IO) {
- 		offset = (unsigned long)hose->io_base_virt - isa_io_base;
--	else if (hose && res->flags & IORESOURCE_MEM)
-+		mask = 0xffffffffu;
-+	} else if (hose && res->flags & IORESOURCE_MEM)
- 		offset = hose->pci_mem_offset;
--	res->start = region->start + offset;
--	res->end = region->end + offset;
-+	res->start = (region->start + offset) & mask;
-+	res->end = (region->end + offset) & mask;
- }
- EXPORT_SYMBOL(pcibios_bus_to_resource);
+-	netdev->mem_start = mmio_start;
+-	netdev->mem_end = mmio_start + mmio_len;
+-	netdev->base_addr = adapter->hw.io_base;
+-
+ 	adapter->bd_number = cards_found;
  
-@@ -334,9 +338,9 @@ static int __init
- pci_relocate_bridge_resource(struct pci_bus *bus, int i)
- {
- 	struct resource *res, *pr, *conflict;
--	unsigned long try, size;
--	int j;
-+	resource_size_t try, size;
- 	struct pci_bus *parent = bus->parent;
-+	int j;
- 
- 	if (parent == NULL) {
- 		/* shouldn't ever happen */
-@@ -438,7 +442,7 @@ update_bridge_resource(struct pci_dev *d
- 	u8 io_base_lo, io_limit_lo;
- 	u16 mem_base, mem_limit;
- 	u16 cmd;
--	unsigned long start, end, off;
-+	resource_size_t start, end, off;
- 	struct pci_controller *hose = dev->sysdata;
- 
- 	if (!hose) {
-@@ -1157,8 +1161,8 @@ void pcibios_fixup_bus(struct pci_bus *b
- 			res->end = IO_SPACE_LIMIT;
- 			res->flags = IORESOURCE_IO;
- 		}
--		res->start += io_offset;
--		res->end += io_offset;
-+		res->start = (res->start + io_offset) & 0xffffffffu;
-+		res->end = (res->end + io_offset) & 0xffffffffu;
- 
- 		for (i = 0; i < 3; ++i) {
- 			res = &hose->mem_resources[i];
-@@ -1183,8 +1187,8 @@ void pcibios_fixup_bus(struct pci_bus *b
- 			if (!res->flags || bus->self->transparent)
- 				continue;
- 			if (io_offset && (res->flags & IORESOURCE_IO)) {
--				res->start += io_offset;
--				res->end += io_offset;
-+				res->start = (res->start + io_offset) & 0xffffffffu;
-+				res->end = (res->end + io_offset) & 0xffffffffu;
- 			} else if (hose->pci_mem_offset
- 				   && (res->flags & IORESOURCE_MEM)) {
- 				res->start += hose->pci_mem_offset;
+ 	/* setup the private structure */
+@@ -960,9 +952,9 @@ e1000_probe(struct pci_dev *pdev,
+ 	 * because it depends on mac_type */
+ 	if ((adapter->hw.mac_type == e1000_ich8lan) &&
+ 	   (pci_resource_flags(pdev, 1) & IORESOURCE_MEM)) {
+-		flash_start = pci_resource_start(pdev, 1);
+-		flash_len = pci_resource_len(pdev, 1);
+-		adapter->hw.flash_address = ioremap(flash_start, flash_len);
++		adapter->hw.flash_address =
++			ioremap(pci_resource_start(pdev, 1),
++				pci_resource_len(pdev, 1));
+ 		if (!adapter->hw.flash_address)
+ 			goto err_flashmap;
+ 	}
