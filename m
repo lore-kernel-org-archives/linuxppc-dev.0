@@ -1,13 +1,32 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: hangs after "Freeing unused kernel memory"
-Date: Thu, 15 Nov 2007 16:00:09 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7F73FC8@corpexc01.corp.networkrobots.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-embedded@ozlabs.org>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2BFEDDDDD5
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 16:52:44 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	lAG5qcRn024192
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 22:52:39 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lAG5qbPw023988
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2007 23:52:37 -0600 (CST)
+Subject: Re: Please pull from for-2.6.24
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20070914122510.6dffb747@weaponx.rchland.ibm.com>
+References: <Pine.LNX.4.64.0709131554530.29675@blarg.am.freescale.net>
+	<AC7B9A70-5050-4191-A20E-B92686B675D4@kernel.crashing.org>
+	<20070914122510.6dffb747@weaponx.rchland.ibm.com>
+Content-Type: text/plain
+Message-Id: <1195192440.7437.1060.camel@localhost.localdomain>
+Mime-Version: 1.0
+Date: 16 Nov 2007 13:54:04 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,39 +36,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-This sounds like a familiar problem, but could not get answers in posts
-that came up in google search.
-
-My system hangs after printing the message "Freeing unused kernel
-memory". It should execute init after that, but not sure what exactly is
-happening. Appreciate if some one can throw few ideas to try out.
-
-Seems it is actually hanging when it makes the call "
-run_init_process(ramdisk_execute_command)" in init/main.c
-
-System: 8641D
-Kernel: 2.6.19
-
-Vitesse VSC8244: Registered new driver
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with
-idebus=3Dxx
-bus pci: add driver ALI15x3_IDE
-bus ide: add driver ide-disk
-bus ide: add driver ide-cdrom
-bus scsi: add driver sd
-bus pci: add driver ahci
-bus platform: add driver fsl-i2c
-bus i2c: add driver eeprom
-TCP cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 1
-NET: Registered protocol family 10
-IPv6 over IPv4 tunneling driver
-NET: Registered protocol family 17
-Freeing unused kernel memory: 140k init
-
-Thanks
-Siva
+On Sat, 2007-09-15 at 01:25, Josh Boyer wrote:
+> On Fri, 14 Sep 2007 09:02:04 -0500
+> Kumar Gala <galak@kernel.crashing.org> wrote:
+> 
+> > 
+> > On Sep 13, 2007, at 3:55 PM, Kumar Gala wrote:
+> > 
+> > > Please pull from 'for-2.6.24' branch of
+> > >
+> > >     master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git 
+> > > for-2.6.24
+> > >
+> > > to receive the following updates:
+> > 
+> > I've updated the branch with the following changes:
+> > 
+> > > Anton Vorontsov (3):
+> > >       [POWERPC] MPC832x_RDB: Update dts to use SPI1 in QE,
+> register  
+> > > mmc_spi stub
+> > 
+> > Updated commit message.  (let me know if you want me to drop this
+> for  
+> > now and wait til mmc_spi gets merged)
+> > 
+> > > Roy Zang (1):
+> > >       [POWERPC] Update mpc7448hpc2 device tree to be compatible
+> for  
+> > > tsi109 chip
+> > 
+> > Dropped for now.  I doubt we want this based on Segher's comments.  
+> > (pretty sure its a ts108 on the hpc2 board).
+> 
+> It is a tsi108 on hpc2.  Holly has tsi109.  From a Linux perspective,
+> there is no difference.  And the comment Segher made on the list was
+> "Looks good, thanks!"  So what other comment are you talking about?
+Hi, guys
+In fact, I was confused by this chain.
+Original hpc2 owns tsi108, but the new manufactured board has tsi109.
+Roy
