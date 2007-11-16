@@ -1,30 +1,31 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (E23SMTP01.au.ibm.com [202.81.18.162])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp01.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 266F2DDDD6
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 01:16:05 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp01.au.ibm.com (8.13.1/8.13.1) with ESMTP id lAGEGP0m025310
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 01:16:25 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAGEJdiv276964
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 01:19:39 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAGEFlM9030555
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 01:15:48 +1100
-Message-ID: <473DA608.1020804@linux.vnet.ibm.com>
-Date: Fri, 16 Nov 2007 19:45:36 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	nfs@lists.sourceforge.net, Andy Whitcroft <apw@shadowen.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4 
-Content-Type: text/plain; charset=ISO-8859-1
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D0C7ADDDDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 01:59:03 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAGF0QkM015947
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 10:00:26 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lAGEwmiE128296
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 09:58:48 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAGEwlXZ004341
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2007 09:58:47 -0500
+Date: Fri, 16 Nov 2007 08:58:13 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
+Message-ID: <20071116085813.3cebed79@weaponx>
+In-Reply-To: <20071116074025.GA4741@lixom.net>
+References: <20071116072149.350ADDDDF4@ozlabs.org>
+	<20071116074025.GA4741@lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,57 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On Fri, 16 Nov 2007 01:40:25 -0600
+Olof Johansson <olof@lixom.net> wrote:
 
-The kernel enters the xmon state while running the file system
-stress on nfs v4 mounted partition.
- 
-0:mon> e
-cpu 0x0: Vector: 300 (Data Access) at [c0000000dbd4f820]
-    pc: c000000000065be4: .__wake_up_common+0x44/0xe8
-    lr: c000000000069768: .__wake_up+0x54/0x88
-    sp: c0000000dbd4faa0
-   msr: 8000000000001032
-   dar: 0
- dsisr: 40010000
-  current = 0xc0000000dfb6f680
-  paca    = 0xc000000000574580
-    pid   = 1865, comm = rpciod/0
-0:mon> t
-[c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
-[c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
-[c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
-[c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
-[c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
-[c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
-[c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
-[c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
-0:mon> r
-R00 = c000000000069768   R16 = 4000000001c00000
-R01 = c0000000dbd4faa0   R17 = c0000000004410c0
-R02 = c0000000006752d8   R18 = 0000000000000000
-R03 = c0000000ace4ffc0   R19 = 000000000019c000
-R04 = 0000000000000003   R20 = c00000000050af08
-R05 = 0000000000000001   R21 = 000000000210af08
-R06 = 0000000000000000   R22 = 000000000210b178
-R07 = 0000000000000000   R23 = c00000000050b178
-R08 = 0000000000000000   R24 = 0000000000000003
-R09 = 0000000000000000   R25 = 0000000000000000
-R10 = 0000000000000001   R26 = 0000000000000000
-R11 = ffffffffffffffe8   R27 = c0000000ace4ffc0
-R12 = 0000000000004000   R28 = 0000000000000001
-R13 = c000000000574580   R29 = 0000000000000003
-R14 = 0000000000000000   R30 = c00000000061bad8
-R15 = c000000000442888   R31 = d0000000008baa50
-pc  = c000000000065be4 .__wake_up_common+0x44/0xe8
-lr  = c000000000069768 .__wake_up+0x54/0x88
-msr = 8000000000001032   cr  = 24000022
-ctr = 80000000001af404   xer = 0000000000000002   trap =  300
-dar = 0000000000000000   dsisr = 40010000
-0:mon>
+> On Fri, Nov 16, 2007 at 06:21:06PM +1100, Benjamin Herrenschmidt wrote:
+> > This removes the old CONFIG_440A which was a pain for multiplatform
+> > kernel and wasn't set properly by default and replaces it with a
+> > CPU feature. This makes Machine Check reporting work correctly on
+> > my Ebony (440GP) board.
+> 
+> I'm not sure I like this. It introduces another cpu feature flag,
+> that we'll soon run out of if it's used to signify version info per
+> implementation like this.
+> 
+> 1) The SET_IVOR could be done from the cpu_setups for 440A instead
+> (i.e. introduce one).
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Yeah, that might work.  I'm wondering if either method needs to take
+arch/ppc into account, as the cputable is shared.
+
+> 2) Please just move the machine check handlers out to individual ones
+> instead of using the generic one. That way you don't need runtime checks
+> between the two (they don't seem to share much of it as-is anyway).
+
+Anton pinged me about cleaning that up a couple months ago.  I have a
+half-baked patch for it somewhere, but I agree having 4xx set a ppc_md
+specific handler would be a good idea.
+
+josh
