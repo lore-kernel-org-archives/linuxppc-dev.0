@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6141CDDE29
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 09:46:08 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix 44x Machine Check handling
+	by ozlabs.org (Postfix) with ESMTP id DBB92DDDF4
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 12:05:57 +1100 (EST)
+Subject: Re: [POWERPC] [RFC] Fix 8xx tlbie definition
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <6612E7C6-C570-4748-BCEE-AC6733C0BB14@kernel.crashing.org>
-References: <20071116072149.350ADDDDF4@ozlabs.org>
-	<6612E7C6-C570-4748-BCEE-AC6733C0BB14@kernel.crashing.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+In-Reply-To: <20071117012837.4811d394@kernel.crashing.org>
+References: <20071116112822.37a238c0@weaponx>
+	<1195247189.28865.174.camel@pasglop>
+	<20071117012837.4811d394@kernel.crashing.org>
 Content-Type: text/plain
-Date: Sat, 17 Nov 2007 09:21:41 +1100
-Message-Id: <1195251702.28865.182.camel@pasglop>
+Date: Sat, 17 Nov 2007 12:05:47 +1100
+Message-Id: <1195261547.28865.184.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -26,25 +27,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > Index: linux-work/include/asm-powerpc/cputable.h
-> > ===================================================================
-> > --- linux-work.orig/include/asm-powerpc/cputable.h	2007-11-16  
-> > 16:14:29.000000000 +1100
-> > +++ linux-work/include/asm-powerpc/cputable.h	2007-11-16  
-> > 16:19:35.000000000 +1100
-> > @@ -138,6 +138,7 @@ extern void do_feature_fixups(unsigned l
-> > #define CPU_FTR_FPU_UNAVAILABLE		ASM_CONST(0x0000000000800000)
-> > #define CPU_FTR_UNIFIED_ID_CACHE	ASM_CONST(0x0000000001000000)
-> > #define CPU_FTR_SPE			ASM_CONST(0x0000000002000000)
-> > +#define CPU_FTR_440A			ASM_CONST(0x0000000004000000)
+On Sat, 2007-11-17 at 01:28 +0300, Vitaly Bordug wrote:
+> On Sat, 17 Nov 2007 08:06:29 +1100
+> Benjamin Herrenschmidt wrote:
 > 
-> Can we be more specific about what this feature really means.
+> > 
+> > On Fri, 2007-11-16 at 11:28 -0600, Josh Boyer wrote:
+> > > Git commit e701d269aa28996f3502780951fe1b12d5d66b49 introduced an
+> > > incorrect definition for _tlbie on PowerPC 8xx platforms.  Only the
+> > > address should be passed to the function.  This patch corrects the
+> > > definition of _tlbie and the related tlb flushing functions for 8xx.
+> > > 
+> > > Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+> > 
+> > That conflicts with the patch I posted to fix it differently (I kept
+> > the additional argument).
+> > 
 > 
-> How about something like CPU_FTR_ENH_MCHCK or something like that.
+> Where can I grab it to give a try? My linuxppc archive is silent for some reason..
 
-Did that at first, then figured out that I indeed had 2 core manuals one
-of them being labelled "A"... I'm trying to figure out what other
-differences they may have to see whether I should stick to that CPU
-feature or just remove it completely and do as Olof suggested.
+Looks like I may have failed to post it ... weird, I was sure I posted
+that days ago, when Olof first mentioned the breakage. I'll check &
+resend.
+
+> > Which one do we take ?
+> > 
+> 
+> If your solution will work out, I'd agree with Kumar to have this thing consistent.
+> If not - It might be cheapier just to fix it this gross way, to keep 8xx stuff running. 
 
 Ben.
