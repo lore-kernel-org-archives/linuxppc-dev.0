@@ -1,24 +1,27 @@
 Return-Path: <just.for.lkml@googlemail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 9B53CDDDE6
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 06:18:51 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so5906168pyi
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 11:18:50 -0800 (PST)
-Message-ID: <64bb37e0711171118t73a7c619p1117a5b150f369b7@mail.gmail.com>
-Date: Sat, 17 Nov 2007 20:18:49 +0100
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 939A1DDDF9
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 06:40:24 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so5916159pyi
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2007 11:40:23 -0800 (PST)
+Message-ID: <64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+Date: Sat, 17 Nov 2007 20:40:22 +0100
 From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
-In-Reply-To: <1195325920.7484.1.camel@localhost.localdomain>
+In-Reply-To: <20071117101957.7562639d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 References: <473DA608.1020804@linux.vnet.ibm.com>
 	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
-	<1195325920.7484.1.camel@localhost.localdomain>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	<20071117180946.GA14055@elte.hu>
+	<20071117101957.7562639d.akpm@linux-foundation.org>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	LKML <linux-kernel@vger.kernel.org>,
 	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
 	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
+	Ingo Molnar <mingo@elte.hu>, Jan Blunck <jblunck@suse.de>,
 	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,41 +32,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Nov 17, 2007 7:58 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+On Nov 17, 2007 7:19 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
 >
-> On Sat, 2007-11-17 at 18:53 +0100, Torsten Kaiser wrote:
-> > On Nov 16, 2007 3:15 PM, Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> > > Hi Andrew,
-> > >
-> > > The kernel enters the xmon state while running the file system
-> > > stress on nfs v4 mounted partition.
-> > [snip]
-> > > 0:mon> t
-> > > [c0000000dbd4fb50] c000000000069768 .__wake_up+0x54/0x88
-> > > [c0000000dbd4fc00] d00000000086b890 .nfs_sb_deactive+0x44/0x58 [nfs]
-> > > [c0000000dbd4fc80] d000000000872658 .nfs_free_unlinkdata+0x2c/0x74 [nfs]
-> > > [c0000000dbd4fd10] d000000000598510 .rpc_release_calldata+0x50/0x74 [sunrpc]
-> > > [c0000000dbd4fda0] c00000000008d960 .run_workqueue+0x10c/0x1f4
-> > > [c0000000dbd4fe50] c00000000008ec70 .worker_thread+0x118/0x138
-> > > [c0000000dbd4ff00] c0000000000939f4 .kthread+0x78/0xc4
-> > > [c0000000dbd4ff90] c00000000002b060 .kernel_thread+0x4c/0x68
+> On Sat, 17 Nov 2007 19:09:46 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 >
-> Could you try with the attached patch.
-[snip]
-> Fix is to move the call to nfs_sb_deactive() into
-> nfs_async_unlink_release().
+> >
+> > * Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> >
+> > > Sadly lockdep does not work for me, as it gets turned off early:
+> > > [   39.851594] ---------------------------------
+> > > [   39.855963] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
+> > > [   39.861981] swapper/0 [HC0[0]:SC1[1]:HE0:SE0] takes:
+> > > [   39.866963]  (&n->list_lock){-+..}, at: [<ffffffff802935c1>]
+> >
+> > hey, that means it found a bug - which is not sad at all :-)
 
-I realley doubt that will fix it.
+It was sad, that it found a bug that I was not searching for. ;)
 
-My stacktrace was like:
-run_workqueue
-called: rpc_async_schedule
-  that called: rpc_release_calldata
-    which points to: nfs_async_unlink_release
-       that called: nfs_free_unlinkdata
+> mutter.
+>
+> Torsten, you could try CONFIG_SLAB=y, CONFIG_SLUB=n to see if you can make
+> some progress on the NFS problem.
 
-So it does not matter for me if nfs_sb_deactive is called one step earlier.
+I should had thought of that myself... OK anyway here is the result:
 
-Currently building with SLAB instead SLUB to see if lockdep tells something...
+The hang is reproducable, emerge froze the system again after download
+the source.
+Lockdep triggers immedetly before the freeze, but the result is still
+not helpful:
+
+[  221.565011] INFO: trying to register non-static key.
+[  221.566999] the code is fine but needs lockdep annotation.
+[  221.569206] turning off the locking correctness validator.
+[  221.571404]
+[  221.571405] Call Trace:
+[  221.572996]  [<ffffffff8025a1b4>] __lock_acquire+0x4c4/0x1140
+[  221.575298]  [<ffffffff8025ae85>] lock_acquire+0x55/0x70
+[  221.577429]  [<ffffffff8022d6fd>] __wake_up+0x2d/0x70
+[  221.579457]  [<ffffffff805c5f04>] _spin_lock_irqsave+0x34/0x50
+[  221.581800]  [<ffffffff805c5e45>] _spin_unlock_irqrestore+0x55/0x70
+[  221.584317]  [<ffffffff8022d6fd>] __wake_up+0x2d/0x70
+[  221.586344]  [<ffffffff805a88b0>] rpc_async_schedule+0x0/0x10
+[  221.588648]  [<ffffffff802fface>] nfs_free_unlinkdata+0x1e/0x50
+[  221.591023]  [<ffffffff805a7e96>] rpc_release_calldata+0x26/0x50
+[  221.593428]  [<ffffffff8024778f>] run_workqueue+0x16f/0x210
+[  221.595662]  [<ffffffff80259731>] trace_hardirqs_on+0xc1/0x160
+[  221.598004]  [<ffffffff802483d0>] worker_thread+0x0/0xb0
+[  221.600130]  [<ffffffff802483d0>] worker_thread+0x0/0xb0
+[  221.602265]  [<ffffffff8024843d>] worker_thread+0x6d/0xb0
+[  221.604431]  [<ffffffff8024bfc0>] autoremove_wake_function+0x0/0x30
+[  221.606939]  [<ffffffff802483d0>] worker_thread+0x0/0xb0
+[  221.609067]  [<ffffffff802483d0>] worker_thread+0x0/0xb0
+[  221.611199]  [<ffffffff8024bbeb>] kthread+0x4b/0x80
+[  221.613156]  [<ffffffff8020cb98>] child_rip+0xa/0x12
+[  221.615151]  [<ffffffff8020c2af>] restore_args+0x0/0x30
+[  221.617247]  [<ffffffff8024bba0>] kthread+0x0/0x80
+[  221.619162]  [<ffffffff8020cb8e>] child_rip+0x0/0x12
+[  221.621147]
+[  221.621749] INFO: lockdep is turned off.
+[  226.369259] SysRq : Emergency Sync
+[  226.331342] Emergency Sync complete
+[  227.064545] SysRq : Emergency Remount R/O
+[  228.193491] SysRq : Emergency Sync
+[  228.155593] Emergency Sync complete
+[  228.767931] SysRq : Resetting
+
+I also had another BUG output during system startup, but that should
+be unrelated:
+[  103.254681] BUG: sleeping function called from invalid context at
+kernel/rwsem.c:20
+[  103.257757] in_atomic():0, irqs_disabled():1
+[  103.259469] 1 lock held by artsd/5883:
+[  103.259470]  #0:  (pm_qos_lock){....}, at: [<ffffffff80250efb>]
+pm_qos_add_requirement+0x6b/0xf0
+[  103.263316] irq event stamp: 49712
+[  103.263318] hardirqs last  enabled at (49711): [<ffffffff802941ed>]
+__kmalloc+0x10d/0x180
+[  103.263321] hardirqs last disabled at (49712): [<ffffffff805c5eea>]
+_spin_lock_irqsave+0x1a/0x50
+[  103.263326] softirqs last  enabled at (48820): [<ffffffff805954d9>]
+unix_release_sock+0x79/0x240
+[  103.263330] softirqs last disabled at (48818): [<ffffffff805c5b89>]
+_write_lock_bh+0x9/0x30
+[  103.263333]
+[  103.263333] Call Trace:
+[  103.263335]  [<ffffffff8024fc25>] down_read+0x15/0x40
+[  103.263338]  [<ffffffff802507e6>] __blocking_notifier_call_chain+0x46/0x90
+[  103.263341]  [<ffffffff80250f23>] pm_qos_add_requirement+0x93/0xf0
+[  103.263344]  [<ffffffff804fdc4a>] snd_pcm_hw_params+0x2fa/0x380
+[  103.263347]  [<ffffffff804fe93c>] snd_pcm_common_ioctl1+0xb4c/0xdc0
+[  103.263350]  [<ffffffff8027b167>] __do_fault+0x227/0x470
+[  103.263353]  [<ffffffff8025a435>] __lock_acquire+0x745/0x1140
+[  103.263357]  [<ffffffff805c5e45>] _spin_unlock_irqrestore+0x55/0x70
+[  103.263359]  [<ffffffff80259731>] trace_hardirqs_on+0xc1/0x160
+[  103.263362]  [<ffffffff804fee88>] snd_pcm_playback_ioctl1+0x48/0x240
+[  103.263365]  [<ffffffff804ffa36>] snd_pcm_playback_ioctl+0x36/0x50
+[  103.263367]  [<ffffffff802a80bf>] vfs_ioctl+0x2f/0xa0
+[  103.263369]  [<ffffffff802a8390>] do_vfs_ioctl+0x260/0x2e0
+[  103.263371]  [<ffffffff80259731>] trace_hardirqs_on+0xc1/0x160
+[  103.263373]  [<ffffffff802a84a1>] sys_ioctl+0x91/0xb0
+[  103.263376]  [<ffffffff8020bc5e>] system_call+0x7e/0x83
+[  103.263379]
 
 Torsten
