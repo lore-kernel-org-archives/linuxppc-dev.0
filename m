@@ -1,24 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
-	[207.189.120.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp.linux-foundation.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4DAF4DDDE4
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 05:20:48 +1100 (EST)
-Date: Sat, 17 Nov 2007 10:19:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
+Return-Path: <clameter@sgi.com>
+Received: from relay.sgi.com (netops-testserver-3-out.sgi.com [192.48.171.28])
+	by ozlabs.org (Postfix) with ESMTP id AAD48DDDF5
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 06:33:59 +1100 (EST)
+Date: Sat, 17 Nov 2007 11:33:56 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
-Message-Id: <20071117101957.7562639d.akpm@linux-foundation.org>
-In-Reply-To: <20071117180946.GA14055@elte.hu>
+In-Reply-To: <20071117100507.912c5e5c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711171128530.7986@schroedinger.engr.sgi.com>
 References: <473DA608.1020804@linux.vnet.ibm.com>
 	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
-	<20071117180946.GA14055@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, Peter,
-	Zijlstra <a.p.zijlstra@chello.nl>, LKML <linux-kernel@vger.kernel.org>,
+	<20071117100507.912c5e5c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+	LKML <linux-kernel@vger.kernel.org>,
 	Torsten Kaiser <just.for.lkml@googlemail.com>,
 	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
 	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
@@ -32,21 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 17 Nov 2007 19:09:46 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, 17 Nov 2007, Andrew Morton wrote:
 
+> > Don't know who to bug about that.
 > 
-> * Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> 
-> > Sadly lockdep does not work for me, as it gets turned off early:
-> > [   39.851594] ---------------------------------
-> > [   39.855963] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
-> > [   39.861981] swapper/0 [HC0[0]:SC1[1]:HE0:SE0] takes:
-> > [   39.866963]  (&n->list_lock){-+..}, at: [<ffffffff802935c1>]
-> 
-> hey, that means it found a bug - which is not sad at all :-)
-> 
+> That's slub.  It appears that list_lock is being taken from process context
+> in one place and from softirq in another.
 
-mutter.
+I kicked out some weird interrupt disable code in mm that was only run during
+NUMA bootstrap.
 
-Torsten, you could try CONFIG_SLAB=y, CONFIG_SLUB=n to see if you can make
-some progress on the NFS problem.
+This should fix it but isnt there some mechanism to convince lockdep that 
+it is okay to do these things during bootstrap?
+
+---
+ mm/slub.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2007-11-17 11:31:21.044136631 -0800
++++ linux-2.6/mm/slub.c	2007-11-17 11:32:17.364386560 -0800
+@@ -2044,7 +2044,9 @@ static struct kmem_cache_node *early_kme
+ #endif
+ 	init_kmem_cache_node(n);
+ 	atomic_long_inc(&n->nr_slabs);
++	local_irq_disable();
+ 	add_partial(kmalloc_caches, page, 0);
++	local_irq_enable();
+ 	return n;
+ }
+ 
