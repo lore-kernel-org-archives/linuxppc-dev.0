@@ -1,15 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-Date: Sun, 18 Nov 2007 16:49:33 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: Revisited, audio codec device tree entries.
-In-Reply-To: <0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id DA5E0DDDE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 09:36:33 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so953938uge
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 14:36:32 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 4/21] ide/Kconfig: fix mpc8xx host driver dependencies
+Date: Sun, 18 Nov 2007 23:15:19 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Message-Id: <200711182315.19408.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,36 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/18/07, Segher Boessenkool <segher@kernel.crashing.org> wrote:
-> > David Gibson
-> > made a proposal that a fabric node wrap the codec node. That doesn't
-> > work very well with the i2c bus where the bus code is walking down the
-> > nodes and triggering the instantiation of the i2c drivers.
->
-> Yeah, doesn't work at all.
->
-> > But what about putting the fabric node inside the codec node?
->
-> _Which_ codec node?  Having more than one isn't uncommon at all.
 
-In all of them. Fabric can probably be split into pieces that
-corresponds to the codec.
+Only LWMON, IVMS8, IVML24 and TQM8xxL platforms have the needed
+defines (IDE0_BASE_OFFSET and friends) in the platform header file.
 
-> There is no way you can describe this fabric stuff in a generic way in
-> the device tree.  Just hardcode it in your platform support code; if
-> the platform code supports several variant boards, _it_ can probe that
-> from the device tree (in whatever way works for that platform).
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The codec-fabric node was just being used to trigger the loading of
-the platform specific driver.
-
->
->
-> Segher
->
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Index: b/drivers/ide/Kconfig
+===================================================================
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -951,7 +951,7 @@ config BLK_DEV_Q40IDE
+ 
+ config BLK_DEV_MPC8xx_IDE
+ 	bool "MPC8xx IDE support"
+-	depends on 8xx && IDE=y && BLK_DEV_IDE=y && !PPC_MERGE
++	depends on 8xx && (LWMON || IVMS8 || IVML24 || TQM8xxL) && IDE=y && BLK_DEV_IDE=y && !PPC_MERGE
+ 	select IDE_GENERIC
+ 	help
+ 	  This option provides support for IDE on Motorola MPC8xx Systems.
