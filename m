@@ -1,11 +1,30 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-Date: Sun, 18 Nov 2007 13:10:10 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "PowerPC dev list" <Linuxppc-dev@ozlabs.org>
-Subject: Revisited, audio codec device tree entries.
+Return-Path: <just.for.lkml@googlemail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.183])
+	by ozlabs.org (Postfix) with ESMTP id F19CDDDDF6
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 05:44:20 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so6460771pyi
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 10:44:19 -0800 (PST)
+Message-ID: <64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
+Date: Sun, 18 Nov 2007 19:44:19 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+In-Reply-To: <20071117230508.GB25905@dyad>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	<20071117180946.GA14055@elte.hu>
+	<20071117101957.7562639d.akpm@linux-foundation.org>
+	<64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+	<20071117230508.GB25905@dyad>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, steved@redhat.com,
+	LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jan Blunck <jblunck@suse.de>, Ingo Molnar <mingo@elte.hu>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,84 +34,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've been trying to write ALSA SOC code supporting audio codecs and
-device trees.
+On Nov 18, 2007 12:05 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> I've been staring at this NFS code for a while an can't make any sense
+> out of it. It seems to correctly initialize the waitqueue. So this would
+> indicate corruption of some sort.
 
-This looks ok for the main device tree entires. Codecs are hung off
-from their controlling bus. It may still need a little tweaking.
+No, it does not "correctly" initialize the waitqueue. It doesn't even
+try to initialize it.
 
-		ac97@2200 {		// PSC2
-			compatible = "mpc5200b-psc-ac97","mpc5200-psc-ac97";
-			cell-index = <1>;
-			reg = <2200 100>;
-			interrupts = <2 2 0>;
-			interrupt-parent = <&mpc5200_pic>;
-			codec@0 {
-				compatible = "idt,stac9766";
-				reg = <0>;
-			};
-		};
+I now found the guilty patch and what is wrong with it.
 
-		i2c@3d40 {
-			compatible = "mpc5200b-i2c","mpc5200-i2c","fsl-i2c";
-			reg = <3d40 40>;
-			interrupts = <2 10 0>;
-			interrupt-parent = <&mpc5200_pic>;
-			fsl5200-clocking;
+nfs-stop-sillyname-renames-and-unmounts-from-racing.patch adds:
 
-			codec@15 {
-				compatible = "ti,tas5504";
-				reg = <15>;
-				i2s-handle = <i2s@2400>;
-			};
-		};
-		
-		i2s@2400 {		// PSC4
-			compatible = "mpc5200b-psc-i2s","mpc5200-psc-i2s";
-			cell-index = <1>;
-			reg = <2400 100>;
-			interrupts = <2 3 0>;
-			interrupt-parent = <&mpc5200_pic>;
-		};
+@@ -110,8 +112,22 @@ struct nfs_server {
+                                                   filesystem */
+ #endif
+        void (*destroy)(struct nfs_server *);
++
++       atomic_t active; /* Keep trace of any activity to this server */
++       wait_queue_head_t active_wq;  /* Wait for any activity to stop  */
 
-In the ALSA SOC model the i2s, codec and ac97 drivers are all generic.
-A fabric driver tells specifically how a generic codec is wired into
-the board. What I haven't been able figure out is how to load the
-right fabric driver.
+and tries to initialize it:
+@@ -593,6 +593,10 @@ static int nfs_init_server(struct nfs_server *server,
+        server->namelen  = data->namlen;
+        /* Create a client RPC handle for the NFSv3 ACL management interface */
+        nfs_init_server_aclclient(server);
++
++       init_waitqueue_head(&server->active_wq);
++       atomic_set(&server->active, 0);
++
 
-It is starting to make more sense to me that fabric driver actually
-does represent a physical device - the cluster of wires. David Gibson
-made a proposal that a fabric node wrap the codec node. That doesn't
-work very well with the i2c bus where the bus code is walking down the
-nodes and triggering the instantiation of the i2c drivers.
+and then uses it via nfs_sb_active and nfs_sb_deactive:
 
-But what about putting the fabric node inside the codec node?
-
-			codec@15 {
-				compatible = "ti,tas5504";
-				reg = <15>;
-				i2s-handle = <i2s@2400>;
-				codec-fabric {
-					compatible = "digispeaker,fabric"
-				};
-			};
-
-			codec@0 {
-				compatible = "idt,stac9766";
-				reg = <0>;
-				codec-fabric {
-					compatible = "efika,fabric"
-				};
-			};
-
-This sort of makes sense, the ac97/i2c bus is connected to the codec,
-which is then connected to the fabric.
-
-The example used in the ALSA doc of an ac97 chip needing a fabric
-driver was a case where the ac97 chip has an external amp. The fabric
-driver uses a GPIO to turn the amp on/off with suspend/resume.
+@@ -29,6 +29,7 @@ struct nfs_unlinkdata {
+ static void
+ nfs_free_unlinkdata(struct nfs_unlinkdata *data)
+ {
++       nfs_sb_deactive(NFS_SERVER(data->dir));
+        iput(data->dir);
+        put_rpccred(data->cred);
+        kfree(data->args.name.name);
+@@ -151,6 +152,7 @@ static int nfs_do_call_unlink(struct dentry
+*parent, struct inode *dir, struct n
+                nfs_dec_sillycount(dir);
+                return 0;
+        }
++       nfs_sb_active(NFS_SERVER(dir));
+        data->args.fh = NFS_FH(dir);
+        nfs_fattr_init(&data->res.dir_attr);
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+But it does not notice this:
+struct dentry_operations nfs_dentry_operations = {
+        .d_revalidate   = nfs_lookup_revalidate,
+        .d_delete       = nfs_dentry_delete,
+        .d_iput         = nfs_dentry_iput,
+};
+struct dentry_operations nfs4_dentry_operations = {
+        .d_revalidate   = nfs_open_revalidate,
+        .d_delete       = nfs_dentry_delete,
+        .d_iput         = nfs_dentry_iput,
+};
+
+NFSv2/3 and NFSv4 share the same dentry_iput and so share the same
+unlink and sillyrename logic.
+But they do not share nfs_init_server()!
+
+I wonder why this doesn't blow up more violently, but only hangs...
+
+But as I don't know if it is correct to add the workqueue
+initialization to nfs4_init_server() or remove the nfs_sb_active /
+nfs_sb_deactive for the NFSv4 case, I can't offer a patch to fix this.
+
+Torsten
