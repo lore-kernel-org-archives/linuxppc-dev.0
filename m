@@ -1,15 +1,18 @@
 Return-Path: <wd@denx.de>
-To: zhangwei zhang <linda.zhangwei@gmail.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id C7D26DDDD5
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 11:54:07 +1100 (EST)
+To: "Jon Smirl" <jonsmirl@gmail.com>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: about uImage-DENX-v2.6.14 config
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 15 Nov 2007 07:13:27 +0100."
-	<200711150713.28211.sr@denx.de>
-Date: Sun, 18 Nov 2007 01:43:01 +0100
+In-reply-to: Your message of "Wed, 14 Nov 2007 21:34:45 EST."
+	<9e4733910711141834n2bfb1742v5637c56e27e26f5a@mail.gmail.com>
+Date: Sun, 18 Nov 2007 01:47:29 +0100
 Sender: wd@denx.de
-Message-Id: <20071118004301.475BC247F1@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Message-Id: <20071118004729.67824247F1@gemini.denx.de>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <200711150713.28211.sr@denx.de> Stefan Roese wrote:
-> On Wednesday 14 November 2007, zhangwei zhang wrote:
-> > Hello, I have a problem when using linux-2.6.14(download from
-> > ftp.denx.de) for RTAI on ppc440EP.
+In message <9e4733910711141834n2bfb1742v5637c56e27e26f5a@mail.gmail.com> you wrote:
+>
+> > * The documentation is only available under NDA, a problem for open
+> > source debuggers.
 > 
-> RTAI on PPC? I thought RTAI was dead for anything other than X86.
+> This is what we need. I would like it specifically for the mpc5200.
+> But we want to use it in OpenOCD so NDA won't work.
 
-Stefan is right.
+It doesn't work. Been  there  a  logn  time  ago.  It's  and  endless
+fingerpointing.  Freescale  (by  then:  Motorola)  says  they  cannot
+release any information because of their contracts with IBM, and vice
+versa.
 
-RTAI is dead.
+> Dominic is way experienced implementing JTAG for ARM CPUs. He has done
+> several dozen interfaces. ARM doesn't have any problems releasing
+> their debugging info.
 
-You should use Xenomai instead.
-
-> And 2.6.14 is quite old. I suggest you use a newer binary version or compile a 
-> the image from the current kernel source.
-
-He is reight again. Pleas euse a current kernel version from our git
-repository; Xenomai should support this directly.
+JTAG is simple, but you don't get the necessery information for the
+COP (= debug) interface.
 
 Best regards,
 
@@ -46,4 +50,6 @@ Wolfgang Denk
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-1 1 was a race-horse, 2 2 was 1 2. When 1 1 1 1 race, 2 2 1 1 2.
+Genius doesn't work on an assembly line basis.  You can't simply say,
+"Today I will be brilliant."
+	-- Kirk, "The Ultimate Computer", stardate 4731.3
