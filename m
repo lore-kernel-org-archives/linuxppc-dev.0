@@ -1,22 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id CC506DDDF4
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1BBC6DDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 18 Nov 2007 08:53:22 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so225292anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Nov 2007 13:53:20 -0800 (PST)
-Message-ID: <fa686aa40711171353t2e8789a2vcf6f2a72afc4c1cd@mail.gmail.com>
-Date: Sat, 17 Nov 2007 14:53:20 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: keng_629 <keng_629@126.com>
-Subject: Re: multiprocessor
-In-Reply-To: <200711171445384213369@126.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <200711171445384213369@126.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sun, 18 Nov 2007 11:49:20 +1100 (EST)
+To: "Leo Hendrawan" <leo.hendrawan@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Problem with uboot on lite5200
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 15 Nov 2007 10:14:50 +0100."
+	<6b461e5b0711150114h26624cacq3cad2629912c60ea@mail.gmail.com>
+Date: Sun, 18 Nov 2007 01:49:19 +0100
+Sender: wd@denx.de
+Message-Id: <20071118004919.19256247F1@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,24 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/16/07, keng_629 <keng_629@126.com> wrote:
+In message <6b461e5b0711150114h26624cacq3cad2629912c60ea@mail.gmail.com> you wrote:
 >
->
-> i am trying to make a exam about Multiprocessor on the Xilinx Virtex-4 with
-> two PowerPc hard core.
-> please give me some advices about  bootloader and os.
-> how can i start my work.
+> how can i re-flash the uboot inside the MPC5200? i use bdi2000, compiled the
 
-I'm sorry, but I really don't understand what you're asking about.
-Both u-boot and Linux run on the ppc405 cores that the Virtex-4 uses.
-However, there is no cache coherency between the cores so you would
-need to run a separate Linux image on each one.  (SMP doesn't work)
+You are off topic here. Please post U-Boto related questions on the
+U-Boot maioling list.
 
-Cheers,
-g.
+> new uboot version 1.1.6 but didnt find out anyway to flash it inside the
+
+New? 1.1.6? That's stone-age.
+
+Current U-Boot is 1.3.0-rc4. Please wake up.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+[Braddock:] Mr. Churchill, you are drunk.
+[Churchill:] And you madam, are ugly.  But I shall be sober tomorrow.
