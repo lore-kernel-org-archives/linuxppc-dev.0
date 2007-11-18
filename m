@@ -1,15 +1,18 @@
-Return-Path: <matt@genesi-usa.com>
-Message-ID: <4740C0E3.5080704@genesi-usa.com>
-Date: Sun, 18 Nov 2007 22:46:59 +0000
-From: Matt Sealey <matt@genesi-usa.com>
-MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Revisited, audio codec device tree entries.
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
-	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-In-Reply-To: <9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Return-Path: <news@alea.gnuu.de>
+Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
+	by ozlabs.org (Postfix) with ESMTP id BF8FADDE16
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 09:52:53 +1100 (EST)
+Received: from news by alea.gnuu.de with local (Exim 4.63)
+	(envelope-from <news@alea.gnuu.de>) id 1Its4g-0005Ax-5V
+	for linuxppc-dev@ozlabs.org; Sun, 18 Nov 2007 22:53:06 +0100
+To: linuxppc-dev@ozlabs.org
+From: =?UTF-8?Q?J=C3=B6rg?= Sommer <joerg@alea.gnuu.de>
+Subject: 2.6.24-rc3: High CPU load -- hardware interrupts
+Date: Sun, 18 Nov 2007 21:53:06 +0000 (UTC)
+Message-ID: <slrnfk1d21.229.joerg@alea.gnuu.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@alea.gnuu.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,41 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
-> 
-> The codec-fabric node was just being used to trigger the loading of
-> the platform specific driver.
+Hi,
 
-Just remember one thing.
+I've installed the new kernel version and now suspend to RAM works. But I
+saw that the CPU load is everytime 50% due to hardware interrupts. Is
+this a known bug?
 
-1) the term "fabric" when coined for audio drivers is a new, ALSA SoC
-specific term. It isn't relevant for anything but ALSA SoC drivers.
+top - 22:51:19 up 21:58,  8 users,  load average: 0.36, 0.39, 0.40
+Tasks:  66 total,   4 running,  62 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.7%us,  0.5%sy, 11.2%ni, 27.0%id,  0.0%wa, 60.6%hi,  0.0%si,  0.0%st
 
-2) this device tree stuff will end up in more than Linux device trees
+% diff <(cat /proc/interrupts) <(sleep 2; cat /proc/interrupts)
+--- /proc/self/fd/11    2007-11-18 13:02:25.204839099 +0100
++++ /proc/self/fd/13    2007-11-18 13:02:25.228832847 +0100
+@@ -1,16 +1,16 @@
+            CPU0       
+  21:          1   MPIC 1    Edge      PMac Output
+  24:         68   MPIC 1    Level     ide1
+- 25:    1337463   MPIC 1    Level     VIA-PMU
++ 25:    1337690   MPIC 1    Level     VIA-PMU
+  26:        378   MPIC 1    Level     keywest i2c
+  29:          1   MPIC 1    Level     ohci_hcd:usb2
+  30:          1   MPIC 1    Edge      PMac Input
+  39:     249347   MPIC 1    Level     ide0
+  40:          3   MPIC 1    Level     ohci1394
+  41:       3454   MPIC 1    Level     eth0
+- 42:      30782   MPIC 1    Level     keywest i2c
+- 47:      22021   MPIC 1    Level     GPIO1 ADB
+- 48:      23892   MPIC 1    Level     radeon@pci:0000:00:10.0
++ 42:      30800   MPIC 1    Level     keywest i2c
++ 47:      22049   MPIC 1    Level     GPIO1 ADB
++ 48:      24014   MPIC 1    Level     radeon@pci:0000:00:10.0
+  61:          0   MPIC 1    Edge      Sound Headphone Detection
+  63:      94237   MPIC 1    Level     ehci_hcd:usb1, ohci_hcd:usb3, ohci_hcd:usb4
+ BAD:          0
 
-3) you're going to piss off Open Firmware developers by specifying
-very Linux-specific features in a device tree the same way Apple
-pissed off Linux developers by encoding MacOS X-specific features in
-the device tree.
+% cat /proc/cpuinfo
+processor	: 0
+cpu		: 7455, altivec supported
+clock		: 798.720000MHz
+revision	: 0.3 (pvr 8001 0303)
+bogomips	: 48.41
+timebase	: 18432000
+platform	: PowerMac
+machine		: PowerBook6,3
+motherboard	: PowerBook6,3 MacRISC3 Power Macintosh
+detected as	: 287 (iBook G4)
+pmac flags	: 0000001b
+L2 cache	: 256K unified
+pmac-generation	: NewWorld
 
-Audio driver control like this has to be very specific for a good
-reason; you can do it a billion ways to Sunday. I'd suggest basically
-that if you must control a device in a way that needs to be defined by
-a device which can change address (either dynamically on boot or by
-board design change - per revision, for example, or with a change of
-controller) then simply use the device tree to report this address
-so that you can have the same basic fabric driver (all in Linux) which
-can handle minor modifications of your board design.
+% uname -a
+Linux ibook 2.6.24-rc3 #1 Sat Nov 17 16:06:21 CET 2007 ppc GNU/Linux
 
-If you require the codec to be subservient to some "fabric" then I
-suggest you make a "sound" node with a compatible entry which is
-defined as something specific to your board (digispeaker,audio) and
-let your driver pick that up and then switch on the model (rather like
-Apple's layout-id) of that device to pick out the specifics of that
-fabric. If it needs an audio codec (ac97 or i2s) and a control
-interface (i2c or spi) then it knows which ones it is looking for
-based on the model.
-
+Bye, Jörg.
 -- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+Es liegt in der Natur des Menschen, vernünftig zu denken und
+unlogisch zu handeln! Das Gesagte ist nicht das Gemeinte und das Gehörte
+nicht das Verstandene!
