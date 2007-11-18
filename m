@@ -1,19 +1,22 @@
-Return-Path: <keng_629@126.com>
-Received: from m5-143.126.com (m5-143.126.com [202.108.5.143])
-	by ozlabs.org (Postfix) with SMTP id D64AADDDDB
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1E387DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 18 Nov 2007 13:26:15 +1100 (EST)
-Date: Sun, 18 Nov 2007 09:55:16 +0800
-From: "keng_629" <keng_629@126.com>
-To: "grant.likely" <grant.likely@secretlab.ca>
-References: <200711171445384213369@126.com>,
-	<fa686aa40711171353t2e8789a2vcf6f2a72afc4c1cd@mail.gmail.com>
-Subject: Re: Re: multiprocessor
-Message-ID: <200711180955153286449@126.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon108454411137_====="
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Sun, 18 Nov 2007 20:28:39 +1100 (EST)
+Message-ID: <4740000A.9060900@dlasys.net>
+Date: Sun, 18 Nov 2007 04:04:10 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: John Williams <jwilliams@itee.uq.edu.au>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] Xilinx TEMAC driver
+References: <46A5C305.5000903@dlasys.net>
+	<fa686aa40707242129p1b5f5299i44818ead5ed4d2f3@mail.gmail.com>
+	<47392A2A.7020200@itee.uq.edu.au>
+In-Reply-To: <47392A2A.7020200@itee.uq.edu.au>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,113 +27,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+John Williams wrote:
+> Hi David, GRant
+>
+> Any progress on the ll_temac driver since July? In EDK9.2, ll_temac is
+> really the only supported ethernet solution, apart from ethernet lite
+> (yuck).
+>
+> If there's a PPC version in a reasonable state, i'm happy to see
+> what's requierd to port it across to MicroBlaze.
+Little has been done since July. The version I posted did have ll_temac
+support that once upon a time worked.
 
-This is a multi-part message in MIME format.
+I have little experience on the firmware side - yet. Though I keep
+getting pushed towards it, I also end up sufficiently busy on the
+software side as to have no time to even finish installing Xilinx tools.
+But I am pretty sure Pico is using 9.2 and I am completely certain we
+are not currently using the ll_temac.
 
---=====003_Dragon108454411137_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+BUT, there is serious discussion about going back to it. We strive for
+the absolute smallest firmware needed for a task. We have clients that
+need Linux or GreenHills on the card AND are designing large blocks of
+firmware for their own purposes. No matter how much free space we give
+them they need more.
 
-U01QIGRvZXNuJ3Qgd29yayBvbiB0aGUgVmlydGV4P2kgYW0gc28gc29ycnkgLmkganVzdCBob3Bl
-ZCB0byBtYWtlIGV4YW0gb24gdmlydGV4IGZvciBTTVAubm93IGkgY2FuIGp1c3QgcnVuIHNlcGFy
-YXRlIExpbnV4IG9uIGVhY2ggb25lLg0KdGhhbmsgeW91IGZvciB5b3UgaGVscA0KeW91cnMgb25t
-aW5lcm9hZA0KDQoNCg0KDQprZW5nXzYyOQ0KMjAwNy0xMS0xOA0KDQoNCg0Kt6K8/sjLo7ogR3Jh
-bnQgTGlrZWx5DQq3osvNyrG85KO6IDIwMDctMTEtMTggMDc6Mjk6NTgNCsrVvP7Iy6O6IGtlbmdf
-NjI5DQqzrcvNo7ogbGludXhwcGMtZW1iZWRkZWQNCtb3zOKjuiBSZTogbXVsdGlwcm9jZXNzb3IN
-Cg0KT24gMTEvMTYvMDcsIGtlbmdfNjI5ICA8a2VuZ182MjlAMTI2LmNvbSA+IHdyb3RlOg0KPg0K
-Pg0KPiBpIGFtIHRyeWluZyB0byBtYWtlIGEgZXhhbSBhYm91dCBNdWx0aXByb2Nlc3NvciBvbiB0
-aGUgWGlsaW54IFZpcnRleC00IHdpdGgNCj4gdHdvIFBvd2VyUGMgaGFyZCBjb3JlLg0KPiBwbGVh
-c2UgZ2l2ZSBtZSBzb21lIGFkdmljZXMgYWJvdXQgIGJvb3Rsb2FkZXIgYW5kIG9zLg0KPiBob3cg
-Y2FuIGkgc3RhcnQgbXkgd29yay4NCg0KSSdtIHNvcnJ5LCBidXQgSSByZWFsbHkgZG9uJ3QgdW5k
-ZXJzdGFuZCB3aGF0IHlvdSdyZSBhc2tpbmcgYWJvdXQuDQpCb3RoIHUtYm9vdCBhbmQgTGludXgg
-cnVuIG9uIHRoZSBwcGM0MDUgY29yZXMgdGhhdCB0aGUgVmlydGV4LTQgdXNlcy4NCkhvd2V2ZXIs
-IHRoZXJlIGlzIG5vIGNhY2hlIGNvaGVyZW5jeSBiZXR3ZWVuIHRoZSBjb3JlcyBzbyB5b3Ugd291
-bGQNCm5lZWQgdG8gcnVuIGEgc2VwYXJhdGUgTGludXggaW1hZ2Ugb24gZWFjaCBvbmUuICAoU01Q
-IGRvZXNuJ3Qgd29yaykNCg0KQ2hlZXJzLA0KZy4NCg0KLS0gDQpHcmFudCBMaWtlbHksIEIuU2Mu
-LCBQLkVuZy4NClNlY3JldCBMYWIgVGVjaG5vbG9naWVzIEx0ZC4NCmdyYW50Lmxpa2VseUBzZWNy
-ZXRsYWIuY2ENCig0MDMpIDM5OS0wMTk1DQo=
+I have heard that the current incarnations of the ll_temac support
+interrupts. This was the deal breaker for us on the original ll_temac.
+Linux could be made to work (fairly badly) without interrupts, but while
+nothing is impossible, trying to write a GreenHills NIC driver that is
+polled was an excercise in futility. I managed to get a polled serial
+driver working - but it was very ugly.
 
---=====003_Dragon108454411137_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Presuming that the currently ll_temac is smaller than the plb
+implimentation and presuming that it has the option of interrupts, it is
+likely to return to my todo list shortly - of course that list is fairly
+long. I have spent the past several months massaging Pico's Host
+utilites to run under Linxu 2.6, 2.4, OpenBSD, and Mac OS X. I have been
+living exclusively in Linux since March. I accidentally obliterated my
+Windows partition and the recovery partition installing OS X86 and have
+not even noticed it is gone.
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgaHR0cC1lcXVpdj1Db250ZW50LVR5cGUgY29udGVu
-dD0idGV4dC9odG1sOyBjaGFyc2V0PWdiMjMxMiI+DQo8TUVUQSBjb250ZW50PSJNU0hUTUwgNi4w
-MC4yOTAwLjMxOTkiIG5hbWU9R0VORVJBVE9SPg0KPFNUWUxFPkBmb250LWZhY2Ugew0KCWZvbnQt
-ZmFtaWx5OiDLzszlOw0KfQ0KQGZvbnQtZmFjZSB7DQoJZm9udC1mYW1pbHk6IFZlcmRhbmE7DQp9
-DQpAZm9udC1mYWNlIHsNCglmb250LWZhbWlseTogQMvOzOU7DQp9DQpAcGFnZSBTZWN0aW9uMSB7
-c2l6ZTogNTk1LjNwdCA4NDEuOXB0OyBtYXJnaW46IDcyLjBwdCA5MC4wcHQgNzIuMHB0IDkwLjBw
-dDsgbGF5b3V0LWdyaWQ6IDE1LjZwdDsgfQ0KUC5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTog
-aW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsg
-Rk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9tYW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpM
-SS5Nc29Ob3JtYWwgew0KCVRFWFQtSlVTVElGWTogaW50ZXItaWRlb2dyYXBoOyBGT05ULVNJWkU6
-IDEwLjVwdDsgTUFSR0lOOiAwY20gMGNtIDBwdDsgRk9OVC1GQU1JTFk6ICJUaW1lcyBOZXcgUm9t
-YW4iOyBURVhULUFMSUdOOiBqdXN0aWZ5DQp9DQpESVYuTXNvTm9ybWFsIHsNCglURVhULUpVU1RJ
-Rlk6IGludGVyLWlkZW9ncmFwaDsgRk9OVC1TSVpFOiAxMC41cHQ7IE1BUkdJTjogMGNtIDBjbSAw
-cHQ7IEZPTlQtRkFNSUxZOiAiVGltZXMgTmV3IFJvbWFuIjsgVEVYVC1BTElHTjoganVzdGlmeQ0K
-fQ0KQTpsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRlcmxpbmUNCn0N
-ClNQQU4uTXNvSHlwZXJsaW5rIHsNCglDT0xPUjogYmx1ZTsgVEVYVC1ERUNPUkFUSU9OOiB1bmRl
-cmxpbmUNCn0NCkE6dmlzaXRlZCB7DQoJQ09MT1I6IHB1cnBsZTsgVEVYVC1ERUNPUkFUSU9OOiB1
-bmRlcmxpbmUNCn0NClNQQU4uTXNvSHlwZXJsaW5rRm9sbG93ZWQgew0KCUNPTE9SOiBwdXJwbGU7
-IFRFWFQtREVDT1JBVElPTjogdW5kZXJsaW5lDQp9DQpTUEFOLkVtYWlsU3R5bGUxNyB7DQoJRk9O
-VC1XRUlHSFQ6IG5vcm1hbDsgQ09MT1I6IHdpbmRvd3RleHQ7IEZPTlQtU1RZTEU6IG5vcm1hbDsg
-Rk9OVC1GQU1JTFk6IFZlcmRhbmE7IFRFWFQtREVDT1JBVElPTjogbm9uZTsgbXNvLXN0eWxlLXR5
-cGU6IHBlcnNvbmFsLWNvbXBvc2UNCn0NCkRJVi5TZWN0aW9uMSB7DQoJcGFnZTogU2VjdGlvbjEN
-Cn0NCkJMT0NLUVVPVEUgew0KCU1BUkdJTi1UT1A6IDBweDsgTUFSR0lOLUJPVFRPTTogMHB4OyBN
-QVJHSU4tTEVGVDogMmVtDQp9DQpPTCB7DQoJTUFSR0lOLVRPUDogMHB4OyBNQVJHSU4tQk9UVE9N
-OiAwcHgNCn0NClVMIHsNCglNQVJHSU4tVE9QOiAwcHg7IE1BUkdJTi1CT1RUT006IDBweA0KfQ0K
-PC9TVFlMRT4NCjwvSEVBRD4NCjxCT0RZPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRhbmEgY29sb3I9
-IzAwMDBmZiBzaXplPTI+PFNQQU4gaWQ9X0ZveENVUlNPUj5TTVAgZG9lc24ndCANCndvcmsgb24g
-dGhlJm5ic3A7VmlydGV4P2kgYW0gc28gc29ycnkgLmkganVzdCBob3BlZCB0byBtYWtlIGV4YW0g
-b24gdmlydGV4IGZvciANClNNUC5ub3cgaSBjYW4ganVzdCBydW4gc2VwYXJhdGUgTGludXggb24g
-ZWFjaCBvbmUuPC9TUEFOPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIGNv
-bG9yPSMwMDAwZmYgc2l6ZT0yPjxTUEFOPnRoYW5rIHlvdSBmb3IgeW91IA0KaGVscDwvU1BBTj48
-L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05UIGZhY2U9VmVyZGFuYSBjb2xvcj0jMDAwMGZmIHNpemU9
-Mj48U1BBTj55b3VycyANCm9ubWluZXJvYWQ8L1NQQU4+PC9GT05UPjwvRElWPg0KPERJVj48Rk9O
-VCBmYWNlPVZlcmRhbmEgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVYgYWxpZ249bGVm
-dD4NCjxESVYgYWxpZ249bGVmdD48Rk9OVCBmYWNlPVZlcmRhbmEgc2l6ZT0yPg0KPEhSIHN0eWxl
-PSJXSURUSDogMTIycHg7IEhFSUdIVDogMnB4IiBTSVpFPTI+DQo8L0ZPTlQ+PC9ESVY+DQo8RElW
-PjxGT05UIGNvbG9yPSNjMGMwYzA+PEZPTlQgZmFjZT1WZXJkYW5hIA0Kc2l6ZT0yPjxTUEFOPmtl
-bmdfNjI5PC9TUEFOPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIHNpemU9
-Mj4yMDA3LTExLTE4PC9GT05UPjwvRk9OVD48L0RJVj48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1W
-ZXJkYW5hIHNpemU9Mj4NCjxIUj4NCjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJk
-YW5hPjxGT05UIHNpemU9Mj48U1RST05HPreivP7Iy6O6PC9TVFJPTkc+IEdyYW50IA0KTGlrZWx5
-PC9GT05UPjwvRk9OVD48L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hPjxGT05UIHNpemU9
-Mj48U1RST05HPreiy83Ksbzko7o8L1NUUk9ORz4gDQoyMDA3LTExLTE4Jm5ic3A7MDc6Mjk6NTg8
-L0ZPTlQ+PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRhbmE+PEZPTlQgc2l6ZT0y
-PjxTVFJPTkc+ytW8/sjLo7o8L1NUUk9ORz4gDQprZW5nXzYyOTwvRk9OVD48L0ZPTlQ+PC9ESVY+
-DQo8RElWPjxGT05UIGZhY2U9VmVyZGFuYT48Rk9OVCBzaXplPTI+PFNUUk9ORz6zrcvNo7o8L1NU
-Uk9ORz4gDQpsaW51eHBwYy1lbWJlZGRlZDwvRk9OVD48L0ZPTlQ+PC9ESVY+DQo8RElWPjxGT05U
-IGZhY2U9VmVyZGFuYT48Rk9OVCBzaXplPTI+PFNUUk9ORz7W98zio7o8L1NUUk9ORz4gUmU6IA0K
-bXVsdGlwcm9jZXNzb3I8L0ZPTlQ+PC9GT05UPjwvRElWPg0KPERJVj48Rk9OVCBmYWNlPVZlcmRh
-bmEgc2l6ZT0yPjwvRk9OVD4mbmJzcDs8L0RJVj4NCjxESVY+PEZPTlQgZmFjZT1WZXJkYW5hIHNp
-emU9Mj4NCjxESVY+T24mbmJzcDsxMS8xNi8wNywmbmJzcDtrZW5nXzYyOSZuYnNwOyAmbHQ7a2Vu
-Z182MjlAMTI2LmNvbSANCiZndDsmbmJzcDt3cm90ZTo8L0RJVj4NCjxESVY+Jmd0OzwvRElWPg0K
-PERJVj4mZ3Q7PC9ESVY+DQo8RElWPiZndDsmbmJzcDtpJm5ic3A7YW0mbmJzcDt0cnlpbmcmbmJz
-cDt0byZuYnNwO21ha2UmbmJzcDthJm5ic3A7ZXhhbSZuYnNwO2Fib3V0Jm5ic3A7TXVsdGlwcm9j
-ZXNzb3ImbmJzcDtvbiZuYnNwO3RoZSZuYnNwO1hpbGlueCZuYnNwO1ZpcnRleC00Jm5ic3A7d2l0
-aDwvRElWPg0KPERJVj4mZ3Q7Jm5ic3A7dHdvJm5ic3A7UG93ZXJQYyZuYnNwO2hhcmQmbmJzcDtj
-b3JlLjwvRElWPg0KPERJVj4mZ3Q7Jm5ic3A7cGxlYXNlJm5ic3A7Z2l2ZSZuYnNwO21lJm5ic3A7
-c29tZSZuYnNwO2FkdmljZXMmbmJzcDthYm91dCZuYnNwOyZuYnNwO2Jvb3Rsb2FkZXImbmJzcDth
-bmQmbmJzcDtvcy48L0RJVj4NCjxESVY+Jmd0OyZuYnNwO2hvdyZuYnNwO2NhbiZuYnNwO2kmbmJz
-cDtzdGFydCZuYnNwO215Jm5ic3A7d29yay48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
-PkknbSZuYnNwO3NvcnJ5LCZuYnNwO2J1dCZuYnNwO0kmbmJzcDtyZWFsbHkmbmJzcDtkb24ndCZu
-YnNwO3VuZGVyc3RhbmQmbmJzcDt3aGF0Jm5ic3A7eW91J3JlJm5ic3A7YXNraW5nJm5ic3A7YWJv
-dXQuPC9ESVY+DQo8RElWPkJvdGgmbmJzcDt1LWJvb3QmbmJzcDthbmQmbmJzcDtMaW51eCZuYnNw
-O3J1biZuYnNwO29uJm5ic3A7dGhlJm5ic3A7cHBjNDA1Jm5ic3A7Y29yZXMmbmJzcDt0aGF0Jm5i
-c3A7dGhlJm5ic3A7VmlydGV4LTQmbmJzcDt1c2VzLjwvRElWPg0KPERJVj5Ib3dldmVyLCZuYnNw
-O3RoZXJlJm5ic3A7aXMmbmJzcDtubyZuYnNwO2NhY2hlJm5ic3A7Y29oZXJlbmN5Jm5ic3A7YmV0
-d2VlbiZuYnNwO3RoZSZuYnNwO2NvcmVzJm5ic3A7c28mbmJzcDt5b3UmbmJzcDt3b3VsZDwvRElW
-Pg0KPERJVj5uZWVkJm5ic3A7dG8mbmJzcDtydW4mbmJzcDthJm5ic3A7c2VwYXJhdGUmbmJzcDtM
-aW51eCZuYnNwO2ltYWdlJm5ic3A7b24mbmJzcDtlYWNoJm5ic3A7b25lLiZuYnNwOyZuYnNwOyhT
-TVAmbmJzcDtkb2Vzbid0Jm5ic3A7d29yayk8L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElW
-PkNoZWVycyw8L0RJVj4NCjxESVY+Zy48L0RJVj4NCjxESVY+Jm5ic3A7PC9ESVY+DQo8RElWPi0t
-Jm5ic3A7PC9ESVY+DQo8RElWPkdyYW50Jm5ic3A7TGlrZWx5LCZuYnNwO0IuU2MuLCZuYnNwO1Au
-RW5nLjwvRElWPg0KPERJVj5TZWNyZXQmbmJzcDtMYWImbmJzcDtUZWNobm9sb2dpZXMmbmJzcDtM
-dGQuPC9ESVY+DQo8RElWPmdyYW50Lmxpa2VseUBzZWNyZXRsYWIuY2E8L0RJVj4NCjxESVY+KDQw
-MykmbmJzcDszOTktMDE5NTwvRElWPjwvRk9OVD48L0RJVj48L0JPRFk+PC9IVE1MPg0K
 
---=====003_Dragon108454411137_=====--
+
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
