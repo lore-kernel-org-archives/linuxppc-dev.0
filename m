@@ -1,18 +1,23 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id B7FF6DDDD6
+Return-Path: <gjalt007@chello.nl>
+Received: from viefep12-int.chello.at (viefep18-int.chello.at [213.46.255.22])
+	by ozlabs.org (Postfix) with ESMTP id 185C1DDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Nov 2007 00:21:58 +1100 (EST)
-Message-ID: <47403C73.9040506@anagramm.de>
-Date: Sun, 18 Nov 2007 14:21:55 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Mon, 19 Nov 2007 04:56:24 +1100 (EST)
+Received: from [192.168.1.203] (really [80.56.196.247])
+	by viefep12-int.chello.at
+	(InterMail vM.7.08.02.00 201-2186-121-20061213) with ESMTP
+	id <20071118175619.HYBY19858.viefep12-int.chello.at@[192.168.1.203]>
+	for <linuxppc-embedded@ozlabs.org>; Sun, 18 Nov 2007 18:56:19 +0100
+Message-ID: <47407CCB.80503@chello.nl>
+Date: Sun, 18 Nov 2007 18:56:27 +0100
+From: Theo Gjaltema <gjalt007@chello.nl>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problem with uboot on lite5200
-References: <20071118004919.19256247F1@gemini.denx.de>
-In-Reply-To: <20071118004919.19256247F1@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: how to improve linux tcp/ip(UDP) efficiency on mpc8541 833Mhz.
+References: <OF406A1338.BB8E4414-ON48257392.000CFC61-48257392.000F90D1@coship.com>
+	<47398B44.2070902@anagramm.de>
+In-Reply-To: <47398B44.2070902@anagramm.de>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +28,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Wolfgang!
+Hi,
 
-Wolfgang Denk schrieb:
-> In message <6b461e5b0711150114h26624cacq3cad2629912c60ea@mail.gmail.com> you wrote:
->> how can i re-flash the uboot inside the MPC5200? i use bdi2000, compiled the
-> 
-> You are off topic here. Please post U-Boto related questions on the
-> U-Boot maioling list.
-> 
->> new uboot version 1.1.6 but didnt find out anyway to flash it inside the
-> 
-> New? 1.1.6? That's stone-age.
+We use a 8250 and 8270 of which the performance is highly limited by the 
+bandwidth of the memory to the very small internal cache.
+I once modified a driver into a "polling" method polling the device 
+every millisecond. The amount of messages processed trippled this way! 
+On full speed the console could even be used for "normal" operation (in 
+contrairy to the interrupt driver driver).
+The penalties are obvious: When the bandwith used is low the delay for 
+polled messages is higher and the CPU overhead is higher.
 
-How should people get a glue what's current, when in the section
-"Latest News" at http://sourceforge.net/projects/u-boot/ the people
-still find a more or less official looking "u-boot-1.1.5" release.
-(And they don't want to use scm repositories because they are afraid
-of using anything unstable.)
+Succes,
+   Theo.
 
-> Current U-Boot is 1.3.0-rc4. Please wake up.
-
-Well... maybe it's better to remove all references to the old
-releases at sourceforge and point them to ftp://ftp.denx.de/pub/u-boot/
-instead. Btw. 1.3.0-rc4 isn't there as well. :-P
-
-Regards,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm-technology.com
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+Clemens Koller schreef:
+> huangyun@coship.com schrieb:
+>  > hi,everbody:
+>  >       I have run linux-2.6.15 on my mpc8541 custom board. but when i test
+>  > TSEC use UDP, i found it's efficinecy is lower.
+>  > my test enviroment: i only run a UDP recieve program and not to handle data
+>  > recieved. when i recevie 400Mbps data, 79% of MPC8541 have be consumed.
+>  > so i think tcp/ip protocal have consume my mpc8541 resource.  i dont know
+>  > how to improve tcp/ip code or TSEC driver(gianfar.c).
+>  >       can somebody help me ?
+>
+> Hmm... you should first try one of the current kernels and check the
+> performance there.
+> For further details about linux networking, I recommend you to contact
+> the guys at the netdev list, giving lots of details how you do your
+> benchmarking and how your workload looks like.
+>
+> Regards,
+>
+> Clemens Koller
+> __________________________________
+> R&D Imaging Devices
+> Anagramm GmbH
+> Rupert-Mayer-Straße 45/1
+> Linhof Werksgelände
+> D-81379 München
+> Tel.089-741518-50
+> Fax 089-741518-19
+> http://www.anagramm-technology.com
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
