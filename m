@@ -1,23 +1,22 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from viefep12-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id 185C1DDDDB
+Return-Path: <ankur_maheshwari@procsys.com>
+Received: from mailsvr.procsys.com (unknown [61.95.199.26])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D593EDDDF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Nov 2007 04:56:24 +1100 (EST)
-Received: from [192.168.1.203] (really [80.56.196.247])
-	by viefep12-int.chello.at
-	(InterMail vM.7.08.02.00 201-2186-121-20061213) with ESMTP
-	id <20071118175619.HYBY19858.viefep12-int.chello.at@[192.168.1.203]>
-	for <linuxppc-embedded@ozlabs.org>; Sun, 18 Nov 2007 18:56:19 +0100
-Message-ID: <47407CCB.80503@chello.nl>
-Date: Sun, 18 Nov 2007 18:56:27 +0100
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Mon, 19 Nov 2007 16:54:17 +1100 (EST)
+Message-ID: <474124BB.7010308@procsys.com>
+Date: Mon, 19 Nov 2007 11:22:59 +0530
+From: Ankur Maheshwari <ankur_maheshwari@procsys.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: how to improve linux tcp/ip(UDP) efficiency on mpc8541 833Mhz.
-References: <OF406A1338.BB8E4414-ON48257392.000CFC61-48257392.000F90D1@coship.com>
-	<47398B44.2070902@anagramm.de>
-In-Reply-To: <47398B44.2070902@anagramm.de>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+Subject: Re: MPC880: i2cer register says tx is done but tx buf descriptor
+	is	still	ready
+References: <F1F6EC0C8B75034F9E3A79FC85122E8EB7C778@aquib01a>	<473F33BB.7050006@scram.de>
+	<F1F6EC0C8B75034F9E3A79FC85122E8E2649F4@aquib01a>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E2649F4@aquib01a>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,53 +27,88 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Antonio,
 
-We use a 8250 and 8270 of which the performance is highly limited by the 
-bandwidth of the memory to the very small internal cache.
-I once modified a driver into a "polling" method polling the device 
-every millisecond. The amount of messages processed trippled this way! 
-On full speed the console could even be used for "normal" operation (in 
-contrairy to the interrupt driver driver).
-The penalties are obvious: When the bandwith used is low the delay for 
-polled messages is higher and the CPU overhead is higher.
+Check  how is your tx_buf is allocated, if its 2.4 kernel , then try 
+allocating  using following function
 
-Succes,
-   Theo.
+tx_buf = (u_char *)m8xx_cpm_hostalloc(512);
 
-Clemens Koller schreef:
-> huangyun@coship.com schrieb:
->  > hi,everbody:
->  >       I have run linux-2.6.15 on my mpc8541 custom board. but when i test
->  > TSEC use UDP, i found it's efficinecy is lower.
->  > my test enviroment: i only run a UDP recieve program and not to handle data
->  > recieved. when i recevie 400Mbps data, 79% of MPC8541 have be consumed.
->  > so i think tcp/ip protocal have consume my mpc8541 resource.  i dont know
->  > how to improve tcp/ip code or TSEC driver(gianfar.c).
->  >       can somebody help me ?
+512 is the size, also dump and check the difference in start address.
+
+I more recommendation, check how your Serial/Network driver has 
+allocated memory, try using same method.
+
+thanks,
+Ankur
+
+
+
+DI BACCO ANTONIO - technolabs wrote:
 >
-> Hmm... you should first try one of the current kernels and check the
-> performance there.
-> For further details about linux networking, I recommend you to contact
-> the guys at the netdev list, giving lots of details how you do your
-> benchmarking and how your workload looks like.
+> A porting of the driver included in kernel 2.4.
 >
-> Regards,
+> Here is an excerpt of the method to send bytes over the i2c bus:
+> ________________________________________________________________________
+>   i2c->i2c_i2cmr = 0x00;        /* Disable I2C interupts */
+>   i2c->i2c_i2cer = 0xff;
+>   i2c->i2c_i2mod |= 1;  /* Enable */
+>   i2c->i2c_i2com |= 0x80;       /* Begin transmission */
+>   tmo = jiffies + 1*HZ;
+>   /* Busy wait, with a timeout */
+>   while(!(i2c->i2c_i2cer & 0x12 || time_after(jiffies, tmo)));
+>  
 >
-> Clemens Koller
-> __________________________________
-> R&D Imaging Devices
-> Anagramm GmbH
-> Rupert-Mayer-Straße 45/1
-> Linhof Werksgelände
-> D-81379 München
-> Tel.089-741518-50
-> Fax 089-741518-19
-> http://www.anagramm-technology.com
+>   if (signal_pending(current) || !tmo){
+>     force_close(algo_8xx_data);
+>     if (!tmo)
+>         printk("IIC write: timeout!\n");
+>
+>     return -EIO;
+>   }
+>
+>   if ((tbdf[0]->cbd_sc | tbdf[1]->cbd_sc) & BD_SC_NAK) {
+>       printk(KERN_INFO "IIC write; no ack\n");
+>       if (cpm_debug > 0)
+>         printk("tx0 sc %04x, tx1 sc %04x\n", 
+> tbdf[0]->cbd_sc,tbdf[1]->cbd_sc);
+>    
+>     return 0;
+>   }
+>
+>   if ((tbdf[0]->cbd_sc | tbdf[1]->cbd_sc) & BD_SC_READY) {
+>       printk(KERN_INFO "IIC write; complete but tbuf ready\n");
+>       if (cpm_debug > 0)
+>         printk("tx0 sc %04x, tx1 sc %04x\n", 
+> tbdf[0]->cbd_sc,tbdf[1]->cbd_sc);
+>
+>     return 0;
+>   }
+>
+>
+> -----Original Message-----
+> From: Jochen Friedrich [mailto:jochen@scram.de]
+> Sent: Sat 17/11/2007 19.32
+> To: DI BACCO ANTONIO - technolabs
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: MPC880: i2cer register says tx is done but tx buf 
+> descriptor is still      ready
+>
+> Hi Antonio,
+>
+> > How could it be possible? It happens during the first i2c transactions
+> > and then no more.
+> >  
+>
+> What linux version? Which driver?
+>
+> Thanks,
+> Jochen
+>
+>
+> ------------------------------------------------------------------------
 >
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->   
