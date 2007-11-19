@@ -1,10 +1,34 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 19 Nov 2007 19:25:08 +1100
-Subject: [RFC/PATCH 9/9] powerpc: PCI support for 4xx Ebony board
-In-Reply-To: <1195460700.350036.781662541765.qpush@grosgo>
-Message-Id: <20071119082555.B1F53DDE30@ozlabs.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A70ADDE34
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 20:00:59 +1100 (EST)
+Date: Mon, 19 Nov 2007 01:00:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+Message-Id: <20071119010002.9387d36b.akpm@linux-foundation.org>
+In-Reply-To: <64bb37e0711182315s1d159c80h11811acb07566f03@mail.gmail.com>
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	<20071117180946.GA14055@elte.hu>
+	<20071117101957.7562639d.akpm@linux-foundation.org>
+	<64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+	<20071117230508.GB25905@dyad>
+	<64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
+	<1195413486.7893.16.camel@heimdal.trondhjem.org>
+	<64bb37e0711182315s1d159c80h11811acb07566f03@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Jan Blunck <jblunck@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	steved@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
+	Ingo Molnar <mingo@elte.hu>, Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,95 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Based on the previous patch, this hooks up PCI for Ebony.
+On Mon, 19 Nov 2007 08:15:48 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> On Nov 18, 2007 8:18 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> > On Sun, 2007-11-18 at 19:44 +0100, Torsten Kaiser wrote:
+> > > NFSv2/3 and NFSv4 share the same dentry_iput and so share the same
+> > > unlink and sillyrename logic.
+> > > But they do not share nfs_init_server()!
+> > >
+> > > I wonder why this doesn't blow up more violently, but only hangs...
+> > >
+> > > But as I don't know if it is correct to add the workqueue
+> > > initialization to nfs4_init_server() or remove the nfs_sb_active /
+> > > nfs_sb_deactive for the NFSv4 case, I can't offer a patch to fix this.
+> > >
+> > > Torsten
+> >
+> > I had already fixed that one in my own stack. Attached are the 3 patches
+> > that I've got. 1 from SteveD, 2 fixes.
+> >
+> 
+> Moving the init_waitqueue_head() like patch
+> linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif and applying
+> linux-2.6.24-007-fix_nfs_free_unlinkdata.dif lets my testcase work.
+> Also lockdep no longer complains about the non-static key.
+> 
 
- arch/powerpc/boot/dts/ebony.dts    |   39 ++++++++++++++++++++++++++++++++-----
- arch/powerpc/platforms/44x/ebony.c |    7 ++++++
- 2 files changed, 41 insertions(+), 5 deletions(-)
+Thanks.
 
-Index: linux-work/arch/powerpc/boot/dts/ebony.dts
-===================================================================
---- linux-work.orig/arch/powerpc/boot/dts/ebony.dts	2007-11-19 15:01:08.000000000 +1100
-+++ linux-work/arch/powerpc/boot/dts/ebony.dts	2007-11-19 15:01:17.000000000 +1100
-@@ -284,12 +284,41 @@
- 
- 		};
- 
--		PCIX0: pci@1234 {
-+		PCIX0: pci@20ec00000 {
- 			device_type = "pci";
--			/* FIXME */
--			reg = <2 0ec00000 8
--			       2 0ec80000 f0
--			       2 0ec80100 fc>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb440gp-pcix", "ibm,plb-pcix";
-+			primary;
-+			reg = <2 0ec00000 8	/* Config space access */
-+			       2 0ec80000 f0	/* Internal registers */
-+			       2 0ec80100 fc>;	/* Internal messaging registers */
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 00000003 80000000 0 80000000
-+				  01000000 0 00000000 00000002 08000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-window = <42000000 0 0 0 80000000>;
-+
-+			/* Ebony has all 4 IRQ pins tied together per slot */
-+			interrupt-map-mask = <f800 0 0 0>;
-+			interrupt-map = <
-+				/* IDSEL 1 */
-+				0800 0 0 0 &UIC0 17 8
-+
-+				/* IDSEL 2 */
-+				1000 0 0 0 &UIC0 18 8
-+
-+				/* IDSEL 3 */
-+				1800 0 0 0 &UIC0 19 8
-+
-+				/* IDSEL 4 */
-+				2000 0 0 0 &UIC0 1a 8
-+			>;
- 		};
- 	};
- 
-Index: linux-work/arch/powerpc/platforms/44x/ebony.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/44x/ebony.c	2007-11-19 15:01:08.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/44x/ebony.c	2007-11-19 15:01:17.000000000 +1100
-@@ -23,6 +23,7 @@
- #include <asm/time.h>
- #include <asm/uic.h>
- #include <asm/of_platform.h>
-+#include <asm/pci-bridge.h>
- 
- #include "44x.h"
- 
-@@ -44,6 +45,11 @@ static int __init ebony_device_probe(voi
- }
- device_initcall(ebony_device_probe);
- 
-+static void __init ebony_setup_arch(void)
-+{
-+	ppc4xx_pci_find_bridges();
-+}
-+
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-  */
-@@ -60,6 +66,7 @@ static int __init ebony_probe(void)
- define_machine(ebony) {
- 	.name			= "Ebony",
- 	.probe			= ebony_probe,
-+	.setup_arch		= ebony_setup_arch,
- 	.progress		= udbg_progress,
- 	.init_IRQ		= uic_init_tree,
- 	.get_irq		= uic_get_irq,
+To avoid goofups, could you please send the full fix against 2.6.24-rc2-mm1?
