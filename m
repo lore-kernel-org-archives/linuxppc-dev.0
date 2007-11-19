@@ -1,11 +1,21 @@
-Return-Path: <benh@ozlabs.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-	<linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 19 Nov 2007 17:41:21 +1100
-Subject: [RFC/PATCH] powerpc: Fix 8xx build breakage due to _tlbie changes
-In-Reply-To: <1195454481.61987.176042550045.qpush@grosgo>
-Message-Id: <20071119064209.03A53DDE21@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 92977DDE11
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 17:44:02 +1100 (EST)
+Date: Mon, 19 Nov 2007 17:44:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] 2.6.24-rc2-mm1 powerpc (iseries)- build failure - mm/stab.c
+Message-Id: <20071119174405.7ae746f1.sfr@canb.auug.org.au>
+In-Reply-To: <20071119062611.GA11135@linux.vnet.ibm.com>
+References: <20071114105410.GA16846@linux.vnet.ibm.com>
+	<20071119133849.bcfe52c1.sfr@canb.auug.org.au>
+	<20071119062611.GA11135@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, anton@au1.ibm.com,
+	linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,69 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My changes to _tlbie to fix 4xx unfortunately broke 8xx build in a
-couple of places. This fixes it.
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-Spotted by Olof Johansson
+The kernel builds fails with following error, with randconfig
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  CC      arch/powerpc/mm/stab.o
+arch/powerpc/mm/stab.c: In function ‘stab_initialize’:
+arch/powerpc/mm/stab.c:282: error: implicit declaration of function ‘HvCall1’
+arch/powerpc/mm/stab.c:282: error: ‘HvCallBaseSetASR’ undeclared (first use in this function)
+arch/powerpc/mm/stab.c:282: error: (Each undeclared identifier is reported only once
+arch/powerpc/mm/stab.c:282: error: for each function it appears in.)
+make[1]: *** [arch/powerpc/mm/stab.o] Error 1
+make: *** [arch/powerpc/mm] Error 2
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ arch/powerpc/mm/stab.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
- arch/powerpc/mm/mem.c      |    2 +-
- arch/powerpc/mm/mmu_decl.h |    2 +-
- arch/ppc/mm/init.c         |    2 +-
- arch/ppc/mm/mmu_decl.h     |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+On Mon, 19 Nov 2007 11:56:11 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+>
+> Resubmitting the patch titled 
+> powerpc-iseries-build-failure-mm-stabc.patch in the -mm tree.
 
-Index: linux-work/arch/powerpc/mm/mem.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/mem.c	2007-11-15 13:59:27.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mem.c	2007-11-15 13:59:44.000000000 +1100
-@@ -464,7 +464,7 @@ void update_mmu_cache(struct vm_area_str
- 		 * we invalidate the TLB here, thus avoiding dcbst
- 		 * misbehaviour.
- 		 */
--		_tlbie(address);
-+		_tlbie(address, 0 /* 8xx doesn't care about PID */);
- #endif
- 		if (!PageReserved(page)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
-Index: linux-work/arch/ppc/mm/init.c
-===================================================================
---- linux-work.orig/arch/ppc/mm/init.c	2007-11-15 14:00:20.000000000 +1100
-+++ linux-work/arch/ppc/mm/init.c	2007-11-15 14:00:35.000000000 +1100
-@@ -561,7 +561,7 @@ void update_mmu_cache(struct vm_area_str
- 		 * That means the zeroed TLB has to be invalidated
- 		 * whenever a page miss occurs.
- 		 */
--		_tlbie(address);
-+		_tlbie(address, 0 /* 8xx doesn't care about PID */);
- #endif
- 		if (!PageReserved(page)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
-Index: linux-work/arch/powerpc/mm/mmu_decl.h
-===================================================================
---- linux-work.orig/arch/powerpc/mm/mmu_decl.h	2007-11-15 14:09:16.000000000 +1100
-+++ linux-work/arch/powerpc/mm/mmu_decl.h	2007-11-15 14:14:29.000000000 +1100
-@@ -56,7 +56,7 @@ extern unsigned long total_lowmem;
-  * architectures.  -- Dan
-  */
- #if defined(CONFIG_8xx)
--#define flush_HPTE(X, va, pg)	_tlbie(va)
-+#define flush_HPTE(X, va, pg)	_tlbie(va, 0, /* 8xx doesn't care about PID */)
- #define MMU_init_hw()		do { } while(0)
- #define mmu_mapin_ram()		(0UL)
+Paulus, this should be fine for merging like above.
+
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
+index 9e85bda..50448d5 100644
+--- a/arch/powerpc/mm/stab.c
++++ b/arch/powerpc/mm/stab.c
+@@ -20,6 +20,7 @@
+ #include <asm/lmb.h>
+ #include <asm/abs_addr.h>
+ #include <asm/firmware.h>
++#include <asm/iseries/hv_call.h>
  
-Index: linux-work/arch/ppc/mm/mmu_decl.h
-===================================================================
---- linux-work.orig/arch/ppc/mm/mmu_decl.h	2007-11-15 14:08:54.000000000 +1100
-+++ linux-work/arch/ppc/mm/mmu_decl.h	2007-11-15 14:14:45.000000000 +1100
-@@ -49,7 +49,7 @@ extern unsigned int num_tlbcam_entries;
-  * architectures.  -- Dan
-  */
- #if defined(CONFIG_8xx)
--#define flush_HPTE(X, va, pg)	_tlbie(va)
-+#define flush_HPTE(X, va, pg)	_tlbie(va, 0 /* 8xx doesn't care about PID */)
- #define MMU_init_hw()		do { } while(0)
- #define mmu_mapin_ram()		(0UL)
- 
+ struct stab_entry {
+ 	unsigned long esid_data;
+-- 
+1.5.3.5
