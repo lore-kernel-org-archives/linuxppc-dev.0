@@ -1,17 +1,18 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
-Date: Mon, 19 Nov 2007 11:00:16 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Revisited, audio codec device tree entries.
-In-Reply-To: <fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
+Return-Path: <matt@genesi-usa.com>
+Message-ID: <4741BA7D.10608@genesi-usa.com>
+Date: Mon, 19 Nov 2007 16:31:57 +0000
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matt Sealey <matt@genesi-usa.com>, Jon Smirl <jonsmirl@gmail.com>,
+	PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Subject: Re: Revisited, audio codec device tree entries.
 References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<4741A56D.9050808@freescale.com>
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
+	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
+	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
+	<20071119001209.GD20794@localhost.localdomain>
+In-Reply-To: <20071119001209.GD20794@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,133 +22,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 11/19/07, Timur Tabi <timur@freescale.com> wrote:
-> > Jon Smirl wrote:
-> >
-> > > In the ALSA SOC model the i2s, codec and ac97 drivers are all generic.
-> > > A fabric driver tells specifically how a generic codec is wired into
-> > > the board. What I haven't been able figure out is how to load the
-> > > right fabric driver.
-> >
-> > Do not use the device tree to load the fabric driver!
->
-> Heh, technically you can't use the device tree to load any device
-> drivers, it's just a data structure.  :-)
->
-> You probably mean "don't use the of_platform bus to load the fabric
-> driver".  He still needs to use the data in the device tree to decide
-> what fabric drivers to use.  of_platform_bus would be awkward to use
-> for this because the node describing the fabric doesn't cleanly sit on
-> any particular bus (ie. it describes the board; it does not describe
-> the device).
->
-> In this case; it probably is appropriate to have the platform code
-> instantiate a platform_device for the fabric (instead of an
-> of_platform device) which the fabric driver can bind against.
+David Gibson wrote:
+> On Sun, Nov 18, 2007 at 11:31:13PM +0000, Matt Sealey wrote:
+> 
+> Gah!  For the benefit of others on this list who may be misled.
+> 
+> *Neither* of you correctly understands the device tree, what I've seen
+> of *both* your suggested approaches is crap.
+> 
+> The device tree describes the _hardware_.  If you start reasoning
+> about how to lay out the device tree based on your driver model,
+> you're already wrong.
+> 
+> Matt, the various properties you list do not mean what you think they
+> mean.
 
-First, I have platform bus turned off in my builds. Platform bus is a
-place where cruft accumulates that really belongs somewhere else. For
-example when I turned it off I discovered that there was a PC speaker
-driver in my kernel and well as several drivers from 82xx chips.
+No, David, I understand exactly what they mean, in the context of
+a guy who works on Open Firmware, real Open Firmware, as was standardised
+12 years ago.
 
-ALSA creates it own bus like i2c. My fabric driver sits on this bus.,
-Kconfig attributes control if it is built-in. I've altered the i2c
-code to look for child device tree nodes and then load the appropriate
-drivers.
+Not your whacky newspeak device trees, which to be fair, are a good
+idea, but it seems you all have tried to change something for the
+sake of changing something.
 
-static void of_register_i2c_devices(struct i2c_adapter *adap, struct
-device_node *adap_node)
-{
-	struct device_node *node = NULL;
+> name - should be named according to the generic names convention.
+> It's pretty much arbitrary, meant for human readability of the device
+> tree.  Drivers should not depend on it (some do, historically, but new
+> drivers and trees should not).
 
-	while ((node = of_get_next_child(adap_node, node))) {
-		struct i2c_board_info info;
-		const u32 *addr;
-		const char *compatible;
-		int len;
+I never said drivers should depend on it but why do you want to name
+an i2s bus as "i2s" or the i2c bus as "i2c"? There are far, far more
+descriptive names that can be used. i2s is basically audio, so why
+not "audio" or "sound" or "headphone"?
 
-		addr = of_get_property(node, "reg", &len);
-		if (!addr || len < sizeof(int) || *addr > (1 << 10) - 1) {
-			printk(KERN_WARNING "i2c-mpc.c: invalid entry, missing reg attribute\n");
-			continue;
-		}
+Why is gpt a "gpt" and not a "timer", it defeats the whole object
+of having a name for it. Since drivers never switch on it, why not
+give them real names?
 
-		info.irq = irq_of_parse_and_map(node, 0);
-		if (info.irq == NO_IRQ)
-			info.irq = -1;
+> device_type - indicates the open firmware method interface for the
+> device.  Therefore, meaningless in flattened trees.  No new driver
+> should use this.
 
-		compatible = of_get_property(node, "compatible", &len);
-		if (!compatible) {
-			printk(KERN_WARNING "i2c-mpc.c: invalid entry, missing compatible
-attribute\n");
-			continue;
-		}
-		strncpy(info.driver_name, compatible, sizeof(info.driver_name));
-		info.type[0] = '\0';
+.. you seem to think you must only design for the guys making Linux
+flattened device trees. I'm sorry, but I am not one of those guys and
+I am much more concerned with how this will affect the OF device tree
+and the usage for anyone else.
 
-		info.platform_data = NULL;
-		info.addr = *addr;
-		
-		i2c_new_device(adap, &info);
-	}
-}
+Meaningless in flattened device trees, but useful information in real
+OF device trees, do you implement it or not? I'd say, yes. Even if
+you don't agree with "real firmware", you can't just ignore it, shrug
+it away and say it doesn't matter.
 
-I have a similar loop in the ac97 driver for loading codecs it controls.
+Jon's fabric driver should be looking for "digispeaker,flinger"
+and nothing else. The name doesn't matter but I called it "sound"
+because it's far, FAR more descriptive than "i2s", and of course
+both the device_type and compatible properties report exactly what
+Jon will need to write a driver which handles, however that might
+be, his audio codec subsystem - pcm, control, magic gpios, or
+whatever.
 
-So now I'm at this point:
-i2c bus driver loaded, initialized from of
-i2s bus driver loaded, initialized from of
-tas5504 codec loaded onto i2c, initialized from i2c loop above
-multiple fabric drivers loaded onto the alsa bus
+If there is an Open Firmware standard for it, I would use that name,
+then it gives everyone a rough idea of what to expect. Open Firmware
+developers can then CHOOSE TO IMPLEMENT THE STANDARD METHODS, and
+Linux device tree authors can just ignore it.
 
-Now how do I pick which fabric driver to initialize?
+You are cutting out a working specification for the sake of some
+arbitrary simplification.
 
-Codec and i2s are also attached to alsa bus.
+> compatible - *this* is the one for driver selection.  It describes the
+> hardware level interface(s) of the device.
 
+Compatible is meant to list alternative, compatible devices as a
+*supplement* to device_type. device_type is your "primary" and
+compatible is your "secondary". In this case, device_type is
+exactly what Jon wants, something to mark out that the audio device
+is his board design and requires special work (it is not merely an
+i2s bus that you can just "use" - although throwing PCM data at it
+would work, who knows what mixer it goes to, and what controls are
+needed to define the bitrate or other features)
 
+> model - usually just for debugging / diagnosis / human-readable
+> purposes, describes exact model / revision of the hardware.  It can be
+> used to enable driver quirks / workarounds for when various devices
+> are supposed to be compatible (as encoded in 'compatible') but
+> aren't, due to hardware bugs.  However, you should never aim to use it
+> this way in design.
 
+I don't see why "model" can't encode the particular revision of the
+hardware in this way when it comes to the audio group of features on
+his board. After all, if you are looking at a "digispeaker,flinger"
+(I made that name up) then you need to know depending on the board
+or even based on weird configurability options of the board, what
+certain things may be - Apple used layout-id and a number. Why NOT
+encode the "model" in the "model"?
 
->
-> Another option is to explicitly call of_platform_device_create in the
-> platform code on the fabric node (which should be a child of the root
-> node) so that you can have an of_platform_bus fabric driver.
->
-> Cheers,
-> g.
->
-> >
-> > The layout of the hardware and the relationship between the I2S, I2C, codec,
-> > and whatever device is determined by *both* the fabric driver and the device
-> > tree.  The information about the devices itself, and *some* information about
-> > their relationship is stored in the device tree.  Everything else is in the
-> > fabric driver.
-> >
-> > The design of the device tree is already locked in stone, so to speak.  The DT
-> > can only store what it is allowed to store.  If there's something more that
-> > you need, you'll have to put it in the fabric driver.
-> >
-> > If I weren't on vacation this week, I'd email you my code.  It's almost done
-> > and it demonstrates what I'm thinking.
-> >
-> > --
-> > Timur Tabi
-> > Linux Kernel Developer @ Freescale
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> >
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
+Why choose some magical, new property, which then has to be further
+standardised for no reason?
 
+I also think that specifying an audio codec - after all the Open
+Firmware standard defines an audio interface and device tree
+requirements for it, even if they are methods that we don't
+implement and you don't care about - as a function of it's
+control interface is so backwards it doesn't bare thinking about.
+
+If you want to output audio you do it through most audio
+controllers as a simple transfer of PCM data. Be it Creative
+or Freescale I2S or AC97, you push data at some port/fifo
+and it plays a sound. It is NOT defined by i2c control ports,
+you don't ever use those to *play* audio. It may also be very,
+very true that a codec DOES NOT REQUIRE implementation of it's
+control interface, or that control interface could be connected
+to some other chip which handles initial configuration (like
+a boot sequencer eeprom) and not to a system bus.
+
+Therefore, pcm audio codecs as subordinate of control interfaces
+is a dumb idea. Nuff said, I think.
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
