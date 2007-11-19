@@ -1,34 +1,16 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 81C5BDDE10
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 02:32:06 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id lAJFW2s4065836
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 15:32:02 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.6) with
-	ESMTP id lAJFW1at2060332
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 16:32:01 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id lAJFW1p2027162
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 16:32:01 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH] hugetlb: follow_hugetlb_page for write access
-Date: Mon, 19 Nov 2007 16:25:00 +0100
-References: <20071107195142.13505.49398.stgit@kernel>
-In-Reply-To: <20071107195142.13505.49398.stgit@kernel>
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
+Date: Mon, 19 Nov 2007 08:33:12 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Timur Tabi" <timur@freescale.com>
+Subject: Re: Revisited, audio codec device tree entries.
+In-Reply-To: <4741A56D.9050808@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200711191625.00882.hnguyen@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
+	<4741A56D.9050808@freescale.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,20 +20,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 November 2007 20:51, Adam Litke wrote:
-> 
-> When calling get_user_pages(), a write flag is passed in by the caller to
-> indicate if write access is required on the faulted-in pages.  Currently,
-> follow_hugetlb_page() ignores this flag and always faults pages for
-> read-only access.  This can cause data corruption because a device driver
-> that calls get_user_pages() with write set will not expect COW faults to
-> occur on the returned pages.
-> 
-> This patch passes the write flag down to follow_hugetlb_page() and makes
-> sure hugetlb_fault() is called with the right write_access parameter.
-> 
-> Signed-off-by: Adam Litke <agl@us.ibm.com>
-Apologize for this late response.
-Tested on 2.6.23 with ehca and mthca. It works like a charm for me.
-Thanks!
-Nam
+On 11/19/07, Timur Tabi <timur@freescale.com> wrote:
+> Jon Smirl wrote:
+>
+> > In the ALSA SOC model the i2s, codec and ac97 drivers are all generic.
+> > A fabric driver tells specifically how a generic codec is wired into
+> > the board. What I haven't been able figure out is how to load the
+> > right fabric driver.
+>
+> Do not use the device tree to load the fabric driver!
+
+Heh, technically you can't use the device tree to load any device
+drivers, it's just a data structure.  :-)
+
+You probably mean "don't use the of_platform bus to load the fabric
+driver".  He still needs to use the data in the device tree to decide
+what fabric drivers to use.  of_platform_bus would be awkward to use
+for this because the node describing the fabric doesn't cleanly sit on
+any particular bus (ie. it describes the board; it does not describe
+the device).
+
+In this case; it probably is appropriate to have the platform code
+instantiate a platform_device for the fabric (instead of an
+of_platform device) which the fabric driver can bind against.
+
+Another option is to explicitly call of_platform_device_create in the
+platform code on the fabric node (which should be a child of the root
+node) so that you can have an of_platform_bus fabric driver.
+
+Cheers,
+g.
+
+>
+> The layout of the hardware and the relationship between the I2S, I2C, codec,
+> and whatever device is determined by *both* the fabric driver and the device
+> tree.  The information about the devices itself, and *some* information about
+> their relationship is stored in the device tree.  Everything else is in the
+> fabric driver.
+>
+> The design of the device tree is already locked in stone, so to speak.  The DT
+> can only store what it is allowed to store.  If there's something more that
+> you need, you'll have to put it in the fabric driver.
+>
+> If I weren't on vacation this week, I'd email you my code.  It's almost done
+> and it demonstrates what I'm thinking.
+>
+> --
+> Timur Tabi
+> Linux Kernel Developer @ Freescale
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
