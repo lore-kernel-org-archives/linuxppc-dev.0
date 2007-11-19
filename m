@@ -1,21 +1,32 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 92977DDE11
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 17:44:02 +1100 (EST)
-Date: Mon, 19 Nov 2007 17:44:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] 2.6.24-rc2-mm1 powerpc (iseries)- build failure - mm/stab.c
-Message-Id: <20071119174405.7ae746f1.sfr@canb.auug.org.au>
-In-Reply-To: <20071119062611.GA11135@linux.vnet.ibm.com>
-References: <20071114105410.GA16846@linux.vnet.ibm.com>
-	<20071119133849.bcfe52c1.sfr@canb.auug.org.au>
-	<20071119062611.GA11135@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, anton@au1.ibm.com,
-	linux-kernel@vger.kernel.org,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Return-Path: <just.for.lkml@googlemail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id B43A4DDE16
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 18:15:50 +1100 (EST)
+Received: by py-out-1112.google.com with SMTP id a29so6827111pyi
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Nov 2007 23:15:49 -0800 (PST)
+Message-ID: <64bb37e0711182315s1d159c80h11811acb07566f03@mail.gmail.com>
+Date: Mon, 19 Nov 2007 08:15:48 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
+In-Reply-To: <1195413486.7893.16.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <473DA608.1020804@linux.vnet.ibm.com>
+	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
+	<20071117180946.GA14055@elte.hu>
+	<20071117101957.7562639d.akpm@linux-foundation.org>
+	<64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
+	<20071117230508.GB25905@dyad>
+	<64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
+	<1195413486.7893.16.camel@heimdal.trondhjem.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, steved@redhat.com,
+	LKML <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jan Blunck <jblunck@suse.de>, Ingo Molnar <mingo@elte.hu>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-
-The kernel builds fails with following error, with randconfig
-
-  CC      arch/powerpc/mm/stab.o
-arch/powerpc/mm/stab.c: In function ‘stab_initialize’:
-arch/powerpc/mm/stab.c:282: error: implicit declaration of function ‘HvCall1’
-arch/powerpc/mm/stab.c:282: error: ‘HvCallBaseSetASR’ undeclared (first use in this function)
-arch/powerpc/mm/stab.c:282: error: (Each undeclared identifier is reported only once
-arch/powerpc/mm/stab.c:282: error: for each function it appears in.)
-make[1]: *** [arch/powerpc/mm/stab.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/mm/stab.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-On Mon, 19 Nov 2007 11:56:11 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Nov 18, 2007 8:18 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> On Sun, 2007-11-18 at 19:44 +0100, Torsten Kaiser wrote:
+> > NFSv2/3 and NFSv4 share the same dentry_iput and so share the same
+> > unlink and sillyrename logic.
+> > But they do not share nfs_init_server()!
+> >
+> > I wonder why this doesn't blow up more violently, but only hangs...
+> >
+> > But as I don't know if it is correct to add the workqueue
+> > initialization to nfs4_init_server() or remove the nfs_sb_active /
+> > nfs_sb_deactive for the NFSv4 case, I can't offer a patch to fix this.
+> >
+> > Torsten
 >
-> Resubmitting the patch titled 
-> powerpc-iseries-build-failure-mm-stabc.patch in the -mm tree.
+> I had already fixed that one in my own stack. Attached are the 3 patches
+> that I've got. 1 from SteveD, 2 fixes.
+>
 
-Paulus, this should be fine for merging like above.
+Moving the init_waitqueue_head() like patch
+linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif and applying
+linux-2.6.24-007-fix_nfs_free_unlinkdata.dif lets my testcase work.
+Also lockdep no longer complains about the non-static key.
 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
-index 9e85bda..50448d5 100644
---- a/arch/powerpc/mm/stab.c
-+++ b/arch/powerpc/mm/stab.c
-@@ -20,6 +20,7 @@
- #include <asm/lmb.h>
- #include <asm/abs_addr.h>
- #include <asm/firmware.h>
-+#include <asm/iseries/hv_call.h>
- 
- struct stab_entry {
- 	unsigned long esid_data;
--- 
-1.5.3.5
+Torsten
