@@ -1,20 +1,15 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9CCE6DDDF4
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 15:23:40 +1100 (EST)
-Date: Sun, 18 Nov 2007 22:25:19 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2] [POWERPC] vdso: Fixes for cache block sizes
-Message-ID: <20071119042519.GA28872@lixom.net>
-References: <20071114192405.GA1637@lixom.net>
-	<1195072102.28865.41.camel@pasglop>
-	<20071114212823.GA3044@lixom.net>
-	<18241.3066.346441.180033@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18241.3066.346441.180033@cargo.ozlabs.ibm.com>
-Cc: dwmw2@infradead.org, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E7A65DDDF4
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 16:56:07 +1100 (EST)
+Date: Mon, 19 Nov 2007 16:56:15 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] make global_phb_number static
+Message-Id: <20071119165615.28de8b81.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +19,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2007 at 03:07:22PM +1100, Paul Mackerras wrote:
-> Olof Johansson writes:
-> 
-> > [POWERPC] vdso: Fixes for cache line sizes
-> > 
-> > Current VDSO implementation is hardcoded to 128 byte cache blocks,
-> > which are only used on IBM's 64-bit processors.
-> > 
-> > Convert it to get the  blocks sizes out of vdso_data instead, similar
-> > to how the ppc64 in-kernel cache flush does it.
-> 
-> OK, but you have removed a "crclr cr0*4+so" instruction in a couple of
-> places.  They are there so that the functions follow the convention
-> for system calls, where cr0.SO set on return indicates an error, and
-> clear indicates no error.  Was there any special reason why you
-> removed them?  If not, please put them back (after the last cmp or
-> dot-form instruction).
 
-Good catch. They must have fallen off when I copied over the in-kernel
-versions. I'll repost tomorrow.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/pci-common.c |    2 +-
+ include/asm-powerpc/ppc-pci.h    |    1 -
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks,
-
--Olof
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0d89350..252dd1e 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -48,7 +48,7 @@
+ static DEFINE_SPINLOCK(hose_spinlock);
+ 
+ /* XXX kill that some day ... */
+-int global_phb_number;		/* Global phb counter */
++static int global_phb_number;		/* Global phb counter */
+ 
+ /* ISA Memory physical address (or 0 if none) */
+ resource_size_t isa_mem_base    = 0;
+diff --git a/include/asm-powerpc/ppc-pci.h b/include/asm-powerpc/ppc-pci.h
+index d41645e..854ab71 100644
+--- a/include/asm-powerpc/ppc-pci.h
++++ b/include/asm-powerpc/ppc-pci.h
+@@ -22,7 +22,6 @@ extern void pci_setup_phb_io_dynamic(struct pci_controller *hose, int primary);
+ 
+ 
+ extern struct list_head hose_list;
+-extern int global_phb_number;
+ 
+ extern void find_and_init_phbs(void);
+ 
+-- 
+1.5.3.5
