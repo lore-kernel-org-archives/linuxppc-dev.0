@@ -1,23 +1,22 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
-Date: Mon, 19 Nov 2007 12:28:02 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: Revisited, audio codec device tree entries.
-In-Reply-To: <9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<4741A56D.9050808@freescale.com>
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
-	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
-	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
-	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
-	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
-	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3D3D1DDE0D
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 06:49:55 +1100 (EST)
+Subject: Re: [RFC/PATCH 1/9] powerpc: Make isa_mem_base common to 32 and 64
+	bits
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20071119103254.GA19708@lst.de>
+References: <1195460700.350036.781662541765.qpush@grosgo>
+	<20071119082547.E1455DDE03@ozlabs.org> <20071119103254.GA19708@lst.de>
+Content-Type: text/plain
+Date: Tue, 20 Nov 2007 06:49:41 +1100
+Message-Id: <1195501781.6539.1.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 11/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > You might be stuck with using either a platform_device or an
-> > of_platform_device as a stepping stone to creating the device on the
-> > ALSA fabric driver.
->
-> I also concluded that I need a of_platform stepping stone.
->
-> There are several ways this could be done, which one is the right one?
-> a) fabric is global, create a global device node for it and implement
-> it as a of_platform device
 
-This is really board level description stuff.  I'd make the node
-global off the root myself and use whatever linkage you think
-appropriate to get you to the codec nodes (phandle's most likely)
+On Mon, 2007-11-19 at 11:32 +0100, Christoph Hellwig wrote:
+> On Mon, Nov 19, 2007 at 07:25:00PM +1100, Benjamin Herrenschmidt wrote:
+> > +/* ISA Memory physical address (or 0 if none) */
+> > +resource_size_t isa_mem_base    = 0;
+> 
+> No need to initialize this.
 
-Cheers,
-g.
+True. I copy/pasted as-is but you are right, I can remove the
+initializer.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Ben.
