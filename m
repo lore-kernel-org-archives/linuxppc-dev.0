@@ -1,12 +1,10 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 19 Nov 2007 17:26:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: libfdt: Abolish fdt_offset_ptr_typed()
-Message-ID: <20071119062622.GL20794@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+	<linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 19 Nov 2007 17:40:34 +1100
+Subject: [PATCH] powerpc: Fix 8xx build breakage due to _tlbie changes
+Message-Id: <20071119064121.4416BDDE07@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,131 +14,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The fdt_offset_ptr_typed() macro seemed like a good idea at the time.
-However, it's not actually used all that often, it can silently throw
-away const qualifications and it uses a gcc extension (typeof) which
-I'd prefer to avoid for portability.
+My changes to _tlbie to fix 4xx unfortunately broke 8xx build in a
+couple of places. This fixes it.
 
-Therefore, this patch gets rid of it (and the fdt_offset_ptr_typed_w()
-variant which was never used at all).  It also makes a few variables
-const in testcases, which always should have been const, but weren't
-caught before because of the aforementioned silent discards.
+Spotted by Olof Johansson
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Index: dtc/libfdt/libfdt.h
-===================================================================
---- dtc.orig/libfdt/libfdt.h	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/libfdt/libfdt.h	2007-11-19 17:22:55.000000000 +1100
-@@ -128,12 +128,6 @@ static inline void *fdt_offset_ptr_w(voi
- 	return (void *)fdt_offset_ptr(fdt, offset, checklen);
- }
- 
--
--#define fdt_offset_ptr_typed(fdt, offset, var) \
--	((typeof(var))(fdt_offset_ptr((fdt), (offset), sizeof(*(var)))))
--#define fdt_offset_ptr_typed_w(fdt, offset, var) \
--	((typeof(var))(fdt_offset_ptr_w((fdt), (offset), sizeof(*(var)))))
--
- uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
- 
- /**********************************************************************/
-Index: dtc/libfdt/fdt_ro.c
-===================================================================
---- dtc.orig/libfdt/fdt_ro.c	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/libfdt/fdt_ro.c	2007-11-19 17:22:55.000000000 +1100
-@@ -249,7 +249,7 @@ const struct fdt_property *fdt_get_prope
- 
- 		case FDT_PROP:
- 			err = -FDT_ERR_BADSTRUCTURE;
--			prop = fdt_offset_ptr_typed(fdt, offset, prop);
-+			prop = fdt_offset_ptr(fdt, offset, sizeof(*prop));
- 			if (! prop)
- 				goto fail;
- 			namestroff = fdt32_to_cpu(prop->nameoff);
-Index: dtc/tests/root_node.c
-===================================================================
---- dtc.orig/tests/root_node.c	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/tests/root_node.c	2007-11-19 17:22:55.000000000 +1100
-@@ -32,12 +32,12 @@
- int main(int argc, char *argv[])
- {
- 	void *fdt;
--	struct fdt_node_header *nh;
-+	const struct fdt_node_header *nh;
- 
- 	test_init(argc, argv);
- 	fdt = load_blob_arg(argc, argv);
- 
--	nh = fdt_offset_ptr_typed(fdt, 0, nh);
-+	nh = fdt_offset_ptr(fdt, 0, sizeof(*nh));
- 
- 	if (! nh)
- 		FAIL("NULL retrieving root node");
-Index: dtc/tests/path_offset.c
-===================================================================
---- dtc.orig/tests/path_offset.c	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/tests/path_offset.c	2007-11-19 17:22:55.000000000 +1100
-@@ -31,7 +31,7 @@
- int check_subnode(void *fdt, int parent, const char *name)
- {
- 	int offset;
--	struct fdt_node_header *nh;
-+	const struct fdt_node_header *nh;
- 	uint32_t tag;
- 
- 	verbose_printf("Checking subnode \"%s\" of %d...", name, parent);
-@@ -39,7 +39,7 @@ int check_subnode(void *fdt, int parent,
- 	verbose_printf("offset %d...", offset);
- 	if (offset < 0)
- 		FAIL("fdt_subnode_offset(\"%s\"): %s", name, fdt_strerror(offset));
--	nh = fdt_offset_ptr_typed(fdt, offset, nh);
-+	nh = fdt_offset_ptr(fdt, offset, sizeof(*nh));
- 	verbose_printf("pointer %p\n", nh);
- 	if (! nh)
- 		FAIL("NULL retrieving subnode \"%s\"", name);
-Index: dtc/tests/subnode_offset.c
-===================================================================
---- dtc.orig/tests/subnode_offset.c	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/tests/subnode_offset.c	2007-11-19 17:22:55.000000000 +1100
-@@ -31,7 +31,7 @@
- int check_subnode(struct fdt_header *fdt, int parent, const char *name)
- {
- 	int offset;
--	struct fdt_node_header *nh;
-+	const struct fdt_node_header *nh;
- 	uint32_t tag;
- 
- 	verbose_printf("Checking subnode \"%s\" of %d...", name, parent);
-@@ -39,7 +39,7 @@ int check_subnode(struct fdt_header *fdt
- 	verbose_printf("offset %d...", offset);
- 	if (offset < 0)
- 		FAIL("fdt_subnode_offset(\"%s\"): %s", name, fdt_strerror(offset));
--	nh = fdt_offset_ptr_typed(fdt, offset, nh);
-+	nh = fdt_offset_ptr(fdt, offset, sizeof(*nh));
- 	verbose_printf("pointer %p\n", nh);
- 	if (! nh)
- 		FAIL("NULL retrieving subnode \"%s\"", name);
-Index: dtc/tests/dtbs_equal_ordered.c
-===================================================================
---- dtc.orig/tests/dtbs_equal_ordered.c	2007-11-19 17:22:28.000000000 +1100
-+++ dtc/tests/dtbs_equal_ordered.c	2007-11-19 17:22:55.000000000 +1100
-@@ -93,10 +93,10 @@ void compare_structure(const void *fdt1,
- 			break;
- 
- 		case FDT_PROP:
--			prop1 = fdt_offset_ptr_typed(fdt1, offset1, prop1);
-+			prop1 = fdt_offset_ptr(fdt1, offset1, sizeof(*prop1));
- 			if (!prop1)
- 				FAIL("Could get fdt1 property at %d", offset1);
--			prop2 = fdt_offset_ptr_typed(fdt2, offset2, prop2);
-+			prop2 = fdt_offset_ptr(fdt2, offset2, sizeof(*prop2));
- 			if (!prop2)
- 				FAIL("Could get fdt2 property at %d", offset2);
- 
+ arch/powerpc/mm/mem.c      |    2 +-
+ arch/powerpc/mm/mmu_decl.h |    2 +-
+ arch/ppc/mm/init.c         |    2 +-
+ arch/ppc/mm/mmu_decl.h     |    2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Index: linux-work/arch/powerpc/mm/mem.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/mem.c	2007-11-15 13:59:27.000000000 +1100
++++ linux-work/arch/powerpc/mm/mem.c	2007-11-15 13:59:44.000000000 +1100
+@@ -464,7 +464,7 @@ void update_mmu_cache(struct vm_area_str
+ 		 * we invalidate the TLB here, thus avoiding dcbst
+ 		 * misbehaviour.
+ 		 */
+-		_tlbie(address);
++		_tlbie(address, 0 /* 8xx doesn't care about PID */);
+ #endif
+ 		if (!PageReserved(page)
+ 		    && !test_bit(PG_arch_1, &page->flags)) {
+Index: linux-work/arch/ppc/mm/init.c
+===================================================================
+--- linux-work.orig/arch/ppc/mm/init.c	2007-11-15 14:00:20.000000000 +1100
++++ linux-work/arch/ppc/mm/init.c	2007-11-15 14:00:35.000000000 +1100
+@@ -561,7 +561,7 @@ void update_mmu_cache(struct vm_area_str
+ 		 * That means the zeroed TLB has to be invalidated
+ 		 * whenever a page miss occurs.
+ 		 */
+-		_tlbie(address);
++		_tlbie(address, 0 /* 8xx doesn't care about PID */);
+ #endif
+ 		if (!PageReserved(page)
+ 		    && !test_bit(PG_arch_1, &page->flags)) {
+Index: linux-work/arch/powerpc/mm/mmu_decl.h
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/mmu_decl.h	2007-11-15 14:09:16.000000000 +1100
++++ linux-work/arch/powerpc/mm/mmu_decl.h	2007-11-15 14:14:29.000000000 +1100
+@@ -56,7 +56,7 @@ extern unsigned long total_lowmem;
+  * architectures.  -- Dan
+  */
+ #if defined(CONFIG_8xx)
+-#define flush_HPTE(X, va, pg)	_tlbie(va)
++#define flush_HPTE(X, va, pg)	_tlbie(va, 0, /* 8xx doesn't care about PID */)
+ #define MMU_init_hw()		do { } while(0)
+ #define mmu_mapin_ram()		(0UL)
+ 
+Index: linux-work/arch/ppc/mm/mmu_decl.h
+===================================================================
+--- linux-work.orig/arch/ppc/mm/mmu_decl.h	2007-11-15 14:08:54.000000000 +1100
++++ linux-work/arch/ppc/mm/mmu_decl.h	2007-11-15 14:14:45.000000000 +1100
+@@ -49,7 +49,7 @@ extern unsigned int num_tlbcam_entries;
+  * architectures.  -- Dan
+  */
+ #if defined(CONFIG_8xx)
+-#define flush_HPTE(X, va, pg)	_tlbie(va)
++#define flush_HPTE(X, va, pg)	_tlbie(va, 0 /* 8xx doesn't care about PID */)
+ #define MMU_init_hw()		do { } while(0)
+ #define mmu_mapin_ram()		(0UL)
+ 
