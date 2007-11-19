@@ -1,18 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711181749p1d2744b1md8ea92fdca60d6d6@mail.gmail.com>
-Date: Sun, 18 Nov 2007 20:49:58 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting
-	memory.
-In-Reply-To: <fa686aa40711090557u1b6cb29ex388b82efcbad7c18@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-References: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
-	<20071109091245.GA3148@nd47.coderock.org>
-	<fa686aa40711090557u1b6cb29ex388b82efcbad7c18@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>, Jeff Garzik <jgarzik@pobox.com>,
-	Domen Puncer <domen.puncer@telargo.com>, netdev <netdev@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B1BCADDDE9
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 13:38:47 +1100 (EST)
+Date: Mon, 19 Nov 2007 13:38:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] 2.6.24-rc2-mm1 powerpc (iseries)- build failure -
+	mm/stab.c
+Message-Id: <20071119133849.bcfe52c1.sfr@canb.auug.org.au>
+In-Reply-To: <20071114105410.GA16846@linux.vnet.ibm.com>
+References: <20071114105410.GA16846@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__19_Nov_2007_13_38_49_+1100_xyk31yLXh2SRmrC."
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, anton@au1.ibm.com,
+	paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,91 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 11/9/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > On 09/11/07 00:31 -0500, Jon Smirl wrote:
-> > > This is the reason I couldn't get user space started or connect to my
-> > > nfs server. Patch is against current linus git.
-> > >
-> > > mpc5200 fec driver is corrupting memory. This patch fixes two bugs
-> > > where the wrong skb buffer was being referenced.
-> > >
-> > > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-> >
-> > Acked-by: Domen Puncer <domen.puncer@telargo.com>
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
->
-> Jeff, can you please pick this up for .24?
+--Signature=_Mon__19_Nov_2007_13_38_49_+1100_xyk31yLXh2SRmrC.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is didn't make it into rc3. Without this patch this driver is broken.
+Hi Kamalesh,
 
+On Wed, 14 Nov 2007 16:24:10 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
 >
-> Thanks,
-> g.
->
-> >
-> > I can't test it at the moment, but the patch is obviously correct,
-> > mapped buffer should be the _same_ as submitted.
-> >
-> > >
-> > > ---
-> > >
-> > >  drivers/net/fec_mpc52xx.c |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > >
-> > > diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-> > > index a8a0ee2..ddfcc0b 100644
-> > > --- a/drivers/net/fec_mpc52xx.c
-> > > +++ b/drivers/net/fec_mpc52xx.c
-> > > @@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
-> > > irq, void *dev_id)
-> > >
-> > >               rskb =3D bcom_retrieve_buffer(priv->rx_dmatsk, &status,
-> > >                               (struct bcom_bd **)&bd);
-> > > -             dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_F=
-ROM_DEVICE);
-> > > +             dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_=
-FROM_DEVICE);
-> > >
-> > >               /* Test for errors in received frame */
-> > >               if (status & BCOM_FEC_RX_BD_ERRORS) {
-> > > @@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
-> > > irq, void *dev_id)
-> > >                       bcom_prepare_next_buffer(priv->rx_dmatsk);
-> > >
-> > >               bd->status =3D FEC_RX_BUFFER_SIZE;
-> > > -             bd->skb_pa =3D dma_map_single(&dev->dev, rskb->data,
-> > > +             bd->skb_pa =3D dma_map_single(&dev->dev, skb->data,
-> > >                               FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
-> > >
-> > >               bcom_submit_next_buffer(priv->rx_dmatsk, skb);
-> > >
-> > >
-> > > --
-> > > Jon Smirl
-> > > jonsmirl@gmail.com
-> >
-> > --
-> > Domen Puncer | Research & Development
-> > .......................................................................=
-......................
-> > Telargo d.o.o. | Zagreb=9Aka cesta 20 | 2000 Maribor | Slovenia
-> > .......................................................................=
-......................
-> > www.telargo.com
-> >
->
->
-> --
-> Grant Likely, B.Sc., P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
+> +#ifdef CONFIG_PPC_ISERIES
+> +#include <asm/iseries/hv_call.h>
+> +#endif /* CONFIG_PPC_ISERIES */
 
+You should not need the #ifdef and we prefer not to ifdef include unless
+necessary.  Please resubmit.
 
 --=20
-Jon Smirl
-jonsmirl@gmail.com
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__19_Nov_2007_13_38_49_+1100_xyk31yLXh2SRmrC.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHQPc+TgG2atn1QN8RAh1RAJ47QqPkhtAVx4E+cQrivYhDDiqB6ACggkrS
+T7OqZN4gyXYmukKyGdprf+8=
+=JXY1
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__19_Nov_2007_13_38_49_+1100_xyk31yLXh2SRmrC.--
