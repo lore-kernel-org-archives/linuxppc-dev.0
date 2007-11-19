@@ -1,17 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20071119001209.GD20794@localhost.localdomain>
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
-	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
-	<20071119001209.GD20794@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f334e85d77c624ef0112437a4049a3cd@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <timur@freescale.com>
+Message-ID: <4741A443.4080900@freescale.com>
+Date: Mon, 19 Nov 2007 08:57:07 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Matt Sealey <matt@genesi-usa.com>
 Subject: Re: Revisited, audio codec device tree entries.
-Date: Mon, 19 Nov 2007 13:48:40 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
+References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
+	<4740C0E3.5080704@genesi-usa.com>
+In-Reply-To: <4740C0E3.5080704@genesi-usa.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,51 +19,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Matt, the various properties you list do not mean what you think they
-> mean.
->
-> name - should be named according to the generic names convention.
-> It's pretty much arbitrary, meant for human readability of the device
-> tree.  Drivers should not depend on it (some do, historically, but new
-> drivers and trees should not).
+Matt Sealey wrote:
+> Jon Smirl wrote:
+>> The codec-fabric node was just being used to trigger the loading of
+>> the platform specific driver.
+> 
+> Just remember one thing.
+> 
+> 1) the term "fabric" when coined for audio drivers is a new, ALSA SoC
+> specific term. It isn't relevant for anything but ALSA SoC drivers.
 
-It is not arbitrary, there is a single well-defined name for every 
-common
-"class" of device.  It _is_ machine-readable (but shouldn't be used for
-driver matching, indeed -- it says nothing about the programming model).
+Earlier this year, when I started working on an ASoC driver, the fabric driver 
+was called a "machine driver".
 
-> device_type - indicates the open firmware method interface for the
-> device.
+> 2) this device tree stuff will end up in more than Linux device trees
 
-Not "method interface", just "interface".
+Sorry, I don't understand.  The device trees are technically OS-independent, 
+so technically there's no such thing as a "Linux device tree".  In addition, 
+the current master repository for device trees happens to be the Linux kernel, 
+  so I'm not sure where else device trees are going to be.
 
-> Therefore, meaningless in flattened trees.
+> 3) you're going to piss off Open Firmware developers by specifying
+> very Linux-specific features in a device tree the same way Apple
+> pissed off Linux developers by encoding MacOS X-specific features in
+> the device tree.
 
-Even in flat trees, a "device_type" of for example "block" indicates the
-node will have the required properties for that device type, for example
-"block-size".  Such properties are perfectly useful.  OTOH, it isn't 
-very
-useful to search for device with a specific device type from within the
-kernel, since it currently has no firmware interaction to speak of (flat
-trees don't interact, and the kernel kills "real" OF dead as soon as
-possible).
+The current device trees have left their OF roots behind.  Sure, we try to 
+conform as much as possible, but they're not OF trees any more.
 
-> No new driver should use this.
+> Audio driver control like this has to be very specific for a good
+> reason; you can do it a billion ways to Sunday. I'd suggest basically
+> that if you must control a device in a way that needs to be defined by
+> a device which can change address (either dynamically on boot or by
+> board design change - per revision, for example, or with a change of
+> controller) then simply use the device tree to report this address
+> so that you can have the same basic fabric driver (all in Linux) which
+> can handle minor modifications of your board design.
 
-Not without very good rationalisation, anyway.
+My position is that the "fabric" driver should be loaded as a normal device 
+tree and it should use the device tree to pick up some data to help it 
+instantiate the other drivers.  I'll be posting the code to my PowerPC ASoC 
+driver in a couple weeks.
 
-> compatible - *this* is the one for driver selection.  It describes the
-> hardware level interface(s) of the device.
->
-> model - usually just for debugging / diagnosis / human-readable
-> purposes, describes exact model / revision of the hardware.  It can be
-> used to enable driver quirks / workarounds for when various devices
-> are supposed to be compatible (as encoded in 'compatible') but
-> aren't, due to hardware bugs.  However, you should never aim to use it
-> this way in design.
+> If you require the codec to be subservient to some "fabric" then I
 
-Yeah.  Any non-workaround value a driver would derive from "model" is
-usually better described using a separate property.
+The codec is subservient to a bus (sometimes multiple buses), which is why it 
+is a child to bus nodes.
 
-
-Segher
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
