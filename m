@@ -1,18 +1,18 @@
 Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711181622q4b1c33dt87de6d73f7f75bc7@mail.gmail.com>
-Date: Sun, 18 Nov 2007 19:22:13 -0500
+Message-ID: <9e4733910711181749p1d2744b1md8ea92fdca60d6d6@mail.gmail.com>
+Date: Sun, 18 Nov 2007 20:49:58 -0500
 From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Matt Sealey" <matt@genesi-usa.com>,
-	"PowerPC dev list" <Linuxppc-dev@ozlabs.org>
-Subject: Re: Revisited, audio codec device tree entries.
-In-Reply-To: <20071119001209.GD20794@localhost.localdomain>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting
+	memory.
+In-Reply-To: <fa686aa40711090557u1b6cb29ex388b82efcbad7c18@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
-	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
-	<20071119001209.GD20794@localhost.localdomain>
+Content-Type: text/plain; charset=WINDOWS-1252
+References: <9e4733910711082131v70c4b7bm2b00445b7e62c33f@mail.gmail.com>
+	<20071109091245.GA3148@nd47.coderock.org>
+	<fa686aa40711090557u1b6cb29ex388b82efcbad7c18@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>, Jeff Garzik <jgarzik@pobox.com>,
+	Domen Puncer <domen.puncer@telargo.com>, netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,83 +22,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/18/07, David Gibson <david@gibson.dropbear.id.au> wrote:
-> On Sun, Nov 18, 2007 at 11:31:13PM +0000, Matt Sealey wrote:
-> > Matt Sealey wrote:
-> > > Jon Smirl wrote:
+On 11/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 11/9/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> > On 09/11/07 00:31 -0500, Jon Smirl wrote:
+> > > This is the reason I couldn't get user space started or connect to my
+> > > nfs server. Patch is against current linus git.
 > > >
-> > > If you require the codec to be subservient to some "fabric" then I
-> > > suggest you make a "sound" node with a compatible entry which is
-> > > defined as something specific to your board (digispeaker,audio) and
-> > > let your driver pick that up and then switch on the model (rather like
-> > > Apple's layout-id) of that device to pick out the specifics of that
-> > > fabric. If it needs an audio codec (ac97 or i2s) and a control
-> > > interface (i2c or spi) then it knows which ones it is looking for
-> > > based on the model.
+> > > mpc5200 fec driver is corrupting memory. This patch fixes two bugs
+> > > where the wrong skb buffer was being referenced.
+> > >
+> > > Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
 > >
-> > Sigh, I suck, I forgot the example :D
+> > Acked-by: Domen Puncer <domen.puncer@telargo.com>
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>
+> Jeff, can you please pick this up for .24?
+
+This is didn't make it into rc3. Without this patch this driver is broken.
+
+>
+> Thanks,
+> g.
+>
 > >
-> > And I forgot the rant you guys usually get - for god's sake, why isn't
-> > anyone using the "model" property? Do I have to whine about this some
-> > more to get your attention, guys? name, device_type, compatible and
-> > model are your tools for building device trees and detecting
-> > things. That's FOUR unique properties.
+> > I can't test it at the moment, but the patch is obviously correct,
+> > mapped buffer should be the _same_ as submitted.
 > >
-> > How come I only see device trees defined using "name", with the same
-> > device_type, and "compatible"? This is braindead design.
+> > >
+> > > ---
+> > >
+> > >  drivers/net/fec_mpc52xx.c |    4 ++--
+> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > >
+> > >
+> > > diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> > > index a8a0ee2..ddfcc0b 100644
+> > > --- a/drivers/net/fec_mpc52xx.c
+> > > +++ b/drivers/net/fec_mpc52xx.c
+> > > @@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+> > > irq, void *dev_id)
+> > >
+> > >               rskb =3D bcom_retrieve_buffer(priv->rx_dmatsk, &status,
+> > >                               (struct bcom_bd **)&bd);
+> > > -             dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_F=
+ROM_DEVICE);
+> > > +             dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_=
+FROM_DEVICE);
+> > >
+> > >               /* Test for errors in received frame */
+> > >               if (status & BCOM_FEC_RX_BD_ERRORS) {
+> > > @@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int
+> > > irq, void *dev_id)
+> > >                       bcom_prepare_next_buffer(priv->rx_dmatsk);
+> > >
+> > >               bd->status =3D FEC_RX_BUFFER_SIZE;
+> > > -             bd->skb_pa =3D dma_map_single(&dev->dev, rskb->data,
+> > > +             bd->skb_pa =3D dma_map_single(&dev->dev, skb->data,
+> > >                               FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
+> > >
+> > >               bcom_submit_next_buffer(priv->rx_dmatsk, skb);
+> > >
+> > >
+> > > --
+> > > Jon Smirl
+> > > jonsmirl@gmail.com
+> >
+> > --
+> > Domen Puncer | Research & Development
+> > .......................................................................=
+......................
+> > Telargo d.o.o. | Zagreb=9Aka cesta 20 | 2000 Maribor | Slovenia
+> > .......................................................................=
+......................
+> > www.telargo.com
+> >
 >
-> Gah!  For the benefit of others on this list who may be misled.
->
-> *Neither* of you correctly understands the device tree, what I've seen
-> of *both* your suggested approaches is crap.
-
-I'm awaiting guidance on how to do the device tree. I just want to
-figure out some way of getting my drivers loaded. I make no claim to
-having any expertise in device tree design.
-
-There are two classes of codecs, ones where control/data is combined
-and one where they are separate. Common examples - combined: ac97, hda
-- separate i2s + i2c. Then there is this fabric stuff which glues a
-generic codec driver into a specific board layout. While a generic
-AC97 design may not need a fabric driver, most other designs need it.
-
-If someone were to put an example into the Docmentation file, I'd follow it.
-
->
-> The device tree describes the _hardware_.  If you start reasoning
-> about how to lay out the device tree based on your driver model,
-> you're already wrong.
->
-> Matt, the various properties you list do not mean what you think they
-> mean.
->
-> name - should be named according to the generic names convention.
-> It's pretty much arbitrary, meant for human readability of the device
-> tree.  Drivers should not depend on it (some do, historically, but new
-> drivers and trees should not).
->
-> device_type - indicates the open firmware method interface for the
-> device.  Therefore, meaningless in flattened trees.  No new driver
-> should use this.
->
-> compatible - *this* is the one for driver selection.  It describes the
-> hardware level interface(s) of the device.
->
-> model - usually just for debugging / diagnosis / human-readable
-> purposes, describes exact model / revision of the hardware.  It can be
-> used to enable driver quirks / workarounds for when various devices
-> are supposed to be compatible (as encoded in 'compatible') but
-> aren't, due to hardware bugs.  However, you should never aim to use it
-> this way in design.
 >
 > --
-> David Gibson                    | I'll have my music baroque, and my code
-> david AT gibson.dropbear.id.au  | minimalist, thank you.  NOT _the_ _other_
->                                 | _way_ _around_!
-> http://www.ozlabs.org/~dgibson
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
 >
 
 
--- 
+--=20
 Jon Smirl
 jonsmirl@gmail.com
