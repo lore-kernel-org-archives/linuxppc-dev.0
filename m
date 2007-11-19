@@ -1,33 +1,19 @@
-Return-Path: <just.for.lkml@googlemail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 3305CDDE25
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 05:24:22 +1100 (EST)
-Received: by py-out-1112.google.com with SMTP id a29so7237734pyi
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 10:24:20 -0800 (PST)
-Message-ID: <64bb37e0711191024m426e8c2cqe1fb968ac3a9dff0@mail.gmail.com>
-Date: Mon, 19 Nov 2007 19:24:19 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [BUG] 2.6.24-rc2-mm1 - kernel bug on nfs v4
-In-Reply-To: <20071119010002.9387d36b.akpm@linux-foundation.org>
+Return-Path: <scottwood@Freescale.com>
+Date: Mon, 19 Nov 2007 11:05:21 -0600
+From: Scott Wood <scottwood@Freescale.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: Revisited, audio codec device tree entries.
+Message-ID: <20071119170521.GA4368@loki.buserror.net>
+References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
+	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
+	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
+	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
+	<20071119001209.GD20794@localhost.localdomain>
+	<4741BA7D.10608@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <473DA608.1020804@linux.vnet.ibm.com>
-	<64bb37e0711170953p67d1be49lf4eaa190d662e2b4@mail.gmail.com>
-	<20071117180946.GA14055@elte.hu>
-	<20071117101957.7562639d.akpm@linux-foundation.org>
-	<64bb37e0711171140w5f1451e0qea081a4fbc7a45f7@mail.gmail.com>
-	<20071117230508.GB25905@dyad>
-	<64bb37e0711181044s75fd1081sdf44dac2e060d49a@mail.gmail.com>
-	<1195413486.7893.16.camel@heimdal.trondhjem.org>
-	<64bb37e0711182315s1d159c80h11811acb07566f03@mail.gmail.com>
-	<20071119010002.9387d36b.akpm@linux-foundation.org>
-Cc: Jan Blunck <jblunck@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	steved@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
-	Ingo Molnar <mingo@elte.hu>, Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <4741BA7D.10608@genesi-usa.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,58 +23,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Nov 19, 2007 10:00 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 19 Nov 2007 08:15:48 +0100 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > On Nov 18, 2007 8:18 PM, Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
-> > > I had already fixed that one in my own stack. Attached are the 3 patches
-> > > that I've got. 1 from SteveD, 2 fixes.
-> >
-> > Moving the init_waitqueue_head() like patch
-> > linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif and applying
-> > linux-2.6.24-007-fix_nfs_free_unlinkdata.dif lets my testcase work.
-> > Also lockdep no longer complains about the non-static key.
->
-> Thanks.
->
-> To avoid goofups, could you please send the full fix against 2.6.24-rc2-mm1?
+On Mon, Nov 19, 2007 at 04:31:57PM +0000, Matt Sealey wrote:
+> I never said drivers should depend on it but why do you want to name
+> an i2s bus as "i2s" or the i2c bus as "i2c"?
 
-Umm... As I applied this changes manually there is a not insignificant
-change of goofups on my part...
+Because that's what they are?
 
-For the hang problem I think Tronds suggestion with replacing the
-patches from -mm with fresh versions would be the best.
+> There are far, far more descriptive names that can be used. i2s is
+> basically audio, so why not "audio" or "sound" or "headphone"?
 
+For i2s, that may be reasonable, but i2c can have several devices under it.
 
-Anyway, currently I have the patch from
-http://lkml.org/lkml/2007/11/16/74 to fix the can't-create-files-bug.
+> Why is gpt a "gpt" and not a "timer", it defeats the whole object
+> of having a name for it. Since drivers never switch on it, why not
+> give them real names?
 
-To fix the hang bug I used Tronds
-linux-2.6.24-007-fix_nfs_free_unlinkdata.dif and the first two hunks
-from linux-2.6.24-006-fix_to_fix_sillyrename_bug_on_umount.dif.
+That one *should* be timer.  Ask whoever did the device tree for it. :-P
 
-Torsten
+> > device_type - indicates the open firmware method interface for the
+> > device.  Therefore, meaningless in flattened trees.  No new driver
+> > should use this.
+> 
+> .. you seem to think you must only design for the guys making Linux
+> flattened device trees. I'm sorry, but I am not one of those guys and
+> I am much more concerned with how this will affect the OF device tree
+> and the usage for anyone else.
+> 
+> Meaningless in flattened device trees, but useful information in real
+> OF device trees, do you implement it or not? I'd say, yes.
 
-The needed 2 hunks for reference:
+Yes, if you have real OF and provide the corresponding method interface.
 
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -594,9 +594,6 @@ static int nfs_init_server(struct nfs_server *server,
- 	/* Create a client RPC handle for the NFSv3 ACL management interface */
- 	nfs_init_server_aclclient(server);
+That doesn't mean the driver should match on it if it doesn't depend on the
+method interface.
 
--	init_waitqueue_head(&server->active_wq);
--	atomic_set(&server->active, 0);
--
- 	dprintk("<-- nfs_init_server() = 0 [new %p]\n", clp);
- 	return 0;
+> > compatible - *this* is the one for driver selection.  It describes the
+> > hardware level interface(s) of the device.
+> 
+> Compatible is meant to list alternative, compatible devices as a
+> *supplement* to device_type. device_type is your "primary" and
+> compatible is your "secondary".
 
-@@ -736,6 +733,9 @@ static struct nfs_server *nfs_alloc_server(void)
- 	INIT_LIST_HEAD(&server->client_link);
- 	INIT_LIST_HEAD(&server->master_link);
+No, please read the spec:
 
-+	init_waitqueue_head(&server->active_wq);
-+	atomic_set(&server->active, 0);
-+
- 	server->io_stats = nfs_alloc_iostats();
- 	if (!server->io_stats) {
- 		kfree(server);
+“compatible”
+    Standard property name to define alternate “name” property values.
+
+No mention of device_type anywhere in the definition.
+
+The generic names recommendation further suggests that compatible always be
+used for matching.
+
+> I don't see why "model" can't encode the particular revision of the
+> hardware in this way when it comes to the audio group of features on
+> his board. After all, if you are looking at a "digispeaker,flinger"
+> (I made that name up) then you need to know depending on the board
+> or even based on weird configurability options of the board, what
+> certain things may be - Apple used layout-id and a number. Why NOT
+> encode the "model" in the "model"?
+> 
+> Why choose some magical, new property, which then has to be further
+> standardised for no reason?
+
+"compatible" is not a magical, new property.  I'm not going to defend what
+Apple did...
+
+> I also think that specifying an audio codec - after all the Open
+> Firmware standard defines an audio interface and device tree
+> requirements for it, even if they are methods that we don't
+> implement and you don't care about - as a function of it's
+> control interface is so backwards it doesn't bare thinking about.
+
+It's how the device tree works.  Devices go underneath the bus (or other
+attachment interface) that they're on.  If you have an audio codec that has
+an i2c interface and an soc interface, then you have two nodes, because
+you're on two buses.
+
+> If you want to output audio you do it through most audio
+> controllers as a simple transfer of PCM data. Be it Creative
+> or Freescale I2S or AC97, you push data at some port/fifo
+> and it plays a sound. It is NOT defined by i2c control ports,
+> you don't ever use those to *play* audio.
+
+You certainly do use the i2c ports in order to do anything with the device
+underneath the i2c bus.
+
+> It may also be very, very true that a codec DOES NOT REQUIRE
+> implementation of it's control interface, or that control interface could
+> be connected to some other chip which handles initial configuration (like
+> a boot sequencer eeprom) and not to a system bus.
+
+Sure... in that case, then that's *not the bus it's on*.  There's still some
+register set somewhere that software uses to shove data at the codec; that's
+where the node should go.
+
+-Scott
