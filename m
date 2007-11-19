@@ -1,21 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E4911DDDFC
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E472EDDDFA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Nov 2007 07:48:50 +1100 (EST)
-Message-ID: <4741F617.9080408@ovro.caltech.edu>
-Date: Mon, 19 Nov 2007 12:46:15 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Mirek23 <miroslaw.dach@psi.ch>
-Subject: Re: Problem with 64-bit variables on ppc405
-References: <13844837.post@talk.nabble.com>
-In-Reply-To: <13844837.post@talk.nabble.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 20 Nov 2007 08:13:49 +1100 (EST)
+To: Clemens Koller <clemens.koller@anagramm.de>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Problem with uboot on lite5200
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 18 Nov 2007 14:21:55 +0100."
+	<47403C73.9040506@anagramm.de>
+Date: Mon, 19 Nov 2007 22:13:47 +0100
+Sender: wd@denx.de
+Message-Id: <20071119211347.575522479C@gemini.denx.de>
+Cc: Leo Hendrawan <leo.hendrawan@gmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,54 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mirek,
+In message <47403C73.9040506@anagramm.de> you wrote:
+> 
+> How should people get a glue what's current, when in the section
+> "Latest News" at http://sourceforge.net/projects/u-boot/ the people
+> still find a more or less official looking "u-boot-1.1.5" release.
 
-> Doubles and long long are 8 bytes long but the byte order differs
-> on my host linux Intel PC from this what I have on the target
-> linux ppc 405.
+Maybe by reading the very first two lines on the SF page:
 
-That would be due to the difference in endianness of the
-processors.
+	...
+        NOTE: current source code is available from DENX git
+        repository and FTP server; see http://www.denx.de/en/Software/GIT
 
-http://en.wikipedia.org/wiki/Endianness
+or by looking at the project page http://u-boot.sourceforge.net/ which
+redirects you to http://www.denx.de/wiki/UBoot which has all the
+significant information?
 
-If you want to work on data on both an Intel machine, and a
-PowerPC, then you have to transfer the data between the machines
-using a machine-independent binary format.
+The problem is that you cannot really "shut down" a SourceForge
+project (please correct me if I'm wrong).
 
-There are several around:
+> (And they don't want to use scm repositories because they are afraid
+> of using anything unstable.)
 
-1. Network byte order = big-endian.
+I guess there is no real cure for this. [Same people will happily
+download any temproray test version from a FTP server, though.]
 
-2. XDR
+> > Current U-Boot is 1.3.0-rc4. Please wake up.
+> 
+> Well... maybe it's better to remove all references to the old
+> releases at sourceforge and point them to ftp://ftp.denx.de/pub/u-boot/
 
-    http://en.wikipedia.org/wiki/External_Data_Representation
+Can you please teach me how to do that?
 
-    used by NFS,
+> instead. Btw. 1.3.0-rc4 isn't there as well. :-P
 
-3. Common Data Representation
+Indeed. But there is a "snapshot" link on the gitweb page...
 
-    http://en.wikipedia.org/wiki/Common_Data_Representation
+And 1.3.0 will be out in less than 2 hours from now :-)
 
-    Which is implemented in the ACE C++ library.
+Best regards,
 
-    The nice thing about CDR is that the 'reader makes right',
-    so its only when the endianness of the reader is different
-    that it has to use CPU cycles to reformat the data.
+Wolfgang Denk
 
-
-Its not only processors that have subtle endian issues.
-I use little-endian x86 host CPUs in a little-endian PCI
-backplane talking to big-endian PowerPC processors.
-
-Data transferred between the processors is first encoded
-into a CDR data stream and then decoded. I write binary
-data files using the same stream formatters, and then
-use mex routines written in C++ to pull the data into
-MATLAB data structures.
-
-MATLAB data files are also an example of a machine independent
-binary format. But I don't use them.
-
-Cheers,
-Dave
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I am an atheist, thank God!
