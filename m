@@ -1,8 +1,7 @@
-Return-Path: <glikely@secretlab.ca>
-Message-ID: <fa686aa40711190853y3ea1fd6cl883caaddbc1530cc@mail.gmail.com>
-Date: Mon, 19 Nov 2007 09:53:58 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
+Return-Path: <jonsmirl@gmail.com>
+Message-ID: <9e4733910711190855g19605bf5o91d3428523961b6a@mail.gmail.com>
+Date: Mon, 19 Nov 2007 11:55:45 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
 To: "Timur Tabi" <timur@freescale.com>
 Subject: Re: Revisited, audio codec device tree entries.
 In-Reply-To: <4741BD5D.2090502@freescale.com>
@@ -39,37 +38,39 @@ On 11/19/07, Timur Tabi <timur@freescale.com> wrote:
 > make sure the kernel initializes them.  It's also responsible for telling ALSA
 >   which driver does what and how they're connected.
 >
+> With the current version of ASoC (V1), I don't think it's possible to have an
+> independent platform driver.  V2 is in development, but it's not ready yet and
+> I haven't had a chance to study it.  V2 is intended to address the problems
+> that a device tree model raises.
 
-Even it it's just based on the board "model" property; that's still
-deciding what the ALSA fabric is based on data in the device tree.
-:-)
+I'm using the v2 code. The v2 code is modeled after the i2c bus code
+which is the correct way to do drivers for open firmware.
 
+v1 creates asoc core as a platform device which was completely wrong
+since it is a driver core, not a device. That is fixed in v2 where it
+initializes with a subsysinit() call and then creates a bus. The whole
+driver organization of v2 is superior to v1. Open firmware support was
+the main motivation behind v2.
+
+
+>
+> > In this case; it probably is appropriate to have the platform code
+> > instantiate a platform_device for the fabric (instead of an
+> > of_platform device) which the fabric driver can bind against.
+> >
 > > Another option is to explicitly call of_platform_device_create in the
 > > platform code on the fabric node (which should be a child of the root
 > > node) so that you can have an of_platform_bus fabric driver.
 >
 > I don't fully understand platform drivers.  Do we really need a full-blown OF
 > platform driver for this?
+>
+> --
+> Timur Tabi
+> Linux Kernel Developer @ Freescale
+>
 
-Both the platform bus and the of_platform bus do exactly the same
-thing in a simple manner.  They allow devices to be matched with
-drivers.  It is a low overhead mechanism.
-
-In both cases, devices carry with them some metadata to describe the
-devices.  For platform devices, that meta data is a resource structure
-and a device specific pdata structure.  For of_platform devices, the
-metadata is a pointer to a device tree node.
-
-That's it.  Using either mechanism allows the platform code to say
-"these devices are present" without having to explicitly call routines
-into the driver.  In other words; it can provide late binding of
-drivers to devices.
-
-Cheers,
-g.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Jon Smirl
+jonsmirl@gmail.com
