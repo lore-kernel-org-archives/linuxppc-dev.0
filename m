@@ -1,17 +1,15 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 6FA01DDDFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 09:03:36 +1100 (EST)
-Received: from [10.50.1.77] (blade.az.mvista.com [10.50.1.77])
-	by hermes.mvista.com (Postfix) with ESMTP id A93691F0ED
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 13:33:26 -0800 (PST)
-Message-ID: <47435338.2050107@mvista.com>
-Date: Tue, 20 Nov 2007 14:35:52 -0700
-From: Dave Jiang <djiang@mvista.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 21 Nov 2007 09:03:09 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: dtc: Add testcases for tree checks
+Message-ID: <20071120220309.GB13156@localhost.localdomain>
+References: <20071120052423.GC4356@localhost.localdomain>
+	<E1IuUiz-00022Y-E1@jdl.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: mmap on PPC removes file refcount?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IuUiz-00022Y-E1@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It seems the mmap() userland call on PPC causes the kernel to lose the ref
-count for the mount point. This is what I did on a prpmc2800 board (74xx) with
-latest powerpc.git tree (but also seem to happen on 8548 as well).
+On Tue, Nov 20, 2007 at 09:09:17AM -0600, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > This patch adds a group of testcases to check that dtc correctly
+> > rejects trees with various structural errors.
+> > 
+> > To make things easier to test, we change dtc so that failing checks
+> > (as opposed to other errors) result in exit code 2.
+> > 
+> > This patch also fixes an embarrasing bug uncovered by these new tests:
+> > check_phandles() worked out if the tree's phandles were valid, then
+> > throws that information away and returns success always.
+> > 
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> > 
+> > NOTE! jdl, you'll need to chmod +x tests/dtc-checkfails.sh before you
+> > git commit this - it's a new shell script and patch can't encode the
+> > permissions info.
+> > 
+> > Index: dtc/tests/dup-nodename.dts
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ dtc/tests/dup-nodename.dts	2007-11-20 16:02:22.000000000 +1100
+> 
+> 
+> Actually, this is the official third time now that it would have
+> been significantly nicer had you been using git for patches as
+> it does correctly handle excute permissions properly in patches.
 
-I mounted an IDE partition. The userland test app opens a file on the mounted
-partition and sits in a sleep loop while holding the file open. I call umount
-on the partition and I get "device is busy" which is suppose to happen.
-However, after the test app calls mmap on the file id for the opened file, I
-can successfully umount even though it should still say "device is busy".  This
-does not happen on x86 so I'm assuming something is going on with just PPC.
+Well, yes.  But, IMO, every time anyone other that you or I has
+commented on one of these patches as it goes past counts as an
+occasion when it's better that I've been using patches, rather than
+pushing to you direct with git.
 
-So using lsof I can list the opened files on a particular partition. When the
-file is opened, it lists 1 entry. When mmaped, on x86 it would list 2 entries,
-but on ppc it lists nothing. Not only did the mmaped entry not show up, the
-entry caused by open disappeared as well. Also, I put a printk in do_umount()
-to see what the refcount is. On x86, it would be 3 and thus causes device busy.
-On PPC it is 3 when the file is openend, however if mmap is called, the
-refcount becomes 2 and thus umount proceeds. It's almost as if the mmap call
-wiped out the opened file entry and decremented the mount count as well.
+> And, it allows for side-band commentary such as your NOTE!, above,
+> to be included in the patch mail, but not in the patch log itself
+> such that it too doesn't have to be "git commit --amend"'ed out
+> as well.
 
+Actually, that should be possible with mails too, it's just that I
+forgot the --- line.
+
+> In any event, Applied and Adjusted.
 
 -- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
