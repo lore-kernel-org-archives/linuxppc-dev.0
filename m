@@ -1,29 +1,22 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from pd4mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 48387DDEAB
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 17:08:58 +1100 (EST)
-Received: from pd2mr1so.prod.shaw.ca
-	(pd2mr1so-qfe3.prod.shaw.ca [10.0.141.110]) by l-daemon
-	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
-	with ESMTP id <0JRS0063LJQRBC80@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 19 Nov 2007 23:08:51 -0700 (MST)
-Received: from pn2ml6so.prod.shaw.ca ([10.0.121.150])
-	by pd2mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
-	(built Sep
-	5 2006)) with ESMTP id <0JRS000B7JQQZL10@pd2mr1so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Mon, 19 Nov 2007 23:08:51 -0700 (MST)
-Received: from trillian.cg.shawcable.net ([68.147.67.118])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JRS00GS7JQP1V70@l-daemon> for linuxppc-dev@ozlabs.org;
-	Mon, 19 Nov 2007 23:08:50 -0700 (MST)
-Date: Mon, 19 Nov 2007 23:08:49 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] [PPC] Remove xmon from ml300 and ml403 defconfig
-To: "jwboyer@"@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
-Message-id: <20071120060435.18259.23444.stgit@trillian.cg.shawcable.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
+Return-Path: <npiggin@suse.de>
+Received: from mx1.suse.de (ns1.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DC551DDE25
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 17:26:24 +1100 (EST)
+Date: Tue, 20 Nov 2007 07:26:19 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] powerpc: hash lock use lock bitops
+Message-ID: <20071120062618.GB31514@wotan.suse.de>
+References: <20071120050826.GA18332@wotan.suse.de>
+	<20071120050950.GB18332@wotan.suse.de>
+	<1195538904.6970.37.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1195538904.6970.37.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,52 +26,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, Nov 20, 2007 at 05:08:24PM +1100, Benjamin Herrenschmidt wrote:
+> 
+> On Tue, 2007-11-20 at 06:09 +0100, Nick Piggin wrote:
+> > This isn't a bugfix, but may help performance slightly...
+> > 
+> > --
+> > powerpc 64-bit hash pte lock bit is an actual lock, so it can take advantage
+> > of lock bitops for slightly more optimal memory barriers (can avoid an lwsync
+> > in the trylock).
+> > 
+> > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> 
+> Looks nice, I'll try it out on a G5 and let you know.
 
-xmon is broken under arch/ppc so remove it from the defconfig.
+Cool, thanks (I don't have mine handy ATM...).
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+BTW, here is another thing which you might want to think about. Again
+untested for temporary lack of hardware.
+
+--
+
+The radix-tree is now RCU safe, so powerpc can avoid the games it was playing
+in order to have a lockless readside. Saves an irq disable/enable, a couple of
+__get_cpu_var()s, a cacheline, and a memory barrier, in the fastpath. Should
+save a cycle or two...
+
 ---
-
-Josh; I'm not going to even bother doing a full defconfig update for these
-boards right now; it's probably not worth it.  This change just eliminates
-the xmon build issue.  Plus doing it this way is trivial to review.  :-)
-
-In fact; looking at the code, I don't think xmon builds for *any* arch/ppc
-platforms at the moment.  :-/  Probably not even worth worrying about.
-
-As we discussed, this should go in for .24
-
-Cheers,
-g.
-
- arch/ppc/configs/ml300_defconfig |    2 +-
- arch/ppc/configs/ml403_defconfig |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/ppc/configs/ml300_defconfig b/arch/ppc/configs/ml300_defconfig
-index 69bad91..d66cacd 100644
---- a/arch/ppc/configs/ml300_defconfig
-+++ b/arch/ppc/configs/ml300_defconfig
-@@ -719,7 +719,7 @@ CONFIG_DEBUG_INFO=y
- CONFIG_FORCED_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_KGDB is not set
--CONFIG_XMON=y
-+# CONFIG_XMON is not set
- # CONFIG_BDI_SWITCH is not set
- # CONFIG_SERIAL_TEXT_DEBUG is not set
+Index: linux-2.6/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/irq.c
++++ linux-2.6/arch/powerpc/kernel/irq.c
+@@ -406,8 +406,6 @@ void do_softirq(void)
  
-diff --git a/arch/ppc/configs/ml403_defconfig b/arch/ppc/configs/ml403_defconfig
-index a78896e..71bcfa7 100644
---- a/arch/ppc/configs/ml403_defconfig
-+++ b/arch/ppc/configs/ml403_defconfig
-@@ -720,7 +720,7 @@ CONFIG_DEBUG_INFO=y
- CONFIG_FORCED_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
- # CONFIG_KGDB is not set
--CONFIG_XMON=y
-+# CONFIG_XMON is not set
- # CONFIG_BDI_SWITCH is not set
- # CONFIG_SERIAL_TEXT_DEBUG is not set
+ static LIST_HEAD(irq_hosts);
+ static DEFINE_SPINLOCK(irq_big_lock);
+-static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
+-static unsigned int irq_radix_writer;
+ struct irq_map_entry irq_map[NR_IRQS];
+ static unsigned int irq_virq_count = NR_IRQS;
+ static struct irq_host *irq_default_host;
+@@ -550,57 +548,6 @@ void irq_set_virq_count(unsigned int cou
+ 		irq_virq_count = count;
+ }
  
+-/* radix tree not lockless safe ! we use a brlock-type mecanism
+- * for now, until we can use a lockless radix tree
+- */
+-static void irq_radix_wrlock(unsigned long *flags)
+-{
+-	unsigned int cpu, ok;
+-
+-	spin_lock_irqsave(&irq_big_lock, *flags);
+-	irq_radix_writer = 1;
+-	smp_mb();
+-	do {
+-		barrier();
+-		ok = 1;
+-		for_each_possible_cpu(cpu) {
+-			if (per_cpu(irq_radix_reader, cpu)) {
+-				ok = 0;
+-				break;
+-			}
+-		}
+-		if (!ok)
+-			cpu_relax();
+-	} while(!ok);
+-}
+-
+-static void irq_radix_wrunlock(unsigned long flags)
+-{
+-	smp_wmb();
+-	irq_radix_writer = 0;
+-	spin_unlock_irqrestore(&irq_big_lock, flags);
+-}
+-
+-static void irq_radix_rdlock(unsigned long *flags)
+-{
+-	local_irq_save(*flags);
+-	__get_cpu_var(irq_radix_reader) = 1;
+-	smp_mb();
+-	if (likely(irq_radix_writer == 0))
+-		return;
+-	__get_cpu_var(irq_radix_reader) = 0;
+-	smp_wmb();
+-	spin_lock(&irq_big_lock);
+-	__get_cpu_var(irq_radix_reader) = 1;
+-	spin_unlock(&irq_big_lock);
+-}
+-
+-static void irq_radix_rdunlock(unsigned long flags)
+-{
+-	__get_cpu_var(irq_radix_reader) = 0;
+-	local_irq_restore(flags);
+-}
+-
+ static int irq_setup_virq(struct irq_host *host, unsigned int virq,
+ 			    irq_hw_number_t hwirq)
+ {
+@@ -791,9 +738,9 @@ void irq_dispose_mapping(unsigned int vi
+ 		/* Check if radix tree allocated yet */
+ 		if (host->revmap_data.tree.gfp_mask == 0)
+ 			break;
+-		irq_radix_wrlock(&flags);
++		spin_lock_irqsave(&irq_big_lock, flags);
+ 		radix_tree_delete(&host->revmap_data.tree, hwirq);
+-		irq_radix_wrunlock(flags);
++		spin_unlock_irqrestore(&irq_big_lock, flags);
+ 		break;
+ 	}
+ 
+@@ -861,9 +808,9 @@ unsigned int irq_radix_revmap(struct irq
+ 		return irq_find_mapping(host, hwirq);
+ 
+ 	/* Now try to resolve */
+-	irq_radix_rdlock(&flags);
++	rcu_read_lock();
+ 	ptr = radix_tree_lookup(tree, hwirq);
+-	irq_radix_rdunlock(flags);
++	rcu_read_unlock();
+ 
+ 	/* Found it, return */
+ 	if (ptr) {
+@@ -874,9 +821,9 @@ unsigned int irq_radix_revmap(struct irq
+ 	/* If not there, try to insert it */
+ 	virq = irq_find_mapping(host, hwirq);
+ 	if (virq != NO_IRQ) {
+-		irq_radix_wrlock(&flags);
++		spin_lock_irqsave(&irq_big_lock, flags);
+ 		radix_tree_insert(tree, hwirq, &irq_map[virq]);
+-		irq_radix_wrunlock(flags);
++		spin_unlock_irqrestore(&irq_big_lock, flags);
+ 	}
+ 	return virq;
+ }
+@@ -989,12 +936,12 @@ static int irq_late_init(void)
+ 	struct irq_host *h;
+ 	unsigned long flags;
+ 
+-	irq_radix_wrlock(&flags);
++	spin_lock_irqsave(&irq_big_lock, flags);
+ 	list_for_each_entry(h, &irq_hosts, link) {
+ 		if (h->revmap_type == IRQ_HOST_MAP_TREE)
+ 			INIT_RADIX_TREE(&h->revmap_data.tree, GFP_ATOMIC);
+ 	}
+-	irq_radix_wrunlock(flags);
++	spin_unlock_irqrestore(&irq_big_lock, flags);
+ 
+ 	return 0;
+ }
