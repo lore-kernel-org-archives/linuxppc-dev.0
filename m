@@ -1,10 +1,32 @@
-Return-Path: <benh@ozlabs.org>
-To: <jgarzik@pobox.com>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 20 Nov 2007 14:50:46 +1100
-Subject: [PATCH] ibm_newemac: Fix possible lockup on close
-Message-Id: <20071120035134.970DCDDE9E@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <balbir@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3505DDDDFE
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 15:16:22 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAK4GJsj008372
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 23:16:19 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lAK4GJj7120002
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 21:16:19 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAK4GJRP026128
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 21:16:19 -0700
+Message-ID: <47425F8F.3060208@linux.vnet.ibm.com>
+Date: Tue, 20 Nov 2007 09:46:15 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] fix scaled time accounting possible divide by zero
+References: <9965.1195529141@neuling.org>
+In-Reply-To: <9965.1195529141@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,116 +36,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's a bad idea to call flush_scheduled_work from within a
-netdev->stop because the linkwatch will occasionally take the
-rtnl lock from a workqueue context, and thus that can deadlock.
+Michael Neuling wrote:
+> This fixes a problem noticed by Balbir Singh
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+> Paulus: can we send this up for 2.6.24?
+> 
+>  arch/powerpc/kernel/time.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+> ===================================================================
+> --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
+> +++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
+> @@ -244,8 +244,9 @@ void account_system_vtime(struct task_st
+>  		/* deltascaled includes both user and system time.
+>  		 * Hence scale it based on the purr ratio to estimate
+>  		 * the system time */
+> -		deltascaled = deltascaled * get_paca()->system_time /
+> -		(get_paca()->system_time + get_paca()->user_time);
+> +		if (get_paca()->user_time)
+> +			deltascaled = deltascaled * get_paca()->system_time /
+> +			(get_paca()->system_time + get_paca()->user_time);
 
-This reworks things a bit in that area to avoid the problem.
+Hi, Michael,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+I'd be doubly careful with scaled multiplication approach, we tried this
+for CFS (please see task_utime() and task_stime() and the fixes that
+went around it). We ran into problems were due to multiplication
+rounding errors, we would see stime and utime go back after a period
+of time.
 
- drivers/net/ibm_newemac/core.c |   31 ++++++++++++++++++++-----------
- drivers/net/ibm_newemac/core.h |    1 +
- 2 files changed, 21 insertions(+), 11 deletions(-)
+Please see http://kerneltrap.org/mailarchive/linux-kernel/2007/10/16/344377
 
-Index: linux-work/drivers/net/ibm_newemac/core.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-20 14:42:50.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-20 14:46:51.000000000 +1100
-@@ -642,9 +642,11 @@ static void emac_reset_work(struct work_
- 	DBG(dev, "reset_work" NL);
- 
- 	mutex_lock(&dev->link_lock);
--	emac_netif_stop(dev);
--	emac_full_tx_reset(dev);
--	emac_netif_start(dev);
-+	if (dev->opened) {
-+		emac_netif_stop(dev);
-+		emac_full_tx_reset(dev);
-+		emac_netif_start(dev);
-+	}
- 	mutex_unlock(&dev->link_lock);
- }
- 
-@@ -1063,10 +1065,9 @@ static int emac_open(struct net_device *
- 	dev->rx_sg_skb = NULL;
- 
- 	mutex_lock(&dev->link_lock);
-+	dev->opened = 1;
- 
--	/* XXX Start PHY polling now. Shouldn't wr do like sungem instead and
--	 * always poll the PHY even when the iface is down ? That would allow
--	 * things like laptop-net to work. --BenH
-+	/* Start PHY polling now.
- 	 */
- 	if (dev->phy.address >= 0) {
- 		int link_poll_interval;
-@@ -1145,9 +1146,11 @@ static void emac_link_timer(struct work_
- 	int link_poll_interval;
- 
- 	mutex_lock(&dev->link_lock);
--
- 	DBG2(dev, "link timer" NL);
- 
-+	if (!dev->opened)
-+		goto bail;
-+
- 	if (dev->phy.def->ops->poll_link(&dev->phy)) {
- 		if (!netif_carrier_ok(dev->ndev)) {
- 			/* Get new link parameters */
-@@ -1170,13 +1173,14 @@ static void emac_link_timer(struct work_
- 		link_poll_interval = PHY_POLL_LINK_OFF;
- 	}
- 	schedule_delayed_work(&dev->link_work, link_poll_interval);
--
-+ bail:
- 	mutex_unlock(&dev->link_lock);
- }
- 
- static void emac_force_link_update(struct emac_instance *dev)
- {
- 	netif_carrier_off(dev->ndev);
-+	smp_rmb();
- 	if (dev->link_polling) {
- 		cancel_rearming_delayed_work(&dev->link_work);
- 		if (dev->link_polling)
-@@ -1191,11 +1195,14 @@ static int emac_close(struct net_device 
- 
- 	DBG(dev, "close" NL);
- 
--	if (dev->phy.address >= 0)
-+	if (dev->phy.address >= 0) {
-+		dev->link_polling = 0;
- 		cancel_rearming_delayed_work(&dev->link_work);
--
-+	}
-+	mutex_lock(&dev->link_lock);
- 	emac_netif_stop(dev);
--	flush_scheduled_work();
-+	dev->opened = 0;
-+	mutex_unlock(&dev->link_lock);
- 
- 	emac_rx_disable(dev);
- 	emac_tx_disable(dev);
-@@ -2756,6 +2763,8 @@ static int __devexit emac_remove(struct 
- 
- 	unregister_netdev(dev->ndev);
- 
-+	flush_scheduled_work();
-+
- 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH))
- 		tah_detach(dev->tah_dev, dev->tah_port);
- 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
-Index: linux-work/drivers/net/ibm_newemac/core.h
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.h	2007-11-20 14:42:50.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.h	2007-11-20 14:46:51.000000000 +1100
-@@ -258,6 +258,7 @@ struct emac_instance {
- 	int				stop_timeout;	/* in us */
- 	int				no_mcast;
- 	int				mcast_pending;
-+	int				opened;
- 	struct work_struct		reset_work;
- 	spinlock_t			lock;
- };
+Our problems were made severe by the fact that sum_exec_runtime and
+stime/utime accounting occured differently. stime/utime were sampled
+at jiffy boundaries and hence could we incorrect. I think we need
+to use rounding to ensure that ac_scaled*time never goes back
+due to rounding errors.
+
+>  		delta += get_paca()->system_time;
+>  		get_paca()->system_time = 0;
+>  	}
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
