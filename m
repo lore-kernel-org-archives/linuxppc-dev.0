@@ -1,15 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 635A8DDE16
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 14:38:19 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id lAK3cDxv013104
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2007 21:38:14 -0600
+Date: Mon, 19 Nov 2007 21:36:57 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
+Message-ID: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18242.21895.876009.632187@cargo.ozlabs.ibm.com>
-Date: Tue, 20 Nov 2007 14:33:27 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH v2] PMU: replace information ioctls and schedule for
-	removal
-In-Reply-To: <1194981108.6695.11.camel@johannes.berg>
-References: <1194981108.6695.11.camel@johannes.berg>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
+isel (Integer Select) is a new user space instruction in the
+PowerISA 2.04 spec.  Not all processors implement it so lets emulate
+to ensure code built with isel will run everywhere.
 
-> This patch adds sysfs attributes to the PMU to allow getting
-> the information on the PMU type and whether adb is present from
-> there instead of via the ioctl. The ioctl is made optional and
-> scheduled for removal.
+---
+ arch/powerpc/kernel/traps.c |   25 +++++++++++++++++++++++++
+ 1 files changed, 25 insertions(+), 0 deletions(-)
 
-I don't see any reason to ever remove the ioctls.  We're talking about
-just 4 lines of code here.  Sure we can add the sysfs attributes -
-even though that adds an order of magnitude more lines of code 
-(thanks sysfs :) but I don't see any good reason to remove the
-existing interface.
+In my git tree for 2.6.25.
 
-Paul.
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 59c464e..cad6484 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -622,6 +622,9 @@ static void parse_fpe(struct pt_regs *regs)
+ #define INST_POPCNTB		0x7c0000f4
+ #define INST_POPCNTB_MASK	0xfc0007fe
+
++#define INST_ISEL		0x7c00001e
++#define INST_ISEL_MASK		0xfc00003e
++
+ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
+ {
+ 	u8 rT = (instword >> 21) & 0x1f;
+@@ -707,6 +710,23 @@ static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
+ 	return 0;
+ }
+
++static int emulate_isel(struct pt_regs *regs, u32 instword)
++{
++	u8 rT = (instword >> 21) & 0x1f;
++	u8 rA = (instword >> 16) & 0x1f;
++	u8 rB = (instword >> 11) & 0x1f;
++	u8 BC = (instword >> 6) & 0x1f;
++	u8 bit;
++	unsigned long tmp;
++
++	tmp = (rA == 0) ? 0 : regs->gpr[rA];
++	bit = (regs->ccr >> (31 - BC)) & 0x1;
++
++	regs->gpr[rT] = bit ? tmp : regs->gpr[rB];
++
++	return 0;
++}
++
+ static int emulate_instruction(struct pt_regs *regs)
+ {
+ 	u32 instword;
+@@ -749,6 +769,11 @@ static int emulate_instruction(struct pt_regs *regs)
+ 		return emulate_popcntb_inst(regs, instword);
+ 	}
+
++	/* Emulate isel (Integer Select) instruction */
++	if ((instword & INST_ISEL_MASK) == INST_ISEL) {
++		return emulate_isel(regs, instword);
++	}
++
+ 	return -EINVAL;
+ }
+
+-- 
+1.5.3.4
