@@ -1,18 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id 6BAE2DDE03
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 07:26:12 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so358935anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 12:26:11 -0800 (PST)
-Message-ID: <fa686aa40711201226o74b526fchebb547a8d08886fa@mail.gmail.com>
-Date: Tue, 20 Nov 2007 13:26:11 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	"Kim Phillips" <kim.phillips@freescale.com>
-Subject: USB failure on mpc8347 based board
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E48C9DDDDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 08:01:21 +1100 (EST)
+Message-Id: <B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20071120175416.GA4389@loki.buserror.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
+Date: Tue, 20 Nov 2007 15:01:11 -0600
+References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
+	<20071120175416.GA4389@loki.buserror.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,50 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'm seeing the following error on an MPC8347 based board.  The
-physical board is wired up with the fsl-usb2-dr controller setup as a
-USB device using port0 and fsl-usb2-mph as a USB host using port1.
-The EHCI driver fails with the following error when initializing the
-fsl-usb2-mph controller:
 
-In particular I'm wondering if anyone knows the cause of "HC died; cleaning up".
+On Nov 20, 2007, at 11:54 AM, Scott Wood wrote:
 
-The board has a hard wired USB hub connected to port1, and the host
-controller seems to be dying while probing that device.
+> On Mon, Nov 19, 2007 at 09:36:57PM -0600, Kumar Gala wrote:
+>> isel (Integer Select) is a new user space instruction in the
+>> PowerISA 2.04 spec.  Not all processors implement it so lets emulate
+>> to ensure code built with isel will run everywhere.
+>
+> Given that the instruction is meant to be a performance enhancement,
+> we should probably warn the first few times it's emulated, so the user
+> knows they should change their toolchain setup if possible.
 
-Cheers,
-g.
+The same is true of mcrxr, popcntb, and possibly string ld/st.
 
-[    0.754259] usbmon: debugfs is not available
-[    0.758862] fsl-ehci fsl-ehci.0: Freescale On-Chip EHCI Host Controller
-[    0.765948] fsl-ehci fsl-ehci.0: new USB bus registered, assigned
-bus number 1
-[    0.795863] fsl-ehci fsl-ehci.0: irq 39, io base 0xe0022000
-[    0.801475] fsl-ehci fsl-ehci.0: USB 2.0 started, EHCI 1.00, driver
-10 Dec 2004
-[    0.809948] usb usb1: configuration #1 chosen from 1 choice
-[    0.815971] hub 1-0:1.0: USB hub found
-[    0.819778] hub 1-0:1.0: 2 ports detected
-[    0.928972] USB Universal Host Controller Interface driver v3.0
-[    0.935257] Initializing USB Mass Storage driver...
-[    1.167836] usb 1-1: new high speed USB device using fsl-ehci and address 2
-[    1.175150] fsl-ehci fsl-ehci.0: fatal error
-[    1.179467] fsl-ehci fsl-ehci.0: HC died; cleaning up
-[    1.184585] hub 1-0:1.0: cannot reset port 1 (err = -19)
-[    1.189934] hub 1-0:1.0: cannot disable port 1 (err = -19)
-[    1.195465] hub 1-0:1.0: cannot reset port 1 (err = -19)
-[    1.200809] hub 1-0:1.0: cannot disable port 1 (err = -19)
-[    1.206327] hub 1-0:1.0: cannot reset port 1 (err = -19)
-[    1.211666] hub 1-0:1.0: cannot disable port 1 (err = -19)
-[    1.217189] hub 1-0:1.0: cannot reset port 1 (err = -19)
-[    1.222527] hub 1-0:1.0: cannot disable port 1 (err = -19)
-[    1.228044] hub 1-0:1.0: cannot disable port 1 (err = -19)
-[    1.233558] hub 1-0:1.0: hub_port_status failed (err = -19)
-[    1.239246] usbcore: registered new interface driver usb-storage
+Feel free to submit a patch that warns about their usage.
 
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+- k
