@@ -1,21 +1,15 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F767DDE24
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 12:30:30 +1100 (EST)
-Message-ID: <4742389E.5080700@pobox.com>
-Date: Mon, 19 Nov 2007 20:30:06 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A8476DDE2C
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 12:33:03 +1100 (EST)
+Date: Mon, 19 Nov 2007 19:34:52 -0600
+From: Olof Johansson <olof@lixom.net>
+To: paulus@samba.org
+Subject: Please pull from 'for-2.6.24' branch of pasemi tree
+Message-ID: <20071120013452.GA18956@lixom.net>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
-References: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
-	<20071119173652.55e385b2.kim.phillips@freescale.com>
-In-Reply-To: <20071119173652.55e385b2.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips wrote:
-> On Mon, 5 Nov 2007 12:15:30 -0600
-> Kim Phillips <kim.phillips@freescale.com> wrote:
-> 
->> Hello all,
->>
->> the following patches fix RGMII timing for rev. 2.1 of the mpc8360,
->> according to erratum #2 (erratum text included below).  Basically the
->> most intrusive part is the addition of two new RGMII Internal Delay
->> modes; one for TX delay only, and the other for RX delay only (i.e, not
->> both at the same time).
->>
->> Please review, and since this affects both netdev and powerpc trees,
->> one maintainer should ack them for the other to push upstream (i.e,
->> Kumar acks them, and Leo picks them up to go through netdev or the
->> other way around; either way is fine with me).  I'm hoping they're
->> trivial enough to go in 2.6.24.
->>
-> Kumar, Leo, 
-> 
-> re-ping due to (a) it's been 2 weeks and (b) Anton Vorontsov has since
-> issued his Tested-by.
-> 
-> Might I suggest Kumar ack the powerpc patches, and Leo/Jeff apply 5/5
-> to go through netdev?
+Hi Paul,
 
-FWIW I just got back from vacation...  I'm grabbing what DaveM has 
-collected into davem/netdev-2.6.git, and then going from there...
+Please pull from:
 
-	Jeff
+ master.kernel.org:/pub/scm/linux/kernel/git/olof/pasemi.git for-2.6.24                            
+
+For the following bugfix for 2.6.24:
+
+Olof Johansson (1):
+      [POWERPC] pasemi: Don't reset mpic at boot
+
+ setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+
+Thanks,
+
+Olof
