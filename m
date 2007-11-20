@@ -1,15 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Nov 2007 09:03:09 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 57F4BDDE03
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 09:22:54 +1100 (EST)
 Subject: Re: dtc: Add testcases for tree checks
-Message-ID: <20071120220309.GB13156@localhost.localdomain>
+From: Jon Loeliger <jdl@freescale.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071120220309.GB13156@localhost.localdomain>
 References: <20071120052423.GC4356@localhost.localdomain>
 	<E1IuUiz-00022Y-E1@jdl.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IuUiz-00022Y-E1@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+	<20071120220309.GB13156@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1195597354.25887.39.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Tue, 20 Nov 2007 16:22:34 -0600
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,51 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 20, 2007 at 09:09:17AM -0600, Jon Loeliger wrote:
-> So, like, the other day David Gibson mumbled:
-> > This patch adds a group of testcases to check that dtc correctly
-> > rejects trees with various structural errors.
-> > 
-> > To make things easier to test, we change dtc so that failing checks
-> > (as opposed to other errors) result in exit code 2.
-> > 
-> > This patch also fixes an embarrasing bug uncovered by these new tests:
-> > check_phandles() worked out if the tree's phandles were valid, then
-> > throws that information away and returns success always.
-> > 
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> > 
-> > NOTE! jdl, you'll need to chmod +x tests/dtc-checkfails.sh before you
-> > git commit this - it's a new shell script and patch can't encode the
-> > permissions info.
-> > 
-> > Index: dtc/tests/dup-nodename.dts
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ dtc/tests/dup-nodename.dts	2007-11-20 16:02:22.000000000 +1100
-> 
-> 
-> Actually, this is the official third time now that it would have
-> been significantly nicer had you been using git for patches as
-> it does correctly handle excute permissions properly in patches.
+On Tue, 2007-11-20 at 16:03, David Gibson wrote:
 
-Well, yes.  But, IMO, every time anyone other that you or I has
-commented on one of these patches as it goes past counts as an
-occasion when it's better that I've been using patches, rather than
-pushing to you direct with git.
+> Well, yes.  But, IMO, every time anyone other that you or I has
+> commented on one of these patches as it goes past counts as an
+> occasion when it's better that I've been using patches, rather than
+> pushing to you direct with git.
 
-> And, it allows for side-band commentary such as your NOTE!, above,
-> to be included in the patch mail, but not in the patch log itself
-> such that it too doesn't have to be "git commit --amend"'ed out
-> as well.
+I am not asking you to stop sending patches.
+I'm asking you to generate your patches with git.
+Git's patch format, send through mail, handles
+the execute permissions.
 
-Actually, that should be possible with mails too, it's just that I
-forgot the --- line.
 
-> In any event, Applied and Adjusted.
+> Actually, that should be possible with mails too, it's just that I
+> forgot the --- line.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Right.  I'm just asking for it to be used. :-)
+
+jdl
