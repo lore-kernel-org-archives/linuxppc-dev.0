@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E472EDDDFA
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 307C8DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Nov 2007 08:13:49 +1100 (EST)
-To: Clemens Koller <clemens.koller@anagramm.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problem with uboot on lite5200
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 18 Nov 2007 14:21:55 +0100."
-	<47403C73.9040506@anagramm.de>
-Date: Mon, 19 Nov 2007 22:13:47 +0100
-Sender: wd@denx.de
-Message-Id: <20071119211347.575522479C@gemini.denx.de>
-Cc: Leo Hendrawan <leo.hendrawan@gmail.com>, linuxppc-embedded@ozlabs.org
+	Tue, 20 Nov 2007 11:08:08 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IuGeq-0004Dy-3S
+	for linuxppc-embedded@ozlabs.org; Mon, 19 Nov 2007 16:08:04 -0800
+Message-ID: <13848328.post@talk.nabble.com>
+Date: Mon, 19 Nov 2007 16:08:03 -0800 (PST)
+From: abhi_linux <seema.pm@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: 2.6 kernel hangs after loading device tree
+In-Reply-To: <fa84b3da0708290938l40d8f543oc0e34fa9bea806a4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+References: <fa84b3da0708290938l40d8f543oc0e34fa9bea806a4@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +28,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <47403C73.9040506@anagramm.de> you wrote:
+
+Hello
+Did u get a solution to this? I have similar issues. How do u enable
+debugging in UBoot?
+Thanks
+
+charanya venkatraman wrote:
 > 
-> How should people get a glue what's current, when in the section
-> "Latest News" at http://sourceforge.net/projects/u-boot/ the people
-> still find a more or less official looking "u-boot-1.1.5" release.
-
-Maybe by reading the very first two lines on the SF page:
-
-	...
-        NOTE: current source code is available from DENX git
-        repository and FTP server; see http://www.denx.de/en/Software/GIT
-
-or by looking at the project page http://u-boot.sourceforge.net/ which
-redirects you to http://www.denx.de/wiki/UBoot which has all the
-significant information?
-
-The problem is that you cannot really "shut down" a SourceForge
-project (please correct me if I'm wrong).
-
-> (And they don't want to use scm repositories because they are afraid
-> of using anything unstable.)
-
-I guess there is no real cure for this. [Same people will happily
-download any temproray test version from a FTP server, though.]
-
-> > Current U-Boot is 1.3.0-rc4. Please wake up.
+> Hi all
+>        Sorry about the previous mail.Got sent  by mistake.
 > 
-> Well... maybe it's better to remove all references to the old
-> releases at sourceforge and point them to ftp://ftp.denx.de/pub/u-boot/
-
-Can you please teach me how to do that?
-
-> instead. Btw. 1.3.0-rc4 isn't there as well. :-P
-
-Indeed. But there is a "snapshot" link on the gitweb page...
-
-And 1.3.0 will be out in less than 2 hours from now :-)
-
-Best regards,
-
-Wolfgang Denk
+> Iam using the 2.6.22.5 kernel on MPC 8560 and MPC8540 on my custom
+> board.Mykernel hangs after loading the device tree in both the
+> processors .There is
+> no output on the serial port after loading the device tree.Am using U-boot
+> 1.2.0 as the bootloader.After enabling debug in u-boot i could see that
+> the
+> control is getting transferred to the kernel after which it hangs.Earlier
+> i
+> tried using 2.6.21 which also hangs at the same point.The config files
+> used
+> were MPC8540ADS_defconfig and MPC8560ADS_defconfig under powerpc
+> directory.
+> The changes that were made to the device tree are:
+> 1.The reg and ranges properties of the soc node have been changed to
+> account
+> for the change in CCSRBAR of my board.
+> 2.Removed the PCI,mdio nodes and ethernet nodes since i dont need support
+> for these as of now.
+> 
+> I have tried the following console arguments:
+> MPC8540: bootargs root=/dev/ram rw console=ttyS0,115200
+> MPC8560:bootargs root=/dev/ram rw console=ttyCPM0,115200
+> 
+> Any help on this issue??
+> 
+> Thanks.
+> Charanya.
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I am an atheist, thank God!
+View this message in context: http://www.nabble.com/2.6-kernel-hangs-after-loading-device-tree-tf4348921.html#a13848328
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
