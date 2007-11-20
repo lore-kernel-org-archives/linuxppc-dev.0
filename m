@@ -1,19 +1,21 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id F24E8DDDEB
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 70008DDE06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Nov 2007 23:49:34 +1100 (EST)
-Message-ID: <4742D7DD.9040308@anagramm.de>
-Date: Tue, 20 Nov 2007 13:49:33 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Wed, 21 Nov 2007 02:21:22 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IuUud-0001tJ-0M
+	for linuxppc-embedded@ozlabs.org; Tue, 20 Nov 2007 07:21:19 -0800
+Message-ID: <13858912.post@talk.nabble.com>
+Date: Tue, 20 Nov 2007 07:21:19 -0800 (PST)
+From: Lorenz Kolb <linuxppcemb@lkmail.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: ML403 USB driver
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Oops: of_platform_serial_probe
-References: <474193B8.9060007@anagramm.de> <200711191756.55165.arnd@arndb.de>
-	<4742BC57.7020305@anagramm.de> <200711201305.47753.arnd@arndb.de>
-In-Reply-To: <200711201305.47753.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,35 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- >> @@ -36,6 +36,10 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
- >>         memset(port, 0, sizeof *port);
- >>         spd = of_get_property(np, "current-speed", NULL);
- >>         clk = of_get_property(np, "clock-frequency", NULL);
- >> +       if (!spd) {
- >> +               dev_warn(&ofdev->dev, "no current-speed property set\n");
- >> +               return -ENODEV;
- >> +       }
- >>         if (!clk) {
- >>                 dev_warn(&ofdev->dev, "no clock-frequency property set\n");
- >>                 return -ENODEV;
- >
- > This looks wrong. Since the current-speed property is not mandated by open firmware,
- > we should not error out here, but simply use the setting from the command line
- > or whatever other defaults can be used. Not setting port->custom_divisor at all
- > should do the job.
 
-Understood... but then, my console just stops / gets reinitialized to some unknown
-baudrate when I get to of_serial.c. :-(
+Hi,
+
+we just tried the USB driver (from Peter Korsgaard) from Grant's virtex
+tree.
+
+Nevertheless we could not get the peripheral ports work as gadgets.
+Has anyone tried (and probably fixed) that before?
+
+Anyway, only one of the two peripheral ports seems to be active.
+
+We use kernel 2.6.22 (as some usb related stuff has recently changed and the
+driver would have to be changed), usb host works (usb-storage, cdc_ether,
+some more stuff we tested)
 
 Regards,
 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Lorenz Kolb
+-- 
+View this message in context: http://www.nabble.com/ML403-USB-driver-tf4844098.html#a13858912
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
