@@ -1,24 +1,18 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C5C2DDE3B
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 25B9FDDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Nov 2007 18:45:18 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IuNnG-0005KS-Vo
-	for linuxppc-embedded@ozlabs.org; Mon, 19 Nov 2007 23:45:14 -0800
-Message-ID: <13852281.post@talk.nabble.com>
-Date: Mon, 19 Nov 2007 23:45:14 -0800 (PST)
-From: Lorenz Kolb <linuxppcemb@lkmail.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Virtex TEMAC ping -s 10000 host, is it working?
-In-Reply-To: <13830023.post@talk.nabble.com>
+	Tue, 20 Nov 2007 21:52:06 +1100 (EST)
+Message-ID: <4742BC57.7020305@anagramm.de>
+Date: Tue, 20 Nov 2007 11:52:07 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <13770288.post@talk.nabble.com> <13790720.post@talk.nabble.com>
-	<13830023.post@talk.nabble.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Oops: of_platform_serial_probe
+References: <474193B8.9060007@anagramm.de> <200711191756.55165.arnd@arndb.de>
+In-Reply-To: <200711191756.55165.arnd@arndb.de>
+Content-Type: multipart/mixed; boundary="------------010403080101010901020306"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,106 +23,145 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------010403080101010901020306
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
 
+Hi, Arnd!
 
-alex_snippet wrote:
-> 
-> 
-> It's interesting to see some info from your design files,  PLB_TEMAC &
-> HardTEMAC description from mhs,
-> and kernel .config network section.
-> 
+Arnd Bergmann schrieb:
+ > On Monday 19 November 2007, Clemens Koller wrote:
+ >> Unable to handle kernel paging request for data at address 0x00000000
+ >> Faulting instruction address: 0xc018f03c
+ >> Oops: Kernel access of bad area, sig: 11 [#1]
+ >> MPC85xx ADS
+ >> Modules linked in:
+ >> NIP: c018f03c LR: c018f00c CTR: c00127b4
+ >> REGS: c0821cf0 TRAP: 0300   Not tainted  (2.6.24-rc2-ge6a5c27f)
+ >> MSR: 00029000 <EE,ME>  CR: 42022088  XER: 20000000
+ >> DEAR: 00000000, ESR: 00000000
+ >> TASK = c081e000[1] 'swapper' THREAD: c0820000
+ >> GPR00: b1000000 c0821da0 c081e000 c0833e10 00000004 c0821d80 c03d3064 c05eea80
+ >> GPR08: 00000200 00000002 0000002a 13ab6680 82022042 00000000 c03318a4 c033188c
+ >> GPR16: c0331908 c03318f0 c03a0e30 c0331930 c033191c 007fff00 0ffeccbc c03a0000
+ >> GPR24: c0821dc4 00000000 00000003 c0934cf8 cffffba8 00000000 c0833e00 c07fdc6c
+ >> NIP [c018f03c] of_platform_serial_probe+0x118/0x1e4
+ >> LR [c018f00c] of_platform_serial_probe+0xe8/0x1e4
+ >> Call Trace:
+ >
+ > Ok, that is a NULL pointer access, probably somewhere in the
+ > of_platform_serial_setup that can be inlined. Please post the
+ > device tree entries for your serial ports so we can see what
+ > goes wrong there.
 
-.mhs
+The device tree is the default one which comes with the kernel:
+paulus.git/arch/powerpc/boot/dts/mpc8540ads.dts
+which contains:
 
+                 serial@4500 {
+                         device_type = "serial";
+                         compatible = "ns16550";
+                         reg = <4500 100>;       // reg base, size
+                         clock-frequency = <0>;  // should we fill in in uboot?
+                         interrupts = <2a 2>;
+                         interrupt-parent = <&mpic>;
+                 };
 
-> <snip>
-> BEGIN hard_temac
->  PARAMETER INSTANCE = hard_temac_0
->  PARAMETER HW_VER = 3.00.a
->  BUS_INTERFACE V4EMACDST0 = plb_temac_0_V4EMACSRC
->  PORT MII_TX_CLK_0 = fpga_0_Hard_Temac_0_MII_TX_CLK_0
->  PORT GMII_TXD_0 = fpga_0_Hard_Temac_0_GMII_TXD_0
->  PORT GMII_TX_EN_0 = fpga_0_Hard_Temac_0_GMII_TX_EN_0
->  PORT GMII_TX_ER_0 = fpga_0_Hard_Temac_0_GMII_TX_ER_0
->  PORT GMII_TX_CLK_0 = fpga_0_Hard_Temac_0_GMII_TX_CLK_0
->  PORT GMII_RXD_0 = fpga_0_Hard_Temac_0_GMII_RXD_0
->  PORT GMII_RX_DV_0 = fpga_0_Hard_Temac_0_GMII_RX_DV_0
->  PORT GMII_RX_ER_0 = fpga_0_Hard_Temac_0_GMII_RX_ER_0
->  PORT GMII_RX_CLK_0 = fpga_0_Hard_Temac_0_GMII_RX_CLK_0
->  PORT MDC_0 = fpga_0_Hard_Temac_0_MDC_0
->  PORT MDIO_0 = fpga_0_Hard_Temac_0_MDIO_0
->  PORT RESET = Emac_Reset_s
->  PORT GTX_CLK_0 = temac_0_clk_s
->  PORT REFCLK = sys_clk
-> END
-> 
-> BEGIN plb_temac
->  PARAMETER INSTANCE = plb_temac_0
->  PARAMETER HW_VER = 3.00.a
->  PARAMETER C_MAC_FIFO_DEPTH = 64
->  PARAMETER C_RX_DRE_TYPE = 0
->  PARAMETER C_TX_DRE_TYPE = 0
->  PARAMETER C_DMA_TYPE = 1
->  PARAMETER C_PLB_CLK_PERIOD_PS = 10000
->  PARAMETER C_BASEADDR = 0x40000000
->  PARAMETER C_HIGHADDR = 0x4000FFFF
->  BUS_INTERFACE V4EMACSRC = plb_temac_0_V4EMACSRC
->  BUS_INTERFACE MSPLB = plb_v34_0
->  PORT Emac_Reset = Emac_Reset_s
->  PORT PhyResetN = fpga_0_TriMode_MAC_GMII_PhyResetN
->  PORT IP2INTC_Irpt = plb_temac_0_IP2INTC_Irpt
-> END
-> <snap>
-> 
+                 serial@4600 {
+                         device_type = "serial";
+                         compatible = "ns16550";
+                         reg = <4600 100>;       // reg base, size
+                         clock-frequency = <0>;  // should we fill in in uboot?
+                         interrupts = <2a 2>;
+                         interrupt-parent = <&mpic>;
+                 };
 
-.config
+ > One potential problem that I can see is a missing 'current-speed'
+ > property in your tree, which would cause this behavior.
 
+That's correct. Should be fixed in all .dts' ?
 
-> <snip>
-> #
-> # Networking
-> #
-> CONFIG_NET=y
-> 
-> #
-> # Networking options
-> #
-> CONFIG_PACKET=y
-> CONFIG_PACKET_MMAP=y
-> CONFIG_UNIX=y
-> CONFIG_INET=y
-> CONFIG_IP_FIB_HASH=y
-> CONFIG_TCP_CONG_CUBIC=y
-> CONFIG_DEFAULT_TCP_CONG="cubic"
-> <snap>
-> 
+ > It looks
+ > like many device trees set this, but it is not required by all
+ > bindings.
 
-We use the Temac driver from Grant's tree.
-Nevertheless we changed the auto-negotiation code, as we had problem with
-the default code when using the same code in U-Boot.
-I have attached our auto-negotiation patch (nevertheless the old
-auto-negotiation worked fine with the linux kernel, the main reason we
-patched that is to hold the code base to maintain minimal).
-http://www.nabble.com/file/p13852281/0018-TEMAC-changed-renegotiation-function-to-ESIC-U-Boo.patch
-0018-TEMAC-changed-renegotiation-function-to-ESIC-U-Boo.patch 
+How should someone know, when it's really needed and when not?
 
+ > If that's the case, the patch below should fix your
+ > problem, but you probably want to set the current-speed anyway,
+ > according to your boot loader settings.
 
-alex_snippet wrote:
-> 
-> The biggest problem that i actually do not understand what kind of problem
-> is it, hardware or software or configuration.
-> 
+I think there was no need to set it again, because of: console=ttyS0,115200
+But I'll verify...
 
+ > --- a/drivers/serial/of_serial.c
+ > +++ b/drivers/serial/of_serial.c
+ > @@ -56,7 +56,8 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ >  	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP
+ >  		| UPF_FIXED_PORT;
+ >  	port->dev = &ofdev->dev;
+ > -	port->custom_divisor = *clk / (16 * (*spd));
+ > +	if (spd)
+ > +		port->custom_divisor = *clk / (16 * (*spd));
+ >
+ >  	return 0;
+ >  }
+ >
+
+Ack! However, I changed it similar to the available code.
+No idea what's better here. At least it should tell the user:
+
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
+serial8250.0: ttyS0 at MMIO 0xe0004500 (irq = 42) is a 16550A
+console [ttyS0] enabled
+serial8250.0: ttyS1 at MMIO 0xe0004600 (irq = 42) is a 16550A
+of_serial e0004500.serial: no current-speed property set
+of_serial e0004600.serial: no current-speed property set
+
+Patch attached.
 
 Regards,
 
---
-Lorenz Kolb
-Embedded specialist
-ESIC Solutions
-San Jose, CA
-Neu-Ulm, Germany
 -- 
-View this message in context: http://www.nabble.com/Virtex-TEMAC-ping--s-10000-host%2C-is-it-working--tf4812989.html#a13852281
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
+
+
+--------------010403080101010901020306
+Content-Type: text/plain;
+ name="of_serial-check-current-speed.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="of_serial-check-current-speed.patch"
+
+Warn user when current-speed property isn't set and exit.
+
+Signed-off-by: Clemens Koller <clemens.koller@anagramm.de>
+CC: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/drivers/serial/of_serial.c b/drivers/serial/of_serial.c
+index a64d858..e035cb2 100644
+--- a/drivers/serial/of_serial.c
++++ b/drivers/serial/of_serial.c
+@@ -36,6 +36,10 @@ static int __devinit of_platform_serial_setup(struct of_device *ofdev,
+ 	memset(port, 0, sizeof *port);
+ 	spd = of_get_property(np, "current-speed", NULL);
+ 	clk = of_get_property(np, "clock-frequency", NULL);
++	if (!spd) {
++		dev_warn(&ofdev->dev, "no current-speed property set\n");
++		return -ENODEV;
++	}
+ 	if (!clk) {
+ 		dev_warn(&ofdev->dev, "no clock-frequency property set\n");
+ 		return -ENODEV;
+
+--------------010403080101010901020306--
