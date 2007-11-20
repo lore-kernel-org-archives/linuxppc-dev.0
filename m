@@ -1,17 +1,12 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA053DDE0F
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 18:32:17 +1100 (EST)
-To: Paul Mackerras <paulus@samba.org>
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: [PATCH] powerpc: Fix 8xx build breakage due to _tlbie changes
-Date: Tue, 20 Nov 2007 10:32:12 +0300
-Message-ID: <20071120073212.5717.51938.stgit@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18242.40182.232259.893416@cargo.ozlabs.ibm.com>
+Date: Tue, 20 Nov 2007 19:38:14 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +16,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-My changes to _tlbie to fix 4xx unfortunately broke 8xx build in a
-couple of places. This fixes it.
+Please do
 
-Spotted by Olof Johansson
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+to get another batch of fixes for powerpc, as listed below.
 
----
+Thanks,
+Paul.
 
- arch/powerpc/mm/mem.c      |    2 +-
- arch/powerpc/mm/mmu_decl.h |    2 +-
- arch/ppc/mm/init.c         |    2 +-
- arch/ppc/mm/mmu_decl.h     |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ Documentation/powerpc/booting-without-of.txt   |    5 +
+ arch/powerpc/boot/dts/mpc832x_mds.dts          |    9 +-
+ arch/powerpc/boot/dts/mpc8544ds.dts            |   20 ++--
+ arch/powerpc/boot/dts/mpc8572ds.dts            |  108 ++++++++++++++++++---
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts         |  126 ++++++++++++++++++++----
+ arch/powerpc/kernel/asm-offsets.c              |    4 +
+ arch/powerpc/kernel/rtas.c                     |  111 ++++++++++++---------
+ arch/powerpc/kernel/time.c                     |    5 +
+ arch/powerpc/kernel/vdso.c                     |   11 ++
+ arch/powerpc/kernel/vdso32/cacheflush.S        |   41 ++++++--
+ arch/powerpc/kernel/vdso64/cacheflush.S        |   41 ++++++--
+ arch/powerpc/mm/mem.c                          |    2 
+ arch/powerpc/mm/mmu_decl.h                     |    2 
+ arch/powerpc/mm/stab.c                         |    1 
+ arch/powerpc/platforms/40x/walnut.c            |    3 -
+ arch/powerpc/platforms/44x/bamboo.c            |    3 -
+ arch/powerpc/platforms/44x/ebony.c             |    3 -
+ arch/powerpc/platforms/44x/sequoia.c           |    3 -
+ arch/powerpc/platforms/83xx/mpc832x_mds.c      |    7 +
+ arch/powerpc/platforms/83xx/mpc836x_mds.c      |   31 +++++-
+ arch/powerpc/platforms/83xx/usb.c              |    8 +-
+ arch/powerpc/platforms/cell/spufs/inode.c      |    1 
+ arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 
+ arch/powerpc/platforms/pasemi/setup.c          |    2 
+ arch/powerpc/platforms/pseries/Kconfig         |    2 
+ arch/powerpc/platforms/pseries/setup.c         |    3 -
+ arch/powerpc/sysdev/uic.c                      |   18 +++
+ arch/ppc/kernel/setup.c                        |    7 +
+ arch/ppc/mm/init.c                             |    2 
+ arch/ppc/mm/mmu_decl.h                         |    2 
+ arch/ppc/platforms/4xx/yucca.c                 |    1 
+ arch/ppc/syslib/virtex_devices.c               |   31 ++++++
+ include/asm-powerpc/page_32.h                  |    4 +
+ include/asm-powerpc/pci-bridge.h               |    5 +
+ include/asm-powerpc/rtas.h                     |    3 -
+ include/asm-powerpc/vdso_datapage.h            |    8 ++
+ 36 files changed, 486 insertions(+), 148 deletions(-)
 
+Benjamin Herrenschmidt (3):
+      [POWERPC] Fix declaration of pcibios_free_controller
+      [POWERPC] Fix kmalloc alignment on non-coherent DMA platforms
+      [POWERPC] Fix 8xx build breakage due to _tlbie changes
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 81eb96e..5402fb6 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -464,7 +464,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 		 * we invalidate the TLB here, thus avoiding dcbst
- 		 * misbehaviour.
- 		 */
--		_tlbie(address);
-+		_tlbie(address, 0 /* 8xx doesn't care about PID */);
- #endif
- 		if (!PageReserved(page)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index eb3a732..ebfd13d 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -56,7 +56,7 @@ extern unsigned long total_lowmem;
-  * architectures.  -- Dan
-  */
- #if defined(CONFIG_8xx)
--#define flush_HPTE(X, va, pg)	_tlbie(va)
-+#define flush_HPTE(X, va, pg)	_tlbie(va, 0 /* 8xx doesn't care about PID */)
- #define MMU_init_hw()		do { } while(0)
- #define mmu_mapin_ram()		(0UL)
- 
-diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
-index 390dd19..dd898d3 100644
---- a/arch/ppc/mm/init.c
-+++ b/arch/ppc/mm/init.c
-@@ -561,7 +561,7 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 		 * That means the zeroed TLB has to be invalidated
- 		 * whenever a page miss occurs.
- 		 */
--		_tlbie(address);
-+		_tlbie(address, 0 /* 8xx doesn't care about PID */);
- #endif
- 		if (!PageReserved(page)
- 		    && !test_bit(PG_arch_1, &page->flags)) {
-diff --git a/arch/ppc/mm/mmu_decl.h b/arch/ppc/mm/mmu_decl.h
-index f1d4f21..b298b60 100644
---- a/arch/ppc/mm/mmu_decl.h
-+++ b/arch/ppc/mm/mmu_decl.h
-@@ -49,7 +49,7 @@ extern unsigned int num_tlbcam_entries;
-  * architectures.  -- Dan
-  */
- #if defined(CONFIG_8xx)
--#define flush_HPTE(X, va, pg)	_tlbie(va)
-+#define flush_HPTE(X, va, pg)	_tlbie(va, 0 /* 8xx doesn't care about PID */)
- #define MMU_init_hw()		do { } while(0)
- #define mmu_mapin_ram()		(0UL)
- 
+Cyrill Gorcunov (1):
+      [POWERPC] Fix potential NULL dereference
+
+Jeremy Kerr (1):
+      [POWERPC] spufs: Fix context destroy vs /spu readdir race
+
+Joachim Foerster (1):
+      [POWERPC] Xilinx: Register AC97 Controller Reference with the platform bus
+
+Jon Loeliger (1):
+      [POWERPC] 4xx: Replace #includes of asm/of_platform.h with linux/of_platform.h.
+
+Josh Boyer (1):
+      [POWERPC] 4xx: Use virtual PVR value to init FPU on arch/ppc 440EP
+
+Kamalesh Babulal (1):
+      [POWERPC] Fix build failure on legacy iSeries
+
+Kim Phillips (4):
+      [POWERPC] 83xx: mpc832x mds: Fix board PHY reset code
+      [POWERPC] 83xx: Fix 2nd UCC entry in mpc832x_mds.dts
+      [POWERPC] Document rgmii-rxid and rgmii-txid phy-connection-types
+      [POWERPC] 83xx: Handle mpc8360 rev. 2.1 RGMII timing erratum
+
+Kumar Gala (1):
+      [POWERPC] Fix device tree interrupt map for Freescale ULI1575 boards
+
+Linas Vepstas (1):
+      [POWERPC] Fix RTAS os-term usage on kernel panic
+
+Mark A. Greer (1):
+      [POWERPC] prpmc2800: Enable L2 cache
+
+Michael Neuling (1):
+      [POWERPC] Fix possible division by zero in scaled time accounting
+
+Nathan Lynch (1):
+      [POWERPC] Fix multiple bugs in rtas_ibm_suspend_me code
+
+Olof Johansson (2):
+      [POWERPC] pasemi: Don't reset mpic at boot
+      [POWERPC] vdso: Fixes for cache block sizes
+
+Roel Kluin (1):
+      [POWERPC] 4xx: balance ioremap/ioumap calls for Yucca
+
+Stephen Rothwell (1):
+      [POWERPC] pSeries: make pseries_defconfig minus PCI build again
+
+Valentine Barshak (1):
+      [POWERPC] 4xx: UIC add mask_ack callback
