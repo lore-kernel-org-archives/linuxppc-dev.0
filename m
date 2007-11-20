@@ -1,19 +1,23 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Nov 2007 11:22:59 +1100
+Date: Tue, 20 Nov 2007 11:59:41 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: Revisited, audio codec device tree entries.
-Message-ID: <20071120002259.GA3126@localhost.localdomain>
+Message-ID: <20071120005941.GC3126@localhost.localdomain>
 References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
-	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
-	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
-	<20071119001209.GD20794@localhost.localdomain>
-	<f334e85d77c624ef0112437a4049a3cd@kernel.crashing.org>
+	<4741A56D.9050808@freescale.com>
+	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
+	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
+	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
+	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
+	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
+	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
+	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f334e85d77c624ef0112437a4049a3cd@kernel.crashing.org>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,80 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2007 at 01:48:40PM +0100, Segher Boessenkool wrote:
-> > Matt, the various properties you list do not mean what you think they
-> > mean.
+On Mon, Nov 19, 2007 at 12:28:02PM -0700, Grant Likely wrote:
+> On 11/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> > On 11/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > > You might be stuck with using either a platform_device or an
+> > > of_platform_device as a stepping stone to creating the device on the
+> > > ALSA fabric driver.
 > >
-> > name - should be named according to the generic names convention.
-> > It's pretty much arbitrary, meant for human readability of the device
-> > tree.  Drivers should not depend on it (some do, historically, but new
-> > drivers and trees should not).
-> 
-> It is not arbitrary, there is a single well-defined name for every 
-> common
-> "class" of device.  It _is_ machine-readable (but shouldn't be used for
-> driver matching, indeed -- it says nothing about the programming model).
-
-Sorry, that was an (over?) simplification on my part.  Yes, there are
-conventions as to what devices should be called by class (usually, but
-not universally observed), yes they can be used machine-readable under
-some circumstances.
-
-My point is that since driver matching is *not* done off name, and
-machine-readable uses are not common, the name tends not to matter
-very much.  Plus if an incorrect name is used, it's usually not too
-bad to fix.
-
-> > device_type - indicates the open firmware method interface for the
-> > device.
-> 
-> Not "method interface", just "interface".
-
-Right, I say "method interface" just to emphasise the fact that we're
-talking about the runtime OF-call interface, rather than
-register-level or other programming interface.
-
-> > Therefore, meaningless in flattened trees.
-> 
-> Even in flat trees, a "device_type" of for example "block" indicates the
-> node will have the required properties for that device type, for example
-> "block-size".  Such properties are perfectly useful.  OTOH, it isn't 
-> very
-> useful to search for device with a specific device type from within the
-> kernel, since it currently has no firmware interaction to speak of (flat
-> trees don't interact, and the kernel kills "real" OF dead as soon as
-> possible).
-
-Uh... it was you who convinced me that device_type was not appropriate
-for new flat-tree devices.
- 
-> > No new driver should use this.
-> 
-> Not without very good rationalisation, anyway.
-> 
-> > compatible - *this* is the one for driver selection.  It describes the
-> > hardware level interface(s) of the device.
+> > I also concluded that I need a of_platform stepping stone.
 > >
-> > model - usually just for debugging / diagnosis / human-readable
-> > purposes, describes exact model / revision of the hardware.  It can be
-> > used to enable driver quirks / workarounds for when various devices
-> > are supposed to be compatible (as encoded in 'compatible') but
-> > aren't, due to hardware bugs.  However, you should never aim to use it
-> > this way in design.
+> > There are several ways this could be done, which one is the right one?
+> > a) fabric is global, create a global device node for it and implement
+> > it as a of_platform device
 > 
-> Yeah.  Any non-workaround value a driver would derive from "model" is
-> usually better described using a separate property.
+> This is really board level description stuff.  I'd make the node
+> global off the root myself and use whatever linkage you think
+> appropriate to get you to the codec nodes (phandle's most likely)
 
-Well, yes, if the need for the workaround is known when the device
-tree is created.  But by their nature workarounds tend not to be
-planned, so from the driver's perspective it's legitimate to use *any*
-reliable-in-practice information to activate a workaround (even if
-it's not reliable in theory, if there's no other option).  That
-includes both everything in the device tree, and any information the
-driver can probe from the hardware.
+No.  I think this is the whole damn point we've been spiralling
+around.
 
-My point above is that iIt's reasonably common in such cases for
-"model" to be a decent choice.
+An of_platform device is appropriate *only* if there is an OF node for
+the device.  There should be an OF node for the device only if it it
+really is a well-defined hardware component which implements it.
+
+As far as I can understand, the "fabric" driver is really just a
+catchall to cover whatever various interconnections there are between
+audio components on the board.
+
+Those interconnections could (and probably should) be described in the
+OF tree.  But that description would be to describe each of those
+interconnections individually e.g. codecs have links to "sound PHY"
+devices (speakers) or whatever, codecs, i2s AC97 and so forth devices
+have links between them appropriate to the type of device.  Not as
+some imaginary "fabric device".
+
+Therefore the fabric driver cannot be instantiated as an of_platfornm
+device.
+
+Therfore arch code will have to instantiate the fabric driver some
+other way.  There are a couple of options here:
+
+	1) We have a "universal" device-tree-based fabric driver which
+parses all the above-described interconnection information in the
+device tree and handles any situation.  Cool, but probably a lot of
+work and fiddly to get right.
+
+	2) Or, the platform code instantiates an appopriate fabric
+driver for the board (which will probably make assumptions about how
+things are interconnected).  Platform code can optionally examine
+board level model properties or other device information to select the
+correct fabric driver and/or options.  The fabric driver can
+optionally look at some parts of the device tree information to
+configure details of its operation.
+
+Option (2) is a hack, but it's a reasonably well-contained hack.  It
+works for now, and doesn't preclude switching to option (1) later -
+without changes to the device tree, and on a board-by-board basis.  It
+can also handle the (almost inevitable) case of device trees with
+missing or incorrect detailed audio interconnection information.
+
+The basic thing is that we have a mismatch between the Linux driver
+model and the device tree model.  Rather than hacking the device tree
+to match the Linux model, we should provide whatever glue code is
+necessary to instantiate the necessary Linux drivers from the device
+tree information we have.  This is, essentially, the exact purpose for
+which platform code exists.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
