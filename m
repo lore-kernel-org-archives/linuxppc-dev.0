@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 80C81DDD0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 09:23:42 +1100 (EST)
-Message-ID: <47435E67.9080706@freescale.com>
-Date: Tue, 20 Nov 2007 16:23:35 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5833BDDDDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 10:39:27 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id lAKNdMfw000839
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 17:39:23 -0600
+Date: Tue, 20 Nov 2007 17:38:05 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Please pull from 'for-2.6.24' branch (fwd)
+Message-ID: <Pine.LNX.4.64.0711201737530.19222@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Jon Loeliger <jdl@jdl.com>, linuxppc-dev@ozlabs.org
-Subject: Re: dtc: Add testcases for tree checks
-References: <20071120052423.GC4356@localhost.localdomain>	<E1IuUiz-00022Y-E1@jdl.com>
-	<20071120220309.GB13156@localhost.localdomain>
-In-Reply-To: <20071120220309.GB13156@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Tue, Nov 20, 2007 at 09:09:17AM -0600, Jon Loeliger wrote:
->> Actually, this is the official third time now that it would have
->> been significantly nicer had you been using git for patches as
->> it does correctly handle excute permissions properly in patches.
-> 
-> Well, yes.  But, IMO, every time anyone other that you or I has
-> commented on one of these patches as it goes past counts as an
-> occasion when it's better that I've been using patches, rather than
-> pushing to you direct with git.
+didn't cc linuxppc-dev.
 
-Generating patches with "git-format-patch -M" isn't the same as pushing 
-directly...
+---------- Forwarded message ----------
+Date: Tue, 20 Nov 2007 15:40:57 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for-2.6.24' branch
 
--Scot
+Please pull from 'for-2.6.24' branch of
+
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
+
+to receive the following updates:
+
+ arch/powerpc/boot/dts/mpc832x_mds.dts        |    7 ++
+ arch/powerpc/boot/dts/mpc834x_mds.dts        |    9 ++
+ arch/powerpc/boot/dts/mpc836x_mds.dts        |    9 ++
+ arch/powerpc/configs/mpc832x_mds_defconfig   |   48 ++++++++++++++
+ arch/powerpc/configs/mpc832x_rdb_defconfig   |   41 +++++++++++-
+ arch/powerpc/configs/mpc834x_itx_defconfig   |    2
+ arch/powerpc/configs/mpc834x_itxgp_defconfig |   88 ++++++++++++++++++++++++++-
+ arch/powerpc/configs/mpc834x_mds_defconfig   |   48 ++++++++++++++
+ arch/powerpc/configs/mpc836x_mds_defconfig   |   48 ++++++++++++++
+ arch/powerpc/configs/mpc8568mds_defconfig    |   48 ++++++++++++++
+ arch/powerpc/platforms/83xx/mpc832x_mds.c    |   24 -------
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c    |   14 ++--
+ arch/powerpc/platforms/83xx/mpc834x_mds.c    |   24 -------
+ arch/powerpc/platforms/83xx/mpc836x_mds.c    |   24 -------
+ 14 files changed, 346 insertions(+), 88 deletions(-)
+
+Anton Vorontsov (2):
+      [POWERPC] 83xx: MPC832x RDB - remove spidev stub, use mmc_spi
+      [POWERPC] 83xx: Update mpc832x_rdb_defconfig to enable MMC-over-SPI
+
+Grant Likely (1):
+      [POWERPC] 83xx: Update mpc8349emitx(gp) defconfig for USB
+
+Kim Phillips (1):
+      [POWERPC] 8xxx: MDS board RTC fixes
