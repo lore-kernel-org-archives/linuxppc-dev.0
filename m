@@ -1,12 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH] fix scaled time accounting possible divide by zero 
-In-reply-to: <47425F8F.3060208@linux.vnet.ibm.com> 
-References: <9965.1195529141@neuling.org> <47425F8F.3060208@linux.vnet.ibm.com>
-Date: Tue, 20 Nov 2007 15:36:49 +1100
-Message-ID: <19947.1195533409@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <npiggin@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 73019DDDFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 16:08:32 +1100 (EST)
+Date: Tue, 20 Nov 2007 06:08:26 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [patch] xmon bitlock fix
+Message-ID: <20071120050826.GA18332@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,51 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <47425F8F.3060208@linux.vnet.ibm.com> you wrote:
-> Michael Neuling wrote:
-> > This fixes a problem noticed by Balbir Singh
-> > 
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> > Paulus: can we send this up for 2.6.24?
-> > 
-> >  arch/powerpc/kernel/time.c |    5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
-> > ===================================================================
-> > --- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
-> > +++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
-> > @@ -244,8 +244,9 @@ void account_system_vtime(struct task_st
-> >  		/* deltascaled includes both user and system time.
-> >  		 * Hence scale it based on the purr ratio to estimate
-> >  		 * the system time */
-> > -		deltascaled = deltascaled * get_paca()->system_time /
-> > -		(get_paca()->system_time + get_paca()->user_time);
-> > +		if (get_paca()->user_time)
-> > +			deltascaled = deltascaled * get_paca()->system_time /
-> > +			(get_paca()->system_time + get_paca()->user_time);
-> 
-> Hi, Michael,
-> 
-> I'd be doubly careful with scaled multiplication approach, we tried this
-> for CFS (please see task_utime() and task_stime() and the fixes that
-> went around it). We ran into problems were due to multiplication
-> rounding errors, we would see stime and utime go back after a period
-> of time.
-> 
-> Please see http://kerneltrap.org/mailarchive/linux-kernel/2007/10/16/344377
-> 
-> Our problems were made severe by the fact that sum_exec_runtime and
-> stime/utime accounting occured differently. stime/utime were sampled
-> at jiffy boundaries and hence could we incorrect. I think we need
-> to use rounding to ensure that ac_scaled*time never goes back
-> due to rounding errors.
+(sorry, untested for lack of hardware)
+--
+xmon uses a bit lock spinlock but doesn't close the critical section
+when releasing it. It doesn't seem like a big deal because it will
+eventually break out of the lock anyway, but presumably that's only
+in exceptional cases where some error is tolerated, while the lack of a memory
+barrier could allow incorrect results during normal functioning operation
+as well.
 
-I've not changed the math here much, just the case of user_time being
-zero.
+Convert it to use a regular spinlock instead.
 
-Is this related to this patch specifically, or something that's been
-wrong with these patches for a while?
-
-Mikey
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+Index: linux-2.6/arch/ppc/xmon/start.c
+===================================================================
+--- linux-2.6.orig/arch/ppc/xmon/start.c
++++ linux-2.6/arch/ppc/xmon/start.c
+@@ -92,16 +92,14 @@ xmon_write(void *handle, void *ptr, int 
+ {
+ 	char *p = ptr;
+ 	int i, c, ct;
+-
+-#ifdef CONFIG_SMP
+-	static unsigned long xmon_write_lock;
++	static DEFINE_SPINLOCK(xmon_write_lock);
+ 	int lock_wait = 1000000;
+ 	int locked;
+ 
+-	while ((locked = test_and_set_bit(0, &xmon_write_lock)) != 0)
++	while (!(locked = spin_trylock(&xmon_write_lock))) {
+ 		if (--lock_wait == 0)
+ 			break;
+-#endif
++	}
+ 
+ 	if (!scc_initialized)
+ 		xmon_init_scc();
+@@ -122,10 +120,9 @@ xmon_write(void *handle, void *ptr, int 
+ 		eieio();
+ 	}
+ 
+-#ifdef CONFIG_SMP
+-	if (!locked)
+-		clear_bit(0, &xmon_write_lock);
+-#endif
++	if (locked)
++		spin_unlock(&xmon_write_lock);
++
+ 	return nb;
+ }
+ 
