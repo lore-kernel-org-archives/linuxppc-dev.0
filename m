@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id E2066DDE27
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 115FCDDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Nov 2007 02:31:15 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so1312098uge
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Nov 2007 07:31:13 -0800 (PST)
-Message-ID: <fa686aa40711200731n61d239fdw4ac1d64a95ad97ff@mail.gmail.com>
-Date: Tue, 20 Nov 2007 08:31:12 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Lorenz Kolb" <linuxppcemb@lkmail.de>
-Subject: Re: ML403 USB driver
-In-Reply-To: <13858912.post@talk.nabble.com>
+	Wed, 21 Nov 2007 04:17:59 +1100 (EST)
+Message-ID: <474316A4.4010807@scram.de>
+Date: Tue, 20 Nov 2007 18:17:24 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <13858912.post@talk.nabble.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH try2] powerpc: Add support for PORTA and PORTB odr registers
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,33 +23,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/20/07, Lorenz Kolb <linuxppcemb@lkmail.de> wrote:
->
-> Hi,
->
-> we just tried the USB driver (from Peter Korsgaard) from Grant's virtex
-> tree.
->
-> Nevertheless we could not get the peripheral ports work as gadgets.
-> Has anyone tried (and probably fixed) that before?
+PORTA and PORTB have odr registers, as well. However, the PORTB odr
+register is only 16bit.
 
-That driver does not work for gadget ports.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
->
-> Anyway, only one of the two peripheral ports seems to be active.
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index d5a0dcf..c0d00c2 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -411,7 +411,7 @@ EXPORT_SYMBOL(cpm_dpram_phys);
+ #endif /* !CONFIG_PPC_CPM_NEW_BINDING */
 
-Yes, I've got that problem here too.  I haven't yet solved it.  Any
-help would be appreciated.
+ struct cpm_ioport16 {
+-	__be16 dir, par, sor, dat, intr;
++	__be16 dir, par, odr_sor, dat, intr;
+ 	__be16 res[3];
+ };
 
-> We use kernel 2.6.22 (as some usb related stuff has recently changed and the
-> driver would have to be changed), usb host works (usb-storage, cdc_ether,
-> some more stuff we tested)
+@@ -441,6 +441,13 @@ static void cpm1_set_pin32(int port, int pin, int flags)
+ 	else
+ 		clrbits32(&iop->par, pin);
 
-Cheers,
-g.
++	if (port == CPM_PORTB) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++		else
++			clrbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++	}
++
+ 	if (port == CPM_PORTE) {
+ 		if (flags & CPM_PIN_SECONDARY)
+ 			setbits32(&iop->sor, pin);
+@@ -474,11 +481,17 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	else
+ 		clrbits16(&iop->par, pin);
+
++	if (port == CPM_PORTA) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&iop->odr_sor, pin);
++		else
++			clrbits16(&iop->odr_sor, pin);
++	}
+ 	if (port == CPM_PORTC) {
+ 		if (flags & CPM_PIN_SECONDARY)
+-			setbits16(&iop->sor, pin);
++			setbits16(&iop->odr_sor, pin);
+ 		else
+-			clrbits16(&iop->sor, pin);
++			clrbits16(&iop->odr_sor, pin);
+ 	}
+ }
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+1.5.3.4
