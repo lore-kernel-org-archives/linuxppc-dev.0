@@ -1,11 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: paulus@samba.org
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Subject: [PATCH] fix scaled time accounting possible divide by zero
-Date: Tue, 20 Nov 2007 14:25:41 +1100
-Message-ID: <9965.1195529141@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18242.21895.876009.632187@cargo.ozlabs.ibm.com>
+Date: Tue, 20 Nov 2007 14:33:27 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH v2] PMU: replace information ioctls and schedule for
+	removal
+In-Reply-To: <1194981108.6695.11.camel@johannes.berg>
+References: <1194981108.6695.11.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,28 +19,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes a problem noticed by Balbir Singh
+Johannes Berg writes:
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-Paulus: can we send this up for 2.6.24?
+> This patch adds sysfs attributes to the PMU to allow getting
+> the information on the PMU type and whether adb is present from
+> there instead of via the ioctl. The ioctl is made optional and
+> scheduled for removal.
 
- arch/powerpc/kernel/time.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+I don't see any reason to ever remove the ioctls.  We're talking about
+just 4 lines of code here.  Sure we can add the sysfs attributes -
+even though that adds an order of magnitude more lines of code 
+(thanks sysfs :) but I don't see any good reason to remove the
+existing interface.
 
-Index: linux-2.6-ozlabs/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6-ozlabs.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6-ozlabs/arch/powerpc/kernel/time.c
-@@ -244,8 +244,9 @@ void account_system_vtime(struct task_st
- 		/* deltascaled includes both user and system time.
- 		 * Hence scale it based on the purr ratio to estimate
- 		 * the system time */
--		deltascaled = deltascaled * get_paca()->system_time /
--		(get_paca()->system_time + get_paca()->user_time);
-+		if (get_paca()->user_time)
-+			deltascaled = deltascaled * get_paca()->system_time /
-+			(get_paca()->system_time + get_paca()->user_time);
- 		delta += get_paca()->system_time;
- 		get_paca()->system_time = 0;
- 	}
+Paul.
