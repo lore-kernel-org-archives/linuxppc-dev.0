@@ -1,21 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from mail17-sin-R.bigfish.com (mail-sin.bigfish.com [207.46.51.74])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C8740DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 06:06:16 +1100 (EST)
-Date: Tue, 20 Nov 2007 11:54:16 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
-Message-ID: <20071120175416.GA4389@loki.buserror.net>
-References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 655A5DDDD6
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 07:15:01 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Xilinx EDK BSP generation of device trees for microblaze and PowerPC
+Date: Tue, 20 Nov 2007 11:44:58 -0800
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: <microblaze-uclinux@itee.uq.edu.au>, <linuxppc-dev@ozlabs.org>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	"Michal Simek" <simekm2@fel.cvut.cz>
+Message-Id: <20071120194411.E183B100060@mail17-sin.bigfish.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2007 at 09:36:57PM -0600, Kumar Gala wrote:
-> isel (Integer Select) is a new user space instruction in the
-> PowerISA 2.04 spec.  Not all processors implement it so lets emulate
-> to ensure code built with isel will run everywhere.
+=09
+I've updated some code from Michel Simek to generate Flat Device Trees
+from Xilinx EDK projects.  This code is now hosted at:
+git://git.xilinx.com/gen-mhs-devtree.git
 
-Given that the instruction is meant to be a performance enhancement,
-we should probably warn the first few times it's emulated, so the user
-knows they should change their toolchain setup if possible.
+This has one major advantage over the gen-mhs-devtree.py approach:
+default IP core parameters that are not specified in the mhs file can
+now be generated, since EDK pulls these in from the core .mpd file.
+I've also managed to incorporate a few more improvements from the
+previous review, so the BSP generator should include at least as much
+information as gen-mhs-devtree.py
 
--Scott
+The next major order of business is to represent the DMA engines in the
+MPMC and locallink connections to the lltemac.
+
+Steve
