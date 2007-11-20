@@ -1,12 +1,32 @@
-Return-Path: <SRS0=2pNn=QN=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 2285EDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 21:24:57 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] ppc: 4xx: Fix TLB 0 problem with CONFIG_SERIAL_TEXT_DEBUG
-Date: Tue, 20 Nov 2007 11:19:16 +0100
-Message-Id: <1195553956-32505-1-git-send-email-sr@denx.de>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 69F40DDF6A
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 22:09:04 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	lAKB8tbD019701
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 04:08:55 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id lAKB8rWi018862
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 05:08:54 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2 (RGMII Timing)
+Date: Tue, 20 Nov 2007 19:08:51 +0800
+Message-ID: <989B956029373F45A0B8AF029708189001A1C75B@zch01exm26.fsl.freescale.net>
+In-Reply-To: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+References: <20071105121530.5c38fbb7.kim.phillips@freescale.com>
+From: "Li Yang" <LeoLi@freescale.com>
+To: <jgarzik@pobox.com>, "Phillips Kim" <Kim.Phillips@freescale.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>, <netdev@vger.kernel.org>,
+	<linuxppc-dev@ozlabs.org>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,135 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Right now TLB entry 0 ist used as UART0 mapping for the early debug
-output (via CONFIG_SERIAL_TEXT_DEBUG). This causes problems when many
-TLB's get used upon Linux bootup (e.g. while PCIe scanning behind
-bridges and/or switches on 440SPe platforms). This will overwrite the
-TLB 0 entry and further debug output's may crash/hang the system.
+> -----Original Message-----
+> From: Phillips Kim=20
+> Sent: Tuesday, November 06, 2007 2:16 AM
+> To: Li Yang-r58472; Kumar Gala; netdev@vger.kernel.org;=20
+> linuxppc-dev@ozlabs.org
+> Cc: jgarzik@pobox.com; paulus@samba.org
+> Subject: [PATCH 0/5] fixups for mpc8360 rev. 2.1 erratum #2=20
+> (RGMII Timing)
+>=20
+> Hello all,
+>=20
+> the following patches fix RGMII timing for rev. 2.1 of the=20
+> mpc8360, according to erratum #2 (erratum text included=20
+> below).  Basically the most intrusive part is the addition of=20
+> two new RGMII Internal Delay modes; one for TX delay only,=20
+> and the other for RX delay only (i.e, not both at the same time).
+>=20
+> Please review, and since this affects both netdev and powerpc=20
+> trees, one maintainer should ack them for the other to push=20
+> upstream (i.e, Kumar acks them, and Leo picks them up to go=20
+> through netdev or the other way around; either way is fine=20
+> with me).  I'm hoping they're trivial enough to go in 2.6.24.
+>=20
+> Depending on how the review goes, a follow-on patch to u-boot=20
+> will be sent out that fixes up the phy-connection-type in the=20
+> device tree (from "rgmii-id" to "rgmii-rxid" iff on mpc8360rev2.1).
+>=20
 
-This patch moves the early debug UART0 TLB entry from 0 to 62 as done
-in arch/powerpc. This way it is in the "pinned" area and will not get
-overwritten. Also the arch/ppc/mm/44x_mmu.c code is now synced with the
-newer code from arch/powerpc.
-
-Signed-off-by: Stefan Roese <sr@denx.de>
----
- arch/ppc/kernel/head_44x.S |    2 +-
- arch/ppc/mm/44x_mmu.c      |   51 +++++++++++++------------------------------
- include/asm-ppc/mmu.h      |    6 +++++
- 3 files changed, 23 insertions(+), 36 deletions(-)
-
-diff --git a/arch/ppc/kernel/head_44x.S b/arch/ppc/kernel/head_44x.S
-index 75bbc93..ebb5a40 100644
---- a/arch/ppc/kernel/head_44x.S
-+++ b/arch/ppc/kernel/head_44x.S
-@@ -195,7 +195,7 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	li	r5,0
- 	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_I | PPC44x_TLB_G)
- 
--        li      r0,0                    /* TLB slot 0 */
-+	li	r0,62			/* TLB slot 62 */
- 
- 	tlbwe	r3,r0,PPC44x_TLB_PAGEID	/* Load the pageid fields */
- 	tlbwe	r4,r0,PPC44x_TLB_XLAT	/* Load the translation fields */
-diff --git a/arch/ppc/mm/44x_mmu.c b/arch/ppc/mm/44x_mmu.c
-index 6536a25..fbb577a 100644
---- a/arch/ppc/mm/44x_mmu.c
-+++ b/arch/ppc/mm/44x_mmu.c
-@@ -60,38 +60,28 @@ extern char etext[], _stext[];
-  * Just needed it declared someplace.
-  */
- unsigned int tlb_44x_index = 0;
--unsigned int tlb_44x_hwater = 62;
-+unsigned int tlb_44x_hwater = PPC4XX_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
- int icache_44x_need_flush;
- 
- /*
-  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
-  */
--static void __init
--ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
-+static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
- {
--	unsigned long attrib = 0;
--
--	__asm__ __volatile__("\
--	clrrwi	%2,%2,10\n\
--	ori	%2,%2,%4\n\
--	clrrwi	%1,%1,10\n\
--	li	%0,0\n\
--	ori	%0,%0,%5\n\
--	tlbwe	%2,%3,%6\n\
--	tlbwe	%1,%3,%7\n\
--	tlbwe	%0,%3,%8"
-+	__asm__ __volatile__(
-+		"tlbwe	%2,%3,%4\n"
-+		"tlbwe	%1,%3,%5\n"
-+		"tlbwe	%0,%3,%6\n"
- 	:
--	: "r" (attrib), "r" (phys), "r" (virt), "r" (slot),
--	  "i" (PPC44x_TLB_VALID | PPC44x_TLB_256M),
--	  "i" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
-+	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
-+	  "r" (phys),
-+	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
-+	  "r" (tlb_44x_hwater--), /* slot for this TLB entry */
- 	  "i" (PPC44x_TLB_PAGEID),
- 	  "i" (PPC44x_TLB_XLAT),
- 	  "i" (PPC44x_TLB_ATTRIB));
- }
- 
--/*
-- * MMU_init_hw does the chip-specific initialization of the MMU hardware.
-- */
- void __init MMU_init_hw(void)
- {
- 	flush_instruction_cache();
-@@ -99,22 +89,13 @@ void __init MMU_init_hw(void)
- 
- unsigned long __init mmu_mapin_ram(void)
- {
--	unsigned int pinned_tlbs = 1;
--	int i;
--
--	/* Determine number of entries necessary to cover lowmem */
--	pinned_tlbs = (unsigned int)
--		(_ALIGN(total_lowmem, PPC_PIN_SIZE) >> PPC44x_PIN_SHIFT);
--
--	/* Write upper watermark to save location */
--	tlb_44x_hwater = PPC44x_LOW_SLOT - pinned_tlbs;
-+	unsigned long addr;
- 
--	/* If necessary, set additional pinned TLBs */
--	if (pinned_tlbs > 1)
--		for (i = (PPC44x_LOW_SLOT-(pinned_tlbs-1)); i < PPC44x_LOW_SLOT; i++) {
--			unsigned int phys_addr = (PPC44x_LOW_SLOT-i) * PPC_PIN_SIZE;
--			ppc44x_pin_tlb(i, phys_addr+PAGE_OFFSET, phys_addr);
--		}
-+	/* Pin in enough TLBs to cover any lowmem not covered by the
-+	 * initial 256M mapping established in head_44x.S */
-+	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
-+	     addr += PPC_PIN_SIZE)
-+		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
- 
- 	return total_lowmem;
- }
-diff --git a/include/asm-ppc/mmu.h b/include/asm-ppc/mmu.h
-index 14584e5..d46b57b 100644
---- a/include/asm-ppc/mmu.h
-+++ b/include/asm-ppc/mmu.h
-@@ -383,6 +383,12 @@ typedef struct _P601_BAT {
- #define BOOKE_PAGESZ_256GB	14
- #define BOOKE_PAGESZ_1TB	15
- 
-+#ifndef CONFIG_SERIAL_TEXT_DEBUG
-+#define PPC44x_EARLY_TLBS	1
-+#else
-+#define PPC44x_EARLY_TLBS	2
-+#endif
-+
- /*
-  * Freescale Book-E MMU support
-  */
--- 
-1.5.3.5.788.gea559
+2-4
+Acked-by: Li Yang <leoli@freescale.com>
