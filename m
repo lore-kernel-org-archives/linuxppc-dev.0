@@ -1,23 +1,19 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Nov 2007 11:59:41 +1100
+Date: Tue, 20 Nov 2007 11:33:16 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Matt Sealey <matt@genesi-usa.com>
 Subject: Re: Revisited, audio codec device tree entries.
-Message-ID: <20071120005941.GC3126@localhost.localdomain>
+Message-ID: <20071120003316.GB3126@localhost.localdomain>
 References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<4741A56D.9050808@freescale.com>
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
-	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
-	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
-	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
-	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
-	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
-	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
+	<0fd3304ee694b2dc6a8f3055c08dc015@kernel.crashing.org>
+	<9e4733910711181349q1f840bc2w8d30bb33d2a353ce@mail.gmail.com>
+	<4740C0E3.5080704@genesi-usa.com> <4740CB41.8030101@genesi-usa.com>
+	<20071119001209.GD20794@localhost.localdomain>
+	<4741BA7D.10608@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
+In-Reply-To: <4741BA7D.10608@genesi-usa.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,72 +23,107 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2007 at 12:28:02PM -0700, Grant Likely wrote:
-> On 11/19/07, Jon Smirl <jonsmirl@gmail.com> wrote:
-> > On 11/19/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > > You might be stuck with using either a platform_device or an
-> > > of_platform_device as a stepping stone to creating the device on the
-> > > ALSA fabric driver.
-> >
-> > I also concluded that I need a of_platform stepping stone.
-> >
-> > There are several ways this could be done, which one is the right one?
-> > a) fabric is global, create a global device node for it and implement
-> > it as a of_platform device
+On Mon, Nov 19, 2007 at 04:31:57PM +0000, Matt Sealey wrote:
+> David Gibson wrote:
+> > On Sun, Nov 18, 2007 at 11:31:13PM +0000, Matt Sealey wrote:
+> > 
+> > Gah!  For the benefit of others on this list who may be misled.
+> > 
+> > *Neither* of you correctly understands the device tree, what I've seen
+> > of *both* your suggested approaches is crap.
+> > 
+> > The device tree describes the _hardware_.  If you start reasoning
+> > about how to lay out the device tree based on your driver model,
+> > you're already wrong.
+> > 
+> > Matt, the various properties you list do not mean what you think they
+> > mean.
 > 
-> This is really board level description stuff.  I'd make the node
-> global off the root myself and use whatever linkage you think
-> appropriate to get you to the codec nodes (phandle's most likely)
+> No, David, I understand exactly what they mean, in the context of a
+> guy who works on Open Firmware, real Open Firmware, as was
+> standardised 12 years ago.
 
-No.  I think this is the whole damn point we've been spiralling
-around.
+No, you really don't.  Either your knowledge of OF is out of date, or
+you've forgotten what you thought you knew.
 
-An of_platform device is appropriate *only* if there is an OF node for
-the device.  There should be an OF node for the device only if it it
-really is a well-defined hardware component which implements it.
+> Not your whacky newspeak device trees, which to be fair, are a good
+> idea, but it seems you all have tried to change something for the
+> sake of changing something.
 
-As far as I can understand, the "fabric" driver is really just a
-catchall to cover whatever various interconnections there are between
-audio components on the board.
+With a couple of tiny exceptions, everything I've said applies equally
+to real OF trees.
 
-Those interconnections could (and probably should) be described in the
-OF tree.  But that description would be to describe each of those
-interconnections individually e.g. codecs have links to "sound PHY"
-devices (speakers) or whatever, codecs, i2s AC97 and so forth devices
-have links between them appropriate to the type of device.  Not as
-some imaginary "fabric device".
+[snip]
+> > device_type - indicates the open firmware method interface for the
+> > device.  Therefore, meaningless in flattened trees.  No new driver
+> > should use this.
+> 
+> .. you seem to think you must only design for the guys making Linux
+> flattened device trees. I'm sorry, but I am not one of those guys and
+> I am much more concerned with how this will affect the OF device tree
+> and the usage for anyone else.
 
-Therefore the fabric driver cannot be instantiated as an of_platfornm
-device.
+No, which is exactly why it's wrong to organize the device tree so
+that it's convenient for loading this "fabric driver" thing (which
+AFAICT is a Linux-specific driver model limitation).
 
-Therfore arch code will have to instantiate the fabric driver some
-other way.  There are a couple of options here:
+> Meaningless in flattened device trees, but useful information in real
+> OF device trees, do you implement it or not? I'd say, yes. Even if
+> you don't agree with "real firmware", you can't just ignore it, shrug
+> it away and say it doesn't matter.
 
-	1) We have a "universal" device-tree-based fabric driver which
-parses all the above-described interconnection information in the
-device tree and handles any situation.  Cool, but probably a lot of
-work and fiddly to get right.
+Useful information in a real OF tree *if* an OF runtime interface for
+the device is defined and implemented.
 
-	2) Or, the platform code instantiates an appopriate fabric
-driver for the board (which will probably make assumptions about how
-things are interconnected).  Platform code can optionally examine
-board level model properties or other device information to select the
-correct fabric driver and/or options.  The fabric driver can
-optionally look at some parts of the device tree information to
-configure details of its operation.
+[snip]
+> > compatible - *this* is the one for driver selection.  It describes the
+> > hardware level interface(s) of the device.
+> 
+> Compatible is meant to list alternative, compatible devices as a
+> *supplement* to device_type. device_type is your "primary" and
+> compatible is your "secondary". In this case, device_type is
+> exactly what Jon wants, something to mark out that the audio device
+> is his board design and requires special work (it is not merely an
+> i2s bus that you can just "use" - although throwing PCM data at it
+> would work, who knows what mixer it goes to, and what controls are
+> needed to define the bitrate or other features)
 
-Option (2) is a hack, but it's a reasonably well-contained hack.  It
-works for now, and doesn't preclude switching to option (1) later -
-without changes to the device tree, and on a board-by-board basis.  It
-can also handle the (almost inevitable) case of device trees with
-missing or incorrect detailed audio interconnection information.
+No, as Segher explains, that's Just Plain Wrong.  Originally "name"
+did perform the function you think device_type had.  But the generic
+names convention, which has been very well established for a long time
+now means that the register-level (or equivalent) programming
+interface is described by "compatible".  Period.
 
-The basic thing is that we have a mismatch between the Linux driver
-model and the device tree model.  Rather than hacking the device tree
-to match the Linux model, we should provide whatever glue code is
-necessary to instantiate the necessary Linux drivers from the device
-tree information we have.  This is, essentially, the exact purpose for
-which platform code exists.
+> > model - usually just for debugging / diagnosis / human-readable
+> > purposes, describes exact model / revision of the hardware.  It can be
+> > used to enable driver quirks / workarounds for when various devices
+> > are supposed to be compatible (as encoded in 'compatible') but
+> > aren't, due to hardware bugs.  However, you should never aim to use it
+> > this way in design.
+> 
+> I don't see why "model" can't encode the particular revision of the
+> hardware in this way when it comes to the audio group of features on
+> his board. After all, if you are looking at a "digispeaker,flinger"
+> (I made that name up) then you need to know depending on the board
+> or even based on weird configurability options of the board, what
+> certain things may be - Apple used layout-id and a number. Why NOT
+> encode the "model" in the "model"?
+> 
+> Why choose some magical, new property, which then has to be further
+> standardised for no reason?
+> 
+> I also think that specifying an audio codec - after all the Open
+> Firmware standard defines an audio interface and device tree
+> requirements for it, even if they are methods that we don't
+> implement and you don't care about - as a function of it's
+> control interface is so backwards it doesn't bare thinking about.
+
+Sure, it's fine for a firmware to implement the OF method interface
+and put in the relevant device_type for audio in the appropriate place
+(although with complex sound systems with many components, the right
+place may be non-obvious or even not well defined).  It's *not* fine
+to make up random new device_type values because you think it's
+convenient.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
