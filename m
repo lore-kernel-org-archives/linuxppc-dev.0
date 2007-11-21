@@ -2,19 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84C05DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:53:30 +1100 (EST)
-Subject: Re: [PATCH 1/8] ibm_newemac: Fix possible lockup on close
+	by ozlabs.org (Postfix) with ESMTP id 0846BDDED7
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 07:05:47 +1100 (EST)
+Subject: Re: [RFC/PATCH 5/14] powerpc: Fix 440/440A machine check handling
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20071121154123.GB23589@lst.de>
-References: <1195625198.76200.922309668615.qpush@grosgo>
-	<20071121060729.71A1FDDE01@ozlabs.org> <20071121154123.GB23589@lst.de>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071121135109.73b9e98f@weaponx>
+References: <1195625777.579001.269266058699.qpush@grosgo>
+	<20071121061714.0AB82DEAF1@ozlabs.org>
+	<20071121071240.141d2917@weaponx>
+	<1195674530.6970.86.camel@pasglop>  <20071121135109.73b9e98f@weaponx>
 Content-Type: text/plain
-Date: Thu, 22 Nov 2007 06:53:11 +1100
-Message-Id: <1195674791.6970.95.camel@pasglop>
+Date: Thu, 22 Nov 2007 07:05:25 +1100
+Message-Id: <1195675525.6970.100.camel@pasglop>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,25 +28,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 2007-11-21 at 16:41 +0100, Christoph Hellwig wrote:
-> On Wed, Nov 21, 2007 at 05:06:39PM +1100, Benjamin Herrenschmidt wrote:
-> > It's a bad idea to call flush_scheduled_work from within a
-> > netdev->stop because the linkwatch will occasionally take the
-> > rtnl lock from a workqueue context, and thus that can deadlock.
-> > 
-> > This reworks things a bit in that area to avoid the problem.
+On Wed, 2007-11-21 at 13:51 -0600, Josh Boyer wrote:
+> > Hrm... it's per processor, not per board. I didn't feel like digging
+> > which board uses which processor and go fixup all the ppc_md's
 > 
-> So from the name of the driver you want to keep the previous emac
-> driver around.  Is there a good reason for that?
+> Sounds like something a generic function could probe for from the DTS.
+> I'll look at doing something here when I start making 44x
+> multiplatform
+> (soon).
 
-Until arch/ppc is gone... the previous driver works with arch/ppc the
-new one with arch/powerpc.
+Well... we already probe the CPU type.... from cputable.
 
-If we kill arch/ppc in .25, then we'll remove the old driver and rename
-the new one. If not, that will wait til .26
+So if there was a place to put that, it would be the cputable.
 
-I'm hard at work porting as much of 4xx over I can to get to the point
-where we -can- kill arch/ppc but I'm not done yet.
-
-Cheers,
 Ben.
