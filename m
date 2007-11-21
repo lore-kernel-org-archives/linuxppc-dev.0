@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18244.41883.240827.165049@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Nov 2007 08:31:07 +1100
+Message-ID: <18244.42181.426804.662877@cargo.ozlabs.ibm.com>
+Date: Thu, 22 Nov 2007 08:36:05 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
@@ -23,15 +23,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Geert Uytterhoeven writes:
 
-> @@ -721,31 +729,38 @@ static int emulate_instruction(struct pt
->  
->  	/* Emulate the mfspr rD, PVR. */
->  	if ((instword & INST_MFSPR_PVR_MASK) == INST_MFSPR_PVR) {
-> +		WARN_EMULATE("mfpvr");
+> +#define WARN_EMULATE(type)						\
+> +	do {								\
+> +	    static unsigned int count;					\
+> +	    if (count++ < 10)						\
+> +		    pr_warning("%s used emulated %s instruction\n",	\
+> +			       current->comm, type);			\
 
-mfpvr is a bit different from the others in that it is actually a
-privileged instruction, so I don't think it helps to warn about it.
-
-Also, I think the warnings should be optional.
+Thinking about this a bit more, if an instruction gets emulated 10
+times then I don't care, since it's probably only cost me 10
+microseconds or so.  If it gets emulated a million times then I might
+want to look at it.  So in fact this approach doesn't give me the
+information I need to know whether there is a real problem or not.
 
 Paul.
