@@ -1,27 +1,31 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 44370DDD04
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 08:48:21 +1100 (EST)
-Date: Wed, 21 Nov 2007 15:48:13 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
-Message-Id: <20071121154813.423e173b.kim.phillips@freescale.com>
-In-Reply-To: <4744A5EC.1090201@freescale.com>
-References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
-	<20071120175416.GA4389@loki.buserror.net>
-	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
-	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
-	<18244.42181.426804.662877@cargo.ozlabs.ibm.com>
-	<4744A5EC.1090201@freescale.com>
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 884C2DDE1F
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 08:55:13 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lALKs73N018336
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 15:54:07 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lALLt9Tf127672
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 14:55:09 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lALLt9pL006946
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 14:55:09 -0700
+Subject: pseries (power3) boot hang  (pageblock_nr_pages==0)
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Mel Gorman <mel@skynet.ie>, Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linux Memory Management List <linux-mm@kvack.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 21 Nov 2007 15:55:11 -0600
+Message-Id: <1195682111.4421.23.camel@farscape.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,28 +35,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Nov 2007 15:41:00 -0600
-Scott Wood <scottwood@freescale.com> wrote:
+Hi Folks, 
 
-> Paul Mackerras wrote:
-> > Geert Uytterhoeven writes:
-> > 
-> >> +#define WARN_EMULATE(type)						\
-> >> +	do {								\
-> >> +	    static unsigned int count;					\
-> >> +	    if (count++ < 10)						\
-> >> +		    pr_warning("%s used emulated %s instruction\n",	\
-> >> +			       current->comm, type);			\
-> > 
-> > Thinking about this a bit more, if an instruction gets emulated 10
-> > times then I don't care, since it's probably only cost me 10
-> > microseconds or so.  If it gets emulated a million times then I might
-> > want to look at it.  So in fact this approach doesn't give me the
-> > information I need to know whether there is a real problem or not.
-> 
-> Maybe print the first time, then when it's happened 10 times, then 100, 
-> then 1000, etc.
-> 
-or just use printk_ratelimit().
+I've been seeing a boot hang/crash on power3 systems for a few weeks.
+(hangs on a 270, drops to SP on a p610).   This afternoon I got around
+to tracking it down to the changes in 
 
-Kim
+commit d9c2340052278d8eb2ffb16b0484f8f794def4de
+    Do not depend on MAX_ORDER when grouping pages by mobility
+
+cpu 0x0: Vector: 100 (System Reset) at [c00000006e803ae0]
+    pc: c00000000009bf50: .setup_per_zone_pages_min+0x298/0x34c
+    lr: c00000000009be38: .setup_per_zone_pages_min+0x180/0x34c
+[c00000006e803e20] c0000000005e3898 .init_per_zone_pages_min+0x80/0xa0
+[c00000006e803ea0] c0000000005c9c04 .kernel_init+0x214/0x3d8
+[c00000006e803f90] c000000000026cac .kernel_thread+0x4c/0x68
+
+I narrowed it down to the for loop within setup_zone_migrate_reserve(),
+called by setup_per_zone_pages_min().   The loop spins forever due to
+pageblock_nr_pages being 0.
+
+I imagine this would be properly fixed with something similar to the
+change for iSeries.   Depending on how obvious, quick and easy it is for
+the experts to come up with a proper fix,  I'll be able to do additional
+debug and hacking after turkey-day.   :-)
+For the moment, I've hacked it with the following patch.   (tested on
+both the 270 and the p610):
+
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2454,6 +2454,9 @@ static void setup_zone_migrate_reserve(struct zone
+*zone)
+        reserve = roundup(zone->pages_min, pageblock_nr_pages) >>
+                                                        pageblock_order;
+
++/* this is a cheap and dirty bailout, probally not a proper fix. */
++       if (pageblock_nr_pages==0) return;
++
+        for (pfn = start_pfn; pfn < end_pfn; pfn += pageblock_nr_pages)
+{
+                if (!pfn_valid(pfn))
+                        continue;
