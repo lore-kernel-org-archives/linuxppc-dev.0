@@ -1,21 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4CD2EDDD0A
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F2066DDE2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Nov 2007 23:52:07 +1100 (EST)
-Message-ID: <474429E9.401@scram.de>
-Date: Wed, 21 Nov 2007 13:51:53 +0100
-From: Jochen Friedrich <jochen@scram.de>
+	Thu, 22 Nov 2007 00:45:34 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IuptT-0006gs-QO
+	for linuxppc-embedded@ozlabs.org; Wed, 21 Nov 2007 05:45:31 -0800
+Message-ID: <13877282.post@talk.nabble.com>
+Date: Wed, 21 Nov 2007 05:45:31 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Firmware Support for USB Hub
 MIME-Version: 1.0
-To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
-Subject: Re: linux2.6.19.2-> mpc8xx_wdt.c: timeout extended to reach several
-	seconds... but I have a problem
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E2649FB@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E2649FB@aquib01a>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Antonio,
 
-> I added a kernel timer (triggering every 500 ms) to reset the watchdog
-> of mpc8xx. This timer starts when the driver is opened. The timer is
-> rearmed till a counter reaches a zero value. A process can use the write
-> method of the driver to set the counter to a preferred value. If the
-> application misses to set the counter, it will decrease to zero and then
-> the board will restart.
+Hi all,
 
-You might want to have a look at this patch:
+I am using a 8248 processor which has a USB controller and i need to connect
+a USB Hub to it, iam using Montavista Linux .I need to know that what are
+the support i need form Montavista or Open source to have an interface with
+Usb hub. ???
 
-http://patchwork.ozlabs.org/linuxppc-embedded/patch?id=14682
+Is there any driver that we need to make if so what type ???
 
-Please make sure to call pq_wdt_init() as early as possible to avoid a
-reset during the initial log buffer flush to the serial console.
-
-Thanks,
-Jochen
+--misbah <><
+-- 
+View this message in context: http://www.nabble.com/Firmware-Support-for-USB-Hub-tf4850180.html#a13877282
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
