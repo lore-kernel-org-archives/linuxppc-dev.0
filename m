@@ -2,23 +2,23 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8179EDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:21:26 +1100 (EST)
-Message-Id: <8B189FFE-F45E-470C-87A0-E9FC61A1CF59@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id D2487DDEC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:23:00 +1100 (EST)
+Message-Id: <CFFD3FB6-C93F-42D3-8CE8-7A729B931792@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20071121173540.GC4413@loki.buserror.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.62.0711211746180.12720@pademelon.sonytel.be>
 Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 3/3] [POWERPC] Add docs for Freescale DMA & DMA channel
-	device tree nodes
-Date: Wed, 21 Nov 2007 13:21:07 -0600
-References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0711202314030.24220@blarg.am.freescale.net>
-	<474447EF.8080405@freescale.com>
-	<E9CED991-4E10-44AE-A446-B6CB151FB9EE@kernel.crashing.org>
-	<20071121173540.GC4413@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
+Date: Wed, 21 Nov 2007 13:22:51 -0600
+References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
+	<20071120175416.GA4389@loki.buserror.net>
+	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
+	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
+	<7D40FA9E-A972-4995-85AE-3CE2551BB195@kernel.crashing.org>
+	<Pine.LNX.4.62.0711211746180.12720@pademelon.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,48 +29,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Nov 21, 2007, at 11:35 AM, Scott Wood wrote:
+On Nov 21, 2007, at 10:50 AM, Geert Uytterhoeven wrote:
 
-> On Wed, Nov 21, 2007 at 09:33:05AM -0600, Kumar Gala wrote:
->> On Nov 21, 2007, at 8:59 AM, Timur Tabi wrote:
->>>> +  Example:
->>>> +	dma@21000 {
->>>
->>> Shouldn't this be dma@21300?
+> On Wed, 21 Nov 2007, Kumar Gala wrote:
+>> On Nov 21, 2007, at 7:09 AM, Geert Uytterhoeven wrote:
+>>> On Tue, 20 Nov 2007, Kumar Gala wrote:
+>>>> On Nov 20, 2007, at 11:54 AM, Scott Wood wrote:
+>>>>> Given that the instruction is meant to be a performance  
+>>>>> enhancement,
+>>>>> we should probably warn the first few times it's emulated, so  
+>>>>> the user
+>>>>> knows they should change their toolchain setup if possible.
+>>>>
+>>>> The same is true of mcrxr, popcntb, and possibly string ld/st.
+>>>>
+>>>> Feel free to submit a patch that warns about their usage.
 >>
->> its an example that has not basis is reality :)
+>> How about some per processor counters in sysfs under the processor.
 >
-> But it should at least be internally consistent with this:
->
->>>> +		reg = <21300 4>;
+> Per processor? That means it has to be per_cpu, which sounds a bit  
+> like
+> overkill to me.
 
-ahh, i see.. yes I'll fix that.
+I can probably live with global, not sure that would work with sysfs.
 
-> [snip]
->>> The DMA controller and the DMA channels need a "device-id", so that
->>> they can be identified by number.  Some peripherals, like the SSI,
->>> can only use the controller and channel number.  This is what I have
->>> in my 8610 DTS:
->>
->> Why not use reg for this?  I don't see any reason to add another
->> "unique id" when there is already one.
->
-> A cell-index property would be useful here for indexing into the  
-> summary
-> status register.
-
-Divide by 0x80.
-
->>>               dma@21300 {
->>>                       #address-cells = <1>;
->>>                       #size-cells = <1>;
->>>                       compatible = "fsl,mpc8610-dma", "fsl,mpc8540-
->>> dma";
->>>       -->             device-id = <0>;
->
-> I don't see any justification for having such a property in the  
-> parent node,
-> though.
-
-huh?
 - k
