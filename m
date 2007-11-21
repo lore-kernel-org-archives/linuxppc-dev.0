@@ -1,17 +1,20 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.187])
-	by ozlabs.org (Postfix) with ESMTP id 90013DDE30
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 07:10:06 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so3133234mue
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 12:10:03 -0800 (PST)
-Date: Wed, 21 Nov 2007 23:09:54 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: PPCML <linuxppc-dev@ozlabs.org>
-Subject: [RFC] PPC: convert for(...) cycles into for_each... form
-Message-ID: <20071121200954.GB7273@cvg>
+Return-Path: <jtyner@cs.ucr.edu>
+Received: from esmtp.cs.ucr.edu (esmtp.cs.ucr.edu [138.23.169.83])
+	by ozlabs.org (Postfix) with ESMTP id 26C14DDEA2
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 07:27:47 +1100 (EST)
+Received: from esmtp.cs.ucr.edu (localhost.localdomain [127.0.0.1])
+	by esmtp.cs.ucr.edu (Postfix) with ESMTP id 35E5F2AEC56
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 11:54:50 -0800 (PST)
+Received: from eon.cs.ucr.edu (eon.cs.ucr.edu [138.23.169.9])
+	by esmtp.cs.ucr.edu (Postfix) with ESMTP id A43E22AEC0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 11:54:04 -0800 (PST)
+Date: Wed, 21 Nov 2007 11:54:01 -0800 (PST)
+From: John Charles Tyner <jtyner@cs.ucr.edu>
+To: linuxppc-dev@ozlabs.org
+Subject: oops trying to execute sh
+Message-ID: <Pine.LNX.4.64.0711211149210.3338@eon.cs.ucr.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,203 +24,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+I'm trying to boot linux 2.6.22.9 on an mpc860c rev d4.
 
-This patch does convert cyclic calls to of_find_compatible_node()
-and of_find_node_by_type() into appropriate macroses. It does reduce
-code a bit.
+When init trys to spawn sh, during the exec, the kernel oopses as seen 
+below:
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
-WARNING: I've no PowerPC to test it - please reiew the patch
-closely. Thanks.
+## Starting application at 0x00400000 ...
 
- arch/powerpc/kernel/legacy_serial.c       |    8 ++++----
- arch/powerpc/platforms/82xx/pq2.c         |    4 ++--
- arch/powerpc/platforms/celleb/scc_sio.c   |    5 ++---
- arch/powerpc/platforms/powermac/low_i2c.c |    3 +--
- arch/powerpc/sysdev/mv64x60_pci.c         |    4 ++--
- arch/powerpc/sysdev/mv64x60_udbg.c        |    4 ++--
- arch/powerpc/sysdev/uic.c                 |   17 +++++------------
- 7 files changed, 18 insertions(+), 27 deletions(-)
+loaded at:     00400000 004EF15C
+board data at: 03F9FBC0 03F9FBFC
+relocated to:  00404044 00404080
+zimage at:     00404E74 004EC662
+avail ram:     004F0000 04000000
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index 4ed5887..b5dc646 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -307,7 +307,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with SOC ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *soc = of_get_parent(np);
- 		if (soc && !strcmp(soc->type, "soc")) {
- 			index = add_legacy_soc_port(np, np);
-@@ -318,7 +318,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with ISA ports */
--	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
-+	for_each_node_by_type(np, "serial") {
- 		struct device_node *isa = of_get_parent(np);
- 		if (isa && !strcmp(isa->name, "isa")) {
- 			index = add_legacy_isa_port(np, isa);
-@@ -329,7 +329,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with tsi-bridge ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *tsi = of_get_parent(np);
- 		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
- 			index = add_legacy_soc_port(np, np);
-@@ -340,7 +340,7 @@ void __init find_legacy_serial_ports(void)
- 	}
- 
- 	/* First fill our array with opb bus ports */
--	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+	for_each_compatible_node(np, "serial", "ns16550") {
- 		struct device_node *opb = of_get_parent(np);
- 		if (opb && (!strcmp(opb->type, "opb") ||
- 			    of_device_is_compatible(opb, "ibm,opb"))) {
-diff --git a/arch/powerpc/platforms/82xx/pq2.c b/arch/powerpc/platforms/82xx/pq2.c
-index a497cba..9e74393 100644
---- a/arch/powerpc/platforms/82xx/pq2.c
-+++ b/arch/powerpc/platforms/82xx/pq2.c
-@@ -72,11 +72,11 @@ err:
- 
- void __init pq2_init_pci(void)
- {
--	struct device_node *np = NULL;
-+	struct device_node *np;
- 
- 	ppc_md.pci_exclude_device = pq2_pci_exclude_device;
- 
--	while ((np = of_find_compatible_node(np, NULL, "fsl,pq2-pci")))
-+	for_each_compatible_node(np, NULL, "fsl,pq2-pci")
- 		pq2_pci_add_bridge(np);
- }
- #endif
-diff --git a/arch/powerpc/platforms/celleb/scc_sio.c b/arch/powerpc/platforms/celleb/scc_sio.c
-index 6100082..5e43bac 100644
---- a/arch/powerpc/platforms/celleb/scc_sio.c
-+++ b/arch/powerpc/platforms/celleb/scc_sio.c
-@@ -42,14 +42,13 @@ static struct {
- static int __init txx9_serial_init(void)
- {
- 	extern int early_serial_txx9_setup(struct uart_port *port);
--	struct device_node *node = NULL;
-+	struct device_node *node;
- 	int i;
- 	struct uart_port req;
- 	struct of_irq irq;
- 	struct resource res;
- 
--	while ((node = of_find_compatible_node(node,
--				"serial", "toshiba,sio-scc")) != NULL) {
-+	for_each_compatible_node(node, "serial", "toshiba,sio-scc") {
- 		for (i = 0; i < ARRAY_SIZE(txx9_scc_tab); i++) {
- 			if (!(txx9_serial_bitmap & (1<<i)))
- 				continue;
-diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
-index da2007e..864fbf4 100644
---- a/arch/powerpc/platforms/powermac/low_i2c.c
-+++ b/arch/powerpc/platforms/powermac/low_i2c.c
-@@ -585,8 +585,7 @@ static void __init kw_i2c_probe(void)
- 	struct device_node *np, *child, *parent;
- 
- 	/* Probe keywest-i2c busses */
--	for (np = NULL;
--	     (np = of_find_compatible_node(np, "i2c","keywest-i2c")) != NULL;){
-+	for_each_compatible_node(np, "i2c","keywest-i2c") {
- 		struct pmac_i2c_host_kw *host;
- 		int multibus, chans, i;
- 
-diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
-index 6933f9c..d21ab8f 100644
---- a/arch/powerpc/sysdev/mv64x60_pci.c
-+++ b/arch/powerpc/sysdev/mv64x60_pci.c
-@@ -164,8 +164,8 @@ static int __init mv64x60_add_bridge(struct device_node *dev)
- 
- void __init mv64x60_pci_init(void)
- {
--	struct device_node *np = NULL;
-+	struct device_node *np;
- 
--	while ((np = of_find_compatible_node(np, "pci", "marvell,mv64x60-pci")))
-+	for_each_compatible_node(np, "pci", "marvell,mv64x60-pci")
- 		mv64x60_add_bridge(np);
- }
-diff --git a/arch/powerpc/sysdev/mv64x60_udbg.c b/arch/powerpc/sysdev/mv64x60_udbg.c
-index 367e7b1..35c77c7 100644
---- a/arch/powerpc/sysdev/mv64x60_udbg.c
-+++ b/arch/powerpc/sysdev/mv64x60_udbg.c
-@@ -85,10 +85,10 @@ static void mv64x60_udbg_init(void)
- 	if (!stdout)
- 		return;
- 
--	for (np = NULL;
--	     (np = of_find_compatible_node(np, "serial", "marvell,mpsc")); )
-+	for_each_compatible_node(np, "serial", "marvell,mpsc") {
- 		if (np == stdout)
- 			break;
-+	}
- 
- 	of_node_put(stdout);
- 	if (!np)
-diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-index 5149716..815d6db 100644
---- a/arch/powerpc/sysdev/uic.c
-+++ b/arch/powerpc/sysdev/uic.c
-@@ -326,28 +326,23 @@ void __init uic_init_tree(void)
- 	const u32 *interrupts;
- 
- 	/* First locate and initialize the top-level UIC */
--
--	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
--	while (np) {
-+	for_each_compatible_node(np, NULL, "ibm,uic") {
- 		interrupts = of_get_property(np, "interrupts", NULL);
--		if (! interrupts)
-+		if (!interrupts)
- 			break;
--
--		np = of_find_compatible_node(np, NULL, "ibm,uic");
- 	}
- 
- 	BUG_ON(!np); /* uic_init_tree() assumes there's a UIC as the
- 		      * top-level interrupt controller */
- 	primary_uic = uic_init_one(np);
--	if (! primary_uic)
-+	if (!primary_uic)
- 		panic("Unable to initialize primary UIC %s\n", np->full_name);
- 
- 	irq_set_default_host(primary_uic->irqhost);
- 	of_node_put(np);
- 
- 	/* The scan again for cascaded UICs */
--	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
--	while (np) {
-+	for_each_compatible_node(np, NULL, "ibm,uic") {
- 		interrupts = of_get_property(np, "interrupts", NULL);
- 		if (interrupts) {
- 			/* Secondary UIC */
-@@ -355,7 +350,7 @@ void __init uic_init_tree(void)
- 			int ret;
- 
- 			uic = uic_init_one(np);
--			if (! uic)
-+			if (!uic)
- 				panic("Unable to initialize a secondary UIC %s\n",
- 				      np->full_name);
- 
-@@ -373,8 +368,6 @@ void __init uic_init_tree(void)
- 
- 			/* FIXME: setup critical cascade?? */
- 		}
--
--		np = of_find_compatible_node(np, NULL, "ibm,uic");
- 	}
- }
- 
+Linux/PPC load: console=ttyCPM,38400
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.6.22.9 (jtyner@johnnyedge) (gcc version 4.2.1) #113 Wed Nov 21 10:49:36 PST 2007
+Zone PFN ranges:
+   DMA             0 ->    16384
+   Normal      16384 ->    16384
+early_node_map[1] active PFN ranges
+     0:        0 ->    16384
+Built 1 zonelists.  Total pages: 16256
+Kernel command line: console=ttyCPM,38400
+PID hash table entries: 256 (order: 8, 1024 bytes)
+Decrementer Frequency = 183750000/60
+Console: colour dummy device 80x25
+cpm_uart: console: compat mode
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 63244k available (880k kernel code, 268k data, 444k init, 0k highmem)
+Mount-cache hash table entries: 512
+ADDSI: Init
+io scheduler noop registered (default)
+Serial: CPM driver $Revision: 0.02 $
+ttyCPM0 at MMIO 0xc5000a80 (irq = 20) is a CPM UART
+mice: PS/2 mouse device common for all mice
+Freeing unused kernel memory: 444k init
+init started: BusyBox v1.8.0 (2007-11-16 14:24:51 PST)
+starting pid 103, tty '': '/bin/sh'
+Oops: kernel access of bad area, sig: 11 [#1]
+NIP: c0044ed0 LR: c0044ff0 CTR: 00000001
+REGS: c3c0bd00 TRAP: 0300   Not tainted  (2.6.22.9)
+MSR: 00009032 <EE,ME,IR,DR>  CR: 30099099  XER: a0008c7f
+DAR: ff80103f, DSISR: c0000000
+TASK = c0288070[103] 'init' THREAD: c3c0a000
+GPR00: c0044ff0 c3c0bdb0 c0288070 ff800fff 00000000 7faf8000 00000000 00000000
+GPR08: c01a8f58 c017d91c 00000002 c0179cd0 30099093 1007687c 00000002 c00f8744
+GPR16: 00000000 c00f0a64 c011d1ac c00f0aa4 c00f0a90 c0120000 00000001 00000003
+GPR24: c3c1ce00 00000000 c0180000 c0247550 00000000 c3c0bdc8 c0179cd0 ff800fff
+NIP [c0044ed0] remove_vma+0x14/0x70
+LR [c0044ff0] exit_mmap+0xc4/0xf0
+Call Trace:
+[c3c0bdb0] [c3c0bdc8] 0xc3c0bdc8 (unreliable)
+[c3c0bdc0] [c0044ff0] exit_mmap+0xc4/0xf0
+[c3c0bdf0] [c000f74c] mmput+0x50/0xd4
+[c3c0be00] [c00591f4] flush_old_exec+0x3b8/0x7a8
+[c3c0be50] [c0086cc0] load_elf_binary+0x2e8/0x1454
+[c3c0bee0] [c005892c] search_binary_handler+0x58/0x12c
+[c3c0bf00] [c0059d64] do_execve+0x13c/0x1f0
+[c3c0bf20] [c00089b4] sys_execve+0x50/0x90
+[c3c0bf40] [c0002a40] ret_from_syscall+0x0/0x38
+Instruction dump:
+7d808120 38210040 4e800020 83c30000 4bffff18 38a00000 4bffff9c 7c0802a6
+9421fff0 bfc10008 90010014 7c7f1b78 <81230040> 83c3000c 2f890000 419e0018
+
+The interesting thing is that r3 points to something funny. While tracing 
+this problem down, I replaced the remove_vma function with the following:
+
+/*
+  * Close a vm structure and free it, returning the next.
+  */
+static struct vm_area_struct * __attribute__((__noinline__)) __remove_vma(struct vm_area_struct *vma)
+{
+
+ 	struct vm_area_struct *next = vma->vm_next;
+
+ 	might_sleep();
+ 	if (vma->vm_ops && vma->vm_ops->close)
+ 		vma->vm_ops->close(vma);
+ 	if (vma->vm_file)
+ 		fput(vma->vm_file);
+ 	mpol_free(vma_policy(vma));
+ 	kmem_cache_free(vm_area_cachep, vma);
+ 	return next;
+}
+
+static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
+{
+         asm volatile (
+                 "lis  4,-128\n"
+                 "ori  4,4,4095\n"
+                 "tweq 3,4\n"
+                 "lwz  5,0(1)\n"
+                 "tweq 3,4\n"
+                 );
+         return __remove_vma( vma );
+}
+
+With this code, the kernel oopses on the *second* tweq instruction:
+
+Kernel BUG at c0045fd4 [verbose debug info unavailable]
+Oops: Exception in kernel mode, sig: 5 [#1]
+NIP: c0045fd4 LR: c00460a0 CTR: 00000001
+REGS: c3c0bd10 TRAP: 0700   Not tainted  (2.6.22.9)
+MSR: 00029032 <EE,ME,IR,DR>  CR: 30099099  XER: a0008c7f
+TASK = c0292b40[103] 'init' THREAD: c3c0a000
+GPR00: 00000001 c3c0bdc0 c0292b40 ff800fff ff800fff c3c0bdf0 00000000 00000000
+GPR08: c0219398 c017d91c 00000002 c0179cd0 30099093 1007687c 00000002 c00f8744
+GPR16: 00000000 c00f0a64 c011d1ac c00f0aa4 c00f0a90 c0120000 00000001 00000003
+GPR24: c3c32e00 00000000 c0180000 c0247080 00000000 c3c0bdc8 c0179cd0 c017641c
+NIP [c0045fd4] remove_vma+0x10/0x18
+LR [c00460a0] exit_mmap+0xc4/0xf0
+Call Trace:
+[c3c0bdc0] [c0046074] exit_mmap+0x98/0xf0 (unreliable)
+[c3c0bdf0] [c000f74c] mmput+0x50/0xd4
+[c3c0be00] [c005920c] flush_old_exec+0x3b8/0x7a8
+[c3c0be50] [c0086cd8] load_elf_binary+0x2e8/0x1454
+[c3c0bee0] [c0058944] search_binary_handler+0x58/0x12c
+[c3c0bf00] [c0059d7c] do_execve+0x13c/0x1f0
+[c3c0bf20] [c00089b4] sys_execve+0x50/0x90
+[c3c0bf40] [c0002a40] ret_from_syscall+0x0/0x38
+Instruction dump:
+7fe4fb78 4800a0ed 80010014 7fc3f378 7c0803a6 bbc10008 38210010 4e800020
+3c80ff80 60840fff 7c832008 80a10000 <7c832008> 4bffff7c 7c0802a6 9421ffd0
+
+The access of memory through r1 seems to corrupt r3, and always with the 
+same value. The problem isn't necessarily here, though. If I modify my 
+remove_vma function to cause and correct the problem (by saving r3 prior 
+to the memory access and restoring it afterwards), I just get the same 
+problem in some other part of the code, but the oops is always caused 
+because the base register for some memory access is set to ff800fff.
+
+I applied a recent patch I found that corrects the address returned by 
+cpm_dpram_addr and its use in cpu_uart_cpm1.h, and I've created my own 
+platform setup file by copying the mpc866ads setup enough to get the 
+console uart (SMC1) to work.
+
+If there is any other information I can or need to provide, let me 
+know. Any help would be greatly appreciated.
+
+Thanks,
+John
