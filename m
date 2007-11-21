@@ -2,9 +2,8 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Wed, 21 Nov 2007 17:15:01 +1100
-Subject: [PATCH 7/14] powerpc: Change 32 bits PCI message about resource
-	allocation
-Message-Id: <20071121061551.0A3CADDECE@ozlabs.org>
+Subject: [PATCH 8/14] powerpc: Fix kmalloc alignmenent on non-coherent DMA
+Message-Id: <20071121061551.E97A1DDF08@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,34 +13,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 32 bits PCI code will display a rather scary error message
-
-   PCI: Cannot allocate resource region N of device XXX
-
-at boot when the existing setup of a device as left by the
-firmware doesn't match the kernel needs and the device needs
-to be moved. This is often not an error at all, as the kernel
-will generally easily reallocate the device elsewhere.
-
-This changes the message to something less scary and lowers
-its level from error to warning.
+On platforms doing non-coherent DMA (4xx, 8xx, ...), it's important that
+kmalloc minimum alignment is set to the cache line size, to avoid sharing
+cache lines between different objects.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/pci_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/asm-powerpc/page_32.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-work/arch/powerpc/kernel/pci_32.c
+Index: linux-work/include/asm-powerpc/page_32.h
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-20 17:04:07.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-21 16:53:53.000000000 +1100
-@@ -508,7 +508,7 @@ static inline void alloc_resource(struct
- 	    pci_name(dev), idx, (u64)r->start, (u64)r->end, r->flags);
- 	pr = pci_find_parent_resource(dev, r);
- 	if (!pr || request_resource(pr, r) < 0) {
--		printk(KERN_ERR "PCI: Cannot allocate resource region %d"
-+		printk(KERN_WARNING "PCI: Remapping resource region %d"
- 		       " of device %s\n", idx, pci_name(dev));
- 		if (pr)
- 			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
+--- linux-work.orig/include/asm-powerpc/page_32.h	2007-11-19 15:01:08.000000000 +1100
++++ linux-work/include/asm-powerpc/page_32.h	2007-11-19 15:01:17.000000000 +1100
+@@ -6,6 +6,10 @@
+ 
+ #define PPC_MEMSTART	0
+ 
++#ifdef CONFIG_NOT_COHERENT_CACHE
++#define ARCH_KMALLOC_MINALIGN	L1_CACHE_BYTES
++#endif
++
+ #ifndef __ASSEMBLY__
+ /*
+  * The basic type of a PTE - 64 bits for those CPUs with > 32 bit
