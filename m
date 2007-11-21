@@ -1,28 +1,11 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 53DFFDDD0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 13:09:27 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAL29NXd020078
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 21:09:23 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lAL29NPj110036
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 21:09:23 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAL29Npt014962
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2007 21:09:23 -0500
-Date: Tue, 20 Nov 2007 20:09:22 -0600
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/pseries: tell phyp to auto-restart
-Message-ID: <20071121020922.GA4374@austin.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, strosake@us.ibm.com
+Message-ID: <18243.41278.72798.100000@cargo.ozlabs.ibm.com>
+Date: Wed, 21 Nov 2007 14:08:46 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ulrich Drepper <drepper@redhat.com>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] sys_indirect kernel implementation for PowerPC
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,62 +15,199 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This implements sys_indirect for 32-bit and 64-bit powerpc machines,
+including a 32-bit compatibility implementation for 64-bit powerpc.
+I decided to use assembly language for call_syscall because on 64-bit
+powerpc the system call table has the addresses of the function text
+rather than pointers to function descriptors; hence the system call
+functions can't be called from C via the system call table.
 
-The pseries hypervisor attempts to detect and prevent an 
-infinite loop of kernel crashes and auto-reboots. It does 
-so by refusing to auto-reboot unless we indicate that the
-current boot was sucessful.  So, indicate success late in
-the boot sequence.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+This patch applies on top of Ulrich Drepper's series adding the
+generic and x86-specific code for sys_indirect.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
-Sigh. This is a side-effect of the patch I sent yesterday.
-Its supposed to simplify the management large numbers of 
-partitions. 
-
- arch/powerpc/platforms/pseries/setup.c |   31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
-
-Index: linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- linux-2.6.24-rc3-git1.orig/arch/powerpc/platforms/pseries/setup.c	2007-11-20 18:37:14.000000000 -0600
-+++ linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/setup.c	2007-11-20 19:08:12.000000000 -0600
-@@ -491,6 +491,37 @@ void pSeries_power_off(void)
- 	for (;;);
- }
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 69a91bd..fd6781c 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -461,6 +461,25 @@ ppc_swapcontext:
+ 	b	sys_swapcontext
  
-+/**
-+ * pSeries_auto_restart - tell hypervisor that boot succeeded.
-+ *
-+ * The pseries hypervisor attempts to detect and prevent an
-+ * infinite loop of kernel crashes and auto-reboots. It does
-+ * so by refusing to auto-reboot unless we indicate that the
-+ * current boot was sucessful.  So, indicate success late in
-+ * the boot sequence.
+ /*
++ * long call_compat_syscall(struct indirect_registers32 *regs)
++ * This function assumes that regs->syscall_nr has already been validated.
 + */
-+static int __init pSeries_auto_restart(void)
++_GLOBAL(call_syscall)
++	lwz	r0,0(r3)	/* system call number */
++	lis	r11,sys_call_table@ha
++	addi	r11,r11,sys_call_table@l
++	slwi	r0,r0,2
++	lwzx	r10,r11,r0
++	mtctr	r10
++	lwz	r4,8(r3)
++	lwz	r5,12(r3)
++	lwz	r6,16(r3)
++	lwz	r7,20(r3)
++	lwz	r8,24(r3)
++	lwz	r3,4(r3)
++	bctr
++
++/*
+  * Top-level page fault handling.
+  * This is in assembler because if do_page_fault tells us that
+  * it is a bad kernel page fault, we want to save the non-volatile
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 148a354..516ee70 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -315,6 +315,43 @@ _GLOBAL(ret_from_fork)
+ 	b	syscall_exit
+ 
+ /*
++ * long call_syscall(struct indirect_registers *regs)
++ * This function assumes that regs->syscall_nr has already been validated.
++ */
++_GLOBAL(call_syscall)
++	ld	r11,.SYS_CALL_TABLE@toc(2)
++	ld	r0,0(r3)	/* system call number */
++	sldi	r0,r0,4
++	ldx	r10,r11,r0
++	mtctr	r10
++	ld	r4,16(r3)
++	ld	r5,24(r3)
++	ld	r6,32(r3)
++	ld	r7,40(r3)
++	ld	r8,48(r3)
++	ld	r3,8(r3)
++	bctr
++
++/*
++ * long call_compat_syscall(struct indirect_registers32 *regs)
++ * This function assumes that regs->syscall_nr has already been validated.
++ */
++_GLOBAL(call_compat_syscall)
++	ld	r11,.SYS_CALL_TABLE@toc(2)
++	lwz	r0,0(r3)	/* system call number */
++	sldi	r0,r0,4
++	addi	r11,r11,8
++	ldx	r10,r11,r0
++	mtctr	r10
++	lwz	r4,8(r3)
++	lwz	r5,12(r3)
++	lwz	r6,16(r3)
++	lwz	r7,20(r3)
++	lwz	r8,24(r3)
++	lwz	r3,4(r3)
++	bctr
++
++/*
+  * This routine switches between two different tasks.  The process
+  * state of one is saved on its kernel stack.  Then the state
+  * of the other is restored from its kernel stack.  The memory
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 4a4f5c6..fcaf0b2 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -826,3 +826,37 @@ asmlinkage long compat_sys_sync_file_range2(int fd, unsigned int flags,
+ 
+ 	return sys_sync_file_range(fd, offset, nbytes, flags);
+ }
++
++long compat_sys_indirect(struct indirect_registers32 __user *userregs,
++			 void __user *userparams, size_t paramslen,
++			 int flags)
 +{
-+	static char buff[3]; /* static so that its in RMO region */
-+	int rc;
-+	int token = rtas_token("ibm,set-system-parameter");
-+	if (!token)
-+		return 0;
++	struct indirect_registers32 regs;
++	long result;
 +
-+	/* partition_auto_restart is 21; set to to 1 to auto-restart the OS. */
-+	buff[0] = 0;
-+	buff[1] = 1; /* length */
-+	buff[2] = 1; /* value */
-+	do {
-+		rc = rtas_call (token, 2, 1, NULL, 21, buff);
-+	} while (rtas_busy_delay(rc));
-+	if (rc)
-+		printk(KERN_INFO "pSeries_auto_restart(): "
-+		       "unable to setup autorestart, rc=%d\n", rc);
-+	return 0;
++	if (unlikely(flags != 0))
++		return -EINVAL;
++
++	if (copy_from_user(&regs, userregs, sizeof(regs)))
++		return -EFAULT;
++
++	switch (regs.syscall_nr) {
++#define INDSYSCALL(name) __NR_##name
++#include <linux/indirect.h>
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	if (paramslen > sizeof(union indirect_params))
++		return -EINVAL;
++
++	result = -EFAULT;
++	if (!copy_from_user(&current->indirect_params, userparams, paramslen))
++		result = call_compat_syscall(&regs);
++
++	memset(&current->indirect_params, '\0', paramslen);
++
++	return result;
 +}
-+late_initcall(pSeries_auto_restart);
+diff --git a/include/asm-powerpc/indirect.h b/include/asm-powerpc/indirect.h
+new file mode 100644
+index 0000000..fcc6729
+--- /dev/null
++++ b/include/asm-powerpc/indirect.h
+@@ -0,0 +1,32 @@
++#ifndef _ASM_POWERPC_INDIRECT_H_
++#define _ASM_POWERPC_INDIRECT_H_
++/*
++ * Copyright 2007 Paul Mackerras <paulus@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
- #ifndef CONFIG_PCI
- void pSeries_final_fixup(void) { }
- #endif
++struct indirect_registers {
++	unsigned long syscall_nr;
++	unsigned long args[6];
++};
++
++extern long call_syscall(struct indirect_registers *regs);
++
++#define INDIRECT_SYSCALL(regs)		(regs)->syscall_nr
++#define CALL_INDIRECT(regs)		call_syscall(regs)
++
++#ifdef CONFIG_PPC64
++struct indirect_registers32 {
++	unsigned int syscall_nr;
++	unsigned int args[6];
++};
++
++extern long call_compat_syscall(struct indirect_registers32 *regs);
++
++#endif /* CONFIG_PPC64 */
++
++#endif /* _ASM_POWERPC_INDIRECT_H_ */
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 11d5383..de2f4d7 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -313,3 +313,4 @@ COMPAT_SYS_SPU(timerfd)
+ SYSCALL_SPU(eventfd)
+ COMPAT_SYS_SPU(sync_file_range2)
+ COMPAT_SYS(fallocate)
++COMPAT_SYS(indirect)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 97d82b6..400e4a6 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -332,10 +332,11 @@
+ #define __NR_eventfd		307
+ #define __NR_sync_file_range2	308
+ #define __NR_fallocate		309
++#define __NR_indirect		310
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		310
++#define __NR_syscalls		311
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
