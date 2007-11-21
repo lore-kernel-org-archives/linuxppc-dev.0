@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <jgarzik@pobox.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 21 Nov 2007 17:06:39 +1100
-Subject: [PATCH 1/8] ibm_newemac: Fix possible lockup on close
+Date: Wed, 21 Nov 2007 17:06:40 +1100
+Subject: [PATCH 2/8] ibm_newemac: Add BCM5248 and Marvell 88E1111 PHY support
 In-Reply-To: <1195625198.76200.922309668615.qpush@grosgo>
-Message-Id: <20071121060729.71A1FDDE01@ozlabs.org>
+Message-Id: <20071121060730.A691CDDE3D@ozlabs.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,116 +15,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's a bad idea to call flush_scheduled_work from within a
-netdev->stop because the linkwatch will occasionally take the
-rtnl lock from a workqueue context, and thus that can deadlock.
+From: Stefan Roese <sr@denx.de>
 
-This reworks things a bit in that area to avoid the problem.
+This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
+These PHY chips are used on PowerPC 440EPx boards.
+The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
 
+Signed-off-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- drivers/net/ibm_newemac/core.c |   31 ++++++++++++++++++++-----------
- drivers/net/ibm_newemac/core.h |    1 +
- 2 files changed, 21 insertions(+), 11 deletions(-)
-
-Index: linux-work/drivers/net/ibm_newemac/core.c
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-20 14:42:50.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-20 14:46:51.000000000 +1100
-@@ -642,9 +642,11 @@ static void emac_reset_work(struct work_
- 	DBG(dev, "reset_work" NL);
- 
- 	mutex_lock(&dev->link_lock);
--	emac_netif_stop(dev);
--	emac_full_tx_reset(dev);
--	emac_netif_start(dev);
-+	if (dev->opened) {
-+		emac_netif_stop(dev);
-+		emac_full_tx_reset(dev);
-+		emac_netif_start(dev);
-+	}
- 	mutex_unlock(&dev->link_lock);
- }
- 
-@@ -1063,10 +1065,9 @@ static int emac_open(struct net_device *
- 	dev->rx_sg_skb = NULL;
- 
- 	mutex_lock(&dev->link_lock);
-+	dev->opened = 1;
- 
--	/* XXX Start PHY polling now. Shouldn't wr do like sungem instead and
--	 * always poll the PHY even when the iface is down ? That would allow
--	 * things like laptop-net to work. --BenH
-+	/* Start PHY polling now.
- 	 */
- 	if (dev->phy.address >= 0) {
- 		int link_poll_interval;
-@@ -1145,9 +1146,11 @@ static void emac_link_timer(struct work_
- 	int link_poll_interval;
- 
- 	mutex_lock(&dev->link_lock);
--
- 	DBG2(dev, "link timer" NL);
- 
-+	if (!dev->opened)
-+		goto bail;
-+
- 	if (dev->phy.def->ops->poll_link(&dev->phy)) {
- 		if (!netif_carrier_ok(dev->ndev)) {
- 			/* Get new link parameters */
-@@ -1170,13 +1173,14 @@ static void emac_link_timer(struct work_
- 		link_poll_interval = PHY_POLL_LINK_OFF;
- 	}
- 	schedule_delayed_work(&dev->link_work, link_poll_interval);
--
-+ bail:
- 	mutex_unlock(&dev->link_lock);
- }
- 
- static void emac_force_link_update(struct emac_instance *dev)
- {
- 	netif_carrier_off(dev->ndev);
-+	smp_rmb();
- 	if (dev->link_polling) {
- 		cancel_rearming_delayed_work(&dev->link_work);
- 		if (dev->link_polling)
-@@ -1191,11 +1195,14 @@ static int emac_close(struct net_device 
- 
- 	DBG(dev, "close" NL);
- 
--	if (dev->phy.address >= 0)
-+	if (dev->phy.address >= 0) {
-+		dev->link_polling = 0;
- 		cancel_rearming_delayed_work(&dev->link_work);
--
-+	}
-+	mutex_lock(&dev->link_lock);
- 	emac_netif_stop(dev);
--	flush_scheduled_work();
-+	dev->opened = 0;
-+	mutex_unlock(&dev->link_lock);
- 
- 	emac_rx_disable(dev);
- 	emac_tx_disable(dev);
-@@ -2756,6 +2763,8 @@ static int __devexit emac_remove(struct 
- 
- 	unregister_netdev(dev->ndev);
- 
-+	flush_scheduled_work();
-+
- 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH))
- 		tah_detach(dev->tah_dev, dev->tah_port);
- 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
-Index: linux-work/drivers/net/ibm_newemac/core.h
-===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.h	2007-11-20 14:42:50.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.h	2007-11-20 14:46:51.000000000 +1100
-@@ -258,6 +258,7 @@ struct emac_instance {
- 	int				stop_timeout;	/* in us */
- 	int				no_mcast;
- 	int				mcast_pending;
-+	int				opened;
- 	struct work_struct		reset_work;
- 	spinlock_t			lock;
+--- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
++++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
+@@ -306,8 +306,47 @@
+ 	.ops		= &cis8201_phy_ops
  };
+ 
++static struct mii_phy_def bcm5248_phy_def = {
++
++	.phy_id		= 0x0143bc00,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "BCM5248 10/100 SMII Ethernet",
++	.ops		= &generic_phy_ops
++};
++
++static int m88e1111_init(struct mii_phy *phy)
++{
++	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
++	phy_write(phy, 0x14, 0x0ce3);
++	phy_write(phy, 0x18, 0x4101);
++	phy_write(phy, 0x09, 0x0e00);
++	phy_write(phy, 0x04, 0x01e1);
++	phy_write(phy, 0x00, 0x9140);
++	phy_write(phy, 0x00, 0x1140);
++
++	return  0;
++}
++
++static struct mii_phy_ops m88e1111_phy_ops = {
++	.init		= m88e1111_init,
++	.setup_aneg	= genmii_setup_aneg,
++	.setup_forced	= genmii_setup_forced,
++	.poll_link	= genmii_poll_link,
++	.read_link	= genmii_read_link
++};
++
++static struct mii_phy_def m88e1111_phy_def = {
++
++	.phy_id		= 0x01410CC0,
++	.phy_id_mask	= 0x0ffffff0,
++	.name		= "Marvell 88E1111 Ethernet",
++	.ops		= &m88e1111_phy_ops,
++};
++
+ static struct mii_phy_def *mii_phy_table[] = {
+ 	&cis8201_phy_def,
++	&bcm5248_phy_def,
++	&m88e1111_phy_def,
+ 	&genmii_phy_def,
+ 	NULL
+ };
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
