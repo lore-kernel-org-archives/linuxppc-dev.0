@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 21 Nov 2007 17:16:20 +1100
-Subject: [RFC/PATCH 3/14] powerpc: Fix declaration of pcibios_free_controller
+Date: Wed, 21 Nov 2007 17:16:21 +1100
+Subject: [RFC/PATCH 4/14] powerpc: Fix powerpc 32 bits resource fixup for 64
+	bits resources
 In-Reply-To: <1195625777.579001.269266058699.qpush@grosgo>
-Message-Id: <20071121061710.7E6B5DEAC3@ozlabs.org>
+Message-Id: <20071121061713.56A0CDEAE0@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,38 +15,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pcibios_free_controller() is now available for both 32 and 64 bits
-but the header only declares it for 64 bits. This moves the
-declaration down next to the pcibios_alloc_controller() one.
+The 32bits powerpc resource fixup code uses unsigned longs to do the
+offseting of resources which overflows on platforms such as 4xx where
+resources can be 64 bits.
+
+This fixes it by using resource_size_t instead.
+
+However, the IO stuff does rely on some 32 bits arithmetic, so we hack
+by cropping the result of the fixups for IO resources with a 32 bits
+mask.
+
+This isn't the prettiest but should work for now until we change the
+32 bits PCI code to do IO mappings like 64 bits does, within a reserved
+are of the kernel address space.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- include/asm-powerpc/pci-bridge.h |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+This needs some regression testing.
 
-Index: linux-work/include/asm-powerpc/pci-bridge.h
+ arch/powerpc/kernel/pci_32.c |   44 +++++++++++++++++++++++--------------------
+ 1 file changed, 24 insertions(+), 20 deletions(-)
+
+Index: linux-work/arch/powerpc/kernel/pci_32.c
 ===================================================================
---- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-11-16 13:44:32.000000000 +1100
-+++ linux-work/include/asm-powerpc/pci-bridge.h	2007-11-16 13:46:40.000000000 +1100
-@@ -247,7 +247,6 @@ static inline struct pci_controller *pci
- 	return PCI_DN(busdn)->phb;
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-16 15:48:27.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-16 15:55:54.000000000 +1100
+@@ -104,7 +104,7 @@ pcibios_fixup_resources(struct pci_dev *
+ {
+ 	struct pci_controller* hose = (struct pci_controller *)dev->sysdata;
+ 	int i;
+-	unsigned long offset;
++	resource_size_t offset, mask;
+ 
+ 	if (!hose) {
+ 		printk(KERN_ERR "No hose for PCI dev %s!\n", pci_name(dev));
+@@ -123,15 +123,17 @@ pcibios_fixup_resources(struct pci_dev *
+ 			continue;
+ 		}
+ 		offset = 0;
++		mask = (resource_size_t)-1;
+ 		if (res->flags & IORESOURCE_MEM) {
+ 			offset = hose->pci_mem_offset;
+ 		} else if (res->flags & IORESOURCE_IO) {
+ 			offset = (unsigned long) hose->io_base_virt
+ 				- isa_io_base;
++			mask = 0xffffffffu;
+ 		}
+ 		if (offset != 0) {
+-			res->start += offset;
+-			res->end += offset;
++			res->start = (res->start + offset) & mask;
++			res->end = (res->end + offset) & mask;
+ 			DBG("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
+ 			    i, res->flags, pci_name(dev),
+ 			    (u64)res->start - offset, (u64)res->start);
+@@ -147,30 +149,32 @@ DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PC
+ void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+ 			struct resource *res)
+ {
+-	unsigned long offset = 0;
++	resource_size_t offset = 0, mask = (resource_size_t)-1;
+ 	struct pci_controller *hose = dev->sysdata;
+ 
+-	if (hose && res->flags & IORESOURCE_IO)
++	if (hose && res->flags & IORESOURCE_IO) {
+ 		offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-	else if (hose && res->flags & IORESOURCE_MEM)
++		mask = 0xffffffffu;
++	} else if (hose && res->flags & IORESOURCE_MEM)
+ 		offset = hose->pci_mem_offset;
+-	region->start = res->start - offset;
+-	region->end = res->end - offset;
++	region->start = (res->start - offset) & mask;
++	region->end = (res->end - offset) & mask;
  }
+ EXPORT_SYMBOL(pcibios_resource_to_bus);
  
--extern void pcibios_free_controller(struct pci_controller *phb);
+ void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+ 			     struct pci_bus_region *region)
+ {
+-	unsigned long offset = 0;
++	resource_size_t offset = 0, mask = (resource_size_t)-1;
+ 	struct pci_controller *hose = dev->sysdata;
  
- extern void isa_bridge_find_early(struct pci_controller *hose);
+-	if (hose && res->flags & IORESOURCE_IO)
++	if (hose && res->flags & IORESOURCE_IO) {
+ 		offset = (unsigned long)hose->io_base_virt - isa_io_base;
+-	else if (hose && res->flags & IORESOURCE_MEM)
++		mask = 0xffffffffu;
++	} else if (hose && res->flags & IORESOURCE_MEM)
+ 		offset = hose->pci_mem_offset;
+-	res->start = region->start + offset;
+-	res->end = region->end + offset;
++	res->start = (region->start + offset) & mask;
++	res->end = (region->end + offset) & mask;
+ }
+ EXPORT_SYMBOL(pcibios_bus_to_resource);
  
-@@ -283,9 +282,11 @@ extern void
- pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			   struct device_node *dev, int primary);
+@@ -334,9 +338,9 @@ static int __init
+ pci_relocate_bridge_resource(struct pci_bus *bus, int i)
+ {
+ 	struct resource *res, *pr, *conflict;
+-	unsigned long try, size;
+-	int j;
++	resource_size_t try, size;
+ 	struct pci_bus *parent = bus->parent;
++	int j;
  
--/* Allocate a new PCI host bridge structure */
-+/* Allocate & free a PCI host bridge structure */
- extern struct pci_controller *
- pcibios_alloc_controller(struct device_node *dev);
-+extern void pcibios_free_controller(struct pci_controller *phb);
-+
- #ifdef CONFIG_PCI
- extern unsigned long pci_address_to_pio(phys_addr_t address);
- extern int pcibios_vaddr_is_ioport(void __iomem *address);
+ 	if (parent == NULL) {
+ 		/* shouldn't ever happen */
+@@ -438,7 +442,7 @@ update_bridge_resource(struct pci_dev *d
+ 	u8 io_base_lo, io_limit_lo;
+ 	u16 mem_base, mem_limit;
+ 	u16 cmd;
+-	unsigned long start, end, off;
++	resource_size_t start, end, off;
+ 	struct pci_controller *hose = dev->sysdata;
+ 
+ 	if (!hose) {
+@@ -1157,8 +1161,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+ 			res->end = IO_SPACE_LIMIT;
+ 			res->flags = IORESOURCE_IO;
+ 		}
+-		res->start += io_offset;
+-		res->end += io_offset;
++		res->start = (res->start + io_offset) & 0xffffffffu;
++		res->end = (res->end + io_offset) & 0xffffffffu;
+ 
+ 		for (i = 0; i < 3; ++i) {
+ 			res = &hose->mem_resources[i];
+@@ -1183,8 +1187,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+ 			if (!res->flags || bus->self->transparent)
+ 				continue;
+ 			if (io_offset && (res->flags & IORESOURCE_IO)) {
+-				res->start += io_offset;
+-				res->end += io_offset;
++				res->start = (res->start + io_offset) & 0xffffffffu;
++				res->end = (res->end + io_offset) & 0xffffffffu;
+ 			} else if (hose->pci_mem_offset
+ 				   && (res->flags & IORESOURCE_MEM)) {
+ 				res->start += hose->pci_mem_offset;
