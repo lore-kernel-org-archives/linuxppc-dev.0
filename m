@@ -1,19 +1,21 @@
-Return-Path: <vitb@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C8B14DDEEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 05:20:02 +1100 (EST)
-Date: Wed, 21 Nov 2007 21:08:42 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Andrei Dolnikov <adolnikov@ru.mvista.com>
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
-Message-ID: <20071121210842.7dc748ed@kernel.crashing.org>
-In-Reply-To: <20071116161253.GB25062@ru.mvista.com>
-References: <20071116154344.GA25062@ru.mvista.com>
-	<20071116161253.GB25062@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	by ozlabs.org (Postfix) with ESMTP id E6753DDE27
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:19:53 +1100 (EST)
+Message-Id: <8A7483CD-AF52-46C7-94FD-2CAE53740EC4@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+In-Reply-To: <20071121173308.GB4413@loki.buserror.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 3/3] [POWERPC] Add docs for Freescale DMA & DMA channel
+	device tree nodes
+Date: Wed, 21 Nov 2007 13:19:43 -0600
+References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0711202314030.24220@blarg.am.freescale.net>
+	<20071121173308.GB4413@loki.buserror.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,418 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 Nov 2007 19:12:53 +0300
-Andrei Dolnikov wrote:
 
-> Device tree source file for the Emerson Katana Qp board
-> 
-> Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvisa.com>
-> 
-> ---
->  arch/powerpc/boot/dts/katanaqp.dts |  357
-> +++++++++++++++++++++++++++++++++++++ 1 files changed, 357
-> insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/katanaqp.dts
-> b/arch/powerpc/boot/dts/katanaqp.dts new file mode 100644
-> index 0000000..9273c4e
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/katanaqp.dts
-> @@ -0,0 +1,357 @@
-> +/* Device Tree Source for Emerson Katana Qp
-> + *
-> + * Authors: Vladislav Buzov <vbuzov@ru.mvista.com>
-> + *	    Andrei Dolnikov <adolnikov@ru.mvista.com>
-> + * 
-> + * Based on prpmc8200.dts by Mark A. Greer <mgreer@mvista.com>
-> + *
-> + * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
-> + * the terms of the GNU General Public License version 2.  This
-> program
-> + * is licensed "as is" without any warranty of any kind, whether
-> express
-> + * or implied.
-> + *
-> + */
-> +
-> +/ {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "Katana-Qp"; /* Default */
-> +	compatible = "emerson,Katana-Qp";
-> +	coherency-off;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,7448@0 {
-> +			device_type = "cpu";
-> +			reg = <0>;
-> +			clock-frequency = <0>;		/*
-> From U-boot */
-> +			bus-frequency = <0>;		/* From
-> U-boot */
-> +			timebase-frequency = <0>;	/* From
-> U-boot */
-> +			i-cache-line-size = <20>;
-> +			d-cache-line-size = <20>;
-> +			i-cache-size = <8000>;
-> +			d-cache-size = <8000>;
-> +		};
-> +	};
-> +
-> +	memory {
-> +		device_type = "memory";
-> +		reg = <00000000 20000000>;	/* Default (512MB)
-> */
-> +	};
-> +
+On Nov 21, 2007, at 11:33 AM, Scott Wood wrote:
 
-shouldn't this come from the firmware if possible?
-> +	mv64x60@f8100000 { /* Marvell Discovery */
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		model = "mv64460";			/* Default
-> */
-> +		compatible = "marvell,mv64x60";
-> +		clock-frequency = <7f28155>;		/*
-> 133.333333 MHz */
-This should be updated somewhere in fw or bootwrapper.. Or is it hardcoded
-value that is not going to change?
+> On Tue, Nov 20, 2007 at 11:14:40PM -0600, Kumar Gala wrote:
+>> +    - compatible        : compatible list, contains 2 entries,  
+>> first is
+>> +			 "fsl,CHIP-dma", where CHIP is the processor
+>> +			 (mpc8540, mpc8540, etc.) and the second is
+>> +			 "fsl,eloplus-dma"
+>
+> So if the DMA register set gets tweaked again, will we have  
+> eloplusplus? :-)
+> Maybe elo2 would be better.
 
-> +		reg = <f8100000 00010000>;
-> +		virtual-reg = <f8100000>;
-> +		ranges = <c1000000 c1000000 01000000	/* PCI 1
-> I/O Space */
-> +			  90000000 90000000 30000000	/* PCI 1
-> MEM Space */
-> +			  e8000000 e8000000 04000000	/* User
-> FLASH: Up to 64Mb */
-> +			  00000000 f8100000 00010000	/*
-> Bridge's regs */
-> +			  f8500000 f8500000 00040000>;	/*
-> Integrated SRAM */ +
-> +		flash@e8000000 {
-> +			compatible = "cfi-flash";
-> +			reg = <e8000000 1000000>; /* Default (16MB)
-> */
-> +			probe-type = "CFI";
-> +			bank-width = <4>;
-> +			
-> +			partition@0 {
-> +				label = "Primary Monitor";
-> +				reg = <0 100000>; /* 1Mb */
-> +				read-only;
-> +			};
-> +
-> +			partition@100000 {
-> +				label = "Primary Kernel";
-> +				reg = <100000 200000>; /* 2 Mb */
-> +			};
-> +
-> +			partition@300000 {
-> +				label = "Primary FS";
-> +				reg = <300000 d00000>; /* 13 Mb */
-> +			};
-> +
-> +		};
-> +
-> +		cpld@f8200000 {
-> +			compatible = "altera,maxii";
-> +			reg = <f8200000 40000>;
-> +			virtual-reg = <f8200000>;
-> +		};
-> +
-> +		mdio {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "marvell,mv64x60-mdio";
-> +			ethernet-phy@0 {
-> +				block-index = <0>;
-> +				compatible = "marvell,mv88e1111";
-> +				reg = <a>;
-> +			};
-> +			ethernet-phy@1 {
-> +				compatible = "marvell,mv88e1111";
-> +				block-index = <1>;
-> +				reg = <d>;
-> +			};
-> +			ethernet-phy@2 {
-> +				compatible = "marvell,mv88e1111";
-> +				block-index = <2>;
-> +				reg = <6>;
-> +			};
-> +		};
-> +
-> +		ethernet@2000 {
-> +			reg = <2000 2000>;
-> +			eth0 {
-> +				device_type = "network";
-> +				compatible = "marvell,mv64x60-eth";
-> +				block-index = <0>;
-> +				interrupts = <20>;
-> +				interrupt-parent = <&/mv64x60/pic>;
-> +				phy =
-> <&/mv64x60/mdio/ethernet-phy@0>;
-> +				speed = <3e8>; 
-> +				duplex = <1>; 
-> +				tx_queue_size = <320>;
-> +				rx_queue_size = <190>;
-> +				local-mac-address = [ 00 00 00 00 00
-> 00 ];
-> +			};
-> +			eth1 {
-> +				device_type = "network";
-> +				compatible = "marvell,mv64x60-eth";
-> +				block-index = <1>;
-> +				interrupts = <21>;
-> +				interrupt-parent = <&/mv64x60/pic>;
-> +				phy =
-> <&/mv64x60/mdio/ethernet-phy@1>;
-> +				speed = <3e8>; 
-> +				duplex = <1>; 
-> +				tx_queue_size = <320>;
-> +				rx_queue_size = <190>;
-> +				local-mac-address = [ 00 00 00 00 00
-> 00 ];
-here and in other places: you need to add a note that stuff is being rewritten/updated by fw and/or bootwrapper.
-> +			};
-> +			eth2 {
-> +				device_type = "network";
-> +				compatible = "marvell,mv64x60-eth";
-> +				block-index = <2>;
-> +				interrupts = <22>;
-> +				interrupt-parent = <&/mv64x60/pic>;
-> +				phy =
-> <&/mv64x60/mdio/ethernet-phy@2>;
-> +				speed = <3e8>; 
-> +				duplex = <1>; 
-> +				tx_queue_size = <320>;
-> +				rx_queue_size = <190>;
-> +				local-mac-address = [ 00 00 00 00 00
-> 00 ];
-> +			};
-> +		};
-> +
-> +		sdma@4000 {
-> +			compatible = "marvell,mv64x60-sdma";
-> +			reg = <4000 c18>;
-> +			virtual-reg = <f8104000>;
-> +			interrupt-base = <0>;
-> +			interrupts = <24>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		sdma@6000 {
-> +			compatible = "marvell,mv64x60-sdma";
-> +			reg = <6000 c18>;
-> +			virtual-reg = <f8106000>;
-> +			interrupt-base = <0>;
-> +			interrupts = <26>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		brg@b200 {
-> +			compatible = "marvell,mv64x60-brg";
-> +			reg = <b200 8>;
-> +			clock-src = <8>;
-> +			clock-frequency = <7ed6b40>;
-> +			current-speed = <2580>;
-> +			bcr = <0>;
-> +		};
-> +
-> +		brg@b208 {
-> +			compatible = "marvell,mv64x60-brg";
-> +			reg = <b208 8>;
-> +			clock-src = <8>;
-> +			clock-frequency = <7ed6b40>;
-> +			current-speed = <2580>;
-> +			bcr = <0>;
-> +		};
-> +
-> +		cunit@f200 {
-> +			reg = <f200 200>;
-> +		};
-> +
-> +		mpscrouting@b400 {
-> +			reg = <b400 c>;
-> +		};
-> +
-> +		mpscintr@b800 {
-> +			reg = <b800 100>;
-> +			virtual-reg = <f810b800>;
-> +		};
-> +
-> +		mpsc@8000 {
-> +			device_type = "serial";
-> +			compatible = "marvell,mpsc";
-> +			reg = <8000 38>;
-> +			virtual-reg = <f8108000>;
-> +			sdma = <&/mv64x60/sdma@4000>;
-> +			brg = <&/mv64x60/brg@b200>;
-> +			cunit = <&/mv64x60/cunit@f200>;
-> +			mpscrouting = <&/mv64x60/mpscrouting@b400>;
-> +			mpscintr = <&/mv64x60/mpscintr@b800>;
-> +			block-index = <0>;
-> +			max_idle = <28>;
-> +			chr_1 = <0>;
-> +			chr_2 = <0>;
-> +			chr_10 = <3>;
-> +			mpcr = <0>;
-> +			interrupts = <28>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		mpsc@9000 {
-> +			device_type = "serial";
-> +			compatible = "marvell,mpsc";
-> +			reg = <9000 38>;
-> +			virtual-reg = <f8109000>;
-> +			sdma = <&/mv64x60/sdma@6000>;
-> +			brg = <&/mv64x60/brg@b208>;
-> +			cunit = <&/mv64x60/cunit@f200>;
-> +			mpscrouting = <&/mv64x60/mpscrouting@b400>;
-> +			mpscintr = <&/mv64x60/mpscintr@b800>;
-> +			block-index = <1>;
-> +			max_idle = <28>;
-> +			chr_1 = <0>;
-> +			chr_2 = <0>;
-> +			chr_10 = <3>;
-> +			mpcr = <0>;
-> +			interrupts = <29>; 
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		wdt@b410 {			/* watchdog timer
-> */
-> +			compatible = "marvell,mv64x60-wdt";
-> +			reg = <b410 8>;
-> +			timeout = <a>;		/* wdt timeout
-> in seconds */
-> +		};
-> +
-> +		i2c@c000 {
-> +			compatible = "marvell,mv64x60-i2c";
-> +			reg = <c000 20>;
-> +			virtual-reg = <f810c000>;
-> +			freq_m = <8>;
-> +			freq_n = <3>;
-> +			timeout = <3e8>;		/* 1000 = 1
-> second */
-> +			retries = <1>;
-> +			interrupts = <25>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		pic {
-> +			#interrupt-cells = <1>;
-> +			#address-cells = <0>;
-> +			compatible = "marvell,mv64x60-pic";
-> +			reg = <0000 88>;
-> +			interrupt-controller;
-> +		};
-> +
-> +		mpp@f000 {
-> +			compatible = "marvell,mv64x60-mpp";
-> +			reg = <f000 10>;
-> +		};
-> +
-> +		gpp@f100 {
-> +			compatible = "marvell,mv64x60-gpp";
-> +			reg = <f100 20>;
-> +		};
-> +
-> +		pci@90000000 {
-> +			#address-cells = <3>;
-> +			#size-cells = <2>;
-> +			#interrupt-cells = <1>;
-> +			device_type = "pci";
-> +			compatible = "marvell,mv64x60-pci";
-> +			reg = <0c78 8>;
-> +			ranges = <01000000 0        0 c1000000 0
-> 01000000
-> +				  02000000 0 90000000 90000000 0
-> 30000000>;
-> +			bus-range = <0 ff>;
-> +			clock-frequency = <3EF1480>;
-> +			interrupt-pci-iack = <0c34>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +			interrupt-map-mask = <f800 0 0 7>;
-> +			interrupt-map = <
-> +				/* IDSEL 0x1 */
-> +				0800 0 0 1 &/mv64x60/pic 5a
-> +				0800 0 0 2 &/mv64x60/pic 5b
-> +				0800 0 0 3 &/mv64x60/pic 5e
-> +				0800 0 0 4 &/mv64x60/pic 5f
-> +
-> +				/* IDSEL 0x2 */
-> +				1000 0 0 1 &/mv64x60/pic 5b
-> +				1000 0 0 2 &/mv64x60/pic 5e
-> +				1000 0 0 3 &/mv64x60/pic 5f
-> +				1000 0 0 4 &/mv64x60/pic 5a
-> +
-> +				/* IDSEL 0x3 */
-> +				1800 0 0 1 &/mv64x60/pic 5e
-> +				1800 0 0 2 &/mv64x60/pic 5f
-> +				1800 0 0 3 &/mv64x60/pic 5a
-> +				1800 0 0 4 &/mv64x60/pic 5b
-> +
-> +				/* IDSEL 0x4 */
-> +				2000 0 0 1 &/mv64x60/pic 5f
-> +				2000 0 0 2 &/mv64x60/pic 5a
-> +				2000 0 0 3 &/mv64x60/pic 5b
-> +				2000 0 0 4 &/mv64x60/pic 5e
-> +
-> +				/* IDSEL 0x6 */
-> +				3000 0 0 1 &/mv64x60/pic 5b
-> +				3000 0 0 2 &/mv64x60/pic 5e
-> +				3000 0 0 3 &/mv64x60/pic 5f
-> +				3000 0 0 4 &/mv64x60/pic 5a
-> +			>;
-> +		};
-> +
-> +		cpu-error@0070 {
-> +			compatible = "marvell,mv64x60-cpu-error";
-> +			reg = <0070 10 0128 28>;
-> +			interrupts = <03>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		sram-ctrl@0380 {
-> +			compatible = "marvell,mv64x60-sram-ctrl";
-> +			reg = <0380 80>;
-> +			interrupts = <0d>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		pci-error@1d40 {
-> +			compatible = "marvell,mv64x60-pci-error";
-> +			reg = <1d40 40 0c28 4>;
-> +			interrupts = <0c>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +
-> +		mem-ctrl@1400 {
-> +			compatible = "marvell,mv64x60-mem-ctrl";
-> +			reg = <1400 60>;
-> +			interrupts = <11>;
-> +			interrupt-parent = <&/mv64x60/pic>;
-> +		};
-> +	};
-> +
-> +	chosen {
-> +		bootargs = "ip=on";
-> +		linux,stdout-path = "/mv64x60@f8100000/mpsc@8000";
-> +	};
-Not sure it is required. At least if u-boot would have OF support, it'll rewrite chosen...
-> +};
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Seem unlikely for the forseeable future.
 
+> Do we really need completely separate descriptions of the two, or
+> can we just describe the difference in the compatible section?
 
--- 
-Sincerely, Vitaly
+it seemed easier to duplicate and fix.
+
+- k
