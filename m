@@ -1,22 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 58A2CDDE1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 01:33:03 +1100 (EST)
-Date: Wed, 21 Nov 2007 15:33:01 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
-In-Reply-To: <7D40FA9E-A972-4995-85AE-3CE2551BB195@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0711211524370.12720@pademelon.sonytel.be>
-References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
-	<20071120175416.GA4389@loki.buserror.net>
-	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
-	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
-	<7D40FA9E-A972-4995-85AE-3CE2551BB195@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-471300123-1195655581=:12720"
+Return-Path: <jwboyer@gmail.com>
+Received: from ro-out-1112.google.com (ro-out-1112.google.com [72.14.202.176])
+	by ozlabs.org (Postfix) with ESMTP id B81FEDDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 01:33:34 +1100 (EST)
+Received: by ro-out-1112.google.com with SMTP id p7so2708219roc
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 06:33:33 -0800 (PST)
+Date: Wed, 21 Nov 2007 08:33:29 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [RFC/PATCH 0/14] powerpc: 4xx PCI and PCI-X support
+Message-ID: <20071121083329.7fce01e9@weaponx>
+In-Reply-To: <200711211504.13003.sr@denx.de>
+References: <1195625777.579001.269266058699.qpush@grosgo>
+	<20071121072348.7fff79a9@weaponx> <200711211504.13003.sr@denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,81 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 21 Nov 2007 15:04:12 +0100
+Stefan Roese <sr@denx.de> wrote:
 
----584337861-471300123-1195655581=:12720
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 21 Nov 2007, Kumar Gala wrote:
-> On Nov 21, 2007, at 7:09 AM, Geert Uytterhoeven wrote:
-> > On Tue, 20 Nov 2007, Kumar Gala wrote:
-> > > On Nov 20, 2007, at 11:54 AM, Scott Wood wrote:
-> > > > On Mon, Nov 19, 2007 at 09:36:57PM -0600, Kumar Gala wrote:
-> > > > > isel (Integer Select) is a new user space instruction in the
-> > > > > PowerISA 2.04 spec.  Not all processors implement it so lets emulate
-> > > > > to ensure code built with isel will run everywhere.
-> > > > 
-> > > > Given that the instruction is meant to be a performance enhancement,
-> > > > we should probably warn the first few times it's emulated, so the user
-> > > > knows they should change their toolchain setup if possible.
-> > > 
-> > > The same is true of mcrxr, popcntb, and possibly string ld/st.
-> > > 
-> > > Feel free to submit a patch that warns about their usage.
-> > 
-> > Something like this?
-> > 
-> > Probably we also want it for:
-> > 
-> >  - arch/powerpc/kernel/align.c
-> >      o emulate_dcbz()
-> >      o emulate_multiple()
-> >      o emulate_fp_pair()
-> >      o emulate_spe()
-> > 
-> >  - arch/powerpc/kernel/softemu8xx.c
-> >      o Soft_emulate_8xx()
-> > 
-> >  - arch/powerpc/kernel/traps.c
-> >      o SoftwareEmulation()
+> On Wednesday 21 November 2007, Josh Boyer wrote:
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > Here's a set of patches that bring PCI and PCI-X support for
+> > > 4xx (PCIe still missing) in arch/powerpc.
+> > >
+> > > This is for review before I ask paulus to pull that into his
+> > > for 2.6.25 tree. Some of the patches still need a bit more
+> > > testing vs. regressions on other platforms such as the
+> > > 64 bits resource fixup one.
+> >
+> > I'm starting my 2.6.25 branch today.  I'll probably throw these in
+> > there after I've tested a bit, since I need them to make further
+> > progress with 4xx anyway.
 > 
-> You missed math_emu.
-> 
-> >   - arch/powerpc/kernel/vecemu.c
-> >      o emulate_altivec()
-> 
-> I'm not sure I would concern this one emulation, there isn't much you can do
-> about the denorm fixup.
-> 
-> How about some per processor counters in sysfs under the processor.
+> Yes, it would be great to have an "official" repo with all the new 4xx stuff 
+> (PCI, EMAC...) stuff.
 
-Good idea!
+Sure, I can do that.  I'll probably use my master branch for this
+instead, and reserve for-2.6.25 for sending stuff to Paul.  Reason
+being that lots of useful things for 4xx don't actually go through my
+tree (like EMAC, MTD stuff, etc).
 
-> > Question: do we want it for emulate_single_step(), too?
-> 
-> What do you mean, we should could the emulation, the emulate single step just
-> is for handling if you are doing debug while hitting an emulated insn.
+I'll send out an email when I've queued up some stuff.
 
-I mean: should these be counted?
-
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-471300123-1195655581=:12720--
+josh
