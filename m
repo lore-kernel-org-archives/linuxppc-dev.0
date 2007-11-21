@@ -2,16 +2,16 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98655DDE3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 05:19:57 +1100 (EST)
-Date: Wed, 21 Nov 2007 19:30:21 +0300
+	by ozlabs.org (Postfix) with ESMTP id C8B14DDEEB
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 05:20:02 +1100 (EST)
+Date: Wed, 21 Nov 2007 21:08:42 +0300
 From: Vitaly Bordug <vitb@kernel.crashing.org>
 To: Andrei Dolnikov <adolnikov@ru.mvista.com>
-Subject: Re: [PATCH 4/5] PowerPC 74xx: Katana Qp base support
-Message-ID: <20071121193021.6bffeaa9@kernel.crashing.org>
-In-Reply-To: <20071116163116.GE25062@ru.mvista.com>
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071121210842.7dc748ed@kernel.crashing.org>
+In-Reply-To: <20071116161253.GB25062@ru.mvista.com>
 References: <20071116154344.GA25062@ru.mvista.com>
-	<20071116163116.GE25062@ru.mvista.com>
+	<20071116161253.GB25062@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -24,65 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Andrei,
-
-Looks okay in general, some notes below...
-
-On Fri, 16 Nov 2007 19:31:16 +0300
+On Fri, 16 Nov 2007 19:12:53 +0300
 Andrei Dolnikov wrote:
 
-> Emerson Katana Qp platform specific code
+> Device tree source file for the Emerson Katana Qp board
 > 
-> Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvista.com>
+> Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvisa.com>
 > 
 > ---
->  arch/powerpc/platforms/embedded6xx/Kconfig    |    9 +
->  arch/powerpc/platforms/embedded6xx/Makefile   |    1
->  arch/powerpc/platforms/embedded6xx/katanaqp.c |  180
-> ++++++++++++++++++++++++++ 3 files changed, 190 insertions(+)
+>  arch/powerpc/boot/dts/katanaqp.dts |  357
+> +++++++++++++++++++++++++++++++++++++ 1 files changed, 357
+> insertions(+)
 > 
-> diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig
-> b/arch/powerpc/platforms/embedded6xx/Kconfig index 8924095..33190bd
-> 100644 --- a/arch/powerpc/platforms/embedded6xx/Kconfig
-> +++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-> @@ -46,6 +46,15 @@ config PPC_PRPMC2800
->  	help
->  	  This option enables support for the Motorola PrPMC2800
-> board 
-> +config PPC_KATANAQP
-> +	bool "Emerson-Katana Qp"
-> +	depends on EMBEDDED6xx
-> +	select MV64X60
-> +	select NOT_COHERENT_CACHE
-> +	select WANT_DEVICE_TREE
-> +	help
-> +	  This option enables support for the Emerson Katana Qp board
-> +
->  config TSI108_BRIDGE
->  	bool
->  	depends on MPC7448HPC2 || PPC_HOLLY
-> diff --git a/arch/powerpc/platforms/embedded6xx/Makefile
-> b/arch/powerpc/platforms/embedded6xx/Makefile index 844947c..c83558f
-> 100644 --- a/arch/powerpc/platforms/embedded6xx/Makefile
-> +++ b/arch/powerpc/platforms/embedded6xx/Makefile
-> @@ -5,3 +5,4 @@ obj-$(CONFIG_MPC7448HPC2)	+= mpc7448_hpc2.o
->  obj-$(CONFIG_LINKSTATION)	+= linkstation.o ls_uart.o
->  obj-$(CONFIG_PPC_HOLLY)		+= holly.o
->  obj-$(CONFIG_PPC_PRPMC2800)	+= prpmc2800.o
-> +obj-$(CONFIG_PPC_KATANAQP)	+= katanaqp.o
-> diff --git a/arch/powerpc/platforms/embedded6xx/katanaqp.c
-> b/arch/powerpc/platforms/embedded6xx/katanaqp.c new file mode 100644
-> index 0000000..c0a8469
+> diff --git a/arch/powerpc/boot/dts/katanaqp.dts
+> b/arch/powerpc/boot/dts/katanaqp.dts new file mode 100644
+> index 0000000..9273c4e
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/embedded6xx/katanaqp.c
-> @@ -0,0 +1,180 @@
-> +/*
-> + * Board setup routines for the Emerson Katana Qp
+> +++ b/arch/powerpc/boot/dts/katanaqp.dts
+> @@ -0,0 +1,357 @@
+> +/* Device Tree Source for Emerson Katana Qp
 > + *
 > + * Authors: Vladislav Buzov <vbuzov@ru.mvista.com>
 > + *	    Andrei Dolnikov <adolnikov@ru.mvista.com>
-> + *
-> + * Based on prpmc2800.c by Dale Farnsworth <dale@farnsworth.org>
+> + * 
+> + * Based on prpmc8200.dts by Mark A. Greer <mgreer@mvista.com>
 > + *
 > + * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
 > + * the terms of the GNU General Public License version 2.  This
@@ -90,188 +55,382 @@ Andrei Dolnikov wrote:
 > + * is licensed "as is" without any warranty of any kind, whether
 > express
 > + * or implied.
+> + *
 > + */
 > +
-> +#include <linux/stddef.h>
-> +#include <linux/kernel.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/pci.h>
+> +/ {
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	model = "Katana-Qp"; /* Default */
+> +	compatible = "emerson,Katana-Qp";
+> +	coherency-off;
 > +
-> +#include <asm/machdep.h>
-> +#include <asm/prom.h>
-> +#include <asm/system.h>
-> +#include <asm/time.h>
-> +#include <asm/kexec.h>
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
 > +
-> +#include <mm/mmu_decl.h>
+> +		PowerPC,7448@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			clock-frequency = <0>;		/*
+> From U-boot */
+> +			bus-frequency = <0>;		/* From
+> U-boot */
+> +			timebase-frequency = <0>;	/* From
+> U-boot */
+> +			i-cache-line-size = <20>;
+> +			d-cache-line-size = <20>;
+> +			i-cache-size = <8000>;
+> +			d-cache-size = <8000>;
+> +		};
+> +	};
 > +
-> +#include <sysdev/mv64x60.h>
-> +
-> +#define PLATFORM_NAME_MAX	64
-> +
-> +/* CPLD registers definitions */
-> +#define KATANAQP_CPLD_RCR	0x0004	/* Reset command */
-> +#define KATANAQP_CPLD_RCR_CPUHR	(1 << 7)
-> +
-> +#define KATANAQP_CPLD_HVR	0x0020
-> +
-> +#define KATANAQP_CPLD_PSR	0x0030	/* PCI status */
-> +#define KATANAQP_CPLD_PSR_PMCM	(1 << 1)
-> +
-> +#define KATANAQP_CPLD_HCR	0x0044
-> +
-> +static char katanaqp_platform_name[PLATFORM_NAME_MAX];
-> +
-> +static void __iomem *cpld_base;
-> +
-> +int katanaqp_exclude_device(struct pci_controller *hose, u_char bus,
-> +			    u_char devfn)
-> +{
-> +	if (bus == 0 && PCI_SLOT(devfn) == 0)
-> +		return PCIBIOS_DEVICE_NOT_FOUND;
-> +	else
-> +		return PCIBIOS_SUCCESSFUL;
-> +}
-> +
-> +static int __init katanaqp_is_monarch(void)
-> +{
-> +	return !(in_8((volatile char *)(cpld_base +
-> KATANAQP_CPLD_PSR)) &
-> +		 KATANAQP_CPLD_PSR_PMCM);
-> +}
-> +
-> +static void __init katanaqp_setup_arch(void)
-> +{
-> +	struct device_node *cpld;
-> +	const unsigned int *reg;
-> +
-> +	/*
-> +	 * ioremap cpld registers in case they are later
-> +	 * needed by katanaqp_reset_board().
-> +	 */
-> +	cpld =
-> of_find_node_by_path("/mv64x60@f8100000/cpld@f8200000");
-> +	reg = of_get_property(cpld, "reg", NULL);
-> +	of_node_put(cpld);
-> +	cpld_base = ioremap(reg[0], reg[1]);
-> +
-use of_iomap here?
-
-> +#ifdef CONFIG_PCI
-> +	if (katanaqp_is_monarch()) {
-> +		mv64x60_pci_init();
-> +		ppc_md.pci_exclude_device = katanaqp_exclude_device;
-> +	}
-> +#endif
-> +
-> +	printk("Emerson Network Power %s\n", katanaqp_platform_name);
-> +}
-> +
-> +static void katanaqp_reset_board(void)
-> +{
-> +	local_irq_disable();
-> +
-> +	/* issue hard reset to the reset command register */
-> +	out_8((volatile char *)(cpld_base + KATANAQP_CPLD_RCR),
-> +	      KATANAQP_CPLD_RCR_CPUHR);
-> +	for (;;) ;
-> +}
-> +
-> +static void katanaqp_restart(char *cmd)
-> +{
-> +	katanaqp_reset_board();
-> +}
-> +
-> +#ifdef CONFIG_NOT_COHERENT_CACHE
-> +#define KATANAQP_COHERENCY_SETTING "off"
-> +#else
-> +#define KATANAQP_COHERENCY_SETTING "on"
-> +#endif
-> +
-Does it mean this HW supports both coherent and non-coherent case?
-I don't think we need to add this just "for the future" if QP doesn't have it.
-
-If it does, I dont' see how it's being handled  - defconfig just enables noncoherent upper.
-
-> +void katanaqp_show_cpuinfo(struct seq_file *m)
-> +{
-> +	uint memsize = total_memory;
-> +
-> +	seq_printf(m, "vendor\t\t: Emerson Network Power\n");
-> +
-> +	seq_printf(m, "hardware rev\t: %d\n",
-> +		   in_8((volatile char *)(cpld_base +
-> KATANAQP_CPLD_HVR))); +
-> +	seq_printf(m, "hardware config\t: %d\n",
-> +		   in_8((volatile char *)(cpld_base +
-> KATANAQP_CPLD_HCR))); +
-> +	seq_printf(m, "memory size\t: %d MB\n", memsize / (1024 *
-> 1024)); +
-> +	seq_printf(m, "voherency\t: %s\n",
-> KATANAQP_COHERENCY_SETTING); +
-> +	seq_printf(m, "PCI\t\t: %sMonarch\n",
-> +		   katanaqp_is_monarch() ? "" : "Non-");
-> +}
-> +
-> +static int __init katanaqp_of_init(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "cfi-flash");
-> +	if (np)
-> +		of_platform_device_create(np, "of-flash", NULL);
-> +
-Why not using of_device for physmap?
-> +	return 0;
-> +}
-> +
-> +device_initcall(katanaqp_of_init);
-> +
-> +/*
-> + * Called very early, device-tree isn't unflattened
-> + */
-> +static int __init katanaqp_probe(void)
-> +{
-> +	unsigned long root = of_get_flat_dt_root();
-> +	unsigned long len = PLATFORM_NAME_MAX;
-not needed - get-prop will rewrite it anyway.
-
-> +	void *m;
-> +
-> +	if (!of_flat_dt_is_compatible(root, "emerson,Katana-Qp"))
-> +		return 0;
-> +
-> +	/* Update ppc_md.name with name from dt */
-> +	m = of_get_flat_dt_prop(root, "model", &len);
-> +	if (m)
-> +		strncpy(katanaqp_platform_name, m,
-> +			min((int)len, PLATFORM_NAME_MAX - 1));
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <00000000 20000000>;	/* Default (512MB)
+> */
+> +	};
 > +
 
-> +	return 1;
-> +}
+shouldn't this come from the firmware if possible?
+> +	mv64x60@f8100000 { /* Marvell Discovery */
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		model = "mv64460";			/* Default
+> */
+> +		compatible = "marvell,mv64x60";
+> +		clock-frequency = <7f28155>;		/*
+> 133.333333 MHz */
+This should be updated somewhere in fw or bootwrapper.. Or is it hardcoded
+value that is not going to change?
+
+> +		reg = <f8100000 00010000>;
+> +		virtual-reg = <f8100000>;
+> +		ranges = <c1000000 c1000000 01000000	/* PCI 1
+> I/O Space */
+> +			  90000000 90000000 30000000	/* PCI 1
+> MEM Space */
+> +			  e8000000 e8000000 04000000	/* User
+> FLASH: Up to 64Mb */
+> +			  00000000 f8100000 00010000	/*
+> Bridge's regs */
+> +			  f8500000 f8500000 00040000>;	/*
+> Integrated SRAM */ +
+> +		flash@e8000000 {
+> +			compatible = "cfi-flash";
+> +			reg = <e8000000 1000000>; /* Default (16MB)
+> */
+> +			probe-type = "CFI";
+> +			bank-width = <4>;
+> +			
+> +			partition@0 {
+> +				label = "Primary Monitor";
+> +				reg = <0 100000>; /* 1Mb */
+> +				read-only;
+> +			};
 > +
-> +define_machine(katanaqp)
-> +{
-> +	.name			= katanaqp_platform_name,
-> +	.probe			= katanaqp_probe,
-> +	.setup_arch		= katanaqp_setup_arch,
-> +	.init_early		= mv64x60_init_early,
-> +	.show_cpuinfo		= katanaqp_show_cpuinfo,
-> +	.init_IRQ		= mv64x60_init_irq,
-> +	.get_irq		= mv64x60_get_irq,
-> +	.restart		= katanaqp_restart,
-> +	.calibrate_decr		= generic_calibrate_decr,
-> +#ifdef CONFIG_KEXEC
-> +	.machine_kexec		= default_machine_kexec,
-> +	.machine_kexec_prepare	=
-> default_machine_kexec_prepare,
-> +	.machine_crash_shutdown	=
-> default_machine_crash_shutdown, +#endif
+> +			partition@100000 {
+> +				label = "Primary Kernel";
+> +				reg = <100000 200000>; /* 2 Mb */
+> +			};
+> +
+> +			partition@300000 {
+> +				label = "Primary FS";
+> +				reg = <300000 d00000>; /* 13 Mb */
+> +			};
+> +
+> +		};
+> +
+> +		cpld@f8200000 {
+> +			compatible = "altera,maxii";
+> +			reg = <f8200000 40000>;
+> +			virtual-reg = <f8200000>;
+> +		};
+> +
+> +		mdio {
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			compatible = "marvell,mv64x60-mdio";
+> +			ethernet-phy@0 {
+> +				block-index = <0>;
+> +				compatible = "marvell,mv88e1111";
+> +				reg = <a>;
+> +			};
+> +			ethernet-phy@1 {
+> +				compatible = "marvell,mv88e1111";
+> +				block-index = <1>;
+> +				reg = <d>;
+> +			};
+> +			ethernet-phy@2 {
+> +				compatible = "marvell,mv88e1111";
+> +				block-index = <2>;
+> +				reg = <6>;
+> +			};
+> +		};
+> +
+> +		ethernet@2000 {
+> +			reg = <2000 2000>;
+> +			eth0 {
+> +				device_type = "network";
+> +				compatible = "marvell,mv64x60-eth";
+> +				block-index = <0>;
+> +				interrupts = <20>;
+> +				interrupt-parent = <&/mv64x60/pic>;
+> +				phy =
+> <&/mv64x60/mdio/ethernet-phy@0>;
+> +				speed = <3e8>; 
+> +				duplex = <1>; 
+> +				tx_queue_size = <320>;
+> +				rx_queue_size = <190>;
+> +				local-mac-address = [ 00 00 00 00 00
+> 00 ];
+> +			};
+> +			eth1 {
+> +				device_type = "network";
+> +				compatible = "marvell,mv64x60-eth";
+> +				block-index = <1>;
+> +				interrupts = <21>;
+> +				interrupt-parent = <&/mv64x60/pic>;
+> +				phy =
+> <&/mv64x60/mdio/ethernet-phy@1>;
+> +				speed = <3e8>; 
+> +				duplex = <1>; 
+> +				tx_queue_size = <320>;
+> +				rx_queue_size = <190>;
+> +				local-mac-address = [ 00 00 00 00 00
+> 00 ];
+here and in other places: you need to add a note that stuff is being rewritten/updated by fw and/or bootwrapper.
+> +			};
+> +			eth2 {
+> +				device_type = "network";
+> +				compatible = "marvell,mv64x60-eth";
+> +				block-index = <2>;
+> +				interrupts = <22>;
+> +				interrupt-parent = <&/mv64x60/pic>;
+> +				phy =
+> <&/mv64x60/mdio/ethernet-phy@2>;
+> +				speed = <3e8>; 
+> +				duplex = <1>; 
+> +				tx_queue_size = <320>;
+> +				rx_queue_size = <190>;
+> +				local-mac-address = [ 00 00 00 00 00
+> 00 ];
+> +			};
+> +		};
+> +
+> +		sdma@4000 {
+> +			compatible = "marvell,mv64x60-sdma";
+> +			reg = <4000 c18>;
+> +			virtual-reg = <f8104000>;
+> +			interrupt-base = <0>;
+> +			interrupts = <24>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		sdma@6000 {
+> +			compatible = "marvell,mv64x60-sdma";
+> +			reg = <6000 c18>;
+> +			virtual-reg = <f8106000>;
+> +			interrupt-base = <0>;
+> +			interrupts = <26>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		brg@b200 {
+> +			compatible = "marvell,mv64x60-brg";
+> +			reg = <b200 8>;
+> +			clock-src = <8>;
+> +			clock-frequency = <7ed6b40>;
+> +			current-speed = <2580>;
+> +			bcr = <0>;
+> +		};
+> +
+> +		brg@b208 {
+> +			compatible = "marvell,mv64x60-brg";
+> +			reg = <b208 8>;
+> +			clock-src = <8>;
+> +			clock-frequency = <7ed6b40>;
+> +			current-speed = <2580>;
+> +			bcr = <0>;
+> +		};
+> +
+> +		cunit@f200 {
+> +			reg = <f200 200>;
+> +		};
+> +
+> +		mpscrouting@b400 {
+> +			reg = <b400 c>;
+> +		};
+> +
+> +		mpscintr@b800 {
+> +			reg = <b800 100>;
+> +			virtual-reg = <f810b800>;
+> +		};
+> +
+> +		mpsc@8000 {
+> +			device_type = "serial";
+> +			compatible = "marvell,mpsc";
+> +			reg = <8000 38>;
+> +			virtual-reg = <f8108000>;
+> +			sdma = <&/mv64x60/sdma@4000>;
+> +			brg = <&/mv64x60/brg@b200>;
+> +			cunit = <&/mv64x60/cunit@f200>;
+> +			mpscrouting = <&/mv64x60/mpscrouting@b400>;
+> +			mpscintr = <&/mv64x60/mpscintr@b800>;
+> +			block-index = <0>;
+> +			max_idle = <28>;
+> +			chr_1 = <0>;
+> +			chr_2 = <0>;
+> +			chr_10 = <3>;
+> +			mpcr = <0>;
+> +			interrupts = <28>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		mpsc@9000 {
+> +			device_type = "serial";
+> +			compatible = "marvell,mpsc";
+> +			reg = <9000 38>;
+> +			virtual-reg = <f8109000>;
+> +			sdma = <&/mv64x60/sdma@6000>;
+> +			brg = <&/mv64x60/brg@b208>;
+> +			cunit = <&/mv64x60/cunit@f200>;
+> +			mpscrouting = <&/mv64x60/mpscrouting@b400>;
+> +			mpscintr = <&/mv64x60/mpscintr@b800>;
+> +			block-index = <1>;
+> +			max_idle = <28>;
+> +			chr_1 = <0>;
+> +			chr_2 = <0>;
+> +			chr_10 = <3>;
+> +			mpcr = <0>;
+> +			interrupts = <29>; 
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		wdt@b410 {			/* watchdog timer
+> */
+> +			compatible = "marvell,mv64x60-wdt";
+> +			reg = <b410 8>;
+> +			timeout = <a>;		/* wdt timeout
+> in seconds */
+> +		};
+> +
+> +		i2c@c000 {
+> +			compatible = "marvell,mv64x60-i2c";
+> +			reg = <c000 20>;
+> +			virtual-reg = <f810c000>;
+> +			freq_m = <8>;
+> +			freq_n = <3>;
+> +			timeout = <3e8>;		/* 1000 = 1
+> second */
+> +			retries = <1>;
+> +			interrupts = <25>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		pic {
+> +			#interrupt-cells = <1>;
+> +			#address-cells = <0>;
+> +			compatible = "marvell,mv64x60-pic";
+> +			reg = <0000 88>;
+> +			interrupt-controller;
+> +		};
+> +
+> +		mpp@f000 {
+> +			compatible = "marvell,mv64x60-mpp";
+> +			reg = <f000 10>;
+> +		};
+> +
+> +		gpp@f100 {
+> +			compatible = "marvell,mv64x60-gpp";
+> +			reg = <f100 20>;
+> +		};
+> +
+> +		pci@90000000 {
+> +			#address-cells = <3>;
+> +			#size-cells = <2>;
+> +			#interrupt-cells = <1>;
+> +			device_type = "pci";
+> +			compatible = "marvell,mv64x60-pci";
+> +			reg = <0c78 8>;
+> +			ranges = <01000000 0        0 c1000000 0
+> 01000000
+> +				  02000000 0 90000000 90000000 0
+> 30000000>;
+> +			bus-range = <0 ff>;
+> +			clock-frequency = <3EF1480>;
+> +			interrupt-pci-iack = <0c34>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +			interrupt-map-mask = <f800 0 0 7>;
+> +			interrupt-map = <
+> +				/* IDSEL 0x1 */
+> +				0800 0 0 1 &/mv64x60/pic 5a
+> +				0800 0 0 2 &/mv64x60/pic 5b
+> +				0800 0 0 3 &/mv64x60/pic 5e
+> +				0800 0 0 4 &/mv64x60/pic 5f
+> +
+> +				/* IDSEL 0x2 */
+> +				1000 0 0 1 &/mv64x60/pic 5b
+> +				1000 0 0 2 &/mv64x60/pic 5e
+> +				1000 0 0 3 &/mv64x60/pic 5f
+> +				1000 0 0 4 &/mv64x60/pic 5a
+> +
+> +				/* IDSEL 0x3 */
+> +				1800 0 0 1 &/mv64x60/pic 5e
+> +				1800 0 0 2 &/mv64x60/pic 5f
+> +				1800 0 0 3 &/mv64x60/pic 5a
+> +				1800 0 0 4 &/mv64x60/pic 5b
+> +
+> +				/* IDSEL 0x4 */
+> +				2000 0 0 1 &/mv64x60/pic 5f
+> +				2000 0 0 2 &/mv64x60/pic 5a
+> +				2000 0 0 3 &/mv64x60/pic 5b
+> +				2000 0 0 4 &/mv64x60/pic 5e
+> +
+> +				/* IDSEL 0x6 */
+> +				3000 0 0 1 &/mv64x60/pic 5b
+> +				3000 0 0 2 &/mv64x60/pic 5e
+> +				3000 0 0 3 &/mv64x60/pic 5f
+> +				3000 0 0 4 &/mv64x60/pic 5a
+> +			>;
+> +		};
+> +
+> +		cpu-error@0070 {
+> +			compatible = "marvell,mv64x60-cpu-error";
+> +			reg = <0070 10 0128 28>;
+> +			interrupts = <03>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		sram-ctrl@0380 {
+> +			compatible = "marvell,mv64x60-sram-ctrl";
+> +			reg = <0380 80>;
+> +			interrupts = <0d>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		pci-error@1d40 {
+> +			compatible = "marvell,mv64x60-pci-error";
+> +			reg = <1d40 40 0c28 4>;
+> +			interrupts = <0c>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +
+> +		mem-ctrl@1400 {
+> +			compatible = "marvell,mv64x60-mem-ctrl";
+> +			reg = <1400 60>;
+> +			interrupts = <11>;
+> +			interrupt-parent = <&/mv64x60/pic>;
+> +		};
+> +	};
+> +
+> +	chosen {
+> +		bootargs = "ip=on";
+> +		linux,stdout-path = "/mv64x60@f8100000/mpsc@8000";
+> +	};
+Not sure it is required. At least if u-boot would have OF support, it'll rewrite chosen...
 > +};
+> 
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
