@@ -1,19 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 70018DDEA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:41:52 +1100 (EST)
-Date: Thu, 22 Nov 2007 09:41:45 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: annoying prinkts during vmemmap initialization
-Message-Id: <20071122094145.e79e1084.sfr@canb.auug.org.au>
-In-Reply-To: <20071121153526.GA23589@lst.de>
-References: <20071121153526.GA23589@lst.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 320D9DDE48
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:43:12 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lALMh9pu023736
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:43:09 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
+	lALMh9YO485618
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:43:09 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lALMh9ce002627
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:43:09 -0500
+Date: Wed, 21 Nov 2007 16:43:08 -0600
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH/RFC 5/6]: phyp dump: register the dump area
+Message-ID: <20071121224308.GE26122@austin.ibm.com>
+References: <20071121223639.GB4374@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071121223639.GB4374@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: mahuja@us.ibm.com, lkessler@us.ibm.com, strosake@us.ibm.com,
+	mahuja@austin.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +35,218 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Christoph,
+Set up the actual dump header, register it with the hypervisor.
 
-On Wed, 21 Nov 2007 16:35:26 +0100 Christoph Hellwig <hch@lst.de> wrote:
->
-> Hi Andi,
->=20
-> your patch 'ppc64: SPARSEMEM_VMEMMAP support' adds the following two line=
-s:
->=20
-> +               printk(KERN_WARNING "vmemmap %08lx allocated at %p, "
-> +                                       "physical %p.\n", start, p, __pa(=
-p));
->=20
-> in a loop around basically every page.  That's a lot of flooding (with
-> the wrong printk level, btw) and really slows down booting my cell blade
-> a lot (these only have a very slow serial over lan console).
->=20
-> Any reason to keep this?  And if yes can we please make it conditional
-> on some kind of vmemmap_debug boot option?
+Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-These have been changed to pr_debug() in 2.6.24-rc3 kernel.
+------
+ arch/powerpc/platforms/pseries/phyp_dump.c |  169 +++++++++++++++++++++++++++--
+ 1 file changed, 163 insertions(+), 6 deletions(-)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHRLQtTgG2atn1QN8RAoaYAJ0d3HpkWsV65Penn4wJFwVueQu7dACeMviQ
-25Ti53PysqM+ldvz+RoRD90=
-=8TmG
------END PGP SIGNATURE-----
-
---Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0--
+Index: linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/phyp_dump.c
+===================================================================
+--- linux-2.6.24-rc3-git1.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2007-11-21 15:55:37.000000000 -0600
++++ linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/phyp_dump.c	2007-11-21 16:06:52.000000000 -0600
+@@ -30,6 +30,134 @@ struct phyp_dump *phyp_dump_info = &phyp
+ static int ibm_configure_kernel_dump;
+ 
+ /* ------------------------------------------------- */
++/* RTAS interfaces to declare the dump regions */
++
++struct dump_section {
++	u32 dump_flags;
++	u16 source_type;
++	u16 error_flags;
++	u64 source_address;
++	u64 source_length;
++	u64 length_copied;
++	u64 destination_address;
++};
++
++struct phyp_dump_header {
++	u32 version;
++	u16 num_of_sections;
++	u16 status;
++
++	u32 first_offset_section;
++	u32 dump_disk_section;
++	u64 block_num_dd;
++	u64 num_of_blocks_dd;
++	u32 offset_dd;
++	u32 maxtime_to_auto;
++	/* No dump disk path string used */
++
++	struct dump_section cpu_data;
++	struct dump_section hpte_data;
++	struct dump_section kernel_data;
++};
++
++/* The dump header *must be* in low memory, so .bss it */
++static struct phyp_dump_header phdr;
++
++#define NUM_DUMP_SECTIONS 3
++#define DUMP_HEADER_VERSION 0x1
++#define DUMP_REQUEST_FLAG 0x1
++#define DUMP_SOURCE_CPU 0x0001
++#define DUMP_SOURCE_HPTE 0x0002
++#define DUMP_SOURCE_RMO  0x0011
++
++/**
++ * init_dump_header() - initialize the header declaring a dump
++ * Returns: length of dump save area.
++ *
++ * When the hypervisor saves crashed state, it needs to put
++ * it somewhere. The dump header tells the hypervisor where
++ * the data can be saved.
++ */
++static unsigned long init_dump_header(struct phyp_dump_header *ph)
++{
++	struct device_node *rtas;
++	const unsigned int *sizes;
++	int len;
++	unsigned long cpu_state_size = 0;
++	unsigned long hpte_region_size = 0;
++	unsigned long addr_offset = 0;
++
++	/* Get the required dump region sizes */
++	rtas = of_find_node_by_path("/rtas");
++	sizes = of_get_property(rtas, "ibm,configure-kernel-dump-sizes", &len);
++	if (!sizes || len < 20)
++		return 0;
++
++	if (sizes[0] == 1)
++		cpu_state_size = *((unsigned long *) &sizes[1]);
++
++	if (sizes[3] == 2)
++		hpte_region_size = *((unsigned long *) &sizes[4]);
++
++	/* Set up the dump header */
++	ph->version = DUMP_HEADER_VERSION;
++	ph->num_of_sections = NUM_DUMP_SECTIONS;
++	ph->status = 0;
++
++	ph->first_offset_section =
++		(u32) &(((struct phyp_dump_header *) 0)->cpu_data);
++	ph->dump_disk_section = 0;
++	ph->block_num_dd = 0;
++	ph->num_of_blocks_dd = 0;
++	ph->offset_dd = 0;
++
++	ph->maxtime_to_auto = 0; /* disabled */
++
++	/* The first two sections are mandatory */
++	ph->cpu_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->cpu_data.source_type = DUMP_SOURCE_CPU;
++	ph->cpu_data.source_address = 0;
++	ph->cpu_data.source_length = cpu_state_size;
++	ph->cpu_data.destination_address = addr_offset;
++	addr_offset += cpu_state_size;
++
++	ph->hpte_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->hpte_data.source_type = DUMP_SOURCE_HPTE;
++	ph->hpte_data.source_address = 0;
++	ph->hpte_data.source_length = hpte_region_size;
++	ph->hpte_data.destination_address = addr_offset;
++	addr_offset += hpte_region_size;
++
++	/* This section describes the low kernel region */
++	ph->kernel_data.dump_flags = DUMP_REQUEST_FLAG;
++	ph->kernel_data.source_type = DUMP_SOURCE_RMO;
++	ph->kernel_data.source_address = PHYP_DUMP_RMR_START;
++	ph->kernel_data.source_length = PHYP_DUMP_RMR_END;
++	ph->kernel_data.destination_address = addr_offset;
++	addr_offset += ph->kernel_data.source_length;
++
++	return addr_offset;
++}
++
++static void register_dump_area(struct phyp_dump_header *ph, unsigned long addr)
++{
++	int rc;
++	ph->cpu_data.destination_address += addr;
++	ph->hpte_data.destination_address += addr;
++	ph->kernel_data.destination_address += addr;
++
++	do {
++		rc = rtas_call(ibm_configure_kernel_dump, 3, 1, NULL,
++		               1, ph, sizeof(struct phyp_dump_header));
++	} while (rtas_busy_delay(rc));
++
++	if (rc)
++	{
++		printk (KERN_ERR "phyp-dump: unexpected error (%d) on register\n", rc);
++	}
++}
++
++/* ------------------------------------------------- */
+ /**
+  * release_memory_range -- release memory previously lmb_reserved
+  * @start_pfn: starting physical frame number
+@@ -125,7 +253,11 @@ static void release_all (void)
+ static int __init phyp_dump_setup(void)
+ {
+ 	struct device_node *rtas;
+-	const int *dump_header;
++	const struct phyp_dump_header *dump_header;
++	unsigned long dump_area_start;
++	unsigned long dump_area_length;
++	unsigned long free_area_length;
++	unsigned long start_pfn, nr_pages;
+ 	int header_len = 0;
+ 	int rc;
+ 
+@@ -140,22 +272,47 @@ static int __init phyp_dump_setup(void)
+ 		return -ENOSYS;
+ 	}
+ 
+-	/* Is there dump data waiting for us? */
++	/* Is there dump data waiting for us? If there isn't,
++	 * then register a new dump area, and release all of
++	 * the rest of the reserved ram.
++	 *
++	 * The /rtas/ibm,kernel-dump rtas node is present only
++	 * if there is dump data waiting for us.
++	 */
+ 	rtas = of_find_node_by_path("/rtas");
+ 	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
++
++	dump_area_length = init_dump_header (&phdr);
++	free_area_length = phyp_dump_info->init_reserve_size - dump_area_length;
++	dump_area_start = phyp_dump_info->init_reserve_start + free_area_length;
++	dump_area_start = dump_area_start & PAGE_MASK; /* align down */
++	free_area_length = dump_area_start - phyp_dump_info->init_reserve_start;
++
+ 	if (dump_header == NULL) {
+-		release_all();
+-		return 0;
++		register_dump_area (&phdr, dump_area_start);
++		goto release_mem;
+ 	}
+ 
++	/* Don't allow user to release the 256MB scratch area */
++	phyp_dump_info->init_reserve_size = free_area_length;
++
+ 	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
+ 	rc = subsys_create_file(&kernel_subsys, &rr);
+ 	if (rc) {
+ 		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
+-		release_all();
+-		return 0;
++		goto release_mem;
+ 	}
+ 
++	/* ToDo: re-register the dump area, for next time. */
++
++	return 0;
++
++release_mem:
++	/* release everything except the top 256 MB scratch area */
++	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
++	nr_pages = PFN_DOWN(free_area_length);
++	release_memory_range(start_pfn, nr_pages);
++
+ 	return 0;
+ }
+ 
