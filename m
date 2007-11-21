@@ -1,34 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8D297DDECB
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:51:14 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lALIo8CM009688
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 13:50:08 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lALJpARs122046
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 12:51:10 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lALJpAS2021125
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 12:51:10 -0700
-Date: Wed, 21 Nov 2007 13:51:09 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC/PATCH 5/14] powerpc: Fix 440/440A machine check handling
-Message-ID: <20071121135109.73b9e98f@weaponx>
-In-Reply-To: <1195674530.6970.86.camel@pasglop>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D9B9DE0E7
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:51:24 +1100 (EST)
+Subject: Re: [RFC/PATCH 0/14] powerpc: 4xx PCI and PCI-X support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071121072348.7fff79a9@weaponx>
 References: <1195625777.579001.269266058699.qpush@grosgo>
-	<20071121061714.0AB82DEAF1@ozlabs.org>
-	<20071121071240.141d2917@weaponx>
-	<1195674530.6970.86.camel@pasglop>
+	<20071121072348.7fff79a9@weaponx>
+Content-Type: text/plain
+Date: Thu, 22 Nov 2007 06:50:51 +1100
+Message-Id: <1195674651.6970.91.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,19 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 22 Nov 2007 06:48:50 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
+On Wed, 2007-11-21 at 07:23 -0600, Josh Boyer wrote:
+> On Wed, 21 Nov 2007 17:16:17 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> > Why didn't you just add a ppc_md.machine_check_exception to the
-> > effected boards?  Then you could have gotten rid of the ifdefs all
-> > together.
+> > Here's a set of patches that bring PCI and PCI-X support for
+> > 4xx (PCIe still missing) in arch/powerpc.
+> > 
+> > This is for review before I ask paulus to pull that into his
+> > for 2.6.25 tree. Some of the patches still need a bit more
+> > testing vs. regressions on other platforms such as the
+> > 64 bits resource fixup one.
 > 
-> Hrm... it's per processor, not per board. I didn't feel like digging
-> which board uses which processor and go fixup all the ppc_md's
+> I'm starting my 2.6.25 branch today.  I'll probably throw these in
+> there after I've tested a bit, since I need them to make further
+> progress with 4xx anyway.
 
-Sounds like something a generic function could probe for from the DTS.
-I'll look at doing something here when I start making 44x multiplatform
-(soon).
+Don't until I submit them for inclusion (when I said paulus above, I
+actually meant you of course :-), I want one more round (I already have
+enough comments to do minor fixups on most of them)
 
-josh
+But I would definitely appreciate testing :-)
+
+Cheers,
+Ben.
