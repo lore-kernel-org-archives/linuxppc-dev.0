@@ -1,31 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D07A7DDE3C
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:41:49 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lALMfkWt016769
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:41:46 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.6) with ESMTP id
-	lALMfkUa483880
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:41:46 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lALMfkZa001242
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 17:41:46 -0500
-Date: Wed, 21 Nov 2007 16:41:46 -0600
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH/RFC 4/6]: phyp dump: use sysfs to release reserved mem
-Message-ID: <20071121224146.GD26122@austin.ibm.com>
-References: <20071121223639.GB4374@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071121223639.GB4374@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: mahuja@us.ibm.com, lkessler@us.ibm.com, strosake@us.ibm.com,
-	mahuja@austin.ibm.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 70018DDEA0
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:41:52 +1100 (EST)
+Date: Thu, 22 Nov 2007 09:41:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: annoying prinkts during vmemmap initialization
+Message-Id: <20071122094145.e79e1084.sfr@canb.auug.org.au>
+In-Reply-To: <20071121153526.GA23589@lst.de>
+References: <20071121153526.GA23589@lst.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,159 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Check to see if there actually is data from a previously
-crashed kernel waiting. If so, Allow user-sapce tools to
-grab the data (by reading /proc/kcore). When user-space 
-finishes dumping a section, it must release that memory
-by writing to sysfs. For example,
+Hi Christoph,
 
-  echo "0x40000000 0x10000000" > /sys/kernel/release_region
+On Wed, 21 Nov 2007 16:35:26 +0100 Christoph Hellwig <hch@lst.de> wrote:
+>
+> Hi Andi,
+>=20
+> your patch 'ppc64: SPARSEMEM_VMEMMAP support' adds the following two line=
+s:
+>=20
+> +               printk(KERN_WARNING "vmemmap %08lx allocated at %p, "
+> +                                       "physical %p.\n", start, p, __pa(=
+p));
+>=20
+> in a loop around basically every page.  That's a lot of flooding (with
+> the wrong printk level, btw) and really slows down booting my cell blade
+> a lot (these only have a very slow serial over lan console).
+>=20
+> Any reason to keep this?  And if yes can we please make it conditional
+> on some kind of vmemmap_debug boot option?
 
-will release 256MB starting at the 1GB.  The released memory
-becomes free for general use.
+These have been changed to pr_debug() in 2.6.24-rc3 kernel.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Manish Ahuja <mahuja@us.ibm.com>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-------
- arch/powerpc/platforms/pseries/phyp_dump.c |  101 +++++++++++++++++++++++++++--
- 1 file changed, 96 insertions(+), 5 deletions(-)
+--Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0
+Content-Type: application/pgp-signature
 
-Index: linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/phyp_dump.c
-===================================================================
---- linux-2.6.24-rc3-git1.orig/arch/powerpc/platforms/pseries/phyp_dump.c	2007-11-21 13:15:05.000000000 -0600
-+++ linux-2.6.24-rc3-git1/arch/powerpc/platforms/pseries/phyp_dump.c	2007-11-21 13:24:30.000000000 -0600
-@@ -12,17 +12,24 @@
-  */
- 
- #include <linux/init.h>
-+#include <linux/kobject.h>
- #include <linux/mm.h>
-+#include <linux/of.h>
- #include <linux/pfn.h>
- #include <linux/swap.h>
-+#include <linux/sysfs.h>
- 
- #include <asm/page.h>
- #include <asm/phyp_dump.h>
-+#include <asm/rtas.h>
- 
- /* Global, used to communicate data between early boot and late boot */
- static struct phyp_dump phyp_dump_global;
- struct phyp_dump *phyp_dump_info = &phyp_dump_global;
- 
-+static int ibm_configure_kernel_dump;
-+
-+/* ------------------------------------------------- */
- /**
-  * release_memory_range -- release memory previously lmb_reserved
-  * @start_pfn: starting physical frame number
-@@ -52,18 +59,102 @@ release_memory_range(unsigned long start
- 	}
- }
- 
--static int __init phyp_dump_setup(void)
-+/* ------------------------------------------------- */
-+/**
-+ * sysfs_release_region -- sysfs interface to release memory range.
-+ *
-+ * Usage:
-+ *   "echo <start addr> <length> > /sys/kernel/release_region"
-+ *
-+ * Example:
-+ *   "echo 0x40000000 0x10000000 > /sys/kernel/release_region"
-+ *
-+ * will release 256MB starting at 1GB.
-+ */
-+static ssize_t
-+store_release_region(struct kset *kset, const char *buf, size_t count)
- {
-+	unsigned long start_addr, length, end_addr;
- 	unsigned long start_pfn, nr_pages;
-+	ssize_t ret;
- 
--	/* If no memory was reserved in early boot, there is nothing to do */
--	if (phyp_dump_info->init_reserve_size == 0)
--		return 0;
-+	ret = sscanf(buf, "%lx %lx", &start_addr, &length);
-+	if (ret != 2)
-+		return -EINVAL;
-+
-+	/* Range-check - don't free any reserved memory that
-+	 * wasn't reserved for phyp-dump */
-+	if (start_addr < phyp_dump_info->init_reserve_start)
-+		start_addr = phyp_dump_info->init_reserve_start;
-+
-+	end_addr = phyp_dump_info->init_reserve_start +
-+			phyp_dump_info->init_reserve_size;
-+	if (start_addr+length > end_addr)
-+		length = end_addr - start_addr;
-+
-+	/* Release the region of memory assed in by user */
-+	start_pfn = PFN_DOWN(start_addr);
-+	nr_pages = PFN_DOWN(length);
-+	release_memory_range (start_pfn, nr_pages);
-+
-+	return count;
-+}
-+
-+static ssize_t
-+show_release_region(struct kset * kset, char *buf)
-+{
-+	return sprintf(buf, "ola\n");
-+}
-+
-+static struct subsys_attribute rr = __ATTR(release_region, 0600,
-+					 show_release_region,
-+					 store_release_region);
-+
-+/* ------------------------------------------------- */
-+
-+static void release_all (void)
-+{
-+	unsigned long start_pfn, nr_pages;
- 
--	/* Release memory that was reserved in early boot */
-+	/* Release all memory that was reserved in early boot */
- 	start_pfn = PFN_DOWN(phyp_dump_info->init_reserve_start);
- 	nr_pages = PFN_DOWN(phyp_dump_info->init_reserve_size);
- 	release_memory_range(start_pfn, nr_pages);
-+}
-+
-+static int __init phyp_dump_setup(void)
-+{
-+	struct device_node *rtas;
-+	const int *dump_header;
-+	int header_len = 0;
-+	int rc;
-+
-+	/* If no memory was reserved in early boot, there is nothing to do */
-+	if (phyp_dump_info->init_reserve_size == 0)
-+		return 0;
-+
-+	/* Return if phyp dump not supported */
-+	ibm_configure_kernel_dump = rtas_token("ibm,configure-kernel-dump");
-+	if (ibm_configure_kernel_dump == RTAS_UNKNOWN_SERVICE) {
-+		release_all();
-+		return -ENOSYS;
-+	}
-+
-+	/* Is there dump data waiting for us? */
-+	rtas = of_find_node_by_path("/rtas");
-+	dump_header = of_get_property(rtas, "ibm,kernel-dump", &header_len);
-+	if (dump_header == NULL) {
-+		release_all();
-+		return 0;
-+	}
-+
-+	/* Should we create a dump_subsys, analogous to s390/ipl.c ? */
-+	rc = subsys_create_file(&kernel_subsys, &rr);
-+	if (rc) {
-+		printk (KERN_ERR "phyp-dump: unable to create sysfs file (%d)\n", rc);
-+		release_all();
-+		return 0;
-+	}
- 
- 	return 0;
- }
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHRLQtTgG2atn1QN8RAoaYAJ0d3HpkWsV65Penn4wJFwVueQu7dACeMviQ
+25Ti53PysqM+ldvz+RoRD90=
+=8TmG
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__22_Nov_2007_09_41_45_+1100_K0Qpf.2LCdKIFkb0--
