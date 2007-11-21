@@ -1,12 +1,9 @@
 Return-Path: <benh@ozlabs.org>
-To: <jgarzik@pobox.com>
+To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 21 Nov 2007 17:06:46 +1100
-Subject: [PATCH 8/8] ibm_newemac: Skip EMACs that are marked unused by the
-	firmware
-In-Reply-To: <1195625198.76200.922309668615.qpush@grosgo>
-Message-Id: <20071121060737.6AA72DDE0C@ozlabs.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Date: Wed, 21 Nov 2007 17:14:56 +1100
+Subject: [PATCH 1/14] powerpc: Make isa_mem_base common to 32 and 64 bits
+Message-Id: <20071121061547.1AF15DDE1A@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,32 +13,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Hugh Blemings <hugh@blemings.org>
+This defines isa_mem_base on both 32 and 64 bits (it used to be 32 bits
+only). This avoids a few ifdef's in later patches and potentially can
+allow support for VGA text mode on 64 bits powerpc.
 
-Depending on how the 44x processors are wired, some EMAC cells
-might not be useable (and not connected to a PHY). However, some
-device-trees may choose to still expose them (since their registers
-are present in the MMIO space) but with an "unused" property in them.
-
-Signed-off-by: Hugh Blemings <hugh@blemings.org>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- drivers/net/ibm_newemac/core.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Small cleanup pre-requisite for my next patch
 
-Index: linux-work/drivers/net/ibm_newemac/core.c
+ arch/powerpc/kernel/pci-common.c |    4 ++++
+ arch/powerpc/kernel/pci_32.c     |    1 -
+ include/asm-powerpc/io.h         |    5 +++--
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-work/arch/powerpc/kernel/pci-common.c
 ===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-20 14:47:02.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-20 14:47:05.000000000 +1100
-@@ -2550,6 +2550,10 @@ static int __devinit emac_probe(struct o
- 	struct device_node **blist = NULL;
- 	int err, i;
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2007-11-20 15:03:02.000000000 +1100
+@@ -52,6 +52,10 @@ int global_phb_number;		/* Global phb co
  
-+	/* Skip unused/unwired EMACS */
-+	if (of_get_property(np, "unused", NULL))
-+		return -ENODEV;
+ extern struct list_head hose_list;
+ 
++/* ISA Memory physical address */
++resource_size_t isa_mem_base;
 +
- 	/* Find ourselves in the bootlist if we are there */
- 	for (i = 0; i < EMAC_BOOT_LIST_SIZE; i++)
- 		if (emac_boot_list[i] == np)
++
+ /*
+  * pci_controller(phb) initialized common variables.
+  */
+Index: linux-work/include/asm-powerpc/io.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/io.h	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/include/asm-powerpc/io.h	2007-11-20 14:47:11.000000000 +1100
+@@ -50,15 +50,16 @@ extern int check_legacy_ioport(unsigned 
+ #define PCI_DRAM_OFFSET	pci_dram_offset
+ #else
+ #define _IO_BASE	pci_io_base
+-#define _ISA_MEM_BASE	0
++#define _ISA_MEM_BASE	isa_mem_base
+ #define PCI_DRAM_OFFSET	0
+ #endif
+ 
+ extern unsigned long isa_io_base;
+-extern unsigned long isa_mem_base;
+ extern unsigned long pci_io_base;
+ extern unsigned long pci_dram_offset;
+ 
++extern resource_size_t isa_mem_base;
++
+ #if defined(CONFIG_PPC32) && defined(CONFIG_PPC_INDIRECT_IO)
+ #error CONFIG_PPC_INDIRECT_IO is not yet supported on 32 bits
+ #endif
+Index: linux-work/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-20 15:02:43.000000000 +1100
+@@ -32,7 +32,6 @@
+ #endif
+ 
+ unsigned long isa_io_base     = 0;
+-unsigned long isa_mem_base    = 0;
+ unsigned long pci_dram_offset = 0;
+ int pcibios_assign_bus_offset = 1;
+ 
