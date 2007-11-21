@@ -1,23 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2AFDFDDDE4
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 14:32:09 +1100 (EST)
-Message-Id: <68738B73-92D6-459F-88A7-BBE66967A3A0@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <fa686aa40710190835t4329d52bt74fb3b8f30b25847@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH v7 3/9] add Freescale SerDes PHY support
-Date: Tue, 20 Nov 2007 21:31:59 -0600
-References: <1192793930-26039-1-git-send-email-leoli@freescale.com>
-	<1192793930-26039-2-git-send-email-leoli@freescale.com>
-	<1192793930-26039-3-git-send-email-leoli@freescale.com>
-	<1192793930-26039-4-git-send-email-leoli@freescale.com>
-	<fa686aa40710190835t4329d52bt74fb3b8f30b25847@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id BF15FDDDE6
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 14:42:51 +1100 (EST)
+Date: Wed, 21 Nov 2007 14:42:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] sys_indirect kernel implementation for PowerPC
+Message-Id: <20071121144245.e8abf9e8.sfr@canb.auug.org.au>
+In-Reply-To: <18243.41278.72798.100000@cargo.ozlabs.ibm.com>
+References: <18243.41278.72798.100000@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__21_Nov_2007_14_42_45_+1100_=PMuU9ZRSOLkPlA4"
+Cc: linuxppc-dev@ozlabs.org, Ulrich Drepper <drepper@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__21_Nov_2007_14_42_45_+1100_=PMuU9ZRSOLkPlA4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Oct 19, 2007, at 10:35 AM, Grant Likely wrote:
-
-> On 10/19/07, Li Yang <leoli@freescale.com> wrote:
->> The SerDes(serializer/deserializer) PHY block is a new SoC block used
->> in Freescale chips to support multiple serial interfaces, such as PCI
->> Express, SGMII, SATA.
+On Wed, 21 Nov 2007 14:08:46 +1100 Paul Mackerras <paulus@samba.org> wrote:
 >
-> This looks like board setup behaviour.  Shouldn't setting this up be
-> the responsibility firmware?  And failing that, I think it should be
-> done directly by the platform setup function (in other words; make it
-> a helper function and call it at board setup time).  Besides, you want
-> to provide guarantees that the board is setup correctly before the
-> device driver that uses it gets probed.
->
-> Cheers,
-> g.
+> +#ifdef CONFIG_PPC64
 
-Upon further review of all this I don't think this belongs in the  
-kernel at all.  This is one time setup and should be done in firmware.
+Use CONFIG_COMPAT?
 
-- k
+> +struct indirect_registers32 {
+> +	unsigned int syscall_nr;
+> +	unsigned int args[6];
+
+These could (should?) be compat_ulong_t
+
+> +++ b/include/asm-powerpc/systbl.h
+> @@ -313,3 +313,4 @@ COMPAT_SYS_SPU(timerfd)
+>  SYSCALL_SPU(eventfd)
+>  COMPAT_SYS_SPU(sync_file_range2)
+>  COMPAT_SYS(fallocate)
+> +COMPAT_SYS(indirect)
+
+Do the SPUs want this?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__21_Nov_2007_14_42_45_+1100_=PMuU9ZRSOLkPlA4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHQ6k6TgG2atn1QN8RAk1MAJ0S1omFAqujP6JTJ77NEcmu/1asggCeNqQI
+hGRM/o7QLhFM/i89hXMXGxc=
+=hhnL
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__21_Nov_2007_14_42_45_+1100_=PMuU9ZRSOLkPlA4--
