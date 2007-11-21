@@ -1,20 +1,21 @@
-Return-Path: <hch@lst.de>
-Received: from verein.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3A6CDDDFC
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:49:26 +1100 (EST)
-Date: Wed, 21 Nov 2007 23:49:08 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: annoying prinkts during vmemmap initialization
-Message-ID: <20071121224908.GA14893@lst.de>
-References: <20071121153526.GA23589@lst.de>
-	<20071122094145.e79e1084.sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1B91BDDE34
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:53:05 +1100 (EST)
+Date: Thu, 22 Nov 2007 09:52:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: 2.6.24-rc3-mm1- powerpc link failure
+Message-Id: <20071122095256.dd5b6e39.sfr@canb.auug.org.au>
+In-Reply-To: <4743E706.6010504@linux.vnet.ibm.com>
+References: <20071120204525.ff27ac98.akpm@linux-foundation.org>
+	<4743E706.6010504@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071122094145.e79e1084.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Christoph Hellwig <hch@lst.de>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5"
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,11 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 22, 2007 at 09:41:45AM +1100, Stephen Rothwell wrote:
-> > Any reason to keep this?  And if yes can we please make it conditional
-> > on some kind of vmemmap_debug boot option?
-> 
-> These have been changed to pr_debug() in 2.6.24-rc3 kernel.
+--Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ah, sorry for not checking.  Looks like the spufs tree lags a little
-behind.
+On Wed, 21 Nov 2007 13:36:30 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
+>
+> The kernel build fails on powerpc while linking,
+
+Only for allyesconfig (or maybe some other config that builds a lot of
+stuff in.
+
+>   AS      .tmp_kallsyms3.o
+>   LD      vmlinux.o
+> ld: TOC section size exceeds 64k
+> make: *** [vmlinux.o] Error 1
+>=20
+> The patch posted at http://lkml.org/lkml/2007/11/13/414, solves this=20
+> failure.
+
+However, that patch needs more testing especially to figure out what
+performance effects it has.  i.e. not for merging, yet.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHRLbMTgG2atn1QN8RAv3JAJ0elWher97gDR4ohd9+9yNOAj27IgCcDCBD
+xKL2XNiv9EK/IUoswd4ILUc=
+=Wmga
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__22_Nov_2007_09_52_56_+1100_SNhmC_mXWA23hoE5--
