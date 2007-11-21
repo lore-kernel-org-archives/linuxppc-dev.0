@@ -1,21 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F2066DDE2F
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F2E90DDEC0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Nov 2007 00:45:34 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IuptT-0006gs-QO
-	for linuxppc-embedded@ozlabs.org; Wed, 21 Nov 2007 05:45:31 -0800
-Message-ID: <13877282.post@talk.nabble.com>
-Date: Wed, 21 Nov 2007 05:45:31 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Firmware Support for USB Hub
+	Thu, 22 Nov 2007 04:22:05 +1100 (EST)
+Message-ID: <474468C5.8080402@freescale.com>
+Date: Wed, 21 Nov 2007 11:20:05 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Misbah khan <misbah_khan@engineer.com>
+Subject: Re: Firmware Support for USB Hub
+References: <13877282.post@talk.nabble.com>
+In-Reply-To: <13877282.post@talk.nabble.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Misbah khan wrote:
+> Hi all,
+> 
+> I am using a 8248 processor which has a USB controller and i need to connect
+> a USB Hub to it, iam using Montavista Linux .I need to know that what are
+> the support i need form Montavista or Open source to have an interface with
+> Usb hub. ???
+> 
+> Is there any driver that we need to make if so what type ???
 
-Hi all,
+I don't believe a driver currently exists for CPM USB.
 
-I am using a 8248 processor which has a USB controller and i need to connect
-a USB Hub to it, iam using Montavista Linux .I need to know that what are
-the support i need form Montavista or Open source to have an interface with
-Usb hub. ???
-
-Is there any driver that we need to make if so what type ???
-
---misbah <><
--- 
-View this message in context: http://www.nabble.com/Firmware-Support-for-USB-Hub-tf4850180.html#a13877282
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+-Scott
