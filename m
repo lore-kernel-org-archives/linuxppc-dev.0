@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 14556DDFA6
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 14:49:41 +1100 (EST)
-Date: Wed, 21 Nov 2007 14:49:35 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] sys_indirect kernel implementation for PowerPC
-Message-Id: <20071121144935.db1c358f.sfr@canb.auug.org.au>
-In-Reply-To: <20071121144245.e8abf9e8.sfr@canb.auug.org.au>
-References: <18243.41278.72798.100000@cargo.ozlabs.ibm.com>
-	<20071121144245.e8abf9e8.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__21_Nov_2007_14_49_35_+1100_/kFagGcelx.cUSUJ"
-Cc: linuxppc-dev@ozlabs.org, Ulrich Drepper <drepper@redhat.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 301C4DDDFE
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 15:01:28 +1100 (EST)
+Message-Id: <56B46498-9213-49A1-B667-40B286291461@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF029708189001A1C7DF@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH v7 3/9] add Freescale SerDes PHY support
+Date: Tue, 20 Nov 2007 22:01:14 -0600
+References: <1192793930-26039-1-git-send-email-leoli@freescale.com>
+	<1192793930-26039-2-git-send-email-leoli@freescale.com>
+	<1192793930-26039-3-git-send-email-leoli@freescale.com>
+	<1192793930-26039-4-git-send-email-leoli@freescale.com>
+	<fa686aa40710190835t4329d52bt74fb3b8f30b25847@mail.gmail.com>
+	<68738B73-92D6-459F-88A7-BBE66967A3A0@kernel.crashing.org>
+	<989B956029373F45A0B8AF029708189001A1C7DF@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__21_Nov_2007_14_49_35_+1100_/kFagGcelx.cUSUJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 21 Nov 2007 14:08:46 +1100 Paul Mackerras <paulus@samba.org> wrote:
+>> Upon further review of all this I don't think this belongs in
+>> the kernel at all.  This is one time setup and should be done
+>> in firmware.
 >
-> +struct indirect_registers32 {
+> I'm ok for it to be taken care of in u-boot for now.  However, if we
+> later plan to add power management support to this block.  We probably
+> have to do it in kernel.
 
-In fact, you should probably call this struct compat_indirect_registers ...
+How does pwr mgmt come into play w/SerDes?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__21_Nov_2007_14_49_35_+1100_/kFagGcelx.cUSUJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHQ6rTTgG2atn1QN8RAkQUAJ9RCRFyp1/nfjbZ4HRlya9y280HJgCdEPJG
-zz8/FKHYWRsWnt1x04uTKbk=
-=l5vU
------END PGP SIGNATURE-----
-
---Signature=_Wed__21_Nov_2007_14_49_35_+1100_/kFagGcelx.cUSUJ--
+- k
