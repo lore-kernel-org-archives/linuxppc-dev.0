@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 21 Nov 2007 17:15:02 +1100
-Subject: [PATCH 9/14] powerpc: 4xx PLB to PCI-X support
-Message-Id: <20071121061552.D226ADDF2C@ozlabs.org>
+Date: Wed, 21 Nov 2007 17:15:03 +1100
+Subject: [PATCH 10/14] powerpc: 4xx PLB to PCI 2.x support
+Message-Id: <20071121061553.C603DDDF5E@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,162 +13,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds base support code for the 4xx PCI-X bridge. It also provides
-placeholders for the PCI and PCI-E version but they aren't supported
-with this patch.
-
-The bridges are configured based on device-tree properties.
+This adds to the previous patch the support for the 4xx PCI 2.x
+bridges.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Tested on 440GP only so far.
+This version implement the basic support for the 405GP bridge,
+I haven't yet looked at differences that other implementations
+may have for the PCI 2.x part.
 
- arch/powerpc/sysdev/Makefile     |    4 
- arch/powerpc/sysdev/ppc4xx_pci.c |  313 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.h |  106 +++++++++++++
- include/asm-powerpc/pci-bridge.h |    3 
- 4 files changed, 426 insertions(+)
+ arch/powerpc/sysdev/ppc4xx_pci.c |  183 ++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/ppc4xx_pci.h |   19 ++++
+ 2 files changed, 201 insertions(+), 1 deletion(-)
 
-Index: linux-work/arch/powerpc/sysdev/Makefile
-===================================================================
---- linux-work.orig/arch/powerpc/sysdev/Makefile	2007-11-20 17:04:07.000000000 +1100
-+++ linux-work/arch/powerpc/sysdev/Makefile	2007-11-20 17:04:52.000000000 +1100
-@@ -29,6 +29,10 @@ obj-$(CONFIG_4xx)		+= uic.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
- endif
- 
-+ifeq ($(CONFIG_PCI),y)
-+obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
-+endif
-+
- # Temporary hack until we have migrated to asm-powerpc
- ifeq ($(ARCH),powerpc)
- obj-$(CONFIG_CPM)		+= cpm_common.o
 Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2007-11-21 11:41:58.000000000 +1100
-@@ -0,0 +1,313 @@
-+/*
-+ * PCI / PCI-X / PCI-Express support for 4xx parts
-+ *
-+ * Copyright 2007 Ben. Herrenschmidt <benh@kernel.crashing.org>, IBM Corp.
-+ *
-+ */
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2007-11-21 12:50:48.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2007-11-21 15:35:37.000000000 +1100
+@@ -25,6 +25,38 @@ extern unsigned long total_memory;
+ /* Defined in drivers/pci/pci.c but not exposed by a header */
+ extern u8 pci_cache_line_size;
+ 
++static void fixup_ppc4xx_pci_bridge(struct pci_dev* dev)
++{
++	struct pci_controller *hose;
++	struct device_node *np;
++	int i;
 +
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/init.h>
-+#include <linux/bootmem.h>
-+#include <linux/of.h>
++	if (dev->devfn != 0 || dev->bus->self != NULL)
++		return;
 +
-+#include <asm/io.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/machdep.h>
++	hose = pci_bus_to_host(dev->bus);
++	if (hose == NULL)
++		return;
++	np = hose->arch_data;
 +
-+#include "ppc4xx_pci.h"
++	if (!of_device_is_compatible(np, "ibm,plb-pciex") &&
++	    !of_device_is_compatible(np, "ibm,plb-pcix") &&
++	    !of_device_is_compatible(np, "ibm,plb-pci"))
++		return;
 +
-+static int dma_offset_set;
++	/* Hide the PCI host BARs from the kernel as their content doesn't
++	 * fit well in the resource management
++	 */
++	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++		dev->resource[i].start = dev->resource[i].end = 0;
++		dev->resource[i].flags = 0;
++	}
 +
-+/* Move that to a useable header */
-+extern unsigned long total_memory;
++	printk(KERN_INFO "PCI: Hiding 4xx host bridge resources %s\n",
++	       pci_name(dev));
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, fixup_ppc4xx_pci_bridge);
 +
-+/* Defined in drivers/pci/pci.c but not exposed by a header */
-+extern u8 pci_cache_line_size;
+ static int __init ppc4xx_parse_dma_window(struct pci_controller *hose,
+ 					  void __iomem *reg,
+ 					  struct resource *res)
+@@ -103,9 +135,158 @@ static int __init ppc4xx_parse_dma_windo
+ /*
+  * 4xx PCI 2.x part
+  */
 +
-+static int __init ppc4xx_parse_dma_window(struct pci_controller *hose,
-+					  void __iomem *reg,
-+					  struct resource *res)
++static void __init ppc4xx_configure_pci_PMMs(struct pci_controller *hose,
++					     void __iomem *reg)
 +{
 +	struct device_node *np = hose->arch_data;
-+	u64 size;
-+	const u32 *dmaw;
-+
-+	/* Default */
-+	res->start = 0;
-+	res->end = 0x80000000;
-+	res->flags = IORESOURCE_MEM | IORESOURCE_PREFETCH;
-+
-+	/* Get dma-window property */
-+	dmaw = of_get_property(np, "dma-window", NULL);
-+	if (dmaw == NULL)
-+		goto out;
-+
-+	/* Check if it makes sense (ie. it encodes memory */
-+	if ((dmaw[0] & 0x03000000) != 0x02000000) {
-+		printk(KERN_ERR "%s: non-memory dma-window\n",
-+		       np->full_name);
-+		return -ENXIO;
-+	}
-+
-+	/* Check if not prefetchable */
-+	if (!(dmaw[0] & 0x40000000))
-+		res->flags &= ~IORESOURCE_PREFETCH;
-+
-+	/* Read the DMA window. We should sanity check that it's
-+	 * not overlapping with the outbound ranges.
-+	 */
-+	res->start = of_read_number(dmaw + 1, 2);
-+	size = of_read_number(dmaw + 3, 2);
-+	res->end = res->start + size - 1;
-+
-+	/* We only support one global DMA offset */
-+	if (dma_offset_set && pci_dram_offset != res->start) {
-+		printk(KERN_ERR "%s: dma-window(s) mismatch\n",
-+		       np->full_name);
-+		return -ENXIO;
-+	}
-+
-+	/* Check that we can fit all of memory as we don't support
-+	 * DMA bounce buffers
-+	 */
-+	if (size < total_memory) {
-+		printk(KERN_ERR "%s: dma-window too small\n",
-+		       np->full_name);
-+		return -ENXIO;
-+	}
-+
-+	/* Check we are a power of 2 size and that base is a multiple of size*/
-+	if (!is_power_of_2(size) ||
-+	    (res->start & (size - 1)) != 0) {
-+		printk(KERN_ERR "%s: dma-window unaligned\n",
-+		       np->full_name);
-+		return -ENXIO;
-+	}
-+
-+	/* Check that we are fully contained within 32 bits space */
-+	if (res->end > 0xffffffff) {
-+		printk(KERN_ERR "%s: dma-window outside of 32 bits space\n",
-+		       np->full_name);
-+		return -ENXIO;
-+	}
-+ out:
-+	dma_offset_set = 1;
-+	pci_dram_offset = res->start;
-+
-+	printk(KERN_INFO "4xx PCI DMA offset set to 0x%08lx\n",
-+	       pci_dram_offset);
-+	return 0;
-+}
-+
-+/*
-+ * 4xx PCI 2.x part
-+ */
-+static void __init ppc4xx_probe_pci_bridge(struct device_node *np)
-+{
-+	/* NYI */
-+}
-+
-+/*
-+ * 4xx PCI-X part
-+ */
-+
-+static void __init ppc4xx_configure_pcix_POMs(struct pci_controller *hose,
-+					      void __iomem *reg)
-+{
-+	struct device_node *np = hose->arch_data;
-+	u32 lah, lal, pciah, pcial, sa;
++	u32 la, ma, pcila, pciha;
 +	int i, j;
 +
 +	/* Setup outbound memory windows */
@@ -178,110 +89,88 @@ Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 +		/* we only care about memory windows */
 +		if (!(res->flags & IORESOURCE_MEM))
 +			continue;
-+		if (j > 1) {
++		if (j > 2) {
 +			printk(KERN_WARNING "%s: Too many ranges\n",
 +			       np->full_name);
 +			break;
 +		}
 +
 +		/* Calculate register values */
-+#ifdef CONFIG_PTE_64BIT
-+		lah = res->start >> 32;
-+		lal = res->start & 0xffffffffu;
-+		pciah = (res->start - hose->pci_mem_offset) >> 32;
-+		pcial = (res->start - hose->pci_mem_offset) & 0xffffffffu;
++		la = res->start;
++#ifdef CONFIG_RESOURCES_64BIT
++		pciha = (res->start - hose->pci_mem_offset) >> 32;
++		pcila = (res->start - hose->pci_mem_offset) & 0xffffffffu;
 +#else
-+		lah = pciah = 0;
-+		lal = res->start;
-+		pcial = res->start - hose->pci_mem_offset;
++		pciha = 0;
++		pcila = res->start - hose->pci_mem_offset;
 +#endif
-+		sa = res->end + 1 - res->start;
-+		if (!is_power_of_2(sa) || sa < 0x100000 ||
-+		    sa > 0xffffffffu) {
++
++		ma = res->end + 1 - res->start;
++		if (!is_power_of_2(ma) || ma < 0x1000 || ma > 0xffffffffu) {
 +			printk(KERN_WARNING "%s: Resource out of range\n",
 +			       np->full_name);
 +			continue;
 +		}
-+		sa = (0xffffffffu << ilog2(sa)) | 0x1;
++		ma = (0xffffffffu << ilog2(ma)) | 0x1;
++		if (res->flags & IORESOURCE_PREFETCH)
++			ma |= 0x2;
 +
 +		/* Program register values */
-+		if (j == 0) {
-+			writel(lah, reg + PCIX0_POM0LAH);
-+			writel(lal, reg + PCIX0_POM0LAL);
-+			writel(pciah, reg + PCIX0_POM0PCIAH);
-+			writel(pcial, reg + PCIX0_POM0PCIAL);
-+			writel(sa, reg + PCIX0_POM0SA);
-+		} else {
-+			writel(lah, reg + PCIX0_POM1LAH);
-+			writel(lal, reg + PCIX0_POM1LAL);
-+			writel(pciah, reg + PCIX0_POM1PCIAH);
-+			writel(pcial, reg + PCIX0_POM1PCIAL);
-+			writel(sa, reg + PCIX0_POM1SA);
-+		}
++		writel(la, reg + PCIL0_PMM0LA + (0x10 * j));
++		writel(pcila, reg + PCIL0_PMM0PCILA + (0x10 * j));
++		writel(pciha, reg + PCIL0_PMM0PCIHA + (0x10 * j));
++		writel(ma, reg + PCIL0_PMM0MA + (0x10 * j));
 +		j++;
 +	}
 +}
 +
-+static void __init ppc4xx_configure_pcix_PIMs(struct pci_controller *hose,
-+					      void __iomem *reg,
-+					      const struct resource *res,
-+					      int big_pim,
-+					      int enable_msi_hole)
++static void __init ppc4xx_configure_pci_PTMs(struct pci_controller *hose,
++					     void __iomem *reg,
++					     const struct resource *res)
 +{
 +	resource_size_t size = res->end - res->start + 1;
 +	u32 sa;
 +
-+	/* RAM is always at 0 */
-+	writel(0x00000000, reg + PCIX0_PIM0LAH);
-+	writel(0x00000000, reg + PCIX0_PIM0LAL);
-+
 +	/* Calculate window size */
 +	sa = (0xffffffffu << ilog2(size)) | 1;
 +	sa |= 0x1;
-+	if (res->flags & IORESOURCE_PREFETCH)
-+		sa |= 0x2;
-+	if (enable_msi_hole)
-+		sa |= 0x4;
-+	writel(sa, reg + PCIX0_PIM0SA);
-+	if (big_pim)
-+		writel(0xffffffff, reg + PCIX0_PIM0SAH);
++
++	/* RAM is always at 0 local for now */
++	writel(0, reg + PCIL0_PTM1LA);
++	writel(sa, reg + PCIL0_PTM1MS);
 +
 +	/* Map on PCI side */
-+	writel(0x00000000, reg + PCIX0_BAR0H);
-+	writel(res->start, reg + PCIX0_BAR0L);
-+	writew(0x0006, reg + PCIX0_COMMAND);
++	early_write_config_dword(hose, hose->first_busno, 0,
++				 PCI_BASE_ADDRESS_1, res->start);
++	early_write_config_dword(hose, hose->first_busno, 0,
++				 PCI_BASE_ADDRESS_2, 0x00000000);
++	early_write_config_word(hose, hose->first_busno, 0,
++				PCI_COMMAND, 0x0006);
 +}
 +
-+static void __init ppc4xx_probe_pcix_bridge(struct device_node *np)
-+{
+ static void __init ppc4xx_probe_pci_bridge(struct device_node *np)
+ {
+ 	/* NYI */
 +	struct resource rsrc_cfg;
 +	struct resource rsrc_reg;
 +	struct resource dma_window;
 +	struct pci_controller *hose = NULL;
 +	void __iomem *reg = NULL;
 +	const int *bus_range;
-+	int big_pim = 0, msi = 0, primary = 0;
++	int primary = 0;
 +
 +	/* Fetch config space registers address */
 +	if (of_address_to_resource(np, 0, &rsrc_cfg)) {
-+		printk(KERN_ERR "%s:Can't get PCI-X config register base !",
++		printk(KERN_ERR "%s:Can't get PCI config register base !",
 +		       np->full_name);
 +		return;
 +	}
 +	/* Fetch host bridge internal registers address */
 +	if (of_address_to_resource(np, 3, &rsrc_reg)) {
-+		printk(KERN_ERR "%s: Can't get PCI-X internal register base !",
++		printk(KERN_ERR "%s: Can't get PCI internal register base !",
 +		       np->full_name);
 +		return;
 +	}
-+
-+	/* Check if it supports large PIMs (440GX) */
-+	if (of_get_property(np, "large-inbound-windows", NULL))
-+		big_pim = 1;
-+
-+	/* Check if we should enable MSIs inbound hole */
-+	if (of_get_property(np, "enable-msi-hole", NULL))
-+		msi = 1;
 +
 +	/* Check if primary bridge */
 +	if (of_get_property(np, "primary", NULL))
@@ -309,16 +198,11 @@ Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 +	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4, 0);
 +
 +	/* Disable all windows */
-+	writel(0, reg + PCIX0_POM0SA);
-+	writel(0, reg + PCIX0_POM1SA);
-+	writel(0, reg + PCIX0_POM2SA);
-+	writel(0, reg + PCIX0_PIM0SA);
-+	writel(0, reg + PCIX0_PIM1SA);
-+	writel(0, reg + PCIX0_PIM2SA);
-+	if (big_pim) {
-+		writel(0, reg + PCIX0_PIM0SAH);
-+		writel(0, reg + PCIX0_PIM2SAH);
-+	}
++	writel(0, reg + PCIL0_PMM0MA);
++	writel(0, reg + PCIL0_PMM1MA);
++	writel(0, reg + PCIL0_PMM2MA);
++	writel(0, reg + PCIL0_PTM1MS);
++	writel(0, reg + PCIL0_PTM2MS);
 +
 +	/* Parse outbound mapping resources */
 +	pci_process_bridge_OF_ranges(hose, np, primary);
@@ -328,10 +212,10 @@ Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 +		goto fail;
 +
 +	/* Configure outbound ranges POMs */
-+	ppc4xx_configure_pcix_POMs(hose, reg);
++	ppc4xx_configure_pci_PMMs(hose, reg);
 +
 +	/* Configure inbound ranges PIMs */
-+	ppc4xx_configure_pcix_PIMs(hose, reg, &dma_window, big_pim, msi);
++	ppc4xx_configure_pci_PTMs(hose, reg, &dma_window);
 +
 +	/* We don't need the registers anymore */
 +	iounmap(reg);
@@ -342,156 +226,45 @@ Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 +		pcibios_free_controller(hose);
 +	if (reg)
 +		iounmap(reg);
-+}
-+
-+/*
-+ * 4xx PCI-Express part
-+ */
-+static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
-+{
-+	/* NYI */
-+}
-+
-+void __init ppc4xx_pci_find_bridges(void)
-+{
-+	struct device_node *np;
-+
-+	for_each_compatible_node(np, NULL, "ibm,plb-pciex")
-+		ppc4xx_probe_pciex_bridge(np);
-+	for_each_compatible_node(np, NULL, "ibm,plb-pcix")
-+		ppc4xx_probe_pcix_bridge(np);
-+	for_each_compatible_node(np, NULL, "ibm,plb-pci")
-+		ppc4xx_probe_pci_bridge(np);
-+}
+ }
+ 
+ /*
+@@ -133,7 +314,7 @@ static void __init ppc4xx_configure_pcix
+ 		}
+ 
+ 		/* Calculate register values */
+-#ifdef CONFIG_PTE_64BIT
++#ifdef CONFIG_RESOURCES_64BIT
+ 		lah = res->start >> 32;
+ 		lal = res->start & 0xffffffffu;
+ 		pciah = (res->start - hose->pci_mem_offset) >> 32;
 Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.h	2007-11-21 11:39:57.000000000 +1100
-@@ -0,0 +1,106 @@
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.h	2007-11-21 12:50:48.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.h	2007-11-21 12:50:50.000000000 +1100
+@@ -101,6 +101,25 @@
+ #define PCIX0_MSGOH		0x10c
+ #define PCIX0_IM		0x1f8
+ 
 +/*
-+ * PCI / PCI-X / PCI-Express support for 4xx parts
-+ *
-+ * Copyright 2007 Ben. Herrenschmidt <benh@kernel.crashing.org>, IBM Corp.
-+ *
-+ * Bits and pieces extracted from arch/ppc support by
-+ *
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ *
-+ * Copyright 2002-2005 MontaVista Software Inc.
++ * 4xx PCI bridge register definitions
 + */
-+#ifndef __PPC4XX_PCI_H__
-+#define __PPC4XX_PCI_H__
-+
-+/*
-+ * 4xx PCI-X bridge register definitions
-+ */
-+#define PCIX0_VENDID		0x000
-+#define PCIX0_DEVID		0x002
-+#define PCIX0_COMMAND		0x004
-+#define PCIX0_STATUS		0x006
-+#define PCIX0_REVID		0x008
-+#define PCIX0_CLS		0x009
-+#define PCIX0_CACHELS		0x00c
-+#define PCIX0_LATTIM		0x00d
-+#define PCIX0_HDTYPE		0x00e
-+#define PCIX0_BIST		0x00f
-+#define PCIX0_BAR0L		0x010
-+#define PCIX0_BAR0H		0x014
-+#define PCIX0_BAR1		0x018
-+#define PCIX0_BAR2L		0x01c
-+#define PCIX0_BAR2H		0x020
-+#define PCIX0_BAR3		0x024
-+#define PCIX0_CISPTR		0x028
-+#define PCIX0_SBSYSVID		0x02c
-+#define PCIX0_SBSYSID		0x02e
-+#define PCIX0_EROMBA		0x030
-+#define PCIX0_CAP		0x034
-+#define PCIX0_RES0		0x035
-+#define PCIX0_RES1		0x036
-+#define PCIX0_RES2		0x038
-+#define PCIX0_INTLN		0x03c
-+#define PCIX0_INTPN		0x03d
-+#define PCIX0_MINGNT		0x03e
-+#define PCIX0_MAXLTNCY		0x03f
-+#define PCIX0_BRDGOPT1		0x040
-+#define PCIX0_BRDGOPT2		0x044
-+#define PCIX0_ERREN		0x050
-+#define PCIX0_ERRSTS		0x054
-+#define PCIX0_PLBBESR		0x058
-+#define PCIX0_PLBBEARL		0x05c
-+#define PCIX0_PLBBEARH		0x060
-+#define PCIX0_POM0LAL		0x068
-+#define PCIX0_POM0LAH		0x06c
-+#define PCIX0_POM0SA		0x070
-+#define PCIX0_POM0PCIAL		0x074
-+#define PCIX0_POM0PCIAH		0x078
-+#define PCIX0_POM1LAL		0x07c
-+#define PCIX0_POM1LAH		0x080
-+#define PCIX0_POM1SA		0x084
-+#define PCIX0_POM1PCIAL		0x088
-+#define PCIX0_POM1PCIAH		0x08c
-+#define PCIX0_POM2SA		0x090
-+#define PCIX0_PIM0SAL		0x098
-+#define PCIX0_PIM0SA		PCIX0_PIM0SAL
-+#define PCIX0_PIM0LAL		0x09c
-+#define PCIX0_PIM0LAH		0x0a0
-+#define PCIX0_PIM1SA		0x0a4
-+#define PCIX0_PIM1LAL		0x0a8
-+#define PCIX0_PIM1LAH		0x0ac
-+#define PCIX0_PIM2SAL		0x0b0
-+#define PCIX0_PIM2SA		PCIX0_PIM2SAL
-+#define PCIX0_PIM2LAL		0x0b4
-+#define PCIX0_PIM2LAH		0x0b8
-+#define PCIX0_OMCAPID		0x0c0
-+#define PCIX0_OMNIPTR		0x0c1
-+#define PCIX0_OMMC		0x0c2
-+#define PCIX0_OMMA		0x0c4
-+#define PCIX0_OMMUA		0x0c8
-+#define PCIX0_OMMDATA		0x0cc
-+#define PCIX0_OMMEOI		0x0ce
-+#define PCIX0_PMCAPID		0x0d0
-+#define PCIX0_PMNIPTR		0x0d1
-+#define PCIX0_PMC		0x0d2
-+#define PCIX0_PMCSR		0x0d4
-+#define PCIX0_PMCSRBSE		0x0d6
-+#define PCIX0_PMDATA		0x0d7
-+#define PCIX0_PMSCRR		0x0d8
-+#define PCIX0_CAPID		0x0dc
-+#define PCIX0_NIPTR		0x0dd
-+#define PCIX0_CMD		0x0de
-+#define PCIX0_STS		0x0e0
-+#define PCIX0_IDR		0x0e4
-+#define PCIX0_CID		0x0e8
-+#define PCIX0_RID		0x0ec
-+#define PCIX0_PIM0SAH		0x0f8
-+#define PCIX0_PIM2SAH		0x0fc
-+#define PCIX0_MSGIL		0x100
-+#define PCIX0_MSGIH		0x104
-+#define PCIX0_MSGOL		0x108
-+#define PCIX0_MSGOH		0x10c
-+#define PCIX0_IM		0x1f8
-+
-+
-+
-+#endif /* __PPC4XX_PCI_H__ */
-Index: linux-work/include/asm-powerpc/pci-bridge.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-11-20 17:04:07.000000000 +1100
-+++ linux-work/include/asm-powerpc/pci-bridge.h	2007-11-20 17:04:52.000000000 +1100
-@@ -290,6 +290,7 @@ extern void pcibios_free_controller(stru
- #ifdef CONFIG_PCI
- extern unsigned long pci_address_to_pio(phys_addr_t address);
- extern int pcibios_vaddr_is_ioport(void __iomem *address);
-+extern void ppc4xx_pci_find_bridges(void);
- #else
- static inline unsigned long pci_address_to_pio(phys_addr_t address)
- {
-@@ -299,6 +300,8 @@ static inline int pcibios_vaddr_is_iopor
- {
- 	return 0;
- }
-+static inline void ppc4xx_pci_find_bridges(void) { }
-+
- #endif
++#define PCIL0_PMM0LA		0x00
++#define PCIL0_PMM0MA		0x04
++#define PCIL0_PMM0PCILA		0x08
++#define PCIL0_PMM0PCIHA		0x0c
++#define PCIL0_PMM1LA		0x10
++#define PCIL0_PMM1MA		0x14
++#define PCIL0_PMM1PCILA		0x18
++#define PCIL0_PMM1PCIHA		0x1c
++#define PCIL0_PMM2LA		0x20
++#define PCIL0_PMM2MA		0x24
++#define PCIL0_PMM2PCILA		0x28
++#define PCIL0_PMM2PCIHA		0x2c
++#define PCIL0_PTM1MS		0x30
++#define PCIL0_PTM1LA		0x34
++#define PCIL0_PTM2MS		0x38
++#define PCIL0_PTM2LA		0x3c
  
  
+ #endif /* __PPC4XX_PCI_H__ */
