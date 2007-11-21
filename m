@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18244.42181.426804.662877@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Nov 2007 08:36:05 +1100
+Message-ID: <18244.42350.871320.117319@cargo.ozlabs.ibm.com>
+Date: Thu, 22 Nov 2007 08:38:54 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
@@ -23,17 +23,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Geert Uytterhoeven writes:
 
-> +#define WARN_EMULATE(type)						\
-> +	do {								\
-> +	    static unsigned int count;					\
-> +	    if (count++ < 10)						\
-> +		    pr_warning("%s used emulated %s instruction\n",	\
-> +			       current->comm, type);			\
+> Question: do we want it for emulate_single_step(), too?
 
-Thinking about this a bit more, if an instruction gets emulated 10
-times then I don't care, since it's probably only cost me 10
-microseconds or so.  If it gets emulated a million times then I might
-want to look at it.  So in fact this approach doesn't give me the
-information I need to know whether there is a real problem or not.
+No, because that's not emulating an instruction.
 
 Paul.
