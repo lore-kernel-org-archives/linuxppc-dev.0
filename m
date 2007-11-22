@@ -1,12 +1,13 @@
 Return-Path: <dale@farnsworth.org>
 Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 72B83DE053
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:49 +1100 (EST)
-Date: Thu, 22 Nov 2007 08:46:48 -0700
+	by ozlabs.org (Postfix) with SMTP id 602E3DE493
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:56 +1100 (EST)
+Date: Thu, 22 Nov 2007 08:46:54 -0700
 From: Dale Farnsworth <dale@farnsworth.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/10] powepc: Remove unnecessary of_get_flat_dt_prop casts
-Message-ID: <20071122154647.GA26556@xyzzy.farnsworth.org>
+Subject: [PATCH 10/10] powerpc: Make crashkernels ignore crashkernel
+	reservations
+Message-ID: <20071122154654.GA26570@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071122154159.GA24711@xyzzy.farnsworth.org>
@@ -19,32 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-of_get_flat_dt_prop returns a void*.  There is no need to cast its
-value when assigning to a pointer variable.  This also avoids warnings
-on ppc32 where unsigned long is 32 bits.
+If a user requests a crash kernel to reserve crashkernel memory,
+the kernel fails to boot.  While the user shouldn't do that, it
+is easy to check for and makes it possible to use the same command
+line for crash kernels as for the initial kernel.
 
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 ---
- arch/powerpc/kernel/prom.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/machine_kexec.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index acc0d24..e2e7d9c 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -790,11 +790,11 @@ static int __init early_init_dt_scan_chosen(unsigned long node,
- #endif
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 38c1c1a..733726a 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -94,6 +94,14 @@ void __init reserve_crashkernel(void)
+ 		printk("Crash kernel location must be 0x%x\n",
+ 				KDUMP_KERNELBASE);
  
- #ifdef CONFIG_KEXEC
--	lprop = (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-base", NULL);
-+	lprop = of_get_flat_dt_prop(node, "linux,crashkernel-base", NULL);
- 	if (lprop)
- 		crashk_res.start = *lprop;
- 
--	lprop = (u64*)of_get_flat_dt_prop(node, "linux,crashkernel-size", NULL);
-+	lprop = of_get_flat_dt_prop(node, "linux,crashkernel-size", NULL);
- 	if (lprop)
- 		crashk_res.end = crashk_res.start + *lprop - 1;
- #endif
++	if (PHYSICAL_START == KDUMP_KERNELBASE) {
++		printk("Already running a crashkernel, "
++			"ignoring crashkernel reservation\n");
++		crashk_res.start = 0;
++		crashk_res.end = 0;
++		return;
++	}
++
+ 	crashk_res.start = KDUMP_KERNELBASE;
+ 	crash_size = PAGE_ALIGN(crash_size);
+ 	crashk_res.end = crashk_res.start + crash_size - 1;
 -- 
 1.5.3.4
