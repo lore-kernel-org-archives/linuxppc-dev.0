@@ -2,20 +2,16 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 659D8DDF3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:27:40 +1100 (EST)
-Message-ID: <4745BBFB.6060403@scram.de>
-Date: Thu, 22 Nov 2007 18:27:23 +0100
+	by ozlabs.org (Postfix) with ESMTP id D33A1DDEC6
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:35:17 +1100 (EST)
+Message-ID: <4745BDC9.3080602@scram.de>
+Date: Thu, 22 Nov 2007 18:35:05 +0100
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH resend 3/4] powerpc: Add EXPORT_SYMBOL for symbols required
-	by fs_enet and cpm_uart
-References: <4745B42B.8050201@scram.de>
-	<fa686aa40711220918l2c7c021euf9ed1e29798e8bc3@mail.gmail.com>
-In-Reply-To: <fa686aa40711220918l2c7c021euf9ed1e29798e8bc3@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH revised 3/4] powerpc: Add EXPORT_SYMBOL_GPL for symbols
+	required by fs_enet and cpm_uart
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
+cpm2_common.c. Add EXPORT_SYMBOL_GPL for cpmp, cpm_setbrg and cpm2_immr,
+so the drivers can be compiled as modules.
 
-> Is this really a good idea?  A globally accessable pointer to the region?
+  Building modules, stage 2.
+  MODPOST 5 modules
+ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
+ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
 
-No it's not. But drivers are actually using the pointer and due to the
-missing export, they currently don't compile as module.
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Acked-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/sysdev/commproc.c    |    3 +++
+ arch/powerpc/sysdev/cpm2_common.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
->> +EXPORT_SYMBOL(cpm_setbrg);
-> 
-> EXPORT_SYMBOL_GPL?
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..ddbe138 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
+ static uint host_buffer; /* One page of host buffer */
+ static uint host_end;    /* end + 1 */
+ cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
++EXPORT_SYMBOL_GPL(cpmp);
++
+ immap_t __iomem *mpc8xx_immr;
+ static cpic8xx_t __iomem *cpic_reg;
 
-Agreed.
+@@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
+ 		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
+ 		             CPM_BRG_EN | CPM_BRG_DIV16);
+ }
++EXPORT_SYMBOL_GPL(cpm_setbrg);
 
-Thanks,
-Jochen
+ #ifndef CONFIG_PPC_CPM_NEW_BINDING
+ /*
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..b878a67 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
+ #endif
+
+ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
++EXPORT_SYMBOL_GPL(cpmp);
+
+ /* We allocate this here because it is used almost exclusively for
+  * the communication processor devices.
+  */
+ cpm2_map_t __iomem *cpm2_immr;
++EXPORT_SYMBOL_GPL(cpm2_immr);
+
+ #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
+ 					   of space for CPM as it is larger
+@@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
+
+ 	cpm2_unmap(bp);
+ }
++EXPORT_SYMBOL_GPL(cpm_setbrg);
+
+ /* This function is used to set high speed synchronous baud rate
+  * clocks.
+-- 
+1.5.3.4
