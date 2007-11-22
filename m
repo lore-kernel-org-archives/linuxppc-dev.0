@@ -1,21 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 4394CDDEEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 05:36:30 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so482879anc
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 10:36:29 -0800 (PST)
-Message-ID: <fa686aa40711221036n6438c252lde71cffdaff97ea9@mail.gmail.com>
-Date: Thu, 22 Nov 2007 11:36:29 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jochen Friedrich" <jochen@scram.de>
-Subject: Re: [RFC/PATCH] powerpc: Move CPM command handling into the cpm
-	drivers
-In-Reply-To: <4745BB5F.6060002@scram.de>
+Return-Path: <gorcunov@gmail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.188])
+	by ozlabs.org (Postfix) with ESMTP id 306DBDDE43
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 07:04:19 +1100 (EST)
+Received: by mu-out-0910.google.com with SMTP id w1so3500088mue
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 12:04:17 -0800 (PST)
+Date: Thu, 22 Nov 2007 22:54:23 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: PPCML <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
+Message-ID: <20071122195423.GA9877@cvg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4745BB5F.6060002@scram.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/22/07, Jochen Friedrich <jochen@scram.de> wrote:
-> This patch moves the CPM command handling into commproc.c
-> for CPM1 and cpm2_common.c. This is yet another preparation
-> to get rid of drivers accessing the CPM via the global cpmp.
->
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> ---
->  arch/powerpc/sysdev/commproc.c          |   20 ++++++++++++++++++++
->  arch/powerpc/sysdev/cpm2_common.c       |   17 +++++++++++++++++
->  drivers/net/fs_enet/mac-fcc.c           |   10 +---------
->  drivers/net/fs_enet/mac-scc.c           |   11 +----------
->  drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
->  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
->  include/asm-powerpc/cpm.h               |    1 +
->  7 files changed, 42 insertions(+), 31 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-> index f6a6378..2bddbde 100644
-> --- a/arch/powerpc/sysdev/commproc.c
-> +++ b/arch/powerpc/sysdev/commproc.c
-> @@ -240,6 +240,26 @@ void __init cpm_reset(void)
->  #endif
->  }
->
-> +#define MAX_CR_CMD_LOOPS        10000
-> +
-> +int cpm_command(u32 command, u8 opcode)
-> +{
-> +       int i;
-> +
-> +       if (command & 0xffffff0f)
-> +               return -EINVAL;
-> +
-> +       out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
-> +       for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
-> +               if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
-> +                       return 0;
-> +
-> +       printk(KERN_ERR "%s(): Not able to issue CPM command\n",
-> +               __FUNCTION__);
-> +       return -EIO;
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 
-Do these need to be protected with a spin lock?
+This patch does fix possible NULL pointer dereference
+inside of strncmp() if of_get_property() failed.
 
-Cheers,
-g.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+ arch/powerpc/platforms/chrp/setup.c |   23 +++++++++++++----------
+ 1 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
+index 5930626..e3f276d 100644
+--- a/arch/powerpc/platforms/chrp/setup.c
++++ b/arch/powerpc/platforms/chrp/setup.c
+@@ -115,7 +115,7 @@ void chrp_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "machine\t\t: CHRP %s\n", model);
+ 
+ 	/* longtrail (goldengate) stuff */
+-	if (!strncmp(model, "IBM,LongTrail", 13)) {
++	if (model && !strncmp(model, "IBM,LongTrail", 13)) {
+ 		/* VLSI VAS96011/12 `Golden Gate 2' */
+ 		/* Memory banks */
+ 		sdramen = (in_le32(gg2_pci_config_base + GG2_PCI_DRAM_CTRL)
+@@ -203,16 +203,19 @@ static void __init sio_fixup_irq(const char *name, u8 device, u8 level,
+ static void __init sio_init(void)
+ {
+ 	struct device_node *root;
++	const char *model = NULL;
+ 
+-	if ((root = of_find_node_by_path("/")) &&
+-	    !strncmp(of_get_property(root, "model", NULL),
+-			"IBM,LongTrail", 13)) {
+-		/* logical device 0 (KBC/Keyboard) */
+-		sio_fixup_irq("keyboard", 0, 1, 2);
+-		/* select logical device 1 (KBC/Mouse) */
+-		sio_fixup_irq("mouse", 1, 12, 2);
+-	}
+-	of_node_put(root);
++	root = of_find_node_by_path("/");
++	if (root) {
++		model = of_get_property(root, "model", NULL);
++		if (model && !strncmp(model,"IBM,LongTrail", 13)) {
++			/* logical device 0 (KBC/Keyboard) */
++			sio_fixup_irq("keyboard", 0, 1, 2);
++			/* select logical device 1 (KBC/Mouse) */
++			sio_fixup_irq("mouse", 1, 12, 2);
++		}
++		of_node_put(root);
++ 	}
+ }
+ 
+ 
