@@ -2,14 +2,15 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3B2DCDDF44
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:07:56 +1100 (EST)
-Message-ID: <4745B41B.3040904@scram.de>
-Date: Thu, 22 Nov 2007 17:53:47 +0100
+	by ozlabs.org (Postfix) with ESMTP id 49FEFDDEB9
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:07:58 +1100 (EST)
+Message-ID: <4745B435.3080002@scram.de>
+Date: Thu, 22 Nov 2007 17:54:13 +0100
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH resend 1/4] powerpc: fix typo #ifdef -> #ifndef
+Subject: [PATCH resend 4/4] powerpc: Add support for PORTA and PORTB odr
+	registers
 Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,30 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-fpi->cp_command should be overwritten only if CONFIG_PPC_CPM_NEW_BINDING
-is NOT set. Otherwise it is already set from the device tree.
+PORTA and PORTB have odr registers, as well. However, the PORTB odr
+register is only 16bit.
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jeff Garzik <jeff@garzik.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/net/fs_enet/mac-scc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/sysdev/commproc.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 03134f4..48f2f30 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -158,7 +158,7 @@ static int setup_data(struct net_device *dev)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index d5a0dcf..c0d00c2 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -411,7 +411,7 @@ EXPORT_SYMBOL(cpm_dpram_phys);
+ #endif /* !CONFIG_PPC_CPM_NEW_BINDING */
 
--#ifdef CONFIG_PPC_CPM_NEW_BINDING
-+#ifndef CONFIG_PPC_CPM_NEW_BINDING
- 	struct fs_platform_info *fpi = fep->fpi;
+ struct cpm_ioport16 {
+-	__be16 dir, par, sor, dat, intr;
++	__be16 dir, par, odr_sor, dat, intr;
+ 	__be16 res[3];
+ };
 
- 	fep->scc.idx = fs_get_scc_index(fpi->fs_no);
+@@ -441,6 +441,13 @@ static void cpm1_set_pin32(int port, int pin, int flags)
+ 	else
+ 		clrbits32(&iop->par, pin);
+
++	if (port == CPM_PORTB) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++		else
++			clrbits16(&mpc8xx_immr->im_cpm.cp_pbodr, pin);
++	}
++
+ 	if (port == CPM_PORTE) {
+ 		if (flags & CPM_PIN_SECONDARY)
+ 			setbits32(&iop->sor, pin);
+@@ -474,11 +481,17 @@ static void cpm1_set_pin16(int port, int pin, int flags)
+ 	else
+ 		clrbits16(&iop->par, pin);
+
++	if (port == CPM_PORTA) {
++		if (flags & CPM_PIN_OPENDRAIN)
++			setbits16(&iop->odr_sor, pin);
++		else
++			clrbits16(&iop->odr_sor, pin);
++	}
+ 	if (port == CPM_PORTC) {
+ 		if (flags & CPM_PIN_SECONDARY)
+-			setbits16(&iop->sor, pin);
++			setbits16(&iop->odr_sor, pin);
+ 		else
+-			clrbits16(&iop->sor, pin);
++			clrbits16(&iop->odr_sor, pin);
+ 	}
+ }
+
 -- 
 1.5.3.4
