@@ -1,23 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2928FDDDCA
+Return-Path: <g.schardt@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 9CF27DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Nov 2007 20:53:26 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1Iv8kL-00082f-S4
-	for linuxppc-embedded@ozlabs.org; Thu, 22 Nov 2007 01:53:21 -0800
-Message-ID: <13893889.post@talk.nabble.com>
-Date: Thu, 22 Nov 2007 01:53:21 -0800 (PST)
-From: Misbah khan <misbah_khan@engineer.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Firmware Support for USB Hub
-In-Reply-To: <474468C5.8080402@freescale.com>
+	Thu, 22 Nov 2007 21:02:05 +1100 (EST)
+Message-ID: <47455393.7050905@fz-juelich.de>
+Date: Thu, 22 Nov 2007 11:01:55 +0100
+From: schardt <g.schardt@fz-juelich.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <13877282.post@talk.nabble.com> <474468C5.8080402@freescale.com>
+To: schardt <g.schardt@fz-juelich.de>
+Subject: Re: Initramfs problem on virtex4fx
+References: <47453B63.6010100@fz-juelich.de>
+In-Reply-To: <47453B63.6010100@fz-juelich.de>
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +24,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+additional i tried a initramfs rootfs with busybox
 
-Thank you for your reply.
+Freeing unused kernel memory: 1944k init
+init started: BusyBox v1.7.0 (2007-11-07 14:29:33 CET)
+starting pid 152eth0: XTemac: Options: 0xb8f2
+eth0: XTemac: We renegotiated the speed to: 1000
+eth0: XTemac: speed set to 1000Mb/s
+, tty '': '/etc/init.d/
 
-Even i think that there is only out-of-tree driver for CPM USB. i would like
-to know that some body used this driver and what is the problem that could
-come and how could we customize for our requirement for the PPC-8248. 
+this looks very strange to me....
 
-Could you tell me what is the reason for not using inbuilt USB controler for
-8248 than going for External controller.
+Georg
 
-If any body has already done USB driver than could you please share your
-experience.
-
-----misbah <><
-
-
-
-
-
-Scott Wood-2 wrote:
-> 
-> Misbah khan wrote:
->> Hi all,
->> 
->> I am using a 8248 processor which has a USB controller and i need to
->> connect
->> a USB Hub to it, iam using Montavista Linux .I need to know that what are
->> the support i need form Montavista or Open source to have an interface
->> with
->> Usb hub. ???
->> 
->> Is there any driver that we need to make if so what type ???
-> 
-> I don't believe a driver currently exists for CPM USB.
-> 
-> -Scott
+schardt wrote:
+> Hi all,
+>
+> i try to run linux from flash with the initramfs as root filesystem.
+> i wrote a simple hello_world as init to test the initramfs.
+>
+> the kernel boots normaly, but instead of the complete "Hello World" i
+> see only "He"
+> and the system hangs.
+>
+> Does anyone have similar problems ? And solved it ? ;)
+>
+> Regards
+> Georg
+>
+>
+> -------------------------------------------------------------------
+> -------------------------------------------------------------------
+> Forschungszentrum J=FClich GmbH
+> 52425 J=FClich
+>
+> Sitz der Gesellschaft: J=FClich
+> Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
+> Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
+> Gesch=E4ftsf=FChrung: Prof. Dr. Achim Bachem (Vorsitzender),
+> Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
+> -------------------------------------------------------------------
+> -------------------------------------------------------------------
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+>
+>  =20
 
--- 
-View this message in context: http://www.nabble.com/Firmware-Support-for-USB-Hub-tf4850180.html#a13893889
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Forschungszentrum J=FClich GmbH
+52425 J=FClich
+
+Sitz der Gesellschaft: J=FClich
+Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
+Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
+Gesch=E4ftsf=FChrung: Prof. Dr. Achim Bachem (Vorsitzender),
+Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
+-------------------------------------------------------------------
+-------------------------------------------------------------------
