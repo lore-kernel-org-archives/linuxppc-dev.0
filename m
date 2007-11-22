@@ -1,23 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 27050DDE9A
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 11:50:43 +1100 (EST)
-Message-ID: <4744D2AE.60902@freescale.com>
-Date: Wed, 21 Nov 2007 18:51:58 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
-	Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/3] [POWERPC] Add docs for Freescale DMA & DMA channel
-	device tree nodes
-References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>	<Pine.LNX.4.64.0711202314030.24220@blarg.am.freescale.net>	<474447EF.8080405@freescale.com>	<E9CED991-4E10-44AE-A446-B6CB151FB9EE@kernel.crashing.org>	<20071121173540.GC4413@loki.buserror.net>	<8B189FFE-F45E-470C-87A0-E9FC61A1CF59@kernel.crashing.org>	<47448687.6010106@freescale.com>
-	<20071121222822.GB19445@localhost.localdomain>
-In-Reply-To: <20071121222822.GB19445@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 48475DDECF
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 11:52:34 +1100 (EST)
+Subject: Re: [PATCH 12/14] powerpc: Add early udbg support for 40x processors
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <fa686aa40711211620q4450f3c2g2450157e37eb7c9@mail.gmail.com>
+References: <20071121061555.55B06DDFA8@ozlabs.org>
+	<fa686aa40711211547nf9d58c4t1bc7a512c699cb02@mail.gmail.com>
+	<1195689601.6970.115.camel@pasglop>
+	<fa686aa40711211620q4450f3c2g2450157e37eb7c9@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 22 Nov 2007 11:52:24 +1100
+Message-Id: <1195692744.6970.122.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
 
-> Indeed, indexing or writing into shared registers is exactly what
-> cell-index is for.
+> fixed speed
+> 4 registers: rx, tx, status & control
+> 
+> rx & tx are... well... rx and tx registers
+> status has a number of bits reporting fifos full/empty etc.
+> control has three bits; reset tx, reset rx and interrupt enable.
+> 
+> See the top of drivers/serial/uartlite.c
+> 
+> Very simple stuff; but definitely not 16550.
 
-I don't care whether it's cell-index or device-id, but I need to know which 
-DMA controller is #0 and which one is #1, and I need to know which channel is 
-#0, which one is #1, etc.  Dividing register offsets by 0x80 is not 
-acceptable, because what if we have an elo-plus-plus that has 0x100 bytes per 
-register, where the additional 0x20 bytes are for enhanced features?
+Yuck, they could have made it look like 16550 at least...
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Oh well, that's allright, select'ing it wont break anything anyway.
+
+Ultimately, we can if we want have a list of all support 40x (and 4xx)
+variants and select what we want in a given kernel build. Those variants
+would themselves select the individual bits they care about...
+
+Ben.
