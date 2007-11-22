@@ -1,18 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 12/14] powerpc: Add early udbg support for 40x
-	processors
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20071121225838.GC19445@localhost.localdomain>
-References: <1195625777.579001.269266058699.qpush@grosgo>
-	<20071121061720.83D5ADEBE3@ozlabs.org>
-	<20071121225838.GC19445@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 22 Nov 2007 11:00:15 +1100
-Message-Id: <1195689615.6970.117.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <glikely@secretlab.ca>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id CF4AADDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 11:20:48 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 68so1007462wri
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2007 16:20:47 -0800 (PST)
+Message-ID: <fa686aa40711211620q4450f3c2g2450157e37eb7c9@mail.gmail.com>
+Date: Wed, 21 Nov 2007 17:20:46 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 12/14] powerpc: Add early udbg support for 40x processors
+In-Reply-To: <1195689601.6970.115.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071121061555.55B06DDFA8@ozlabs.org>
+	<fa686aa40711211547nf9d58c4t1bc7a512c699cb02@mail.gmail.com>
+	<1195689601.6970.115.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,14 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 11/21/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Wed, 2007-11-21 at 16:47 -0700, Grant Likely wrote:
+> > On 11/20/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > > This adds some basic real mode based early udbg support for 40x
+> > > in order to debug things more easily
+> > >
+> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > ---
+> > > --- linux-work.orig/arch/powerpc/platforms/Kconfig.cputype      2007-11-21 12:50:16.000000000 +1100
+> > > +++ linux-work/arch/powerpc/platforms/Kconfig.cputype   2007-11-21 12:50:18.000000000 +1100
+> > > @@ -43,6 +43,7 @@ config 40x
+> > >         bool "AMCC 40x"
+> > >         select PPC_DCR_NATIVE
+> > >         select WANT_DEVICE_TREE
+> > > +       select PPC_UDBG_16550
+> >
+> > Unfortunately, this isn't always true.  The Xilinx Virtex parts us
+> > config 40x, but not all FPGA bitstreams have a 16550 serial port.
+> > Sometimes it's a uartlite instead.
+>
+> What does uartlite looks like ?
 
-On Thu, 2007-11-22 at 09:58 +1100, David Gibson wrote:
-> On Wed, Nov 21, 2007 at 05:16:30PM +1100, Benjamin Herrenschmidt wrote:
-> > This adds some basic real mode based early udbg support for 40x
-> > in order to debug things more easily
-> 
-> Shouldn't we be able to share code with the Maple realmode udbg()?
+fixed speed
+4 registers: rx, tx, status & control
 
-Do you really care ?
+rx & tx are... well... rx and tx registers
+status has a number of bits reporting fifos full/empty etc.
+control has three bits; reset tx, reset rx and interrupt enable.
 
-Ben.
+See the top of drivers/serial/uartlite.c
+
+Very simple stuff; but definitely not 16550.
+
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
