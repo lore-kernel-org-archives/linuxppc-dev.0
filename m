@@ -1,16 +1,17 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 602E3DE493
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:56 +1100 (EST)
-Date: Thu, 22 Nov 2007 08:46:54 -0700
-From: Dale Farnsworth <dale@farnsworth.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/10] powerpc: Make crashkernels ignore crashkernel
-	reservations
-Message-ID: <20071122154654.GA26570@xyzzy.farnsworth.org>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D6ED7DDE3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:06:55 +1100 (EST)
+Message-ID: <4745B42B.8050201@scram.de>
+Date: Thu, 22 Nov 2007 17:54:03 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071122154159.GA24711@xyzzy.farnsworth.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH resend 3/4] powerpc: Add EXPORT_SYMBOL for symbols required
+	by fs_enet and cpm_uart
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If a user requests a crash kernel to reserve crashkernel memory,
-the kernel fails to boot.  While the user shouldn't do that, it
-is easy to check for and makes it possible to use the same command
-line for crash kernels as for the initial kernel.
+fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
+cpm2_common.c. Add EXPORT_SYMBOL for cpmp, cpm_setbrg and cpm2_immr, so
+the drivers can be compiled as modules.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+  Building modules, stage 2.
+  MODPOST 5 modules
+ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
+ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Acked-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/machine_kexec.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/commproc.c    |    3 +++
+ arch/powerpc/sysdev/cpm2_common.c |    3 +++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 38c1c1a..733726a 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -94,6 +94,14 @@ void __init reserve_crashkernel(void)
- 		printk("Crash kernel location must be 0x%x\n",
- 				KDUMP_KERNELBASE);
- 
-+	if (PHYSICAL_START == KDUMP_KERNELBASE) {
-+		printk("Already running a crashkernel, "
-+			"ignoring crashkernel reservation\n");
-+		crashk_res.start = 0;
-+		crashk_res.end = 0;
-+		return;
-+	}
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..d5a0dcf 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
+ static uint host_buffer; /* One page of host buffer */
+ static uint host_end;    /* end + 1 */
+ cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
++EXPORT_SYMBOL(cpmp);
 +
- 	crashk_res.start = KDUMP_KERNELBASE;
- 	crash_size = PAGE_ALIGN(crash_size);
- 	crashk_res.end = crashk_res.start + crash_size - 1;
+ immap_t __iomem *mpc8xx_immr;
+ static cpic8xx_t __iomem *cpic_reg;
+
+@@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
+ 		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
+ 		             CPM_BRG_EN | CPM_BRG_DIV16);
+ }
++EXPORT_SYMBOL(cpm_setbrg);
+
+ #ifndef CONFIG_PPC_CPM_NEW_BINDING
+ /*
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..4ed5df6 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
+ #endif
+
+ cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
++EXPORT_SYMBOL(cpmp);
+
+ /* We allocate this here because it is used almost exclusively for
+  * the communication processor devices.
+  */
+ cpm2_map_t __iomem *cpm2_immr;
++EXPORT_SYMBOL(cpm2_immr);
+
+ #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
+ 					   of space for CPM as it is larger
+@@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
+
+ 	cpm2_unmap(bp);
+ }
++EXPORT_SYMBOL(cpm_setbrg);
+
+ /* This function is used to set high speed synchronous baud rate
+  * clocks.
 -- 
 1.5.3.4
