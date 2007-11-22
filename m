@@ -1,18 +1,21 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.188])
-	by ozlabs.org (Postfix) with ESMTP id 306DBDDE43
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 07:04:19 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w1so3500088mue
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 12:04:17 -0800 (PST)
-Date: Thu, 22 Nov 2007 22:54:23 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: PPCML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
-Message-ID: <20071122195423.GA9877@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F24B2DDE9D
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 08:51:48 +1100 (EST)
+Date: Thu, 22 Nov 2007 21:31:23 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 4/14] powerpc: Fix powerpc 32 bits resource fixup
+	for 64 bits resources
+Message-ID: <20071122213123.3d1ce85f@kernel.crashing.org>
+In-Reply-To: <20071121061713.56A0CDEAE0@ozlabs.org>
+References: <1195625777.579001.269266058699.qpush@grosgo>
+	<20071121061713.56A0CDEAE0@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,56 +25,163 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+On Wed, 21 Nov 2007 17:16:21 +1100
+Benjamin Herrenschmidt wrote:
 
-This patch does fix possible NULL pointer dereference
-inside of strncmp() if of_get_property() failed.
+> The 32bits powerpc resource fixup code uses unsigned longs to do the
+> offseting of resources which overflows on platforms such as 4xx where
+> resources can be 64 bits.
+> 
+> This fixes it by using resource_size_t instead.
+> 
+> However, the IO stuff does rely on some 32 bits arithmetic, so we hack
+> by cropping the result of the fixups for IO resources with a 32 bits
+> mask.
+> 
+> This isn't the prettiest but should work for now until we change the
+> 32 bits PCI code to do IO mappings like 64 bits does, within a
+> reserved are of the kernel address space.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> ---
+> 
+Verified on Freescale 83xx and should work for other 32bit stuff.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+> This needs some regression testing.
+> 
+>  arch/powerpc/kernel/pci_32.c |   44
+> +++++++++++++++++++++++-------------------- 1 file changed, 24
+> insertions(+), 20 deletions(-)
+> 
+> Index: linux-work/arch/powerpc/kernel/pci_32.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-16
+> 15:48:27.000000000 +1100 +++
+> linux-work/arch/powerpc/kernel/pci_32.c	2007-11-16
+> 15:55:54.000000000 +1100 @@ -104,7 +104,7 @@
+> pcibios_fixup_resources(struct pci_dev * { struct pci_controller*
+> hose = (struct pci_controller *)dev->sysdata; int i;
+> -	unsigned long offset;
+> +	resource_size_t offset, mask;
+>  
+>  	if (!hose) {
+>  		printk(KERN_ERR "No hose for PCI dev %s!\n",
+> pci_name(dev)); @@ -123,15 +123,17 @@ pcibios_fixup_resources(struct
+> pci_dev * continue;
+>  		}
+>  		offset = 0;
+> +		mask = (resource_size_t)-1;
+>  		if (res->flags & IORESOURCE_MEM) {
+>  			offset = hose->pci_mem_offset;
+>  		} else if (res->flags & IORESOURCE_IO) {
+>  			offset = (unsigned long) hose->io_base_virt
+>  				- isa_io_base;
+> +			mask = 0xffffffffu;
+>  		}
+>  		if (offset != 0) {
+> -			res->start += offset;
+> -			res->end += offset;
+> +			res->start = (res->start + offset) & mask;
+> +			res->end = (res->end + offset) & mask;
+>  			DBG("Fixup res %d (%lx) of dev %s: %llx ->
+> %llx\n", i, res->flags, pci_name(dev),
+>  			    (u64)res->start - offset,
+> (u64)res->start); @@ -147,30 +149,32 @@
+> DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PC void
+> pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region
+> *region, struct resource *res) {
+> -	unsigned long offset = 0;
+> +	resource_size_t offset = 0, mask = (resource_size_t)-1;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+> -	if (hose && res->flags & IORESOURCE_IO)
+> +	if (hose && res->flags & IORESOURCE_IO) {
+>  		offset = (unsigned long)hose->io_base_virt -
+> isa_io_base;
+> -	else if (hose && res->flags & IORESOURCE_MEM)
+> +		mask = 0xffffffffu;
+> +	} else if (hose && res->flags & IORESOURCE_MEM)
+>  		offset = hose->pci_mem_offset;
+> -	region->start = res->start - offset;
+> -	region->end = res->end - offset;
+> +	region->start = (res->start - offset) & mask;
+> +	region->end = (res->end - offset) & mask;
+>  }
+>  EXPORT_SYMBOL(pcibios_resource_to_bus);
+>  
+>  void pcibios_bus_to_resource(struct pci_dev *dev, struct resource
+> *res, struct pci_bus_region *region)
+>  {
+> -	unsigned long offset = 0;
+> +	resource_size_t offset = 0, mask = (resource_size_t)-1;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+> -	if (hose && res->flags & IORESOURCE_IO)
+> +	if (hose && res->flags & IORESOURCE_IO) {
+>  		offset = (unsigned long)hose->io_base_virt -
+> isa_io_base;
+> -	else if (hose && res->flags & IORESOURCE_MEM)
+> +		mask = 0xffffffffu;
+> +	} else if (hose && res->flags & IORESOURCE_MEM)
+>  		offset = hose->pci_mem_offset;
+> -	res->start = region->start + offset;
+> -	res->end = region->end + offset;
+> +	res->start = (region->start + offset) & mask;
+> +	res->end = (region->end + offset) & mask;
+>  }
+>  EXPORT_SYMBOL(pcibios_bus_to_resource);
+>  
+> @@ -334,9 +338,9 @@ static int __init
+>  pci_relocate_bridge_resource(struct pci_bus *bus, int i)
+>  {
+>  	struct resource *res, *pr, *conflict;
+> -	unsigned long try, size;
+> -	int j;
+> +	resource_size_t try, size;
+>  	struct pci_bus *parent = bus->parent;
+> +	int j;
+>  
+>  	if (parent == NULL) {
+>  		/* shouldn't ever happen */
+> @@ -438,7 +442,7 @@ update_bridge_resource(struct pci_dev *d
+>  	u8 io_base_lo, io_limit_lo;
+>  	u16 mem_base, mem_limit;
+>  	u16 cmd;
+> -	unsigned long start, end, off;
+> +	resource_size_t start, end, off;
+>  	struct pci_controller *hose = dev->sysdata;
+>  
+>  	if (!hose) {
+> @@ -1157,8 +1161,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+>  			res->end = IO_SPACE_LIMIT;
+>  			res->flags = IORESOURCE_IO;
+>  		}
+> -		res->start += io_offset;
+> -		res->end += io_offset;
+> +		res->start = (res->start + io_offset) & 0xffffffffu;
+> +		res->end = (res->end + io_offset) & 0xffffffffu;
+>  
+>  		for (i = 0; i < 3; ++i) {
+>  			res = &hose->mem_resources[i];
+> @@ -1183,8 +1187,8 @@ void pcibios_fixup_bus(struct pci_bus *b
+>  			if (!res->flags || bus->self->transparent)
+>  				continue;
+>  			if (io_offset && (res->flags &
+> IORESOURCE_IO)) {
+> -				res->start += io_offset;
+> -				res->end += io_offset;
+> +				res->start = (res->start +
+> io_offset) & 0xffffffffu;
+> +				res->end = (res->end + io_offset) &
+> 0xffffffffu; } else if (hose->pci_mem_offset
+>  				   && (res->flags & IORESOURCE_MEM))
+> { res->start += hose->pci_mem_offset;
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
- arch/powerpc/platforms/chrp/setup.c |   23 +++++++++++++----------
- 1 files changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 5930626..e3f276d 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -115,7 +115,7 @@ void chrp_show_cpuinfo(struct seq_file *m)
- 	seq_printf(m, "machine\t\t: CHRP %s\n", model);
- 
- 	/* longtrail (goldengate) stuff */
--	if (!strncmp(model, "IBM,LongTrail", 13)) {
-+	if (model && !strncmp(model, "IBM,LongTrail", 13)) {
- 		/* VLSI VAS96011/12 `Golden Gate 2' */
- 		/* Memory banks */
- 		sdramen = (in_le32(gg2_pci_config_base + GG2_PCI_DRAM_CTRL)
-@@ -203,16 +203,19 @@ static void __init sio_fixup_irq(const char *name, u8 device, u8 level,
- static void __init sio_init(void)
- {
- 	struct device_node *root;
-+	const char *model = NULL;
- 
--	if ((root = of_find_node_by_path("/")) &&
--	    !strncmp(of_get_property(root, "model", NULL),
--			"IBM,LongTrail", 13)) {
--		/* logical device 0 (KBC/Keyboard) */
--		sio_fixup_irq("keyboard", 0, 1, 2);
--		/* select logical device 1 (KBC/Mouse) */
--		sio_fixup_irq("mouse", 1, 12, 2);
--	}
--	of_node_put(root);
-+	root = of_find_node_by_path("/");
-+	if (root) {
-+		model = of_get_property(root, "model", NULL);
-+		if (model && !strncmp(model,"IBM,LongTrail", 13)) {
-+			/* logical device 0 (KBC/Keyboard) */
-+			sio_fixup_irq("keyboard", 0, 1, 2);
-+			/* select logical device 1 (KBC/Mouse) */
-+			sio_fixup_irq("mouse", 1, 12, 2);
-+		}
-+		of_node_put(root);
-+ 	}
- }
- 
- 
+-- 
+Sincerely, Vitaly
