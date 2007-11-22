@@ -1,18 +1,19 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 93DA1DDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 09:11:03 +1100 (EST)
-Date: Fri, 23 Nov 2007 01:06:01 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: John Charles Tyner <jtyner@cs.ucr.edu>
-Subject: Re: oops trying to execute sh
-Message-ID: <20071123010601.415b5761@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.64.0711211149210.3338@eon.cs.ucr.edu>
-References: <Pine.LNX.4.64.0711211149210.3338@eon.cs.ucr.edu>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 06E05DDF38
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 09:17:36 +1100 (EST)
+Date: Fri, 23 Nov 2007 09:17:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH 01/10] powerpc: Set up OF properties for ppc32 kexec
+Message-Id: <20071123091727.6e6fcd7a.sfr@canb.auug.org.au>
+In-Reply-To: <20071122154517.GA26340@xyzzy.farnsworth.org>
+References: <20071122154159.GA24711@xyzzy.farnsworth.org>
+	<20071122154517.GA26340@xyzzy.farnsworth.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__23_Nov_2007_09_17_27_+1100_M9g8Ph6mK6G..OuQ"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,21 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Nov 2007 11:54:01 -0800 (PST)
-John Charles Tyner wrote:
+--Signature=_Fri__23_Nov_2007_09_17_27_+1100_M9g8Ph6mK6G..OuQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I'm trying to boot linux 2.6.22.9 on an mpc860c rev d4.
-> 
-ppc or powerpc?
+Hi Dale,
 
+Just a nit ...
 
-> When init trys to spawn sh, during the exec, the kernel oopses as
-> seen below:
-This looks like coherency problem, or kernel picks wrong entry off cputable.
-I think I recall something similar when I lost a hunk applying patch for new e300 core.
-... or not. The game across that ff8.. value is very confusing.
+On Thu, 22 Nov 2007 08:45:17 -0700 Dale Farnsworth <dale@farnsworth.org> wr=
+ote:
+>
+> +static struct property crashk_base_prop =3D {
+> +	.name =3D "linux,crashkernel-base",
+> +	.length =3D sizeof(unsigned long),
+> +	.value =3D &crashk_res.start, };
+                                    ^^
+Should be on a new line.
 
-> 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-Sincerely, Vitaly
+--Signature=_Fri__23_Nov_2007_09_17_27_+1100_M9g8Ph6mK6G..OuQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHRf/8TgG2atn1QN8RAomOAJ4shih5yv+AvuA0SyIS7+0sWir0yQCZAbBg
+m5ykfn5zklai8Ml6pEAOw7E=
+=nC5z
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__23_Nov_2007_09_17_27_+1100_M9g8Ph6mK6G..OuQ--
