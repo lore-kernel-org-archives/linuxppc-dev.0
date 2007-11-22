@@ -1,13 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Nov 2007 17:23:39 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: dtc: RFC: Fix some lexical problems with references
-Message-ID: <20071122062339.GB22888@localhost.localdomain>
-References: <20071122061007.GA22888@localhost.localdomain>
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 565F6DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 21:26:33 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id lAMAQSs2276794
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 10:26:28 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.7) with
+	ESMTP id lAMAQScq2752764
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 11:26:28 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id lAMAQRZY021644
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 11:26:28 +0100
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Fix static rate regression
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071122061007.GA22888@localhost.localdomain>
+Date: Thu, 22 Nov 2007 12:26:26 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711221126.27465.fenkes@de.ibm.com>
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,67 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Nov 22, 2007 at 05:10:07PM +1100, David Gibson wrote:
-> The recent change to the lexer to only recognize property and node
-> names in the appropriate context removed a number of lexical warts in
-> our language that would have gotten ugly as we add expression support
-> and so forth.
-> 
-> But there's one nasty one remaining: references can contain a full
-> path, including the various problematic node name characters (',', '+'
-> and '-', for example).  This would cause trouble with expressions, and
-> it also causes trouble with the patch I'm working on to allow
-> expanding references to paths rather than phandles.  This patch
-> therefore reworks the lexer to mitigate these problems.
-> 
-> 	- References to labels cause no problems.  These are now
-> recognized separately from references to full paths.  No syntax change
-> here.
-> 
-> 	- References to full paths, including problematic characters
-> are allowed by "quoting" the path with braces
-> e.g. &{/pci@10000/somedevice@3,8000}.  The braces protect any internal
-> problematic characters from being confused with operators or whatever.
-> 
-> 	- For compatibility with existing dts files, in v0 dts files
-> we allow bare references to paths as before &/foo/bar/whatever - but
-> *only* if the path contains no troublesome characters.  Specifically
-> only [a-zA-Z0-9_@/] are allowed.
-> 
-> This is an incompatible change to the dts-v1 format, but since AFAIK
-> no-one has yet switched to dts-v1 files, I think we can get away with
-> it.  Better to make the transition when people to convert to v1, and
-> get rid of the problematic old syntax.
-> 
-> Strictly speaking, it's also an incompatible change to the v0 format,
-> since some path references that were allowed before are no longer
-> allowed.  I suspect no-one has been using the no-longer-supported
-> forms (certainly none of the kernel dts files will cause trouble).  We
-> might need to think about this harder, though.
+Wrong choice of port number caused modify_qp() to fail -- fixed.
 
-Just to note: we need to do something here, but there are approaches
-other than the one above (hence the RFC).  For example, if we just
-separate the lexical recognition of refs-to-labels from refs-to-paths
-then we can continue to recognize full bare path references.  However,
-in some circumstances it might be necessary to add whitespace in the
-dts to correctly mark the end of the path (in the case '/' and ' '
-would essentially take the place of the braces for delimiting the
-path).  That maintains full compatibility, and avoids the arguably
-ugly &{/foo} syntax, but it does mean there are some odd situations
-like the fact that (once string references are implemented):
-		&label1, &label2
-	and	&label1 , &label2
-would be equivalent, but the following two:
-		&/node1, &/node2
-		&/node1 , &/node2
-would not be equivalent (depending on context one or both of them
-could be syntax errors).  The first is a reference to the node
-"/node1," then a reference to the node "/node2", the second is a
-reference to the node "/node1" then a comma then a reference to the
-node "/node2".
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+Please apply this for 2.6.24-rc4 as it fixes a regression introduced in rc3.
+Thanks!
 
+ drivers/infiniband/hw/ehca/ehca_qp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index 2e3e654..dd12668 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -1203,7 +1203,7 @@ static int internal_modify_qp(struct ib_qp *ibqp,
+ 		mqpcb->service_level = attr->ah_attr.sl;
+ 		update_mask |= EHCA_BMASK_SET(MQPCB_MASK_SERVICE_LEVEL, 1);
+ 
+-		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
++		if (ehca_calc_ipd(shca, mqpcb->prim_phys_port,
+ 				  attr->ah_attr.static_rate,
+ 				  &mqpcb->max_static_rate)) {
+ 			ret = -EINVAL;
+@@ -1302,7 +1302,7 @@ static int internal_modify_qp(struct ib_qp *ibqp,
+ 		mqpcb->source_path_bits_al = attr->alt_ah_attr.src_path_bits;
+ 		mqpcb->service_level_al = attr->alt_ah_attr.sl;
+ 
+-		if (ehca_calc_ipd(shca, my_qp->init_attr.port_num,
++		if (ehca_calc_ipd(shca, mqpcb->alt_phys_port,
+ 				  attr->alt_ah_attr.static_rate,
+ 				  &mqpcb->max_static_rate_al)) {
+ 			ret = -EINVAL;
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.5.2
