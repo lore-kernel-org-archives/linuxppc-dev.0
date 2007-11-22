@@ -1,12 +1,12 @@
 Return-Path: <dale@farnsworth.org>
 Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 99E0EDE203
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:21 +1100 (EST)
-Date: Thu, 22 Nov 2007 08:46:20 -0700
+	by ozlabs.org (Postfix) with SMTP id A880BDE000
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:25 +1100 (EST)
+Date: Thu, 22 Nov 2007 08:46:23 -0700
 From: Dale Farnsworth <dale@farnsworth.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/10] powerpc: Add crash kernel support for 85xx
-Message-ID: <20071122154619.GA26471@xyzzy.farnsworth.org>
+Subject: [PATCH 06/10] powerpc: Fix bogus crash kernel messages
+Message-ID: <20071122154623.GA26499@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071122154159.GA24711@xyzzy.farnsworth.org>
@@ -19,124 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the ability to build a ppc_85xx kernel to run at a physical
-address of 32MB.
+Commit edd8ce67, Use extended crashkernel command line on ppc64,
+resulted in reserve_crashkernel() attempting to reserve a 1 byte
+crashkernel area when no no crashkernel reservation is requested.
+This results in the following bogus messages:
+    Crash kernel location must be 0x2000000
+    Reserving 0MB of memory at 32MB for crashkernel
+
+The problem is that when crashk_res.start and crashk_res.end are
+both 0, the crash_size is computed to be 1 byte.
+
+Revert back to using the value of crashk_res.start to determine
+if crashkernel memory is being reserved, rather than the computed
+crash_size.
 
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 ---
- arch/powerpc/Kconfig                 |    2 +-
- arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++++++++++++++-----
- arch/powerpc/mm/fsl_booke_mmu.c      |    6 +++---
- 3 files changed, 22 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/machine_kexec.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 805b4d1..d405298 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -253,7 +253,7 @@ config KEXEC
- 
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel (EXPERIMENTAL)"
--	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
-+	depends on (PPC_MULTIPLATFORM || PPC_85xx) && EXPERIMENTAL
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The kernel will be linked at a different address than normal, and
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 4b98227..1c9685f 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -41,6 +41,12 @@
- #include <asm/asm-offsets.h>
- #include "head_booke.h"
- 
-+#ifdef CONFIG_CRASH_DUMP
-+#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_64M)
-+#else
-+#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_16M)
-+#endif
-+
- /* As with the other PowerPC ports, it is expected that when code
-  * execution begins here, the following registers contain valid, yet
-  * optional, information:
-@@ -75,6 +81,7 @@ _ENTRY(_start);
-  * boot loader and load a single entry in TLB1[0] to map the
-  * first 16M of kernel memory.  Any boot info passed from the
-  * bootloader needs to live in this first 16M.
-+ * Note that for crash (kdump) kernels, the first 64M is mapped.
-  *
-  * Requirement on bootloader:
-  *  - The page we're executing in needs to reside in TLB1 and
-@@ -167,7 +174,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	mtspr	SPRN_MAS0,r7
- 	tlbre
- 
--	/* Just modify the entry ID and EPN for the temp mapping */
-+	/* Just modify the entry ID, EPN and RPN for the temp mapping */
- 	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
- 	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
- 	mtspr	SPRN_MAS0,r7
-@@ -177,9 +184,12 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
- 	mtspr	SPRN_MAS1,r6
- 	mfspr	r6,SPRN_MAS2
--	li	r7,0		/* temp EPN = 0 */
-+	lis	r7,PHYSICAL_START@h
- 	rlwimi	r7,r6,0,20,31
- 	mtspr	SPRN_MAS2,r7
-+	mfspr	r6,SPRN_MAS3
-+	rlwimi	r7,r6,0,20,31
-+	mtspr	SPRN_MAS3,r7
- 	tlbwe
- 
- 	xori	r6,r4,1
-@@ -222,11 +232,11 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
- 	mtspr	SPRN_MAS0,r6
- 	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
--	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_16M))@l
-+	ori	r6,r6,(MAS1_TSIZE(INITIAL_BOOKE_PAGESZ))@l
- 	mtspr	SPRN_MAS1,r6
- 	li	r7,0
--	lis	r6,KERNELBASE@h
--	ori	r6,r6,KERNELBASE@l
-+	lis	r6,PAGE_OFFSET@h
-+	ori	r6,r6,PAGE_OFFSET@l
- 	rlwimi	r6,r7,0,20,31
- 	mtspr	SPRN_MAS2,r6
- 	li	r7,(MAS3_SX|MAS3_SW|MAS3_SR)
-@@ -234,6 +244,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbwe
- 
- /* 7. Jump to KERNELBASE mapping */
-+	lis	r6,KERNELBASE@h
-+	ori	r6,r6,KERNELBASE@l
-+	rlwimi	r6,r7,0,20,31
- 	lis	r7,MSR_KERNEL@h
- 	ori	r7,r7,MSR_KERNEL@l
- 	bl	1f			/* Find our address */
-diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-index 17139da..c93a966 100644
---- a/arch/powerpc/mm/fsl_booke_mmu.c
-+++ b/arch/powerpc/mm/fsl_booke_mmu.c
-@@ -165,15 +165,15 @@ void invalidate_tlbcam_entry(int index)
- void __init cam_mapin_ram(unsigned long cam0, unsigned long cam1,
- 		unsigned long cam2)
- {
--	settlbcam(0, KERNELBASE, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
-+	settlbcam(0, PAGE_OFFSET, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
- 	tlbcam_index++;
- 	if (cam1) {
- 		tlbcam_index++;
--		settlbcam(1, KERNELBASE+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
-+		settlbcam(1, PAGE_OFFSET+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 691dba7..38c1c1a 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -84,7 +84,7 @@ void __init reserve_crashkernel(void)
+ 		crash_size = crashk_res.end - crashk_res.start + 1;
  	}
- 	if (cam2) {
- 		tlbcam_index++;
--		settlbcam(2, KERNELBASE+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
-+		settlbcam(2, PAGE_OFFSET+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
- 	}
- }
  
+-	if (crash_size == 0)
++	if (crashk_res.start == 0)
+ 		return;
+ 
+ 	/* We might have got these values via the command line or the
 -- 
 1.5.3.4
