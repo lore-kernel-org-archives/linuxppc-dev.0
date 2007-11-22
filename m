@@ -1,21 +1,16 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.231])
-	by ozlabs.org (Postfix) with ESMTP id 7DA64DDEF8
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:18:27 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id h27so1114047wxd
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:18:26 -0800 (PST)
-Message-ID: <fa686aa40711220918l2c7c021euf9ed1e29798e8bc3@mail.gmail.com>
-Date: Thu, 22 Nov 2007 10:18:26 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Jochen Friedrich" <jochen@scram.de>
-Subject: Re: [PATCH resend 3/4] powerpc: Add EXPORT_SYMBOL for symbols
-	required by fs_enet and cpm_uart
-In-Reply-To: <4745B42B.8050201@scram.de>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6FB0CDDEDE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:25:05 +1100 (EST)
+Message-ID: <4745BB5F.6060002@scram.de>
+Date: Thu, 22 Nov 2007 18:24:47 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4745B42B.8050201@scram.de>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCH] powerpc: Move CPM command handling into the cpm drivers
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,105 +20,175 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/22/07, Jochen Friedrich <jochen@scram.de> wrote:
-> fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
-> cpm2_common.c. Add EXPORT_SYMBOL for cpmp, cpm_setbrg and cpm2_immr, so
-> the drivers can be compiled as modules.
->
->   Building modules, stage 2.
->   MODPOST 5 modules
-> ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
-> ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
->
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/sysdev/commproc.c    |    3 +++
->  arch/powerpc/sysdev/cpm2_common.c |    3 +++
->  2 files changed, 6 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-> index f6a6378..d5a0dcf 100644
-> --- a/arch/powerpc/sysdev/commproc.c
-> +++ b/arch/powerpc/sysdev/commproc.c
-> @@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
->  static uint host_buffer; /* One page of host buffer */
->  static uint host_end;    /* end + 1 */
->  cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
-> +EXPORT_SYMBOL(cpmp);
-> +
+This patch moves the CPM command handling into commproc.c
+for CPM1 and cpm2_common.c. This is yet another preparation
+to get rid of drivers accessing the CPM via the global cpmp.
 
-Is this really a good idea?  A globally accessable pointer to the region?
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c          |   20 ++++++++++++++++++++
+ arch/powerpc/sysdev/cpm2_common.c       |   17 +++++++++++++++++
+ drivers/net/fs_enet/mac-fcc.c           |   10 +---------
+ drivers/net/fs_enet/mac-scc.c           |   11 +----------
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
+ include/asm-powerpc/cpm.h               |    1 +
+ 7 files changed, 42 insertions(+), 31 deletions(-)
 
-The driver should either have a copy of the pointer in its private
-data or operations on the region should be performed by helpers (the
-choice of course depends on how varied the operations on the region
-are).  I know 8xx is old and crusty, but it is possible for a board to
-have multiple CPMs (ie. a second 8xx with the ppc core disabled).
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..2bddbde 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -240,6 +240,26 @@ void __init cpm_reset(void)
+ #endif
+ }
 
->  immap_t __iomem *mpc8xx_immr;
->  static cpic8xx_t __iomem *cpic_reg;
->
-> @@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
->                 out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
->                              CPM_BRG_EN | CPM_BRG_DIV16);
->  }
-> +EXPORT_SYMBOL(cpm_setbrg);
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i;
++
++	if (command & 0xffffff0f)
++		return -EINVAL;
++
++	out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
++			return 0;
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
++		__FUNCTION__);
++	return -EIO;
++}
++EXPORT_SYMBOL(cpm_command);
++
+ /* We used to do this earlier, but have to postpone as long as possible
+  * to ensure the kernel VM is now running.
+  */
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..9e36b6b 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -83,6 +83,23 @@ cpm2_reset(void)
+ 	cpmp = &cpm2_immr->im_cpm;
+ }
 
-EXPORT_SYMBOL_GPL?
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i;
++
++	out_be32(&cpmp->cp_cpcr, command | opcode | CPM_CR_FLG);
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be32(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
++			return 0;
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
++		__FUNCTION__);
++	return -EIO;
++}
++EXPORT_SYMBOL(cpm_command);
++
+ /* Set a baud rate generator.  This needs lots of work.  There are
+  * eight BRGs, which can be connected to the CPM channels or output
+  * as clocks.  The BRGs are in two different block of internal
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index da4efbc..e363211 100644
+--- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -81,16 +81,8 @@
+ static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W32(cpmp, cp_cpcr, fpi->cp_command | op | CPM_CR_FLG);
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
 
->
->  #ifndef CONFIG_PPC_CPM_NEW_BINDING
->  /*
-> diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-> index 859362f..4ed5df6 100644
-> --- a/arch/powerpc/sysdev/cpm2_common.c
-> +++ b/arch/powerpc/sysdev/cpm2_common.c
-> @@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
->  #endif
->
->  cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-> +EXPORT_SYMBOL(cpmp);
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-	       __FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
 
-ditto to first comment.
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 03134f4..5ff856d 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -89,21 +89,12 @@
+  * Delay to wait for SCC reset command to complete (in us)
+  */
+ #define SCC_RESET_DELAY		50
+-#define MAX_CR_CMD_LOOPS	10000
 
->
->  /* We allocate this here because it is used almost exclusively for
->   * the communication processor devices.
->   */
->  cpm2_map_t __iomem *cpm2_immr;
-> +EXPORT_SYMBOL(cpm2_immr);
+ static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
 
-ditto
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-		__FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
 
->
->  #define CPM_MAP_SIZE   (0x40000)       /* 256k - the PQ3 reserve this amount
->                                            of space for CPM as it is larger
-> @@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
->
->         cpm2_unmap(bp);
->  }
-> +EXPORT_SYMBOL(cpm_setbrg);
->
->  /* This function is used to set high speed synchronous baud rate
->   * clocks.
-> --
-> 1.5.3.4
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 52fb044..6ea0366 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -52,11 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	u16 __iomem *cpcr = &cpmp->cp_cpcr;
+-
+-	out_be16(cpcr, port->command | (cmd << 8) | CPM_CR_FLG);
+-	while (in_be16(cpcr) & CPM_CR_FLG)
+-		;
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 882dbc1..def0158 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -52,13 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	cpm_cpm2_t __iomem *cp = cpm2_map(im_cpm);
+-
+-	out_be32(&cp->cp_cpcr, port->command | cmd | CPM_CR_FLG);
+-	while (in_be32(&cp->cp_cpcr) & CPM_CR_FLG)
+-		;
+-
+-	cpm2_unmap(cp);
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
+index 48df9f3..fae83b1 100644
+--- a/include/asm-powerpc/cpm.h
++++ b/include/asm-powerpc/cpm.h
+@@ -10,5 +10,6 @@ int cpm_muram_free(unsigned long offset);
+ unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
+ void __iomem *cpm_muram_addr(unsigned long offset);
+ dma_addr_t cpm_muram_dma(void __iomem *addr);
++int cpm_command(u32 command, u8 opcode);
 
-Cheers,
-g.
-
+ #endif
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+1.5.3.4
