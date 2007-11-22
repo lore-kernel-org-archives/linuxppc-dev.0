@@ -2,15 +2,14 @@ Return-Path: <jochen@scram.de>
 Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 03AB8DDECD
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:07:22 +1100 (EST)
-Message-ID: <4745B422.5080103@scram.de>
-Date: Thu, 22 Nov 2007 17:53:54 +0100
+	by ozlabs.org (Postfix) with ESMTP id 3B2DCDDF44
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:07:56 +1100 (EST)
+Message-ID: <4745B41B.3040904@scram.de>
+Date: Thu, 22 Nov 2007 17:53:47 +0100
 From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH resend 2/4] powerpc: kill non-existent symbols from ksyms
-	and commproc.h
+Subject: [PATCH resend 1/4] powerpc: fix typo #ifdef -> #ifndef
 Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,71 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove exports of __res and cpm_install_handler/cpm_free_handler.  Remove
-cpm_install_handler/cpm_free_handler from the commproc.h as well.  Both
-were used for ARCH=ppc and aren't defined for ARCH=powerpc.
-
-CC      arch/powerpc/kernel/ppc_ksyms.o
-arch/powerpc/kernel/ppc_ksyms.c:180: error: '__res' undeclared here (not in a function)
-arch/powerpc/kernel/ppc_ksyms.c:180: warning: type defaults to 'int' in declaration of '__res'
-make[1]: *** [arch/powerpc/kernel/ppc_ksyms.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
-
-LD      .tmp_vmlinux1
-arch/powerpc/kernel/built-in.o:(__ksymtab+0x198): undefined reference to `cpm_free_handler'
-arch/powerpc/kernel/built-in.o:(__ksymtab+0x1a0): undefined reference to `cpm_install_handler'
-make: *** [.tmp_vmlinux1] Error 1
+fpi->cp_command should be overwritten only if CONFIG_PPC_CPM_NEW_BINDING
+is NOT set. Otherwise it is already set from the device tree.
 
 Signed-off-by: Jochen Friedrich <jochen@scram.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/powerpc/kernel/ppc_ksyms.c |   12 ------------
- include/asm-powerpc/commproc.h  |    3 ---
- 2 files changed, 0 insertions(+), 15 deletions(-)
+ drivers/net/fs_enet/mac-scc.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
-index c6b1aa3..13ebeb2 100644
---- a/arch/powerpc/kernel/ppc_ksyms.c
-+++ b/arch/powerpc/kernel/ppc_ksyms.c
-@@ -45,10 +45,6 @@
- #include <asm/signal.h>
- #include <asm/dcr.h>
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 03134f4..48f2f30 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -158,7 +158,7 @@ static int setup_data(struct net_device *dev)
+ {
+ 	struct fs_enet_private *fep = netdev_priv(dev);
 
--#ifdef  CONFIG_8xx
--#include <asm/commproc.h>
--#endif
--
- #ifdef CONFIG_PPC64
- EXPORT_SYMBOL(local_irq_restore);
- #endif
-@@ -172,14 +168,6 @@ EXPORT_SYMBOL(console_drivers);
- EXPORT_SYMBOL(cacheable_memcpy);
- #endif
+-#ifdef CONFIG_PPC_CPM_NEW_BINDING
++#ifndef CONFIG_PPC_CPM_NEW_BINDING
+ 	struct fs_platform_info *fpi = fep->fpi;
 
--#ifdef  CONFIG_8xx
--EXPORT_SYMBOL(cpm_install_handler);
--EXPORT_SYMBOL(cpm_free_handler);
--#endif /* CONFIG_8xx */
--#if defined(CONFIG_8xx)
--EXPORT_SYMBOL(__res);
--#endif
--
- #ifdef CONFIG_PPC32
- EXPORT_SYMBOL(next_mmu_context);
- EXPORT_SYMBOL(set_context);
-diff --git a/include/asm-powerpc/commproc.h b/include/asm-powerpc/commproc.h
-index a2328b8..2ee59d7 100644
---- a/include/asm-powerpc/commproc.h
-+++ b/include/asm-powerpc/commproc.h
-@@ -698,9 +698,6 @@ typedef struct risc_timer_pram {
- #define CICR_IEN		((uint)0x00000080)	/* Int. enable */
- #define CICR_SPS		((uint)0x00000001)	/* SCC Spread */
-
--extern void cpm_install_handler(int vec, void (*handler)(void *), void *dev_id);
--extern void cpm_free_handler(int vec);
--
- #define IMAP_ADDR		(get_immrbase())
-
- #define CPM_PIN_INPUT     0
+ 	fep->scc.idx = fs_get_scc_index(fpi->fs_no);
 -- 
 1.5.3.4
