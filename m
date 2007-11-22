@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id ACDB1DDE44
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 10:16:56 +1100 (EST)
-Date: Fri, 23 Nov 2007 10:16:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
-Message-Id: <20071123101646.63550945.sfr@canb.auug.org.au>
-In-Reply-To: <20071122195423.GA9877@cvg>
-References: <20071122195423.GA9877@cvg>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6ACE2DDE27
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 10:37:24 +1100 (EST)
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20071118004729.67824247F1@gemini.denx.de>
+References: <20071118004729.67824247F1@gemini.denx.de>
+Content-Type: text/plain
+Date: Fri, 23 Nov 2007 10:37:05 +1100
+Message-Id: <1195774625.6970.145.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__23_Nov_2007_10_16_46_+1100_X7su_ztJU5EfC4Dm"
-Cc: Olof Johansson <olof@lixom.net>, PPCML <linuxppc-dev@ozlabs.org>, Paul,
-	Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,49 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__23_Nov_2007_10_16_46_+1100_X7su_ztJU5EfC4Dm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 22 Nov 2007 22:54:23 +0300 Cyrill Gorcunov <gorcunov@gmail.com> wro=
-te:
->
-> This patch does fix possible NULL pointer dereference
-> inside of strncmp() if of_get_property() failed.
+On Sun, 2007-11-18 at 01:47 +0100, Wolfgang Denk wrote:
+> In message <9e4733910711141834n2bfb1742v5637c56e27e26f5a@mail.gmail.com> you wrote:
+> >
+> > > * The documentation is only available under NDA, a problem for open
+> > > source debuggers.
+> > 
+> > This is what we need. I would like it specifically for the mpc5200.
+> > But we want to use it in OpenOCD so NDA won't work.
+> 
+> It doesn't work. Been  there  a  logn  time  ago.  It's  and  endless
+> fingerpointing.  Freescale  (by  then:  Motorola)  says  they  cannot
+> release any information because of their contracts with IBM, and vice
+> versa.
 
-Thanks for this.
+It seems like AMCC does provide the necessary infos for 4xx processors
+though. Jon, do you think what they provide is enough to use an open
+source debugger ?
 
->  static void __init sio_init(void)
->  {
->  	struct device_node *root;
-> +	const char *model =3D NULL;
-
-You don't need this initialization as you always assign the variable
-before you use it.
-
-> +	root =3D of_find_node_by_path("/");
-> +	if (root) {
-
-	if (!root)
-		return;
-
-would save a level of indentation. Not important.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__23_Nov_2007_10_16_46_+1100_X7su_ztJU5EfC4Dm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHRg3jTgG2atn1QN8RAgS+AJ0TSnJ7K3W4eF1xYySKWQoMYZ5enwCgiyDn
-eJi7c8GJEdu634081uFuVvU=
-=E8Lx
------END PGP SIGNATURE-----
-
---Signature=_Fri__23_Nov_2007_10_16_46_+1100_X7su_ztJU5EfC4Dm--
+Ben.
