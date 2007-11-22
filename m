@@ -1,19 +1,24 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 9CF27DDE17
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D2F18DDDE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Nov 2007 21:02:05 +1100 (EST)
-Message-ID: <47455393.7050905@fz-juelich.de>
-Date: Thu, 22 Nov 2007 11:01:55 +0100
-From: schardt <g.schardt@fz-juelich.de>
+	Thu, 22 Nov 2007 21:27:09 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1Iv9H0-0000fu-TF
+	for linuxppc-embedded@ozlabs.org; Thu, 22 Nov 2007 02:27:06 -0800
+Message-ID: <13894278.post@talk.nabble.com>
+Date: Thu, 22 Nov 2007 02:27:06 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Firmware Support for USB Hub
+In-Reply-To: <200711211830.02997.laurentp@cse-semaphore.com>
 MIME-Version: 1.0
-To: schardt <g.schardt@fz-juelich.de>
-Subject: Re: Initramfs problem on virtex4fx
-References: <47453B63.6010100@fz-juelich.de>
-In-Reply-To: <47453B63.6010100@fz-juelich.de>
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
+References: <13877282.post@talk.nabble.com> <474468C5.8080402@freescale.com>
+	<200711211830.02997.laurentp@cse-semaphore.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,65 +29,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-additional i tried a initramfs rootfs with busybox
 
-Freeing unused kernel memory: 1944k init
-init started: BusyBox v1.7.0 (2007-11-07 14:29:33 CET)
-starting pid 152eth0: XTemac: Options: 0xb8f2
-eth0: XTemac: We renegotiated the speed to: 1000
-eth0: XTemac: speed set to 1000Mb/s
-, tty '': '/etc/init.d/
 
-this looks very strange to me....
 
-Georg
 
-schardt wrote:
-> Hi all,
->
-> i try to run linux from flash with the initramfs as root filesystem.
-> i wrote a simple hello_world as init to test the initramfs.
->
-> the kernel boots normaly, but instead of the complete "Hello World" i
-> see only "He"
-> and the system hangs.
->
-> Does anyone have similar problems ? And solved it ? ;)
->
-> Regards
-> Georg
->
->
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
-> Forschungszentrum J=FClich GmbH
-> 52425 J=FClich
->
-> Sitz der Gesellschaft: J=FClich
-> Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
-> Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
-> Gesch=E4ftsf=FChrung: Prof. Dr. Achim Bachem (Vorsitzender),
-> Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
+
+Laurent Pinchart-4 wrote:
+>=20
+> On Wednesday 21 November 2007 18:20, Scott Wood wrote:
+>> Misbah khan wrote:
+>> > Hi all,
+>> >
+>> > I am using a 8248 processor which has a USB controller and i need to
+>> > connect a USB Hub to it, iam using Montavista Linux .I need to know
+>> that
+>> > what are the support i need form Montavista or Open source to have an
+>> > interface with Usb hub. ???
+>> >
+>> > Is there any driver that we need to make if so what type ???
+>>
+>> I don't believe a driver currently exists for CPM USB.
+>=20
+> There's an experimental out-of-tree driver available at=20
+> http://cpm2usb.sourceforge.net/
+>=20
+> The code is outdated and doesn't work, but that's a starting point.
+>=20
+> can you suggest me the problems both in terms of H/W S/W and Montavista
+> ????
+>=20
+> If I remember correctly, CPM2 USB host support requires the host to creat=
+e
+> SOF=20
+> packets in software. High system loads will probably mess the bus up. A=
+=20
+> colleague of mines was told by Freescale to use an external USB controlle=
+r=20
+> instead of the MPC8248 bundled one.
+>=20
+> I have posted this quarry to freescale. Anyway if you get more informatio=
+n
+> could you please share with me ??
+>=20
+>=20
+> ---Misbah <><
+> --=20
+> Laurent Pinchart
+> CSE Semaphore Belgium
+>=20
+> Chauss=C3=A9e de Bruxelles, 732A
+> B-1410 Waterloo
+> Belgium
+>=20
+> T +32 (2) 387 42 59
+> F +32 (2) 387 42 75
+>=20
+> =20
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->  =20
+>=20
 
-
-
--------------------------------------------------------------------
--------------------------------------------------------------------
-Forschungszentrum J=FClich GmbH
-52425 J=FClich
-
-Sitz der Gesellschaft: J=FClich
-Eingetragen im Handelsregister des Amtsgerichts D=FCren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDirig'in B=E4rbel Brumme-Bothe
-Gesch=E4ftsf=FChrung: Prof. Dr. Achim Bachem (Vorsitzender),
-Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
--------------------------------------------------------------------
--------------------------------------------------------------------
+--=20
+View this message in context: http://www.nabble.com/Firmware-Support-for-US=
+B-Hub-tf4850180.html#a13894278
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
