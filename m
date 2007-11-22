@@ -1,16 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BCB6FDDF2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:10:31 +1100 (EST)
-Message-ID: <4745B40F.7050205@scram.de>
-Date: Thu, 22 Nov 2007 17:53:35 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.231])
+	by ozlabs.org (Postfix) with ESMTP id 7DA64DDEF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:18:27 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id h27so1114047wxd
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 09:18:26 -0800 (PST)
+Message-ID: <fa686aa40711220918l2c7c021euf9ed1e29798e8bc3@mail.gmail.com>
+Date: Thu, 22 Nov 2007 10:18:26 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jochen Friedrich" <jochen@scram.de>
+Subject: Re: [PATCH resend 3/4] powerpc: Add EXPORT_SYMBOL for symbols
+	required by fs_enet and cpm_uart
+In-Reply-To: <4745B42B.8050201@scram.de>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH resend 0/4] powerpc fixes for 2.6.24
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4745B42B.8050201@scram.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,10 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 11/22/07, Jochen Friedrich <jochen@scram.de> wrote:
+> fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
+> cpm2_common.c. Add EXPORT_SYMBOL for cpmp, cpm_setbrg and cpm2_immr, so
+> the drivers can be compiled as modules.
+>
+>   Building modules, stage 2.
+>   MODPOST 5 modules
+> ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
+> ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+>
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/sysdev/commproc.c    |    3 +++
+>  arch/powerpc/sysdev/cpm2_common.c |    3 +++
+>  2 files changed, 6 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+> index f6a6378..d5a0dcf 100644
+> --- a/arch/powerpc/sysdev/commproc.c
+> +++ b/arch/powerpc/sysdev/commproc.c
+> @@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
+>  static uint host_buffer; /* One page of host buffer */
+>  static uint host_end;    /* end + 1 */
+>  cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
+> +EXPORT_SYMBOL(cpmp);
+> +
 
-this is a resend of 4 patches i've sent to linuxppc-embedded before. Later i found the MAINTAINERS entry has been updated.
-The series can be pulled from git://git.bocc.de/dbox2.git for-2.6.24
+Is this really a good idea?  A globally accessable pointer to the region?
 
-Thanks,
-Jochen
+The driver should either have a copy of the pointer in its private
+data or operations on the region should be performed by helpers (the
+choice of course depends on how varied the operations on the region
+are).  I know 8xx is old and crusty, but it is possible for a board to
+have multiple CPMs (ie. a second 8xx with the ppc core disabled).
+
+>  immap_t __iomem *mpc8xx_immr;
+>  static cpic8xx_t __iomem *cpic_reg;
+>
+> @@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
+>                 out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
+>                              CPM_BRG_EN | CPM_BRG_DIV16);
+>  }
+> +EXPORT_SYMBOL(cpm_setbrg);
+
+EXPORT_SYMBOL_GPL?
+
+>
+>  #ifndef CONFIG_PPC_CPM_NEW_BINDING
+>  /*
+> diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+> index 859362f..4ed5df6 100644
+> --- a/arch/powerpc/sysdev/cpm2_common.c
+> +++ b/arch/powerpc/sysdev/cpm2_common.c
+> @@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
+>  #endif
+>
+>  cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
+> +EXPORT_SYMBOL(cpmp);
+
+ditto to first comment.
+
+>
+>  /* We allocate this here because it is used almost exclusively for
+>   * the communication processor devices.
+>   */
+>  cpm2_map_t __iomem *cpm2_immr;
+> +EXPORT_SYMBOL(cpm2_immr);
+
+ditto
+
+>
+>  #define CPM_MAP_SIZE   (0x40000)       /* 256k - the PQ3 reserve this amount
+>                                            of space for CPM as it is larger
+> @@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
+>
+>         cpm2_unmap(bp);
+>  }
+> +EXPORT_SYMBOL(cpm_setbrg);
+>
+>  /* This function is used to set high speed synchronous baud rate
+>   * clocks.
+> --
+> 1.5.3.4
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
