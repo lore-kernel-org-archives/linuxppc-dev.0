@@ -1,12 +1,12 @@
 Return-Path: <dale@farnsworth.org>
 Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 9C778DDF6F
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:13 +1100 (EST)
-Date: Thu, 22 Nov 2007 08:46:12 -0700
+	by ozlabs.org (Postfix) with SMTP id 99E0EDE203
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 02:46:21 +1100 (EST)
+Date: Thu, 22 Nov 2007 08:46:20 -0700
 From: Dale Farnsworth <dale@farnsworth.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/10] powerpc: Add crash kernel support for classic ppc
-Message-ID: <20071122154611.GA26459@xyzzy.farnsworth.org>
+Subject: [PATCH 05/10] powerpc: Add crash kernel support for 85xx
+Message-ID: <20071122154619.GA26471@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071122154159.GA24711@xyzzy.farnsworth.org>
@@ -19,205 +19,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the ability for a classic ppc kernel to be loaded at
-an address of 32MB.  This done by fixing a few places that
-assume we are loaded at address 0, and by changing several
-uses of KERNELBASE to use PAGE_OFFSET, instead.  We also
-wire up the trampoline code for ppc32 to relay exceptions
-from the vectors at address 0 to vectors at address 32MB.
+Add the ability to build a ppc_85xx kernel to run at a physical
+address of 32MB.
 
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 ---
- arch/powerpc/Kconfig              |    2 +-
- arch/powerpc/kernel/crash_dump.c  |    1 +
- arch/powerpc/kernel/head_32.S     |   11 ++++++-----
- arch/powerpc/kernel/setup_32.c    |    2 ++
- arch/powerpc/kernel/vmlinux.lds.S |    4 +---
- arch/powerpc/mm/init_32.c         |    2 +-
- arch/powerpc/mm/pgtable_32.c      |    4 ++--
- arch/powerpc/mm/ppc_mmu_32.c      |    8 ++++----
- include/asm-powerpc/ppc_asm.h     |    4 ++--
- 9 files changed, 20 insertions(+), 18 deletions(-)
+ arch/powerpc/Kconfig                 |    2 +-
+ arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++++++++++++++-----
+ arch/powerpc/mm/fsl_booke_mmu.c      |    6 +++---
+ 3 files changed, 22 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9e9581a..805b4d1 100644
+index 805b4d1..d405298 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
 @@ -253,7 +253,7 @@ config KEXEC
  
  config CRASH_DUMP
  	bool "Build a kdump crash kernel (EXPERIMENTAL)"
--	depends on PPC_MULTIPLATFORM && PPC64 && EXPERIMENTAL
-+	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
+-	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
++	depends on (PPC_MULTIPLATFORM || PPC_85xx) && EXPERIMENTAL
  	help
  	  Build a kernel suitable for use as a kdump capture kernel.
  	  The kernel will be linked at a different address than normal, and
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index 29ff77c..77c0376 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -40,6 +40,7 @@ static void __init create_trampoline(unsigned long addr)
- 	 * branch to "addr" we jump to ("addr" + 32 MB). Although it requires
- 	 * two instructions it doesn't require any registers.
- 	 */
-+	addr += PAGE_OFFSET;
- 	create_instruction(addr, 0x60000000); /* nop */
- 	create_branch(addr + 4, addr + PHYSICAL_START, 0);
- }
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index a5b13ae..a9b50ab 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -175,7 +175,8 @@ __after_mmu_off:
- 	bl	reloc_offset
- 	mr	r26,r3
- 	addis	r4,r3,KERNELBASE@h	/* current address of _start */
--	cmpwi	0,r4,0			/* are we already running at 0? */
-+	lis	r5,PHYSICAL_START@h
-+	cmplw	0,r4,r5			/* already running at PHYSICAL_START? */
- 	bne	relocate_kernel
- /*
-  * we now have the 1st 16M of ram mapped with the bats.
-@@ -818,13 +819,13 @@ giveup_altivec:
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 4b98227..1c9685f 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -41,6 +41,12 @@
+ #include <asm/asm-offsets.h>
+ #include "head_booke.h"
  
- /*
-  * This code is jumped to from the startup code to copy
-- * the kernel image to physical address 0.
-+ * the kernel image to physical address PHYSICAL_START.
-  */
- relocate_kernel:
- 	addis	r9,r26,klimit@ha	/* fetch klimit */
- 	lwz	r25,klimit@l(r9)
- 	addis	r25,r25,-KERNELBASE@h
--	li	r3,0			/* Destination base address */
-+	lis	r3,PHYSICAL_START@h	/* Destination base address */
- 	li	r6,0			/* Destination offset */
- 	li	r5,0x4000		/* # bytes of memory to copy */
- 	bl	copy_and_flush		/* copy the first 0x4000 bytes */
-@@ -1186,11 +1187,11 @@ mmu_off:
- 
- /*
-  * Use the first pair of BAT registers to map the 1st 16MB
-- * of RAM to KERNELBASE.  From this point on we can't safely
-+ * of RAM to PAGE_OFFSET.  From this point on we can't safely
-  * call OF any more.
-  */
- initial_bats:
--	lis	r11,KERNELBASE@h
-+	lis	r11,PAGE_OFFSET@h
- 	mfspr	r9,SPRN_PVR
- 	rlwinm	r9,r9,16,16,31		/* r9 = 1 for 601, 4 for 604 */
- 	cmpwi	0,r9,1
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index cd870a8..bbb4caf 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -128,6 +128,8 @@ void __init machine_init(unsigned long dt_ptr, unsigned long phys)
- 
- 	probe_machine();
- 
-+	setup_kdump_trampoline();
++#ifdef CONFIG_CRASH_DUMP
++#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_64M)
++#else
++#define INITIAL_BOOKE_PAGESZ (BOOKE_PAGESZ_16M)
++#endif
 +
- #ifdef CONFIG_6xx
- 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
- 	    cpu_has_feature(CPU_FTR_CAN_NAP))
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index f66fa5d..242f17d 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -1,11 +1,9 @@
- #ifdef CONFIG_PPC64
--#include <asm/page.h>
- #define PROVIDE32(x)	PROVIDE(__unused__##x)
- #else
--#define PAGE_SIZE	4096
--#define KERNELBASE	CONFIG_KERNEL_START
- #define PROVIDE32(x)	PROVIDE(x)
- #endif
-+#include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/cache.h>
+ /* As with the other PowerPC ports, it is expected that when code
+  * execution begins here, the following registers contain valid, yet
+  * optional, information:
+@@ -75,6 +81,7 @@ _ENTRY(_start);
+  * boot loader and load a single entry in TLB1[0] to map the
+  * first 16M of kernel memory.  Any boot info passed from the
+  * bootloader needs to live in this first 16M.
++ * Note that for crash (kdump) kernels, the first 64M is mapped.
+  *
+  * Requirement on bootloader:
+  *  - The page we're executing in needs to reside in TLB1 and
+@@ -167,7 +174,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
  
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index 977cb1e..a25d3d7 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -48,7 +48,7 @@
+-	/* Just modify the entry ID and EPN for the temp mapping */
++	/* Just modify the entry ID, EPN and RPN for the temp mapping */
+ 	lis	r7,0x1000	/* Set MAS0(TLBSEL) = 1 */
+ 	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+ 	mtspr	SPRN_MAS0,r7
+@@ -177,9 +184,12 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_4K))@l
+ 	mtspr	SPRN_MAS1,r6
+ 	mfspr	r6,SPRN_MAS2
+-	li	r7,0		/* temp EPN = 0 */
++	lis	r7,PHYSICAL_START@h
+ 	rlwimi	r7,r6,0,20,31
+ 	mtspr	SPRN_MAS2,r7
++	mfspr	r6,SPRN_MAS3
++	rlwimi	r7,r6,0,20,31
++	mtspr	SPRN_MAS3,r7
+ 	tlbwe
  
- #if defined(CONFIG_KERNEL_START_BOOL) || defined(CONFIG_LOWMEM_SIZE_BOOL)
- /* The ammount of lowmem must be within 0xF0000000 - KERNELBASE. */
--#if (CONFIG_LOWMEM_SIZE > (0xF0000000 - KERNELBASE))
-+#if (CONFIG_LOWMEM_SIZE > (0xF0000000 - PAGE_OFFSET))
- #error "You must adjust CONFIG_LOWMEM_SIZE or CONFIG_START_KERNEL"
- #endif
- #endif
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 6448872..e7505ea 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -275,7 +275,7 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
+ 	xori	r6,r4,1
+@@ -222,11 +232,11 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	lis	r6,0x1000		/* Set MAS0(TLBSEL) = TLB1(1), ESEL = 0 */
+ 	mtspr	SPRN_MAS0,r6
+ 	lis	r6,(MAS1_VALID|MAS1_IPROT)@h
+-	ori	r6,r6,(MAS1_TSIZE(BOOKE_PAGESZ_16M))@l
++	ori	r6,r6,(MAS1_TSIZE(INITIAL_BOOKE_PAGESZ))@l
+ 	mtspr	SPRN_MAS1,r6
+ 	li	r7,0
+-	lis	r6,KERNELBASE@h
+-	ori	r6,r6,KERNELBASE@l
++	lis	r6,PAGE_OFFSET@h
++	ori	r6,r6,PAGE_OFFSET@l
+ 	rlwimi	r6,r7,0,20,31
+ 	mtspr	SPRN_MAS2,r6
+ 	li	r7,(MAS3_SX|MAS3_SW|MAS3_SR)
+@@ -234,6 +244,9 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbwe
+ 
+ /* 7. Jump to KERNELBASE mapping */
++	lis	r6,KERNELBASE@h
++	ori	r6,r6,KERNELBASE@l
++	rlwimi	r6,r7,0,20,31
+ 	lis	r7,MSR_KERNEL@h
+ 	ori	r7,r7,MSR_KERNEL@l
+ 	bl	1f			/* Find our address */
+diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
+index 17139da..c93a966 100644
+--- a/arch/powerpc/mm/fsl_booke_mmu.c
++++ b/arch/powerpc/mm/fsl_booke_mmu.c
+@@ -165,15 +165,15 @@ void invalidate_tlbcam_entry(int index)
+ void __init cam_mapin_ram(unsigned long cam0, unsigned long cam1,
+ 		unsigned long cam2)
+ {
+-	settlbcam(0, KERNELBASE, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
++	settlbcam(0, PAGE_OFFSET, PPC_MEMSTART, cam0, _PAGE_KERNEL, 0);
+ 	tlbcam_index++;
+ 	if (cam1) {
+ 		tlbcam_index++;
+-		settlbcam(1, KERNELBASE+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
++		settlbcam(1, PAGE_OFFSET+cam0, PPC_MEMSTART+cam0, cam1, _PAGE_KERNEL, 0);
+ 	}
+ 	if (cam2) {
+ 		tlbcam_index++;
+-		settlbcam(2, KERNELBASE+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
++		settlbcam(2, PAGE_OFFSET+cam0+cam1, PPC_MEMSTART+cam0+cam1, cam2, _PAGE_KERNEL, 0);
+ 	}
  }
  
- /*
-- * Map in all of physical memory starting at KERNELBASE.
-+ * Map in all of physical memory starting at PAGE_OFFSET.
-  */
- void __init mapin_ram(void)
- {
-@@ -283,7 +283,7 @@ void __init mapin_ram(void)
- 	int ktext;
- 
- 	s = mmu_mapin_ram();
--	v = KERNELBASE + s;
-+	v = PAGE_OFFSET + s;
- 	p = PPC_MEMSTART + s;
- 	for (; s < total_lowmem; s += PAGE_SIZE) {
- 		ktext = ((char *) v >= _stext && (char *) v < etext);
-diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
-index 5c45d47..6316895 100644
---- a/arch/powerpc/mm/ppc_mmu_32.c
-+++ b/arch/powerpc/mm/ppc_mmu_32.c
-@@ -105,16 +105,16 @@ unsigned long __init mmu_mapin_ram(void)
- 			break;
- 	}
- 
--	setbat(2, KERNELBASE, PPC_MEMSTART, bl, _PAGE_RAM);
--	done = (unsigned long)bat_addrs[2].limit - KERNELBASE + 1;
-+	setbat(2, PAGE_OFFSET, PPC_MEMSTART, bl, _PAGE_RAM);
-+	done = (unsigned long)bat_addrs[2].limit - PAGE_OFFSET + 1;
- 	if ((done < tot) && !bat_addrs[3].limit) {
- 		/* use BAT3 to cover a bit more */
- 		tot -= done;
- 		for (bl = 128<<10; bl < max_size; bl <<= 1)
- 			if (bl * 2 > tot)
- 				break;
--		setbat(3, KERNELBASE+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
--		done = (unsigned long)bat_addrs[3].limit - KERNELBASE + 1;
-+		setbat(3, PAGE_OFFSET+done, PPC_MEMSTART+done, bl, _PAGE_RAM);
-+		done = (unsigned long)bat_addrs[3].limit - PAGE_OFFSET + 1;
- 	}
- 
- 	return done;
-diff --git a/include/asm-powerpc/ppc_asm.h b/include/asm-powerpc/ppc_asm.h
-index 2dbd4e7..f8943ec 100644
---- a/include/asm-powerpc/ppc_asm.h
-+++ b/include/asm-powerpc/ppc_asm.h
-@@ -382,14 +382,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- #define fromreal(rd)	tovirt(rd,rd)
- 
- #define tophys(rd,rs)				\
--0:	addis	rd,rs,-KERNELBASE@h;		\
-+0:	addis	rd,rs,-PAGE_OFFSET@h;		\
- 	.section ".vtop_fixup","aw";		\
- 	.align  1;				\
- 	.long   0b;				\
- 	.previous
- 
- #define tovirt(rd,rs)				\
--0:	addis	rd,rs,KERNELBASE@h;		\
-+0:	addis	rd,rs,PAGE_OFFSET@h;		\
- 	.section ".ptov_fixup","aw";		\
- 	.align  1;				\
- 	.long   0b;				\
 -- 
 1.5.3.4
