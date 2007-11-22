@@ -1,13 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Nov 2007 14:38:07 +1100
+Date: Thu, 22 Nov 2007 14:39:23 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: dtc: Flexible tree checking infrastructure (v2)
-Message-ID: <20071122033807.GH19445@localhost.localdomain>
-References: <20071121053851.GA17801@localhost.localdomain>
+Subject: dtc: Merge refs and labels into single "markers" list (v2)
+Message-ID: <20071122033923.GI19445@localhost.localdomain>
+References: <20071122003707.GF19445@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071121053851.GA17801@localhost.localdomain>
+In-Reply-To: <20071122003707.GF19445@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,591 +17,478 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-dtc: Flexible tree checking infrastructure
+Currently, every 'data' object, used to represent property values, has
+two lists of fixup structures - one for labels and one for references.
+Sometimes we want to look at them separately, but other times we need
+to consider both types of fixup.
 
-Here, at last, is a substantial start on revising dtc's infrastructure
-for checking the tree; this is the rework I've been saying was
-necessary practically since dtc was first release.
+I'm planning to implement string references, where a full path rather
+than a phandle is substituted into a property value.  Adding yet
+another list of fixups for that would start to get silly.  So, this
+patch merges the "refs" and "labels" lists into a single list of
+"markers", each of which has a type field indicating if it represents
+a label or a phandle reference.  String references or any other new
+type of in-data marker will then just need a new type value - merging
+data blocks and other common manipulations will just work.
 
-In the new model, we have a table of "check" structures, each with a
-name, references to checking functions, and status variables.  Each
-check can (in principle) be individually switched off or on (as either
-a warning or error).  Checks have a list of prerequisites, so if
-checks need to rely on results from earlier checks to make sense (or
-even to avoid crashing) they just need to list the relevant other
-checks there.
-
-For now, only the "structural" checks and the fixups for phandle
-references are converted to the new mechanism.  The rather more
-involved semantic checks (which is where this new mechanism will
-really be useful) will have to be converted in future patches.
-
-At present, there's no user interface for turning on/off the checks -
-the -f option now forces output even if "error" level checks fail.
-Again, future patches will be needed to add the fine-grained control,
-but that should be quite straightforward with the infrastructure
-implemented here.
-
-Also adds a testcase for the handling of bad references, which catches
-a bug encountered while developing this patch.
+While I was at it I made some cleanups to the handling of fixups which
+simplify things further.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
 ---
 
-Oops, the original version had a bug: processing a bad reference would
-cause dtc to SEGV.  Plus the sense was backwards when checking the
-value of 'quiet' to suppress errors/warnings.  Fixed here and some
-other small changes:
-	- cleanups to reference processing code
-	- cleanups to error/warning message printing code
-	- added a tracing mechanism (compile time option) useful for
-debugging problems with the checks
+Updated to apply on top of the new version of the checking
+infrastructure patch.
 
+ checks.c     |   20 ++++-------
+ data.c       |  101 ++++++++++++++++-------------------------------------------
+ dtc-parser.y |   11 +++---
+ dtc.h        |   24 +++++++++-----
+ flattree.c   |   11 +++---
+ treesource.c |   62 ++++++++++++++++++------------------
+ 6 files changed, 97 insertions(+), 132 deletions(-)
 
 Index: dtc/checks.c
 ===================================================================
---- dtc.orig/checks.c	2007-11-22 13:03:05.000000000 +1100
-+++ dtc/checks.c	2007-11-22 14:02:26.000000000 +1100
-@@ -20,104 +20,293 @@
+--- dtc.orig/checks.c	2007-11-22 14:02:26.000000000 +1100
++++ dtc/checks.c	2007-11-22 14:38:39.000000000 +1100
+@@ -243,26 +243,22 @@
+ static void fixup_phandle_references(struct check *c, struct node *dt,
+ 				     struct node *node, struct property *prop)
+ {
+-      struct fixup *f = prop->val.refs;
++      struct marker *m = prop->val.markers;
+       struct node *refnode;
+       cell_t phandle;
+ 
+-      while (f) {
+-	      assert(f->offset + sizeof(cell_t) <= prop->val.len);
++      for_each_marker_of_type(m, REF_PHANDLE) {
++	      assert(m->offset + sizeof(cell_t) <= prop->val.len);
+ 
+-	      refnode = get_node_by_ref(dt, f->ref);
++	      refnode = get_node_by_ref(dt, m->ref);
+ 	      if (! refnode) {
+ 		      FAIL(c, "Reference to non-existent node or label \"%s\"\n",
+-			   f->ref);
+-	      } else {
+-		      phandle = get_node_phandle(dt, refnode);
+-
+-		      *((cell_t *)(prop->val.val + f->offset)) = cpu_to_be32(phandle);
++			   m->ref);
++		      continue;
+ 	      }
+ 
+-              prop->val.refs = f->next;
+-              fixup_free(f);
+-              f = prop->val.refs;
++	      phandle = get_node_phandle(dt, refnode);
++	      *((cell_t *)(prop->val.val + m->offset)) = cpu_to_be32(phandle);
+       }
+ }
+ CHECK(phandle_references, NULL, NULL, fixup_phandle_references, NULL, ERROR,
+Index: dtc/data.c
+===================================================================
+--- dtc.orig/data.c	2007-11-22 13:54:57.000000000 +1100
++++ dtc/data.c	2007-11-22 14:38:39.000000000 +1100
+@@ -20,28 +20,16 @@
  
  #include "dtc.h"
  
--/*
-- * Structural check functions
-- */
-+#ifdef TRACE_CHECKS
-+#define TRACE(c, ...) \
-+	do { \
-+		fprintf(stderr, "=== %s: ", (c)->name); \
-+		fprintf(stderr, __VA_ARGS__); \
-+		fprintf(stderr, "\n"); \
-+	} while (0)
-+#else
-+#define TRACE(c, fmt, ...)	do { } while (0)
-+#endif
-+
-+enum checklevel {
-+	IGNORE = 0,
-+	WARN = 1,
-+	ERROR = 2,
-+};
- 
--#define ERRMSG(...) if (quiet < 2) fprintf(stderr, "ERROR: " __VA_ARGS__)
--#define WARNMSG(...) if (quiet < 1) fprintf(stderr, "Warning: " __VA_ARGS__)
-+enum checkstatus {
-+	UNCHECKED = 0,
-+	PREREQ,
-+	PASSED,
-+	FAILED,
-+};
- 
--#define DO_ERR(...) do {ERRMSG(__VA_ARGS__); ok = 0; } while (0)
-+struct check;
- 
--static int check_names(struct node *tree)
+-void fixup_free(struct fixup *f)
 -{
--	struct node *child, *child2;
--	struct property *prop, *prop2;
--	int len = strlen(tree->name);
--	int ok = 1;
-+typedef void (*tree_check_fn)(struct check *c, struct node *dt);
-+typedef void (*node_check_fn)(struct check *c, struct node *dt, struct node *node);
-+typedef void (*prop_check_fn)(struct check *c, struct node *dt,
-+			      struct node *node, struct property *prop);
-+
-+struct check {
-+	const char *name;
-+	tree_check_fn tree_fn;
-+	node_check_fn node_fn;
-+	prop_check_fn prop_fn;
-+	void *data;
-+	enum checklevel level;
-+	enum checkstatus status;
-+	int inprogress;
-+	int num_prereqs;
-+	struct check **prereq;
-+};
- 
--	if (len == 0 && tree->parent)
--		DO_ERR("Empty, non-root nodename at %s\n", tree->fullpath);
-+#define CHECK(nm, tfn, nfn, pfn, d, lvl, ...) \
-+	static struct check *nm##_prereqs[] = { __VA_ARGS__ }; \
-+	static struct check nm = { \
-+		.name = #nm, \
-+		.tree_fn = (tfn), \
-+		.node_fn = (nfn), \
-+		.prop_fn = (pfn), \
-+		.data = (d), \
-+		.level = (lvl), \
-+		.status = UNCHECKED, \
-+		.num_prereqs = ARRAY_SIZE(nm##_prereqs), \
-+		.prereq = nm##_prereqs, \
-+	};
-+
-+#define TREE_CHECK(nm, d, lvl, ...) \
-+	CHECK(nm, check_##nm, NULL, NULL, d, lvl, __VA_ARGS__)
-+#define NODE_CHECK(nm, d, lvl, ...) \
-+	CHECK(nm, NULL, check_##nm, NULL, d, lvl, __VA_ARGS__)
-+#define PROP_CHECK(nm, d, lvl, ...) \
-+	CHECK(nm, NULL, NULL, check_##nm, d, lvl, __VA_ARGS__)
-+#define BATCH_CHECK(nm, lvl, ...) \
-+	CHECK(nm, NULL, NULL, NULL, NULL, lvl, __VA_ARGS__)
-+
-+static inline void check_msg(struct check *c, const char *fmt, ...)
-+{
-+	va_list ap;
-+	va_start(ap, fmt);
-+
-+	if ((c->level < WARN) || (c->level <= quiet))
-+		return; /* Suppress message */
-+
-+	fprintf(stderr, "%s (%s): ",
-+		(c->level == ERROR) ? "ERROR" : "Warning", c->name);
-+	vfprintf(stderr, fmt, ap);
-+	fprintf(stderr, "\n");
-+}
- 
--	if (len > MAX_NODENAME_LEN)
--		WARNMSG("Overlength nodename at %s\n", tree->fullpath);
-+#define FAIL(c, fmt, ...) \
-+	do { \
-+		TRACE((c), "\t\tFAILED at %s:%d", __FILE__, __LINE__); \
-+		(c)->status = FAILED; \
-+		check_msg((c), fmt, __VA_ARGS__); \
-+	} while (0)
- 
--	for_each_property(tree, prop) {
--		/* check for duplicates */
--		/* FIXME: do this more efficiently */
--		for (prop2 = prop->next; prop2; prop2 = prop2->next) {
--			if (streq(prop->name, prop2->name)) {
--				DO_ERR("Duplicate propertyname %s in node %s\n",
--					prop->name, tree->fullpath);
--			}
-+static void check_nodes_props(struct check *c, struct node *dt, struct node *node)
-+{
-+	struct node *child;
-+	struct property *prop;
-+
-+	TRACE(c, "%s", node->fullpath);
-+	if (c->node_fn)
-+		c->node_fn(c, dt, node);
-+
-+	if (c->prop_fn)
-+		for_each_property(node, prop) {
-+			TRACE(c, "%s\t'%s'", node->fullpath, prop->name);
-+			c->prop_fn(c, dt, node, prop);
- 		}
- 
--		/* check name length */
--		if (strlen(prop->name) > MAX_PROPNAME_LEN)
--			WARNMSG("Property name %s is too long in %s\n",
--				prop->name, tree->fullpath);
-+	for_each_child(node, child)
-+		check_nodes_props(c, dt, child);
-+}
-+
-+static int run_check(struct check *c, struct node *dt)
-+{
-+	int error = 0;
-+	int i;
-+
-+	assert(!c->inprogress);
-+
-+	if (c->status != UNCHECKED)
-+		goto out;
-+
-+	c->inprogress = 1;
-+
-+	for (i = 0; i < c->num_prereqs; i++) {
-+		struct check *prq = c->prereq[i];
-+		error |= run_check(prq, dt);
-+		if (prq->status != PASSED) {
-+			c->status = PREREQ;
-+			check_msg(c, "Failed prerequisite '%s'",
-+				  c->prereq[i]->name);
-+		}
- 	}
- 
--	for_each_child(tree, child) {
--		/* Check for duplicates */
-+	if (c->status != UNCHECKED)
-+		goto out;
-+
-+	if (c->node_fn || c->prop_fn)
-+		check_nodes_props(c, dt, dt);
-+
-+	if (c->tree_fn)
-+		c->tree_fn(c, dt);
-+	if (c->status == UNCHECKED)
-+		c->status = PASSED;
-+
-+	TRACE(c, "\tCompleted, status %d", c->status);
-+
-+out:
-+	c->inprogress = 0;
-+	if ((c->status != PASSED) && (c->level == ERROR))
-+		error = 1;
-+	return error;
-+}
-+
-+/*
-+ * Structural check functions
-+ */
-+
-+static void check_duplicate_node_names(struct check *c, struct node *dt,
-+				       struct node *node)
-+{
-+	struct node *child, *child2;
- 
-+	for_each_child(node, child)
- 		for (child2 = child->next_sibling;
- 		     child2;
--		     child2 = child2->next_sibling) {
-+		     child2 = child2->next_sibling)
- 			if (streq(child->name, child2->name))
--				DO_ERR("Duplicate node name %s\n",
--					child->fullpath);
--		}
--		if (! check_names(child))
--			ok = 0;
--	}
-+				FAIL(c, "Duplicate node name %s",
-+				     child->fullpath);
-+}
-+NODE_CHECK(duplicate_node_names, NULL, ERROR);
- 
--	return ok;
-+static void check_duplicate_property_names(struct check *c, struct node *dt,
-+					   struct node *node)
-+{
-+	struct property *prop, *prop2;
-+
-+	for_each_property(node, prop)
-+		for (prop2 = prop->next; prop2; prop2 = prop2->next)
-+			if (streq(prop->name, prop2->name))
-+				FAIL(c, "Duplicate property name %s in %s",
-+				     prop->name, node->fullpath);
- }
-+NODE_CHECK(duplicate_property_names, NULL, ERROR);
- 
--static int check_phandles(struct node *root, struct node *node)
-+static void check_explicit_phandles(struct check *c, struct node *root,
-+					  struct node *node)
+-	free(f->ref);
+-	free(f);
+-}
+-
+ void data_free(struct data d)
  {
- 	struct property *prop;
--	struct node *child, *other;
-+	struct node *other;
- 	cell_t phandle;
--	int ok = 1;
+-	struct fixup *f, *nf;
++	struct marker *m, *nm;
  
- 	prop = get_property(node, "linux,phandle");
--	if (prop) {
--		phandle = propval_cell(prop);
--		if ((phandle == 0) || (phandle == -1)) {
--			DO_ERR("%s has invalid linux,phandle %x\n",
--			       node->fullpath, phandle);
--		} else {
--			other = get_node_by_phandle(root, phandle);
--			if (other)
--				DO_ERR("%s has duplicated phandle %x (seen before at %s)\n",
--				       node->fullpath, phandle, other->fullpath);
-+	if (! prop)
-+		return; /* No phandle, that's fine */
- 
--			node->phandle = phandle;
--		}
-+	if (prop->val.len != sizeof(cell_t)) {
-+		FAIL(c, "%s has bad length (%d) linux,phandle property",
-+		     node->fullpath, prop->val.len);
-+		return;
- 	}
- 
--	for_each_child(node, child)
--		ok = ok && check_phandles(root, child);
-+	phandle = propval_cell(prop);
-+	if ((phandle == 0) || (phandle == -1)) {
-+		FAIL(c, "%s has invalid linux,phandle value 0x%x",
-+		     node->fullpath, phandle);
-+		return;
-+	}
- 
--	return ok;
-+	other = get_node_by_phandle(root, phandle);
-+	if (other) {
-+		FAIL(c, "%s has duplicated phandle 0x%x (seen before at %s)",
-+		     node->fullpath, phandle, other->fullpath);
-+		return;
-+	}
-+
-+	node->phandle = phandle;
- }
-+NODE_CHECK(explicit_phandles, NULL, ERROR);
-+
-+/*
-+ * Reference fixup functions
-+ */
- 
--int check_structure(struct node *dt)
-+static void fixup_phandle_references(struct check *c, struct node *dt,
-+				     struct node *node, struct property *prop)
- {
--	int ok = 1;
-+      struct fixup *f = prop->val.refs;
-+      struct node *refnode;
-+      cell_t phandle;
-+
-+      while (f) {
-+	      assert(f->offset + sizeof(cell_t) <= prop->val.len);
-+
-+	      refnode = get_node_by_ref(dt, f->ref);
-+	      if (! refnode) {
-+		      FAIL(c, "Reference to non-existent node or label \"%s\"\n",
-+			   f->ref);
-+	      } else {
-+		      phandle = get_node_phandle(dt, refnode);
-+
-+		      *((cell_t *)(prop->val.val + f->offset)) = cpu_to_be32(phandle);
-+	      }
-+
-+              prop->val.refs = f->next;
-+              fixup_free(f);
-+              f = prop->val.refs;
-+      }
-+}
-+CHECK(phandle_references, NULL, NULL, fixup_phandle_references, NULL, ERROR,
-+      &duplicate_node_names, &explicit_phandles);
-+
-+static struct check *check_table[] = {
-+	&duplicate_node_names, &duplicate_property_names,
-+	&explicit_phandles,
-+	&phandle_references,
-+};
- 
--	ok = ok && check_names(dt);
--	ok = ok && check_phandles(dt, dt);
-+void process_checks(int force, struct node *dt)
-+{
-+	int i;
-+	int error = 0;
- 
--	return ok;
-+	for (i = 0; i < ARRAY_SIZE(check_table); i++) {
-+		struct check *c = check_table[i];
-+
-+		if (c->level != IGNORE)
-+			error = error || run_check(c, dt);
-+	}
-+
-+	if (error) {
-+		if (!force) {
-+			fprintf(stderr, "ERROR: Input tree has errors, aborting "
-+				"(use -f to force output)\n");
-+			exit(2);
-+		} else if (quiet < 3) {
-+			fprintf(stderr, "Warning: Input tree has errors, "
-+				"output forced\n");
-+		}
-+	}
- }
- 
- /*
-  * Semantic check functions
-  */
- 
-+#define ERRMSG(...) if (quiet < 2) fprintf(stderr, "ERROR: " __VA_ARGS__)
-+#define WARNMSG(...) if (quiet < 1) fprintf(stderr, "Warning: " __VA_ARGS__)
-+
-+#define DO_ERR(...) do {ERRMSG(__VA_ARGS__); ok = 0; } while (0)
-+
- static int must_be_one_cell(struct property *prop, struct node *node)
- {
- 	if (prop->val.len != sizeof(cell_t)) {
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2007-11-22 13:03:05.000000000 +1100
-+++ dtc/dtc.c	2007-11-22 13:03:21.000000000 +1100
-@@ -193,17 +193,7 @@
- 	if (! bi || ! bi->dt)
- 		die("Couldn't read input tree\n");
- 
--	structure_ok = check_structure(bi->dt);
--	if (!structure_ok) {
--		if (!force) {
--			fprintf(stderr, "ERROR: Input tree has structural errors, aborting (use -f to force output)\n");
--			exit(2);
--		} else if (quiet < 3) {
--			fprintf(stderr, "Warning: Input tree has structural errors, output forced\n");
--		}
+-	f = d.refs;
+-	while (f) {
+-		nf = f->next;
+-		fixup_free(f);
+-		f = nf;
 -	}
 -
--	fixup_references(bi->dt);
-+	process_checks(force, bi->dt);
+-	f = d.labels;
+-	while (f) {
+-		nf = f->next;
+-		fixup_free(f);
+-		f = nf;
++	m = d.markers;
++	while (m) {
++		nm = m->next;
++		free(m->ref);
++		free(m);
++		m = nm;
+ 	}
  
- 	if (check) {
- 		if (!structure_ok) {
+ 	assert(!d.val || d.asize);
+@@ -214,37 +202,29 @@
+ 	return d;
+ }
+ 
+-void fixup_merge(struct fixup **fd, struct fixup **fd2, int d1_len)
++struct data data_append_markers(struct data d, struct marker *m)
+ {
+-	struct fixup **ff;
+-	struct fixup *f, *f2;
+-
+-	/* Extract d2's fixups */
+-	f2 = *fd2;
+-	*fd2 = NULL;
+-
+-	/* Tack them onto d's list of fixups */
+-	ff = fd;
+-	while (*ff)
+-		ff = &((*ff)->next);
+-	*ff = f2;
+-
+-	/* And correct them for their new position */
+-	for (f = f2; f; f = f->next)
+-		f->offset += d1_len;
+-
++	struct marker **mp = &d.markers;
+ 
++	/* Find the end of the markerlist */
++	while (*mp)
++		mp = &((*mp)->next);
++	*mp = m;
++	return d;
+ }
+ 
+ struct data data_merge(struct data d1, struct data d2)
+ {
+ 	struct data d;
++	struct marker *m2 = d2.markers;
+ 
+-	d = data_append_data(d1, d2.val, d2.len);
++	d = data_append_markers(data_append_data(d1, d2.val, d2.len), m2);
+ 
+-	fixup_merge(&d.refs, &d2.refs, d1.len);
+-	fixup_merge(&d.labels, &d2.labels, d1.len);
++	/* Adjust for the length of d1 */
++	for_each_marker(m2)
++		m2->offset += d1.len;
+ 
++	d2.markers = NULL; /* So data_free() doesn't clobber them */
+ 	data_free(d2);
+ 
+ 	return d;
+@@ -294,42 +274,17 @@
+ 	return data_append_zeroes(d, newlen - d.len);
+ }
+ 
+-struct data data_add_fixup(struct data d, char *ref)
++struct data data_add_marker(struct data d, enum markertype type, char *ref)
+ {
+-	struct fixup *f;
+-	struct data nd;
++	struct marker *m;
+ 
+-	f = xmalloc(sizeof(*f));
+-	f->offset = d.len;
+-	f->ref = ref;
+-	f->next = d.refs;
++	m = xmalloc(sizeof(*m));
++	m->offset = d.len;
++	m->type = type;
++	m->ref = ref;
++	m->next = NULL;
+ 
+-	nd = d;
+-	nd.refs = f;
+-
+-	return nd;
+-}
+-
+-struct data data_add_label(struct data d, char *label)
+-{
+-	struct fixup *f, **p;
+-	struct data nd;
+-
+-	f = xmalloc(sizeof(*f));
+-	f->offset = d.len;
+-	f->ref = label;
+-
+-	nd = d;
+-	p = &nd.labels;
+-
+-	/* adding to end keeps them sorted */
+-	while (*p)
+-		p = &((*p)->next);
+-
+-	f->next = *p;
+-	*p = f;
+-
+-	return nd;
++	return data_append_markers(d, m);
+ }
+ 
+ int data_is_one_string(struct data d)
+Index: dtc/dtc-parser.y
+===================================================================
+--- dtc.orig/dtc-parser.y	2007-11-22 13:54:57.000000000 +1100
++++ dtc/dtc-parser.y	2007-11-22 14:38:39.000000000 +1100
+@@ -194,7 +194,7 @@
+ 		}
+ 	| propdata DT_LABEL
+ 		{
+-			$$ = data_add_label($1, $2);
++			$$ = data_add_marker($1, LABEL, $2);
+ 		}
+ 	;
+ 
+@@ -209,7 +209,7 @@
+ 		}
+ 	| propdataprefix DT_LABEL
+ 		{
+-			$$ = data_add_label($1, $2);
++			$$ = data_add_marker($1, LABEL, $2);
+ 		}
+ 	;
+ 
+@@ -224,11 +224,12 @@
+ 		}
+ 	| celllist DT_REF
+ 		{
+-			$$ = data_append_cell(data_add_fixup($1, $2), -1);
++			$$ = data_append_cell(data_add_marker($1, REF_PHANDLE,
++							      $2), -1);
+ 		}
+ 	| celllist DT_LABEL
+ 		{
+-			$$ = data_add_label($1, $2);
++			$$ = data_add_marker($1, LABEL, $2);
+ 		}
+ 	;
+ 
+@@ -262,7 +263,7 @@
+ 		}
+ 	| bytestring DT_LABEL
+ 		{
+-			$$ = data_add_label($1, $2);
++			$$ = data_add_marker($1, LABEL, $2);
+ 		}
+ 	;
+ 
 Index: dtc/dtc.h
 ===================================================================
---- dtc.orig/dtc.h	2007-11-22 13:03:05.000000000 +1100
-+++ dtc/dtc.h	2007-11-22 13:54:57.000000000 +1100
-@@ -193,9 +193,11 @@
- struct property *get_property(struct node *node, char *propname);
- cell_t propval_cell(struct property *prop);
- struct node *get_subnode(struct node *node, char *nodename);
-+struct node *get_node_by_path(struct node *tree, char *path);
-+struct node *get_node_by_label(struct node *tree, const char *label);
- struct node *get_node_by_phandle(struct node *tree, cell_t phandle);
--
--void fixup_references(struct node *dt);
-+struct node *get_node_by_ref(struct node *tree, char *ref);
-+cell_t get_node_phandle(struct node *root, struct node *node);
+--- dtc.orig/dtc.h	2007-11-22 13:54:57.000000000 +1100
++++ dtc/dtc.h	2007-11-22 14:38:39.000000000 +1100
+@@ -101,23 +101,34 @@
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
  
- /* Boot info (tree plus memreserve information */
- 
-@@ -224,7 +226,7 @@
- 
- /* Checks */
- 
--int check_structure(struct node *dt);
-+void process_checks(int force, struct node *dt);
- int check_semantics(struct node *dt, int outversion, int boot_cpuid_phys);
- 
- /* Flattened trees */
-Index: dtc/livetree.c
-===================================================================
---- dtc.orig/livetree.c	2007-11-22 13:03:05.000000000 +1100
-+++ dtc/livetree.c	2007-11-22 13:23:08.000000000 +1100
-@@ -216,7 +216,7 @@
- 	return NULL;
- }
- 
--static struct node *get_node_by_path(struct node *tree, char *path)
-+struct node *get_node_by_path(struct node *tree, char *path)
- {
- 	char *p;
- 	struct node *child;
-@@ -239,7 +239,7 @@
- 	return NULL;
- }
- 
--static struct node *get_node_by_label(struct node *tree, const char *label)
-+struct node *get_node_by_label(struct node *tree, const char *label)
- {
- 	struct node *child, *node;
- 
-@@ -275,7 +275,15 @@
- 	return NULL;
- }
- 
--static cell_t get_node_phandle(struct node *root, struct node *node)
-+struct node *get_node_by_ref(struct node *tree, char *ref)
-+{
-+	if (ref[0] == '/')
-+		return get_node_by_path(tree, ref);
-+	else
-+		return get_node_by_label(tree, ref);
-+}
-+
-+cell_t get_node_phandle(struct node *root, struct node *node)
- {
- 	static cell_t phandle = 1; /* FIXME: ick, static local */
- 
-@@ -295,56 +303,3 @@
- 
- 	return node->phandle;
- }
--
--/*
-- * Reference fixup functions
-- */
--
--static void apply_fixup(struct node *root, struct property *prop,
--			struct fixup *f)
--{
--	struct node *refnode;
--	cell_t phandle;
--
--	if (f->ref[0] == '/') {
--		/* Reference to full path */
--		refnode = get_node_by_path(root, f->ref);
--		if (! refnode)
--			die("Reference to non-existent node \"%s\"\n", f->ref);
--	} else {
--		refnode = get_node_by_label(root, f->ref);
--		if (! refnode)
--			die("Reference to non-existent node label \"%s\"\n", f->ref);
--	}
--
--	phandle = get_node_phandle(root, refnode);
--
--	assert(f->offset + sizeof(cell_t) <= prop->val.len);
--
--	*((cell_t *)(prop->val.val + f->offset)) = cpu_to_be32(phandle);
--}
--
--static void fixup_phandles(struct node *root, struct node *node)
--{
--	struct property *prop;
--	struct node *child;
--
--	for_each_property(node, prop) {
--		struct fixup *f = prop->val.refs;
--
--		while (f) {
--			apply_fixup(root, prop, f);
--			prop->val.refs = f->next;
--			fixup_free(f);
--			f = prop->val.refs;
--		}
--	}
--
--	for_each_child(node, child)
--		fixup_phandles(root, child);
--}
--
--void fixup_references(struct node *dt)
--{
--	fixup_phandles(dt, dt);
--}
-Index: dtc/tests/nonexist-label-ref.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/nonexist-label-ref.dts	2007-11-22 13:03:45.000000000 +1100
-@@ -0,0 +1,8 @@
-+/dts-v1/;
-+
-+/ {
-+	ref = <&label>;
-+	badref = <&nosuchlabel>;
-+	label: node {
-+	};
+ /* Data blobs */
+-struct fixup {
++enum markertype {
++	REF_PHANDLE,
++	LABEL,
 +};
-Index: dtc/tests/nonexist-node-ref.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ dtc/tests/nonexist-node-ref.dts	2007-11-22 13:03:45.000000000 +1100
-@@ -0,0 +1,8 @@
-+/dts-v1/;
 +
-+/ {
-+	ref = < &/node >;
-+	badref = < &/nosuchnode >;
-+	label: node {
-+	};
-+};
-Index: dtc/tests/run_tests.sh
++struct  marker {
++	enum markertype type;
+ 	int offset;
+ 	char *ref;
+-	struct fixup *next;
++	struct marker *next;
+ };
+ 
+ struct data {
+ 	int len;
+ 	char *val;
+ 	int asize;
+-	struct fixup *refs;
+-	struct fixup *labels;
++	struct marker *markers;
+ };
+ 
++
+ #define empty_data ((struct data){ /* all .members = 0 or NULL */ })
+ 
+-void fixup_free(struct fixup *f);
++#define for_each_marker(m) \
++	for (; (m); (m) = (m)->next)
++#define for_each_marker_of_type(m, t) \
++	for_each_marker(m) \
++		if ((m)->type == (t))
++
+ void data_free(struct data d);
+ 
+ struct data data_grow_for(struct data d, int xlen);
+@@ -135,8 +146,7 @@
+ struct data data_append_zeroes(struct data d, int len);
+ struct data data_append_align(struct data d, int align);
+ 
+-struct data data_add_fixup(struct data d, char *ref);
+-struct data data_add_label(struct data d, char *label);
++struct data data_add_marker(struct data d, enum markertype type, char *ref);
+ 
+ int data_is_one_string(struct data d);
+ 
+Index: dtc/flattree.c
 ===================================================================
---- dtc.orig/tests/run_tests.sh	2007-11-22 13:03:20.000000000 +1100
-+++ dtc/tests/run_tests.sh	2007-11-22 13:54:56.000000000 +1100
-@@ -158,6 +158,8 @@
-     run_test dtc-checkfails.sh -I dts -O dtb dup-phandle.dts
-     run_test dtc-checkfails.sh -I dts -O dtb zero-phandle.dts
-     run_test dtc-checkfails.sh -I dts -O dtb minusone-phandle.dts
-+    run_test dtc-checkfails.sh -I dts -O dtb nonexist-node-ref.dts
-+    run_test dtc-checkfails.sh -I dts -O dtb nonexist-label-ref.dts
+--- dtc.orig/flattree.c	2007-11-22 13:54:57.000000000 +1100
++++ dtc/flattree.c	2007-11-22 14:02:49.000000000 +1100
+@@ -162,12 +162,13 @@
+ {
+ 	FILE *f = e;
+ 	int off = 0;
+-	struct fixup *l;
++	struct marker *m;
+ 
+-	l = d.labels;
+-	while (l) {
+-		emit_offset_label(f, l->ref, l->offset);
+-		l = l->next;
++	m = d.markers;
++	while (m) {
++		if (m->type == LABEL)
++			emit_offset_label(f, m->ref, m->offset);
++		m = m->next;
+ 	}
+ 
+ 	while ((d.len - off) >= sizeof(u32)) {
+Index: dtc/treesource.c
+===================================================================
+--- dtc.orig/treesource.c	2007-11-22 13:54:57.000000000 +1100
++++ dtc/treesource.c	2007-11-22 14:02:49.000000000 +1100
+@@ -61,7 +61,7 @@
+ 	char *str = val.val;
+ 	int i;
+ 	int newchunk = 1;
+-	struct fixup *l = val.labels;
++	struct marker *m = val.markers;
+ 
+ 	assert(str[val.len-1] == '\0');
+ 
+@@ -69,10 +69,12 @@
+ 		char c = str[i];
+ 
+ 		if (newchunk) {
+-			while (l && (l->offset <= i)) {
+-				assert(l->offset == i);
+-				fprintf(f, "%s: ", l->ref);
+-				l = l->next;
++			while (m && (m->offset <= i)) {
++				if (m->type == LABEL) {
++					assert(m->offset == i);
++					fprintf(f, "%s: ", m->ref);
++				}
++				m = m->next;
+ 			}
+ 			fprintf(f, "\"");
+ 			newchunk = 0;
+@@ -120,10 +122,9 @@
+ 	fprintf(f, "\"");
+ 
+ 	/* Wrap up any labels at the end of the value */
+-	while (l) {
+-		assert (l->offset == val.len);
+-		fprintf(f, " %s:", l->ref);
+-		l = l->next;
++	for_each_marker_of_type(m, LABEL) {
++		assert (m->offset == val.len);
++		fprintf(f, " %s:", m->ref);
+ 	}
  }
  
- while getopts "vt:m" ARG ; do
+@@ -131,14 +132,16 @@
+ {
+ 	void *propend = val.val + val.len;
+ 	cell_t *cp = (cell_t *)val.val;
+-	struct fixup *l = val.labels;
++	struct marker *m = val.markers;
+ 
+ 	fprintf(f, "<");
+ 	for (;;) {
+-		while (l && (l->offset <= ((char *)cp - val.val))) {
+-			assert(l->offset == ((char *)cp - val.val));
+-			fprintf(f, "%s: ", l->ref);
+-			l = l->next;
++		while (m && (m->offset <= ((char *)cp - val.val))) {
++			if (m->type == LABEL) {
++				assert(m->offset == ((char *)cp - val.val));
++				fprintf(f, "%s: ", m->ref);
++			}
++			m = m->next;
+ 		}
+ 
+ 		fprintf(f, "0x%x", be32_to_cpu(*cp++));
+@@ -148,10 +151,9 @@
+ 	}
+ 
+ 	/* Wrap up any labels at the end of the value */
+-	while (l) {
+-		assert (l->offset == val.len);
+-		fprintf(f, " %s:", l->ref);
+-		l = l->next;
++	for_each_marker_of_type(m, LABEL) {
++		assert (m->offset == val.len);
++		fprintf(f, " %s:", m->ref);
+ 	}
+ 	fprintf(f, ">");
+ }
+@@ -160,13 +162,14 @@
+ {
+ 	void *propend = val.val + val.len;
+ 	char *bp = val.val;
+-	struct fixup *l = val.labels;
++	struct marker *m = val.markers;
+ 
+ 	fprintf(f, "[");
+ 	for (;;) {
+-		while (l && (l->offset == (bp-val.val))) {
+-			fprintf(f, "%s: ", l->ref);
+-			l = l->next;
++		while (m && (m->offset == (bp-val.val))) {
++			if (m->type == LABEL)
++				fprintf(f, "%s: ", m->ref);
++			m = m->next;
+ 		}
+ 
+ 		fprintf(f, "%02hhx", *bp++);
+@@ -176,10 +179,9 @@
+ 	}
+ 
+ 	/* Wrap up any labels at the end of the value */
+-	while (l) {
+-		assert (l->offset == val.len);
+-		fprintf(f, " %s:", l->ref);
+-		l = l->next;
++	for_each_marker_of_type(m, LABEL) {
++		assert (m->offset == val.len);
++		fprintf(f, " %s:", m->ref);
+ 	}
+ 	fprintf(f, "]");
+ }
+@@ -188,7 +190,7 @@
+ {
+ 	int len = prop->val.len;
+ 	char *p = prop->val.val;
+-	struct fixup *l;
++	struct marker *m = prop->val.markers;
+ 	int nnotstring = 0, nnul = 0;
+ 	int nnotstringlbl = 0, nnotcelllbl = 0;
+ 	int i;
+@@ -205,10 +207,10 @@
+ 			nnul++;
+ 	}
+ 
+-	for (l = prop->val.labels; l; l = l->next) {
+-		if ((l->offset > 0) && (prop->val.val[l->offset - 1] != '\0'))
++	for_each_marker_of_type(m, LABEL) {
++		if ((m->offset > 0) && (prop->val.val[m->offset - 1] != '\0'))
+ 			nnotstringlbl++;
+-		if ((l->offset % sizeof(cell_t)) != 0)
++		if ((m->offset % sizeof(cell_t)) != 0)
+ 			nnotcelllbl++;
+ 	}
+ 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
