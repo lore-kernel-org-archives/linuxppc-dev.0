@@ -1,17 +1,21 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D33A1DDEC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 04:35:17 +1100 (EST)
-Message-ID: <4745BDC9.3080602@scram.de>
-Date: Thu, 22 Nov 2007 18:35:05 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
+	by ozlabs.org (Postfix) with ESMTP id 4394CDDEEE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 05:36:30 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so482879anc
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 10:36:29 -0800 (PST)
+Message-ID: <fa686aa40711221036n6438c252lde71cffdaff97ea9@mail.gmail.com>
+Date: Thu, 22 Nov 2007 11:36:29 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jochen Friedrich" <jochen@scram.de>
+Subject: Re: [RFC/PATCH] powerpc: Move CPM command handling into the cpm
+	drivers
+In-Reply-To: <4745BB5F.6060002@scram.de>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH revised 3/4] powerpc: Add EXPORT_SYMBOL_GPL for symbols
-	required by fs_enet and cpm_uart
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4745BB5F.6060002@scram.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,70 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
-cpm2_common.c. Add EXPORT_SYMBOL_GPL for cpmp, cpm_setbrg and cpm2_immr,
-so the drivers can be compiled as modules.
+On 11/22/07, Jochen Friedrich <jochen@scram.de> wrote:
+> This patch moves the CPM command handling into commproc.c
+> for CPM1 and cpm2_common.c. This is yet another preparation
+> to get rid of drivers accessing the CPM via the global cpmp.
+>
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/powerpc/sysdev/commproc.c          |   20 ++++++++++++++++++++
+>  arch/powerpc/sysdev/cpm2_common.c       |   17 +++++++++++++++++
+>  drivers/net/fs_enet/mac-fcc.c           |   10 +---------
+>  drivers/net/fs_enet/mac-scc.c           |   11 +----------
+>  drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
+>  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
+>  include/asm-powerpc/cpm.h               |    1 +
+>  7 files changed, 42 insertions(+), 31 deletions(-)
+>
+> diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+> index f6a6378..2bddbde 100644
+> --- a/arch/powerpc/sysdev/commproc.c
+> +++ b/arch/powerpc/sysdev/commproc.c
+> @@ -240,6 +240,26 @@ void __init cpm_reset(void)
+>  #endif
+>  }
+>
+> +#define MAX_CR_CMD_LOOPS        10000
+> +
+> +int cpm_command(u32 command, u8 opcode)
+> +{
+> +       int i;
+> +
+> +       if (command & 0xffffff0f)
+> +               return -EINVAL;
+> +
+> +       out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
+> +       for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+> +               if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
+> +                       return 0;
+> +
+> +       printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+> +               __FUNCTION__);
+> +       return -EIO;
 
-  Building modules, stage 2.
-  MODPOST 5 modules
-ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
-ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+Do these need to be protected with a spin lock?
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
-Acked-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/sysdev/commproc.c    |    3 +++
- arch/powerpc/sysdev/cpm2_common.c |    3 +++
- 2 files changed, 6 insertions(+), 0 deletions(-)
+Cheers,
+g.
 
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index f6a6378..ddbe138 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
- static uint host_buffer; /* One page of host buffer */
- static uint host_end;    /* end + 1 */
- cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
-+EXPORT_SYMBOL_GPL(cpmp);
-+
- immap_t __iomem *mpc8xx_immr;
- static cpic8xx_t __iomem *cpic_reg;
-
-@@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
- 		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) << 1) |
- 		             CPM_BRG_EN | CPM_BRG_DIV16);
- }
-+EXPORT_SYMBOL_GPL(cpm_setbrg);
-
- #ifndef CONFIG_PPC_CPM_NEW_BINDING
- /*
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-index 859362f..b878a67 100644
---- a/arch/powerpc/sysdev/cpm2_common.c
-+++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
- #endif
-
- cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-+EXPORT_SYMBOL_GPL(cpmp);
-
- /* We allocate this here because it is used almost exclusively for
-  * the communication processor devices.
-  */
- cpm2_map_t __iomem *cpm2_immr;
-+EXPORT_SYMBOL_GPL(cpm2_immr);
-
- #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
- 					   of space for CPM as it is larger
-@@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
-
- 	cpm2_unmap(bp);
- }
-+EXPORT_SYMBOL_GPL(cpm_setbrg);
-
- /* This function is used to set high speed synchronous baud rate
-  * clocks.
 -- 
-1.5.3.4
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
