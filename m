@@ -1,21 +1,22 @@
-Return-Path: <jacmet@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id A5187DDDF4
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 00:48:29 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so386867uge
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 05:48:28 -0800 (PST)
-To: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
+	by ozlabs.org (Postfix) with ESMTP id AF8D3DDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 01:35:14 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so470267anc
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 06:35:13 -0800 (PST)
+Message-ID: <fa686aa40711220635g1aa7dcc9w823de6a8c2d5832a@mail.gmail.com>
+Date: Thu, 22 Nov 2007 07:35:13 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Peter Korsgaard" <jacmet@sunsite.dk>
 Subject: Re: Xilinx Linux git server available
-References: <20071114015615.12B9B1528050@mail173-sin.bigfish.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Thu, 22 Nov 2007 14:48:14 +0100
-In-Reply-To: <20071114015615.12B9B1528050@mail173-sin.bigfish.com> (Wolfgang
-	Reissnegger's message of "Tue\, 13 Nov 2007 17\:56\:42 -0800")
-Message-ID: <8763zufl29.fsf@macbook.be.48ers.dk>
+In-Reply-To: <8763zufl29.fsf@macbook.be.48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Peter Korsgaard <jacmet@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071114015615.12B9B1528050@mail173-sin.bigfish.com>
+	<8763zufl29.fsf@macbook.be.48ers.dk>
+Cc: linuxppc-dev@ozlabs.org,
+	Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "Wolfgang" == Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com> writes:
+On 11/22/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
+> >>>>> "Wolfgang" == Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com> writes:
+>
+> Hi,
+>
+>  Wolfgang> The kernel includes drivers to support the following Xilinx IP cores:
+>  Wolfgang>   * EMAC, EMACLITE, TEMAC, LLTEMAC
+>  Wolfgang>   * UART, UARTLITE
+>
+> Why another uartlite driver? What's wrong with mine in mainline?
 
-Hi,
+Relax; he's talking about your driver.
 
- Wolfgang> The kernel includes drivers to support the following Xilinx IP cores:
- Wolfgang>   * EMAC, EMACLITE, TEMAC, LLTEMAC
- Wolfgang>   * UART, UARTLITE
-
-Why another uartlite driver? What's wrong with mine in mainline?
+g.
 
 -- 
-Bye, Peter Korsgaard
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
