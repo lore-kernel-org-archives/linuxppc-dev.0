@@ -1,12 +1,13 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id ED748DDF5F
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 04:48:30 +1100 (EST)
-Date: Fri, 23 Nov 2007 20:53:51 +0300
+	by ozlabs.org (Postfix) with ESMTP id 7AB97DDF02
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 04:48:35 +1100 (EST)
+Date: Fri, 23 Nov 2007 20:53:56 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-Subject: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device driver
-Message-ID: <20071123175351.GB27338@localhost.localdomain>
+Subject: [PATCH 3/3] [POWERPC] MPC8349E-mITX: introduce pata node,
+	make use pata_of_platform driver
+Message-ID: <20071123175356.GC27338@localhost.localdomain>
 References: <20071123175229.GA27143@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -23,138 +24,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/ata/Kconfig            |   10 +++++
- drivers/ata/Makefile           |    1 +
- drivers/ata/pata_of_platform.c |   88 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 99 insertions(+), 0 deletions(-)
- create mode 100644 drivers/ata/pata_of_platform.c
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |    9 +++++++--
+ arch/powerpc/platforms/83xx/mpc834x_itx.c |   17 +++++++++++++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index ba63619..5a492fa 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -614,6 +614,16 @@ config PATA_PLATFORM
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 5072f6d..898c294 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -249,6 +249,11 @@
+ 		device_type = "pci";
+ 	};
  
- 	  If unsure, say N.
- 
-+config PATA_OF_PLATFORM
-+	tristate "OpenFirmware platform device PATA support"
-+	depends on PATA_PLATFORM && PPC_OF
-+	help
-+	  This option enables support for generic directly connected ATA
-+	  devices commonly found on embedded systems with OpenFirmware
-+	  bindings.
-+
-+	  If unsure, say N.
-+
- config PATA_ICSIDE
- 	tristate "Acorn ICS PATA support"
- 	depends on ARM && ARCH_ACORN
-diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-index b13feb2..ebcee64 100644
---- a/drivers/ata/Makefile
-+++ b/drivers/ata/Makefile
-@@ -67,6 +67,7 @@ obj-$(CONFIG_PATA_IXP4XX_CF)	+= pata_ixp4xx_cf.o
- obj-$(CONFIG_PATA_SCC)		+= pata_scc.o
- obj-$(CONFIG_PATA_BF54X)	+= pata_bf54x.o
- obj-$(CONFIG_PATA_PLATFORM)	+= pata_platform.o
-+obj-$(CONFIG_PATA_OF_PLATFORM)	+= pata_of_platform.o
- obj-$(CONFIG_PATA_ICSIDE)	+= pata_icside.o
- # Should be last but two libata driver
- obj-$(CONFIG_PATA_ACPI)		+= pata_acpi.o
-diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
-new file mode 100644
-index 0000000..b4eca70
---- /dev/null
-+++ b/drivers/ata/pata_of_platform.c
-@@ -0,0 +1,88 @@
-+/*
-+ * OF-platform PATA driver
-+ *
-+ * Copyright (c) 2007  MontaVista Software, Inc.
-+ *                     Anton Vorontsov <avorontsov@ru.mvista.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License (Version 2) as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
+-
+-
++	pata@f0000000 {
++		compatible = "fsl,mpc8349emitx", "pata-platform";
++		reg = <f0000000 10 f000020c 4>;
++		ioport-shift = <1>;
++		interrupts = <17 8>;
++		interrupt-parent = <&ipic>;
++	};
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index aa76819..150fafb 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -23,6 +23,7 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
 +#include <linux/of_platform.h>
-+#include "pata_platform.h"
-+
-+static int __devinit pata_of_platform_probe(struct of_device *ofdev,
-+					    const struct of_device_id *match)
-+{
-+	int ret;
-+	struct device_node *dn = ofdev->node;
-+	struct resource io_res;
-+	struct resource ctl_res;
-+	struct resource irq_res;
-+	unsigned int ioport_shift = 0;
-+	uint32_t *prop;
-+
-+	ret = of_address_to_resource(dn, 0, &io_res);
-+	if (ret) {
-+		dev_err(&ofdev->dev, "can't get IO address from "
-+			"device tree\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_address_to_resource(dn, 1, &ctl_res);
-+	if (ret) {
-+		dev_err(&ofdev->dev, "can't get CTL address from "
-+			"device tree\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = of_irq_to_resource(dn, 0, &irq_res);
-+	if (ret == NO_IRQ)
-+		irq_res.start = irq_res.end = -1;
-+	else
-+		irq_res.flags = 0;
-+
-+	prop = (uint32_t *)of_get_property(dn, "ioport-shift", NULL);
-+	if (prop)
-+		ioport_shift = *prop;
-+
-+	return __pata_platform_probe(&ofdev->dev, &io_res, &ctl_res, &irq_res,
-+				     ioport_shift);
-+}
-+
-+static int __devexit pata_of_platform_remove(struct of_device *ofdev)
-+{
-+	return __pata_platform_remove(&ofdev->dev);
-+}
-+
-+static struct of_device_id pata_of_platform_match[] = {
-+	{
-+		.compatible = "pata-platform",
-+	},
+ 
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+@@ -37,6 +38,22 @@
+ 
+ #include "mpc83xx.h"
+ 
++static struct of_device_id mpc834x_ids[] = {
++	{ .compatible = "pata-platform", },
++	{},
 +};
 +
-+static struct of_platform_driver pata_of_platform_driver = {
-+	.name		= "pata_of_platform",
-+	.match_table	= pata_of_platform_match,
-+	.probe		= pata_of_platform_probe,
-+	.remove		= __devexit_p(pata_of_platform_remove),
-+};
-+
-+static int __init pata_of_platform_init(void)
++static int __init mpc834x_declare_of_platform_devices(void)
 +{
-+	return of_register_platform_driver(&pata_of_platform_driver);
-+}
-+module_init(pata_of_platform_init);
++	if (!machine_is(mpc834x_itx))
++		return 0;
 +
-+static void __exit pata_platform_exit(void)
-+{
-+	of_unregister_platform_driver(&pata_of_platform_driver);
-+}
-+module_exit(pata_platform_exit);
++	of_platform_bus_probe(NULL, mpc834x_ids, NULL);
 +
-+MODULE_DESCRIPTION("OF-platform PATA driver");
-+MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
-+MODULE_LICENSE("GPL");
++	return 0;
++}
++device_initcall(mpc834x_declare_of_platform_devices);
++
+ /* ************************************************************************
+  *
+  * Setup the architecture
 -- 
 1.5.2.2
