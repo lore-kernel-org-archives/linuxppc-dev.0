@@ -2,19 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 41816DDEC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 07:37:33 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D425DDDEBE
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 07:48:50 +1100 (EST)
 Subject: Re: time accounting problem (powerpc only?)
 From: Johannes Berg <johannes@sipsolutions.net>
 To: =?ISO-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-In-Reply-To: <slrnfkdnma.681.joerg@alea.gnuu.de>
+In-Reply-To: <1195850245.4149.170.camel@johannes.berg>
 References: <1195814816.4149.94.camel@johannes.berg>
 	<slrnfkdnma.681.joerg@alea.gnuu.de>
+	<1195850245.4149.170.camel@johannes.berg>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-pTvK+/p4L9+B+N0KSOVw"
-Date: Fri, 23 Nov 2007 21:37:25 +0100
-Message-Id: <1195850245.4149.170.camel@johannes.berg>
+	boundary="=-XC8BhilXGUmiYUrCxzVK"
+Date: Fri, 23 Nov 2007 21:48:42 +0100
+Message-Id: <1195850922.4149.175.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,66 +28,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-pTvK+/p4L9+B+N0KSOVw
+--=-XC8BhilXGUmiYUrCxzVK
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
 
-> % diff /proc/interrupts <(sleep 2; cat /proc/interrupts)
-> --- /proc/interrupts    2007-11-23 15:04:06.004846901 +0100
-> +++ /proc/self/fd/11    2007-11-23 15:04:05.952841422 +0100
-> @@ -1,15 +1,15 @@
->             CPU0      =20
->   21:          5   MPIC 1    Edge      PMac Output
->   24:         68   MPIC 1    Level     ide1
-> - 25:   18063968   MPIC 1    Level     VIA-PMU
-> + 25:   18064241   MPIC 1    Level     VIA-PMU
->   26:       2426   MPIC 1    Level     keywest i2c
->   29:          1   MPIC 1    Level     ohci_hcd:usb2
->   30:          1   MPIC 1    Edge      PMac Input
->   39:     843910   MPIC 1    Level     ide0
->   41:     990592   MPIC 1    Level     eth0
-> - 42:    1415066   MPIC 1    Level     keywest i2c
-> - 47:    2075159   MPIC 1    Level     GPIO1 ADB
-> - 48:    6686659   MPIC 1    Level     radeon@pci:0000:00:10.0
-> + 42:    1415084   MPIC 1    Level     keywest i2c
-> + 47:    2075193   MPIC 1    Level     GPIO1 ADB
-> + 48:    6686778   MPIC 1    Level     radeon@pci:0000:00:10.0
->   61:          0   MPIC 1    Edge      Sound Headphone Detection
->   63:      94238   MPIC 1    Level     ehci_hcd:usb1, ohci_hcd:usb3, ohci=
-_hcd:usb4
->  BAD:         19
->=20
-> I don't know where they come from, but that's the cause of the high IRQ
-> time.
+On Fri, 2007-11-23 at 21:37 +0100, Johannes Berg wrote:
+> Hi,
 
-Are you sure about that? I'm fairly sure that I always had rather high
-numbers of interrupt here. And the system isn't sluggish or unresponsive
-as you'd expect if the IRQs actually did take 90% of the CPU time!
+> > - 25:   18063968   MPIC 1    Level     VIA-PMU
+> > + 25:   18064241   MPIC 1    Level     VIA-PMU
+
+> > - 42:    1415066   MPIC 1    Level     keywest i2c
+> > - 47:    2075159   MPIC 1    Level     GPIO1 ADB
+> > - 48:    6686659   MPIC 1    Level     radeon@pci:0000:00:10.0
+> > + 42:    1415084   MPIC 1    Level     keywest i2c
+> > + 47:    2075193   MPIC 1    Level     GPIO1 ADB
+> > + 48:    6686778   MPIC 1    Level     radeon@pci:0000:00:10.0
+
+> Are you sure about that? I'm fairly sure that I always had rather high
+> numbers of interrupt here. And the system isn't sluggish or unresponsive
+> as you'd expect if the IRQs actually did take 90% of the CPU time!
+
+Also, I'm pretty sure I see the same on my powermac (haven't tested but
+I did see the same symptoms) and it has neither a PMU nor radeon :)
 
 johannes
 
---=-pTvK+/p4L9+B+N0KSOVw
+--=-XC8BhilXGUmiYUrCxzVK
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUAR0c6BKVg1VMiehFYAQLyFhAAxIiqmxyefycxOoI4sfp/DImTmm8fWxlY
-5yDObXEUaPLInr4PxVw8YzpW5zHxmQVkuJBBbdVcNzxa9Z/uX4FIh3Sd53LuNUOq
-9gTTdl1EgCKNLKKZAxK+qBmz7Z66Kb5sFLogqJBin5jUgJER24ITz++LfhLta5AE
-qBUCfNP73L88QSGSoj1hr4cQiJTj9ULC3Ap7ZVsvvS91MI/WY/dqnJ1y1FW2Df6R
-+oqqRTYmdGhn0/4lrL14LpOteT4Hx/kR5oAff9cED55ucufVZdI1h5S2/HCDQroB
-gt5/1ywjbyBQcXsGhznFU7KTqkgRbmEhhEfBI356egv9yjlUppNLvb+MVJx72Xdc
-8kP+ndYalNzbDKu9OWIrgcZv9CqflSSSQORGV+Uj6Gz2fj8IkgPPq0glh//bDK4e
-UtmP8KJbROT95ZcdbaemBAJVF4sPAQmkx0FEeO6Sp2EPgqwOz+UyMWEEdzJTcZ9H
-bSgMFONLxlgGSrfDbLpXq4X+iOKvfKseeRr/5a/skxKbemx+GKT52J7aOBDbCGIl
-IfJQlRbkpAre2PGuKrqhvVuBL2/2dQnycUsss/OKPAeY6TtiazGOIn+gYZFllv2r
-y0jcZ8jBF10+BoudOM4jslqH/ln0oQjtQDXrAJqLx3S/BVwcgwHw2fxZwsODTS3U
-s1bdGxh4HmU=
-=cPE6
+iQIVAwUAR0c8qaVg1VMiehFYAQKeCg/9EQg9Y/7+0kqMtdG/IlSCmzBKEPozkuDb
+8WQYFz3MWvCVV4gz122nKifiBqoKgEQq+UT8L2g2LFU2gdWQNpjDcsQy2YAmD2v+
+f0y01VDrsMb+mQz/8jcAguiXJZB8N86GnwSBWr9moQnGmMB+qKoRtQQTUpy+I+0Q
+60hhvuEZVovC90ZYuwt8/Tuzv108UwJjelo2Qmm1K6RPkdiCCrWZr158UEbS6iXr
+i3pyqbBjGtV08zrpDAKbTPWZ3a4tVCr19/RPJjbeNOvgdApmzoWk6MM/oXTou6WG
+2qnoJqIk8Qtil2bE9/ro2sIlOcO09HwBXUdlMjwywymy8uQs+JtRecJ3aMA97I2h
+2S549YzurNCAPSOYO175uQO9PTbp26/e2C3Fqzc0UV26b4ydZk9HYkZ5XWoLdH9O
+M9xM+mmfVwWHBcvEkjM7M6eFeYk0XNcC2SZKVcHC/CgZPO/wb7qoVDDc+TwL57oy
+bVq/9f41BdeXBFDJXU/vw20XR3IAEtd7CIvg0mhuH/nQ0UWb2U3iYgfWBcgrILz7
+Wl4LaI8sZMKdjZYWxdJE6xEevCSrvgK+6MlGqtYjM2uXkfC1VPLjdJ1FBqEzKqz3
+gTT2snSO8sPGCTtOIAM+4zedikPEHwOaPlQ0yJXLt6jwpxVG48C3uEeFGCzmc7mC
+79I842v8RDw=
+=pvbJ
 -----END PGP SIGNATURE-----
 
---=-pTvK+/p4L9+B+N0KSOVw--
+--=-XC8BhilXGUmiYUrCxzVK--
