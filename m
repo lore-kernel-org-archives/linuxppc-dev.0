@@ -1,17 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 85790DDE1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 23:16:21 +1100 (EST)
-Subject: time accounting problem (powerpc only?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 23 Nov 2007 11:46:56 +0100
-Message-Id: <1195814816.4149.94.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
+	by ozlabs.org (Postfix) with ESMTP id 3CA89DDE3C
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 02:03:11 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3873980wag
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 07:03:10 -0800 (PST)
+Message-ID: <9e4733910711230703w3a8ba108ybfdd0a9f2bf6f537@mail.gmail.com>
+Date: Fri, 23 Nov 2007 10:03:09 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: benh@kernel.crashing.org
+Subject: Re: Hardware debuggers for PPC74xx G4 CPUs
+In-Reply-To: <1195777323.6970.153.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071118004729.67824247F1@gemini.denx.de>
+	<1195774625.6970.145.camel@pasglop>
+	<9e4733910711221600t378a3afate51cc798df0d8b8d@mail.gmail.com>
+	<1195777323.6970.153.camel@pasglop>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 11/22/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Thu, 2007-11-22 at 19:00 -0500, Jon Smirl wrote:
+> > > It seems like AMCC does provide the necessary infos for 4xx
+> > processors
+> > > though. Jon, do you think what they provide is enough to use an open
+> > > source debugger ?
+> >
+> > Do you have a link to the info?
+>
+> Not at hand, but easy to find from AMCC main product page, you can then
+> go to the various eval board download pages, and some of the d/l are
+> infos for JTAG debugger manufacturers.
 
-On my powerbook, with NO_HZ and HIGH_RES_TIMERS, I observed recently
-that powernowd would not ever switch between CPU speeds.
+Dominick Rath wrote OpenOCD (open source JTAG) as his senior thesis in
+college, he graduated this spring and has a job now. I've sent mail to
+him but he may be a lost cause.
+Thesis: http://developer.berlios.de/docman/display_doc.php?docid=1367&group_id=4148
 
-Doing some scripting to read /proc/stat every half second and print the
-differences, I get output like this on a mostly idle system:
+Low cost dev tools are an important part of the CPU selection process.
+We went through four ARM CPUs before deciding on the MPC5200. We were
+able to get ARM eval boards and JTAGs for under $500 for each of the
+eval CPUs. We used the low cost evals to screen the CPUs, we didn't
+want spend $5-10K until we are 90% sure we are going to use the CPU. I
+returned one $5K eval board, it was a pain and it took over six months
+to get a refund.
 
-# for reference:
-# [user, nice, system, idle, iowait, irq, softirq, steal, guest]
+We have also learned the hard way about "port and forget" several of
+the CPUs we picked had Linux ports, but the ports were five years old.
+When we pushed the vendors for more recent kernels the typical answer
+was, send us $50,000 and we'll see what we can do. We're not going to
+send in $50K for a CPU we haven't decided to use, that answer simply
+resulted in us changing CPUs. An example of this is the NXP LPC3180,
+$9 with a FPU, but only a 2.6.5 kernel.
 
-[4, 0, 3, 46, 0, 264, 0, 0, 0]
-[5, 0, 4, 41, 0, 266, 0, 0, 0]
-[4, 0, 7, 37, 0, 299, 0, 0, 0]
+I've also only seen ARM CPUs being used in schools. You can get ARM
+eval boards and a JTAG for under $100 on some ARM CPUs. AFAIK there is
+no low cost PowerPC option suitable for classroom use.
 
-Now starting an empty while (1) loop, I see:
-
-[53, 0, 1, 0, 0, 243, 0, 0, 0]
-[53, 0, 2, 0, 0, 224, 0, 0, 0]
-[45, 0, 7, 0, 0, 249, 0, 0, 0]
-
-As you can see, the "irq" time is very high so that "user" (mostly my
-CPU burning program) only accounts for maybe 15%. This leads to
-powernowd thinking that all is fine and no switching is required. Also,
-the whole stuff leads to top(1) displaying about 80-90% "hi" (hard irq?
-calculated as irq - softirq?) time.
-
-Does anybody have an idea why the irq time is so high? And no, I don't
-think it can actually be true, I'm seeing maybe 500 interrupts/second
-(most due to USB).
-
-johannes
+-- 
+Jon Smirl
+jonsmirl@gmail.com
