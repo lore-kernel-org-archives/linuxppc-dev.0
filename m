@@ -1,19 +1,22 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay006.isp.belgacom.be (mailrelay006.isp.belgacom.be
-	[195.238.6.172]) by ozlabs.org (Postfix) with ESMTP id 95ABDDDDF5
+Return-Path: <fabien.fb@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 97DD6DDE0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Nov 2007 23:23:57 +1100 (EST)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Firmware Support for USB Hub
-Date: Fri, 23 Nov 2007 13:23:43 +0100
-References: <13877282.post@talk.nabble.com> <13908701.post@talk.nabble.com>
-In-Reply-To: <13908701.post@talk.nabble.com>
+	Fri, 23 Nov 2007 23:40:01 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id c10so3289951nfd
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 23 Nov 2007 04:40:00 -0800 (PST)
+Message-ID: <f8f856500711230439q39c352ffi4cf3a206de68733a@mail.gmail.com>
+Date: Fri, 23 Nov 2007 13:39:59 +0100
+From: fabien <fabien.fb@gmail.com>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Subject: Re: cant' compile busybox-1.8.1 with eldk 4.1
+In-Reply-To: <4746C1F6.9050601@anagramm.de>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1409092.p81baav7ZD";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200711231323.50212.laurentp@cse-semaphore.com>
-Cc: Misbah khan <misbah_khan@engineer.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <f8f856500711230256j5f3c7b9fneb7351a4fdfdfe09@mail.gmail.com>
+	<4746C1F6.9050601@anagramm.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,90 +27,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1409092.p81baav7ZD
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Thanks Clemens i've opened a thread in busybox mailing list :
+http://www.busybox.net/lists/busybox/2007-November/029322.html
 
-On Friday 23 November 2007 09:45, Misbah khan wrote:
-> This is the reply that i got from the Freescale :-
+2007/11/23, Clemens Koller <clemens.koller@anagramm.de>:
+> fabien schrieb:
+>  > I try to compile busybox for my ppc custom board.
 >
-> --------------------------------------------------------------------------
-> Reply from Freescale
-> In reply to your Service Request SR 1-403672820:
+> What ARCH/cpu?
 >
-> We recommend using the MPC8272 USB controller.
-> We know that customers use the MPC8272/MPC8248 USB controller.
-> You can find also USB drivers in Linux software for the MPC8272.
-> For example Linux BSP for Freescale MPC8272ADS contains USB slave
-> driver
-> (http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=3D012726006=
-1033
->202A5).
+>  > I successfuly
+>  > compile kernel 2.6.19 with
+>  > eldk and boot it. Now i try to get busybox working but i get some
+>  > errors at compile time.
+>  > It's look strange if someone can spend one minute to look at the compi=
+le log
+>  > What step could i miss ?
 >
-> Linux USB driver is available in the Arabella Linux
-> (http://www.arabellasw.com/products-pow2.php).
+>  > [...]
+>  > /opt/eldk/usr/../ppc_8xx/usr/include/linux/param.h:4:23: error:
+>  > asm/param.h: No such file or directory
+>  > make[1]: *** [applets/applets.o] Erreur 1
+>  > make: *** [applets] Erreur 2
 >
-> If the MPC8272 is USB host, the transaction-level interface can be used.
+> It looks like your kernel headers (ARCH-specific or generic)
+> are broken or missing.
+> See i.e. Linux From Scratch to get an idea about the dependencies.
+> Or, see latest kernel's 'make headers_install' target and how it is used.
+> Google is your friend, here...
 >
-> Note: The MPC8272 USB does not support high-speed mode. It can
-> operate on low-speed mode (1.5MHz) or full-speed mode (12MHz).
+> The busybox mailing list would be more suited for this question.
 >
-> -------------------------------------------------------------------------=
-=2D-
+> Regards,
 >
-> Can any body comment on this and help me how to start with and requirement
-> is this :-
+> Clemens Koller
+> __________________________________
+> R&D Imaging Devices
+> Anagramm GmbH
+> Rupert-Mayer-Stra=DFe 45/1
+> Linhof Werksgel=E4nde
+> D-81379 M=FCnchen
+> Tel.089-741518-50
+> Fax 089-741518-19
+> http://www.anagramm-technology.com
 >
-> I need a USB Hub to be connected to the PPC8248 board with Montavista Lin=
-ux
-> 2.6.10 on it what shall i do to achive it ....????The challenges you alre=
-ady
-> know=20
-
-You need a USB host driver for the CPM2 controller. There are several=20
-solutions:
-
-=2D Start with the driver available at http://cpm2usb.sourceforge.net/ and =
-port=20
-it for your kernel.
-=2D Ask Montavista support for a CPM2 USB host driver (they will most likel=
-y=20
-charge for that).
-=2D Buy the Arabella kernel and port the driver to the Montavista kernel (a=
-sk=20
-the Arabella support to make sure their USB host driver supports what you=20
-need, and pay attention to possible license issues).
-
-In the end, it boils down to writing code yourself or paying someone to do =
-the=20
-job.
-
-Best regards,
-
-Laurent Pinchart
-
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
-
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
-
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
-
---nextPart1409092.p81baav7ZD
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBHRsZW8y9gWxC9vpcRAtKdAKCjZ7m5awpMqdO3DyTDh27jDYqyrACeMb8v
-tCTeSdCnq6GZN+YodgTb2C0=
-=iDUX
------END PGP SIGNATURE-----
-
---nextPart1409092.p81baav7ZD--
+>
