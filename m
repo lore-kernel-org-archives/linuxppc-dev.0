@@ -1,20 +1,23 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0805BDDE02
+	by ozlabs.org (Postfix) with ESMTP id 7CEEBDDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Nov 2007 12:26:35 +1100 (EST)
-Message-ID: <47462AEA.9030500@dlasys.net>
-Date: Thu, 22 Nov 2007 20:20:42 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri, 23 Nov 2007 19:45:55 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IvUAZ-0001uE-Vt
+	for linuxppc-embedded@ozlabs.org; Fri, 23 Nov 2007 00:45:51 -0800
+Message-ID: <13908701.post@talk.nabble.com>
+Date: Fri, 23 Nov 2007 00:45:51 -0800 (PST)
+From: Misbah khan <misbah_khan@engineer.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Firmware Support for USB Hub
+In-Reply-To: <13877282.post@talk.nabble.com>
 MIME-Version: 1.0
-To: schardt <g.schardt@fz-juelich.de>
-Subject: Re: Initramfs problem on virtex4fx
-References: <47453B63.6010100@fz-juelich.de>
-In-Reply-To: <47453B63.6010100@fz-juelich.de>
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <13877282.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,59 +28,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-schardt wrote:
+
+This is the reply that i got from the Freescale :-
+
+--------------------------------------------------------------------------
+Reply from Freescale 
+In reply to your Service Request SR 1-403672820:
+
+We recommend using the MPC8272 USB controller.
+We know that customers use the MPC8272/MPC8248 USB controller.
+You can find also USB drivers in Linux software for the MPC8272.
+For example Linux BSP for Freescale MPC8272ADS contains USB slave 
+driver 
+(http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=0127260061033202A5).
+
+Linux USB driver is available in the Arabella Linux 
+(http://www.arabellasw.com/products-pow2.php).
+
+If the MPC8272 is USB host, the transaction-level interface can be used.
+
+Note: The MPC8272 USB does not support high-speed mode. It can 
+operate on low-speed mode (1.5MHz) or full-speed mode (12MHz).
+
+------------------------------------------------------------------------------------------
+
+Can any body comment on this and help me how to start with and requirement
+is this :-
+
+I need a USB Hub to be connected to the PPC8248 board with Montavista Linux
+2.6.10 
+on it what shall i do to achive it ....????The challenges you already know 
+
+Hoping for the the Help ...
+
+
+
+
+Misbah khan wrote:
+> 
 > Hi all,
->
-> i try to run linux from flash with the initramfs as root filesystem.
-> i wrote a simple hello_world as init to test the initramfs.
->
-> the kernel boots normaly, but instead of the complete "Hello World" i
-> see only "He"
-> and the system hangs.
->
-> Does anyone have similar problems ? And solved it ? ;)
->
-> Regards
-> Georg
->   
-    The Pico Linux BSP uses initramfs.  The whole Pico Linux development
-environment including busybox and an initramfs  cross compilers, Linux
-source - pretty much everything you need is at
-http://www.picocomputing.com/downloads/software.php, everything is
-incorporated into a Colinux install, though you can just pull out the
-necescary peices - the cross compiler, busy box, intramfs and linux
-source if you are working completely under linux. 
-
-   
-
-
-
->
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
-> Forschungszentrum Jülich GmbH
-> 52425 Jülich
->
-> Sitz der Gesellschaft: Jülich
-> Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-> Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-> Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
-> Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
-
+> 
+> I am using a 8248 processor which has a USB controller and i need to
+> connect a USB Hub to it, iam using Montavista Linux .I need to know that
+> what are the support i need form Montavista or Open source to have an
+> interface with Usb hub. ???
+> 
+> Is there any driver that we need to make if so what type ???
+> 
+> --misbah <><
+> 
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+View this message in context: http://www.nabble.com/Firmware-Support-for-USB-Hub-tf4850180.html#a13908701
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
