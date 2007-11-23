@@ -1,18 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 1C4FBDDD0D
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay006.isp.belgacom.be (mailrelay006.isp.belgacom.be
+	[195.238.6.172]) by ozlabs.org (Postfix) with ESMTP id 95ABDDDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Nov 2007 23:05:17 +1100 (EST)
-Message-ID: <4746C1F6.9050601@anagramm.de>
-Date: Fri, 23 Nov 2007 13:05:10 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Fri, 23 Nov 2007 23:23:57 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Firmware Support for USB Hub
+Date: Fri, 23 Nov 2007 13:23:43 +0100
+References: <13877282.post@talk.nabble.com> <13908701.post@talk.nabble.com>
+In-Reply-To: <13908701.post@talk.nabble.com>
 MIME-Version: 1.0
-To: fabien <fabien.fb@gmail.com>
-Subject: Re: cant' compile busybox-1.8.1 with eldk 4.1
-References: <f8f856500711230256j5f3c7b9fneb7351a4fdfdfe09@mail.gmail.com>
-In-Reply-To: <f8f856500711230256j5f3c7b9fneb7351a4fdfdfe09@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/signed; boundary="nextPart1409092.p81baav7ZD";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200711231323.50212.laurentp@cse-semaphore.com>
+Cc: Misbah khan <misbah_khan@engineer.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,41 +24,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-fabien schrieb:
- > I try to compile busybox for my ppc custom board.
+--nextPart1409092.p81baav7ZD
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-What ARCH/cpu?
+On Friday 23 November 2007 09:45, Misbah khan wrote:
+> This is the reply that i got from the Freescale :-
+>
+> --------------------------------------------------------------------------
+> Reply from Freescale
+> In reply to your Service Request SR 1-403672820:
+>
+> We recommend using the MPC8272 USB controller.
+> We know that customers use the MPC8272/MPC8248 USB controller.
+> You can find also USB drivers in Linux software for the MPC8272.
+> For example Linux BSP for Freescale MPC8272ADS contains USB slave
+> driver
+> (http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=3D012726006=
+1033
+>202A5).
+>
+> Linux USB driver is available in the Arabella Linux
+> (http://www.arabellasw.com/products-pow2.php).
+>
+> If the MPC8272 is USB host, the transaction-level interface can be used.
+>
+> Note: The MPC8272 USB does not support high-speed mode. It can
+> operate on low-speed mode (1.5MHz) or full-speed mode (12MHz).
+>
+> -------------------------------------------------------------------------=
+=2D-
+>
+> Can any body comment on this and help me how to start with and requirement
+> is this :-
+>
+> I need a USB Hub to be connected to the PPC8248 board with Montavista Lin=
+ux
+> 2.6.10 on it what shall i do to achive it ....????The challenges you alre=
+ady
+> know=20
 
- > I successfuly
- > compile kernel 2.6.19 with
- > eldk and boot it. Now i try to get busybox working but i get some
- > errors at compile time.
- > It's look strange if someone can spend one minute to look at the compile log
- > What step could i miss ?
+You need a USB host driver for the CPM2 controller. There are several=20
+solutions:
 
- > [...]
- > /opt/eldk/usr/../ppc_8xx/usr/include/linux/param.h:4:23: error:
- > asm/param.h: No such file or directory
- > make[1]: *** [applets/applets.o] Erreur 1
- > make: *** [applets] Erreur 2
+=2D Start with the driver available at http://cpm2usb.sourceforge.net/ and =
+port=20
+it for your kernel.
+=2D Ask Montavista support for a CPM2 USB host driver (they will most likel=
+y=20
+charge for that).
+=2D Buy the Arabella kernel and port the driver to the Montavista kernel (a=
+sk=20
+the Arabella support to make sure their USB host driver supports what you=20
+need, and pay attention to possible license issues).
 
-It looks like your kernel headers (ARCH-specific or generic)
-are broken or missing.
-See i.e. Linux From Scratch to get an idea about the dependencies.
-Or, see latest kernel's 'make headers_install' target and how it is used.
-Google is your friend, here...
+In the end, it boils down to writing code yourself or paying someone to do =
+the=20
+job.
 
-The busybox mailing list would be more suited for this question.
+Best regards,
 
-Regards,
+Laurent Pinchart
 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart1409092.p81baav7ZD
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBHRsZW8y9gWxC9vpcRAtKdAKCjZ7m5awpMqdO3DyTDh27jDYqyrACeMb8v
+tCTeSdCnq6GZN+YodgTb2C0=
+=iDUX
+-----END PGP SIGNATURE-----
+
+--nextPart1409092.p81baav7ZD--
