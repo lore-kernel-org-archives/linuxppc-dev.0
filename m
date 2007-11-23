@@ -1,14 +1,17 @@
-Return-Path: <loveabcxyz@yahoo.com>
-Received: from n8.bullet.re3.yahoo.com (n8.bullet.re3.yahoo.com
-	[68.142.237.93]) by ozlabs.org (Postfix) with SMTP id 5DD48DDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 17:55:12 +1100 (EST)
-Date: Thu, 22 Nov 2007 22:55:11 -0800 (PST)
-From: Deep Deep <loveabcxyz@yahoo.com>
-Subject: register writing fails
-To: Linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-266292284-1195800911=:69511"
-Message-ID: <271719.69511.qm@web57311.mail.re1.yahoo.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 85790DDE1C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 23:16:21 +1100 (EST)
+Subject: time accounting problem (powerpc only?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 23 Nov 2007 11:46:56 +0100
+Message-Id: <1195814816.4149.94.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-266292284-1195800911=:69511
-Content-Type: text/plain; charset=us-ascii
+Hi,
 
-Hi everyone,
+On my powerbook, with NO_HZ and HIGH_RES_TIMERS, I observed recently
+that powernowd would not ever switch between CPU speeds.
 
-I am writing a serial port driver for ppc board. I am facing a very strange problem. I can read the values from registers of  serial port but at the time of configuration or writing the values in the register, its not allowing me to change the reset values.  I am not sure about the problem cause. 
+Doing some scripting to read /proc/stat every half second and print the
+differences, I get output like this on a mostly idle system:
 
-Thanks,
-sachin
+# for reference:
+# [user, nice, system, idle, iowait, irq, softirq, steal, guest]
 
+[4, 0, 3, 46, 0, 264, 0, 0, 0]
+[5, 0, 4, 41, 0, 266, 0, 0, 0]
+[4, 0, 7, 37, 0, 299, 0, 0, 0]
 
+Now starting an empty while (1) loop, I see:
 
+[53, 0, 1, 0, 0, 243, 0, 0, 0]
+[53, 0, 2, 0, 0, 224, 0, 0, 0]
+[45, 0, 7, 0, 0, 249, 0, 0, 0]
 
+As you can see, the "irq" time is very high so that "user" (mostly my
+CPU burning program) only accounts for maybe 15%. This leads to
+powernowd thinking that all is fine and no switching is required. Also,
+the whole stuff leads to top(1) displaying about 80-90% "hi" (hard irq?
+calculated as irq - softirq?) time.
 
+Does anybody have an idea why the irq time is so high? And no, I don't
+think it can actually be true, I'm seeing maybe 500 interrupts/second
+(most due to USB).
 
-      ____________________________________________________________________________________
-Never miss a thing.  Make Yahoo your home page. 
-http://www.yahoo.com/r/hs
---0-266292284-1195800911=:69511
-Content-Type: text/html; charset=us-ascii
-
-<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><div>Hi everyone,<br><br>I am writing a serial port driver for ppc board. I am facing a very strange problem. I can read the values from registers of  serial port but at the time of configuration or writing the values in the register, its not allowing me to change the reset values.&nbsp; I am not sure about the problem cause. <br><br>Thanks,<br>sachin<br><br><br></div></div><br>
-      <hr size=1>Get easy, one-click access to your favorites. 
-<a href="http://us.rd.yahoo.com/evt=51443/*http://www.yahoo.com/r/hs"> Make Yahoo! your homepage.</a>
-
-</body></html>
---0-266292284-1195800911=:69511--
+johannes
