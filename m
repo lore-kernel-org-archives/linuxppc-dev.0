@@ -2,15 +2,16 @@ Return-Path: <vbarshak@ru.mvista.com>
 Received: from vaxon.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 56193DDE19
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 06:09:19 +1100 (EST)
-Date: Fri, 23 Nov 2007 22:07:47 +0300
+	by ozlabs.org (Postfix) with ESMTP id 47357DDE9B
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 06:12:34 +1100 (EST)
+Date: Fri, 23 Nov 2007 22:10:19 +0300
 From: Valentine Barshak <vbarshak@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3] PowerPC: ibm_newemac minor fixes.
-Message-ID: <20071123190747.GA25654@ru.mvista.com>
+Subject: [PATCH 1/3] PowerPC: ibm_newemac correct opb_bus_freq value
+Message-ID: <20071123191019.GA25685@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071123190747.GA25654@ru.mvista.com>
 Cc: jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,7 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These patches have some minor ibm_newemac fixes.
+The EMAC4_MR1_OBCI(freq) macro expects freg in MHz,
+while opb_bus_freq is kept in Hz. Correct this.
 
-Thanks,
-Valentine.
+Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+---
+ drivers/net/ibm_newemac/core.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/core.c linux-2.6/drivers/net/ibm_newemac/core.c
+--- linux-2.6.orig/drivers/net/ibm_newemac/core.c	2007-11-23 21:27:57.000000000 +0300
++++ linux-2.6/drivers/net/ibm_newemac/core.c	2007-11-23 21:47:53.000000000 +0300
+@@ -402,7 +402,7 @@ static u32 __emac_calc_base_mr1(struct e
+ static u32 __emac4_calc_base_mr1(struct emac_instance *dev, int tx_size, int rx_size)
+ {
+ 	u32 ret = EMAC_MR1_VLE | EMAC_MR1_IST | EMAC4_MR1_TR |
+-		EMAC4_MR1_OBCI(dev->opb_bus_freq);
++		EMAC4_MR1_OBCI(dev->opb_bus_freq / 1000000);
+ 
+ 	DBG2(dev, "__emac4_calc_base_mr1" NL);
+ 
