@@ -1,21 +1,17 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.247])
-	by ozlabs.org (Postfix) with ESMTP id 1DD41DDE08
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp100.biz.mail.re2.yahoo.com (smtp100.biz.mail.re2.yahoo.com
+	[206.190.52.46]) by ozlabs.org (Postfix) with SMTP id E77E9DDE03
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Nov 2007 10:17:33 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so544968anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Nov 2007 15:17:32 -0800 (PST)
-Message-ID: <fa686aa40711231517x2f71d8dcv43c58860a052b52c@mail.gmail.com>
-Date: Fri, 23 Nov 2007 16:17:31 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "narendra sisodiya" <narendra.sisodiya@gmail.com>
-Subject: Re: Linux on ML310
-In-Reply-To: <e3fb97f30711231452t473f7949x901e4921c20ec699@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <e3fb97f30711231452t473f7949x901e4921c20ec699@mail.gmail.com>
+	Sat, 24 Nov 2007 10:30:47 +1100 (EST)
+In-Reply-To: <348656.85285.qm@web45609.mail.sp1.yahoo.com>
+References: <348656.85285.qm@web45609.mail.sp1.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A54CDFF0-EF7A-445B-8A1E-E211E5D267D9@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: How to map addresses beyond 4GB
+Date: Fri, 23 Nov 2007 15:23:55 -0800
+To: Dell Query <dell.query@yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,45 +23,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/23/07, narendra sisodiya <narendra.sisodiya@gmail.com> wrote:
-> Hi, I am working ML310 XUP virtex2Pro board. My task is to port a Linux
-> 2.4.26 on PowerPC405. I am on the mid way
-> I have following question.
->
->
-> Why in every document Linux kernel 2.4.26 is used, can i use 2.6.xx version.
-> If yes what will be the modifications,
 
-Mainline 2.6.x has support for the virtex device but it is missing
-some drivers for EMAC, TEMAC and some other devices.
+On Nov 22, 2007, at 2:42 AM, Dell Query wrote:
 
-You can get the drivers from my tree at http://git.secretlab.ca/ or
-from the xilinx git server http://git.xilinx.com
+> May I know how to map this one?
 
-> In document some are using busybox for making root file system and in some
-> Yellow Dog Linux. so what are the such possible options?
+Just call ioremap() as usual.  It will understand the > 4G
+physical address and return a useful virtual address
+to you.
 
-Yellow Dog isn't a very good choice for the ppc405 with no floating
-point unit.  Use an embedded distro like ELDK, or build your own using
-buildroot or openembedded
-
-> If any body has done some project then Please share your experience with me.
->
->
-> --
-> Narendra Sisodiya
-> MTech (Computer Technology), IIT Delhi
-> +91-9999232792
-> http://www.techfandu.org/index.html
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+	-- Dan
