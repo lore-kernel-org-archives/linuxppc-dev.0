@@ -1,22 +1,14 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id C97E2DDE17
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 16:43:05 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3715501wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 21:43:04 -0800 (PST)
-Message-ID: <aa79d98a0711222143r746d8789r1bff0cb7b7cd88a5@mail.gmail.com>
-Date: Fri, 23 Nov 2007 08:43:04 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
-In-Reply-To: <20071123101646.63550945.sfr@canb.auug.org.au>
+Return-Path: <loveabcxyz@yahoo.com>
+Received: from n8.bullet.re3.yahoo.com (n8.bullet.re3.yahoo.com
+	[68.142.237.93]) by ozlabs.org (Postfix) with SMTP id 5DD48DDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 17:55:12 +1100 (EST)
+Date: Thu, 22 Nov 2007 22:55:11 -0800 (PST)
+From: Deep Deep <loveabcxyz@yahoo.com>
+Subject: register writing fails
+To: Linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_19488_23666844.1195796584724"
-References: <20071122195423.GA9877@cvg>
-	<20071123101646.63550945.sfr@canb.auug.org.au>
-Cc: Olof Johansson <olof@lixom.net>, PPCML <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/alternative; boundary="0-266292284-1195800911=:69511"
+Message-ID: <271719.69511.qm@web57311.mail.re1.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_19488_23666844.1195796584724
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--0-266292284-1195800911=:69511
+Content-Type: text/plain; charset=us-ascii
 
-Here is updated version
----
-From: Cyrill Gorcunov <gorcunov@gmail.com>
+Hi everyone,
 
-This patch does fix possible NULL pointer dereference
-inside of strncmp() if of_get_property() failed.
+I am writing a serial port driver for ppc board. I am facing a very strange problem. I can read the values from registers of  serial port but at the time of configuration or writing the values in the register, its not allowing me to change the reset values.  I am not sure about the problem cause. 
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+Thanks,
+sachin
 
-------=_Part_19488_23666844.1195796584724
-Content-Type: text/plain; name=ppc-chrs-null-fix.diff
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f9cadwlc
-Content-Disposition: attachment; filename=ppc-chrs-null-fix.diff
 
-IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2hycC9zZXR1cC5jIHwgICAxMyArKysrKysrKystLS0t
-CiAxIGZpbGVzIGNoYW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKCmRpZmYg
-LS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NocnAvc2V0dXAuYyBiL2FyY2gvcG93ZXJw
-Yy9wbGF0Zm9ybXMvY2hycC9zZXR1cC5jCmluZGV4IDU5MzA2MjYuLmRhNGU0NWUgMTAwNjQ0Ci0t
-LSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2hycC9zZXR1cC5jCisrKyBiL2FyY2gvcG93ZXJw
-Yy9wbGF0Zm9ybXMvY2hycC9zZXR1cC5jCkBAIC0xMTUsNyArMTE1LDcgQEAgdm9pZCBjaHJwX3No
-b3dfY3B1aW5mbyhzdHJ1Y3Qgc2VxX2ZpbGUgKm0pCiAJc2VxX3ByaW50ZihtLCAibWFjaGluZVx0
-XHQ6IENIUlAgJXNcbiIsIG1vZGVsKTsKIAogCS8qIGxvbmd0cmFpbCAoZ29sZGVuZ2F0ZSkgc3R1
-ZmYgKi8KLQlpZiAoIXN0cm5jbXAobW9kZWwsICJJQk0sTG9uZ1RyYWlsIiwgMTMpKSB7CisJaWYg
-KG1vZGVsICYmICFzdHJuY21wKG1vZGVsLCAiSUJNLExvbmdUcmFpbCIsIDEzKSkgewogCQkvKiBW
-TFNJIFZBUzk2MDExLzEyIGBHb2xkZW4gR2F0ZSAyJyAqLwogCQkvKiBNZW1vcnkgYmFua3MgKi8K
-IAkJc2RyYW1lbiA9IChpbl9sZTMyKGdnMl9wY2lfY29uZmlnX2Jhc2UgKyBHRzJfUENJX0RSQU1f
-Q1RSTCkKQEAgLTIwMywxNSArMjAzLDIwIEBAIHN0YXRpYyB2b2lkIF9faW5pdCBzaW9fZml4dXBf
-aXJxKGNvbnN0IGNoYXIgKm5hbWUsIHU4IGRldmljZSwgdTggbGV2ZWwsCiBzdGF0aWMgdm9pZCBf
-X2luaXQgc2lvX2luaXQodm9pZCkKIHsKIAlzdHJ1Y3QgZGV2aWNlX25vZGUgKnJvb3Q7CisJY29u
-c3QgY2hhciAqbW9kZWw7CiAKLQlpZiAoKHJvb3QgPSBvZl9maW5kX25vZGVfYnlfcGF0aCgiLyIp
-KSAmJgotCSAgICAhc3RybmNtcChvZl9nZXRfcHJvcGVydHkocm9vdCwgIm1vZGVsIiwgTlVMTCks
-Ci0JCQkiSUJNLExvbmdUcmFpbCIsIDEzKSkgeworCXJvb3QgPSBvZl9maW5kX25vZGVfYnlfcGF0
-aCgiLyIpOworCWlmICghcm9vdCkKKwkJcmV0dXJuOworCisJbW9kZWwgPSBvZl9nZXRfcHJvcGVy
-dHkocm9vdCwgIm1vZGVsIiwgTlVMTCk7CisJaWYgKG1vZGVsICYmICFzdHJuY21wKG1vZGVsLCJJ
-Qk0sTG9uZ1RyYWlsIiwgMTMpKSB7CiAJCS8qIGxvZ2ljYWwgZGV2aWNlIDAgKEtCQy9LZXlib2Fy
-ZCkgKi8KIAkJc2lvX2ZpeHVwX2lycSgia2V5Ym9hcmQiLCAwLCAxLCAyKTsKIAkJLyogc2VsZWN0
-IGxvZ2ljYWwgZGV2aWNlIDEgKEtCQy9Nb3VzZSkgKi8KIAkJc2lvX2ZpeHVwX2lycSgibW91c2Ui
-LCAxLCAxMiwgMik7CiAJfQorCiAJb2Zfbm9kZV9wdXQocm9vdCk7CiB9CiAK
-------=_Part_19488_23666844.1195796584724--
+
+
+
+
+      ____________________________________________________________________________________
+Never miss a thing.  Make Yahoo your home page. 
+http://www.yahoo.com/r/hs
+--0-266292284-1195800911=:69511
+Content-Type: text/html; charset=us-ascii
+
+<html><head><style type="text/css"><!-- DIV {margin:0px;} --></style></head><body><div style="font-family:times new roman, new york, times, serif;font-size:12pt"><div>Hi everyone,<br><br>I am writing a serial port driver for ppc board. I am facing a very strange problem. I can read the values from registers of  serial port but at the time of configuration or writing the values in the register, its not allowing me to change the reset values.&nbsp; I am not sure about the problem cause. <br><br>Thanks,<br>sachin<br><br><br></div></div><br>
+      <hr size=1>Get easy, one-click access to your favorites. 
+<a href="http://us.rd.yahoo.com/evt=51443/*http://www.yahoo.com/r/hs"> Make Yahoo! your homepage.</a>
+
+</body></html>
+--0-266292284-1195800911=:69511--
