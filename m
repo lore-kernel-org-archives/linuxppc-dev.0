@@ -1,21 +1,19 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
-	by ozlabs.org (Postfix) with ESMTP id 86C66DDDF9
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 15:23:56 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3692769wag
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Nov 2007 20:23:54 -0800 (PST)
-Message-ID: <aa79d98a0711222023l31cdec98o47f56e3c87886a02@mail.gmail.com>
-Date: Fri, 23 Nov 2007 07:23:54 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] PPC: CHRP - fix possible NULL pointer dereference
-In-Reply-To: <20071123101646.63550945.sfr@canb.auug.org.au>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id 715BBDDDF5
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Nov 2007 15:43:26 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Thu, 22 Nov 2007 21:43:22 -0700
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 01/10] powerpc: Set up OF properties for ppc32 kexec
+Message-ID: <20071123044322.GA2820@xyzzy.farnsworth.org>
+References: <20071122154159.GA24711@xyzzy.farnsworth.org>
+	<20071122154517.GA26340@xyzzy.farnsworth.org>
+	<20071123091727.6e6fcd7a.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071122195423.GA9877@cvg>
-	<20071123101646.63550945.sfr@canb.auug.org.au>
-Cc: Olof Johansson <olof@lixom.net>, PPCML <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071123091727.6e6fcd7a.sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/23/07, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> On Thu, 22 Nov 2007 22:54:23 +0300 Cyrill Gorcunov <gorcunov@gmail.com>
-> wrote:
-> >
-> > This patch does fix possible NULL pointer dereference
-> > inside of strncmp() if of_get_property() failed.
->
-> Thanks for this.
->
-> >  static void __init sio_init(void)
-> >  {
-> >   struct device_node *root;
-> > + const char *model = NULL;
->
-> You don't need this initialization as you always assign the variable
-> before you use it.
->
-> > + root = of_find_node_by_path("/");
-> > + if (root) {
->
->  if (!root)
->   return;
->
-> would save a level of indentation. Not important.
->
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> http://www.canb.auug.org.au/~sfr/
->
-Oh my :) Thanks. I'll fix it and resend.
+On Fri, Nov 23, 2007 at 09:17:27AM +1100, Stephen Rothwell wrote:
+> Hi Dale,
+> 
+> Just a nit ...
+> 
+> On Thu, 22 Nov 2007 08:45:17 -0700 Dale Farnsworth <dale@farnsworth.org> wrote:
+> > +static struct property crashk_base_prop = {
+> > +	.name = "linux,crashkernel-base",
+> > +	.length = sizeof(unsigned long),
+> > +	.value = &crashk_res.start, };
+
+Heh.  How did that happen?  :)
+
+I'll fix it as well as the alignment issues you mentioned.
+
+Thanks Stephen.
+
+-Dale
