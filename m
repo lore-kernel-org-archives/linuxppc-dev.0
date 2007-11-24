@@ -1,21 +1,16 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 2DB7EDDED4
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 06:06:49 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/5] USB: Make usb_hcd_irq work for multi-role USB
-	controllers w/ shared irq
-Date: Sat, 24 Nov 2007 11:06:46 -0800
-References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
-	<20071124002431.25361.23974.stgit@trillian.cg.shawcable.net>
-In-Reply-To: <20071124002431.25361.23974.stgit@trillian.cg.shawcable.net>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4D2BCDDEBE
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 06:16:38 +1100 (EST)
+Message-ID: <4748788C.7020706@scram.de>
+Date: Sat, 24 Nov 2007 20:16:28 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200711241106.46515.david-b@pacbell.net>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCHv2] powerpc: Move CPM command handling into the cpm drivers
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +20,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 23 November 2007, Grant Likely wrote:
-> Some multi-role (host/peripheral) USB controllers use a shared interrupt
-> line for all parts of the chip.
+This patch moves the CPM command handling into commproc.c
+for CPM1 and cpm2_common.c. This is yet another preparation
+to get rid of drivers accessing the CPM via the global cpmp.
 
-Like the musb_hdrc code ... soonish to go upstream (it needs some
-updates to catch up to usbcore urb->status changes), this is used
-by the Nokia 800 and 810.  In terms of chips with Linux support:
-DaVinci, TUSB60x0, OMAP 2430, OMAP 3430, Blackfin BF527; and ISTR
-a few less-publicised ones (including, yes, some PPC SOCs).
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c          |   27 +++++++++++++++++++++++++++
+ arch/powerpc/sysdev/cpm2_common.c       |   24 ++++++++++++++++++++++++
+ drivers/net/fs_enet/mac-fcc.c           |   10 +---------
+ drivers/net/fs_enet/mac-scc.c           |   11 +----------
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
+ include/asm-powerpc/cpm.h               |    1 +
+ 7 files changed, 56 insertions(+), 31 deletions(-)
 
-That driver hasn't needed to change usbcore for IRQ handling though.
-
-
-> Export usb_hcd_irq so drivers can call it 
-> from their interrupt handler instead of duplicating code.
-
-This seems to be the main point of this patch.  I'd rather just
-make that "static" though; it should already be marked that way.
-
-That routine doesn't do enough to make me like it any more; and
-with dual-role controllers, the driver lifecycle is more complex
-than usbcore can be expected to mediate.  Best to just call the
-host side IRQ logic directly from your toplevel IRQ handler.
-
-
-> Drivers pass an irqnum of 0 to usb_add_hcd to signal that the interrupt handler
-> shouldn't be registerred by the core.
-
-The current way to get that behavior is to leave hcd->driver->irq
-as zero; then "irqnum" is ignored, and your dual role driver can
-register its own handler.
-
-- Dave
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..4cc245f 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -240,6 +240,33 @@ void __init cpm_reset(void)
+ #endif
+ }
+ 
++DEFINE_SPINLOCK(cmd_lock);
++
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i;
++	unsigned long flags;
++
++	if (command & 0xffffff0f)
++		return -EINVAL;
++
++	spin_lock_irqsave(&cmd_lock, flags);
++
++	out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0) {
++			spin_unlock_irqrestore(&cmd_lock, flags);
++			return 0;
++		}
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
++	spin_unlock_irqrestore(&cmd_lock, flags);
++	return -EIO;
++}
++EXPORT_SYMBOL(cpm_command);
++
+ /* We used to do this earlier, but have to postpone as long as possible
+  * to ensure the kernel VM is now running.
+  */
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..db282bc 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -83,6 +83,30 @@ cpm2_reset(void)
+ 	cpmp = &cpm2_immr->im_cpm;
+ }
+ 
++DEFINE_SPINLOCK(cmd_lock);
++
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cmd_lock, flags);
++
++	out_be32(&cpmp->cp_cpcr, command | opcode | CPM_CR_FLG);
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be32(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0) {
++			spin_unlock_irqrestore(&cmd_lock, flags);
++			return 0;
++		}
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
++	spin_unlock_irqrestore(&cmd_lock, flags);
++	return -EIO;
++}
++EXPORT_SYMBOL(cpm_command);
++
+ /* Set a baud rate generator.  This needs lots of work.  There are
+  * eight BRGs, which can be connected to the CPM channels or output
+  * as clocks.  The BRGs are in two different block of internal
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index da4efbc..e363211 100644
+--- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -81,16 +81,8 @@
+ static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W32(cpmp, cp_cpcr, fpi->cp_command | op | CPM_CR_FLG);
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
+ 
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-	       __FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 03134f4..5ff856d 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -89,21 +89,12 @@
+  * Delay to wait for SCC reset command to complete (in us)
+  */
+ #define SCC_RESET_DELAY		50
+-#define MAX_CR_CMD_LOOPS	10000
+ 
+ static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
+ 
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-		__FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 52fb044..6ea0366 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -52,11 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	u16 __iomem *cpcr = &cpmp->cp_cpcr;
+-
+-	out_be16(cpcr, port->command | (cmd << 8) | CPM_CR_FLG);
+-	while (in_be16(cpcr) & CPM_CR_FLG)
+-		;
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 882dbc1..def0158 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -52,13 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	cpm_cpm2_t __iomem *cp = cpm2_map(im_cpm);
+-
+-	out_be32(&cp->cp_cpcr, port->command | cmd | CPM_CR_FLG);
+-	while (in_be32(&cp->cp_cpcr) & CPM_CR_FLG)
+-		;
+-
+-	cpm2_unmap(cp);
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
+index 48df9f3..fae83b1 100644
+--- a/include/asm-powerpc/cpm.h
++++ b/include/asm-powerpc/cpm.h
+@@ -10,5 +10,6 @@ int cpm_muram_free(unsigned long offset);
+ unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
+ void __iomem *cpm_muram_addr(unsigned long offset);
+ dma_addr_t cpm_muram_dma(void __iomem *addr);
++int cpm_command(u32 command, u8 opcode);
+ 
+ #endif
+-- 
+1.5.3.5
