@@ -1,21 +1,16 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
-	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id 73FC2DDEB6
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 07:12:30 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 5/5] USB: Add Cypress c67x00 OTG controller driver to
-	Kconfig and Makefiles
-Date: Sat, 24 Nov 2007 12:12:27 -0800
-References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
-	<20071124002451.25361.90102.stgit@trillian.cg.shawcable.net>
-In-Reply-To: <20071124002451.25361.90102.stgit@trillian.cg.shawcable.net>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9C298DDED4
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 07:17:16 +1100 (EST)
+Message-ID: <474886C2.7030609@scram.de>
+Date: Sat, 24 Nov 2007 21:17:06 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711241212.27787.david-b@pacbell.net>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCHv3] powerpc: Move CPM command handling into the cpm drivers
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,181 +20,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 23 November 2007, Grant Likely wrote:
-> +config USB_C67X00_DRV
-> +       tristate "Cypress C67x00 support"
-> +       # only allowed to be =y if both USB!=m and USB_GADGET!=m
+This patch moves the CPM command handling into commproc.c
+for CPM1 and cpm2_common.c. This is yet another preparation
+to get rid of drivers accessing the CPM via the global cpmp.
 
-This is wrong.  Remember that since this is a dual-role driver,
-there are exactly three possible driver modes ... and the driver
-must support only one of them at a time:
+Signed-off-by: Jochen Friedrich <jochen@scram.de>
+---
+ arch/powerpc/sysdev/commproc.c          |   28 ++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/cpm2_common.c       |   25 +++++++++++++++++++++++++
+ drivers/net/fs_enet/mac-fcc.c           |   10 +---------
+ drivers/net/fs_enet/mac-scc.c           |   11 +----------
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
+ include/asm-powerpc/cpm.h               |    1 +
+ 7 files changed, 58 insertions(+), 31 deletions(-)
 
-  - Host-only ... only allowed if host side USB is enabled.  The
-    controller driver can be statically linked iff usbcore is too.
-
-  - Peripheral-only ... only allowed if peripheral side USB is
-    enabled.  Only one port may be used as the peripheral; the
-    controller driver can be linked statically or as a module.
-
-  - OTG ... only allowed if both host and peripheral side USB
-    are enabled.  Only one port can be the OTG port, but other
-    ports can be used for host functionality.  Static/modular
-    linkage follows (more restrictive) the host-only rule.
-
-And of course, what a given board supports is controlled by the
-connectors it has ... A, B, or AB.  (Possibly AB plus n*A.)  So
-the driver should probably be able to make sense of having OTG
-support, but needing to cope with a non-OTG board ... or having
-an OTG board, a driver that only copes with one role.
-
-Hmmm ... your patches don't include peripheral mode support yet.
-
-Either all these gadget hooks should vanish, or you should try
-to get the controller mode stuff right from the beginning.
-
-I've appended the relevant Kconfig bits from the musb_hdrc
-driver, which (despite some glitches) are pretty much correct.
-
-- Dave
-
-
-
-> +       depends on (!USB && USB_GADGET) || (!USB_GADGET && USB) || (USB && USB_GADGET)
-> +       default n
-> +       help
-> +         The Cypress C67x00 (EZ-Host/EZ-OTG) chips are dual-role
-> +         host/peripheral USB controllers.
-> +
-> +         To compile this driver as a module, choose M here: the
-> +         module will be called c67x00.
-> +
-> +config USB_C67X00_HCD
-> +       bool "Cypress C67X00 Host support"
-> +       depends on USB_C67X00_DRV
-> +       depends on USB
-> +       default y
-> +       help
-> +         This enables the host functionality of the Cypress C67X00.
-> 
-
-
-================
-#
-# USB Dual Role (OTG-ready) Controller Drivers
-# for silicon based on Mentor Graphics INVENTRA designs
-#
-
-comment "Enable Host or Gadget support to see Inventra options"
-	depends on !USB && USB_GADGET=n
-
-# (M)HDRC = (Multipoint) Highspeed Dual-Role Controller
-config USB_MUSB_HDRC
-	depends on USB || USB_GADGET
-	tristate 'Inventra Highspeed Dual Role Controller (TI, ...)'
-	help
-	  Say Y here if your system has a dual role high speed USB
-	  controller based on the Mentor Graphics silicon IP.  Then
-	  configure options to match your silicon and the board
-	  it's being used with, including the USB peripheral role,
-	  or the USB host role, or both.
-
-	  Texas Instruments parts using this IP include DaVinci 644x,
-	  OMAP 243x, OMAP 343x, and TUSB 6010.
-
-	  If you do not know what this is, please say N.
-
-	  To compile this driver as a module, choose M here; the
-	  module will be called "musb_hdrc".
-
-config USB_MUSB_SOC
-	boolean
-	depends on USB_MUSB_HDRC
-	default y if ARCH_DAVINCI
-	default y if ARCH_OMAP2430
-	default y if ARCH_OMAP343X
-	help
-	  Use a static <asm/arch/hdrc_cnf.h> file to describe how the
-	  controller is configured (endpoints, mechanisms, etc) on the
-	  current iteration of a given system-on-chip.
-
-comment "DaVinci 644x USB support"
-	depends on USB_MUSB_HDRC && ARCH_DAVINCI
-
-comment "OMAP 243x high speed USB support"
-	depends on USB_MUSB_HDRC && ARCH_OMAP2430
-
-comment "OMAP 343x high speed USB support"
-	depends on USB_MUSB_HDRC && ARCH_OMAP343X
-
-config USB_TUSB6010
-	boolean "TUSB 6010 support"
-	depends on USB_MUSB_HDRC && !USB_MUSB_SOC
-	default y
-	help
-	  The TUSB 6010 chip, from Texas Instruments, connects a discrete
-	  HDRC core using a 16-bit parallel bus.  It can use system-specific
-	  external DMA controllers.
-
-choice
-	prompt "Driver Mode"
-	depends on USB_MUSB_HDRC
-	help
-	  Dual-Role devices can support both host and peripheral roles,
-	  as well as a the special "OTG Device" role which can switch
-	  between both roles as needed.
-
-# use USB_MUSB_HDRC_HCD not USB_MUSB_HOST to #ifdef host side support;
-# OTG needs both roles, not just USB_MUSB_HOST.
-config USB_MUSB_HOST
-	depends on USB
-	bool "USB Host"
-	help
-	  Say Y here if your system supports the USB host role.
-	  If it has a USB "A" (rectangular), "Mini-A" (uncommon),
-	  or "Mini-AB" connector, it supports the host role.
-	  (With a "Mini-AB" connector, you should enable USB OTG.)
-
-# use USB_GADGET_MUSB_HDRC not USB_MUSB_PERIPHERAL to #ifdef peripheral
-# side support ... OTG needs both roles
-config USB_MUSB_PERIPHERAL
-	depends on USB_GADGET
-	bool "USB Peripheral (gadget stack)"
-	select USB_GADGET_MUSB_HDRC
-	help
-	  Say Y here if your system supports the USB peripheral role.
-	  If it has a USB "B" (squarish), "Mini-B", or "Mini-AB"
-	  connector, it supports the peripheral role.
-	  (With a "Mini-AB" connector, you should enable USB OTG.)
-
-config USB_MUSB_OTG
-	depends on USB && USB_GADGET && EXPERIMENTAL
-	bool "Both host and peripheral:  USB OTG (On The Go) Device"
-	select USB_GADGET_MUSB_HDRC
-	select USB_OTG
-	select PM
-	help
-	   The most notable feature of USB OTG is support for a
-	   "Dual-Role" device, which can act as either a device
-	   or a host.  The initial role choice can be changed
-	   later, when two dual-role devices talk to each other.
-
-	   Select this if your system has a Mini-AB connector, or
-	   to simplify certain kinds of configuration.
-
-	   To implement your OTG Targeted Peripherals List (TPL), enable
-	   USB_OTG_WHITELIST and update "drivers/usb/core/otg_whitelist.h"
-	   to match your requirements.
-
-endchoice
-
-# enable peripheral support (including with OTG)
-config USB_GADGET_MUSB_HDRC
-	bool
-	depends on USB_MUSB_HDRC && (USB_MUSB_PERIPHERAL || USB_MUSB_OTG)
-
-# enables host support (including with OTG)
-config USB_MUSB_HDRC_HCD
-	bool
-	depends on USB_MUSB_HDRC && (USB_MUSB_HOST || USB_MUSB_OTG)
-	select USB_OTG if USB_GADGET_MUSB_HDRC
-	default y
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index f6a6378..2426bcb 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -240,6 +240,34 @@ void __init cpm_reset(void)
+ #endif
+ }
+ 
++static DEFINE_SPINLOCK(cmd_lock);
++
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i, ret;
++	unsigned long flags;
++
++	if (command & 0xffffff0f)
++		return -EINVAL;
++
++	spin_lock_irqsave(&cmd_lock, flags);
++
++	ret = 0;
++	out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
++			goto out;
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
++	ret = -EIO;
++out:
++	spin_unlock_irqrestore(&cmd_lock, flags);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(cpm_command);
++
+ /* We used to do this earlier, but have to postpone as long as possible
+  * to ensure the kernel VM is now running.
+  */
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index 859362f..e2acc60 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -83,6 +83,31 @@ cpm2_reset(void)
+ 	cpmp = &cpm2_immr->im_cpm;
+ }
+ 
++static DEFINE_SPINLOCK(cmd_lock);
++
++#define MAX_CR_CMD_LOOPS        10000
++
++int cpm_command(u32 command, u8 opcode)
++{
++	int i, ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cmd_lock, flags);
++
++	ret = 0;
++	out_be32(&cpmp->cp_cpcr, command | opcode | CPM_CR_FLG);
++	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
++		if ((in_be32(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
++			goto out;
++
++	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
++	ret = -EIO;
++out:
++	spin_unlock_irqrestore(&cmd_lock, flags);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(cpm_command);
++
+ /* Set a baud rate generator.  This needs lots of work.  There are
+  * eight BRGs, which can be connected to the CPM channels or output
+  * as clocks.  The BRGs are in two different block of internal
+diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
+index da4efbc..e363211 100644
+--- a/drivers/net/fs_enet/mac-fcc.c
++++ b/drivers/net/fs_enet/mac-fcc.c
+@@ -81,16 +81,8 @@
+ static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W32(cpmp, cp_cpcr, fpi->cp_command | op | CPM_CR_FLG);
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
+ 
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-	       __FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 03134f4..5ff856d 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -89,21 +89,12 @@
+  * Delay to wait for SCC reset command to complete (in us)
+  */
+ #define SCC_RESET_DELAY		50
+-#define MAX_CR_CMD_LOOPS	10000
+ 
+ static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+ 	const struct fs_platform_info *fpi = fep->fpi;
+-	int i;
+-
+-	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
+-	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+-		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
+-			return 0;
+ 
+-	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+-		__FUNCTION__);
+-	return 1;
++	return cpm_command(fpi->cp_command, op);
+ }
+ 
+ static int do_pd_setup(struct fs_enet_private *fep)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 52fb044..6ea0366 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -52,11 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	u16 __iomem *cpcr = &cpmp->cp_cpcr;
+-
+-	out_be16(cpcr, port->command | (cmd << 8) | CPM_CR_FLG);
+-	while (in_be16(cpcr) & CPM_CR_FLG)
+-		;
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 882dbc1..def0158 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -52,13 +52,7 @@
+ #ifdef CONFIG_PPC_CPM_NEW_BINDING
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+ {
+-	cpm_cpm2_t __iomem *cp = cpm2_map(im_cpm);
+-
+-	out_be32(&cp->cp_cpcr, port->command | cmd | CPM_CR_FLG);
+-	while (in_be32(&cp->cp_cpcr) & CPM_CR_FLG)
+-		;
+-
+-	cpm2_unmap(cp);
++	cpm_command(port->command, cmd);
+ }
+ #else
+ void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
+diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
+index 48df9f3..fae83b1 100644
+--- a/include/asm-powerpc/cpm.h
++++ b/include/asm-powerpc/cpm.h
+@@ -10,5 +10,6 @@ int cpm_muram_free(unsigned long offset);
+ unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
+ void __iomem *cpm_muram_addr(unsigned long offset);
+ dma_addr_t cpm_muram_dma(void __iomem *addr);
++int cpm_command(u32 command, u8 opcode);
+ 
+ #endif
+-- 
+1.5.3.5
