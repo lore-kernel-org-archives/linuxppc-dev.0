@@ -1,22 +1,21 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp121.sbc.mail.sp1.yahoo.com (smtp121.sbc.mail.sp1.yahoo.com
-	[69.147.64.94]) by ozlabs.org (Postfix) with SMTP id AFBA5DDED0
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 04:50:44 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [linux-usb-devel] [PATCH 1/5] USB: Make usb_hcd_irq work for
-	multi-role =?iso-8859-1?q?USB=09controllers_w/_shared?= irq
-Date: Sat, 24 Nov 2007 09:50:40 -0800
-References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
-	<20071124051039.GA11029@suse.de>
-	<20071124170307.773d7317@the-village.bc.nu>
-In-Reply-To: <20071124170307.773d7317@the-village.bc.nu>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 33D49DDE03
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 04:53:47 +1100 (EST)
+Message-ID: <4748651E.2020806@scram.de>
+Date: Sat, 24 Nov 2007 18:53:34 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711240950.41235.david-b@pacbell.net>
-Cc: akpm@osdl.org, Greg KH <gregkh@suse.de>,
-	linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] powerpc: Move CPM command handling into the cpm
+	drivers
+References: <4745BB5F.6060002@scram.de>	<fa686aa40711221036n6438c252lde71cffdaff97ea9@mail.gmail.com>
+	<20071123005121.4d38d877@kernel.crashing.org>
+In-Reply-To: <20071123005121.4d38d877@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 24 November 2007, Alan Cox wrote:
-> > 
-> > What about for platforms where irq 0 is a valid irq?
-> 
-> There are no such platforms. Linus made that absolutely clear every time
-> this came up before
-> 
->         0       -       No IRQ
-> 
-> A platform with a physical or bus IRQ of 0 needs to remap it to a
-> different constant.
+Hi Vitaly,
 
-However it's also common practice to use negative numbers to
-flag "this is no IRQ" ... avoiding all confusions with zero.
+>>> +       printk(KERN_ERR "%s(): Not able to issue CPM command\n",
+>>> +               __FUNCTION__);
+>>> +       return -EIO;  
+>>>       
+>> Do these need to be protected with a spin lock?
+>>     
+> Even that might be not enough - we may have simultaneous call of this func in non-smp case...
+> I was thinking of some kind of refcount, so one that is going to issue CPM command, must do say pq_cpmp_get()
+> and another driver won't be able to mangle with cpcr while it's not done with previous request.
+>
+> Yet I am not telling it was better the way it used to be - this approach looks okay but needs some efforts to defend against
+> deadlocks while we are at it
 
-  - platform_get_irq(), platform_get_irq_byname() ... never
-    return zero, they return irq (positive) or errno
+Wouldn't spin_lock_irqsave() prevent a deadlock?
 
-  - PNP initializes invalid IRQs to "-1", and pnp_check_irq()
-    handles irq zero as in-range
-
-  - I'm sure I've seen negative numbers used elsewhere too
-
-Something like
-
-  #define is_valid_irq(x) ((x) >= 0)
-
-would work better than expecting sudden agreement everywhere
-about a single number representing "this is not an IRQ".
-
-- Dave
+Thanks,
+Jochen
