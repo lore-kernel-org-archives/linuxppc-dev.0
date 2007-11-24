@@ -1,22 +1,20 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from mail186-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
+Return-Path: <lethal@linux-sh.org>
+Received: from mx.gate01.com (pip15.gyao.ne.jp [61.122.117.253])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2F927DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 16:55:40 +1100 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E92D0DDE33
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 18:26:19 +1100 (EST)
+Date: Sat, 24 Nov 2007 16:26:13 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC][PATCH 0/3] OF-platform PATA driver
+Message-ID: <20071124072613.GA7303@linux-sh.org>
+References: <20071123175229.GA27143@localhost.localdomain>
+	<4747751D.4060802@garzik.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C82E5E.9EF8AB20"
-Subject: RE: Xilinx Linux git server available
-Date: Fri, 23 Nov 2007 21:54:33 -0800
-References: <20071114015615.12B9B1528050@mail173-sin.bigfish.com><8763zufl29.fsf@macbook.be.48ers.dk><fa686aa40711220635g1aa7dcc9w823de6a8c2d5832a@mail.gmail.com><871waifgbf.fsf@macbook.be.48ers.dk><fa686aa40711220739i3e950a59w5becd19125c23ff1@mail.gmail.com>
-	<87wssae11t.fsf@macbook.be.48ers.dk>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "Peter Korsgaard" <jacmet@sunsite.dk>,
-	"Grant Likely" <grant.likely@secretlab.ca>
-Message-Id: <20071124055535.81DD75F806D@mail186-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Reissnegger <wre@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4747751D.4060802@garzik.org>
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,120 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Fri, Nov 23, 2007 at 07:49:33PM -0500, Jeff Garzik wrote:
+> Anton Vorontsov wrote:
+> >Here is the PATA Platform driver using OF infrastructure.
+> >
+> >Mostly it's just a wrapper around a bit modified pata_platform
+> >driver.
+> >
+> >Patches are well split for the easier review:
+> >
+> >First one factors out platform_device specific bits and modifies
+> >pata_platform to be a library-alike driver (with platform_device
+> >default binding).
+> >
+The only issue I have here is that this library-like version has subtle
+semantic changes that will break existing drivers.
 
-------_=_NextPart_001_01C82E5E.9EF8AB20
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+irq_flags exists in struct pata_platform_info precisely for the IRQ
+resource IRQ flags (as opposed to the IORESOURCE flags, which are what
+the IRQ resource flags refer to instead). This change takes that for
+granted and just assumes we're going to be using the res->flags, which is
+both an invalid assumption, and will utterly break blackfin and others
+that depend on it.
 
+Incidentally, we already have an include/linux/pata_platform.h. If this
+is going to be library-like, through the prototypes in there, rather than
+splitting them up betewen include/linux and drivers/ata. We don't need
+two headers.
 
-It was the edk-derived driver for the uartlite..  The functionality is =
-now provided by the open source driver.
-
-Steve
-
------Original Message-----
-From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org =
-on behalf of Peter Korsgaard
-Sent: Thu 11/22/2007 7:45 AM
-To: Grant Likely
-Cc: linuxppc-dev@ozlabs.org; Wolfgang Reissnegger
-Subject: Re: Xilinx Linux git server available
-=20
->>>>> "Grant" =3D=3D Grant Likely <grant.likely@secretlab.ca> writes:
-
-Hi,
-
- >> Ok, I had a quick look at the tree and saw a uartlite-alternative.c =
--
- >> What's that about?
-
- Grant> What directory is that in?  I had looked in drivers/serial and =
-only
- Grant> saw uartlite.c:
-
-It's gone now (I accidently ended up browsing an earlier version
-before):
-
-http://git.xilinx.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git;a=3Dcommi=
-t;h=3D9912d5bf98f969324e1d4f12210adccd1530de68
-
---=20
-Bye, Peter Korsgaard
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-
-
-------_=_NextPart_001_01C82E5E.9EF8AB20
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DISO-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: Xilinx Linux git server available</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>It was the edk-derived driver for the uartlite..&nbsp; =
-The functionality is now provided by the open source driver.<BR>
-<BR>
-Steve<BR>
-<BR>
------Original Message-----<BR>
-From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org =
-on behalf of Peter Korsgaard<BR>
-Sent: Thu 11/22/2007 7:45 AM<BR>
-To: Grant Likely<BR>
-Cc: linuxppc-dev@ozlabs.org; Wolfgang Reissnegger<BR>
-Subject: Re: Xilinx Linux git server available<BR>
-<BR>
-&gt;&gt;&gt;&gt;&gt; &quot;Grant&quot; =3D=3D Grant Likely =
-&lt;grant.likely@secretlab.ca&gt; writes:<BR>
-<BR>
-Hi,<BR>
-<BR>
-&nbsp;&gt;&gt; Ok, I had a quick look at the tree and saw a =
-uartlite-alternative.c -<BR>
-&nbsp;&gt;&gt; What's that about?<BR>
-<BR>
-&nbsp;Grant&gt; What directory is that in?&nbsp; I had looked in =
-drivers/serial and only<BR>
-&nbsp;Grant&gt; saw uartlite.c:<BR>
-<BR>
-It's gone now (I accidently ended up browsing an earlier version<BR>
-before):<BR>
-<BR>
-<A =
-HREF=3D"http://git.xilinx.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git;a=
-=3Dcommit;h=3D9912d5bf98f969324e1d4f12210adccd1530de68">http://git.xilinx=
-.com/cgi-bin/gitweb.cgi?p=3Dlinux-2.6-xlnx.git;a=3Dcommit;h=3D9912d5bf98f=
-969324e1d4f12210adccd1530de68</A><BR>
-<BR>
---<BR>
-Bye, Peter Korsgaard<BR>
-_______________________________________________<BR>
-Linuxppc-dev mailing list<BR>
-Linuxppc-dev@ozlabs.org<BR>
-<A =
-HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.=
-org/mailman/listinfo/linuxppc-dev</A><BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C82E5E.9EF8AB20--
+These patches basically look fine to me otherwise, though it would be
+nice if the semantic-changing bits had been abstracted. So as long as the
+old irq_flags behaviour is maintained and that irq_res->flags stuff is
+ripped out, I'll add my Acked-by as well.
