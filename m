@@ -1,17 +1,23 @@
-Return-Path: <baishuwei@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
-	by ozlabs.org (Postfix) with ESMTP id DB564DDE29
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 02:19:30 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so242264wag
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 07:19:28 -0800 (PST)
-Message-ID: <f3566d60711240719j37367b7ci955b39bdd6116316@mail.gmail.com>
-Date: Sat, 24 Nov 2007 23:19:27 +0800
-From: "Bai Shuwei" <baishuwei@gmail.com>
-To: linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: shekr06@lzu.cn;puyq@lzu.cn;zhang_wei@lzu.cn
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5712_15767696.1195917567557"
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81031DDEB7
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 04:15:17 +1100 (EST)
+Date: Sat, 24 Nov 2007 17:03:07 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [linux-usb-devel] [PATCH 1/5] USB: Make usb_hcd_irq work for
+	multi-role USB	controllers w/ shared irq
+Message-ID: <20071124170307.773d7317@the-village.bc.nu>
+In-Reply-To: <20071124051039.GA11029@suse.de>
+References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
+	<20071124002431.25361.23974.stgit@trillian.cg.shawcable.net>
+	<20071124051039.GA11029@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: akpm@osdl.org, dbrownell@users.sourceforge.net,
+	linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,45 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5712_15767696.1195917567557
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 23 Nov 2007 21:10:39 -0800
+Greg KH <gregkh@suse.de> wrote:
 
-hi, all
-    I bought a SMC1500 stepper motor card. And it can connect with host
-through parallel port. My target board is PowerPC 440, which hasn't
-parrallel port. So I bought a PCI to Parallel line for SMC1500. But when I
-run the stepper motor, I find it's not stable. I  doubt there are somthing
-wrong with my PCI to Parallel line. So I beg somebody can tell me where I
-can bought the  appropriate conversion line from PCI to parallel, and does
-somebody give me some idea about how to control my stepper motor
-through PowerPC 440? thx all
+> On Fri, Nov 23, 2007 at 05:24:31PM -0700, Grant Likely wrote:
+> > From: Peter Korsgaard <peter.korsgaard@barco.com>
+> > 
+> > Some multi-role (host/peripheral) USB controllers use a shared interrupt
+> > line for all parts of the chip. Export usb_hcd_irq so drivers can call it
+> > from their interrupt handler instead of duplicating code.
+> > Drivers pass an irqnum of 0 to usb_add_hcd to signal that the interrupt handler
+> > shouldn't be registerred by the core.
+> 
+> What about for platforms where irq 0 is a valid irq?
 
-Best Regards!
+There are no such platforms. Linus made that absolutely clear every time
+this came up before
 
-Buroc
+	0	-	No IRQ
 
--- 
+A platform with a physical or bus IRQ of 0 needs to remap it to a
+different constant.
 
-Add: Tianshui South Road 222, Lanzhou, P.R.China
-Tel: +86-931-8912025
-Zip Code: 730000
-URL: oss.lzu.edu.cn
-Email: baishuwei@gmail.com, buroc@126.com
-
-------=_Part_5712_15767696.1195917567557
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>hi, all</div>
-<div>&nbsp;&nbsp;&nbsp; I bought a SMC1500 stepper motor card. And it can connect with host through parallel port. My target board is PowerPC 440, which hasn&#39;t parrallel port. So I bought a PCI to Parallel line for SMC1500. But&nbsp;when I run the stepper motor, I&nbsp;find&nbsp;it&#39;s not stable. I &nbsp;doubt there are somthing wrong with my&nbsp;PCI to Parallel line. So I beg somebody can tell me where I can bought the&nbsp;&nbsp;appropriate conversion line from PCI to parallel, and does somebody give me some idea about how to control my stepper motor through&nbsp;PowerPC 440? thx all
-</div>
-<div>&nbsp;</div>
-<div>Best Regards!</div>
-<div>&nbsp;</div>
-<div>Buroc&nbsp;<br clear="all"><br>-- <br><br>Add: Tianshui South Road 222, Lanzhou, P.R.China<br>Tel: +86-931-8912025<br>Zip Code: 730000<br>URL: <a href="http://oss.lzu.edu.cn">oss.lzu.edu.cn</a><br>Email: <a href="mailto:baishuwei@gmail.com">
-baishuwei@gmail.com</a>, <a href="mailto:buroc@126.com">buroc@126.com</a> </div>
-
-------=_Part_5712_15767696.1195917567557--
+Alan
