@@ -1,16 +1,24 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9C298DDED4
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 07:17:16 +1100 (EST)
-Message-ID: <474886C2.7030609@scram.de>
-Date: Sat, 24 Nov 2007 21:17:06 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 6BDD3DDE1E
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 07:20:37 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so26238anc
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 12:20:36 -0800 (PST)
+Message-ID: <fa686aa40711241220r4e808ad8obb27ae8bf5890048@mail.gmail.com>
+Date: Sat, 24 Nov 2007 13:20:36 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 5/5] USB: Add Cypress c67x00 OTG controller driver to
+	Kconfig and Makefiles
+In-Reply-To: <200711241212.27787.david-b@pacbell.net>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC/PATCHv3] powerpc: Move CPM command handling into the cpm drivers
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
+	<20071124002451.25361.90102.stgit@trillian.cg.shawcable.net>
+	<200711241212.27787.david-b@pacbell.net>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, gregkh@suse.de,
+	linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,191 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch moves the CPM command handling into commproc.c
-for CPM1 and cpm2_common.c. This is yet another preparation
-to get rid of drivers accessing the CPM via the global cpmp.
+On 11/24/07, David Brownell <david-b@pacbell.net> wrote:
+> On Friday 23 November 2007, Grant Likely wrote:
+> > +config USB_C67X00_DRV
+> > +tristate "Cypress C67x00 support"
+> > +# only allowed to be =y if both USB!=m and USB_GADGET!=m
+>
+> This is wrong.  Remember that since this is a dual-role driver,
+> there are exactly three possible driver modes ... and the driver
+> must support only one of them at a time:
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/sysdev/commproc.c          |   28 ++++++++++++++++++++++++++++
- arch/powerpc/sysdev/cpm2_common.c       |   25 +++++++++++++++++++++++++
- drivers/net/fs_enet/mac-fcc.c           |   10 +---------
- drivers/net/fs_enet/mac-scc.c           |   11 +----------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c |    6 +-----
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |    8 +-------
- include/asm-powerpc/cpm.h               |    1 +
- 7 files changed, 58 insertions(+), 31 deletions(-)
+Actually, this part has 2 serial in interface engines; either of which
+can be in host, peripheral or OTG mode.  So; it is entirely relevant
+for the driver to be doing both host and peripheral at the same time
+with a single device.
 
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index f6a6378..2426bcb 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -240,6 +240,34 @@ void __init cpm_reset(void)
- #endif
- }
- 
-+static DEFINE_SPINLOCK(cmd_lock);
-+
-+#define MAX_CR_CMD_LOOPS        10000
-+
-+int cpm_command(u32 command, u8 opcode)
-+{
-+	int i, ret;
-+	unsigned long flags;
-+
-+	if (command & 0xffffff0f)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&cmd_lock, flags);
-+
-+	ret = 0;
-+	out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
-+	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
-+		if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
-+			goto out;
-+
-+	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
-+	ret = -EIO;
-+out:
-+	spin_unlock_irqrestore(&cmd_lock, flags);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cpm_command);
-+
- /* We used to do this earlier, but have to postpone as long as possible
-  * to ensure the kernel VM is now running.
-  */
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-index 859362f..e2acc60 100644
---- a/arch/powerpc/sysdev/cpm2_common.c
-+++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -83,6 +83,31 @@ cpm2_reset(void)
- 	cpmp = &cpm2_immr->im_cpm;
- }
- 
-+static DEFINE_SPINLOCK(cmd_lock);
-+
-+#define MAX_CR_CMD_LOOPS        10000
-+
-+int cpm_command(u32 command, u8 opcode)
-+{
-+	int i, ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cmd_lock, flags);
-+
-+	ret = 0;
-+	out_be32(&cpmp->cp_cpcr, command | opcode | CPM_CR_FLG);
-+	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
-+		if ((in_be32(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0)
-+			goto out;
-+
-+	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
-+	ret = -EIO;
-+out:
-+	spin_unlock_irqrestore(&cmd_lock, flags);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cpm_command);
-+
- /* Set a baud rate generator.  This needs lots of work.  There are
-  * eight BRGs, which can be connected to the CPM channels or output
-  * as clocks.  The BRGs are in two different block of internal
-diff --git a/drivers/net/fs_enet/mac-fcc.c b/drivers/net/fs_enet/mac-fcc.c
-index da4efbc..e363211 100644
---- a/drivers/net/fs_enet/mac-fcc.c
-+++ b/drivers/net/fs_enet/mac-fcc.c
-@@ -81,16 +81,8 @@
- static inline int fcc_cr_cmd(struct fs_enet_private *fep, u32 op)
- {
- 	const struct fs_platform_info *fpi = fep->fpi;
--	int i;
--
--	W32(cpmp, cp_cpcr, fpi->cp_command | op | CPM_CR_FLG);
--	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
--		if ((R32(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
--			return 0;
- 
--	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
--	       __FUNCTION__);
--	return 1;
-+	return cpm_command(fpi->cp_command, op);
- }
- 
- static int do_pd_setup(struct fs_enet_private *fep)
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 03134f4..5ff856d 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -89,21 +89,12 @@
-  * Delay to wait for SCC reset command to complete (in us)
-  */
- #define SCC_RESET_DELAY		50
--#define MAX_CR_CMD_LOOPS	10000
- 
- static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
- {
- 	const struct fs_platform_info *fpi = fep->fpi;
--	int i;
--
--	W16(cpmp, cp_cpcr, fpi->cp_command | CPM_CR_FLG | (op << 8));
--	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
--		if ((R16(cpmp, cp_cpcr) & CPM_CR_FLG) == 0)
--			return 0;
- 
--	printk(KERN_ERR "%s(): Not able to issue CPM command\n",
--		__FUNCTION__);
--	return 1;
-+	return cpm_command(fpi->cp_command, op);
- }
- 
- static int do_pd_setup(struct fs_enet_private *fep)
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-index 52fb044..6ea0366 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-@@ -52,11 +52,7 @@
- #ifdef CONFIG_PPC_CPM_NEW_BINDING
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
--	u16 __iomem *cpcr = &cpmp->cp_cpcr;
--
--	out_be16(cpcr, port->command | (cmd << 8) | CPM_CR_FLG);
--	while (in_be16(cpcr) & CPM_CR_FLG)
--		;
-+	cpm_command(port->command, cmd);
- }
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-index 882dbc1..def0158 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -52,13 +52,7 @@
- #ifdef CONFIG_PPC_CPM_NEW_BINDING
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
- {
--	cpm_cpm2_t __iomem *cp = cpm2_map(im_cpm);
--
--	out_be32(&cp->cp_cpcr, port->command | cmd | CPM_CR_FLG);
--	while (in_be32(&cp->cp_cpcr) & CPM_CR_FLG)
--		;
--
--	cpm2_unmap(cp);
-+	cpm_command(port->command, cmd);
- }
- #else
- void cpm_line_cr_cmd(struct uart_cpm_port *port, int cmd)
-diff --git a/include/asm-powerpc/cpm.h b/include/asm-powerpc/cpm.h
-index 48df9f3..fae83b1 100644
---- a/include/asm-powerpc/cpm.h
-+++ b/include/asm-powerpc/cpm.h
-@@ -10,5 +10,6 @@ int cpm_muram_free(unsigned long offset);
- unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
- void __iomem *cpm_muram_addr(unsigned long offset);
- dma_addr_t cpm_muram_dma(void __iomem *addr);
-+int cpm_command(u32 command, u8 opcode);
- 
- #endif
+>
+>   - Host-only ... only allowed if host side USB is enabled.  The
+>     controller driver can be statically linked iff usbcore is too.
+>
+>   - Peripheral-only ... only allowed if peripheral side USB is
+>     enabled.  Only one port may be used as the peripheral; the
+>     controller driver can be linked statically or as a module.
+>
+>   - OTG ... only allowed if both host and peripheral side USB
+>     are enabled.  Only one port can be the OTG port, but other
+>     ports can be used for host functionality.  Static/modular
+>     linkage follows (more restrictive) the host-only rule.
+>
+> And of course, what a given board supports is controlled by the
+> connectors it has ... A, B, or AB.  (Possibly AB plus n*A.)  So
+> the driver should probably be able to make sense of having OTG
+> support, but needing to cope with a non-OTG board ... or having
+> an OTG board, a driver that only copes with one role.
+>
+> Hmmm ... your patches don't include peripheral mode support yet.
+
+No, nobody has written it yet.
+
+>
+> Either all these gadget hooks should vanish, or you should try
+> to get the controller mode stuff right from the beginning.
+>
+> I've appended the relevant Kconfig bits from the musb_hdrc
+> driver, which (despite some glitches) are pretty much correct.
+
+I'll drop the gadget hooks for now.  Most likely gadget and OTG
+support will require more changes to this driver regardless, so it's
+not a big deal.
+
+Cheers,
+g.
+
 -- 
-1.5.3.5
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
