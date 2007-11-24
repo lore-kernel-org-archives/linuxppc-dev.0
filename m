@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.250])
-	by ozlabs.org (Postfix) with ESMTP id 6C5D3DDED4
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 06:27:05 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so24530anc
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 11:27:04 -0800 (PST)
-Message-ID: <fa686aa40711241127i80acb2fyf61c41ab965c3178@mail.gmail.com>
-Date: Sat, 24 Nov 2007 12:27:04 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 0/5] Review request: Cypress c67x00 OTG controller
-In-Reply-To: <200711240957.35385.david-b@pacbell.net>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id DB132DDED4
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 06:27:21 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC/PATCHv2] powerpc: Move CPM command handling into the cpm
+	drivers
+Date: Sat, 24 Nov 2007 20:27:09 +0100
+References: <4748788C.7020706@scram.de>
+In-Reply-To: <4748788C.7020706@scram.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
-	<200711240957.35385.david-b@pacbell.net>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711242027.10396.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/24/07, David Brownell <david-b@pacbell.net> wrote:
-> On Friday 23 November 2007, Grant Likely wrote:
-> >
-> > This patch series is based on the c67x00 work done by Peter Korsgaard and
-> > posted back in April this year.
->
-> What's changed since that version?  Were the comments sent
-> at that time addressed?
+On Saturday 24 November 2007, Jochen Friedrich wrote:
+> This patch moves the CPM command handling into commproc.c
+> for CPM1 and cpm2_common.c. This is yet another preparation
+> to get rid of drivers accessing the CPM via the global cpmp.
 
-A lot has changes since that version.  I'm not sure if all the
-comments at that time were addressed (as in it's been a while since
-I've looked at them; I'll go back and take another look).
+good stuff, just a little nitpicking below:
 
-You can see my progression from Peter's version and my version here:
+> +DEFINE_SPINLOCK(cmd_lock);
 
-http://git.secretlab.ca/git/gitweb.cgi?p=linux-2.6-virtex.git;a=shortlog;h=virtex-c67x00-dev
+This should probably be a static variable. The name is too generic
+for a global identifier. If every use of the command register
+goes through the cpm_command function, you could even make it
+a static variable in that function.
 
-The patches I posted are the consolidation of the series in that git tree.
+> +int cpm_command(u32 command, u8 opcode)
+> +{
+> +	int i;
+> +	unsigned long flags;
+> +
+> +	if (command & 0xffffff0f)
+> +		return -EINVAL;
+> +
+> +	spin_lock_irqsave(&cmd_lock, flags);
+> +
+> +	out_be16(&cpmp->cp_cpcr, command | CPM_CR_FLG | (opcode << 8));
+> +	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+> +		if ((in_be16(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0) {
+> +			spin_unlock_irqrestore(&cmd_lock, flags);
+> +			return 0;
+> +		}
 
-Cheers,
-g.
+Error handling in here is nicer if you do a goto that jumps to the
+unlock below. If the code ever gets more complex, this makes it easier
+to check if it's correct regarding locking.
 
+> +	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
+> +	spin_unlock_irqrestore(&cmd_lock, flags);
+> +	return -EIO;
+> +}
+> +EXPORT_SYMBOL(cpm_command);
 
+Why not EXPORT_SYMBOL_GPL?
+  
+> +DEFINE_SPINLOCK(cmd_lock);
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+see above
+
+> +
+> +#define MAX_CR_CMD_LOOPS        10000
+> +
+> +int cpm_command(u32 command, u8 opcode)
+> +{
+> +	int i;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&cmd_lock, flags);
+> +
+> +	out_be32(&cpmp->cp_cpcr, command | opcode | CPM_CR_FLG);
+> +	for (i = 0; i < MAX_CR_CMD_LOOPS; i++)
+> +		if ((in_be32(&cpmp->cp_cpcr) & CPM_CR_FLG) == 0) {
+> +			spin_unlock_irqrestore(&cmd_lock, flags);
+> +			return 0;
+> +		}
+> +
+> +	printk(KERN_ERR "%s(): Not able to issue CPM command\n", __FUNCTION__);
+> +	spin_unlock_irqrestore(&cmd_lock, flags);
+> +	return -EIO;
+> +}
+> +EXPORT_SYMBOL(cpm_command);
+
+see above
+
+	Arnd <><
