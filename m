@@ -1,18 +1,22 @@
-Return-Path: <stern@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
-	by ozlabs.org (Postfix) with SMTP id E73B3DDE37
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 14:56:25 +1100 (EST)
-Date: Fri, 23 Nov 2007 22:56:21 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de", Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4EDF0DDE34
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 16:09:27 +1100 (EST)
+Date: Fri, 23 Nov 2007 21:10:39 -0800
+From: Greg KH <gregkh@suse.de>
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [linux-usb-devel] [PATCH 4/5] USB: add Cypress c67x00 OTG
-	controller HCD driver
-In-Reply-To: <20071124002446.25361.88850.stgit@trillian.cg.shawcable.net>
-Message-ID: <Pine.LNX.4.44L0.0711232253530.29983-100000@netrider.rowland.org>
+Subject: Re: [PATCH 1/5] USB: Make usb_hcd_irq work for multi-role USB
+	controllers w/ shared irq
+Message-ID: <20071124051039.GA11029@suse.de>
+References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
+	<20071124002431.25361.23974.stgit@trillian.cg.shawcable.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071124002431.25361.23974.stgit@trillian.cg.shawcable.net>
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-	linux-usb-devel@lists.sourceforge.net, gregkh@suse.de
+	linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 23 Nov 2007, Grant Likely wrote:
-
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Fri, Nov 23, 2007 at 05:24:31PM -0700, Grant Likely wrote:
+> From: Peter Korsgaard <peter.korsgaard@barco.com>
 > 
-> This patch adds HDC support for the Cypress c67x00 family of devices.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> Some multi-role (host/peripheral) USB controllers use a shared interrupt
+> line for all parts of the chip. Export usb_hcd_irq so drivers can call it
+> from their interrupt handler instead of duplicating code.
+> Drivers pass an irqnum of 0 to usb_add_hcd to signal that the interrupt handler
+> shouldn't be registerred by the core.
 
-> +static void c67x00_sched_done(unsigned long __c67x00)
-> +{
-> +	struct c67x00_hcd *c67x00 = (struct c67x00_hcd *)__c67x00;
-> +	struct c67x00_urb_priv *urbp, *tmp;
-> +	struct usb_hcd *hcd = c67x00_hcd_to_hcd(c67x00);
-> +	struct urb *urb;
-> +	int status;
-> +
-> +	spin_lock(&c67x00->lock);
-> +
-> +	/* Loop over the done list and give back all the urbs */
-> +	list_for_each_entry_safe(urbp, tmp, &c67x00->done_list, hep_node) {
-> +		urb = urbp->urb;
-> +		status = urbp->status;
-> +
-> +		c67x00_release_urb(c67x00, urb);
-> +
-> +		usb_hcd_unlink_urb_from_ep(hcd, urb);
-> +		usb_hcd_giveback_urb(hcd, urb, status);
-> +	}
-> +	spin_unlock(&c67x00->lock);
-> +}
+What about for platforms where irq 0 is a valid irq?
 
-You need to release the spinlock around the call to 
-usb_hcd_giveback_urb().  Otherwise you will deadlock if the completion 
-routine submits another URB.
+thanks,
 
-Alan Stern
+greg k-h
