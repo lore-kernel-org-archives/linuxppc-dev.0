@@ -1,23 +1,22 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDE2FDDEBE
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 08:47:19 +1100 (EST)
-Date: Sun, 25 Nov 2007 00:47:08 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [RFC/PATCH] powerpc: Move CPM command handling into the cpm
-	drivers
-Message-ID: <20071125004708.739366a1@kernel.crashing.org>
-In-Reply-To: <4748651E.2020806@scram.de>
-References: <4745BB5F.6060002@scram.de>
-	<fa686aa40711221036n6438c252lde71cffdaff97ea9@mail.gmail.com>
-	<20071123005121.4d38d877@kernel.crashing.org>
-	<4748651E.2020806@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
+	by ozlabs.org (Postfix) with ESMTP id 01B1ADDFCC
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 08:48:15 +1100 (EST)
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Fix static rate regression
+References: <200711221126.27465.fenkes@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 24 Nov 2007 13:48:13 -0800
+In-Reply-To: <200711221126.27465.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Thu, 22 Nov 2007 12:26:26 +0200")
+Message-ID: <adabq9jtiw2.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
+	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +26,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 24 Nov 2007 18:53:34 +0100
-Jochen Friedrich wrote:
-
-> Hi Vitaly,
-> 
-> >>> +       printk(KERN_ERR "%s(): Not able to issue CPM command\n",
-> >>> +               __FUNCTION__);
-> >>> +       return -EIO;  
-> >>>       
-> >> Do these need to be protected with a spin lock?
-> >>     
-> > Even that might be not enough - we may have simultaneous call of
-> > this func in non-smp case... I was thinking of some kind of
-> > refcount, so one that is going to issue CPM command, must do say
-> > pq_cpmp_get() and another driver won't be able to mangle with cpcr
-> > while it's not done with previous request.
-> >
-> > Yet I am not telling it was better the way it used to be - this
-> > approach looks okay but needs some efforts to defend against
-> > deadlocks while we are at it
-> 
-> Wouldn't spin_lock_irqsave() prevent a deadlock?
-> 
-yes, I believe it is OK for now.
-
-> Thanks,
-> Jochen
-
-
--- 
-Sincerely, Vitaly
+thanks, applied.
