@@ -1,20 +1,32 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 368D1DDE02
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 10:48:27 +1100 (EST)
-Date: Sat, 24 Nov 2007 02:46:24 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [PATCH resend 3/4] powerpc: Add EXPORT_SYMBOL for symbols
-	required by fs_enet and cpm_uart
-Message-ID: <20071124024624.41ca272a@kernel.crashing.org>
-In-Reply-To: <4745B42B.8050201@scram.de>
-References: <4745B42B.8050201@scram.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd3mo2so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 6BF1CDDDD6
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 11:24:52 +1100 (EST)
+Received: from pd3mr2so.prod.shaw.ca
+	(pd3mr2so-qfe3.prod.shaw.ca [10.0.141.178]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JRZ004C9IH9PX50@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 23 Nov 2007 17:24:45 -0700 (MST)
+Received: from pn2ml7so.prod.shaw.ca ([10.0.121.151])
+	by pd3mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JRZ004BKIH4TC20@pd3mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Fri, 23 Nov 2007 17:24:43 -0700 (MST)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
+	2004))
+	with ESMTP id <0JRZ00KCOIH30J70@l-daemon> for linuxppc-dev@ozlabs.org;
+	Fri, 23 Nov 2007 17:24:40 -0700 (MST)
+Date: Fri, 23 Nov 2007 17:24:41 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH 3/5] USB: add Cypress c67x00 OTG controller core driver
+In-reply-to: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
+To: linux-usb-devel@lists.sourceforge.net, akpm@osdl.org,
+	dbrownell@users.sourceforge.net, gregkh@suse.de, linuxppc-dev@ozlabs.org
+Message-id: <20071124002441.25361.60141.stgit@trillian.cg.shawcable.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+References: <20071124001203.25361.99294.stgit@trillian.cg.shawcable.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,83 +36,378 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 22 Nov 2007 17:54:03 +0100
-Jochen Friedrich wrote:
+From: Grant Likely <grant.likely@secretlab.ca>
 
-> fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
-> cpm2_common.c. Add EXPORT_SYMBOL for cpmp, cpm_setbrg and cpm2_immr,
-> so the drivers can be compiled as modules.
-> 
-I think this is not required. We are having very gross setup_immap
-function, where just using global area pointer - this should be replaced
-with parent node traverse to figure out proper immr reg.
+This patch add the core driver for the c67x00 USB OTG controller.  The core
+driver is responsible for the platform bus binding and creating either
+USB HCD or USB Gadget instances for each of the serial interface engines
+on the chip.
 
-I will likely have a look at this problem. Additionally, I must say what we are having
-is unpleasant enough, and EXPORT_...ing global memmapped pointers, we'll open the way to ugly
-hacks which nobody want to. Let's cure the disease,   not its effects.
+This driver does not directly implement the HCD or gadget behaviours; it
+just controls access to the chip.
 
->   Building modules, stage 2.
->   MODPOST 5 modules
-> ERROR: "cpm2_immr" [drivers/net/fs_enet/fs_enet.ko] undefined!
-> ERROR: "cpmp" [drivers/net/fs_enet/fs_enet.ko] undefined!
-> make[1]: *** [__modpost] Error 1
-> make: *** [modules] Error 2
-> 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/sysdev/commproc.c    |    3 +++
->  arch/powerpc/sysdev/cpm2_common.c |    3 +++
->  2 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/commproc.c
-> b/arch/powerpc/sysdev/commproc.c index f6a6378..d5a0dcf 100644
-> --- a/arch/powerpc/sysdev/commproc.c
-> +++ b/arch/powerpc/sysdev/commproc.c
-> @@ -51,6 +51,8 @@ static void m8xx_cpm_dpinit(void);
->  static uint host_buffer; /* One page of host buffer */
->  static uint host_end;    /* end + 1 */
->  cpm8xx_t __iomem *cpmp;  /* Pointer to comm processor space */
-> +EXPORT_SYMBOL(cpmp);
-> +
->  immap_t __iomem *mpc8xx_immr;
->  static cpic8xx_t __iomem *cpic_reg;
-> 
-> @@ -302,6 +304,7 @@ cpm_setbrg(uint brg, uint rate)
->  		out_be32(bp, (((BRG_UART_CLK_DIV16 / rate) - 1) <<
-> 1) | CPM_BRG_EN | CPM_BRG_DIV16);
->  }
-> +EXPORT_SYMBOL(cpm_setbrg);
-> 
->  #ifndef CONFIG_PPC_CPM_NEW_BINDING
->  /*
-> diff --git a/arch/powerpc/sysdev/cpm2_common.c
-> b/arch/powerpc/sysdev/cpm2_common.c index 859362f..4ed5df6 100644
-> --- a/arch/powerpc/sysdev/cpm2_common.c
-> +++ b/arch/powerpc/sysdev/cpm2_common.c
-> @@ -51,11 +51,13 @@ static void cpm2_dpinit(void);
->  #endif
-> 
->  cpm_cpm2_t __iomem *cpmp; /* Pointer to comm processor space */
-> +EXPORT_SYMBOL(cpmp);
-> 
->  /* We allocate this here because it is used almost exclusively for
->   * the communication processor devices.
->   */
->  cpm2_map_t __iomem *cpm2_immr;
-> +EXPORT_SYMBOL(cpm2_immr);
-> 
->  #define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3
-> reserve this amount of space for CPM as it is larger
-> @@ -117,6 +119,7 @@ cpm_setbrg(uint brg, uint rate)
-> 
->  	cpm2_unmap(bp);
->  }
-> +EXPORT_SYMBOL(cpm_setbrg);
-> 
->  /* This function is used to set high speed synchronous baud rate
->   * clocks.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
+ drivers/usb/c67x00/c67x00-drv.c |  301 +++++++++++++++++++++++++++++++++++++++
+ include/linux/usb/c67x00.h      |   45 ++++++
+ 2 files changed, 346 insertions(+), 0 deletions(-)
 
--- 
-Sincerely, Vitaly
+diff --git a/drivers/usb/c67x00/c67x00-drv.c b/drivers/usb/c67x00/c67x00-drv.c
+new file mode 100644
+index 0000000..e1b1db1
+--- /dev/null
++++ b/drivers/usb/c67x00/c67x00-drv.c
+@@ -0,0 +1,301 @@
++/*
++ * c67x00-drv.c: Cypress C67X00 USB Common infrastructure
++ *
++ * Copyright (C) 2006-2007 Barco N.V.
++ *    Derived from the Cypress cy7c67200/300 ezusb linux driver and
++ *    based on multiple host controller drivers inside the linux kernel.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA  02110-1301  USA.
++ */
++
++/*
++ * This file implements the common infrastructure for using the c67x00.
++ * It is both the link between the platform configuration and subdrivers and
++ * the link between the common hardware parts and the subdrivers (e.g.
++ * interrupt handling).
++ *
++ * The c67x00 has 2 SIE's (serial interface engine) wich can be configured
++ * to be host, device or OTG (with some limitations, E.G. only SIE1 can be OTG).
++ *
++ * Depending on the platform configuration, the SIE's are created (setup_sie)
++ * and the corresponding subdriver is initialized (c67x00_probe_sie).
++ */
++
++#include <linux/device.h>
++#include <linux/list.h>
++#include <linux/usb.h>
++#include <linux/usb/c67x00.h>
++#include <asm/io.h>
++
++#include "c67x00.h"
++#include "c67x00-hcd.h"
++#include "c67x00-udc.h"
++
++static struct platform_driver c67x00_driver;
++
++static void
++c67x00_setup_sie(struct c67x00_sie *sie, struct c67x00_device *dev, int sie_num)
++{
++	static unsigned int id = 0;
++
++	/* Fill in needed attributes */
++	sie->pdev = platform_device_register_simple("c67x00_sie",
++						    id++, NULL, 0);
++	/* driver used in hub.c: hub_port_init */
++	sie->pdev->dev.driver = &c67x00_driver.driver;
++	spin_lock_init(&sie->lock);
++	sie->dev = dev;
++	sie->sie_num = sie_num;
++	sie->mode = c67x00_sie_config(dev->pdata->sie_config, sie_num);
++}
++
++static void c67x00_teardown_sie(struct c67x00_sie *sie)
++{
++	sie->pdev->dev.driver = NULL;
++	platform_device_unregister(sie->pdev);
++}
++
++/* ------------------------------------------------------------------ */
++
++static void c67x00_probe_sie(struct c67x00_sie *sie)
++{
++	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
++	case C67X00_SIE_HOST:
++		c67x00_hcd_probe(sie);
++		break;
++
++	case C67X00_SIE_PERIPHERAL:
++		c67x00_udc_probe(sie);
++		break;
++
++	case C67X00_SIE_UNUSED:
++		dev_info(sie_dev(sie),
++			 "Not using SIE %d as requested\n", sie->sie_num);
++		break;
++
++	default:
++		dev_err(sie_dev(sie),
++			"Unsupported configuration: 0x%x for SIE %d\n",
++			c67x00_sie_config(sie->dev->pdata->sie_config,
++					  sie->sie_num), sie->sie_num);
++		break;
++	}
++}
++
++static void c67x00_remove_sie(struct c67x00_sie *sie)
++{
++	switch (c67x00_sie_config(sie->dev->pdata->sie_config, sie->sie_num)) {
++	case C67X00_SIE_HOST:
++		c67x00_hcd_remove(sie);
++		break;
++
++	case C67X00_SIE_PERIPHERAL:
++		c67x00_udc_remove(sie);
++		break;
++
++	default:
++		break;
++	}
++}
++
++/* ------------------------------------------------------------------ */
++
++static void
++c67x00_sie_irq(struct c67x00_device *c67x00, int sie_idx, int irq)
++{
++	struct c67x00_sie *sie = &c67x00->sie[sie_idx];
++
++	spin_lock(&sie->lock);
++	if (c67x00->int_status & SIEMSG_FLAG(sie_idx)) {
++		u16 msg = c67x00_ll_get_siemsg(c67x00, sie_idx);
++		if (sie->msg_received)
++			sie->msg_received(sie, msg);
++	}
++	if (sie->irq)
++		sie->irq(irq, sie);
++	spin_unlock(&sie->lock);
++}
++
++static irqreturn_t c67x00_irq(int irq, void *__dev)
++{
++	struct c67x00_device *c67x00 = __dev;
++	int i, count = 8;
++
++	c67x00->int_status = c67x00_ll_hpi_status(c67x00);
++	if (!c67x00->int_status)
++		return IRQ_NONE;
++
++	while (c67x00->int_status != 0 && (count-- >= 0)) {
++		c67x00_ll_irq(c67x00);
++		for (i = 0; i < C67X00_SIES; i++)
++			c67x00_sie_irq(c67x00, i, irq);
++		c67x00->int_status = c67x00_ll_hpi_status(c67x00);
++	}
++
++	if (c67x00->int_status)
++		dev_warn(&c67x00->pdev->dev, "Not all interrupts handled! "
++			 "status = 0x%04x\n", c67x00->int_status);
++
++	return IRQ_HANDLED;
++}
++
++/* ---------------------------------------------------------------------
++ * Platform bus binding
++ */
++
++static int __devinit c67x00_drv_probe(struct platform_device *pdev)
++{
++	struct c67x00_device *c67x00;
++	struct c67x00_platform_data *pdata;
++	struct resource *res, *res2;
++	int ret, i;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res)
++		return -ENODEV;
++
++	res2 = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res2)
++		return -ENODEV;
++
++	pdata = (struct c67x00_platform_data*)pdev->dev.platform_data;
++	if (!pdata)
++		return -ENODEV;
++
++	c67x00 = kzalloc(sizeof(*c67x00), GFP_KERNEL);
++	if (!c67x00)
++		return -ENOMEM;
++
++	if (!request_mem_region(res->start, res->end - res->start + 1,
++				pdev->name)) {
++		dev_err(&pdev->dev, "Memory region busy\n");
++		ret = -EBUSY;
++		goto request_mem_failed;
++	}
++	c67x00->hpi.base = ioremap(res->start, res->end - res->start + 1);
++	if (!c67x00->hpi.base) {
++		dev_err(&pdev->dev, "Unable to map HPI registers\n");
++		ret = -EIO;
++		goto map_failed;
++	}
++
++	spin_lock_init(&c67x00->hw_lock);
++	c67x00->hpi.regstep = pdata->hpi_regstep;
++	c67x00->pdata = pdev->dev.platform_data;
++	c67x00->pdev = pdev;
++
++	for (i = 0; i < C67X00_SIES; i++)
++		c67x00_setup_sie(&c67x00->sie[i], c67x00, i);
++
++	c67x00_ll_init(c67x00);
++	c67x00_ll_hpi_reg_init(c67x00);
++
++	dev_info(&pdev->dev, "USB OTG controller, p:0x%x, v:0x%p, irq:%i\n",
++	         res->start, c67x00->hpi.base, res2->start);
++
++	ret = request_irq(res2->start, c67x00_irq, 0, pdev->name, c67x00);
++	if (ret) {
++		dev_err(&pdev->dev, "Cannot claim IRQ\n");
++		goto request_irq_failed;
++	}
++
++	ret = c67x00_ll_reset(c67x00);
++	if (ret) {
++		dev_err(&pdev->dev, "Device reset failed\n");
++		goto reset_failed;
++	}
++
++	for (i = 0; i < C67X00_SIES; i++)
++		c67x00_probe_sie(&c67x00->sie[i]);
++
++	platform_set_drvdata(pdev, c67x00);
++
++	return 0;
++
++ reset_failed:
++	free_irq(res2->start, c67x00);
++ request_irq_failed:
++	iounmap(c67x00->hpi.base);
++ map_failed:
++	release_mem_region(res->start, res->end - res->start + 1);
++ request_mem_failed:
++	kfree(c67x00);
++
++	return ret;
++}
++
++static int __devexit c67x00_drv_remove(struct platform_device *pdev)
++{
++	struct c67x00_device *c67x00 = platform_get_drvdata(pdev);
++	struct resource *res;
++	int i;
++
++	for (i = 0; i < C67X00_SIES; i++) {
++		c67x00_remove_sie(&c67x00->sie[i]);
++		c67x00_teardown_sie(&c67x00->sie[i]);
++	}
++
++	c67x00_ll_release(c67x00);
++
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (res)
++		free_irq(res->start, c67x00);
++
++	iounmap(c67x00->hpi.base);
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (res)
++		release_mem_region(res->start, res->end - res->start + 1);
++
++	kfree(c67x00);
++
++	return 0;
++}
++
++static struct platform_driver c67x00_driver = {
++	.probe = c67x00_drv_probe,
++	.remove = c67x00_drv_remove,
++	.driver = {
++		.owner = THIS_MODULE,
++		.name = "c67x00",
++	},
++};
++
++static int __init c67x00_init(void)
++{
++	int ret;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	ret = c67x00_udc_init();
++	if (ret)
++		return ret;
++
++	return platform_driver_register(&c67x00_driver);
++}
++module_init(c67x00_init);
++
++static void __exit c67x00_exit(void)
++{
++	c67x00_udc_cleanup();
++	platform_driver_unregister(&c67x00_driver);
++}
++module_exit(c67x00_exit);
++
++MODULE_AUTHOR("Peter Korsgaard, Jan Veldeman, Grant Likely");
++MODULE_DESCRIPTION("Cypress C67X00 USB Controller Driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/usb/c67x00.h b/include/linux/usb/c67x00.h
+new file mode 100644
+index 0000000..80b1a87
+--- /dev/null
++++ b/include/linux/usb/c67x00.h
+@@ -0,0 +1,45 @@
++/*
++ * usb_c67x00.h: platform definitions for the Cypress C67X00 USB chip
++ *
++ * Copyright (C) 2006-2007 Barco N.V.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
++ * MA  02110-1301  USA.
++ */
++
++#ifndef _LINUX_USB_C67X00_H
++#define _LINUX_USB_C67X00_H
++
++/* SIE configuration */
++#define C67X00_SIE_UNUSED	0
++#define C67X00_SIE_HOST		1
++#define C67X00_SIE_PERIPHERAL	2
++
++#define c67x00_sie_config(config, n)  (((config)>>(4*(n)))&0x3)
++
++#define C67X00_SIE1_UNUSED	(C67X00_SIE_UNUSED	<< 0)
++#define C67X00_SIE1_HOST	(C67X00_SIE_HOST	<< 0)
++#define C67X00_SIE1_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 0)
++
++#define C67X00_SIE2_UNUSED	(C67X00_SIE_UNUSED	<< 4)
++#define C67X00_SIE2_HOST	(C67X00_SIE_HOST	<< 4)
++#define C67X00_SIE2_PERIPHERAL	(C67X00_SIE_PERIPHERAL	<< 4)
++
++struct c67x00_platform_data {
++	int sie_config;			/* SIEs config (C67X00_SIEx_*) */
++	unsigned long hpi_regstep;	/* Step between HPI registers  */
++};
++
++#endif /* _LINUX_USB_C67X00_H */
