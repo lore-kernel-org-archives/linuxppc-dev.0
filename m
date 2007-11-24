@@ -1,19 +1,22 @@
-Return-Path: <jgarzik@pobox.com>
+Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35866DDE3B
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 13:52:11 +1100 (EST)
-Message-ID: <474791D3.1090607@pobox.com>
-Date: Fri, 23 Nov 2007 21:52:03 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+	by ozlabs.org (Postfix) with ESMTP id 89CF0DDDF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 14:10:06 +1100 (EST)
+Message-ID: <47479606.10004@garzik.org>
+Date: Fri, 23 Nov 2007 22:09:58 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
-References: <20071116073821.548CCDDDF4@ozlabs.org>
-In-Reply-To: <20071116073821.548CCDDDF4@ozlabs.org>
+To: Thomas Klein <osstklei@de.ibm.com>
+Subject: Re: [PATCH 1/2][2.6.24] ehea: Improve tx packets counting
+References: <200711211737.58789.osstklei@de.ibm.com>
+In-Reply-To: <200711211737.58789.osstklei@de.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, auke-jan.h.kok@intel.com, linuxppc-dev@ozlabs.org
+Cc: Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> The e1000 driver stores the content of the PCI resources into
-> unsigned long's before ioremapping. This breaks on 32 bits
-> platforms that support 64 bits MMIO resources such as ppc 44x.
+Thomas Klein wrote:
+> Using own tx_packets counter instead of firmware counters.
 > 
-> This fixes it by removing those temporary variables and passing
-> directly the result of pci_resource_start/len to ioremap.
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 > 
-> The side effect is that I removed the assignments to the netdev
-> fields mem_start, mem_end and base_addr, which are totally useless
-> for PCI devices.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> --
-> 
->  drivers/net/e1000/e1000_main.c |   18 +++++-------------
->  1 file changed, 5 insertions(+), 13 deletions(-)
+> ---
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |    9 +++++++--
+>  2 files changed, 8 insertions(+), 3 deletions(-)
 
-Looks good to me.  auke?
+applies 1-2 to #upstream-fixes
