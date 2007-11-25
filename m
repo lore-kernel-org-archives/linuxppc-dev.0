@@ -1,23 +1,21 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9AD5DDDF17
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8679ADDEF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 09:56:51 +1100 (EST)
-Message-ID: <4749FD5E.7000408@dlasys.net>
-Date: Sun, 25 Nov 2007 17:55:26 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Mon, 26 Nov 2007 10:22:06 +1100 (EST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Xilinx devicetrees
-References: <47480CF0.7090105@dlasys.net>	
-	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	
-	<47493D4F.4070605@dlasys.net>
-	<fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
-In-Reply-To: <fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C82FB9.FAEE9482"
+Subject: RE: SPI, I2C
+Date: Sun, 25 Nov 2007 15:17:58 -0800
+References: <4749441B.1000703@dlasys.net>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Message-Id: <20071125232203.606C84F804E@mail91-cpk.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,113 +26,173 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> nope, not at all the same as dynamic detection; just backwards
-> compatibility with the way we do it now for arch/ppc.
->   
-    Other things being equal a common architecture is preferable to a
-collection of independent ones.
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C82FB9.FAEE9482
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
->
->
-> No, it doesn't make sense to store is in the FPGA fabric; but if the
-> design already contains BRAM then it could be placed there and
-> reclaimed for other purposes after booting.  Or anywhere in RAM for
-> that matter.  I don't know how feasible is to load a device tree into
-> SDRAM at FPGA config time.
->   
-    I am not expert on this, but at Pico we already store our boot
-monitor in the .bit files in BRAM.
-    But that is not free.  It is one of the reasons we do not use
-u-boot. Our boot monitor must fit into 16K of BRAM.
-    Must be able to perform selftests on critical hardware, support a
-flash file system, load bit files from flash to the FGA, load and
-exectute elf files, allow a small set of user commands, and handle
-hosted vs. standalone operation.
-    And aparently extract the devicetree from a bit file and pass it to
-a linux kernel.
+The drivers for these do exist (see git.xilinx.com).  I suppose as a =
+'control' bus, they might actually be useful inside an FPGA, but why not =
+just use dcr?  Part of the value of i2c is minimizing wires (including =
+power wires), but that's hardly a design constraint in an FPGA compared =
+to conserving logic.=20
+
+I also got fed up with the i2c core at one point and wrote a bitbang =
+version for the gpio.  It might be a bit slower, but it's dirt simple.  =
+I can send it do you, if you're interested.
+
+Steve
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
+on behalf of David H. Lynch Jr.
+Sent: Sun 11/25/2007 1:44 AM
+To: linuxppc-embedded
+Subject: SPI, I2C
+=20
+
+    I have been asked to do SPI and I2C drivers for Pico cards.
+  =20
+    I am trying to grasp what the practical use of either could be in an
+environment where neither SPI nor I2C are going to be able to
+communicate outside the FPGA.
+
+    I am guessing that SPI and I2C implementations already exist for
+Xilinx FPGA's - any chance that drivers might already exist ?
+
+    I would prefer not to charge a client to reinvent something that
+exists, or that can not serve a useful purpose.
+
+    I am not trying to imply that SPI or I2C are not useful, just that
+they are communications channels, and unless  they have outside I2C or
+SPI hardware to talk to what purpose might they serve ?
 
 
-> Ah; I think I see the disconnect we're having.  Device trees are not
-> about, *and never have been about*, device detection.  The device tree
-> is simply the communication medium used to describe the hardware.  It
-> doesn't matter if you choose to use a 100% dynamically generated
-> device tree from intelligent firmware or a 100% static device tree
-> blob.  All that matters is that the kernel is able to trust the
-> information handed to it by firmware.
->
-> Device detection is not a problem that the device tree is designed to solve.
->
-> It is designed to solve the problem of telling the kernel what the
-> platform looks like (which occurs after the detection stage).
->   
-    In static or fairly static hardware, that's fine. Even in somewhat
-dynamic hardware with large quantities of startup resources - like a PC.
-    But in highly dynamic hardware with fairly limited resources it
-starts to become an issue.
 
-    Still if xilinx intends to generate the device tree with the bit
-file - even better appended to the bit file or embedded in the FPGA if
-feasible,
-    this could still work.
-
-    I do not see Detection as independent of communication.
-    Aside from a very minimal core, If device drivers can do a good job
-of validating their hardware (back to my version registers issue in
-another post) and I just load them willy nilly and let the ones that
-have no hardware fail (Gross over simplification, but still viable) then
-a communication scheme is meaningless. Going the opposite direction,  if
-I do not have the resources to detect the hardware and build the
-devicetree dynamically, AND I have  highly dynamic hardware, AND I do
-not have an easy method I can trust of aquiring another source for the
-hardware description, devicetree's aren't any help. There are alot of
-AND's there but most if not all appear to be present with FPGA based
-systems.
-
-
-> arch/powerpc support for Virtex is now in Linus' mainline tree which
-> will become 2.6.24
->   
-
-    Guess it is time to pull Linus again.
-> No, unfortunately they don't deal with the problem you're facing
-> (which I'm facing also).  But it will be solved if we figure out a
-> sane way to bind the device tree up with the FPGA bitstream without
-> consuming FPGA resources.
->   
-    Note to Xilinx:
-
-       There MUST be some way of binding a device description to a bit file.
-
-    neither building it into the FPGA fabric nor appending it to the end
-of the bit file are perfect solutions,
-    The former is more powerfull and flexible but wastes precious
-resources. The later is more complex and puts more burdens on
-    software developers, and may be completely unfeasible in some
-environments - not mine fortunately.
-
-    Regardless, something must be done. An odd collection of devicetree
-files co-mingled with a collection of bit files, is little better than
-xparameter files all over the place.
-
-    And once again a plea to ALWAYS make version/capabilities registers
-atleast an optional part of every design.
-    Embeddeding a device tree into a design might be fairly expensive. a
-pair of read only 32 bit registers is damn near free - basically the
-FPGA equivalent of atmost 64 diodes or resistors.
-> Cheers,
-> g.
->
->   
-
-
--- 
+--=20
 Dave Lynch 					  	    DLA Systems
 Software Development:  				         Embedded Linux
 717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
 fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+Over 25 years' experience in platforms, languages, and technologies too =
+numerous to list.
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+"Any intelligent fool can make things bigger and more complex... It =
+takes a touch of genius - and a lot of courage to move in the opposite =
+direction."
 Albert Einstein
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+
+------_=_NextPart_001_01C82FB9.FAEE9482
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: SPI, I2C</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>The drivers for these do exist (see =
+git.xilinx.com).&nbsp; I suppose as a 'control' bus, they might actually =
+be useful inside an FPGA, but why not just use dcr?&nbsp; Part of the =
+value of i2c is minimizing wires (including power wires), but that's =
+hardly a design constraint in an FPGA compared to conserving logic.<BR>
+<BR>
+I also got fed up with the i2c core at one point and wrote a bitbang =
+version for the gpio.&nbsp; It might be a bit slower, but it's dirt =
+simple.&nbsp; I can send it do you, if you're interested.<BR>
+<BR>
+Steve<BR>
+<BR>
+-----Original Message-----<BR>
+From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
+on behalf of David H. Lynch Jr.<BR>
+Sent: Sun 11/25/2007 1:44 AM<BR>
+To: linuxppc-embedded<BR>
+Subject: SPI, I2C<BR>
+<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; I have been asked to do SPI and I2C drivers for Pico =
+cards.<BR>
+&nbsp;&nbsp;<BR>
+&nbsp;&nbsp;&nbsp; I am trying to grasp what the practical use of either =
+could be in an<BR>
+environment where neither SPI nor I2C are going to be able to<BR>
+communicate outside the FPGA.<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; I am guessing that SPI and I2C implementations =
+already exist for<BR>
+Xilinx FPGA's - any chance that drivers might already exist ?<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; I would prefer not to charge a client to reinvent =
+something that<BR>
+exists, or that can not serve a useful purpose.<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; I am not trying to imply that SPI or I2C are not =
+useful, just that<BR>
+they are communications channels, and unless&nbsp; they have outside I2C =
+or<BR>
+SPI hardware to talk to what purpose might they serve ?<BR>
+<BR>
+<BR>
+<BR>
+--<BR>
+Dave Lynch &nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; DLA Systems<BR>
+Software Development:&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Embedded Linux<BR>
+717.627.3770 &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+dhlii@dlasys.net &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; <A =
+HREF=3D"http://www.dlasys.net">http://www.dlasys.net</A><BR>
+fax: 1.253.369.9244 &nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Cell: =
+1.717.587.7774<BR>
+Over 25 years' experience in platforms, languages, and technologies too =
+numerous to list.<BR>
+<BR>
+&quot;Any intelligent fool can make things bigger and more complex... It =
+takes a touch of genius - and a lot of courage to move in the opposite =
+direction.&quot;<BR>
+Albert Einstein<BR>
+<BR>
+_______________________________________________<BR>
+Linuxppc-embedded mailing list<BR>
+Linuxppc-embedded@ozlabs.org<BR>
+<A =
+HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://oz=
+labs.org/mailman/listinfo/linuxppc-embedded</A><BR>
+<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C82FB9.FAEE9482--
