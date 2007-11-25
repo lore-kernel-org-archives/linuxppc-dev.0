@@ -1,18 +1,24 @@
-Return-Path: <baishuwei@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.181])
-	by ozlabs.org (Postfix) with ESMTP id 65F05DDEC9
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 16:06:21 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so436383wag
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2007 21:06:20 -0800 (PST)
-Message-ID: <f3566d60711242106x4d56efe1w325e70c522ddd62c@mail.gmail.com>
-Date: Sun, 25 Nov 2007 13:06:20 +0800
-From: "Bai Shuwei" <baishuwei@gmail.com>
-To: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
-Subject: PCI to Parallel for PowerPC
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 542B7DDE41
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 17:25:01 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_Part_6925_31562503.1195967180099"
-Cc: zhang_wei@lzu.cn, puyq@lzu.cn, shekr06@lzu.cn
+	boundary="----_=_NextPart_001_01C82F2B.E4E81D8C"
+Subject: RE: Xilinx EDK BSP generation of device trees for microblaze and
+	PowerPC
+Date: Sat, 24 Nov 2007 22:24:55 -0800
+References: <20071120194411.E183B100060@mail17-sin.bigfish.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>,
+	<microblaze-uclinux@itee.uq.edu.au>, <linuxppc-dev@ozlabs.org>,
+	"Grant Likely" <grant.likely@secretlab.ca>,
+	"Michal Simek" <simekm2@fel.cvut.cz>
+Message-Id: <20071125062456.ABA4AA4804E@mail64-cpk.bigfish.com>
+Cc: git <git@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +28,402 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6925_31562503.1195967180099
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is a multi-part message in MIME format.
 
-hi, all
-    I bought a SMC1500 stepper motor card. And it can connect with host
-through parallel port. My target board is PowerPC 440, which hasn't
-parrallel port. So I bought a PCI to Parallel line for SMC1500. But when I
-run the stepper motor, I find it's not stable. I  doubt there are somthing
-wrong with my PCI to Parallel line. So I beg somebody can tell me where I
-can bought the  appropriate conversion line from PCI to parallel, and does
-somebody give me some idea about how to control my stepper motor
-through PowerPC 440? thx all
-
-Best Regards!
-
-Buroc
+------_=_NextPart_001_01C82F2B.E4E81D8C
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
+Here's what I've gotten so far:
 
-Add: Tianshui South Road 222, Lanzhou, P.R.China
-Tel: +86-931-8912025
-Zip Code: 730000
-URL: oss.lzu.edu.cn
-Email: baishuwei@gmail.com, buroc@126.com
+		Hard_Ethernet_MAC: xps-ll-temac@81c00000 {
+			#address-cells =3D <1>;
+			#size-cells =3D <1>;
+			network@81c00000 {
+				compatible =3D "xlnx,xps-ll-temac-1.00.a", "xlnx,xps-ll-temac";
+				interrupt-parent =3D <&xps_intc_0>;
+				interrupts =3D < 3 0 >;
+				llink-connected =3D <&PIM3>;
+				reg =3D < 81c00000 40 >;
+				xlnx,bus2core-clk-ratio =3D <1>;
+				xlnx,phy-type =3D <1>;
+				xlnx,phyaddr =3D <1>;
+				xlnx,rxcsum =3D <0>;
+				xlnx,rxfifo =3D <1000>;
+				xlnx,temac-type =3D <0>;
+				xlnx,txcsum =3D <0>;
+				xlnx,txfifo =3D <1000>;
+			} ;
+		} ;
+		mpmc@90000000 {
+			#address-cells =3D <1>;
+			#size-cells =3D <1>;
+			compatible =3D "xlnx,mpmc-3.00.a", "xlnx,mpmc";
+			PIM3: sdma@84600180 {
+				compatible =3D "xlnx,ll-dma-1.00a", "xlnx,ll-dma";
+				interrupt-parent =3D <&xps_intc_0>;
+				interrupts =3D < 1 0 0 0 >;
+				reg =3D < 84600180 80 >;
+			} ;
+		} ;
+	DDR2_SDRAM: memory@90000000 {
+		device_type =3D "memory";
+		reg =3D < 90000000 10000000 >;
+	} ;
 
-------=_Part_6925_31562503.1195967180099
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+So: the mpmc generates a 'memory' node, corresponding to it's memory =
+interface.  It also gets a separate entry which contains the (optional, =
+not present in this example) slave management interface (for ECC and =
+performance information), and any sdma ports.  In this case, this node =
+is mpmc@90000000, because there is no management interface.  If a =
+management interface was present, then it would be @ the management =
+address.
+The mpmc gets a compatible string that describes its management =
+interface.
+The sdma port has information about the tx and rx interrupts and the =
+slave management interface.  Note that the slave management interface =
+has the correct baseaddress for port3, generated from the base =
+SDMA_CTRL_ address from the mpmc + the port 3 offset.  Note that sdma =
+has an artificial compatible name.  I'm not sure whether the ll_dma =
+driver can be easily convinced to bind to this, or whether the ll_temac =
+driver will just traverse the device tree and then do a match against =
+this.
 
-<div>hi, all</div>
-<div>&nbsp;&nbsp;&nbsp; I bought a SMC1500 stepper motor card. And it can connect with host through parallel port. My target board is PowerPC 440, which hasn&#39;t parrallel port. So I bought a PCI to Parallel line for SMC1500. But&nbsp;when I run the stepper motor, I&nbsp;find&nbsp;it&#39;s not stable. I &nbsp;doubt there are somthing wrong with my&nbsp;PCI to Parallel line. So I beg somebody can tell me where I can bought the&nbsp;&nbsp;appropriate conversion line from PCI to parallel, and does somebody give me some idea about how to control my stepper motor through&nbsp;PowerPC 440? thx all 
-</div>
-<div>&nbsp;</div>
-<div>Best Regards!</div>
-<div>&nbsp;</div>
-<div>Buroc&nbsp;</div><br clear="all"><br>-- <br><br>Add: Tianshui South Road 222, Lanzhou, P.R.China<br>Tel: +86-931-8912025<br>Zip Code: 730000<br>URL: <a onclick="return top.js.OpenExtLink(window,event,this)" href="http://oss.lzu.edu.cn/" target="_blank">
-oss.lzu.edu.cn</a><br>Email: <a onclick="return top.js.OpenExtLink(window,event,this)" href="mailto:baishuwei@gmail.com" target="_blank">baishuwei@gmail.com</a>, <a onclick="return top.js.OpenExtLink(window,event,this)" href="mailto:buroc@126.com" target="_blank">
-buroc@126.com</a> 
+The temac works similarly, although the temac itself doesn't have a =
+slave interface, so no compatible node for it.  The sub nodes get the =
+compatible string for the ll_temac driver.  In this case, there is only =
+one temac port active.  Some of the parameters are specific to port 0, =
+in which case the parameter names (e.g. phyaddr) are generated by =
+stripping off the complete C_TEMAC0 prefix.  Other parameters (e.g. =
+phy-type) are common to both sub nodes, but are duplicated to make it =
+easier for the driver to get the information out.  At runtime, the =
+driver has to follow the llink-connected path to find what it is =
+connected to, and use the dma code, or the fifo code.
 
-------=_Part_6925_31562503.1195967180099--
+the xps-ll-fifo structure is a bit simpler, with llink-connected =
+pointing to the fifo, which looks like a 'normal' peripheral.
+
+Points for comment:
+1) I don't like the "PIM3" label, which is artificial (i.e. it doesn't =
+correspond to a name in the .mhs) and not guaranteed to be unique.  =
+However, in the BSP generator it seems awkward to generate path =
+references easily in a single pass.  What I'd might prefer is:
+		DDR2_SDRAM: mpmc@90000000 {
+			sdma@3 {
+
+and refer to the sdma port using something like <&DDR2_SDRAM/sdma@3>, =
+but I don't think you can do that in dtc?
+
+2) Not sure whether this is really simpler than just having a 'simple' =
+node with both temacs and letting the driver sort everything out.  In =
+particular, I'm concerned about maintaining a bunch of semantic =
+information about the ll_temac driver outside of the driver itself.
+
+3) All of this is very different in structure from the way that the =
+xparameters are organized.  The ll_temac BSP code copies the xparameters =
+out of the MPMC and they are simply other parameters of the ll_temac =
+driver.  Although the above structure better represents the actual =
+system, there is another organization for people to be confused about.
+
+Steve
+
+-----Original Message-----
+From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org =
+on behalf of Stephen Neuendorffer
+Sent: Tue 11/20/2007 11:44 AM
+To: microblaze-uclinux@itee.uq.edu.au; linuxppc-dev@ozlabs.org; Grant =
+Likely; Michal Simek
+Subject: Xilinx EDK BSP generation of device trees for microblaze and =
+PowerPC
+=20
+
+=09
+I've updated some code from Michel Simek to generate Flat Device Trees
+from Xilinx EDK projects.  This code is now hosted at:
+git://git.xilinx.com/gen-mhs-devtree.git
+
+This has one major advantage over the gen-mhs-devtree.py approach:
+default IP core parameters that are not specified in the mhs file can
+now be generated, since EDK pulls these in from the core .mpd file.
+I've also managed to incorporate a few more improvements from the
+previous review, so the BSP generator should include at least as much
+information as gen-mhs-devtree.py
+
+The next major order of business is to represent the DMA engines in the
+MPMC and locallink connections to the lltemac.
+
+Steve
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+------_=_NextPart_001_01C82F2B.E4E81D8C
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3DISO-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>RE: Xilinx EDK BSP generation of device trees for microblaze and =
+PowerPC</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>Here's what I've gotten so far:<BR>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Hard_Ethernet_MAC: =
+xps-ll-temac@81c00000 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; network@81c00000 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;xlnx,xps-ll-temac-1.00.a&quot;, &quot;xlnx,xps-ll-temac&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
+&lt;&amp;xps_intc_0&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt; 3 0 =
+&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; llink-connected =3D =
+&lt;&amp;PIM3&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt; 81c00000 40 =
+&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,bus2core-clk-ratio =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,phy-type =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,phyaddr =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,rxcsum =3D =
+&lt;0&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,rxfifo =3D =
+&lt;1000&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,temac-type =3D =
+&lt;0&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,txcsum =3D =
+&lt;0&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xlnx,txfifo =3D =
+&lt;1000&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mpmc@90000000 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #address-cells =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #size-cells =3D =
+&lt;1&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;xlnx,mpmc-3.00.a&quot;, &quot;xlnx,mpmc&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PIM3: sdma@84600180 {<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; compatible =3D =
+&quot;xlnx,ll-dma-1.00a&quot;, &quot;xlnx,ll-dma&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupt-parent =3D =
+&lt;&amp;xps_intc_0&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interrupts =3D &lt; 1 0 0 0 =
+&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt; 84600180 80 =
+&gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DDR2_SDRAM: memory@90000000 =
+{<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; device_type =3D =
+&quot;memory&quot;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reg =3D &lt; 90000000 =
+10000000 &gt;;<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; } ;<BR>
+<BR>
+So: the mpmc generates a 'memory' node, corresponding to it's memory =
+interface.&nbsp; It also gets a separate entry which contains the =
+(optional, not present in this example) slave management interface (for =
+ECC and performance information), and any sdma ports.&nbsp; In this =
+case, this node is mpmc@90000000, because there is no management =
+interface.&nbsp; If a management interface was present, then it would be =
+@ the management address.<BR>
+The mpmc gets a compatible string that describes its management =
+interface.<BR>
+The sdma port has information about the tx and rx interrupts and the =
+slave management interface.&nbsp; Note that the slave management =
+interface has the correct baseaddress for port3, generated from the base =
+SDMA_CTRL_ address from the mpmc + the port 3 offset.&nbsp; Note that =
+sdma has an artificial compatible name.&nbsp; I'm not sure whether the =
+ll_dma driver can be easily convinced to bind to this, or whether the =
+ll_temac driver will just traverse the device tree and then do a match =
+against this.<BR>
+<BR>
+The temac works similarly, although the temac itself doesn't have a =
+slave interface, so no compatible node for it.&nbsp; The sub nodes get =
+the compatible string for the ll_temac driver.&nbsp; In this case, there =
+is only one temac port active.&nbsp; Some of the parameters are specific =
+to port 0, in which case the parameter names (e.g. phyaddr) are =
+generated by stripping off the complete C_TEMAC0 prefix.&nbsp; Other =
+parameters (e.g. phy-type) are common to both sub nodes, but are =
+duplicated to make it easier for the driver to get the information =
+out.&nbsp; At runtime, the driver has to follow the llink-connected path =
+to find what it is connected to, and use the dma code, or the fifo =
+code.<BR>
+<BR>
+the xps-ll-fifo structure is a bit simpler, with llink-connected =
+pointing to the fifo, which looks like a 'normal' peripheral.<BR>
+<BR>
+Points for comment:<BR>
+1) I don't like the &quot;PIM3&quot; label, which is artificial (i.e. it =
+doesn't correspond to a name in the .mhs) and not guaranteed to be =
+unique.&nbsp; However, in the BSP generator it seems awkward to generate =
+path references easily in a single pass.&nbsp; What I'd might prefer =
+is:<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DDR2_SDRAM: mpmc@90000000 =
+{<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sdma@3 {<BR>
+<BR>
+and refer to the sdma port using something like =
+&lt;&amp;DDR2_SDRAM/sdma@3&gt;, but I don't think you can do that in =
+dtc?<BR>
+<BR>
+2) Not sure whether this is really simpler than just having a 'simple' =
+node with both temacs and letting the driver sort everything out.&nbsp; =
+In particular, I'm concerned about maintaining a bunch of semantic =
+information about the ll_temac driver outside of the driver itself.<BR>
+<BR>
+3) All of this is very different in structure from the way that the =
+xparameters are organized.&nbsp; The ll_temac BSP code copies the =
+xparameters out of the MPMC and they are simply other parameters of the =
+ll_temac driver.&nbsp; Although the above structure better represents =
+the actual system, there is another organization for people to be =
+confused about.<BR>
+<BR>
+Steve<BR>
+<BR>
+-----Original Message-----<BR>
+From: linuxppc-dev-bounces+stephen.neuendorffer=3Dxilinx.com@ozlabs.org =
+on behalf of Stephen Neuendorffer<BR>
+Sent: Tue 11/20/2007 11:44 AM<BR>
+To: microblaze-uclinux@itee.uq.edu.au; linuxppc-dev@ozlabs.org; Grant =
+Likely; Michal Simek<BR>
+Subject: Xilinx EDK BSP generation of device trees for microblaze and =
+PowerPC<BR>
+<BR>
+<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<BR>
+I've updated some code from Michel Simek to generate Flat Device =
+Trees<BR>
+from Xilinx EDK projects.&nbsp; This code is now hosted at:<BR>
+git://git.xilinx.com/gen-mhs-devtree.git<BR>
+<BR>
+This has one major advantage over the gen-mhs-devtree.py approach:<BR>
+default IP core parameters that are not specified in the mhs file =
+can<BR>
+now be generated, since EDK pulls these in from the core .mpd file.<BR>
+I've also managed to incorporate a few more improvements from the<BR>
+previous review, so the BSP generator should include at least as =
+much<BR>
+information as gen-mhs-devtree.py<BR>
+<BR>
+The next major order of business is to represent the DMA engines in =
+the<BR>
+MPMC and locallink connections to the lltemac.<BR>
+<BR>
+Steve<BR>
+<BR>
+_______________________________________________<BR>
+Linuxppc-dev mailing list<BR>
+Linuxppc-dev@ozlabs.org<BR>
+<A =
+HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.=
+org/mailman/listinfo/linuxppc-dev</A><BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C82F2B.E4E81D8C--
