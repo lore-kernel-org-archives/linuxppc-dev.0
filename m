@@ -2,18 +2,19 @@ Return-Path: <dhlii@dlasys.net>
 Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
 	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 877DEDDEC5
+	by ozlabs.org (Postfix) with ESMTP id 220D5DDE37
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 25 Nov 2007 20:17:11 +1100 (EST)
-Message-ID: <47493D4F.4070605@dlasys.net>
-Date: Sun, 25 Nov 2007 04:15:59 -0500
+	Sun, 25 Nov 2007 20:38:59 +1100 (EST)
+Message-ID: <4749425C.5060207@dlasys.net>
+Date: Sun, 25 Nov 2007 04:37:32 -0500
 From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 Subject: Re: Xilinx devicetrees
 References: <47480CF0.7090105@dlasys.net>
 	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>
-In-Reply-To: <fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>
+	<20071125052459.DA8B1EE805F@mail70-blu.bigfish.com>
+In-Reply-To: <20071125052459.DA8B1EE805F@mail70-blu.bigfish.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,82 +27,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    First;
-          I am not deliberately trying to be obstructive. It is apparent
-that the ppc kernel is moving towards devicetrees and initially I
-thought that sounded like  a good idea.
-          Now I am trying to reconcile the positive benefits with my
-perception of the negative side effects.
-
-> Yes, you are correct in all of the above.
+Stephen Neuendorffer wrote:
 >
-> One more point; it is also possible to bind the device tree up with
-> the kernel so you've got a single image just like old times.  :-)
->   
-    But that is not actually the same is dynamically detecting
-configuration.
-
-    On an ordinary PC where the critical core configuration is somewhat
-fixed and the rest can be determined by firmware (code), this makes a
-great deal of sense.
-    In a system where the hardware itself is actually firmware and there
-is little or no startup software to query the device and build a device
-tree dynamically for you, it is of more questionable value.
-    Maybe if there is some mechanism existed to have the devicetree
-stored into the FPGA firmware where there is a natural link between the
-implimented hardware and its description. But I am not gathering things
-going in that direction and storing the device tree in the FPGA consumes
-valuable FPGA resources.
-
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+stephen=neuendorffer.name@ozlabs.org on behalf of Grant Likely
+> Sent: Sat 11/24/2007 9:12 AM
+> To: David H. Lynch Jr.
+> Cc: linuxppc-embedded
+> Subject: Re: Xilinx devicetrees
+>  
+> On 11/24/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
 >
-> The board description has to live *somewhere*.  
-    I have done alot of code for many purposes where the code went to a
-great deal of effort to figure out its own environment dynamically.
-    Some (relatively minimal) assumptions have to be made. And some
-balance has to be struck between code complexity and dynamic flexibility.
-    though sometimes dynamic detection can be simpler.
-    Part of what bothers me about devicetrees, is that the entire design
-seems to presume either standard hardware with minimal permutations, or
-fairly complex firmware - like boot roms to dynamically build atleast
-parts of the device tree.
-
+>   
+>>>     I am having some difficulty grasping the significant advantages to
+>>> this.
+>>>     If the firmware for a given target is not fairly static - and I load
+>>> different firmware depending on what I am doing all the time, then I
+>>> know have to manage both a bit file for the firmware, and a devicetree
+>>> file describing it to the kernel.
+>>>       
 >
-> That being said, using the device tree does not preclude using
-> platform code to setup devices *where it makes sense to do so*.  Many
-> things are one-off board specific things that are not well described
-> with the device tree.  For example, we've been debating how to handle
-> on board sound which use common codec chips, but have custom wireup.
-> The codec chip can use a common driver, but the wireup is handled with
-> an ALSA 'fabric' driver that is pretty much a one-off for the board.
-> It probably makes more sense for the fabric driver to be instantiated
-> by the platform code rather than trying to do a full device tree
-> representation.
+> The device tree file is meta-information about your bitfile.  Think of it as 'part of the firmware'.  In the (hopefully short) future, it won't even have to be managed, it will just be one of the things that is generated by the EDK flow.
 >   
-       So I can hard code some relatively simple stripped devicetree
-that  may do little more than specify the CPU, major elements of the
-memory map (maybe), and say the PIC, and then let the BSP, detect things
-like the UART(s), NIC, ...
+    Part of the bad news is that I have been kept so busy on the
+software side of things, I have had very very little time to play with
+xilinx tools and firmware. But overall at Pico we have a love hate
+relationship with them. Our products are primarily wrapped arround
+FPGA's particularly Xilinx.
+We love what we can do. But there are days that I here loud muttering
+about completely rewriting all the xilinx software tools - there is a
+surprisingly large amount that many of the Pico firmware people do not
+use already.
+    Regardless, I think I saw a post of yours on the microblaze list
+about exporting a devicetree list with the firmware.
+    that is probably a better solution that what exists now.
 
-
->   In arch/powerpc
-> we're *still* data driven; it's just that the data is no longer
-> compiled into a static structure.  Plus, in the transition we've moved
-> from needed per-device platform data structures to a more expressive
-> format.  Also, per-board platform support code has become much simpler
-> (compare ml300.c in arch/ppc with platforms/40x/virtex.c)
+> You won't have to write a bunch of code that deciphers which fpga firmware you are running on..  That information will be found with the firmware and can be dealt with in a generic way.  If you already HAVE that code, you can keep using it, but maintaining that kind of code is probably not where you want to spend your time.
 >   
+    I am curious - with the firmware is not the same as in the firmware.
+    But since you brought up deciphering firmware - to me and to Pico,
+and I gather to alot of others, providing indentity information within
+the firmware is a really really important issue - one which xilinx seems
+to be unable to make up its mind about.
+    There are frequent posts addressing issues like this driver only
+works with this version of some IP - but there is no way to query the IP
+to enough detail to determine whether the driver will work. It is one
+thing to make version registers an option. It is entirely different to
+just omit them entirely or change the IP without changing the version.
+Our clients beat us up for things like that. DevieTrees do nto solve
+that problem.
 
-    I have not pulled your tree in a while - are devicetree's in your
-current git tree ?
+    Anyway, my .02 would be to put the device tree into the firmware. In
+a perfect world - litterally in the firmware so that when the firmware
+loads the device tree data is already in the FPGA somewhere that it can
+be easily ready - oh and do that without consuming many FPGA resources.
+    But in a more likely realworld scenario - append the information to
+the .bit file in some fashion so that if can easily be found and passed on.
 
-    Thanks for the remarks.
+    Binding it to a kernel, is a non-starter for us. That means a
+permuation of multiple different OS kernels for each bit file we might
+have. That is huge number. I am tasked with getting one binary for each
+OS to work with nearly every device(hardware) we make including
+addressing options that change with firmware AND the whim of the user.
+    But life might not be to unpleasant - it might even actually be
+better, if our kernel loader just extracted the devicetree from the end
+of the currently executing firmware.
 
-    Again, I am just trying to figure out how to keep my Pico code in
-sync and hopefully make my life better rather than worse at the same time.
-    Unfortunately, I am coming to the conclusion that DeviceTrees are
-probably not going to make it that much better,
-    but they are probably not going to make it that much worse either.
-   
+
 
 -- 
 Dave Lynch 					  	    DLA Systems
