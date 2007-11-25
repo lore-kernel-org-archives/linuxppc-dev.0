@@ -1,21 +1,23 @@
-Return-Path: <news@alea.gnuu.de>
-Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id 2379ADDE0A
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 00:22:08 +1100 (EST)
-Received: from news by alea.gnuu.de with local (Exim 4.63)
-	(envelope-from <news@alea.gnuu.de>) id 1IwEm3-0000GZ-Si
-	for linuxppc-dev@ozlabs.org; Sun, 25 Nov 2007 11:31:40 +0100
-To: linuxppc-dev@ozlabs.org
-From: =?UTF-8?Q?J=C3=B6rg?= Sommer <joerg@alea.gnuu.de>
-Subject: Re: time accounting problem (powerpc only?)
-Date: Sun, 25 Nov 2007 10:31:39 +0000 (UTC)
-Message-ID: <slrnfkijob.j2k.joerg@alea.gnuu.de>
-References: <1195814816.4149.94.camel@johannes.berg>
-	<slrnfkdnma.681.joerg@alea.gnuu.de>
-	<1195850245.4149.170.camel@johannes.berg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Sender: news <news@alea.gnuu.de>
+Return-Path: <jonsmirl@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.178])
+	by ozlabs.org (Postfix) with ESMTP id 8F379DDEE4
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 00:30:59 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so581484wag
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 05:30:58 -0800 (PST)
+Message-ID: <9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
+Date: Sun, 25 Nov 2007 08:30:58 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Robin H. Johnson" <robbat2@gentoo.org>,
+	"Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: Access to PCI Expansion ROMs on PPC
+In-Reply-To: <20071125114919.GC14557@curie-int.orbis-terrarum.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071125015707.GO3174@curie-int.orbis-terrarum.net>
+	<9e4733910711241813r3412d459l95fb3b84cbee1d8a@mail.gmail.com>
+	<20071125111535.GB14557@curie-int.orbis-terrarum.net>
+	<20071125114919.GC14557@curie-int.orbis-terrarum.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,43 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-Johannes Berg <johannes@sipsolutions.net> wrote:
->> % diff /proc/interrupts <(sleep 2; cat /proc/interrupts)
->> --- /proc/interrupts    2007-11-23 15:04:06.004846901 +0100
->> +++ /proc/self/fd/11    2007-11-23 15:04:05.952841422 +0100
->> @@ -1,15 +1,15 @@
->>             CPU0       
->> - 25:   18063968   MPIC 1    Level     VIA-PMU
->> + 25:   18064241   MPIC 1    Level     VIA-PMU
->> - 42:    1415066   MPIC 1    Level     keywest i2c
->> - 47:    2075159   MPIC 1    Level     GPIO1 ADB
->> - 48:    6686659   MPIC 1    Level     radeon@pci:0000:00:10.0
->> + 42:    1415084   MPIC 1    Level     keywest i2c
->> + 47:    2075193   MPIC 1    Level     GPIO1 ADB
->> + 48:    6686778   MPIC 1    Level     radeon@pci:0000:00:10.0
->> 
->> I don't know where they come from, but that's the cause of the high IRQ
->> time.
+On 11/25/07, Robin H. Johnson <robbat2@gentoo.org> wrote:
+> On Sun, Nov 25, 2007 at 03:15:35AM -0800, Robin H. Johnson wrote:
+> > I started in there from that, and ended up in pci-sysfs.c...
+> > The ROM memcpy in drivers/pci/pci-sysfs.c:pci_read_rom() is never running.
+> ...
+> > [  306.396743] drivers/pci/pci-sysfs.c:577:pci_read_rom: size=0x0 rom=0xd000080082580000 off=0x0
+> > [  306.396764] drivers/pci/pci-sysfs.c:579:pci_read_rom: off >= size!
+> ...
+> > So next, why is it failing to decode the ROM size correctly?
+> > pci_get_rom_size(), here I come.
+> Instead of the expected value of 0x55, 0xAA at the start of the ROM
+> size decode in pci_get_rom_size(), the first two readb() calls both
+> return either 0xFF or 0x00 so the size check fails right away.
 >
-> Are you sure about that?
+> The two cards with x86 firmware return 0xFF for those two readb()
+> instructions, while the X1900 with OF returns 0x00 for the readb().
+>
+> Could one of the more knowledgeable folk for PPC intricacies suggest why
+> those readb calls are returning the wrong data?
 
-No, I saw the high hardware interrupt value in top and looked at
-/proc/interrupts and concluded that those are the evil source of the
-high load.
+I don't know PPC at this low of level but it may be a problem with non
+word-aligned access to memory. I thought readb() was supposed to work
+on all archs and alignment issues are handled inside readb(). Also,
+the readw() may have an endian bug.
 
-> I'm fairly sure that I always had rather high numbers of interrupt
-> here. And the system isn't sluggish or unresponsive as you'd expect if
-> the IRQs actually did take 90% of the CPU time!
+It might be prudent to add this check at the end of the rom size routine.
+if (image == rom)
+    return size;
+That would ensure a non-zero size is returned for non-standard ROMs.
 
-Okay, so what might be the source?
+If you add that at the end, can you read the ROM from user space?
 
-Doesn't really nobody else see this values? At least, Elimar
-Riesebieter has the same problem. He reported on debian-powerpc.
+BenH, has source code for an x86 emulator that will run on PPC. That
+will let you run the ROMs. The original plan was for the kernel to
+generate a uevent that would have triggered the x86 emulator to run.
 
-Bye, Jörg.
+Progress along that path was blocked by the X developers. The X server
+contains code for enabling the PCI ROM and reading it from user space.
+I wanted to move this code out of X and into the kernel.
+
+Because the path was blocked things like the PCI ROM API were never
+throughly tested. It works most of the time but the occasional problem
+is still turning up. Once we identify the PPC problem we can fix it in
+the kernel.
+
+>
+> --
+> Robin Hugh Johnson
+> Gentoo Linux Developer & Infra Guy
+> E-Mail     : robbat2@gentoo.org
+> GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+>
+>
+
+
 -- 
-Treffen sich zwei Funktionen.
-Sagt die eine: „Verschwinde oder ich differenzier' dich!“
-Erwidert die andere: „Ätsch, ich bin exponentiell!“
+Jon Smirl
+jonsmirl@gmail.com
