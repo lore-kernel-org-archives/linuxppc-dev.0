@@ -1,24 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7809CDDEBE
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 04:45:24 +1100 (EST)
-Subject: Re: time accounting problem (powerpc only?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-In-Reply-To: <slrnfkijob.j2k.joerg@alea.gnuu.de>
-References: <1195814816.4149.94.camel@johannes.berg>
-	<slrnfkdnma.681.joerg@alea.gnuu.de>
-	<1195850245.4149.170.camel@johannes.berg>
-	<slrnfkijob.j2k.joerg@alea.gnuu.de>
+Return-Path: <robbat2@gentoo.org>
+Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
+	by ozlabs.org (Postfix) with ESMTP id 84330DDEDC
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 06:40:50 +1100 (EST)
+Date: Sun, 25 Nov 2007 11:41:01 -0800
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: Jon Smirl <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: Access to PCI Expansion ROMs on PPC
+Message-ID: <20071125194101.GD14557@curie-int.orbis-terrarum.net>
+References: <20071125015707.GO3174@curie-int.orbis-terrarum.net>
+	<9e4733910711241813r3412d459l95fb3b84cbee1d8a@mail.gmail.com>
+	<20071125111535.GB14557@curie-int.orbis-terrarum.net>
+	<20071125114919.GC14557@curie-int.orbis-terrarum.net>
+	<9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-l0+Aq3oLLZ77NwwkoLM3"
-Date: Sun, 25 Nov 2007 18:45:03 +0100
-Message-Id: <1196012703.4149.238.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature"; boundary="T7mxYSe680VjQnyC"
+In-Reply-To: <9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,49 +26,56 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-l0+Aq3oLLZ77NwwkoLM3
-Content-Type: text/plain
+--T7mxYSe680VjQnyC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sun, Nov 25, 2007 at 08:30:58AM -0500, Jon Smirl wrote:
+> I don't know PPC at this low of level but it may be a problem with non
+> word-aligned access to memory. I thought readb() was supposed to work
+> on all archs and alignment issues are handled inside readb(). Also,
+> the readw() may have an endian bug.
+I was looking around for a description of the ROM layout, and instead I
+found this: http://developer.apple.com/technotes/tn/tn2000.html
+It was relevant because it explicitly mentioned enabling the
+PCI_COMMAND_MEMORY bit in the PCI_COMMAND register, which is NOT present
+in any path of the sizing code.
 
-[can you CC me? I can sometimes only skim the lists]
+By doing:
+# dev=3D"/sys/devices/pci0001:00/0001:00:03.0/0001:06:00.0/"
+# echo 1 >${dev}/enable
+# echo 1 >${dev}/rom
+# cat ${dev}/rom >rom
+The ROM is successfully returned for two of my 3 cards.
+Namely, both of the ones containing x86 BIOS (sata_sil24, ATI X700).
+The X1900 does still not return any ROM.
 
-> No, I saw the high hardware interrupt value in top and looked at
-> /proc/interrupts and concluded that those are the evil source of the
-> high load.
->=20
-> > I'm fairly sure that I always had rather high numbers of interrupt
-> > here. And the system isn't sluggish or unresponsive as you'd expect if
-> > the IRQs actually did take 90% of the CPU time!
->=20
-> Okay, so what might be the source?
+So the pci-sysfs.c/rom.c code path needs to change to enable the device
+somewhere if it was not enabled before (and presumably disable
+afterwards for suspend/resume?).
 
-I'd guess NOHZ is the problem because we're letting the CPU not do
-anything rather than doing idle ticks or something.
+I broke my testing kernel temporarily, so I need a bit more testing to
+see why the X1900 did not return a ROM. More on that in a couple of
+hours.
 
-johannes
+--=20
+Robin Hugh Johnson
+Gentoo Linux Developer & Infra Guy
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
 
---=-l0+Aq3oLLZ77NwwkoLM3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--T7mxYSe680VjQnyC
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Version: GnuPG v2.0.7 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
 
-iQIVAwUAR0m0n6Vg1VMiehFYAQJmEBAAvUAMvyo31BfVTQ0lo7JSNceQ9Qg2BDLM
-NCelxIfnF0lMgc16q+1alLtmlkDX8aYWnqGuvozUVGqtqSAolsmRDlmjrAL7n/UM
-LLw0V0otDYytaxdrnL/3khKQw0bILPW7qfbtVujSomr0mAVfljPV5wRRxopvXDYh
-nRIDoAYJMy1X4YL1/Y7H4CJO9FJZk2PfZ4xGG9T6yIRIFr9zM1MRtQowM4dB7bUq
-O10MTe8iq0mF0lhNWToSiNAXDQpSoZk8m0AQqODi0hEGJo+ip2vqDaNGVsgKcgbN
-sA4r0KJsRj2ZxzChPuf66FRGnHxbneLtjAZ4Zihlo1MfA2KM/0vdEQYHotJJS2wh
-wk9KJZp5shsTKoRb2EQjGpn/qyD+UvN7qiQF1ks/Pe6aUsolkAZuUKjttAfSa1W1
-XaAPlkUU0G0Z3fvBe0AnuWlgyJN6h6ITqSi8cTK5agfS6YQZkFkF9FwLsNTMPARo
-jVIUnL4HoMj1ESqqSaMB8oHmgqw9+YHTvj+6sFwol9kq4ZsSc3Mo7KFpgQwQsOmI
-8ZF+8Suc4JPv0wIlZtm/VWMga0rvBXvHsHO7g+pSkM0Gz/v9sfomUeFGh8cu44ZX
-M86GZtx1OtXqh0vCiS9whbrYjufSzfTluo5/R51o2I5LaV16NNl2qZWUGTy+DQbA
-DM4e9RG+H38=
-=0f6p
+iD8DBQFHSc/NPpIsIjIzwiwRAiNmAJ9lVNFfcFlaIBCn9ZOJjeoRoUM+GgCgxpMK
+zpRSrViXrx/QvtM69QHLSAM=
+=QGZI
 -----END PGP SIGNATURE-----
 
---=-l0+Aq3oLLZ77NwwkoLM3--
+--T7mxYSe680VjQnyC--
