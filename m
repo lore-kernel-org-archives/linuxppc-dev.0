@@ -1,24 +1,23 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.243])
-	by ozlabs.org (Postfix) with ESMTP id 1DA15DDF03
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9AD5DDDF17
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 09:21:16 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so65659anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 25 Nov 2007 14:21:14 -0800 (PST)
-Message-ID: <fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
-Date: Sun, 25 Nov 2007 15:21:14 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: Xilinx devicetrees
-In-Reply-To: <47493D4F.4070605@dlasys.net>
+	Mon, 26 Nov 2007 09:56:51 +1100 (EST)
+Message-ID: <4749FD5E.7000408@dlasys.net>
+Date: Sun, 25 Nov 2007 17:55:26 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <47480CF0.7090105@dlasys.net>
-	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Xilinx devicetrees
+References: <47480CF0.7090105@dlasys.net>	
+	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	
 	<47493D4F.4070605@dlasys.net>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	<fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
+In-Reply-To: <fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,118 +28,113 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 11/25/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
-> > One more point; it is also possible to bind the device tree up with
-> > the kernel so you've got a single image just like old times.  :-)
-> >
->     But that is not actually the same is dynamically detecting
-> configuration.
+Grant Likely wrote:
+> nope, not at all the same as dynamic detection; just backwards
+> compatibility with the way we do it now for arch/ppc.
+>   
+    Other things being equal a common architecture is preferable to a
+collection of independent ones.
 
-nope, not at all the same as dynamic detection; just backwards
-compatibility with the way we do it now for arch/ppc.
-
->     On an ordinary PC where the critical core configuration is somewhat
-> fixed and the rest can be determined by firmware (code), this makes a
-> great deal of sense.
->     In a system where the hardware itself is actually firmware and there
-> is little or no startup software to query the device and build a device
-> tree dynamically for you, it is of more questionable value.
->     Maybe if there is some mechanism existed to have the devicetree
-> stored into the FPGA firmware where there is a natural link between the
-> implimented hardware and its description. But I am not gathering things
-> going in that direction and storing the device tree in the FPGA consumes
-> valuable FPGA resources.
-
-No, it doesn't make sense to store is in the FPGA fabric; but if the
-design already contains BRAM then it could be placed there and
-reclaimed for other purposes after booting.  Or anywhere in RAM for
-that matter.  I don't know how feasible is to load a device tree into
-SDRAM at FPGA config time.
-
-If the FPGA bitstream is stored in processor accessable flash, then
-the best place would be tacked onto the end of the bitstream file.  I
-believe Xilinx is planning for EDK to be responsible to generate the
-.dts file for the design.
 
 >
-> >
-> > The board description has to live *somewhere*.
->     I have done alot of code for many purposes where the code went to a
-> great deal of effort to figure out its own environment dynamically.
->     Some (relatively minimal) assumptions have to be made. And some
-> balance has to be struck between code complexity and dynamic flexibility.
->     though sometimes dynamic detection can be simpler.
->     Part of what bothers me about devicetrees, is that the entire design
-> seems to presume either standard hardware with minimal permutations, or
-> fairly complex firmware - like boot roms to dynamically build atleast
-> parts of the device tree.
-
-Ah; I think I see the disconnect we're having.  Device trees are not
-about, *and never have been about*, device detection.  The device tree
-is simply the communication medium used to describe the hardware.  It
-doesn't matter if you choose to use a 100% dynamically generated
-device tree from intelligent firmware or a 100% static device tree
-blob.  All that matters is that the kernel is able to trust the
-information handed to it by firmware.
-
-Device detection is not a problem that the device tree is designed to solve.
-
-It is designed to solve the problem of telling the kernel what the
-platform looks like (which occurs after the detection stage).
-
-> > That being said, using the device tree does not preclude using
-> > platform code to setup devices *where it makes sense to do so*.  Many
-> > things are one-off board specific things that are not well described
-> > with the device tree.  For example, we've been debating how to handle
-> > on board sound which use common codec chips, but have custom wireup.
-> > The codec chip can use a common driver, but the wireup is handled with
-> > an ALSA 'fabric' driver that is pretty much a one-off for the board.
-> > It probably makes more sense for the fabric driver to be instantiated
-> > by the platform code rather than trying to do a full device tree
-> > representation.
-> >
->        So I can hard code some relatively simple stripped devicetree
-> that  may do little more than specify the CPU, major elements of the
-> memory map (maybe), and say the PIC, and then let the BSP, detect things
-> like the UART(s), NIC, ...
-
-If devices *are* detectable, then they don't need to be in the device
-tree.  That's why we don't describe PCI devices in the FDT for
-embedded boards.  (We *could* but we *don't*)  :-)
-
-> >   In arch/powerpc
-> > we're *still* data driven; it's just that the data is no longer
-> > compiled into a static structure.  Plus, in the transition we've moved
-> > from needed per-device platform data structures to a more expressive
-> > format.  Also, per-board platform support code has become much simpler
-> > (compare ml300.c in arch/ppc with platforms/40x/virtex.c)
-> >
 >
->     I have not pulled your tree in a while - are devicetree's in your
-> current git tree ?
+> No, it doesn't make sense to store is in the FPGA fabric; but if the
+> design already contains BRAM then it could be placed there and
+> reclaimed for other purposes after booting.  Or anywhere in RAM for
+> that matter.  I don't know how feasible is to load a device tree into
+> SDRAM at FPGA config time.
+>   
+    I am not expert on this, but at Pico we already store our boot
+monitor in the .bit files in BRAM.
+    But that is not free.  It is one of the reasons we do not use
+u-boot. Our boot monitor must fit into 16K of BRAM.
+    Must be able to perform selftests on critical hardware, support a
+flash file system, load bit files from flash to the FGA, load and
+exectute elf files, allow a small set of user commands, and handle
+hosted vs. standalone operation.
+    And aparently extract the devicetree from a bit file and pass it to
+a linux kernel.
 
-arch/powerpc support for Virtex is now in Linus' mainline tree which
-will become 2.6.24
 
+> Ah; I think I see the disconnect we're having.  Device trees are not
+> about, *and never have been about*, device detection.  The device tree
+> is simply the communication medium used to describe the hardware.  It
+> doesn't matter if you choose to use a 100% dynamically generated
+> device tree from intelligent firmware or a 100% static device tree
+> blob.  All that matters is that the kernel is able to trust the
+> information handed to it by firmware.
 >
->     Thanks for the remarks.
+> Device detection is not a problem that the device tree is designed to solve.
 >
->     Again, I am just trying to figure out how to keep my Pico code in
-> sync and hopefully make my life better rather than worse at the same time.
->     Unfortunately, I am coming to the conclusion that DeviceTrees are
-> probably not going to make it that much better,
->     but they are probably not going to make it that much worse either.
+> It is designed to solve the problem of telling the kernel what the
+> platform looks like (which occurs after the detection stage).
+>   
+    In static or fairly static hardware, that's fine. Even in somewhat
+dynamic hardware with large quantities of startup resources - like a PC.
+    But in highly dynamic hardware with fairly limited resources it
+starts to become an issue.
 
-No, unfortunately they don't deal with the problem you're facing
-(which I'm facing also).  But it will be solved if we figure out a
-sane way to bind the device tree up with the FPGA bitstream without
-consuming FPGA resources.
+    Still if xilinx intends to generate the device tree with the bit
+file - even better appended to the bit file or embedded in the FPGA if
+feasible,
+    this could still work.
 
-Cheers,
-g.
+    I do not see Detection as independent of communication.
+    Aside from a very minimal core, If device drivers can do a good job
+of validating their hardware (back to my version registers issue in
+another post) and I just load them willy nilly and let the ones that
+have no hardware fail (Gross over simplification, but still viable) then
+a communication scheme is meaningless. Going the opposite direction,  if
+I do not have the resources to detect the hardware and build the
+devicetree dynamically, AND I have  highly dynamic hardware, AND I do
+not have an easy method I can trust of aquiring another source for the
+hardware description, devicetree's aren't any help. There are alot of
+AND's there but most if not all appear to be present with FPGA based
+systems.
+
+
+> arch/powerpc support for Virtex is now in Linus' mainline tree which
+> will become 2.6.24
+>   
+
+    Guess it is time to pull Linus again.
+> No, unfortunately they don't deal with the problem you're facing
+> (which I'm facing also).  But it will be solved if we figure out a
+> sane way to bind the device tree up with the FPGA bitstream without
+> consuming FPGA resources.
+>   
+    Note to Xilinx:
+
+       There MUST be some way of binding a device description to a bit file.
+
+    neither building it into the FPGA fabric nor appending it to the end
+of the bit file are perfect solutions,
+    The former is more powerfull and flexible but wastes precious
+resources. The later is more complex and puts more burdens on
+    software developers, and may be completely unfeasible in some
+environments - not mine fortunately.
+
+    Regardless, something must be done. An odd collection of devicetree
+files co-mingled with a collection of bit files, is little better than
+xparameter files all over the place.
+
+    And once again a plea to ALWAYS make version/capabilities registers
+atleast an optional part of every design.
+    Embeddeding a device tree into a design might be fairly expensive. a
+pair of read only 32 bit registers is damn near free - basically the
+FPGA equivalent of atmost 64 diodes or resistors.
+> Cheers,
+> g.
+>
+>   
+
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
