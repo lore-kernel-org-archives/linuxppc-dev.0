@@ -1,21 +1,18 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09B08DDE3F
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 03:18:48 +1100 (EST)
-Date: Sun, 25 Nov 2007 19:18:33 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH revised 3/4] powerpc: Add EXPORT_SYMBOL_GPL for symbols
-	required by fs_enet and cpm_uart
-Message-ID: <20071125191833.1e76f335@kernel.crashing.org>
-In-Reply-To: <47499711.2020409@freescale.com>
-References: <4745BDC9.3080602@scram.de>
-	<47499711.2020409@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B26FBDDED1
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 04:05:41 +1100 (EST)
+Message-ID: <4749AA1B.3050805@anagramm.de>
+Date: Sun, 25 Nov 2007 18:00:11 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+MIME-Version: 1.0
+To: Bai Shuwei <baishuwei@gmail.com>
+Subject: Re: PCI to Parallel for PowerPC
+References: <f3566d60711242106x4d56efe1w325e70c522ddd62c@mail.gmail.com>
+In-Reply-To: <f3566d60711242106x4d56efe1w325e70c522ddd62c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, shekr06@lzu.cn, puyq@lzu.cn, zhang_wei@lzu.cn,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 25 Nov 2007 09:38:57 -0600
-Timur Tabi wrote:
+Bai Shuwei schrieb:
 
-> Jochen Friedrich wrote:
-> > fs_enet and cpm_uart need symbols from commproc.c (for CPM1) or
-> > cpm2_common.c. Add EXPORT_SYMBOL_GPL for cpmp, cpm_setbrg and
-> > cpm2_immr, so the drivers can be compiled as modules.
-As I told replying to prev mail, this needs to be addressed in respective driver(s), since
-there is a way to retrieve such pointers without making them global.
+Please don't cross-post.
 
-This patch will exist in maillist as a workaround, but meanwhile I'll take a look at this problem.
-> 
-> Maybe this is a stupid question, but why did you choose
-> EXPORT_SYMBOL_GPL and not EXPORT_SYMBOL?
-> 
-To prevent using those pointers from within non-GPL modules. kind of policy now...
+> hi, all
+>     I bought a SMC1500 stepper motor card. And it can connect with host 
+> through parallel port. My target board is PowerPC 440, which hasn't 
+> parrallel port. So I bought a PCI to Parallel line for SMC1500. But when 
+> I run the stepper motor, I find it's not stable. I  doubt there are 
+> somthing wrong with my PCI to Parallel line. So I beg somebody can tell 
+> me where I can bought the  appropriate conversion line from PCI to 
+> parallel, and does somebody give me some idea about how to control my 
+> stepper motor through PowerPC 440? thx all
 
+Put that PCI Card to your host where your stepper was working
+properly to see if it's a hardware issue with that card.
+
+Then it depends on how you control your stepper motor. If you use
+some bit-banging (which I wouldn't recommend) to drive each winding
+and want to have smooth movement, you need a very precise timing
+when it comes to some "more than low-speed" stepper motors,
+otherwise your motors will start to coggle.
+To be precise: you will first have to figure out what leads to
+the effect of "it's not stable". Do you have an Oscilloscope?
+
+Regards,
 -- 
-Sincerely, Vitaly
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
