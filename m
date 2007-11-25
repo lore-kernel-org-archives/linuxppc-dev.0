@@ -1,21 +1,24 @@
-Return-Path: <robbat2@gentoo.org>
-Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
-	by ozlabs.org (Postfix) with ESMTP id 84330DDEDC
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 06:40:50 +1100 (EST)
-Date: Sun, 25 Nov 2007 11:41:01 -0800
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: Jon Smirl <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8EC7ADDE33
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 07:20:17 +1100 (EST)
 Subject: Re: Access to PCI Expansion ROMs on PPC
-Message-ID: <20071125194101.GD14557@curie-int.orbis-terrarum.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
 References: <20071125015707.GO3174@curie-int.orbis-terrarum.net>
 	<9e4733910711241813r3412d459l95fb3b84cbee1d8a@mail.gmail.com>
 	<20071125111535.GB14557@curie-int.orbis-terrarum.net>
 	<20071125114919.GC14557@curie-int.orbis-terrarum.net>
 	<9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="T7mxYSe680VjQnyC"
-In-Reply-To: <9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 26 Nov 2007 07:20:00 +1100
+Message-Id: <1196022000.7195.70.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,56 +29,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---T7mxYSe680VjQnyC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sun, Nov 25, 2007 at 08:30:58AM -0500, Jon Smirl wrote:
+On Sun, 2007-11-25 at 08:30 -0500, Jon Smirl wrote:
+> 
+> > The two cards with x86 firmware return 0xFF for those two readb()
+> > instructions, while the X1900 with OF returns 0x00 for the readb().
+> >
+> > Could one of the more knowledgeable folk for PPC intricacies suggest
+> why
+> > those readb calls are returning the wrong data?
+> 
 > I don't know PPC at this low of level but it may be a problem with non
 > word-aligned access to memory. I thought readb() was supposed to work
 > on all archs and alignment issues are handled inside readb(). Also,
 > the readw() may have an endian bug.
-I was looking around for a description of the ROM layout, and instead I
-found this: http://developer.apple.com/technotes/tn/tn2000.html
-It was relevant because it explicitly mentioned enabling the
-PCI_COMMAND_MEMORY bit in the PCI_COMMAND register, which is NOT present
-in any path of the sizing code.
 
-By doing:
-# dev=3D"/sys/devices/pci0001:00/0001:00:03.0/0001:06:00.0/"
-# echo 1 >${dev}/enable
-# echo 1 >${dev}/rom
-# cat ${dev}/rom >rom
-The ROM is successfully returned for two of my 3 cards.
-Namely, both of the ones containing x86 BIOS (sata_sil24, ATI X700).
-The X1900 does still not return any ROM.
+Ugh ? Read be reads -bytes- ! Can you tell me how the hell can a byte
+access be non-aligned ?
 
-So the pci-sysfs.c/rom.c code path needs to change to enable the device
-somewhere if it was not enabled before (and presumably disable
-afterwards for suspend/resume?).
 
-I broke my testing kernel temporarily, so I need a bit more testing to
-see why the X1900 did not return a ROM. More on that in a couple of
-hours.
+> BenH, has source code for an x86 emulator that will run on PPC. That
+> will let you run the ROMs. The original plan was for the kernel to
+> generate a uevent that would have triggered the x86 emulator to run.
+> 
+> Progress along that path was blocked by the X developers. The X server
+> contains code for enabling the PCI ROM and reading it from user space.
+> I wanted to move this code out of X and into the kernel.
+> 
+> Because the path was blocked things like the PCI ROM API were never
+> throughly tested. It works most of the time but the occasional problem
+> is still turning up. Once we identify the PPC problem we can fix it in
+> the kernel.
 
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+Nobody blocked anything, you are free to develop an emulator triggered
+by a uevent, nobody prevented you from doing so.
 
---T7mxYSe680VjQnyC
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Now, regarding that user problem, this it totally unrelated as it's a
+"mac" card.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+It's possible that it's one of these radeons that disable ROM access via
+a register in which case a quirk is needed to re-enable it.
 
-iD8DBQFHSc/NPpIsIjIzwiwRAiNmAJ9lVNFfcFlaIBCn9ZOJjeoRoUM+GgCgxpMK
-zpRSrViXrx/QvtM69QHLSAM=
-=QGZI
------END PGP SIGNATURE-----
-
---T7mxYSe680VjQnyC--
+Ben.
