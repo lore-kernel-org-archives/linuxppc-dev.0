@@ -1,22 +1,19 @@
-Return-Path: <roland@redhat.com>
-Received: from QMTA02.emeryville.ca.mail.comcast.net
-	(qmta02.emeryville.ca.mail.comcast.net [76.96.30.24])
-	by ozlabs.org (Postfix) with ESMTP id 34D18DDEF6
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 09:11:07 +1100 (EST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 9CA3EDDF06
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 09:22:23 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/3] [POWERPC] Add docs for Freescale 83xx SATA device
+	tree nodes
+Date: Sun, 25 Nov 2007 23:22:08 +0100
+References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>
+	<Pine.LNX.4.64.0711202312130.24220@blarg.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0711202312130.24220@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 14/27] powerpc: ptrace generic resume
-In-Reply-To: Roland McGrath's message of  Sunday,
-	25 November 2007 13:55:07 -0800
-	<20071125215507.4B89226F8C5@magilla.localdomain>
-References: <20071125215507.4B89226F8C5@magilla.localdomain>
-Message-Id: <20071125220402.4C43C26F8DE@magilla.localdomain>
-Date: Sun, 25 Nov 2007 14:04:02 -0800 (PST)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711252322.09370.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,69 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 21 November 2007, Kumar Gala wrote:
+> + =A0 =A0* Freescale 8xxx/3.0 Gb/s SATA nodes
+> +
+> + =A0 =A0SATA nodes are defined to describe on-chip Serial ATA controller=
+s.
+> + =A0 =A0Each SATA port should have its own node.
+> +
+> + =A0 =A0Required properties:
+> + =A0 =A0- compatible =A0 =A0 =A0 =A0: compatible list, contains 2 entrie=
+s, first is
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 "f=
+sl,sata-CHIP", where CHIP is the processor
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 (m=
+pc8315, mpc8379, etc.) and the second is
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 "f=
+sl,sata-pq2pro"
+> + =A0 =A0- interrupts =A0 =A0 =A0 =A0: <interrupt mapping for SATA IRQ>
+> + =A0 =A0- interrupt-parent =A0: optional, if needed for interrupt mapping
+> + =A0 =A0- reg =A0 =A0 =A0 =A0 =A0 =A0 =A0 : <registers mapping>
+> +
 
-This removes the handling for PTRACE_CONT et al from the powerpc
-ptrace code, so it uses the new generic code via ptrace_request.
+Should this maybe also mandate a compatible property that is defined
+in a way to match the generic (p)ata_of_platform driver?
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- arch/powerpc/kernel/ptrace.c |   46 ------------------------------------------
- 1 files changed, 0 insertions(+), 46 deletions(-)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index b970d79..8b056d2 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -445,52 +445,6 @@ long arch_ptrace(struct task_struct *child, long request, long addr, long data)
- 		break;
- 	}
- 
--	case PTRACE_SYSCALL: /* continue and stop at next (return from) syscall */
--	case PTRACE_CONT: { /* restart after signal. */
--		ret = -EIO;
--		if (!valid_signal(data))
--			break;
--		if (request == PTRACE_SYSCALL)
--			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		else
--			clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		child->exit_code = data;
--		/* make sure the single step bit is not set. */
--		user_disable_single_step(child);
--		wake_up_process(child);
--		ret = 0;
--		break;
--	}
--
--/*
-- * make the child exit.  Best I can do is send it a sigkill.
-- * perhaps it should be put in the status that it wants to
-- * exit.
-- */
--	case PTRACE_KILL: {
--		ret = 0;
--		if (child->exit_state == EXIT_ZOMBIE)	/* already dead */
--			break;
--		child->exit_code = SIGKILL;
--		/* make sure the single step bit is not set. */
--		user_disable_single_step(child);
--		wake_up_process(child);
--		break;
--	}
--
--	case PTRACE_SINGLESTEP: {  /* set the trap flag. */
--		ret = -EIO;
--		if (!valid_signal(data))
--			break;
--		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
--		user_enable_single_step(child);
--		child->exit_code = data;
--		/* give it a chance to run. */
--		wake_up_process(child);
--		ret = 0;
--		break;
--	}
--
- 	case PTRACE_GET_DEBUGREG: {
- 		ret = -EINVAL;
- 		/* We only support one DABR and no IABRS at the moment */
+	Arnd <><
