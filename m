@@ -1,36 +1,24 @@
-Return-Path: <lukebr@linux.vnet.ibm.com>
-Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mailgw1.br.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 29A5ADDF63
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 02:41:23 +1100 (EST)
-Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
-	by igw1.br.ibm.com (Postfix) with ESMTP id 6A6AD32C202
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:35:47 -0200 (BRDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
-	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAQFfFBv2879612
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:41:15 -0200
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
-	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAQFfFiX023495
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:41:15 -0200
-Subject: Re: [PATCH] ehea: Add kdump support
-From: Luke Browning <lukebr@linux.vnet.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1196064988.19855.15.camel@concordia>
-References: <200711091433.51259.osstklei@de.ibm.com>
-	<1196064988.19855.15.camel@concordia>
-Content-Type: text/plain
-Date: Mon, 26 Nov 2007 13:41:37 -0200
-Message-Id: <1196091697.7513.30.camel@luke-laptop.br.ibm.com>
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ED52ADDEB8
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 02:44:03 +1100 (EST)
+Message-ID: <474AE9D3.3070205@freescale.com>
+Date: Mon, 26 Nov 2007 09:44:19 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 3/3] [POWERPC] Add docs for Freescale DMA & DMA channel
+	device tree nodes
+References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>	<Pine.LNX.4.64.0711202314030.24220@blarg.am.freescale.net>	<474447EF.8080405@freescale.com>	<E9CED991-4E10-44AE-A446-B6CB151FB9EE@kernel.crashing.org>	<20071121173540.GC4413@loki.buserror.net>	<8B189FFE-F45E-470C-87A0-E9FC61A1CF59@kernel.crashing.org>	<47448687.6010106@freescale.com>
+	<20071121222822.GB19445@localhost.localdomain>
+	<4744D2AE.60902@freescale.com>
+In-Reply-To: <4744D2AE.60902@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,39 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-11-26 at 19:16 +1100, Michael Ellerman wrote:
-
+Timur Tabi wrote:
+> David Gibson wrote:
 > 
-> Hi Thomas,
+>> Indeed, indexing or writing into shared registers is exactly what
+>> cell-index is for.
 > 
-> I'm sorry, but this patch is all wrong IMHO.
-> 
-> For kdump we have to assume that the kernel is fundamentally broken,
-> we've panicked, so something bad has happened - every line of kernel
-> code that is run decreases the chance that we'll successfully make it
-> into the kdump kernel.
+> I don't care whether it's cell-index or device-id, but I need to know 
+> which DMA controller is #0 and which one is #1, and I need to know which 
+> channel is #0, which one is #1, etc.
 
-I agree with Michael.
+OK, cell-index makes sense there too, then.
 
-> Solutions that might be better:
-> 
->  a) if there are a finite number of handles and we can predict their 
->     values, just delete them all in the kdump kernel before the driver
->     loads.
-
-This is a good solution if handles are predefined.
-
->  b) if there are a small & finite number of handles, save their values 
->     in a device tree property and have the kdump kernel read them and 
->     delete them before the driver loads.
-
-Also good but is more complicated.  
-
->  c) if neither of those work, provide a minimal routine that _only_
->     deletes the handles in the crashed kernel.
->  d) <something else>
-
-Can the driver or configuration method for the driver query PHYP to
-determine if there are any pre-existing mappings... 
-
-Regards, Luke
+-Scott
