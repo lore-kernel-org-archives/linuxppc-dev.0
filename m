@@ -1,19 +1,21 @@
-Return-Path: <joerg@alea.gnuu.de>
-Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id 65190DDDCA
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 23:44:42 +1100 (EST)
-Date: Tue, 27 Nov 2007 12:13:45 +0100
-From: =?iso-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
-To: Elimar Riesebieter <riesebie@frodo.home.lxtec.de>
-Subject: Re: 2.6.24-rc3: High CPU load -- hardware interrupts
-Message-ID: <20071127111345.GA26586@alea.gnuu.de>
-References: <slrnfk1d21.229.joerg@alea.gnuu.de>
-	<20071126223831.GA11112@frodo.home.lxtec.de>
-MIME-Version: 1.0
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 41BEDDDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 00:07:36 +1100 (EST)
+Subject: Re: time accounting problem (powerpc only?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1195814816.4149.94.camel@johannes.berg>
+References: <1195814816.4149.94.camel@johannes.berg>
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
-In-Reply-To: <20071126223831.GA11112@frodo.home.lxtec.de>
-Cc: linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature";
+	boundary="=-LPjZDLP2bIhoh/7P5BtP"
+Date: Tue, 27 Nov 2007 00:55:14 +0100
+Message-Id: <1196121315.6058.0.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+--=-LPjZDLP2bIhoh/7P5BtP
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi Elimar,
 
-Elimar Riesebieter schrieb am Mon 26. Nov, 23:38 (+0100):
-> I can confirm this situation. But it seems, that no one takes care
-> of it ....
+> On my powerbook, with NO_HZ and HIGH_RES_TIMERS, I observed recently
+> that powernowd would not ever switch between CPU speeds.
 
-Have a look at the thread =E2=80=9Ctime accounting problem (powerpc only?)=
-=E2=80=9D
-started by Johannes Berg on 23 Nov 2007.
+Also happens without NO_HZ (with HIGH_RES_TIMERS).
 
-Bye, J=C3=B6rg.
---=20
-Du kannst einem Schwein einen goldenen Ring durch die Nase ziehen,
-deswegen bleibt es trozdem ein Schwein!
+johannes
 
---sm4nu43k4a2Rpi4c
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+--=-LPjZDLP2bIhoh/7P5BtP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQFHS/vpwe0mZwH1VIARApgLAJ9ZTz8Rke1fvXE8JRifLeenmI1TqgCfRBJt
-8d8QlSf2P6zZBbFx0rPzSQM=
-=nluy
+iQIVAwUAR0tc4aVg1VMiehFYAQLO4Q//Qm3GtSf8MqR0DC7/qiQVik9+qIHiA8CE
+7n5fUOZ8yJWmXkbD4IHlbwgMCHLWOw6GfT1ziZCdLtpIGjTz3zkL9J7Us9LZv168
++uuI0pTdmxgy1lqqYobsNVHxb7XDRBmL6RY5l5yCX+DSnfwOL0m7ASnuts+7+2fK
+5oOcdzN6zLykb4EN8WtzghKz8MSVvHwcJvxp6cfRahmyPp+Ub4CrTIvQUupg2X5T
+dfEm6y6yjeqz8pA8HI2JAImWUgQ3OfzQNLc2id7SQ5KHTbAbXdW/cAxKLxThO/qH
+kQ2Yolf5Pv9wnlfY0kLYvn83jjWr+8qRJJDB/kCyEoyuxh5zH0yb+e4Vy5nC7tHn
+AXGJrTzAV53ojoI0GUhyv/JxVlEL3GBMkM8z0nmqlK5Sp+wtWy1HfKiGSrqwrzt+
+0p25rNba5yGMtut9nFlMhDBk6ekGG7MTuYCVeXOmMNFlLbCroMAitjZpvn7Nx/2g
+Wavt3jWDh77yZkym5wNrM4U2DNASAiDctP895zjBZ3aq8pTv+OxRQPuWvqgl6fvG
+TGIP5Akuhqu9C4ceNq9eM8mpw4WngGIeGmQxLuPSXJoASzENQRNEyKmWnIYFgYwp
+znvln1L54z0yVhhpAFwbnWg8y53XSVvJ+53tg1ugsycYoXrRP9BSVZUSRYnXjGuo
+gaKcC1fO1ZM=
+=/uxl
 -----END PGP SIGNATURE-----
 
---sm4nu43k4a2Rpi4c--
+--=-LPjZDLP2bIhoh/7P5BtP--
