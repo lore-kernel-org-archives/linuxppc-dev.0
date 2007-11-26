@@ -1,24 +1,21 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <474AEB6A.40408@freescale.com>
-Date: Mon, 26 Nov 2007 09:51:06 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>, Jon Smirl <jonsmirl@gmail.com>,
-	PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>
-Subject: Re: Revisited, audio codec device tree entries.
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<4741A56D.9050808@freescale.com>
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
-	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
-	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
-	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
-	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
-	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
-	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
-	<20071120005941.GC3126@localhost.localdomain>
-In-Reply-To: <20071120005941.GC3126@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 473C8DDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:23:34 +1100 (EST)
+Subject: Re: time accounting problem (powerpc only?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1195814816.4149.94.camel@johannes.berg>
+References: <1195814816.4149.94.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-YrYhn9tY2JEhBAzreAYX"
+Date: Mon, 26 Nov 2007 17:23:13 +0100
+Message-Id: <1196094193.4149.287.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
 
-> 	1) We have a "universal" device-tree-based fabric driver which
-> parses all the above-described interconnection information in the
-> device tree and handles any situation.  Cool, but probably a lot of
-> work and fiddly to get right.
+--=-YrYhn9tY2JEhBAzreAYX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Definitely a lot of work.  I suggest we wait until there are a few PowerPC ASOC 
-v2 audio drivers in the kernel before we even consider this.  And it may not 
-even be possible.  I can easily imagine situations where we need board-specific 
-code that belongs in a machine-specific fabric driver.
+Contrary to what I claimed later in the thread, my 64-bit powerpc box
+(quad-core G5) doesn't suffer from this problem.
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Does anybody have any idea? I don't even know how to debug it further.
+
+johannes
+
+--=-YrYhn9tY2JEhBAzreAYX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR0ry8KVg1VMiehFYAQJ8Pw//UqVaTlgZLljfY/4ZquTyYmiQHxJslbq/
+hV5kU1XyDPy4BgoQJtgPUKP4GQURB5b9lv54J87mgYcNS9sTvAthdeuzVUoWgzll
+bjFcdPLvLwgS/RB2qPJVHBBKrLZIPS9uqV0iJo4kELorFtkBS9D/CAPbsKOf8fx7
+2g1cNI0BJVdSs1FcrdDTfo/t0kZL78UTZdeDYTRXTqfymfLM4AclCqEoJnD5PPoM
++e8sxaXzGADOy/ISJieyGuCZL9oFvzGks6My8YW9Shut98q9VYx1QiJNBeKoHve7
+5HpkGjLU+t5hW89mPNny8yayUNoK99DmcbkxbhQp/Y63US/IAWl3+UpVfET9Vtf8
+s95x8r/hOyLneSG2OiP1bn4S9JFAae8TrM/hlLj52Un7nD8C0b+8k1aSDqznfapJ
+Jy3oi6TM5ILq6PGMedd41OcRdiJyl5p8aSQ2lIzHRkOPPA9jtDADnFyULDBBB48+
+wZWF0oszxg+bFUmdqB8A2LK1QaNU6IklBJ0uQInvpqpApbrFl2cEywBDYKgoTZTR
+uzWiZHHx9S8Q5VlX7h7hkIrih6lYaNagF6Te3MI6VW4OaBA4pEEx4RH75VwGUxcG
+JiMTdWtEBo+ej0kc2CKkOMLBeJV+KtuPDsSRSKMDsRSOP/x8MQByoQa84EVmAAIf
+6Rl+liY+6iw=
+=V5Sl
+-----END PGP SIGNATURE-----
+
+--=-YrYhn9tY2JEhBAzreAYX--
