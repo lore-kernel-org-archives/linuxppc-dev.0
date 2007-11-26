@@ -1,19 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Christoph Raisch <RAISCH@de.ibm.com>
-Subject: Re: [PATCH] ehea: Add kdump support 
-In-reply-to: <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
-References: <200711091433.51259.osstklei@de.ibm.com>
-	<1196064988.19855.15.camel@concordia>
-	<OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
-Date: Tue, 27 Nov 2007 11:35:18 +1100
-Message-ID: <11699.1196123718@neuling.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Marcus Eder <MEDER@de.ibm.com>, tklein@linux.ibm.com,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <jan.kratochvil@redhat.com>
+Received: from pauline.vellum.cz (pauline.vellum.cz [89.250.243.234])
+	by ozlabs.org (Postfix) with ESMTP id E0466DDE2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 09:41:46 +1100 (EST)
+Date: Mon, 26 Nov 2007 23:02:24 +0100
+From: Jan Kratochvil <jan.kratochvil@redhat.com>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: PPC upstream kernel ignored DABR bug
+Message-ID: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Roland McGrath <roland@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com> you wrote:
-> Michael Ellerman wrote on 26.11.2007 09:16:28:
-> > Solutions that might be better:
-> >
-> >  a) if there are a finite number of handles and we can predict their
-> >     values, just delete them all in the kdump kernel before the driver
-> >     loads.
-> 
-> Guessing the values does not work, because of the handle structure
-> defined by the hypervisor.
-> 
-> >  b) if there are a small & finite number of handles, save their values
-> >     in a device tree property and have the kdump kernel read them and
-> >     delete them before the driver loads.
-> 
-> 5*16*nr_ports+1+1=   >82. a ML16 has 4 adapters with up to 16 ports, so the
-> number is not small anymore....
+Hi,
 
-I assume this machine with a huge number of adapters has a huge amount
-of memory too! :-)
+this testcase:
+	http://people.redhat.com/jkratoch/dabr-lost.c
 
-> The device tree functions are currently not exported.
+reproduces a PPC DABR kernel bug.  The variable `variable' should not get
+modified as the thread modifying it should be caught by its DABR:
 
-We can add this.
+$ ./dabr-lost
+TID 30914: DABR 0x10012a77 NIP 0x80f6ebb318
+TID 30915: DABR 0x10012a77 NIP 0x80f6ebb318
+TID 30916: DABR 0x10012a77 NIP 0x80f6ebb318
+TID 30914: hitting the variable
+TID 30915: hitting the variable
+TID 30916: hitting the variable
+variable found = 30916, caught TID = 30914
+TID 30916: DABR 0x10012a77
+Variable got modified by a thread which has DABR still set!
 
-> If you crashdump to a new kernel, will it get the device tree
-> representation of the crashed kernel or of the initial one of open
-> firmware?
+At the `variable found =' line the parent ptracer found the TID thread 30916
+wrote the value into the variable - despite it had DABR alrady set before.
 
-The kexec tools userspace control this.  Normally it just takes the
-current device tree plus some modifications (eg. initrd location
-changes).
+As the behavior is dependent on the current weather I expect the scheduling
+matters there.
 
-So provided the ehea driver export this info somewhere, it can be
-grabbed by the kexec tools and stuffed in the device tree of the new
-kernel.  
+It is important the target thread is in the `nanosleep' syscall.  If you define
+WORKAROUND_SET_DABR_IN_SYSCALL in the testcase it busyloops in the userland and
+the bug gets no longer reproduced.
 
-That being said, the proper place to have this would be original device
-tree.
+I got it reproduced on a utrace-patched kernel on dual-CPU Power5 and Roland
+McGrath reported it reproduced on the vanilla upstream kernel on a Mac G5.
 
-> 
-> >  c) if neither of those work, provide a minimal routine that _only_
-> >     deletes the handles in the crashed kernel.
-> 
-> I would hope this has the highest chance to actually work.
-> For this we would have to add a proper notifier chain.
-> Do you agree?
-> 
-> >  d) <something else>
-> 
-> Firmware change? But that's not something you will get very soon.
-> 
-> Christoph R.
-> 
+
+
+Regards,
+Jan Kratochvil
