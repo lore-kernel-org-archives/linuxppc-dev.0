@@ -1,17 +1,17 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2DE9CDDF91
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 09:17:59 +1100 (EST)
-Date: Mon, 26 Nov 2007 16:17:52 -0600
+	by ozlabs.org (Postfix) with ESMTP id 6A78EDE058
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 09:18:07 +1100 (EST)
+Date: Mon, 26 Nov 2007 16:17:58 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
 To: jgarzik@pobox.com
-Subject: [PATCH 2/3][RESEND] phylib: marvell: add support for TX-only and
-	RX-only Internal Delay
-Message-Id: <20071126161752.5b4bd09d.kim.phillips@freescale.com>
+Subject: [PATCH 3/3][RESEND] ucc_geth: handle passing of RX-only and TX-only
+	internal delay PHY connection type parameters
+Message-Id: <20071126161758.38056096.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
@@ -25,59 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Previously, Internal Delay specification implied the delay be
-applied to both TX and RX.  This patch allows for separate TX/RX-only
-internal delay specification.
+Extend the RGMII-Internal Delay specification case to include
+TX-only and RX-only variants.
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 Tested-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 Acked-by: Li Yang <leoli@freescale.com>
 ---
- drivers/net/phy/marvell.c |   26 +++++++++++++++++---------
- 1 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/net/ucc_geth.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/phy/marvell.c b/drivers/net/phy/marvell.c
-index 035fd41..f057407 100644
---- a/drivers/net/phy/marvell.c
-+++ b/drivers/net/phy/marvell.c
-@@ -143,21 +143,29 @@ static int m88e1111_config_init(struct phy_device *phydev)
- 	int err;
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index a3ff270..7f68990 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -1460,6 +1460,8 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
+ 	if ((ugeth->phy_interface == PHY_INTERFACE_MODE_RMII) ||
+ 	    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII) ||
+ 	    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_ID) ||
++	    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
++	    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_TXID) ||
+ 	    (ugeth->phy_interface == PHY_INTERFACE_MODE_RTBI)) {
+ 		upsmr |= UPSMR_RPM;
+ 		switch (ugeth->max_speed) {
+@@ -1557,6 +1559,8 @@ static void adjust_link(struct net_device *dev)
+ 				if ((ugeth->phy_interface == PHY_INTERFACE_MODE_RMII) ||
+ 				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII) ||
+ 				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_ID) ||
++				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
++				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RGMII_TXID) ||
+ 				    (ugeth->phy_interface == PHY_INTERFACE_MODE_RTBI)) {
+ 					if (phydev->speed == SPEED_10)
+ 						upsmr |= UPSMR_R10M;
+@@ -3795,6 +3799,10 @@ static phy_interface_t to_phy_interface(const char *phy_connection_type)
+ 		return PHY_INTERFACE_MODE_RGMII;
+ 	if (strcasecmp(phy_connection_type, "rgmii-id") == 0)
+ 		return PHY_INTERFACE_MODE_RGMII_ID;
++	if (strcasecmp(phy_connection_type, "rgmii-txid") == 0)
++		return PHY_INTERFACE_MODE_RGMII_TXID;
++	if (strcasecmp(phy_connection_type, "rgmii-rxid") == 0)
++		return PHY_INTERFACE_MODE_RGMII_RXID;
+ 	if (strcasecmp(phy_connection_type, "rtbi") == 0)
+ 		return PHY_INTERFACE_MODE_RTBI;
  
- 	if ((phydev->interface == PHY_INTERFACE_MODE_RGMII) ||
--	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID)) {
-+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) ||
-+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) ||
-+	    (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID)) {
- 		int temp;
- 
--		if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) {
--			temp = phy_read(phydev, MII_M1111_PHY_EXT_CR);
--			if (temp < 0)
--				return temp;
-+		temp = phy_read(phydev, MII_M1111_PHY_EXT_CR);
-+		if (temp < 0)
-+			return temp;
- 
-+		if (phydev->interface == PHY_INTERFACE_MODE_RGMII_ID) {
- 			temp |= (MII_M1111_RX_DELAY | MII_M1111_TX_DELAY);
--
--			err = phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
--			if (err < 0)
--				return err;
-+		} else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_RXID) {
-+			temp &= ~MII_M1111_TX_DELAY;
-+			temp |= MII_M1111_RX_DELAY;
-+		} else if (phydev->interface == PHY_INTERFACE_MODE_RGMII_TXID) {
-+			temp &= ~MII_M1111_RX_DELAY;
-+			temp |= MII_M1111_TX_DELAY;
- 		}
- 
-+		err = phy_write(phydev, MII_M1111_PHY_EXT_CR, temp);
-+		if (err < 0)
-+			return err;
-+
- 		temp = phy_read(phydev, MII_M1111_PHY_EXT_SR);
- 		if (temp < 0)
- 			return temp;
+@@ -3889,6 +3897,8 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		case PHY_INTERFACE_MODE_GMII:
+ 		case PHY_INTERFACE_MODE_RGMII:
+ 		case PHY_INTERFACE_MODE_RGMII_ID:
++		case PHY_INTERFACE_MODE_RGMII_RXID:
++		case PHY_INTERFACE_MODE_RGMII_TXID:
+ 		case PHY_INTERFACE_MODE_TBI:
+ 		case PHY_INTERFACE_MODE_RTBI:
+ 			max_speed = SPEED_1000;
 -- 
 1.5.2.2
