@@ -1,24 +1,17 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <474AF711.9010602@freescale.com>
-Date: Mon, 26 Nov 2007 10:40:49 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B0449DDF51
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:49:53 +1100 (EST)
+Date: Mon, 26 Nov 2007 17:24:43 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: kill sparse warning in HPTE_V_COMPARE()
+Message-ID: <Pine.LNX.4.62.0711261724120.32260@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Revisited, audio codec device tree entries.
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>	
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>	
-	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>	
-	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>	
-	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>	
-	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>	
-	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>	
-	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>	
-	<20071120005941.GC3126@localhost.localdomain>	
-	<474AEB6A.40408@freescale.com>
-	<9e4733910711260838s26e5b155n8d1cb2c246248394@mail.gmail.com>
-In-Reply-To: <9e4733910711260838s26e5b155n8d1cb2c246248394@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-731037697-1196094283=:32260"
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> I'm fixing up the asoc v2 code to use MODULE_DEVICE_TABLE() and the
-> real kernel aliasing/insmod system. Half of why we are having trouble
-> is because asoc isn't using this mechanism. I've posted patches fixing
-> i2c to use the same mechanism.  I don't have the asoc ones ready yet.
+---584337861-731037697-1196094283=:32260
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-I look forward to porting my driver to ASoC V2 once the dust settles. :-)  In 
-the meantime, I'll post the V1 version this week or next.
+sparse warning: constant 0xffffffffffffff80 is so big it is unsigned long
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ include/asm-powerpc/mmu-hash64.h |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+--- a/include/asm-powerpc/mmu-hash64.h
++++ b/include/asm-powerpc/mmu-hash64.h
+@@ -80,7 +80,7 @@ extern char initial_stab[];
+ #define HPTE_V_AVPN_SHIFT	7
+ #define HPTE_V_AVPN		ASM_CONST(0x3fffffffffffff80)
+ #define HPTE_V_AVPN_VAL(x)	(((x) & HPTE_V_AVPN) >> HPTE_V_AVPN_SHIFT)
+-#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80))
++#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80UL))
+ #define HPTE_V_BOLTED		ASM_CONST(0x0000000000000010)
+ #define HPTE_V_LOCK		ASM_CONST(0x0000000000000008)
+ #define HPTE_V_LARGE		ASM_CONST(0x0000000000000004)
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-731037697-1196094283=:32260--
