@@ -1,24 +1,32 @@
-Return-Path: <dhlii@dlasystems.com>
-Received: from outbound-mail-35.bluehost.com (outbound-mail-35.bluehost.com
-	[69.89.18.155]) by ozlabs.org (Postfix) with SMTP id 2B2DEDDDFB
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.248])
+	by ozlabs.org (Postfix) with ESMTP id 6EC88DDE1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 08:36:54 +1100 (EST)
-Received: from c-76-99-73-82.hsd1.pa.comcast.net ([76.99.73.82]
-	helo=hp-dhlii.dlasys.net)
-	by host151.hostmonster.com with esmtpa (Exim 4.68)
-	(envelope-from <dhlii@dlasystems.com>) id 1IwldN-00067n-UD
-	for linuxppc-embedded@ozlabs.org; Mon, 26 Nov 2007 14:36:54 -0700
-Message-ID: <474B3C75.1080508@dlasystems.com>
-Date: Mon, 26 Nov 2007 16:36:53 -0500
-From: "David H. Lynch Jr." <dhlii@dlasystems.com>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Tue, 27 Nov 2007 09:09:07 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so139715anc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 26 Nov 2007 14:09:06 -0800 (PST)
+Message-ID: <fa686aa40711261409s1535d2b8m3a58e90bcc2206a7@mail.gmail.com>
+Date: Mon, 26 Nov 2007 15:09:06 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
 Subject: Re: Xilinx devicetrees
-References: <47480CF0.7090105@dlasys.net>	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	<47493D4F.4070605@dlasys.net><fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
+In-Reply-To: <20071126215615.73F4B1138066@mail175-dub.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <47480CF0.7090105@dlasys.net>
+	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>
+	<47493D4F.4070605@dlasys.net>
+	<fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
 	<4749FD5E.7000408@dlasys.net>
 	<20071125235855.95B9999804D@mail138-cpk.bigfish.com>
-In-Reply-To: <20071125235855.95B9999804D@mail138-cpk.bigfish.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<EDAE140DF1B2FC42B5867C22CA0B333F0A58E4@XMBIL132.northgrum.com>
+	<474B37C9.8020405@dlasystems.com>
+	<20071126215615.73F4B1138066@mail175-dub.bigfish.com>
+Cc: "Koss, Mike \(Mission Systems\)" <mike.koss@ngc.com>,
+	"David H. Lynch Jr." <dhlii@dlasystems.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,29 +37,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stephen Neuendorffer wrote:
-> In any event, why do you do this rather than just run out of the flash (or a ram copy of the flash?)
->   
-    This is not literally true, but  the parameters are nearly the same
-- pretend we are using NAND flash  and storing executables as elf files.
+On 11/26/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+>
+>
+> > -----Original Message-----
+> > From: David H. Lynch Jr. [mailto:dhlii@dlasystems.com]
+> > Sent: Monday, November 26, 2007 1:17 PM
+> > To: Koss, Mike (Mission Systems)
+> > Cc: Stephen Neuendorffer; Grant Likely; linuxppc-embedded
+> > Subject: Re: Xilinx devicetrees
+> >
+> >      My objective is to get alot of software - linux, GHS, and
+> > standalone apps, to all load - from a single executables, accross
+> > multiple different bit images on several different (though
+> > deliberately
+> > similar) products. My Linux kernel needs to work regardless
+> > of the Pico
+> > card and regardless of the bit image, as done my GHS kernel, and ....
+> > And I need to do that in a severly resource constrained environment.
+> >     I would hope that should make sense of my harping about
+> > version/capabilities registers. If I have maybe 10 possible
+> > peices of IP
+> > that may/maynot be present in a given FPGA and I am trying to
+> > dynamically configure - Linux/GHS/... to adapt to whatever it
+> > encounters
+> > and work as long as it is a viable combination. At best
+> > devicetrees are
+> > an extremly complex way of solving that - while version
+> > registers are a
+> > trivial way.
 
-    We can not run from flash because:
-       The code has not been relocated
-       the flash is not persistent
-    We do load the flash/elf file into DRAM  dealing with elf issues
-along the way and then execute it.   
-    We can do something similar for devicetrees, actually just passing
-Linux the offset from the begining of flash to the devicetree would be
-sufficient. Or if finding the devicetree inside the bitsstream can be
-accomplished fairly simply, just passing the offset of the bit file.
+I disagree.  I'm not disputing that version registers are valuable.
+But I *am* disputing their value for device detection.  It may work in
+your specific case of devices always in certain locations, but it does
+not help the general case where devices can be instantiated anywhere
+in the 4GB address space.
 
+>
+> It sounds like the real problem that you have is that even if you get
+> device trees working for Linux, you still have the same problem for GHS,
+> so from your perspective "device trees don't help"
+
+In embedded power.org land, device trees are becoming the recommended
+method for describing platform configuration for all embedded powerpc
+software.  Not just Linux.  So from that perspective device trees
+might help.
+
+Cheers,
+g.
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
