@@ -1,25 +1,19 @@
-Return-Path: <michel@tungstengraphics.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id DDE90DDE43
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 20:19:42 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so770014nfd
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 01:19:40 -0800 (PST)
-Subject: Re: Access to PCI Expansion ROMs on PPC
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-In-Reply-To: <20071126085928.GE14557@curie-int.orbis-terrarum.net>
-References: <20071125015707.GO3174@curie-int.orbis-terrarum.net>
-	<9e4733910711241813r3412d459l95fb3b84cbee1d8a@mail.gmail.com>
-	<20071125111535.GB14557@curie-int.orbis-terrarum.net>
-	<20071125114919.GC14557@curie-int.orbis-terrarum.net>
-	<9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
-	<20071125194101.GD14557@curie-int.orbis-terrarum.net>
-	<20071126085928.GE14557@curie-int.orbis-terrarum.net>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 26 Nov 2007 10:20:14 +0100
-Message-Id: <1196068814.22865.108.camel@thor.sulgenrain.local>
+Return-Path: <sonny@kevlar.boston.burdell.org>
+Received: from asclepius.site5.com (asclepius.site5.com [70.47.36.37])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8204ADDF04
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 20:36:15 +1100 (EST)
+Date: Mon, 26 Nov 2007 02:44:38 -0500
+From: Sonny Rao <sonny@burdell.org>
+To: perfmon2-devel@lists.sourceforge.net
+Subject: perfmon2 needs hard_irq_disable() for powerpc
+Message-ID: <20071126074438.GA27499@kevlar.boston.burdell.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: mikey@neuling.org, miltonm@bga.com, dwg@au1.ibm.com,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
+	eranian@hpl.hp.com, cjashfor@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi, I've been reading through the perfmon2 patch for 2.6.23 and it
+dawned on me that in the powerpc architecture we have the notion of
+lazy-disabling of interrupts where we don't actually disable
+interrupts unless we see one come in and then turn them off.  I believe
+a notable exception is the performance monitor interrupt which we
+allow to break into our critical sections.  This is desirable because
+we want to profile those sections  and right now, no in-kernel user of
+the performance monitor interrupt in powerpc does any synchronization
+across cpus inside the interrupt handler (oprofile seems to use
+per-cpu buffers/state for everything).  We use hard_irq_disable() when
+we _really_ have to disable interrupts because we're switching out the
+kernel stack, etc. 
 
-On Mon, 2007-11-26 at 00:59 -0800, Robin H. Johnson wrote:
-> 
-> Regarding the sub-thread on x86 emulation, that is totally out of scope
-> for this. The 'AtomBIOS' of the ATI cards, consists of multiple parts (I
-> may have minor errors here, ask airlied if you need more
-> clarification):
-> a) Initialization code (I think arch-specific)
-> b) AtomBIOS script interpreter (I think arch-specific)
-> c) AtomBIOS scripts (card-specific, but not arch-specific)
-> d) Data tables (card-specific, but not arch-specific)
-> 
-> The AtomBIOS parts of the various drivers need data from c+d primarily,
-> and provide their own script interpreter, or not using the scripts, just
-> the data tables.
+Perfmon2 is more demanding in its synchronization requirements and it
+uses spin_lock_irqsave() in the generic arch-neutral code in several
+places, I think this will break on powerpc the way we're handling
+things now.
 
-Are you sure the X1900 Mac Edition ROM contains any ATOM data structures
-though? I rather doubt it.
+I'm copying a few people to solicit opinions on how best to deal with
+this.  I think it's desirable to keep the property of letting us
+profile critical sections in the kernel wherever possible. So we would
+need to add hard_irq_disable/enable calls to the generic code, but want to
+check with you guys first.   
 
-
--- 
-Earthling Michel Dänzer           |          http://tungstengraphics.com
-Libre software enthusiast         |          Debian, X and DRI developer
+Sonny 
