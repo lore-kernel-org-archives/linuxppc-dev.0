@@ -1,15 +1,16 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 674F1DE009
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 80DC5DE09F
 	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:27:50 +1100 (EST)
-Message-Id: <20071126172712.241743000@pademelon.sonytel.be>
+Message-Id: <20071126172712.021850000@pademelon.sonytel.be>
 References: <20071126172455.308741000@pademelon.sonytel.be>
-Date: Mon, 26 Nov 2007 18:24:58 +0100
+Date: Mon, 26 Nov 2007 18:24:56 +0100
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Linux Frame Buffer Device Development
 	<linux-fbdev-devel@lists.sourceforge.net>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [patch 3/9] ps3fb: Kill PS3FB_FULL_MODE_BIT
+Subject: [patch 1/9] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate()
+	are unused
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,51 +24,102 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3fb: Kill PS3FB_FULL_MODE_BIT, use PS3AV_MODE_FULL instead
+ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused, so remove
+them
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/ps3/ps3av.c         |   58 +++++++++-----------------------------------
+ include/asm-powerpc/ps3av.h |    2 -
+ 2 files changed, 13 insertions(+), 47 deletions(-)
 
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -56,8 +56,6 @@
- #define GPU_ALIGN_UP(x)				_ALIGN_UP((x), 64)
- #define GPU_MAX_LINE_LENGTH			(65536 - 64)
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -78,23 +78,21 @@ static const struct avset_video_mode {
+ 	u32 aspect;
+ 	u32 x;
+ 	u32 y;
+-	u32 interlace;
+-	u32 freq;
+ } video_mode_table[] = {
+ 	{     0, }, /* auto */
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
+-	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
+-	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080},
++	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024},
++	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200},
+ };
  
--#define PS3FB_FULL_MODE_BIT			0x80
+ /* supported CIDs */
+@@ -889,36 +887,6 @@ int ps3av_get_mode(void)
+ 
+ EXPORT_SYMBOL_GPL(ps3av_get_mode);
+ 
+-int ps3av_get_scanmode(int id)
+-{
+-	int size;
 -
- #define GPU_INTR_STATUS_VSYNC_0			0	/* vsync on head A */
- #define GPU_INTR_STATUS_VSYNC_1			1	/* vsync on head B */
- #define GPU_INTR_STATUS_FLIP_0			3	/* flip head A */
-@@ -309,7 +307,7 @@ static int ps3fb_get_res_table(u32 xres,
- 	unsigned int i;
- 	u32 x, y, f;
- 
--	full_mode = (mode & PS3FB_FULL_MODE_BIT) ? PS3FB_RES_FULL : 0;
-+	full_mode = (mode & PS3AV_MODE_FULL) ? PS3FB_RES_FULL : 0;
- 	for (i = 0;; i++) {
- 		x = ps3fb_res[i].xres;
- 		y = ps3fb_res[i].yres;
-@@ -372,7 +370,7 @@ found:
- 	/* Full broadcast modes have the full mode bit set */
- 	mode = i+1;
- 	if (mode > PS3AV_MODE_WUXGA)
--		mode = (mode - PS3AV_MODE_WUXGA) | PS3FB_FULL_MODE_BIT;
-+		mode = (mode - PS3AV_MODE_WUXGA) | PS3AV_MODE_FULL;
- 
- 	pr_debug("ps3fb_find_mode: mode %u\n", mode);
- 
-@@ -389,7 +387,7 @@ static const struct fb_videomode *ps3fb_
- 
- 	flags = id & ~PS3AV_MODE_MASK;
- 
--	if (mode <= PS3AV_MODE_1080P50 && flags & PS3FB_FULL_MODE_BIT) {
-+	if (mode <= PS3AV_MODE_1080P50 && flags & PS3AV_MODE_FULL) {
- 		/* Full broadcast mode */
- 		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
- 	}
+-	id = id & PS3AV_MODE_MASK;
+-	size = ARRAY_SIZE(video_mode_table);
+-	if (id > size - 1 || id < 0) {
+-		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
+-		return -EINVAL;
+-	}
+-	return video_mode_table[id].interlace;
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3av_get_scanmode);
+-
+-int ps3av_get_refresh_rate(int id)
+-{
+-	int size;
+-
+-	id = id & PS3AV_MODE_MASK;
+-	size = ARRAY_SIZE(video_mode_table);
+-	if (id > size - 1 || id < 0) {
+-		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
+-		return -EINVAL;
+-	}
+-	return video_mode_table[id].freq;
+-}
+-
+-EXPORT_SYMBOL_GPL(ps3av_get_refresh_rate);
+-
+ /* get resolution by video_mode */
+ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
+ {
+--- a/include/asm-powerpc/ps3av.h
++++ b/include/asm-powerpc/ps3av.h
+@@ -713,8 +713,6 @@ extern int ps3av_set_video_mode(u32);
+ extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
+ extern int ps3av_get_auto_mode(void);
+ extern int ps3av_get_mode(void);
+-extern int ps3av_get_scanmode(int);
+-extern int ps3av_get_refresh_rate(int);
+ extern int ps3av_video_mode2res(u32, u32 *, u32 *);
+ extern int ps3av_video_mute(int);
+ extern int ps3av_audio_mute(int);
 
 -- 
 With kind regards,
