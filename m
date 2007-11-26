@@ -1,12 +1,13 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Merge refs and labels into single "markers" list 
-In-Reply-To: Your message of "Thu, 22 Nov 2007 11:37:07 +1100."
-	<20071122003707.GF19445@localhost.localdomain>
-References: <20071122003707.GF19445@localhost.localdomain> 
-Date: Mon, 26 Nov 2007 16:11:52 -0600
+Subject: Re: dtc: Flexible tree checking infrastructure (v2) 
+In-Reply-To: Your message of "Thu, 22 Nov 2007 14:38:07 +1100."
+	<20071122033807.GH19445@localhost.localdomain>
+References: <20071121053851.GA17801@localhost.localdomain>
+	<20071122033807.GH19445@localhost.localdomain>
+Date: Mon, 26 Nov 2007 16:13:32 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IwmBE-0002f5-L2@jdl.com>
+Message-Id: <E1IwmCq-0002g9-Nk@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,26 +19,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> Currently, every 'data' object, used to represent property values, has
-> two lists of fixup structures - one for labels and one for references.
-> Sometimes we want to look at them separately, but other times we need
-> to consider both types of fixup.
+> dtc: Flexible tree checking infrastructure
 > 
-> I'm planning to implement string references, where a full path rather
-> than a phandle is substituted into a property value.  Adding yet
-> another list of fixups for that would start to get messy.  So, this
-> patch merges the "refs" and "labels" lists into a single list of
-> "markers", each of which has a type field indicating if it represents
-> a label or a phandle reference.  String references or any other new
-> type of in-data marker will then just need a new type value - merging
-> data blocks and other common manipulations will just work.
+> Here, at last, is a substantial start on revising dtc's infrastructure
+> for checking the tree; this is the rework I've been saying was
+> necessary practically since dtc was first release.
 > 
-> While I was at it I made some cleanups to the handling of fixups which
-> simplify things further.
+> In the new model, we have a table of "check" structures, each with a
+> name, references to checking functions, and status variables.  Each
+> check can (in principle) be individually switched off or on (as either
+> a warning or error).  Checks have a list of prerequisites, so if
+> checks need to rely on results from earlier checks to make sense (or
+> even to avoid crashing) they just need to list the relevant other
+> checks there.
+> 
+> For now, only the "structural" checks and the fixups for phandle
+> references are converted to the new mechanism.  The rather more
+> involved semantic checks (which is where this new mechanism will
+> really be useful) will have to be converted in future patches.
+> 
+> At present, there's no user interface for turning on/off the checks -
+> the -f option now forces output even if "error" level checks fail.
+> Again, future patches will be needed to add the fine-grained control,
+> but that should be quite straightforward with the infrastructure
+> implemented here.
+> 
+> Also adds a testcase for the handling of bad references, which catches
+> a bug encountered while developing this patch.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Applied.
+While I've Applied this one, it has introduced this:
+
+         CC dtc.o
+    dtc.c: In function 'main':
+    dtc.c:199: warning: 'structure_ok' is used uninitialized in this function
+
+Followup easy patch?
 
 Thanks,
 jdl
