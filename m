@@ -1,27 +1,19 @@
-Return-Path: <MBenedict@twacs.com>
-Received: from mail162-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AE605DDEBD
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 53CB0DDDD8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 07:06:57 +1100 (EST)
-Received: from mail162-dub (localhost.localdomain [127.0.0.1])
-	by mail162-dub-R.bigfish.com (Postfix) with ESMTP id DF4DC12C8826
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 20:06:52 +0000 (UTC)
-Received: from mail.twacs.com (unknown [68.89.149.4])
-	by mail162-dub.bigfish.com (Postfix) with ESMTP id 898BB1908050
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 20:06:52 +0000 (UTC)
+	Tue, 27 Nov 2007 07:20:17 +1100 (EST)
+Message-ID: <474B2A7F.5090607@anagramm.de>
+Date: Mon, 26 Nov 2007 21:20:15 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: LED heartbeat trigger - in_atomic() while allocs
-Date: Mon, 26 Nov 2007 14:07:05 -0600
-Message-ID: <BAF8B1E0BB28024A90895E746A3B610D1C2DA2@twx-exch01.twacs.local>
-From: "Benedict, Michael" <MBenedict@twacs.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: robert lazarski <robertlazarski@gmail.com>
+Subject: Re: 85xx software reset problems from paulus.git
+References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>	<473DB6DF.9010804@anagramm.de>	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>	<0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>	<f87675ee0711161401k600b658ao3d6ae572fb367c47@mail.gmail.com>	<7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
+	<f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
+In-Reply-To: <f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,31 +24,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I was playing around with the LED heartbeat trigger and it caught the
-BUG() code when trying to activate.  Does anyone know why this call
-stack would be in_atomic()?  Or any ideas for a patch that would allow
-the heartbeat trigger to allocate when it is not in atomic context?
+Hi, Robert, Hi, Kumar!
 
-BUG: sleeping function called from invalid context at mm/slab.c:3024
-in_atomic():1, irqs_disabled():0
-Call Trace:
-[def3dd90] [c0008e60] show_stack+0x48/0x194 (unreliable)
-[def3ddc0] [c0014160] __might_sleep+0xd0/0xdc
-[def3dde0] [c0063e60] kmem_cache_zalloc+0xdc/0x12c
-[def3de00] [c01975c0] heartbeat_trig_activate+0x24/0x80
-[def3de20] [c0196844] led_trigger_set+0x128/0x160
-[def3de40] [c0196988] led_trigger_store+0x10c/0x1a8
-[def3deb0] [c0162f40] class_device_attr_store+0x44/0x5c
-[def3dec0] [c00ae614] sysfs_write_file+0x114/0x1dc
-[def3def0] [c0068ea4] vfs_write+0x9c/0x110
-[def3df10] [c0068ff4] sys_write+0x4c/0x90
-[def3df40] [c000fc00] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xfe83818
-    LR =3D 0xfe35448
+robert lazarski schrieb:
+> Hi Kumar, I finally got time to get back to this:
+> 
+> On Nov 17, 2007 2:52 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>>
+>> On Nov 16, 2007, at 4:01 PM, robert lazarski wrote:
+>>
+>>>>> Sorry for replying to myself, but thought I'd mention SRESET works
+>>>>> fine on 85xx 2.6.23 , ie, the board resets after kernel panic. It
+>>>>> doesn't work for me on 2.6.24rc2 .
+>>>> What actual 85xx are you using?
+>>>>
+>>>> - k
+>>>>
+>>> Custom 8548 board. I'm using the cds 85xx code for a reference and I
+>>> calling the same reset functions.
+>>>
+>> 1. do you have the following in your dts:
+>>
+>>                  global-utilities@e0000 {        //global utilities reg
+>>                          compatible = "fsl,mpc8548-guts";
+>>                          reg = <e0000 1000>;
+>>                          fsl,has-rstcr;
+>>                  };
+>>
+> 
+> Yes.
+> 
+>> 2. in your platform code are you using fsl_rstcr_restart in
+>> define_machine()
+>>
+>> - k
+>>
+> 
+> Yes. The symptoms in 2.6.24RC2 are that during a kernel panic or when
+> calling 'reboot' in the shell, it just hangs. Using the same dts and
+> resets in 2.6.23.1 reboots fine. I don't have a cds reference, but
+> someone who does should be able to confirm whether the issue exists or
+> not by just attempting to reboot via bash.
 
-Kernel 2.6.22-4, powerpc, targeting an MPC 8347.  I don't think this
-issue is PowerPC specific but I was hoping other embedded people might
-have experience with the LED class driver.
+ACK. Exactly the same over here (mpc8540ads compatible).
+I added the global-utilities today as well, but reboot fails.
 
-Thank you,
-	Michael
+Why is the guts stuff missing i.e. in most of the shipped
+mpc85xx*.dts? Does it depend on some hardware connections
+external to the CPU?
+
+Regards,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm-technology.com
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
