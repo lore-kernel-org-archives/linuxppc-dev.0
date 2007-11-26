@@ -1,15 +1,20 @@
-Return-Path: <jan.kratochvil@redhat.com>
-Received: from pauline.vellum.cz (pauline.vellum.cz [89.250.243.234])
-	by ozlabs.org (Postfix) with ESMTP id E0466DDE2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 09:41:46 +1100 (EST)
-Date: Mon, 26 Nov 2007 23:02:24 +0100
-From: Jan Kratochvil <jan.kratochvil@redhat.com>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: PPC upstream kernel ignored DABR bug
-Message-ID: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+Return-Path: <riesebie@frodo.home.lxtec.de>
+Received: from smtpout.hostsharing.net (smtpout.hostsharing.net [83.223.95.98])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtpout.hostsharing.net",
+	Issuer "Hostsharing eG Root CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 41BE8DDE21
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 10:02:07 +1100 (EST)
+Date: Mon, 26 Nov 2007 23:38:31 +0100
+From: Elimar Riesebieter <riesebie@frodo.home.lxtec.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.24-rc3: High CPU load -- hardware interrupts
+Message-ID: <20071126223831.GA11112@frodo.home.lxtec.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Roland McGrath <roland@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
+In-Reply-To: <slrnfk1d21.229.joerg@alea.gnuu.de>
+Cc: joerg@alea.gnuu.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+
+--X1bOJ3K7DJ5YkBrT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+
 Hi,
 
-this testcase:
-	http://people.redhat.com/jkratoch/dabr-lost.c
+I can confirm this situation. But it seems, that no one takes care
+of it ....
 
-reproduces a PPC DABR kernel bug.  The variable `variable' should not get
-modified as the thread modifying it should be caught by its DABR:
-
-$ ./dabr-lost
-TID 30914: DABR 0x10012a77 NIP 0x80f6ebb318
-TID 30915: DABR 0x10012a77 NIP 0x80f6ebb318
-TID 30916: DABR 0x10012a77 NIP 0x80f6ebb318
-TID 30914: hitting the variable
-TID 30915: hitting the variable
-TID 30916: hitting the variable
-variable found = 30916, caught TID = 30914
-TID 30916: DABR 0x10012a77
-Variable got modified by a thread which has DABR still set!
-
-At the `variable found =' line the parent ptracer found the TID thread 30916
-wrote the value into the variable - despite it had DABR alrady set before.
-
-As the behavior is dependent on the current weather I expect the scheduling
-matters there.
-
-It is important the target thread is in the `nanosleep' syscall.  If you define
-WORKAROUND_SET_DABR_IN_SYSCALL in the testcase it busyloops in the userland and
-the bug gets no longer reproduced.
-
-I got it reproduced on a utrace-patched kernel on dual-CPU Power5 and Roland
-McGrath reported it reproduced on the vanilla upstream kernel on a Mac G5.
+Elimar
 
 
+--=20
+  Excellent day for drinking heavily.=20
+  Spike the office water cooler;-)
 
-Regards,
-Jan Kratochvil
+--X1bOJ3K7DJ5YkBrT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHS0rn3Ig8bsVPf7ARAl5qAJ9GBhWoN/QGCl9NHniy/sBpGWhJGwCdFjN0
+VbH8fgWMmu67a7RLg5EAajQ=
+=LXDk
+-----END PGP SIGNATURE-----
+
+--X1bOJ3K7DJ5YkBrT--
