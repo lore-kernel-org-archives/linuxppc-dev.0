@@ -1,16 +1,15 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 80DC5DE09F
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D580BDE179
 	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:27:50 +1100 (EST)
-Message-Id: <20071126172712.021850000@pademelon.sonytel.be>
+Message-Id: <20071126172712.338327000@pademelon.sonytel.be>
 References: <20071126172455.308741000@pademelon.sonytel.be>
-Date: Mon, 26 Nov 2007 18:24:56 +0100
+Date: Mon, 26 Nov 2007 18:24:59 +0100
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Linux Frame Buffer Device Development
 	<linux-fbdev-devel@lists.sourceforge.net>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [patch 1/9] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate()
-	are unused
+Subject: [patch 4/9] ps3fb: Inline macros that are used only once
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,102 +23,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused, so remove
-them
+ps3fb: inline the X_OFF(), Y_OFF(), WIDTH(), HEIGHT(), and VP_OFF() macros,
+as they're used in one place only
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   58 +++++++++-----------------------------------
- include/asm-powerpc/ps3av.h |    2 -
- 2 files changed, 13 insertions(+), 47 deletions(-)
+ drivers/video/ps3fb.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -78,23 +78,21 @@ static const struct avset_video_mode {
- 	u32 aspect;
- 	u32 x;
- 	u32 y;
--	u32 interlace;
--	u32 freq;
- } video_mode_table[] = {
- 	{     0, }, /* auto */
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
--	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
--	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080},
-+	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024},
-+	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200},
- };
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -286,15 +286,8 @@ static const struct fb_videomode ps3fb_m
+ #define HEAD_A
+ #define HEAD_B
  
- /* supported CIDs */
-@@ -889,36 +887,6 @@ int ps3av_get_mode(void)
+-#define X_OFF(i)	(ps3fb_res[i].xoff)	/* left/right margin (pixel) */
+-#define Y_OFF(i)	(ps3fb_res[i].yoff)	/* top/bottom margin (pixel) */
+-#define WIDTH(i)	(ps3fb_res[i].xres)	/* width of FB */
+-#define HEIGHT(i)	(ps3fb_res[i].yres)	/* height of FB */
+ #define BPP		4			/* number of bytes per pixel */
  
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
+-/* Start of the virtual frame buffer (relative to fullscreen ) */
+-#define VP_OFF(i)	((WIDTH(i) * Y_OFF(i) + X_OFF(i)) * BPP)
+-
  
--int ps3av_get_scanmode(int id)
--{
--	int size;
--
--	id = id & PS3AV_MODE_MASK;
--	size = ARRAY_SIZE(video_mode_table);
--	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
--		return -EINVAL;
--	}
--	return video_mode_table[id].interlace;
--}
--
--EXPORT_SYMBOL_GPL(ps3av_get_scanmode);
--
--int ps3av_get_refresh_rate(int id)
--{
--	int size;
--
--	id = id & PS3AV_MODE_MASK;
--	size = ARRAY_SIZE(video_mode_table);
--	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
--		return -EINVAL;
--	}
--	return video_mode_table[id].freq;
--}
--
--EXPORT_SYMBOL_GPL(ps3av_get_refresh_rate);
--
- /* get resolution by video_mode */
- int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
- {
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -713,8 +713,6 @@ extern int ps3av_set_video_mode(u32);
- extern int ps3av_set_audio_mode(u32, u32, u32, u32, u32);
- extern int ps3av_get_auto_mode(void);
- extern int ps3av_get_mode(void);
--extern int ps3av_get_scanmode(int);
--extern int ps3av_get_refresh_rate(int);
- extern int ps3av_video_mode2res(u32, u32 *, u32 *);
- extern int ps3av_video_mute(int);
- extern int ps3av_audio_mute(int);
+ static int ps3fb_mode;
+ module_param(ps3fb_mode, int, 0);
+@@ -609,7 +602,10 @@ static int ps3fb_set_par(struct fb_info 
+ 
+ 	par->width = info->var.xres;
+ 	par->height = info->var.yres;
+-	offset = VP_OFF(i);
++
++	/* Start of the virtual frame buffer (relative to fullscreen) */
++	offset = ps3fb_res[i].yoff * ddr_line_length + ps3fb_res[i].xoff * BPP;
++
+ 	par->fb_offset = GPU_ALIGN_UP(offset);
+ 	par->full_offset = par->fb_offset - offset;
+ 	par->pan_offset = info->var.yoffset * xdr_line_length +
 
 -- 
 With kind regards,
