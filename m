@@ -1,23 +1,15 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9D7E0DDE3F
+Return-Path: <guojin02@tsinghua.org.cn>
+Received: from tsinghua.org.cn (unknown [210.77.143.232])
+	by ozlabs.org (Postfix) with SMTP id 91CAFDDE36
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 10:58:57 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C82FBF.220D29B4"
-Subject: RE: Xilinx devicetrees
-Date: Sun, 25 Nov 2007 15:58:53 -0800
-References: <47480CF0.7090105@dlasys.net>	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	<47493D4F.4070605@dlasys.net><fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>
-	<4749FD5E.7000408@dlasys.net>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>,
-	"Grant Likely" <grant.likely@secretlab.ca>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Message-Id: <20071125235855.95B9999804D@mail138-cpk.bigfish.com>
+	Mon, 26 Nov 2007 15:05:41 +1100 (EST)
+Message-ID: <396048835.09329@tsinghua.org.cn>
+From: "=?gb2312?B?ufm+og==?=" <guojin02@tsinghua.org.cn>
+To: linuxppc-embedded@ozlabs.org
+Date: Mon, 26 Nov 2007 11:47:15 +0800
+Subject: The question about the UART on UCC5,UCC6,UCC7,UCC8 for MPC8360?
+Content-Type: text/plain
+Reply-To: =?gb2312?B?ufm+og==?= <guojin02@tsinghua.org.cn>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,249 +20,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C82FBF.220D29B4
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi,friends,
+
+ I runed the LTIB for MPC8360,selected "configure the kernel", then the make
+menuconfig is appeared,that is "linux kernel configuration". I config QE to
+follow
+style: 
+UCC1,GETH;
+UCC2,GETH; 
+UCC5,UART;
+UCC6,UART;
+UCC7,UART;
+UCC8,UART. 
+
+  after compiled, I download the linux to MPC8360 board, but I cannot find the
+serial device for UCC5,UCC6,UCC7,UCC8. I just find the ttyS0,ttyS1 is OK.
+  Could you tell me that what's the name for the serial device of UCC5,6,7,8?
+  Whether or not I can use those UART just like the ttyS0,ttyS1?
 
 
-I understand that you're trying to be somewhat of a devil's advocate =
-here, but (as I mentioned in my other email), alot of these are issues =
-we're attempting to tackle.
-More comments below.
 
------Original Message-----
-From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
-on behalf of David H. Lynch Jr.
-Sent: Sun 11/25/2007 2:55 PM
-To: Grant Likely; linuxppc-embedded
-Subject: Re: Xilinx devicetrees
-=20
-Grant Likely wrote:
->    I am not expert on this, but at Pico we already store our boot
-> monitor in the .bit files in BRAM.
->     But that is not free.  It is one of the reasons we do not use
-> u-boot. Our boot monitor must fit into 16K of BRAM.
->     Must be able to perform selftests on critical hardware, support a
-> flash file system, load bit files from flash to the FGA, load and
-> exectute elf files, allow a small set of user commands, and handle
-> hosted vs. standalone operation.
->     And aparently extract the devicetree from a bit file and pass it =
-to
-> a linux kernel.
-
-Once you can load a bitstream from flash, loading the device tree from =
-flash
-should be practically free.  In any event, why do you do this rather =
-than just run out of the flash (or a ram copy of the flash?)
-
->     In static or fairly static hardware, that's fine. Even in somewhat
-> dynamic hardware with large quantities of startup resources - like a =
-PC.
->     But in highly dynamic hardware with fairly limited resources it
-> starts to become an issue.
-
-As Grant says, the dynamic detection doesn't have to be done in the boot =
-loader, it could be done in the platform code.  You can largely ignore =
-the device trees, or always boot with a core device tree and figure it =
-all out later (perhaps using version registers).  I anticipate that the =
-'standard flow' will have standard platform code for any board that uses =
-a complete device tree.  If you have the need to do something =
-extraordinary, then you should feel free to hack away...  However, It =
-doesn't seem to me to be really necessary in your case, assuming that =
-the device tree is packaged (somehow, TBD) along with the bitstream.
-
->> No, unfortunately they don't deal with the problem you're facing
->> (which I'm facing also).  But it will be solved if we figure out a
->> sane way to bind the device tree up with the FPGA bitstream without
->> consuming FPGA resources.
->>  =20
->    Note to Xilinx:
->
->       There MUST be some way of binding a device description to a bit =
-file.
->
->    neither building it into the FPGA fabric nor appending it to the =
-end
-> of the bit file are perfect solutions,
->    The former is more powerfull and flexible but wastes precious
-> resources. The later is more complex and puts more burdens on
->    software developers, and may be completely unfeasible in some
-> environments - not mine fortunately.
-
-I don't understand the 'burden on software developers'.  The code to do =
-this will just be standard code.  The worst that one can say is:
-1) I need several KB additional non volatile storage.  Given the size of =
-the FPGA bitstream, this can't be a huge constraint.
-2) I can't use compile time optimization based on xparameters as easily. =
- Anyone want to implement the alternatives mechanism on ppc and =
-microblaze?
-3) Some additional boot time.  However, again, this seems marginal.
-
->    Regardless, something must be done. An odd collection of devicetree
-> files co-mingled with a collection of bit files, is little better than
-> xparameter files all over the place.
-
-Certainly..  But in a sense, these are all intermediate files on the =
-path to the image on the board.  That (and how it is interpreted by the =
-platform code) should be generated in a consistent fashion by EDK.  See =
-my other email for some of the possibilities.  Are there specific =
-reasons why you think those proposals are inadequate?  Now is the time =
-when we can take criticism, with the goal towards making a good end =
-solution.
-
->    And once again a plea to ALWAYS make version/capabilities registers
-> atleast an optional part of every design.
->    Embeddeding a device tree into a design might be fairly expensive. =
-a
-> pair of read only 32 bit registers is damn near free - basically the
-> FPGA equivalent of atmost 64 diodes or resistors.
-
-Actually, device trees actually seem to be cheaper (in the whole system =
-sense) than such registers.  Unless there is something I don't =
-understand?
-
-Steve
-
-------_=_NextPart_001_01C82FBF.220D29B4
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3DISO-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: Xilinx devicetrees</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>I understand that you're trying to be somewhat of a =
-devil's advocate here, but (as I mentioned in my other email), alot of =
-these are issues we're attempting to tackle.<BR>
-More comments below.<BR>
-<BR>
------Original Message-----<BR>
-From: linuxppc-embedded-bounces+stephen=3Dneuendorffer.name@ozlabs.org =
-on behalf of David H. Lynch Jr.<BR>
-Sent: Sun 11/25/2007 2:55 PM<BR>
-To: Grant Likely; linuxppc-embedded<BR>
-Subject: Re: Xilinx devicetrees<BR>
-<BR>
-Grant Likely wrote:<BR>
-&gt;&nbsp;&nbsp;&nbsp; I am not expert on this, but at Pico we already =
-store our boot<BR>
-&gt; monitor in the .bit files in BRAM.<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; But that is not free.&nbsp; It is one of =
-the reasons we do not use<BR>
-&gt; u-boot. Our boot monitor must fit into 16K of BRAM.<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; Must be able to perform selftests on =
-critical hardware, support a<BR>
-&gt; flash file system, load bit files from flash to the FGA, load =
-and<BR>
-&gt; exectute elf files, allow a small set of user commands, and =
-handle<BR>
-&gt; hosted vs. standalone operation.<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; And aparently extract the devicetree from a =
-bit file and pass it to<BR>
-&gt; a linux kernel.<BR>
-<BR>
-Once you can load a bitstream from flash, loading the device tree from =
-flash<BR>
-should be practically free.&nbsp; In any event, why do you do this =
-rather than just run out of the flash (or a ram copy of the flash?)<BR>
-<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; In static or fairly static hardware, that's =
-fine. Even in somewhat<BR>
-&gt; dynamic hardware with large quantities of startup resources - like =
-a PC.<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp; But in highly dynamic hardware with fairly =
-limited resources it<BR>
-&gt; starts to become an issue.<BR>
-<BR>
-As Grant says, the dynamic detection doesn't have to be done in the boot =
-loader, it could be done in the platform code.&nbsp; You can largely =
-ignore the device trees, or always boot with a core device tree and =
-figure it all out later (perhaps using version registers).&nbsp; I =
-anticipate that the 'standard flow' will have standard platform code for =
-any board that uses a complete device tree.&nbsp; If you have the need =
-to do something extraordinary, then you should feel free to hack =
-away...&nbsp; However, It doesn't seem to me to be really necessary in =
-your case, assuming that the device tree is packaged (somehow, TBD) =
-along with the bitstream.<BR>
-<BR>
-&gt;&gt; No, unfortunately they don't deal with the problem you're =
-facing<BR>
-&gt;&gt; (which I'm facing also).&nbsp; But it will be solved if we =
-figure out a<BR>
-&gt;&gt; sane way to bind the device tree up with the FPGA bitstream =
-without<BR>
-&gt;&gt; consuming FPGA resources.<BR>
-&gt;&gt;&nbsp;&nbsp;<BR>
-&gt;&nbsp;&nbsp;&nbsp; Note to Xilinx:<BR>
-&gt;<BR>
-&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; There MUST be some way of =
-binding a device description to a bit file.<BR>
-&gt;<BR>
-&gt;&nbsp;&nbsp;&nbsp; neither building it into the FPGA fabric nor =
-appending it to the end<BR>
-&gt; of the bit file are perfect solutions,<BR>
-&gt;&nbsp;&nbsp;&nbsp; The former is more powerfull and flexible but =
-wastes precious<BR>
-&gt; resources. The later is more complex and puts more burdens on<BR>
-&gt;&nbsp;&nbsp;&nbsp; software developers, and may be completely =
-unfeasible in some<BR>
-&gt; environments - not mine fortunately.<BR>
-<BR>
-I don't understand the 'burden on software developers'.&nbsp; The code =
-to do this will just be standard code.&nbsp; The worst that one can say =
-is:<BR>
-1) I need several KB additional non volatile storage.&nbsp; Given the =
-size of the FPGA bitstream, this can't be a huge constraint.<BR>
-2) I can't use compile time optimization based on xparameters as =
-easily.&nbsp; Anyone want to implement the alternatives mechanism on ppc =
-and microblaze?<BR>
-3) Some additional boot time.&nbsp; However, again, this seems =
-marginal.<BR>
-<BR>
-&gt;&nbsp;&nbsp;&nbsp; Regardless, something must be done. An odd =
-collection of devicetree<BR>
-&gt; files co-mingled with a collection of bit files, is little better =
-than<BR>
-&gt; xparameter files all over the place.<BR>
-<BR>
-Certainly..&nbsp; But in a sense, these are all intermediate files on =
-the path to the image on the board.&nbsp; That (and how it is =
-interpreted by the platform code) should be generated in a consistent =
-fashion by EDK.&nbsp; See my other email for some of the =
-possibilities.&nbsp; Are there specific reasons why you think those =
-proposals are inadequate?&nbsp; Now is the time when we can take =
-criticism, with the goal towards making a good end solution.<BR>
-<BR>
-&gt;&nbsp;&nbsp;&nbsp; And once again a plea to ALWAYS make =
-version/capabilities registers<BR>
-&gt; atleast an optional part of every design.<BR>
-&gt;&nbsp;&nbsp;&nbsp; Embeddeding a device tree into a design might be =
-fairly expensive. a<BR>
-&gt; pair of read only 32 bit registers is damn near free - basically =
-the<BR>
-&gt; FPGA equivalent of atmost 64 diodes or resistors.<BR>
-<BR>
-Actually, device trees actually seem to be cheaper (in the whole system =
-sense) than such registers.&nbsp; Unless there is something I don't =
-understand?<BR>
-<BR>
-Steve<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C82FBF.220D29B4--
+>Follow is the device name in linux for MPC8360.
+>/dev # ls
+>audio      hdb5       mtdblock4  ram2       sdc3       tty6       ttyp0
+>audio1     hdb6       mtdblock5  ram3       sdc4       tty7       ttyp1
+>buttons    hdb7       mtdblock6  random     sdc5       ttyAM0     ttyp2
+>console    input      net        rtc        sdc6       ttyAM1     ttyp3
+>dsp        kmem       null       sda        sdc7       ttyAM2     ttyp4
+>dsp1       loop0      ppp        sda1       sdd        ttyAM3     ttyp5
+>fb0        loop1      psaux      sda2       sdd1       ttyCPM0    ttyp6         
+>fb1        md0        ptmx       sda3       sdd2       ttyCPM1    ttyp7         
+>fb2        md1        pts        sda4       sdd3       ttyP0      ttyp8         
+>fb3        md2        ptyp0      sda5       sdd4       ttyP1      ttyp9         
+>hda        md3        ptyp1      sda6       sdd5       ttyP2      ubda          
+>hda1       mem        ptyp2      sda7       sdd6       ttyP3      ubda1         
+>hda2       mtd0       ptyp3      sdb        sdd7       ttyPSC0    ubda2         
+>hda3       mtd1       ptyp4      sdb1       shm        ttyPSC1    ubda3         
+>hda4       mtd2       ptyp5      sdb2       sndstat    ttyPSC2    ubda4         
+>hda5       mtd3       ptyp6      sdb3       ts         ttyPSC3    ubda5         
+>hda6       mtd4       ptyp7      sdb4       tty        ttyPSC4    ubda6         
+>hda7       mtd5       ptyp8      sdb5       tty0       ttyPSC5    ubda7         
+>hdb        mtd6       ptyp9      sdb6       tty1       ttyS0      urandom       
+>hdb1       mtdblock0  qspi       sdb7       tty2       ttyS1      watchdog      
+>hdb2       mtdblock1  ram        sdc        tty3       ttyS2      zero          
+>hdb3       mtdblock2  ram0       sdc1       tty4       ttyS3                    
+>hdb4       mtdblock3  ram1       sdc2       tty5       ttymxc0                  
+>/dev # cat ttyS0                                                                
+>                                                                                
+>/dev # cat ttyS1                                                                
+>                                                                                
+>/dev # cat ttyS2                                                                
+>cat: ttyS2: No such device or address                                           
+>/dev # cat ttyPSC0                                                              
+>cat: ttyPSC0: No such device or address                                         
+>/dev # cat ttyP0                                                                
+>cat: ttyP0: No such device or address                                           
+>/dev # cat ttyp0                                                                
+>cat: ttyp0: Input/output error                                                  
+>/dev # cat ttyAM0
+>cat: ttyAM0: No such device or address
+>/dev # cat ttyCPM0
+>cat: ttyCPM0: No such device or address
+>/dev # 
