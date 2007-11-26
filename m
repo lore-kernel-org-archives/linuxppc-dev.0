@@ -1,19 +1,27 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id F1438DDEBD
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:35:25 +1100 (EST)
-Date: Mon, 26 Nov 2007 20:40:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: sys_mpc83xx spi driver not probed
-Message-ID: <20071126174023.GA17555@localhost.localdomain>
-References: <4747079F.60703@fabiotec.com>
-	<20071126163956.GB4408@loki.buserror.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071126163956.GB4408@loki.buserror.net>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <robbat2@gentoo.org>
+Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
+	by ozlabs.org (Postfix) with ESMTP id D073EDE4E3
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:35:41 +1100 (EST)
+Date: Mon, 26 Nov 2007 09:35:44 -0800
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: Jon Smirl <jonsmirl@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: Access to PCI Expansion ROMs on PPC
+Message-ID: <20071126173544.GI14557@curie-int.orbis-terrarum.net>
+References: <20071125015707.GO3174@curie-int.orbis-terrarum.net>
+	<9e4733910711241813r3412d459l95fb3b84cbee1d8a@mail.gmail.com>
+	<20071125111535.GB14557@curie-int.orbis-terrarum.net>
+	<20071125114919.GC14557@curie-int.orbis-terrarum.net>
+	<9e4733910711250530r454c01ecoe8867a7f492b8704@mail.gmail.com>
+	<20071125194101.GD14557@curie-int.orbis-terrarum.net>
+	<20071126085928.GE14557@curie-int.orbis-terrarum.net>
+	<1196068814.22865.108.camel@thor.sulgenrain.local>
+	<20071126102414.GF14557@curie-int.orbis-terrarum.net>
+	<9e4733910711260833t5053ed5fu5227046565eae86b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Hlh2aiwFLCZwGcpw"
+In-Reply-To: <9e4733910711260833t5053ed5fu5227046565eae86b@mail.gmail.com>
+Cc: Michel D?nzer <michel@tungstengraphics.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 26, 2007 at 10:39:56AM -0600, Scott Wood wrote:
-> On Fri, Nov 23, 2007 at 07:02:23PM +0200, Joel Rouch wrote:
-> > I have a custom 8349 ppc board. I have defined the spi master in the 
-> > configuration.
-> > While booting my board, I driver is well added and linked to platform 
-> > bus, however I don't see that the probe entry point is reached.
-> > I don't succeed to understand who is triggering the probe. Can someone 
-> > point me to the right link or explain me how to force it ?
-> 
-> Are you calling of_platform_bus_probe() from your board file?
 
-spi_mpc83xx isn't of_platform_driver, yet. Thus we have to use fsl helper,
-fsl_spi_init.
+--Hlh2aiwFLCZwGcpw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So far, good example of spi_mpc83xx usage is in
-arch/powerpc/platforms/83xx/mpc832x_rdb.c
+On Mon, Nov 26, 2007 at 11:33:00AM -0500, Jon Smirl wrote:
+> Did you check out the cards on x86 and ascertain that they have the
+> standard PCI header in them? 55 AA .... All PCI ROMs are supposed to
+> have that. If they are missing that the size code in the rom.c isn't
+> going to work right.
+See my more recent testing summary post to the list, with the message-id
+of 20071126085928.GE14557@curie-int.orbis-terrarum.net
+(http://ozlabs.org/pipermail/linuxppc-dev/2007-November/046880.html)
+The X1900 and Nvidia OF-based cards do not turn up on the x86_64 box at
+all (the PCIe root node is entirely missing with them as well), and the
+sata_mv claims to not have a ROM, but does otherwise work.
 
+> If these are OF ROM and you are booting on OF firmware, the ROM is
+> getting run. In that case it may not be so simple to turn them back on
+> if they have been hidden using a proprietary register. That's the
+> quirk BenH has referred to.
+That's the path that I was investigating with the register stuff via
+airlied's avivotool. There was one register he thought about, but it
+didn't seem to do much.
 
-Good luck,
+I also found some instructions to try and view the ROMs from inside OF,
+some I'm going to try that later today, as that will enable seeing if
+Linux is changing something critical.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--=20
+Robin Hugh Johnson
+Gentoo Linux Developer & Infra Guy
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+
+--Hlh2aiwFLCZwGcpw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+
+iD8DBQFHSwPwPpIsIjIzwiwRAtZ0AJwI8wpkIiXx/Rf750kktXbb6UP6ZACfbtnJ
+o8NCx+RcSgkclUzvyGv8TC8=
+=IFk7
+-----END PGP SIGNATURE-----
+
+--Hlh2aiwFLCZwGcpw--
