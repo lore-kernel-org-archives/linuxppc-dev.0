@@ -1,22 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8FC6CDDF2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:26:55 +1100 (EST)
-Message-ID: <474B01F5.2020702@freescale.com>
-Date: Mon, 26 Nov 2007 11:27:17 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jochen Friedrich <jochen@scram.de>
-Subject: Re: [RFC/PATCHv4] powerpc: Move CPM command handling into the cpm
-	drivers
-References: <474AFC6C.9020007@scram.de>
-In-Reply-To: <474AFC6C.9020007@scram.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <geert@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id ECC45DDF9A
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:27:49 +1100 (EST)
+Message-Id: <20071126172455.308741000@pademelon.sonytel.be>
+Date: Mon, 26 Nov 2007 18:24:55 +0100
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: [patch 0/9] ps3av/fb patches for 2.6.25
+Sender: Geert Uytterhoeven <geert@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +19,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jochen Friedrich wrote:
-> This patch moves the CPM command handling into commproc.c
-> for CPM1 and cpm2_common.c. This is yet another preparation
-> to get rid of drivers accessing the CPM via the global cpmp.
-> 
-> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+	Hi,
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+Here is a first bunch of ps3av/fb patches for 2.6.25:
+  [1] ps3av: ps3av_get_scanmode() and ps3av_get_refresh_rate() are unused
+  [2] ps3: Use symbolic names for video modes
+  [3] ps3fb: Kill PS3FB_FULL_MODE_BIT
+  [4] ps3fb: Inline macros that are used only once
+  [5] ps3fb: Kill ps3fb_res[]
+  [6] ps3fb: Make frame buffer offset unsigned int
+  [7] ps3fb: Configurable black borders
+  [8] ps3fb: Reorganize modedb handling
+  [9] ps3fb: Round up video modes
 
--Scott
+Thanks for reviewing!
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
