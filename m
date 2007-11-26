@@ -1,19 +1,12 @@
-Return-Path: <gorcunov@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.177])
-	by ozlabs.org (Postfix) with ESMTP id 3BF47DDE1A
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 18:46:45 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so841037wag
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Nov 2007 23:46:43 -0800 (PST)
-Message-ID: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
-Date: Mon, 26 Nov 2007 10:46:42 +0300
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: PPCML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_3151_30274450.1196063202969"
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <michael@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>
+Message-Id: <e68326d47ae49fee03c635514d5a86a566b13ff9.1196064155.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Add for_each_child_of_node() helper for iterating over child
+	nodes
+Date: Mon, 26 Nov 2007 19:03:45 +1100 (EST)
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,60 +16,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_3151_30274450.1196063202969
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Add for_each_child_of_node() to encapsulate the common idiom of
+iterating over the children of a device_node.
 
-This patch adds checking for NULL value returned to prevent possible
-NULL pointer dereference.
-Also two unneeded 'return' are removed.
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
-Any comments are welcome.
 
-------=_Part_3151_30274450.1196063202969
-Content-Type: text/plain; name=ppc-celleb-fix-null.diff
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f9gozfgx
-Content-Disposition: attachment; filename=ppc-celleb-fix-null.diff
+After conducting a straw pole of powerpc hackers, this seems to be the
+preferred name for such a beast.
 
-IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbGViL3BjaS5jIHwgICAyMyArKysrKysrKysrKysr
-KysrKysrKy0tLQogMSBmaWxlcyBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9u
-cygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbGViL3BjaS5jIGIv
-YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsZWIvcGNpLmMKaW5kZXggNmJjMzJmZC4uOWI4YmIw
-MSAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsZWIvcGNpLmMKKysrIGIv
-YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy9jZWxsZWIvcGNpLmMKQEAgLTEzOCw4ICsxMzgsNiBAQCBz
-dGF0aWMgdm9pZCBjZWxsZWJfY29uZmlnX3JlYWRfZmFrZSh1bnNpZ25lZCBjaGFyICpjb25maWcs
-IGludCB3aGVyZSwKIAkJKnZhbCA9IGNlbGxlYl9mYWtlX2NvbmZpZ19yZWFkbChwKTsKIAkJYnJl
-YWs7CiAJfQotCi0JcmV0dXJuOwogfQogCiBzdGF0aWMgdm9pZCBjZWxsZWJfY29uZmlnX3dyaXRl
-X2Zha2UodW5zaWduZWQgY2hhciAqY29uZmlnLCBpbnQgd2hlcmUsCkBAIC0xNTgsNyArMTU2LDYg
-QEAgc3RhdGljIHZvaWQgY2VsbGViX2NvbmZpZ193cml0ZV9mYWtlKHVuc2lnbmVkIGNoYXIgKmNv
-bmZpZywgaW50IHdoZXJlLAogCQljZWxsZWJfZmFrZV9jb25maWdfd3JpdGVsKHZhbCwgcCk7CiAJ
-CWJyZWFrOwogCX0KLQlyZXR1cm47CiB9CiAKIHN0YXRpYyBpbnQgY2VsbGViX2Zha2VfcGNpX3Jl
-YWRfY29uZmlnKHN0cnVjdCBwY2lfYnVzICpidXMsCkBAIC0zNDgsOSArMzQ1LDI1IEBAIHN0YXRp
-YyBpbnQgX19pbml0IGNlbGxlYl9zZXR1cF9mYWtlX3BjaV9kZXZpY2Uoc3RydWN0IGRldmljZV9u
-b2RlICpub2RlLAogCXByX2RlYnVnKCJQQ0k6IHJlcyBhc3NpZ25lZCAweCUwMTZseFxuIiwgKHVu
-c2lnbmVkIGxvbmcpKnJlcyk7CiAKIAl3aTAgPSBvZl9nZXRfcHJvcGVydHkobm9kZSwgImRldmlj
-ZS1pZCIsIE5VTEwpOworCWlmICh1bmxpa2VseSgoIXdpMCkpKSB7CisJCXByaW50ayhLRVJOX0VS
-UiAiUENJOiBkZXZpY2UtaWQgbm90IGZvdW5kLlxuIik7CisJCWdvdG8gZXJyb3I7CisJfQogCXdp
-MSA9IG9mX2dldF9wcm9wZXJ0eShub2RlLCAidmVuZG9yLWlkIiwgTlVMTCk7CisJaWYgKHVubGlr
-ZWx5KCghd2kxKSkpIHsKKwkJcHJpbnRrKEtFUk5fRVJSICJQQ0k6IHZlbmRvci1pZCBub3QgZm91
-bmQuXG4iKTsKKwkJZ290byBlcnJvcjsKKwl9CiAJd2kyID0gb2ZfZ2V0X3Byb3BlcnR5KG5vZGUs
-ICJjbGFzcy1jb2RlIiwgTlVMTCk7CisJaWYgKHVubGlrZWx5KCghd2kyKSkpIHsKKwkJcHJpbnRr
-KEtFUk5fRVJSICJQQ0k6IGNsYXNzLWNvZGUgbm90IGZvdW5kLlxuIik7CisJCWdvdG8gZXJyb3I7
-CisJfQogCXdpMyA9IG9mX2dldF9wcm9wZXJ0eShub2RlLCAicmV2aXNpb24taWQiLCBOVUxMKTsK
-KwlpZiAodW5saWtlbHkoKCF3aTMpKSkgeworCQlwcmludGsoS0VSTl9FUlIgIlBDSTogcmV2aXNp
-b24taWQgbm90IGZvdW5kLlxuIik7CisJCWdvdG8gZXJyb3I7CisJfQogCiAJY2VsbGViX2NvbmZp
-Z193cml0ZV9mYWtlKCpjb25maWcsIFBDSV9ERVZJQ0VfSUQsIDIsIHdpMFswXSAmIDB4ZmZmZik7
-CiAJY2VsbGViX2NvbmZpZ193cml0ZV9mYWtlKCpjb25maWcsIFBDSV9WRU5ET1JfSUQsIDIsIHdp
-MVswXSAmIDB4ZmZmZik7CkBAIC0zNzIsNiArMzg1LDEwIEBAIHN0YXRpYyBpbnQgX19pbml0IGNl
-bGxlYl9zZXR1cF9mYWtlX3BjaV9kZXZpY2Uoc3RydWN0IGRldmljZV9ub2RlICpub2RlLAogCWNl
-bGxlYl9zZXR1cF9wY2lfYmFzZV9hZGRycyhob3NlLCBkZXZubywgZm4sIG51bV9iYXNlX2FkZHIp
-OwogCiAJbGkgPSBvZl9nZXRfcHJvcGVydHkobm9kZSwgImludGVycnVwdHMiLCAmcmxlbik7CisJ
-aWYgKCFsaSkgeworCQlwcmludGsoS0VSTl9FUlIgIlBDSTogaW50ZXJydXB0cyBub3QgZm91bmQu
-XG4iKTsKKwkJZ290byBlcnJvcjsKKwl9CiAJdmFsID0gbGlbMF07CiAJY2VsbGViX2NvbmZpZ193
-cml0ZV9mYWtlKCpjb25maWcsIFBDSV9JTlRFUlJVUFRfUElOLCAxLCAxKTsKIAljZWxsZWJfY29u
-ZmlnX3dyaXRlX2Zha2UoKmNvbmZpZywgUENJX0lOVEVSUlVQVF9MSU5FLCAxLCB2YWwpOwo=
-------=_Part_3151_30274450.1196063202969--
+
+ include/linux/of.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 5c39b92..c65af7b 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -46,6 +46,10 @@ extern struct device_node *of_find_node_by_phandle(phandle handle);
+ extern struct device_node *of_get_parent(const struct device_node *node);
+ extern struct device_node *of_get_next_child(const struct device_node *node,
+ 					     struct device_node *prev);
++#define for_each_child_of_node(parent, child) \
++	for (child = of_get_next_child(parent, NULL); child != NULL; \
++	     child = of_get_next_child(parent, child))
++
+ extern struct property *of_find_property(const struct device_node *np,
+ 					 const char *name,
+ 					 int *lenp);
+-- 
+1.5.2.rc1.1884.g59b20
