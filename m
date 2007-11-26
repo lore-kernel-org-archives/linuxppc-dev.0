@@ -1,17 +1,20 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id B0449DDF51
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:49:53 +1100 (EST)
-Date: Mon, 26 Nov 2007 17:24:43 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: kill sparse warning in HPTE_V_COMPARE()
-Message-ID: <Pine.LNX.4.62.0711261724120.32260@pademelon.sonytel.be>
+Return-Path: <jochen@scram.de>
+Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E955FDE2AE
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:13:25 +1100 (EST)
+Message-ID: <474AFABE.1090702@scram.de>
+Date: Mon, 26 Nov 2007 17:56:30 +0100
+From: Jochen Friedrich <jochen@scram.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-731037697-1196094283=:32260"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC/PATCHv3] powerpc: Move CPM command handling into the cpm
+	drivers
+References: <474886C2.7030609@scram.de> <474AEBD2.3040504@freescale.com>
+In-Reply-To: <474AEBD2.3040504@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Scott,
 
----584337861-731037697-1196094283=:32260
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+>> +    spin_lock_irqsave(&cmd_lock, flags);
+> 
+> I'm a little uneasy about this -- what's the longest it can take for the
+> CPM command to complete (or timeout)?  I'd rather use a mutex, if we can
+> make sure that it's never called from atomic context.
 
-sparse warning: constant 0xffffffffffffff80 is so big it is unsigned long
+Unfortunately, fs_enet may call this from interrupt context.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- include/asm-powerpc/mmu-hash64.h |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+>> +EXPORT_SYMBOL_GPL(cpm_command);
+> 
+> Can we please not play the GPL DRM game here?
 
---- a/include/asm-powerpc/mmu-hash64.h
-+++ b/include/asm-powerpc/mmu-hash64.h
-@@ -80,7 +80,7 @@ extern char initial_stab[];
- #define HPTE_V_AVPN_SHIFT	7
- #define HPTE_V_AVPN		ASM_CONST(0x3fffffffffffff80)
- #define HPTE_V_AVPN_VAL(x)	(((x) & HPTE_V_AVPN) >> HPTE_V_AVPN_SHIFT)
--#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80))
-+#define HPTE_V_COMPARE(x,y)	(!(((x) ^ (y)) & 0xffffffffffffff80UL))
- #define HPTE_V_BOLTED		ASM_CONST(0x0000000000000010)
- #define HPTE_V_LOCK		ASM_CONST(0x0000000000000008)
- #define HPTE_V_LARGE		ASM_CONST(0x0000000000000004)
+Arnd Bergmann proposed to change that, but you're right. This really is part
+of the CPM API, so i'll revert this.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-731037697-1196094283=:32260--
+Thanks,
+Jochen
