@@ -1,22 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] ehea: Add kdump support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Thomas Klein <osstklei@de.ibm.com>
-In-Reply-To: <200711091433.51259.osstklei@de.ibm.com>
-References: <200711091433.51259.osstklei@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-yy5JIdwYhC9mcuqd40ej"
-Date: Mon, 26 Nov 2007 19:16:28 +1100
-Message-Id: <1196064988.19855.15.camel@concordia>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1AFE9DDE2F
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 19:28:49 +1100 (EST)
+Date: Mon, 26 Nov 2007 08:28:41 +0000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Add for_each_child_of_node() helper for iterating over
+	child nodes
+Message-Id: <20071126082841.3e3179b3.sfr@canb.auug.org.au>
+In-Reply-To: <e68326d47ae49fee03c635514d5a86a566b13ff9.1196064155.git.michael@ellerman.id.au>
+References: <e68326d47ae49fee03c635514d5a86a566b13ff9.1196064155.git.michael@ellerman.id.au>
 Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Paul Mackerras <paulus@samba.org>, Marcus Eder <meder@de.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__26_Nov_2007_08_28_41_+0000_ut/D_CZaR9AyZtuQ"
+Cc: linuxppc-dev@ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,94 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-yy5JIdwYhC9mcuqd40ej
-Content-Type: text/plain
+--Signature=_Mon__26_Nov_2007_08_28_41_+0000_ut/D_CZaR9AyZtuQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-11-09 at 14:33 +0100, Thomas Klein wrote:
-> To support ehea driver reloading in a kdump kernel the driver has to perf=
-orm
-> firmware handle deregistrations when the original kernel crashes. As ther=
-e's
-> currently no notifier chain for machine crashes this patch enables kdump =
-support
-> in the ehea driver by bending the ppc_md.machine_crash_shutdown hook to i=
-ts own
-> machine crash handler. The original machine_crash_shutdown() fn is called
-> afterwards. This works fine as long as the ehea driver is the only one wh=
-ich
-> does so. Problems may occur if other drivers do the same and unload regul=
-arly.
-> This patch enables 2.6.24-rc2 to use kdump with ehea and only puts a very
-> low risk on base kernel. In 2.6.24 we know ehea is the only user of this
-> mechanism. The next step for 2.6.25 would be to add a proper notifier cha=
-in.
-> The full solution might be that register_reboot_notifier() provides sth
-> like a SYS_CRASH action. Please apply.
+On Mon, 26 Nov 2007 19:03:45 +1100 (EST) Michael Ellerman <michael@ellerman=
+.id.au> wrote:
+>
+> Add for_each_child_of_node() to encapsulate the common idiom of
+> iterating over the children of a device_node.
 >=20
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
->=20
-> ---
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |   28 ++++++++++++++++++++++++++++
->  2 files changed, 29 insertions(+), 1 deletions(-)
->=20
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Hi Thomas,
-
-I'm sorry, but this patch is all wrong IMHO.
-
-For kdump we have to assume that the kernel is fundamentally broken,
-we've panicked, so something bad has happened - every line of kernel
-code that is run decreases the chance that we'll successfully make it
-into the kdump kernel.
-
-So just calling unregister_driver() is no good, that's going to call
-lots of code, try to take lots of locks, rely on lots of data structures
-being uncorrupted etc. etc.
-
-And the hijacking of machine_crash_shutdown() is IMO not an acceptable
-solution, as you say it only works if EHEA is the only driver to do it.
-And as soon as EHEA does it other drivers will want to do it.
-
-What we need is the _minimal_ set of actions that can happen to make
-EHEA work in the kdump kernel.
-
-Solutions that might be better:
-
- a) if there are a finite number of handles and we can predict their=20
-    values, just delete them all in the kdump kernel before the driver
-    loads.
- b) if there are a small & finite number of handles, save their values=20
-    in a device tree property and have the kdump kernel read them and=20
-    delete them before the driver loads.
- c) if neither of those work, provide a minimal routine that _only_
-    deletes the handles in the crashed kernel.
- d) <something else>
-
-cheers
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 --=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-yy5JIdwYhC9mcuqd40ej
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Mon__26_Nov_2007_08_28_41_+0000_ut/D_CZaR9AyZtuQ
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBHSoDcdSjSd0sB4dIRAmrHAJ44uAhPPnPmXxqcbiZBmDYoMIWxJgCgr5fL
-qTu8td4i0rgrOuOESNq2MkA=
-=cH8k
+iD8DBQFHSoPATgG2atn1QN8RAuC/AJ9fo3ql91h4Zlek1ZZ99wwJ8zUMuwCeMDbT
+h2hVB1JD4eo3NPwrZVuj+fo=
+=9hbH
 -----END PGP SIGNATURE-----
 
---=-yy5JIdwYhC9mcuqd40ej--
+--Signature=_Mon__26_Nov_2007_08_28_41_+0000_ut/D_CZaR9AyZtuQ--
