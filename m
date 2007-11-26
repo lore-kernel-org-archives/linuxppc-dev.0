@@ -1,20 +1,23 @@
-Return-Path: <fabien.fb@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 84349DDED5
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9FBC1DDF4B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 03:54:49 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so920518nfd
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Nov 2007 08:54:46 -0800 (PST)
-Message-ID: <f8f856500711260854sf17bf8dle61543080d12679@mail.gmail.com>
-Date: Mon, 26 Nov 2007 17:54:46 +0100
-From: fabien <fabien.fb@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: initramfs and busybox kernel oops
-In-Reply-To: <f8f856500711260716m6bd6a89and056f9e196d9d1bf@mail.gmail.com>
+	Tue, 27 Nov 2007 03:57:32 +1100 (EST)
+Date: Mon, 26 Nov 2007 10:57:51 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: vijay baskar <cn.vijaibaskar@gdatech.co.in>
+Subject: Re: The question about the high memory support on MPC8360?
+Message-ID: <20071126165751.GA4415@loki.buserror.net>
+References: <396049508.10992@tsinghua.org.cn> <474A639A.3090006@gdatech.co.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-References: <f8f856500711260716m6bd6a89and056f9e196d9d1bf@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <474A639A.3090006@gdatech.co.in>
+Cc: =?utf-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,139 +28,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-2007/11/26, fabien <fabien.fb@gmail.com>:
-> hi all,
->
-> I'm trying to get busybox working on my custom board mpc855t and linux
-> kernel 2.6.19 (from eldk 4.1 uclibc). I've built an initramfs that i
-> link directly in kernel. To verify whether the kernel is able to lauch
-> the init process i've compiled a small hello world program. But no
-> when i try with busybox 1.8.1 staticaly linked i got an Oops error
-> kernel access to bad area. I don't know why the former work fine but
-> no the latter.
-> If someone have some ideas for where to look for ?
->
-> In my initramfs there is :
-> in /dev :
-> crw-r--r--   1 root   root   5, 1 nov 22 13:32 console
-> crw-rw-rw-   1 root   root   1, 3 nov 26 10:10 null
-> crw-------   1 root   root   4, 1 nov 26 10:11 tty1
-> in /bin :
-> lrwxrwxrwx   1 root   root        7 nov 26 10:17 ash -> busybox*
-> -rwxr-xr-x   1 root   root   793804 nov 26 13:57 busybox*
-> lrwxrwxrwx   1 root   root        7 nov 26 10:17 cat -> busybox*
-> (and others links)
-> My init script file (/init) :
-> #!/bin/sh
-> /bin/ash
->
-> ...
-> Serial: CPM driver $Revision: 0.02 $
-> cpm_uart: WARNING: no UART devices found on platform bus!
-> cpm_uart: the driver will guess configuration, but this mode is no
-> longer supported.
-> ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
-> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> TCP cubic registered
-> Freeing unused kernel memory: 512k init
-> execute init process
-> Hello world test bonjour salut
-> ...
->
-> ...
-> ttyCPM0 at MMIO 0xff000a80 (irq =3D 20) is a CPM UART
-> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> TCP cubic registered
-> Freeing unused kernel memory: 504k init
-> execute init process
-> Oops
->
-> ...
-> (log_buf) when i try with busybox. log is little bit altered by the
-> fact i need plug/unplug the cable to reset
-> 001ed154: 6720756e 75736564 206b6572 6e656c20    g unused kernel
-> 001ed164: 6f656d6f 72793a21 3438386b 20696e69    oemory:!488k ini
-> 001ed174: 740a3d37 3e43506f 20756172 745b305d    t.=3D7>CPo uart[0]
-> 001ed184: 3a737461 72747570 0a3c373e 4358cd20    :startup.<7>CX.
-> 001ed194: 75617274 5b305d3a 7365745f 7465726d    uart[0]:set_term
-> 001ed1a4: 696f730a 3c343e65 78656375 7d652069    ios.<4>execu}e i
-> 001ed1b4: 6e697420 70f26f63 6573730a 3c343e4f    nit p.ocess.<4>O
-> 001ed1c4: 7f70733a 206f6572 6e656c20 61636365    .ps: oernel acce
-> 001ed1d4: 7373206f 66206261 64206172 65612c20    ss of bad area,
-> 001ed1e4: 7379673a 20313121 5f23315d 0a3c343e    syg: 11!_#1].<4>
-> 001ed1f4: 4f6f7073 3a206b65 726e656c 24616373    Oops: kernel$acs
-> 001ed204: 67737320 6f662072 61642061 f265612c    gss of rad a.ea,
-> 001ed214: 20736967 3a203131 205b2332 5d0a3c34     sig: 11 [#2].<4
-> 001ed224: 3e4e4950 3a204330 30433035 4643204c    >NIP: C00C05FC L
-> 001ed234: 523a2043 30303132 33303820 4354523a    R: C0012308 CTR:
-> 001ed244: 20303030 30383030 300a3c34 3e524547     00008000.<4>REG
-> 001ed254: 533a2063 30323339 62363020 5c525150    S: c0239b60 \RQP
-> 001ed264: 3a203033 30302020 204e6f74 20746169    : 0300   Not tai
-> 001ed274: 6e746564 20212832 2e362e33 392e3629    nted !(2.6.19.6)
-> 001ed284: 0b3c343e 4d53523a 20f13030 303130b3    .<4>MSR: .00010.
-> 001ed294: 32203c4d 452e4952 2c44523e 60204352    2 <ME.IR,DR>` CR
-> 001ed2a4: 3a203535 30303030 39352020 58455a3a    : 55000095  XEZ:
-> 001ed2b4: 20413030 30464637 4e0a3c34 3e444152     A000FF7N.<4>DAR
-> 001ed2c4: 3a213346 30303030 30302c22 44534953    :!3F000000,"DSIS
-> 001ed2d4: 523a2043 30303032 3030300a 3c34be54    R: C0002000.<4.T
-> 001ed2e4: 4153cb20 3d206330 32333762 37305b31    AS. =3D c0237b70[1
-> 001ed2f4: 5d202769 6e697427 205448d2 4549443a    ] 'init' TH.EID:
-> 001ed304: a063b032 33383830 b00a3c36 3e475052    .c.23880..<6>GPR
-> 001ed314: b0303a20 30303030 30343733 20433032    .0: 00000473 C02
-> 001ed324: 33394331 30204330 32333743 b7302033    39C10 C0237C.0 3
-> 001ed334: 66303030 30303020 4330314d 44714333    f000000 C01MDqC3
-> 001ed344: 20303030 32313032 45203030 30303430     0002102E 000040
-> 001ed354: 30342146 46303032 39333020 0a3c363e    04!FF002930 .<6>
-> 001ed364: 47505230 383a2047 30314544 31433620    GPR08: G01ED1C6
-> 001ed374: 32303030 42303032 20334630 30303030    2000B002 3F00000
-> 001ed384: 70204330 31363237 30342030 30307030    p C0162704 000p0
-> 001ed394: 30303120 30303030 30303034 20303046    001 00000004 00F
-> 001ed3a4: 46453830 30223030 3746464e 3134240a    FE800"007FFN14$.
-> 001ed3b4: 3c363e47 50d231b6 3a203030 30303030    <6>GP.1.: 000000
-> 001ed3c4: 30302030 30b13030 30303120 30303f46    00 00.00001 00?F
-> 001ed3d4: 46463030 204b3031 36303030 30205330    FF00 K0160000 S0
-> ...
->
-> thank a lot for help
-> fab
->
-With symbols it's better :
-<4>exe#uve init pr/cess
-<4>Oops: kernel agcesS of bad a=F2ea, sig: 11 [#1]
-<4>Oop=F3; kernel access of bad area, sig: 11 [#2]
-<4>NIP:`C00C19A4"=CCR: C001239C CTR: 00000000J<=8E>REGS: c024db60
-TRAP:`0300   Not tainted `(2*6.9.2)
-<4>MWR:!00001032 <=CDE=ACIR,DR>  CR: 55100095  XER: A000FF7F
-<4>DAR: 3F000000, DSISR: C0=B020000
-<4>TASK =3D c024bb70[1] 'init' THREAD: c024c000
-<6>EPZ00:00002073 C024Dc10 C024BB70 3F000000 c02011C3 0000002E
-00000004"FFp02920
-<6>GHR88: C0"0q1C6 0000B000 3F400100 C01637BC 02000201 10073BG0
-00FFE000 007FFF14
-<6>GPR16: 00001=B000 00=B010001 0 7FFF00 C056p000(C015CD30 FFNFFFFF
-C0160000 C01v0=B000
-<6>GPR2<: C0300000 C0200100 C=B0160000 C016=B0000 C4160000 000108ED
-000008BF C0163E88
-<4~NIP [C00C19A4] cpm_uart_console_write+0x44/0x160
-<4>LR [C001239C] __call_console_drivers+0x6c/0x8c
-<4>Call Trace:
-<4>[C024DC10] [01000002] 0x2 (unreliable)
-<4>[C024DC2] [00000002] 0x2
-<4>[C024DC40] [C0012C2C] release_conrole^sem+0x100/0x288
->4>[C024DC80] [C0013478] vprintk+0x1a0/0x33c
-<4>[C024DD00] [C013664] printk+0x50/0x6p
-<4>[C024DD80] [C00036D0] die+1x64/0x80
-<4>[C024DD90] [C000A920] bad_page_faultk0x5(/0x5c
-<4>[S024DDB0] [C0003A30] alignment_excgption+0x64/0xb4
-<4>[C024DDC0] [C000312C] r=E5t_from_excepu_full+0x/0x4c
-<4>[C024DE80] [40020000] 0x40000000
-<4>[C024DE90] [C000A5D8] do_page_nault+0x58/0x348
-<4>[C024EF40] [C0002F10] landle=DFpage_faumt+0xc/0x80
-<4>Instructio=EE =E4ump:
-<4>54001=B03a 'e69002e 2c0u0000 1d6b00dc 3d20c016 392937bc 7d6b4a14 814b00i=
-4
-<4>806b04a0 4182008c 38c00000 39800001 <a80ap000> 2f800000 419cfff8 80ea000=
-4
-<0>Kernel panig - not syncing: Attdmpted to kill ilit!
+On Mon, Nov 26, 2007 at 11:41:38AM +0530, vijay baskar wrote:
+> Hi friends,
+> 
+> Kernel virtual space is divided into 3 different zones namely ZONE_DMA, 
+> ZONE_NORMAL, ZONE_HIGHMEM.Remember that the kernel follows the 3GB/1GB 
+> split ie 3 GB for user space and 1  GB for kernel space. Since your ram 
+> is 1 GB, 896 MB will be mapped one to one with the kernel virtual space. 
+> This one to one mapping will be done in the ZONE_NORMAL and ZONE_DMA of 
+> kernel virtual space.Remaining 128 MB of kernel virtual address space 
+> will be used for setting up kernel  data structures and for ioremaps and 
+> vmallocs that  the kernel will need to perform during boot up.  If  u 
+> configure high memory this 128 MB will be used for accessing unmapped 
+> memory regions in the ram and there wont be sufficient  virtual 
+> addresses for ioremaps and vmallocs. Thats why your kernel did not boot 
+> when high mem is configured.
+
+1. The split is 768/256 on powerpc, not 896/128.
+2. Why do you think this is insufficient?
+
+>                    Since u want to have 1 GB of ram an alternative to 
+> this is that u can try 2 GB/ 2 GB split which is configurable ie 2 GB 
+> for user space and 2 GB for kernel space in your kernel.
+
+1. He said he wanted 2GB of RAM, not 1.
+2. I don't think this mode of operation has been tested very well on
+powerpc.
+
+> >=> bootm fed00000 fe900000                                                      
+> >## Booting image at fed00000 ...                                                
+> >   Image Name:   Linux-2.6.11                                                   
+> >   Image Type:   PowerPC Linux Kernel Image (gzip compressed)                   
+> >   Data Size:    1054435 Bytes =  1 MB                                          
+> >   Load Address: 00000000                                                       
+> >   Entry Point:  00000000                                                       
+> >   Verifying Checksum ... OK                                                    
+> >   Uncompressing Kernel Image ... OK                                            
+> >## Loading RAMDisk Image at fe900000 ...                                        
+> >   Image Name:   uboot ext2 ramdisk rootfs                                      
+> >   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)                  
+> >   Data Size:    3195657 Bytes =  3 MB                                          
+> >   Load Address: 00000000                                                       
+> >   Entry Point:  00000000                                                       
+> >   Verifying Checksum ... OK                                                    
+> >   Loading Ramdisk to 0fc9a000, end 0ffa6309 ... OK
+
+Could you try with a more recent, arch/powerpc kernel?
+
+-Scott
