@@ -1,19 +1,13 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 78BADDDE41
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 09:28:02 +1100 (EST)
-Received: from [10.50.1.77] (blade.az.mvista.com [10.50.1.77])
-	by hermes.mvista.com (Postfix) with ESMTP id D3F3A1F172
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 14:27:59 -0800 (PST)
-Message-ID: <474B4923.905@mvista.com>
-Date: Mon, 26 Nov 2007 15:30:59 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: mmap on PPC removes file refcount?
-References: <47435338.2050107@mvista.com>
-In-Reply-To: <47435338.2050107@mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: RFC: Fix some lexical problems with references 
+In-Reply-To: Your message of "Thu, 22 Nov 2007 17:10:07 +1100."
+	<20071122061007.GA22888@localhost.localdomain>
+References: <20071122061007.GA22888@localhost.localdomain> 
+Date: Mon, 26 Nov 2007 16:38:20 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1Iwmaq-0002n8-U0@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +17,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-NM, it was a bad test causing weird behavior on PPC. :(
-
-Dave Jiang wrote:
-> It seems the mmap() userland call on PPC causes the kernel to lose the ref
-> count for the mount point. This is what I did on a prpmc2800 board (74xx) with
-> latest powerpc.git tree (but also seem to happen on 8548 as well).
+So, like, the other day David Gibson mumbled:
+> The recent change to the lexer to only recognize property and node
+> names in the appropriate context removed a number of lexical warts in
+> our language that would have gotten ugly as we add expression support
+> and so forth.
 > 
-> I mounted an IDE partition. The userland test app opens a file on the mounted
-> partition and sits in a sleep loop while holding the file open. I call umount
-> on the partition and I get "device is busy" which is suppose to happen.
-> However, after the test app calls mmap on the file id for the opened file, I
-> can successfully umount even though it should still say "device is busy".  This
-> does not happen on x86 so I'm assuming something is going on with just PPC.
+> But there's one nasty one remaining: references can contain a full
+> path, including the various problematic node name characters (',', '+'
+> and '-', for example).  This would cause trouble with expressions, and
+> it also causes trouble with the patch I'm working on to allow
+> expanding references to paths rather than phandles.  This patch
+> therefore reworks the lexer to mitigate these problems.
 > 
-> So using lsof I can list the opened files on a particular partition. When the
-> file is opened, it lists 1 entry. When mmaped, on x86 it would list 2 entries,
-> but on ppc it lists nothing. Not only did the mmaped entry not show up, the
-> entry caused by open disappeared as well. Also, I put a printk in do_umount()
-> to see what the refcount is. On x86, it would be 3 and thus causes device busy.
-> On PPC it is 3 when the file is openend, however if mmap is called, the
-> refcount becomes 2 and thus umount proceeds. It's almost as if the mmap call
-> wiped out the opened file entry and decremented the mount count as well.
+> 	- References to labels cause no problems.  These are now
+> recognized separately from references to full paths.  No syntax change
+> here.
 > 
+> 	- References to full paths, including problematic characters
+> are allowed by "quoting" the path with braces
+> e.g. &{/pci@10000/somedevice@3,8000}.  The braces protect any internal
+> problematic characters from being confused with operators or whatever.
 > 
+> 	- For compatibility with existing dts files, in v0 dts files
+> we allow bare references to paths as before &/foo/bar/whatever - but
+> *only* if the path contains no troublesome characters.  Specifically
+> only [a-zA-Z0-9_@/] are allowed.
+> 
+> This is an incompatible change to the dts-v1 format, but since AFAIK
+> no-one has yet switched to dts-v1 files, I think we can get away with
+> it.  Better to make the transition when people to convert to v1, and
+> get rid of the problematic old syntax.
+> 
+> Strictly speaking, it's also an incompatible change to the v0 format,
+> since some path references that were allowed before are no longer
+> allowed.  I suspect no-one has been using the no-longer-supported
+> forms (certainly none of the kernel dts files will cause trouble).  We
+> might need to think about this harder, though.
 
+This all sounds fine by me.  We should take the incompatibility hit
+once here and now; it shouldn't be a problem to eek in some more still.
 
--- 
-
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+Thanks,
+jdl
