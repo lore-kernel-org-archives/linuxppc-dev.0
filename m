@@ -1,23 +1,22 @@
-Return-Path: <bounces@nabble.com>
-Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3418FDDE0F
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A9EAEDDF72
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 02:23:44 +1100 (EST)
-Received: from isper.nabble.com ([192.168.236.156])
-	by kuber.nabble.com with esmtp (Exim 4.63)
-	(envelope-from <bounces@nabble.com>) id 1IwfoC-0003ll-C6
-	for linuxppc-embedded@ozlabs.org; Mon, 26 Nov 2007 07:23:40 -0800
-Message-ID: <13951808.post@talk.nabble.com>
-Date: Mon, 26 Nov 2007 07:23:40 -0800 (PST)
-From: khollan <khollan@daktronics.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Debugging with gdbserver slow
-In-Reply-To: <13865715.post@talk.nabble.com>
+	Tue, 27 Nov 2007 03:05:41 +1100 (EST)
+Message-ID: <474AE75C.5070405@freescale.com>
+Date: Mon, 26 Nov 2007 09:33:48 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <13865715.post@talk.nabble.com>
+To: =?windows-1252?Q?=3F=3F?= <guojin02@tsinghua.org.cn>
+Subject: Re: The question about the UART on UCC5,UCC6,UCC7,UCC8 for MPC8360?
+References: <396048835.09329@tsinghua.org.cn>
+In-Reply-To: <396048835.09329@tsinghua.org.cn>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+?? wrote:
 
+>   after compiled, I download the linux to MPC8360 board, but I cannot find the
+> serial device for UCC5,UCC6,UCC7,UCC8. I just find the ttyS0,ttyS1 is OK.
+>   Could you tell me that what's the name for the serial device of UCC5,6,7,8?
+>   Whether or not I can use those UART just like the ttyS0,ttyS1?
 
-khollan wrote:
-> 
-> Hi everyone,
-> 
-> Im using gdbserver to debug Linux apps on my embedded board, but it takes
-> like 3-6 sec to step one line of code.  Its about the same to go from
-> breakpoint to breakpont.  Im using TCP to connect the host to the target. 
-> Is this typical or is there some setting wrong or was it built wrong.  Its
-> a PPC405 in a Xilinx FPGA.
-> 
-> Thanks
-> 
-> khollan
-> 
-How long does it take everyone else to step through code serial or TCP?
+I don't know why the BSP offers a UART driver for the 8360, because the driver 
+isn't available yet.  I'm working on that, though.  I'll post the driver in a 
+week or so, and it will be included in 2.6.25.  You'll have to ask the BSP 
+support line if they plan on updating the BSP to include the new driver.
+
 -- 
-View this message in context: http://www.nabble.com/Debugging-with-gdbserver-slow-tf4846374.html#a13951808
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Timur Tabi
+Linux kernel developer at Freescale
