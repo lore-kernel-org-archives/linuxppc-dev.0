@@ -1,31 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2314DDF96
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:09:04 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAQG8sJO010806
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 11:08:54 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAQG8j7W067750
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 09:08:46 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAQG8ids007167
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 09:08:44 -0700
-Date: Mon, 26 Nov 2007 10:08:43 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: "Steven A. Falco" <sfalco@harris.com>
-Subject: Re: Sequoia EMAC only works if u-boot initializes it?
-Message-ID: <20071126100843.2ee3e0b9@weaponx>
-In-Reply-To: <474AED67.4020006@harris.com>
-References: <474AED67.4020006@harris.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <timur@freescale.com>
+Message-ID: <474AEB6A.40408@freescale.com>
+Date: Mon, 26 Nov 2007 09:51:06 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>, Jon Smirl <jonsmirl@gmail.com>,
+	PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
+Subject: Re: Revisited, audio codec device tree entries.
+References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
+	<4741A56D.9050808@freescale.com>
+	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
+	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
+	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
+	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
+	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
+	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
+	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
+	<20071120005941.GC3126@localhost.localdomain>
+In-Reply-To: <20071120005941.GC3126@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,30 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 26 Nov 2007 10:59:35 -0500
-"Steven A. Falco" <sfalco@harris.com> wrote:
+David Gibson wrote:
 
-> I have noticed odd behavior on a Sequoia board.  Kernel is built from 
-> DENX git, ARCH=powerpc, 2.6.23.1.
-> 
-> Sequence that works:
-> 1) In u-boot, do "dhcp" (this initializes the PHY)
-> 2) Boot linux from flash
-> 3) ifconfig eth0 192.168.0.101 netmask 255.255.255.0 up
-> Ethernet is now functional, and I can ping the Sequoia (and it can ping 
-> my host)
-> 
-> Sequence that does not work:
-> 1) Boot linux from flash without letting u-boot touch eth0
-> 2) ifconfig eth0 192.168.0.101 netmask 255.255.255.0 up
-> Ethernet appears to come up, but it is not functional.  I.e. I get 
-> "eth0: link is up, 100 FDX, pause enabled" but I cannot ping the board, 
-> and the board cannot ping my host.
-> 
-> So, the kernel appears to be missing some initialization that u-boot 
-> provides.
+> 	1) We have a "universal" device-tree-based fabric driver which
+> parses all the above-described interconnection information in the
+> device tree and handles any situation.  Cool, but probably a lot of
+> work and fiddly to get right.
 
-There are some PHY patches from Valentine that Ben needs to send to
-Jeff Garzik.
+Definitely a lot of work.  I suggest we wait until there are a few PowerPC ASOC 
+v2 audio drivers in the kernel before we even consider this.  And it may not 
+even be possible.  I can easily imagine situations where we need board-specific 
+code that belongs in a machine-specific fabric driver.
 
-josh
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
