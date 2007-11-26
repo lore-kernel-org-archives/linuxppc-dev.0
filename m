@@ -1,23 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9FBC1DDF4B
+Return-Path: <robertlazarski@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.233])
+	by ozlabs.org (Postfix) with ESMTP id ACF3CDDF96
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 03:57:32 +1100 (EST)
-Date: Mon, 26 Nov 2007 10:57:51 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: vijay baskar <cn.vijaibaskar@gdatech.co.in>
-Subject: Re: The question about the high memory support on MPC8360?
-Message-ID: <20071126165751.GA4415@loki.buserror.net>
-References: <396049508.10992@tsinghua.org.cn> <474A639A.3090006@gdatech.co.in>
+	Tue, 27 Nov 2007 04:41:39 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so405049nzh
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 26 Nov 2007 09:41:38 -0800 (PST)
+Message-ID: <f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
+Date: Mon, 26 Nov 2007 12:41:37 -0500
+From: "robert lazarski" <robertlazarski@gmail.com>
+Subject: Re: 85xx software reset problems from paulus.git
+Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <474A639A.3090006@gdatech.co.in>
-Cc: =?utf-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>
+	<473DB6DF.9010804@anagramm.de>
+	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>
+	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
+	<0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>
+	<f87675ee0711161401k600b658ao3d6ae572fb367c47@mail.gmail.com>
+	<7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,51 +31,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 26, 2007 at 11:41:38AM +0530, vijay baskar wrote:
-> Hi friends,
-> 
-> Kernel virtual space is divided into 3 different zones namely ZONE_DMA, 
-> ZONE_NORMAL, ZONE_HIGHMEM.Remember that the kernel follows the 3GB/1GB 
-> split ie 3 GB for user space and 1  GB for kernel space. Since your ram 
-> is 1 GB, 896 MB will be mapped one to one with the kernel virtual space. 
-> This one to one mapping will be done in the ZONE_NORMAL and ZONE_DMA of 
-> kernel virtual space.Remaining 128 MB of kernel virtual address space 
-> will be used for setting up kernel  data structures and for ioremaps and 
-> vmallocs that  the kernel will need to perform during boot up.  If  u 
-> configure high memory this 128 MB will be used for accessing unmapped 
-> memory regions in the ram and there wont be sufficient  virtual 
-> addresses for ioremaps and vmallocs. Thats why your kernel did not boot 
-> when high mem is configured.
+Hi Kumar, I finally got time to get back to this:
 
-1. The split is 768/256 on powerpc, not 896/128.
-2. Why do you think this is insufficient?
+On Nov 17, 2007 2:52 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+>
+> On Nov 16, 2007, at 4:01 PM, robert lazarski wrote:
+>
+> >>>
+> >>> Sorry for replying to myself, but thought I'd mention SRESET works
+> >>> fine on 85xx 2.6.23 , ie, the board resets after kernel panic. It
+> >>> doesn't work for me on 2.6.24rc2 .
+> >>
+> >> What actual 85xx are you using?
+> >>
+> >> - k
+> >>
+> >
+> > Custom 8548 board. I'm using the cds 85xx code for a reference and I
+> > calling the same reset functions.
+> >
+> 1. do you have the following in your dts:
+>
+>                  global-utilities@e0000 {        //global utilities reg
+>                          compatible = "fsl,mpc8548-guts";
+>                          reg = <e0000 1000>;
+>                          fsl,has-rstcr;
+>                  };
+>
 
->                    Since u want to have 1 GB of ram an alternative to 
-> this is that u can try 2 GB/ 2 GB split which is configurable ie 2 GB 
-> for user space and 2 GB for kernel space in your kernel.
+Yes.
 
-1. He said he wanted 2GB of RAM, not 1.
-2. I don't think this mode of operation has been tested very well on
-powerpc.
+>
+> 2. in your platform code are you using fsl_rstcr_restart in
+> define_machine()
+>
+> - k
+>
 
-> >=> bootm fed00000 fe900000                                                      
-> >## Booting image at fed00000 ...                                                
-> >   Image Name:   Linux-2.6.11                                                   
-> >   Image Type:   PowerPC Linux Kernel Image (gzip compressed)                   
-> >   Data Size:    1054435 Bytes =  1 MB                                          
-> >   Load Address: 00000000                                                       
-> >   Entry Point:  00000000                                                       
-> >   Verifying Checksum ... OK                                                    
-> >   Uncompressing Kernel Image ... OK                                            
-> >## Loading RAMDisk Image at fe900000 ...                                        
-> >   Image Name:   uboot ext2 ramdisk rootfs                                      
-> >   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)                  
-> >   Data Size:    3195657 Bytes =  3 MB                                          
-> >   Load Address: 00000000                                                       
-> >   Entry Point:  00000000                                                       
-> >   Verifying Checksum ... OK                                                    
-> >   Loading Ramdisk to 0fc9a000, end 0ffa6309 ... OK
+Yes. The symptoms in 2.6.24RC2 are that during a kernel panic or when
+calling 'reboot' in the shell, it just hangs. Using the same dts and
+resets in 2.6.23.1 reboots fine. I don't have a cds reference, but
+someone who does should be able to confirm whether the issue exists or
+not by just attempting to reboot via bash.
 
-Could you try with a more recent, arch/powerpc kernel?
-
--Scott
+Robert
