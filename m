@@ -1,26 +1,27 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from mail175-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BB31ADDDE6
+Return-Path: <dhlii@dlasystems.com>
+Received: from outbound-mail-57.bluehost.com (outbound-mail-57.bluehost.com
+	[69.89.20.37]) by ozlabs.org (Postfix) with SMTP id 24B8CDDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 08:56:22 +1100 (EST)
+	Tue, 27 Nov 2007 07:34:51 +1100 (EST)
+Message-ID: <474B2C56.5040008@dlasystems.com>
+Date: Mon, 26 Nov 2007 15:28:06 -0500
+From: "David H. Lynch Jr." <dhlii@dlasystems.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Xilinx devicetrees
-Date: Mon, 26 Nov 2007 13:55:18 -0800
-In-Reply-To: <474B37C9.8020405@dlasystems.com>
-References: <47480CF0.7090105@dlasys.net>	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	<47493D4F.4070605@dlasys.net><fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com><4749FD5E.7000408@dlasys.net>
-	<20071125235855.95B9999804D@mail138-cpk.bigfish.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Xilinx devicetrees
+References: <47480CF0.7090105@dlasys.net>	
+	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>	
+	<47493D4F.4070605@dlasys.net>	
+	<fa686aa40711251421q38f53ee3hb2a308cc5f93183f@mail.gmail.com>	
+	<4749FD5E.7000408@dlasys.net>	
+	<20071125235855.95B9999804D@mail138-cpk.bigfish.com>	
 	<EDAE140DF1B2FC42B5867C22CA0B333F0A58E4@XMBIL132.northgrum.com>
-	<474B37C9.8020405@dlasystems.com>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "David H. Lynch Jr." <dhlii@dlasystems.com>,
-	"Koss, Mike (Mission Systems)" <mike.koss@ngc.com>
-Message-Id: <20071126215615.73F4B1138066@mail175-dub.bigfish.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	<fa686aa40711260830y46aeb64cy8b662cad7196af8d@mail.gmail.com>
+In-Reply-To: <fa686aa40711260830y46aeb64cy8b662cad7196af8d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "Koss, Mike \(Mission Systems\)" <mike.koss@ngc.com>,
+	Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,102 +32,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+Grant Likely wrote:
+> On 11/26/07, Koss, Mike (Mission Systems) <mike.koss@ngc.com> wrote:
+>   
+>> DL>    And once again a plea to ALWAYS make version/capabilities registers
+>> DL> atleast an optional part of every design.
+>> DL>    Embeddeding a device tree into a design might be fairly expensive. a
+>> DL> pair of read only 32 bit registers is damn near free - basically the
+>> DL> FPGA equivalent of atmost 64 diodes or resistors.
+>>
+>> SN> Actually, device trees actually seem to be cheaper (in the whole system
+>> sense) than such registers.  Unless there is something I don't understand?
+>>     
+    First the decoding for the register is almost certainly already
+present for the other registers for the device.
+    After that - assuming that an FPGA can impliment a read only
+register as easily as discrete logic -  it should be damn near the
+    most trivial peice of hardware imaginable. It is simpler than 64
+bits of RAM. It can be simpler than 64bits of ROM.
+    I do not think there is a way in the world that devicetrees can more
+cheaply provide the same information.
+    They might me more flexible, or powerful, but 2 64bit read only
+registers.
 
-> -----Original Message-----
-> From: David H. Lynch Jr. [mailto:dhlii@dlasystems.com]=20
-> Sent: Monday, November 26, 2007 1:17 PM
-> To: Koss, Mike (Mission Systems)
-> Cc: Stephen Neuendorffer; Grant Likely; linuxppc-embedded
-> Subject: Re: Xilinx devicetrees
->=20
-> Koss, Mike (Mission Systems) wrote:
-> > Time for my $.02, since I am heavily weighting my future=20
-> designs on the
-> > use of the device trees. :) (and b/c I don't check my work=20
-> e-mail from
-> > home ;P)
-> >
-> > ________________________________
-> >
-> > From: Stephen Neuendorffer [mailto:stephen.neuendorffer@xilinx.com]=20
-> > Sent: Sunday, November 25, 2007 6:59 PM
-> > To: David H. Lynch Jr.; Grant Likely; linuxppc-embedded
-> > Subject: RE: Xilinx devicetrees
-> >
-> >
->=20
-> >
-> > SN> I don't understand the 'burden on software developers'.=20
->  The code to
-> > do this will just be standard code. =20
->     I got 16K of RAM for my boot loader and that 16K has to=20
-> do alot more
-> than just manage device trees.
->     I think we have 2K left. In that I have to fit scripting, and
-> ethernet, so where am I supposed to fit the standard code ?
->     If the devicetree is say at the end of the bit file I can probably
-> copy it to ram and pass a pointer to linux in maybe a couple=20
-> of hundred
-> bytes.
->     If I have to do much more it ain't happening.
+    Anyway I am not arguing that you should not do devicetrees. Just
+that you should do version/capabilities registers - atleast as a IP
+option always.
+    Every OS does nto support devicetree's. Every application of an FPGA
+not going to have that as an option. But every peice of software that
+can access and I/O device can access its version and capabilities registers.
 
-Personally, It sounds like you're trying to do to much...  The only
-thing that that code really needs to do is to find the 'real' boot code:
-Maybe Uboot stored in flash? :)  I'm not naive enough to suggest that I
-understand all the constraints of your system, but it is another
-solution.
 
-> > The worst that one can say is:
-> > SN> 1) I need several KB additional non volatile storage.  Given the
-> > size of the FPGA bitstream, this can't be a huge constraint.
-> >  =20
->        Several KB is NOT happening. The bitstream is in=20
-> flash. Flash is
-> not a limited reasorce for  us.
->        FPGA cells, and BRAM are precious as gold. The more we use the
-> less our clients have.
+> *If* edk is generating our device tree(s) for us, *then* version
+> registers are not needed by Linux.
+>   
+    I want both. I want version registers - because they are ALWAYS
+available.
+    They are available to software running on the FPGA that has no clue
+what bit file it is running on,how it got to be running.
+    Devicetrees may provide a great deal more information bit it is not
+hard to come up with scenarios where that information might not
+    be present. It is like the security arguments about biometric
+identification. I can forget my key card, my password, ... But I am
+unlikely to forget my thumbprint or retina.
+   
 
-Device tree should probably be stored in flash, in your case....
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-> >
-> > SN> Certainly..  But in a sense, these are all intermediate=20
-> files on the
-> > path to the image on the board.
->     Unless we are going to teach linux to read and interpret=20
-> .bit files
-> while loading, then devicetrees are intermediate in an entirely
-> different sense.
->     The hardware works fine regardless of whether their is a=20
-> devicetree.
-> But Linux may not boot.
-
-I think this philosphy really minimized the value of software...  The
-hardware doesn't work unless the software that comes with it *also*
-works. :)
-
->      My objective is to get alot of software - linux, GHS, and
-> standalone apps, to all load - from a single executables, accross
-> multiple different bit images on several different (though=20
-> deliberately
-> similar) products. My Linux kernel needs to work regardless=20
-> of the Pico
-> card and regardless of the bit image, as done my GHS kernel, and ....
-> And I need to do that in a severly resource constrained environment.
->     I would hope that should make sense of my harping about
-> version/capabilities registers. If I have maybe 10 possible=20
-> peices of IP
-> that may/maynot be present in a given FPGA and I am trying to
-> dynamically configure - Linux/GHS/... to adapt to whatever it=20
-> encounters
-> and work as long as it is a viable combination. At best=20
-> devicetrees are
-> an extremly complex way of solving that - while version=20
-> registers are a
-> trivial way.
-
-It sounds like the real problem that you have is that even if you get
-device trees working for Linux, you still have the same problem for GHS,
-so from your perspective "device trees don't help"
-
-Steve
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
