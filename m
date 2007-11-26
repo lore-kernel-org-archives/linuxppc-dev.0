@@ -1,22 +1,36 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <lukebr@linux.vnet.ibm.com>
+Received: from igw1.br.ibm.com (igw1.br.ibm.com [32.104.18.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8BF46DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 02:41:15 +1100 (EST)
-Message-Id: <CAF0919C-0116-403C-A8C5-024B43480D77@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200711252322.09370.arnd@arndb.de>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 1/3] [POWERPC] Add docs for Freescale 83xx SATA device
-	tree nodes
-Date: Mon, 26 Nov 2007 09:41:07 -0600
-References: <Pine.LNX.4.64.0711202310280.24220@blarg.am.freescale.net>
-	<Pine.LNX.4.64.0711202312130.24220@blarg.am.freescale.net>
-	<200711252322.09370.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mailgw1.br.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 29A5ADDF63
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 02:41:23 +1100 (EST)
+Received: from mailhub1.br.ibm.com (mailhub1 [9.18.232.109])
+	by igw1.br.ibm.com (Postfix) with ESMTP id 6A6AD32C202
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:35:47 -0200 (BRDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.18.232.46])
+	by mailhub1.br.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lAQFfFBv2879612
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:41:15 -0200
+Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
+	by d24av01.br.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAQFfFiX023495
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2007 13:41:15 -0200
+Subject: Re: [PATCH] ehea: Add kdump support
+From: Luke Browning <lukebr@linux.vnet.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1196064988.19855.15.camel@concordia>
+References: <200711091433.51259.osstklei@de.ibm.com>
+	<1196064988.19855.15.camel@concordia>
+Content-Type: text/plain
+Date: Mon, 26 Nov 2007 13:41:37 -0200
+Message-Id: <1196091697.7513.30.camel@luke-laptop.br.ibm.com>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Thomas Klein <osstklei@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2007-11-26 at 19:16 +1100, Michael Ellerman wrote:
 
-On Nov 25, 2007, at 4:22 PM, Arnd Bergmann wrote:
+> 
+> Hi Thomas,
+> 
+> I'm sorry, but this patch is all wrong IMHO.
+> 
+> For kdump we have to assume that the kernel is fundamentally broken,
+> we've panicked, so something bad has happened - every line of kernel
+> code that is run decreases the chance that we'll successfully make it
+> into the kdump kernel.
 
-> On Wednesday 21 November 2007, Kumar Gala wrote:
->> +    * Freescale 8xxx/3.0 Gb/s SATA nodes
->> +
->> +    SATA nodes are defined to describe on-chip Serial ATA  
->> controllers.
->> +    Each SATA port should have its own node.
->> +
->> +    Required properties:
->> +    - compatible        : compatible list, contains 2 entries,  
->> first is
->> +                        "fsl,sata-CHIP", where CHIP is the processor
->> +                        (mpc8315, mpc8379, etc.) and the second is
->> +                        "fsl,sata-pq2pro"
->> +    - interrupts        : <interrupt mapping for SATA IRQ>
->> +    - interrupt-parent  : optional, if needed for interrupt mapping
->> +    - reg               : <registers mapping>
->> +
->
-> Should this maybe also mandate a compatible property that is defined
-> in a way to match the generic (p)ata_of_platform driver?
+I agree with Michael.
 
-Is there something about the (p)ata_of_platform driver you think we  
-can use.  The SATA controller here is a unique piece of HW and  
-requires a unique driver so I'm not sure what we get from  
-(p)ata_of_platform.
+> Solutions that might be better:
+> 
+>  a) if there are a finite number of handles and we can predict their 
+>     values, just delete them all in the kdump kernel before the driver
+>     loads.
 
-- k
+This is a good solution if handles are predefined.
+
+>  b) if there are a small & finite number of handles, save their values 
+>     in a device tree property and have the kdump kernel read them and 
+>     delete them before the driver loads.
+
+Also good but is more complicated.  
+
+>  c) if neither of those work, provide a minimal routine that _only_
+>     deletes the handles in the crashed kernel.
+>  d) <something else>
+
+Can the driver or configuration method for the driver query PHYP to
+determine if there are any pre-existing mappings... 
+
+Regards, Luke
