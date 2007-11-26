@@ -1,23 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711260838s26e5b155n8d1cb2c246248394@mail.gmail.com>
-Date: Mon, 26 Nov 2007 11:38:44 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Timur Tabi" <timur@freescale.com>
-Subject: Re: Revisited, audio codec device tree entries.
-In-Reply-To: <474AEB6A.40408@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 21784DDEB7
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:39:49 +1100 (EST)
+Date: Mon, 26 Nov 2007 10:39:56 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Joel Rouch <joel@fabiotec.com>
+Subject: Re: sys_mpc83xx spi driver not probed
+Message-ID: <20071126163956.GB4408@loki.buserror.net>
+References: <4747079F.60703@fabiotec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <9e4733910711181010q50c08d2ek8413af74d58cf0ce@mail.gmail.com>
-	<fa686aa40711190733vd1ffac0k62bf32186eb57aff@mail.gmail.com>
-	<9e4733910711190800t5dc9bc40q1b58feae4ff364d0@mail.gmail.com>
-	<fa686aa40711190831s2e59ab05h63d10ec8a24eaad5@mail.gmail.com>
-	<9e4733910711190851g3e1f2ef9k5f87c7c2dae929ef@mail.gmail.com>
-	<fa686aa40711190933r3cbeb51bw7b9073a40f8396ed@mail.gmail.com>
-	<9e4733910711191120l45d9257bwf4ccf8c7365393d0@mail.gmail.com>
-	<fa686aa40711191128i59245403g3e15e3b6c545b6ee@mail.gmail.com>
-	<20071120005941.GC3126@localhost.localdomain>
-	<474AEB6A.40408@freescale.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4747079F.60703@fabiotec.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/26/07, Timur Tabi <timur@freescale.com> wrote:
-> David Gibson wrote:
->
-> >       1) We have a "universal" device-tree-based fabric driver which
-> > parses all the above-described interconnection information in the
-> > device tree and handles any situation.  Cool, but probably a lot of
-> > work and fiddly to get right.
->
-> Definitely a lot of work.  I suggest we wait until there are a few PowerPC ASOC
-> v2 audio drivers in the kernel before we even consider this.  And it may not
-> even be possible.  I can easily imagine situations where we need board-specific
-> code that belongs in a machine-specific fabric driver.
+On Fri, Nov 23, 2007 at 07:02:23PM +0200, Joel Rouch wrote:
+> I have a custom 8349 ppc board. I have defined the spi master in the 
+> configuration.
+> While booting my board, I driver is well added and linked to platform 
+> bus, however I don't see that the probe entry point is reached.
+> I don't succeed to understand who is triggering the probe. Can someone 
+> point me to the right link or explain me how to force it ?
 
-I'm fixing up the asoc v2 code to use MODULE_DEVICE_TABLE() and the
-real kernel aliasing/insmod system. Half of why we are having trouble
-is because asoc isn't using this mechanism. I've posted patches fixing
-i2c to use the same mechanism.  I don't have the asoc ones ready yet.
+Are you calling of_platform_bus_probe() from your board file?
 
-
->
-> --
-> Timur Tabi
-> Linux kernel developer at Freescale
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+-Scott
