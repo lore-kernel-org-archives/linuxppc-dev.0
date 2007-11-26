@@ -1,15 +1,15 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id A8C73DE175
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:27:50 +1100 (EST)
-Message-Id: <20071126172712.128301000@pademelon.sonytel.be>
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id E11D7DE19A
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 04:27:53 +1100 (EST)
+Message-Id: <20071126172712.859661000@pademelon.sonytel.be>
 References: <20071126172455.308741000@pademelon.sonytel.be>
-Date: Mon, 26 Nov 2007 18:24:57 +0100
+Date: Mon, 26 Nov 2007 18:25:04 +0100
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Linux Frame Buffer Device Development
 	<linux-fbdev-devel@lists.sourceforge.net>,
 	Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Subject: [patch 2/9] ps3: Use symbolic names for video modes
+Subject: [patch 9/9] ps3fb: Round up video modes
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,220 +23,227 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-ps3: Use symbolic names for video modes
+ps3fb: Round up arbitrary video modes until they fit (if possible)
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   39 ++++++++++++++++++++-------------------
- drivers/video/ps3fb.c       |   17 ++++++++++-------
- include/asm-powerpc/ps3av.h |   41 ++++++++++++++++++++++++++++++-----------
- 3 files changed, 60 insertions(+), 37 deletions(-)
+ drivers/video/ps3fb.c |  160 +++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 114 insertions(+), 46 deletions(-)
 
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -542,7 +542,7 @@ static void ps3av_set_videomode_packet(u
- 
- static void ps3av_set_videomode_cont(u32 id, u32 old_id)
- {
--	static int vesa = 0;
-+	static int vesa;
- 	int res;
- 
- 	/* video signal off */
-@@ -552,9 +552,9 @@ static void ps3av_set_videomode_cont(u32
- 	 * AV backend needs non-VESA mode setting at least one time
- 	 * when VESA mode is used.
- 	 */
--	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= 11) {
-+	if (vesa == 0 && (id & PS3AV_MODE_MASK) >= PS3AV_MODE_WXGA) {
- 		/* vesa mode */
--		ps3av_set_videomode_packet(2);	/* 480P */
-+		ps3av_set_videomode_packet(PS3AV_MODE_480P);
- 	}
- 	vesa = 1;
- 
-@@ -594,20 +594,21 @@ static const struct {
- 	unsigned mask : 19;
- 	unsigned id :  4;
- } ps3av_preferred_modes[] = {
--	{ .mask = PS3AV_RESBIT_WUXGA		<< SHIFT_VESA,	.id = 13 },
--	{ .mask = PS3AV_RESBIT_1920x1080P	<< SHIFT_60,	.id = 5 },
--	{ .mask = PS3AV_RESBIT_1920x1080P	<< SHIFT_50,	.id = 10 },
--	{ .mask = PS3AV_RESBIT_1920x1080I	<< SHIFT_60,	.id = 4 },
--	{ .mask = PS3AV_RESBIT_1920x1080I	<< SHIFT_50,	.id = 9 },
--	{ .mask = PS3AV_RESBIT_SXGA		<< SHIFT_VESA,	.id = 12 },
--	{ .mask = PS3AV_RESBIT_WXGA		<< SHIFT_VESA,	.id = 11 },
--	{ .mask = PS3AV_RESBIT_1280x720P	<< SHIFT_60,	.id = 3 },
--	{ .mask = PS3AV_RESBIT_1280x720P	<< SHIFT_50,	.id = 8 },
--	{ .mask = PS3AV_RESBIT_720x480P		<< SHIFT_60,	.id = 2 },
--	{ .mask = PS3AV_RESBIT_720x576P		<< SHIFT_50,	.id = 7 },
-+	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
-+	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
-+	{ PS3AV_RESBIT_1920x1080P << SHIFT_50,   PS3AV_MODE_1080P50 },
-+	{ PS3AV_RESBIT_1920x1080I << SHIFT_60,   PS3AV_MODE_1080I60 },
-+	{ PS3AV_RESBIT_1920x1080I << SHIFT_50,   PS3AV_MODE_1080I50 },
-+	{ PS3AV_RESBIT_SXGA       << SHIFT_VESA, PS3AV_MODE_SXGA    },
-+	{ PS3AV_RESBIT_WXGA       << SHIFT_VESA, PS3AV_MODE_WXGA    },
-+	{ PS3AV_RESBIT_1280x720P  << SHIFT_60,   PS3AV_MODE_720P60  },
-+	{ PS3AV_RESBIT_1280x720P  << SHIFT_50,   PS3AV_MODE_720P50  },
-+	{ PS3AV_RESBIT_720x480P   << SHIFT_60,   PS3AV_MODE_480P    },
-+	{ PS3AV_RESBIT_720x576P   << SHIFT_50,   PS3AV_MODE_576P    },
- };
- 
--static int ps3av_resbit2id(u32 res_50, u32 res_60, u32 res_vesa)
-+static enum ps3av_mode_num ps3av_resbit2id(u32 res_50, u32 res_60,
-+					   u32 res_vesa)
- {
- 	unsigned int i;
- 	u32 res_all;
-@@ -636,9 +637,9 @@ static int ps3av_resbit2id(u32 res_50, u
- 	return 0;
- }
- 
--static int ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
-+static enum ps3av_mode_num ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
- {
--	int id;
-+	enum ps3av_mode_num id;
- 
- 	if (safe_mode)
- 		return PS3AV_DEFAULT_HDMI_MODE_ID_REG_60;
-@@ -852,7 +853,7 @@ int ps3av_set_video_mode(u32 id)
- 
- 	/* auto mode */
- 	option = id & ~PS3AV_MODE_MASK;
--	if ((id & PS3AV_MODE_MASK) == 0) {
-+	if ((id & PS3AV_MODE_MASK) == PS3AV_MODE_AUTO) {
- 		id = ps3av_auto_videomode(&ps3av->av_hw_conf);
- 		if (id < 1) {
- 			printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
-@@ -958,7 +959,7 @@ static int ps3av_probe(struct ps3_system
- 		return -ENOMEM;
- 
- 	mutex_init(&ps3av->mutex);
--	ps3av->ps3av_mode = 0;
-+	ps3av->ps3av_mode = PS3AV_MODE_AUTO;
- 	ps3av->dev = dev;
- 
- 	INIT_WORK(&ps3av->work, ps3avd);
 --- a/drivers/video/ps3fb.c
 +++ b/drivers/video/ps3fb.c
-@@ -337,7 +337,7 @@ static int ps3fb_get_res_table(u32 xres,
- static unsigned int ps3fb_find_mode(const struct fb_var_screeninfo *var,
+@@ -275,29 +275,49 @@ static char *mode_option __devinitdata;
+ static int ps3fb_cmp_mode(const struct fb_videomode *vmode,
+ 			  const struct fb_var_screeninfo *var)
+ {
+-	/* resolution + black border must match a native resolution */
+-	if (vmode->left_margin + vmode->xres + vmode->right_margin !=
+-	    var->left_margin + var->xres + var->right_margin ||
+-	    vmode->upper_margin + vmode->yres + vmode->lower_margin !=
+-	    var->upper_margin + var->yres + var->lower_margin)
++	long xres, yres, left_margin, right_margin, upper_margin, lower_margin;
++	long dx, dy;
++
++	/* maximum values */
++	if (var->xres > vmode->xres || var->yres > vmode->yres ||
++	    var->pixclock > vmode->pixclock ||
++	    var->hsync_len > vmode->hsync_len ||
++	    var->vsync_len > vmode->vsync_len)
+ 		return -1;
+ 
+-	/* minimum limits for margins */
+-	if (vmode->left_margin > var->left_margin ||
+-	    vmode->right_margin > var->right_margin ||
+-	    vmode->upper_margin > var->upper_margin ||
+-	    vmode->lower_margin > var->lower_margin)
++	/* progressive/interlaced must match */
++	if ((var->vmode & FB_VMODE_MASK) != vmode->vmode)
+ 		return -1;
+ 
+-	/* these fields must match exactly */
+-	if (vmode->pixclock != var->pixclock ||
+-	    vmode->hsync_len != var->hsync_len ||
+-	    vmode->vsync_len != var->vsync_len ||
+-	    vmode->sync != var->sync ||
+-	    vmode->vmode != (var->vmode & FB_VMODE_MASK))
++	/* minimum resolution */
++	xres = max(var->xres, 1U);
++	yres = max(var->yres, 1U);
++
++	/* minimum margins */
++	left_margin = max(var->left_margin, vmode->left_margin);
++	right_margin = max(var->right_margin, vmode->right_margin);
++	upper_margin = max(var->upper_margin, vmode->upper_margin);
++	lower_margin = max(var->lower_margin, vmode->lower_margin);
++
++	/* resolution + margins may not exceed native parameters */
++	dx = ((long)vmode->left_margin + (long)vmode->xres +
++	      (long)vmode->right_margin) -
++	     (left_margin + xres + right_margin);
++	if (dx < 0)
+ 		return -1;
+ 
+-	return 0;
++	dy = ((long)vmode->upper_margin + (long)vmode->yres +
++	      (long)vmode->lower_margin) -
++	     (upper_margin + yres + lower_margin);
++	if (dy < 0)
++		return -1;
++
++	/* exact match */
++	if (!dx && !dy)
++		return 0;
++
++	/* resolution difference */
++	return (vmode->xres - xres) * (vmode->yres - yres);
+ }
+ 
+ static const struct fb_videomode *ps3fb_native_vmode(enum ps3av_mode_num id)
+@@ -323,33 +343,96 @@ static const struct fb_videomode *ps3fb_
+ static unsigned int ps3fb_find_mode(struct fb_var_screeninfo *var,
  				    u32 *ddr_line_length, u32 *xdr_line_length)
  {
--	unsigned int i, mode;
-+	unsigned int i, fi, mode;
+-	unsigned int id;
++	unsigned int id, best_id;
++	int diff, best_diff;
+ 	const struct fb_videomode *vmode;
++	long gap;
  
- 	for (i = 0; i < ARRAY_SIZE(ps3fb_modedb); i++)
- 		if (var->xres == ps3fb_modedb[i].xres &&
-@@ -358,7 +358,8 @@ static unsigned int ps3fb_find_mode(cons
- 
- found:
- 	/* Cropped broadcast modes use the full line length */
--	*ddr_line_length = ps3fb_modedb[i < 10 ? i + 13 : i].xres * BPP;
-+	fi = i < PS3AV_MODE_1080P50 ? i + PS3AV_MODE_WUXGA : i;
-+	*ddr_line_length = ps3fb_modedb[fi].xres * BPP;
- 
- 	if (ps3_compare_firmware_version(1, 9, 0) >= 0) {
- 		*xdr_line_length = GPU_ALIGN_UP(max(var->xres,
-@@ -369,7 +370,9 @@ found:
- 		*xdr_line_length = *ddr_line_length;
- 
- 	/* Full broadcast modes have the full mode bit set */
--	mode = i > 12 ? (i - 12) | PS3FB_FULL_MODE_BIT : i + 1;
-+	mode = i+1;
-+	if (mode > PS3AV_MODE_WUXGA)
-+		mode = (mode - PS3AV_MODE_WUXGA) | PS3FB_FULL_MODE_BIT;
- 
- 	pr_debug("ps3fb_find_mode: mode %u\n", mode);
- 
-@@ -381,14 +384,14 @@ static const struct fb_videomode *ps3fb_
- 	u32 mode = id & PS3AV_MODE_MASK;
- 	u32 flags;
- 
--	if (mode < 1 || mode > 13)
-+	if (mode < PS3AV_MODE_480I || mode > PS3AV_MODE_WUXGA)
- 		return NULL;
- 
- 	flags = id & ~PS3AV_MODE_MASK;
- 
--	if (mode <= 10 && flags & PS3FB_FULL_MODE_BIT) {
-+	if (mode <= PS3AV_MODE_1080P50 && flags & PS3FB_FULL_MODE_BIT) {
- 		/* Full broadcast mode */
--		return &ps3fb_modedb[mode + 12];
-+		return &ps3fb_modedb[mode + PS3AV_MODE_WUXGA - 1];
++	best_id = 0;
++	best_diff = INT_MAX;
++	pr_debug("%s: wanted %u [%u] %u x %u [%u] %u\n", __func__,
++		 var->left_margin, var->xres, var->right_margin,
++		 var->upper_margin, var->yres, var->lower_margin);
+ 	for (id = PS3AV_MODE_480I; id <= PS3AV_MODE_WUXGA; id++) {
+ 		vmode = ps3fb_native_vmode(id);
+-		if (!ps3fb_cmp_mode(vmode, var))
+-			goto found;
++		diff = ps3fb_cmp_mode(vmode, var);
++		pr_debug("%s: mode %u: %u [%u] %u x %u [%u] %u: diff = %d\n",
++			 __func__, id, vmode->left_margin, vmode->xres,
++			 vmode->right_margin, vmode->upper_margin,
++			 vmode->yres, vmode->lower_margin, diff);
++		if (diff < 0)
++			continue;
++		if (diff < best_diff) {
++			best_id = id;
++			if (!diff)
++				break;
++			best_diff = diff;
++		}
  	}
  
- 	return &ps3fb_modedb[mode - 1];
-@@ -1070,7 +1073,7 @@ static int __devinit ps3fb_probe(struct 
+-	pr_debug("%s: mode not found\n", __func__);
+-	return 0;
++	if (!best_id) {
++		pr_debug("%s: no suitable mode found\n", __func__);
++		return 0;
++	}
++
++	id = best_id;
++	vmode = ps3fb_native_vmode(id);
  
- 	if (!ps3fb_mode)
- 		ps3fb_mode = ps3av_get_mode();
--	dev_dbg(&dev->core, "ps3av_mode:%d\n", ps3fb_mode);
-+	dev_dbg(&dev->core, "ps3fb_mode: %d\n", ps3fb_mode);
+-found:
+ 	*ddr_line_length = vmode->xres * BPP;
  
- 	if (ps3fb_mode > 0 &&
- 	    !ps3av_video_mode2res(ps3fb_mode, &xres, &yres)) {
---- a/include/asm-powerpc/ps3av.h
-+++ b/include/asm-powerpc/ps3av.h
-@@ -310,19 +310,25 @@
- #define PS3AV_MONITOR_TYPE_HDMI			1	/* HDMI */
- #define PS3AV_MONITOR_TYPE_DVI			2	/* DVI */
+-	if (!var->xres) {
++	/* minimum resolution */
++	if (!var->xres)
+ 		var->xres = 1;
+-		var->right_margin--;
+-	}
+-	if (!var->yres) {
++	if (!var->yres)
+ 		var->yres = 1;
+-		var->lower_margin--;
+-	}
++
++	/* minimum virtual resolution */
++	if (var->xres_virtual < var->xres)
++		var->xres_virtual = var->xres;
++	if (var->yres_virtual < var->yres)
++		var->yres_virtual = var->yres;
++
++	/* minimum margins */
++	if (var->left_margin < vmode->left_margin)
++		var->left_margin = vmode->left_margin;
++	if (var->right_margin < vmode->right_margin)
++		var->right_margin = vmode->right_margin;
++	if (var->upper_margin < vmode->upper_margin)
++		var->upper_margin = vmode->upper_margin;
++	if (var->lower_margin < vmode->lower_margin)
++		var->lower_margin = vmode->lower_margin;
++
++	/* extra margins */
++	gap = ((long)vmode->left_margin + (long)vmode->xres +
++	       (long)vmode->right_margin) -
++	      ((long)var->left_margin + (long)var->xres +
++	       (long)var->right_margin);
++	if (gap > 0) {
++		var->left_margin += gap/2;
++		var->right_margin += (gap+1)/2;
++		pr_debug("%s: rounded up H to %u [%u] %u\n", __func__,
++			 var->left_margin, var->xres, var->right_margin);
++	}
++
++	gap = ((long)vmode->upper_margin + (long)vmode->yres +
++	       (long)vmode->lower_margin) -
++	      ((long)var->upper_margin + (long)var->yres +
++	       (long)var->lower_margin);
++	if (gap > 0) {
++		var->upper_margin += gap/2;
++		var->lower_margin += (gap+1)/2;
++		pr_debug("%s: rounded up V to %u [%u] %u\n", __func__,
++			 var->upper_margin, var->yres, var->lower_margin);
++	}
++
++	/* fixed fields */
++	var->pixclock = vmode->pixclock;
++	var->hsync_len = vmode->hsync_len;
++	var->vsync_len = vmode->vsync_len;
++	var->sync = vmode->sync;
  
--#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_60	2	/* 480p */
--#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60	1	/* 480i */
--#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_50	7	/* 576p */
--#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_50	6	/* 576i */
+ 	if (ps3_compare_firmware_version(1, 9, 0) >= 0) {
+-		*xdr_line_length = GPU_ALIGN_UP(max(var->xres,
+-						    var->xres_virtual) * BPP);
++		*xdr_line_length = GPU_ALIGN_UP(var->xres_virtual * BPP);
+ 		if (*xdr_line_length > GPU_MAX_LINE_LENGTH)
+ 			*xdr_line_length = GPU_MAX_LINE_LENGTH;
+ 	} else
+@@ -463,22 +546,11 @@ static int ps3fb_check_var(struct fb_var
+ 	u32 xdr_line_length, ddr_line_length;
+ 	int mode;
+ 
+-	dev_dbg(info->device, "var->xres:%u info->var.xres:%u\n", var->xres,
+-		info->var.xres);
+-	dev_dbg(info->device, "var->yres:%u info->var.yres:%u\n", var->yres,
+-		info->var.yres);
 -
--#define PS3AV_REGION_60				0x01
--#define PS3AV_REGION_50				0x02
--#define PS3AV_REGION_RGB			0x10
+-	/* FIXME For now we do exact matches only */
+ 	mode = ps3fb_find_mode(var, &ddr_line_length, &xdr_line_length);
+ 	if (!mode)
+ 		return -EINVAL;
+ 
+ 	/* Virtual screen */
+-	if (var->xres_virtual < var->xres)
+-		var->xres_virtual = var->xres;
+-	if (var->yres_virtual < var->yres)
+-		var->yres_virtual = var->yres;
 -
--#define get_status(buf)				(((__u32 *)buf)[2])
--#define PS3AV_HDR_SIZE				4	/* version + size */
+ 	if (var->xres_virtual > xdr_line_length / BPP) {
+ 		dev_dbg(info->device,
+ 			"Horizontal virtual screen size too large\n");
+@@ -547,10 +619,6 @@ static int ps3fb_set_par(struct fb_info 
+ 	const struct fb_videomode *vmode;
+ 	u64 dst;
  
- /* for video mode */
-+enum ps3av_mode_num {
-+	PS3AV_MODE_AUTO				= 0,
-+	PS3AV_MODE_480I				= 1,
-+	PS3AV_MODE_480P				= 2,
-+	PS3AV_MODE_720P60			= 3,
-+	PS3AV_MODE_1080I60			= 4,
-+	PS3AV_MODE_1080P60			= 5,
-+	PS3AV_MODE_576I				= 6,
-+	PS3AV_MODE_576P				= 7,
-+	PS3AV_MODE_720P50			= 8,
-+	PS3AV_MODE_1080I50			= 9,
-+	PS3AV_MODE_1080P50			= 10,
-+	PS3AV_MODE_WXGA				= 11,
-+	PS3AV_MODE_SXGA				= 12,
-+	PS3AV_MODE_WUXGA			= 13,
-+};
-+
- #define PS3AV_MODE_MASK				0x000F
- #define PS3AV_MODE_HDCP_OFF			0x1000	/* Retail PS3 product doesn't support this */
- #define PS3AV_MODE_DITHER			0x0800
-@@ -333,6 +339,19 @@
- #define PS3AV_MODE_RGB				0x0020
- 
- 
-+#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_60	PS3AV_MODE_480P
-+#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_60	PS3AV_MODE_480I
-+#define PS3AV_DEFAULT_HDMI_MODE_ID_REG_50	PS3AV_MODE_576P
-+#define PS3AV_DEFAULT_AVMULTI_MODE_ID_REG_50	PS3AV_MODE_576I
-+
-+#define PS3AV_REGION_60				0x01
-+#define PS3AV_REGION_50				0x02
-+#define PS3AV_REGION_RGB			0x10
-+
-+#define get_status(buf)				(((__u32 *)buf)[2])
-+#define PS3AV_HDR_SIZE				4	/* version + size */
-+
-+
- /** command packet structure **/
- struct ps3av_send_hdr {
- 	u16 version;
+-	dev_dbg(info->device, "xres:%d xv:%d yres:%d yv:%d clock:%d\n",
+-		info->var.xres, info->var.xres_virtual,
+-		info->var.yres, info->var.yres_virtual, info->var.pixclock);
+-
+ 	mode = ps3fb_find_mode(&info->var, &ddr_line_length, &xdr_line_length);
+ 	if (!mode)
+ 		return -EINVAL;
 
 -- 
 With kind regards,
