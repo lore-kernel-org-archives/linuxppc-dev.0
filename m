@@ -1,21 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 473C8DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:23:34 +1100 (EST)
-Subject: Re: time accounting problem (powerpc only?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1195814816.4149.94.camel@johannes.berg>
-References: <1195814816.4149.94.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-YrYhn9tY2JEhBAzreAYX"
-Date: Mon, 26 Nov 2007 17:23:13 +0100
-Message-Id: <1196094193.4149.287.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <SRS0=j6VG=QT=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id A5C00DDF39
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 03:24:42 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Sequoia EMAC only works if u-boot initializes it?
+Date: Mon, 26 Nov 2007 17:20:26 +0100
+References: <474AED67.4020006@harris.com>
+In-Reply-To: <474AED67.4020006@harris.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711261720.26629.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 26 November 2007, Steven A. Falco wrote:
+> I have noticed odd behavior on a Sequoia board.  Kernel is built from
+> DENX git, ARCH=powerpc, 2.6.23.1.
+>
+> Sequence that works:
+> 1) In u-boot, do "dhcp" (this initializes the PHY)
+> 2) Boot linux from flash
+> 3) ifconfig eth0 192.168.0.101 netmask 255.255.255.0 up
+> Ethernet is now functional, and I can ping the Sequoia (and it can ping
+> my host)
+>
+> Sequence that does not work:
+> 1) Boot linux from flash without letting u-boot touch eth0
+> 2) ifconfig eth0 192.168.0.101 netmask 255.255.255.0 up
+> Ethernet appears to come up, but it is not functional.  I.e. I get
+> "eth0: link is up, 100 FDX, pause enabled" but I cannot ping the board,
+> and the board cannot ping my host.
 
---=-YrYhn9tY2JEhBAzreAYX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Do you have a 100MBit connection? Or Gbit? Could you please send the complete 
+bootlog.
 
-Contrary to what I claimed later in the thread, my 64-bit powerpc box
-(quad-core G5) doesn't suffer from this problem.
+> So, the kernel appears to be missing some initialization that u-boot
+> provides.
+>
+> However, eth1 is more strange.  U-boot can use it (via "setenv ethact
+> ppc_4xx_eth1;dhcp"), however, the kernel cannot use it, whether or not
+> u-boot first initializes it.
+>
+> If anyone has suggestions on where to look, I'd appreciate it.  I'm
+> going to look at the PHY register settings and see if there are any
+> clues there...
 
-Does anybody have any idea? I don't even know how to debug it further.
+Again it would be interesting to see the bootlog here.
 
-johannes
+Best regards,
+Stefan
 
---=-YrYhn9tY2JEhBAzreAYX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR0ry8KVg1VMiehFYAQJ8Pw//UqVaTlgZLljfY/4ZquTyYmiQHxJslbq/
-hV5kU1XyDPy4BgoQJtgPUKP4GQURB5b9lv54J87mgYcNS9sTvAthdeuzVUoWgzll
-bjFcdPLvLwgS/RB2qPJVHBBKrLZIPS9uqV0iJo4kELorFtkBS9D/CAPbsKOf8fx7
-2g1cNI0BJVdSs1FcrdDTfo/t0kZL78UTZdeDYTRXTqfymfLM4AclCqEoJnD5PPoM
-+e8sxaXzGADOy/ISJieyGuCZL9oFvzGks6My8YW9Shut98q9VYx1QiJNBeKoHve7
-5HpkGjLU+t5hW89mPNny8yayUNoK99DmcbkxbhQp/Y63US/IAWl3+UpVfET9Vtf8
-s95x8r/hOyLneSG2OiP1bn4S9JFAae8TrM/hlLj52Un7nD8C0b+8k1aSDqznfapJ
-Jy3oi6TM5ILq6PGMedd41OcRdiJyl5p8aSQ2lIzHRkOPPA9jtDADnFyULDBBB48+
-wZWF0oszxg+bFUmdqB8A2LK1QaNU6IklBJ0uQInvpqpApbrFl2cEywBDYKgoTZTR
-uzWiZHHx9S8Q5VlX7h7hkIrih6lYaNagF6Te3MI6VW4OaBA4pEEx4RH75VwGUxcG
-JiMTdWtEBo+ej0kc2CKkOMLBeJV+KtuPDsSRSKMDsRSOP/x8MQByoQa84EVmAAIf
-6Rl+liY+6iw=
-=V5Sl
------END PGP SIGNATURE-----
-
---=-YrYhn9tY2JEhBAzreAYX--
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
