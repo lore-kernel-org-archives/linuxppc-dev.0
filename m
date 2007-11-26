@@ -1,18 +1,27 @@
-Return-Path: <dhlii@picocomputing.net>
-Received: from outbound-mail-56.bluehost.com (outbound-mail-56.bluehost.com
-	[69.89.20.36]) by ozlabs.org (Postfix) with SMTP id 18F04DDE9B
+Return-Path: <MBenedict@twacs.com>
+Received: from mail162-dub-R.bigfish.com (mail-dub.bigfish.com
+	[213.199.154.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AE605DDEBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 06:21:27 +1100 (EST)
-Message-ID: <474B1B23.40404@picocomputing.net>
-Date: Mon, 26 Nov 2007 14:14:43 -0500
-From: "David H. Lynch Jr." <dhlii@picocomputing.net>
+	Tue, 27 Nov 2007 07:06:57 +1100 (EST)
+Received: from mail162-dub (localhost.localdomain [127.0.0.1])
+	by mail162-dub-R.bigfish.com (Postfix) with ESMTP id DF4DC12C8826
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 26 Nov 2007 20:06:52 +0000 (UTC)
+Received: from mail.twacs.com (unknown [68.89.149.4])
+	by mail162-dub.bigfish.com (Postfix) with ESMTP id 898BB1908050
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 26 Nov 2007 20:06:52 +0000 (UTC)
 MIME-Version: 1.0
-To: fabien <fabien.fb@gmail.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: initramfs and busybox kernel oops
-References: <f8f856500711260716m6bd6a89and056f9e196d9d1bf@mail.gmail.com>
-In-Reply-To: <f8f856500711260716m6bd6a89and056f9e196d9d1bf@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: LED heartbeat trigger - in_atomic() while allocs
+Date: Mon, 26 Nov 2007 14:07:05 -0600
+Message-ID: <BAF8B1E0BB28024A90895E746A3B610D1C2DA2@twx-exch01.twacs.local>
+From: "Benedict, Michael" <MBenedict@twacs.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +32,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-fabien wrote:
-> hi all,
->
-> I'm trying to get busybox working on my custom board mpc855t and linux
-> kernel 2.6.19 (from eldk 4.1 uclibc). I've built an initramfs that i
-> link directly in kernel. To verify whether the kernel is able to lauch
-> the init process i've compiled a small hello world program. But no
-> when i try with busybox 1.8.1 staticaly linked i got an Oops error
-> kernel access to bad area. I don't know why the former work fine but
-> no the latter.
-> If someone have some ideas for where to look for ?
->
-> In my initramfs there is :
-> in /dev :
-> crw-r--r--   1 root   root   5, 1 nov 22 13:32 console
-> crw-rw-rw-   1 root   root   1, 3 nov 26 10:10 null
-> crw-------   1 root   root   4, 1 nov 26 10:11 tty1
-> in /bin :
-> lrwxrwxrwx   1 root   root        7 nov 26 10:17 ash -> busybox*
-> -rwxr-xr-x   1 root   root   793804 nov 26 13:57 busybox*
-> lrwxrwxrwx   1 root   root        7 nov 26 10:17 cat -> busybox*
-> (and others links)
-> My init script file (/init) :
-> #!/bin/sh
-> /bin/ash
->   
-It took me a while to get initramfs running. But after I did I have been
-very happy with it.
+I was playing around with the LED heartbeat trigger and it caught the
+BUG() code when trying to activate.  Does anyone know why this call
+stack would be in_atomic()?  Or any ideas for a patch that would allow
+the heartbeat trigger to allocate when it is not in atomic context?
 
-It is possible you need more in /dev.
-My initramfs has much more than yours - though it is still quite small.
-I sort of stole it from somewhere. I think I took an initrd from
-somewhere expanded it an culled out what iI did not want.
-Busybox is still the bulk by volume, but that got me all the /dev /etc/
-... stuff I needed
+BUG: sleeping function called from invalid context at mm/slab.c:3024
+in_atomic():1, irqs_disabled():0
+Call Trace:
+[def3dd90] [c0008e60] show_stack+0x48/0x194 (unreliable)
+[def3ddc0] [c0014160] __might_sleep+0xd0/0xdc
+[def3dde0] [c0063e60] kmem_cache_zalloc+0xdc/0x12c
+[def3de00] [c01975c0] heartbeat_trig_activate+0x24/0x80
+[def3de20] [c0196844] led_trigger_set+0x128/0x160
+[def3de40] [c0196988] led_trigger_store+0x10c/0x1a8
+[def3deb0] [c0162f40] class_device_attr_store+0x44/0x5c
+[def3dec0] [c00ae614] sysfs_write_file+0x114/0x1dc
+[def3def0] [c0068ea4] vfs_write+0x9c/0x110
+[def3df10] [c0068ff4] sys_write+0x4c/0x90
+[def3df40] [c000fc00] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xfe83818
+    LR =3D 0xfe35448
 
-You can pull mine from http://www.picocomputing.net/files/initramfs/
+Kernel 2.6.22-4, powerpc, targeting an MPC 8347.  I don't think this
+issue is PowerPC specific but I was hoping other embedded people might
+have experience with the LED class driver.
+
+Thank you,
+	Michael
