@@ -1,23 +1,24 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
-	by ozlabs.org (Postfix) with ESMTP id 7D094DDE2F
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 00:17:14 +1100 (EST)
-Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for
-	fixed-link property
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: avorontsov@ru.mvista.com
-In-Reply-To: <20071127113935.GA26867@localhost.localdomain>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	<20071126142915.19642.5842.stgit@localhost.localdomain>
-	<1196089448.12625.62.camel@gentoo-jocke.transmode.se>
-	<20071127113935.GA26867@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 27 Nov 2007 14:17:11 +0100
-Message-Id: <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 11516DDDD6
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 00:43:13 +1100 (EST)
+Subject: Re: time accounting problem (powerpc only?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20071127050031.GC24243@bakeyournoodle.com>
+References: <1195814816.4149.94.camel@johannes.berg>
+	<1196094193.4149.287.camel@johannes.berg>
+	<20071127050031.GC24243@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-oTNo9IylfyH5KXYpo6Gj"
+Date: Tue, 27 Nov 2007 14:42:53 +0100
+Message-Id: <1196170973.6058.18.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,59 +29,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
-> On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
-> > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> > > not connected to the real MDIO bus.
-> > > 
-> > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > 
-> > > ---
-> > > 
-> > >  Documentation/powerpc/booting-without-of.txt |    3 +
-> > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
-> > >  2 files changed, 42 insertions(+), 17 deletions(-)
-> > > 
-> > > 
-> > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > > index e9a3cb1..cf25070 100644
-> > > --- a/Documentation/powerpc/booting-without-of.txt
-> > > +++ b/Documentation/powerpc/booting-without-of.txt
-> > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
-> > >        services interrupts for this device.
-> > >      - phy-handle : The phandle for the PHY connected to this ethernet
-> > >        controller.
-> > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> > > +      1 full, c is link speed - d#10/d#100/d#1000.
-> > 
-> > Good work!
-> > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
-> 
-> Well, I see no reference of the "flow" neither in the include/linux/mii.h
-> nor in the drivers/net/phy/*. :-/ Thus today there is no such register
-> bit we can emulate?..
+--=-oTNo9IylfyH5KXYpo6Gj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Well, as good as I can recall, flow control(pause) is something that the
-PHY negotiates, just like FDX/HDX and should be dealt with in the
-adjust_link callback but not many do currently.
 
-If you seach for pause in phy_device.c you will find it.
+On Tue, 2007-11-27 at 16:00 +1100, Tony Breeds wrote:
+> On Mon, Nov 26, 2007 at 05:23:13PM +0100, Johannes Berg wrote:
+> > Contrary to what I claimed later in the thread, my 64-bit powerpc box
+> > (quad-core G5) doesn't suffer from this problem.
+> >=20
+> > Does anybody have any idea? I don't even know how to debug it further.
+>=20
+> I'll see if I can grab an appropriate machine tomorrow and have a look at
+> it.  I think it's just an accounting bug, which is probably my fault :)
 
-> 
-> > flow control or not just popped up here today so I got a use for it.
-> 
-> ..and I looked into few drivers (gianfar, ucc), and they seem to use
-> hard-coded flow control values, thus they don't speak to the PHYs
-> about that.
+Thanks. Let me know if you need any info.
 
-Yes, but they should.
+johannes
 
-> 
-> Can you give any reference to the driver that needs that parameter?
-> Does it use PHY subsystem to obtain flow-control on/off information?
-> 
-> Thanks,
-> 
+--=-oTNo9IylfyH5KXYpo6Gj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUAR0we26Vg1VMiehFYAQJjJw//e2gRTdWu+yTGLpwrXixH6O2zBEE6idrQ
+u1nm+7glMlJ1gJa09KJ/CejMUoH7O51lEn2Dw/lRTxJuEihrhvHIlU3nA4v67x0n
+afksy/Z40Nh86jg8Qd0s+oTjDRBmp7CNV4gA0AMEINfozlgEqEP9Dj8e5LE8j+lZ
+5T4JbWDe7C0+zpsJNwWDCQ28+ds619P1hNhueCslKaFXtRLjDja8R4wzlJHBh802
+0xOIXp61fnQRS447WOk3OnZPyTC0JWbUvNMUloDHxTh0ELBL8LShIQhNo/SsHjZp
+tKnJqhi2lxgahwRvyHDvypLukP7hWsV3SMRr09lYr8uzw8a5s81Ut/9heLmS8V9K
+DosRXlpbOJ5XixGEH4I0GHhn1oM55qebF+1VtCVechDAQ7+Vx27V/4VagUQIQ/nE
+UmTULGMZlj/bPX1XRzS2nXncWSWw+N85kff2HZif6pYrMC4q58QReTFll8rQNcF8
+TEBHUxRdNkZ32Se3z7hEzdqiqss7PIkTr49o/eI69qzAwi7+P312+RYVQa0Dp8D8
+QgKu5CcDSKlCdLRY85WQBO5TSF0BTQxUSmoV7SWGzOXlGIQmj6k9lFzCX/LemnMI
+HNOHN4RVOQkBQpwkJNnHMZXHmlJ7bnOvvt5LwgJPeeQ5aFSn4FOpHEES44T4/Wus
+XK+hdBXFLts=
+=0dtu
+-----END PGP SIGNATURE-----
+
+--=-oTNo9IylfyH5KXYpo6Gj--
