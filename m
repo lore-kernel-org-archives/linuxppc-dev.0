@@ -1,15 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 27 Nov 2007 15:17:13 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: dtc: Add valgrind support to testsuite
-Message-ID: <20071127041713.GD12051@localhost.localdomain>
-References: <20071121005614.GD13156@localhost.localdomain>
-	<E1IwmA3-0002eh-OO@jdl.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 152ABDDDCA
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 16:00:31 +1100 (EST)
+Date: Tue, 27 Nov 2007 16:00:31 +1100
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: time accounting problem (powerpc only?)
+Message-ID: <20071127050031.GC24243@bakeyournoodle.com>
+References: <1195814816.4149.94.camel@johannes.berg>
+	<1196094193.4149.287.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1IwmA3-0002eh-OO@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1196094193.4149.287.camel@johannes.berg>
+From: tony@bakeyournoodle.com (Tony Breeds)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,49 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 26, 2007 at 04:10:39PM -0600, Jon Loeliger wrote:
-> So, like, the other day David Gibson mumbled:
-> > This patch adds some options to the run_tests.sh script allowing it to
-> > run all the testcases under valgrind to check for pointer corruption
-> > bugs and memory leaks.  Invoking "make checkm" will run the testsuite
-> > with valgrind.
-> > 
-> > It include a mechanism for specifying valgrind errors to be suppressed
-> > on a per-testcase basis, and adds a couple of such suppression files
-> > for the mangle-layout and open_pack testcases which dump for use by
-> > other testcases a buffer which may contain uninitialized sections.  We
-> > use suppressions rather than initializing the buffer so that valgrind
-> > will catch any internal access s to the uninitialized data, which
-> > would be a bug.
-> > 
-> > The patch also fixes one genuine bug caught by valgrind -
-> > _packblocks() in fdt_rw.c was using memcpy() where it should have been
-> > using memmove().
-> > 
-> > At present the valgrinding won't do anything useful for testcases
-> > invoked via a shell script - which includes all the dtc testcases.  I
-> > plan to fix that later.
-> > 
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Mon, Nov 26, 2007 at 05:23:13PM +0100, Johannes Berg wrote:
+> Contrary to what I claimed later in the thread, my 64-bit powerpc box
+> (quad-core G5) doesn't suffer from this problem.
 > 
-> Applied.
-> 
-> Thanks,
-> jdl
-> 
-> PS -- Clearly, I'm going to have to break down and install valgrind now. :-)
+> Does anybody have any idea? I don't even know how to debug it further.
 
-Absolutely.  Actually valgrind didn't show up much interesting on
-libfdt.  Some preliminary investigations suggest it may find some
-problems in dtc, once I get the shell scripts to pass the valgrind
-option through properly.
+I'll see if I can grab an appropriate machine tomorrow and have a look at
+it.  I think it's just an accounting bug, which is probably my fault :)
 
-Be aware that running the testsuite under valgrind will take a long
-time.  It goes from something like 1s without valgrind to 10 minutes
-on one of my machines.
+Yours Tony
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
