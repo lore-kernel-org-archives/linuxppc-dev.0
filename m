@@ -1,27 +1,22 @@
-Return-Path: <cbou@mail.ru>
-Received: from mx30.mail.ru (mx30.mail.ru [194.67.23.238])
-	by ozlabs.org (Postfix) with ESMTP id 2737FDDDE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 06:57:20 +1100 (EST)
-Date: Tue, 27 Nov 2007 22:50:46 +0300
-From: Anton Vorontsov <cbou@mail.ru>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 32449DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 08:19:05 +1100 (EST)
+Message-Id: <5D634124-D3BA-41B7-9765-4A1A09C8DCB8@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] [POWERPC] MPC8349E-mITX: introduce localbus and
-	pata nodes
-Message-ID: <20071127195045.GA1320@zarina>
+In-Reply-To: <474C3C79.5060908@ru.mvista.com>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 3/3] [POWERPC] MPC8349E-mITX: introduce localbus and pata
+	nodes
+Date: Tue, 27 Nov 2007 15:18:55 -0600
 References: <20071127153708.GA12490@localhost.localdomain>
 	<20071127153940.GC14183@localhost.localdomain>
 	<474C3C79.5060908@ru.mvista.com>
-	<20071127164101.GA14790@localhost.localdomain>
-	<474C49D5.2000206@ru.mvista.com>
-	<20071127173456.GA15693@localhost.localdomain>
-	<474C5513.6010801@ru.mvista.com>
-	<20071127174826.GA15980@localhost.localdomain>
-	<474C5CD2.7080208@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <474C5CD2.7080208@ru.mvista.com>
 Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-Reply-To: cbou@mail.ru
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,41 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 27, 2007 at 09:07:14PM +0300, Sergei Shtylyov wrote:
+
+On Nov 27, 2007, at 9:49 AM, Sergei Shtylyov wrote:
+
+> Hello.
+>
 > Anton Vorontsov wrote:
-> 
-> >>>>>2. "ioport" because shift^Wstride ;-) applies only to the io range
-> >>>>>(yes, it's obvious, but worth open-wording, no?).
-> 
-> >>>> Contrarywise, to memory range.
-> 
-> >>>By io range I meant "I/O base", in contrast to "CTL base".
-> 
-> >>>There is no need to apply shifting for CTL. That's why ioport-*
-> >>>appeared in the first place.
-> 
-> >>   So, a matter of wrong terminology then. The thing that you meant by 
-> >>   "I/O" is actually called "command block".
-> 
-> > Yes. And IO is the second name.
-> 
->     I'd say the first place in drivers/ide belongs to the historic name 
-> "taskfile". The "command block" which is as ATA standard calls it, is hardly used.
-> 
-> > It's used widespread in the drivers/ide/.
-> 
->     Don't remember seeing it.
+>
+>> This patch adds localbus and pata nodes to use CF IDE interface
+>> on MPC8349E-mITX boards.
+>
+>> Patch also adds code to probe localbus.
+>
+>> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+>> ---
+>> arch/powerpc/boot/dts/mpc8349emitx.dts    |   17 ++++++++++++++++-
+>> arch/powerpc/platforms/83xx/mpc834x_itx.c |   17 +++++++++++++++++
+>> 2 files changed, 33 insertions(+), 1 deletions(-)
+>
+>> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/=20=
 
-Oops, thinko -- not drivers/ide/, but include/linux/ide.h.
-Grep for io_addr.
+>> boot/dts/mpc8349emitx.dts
+>> index 5072f6d..7a97068 100644
+>> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+>> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+>> @@ -249,6 +249,21 @@
+>> 		device_type =3D "pci";
+>> 	};
+>>
+>> +	localbus@e0005000 {
+>> +		#address-cells =3D <2>;
+>> +		#size-cells =3D <1>;
+>> +		compatible =3D "fsl,mpc8349emitx-localbus",
+>
+>    Board compatible bus?
+>
+>> +			     "fsl,mpc8349e-localbus",
+>> +			     "fsl,pq2pro-localbus";
+>> +		reg =3D <e0005000 d8>;
+>> +		ranges =3D <3 0 f0000000 210>;
+>>
+>> -
+>> +		pata@3,0 {
+>> +			compatible =3D "fsl,mpc8349emitx-pata", =
+"pata-platform";
+>> +			reg =3D <3 0 10 3 20c 4>;
+>> +			ioport-shift =3D <1>;
+>
+>    Bleh... that shift again. And this is surely not a good name for a
+> property (where's I/O ports in your case?) -- why not call it "reg-=20
+> shift"
+> (well, I'd call it "reg-size" or "reg-stride" myself :-)?
 
-> > Now you understand why I'm so reluctant to hanging up different
-> > labels on the single thing? ;-)
-> 
->     :-)
+I'm coming into this late, but if ioport-shift applies to reg (which I =20=
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+think it does) it should really be called "reg-shift".  The ePAPR is =20
+using that property name:
+
+Specifies in bytes how far the discrete device registers are separated =20=
+
+from each other. The
+individual register location is calculated by using following formula: =20=
+
+=93registers address=94 <<
+reg-shift. If unspecified the default value is 0.
+
+- k
