@@ -1,24 +1,25 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 5DAD4DDE1A
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BCC20DDEDE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 01:54:26 +1100 (EST)
-Date: 27 Nov 2007 07:54:24 -0700
-Message-ID: <20071127145424.8925.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: 85xx software reset problems from paulus.git
-In-Reply-To: <20071127135051.32227.qmail@farnsworth.org>
-References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>
-	<473DB6DF.9010804@anagramm.de>
-	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>
-	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
-	<0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>
-	<f87675ee0711161401k600b658ao3d6ae572fb367c47@mail.gmail.com>
-	<7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
-	<f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
-	<474B2A7F.5090607@anagramm.de>
-Cc: 
+	Wed, 28 Nov 2007 04:03:33 +1100 (EST)
+Message-ID: <474C4DA9.6000205@freescale.com>
+Date: Tue, 27 Nov 2007 11:02:33 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: vijay baskar <cn.vijaibaskar@gdatech.co.in>
+Subject: Re: The question about the high memory support on MPC8360?
+References: <396049508.10992@tsinghua.org.cn>
+	<474A639A.3090006@gdatech.co.in>	<20071126165751.GA4415@loki.buserror.net>
+	<474B9CC0.2000803@gdatech.co.in>
+In-Reply-To: <474B9CC0.2000803@gdatech.co.in>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: =?UTF-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,20 +30,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I wrote:
-> Kumar Gala wrote:
-> > >> Yes. The symptoms in 2.6.24RC2 are that during a kernel panic or when
-> > >> calling 'reboot' in the shell, it just hangs. Using the same dts and
-> > >> resets in 2.6.23.1 reboots fine. I don't have a cds reference, but
-> > >> someone who does should be able to confirm whether the issue exists  
-> > >> or
-> > >> not by just attempting to reboot via bash.
-> > 
-> > Can someone do a git-bisect and find the patch that breaks things?
-> 
-> I'll see if I can reproduce it on my 8548cds.  If so, I'll then git-bisect.
+vijay baskar wrote:
+> The kernel maps the last 1 GB of the virtual address space one to one
+> to the physical memory.
 
-I tried this with the current powerpc.git tree on my mpc8548cds, and
-the reboot command works for me.  The system rebooted just fine.
+No, it maps 768MB of RAM in this manner.
 
--Dale
+> This is called the kernel space. After the one
+> to one mapping is done for the available physical memory, the
+> remaining virtual addresses are used for vmalloc and ioremap.
+
+And highmem mappings.
+
+> The kernel also allows hardcoded mapping
+> of IO regions into its virtual address space through the
+> io_block_mapping interface.
+
+Not in current arch/powerpc kernels.
+
+> Many boards use the block IO mapping to
+> map the CCSRBAR/IMMR into the kernel address space, such that the
+> physical address and the virutal address is the same. Virtual
+> addresses beyond these hardcoded mappings cannot be used by
+> vmalloc/ioremap.
+
+And this is why.
+
+> Now as more and more memory is added to the system the addresses
+> available for vmalloc and ioremap gets reduced, and memory allocations
+> start to fail, due to the lack of availability of virtual addresses.
+
+How so?  The size of lowmem is constant once you reach the threshold, as 
+is the size of the highmem mapping area.
+
+What *does* start to fail eventually, if you have a *lot* of highmem, is 
+that you run out of lowmem for pagetables and such.
+
+-Scott
