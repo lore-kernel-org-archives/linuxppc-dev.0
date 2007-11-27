@@ -1,13 +1,12 @@
 Return-Path: <avorontsov@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 30B29DDE27
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 02:34:08 +1100 (EST)
-Date: Tue, 27 Nov 2007 18:39:00 +0300
+	by ozlabs.org (Postfix) with ESMTP id 8AB8BDDEDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 02:34:15 +1100 (EST)
+Date: Tue, 27 Nov 2007 18:39:08 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-Subject: [PATCH 1/3] [libata] pata_platform: make probe and remove functions
-	device type neutral
-Message-ID: <20071127153900.GA14183@localhost.localdomain>
+Subject: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device driver
+Message-ID: <20071127153908.GB14183@localhost.localdomain>
 References: <20071127153708.GA12490@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -21,255 +20,141 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Split pata_platform_{probe,remove} into two pieces:
-1. pata_platform_{probe,remove} -- platform_device-dependant bits;
-2. __ptata_platform_{probe,remove} -- device type neutral bits.
-
-This is done to not duplicate code for the OF-platform driver.
+This driver nicely wraps around pata_platform library functions,
+and provides OF platform bus bindings to the PATA devices.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/ata/pata_platform.c   |  139 ++++++++++++++++++++++++-----------------
- include/linux/pata_platform.h |    8 +++
- 2 files changed, 90 insertions(+), 57 deletions(-)
+ drivers/ata/Kconfig            |   10 +++++
+ drivers/ata/Makefile           |    1 +
+ drivers/ata/pata_of_platform.c |   86 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 97 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/ata/pata_of_platform.c
 
-diff --git a/drivers/ata/pata_platform.c b/drivers/ata/pata_platform.c
-index ac03a90..6436c38 100644
---- a/drivers/ata/pata_platform.c
-+++ b/drivers/ata/pata_platform.c
-@@ -93,14 +93,9 @@ static struct ata_port_operations pata_platform_port_ops = {
- };
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index ba63619..5a492fa 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -614,6 +614,16 @@ config PATA_PLATFORM
  
- static void pata_platform_setup_port(struct ata_ioports *ioaddr,
--				     struct pata_platform_info *info)
-+				     unsigned int shift)
- {
--	unsigned int shift = 0;
--
- 	/* Fixup the port shift for platforms that need it */
--	if (info && info->ioport_shift)
--		shift = info->ioport_shift;
--
- 	ioaddr->data_addr	= ioaddr->cmd_addr + (ATA_REG_DATA    << shift);
- 	ioaddr->error_addr	= ioaddr->cmd_addr + (ATA_REG_ERR     << shift);
- 	ioaddr->feature_addr	= ioaddr->cmd_addr + (ATA_REG_FEATURE << shift);
-@@ -114,8 +109,12 @@ static void pata_platform_setup_port(struct ata_ioports *ioaddr,
- }
+ 	  If unsure, say N.
  
- /**
-- *	pata_platform_probe		-	attach a platform interface
-- *	@pdev: platform device
-+ *	__pata_platform_probe		-	attach a platform interface
-+ *	@dev: device
-+ *	@io_res: Resource representing I/O base
-+ *	@ctl_res: Resource representing CTL base
-+ *	@irq_res: Resource representing IRQ and its flags
-+ *	@ioport_shift: I/O port shift
-  *
-  *	Register a platform bus IDE interface. Such interfaces are PIO and we
-  *	assume do not support IRQ sharing.
-@@ -135,42 +134,17 @@ static void pata_platform_setup_port(struct ata_ioports *ioaddr,
-  *
-  *	If no IRQ resource is present, PIO polling mode is used instead.
-  */
--static int __devinit pata_platform_probe(struct platform_device *pdev)
-+int __devinit __pata_platform_probe(struct device *dev,
-+				    struct resource *io_res,
-+				    struct resource *ctl_res,
-+				    struct resource *irq_res,
-+				    unsigned int ioport_shift)
- {
--	struct resource *io_res, *ctl_res;
- 	struct ata_host *host;
- 	struct ata_port *ap;
--	struct pata_platform_info *pp_info;
- 	unsigned int mmio;
--	int irq;
--
--	/*
--	 * Simple resource validation ..
--	 */
--	if ((pdev->num_resources != 3) && (pdev->num_resources != 2)) {
--		dev_err(&pdev->dev, "invalid number of resources\n");
--		return -EINVAL;
--	}
--
--	/*
--	 * Get the I/O base first
--	 */
--	io_res = platform_get_resource(pdev, IORESOURCE_IO, 0);
--	if (io_res == NULL) {
--		io_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--		if (unlikely(io_res == NULL))
--			return -EINVAL;
--	}
--
--	/*
--	 * Then the CTL base
--	 */
--	ctl_res = platform_get_resource(pdev, IORESOURCE_IO, 1);
--	if (ctl_res == NULL) {
--		ctl_res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
--		if (unlikely(ctl_res == NULL))
--			return -EINVAL;
--	}
-+	int irq = 0;
-+	int irq_flags = 0;
- 
- 	/*
- 	 * Check for MMIO
-@@ -181,14 +155,15 @@ static int __devinit pata_platform_probe(struct platform_device *pdev)
- 	/*
- 	 * And the IRQ
- 	 */
--	irq = platform_get_irq(pdev, 0);
--	if (irq < 0)
--		irq = 0;	/* no irq */
-+	if (irq_res && irq_res->start > 0) {
-+		irq = irq_res->start;
-+		irq_flags = irq_res->flags;
-+	}
- 
- 	/*
- 	 * Now that that's out of the way, wire up the port..
- 	 */
--	host = ata_host_alloc(&pdev->dev, 1);
-+	host = ata_host_alloc(dev, 1);
- 	if (!host)
- 		return -ENOMEM;
- 	ap = host->ports[0];
-@@ -209,25 +184,24 @@ static int __devinit pata_platform_probe(struct platform_device *pdev)
- 	 * Handle the MMIO case
- 	 */
- 	if (mmio) {
--		ap->ioaddr.cmd_addr = devm_ioremap(&pdev->dev, io_res->start,
-+		ap->ioaddr.cmd_addr = devm_ioremap(dev, io_res->start,
- 				io_res->end - io_res->start + 1);
--		ap->ioaddr.ctl_addr = devm_ioremap(&pdev->dev, ctl_res->start,
-+		ap->ioaddr.ctl_addr = devm_ioremap(dev, ctl_res->start,
- 				ctl_res->end - ctl_res->start + 1);
- 	} else {
--		ap->ioaddr.cmd_addr = devm_ioport_map(&pdev->dev, io_res->start,
-+		ap->ioaddr.cmd_addr = devm_ioport_map(dev, io_res->start,
- 				io_res->end - io_res->start + 1);
--		ap->ioaddr.ctl_addr = devm_ioport_map(&pdev->dev, ctl_res->start,
-+		ap->ioaddr.ctl_addr = devm_ioport_map(dev, ctl_res->start,
- 				ctl_res->end - ctl_res->start + 1);
- 	}
- 	if (!ap->ioaddr.cmd_addr || !ap->ioaddr.ctl_addr) {
--		dev_err(&pdev->dev, "failed to map IO/CTL base\n");
-+		dev_err(dev, "failed to map IO/CTL base\n");
- 		return -ENOMEM;
- 	}
- 
- 	ap->ioaddr.altstatus_addr = ap->ioaddr.ctl_addr;
- 
--	pp_info = pdev->dev.platform_data;
--	pata_platform_setup_port(&ap->ioaddr, pp_info);
-+	pata_platform_setup_port(&ap->ioaddr, ioport_shift);
- 
- 	ata_port_desc(ap, "%s cmd 0x%llx ctl 0x%llx", mmio ? "mmio" : "ioport",
- 		      (unsigned long long)io_res->start,
-@@ -235,26 +209,77 @@ static int __devinit pata_platform_probe(struct platform_device *pdev)
- 
- 	/* activate */
- 	return ata_host_activate(host, irq, irq ? ata_interrupt : NULL,
--				 pp_info ? pp_info->irq_flags : 0,
--				 &pata_platform_sht);
-+				 irq_flags, &pata_platform_sht);
- }
-+EXPORT_SYMBOL_GPL(__pata_platform_probe);
- 
- /**
-- *	pata_platform_remove	-	unplug a platform interface
-- *	@pdev: platform device
-+ *	__pata_platform_remove		-	unplug a platform interface
-+ *	@dev: device
-  *
-  *	A platform bus ATA device has been unplugged. Perform the needed
-  *	cleanup. Also called on module unload for any active devices.
-  */
--static int __devexit pata_platform_remove(struct platform_device *pdev)
-+int __devexit __pata_platform_remove(struct device *dev)
- {
--	struct device *dev = &pdev->dev;
- 	struct ata_host *host = dev_get_drvdata(dev);
- 
- 	ata_host_detach(host);
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(__pata_platform_remove);
++config PATA_OF_PLATFORM
++	tristate "OpenFirmware platform device PATA support"
++	depends on PATA_PLATFORM && PPC_OF
++	help
++	  This option enables support for generic directly connected ATA
++	  devices commonly found on embedded systems with OpenFirmware
++	  bindings.
 +
-+static int __devinit pata_platform_probe(struct platform_device *pdev)
++	  If unsure, say N.
++
+ config PATA_ICSIDE
+ 	tristate "Acorn ICS PATA support"
+ 	depends on ARM && ARCH_ACORN
+diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
+index b13feb2..ebcee64 100644
+--- a/drivers/ata/Makefile
++++ b/drivers/ata/Makefile
+@@ -67,6 +67,7 @@ obj-$(CONFIG_PATA_IXP4XX_CF)	+= pata_ixp4xx_cf.o
+ obj-$(CONFIG_PATA_SCC)		+= pata_scc.o
+ obj-$(CONFIG_PATA_BF54X)	+= pata_bf54x.o
+ obj-$(CONFIG_PATA_PLATFORM)	+= pata_platform.o
++obj-$(CONFIG_PATA_OF_PLATFORM)	+= pata_of_platform.o
+ obj-$(CONFIG_PATA_ICSIDE)	+= pata_icside.o
+ # Should be last but two libata driver
+ obj-$(CONFIG_PATA_ACPI)		+= pata_acpi.o
+diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
+new file mode 100644
+index 0000000..e6c769c
+--- /dev/null
++++ b/drivers/ata/pata_of_platform.c
+@@ -0,0 +1,86 @@
++/*
++ * OF-platform PATA driver
++ *
++ * Copyright (c) 2007  MontaVista Software, Inc.
++ *                     Anton Vorontsov <avorontsov@ru.mvista.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License (Version 2) as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/pata_platform.h>
++
++static int __devinit pata_of_platform_probe(struct of_device *ofdev,
++					    const struct of_device_id *match)
 +{
-+	struct resource *io_res;
-+	struct resource *ctl_res;
-+	struct resource *irq_res;
-+	struct pata_platform_info *pp_info = pdev->dev.platform_data;
++	int ret;
++	struct device_node *dn = ofdev->node;
++	struct resource io_res;
++	struct resource ctl_res;
++	struct resource irq_res;
++	unsigned int ioport_shift = 0;
++	uint32_t *prop;
 +
-+	/*
-+	 * Simple resource validation ..
-+	 */
-+	if ((pdev->num_resources != 3) && (pdev->num_resources != 2)) {
-+		dev_err(&pdev->dev, "invalid number of resources\n");
++	ret = of_address_to_resource(dn, 0, &io_res);
++	if (ret) {
++		dev_err(&ofdev->dev, "can't get IO address from "
++			"device tree\n");
 +		return -EINVAL;
 +	}
 +
-+	/*
-+	 * Get the I/O base first
-+	 */
-+	io_res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+	if (io_res == NULL) {
-+		io_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+		if (unlikely(io_res == NULL))
-+			return -EINVAL;
++	ret = of_address_to_resource(dn, 1, &ctl_res);
++	if (ret) {
++		dev_err(&ofdev->dev, "can't get CTL address from "
++			"device tree\n");
++		return -EINVAL;
 +	}
 +
-+	/*
-+	 * Then the CTL base
-+	 */
-+	ctl_res = platform_get_resource(pdev, IORESOURCE_IO, 1);
-+	if (ctl_res == NULL) {
-+		ctl_res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+		if (unlikely(ctl_res == NULL))
-+			return -EINVAL;
-+	}
++	ret = of_irq_to_resource(dn, 0, &irq_res);
++	if (ret == NO_IRQ)
++		irq_res.start = irq_res.end = -1;
++	else
++		irq_res.flags = 0;
 +
-+	/*
-+	 * And the IRQ
-+	 */
-+	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (irq_res)
-+		irq_res->flags = pp_info ? pp_info->irq_flags : 0;
++	prop = (uint32_t *)of_get_property(dn, "ioport-shift", NULL);
++	if (prop)
++		ioport_shift = *prop;
 +
-+	return __pata_platform_probe(&pdev->dev, io_res, ctl_res, irq_res,
-+				     pp_info ? pp_info->ioport_shift : 0);
++	return __pata_platform_probe(&ofdev->dev, &io_res, &ctl_res, &irq_res,
++				     ioport_shift);
 +}
 +
-+static int __devexit pata_platform_remove(struct platform_device *pdev)
++static int __devexit pata_of_platform_remove(struct of_device *ofdev)
 +{
-+	return __pata_platform_remove(&pdev->dev);
++	return __pata_platform_remove(&ofdev->dev);
 +}
- 
- static struct platform_driver pata_platform_driver = {
- 	.probe		= pata_platform_probe,
-diff --git a/include/linux/pata_platform.h b/include/linux/pata_platform.h
-index 5799e8d..0b11f6b 100644
---- a/include/linux/pata_platform.h
-+++ b/include/linux/pata_platform.h
-@@ -15,4 +15,12 @@ struct pata_platform_info {
- 	unsigned int irq_flags;
- };
- 
-+extern int __devinit __pata_platform_probe(struct device *dev,
-+					   struct resource *io_res,
-+					   struct resource *ctl_res,
-+					   struct resource *irq_res,
-+					   unsigned int ioport_shift);
 +
-+extern int __devexit __pata_platform_remove(struct device *dev);
++static struct of_device_id pata_of_platform_match[] = {
++	{ .compatible = "pata-platform", },
++};
 +
- #endif /* __LINUX_PATA_PLATFORM_H */
++static struct of_platform_driver pata_of_platform_driver = {
++	.name		= "pata_of_platform",
++	.match_table	= pata_of_platform_match,
++	.probe		= pata_of_platform_probe,
++	.remove		= __devexit_p(pata_of_platform_remove),
++};
++
++static int __init pata_of_platform_init(void)
++{
++	return of_register_platform_driver(&pata_of_platform_driver);
++}
++module_init(pata_of_platform_init);
++
++static void __exit pata_of_platform_exit(void)
++{
++	of_unregister_platform_driver(&pata_of_platform_driver);
++}
++module_exit(pata_of_platform_exit);
++
++MODULE_DESCRIPTION("OF-platform PATA driver");
++MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
++MODULE_LICENSE("GPL");
 -- 
 1.5.2.2
