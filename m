@@ -1,20 +1,16 @@
-Return-Path: <riesebie@frodo.home.lxtec.de>
-Received: from smtpout.hostsharing.net (smtpout.hostsharing.net [83.223.95.98])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtpout.hostsharing.net",
-	Issuer "Hostsharing eG Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 41BE8DDE21
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 10:02:07 +1100 (EST)
-Date: Mon, 26 Nov 2007 23:38:31 +0100
-From: Elimar Riesebieter <riesebie@frodo.home.lxtec.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.24-rc3: High CPU load -- hardware interrupts
-Message-ID: <20071126223831.GA11112@frodo.home.lxtec.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 27 Nov 2007 14:58:29 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: dtc: Flexible tree checking infrastructure (v2)
+Message-ID: <20071127035829.GB12051@localhost.localdomain>
+References: <20071121053851.GA17801@localhost.localdomain>
+	<20071122033807.GH19445@localhost.localdomain>
+	<E1IwmCq-0002g9-Nk@jdl.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-In-Reply-To: <slrnfk1d21.229.joerg@alea.gnuu.de>
-Cc: joerg@alea.gnuu.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1IwmCq-0002g9-Nk@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Nov 26, 2007 at 04:13:32PM -0600, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > dtc: Flexible tree checking infrastructure
+> > 
+> > Here, at last, is a substantial start on revising dtc's infrastructure
+> > for checking the tree; this is the rework I've been saying was
+> > necessary practically since dtc was first release.
+> > 
+> > In the new model, we have a table of "check" structures, each with a
+> > name, references to checking functions, and status variables.  Each
+> > check can (in principle) be individually switched off or on (as either
+> > a warning or error).  Checks have a list of prerequisites, so if
+> > checks need to rely on results from earlier checks to make sense (or
+> > even to avoid crashing) they just need to list the relevant other
+> > checks there.
+> > 
+> > For now, only the "structural" checks and the fixups for phandle
+> > references are converted to the new mechanism.  The rather more
+> > involved semantic checks (which is where this new mechanism will
+> > really be useful) will have to be converted in future patches.
+> > 
+> > At present, there's no user interface for turning on/off the checks -
+> > the -f option now forces output even if "error" level checks fail.
+> > Again, future patches will be needed to add the fine-grained control,
+> > but that should be quite straightforward with the infrastructure
+> > implemented here.
+> > 
+> > Also adds a testcase for the handling of bad references, which catches
+> > a bug encountered while developing this patch.
+> > 
+> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> 
+> While I've Applied this one, it has introduced this:
+> 
+>          CC dtc.o
+>     dtc.c: In function 'main':
+>     dtc.c:199: warning: 'structure_ok' is used uninitialized in this function
+> 
+> Followup easy patch?
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Crap.  For some reason my compiler isn't giving that warning, so I
+missed that little bug :(.
 
+I'm away at the moment, I'll see what I can do.
 
-Hi,
-
-I can confirm this situation. But it seems, that no one takes care
-of it ....
-
-Elimar
-
-
---=20
-  Excellent day for drinking heavily.=20
-  Spike the office water cooler;-)
-
---X1bOJ3K7DJ5YkBrT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHS0rn3Ig8bsVPf7ARAl5qAJ9GBhWoN/QGCl9NHniy/sBpGWhJGwCdFjN0
-VbH8fgWMmu67a7RLg5EAajQ=
-=LXDk
------END PGP SIGNATURE-----
-
---X1bOJ3K7DJ5YkBrT--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
