@@ -1,22 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 166CDDDD0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 11:05:45 +1100 (EST)
-Date: Tue, 27 Nov 2007 11:05:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 2/9] ps3: Use symbolic names for video modes
-Message-Id: <20071127110538.32f8dfef.sfr@canb.auug.org.au>
-In-Reply-To: <20071126172712.128301000@pademelon.sonytel.be>
-References: <20071126172455.308741000@pademelon.sonytel.be>
-	<20071126172712.128301000@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc"
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Christoph Raisch <RAISCH@de.ibm.com>
+Subject: Re: [PATCH] ehea: Add kdump support 
+In-reply-to: <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
+References: <200711091433.51259.osstklei@de.ibm.com>
+	<1196064988.19855.15.camel@concordia>
+	<OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com>
+Date: Tue, 27 Nov 2007 11:35:18 +1100
+Message-ID: <11699.1196123718@neuling.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Marcus Eder <MEDER@de.ibm.com>, tklein@linux.ibm.com,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In message <OF94123F44.9DB75CE9-ONC125739F.00398E63-C125739F.003B2AFE@de.ibm.com> you wrote:
+> Michael Ellerman wrote on 26.11.2007 09:16:28:
+> > Solutions that might be better:
+> >
+> >  a) if there are a finite number of handles and we can predict their
+> >     values, just delete them all in the kdump kernel before the driver
+> >     loads.
+> 
+> Guessing the values does not work, because of the handle structure
+> defined by the hypervisor.
+> 
+> >  b) if there are a small & finite number of handles, save their values
+> >     in a device tree property and have the kdump kernel read them and
+> >     delete them before the driver loads.
+> 
+> 5*16*nr_ports+1+1=   >82. a ML16 has 4 adapters with up to 16 ports, so the
+> number is not small anymore....
 
-On Mon, 26 Nov 2007 18:24:57 +0100 Geert Uytterhoeven <Geert.Uytterhoeven@s=
-onycom.com> wrote:
->
-> @@ -594,20 +594,21 @@ static const struct {
->  	unsigned mask : 19;
->  	unsigned id :  4;
->  } ps3av_preferred_modes[] =3D {
-> -	{ .mask =3D PS3AV_RESBIT_WUXGA		<< SHIFT_VESA,	.id =3D 13 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_60,	.id =3D 5 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080P	<< SHIFT_50,	.id =3D 10 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_60,	.id =3D 4 },
-> -	{ .mask =3D PS3AV_RESBIT_1920x1080I	<< SHIFT_50,	.id =3D 9 },
-> -	{ .mask =3D PS3AV_RESBIT_SXGA		<< SHIFT_VESA,	.id =3D 12 },
-> -	{ .mask =3D PS3AV_RESBIT_WXGA		<< SHIFT_VESA,	.id =3D 11 },
-> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_60,	.id =3D 3 },
-> -	{ .mask =3D PS3AV_RESBIT_1280x720P	<< SHIFT_50,	.id =3D 8 },
-> -	{ .mask =3D PS3AV_RESBIT_720x480P		<< SHIFT_60,	.id =3D 2 },
-> -	{ .mask =3D PS3AV_RESBIT_720x576P		<< SHIFT_50,	.id =3D 7 },
-> +	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
-> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
-> +	{ PS3AV_RESBIT_1920x1080P << SHIFT_50,   PS3AV_MODE_1080P50 },
-> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_60,   PS3AV_MODE_1080I60 },
-> +	{ PS3AV_RESBIT_1920x1080I << SHIFT_50,   PS3AV_MODE_1080I50 },
-> +	{ PS3AV_RESBIT_SXGA       << SHIFT_VESA, PS3AV_MODE_SXGA    },
-> +	{ PS3AV_RESBIT_WXGA       << SHIFT_VESA, PS3AV_MODE_WXGA    },
-> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_60,   PS3AV_MODE_720P60  },
-> +	{ PS3AV_RESBIT_1280x720P  << SHIFT_50,   PS3AV_MODE_720P50  },
-> +	{ PS3AV_RESBIT_720x480P   << SHIFT_60,   PS3AV_MODE_480P    },
-> +	{ PS3AV_RESBIT_720x576P   << SHIFT_50,   PS3AV_MODE_576P    },
+I assume this machine with a huge number of adapters has a huge amount
+of memory too! :-)
 
-Why did you remove the C99 style initialisers?
+> The device tree functions are currently not exported.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+We can add this.
 
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc
-Content-Type: application/pgp-signature
+> If you crashdump to a new kernel, will it get the device tree
+> representation of the crashed kernel or of the initial one of open
+> firmware?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+The kexec tools userspace control this.  Normally it just takes the
+current device tree plus some modifications (eg. initrd location
+changes).
 
-iD8DBQFHS19WTgG2atn1QN8RAhxjAJwO8pMQu5fv7MzhHK+grvUvE3S7FACfUQMh
-H/2Vj3Wuoo0daPBQ+TH9kxc=
-=GFUR
------END PGP SIGNATURE-----
+So provided the ehea driver export this info somewhere, it can be
+grabbed by the kexec tools and stuffed in the device tree of the new
+kernel.  
 
---Signature=_Tue__27_Nov_2007_11_05_38_+1100_2OITvKt3g7Xo4vQc--
+That being said, the proper place to have this would be original device
+tree.
+
+> 
+> >  c) if neither of those work, provide a minimal routine that _only_
+> >     deletes the handles in the crashed kernel.
+> 
+> I would hope this has the highest chance to actually work.
+> For this we would have to add a proper notifier chain.
+> Do you agree?
+> 
+> >  d) <something else>
+> 
+> Firmware change? But that's not something you will get very soon.
+> 
+> Christoph R.
+> 
