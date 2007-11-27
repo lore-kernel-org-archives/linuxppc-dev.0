@@ -1,23 +1,21 @@
-Return-Path: <laurentp@cse-semaphore.com>
-Received: from mailrelay002.isp.belgacom.be (mailrelay002.isp.belgacom.be
-	[195.238.6.175]) by ozlabs.org (Postfix) with ESMTP id 29A53DDE3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 02:51:15 +1100 (EST)
-Received: from mail.technotrade.biz (localhost [127.0.0.1])
-	by mail.technotrade.biz (Postfix) with ESMTP id 972F94DFB
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 16:51:08 +0100 (CET)
-Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
-	[192.168.1.47])
-	by mail.technotrade.biz (Postfix) with ESMTP id 7FC9C4B64
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 16:51:08 +0100 (CET)
-From: Laurent Pinchart <laurentp@cse-semaphore.com>
-To: linuxppc-dev@ozlabs.org
-Subject: How to notify userspace of custom bus master/slave access mode
-	changes ?
-Date: Tue, 27 Nov 2007 16:51:01 +0100
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4418662.IMYsjNrjqE";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200711271651.07191.laurentp@cse-semaphore.com>
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id F1289DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 03:36:35 +1100 (EST)
+Date: Tue, 27 Nov 2007 19:41:01 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 3/3] [POWERPC] MPC8349E-mITX: introduce localbus and pata
+	nodes
+Message-ID: <20071127164101.GA14790@localhost.localdomain>
+References: <20071127153708.GA12490@localhost.localdomain>
+	<20071127153940.GC14183@localhost.localdomain>
+	<474C3C79.5060908@ru.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <474C3C79.5060908@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,86 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart4418662.IMYsjNrjqE
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, Nov 27, 2007 at 06:49:13PM +0300, Sergei Shtylyov wrote:
+> Hello.
 
-Hi everybody,
+Hi Sergei,
 
-I'm a bit unsure about how to notify userspace of changes to access mode to=
- a=20
-custom bus. This is more an architecture issue than an implementation issue.
+> Anton Vorontsov wrote:
+> 
+> >This patch adds localbus and pata nodes to use CF IDE interface
+> >on MPC8349E-mITX boards.
+> 
+> >Patch also adds code to probe localbus.
+> 
+> >Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> >---
+> > arch/powerpc/boot/dts/mpc8349emitx.dts    |   17 ++++++++++++++++-
+> > arch/powerpc/platforms/83xx/mpc834x_itx.c |   17 +++++++++++++++++
+> > 2 files changed, 33 insertions(+), 1 deletions(-)
+> 
+> >diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts 
+> >b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> >index 5072f6d..7a97068 100644
+> >--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
+> >+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> >@@ -249,6 +249,21 @@
+> > 		device_type = "pci";
+> > 	};
+> > 
+> >+	localbus@e0005000 {
+> >+		#address-cells = <2>;
+> >+		#size-cells = <1>;
+> >+		compatible = "fsl,mpc8349emitx-localbus",
+> 
+>    Board compatible bus?
 
-My system has an ISA-like cold-pluggable extension bus. The bus controller=
-=20
-sits on the CPU board which is plugged along with slave devices into a=20
-passive backplane.
+This is what Documentation/powerpc/booting-without-of.txt suggests
+for localbuses. I'm following.
 
-To add CPU redundancy support to the system, I implemented master and slave=
-=20
-modes for the CPU board. The slave monitors the master and can disconnect i=
-t=20
-from the bus when a failure is detected.
+> >+			     "fsl,mpc8349e-localbus",
+> >+			     "fsl,pq2pro-localbus";
+> >+		reg = <e0005000 d8>;
+> >+		ranges = <3 0 f0000000 210>;
+> > 
+> >-
+> >+		pata@3,0 {
+> >+			compatible = "fsl,mpc8349emitx-pata", 
+> >"pata-platform";
+> >+			reg = <3 0 10 3 20c 4>;
+> >+			ioport-shift = <1>;
+> 
+>    Bleh... that shift again. And this is surely not a good name for a 
+> property (where's I/O ports in your case?) -- why not call it "reg-shift" 
+> (well, I'd call it "reg-size" or "reg-stride" myself :-)?
 
-The bus drivers haven't been developed with hotplug in mind, but I eventual=
-ly=20
-managed to fix them. The kernel is now able to scan the bus when a CPU boar=
-d=20
-switches from slave to master mode, adding peripherals as they are detected=
-,=20
-and to remove all peripherals when the CPU board switches from master to=20
-slave.
+1. "shift" because pata_platform using that name. I don't see any
+   reason to contrive indirections. ioport-shift is what the whole
+   Linux kernel using nowadays, and ioport-shift dts property
+   anyway Linux-specific.
 
-I now have to notify userspace applications of master <-> slave mode change=
-s.=20
-I thought about using kobject netlink notifications, but the kernel only=20
-generates events for individual peripherals (when they are added or removed=
-).
+   I'm just following todays' conventions.
 
-The bus driver registers a peripheral for the bus controller at boot time. =
-I=20
-thought about registering the peripheral only when the system switches from=
-=20
-slave to master, and deregistering it when it switches back to slave mode,=
-=20
-but that's not very clean as the bus controller is always attached to the=20
-CPU, regardless of its bus access mode. Beside, I need to access the bus=20
-controller to detect master <-> slave transitions, so this would be a bit=20
-hackish.
+   If you feel really bad about that, I think better to fix that in
+   the source of the badness -- pata_platform. It's easy, I can do
+   that. Would you ack patch that converts whole pata_platform and
+   users? Would Paul ack it?
 
-Is there a kobject netlink event I could use that I haven't thought about ?=
- Am=20
-I missing a pseudo-peripheral in my implementation ? Is there a preferred w=
-ay=20
-to notify userspace of such events ?
+   Still, is there any hardware that needs not power of 2 stride?
 
-Thanks for any help you can provide (and thanks for having read this mail=20
-throughout :-)).
+2. "ioport" because shift^Wstride ;-) applies only to the io range
+   (yes, it's obvious, but worth open-wording, no?).
 
-Best regards,
 
-=2D-=20
-Laurent Pinchart
-CSE Semaphore Belgium
+And btw, I can get rid of ioport-shift at all. And do fixups in
+the pata_of_platform driver via .compatible matching. But I don't
+want: it feels bad to list every needs-to-fixup board in the common
+driver. It also feels not so great creating something like
+pata-platform-stride-{1,2,4,...} compatible stuff. Heh.
 
-Chauss=E9e de Bruxelles, 732A
-B-1410 Waterloo
-Belgium
 
-T +32 (2) 387 42 59
-=46 +32 (2) 387 42 75
+Thanks,
 
---nextPart4418662.IMYsjNrjqE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBHTDzr8y9gWxC9vpcRAjF8AKDE/wmqP2ohvGO1W0u57igc5WrOOACg2vI8
-xtvhKOlu8qeId0t4cu1zsDA=
-=1BNs
------END PGP SIGNATURE-----
-
---nextPart4418662.IMYsjNrjqE--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.net/bd2
