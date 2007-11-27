@@ -1,18 +1,21 @@
-Return-Path: <Emilian.Medve@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 05810DDE01
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 01:56:55 +1100 (EST)
+Date: Tue, 27 Nov 2007 15:56:53 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
+In-Reply-To: <Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0711271555520.5847@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
+	<20071120175416.GA4389@loki.buserror.net>
+	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
+	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH v2] [POWERPC] Optimize counting distinct entries in the
-	relocation sections
-Date: Tue, 27 Nov 2007 07:54:07 -0700
-Message-ID: <598D5675D34BE349929AF5EDE9B03E2701827F50@az33exm24.fsl.freescale.net>
-In-Reply-To: <1194971044-28840-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1194971044-28840-1-git-send-email-Emilian.Medve@Freescale.com>
-From: "Medve Emilian" <Emilian.Medve@freescale.com>
-To: <paulus@samba.org>, <rusty@rustcorp.com.au>, <ntl@pobox.com>,
-	<sfr@canb.auug.org.au>, <behlendorf1@llnl.gov>,
-	<galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-182377066-1196175413=:5847"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,406 +25,372 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Paul,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+---584337861-182377066-1196175413=:5847
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-I'm just wondering what are your latest thoughts about this patch
-(http://patchwork.ozlabs.org/linuxppc/patch?id=3D14707).
+On Wed, 21 Nov 2007, Geert Uytterhoeven wrote:
+> On Tue, 20 Nov 2007, Kumar Gala wrote:
+> > On Nov 20, 2007, at 11:54 AM, Scott Wood wrote:
+> > > On Mon, Nov 19, 2007 at 09:36:57PM -0600, Kumar Gala wrote:
+> > >> isel (Integer Select) is a new user space instruction in the
+> > >> PowerISA 2.04 spec.  Not all processors implement it so lets emulate
+> > >> to ensure code built with isel will run everywhere.
+> > >
+> > > Given that the instruction is meant to be a performance enhancement,
+> > > we should probably warn the first few times it's emulated, so the user
+> > > knows they should change their toolchain setup if possible.
+> > 
+> > The same is true of mcrxr, popcntb, and possibly string ld/st.
+> > 
+> > Feel free to submit a patch that warns about their usage.
+> 
+> Something like this?
 
+New version below.
 
-Cheers,
-Emil.
+Do we want it in sysfs? Or should we use debugfs instead?
 
+Subject: powerpc: Keep track of emulated instructions
 
-> -----Original Message-----
-> From: Medve Emilian=20
-> Sent: Tuesday, November 13, 2007 10:24 AM
-> To: paulus@samba.org; rusty@rustcorp.com.au; ntl@pobox.com;=20
-> sfr@canb.auug.org.au; behlendorf1@llnl.gov;=20
-> galak@kernel.crashing.org; linuxppc-dev@ozlabs.org;=20
-> linuxppc-embedded@ozlabs.org
-> Cc: Medve Emilian
-> Subject: [PATCH v2] [POWERPC] Optimize counting distinct=20
-> entries in the relocation sections
->=20
-> When a module has relocation sections with tens of thousands=20
-> worth of entries,
-> counting the distinct/unique entries only (i.e. no=20
-> duplicates) at load time can
-> take tens of seconds and up to minutes. The sore point is the=20
-> count_relocs()
-> function which is called as part of the architecture specific=20
-> module loading
-> processing path:
->=20
-> 	-> load_module()			generic
-> 	   -> module_frob_arch_sections()	arch specific
-> 	      -> get_plt_size()		32-bit
-> 	      -> get_stubs_size()	64-bit
-> 		 -> count_relocs()
->=20
-> (Not sure why the relocation tables could contain lots of=20
-> duplicates and why
-> they are not trimmed at compile time by the linker. In some=20
-> test cases, out of
-> 35K relocation entries only 1.5K were distinct/unique)
->=20
-> The previous counting algorithm was having O(n^2) complexity.=20
-> Basically two
-> solutions were proposed on the e-mail list: a hash based=20
-> approach and a sort
-> based approach
->=20
-> The hash based approach is the fastest (O(n)) but the has it=20
-> needs additional
-> memory and for certain corner cases it could take lots of=20
-> memory due to the
-> degeneration of the hash. One such proposal was submitted here:
->=20
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-June/037641.html
->=20
-> In this proposal, the symbol + addendum are hashed to=20
-> generate a key and a
-> pointer to the relocation entry will be stored in it. The=20
-> hash is implemented as
-> a linked list of memory pages with PAGE_SIZE /=20
-> sizeof(Elfxx_Rela *) entries. In
-> case of collisions in all the existing pages, a new page is=20
-> added to the list to
-> accommodate the new distinct relocation entry
->=20
-> For 32-bit PowerPCs with 4K pages, a page can accommodate 1K=20
-> worth of pointers
-> to relocation entries. In the 35K entries scenario, as=20
-> much/little of six (6)
-> pages could be allocated using 24K of extra memory during the=20
-> module load
->=20
-> The sort based approach is slower (O(n * log n + n)) but if=20
-> the sorting is done
-> "in place" it doesn't need additional memory. A proposal was=20
-> submitted here:
->=20
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-November/045854.html
-> =
-(http://patchwork.ozlabs.org/linuxppc/patch?filter=3Ddefault&id=3D14573)
->=20
-> In this proposal an array of pointers to the relocation=20
-> entries is built and
-> then is sorted using the kernel sort() utility function. This=20
-> is basically a heap
-> sort algorithm with a stable O(n * log n) complexity. With=20
-> this counting the
-> distinct/unique entries is just linear (O(n)) complexity. The=20
-> problem is the
-> extra memory needed in this proposal, which in the 35K=20
-> relocation entries test
-> case it can be as much as 140K (for 32-bit PowerPCs; double=20
-> for 64-bit). This is
-> much more then the memory needed by the hash based approach described
-> above/earlier but it doesn't hide potential degenerative corner cases
->=20
-> The current patch is a happy compromise between the two=20
-> proposals above:
-> O(n + n * log n) performance with no additional memory=20
-> requirements due to
-> sorting in place the relocation table itself
->=20
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> ---
->=20
-> This patch only tries to address counting the distinct=20
-> R_PPC_REL24 entries for
-> the purpose of sizing the PLT. This operation was/can be=20
-> detected by the proper
-> kernel logic as a soft lockup for large relocation tables
->=20
-> A related optimization (that could cause rewriting the this=20
-> patch) is to
-> optimize the PLT search from do_plt_call() but that doesn't=20
-> seem to be a
-> problem right now
->=20
-> The errors below are false positives due to the fact that=20
-> Elfxx_Rela are
-> falsely assumed to be variables/operands instead of types:
->=20
-> linux-2.6> scripts/checkpatch.pl=20
-> 0001-POWERPC-Optimize-counting-distinct-entries-in-the.patch=20
-> ERROR: need consistent spacing around '*' (ctx:WxV)
-> #116: FILE: arch/powerpc/kernel/module_32.c:78:
-> +       const Elf32_Rela *x, *y;
->                          ^
->=20
-> ERROR: need consistent spacing around '*' (ctx:WxV)
-> #228: FILE: arch/powerpc/kernel/module_64.c:122:
-> +       const Elf64_Rela *x, *y;
->                          ^
->=20
-> total: 2 errors, 0 warnings, 218 lines checked
-> Your patch has style problems, please review.  If any of these errors
-> are false positives report them to the maintainer, see
-> CHECKPATCH in MAINTAINERS.
->=20
->  arch/powerpc/kernel/module_32.c |   77=20
-> ++++++++++++++++++++++++++++++-------
->  arch/powerpc/kernel/module_64.c |   81=20
-> ++++++++++++++++++++++++++++++--------
->  2 files changed, 127 insertions(+), 31 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/module_32.c=20
-> b/arch/powerpc/kernel/module_32.c
-> index 07a89a3..eab3138 100644
-> --- a/arch/powerpc/kernel/module_32.c
-> +++ b/arch/powerpc/kernel/module_32.c
-> @@ -24,6 +24,7 @@
->  #include <linux/kernel.h>
->  #include <linux/cache.h>
->  #include <linux/bug.h>
-> +#include <linux/sort.h>
-> =20
->  #include "setup.h"
-> =20
-> @@ -54,22 +55,60 @@ void module_free(struct module *mod, void=20
-> *module_region)
->     addend) */
->  static unsigned int count_relocs(const Elf32_Rela *rela,=20
-> unsigned int num)
->  {
-> -	unsigned int i, j, ret =3D 0;
-> -
-> -	/* Sure, this is order(n^2), but it's usually short, and not
-> -           time critical */
-> -	for (i =3D 0; i < num; i++) {
-> -		for (j =3D 0; j < i; j++) {
-> -			/* If this addend appeared before, it's
-> -                           already been counted */
-> -			if (ELF32_R_SYM(rela[i].r_info)
-> -			    =3D=3D ELF32_R_SYM(rela[j].r_info)
-> -			    && rela[i].r_addend =3D=3D rela[j].r_addend)
-> -				break;
-> +	unsigned int i, r_info, r_addend, _count_relocs;
-> +
-> +	_count_relocs =3D 0;
-> +	r_info =3D 0;
-> +	r_addend =3D 0;
-> +	for (i =3D 0; i < num; i++)
-> +		/* Only count 24-bit relocs, others don't need stubs */
-> +		if (ELF32_R_TYPE(rela[i].r_info) =3D=3D R_PPC_REL24 &&
-> +		    (r_info !=3D ELF32_R_SYM(rela[i].r_info) ||
-> +		     r_addend !=3D rela[i].r_addend)) {
-> +			_count_relocs++;
-> +			r_info =3D ELF32_R_SYM(rela[i].r_info);
-> +			r_addend =3D rela[i].r_addend;
->  		}
-> -		if (j =3D=3D i) ret++;
-> +
-> +	return _count_relocs;
-> +}
-> +
-> +static int relacmp(const void *_x, const void *_y)
-> +{
-> +	const Elf32_Rela *x, *y;
-> +
-> +	y =3D (Elf32_Rela *)_x;
-> +	x =3D (Elf32_Rela *)_y;
-> +
-> +	/* Compare the entire r_info (as opposed to=20
-> ELF32_R_SYM(r_info) only) to
-> +	 * make the comparison cheaper/faster. It won't affect=20
-> the sorting or
-> +	 * the counting algorithms' performance
-> +	 */
-> +	if (x->r_info < y->r_info)
-> +		return -1;
-> +	else if (x->r_info > y->r_info)
-> +		return 1;
-> +	else if (x->r_addend < y->r_addend)
-> +		return -1;
-> +	else if (x->r_addend > y->r_addend)
-> +		return 1;
-> +	else
-> +		return 0;
-> +}
-> +
-> +static void relaswap(void *_x, void *_y, int size)
-> +{
-> +	uint32_t *x, *y, tmp;
-> +	int i;
-> +
-> +	y =3D (uint32_t *)_x;
-> +	x =3D (uint32_t *)_y;
-> +
-> +	for (i =3D 0; i < sizeof(Elf32_Rela) / sizeof(uint32_t); i++) {
-> +		tmp =3D x[i];
-> +		x[i] =3D y[i];
-> +		y[i] =3D tmp;
->  	}
-> -	return ret;
->  }
-> =20
->  /* Get the potential trampolines size required of the init and
-> @@ -100,6 +139,16 @@ static unsigned long get_plt_size(const=20
-> Elf32_Ehdr *hdr,
->  			DEBUGP("Ptr: %p.  Number: %u\n",
->  			       (void *)hdr + sechdrs[i].sh_offset,
->  			       sechdrs[i].sh_size / sizeof(Elf32_Rela));
-> +
-> +			/* Sort the relocation information=20
-> based on a symbol and
-> +			 * addend key. This is a stable O(n*log=20
-> n) complexity
-> +			 * alogrithm but it will reduce the=20
-> complexity of
-> +			 * count_relocs() to linear complexity O(n)
-> +			 */
-> +			sort((void *)hdr + sechdrs[i].sh_offset,
-> +			     sechdrs[i].sh_size / sizeof(Elf32_Rela),
-> +			     sizeof(Elf32_Rela), relacmp, relaswap);
-> +
->  			ret +=3D count_relocs((void *)hdr
->  					     + sechdrs[i].sh_offset,
->  					     sechdrs[i].sh_size
-> diff --git a/arch/powerpc/kernel/module_64.c=20
-> b/arch/powerpc/kernel/module_64.c
-> index 75c7c4f..3a82b02 100644
-> --- a/arch/powerpc/kernel/module_64.c
-> +++ b/arch/powerpc/kernel/module_64.c
-> @@ -24,6 +24,7 @@
->  #include <asm/module.h>
->  #include <asm/uaccess.h>
->  #include <asm/firmware.h>
-> +#include <linux/sort.h>
-> =20
->  #include "setup.h"
-> =20
-> @@ -81,25 +82,23 @@ static struct ppc64_stub_entry ppc64_stub =3D
->     different addend) */
->  static unsigned int count_relocs(const Elf64_Rela *rela,=20
-> unsigned int num)
->  {
-> -	unsigned int i, j, ret =3D 0;
-> +	unsigned int i, r_info, r_addend, _count_relocs;
-> =20
->  	/* FIXME: Only count external ones --RR */
-> -	/* Sure, this is order(n^2), but it's usually short, and not
-> -           time critical */
-> -	for (i =3D 0; i < num; i++) {
-> +	_count_relocs =3D 0;
-> +	r_info =3D 0;
-> +	r_addend =3D 0;
-> +	for (i =3D 0; i < num; i++)
->  		/* Only count 24-bit relocs, others don't need stubs */
-> -		if (ELF64_R_TYPE(rela[i].r_info) !=3D R_PPC_REL24)
-> -			continue;
-> -		for (j =3D 0; j < i; j++) {
-> -			/* If this addend appeared before, it's
-> -                           already been counted */
-> -			if (rela[i].r_info =3D=3D rela[j].r_info
-> -			    && rela[i].r_addend =3D=3D rela[j].r_addend)
-> -				break;
-> +		if (ELF64_R_TYPE(rela[i].r_info) =3D=3D R_PPC_REL24 &&
-> +		    (r_info !=3D ELF64_R_SYM(rela[i].r_info) ||
-> +		     r_addend !=3D rela[i].r_addend)) {
-> +			_count_relocs++;
-> +			r_info =3D ELF64_R_SYM(rela[i].r_info);
-> +			r_addend =3D rela[i].r_addend;
->  		}
-> -		if (j =3D=3D i) ret++;
-> -	}
-> -	return ret;
-> +
-> +	return _count_relocs;
->  }
-> =20
->  void *module_alloc(unsigned long size)
-> @@ -118,6 +117,44 @@ void module_free(struct module *mod,=20
-> void *module_region)
->             table entries. */
->  }
-> =20
-> +static int relacmp(const void *_x, const void *_y)
-> +{
-> +	const Elf64_Rela *x, *y;
-> +
-> +	y =3D (Elf64_Rela *)_x;
-> +	x =3D (Elf64_Rela *)_y;
-> +
-> +	/* Compare the entire r_info (as opposed to=20
-> ELF64_R_SYM(r_info) only) to
-> +	 * make the comparison cheaper/faster. It won't affect=20
-> the sorting or
-> +	 * the counting algorithms' performance
-> +	 */
-> +	if (x->r_info < y->r_info)
-> +		return -1;
-> +	else if (x->r_info > y->r_info)
-> +		return 1;
-> +	else if (x->r_addend < y->r_addend)
-> +		return -1;
-> +	else if (x->r_addend > y->r_addend)
-> +		return 1;
-> +	else
-> +		return 0;
-> +}
-> +
-> +static void relaswap(void *_x, void *_y, int size)
-> +{
-> +	uint64_t *x, *y, tmp;
-> +	int i;
-> +
-> +	y =3D (uint64_t *)_x;
-> +	x =3D (uint64_t *)_y;
-> +
-> +	for (i =3D 0; i < sizeof(Elf64_Rela) / sizeof(uint64_t); i++) {
-> +		tmp =3D x[i];
-> +		x[i] =3D y[i];
-> +		y[i] =3D tmp;
-> +	}
-> +}
-> +
->  /* Get size of potential trampolines required. */
->  static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
->  				    const Elf64_Shdr *sechdrs)
-> @@ -133,6 +170,16 @@ static unsigned long=20
-> get_stubs_size(const Elf64_Ehdr *hdr,
->  			DEBUGP("Ptr: %p.  Number: %lu\n",
->  			       (void *)sechdrs[i].sh_addr,
->  			       sechdrs[i].sh_size / sizeof(Elf64_Rela));
-> +
-> +			/* Sort the relocation information=20
-> based on a symbol and
-> +			 * addend key. This is a stable O(n*log=20
-> n) complexity
-> +			 * alogrithm but it will reduce the=20
-> complexity of
-> +			 * count_relocs() to linear complexity O(n)
-> +			 */
-> +			sort((void *)sechdrs[i].sh_addr,
-> +			     sechdrs[i].sh_size / sizeof(Elf64_Rela),
-> +			     sizeof(Elf64_Rela), relacmp, relaswap);
-> +
->  			relocs +=3D count_relocs((void=20
-> *)sechdrs[i].sh_addr,
->  					       sechdrs[i].sh_size
->  					       / sizeof(Elf64_Rela));
-> @@ -343,7 +390,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
->  			/* Simply set it */
->  			*(u32 *)location =3D value;
->  			break;
-> -		=09
-> +
->  		case R_PPC64_ADDR64:
->  			/* Simply set it */
->  			*(unsigned long *)location =3D value;
-> @@ -399,7 +446,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
->  			}
-> =20
->  			/* Only replace bits 2 through 26 */
-> -			*(uint32_t *)location=20
-> +			*(uint32_t *)location
->  				=3D (*(uint32_t *)location & ~0x03fffffc)
->  				| (value & 0x03fffffc);
->  			break;
-> --=20
-> 1.5.3.GIT
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+powerpc: Keep track of emulated instructions
+
+Counters for the various classes of emulated instructions are available under
+/sys/devices/system/cpu/cpu*/emulated/.
+Optionally, rate-limited warnings can be printed to the console when
+instructions are emulated.
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ arch/powerpc/Kconfig.debug     |   10 ++++++
+ arch/powerpc/kernel/align.c    |   17 ++++++++--
+ arch/powerpc/kernel/sysfs.c    |   64 ++++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/kernel/traps.c    |   17 +++++++++-
+ include/asm-powerpc/emulator.h |   60 ++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 161 insertions(+), 7 deletions(-)
+
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -284,4 +284,14 @@ config PPC_EARLY_DEBUG_CPM_ADDR
+ 	  platform probing is done, all platforms selected must
+ 	  share the same address.
+ 
++config DEBUG_WARN_EMULATED
++	bool "Warn if emulated instructions are used"
++	depends on DEBUG_KERNEL && SYSFS
++	help
++	  This option will cause messages to be printed if an instruction is
++	  emulated.
++	  Counters for emulated instruction usages are always available under
++	  /sys/devices/system/cpu/cpu*/emulated/, irrespective of the state
++	  of this option.
++
+ endmenu
+--- a/arch/powerpc/kernel/align.c
++++ b/arch/powerpc/kernel/align.c
+@@ -24,6 +24,7 @@
+ #include <asm/system.h>
+ #include <asm/cache.h>
+ #include <asm/cputable.h>
++#include <asm/emulator.h>
+ 
+ struct aligninfo {
+ 	unsigned char len;
+@@ -696,8 +697,10 @@ int fix_alignment(struct pt_regs *regs)
+ 	areg = dsisr & 0x1f;		/* register to update */
+ 
+ #ifdef CONFIG_SPE
+-	if ((instr >> 26) == 0x4)
++	if ((instr >> 26) == 0x4) {
++		WARN_EMULATE(spe);
+ 		return emulate_spe(regs, reg, instr);
++	}
+ #endif
+ 
+ 	instr = (dsisr >> 10) & 0x7f;
+@@ -731,17 +734,21 @@ int fix_alignment(struct pt_regs *regs)
+ 	/* A size of 0 indicates an instruction we don't support, with
+ 	 * the exception of DCBZ which is handled as a special case here
+ 	 */
+-	if (instr == DCBZ)
++	if (instr == DCBZ) {
++		WARN_EMULATE(dcbz);
+ 		return emulate_dcbz(regs, addr);
++	}
+ 	if (unlikely(nb == 0))
+ 		return 0;
+ 
+ 	/* Load/Store Multiple instructions are handled in their own
+ 	 * function
+ 	 */
+-	if (flags & M)
++	if (flags & M) {
++		WARN_EMULATE(multiple);
+ 		return emulate_multiple(regs, addr, reg, nb,
+ 					flags, instr, swiz);
++	}
+ 
+ 	/* Verify the address of the operand */
+ 	if (unlikely(user_mode(regs) &&
+@@ -758,8 +765,10 @@ int fix_alignment(struct pt_regs *regs)
+ 	}
+ 
+ 	/* Special case for 16-byte FP loads and stores */
+-	if (nb == 16)
++	if (nb == 16) {
++		WARN_EMULATE(fp_pair);
+ 		return emulate_fp_pair(regs, addr, reg, flags);
++	}
+ 
+ 	/* If we are loading, get the data from user space, else
+ 	 * get it from register values
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -19,6 +19,7 @@
+ #include <asm/lppaca.h>
+ #include <asm/machdep.h>
+ #include <asm/smp.h>
++#include <asm/emulator.h>
+ 
+ static DEFINE_PER_CPU(struct cpu, cpu_devices);
+ 
+@@ -291,12 +292,68 @@ static struct sysdev_attribute pa6t_attr
+ };
+ 
+ 
++#define SYSFS_EMULATED_SETUP(type)					\
++DEFINE_PER_CPU(atomic_long_t, emulated_ ## type);			\
++static ssize_t show_emulated_ ## type (struct sys_device *dev,		\
++				       char *buf)			\
++{									\
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);	\
++									\
++	return sprintf(buf, "%lu\n",					\
++		       atomic_long_read(&per_cpu(emulated_ ## type,	\
++					cpu->sysdev.id)));		\
++}									\
++									\
++static struct sysdev_attribute emulated_ ## type ## _attr = {		\
++	.attr = { .name = #type, .mode = 0400 },			\
++	.show = show_emulated_ ## type,					\
++};
++
++SYSFS_EMULATED_SETUP(dcba);
++SYSFS_EMULATED_SETUP(dcbz);
++SYSFS_EMULATED_SETUP(fp_pair);
++SYSFS_EMULATED_SETUP(mcrxr);
++SYSFS_EMULATED_SETUP(mfpvr);
++SYSFS_EMULATED_SETUP(multiple);
++SYSFS_EMULATED_SETUP(popcntb);
++SYSFS_EMULATED_SETUP(spe);
++SYSFS_EMULATED_SETUP(string);
++#ifdef CONFIG_MATH_EMULATION
++SYSFS_EMULATED_SETUP(math);
++#elif defined(CONFIG_8XX_MINIMAL_FPEMU)
++SYSFS_EMULATED_SETUP(8xx);
++#endif
++
++static struct attribute *emulated_attrs[] = {
++	&emulated_dcba_attr.attr,
++	&emulated_dcbz_attr.attr,
++	&emulated_fp_pair_attr.attr,
++	&emulated_mcrxr_attr.attr,
++	&emulated_mfpvr_attr.attr,
++	&emulated_multiple_attr.attr,
++	&emulated_popcntb_attr.attr,
++	&emulated_spe_attr.attr,
++	&emulated_string_attr.attr,
++#ifdef CONFIG_MATH_EMULATION
++	&emulated_math_attr.attr,
++#elif defined(CONFIG_8XX_MINIMAL_FPEMU)
++	&emulated_8xx_attr.attr,
++#endif
++	NULL
++};
++
++static struct attribute_group emulated_attr_group = {
++	.attrs = emulated_attrs,
++	.name = "emulated"
++};
++
++
+ static void register_cpu_online(unsigned int cpu)
+ {
+ 	struct cpu *c = &per_cpu(cpu_devices, cpu);
+ 	struct sys_device *s = &c->sysdev;
+ 	struct sysdev_attribute *attrs, *pmc_attrs;
+-	int i, nattrs;
++	int i, nattrs, res;
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_ISERIES) &&
+ 			cpu_has_feature(CPU_FTR_SMT))
+@@ -339,6 +396,11 @@ static void register_cpu_online(unsigned
+ 
+ 	if (cpu_has_feature(CPU_FTR_DSCR))
+ 		sysdev_create_file(s, &attr_dscr);
++
++	res = sysfs_create_group(&s->kobj, &emulated_attr_group);
++	if (res)
++		pr_warning("Cannot create emulated sysfs group for cpu %u\n",
++			   cpu);
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -53,6 +53,7 @@
+ #include <asm/processor.h>
+ #endif
+ #include <asm/kexec.h>
++#include <asm/emulator.h>
+ 
+ #ifdef CONFIG_DEBUGGER
+ int (*__debugger)(struct pt_regs *regs);
+@@ -721,31 +722,38 @@ static int emulate_instruction(struct pt
+ 
+ 	/* Emulate the mfspr rD, PVR. */
+ 	if ((instword & INST_MFSPR_PVR_MASK) == INST_MFSPR_PVR) {
++		WARN_EMULATE(mfpvr);
+ 		rd = (instword >> 21) & 0x1f;
+ 		regs->gpr[rd] = mfspr(SPRN_PVR);
+ 		return 0;
+ 	}
+ 
+ 	/* Emulating the dcba insn is just a no-op.  */
+-	if ((instword & INST_DCBA_MASK) == INST_DCBA)
++	if ((instword & INST_DCBA_MASK) == INST_DCBA) {
++		WARN_EMULATE(dcba);
+ 		return 0;
++	}
+ 
+ 	/* Emulate the mcrxr insn.  */
+ 	if ((instword & INST_MCRXR_MASK) == INST_MCRXR) {
+ 		int shift = (instword >> 21) & 0x1c;
+ 		unsigned long msk = 0xf0000000UL >> shift;
+ 
++		WARN_EMULATE(mcrxr);
+ 		regs->ccr = (regs->ccr & ~msk) | ((regs->xer >> shift) & msk);
+ 		regs->xer &= ~0xf0000000UL;
+ 		return 0;
+ 	}
+ 
+ 	/* Emulate load/store string insn. */
+-	if ((instword & INST_STRING_GEN_MASK) == INST_STRING)
++	if ((instword & INST_STRING_GEN_MASK) == INST_STRING) {
++		WARN_EMULATE(string);
+ 		return emulate_string_inst(regs, instword);
++	}
+ 
+ 	/* Emulate the popcntb (Population Count Bytes) instruction. */
+ 	if ((instword & INST_POPCNTB_MASK) == INST_POPCNTB) {
++		WARN_EMULATE(popcntb);
+ 		return emulate_popcntb_inst(regs, instword);
+ 	}
+ 
+@@ -929,6 +937,8 @@ void SoftwareEmulation(struct pt_regs *r
+ 
+ #ifdef CONFIG_MATH_EMULATION
+ 	errcode = do_mathemu(regs);
++	if (errcode >= 0)
++		WARN_EMULATE(math);
+ 
+ 	switch (errcode) {
+ 	case 0:
+@@ -950,6 +960,9 @@ void SoftwareEmulation(struct pt_regs *r
+ 
+ #elif defined(CONFIG_8XX_MINIMAL_FPEMU)
+ 	errcode = Soft_emulate_8xx(regs);
++	if (errcode >= 0)
++		WARN_EMULATE(8xx);
++
+ 	switch (errcode) {
+ 	case 0:
+ 		emulate_single_step(regs);
+--- /dev/null
++++ b/include/asm-powerpc/emulator.h
+@@ -0,0 +1,60 @@
++/*
++ *  Copyright 2007 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#ifndef _ASM_POWERPC_EMULATOR_H
++#define _ASM_POWERPC_EMULATOR_H
++
++#include <linux/kernel.h>
++#include <linux/percpu.h>
++
++#include <asm/atomic.h>
++
++DECLARE_PER_CPU(atomic_long_t, emulated_dcba);
++DECLARE_PER_CPU(atomic_long_t, emulated_dcbz);
++DECLARE_PER_CPU(atomic_long_t, emulated_fp_pair);
++DECLARE_PER_CPU(atomic_long_t, emulated_mcrxr);
++DECLARE_PER_CPU(atomic_long_t, emulated_mfpvr);
++DECLARE_PER_CPU(atomic_long_t, emulated_multiple);
++DECLARE_PER_CPU(atomic_long_t, emulated_popcntb);
++DECLARE_PER_CPU(atomic_long_t, emulated_spe);
++DECLARE_PER_CPU(atomic_long_t, emulated_string);
++#ifdef CONFIG_MATH_EMULATION
++DECLARE_PER_CPU(atomic_long_t, emulated_math);
++#elif defined(CONFIG_8XX_MINIMAL_FPEMU)
++DECLARE_PER_CPU(atomic_long_t, emulated_8xx);
++#endif
++
++#ifdef CONFIG_DEBUG_WARN_EMULATED
++static inline void do_warn_emulate(const char *type)
++{
++	if (printk_ratelimit())
++		pr_warning("%s used emulated %s instruction\n", current->comm,
++			   type);
++}
++#else
++static inline void do_warn_emulate(const char *type) {}
++#endif
++
++#define WARN_EMULATE(type)						\
++	do {								\
++		atomic_long_inc(&per_cpu(emulated_ ## type,		\
++					 raw_smp_processor_id()));	\
++		do_warn_emulate(#type);					\
++	} while (0)
++
++
++#endif /* _ASM_POWERPC_EMULATOR_H */
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-182377066-1196175413=:5847--
