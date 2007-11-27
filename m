@@ -1,24 +1,25 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id ADF18DDE08
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 00:55:00 +1100 (EST)
-Date: Tue, 27 Nov 2007 16:59:52 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (mail.transmode.se [83.241.175.147])
+	by ozlabs.org (Postfix) with ESMTP id 1E0DFDDE17
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 01:01:32 +1100 (EST)
 Subject: Re: [PATCH 2/3] [POWERPC] fsl_soc: add support for gianfar for
 	fixed-link property
-Message-ID: <20071127135952.GA1483@localhost.localdomain>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: avorontsov@ru.mvista.com
+In-Reply-To: <20071127135952.GA1483@localhost.localdomain>
 References: <20071126142906.19642.45540.stgit@localhost.localdomain>
 	<20071126142915.19642.5842.stgit@localhost.localdomain>
 	<1196089448.12625.62.camel@gentoo-jocke.transmode.se>
 	<20071127113935.GA26867@localhost.localdomain>
 	<1196169432.9816.16.camel@gentoo-jocke.transmode.se>
+	<20071127135952.GA1483@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 27 Nov 2007 15:01:30 +0100
+Message-Id: <1196172090.9816.23.camel@gentoo-jocke.transmode.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <1196169432.9816.16.camel@gentoo-jocke.transmode.se>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
 	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Reply-To: joakim.tjernlund@transmode.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,53 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 27, 2007 at 02:17:11PM +0100, Joakim Tjernlund wrote:
-> 
-> On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
-> > On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
-> > > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
-> > > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
-> > > > not connected to the real MDIO bus.
-> > > > 
-> > > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > > 
-> > > > ---
-> > > > 
-> > > >  Documentation/powerpc/booting-without-of.txt |    3 +
-> > > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
-> > > >  2 files changed, 42 insertions(+), 17 deletions(-)
-> > > > 
-> > > > 
-> > > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-> > > > index e9a3cb1..cf25070 100644
-> > > > --- a/Documentation/powerpc/booting-without-of.txt
-> > > > +++ b/Documentation/powerpc/booting-without-of.txt
-> > > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
-> > > >        services interrupts for this device.
-> > > >      - phy-handle : The phandle for the PHY connected to this ethernet
-> > > >        controller.
-> > > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
-> > > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
-> > > > +      1 full, c is link speed - d#10/d#100/d#1000.
-> > > 
-> > > Good work!
-> > > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
+
+On Tue, 2007-11-27 at 16:59 +0300, Anton Vorontsov wrote:
+> On Tue, Nov 27, 2007 at 02:17:11PM +0100, Joakim Tjernlund wrote:
 > > 
-> > Well, I see no reference of the "flow" neither in the include/linux/mii.h
-> > nor in the drivers/net/phy/*. :-/ Thus today there is no such register
-> > bit we can emulate?..
+> > On Tue, 2007-11-27 at 14:39 +0300, Anton Vorontsov wrote:
+> > > On Mon, Nov 26, 2007 at 04:04:08PM +0100, Joakim Tjernlund wrote:
+> > > > On Mon, 2007-11-26 at 17:29 +0300, Vitaly Bordug wrote:
+> > > > > fixed-link says: register new "Fixed/emulated PHY", i.e. PHY that
+> > > > > not connected to the real MDIO bus.
+> > > > > 
+> > > > > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> > > > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > > > 
+> > > > > ---
+> > > > > 
+> > > > >  Documentation/powerpc/booting-without-of.txt |    3 +
+> > > > >  arch/powerpc/sysdev/fsl_soc.c                |   56 ++++++++++++++++++--------
+> > > > >  2 files changed, 42 insertions(+), 17 deletions(-)
+> > > > > 
+> > > > > 
+> > > > > diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> > > > > index e9a3cb1..cf25070 100644
+> > > > > --- a/Documentation/powerpc/booting-without-of.txt
+> > > > > +++ b/Documentation/powerpc/booting-without-of.txt
+> > > > > @@ -1254,6 +1254,9 @@ platforms are moved over to use the flattened-device-tree model.
+> > > > >        services interrupts for this device.
+> > > > >      - phy-handle : The phandle for the PHY connected to this ethernet
+> > > > >        controller.
+> > > > > +    - fixed-link : <a b c> where a is emulated phy id - choose any,
+> > > > > +      but unique to the all specified fixed-links, b is duplex - 0 half,
+> > > > > +      1 full, c is link speed - d#10/d#100/d#1000.
+> > > > 
+> > > > Good work!
+> > > > May I suggest adding a "d" to <a b c> where d is flow control - 0 no, 1 yes
+> > > 
+> > > Well, I see no reference of the "flow" neither in the include/linux/mii.h
+> > > nor in the drivers/net/phy/*. :-/ Thus today there is no such register
+> > > bit we can emulate?..
+> > 
+> > Well, as good as I can recall, flow control(pause) is something that the
+> > PHY negotiates, just like FDX/HDX and should be dealt with in the
+> > adjust_link callback but not many do currently.
+> > 
+> > If you seach for pause in phy_device.c you will find it.
 > 
-> Well, as good as I can recall, flow control(pause) is something that the
-> PHY negotiates, just like FDX/HDX and should be dealt with in the
-> adjust_link callback but not many do currently.
-> 
-> If you seach for pause in phy_device.c you will find it.
+> Ah, pause. Sure, we can emulate that.
 
-Ah, pause. Sure, we can emulate that.
+Good, looking into phy_device there seems to be 2 pauses:
+ADVERTISED_Pause and ADVERTISE_PAUSE_ASYM which
+maps to phydev->pause and phydev->asym_pause
+so "d" should reflect that or a "e" should be added
+for the asym pause.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+ Jocke
+
+ Jocke
