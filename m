@@ -1,29 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B5C67DDF09
+Return-Path: <fabio7774@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 42460DDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 04:45:43 +1100 (EST)
-Message-Id: <751B3227-484E-45BE-B233-D4A8CAC2F3FD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Dale Farnsworth <dale@farnsworth.org>
-In-Reply-To: <20071127145424.8925.qmail@farnsworth.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: 85xx software reset problems from paulus.git
-Date: Tue, 27 Nov 2007 10:26:59 -0600
-References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>
-	<473DB6DF.9010804@anagramm.de>
-	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>
-	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
-	<0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>
-	<f87675ee0711161401k600b658ao3d6ae572fb367c47@mail.gmail.com>
-	<7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
-	<f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
-	<474B2A7F.5090607@anagramm.de>
-	<20071127145424.8925.qmail@farnsworth.org>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 28 Nov 2007 05:59:58 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so1500740uge
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Nov 2007 10:59:58 -0800 (PST)
+Message-ID: <474C6920.3030109@gmail.com>
+Date: Tue, 27 Nov 2007 20:59:44 +0200
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org,  bwarren@qstreams.com
+Subject: Re: Linuxppc-embedded Digest, Vol 39, Issue 48
+References: <mailman.3149.1196114204.3099.linuxppc-embedded@ozlabs.org>
+In-Reply-To: <mailman.3149.1196114204.3099.linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+From: fabio777 <fabio7774@gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,29 +25,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Thanks Ben,
 
-On Nov 27, 2007, at 8:54 AM, Dale Farnsworth wrote:
+Here it is
 
-> I wrote:
->> Kumar Gala wrote:
->>>>> Yes. The symptoms in 2.6.24RC2 are that during a kernel panic or  
->>>>> when
->>>>> calling 'reboot' in the shell, it just hangs. Using the same dts  
->>>>> and
->>>>> resets in 2.6.23.1 reboots fine. I don't have a cds reference, but
->>>>> someone who does should be able to confirm whether the issue  
->>>>> exists
->>>>> or
->>>>> not by just attempting to reboot via bash.
->>>
->>> Can someone do a git-bisect and find the patch that breaks things?
->>
->> I'll see if I can reproduce it on my 8548cds.  If so, I'll then git- 
->> bisect.
+static struct fsl_spi_platform_data k_platform_data = {
+    .initial_spmode = 0,
+    .bus_num = 1,
+    .max_chipselect = 1,
+/* board specific information */
+    .activate_cs = k_cs_activate,
+    .deactivate_cs = k_cs_deactivate,
+    .sysclk =    266,
+};
+
+static struct spi_board_info spi_board_info[] __initdata = { {
+    .modalias    = "kplus",
+    .platform_data    = &k_platform_data,
+    .max_speed_hz    = 120000,
+    .bus_num    = 1,
+    .chip_select    = 0,
+},
+};
+
+
+struct platform_device k_plus = {
+    .name        = "kplus",
+    .id        = 1,
+    .dev        = {
+        .platform_data = &k_platform_data,
+    },
+};
+
+ platform_device_register(&k_plus);
+
+ spi_register_board_info(spi_board_info, ARRAY_SIZE(spi_board_info))
+
+and then calls  spi_register_driver(&k_driver);
+
+I can't get the into the *probe functions. 
+
+Thanks 
+
+
+
+
+
 >
-> I tried this with the current powerpc.git tree on my mpc8548cds, and
-> the reboot command works for me.  The system rebooted just fine.
-
-I'm wondering if there is an issue rebooting if we are in an oops.
-
-- k
+> fabio777 wrote:
+>   
+>> Has anyone been using this driver ?
+>>   
+>>     
+> I use it, on ARCH=powerpc, though.
+>   
+>> For legacy reasons I need to keep the ppc=arch however I haven't found 
+>> out how to get this driver probed at start-up even basing my init on 
+>> Lublock.
+>>
+>>   
+>>     
+> The driver's expecting a platform device with name "mpc83xx_spi" to be 
+> registered in board init code. If you post your init code I may be able 
+> to help.
+>
+> regards,
+> Ben
+>
+>   
