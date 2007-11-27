@@ -1,17 +1,24 @@
-Return-Path: <dell.query@yahoo.com>
-Received: from n8b.bullet.mail.tp2.yahoo.com (n8b.bullet.mail.tp2.yahoo.com
-	[203.188.202.120]) by ozlabs.org (Postfix) with SMTP id 20A1ADDDF2
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id 92EB1DDE18
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 21:02:29 +1100 (EST)
-Date: Tue, 27 Nov 2007 01:57:05 -0800 (PST)
-From: Dell Query <dell.query@yahoo.com>
-Subject: Re: How to map addresses beyond 4GB
-To: Dan Malek <dan@embeddedalley.com>
-In-Reply-To: <A54CDFF0-EF7A-445B-8A1E-E211E5D267D9@embeddedalley.com>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1276259793-1196157425=:79614"
-Message-ID: <371506.79614.qm@web45606.mail.sp1.yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 28 Nov 2007 00:51:00 +1100 (EST)
+Date: 27 Nov 2007 06:50:51 -0700
+Message-ID: <20071127135051.32227.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: 85xx software reset problems from paulus.git
+References: <f87675ee0711160700m17122edcv51b55f4a0cbe38b1@mail.gmail.com>
+	<473DB6DF.9010804@anagramm.de>
+	<f87675ee0711161244h46c23d8byadaf1abb923b3971@mail.gmail.com>
+	<f87675ee0711161328u3127de3bjdd6341cdf11cd626@mail.gmail.com>
+	<0B4C1069-9D89-44E8-89F7-9E7CE07B03DF@kernel.crashing.org>
+	<f87675ee0711161401k600b658ao3d6ae572fb367c47@mail.gmail.com>
+	<7C2ED552-6644-4FB3-A97B-05FC3E2141FF@kernel.crashing.org>
+	<f87675ee0711260941w25e5ed81v7322be1500fd5611@mail.gmail.com>
+	<474B2A7F.5090607@anagramm.de>
+	<2F57AC6E-EE1B-4B8D-8AB5-AAF5B2DC4C06@kernel.crashing.org>
+Cc: 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,37 +29,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1276259793-1196157425=:79614
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Kumar Gala wrote:
+> >> Yes. The symptoms in 2.6.24RC2 are that during a kernel panic or when
+> >> calling 'reboot' in the shell, it just hangs. Using the same dts and
+> >> resets in 2.6.23.1 reboots fine. I don't have a cds reference, but
+> >> someone who does should be able to confirm whether the issue exists  
+> >> or
+> >> not by just attempting to reboot via bash.
+> 
+> Can someone do a git-bisect and find the patch that breaks things?
 
-Thanks
+I'll see if I can reproduce it on my 8548cds.  If so, I'll then git-bisect.
 
-Dan Malek <dan@embeddedalley.com> wrote: 
-On Nov 22, 2007, at 2:42 AM, Dell Query wrote:
-
-> May I know how to map this one?
-
-Just call ioremap() as usual.  It will understand the > 4G
-physical address and return a useful virtual address
-to you.
-
- -- Dan
-
-
-
-       
----------------------------------
-Never miss a thing.   Make Yahoo your homepage.
---0-1276259793-1196157425=:79614
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Thanks<br><br><b><i>Dan Malek &lt;dan@embeddedalley.com&gt;</i></b> wrote:<blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;"> <br>On Nov 22, 2007, at 2:42 AM, Dell Query wrote:<br><br>&gt; May I know how to map this one?<br><br>Just call ioremap() as usual.  It will understand the &gt; 4G<br>physical address and return a useful virtual address<br>to you.<br><br> -- Dan<br><br></blockquote><br><p>&#32;
-
-
-
-      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
-
-
---0-1276259793-1196157425=:79614--
+-Dale
