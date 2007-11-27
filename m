@@ -1,19 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31D44DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 18:40:53 +1100 (EST)
-Message-Id: <934111F9-97C2-4737-BEE7-3938BA8D25A8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: rajendra prasad <rajmadepogu@gmail.com>
-In-Reply-To: <760ff48e0711262154u39c30dbduacdf310b820a7c81@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Booting latest linux kernel(2.6.20) on MPC8548ECDS
-Date: Tue, 27 Nov 2007 01:40:43 -0600
-References: <760ff48e0711262154u39c30dbduacdf310b820a7c81@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 7FDBFDDDE4
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 19:08:41 +1100 (EST)
+Date: Tue, 27 Nov 2007 11:08:08 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC/PATCH] powerpc: Move CPM command handling into the cpm
+	drivers
+Message-ID: <20071127110808.6ef34d92@kernel.crashing.org>
+In-Reply-To: <474B3D7F.8060503@freescale.com>
+References: <4745BB5F.6060002@scram.de>
+	<fa686aa40711221036n6438c252lde71cffdaff97ea9@mail.gmail.com>
+	<20071123005121.4d38d877@kernel.crashing.org>
+	<20071126162446.GA4408@loki.buserror.net>
+	<20071127002249.612f4ff6@kernel.crashing.org>
+	<474B3D7F.8060503@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 26 Nov 2007 15:41:19 -0600
+Scott Wood wrote:
 
-On Nov 26, 2007, at 11:54 PM, rajendra prasad wrote:
+> Vitaly Bordug wrote:
+> > perhaps I was not clear enough. That was a rough idea how to handle
+> > the whole thing, not just cpm_cr_cmd. This cpm command is a corner
+> > case, but there can be other actions that may confuse CPM being
+> > triggered simultaneously or overlapping.
+> 
+> What kind of actions did you have in mind?  Microcode patching?
+> 
+microcode is another case to handle gracefully. There are also
+"soft" cases like cpmux mess-up, incompatible SoC devices (which we are handling by
+logical exclude now but which do have natural reasons of "not leaving together" like
+shared dedicated GPIO or smth else) etc. 
 
-> Hi,
->
-> I am using MPC8548ECDS board from CDS for my telecom application. I am
-> able to build 2.6.10 linux kernel and boot 2.6.10 kernel on
-> MPC8548ECDS board.When I take same configuration file and built
-> successfully but not able to boot on MPC8548E CDS board.I am  using
-> u-boot-1.1.6 as boot loader.I came to know taht latest kernel is
-> booted with new procedure.Pls tell me the procedure how to boot
-> procedure.
-
-Ask this question on the linuxppc-dev list.  You're more likely to get  
-an answer.
-
-Its unclear, but you are trying to use the latest kernel on a MPC8548E  
-CDS?
-
-- k
+-- 
+Sincerely, Vitaly
