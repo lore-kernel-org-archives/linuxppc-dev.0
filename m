@@ -1,20 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1A5FFDDE10
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 03:11:09 +1100 (EST)
-Message-ID: <474D9327.9020305@ru.mvista.com>
-Date: Wed, 28 Nov 2007 19:11:19 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <mel@csn.ul.ie>
+Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E779CDDE1D
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 03:12:09 +1100 (EST)
+Date: Wed, 28 Nov 2007 16:12:02 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/2] powerpc: add hugepagesz boot-time parameter
+Message-ID: <20071128161201.GA10916@csn.ul.ie>
+References: <474CF68E.1040709@us.ibm.com> <200711280826.46820.arnd@arndb.de>
 MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
-	driver
-References: <20071127153708.GA12490@localhost.localdomain>	<20071127153908.GB14183@localhost.localdomain>	<20071127212222.GB10829@lixom.net>	<200711272233.00456.arnd@arndb.de>
-	<20071128154904.GA20722@localhost.localdomain>
-In-Reply-To: <20071128154904.GA20722@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200711280826.46820.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, kniht@linux.vnet.ibm.com,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+On (28/11/07 08:26), Arnd Bergmann didst pronounce:
+> On Wednesday 28 November 2007, Jon Tollefson wrote:
+> > This patch adds the hugepagesz boot-time parameter for ppc64 that lets 
+> > you pick the size for your huge pages.  The choices available are 64K 
+> > and 16M.  It defaults to 16M (previously the only choice) if nothing or 
+> > an invalid choice is specified.  Tested 64K huge pages with the 
+> > libhugetlbfs 1.2 release with its 'make func' and 'make stress' test 
+> > invocations.
+> 
+> How hard would it be to add the 1MB page size that some CPUs support
+> as well? On systems with small physical memory like the PS3, that
+> sounds very useful to me.
+> 
 
->>>>This driver nicely wraps around pata_platform library functions,
->>>>and provides OF platform bus bindings to the PATA devices.
+Does the PS3 support 1M pages in hardware? When I last looked, the magic
+ibm,segment-page-sizes file that described the supported pagesizes was
+missing from the device tree. In this situation, the default sizes
+become 4K and 16M because no other ones are advertised.
 
->>>>+static struct of_device_id pata_of_platform_match[] = {
->>>>+     { .compatible = "pata-platform", },
->>>>+};
-
->>>"pata-platform" really means nothing outside of linux. A more
->>>generic label would be useful.
-
-> Agreed.
-
-    Now you're quick to agree. :-)
-
->>Maybe the name of the standards it supports? Could be
->>"ata-4", "ata-5" and the like, or the exact transfer mode, like
->>"pata-udma-5", "pata-pio-3", "sata-150", etc.
-
-> You're quite optimistic about pata_platform capabilities. ;-)
-
-    Indeed. :-)
-
-> As far as I know it is [obviously] supports PIO modes only. And so
-> far I was able to get max 5.28 MB/s read transfers. Which looks like
-> ideal case for PIO1 (CF I'm testing on is 3.0, max. PIO4).
-
-    Believe me, it's a great speed even for PIO4. Most systems only show 3+ 
-MiB/s in this mode according to hdparm.
-
-> I've modified pio_mask appropriately, plus I've tried to comment
-> out .set_mode = pata_platform_set_mode, and now it says:
-
-> ata5: PATA max PIO4 mmio cmd 0xf0000000 ctl 0xf000020c irq 24
-> ata5.00: CFA: TOSHIBA THNCF512MQG, 3.00, max PIO4
-> ata5.00: configured for PIO4
-> ata5.00: configured for PIO4
-
-> That looks good, but speed is the same. Oh well, it's another
-> matter.
-
-> Back to dts, I think pata-pio-X is good scheme. That way we can
-> pass pio_mask via device tree. Sounds reasonable?
-
-    Grumble. Can't we pass this via some property other than "compatible"? I'm 
-opposed to "ata-5" and the like in there as well cause it's not clear what 
-information this would provide. Why people so love to make things complex WRT 
-the "compatible" property -- instead of making the task of selecting a proper 
-driver more simple, they tend to make it mode complex by trying to specify 
-values that have quite little to do with the device's programming interface 
-itself...
-
-MBR, Sergei
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
