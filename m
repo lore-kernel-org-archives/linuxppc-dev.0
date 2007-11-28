@@ -1,31 +1,15 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 94A63DDF30
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 07:18:42 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lASKKJPj017406
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:20:19 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lASKIcoP423040
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:18:38 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lASKIcWV005094
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:18:38 -0500
-Date: Wed, 28 Nov 2007 14:18:38 -0600
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
-Message-ID: <20071128201838.GH19584@austin.ibm.com>
-References: <20071120012815.GB7969@austin.ibm.com>
-	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196208960.11297.26.camel@farscape.rchland.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <wd@denx.de>
+To: Oliver Rutsch <orutsch@sympatec.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: MPC5200 I2C and 2.6 kernel
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 27 Nov 2007 11:07:11 +0100."
+	<474BEC4F.3080800@sympatec.com>
+Date: Wed, 28 Nov 2007 21:22:45 +0100
+Sender: wd@denx.de
+Message-Id: <20071128202245.90051247C1@gemini.denx.de>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,45 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 27, 2007 at 06:15:59PM -0600, Will Schmidt wrote:
-> (resending with the proper "from" addr this time). 
+In message <474BEC4F.3080800@sympatec.com> you wrote:
 > 
-> 
-> I'm seeing some funky behavior on power5/power6 partitions with this
-> patch.    A "/sbin/reboot" is now behaving much more like a
-> "/sbin/halt".
-> 
-> Anybody else seeing this, or is it time for me to call an exorcist for
-> my boxes? 
+> Regardless what I'm doing in the 2.6 kernel configuration I can't get 
+> this RTC running (I activated RTC support and the driver for the M41T00 
+> in the configuration).
+> hwclock --debug tells me:
 
-I beleive the patch
-http://www.nabble.com/-PATCH--powerpc-pseries:-tell-phyp-to-auto-restart-t4847604.html
+> hwclock: Open of /dev/rtc failed, errno=19: No such device.
 
-will cure this problem.
+Well... did you check how your /dev/rtc is set up? It used  to  be  a
+misc  device with MAJ=10 MIN=135 in old kernel versions, but now it's
+MAJ=254 MIN=4, i. e. it should look like this:
 
->From that patch:
+crw-r--r-- 1 root root 254,   0 Jun 22 18:30 /dev/rtc
 
-+/**
-+ * pSeries_auto_restart - tell hypervisor that boot succeeded.
-+ *
-+ * The pseries hypervisor attempts to detect and prevent an
-+ * infinite loop of kernel crashes and auto-reboots. It does
-+ * so by refusing to auto-reboot unless we indicate that the
-+ * current boot was sucessful.  So, indicate success late in
-+ * the boot sequence.
-+ */ 
 
-FYI, I am leaving IBM in just a few days now, and won't really
-have much of a chance to debug this, if there are other problems.
+Best regards,
 
-This pair of patches was required to make hypervisor-assisted 
-dump work, viz, we need to tell the hypervisor about when we 
-crashed, or didn't crash, so that if we crashed, the dump can 
-be taken appropriately.
+Wolfgang Denk
 
-It occurs to me that, as I write this, that maybe xmon 'zr'
-command should be modified to call pSeries_auto_restart just
-in case, so that it actually reboots.  There might be another
-funky code path that I can't think of right now.
-
---linas
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+For every complex problem, there is a solution that is simple,  neat,
+and wrong.                                           -- H. L. Mencken
