@@ -1,32 +1,33 @@
-Return-Path: <davidel@xmailserver.org>
-Received: from x35.xmailserver.org (x35.xmailserver.org [64.71.152.41])
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "x35.xmailserver.org",
-	Issuer "x35.xmailserver.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id ADF5BDDE38
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:33:48 +1100 (EST)
-Received: from alien.or.mcafeemobile.com
-	by x35.xmailserver.org with [XMail 1.25 ESMTP Server]
-	id <S260A2D> for <linuxppc-dev@ozlabs.org> from
-	<davidel@xmailserver.org>; Wed, 28 Nov 2007 14:25:34 -0500
-Date: Wed, 28 Nov 2007 11:25:30 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
-In-Reply-To: <20071128104345.9474025e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0711281123360.14548@alien.or.mcafeemobile.com>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<474D61CF.6080400@linux.vnet.ibm.com>
-	<200711281432.09178.arnd@arndb.de>
-	<20071128104345.9474025e.akpm@linux-foundation.org>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E8C1DDEC2
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 07:09:37 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lASK9YAY023692
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:34 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lASK9XK3431342
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:33 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lASK9WRE027058
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:33 -0500
+Date: Wed, 28 Nov 2007 14:09:32 -0600
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
+Message-ID: <20071128200932.GG19584@austin.ibm.com>
+References: <20071120012815.GB7969@austin.ibm.com>
+	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
+	<20071128110037.GB31217@aepfle.de>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="1795850513-290824188-1196277930=:14548"
-Cc: Michael Kerrisk <mtk-manpages@gmx.net>, Arnd Bergmann <arnd@arndb.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071128110037.GB31217@aepfle.de>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,50 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, Nov 28, 2007 at 12:00:37PM +0100, Olaf Hering wrote:
+> On Tue, Nov 27, Will Schmidt wrote:
+> 
+> > > -void rtas_os_term(char *str)
+> > > +void rtas_panic_msg(char *str)
+> 
+> > > -	if (panic_timeout)
+> > > -		return;
+> 
+> This change is wrong. Booting with panic=123 really means the system
+> has to reboot in 123 seconds after a panic.
 
---1795850513-290824188-1196277930=:14548
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+And it does.
 
-On Wed, 28 Nov 2007, Andrew Morton wrote:
+> But, maybe this panic_timeout check was moved elsewhere.
 
-> On Wed, 28 Nov 2007 14:32:07 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
->=20
-> > On Wednesday 28 November 2007, Kamalesh Babulal wrote:
-> > > Kernel build fails, with build error
-> > >=20
-> > > =C2=A0 CC =C2=A0 =C2=A0 =C2=A0arch/powerpc/platforms/cell/spu_callbac=
-ks.o
-> > > In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
-> > > include/asm/systbl.h:312: error: =E2=80=98sys_timerfd=E2=80=99 undecl=
-ared here (not in a function)
-> > > make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
-> > > make[1]: *** [arch/powerpc/platforms/cell] Error 2
-> > > make: *** [arch/powerpc/platforms] Error 2
-> > >=20
-> >=20
-> > I guess all architectures except x86 are currently broken because they
-> > reference the old sys_timerfd function.
->=20
-> None of them were broken in my testing and I'm unsure why powerpc broke
-> here.
->=20
-> > This patch should add the missing
-> > bits to powerpc.
-> >=20
->=20
-> Because the patches in -mm left the stubs in place in sys_ni.c and powerp=
-c
-> _should_ have (incorrectly) picked those up.
+It was *always* somewhere else; the check here was always wrong.
 
-My fault. I forgot to update sys_ni.c with the new functions (and with the
-sys_timerfd->sys_timerfd_create name change).
-Do you want a patch Andrew?
+This change makes the os-term call happen after the the panic
+timeout amount of time has elapsed.
 
-
-
-- Davide
-
---1795850513-290824188-1196277930=:14548--
+--linas
