@@ -1,23 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from mail188-dub-R.bigfish.com (mail-dub.bigfish.com
-	[213.199.154.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1D718DDE04
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 08:22:19 +1100 (EST)
-Message-ID: <474DDBFF.9020206@am.sony.com>
-Date: Wed, 28 Nov 2007 13:22:07 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2042EDDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 08:31:37 +1100 (EST)
+Date: Wed, 28 Nov 2007 15:34:45 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH 5/14] powerpc: Fix 440/440A machine check handling
+Message-ID: <20071128213445.GA29962@lixom.net>
+References: <1195625777.579001.269266058699.qpush@grosgo>
+	<20071121061714.0AB82DEAF1@ozlabs.org>
+	<20071121071240.141d2917@weaponx>
+	<1195674530.6970.86.camel@pasglop>
+	<20071121135109.73b9e98f@weaponx>
+	<1195675525.6970.100.camel@pasglop>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/2] powerpc: add hugepagesz boot-time parameter
-References: <474CF68E.1040709@us.ibm.com>
-	<200711280826.46820.arnd@arndb.de>	<20071128161201.GA10916@csn.ul.ie>
-	<200711281730.40907.arnd@arndb.de>
-In-Reply-To: <200711281730.40907.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Mel Gorman <mel@csn.ul.ie>, linuxppc-dev@ozlabs.org,
-	kniht@linux.vnet.ibm.com, Linux Memory Management List <linux-mm@kvack.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1195675525.6970.100.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Wednesday 28 November 2007, Mel Gorman wrote:
->> On (28/11/07 08:26), Arnd Bergmann didst pronounce:
->> > On Wednesday 28 November 2007, Jon Tollefson wrote:
->> > > This patch adds the hugepagesz boot-time parameter for ppc64 that lets 
->> > > you pick the size for your huge pages.  The choices available are 64K 
->> > > and 16M.  It defaults to 16M (previously the only choice) if nothing or 
->> > > an invalid choice is specified.  Tested 64K huge pages with the 
->> > > libhugetlbfs 1.2 release with its 'make func' and 'make stress' test 
->> > > invocations.
->> > 
->> > How hard would it be to add the 1MB page size that some CPUs support
->> > as well? On systems with small physical memory like the PS3, that
->> > sounds very useful to me.
->> > 
->> 
->> Does the PS3 support 1M pages in hardware? When I last looked, the magic
->> ibm,segment-page-sizes file that described the supported pagesizes was
->> missing from the device tree. In this situation, the default sizes
->> become 4K and 16M because no other ones are advertised.
+On Thu, Nov 22, 2007 at 07:05:25AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> I think you can select the page size using a hypercall on the PS3.
-> The CPU supports any two of (64k, 1M, 16M) simultaneously.
+> On Wed, 2007-11-21 at 13:51 -0600, Josh Boyer wrote:
+> > > Hrm... it's per processor, not per board. I didn't feel like digging
+> > > which board uses which processor and go fixup all the ppc_md's
+> > 
+> > Sounds like something a generic function could probe for from the DTS.
+> > I'll look at doing something here when I start making 44x
+> > multiplatform
+> > (soon).
+> 
+> Well... we already probe the CPU type.... from cputable.
+> 
+> So if there was a place to put that, it would be the cputable.
 
-The PS3's hypervisor allows you to create the lpar's virtual address
-space with two page sizes.  I currently have this hard coded to 64K
-and 16M.  Within the address space you create memory regions.  I have
-the hot-plug memory mapped in as a single region that is hard coded
-as 16M pages.
+It could make sense to have _both_ platform (ppc_md) and cputable
+functions, since some info is likely to be core-specific, other might
+be board/chipset/SoC-specific.
 
-The current HV implementation only allows you to create an htab of
-at maximum 1M, so that influences how you can configure page sizes.
 
-Just as a note, since the amount of memory available to the Linux lpar
-is not a multiple of 16M, some of the available hot-plug memory is not
-mapped into the address space.  For firmware 1.90, 8M is unused.  I
-was thinking to create another region for that memory and put things
-like the storage bounce buffers in there.  Maybe I'll use 1M pages
-for that memory.
-
--Geoff
+-Olof
