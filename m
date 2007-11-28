@@ -1,17 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Problems booting a 64k page kernel
-From: Michael Ellerman <michael@ellerman.id.au>
-To: aglitke <agl@us.ibm.com>
-In-Reply-To: <1196290249.27582.122.camel@localhost.localdomain>
-References: <1196290249.27582.122.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4SggCRr72wd5ugQxPUnD"
-Date: Thu, 29 Nov 2007 10:39:02 +1100
-Message-Id: <1196293142.7875.1.camel@concordia>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Return-Path: <alan@akb.net>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.234])
+	by ozlabs.org (Postfix) with ESMTP id 8C9BEDDE1E
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:41:24 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id i1so1248070nzh
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:41:23 -0800 (PST)
+Message-ID: <bfa0697f0711281541l31225d59ne78c8fe40286052e@mail.gmail.com>
+Date: Wed, 28 Nov 2007 16:41:22 -0700
+From: "Alan Bennett" <embedded@akb.net>
+Sender: alan@akb.net
+To: linuxppc-dev@ozlabs.org
+Subject: Timers on mpc8248 etc...
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,46 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I've got a routine that needs to delay for X microseconds, this is a
+must.  The command after schedule_timeout must has to wait for the HW
+to complete a task that takes X microseconds.
 
---=-4SggCRr72wd5ugQxPUnD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I would think that one way to do this is with a simple
+schedule_timeout.  But in the example below, the time that passes from
+run1() to dontrun() is far less than 3.2 msecs.  Infact, sometimes its
+~ 800 micros according the a analyzer looking at points triggered in
+run1() and donrun().  Could this be a configuration problem with the
+timer/interrupt that generates the jiffies?
 
-On Wed, 2007-11-28 at 16:50 -0600, aglitke wrote:
-> Hello all.  I am new to building 64k page kernels and can't seem to get
-> one to boot correctly.  Everything looks okay until init gets a signal
-> 11 while booting.  Attached is my boot log and the kernel config I used.
-> To generate this config I merely enabled the 64k page option in make
-> menuconfig to alter a previously working config.
->=20
-> Any help you can provide would be greatly appreciated.
 
-I've seen that happen with an init linked with uClibc, its dynamic
-loader was doing mmap with MAP_FIXED on non-64K aligned addresses.
-What user space are you using?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-4SggCRr72wd5ugQxPUnD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHTfwWdSjSd0sB4dIRAp94AKCuQ3Ltd63/CkFtiWLUDy9mH866tQCfVrx1
-8mOjW8wPfcF5+vcs0nZ0Qso=
-=0bNG
------END PGP SIGNATURE-----
-
---=-4SggCRr72wd5ugQxPUnD--
+run1();
+delaytime = 3280;
+set_current_state(TASK_UNINTERRUPTIBLE) ;
+schedule_timeout(usecs_to_jiffies(delaytime));  //1HZ = 1 second
+1/1000 second = 1 milli
+dontrun();
