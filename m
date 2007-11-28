@@ -1,30 +1,33 @@
-Return-Path: <kniht@us.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (E23SMTP03.au.ibm.com [202.81.18.172])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1068DDDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 16:03:21 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAS53IOB027788
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 00:03:18 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAS53I4f081706
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 22:03:18 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAS53HnZ017917
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Nov 2007 22:03:17 -0700
-Message-ID: <474CF694.8040700@us.ibm.com>
-Date: Tue, 27 Nov 2007 23:03:16 -0600
-From: Jon Tollefson <kniht@us.ibm.com>
+	(Client CN "e23smtp03.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 780FEDDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 19:16:32 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp03.au.ibm.com (8.13.1/8.13.1) with ESMTP id lAS7Iuae008771
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 18:18:56 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lAS7HtKn2375848
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 18:17:55 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAS7HcLh016568
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 18:17:39 +1100
+Message-ID: <474D15FF.5080508@linux.vnet.ibm.com>
+Date: Wed, 28 Nov 2007 12:47:19 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Linux Memory Management List <linux-mm@kvack.org>
-Subject: [PATCH 2/2] powerpc: make 64K huge pages more reliable
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: kniht@linux.vnet.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+References: <474D0AAC.5010005@linux.vnet.ibm.com>
+	<20071127225328.9e3f3827.akpm@linux-foundation.org>
+In-Reply-To: <20071127225328.9e3f3827.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,123 +37,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds reliability to the 64K huge page option by making use of 
-the PMD for 64K huge pages when base pages are 4k.  So instead of a 12 
-bit pte it would be 7 bit pmd and a 5 bit pte. The pgd and pud offsets 
-would continue as 9 bits and 7 bits respectively.  This will allow the 
-pgtable to fit in one base page.  This patch would have to be applied 
-after part 1.
+Andrew Morton wrote:
+> On Wed, 28 Nov 2007 11:59:00 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>> Hi,
+> 
+> (cc linux-scsi, for sym53c8xx)
+> 
+>> Soft lockup is detected while bootup with 2.6.24-rc3-git2 on powerbox
+> 
+> I assume this is a post-2.6.23 regression?
+> 
+>> BUG: soft lockup - CPU#1 stuck for 11s! [insmod:375]
+>> NIP: c00000000002f02c LR: d0000000001414fc CTR: c00000000002f018
+>> REGS: c00000077cbef0b0 TRAP: 0901   Not tainted  (2.6.24-rc3-git2-autotest)
+>> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 24022088  XER: 00000000
+>> TASK = c00000077cbd8000[375] 'insmod' THREAD: c00000077cbec000 CPU: 1
+>> GPR00: d0000000001414fc c00000077cbef330 c00000000052b930 d000080080002014 
+>> GPR04: d00008008000202c 0000000000000000 c00000077ca1cb00 d00000000014ce54 
+>> GPR08: c00000077ca1c63c 0000000000000000 000000000000002a c00000000002f018 
+>> GPR12: d000000000143610 c000000000473d00 
+>> NIP [c00000000002f02c] .ioread8+0x14/0x60
+>> LR [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
+>> Call Trace:
+>> [c00000077cbef330] [c00000077cbef3c0] 0xc00000077cbef3c0 (unreliable)
+>> [c00000077cbef3a0] [d0000000001414fc] .sym_hcb_attach+0x1188/0x1378 [sym53c8xx]
+>> [c00000077cbef470] [d0000000001395f8] .sym2_probe+0x700/0x99c [sym53c8xx]
+>> [c00000077cbef710] [c0000000001bc118] .pci_device_probe+0x124/0x1b0
+>> [c00000077cbef7b0] [c000000000221138] .driver_probe_device+0x144/0x20c
+>> [c00000077cbef850] [c000000000221450] .__driver_attach+0xcc/0x154
+>> [c00000077cbef8e0] [c00000000021ff94] .bus_for_each_dev+0x7c/0xd4
+>> [c00000077cbef9a0] [c000000000220e9c] .driver_attach+0x28/0x40
+>> [c00000077cbefa20] [c0000000002204d8] .bus_add_driver+0x90/0x228
+>> [c00000077cbefac0] [c000000000221858] .driver_register+0x94/0xb0
+>> [c00000077cbefb40] [c0000000001bc430] .__pci_register_driver+0x6c/0xcc
+>> [c00000077cbefbe0] [d000000000143428] .sym2_init+0x108/0x15b0 [sym53c8xx]
+>> [c00000077cbefc80] [c00000000008ce80] .sys_init_module+0x17c4/0x1958
+>> [c00000077cbefe30] [c00000000000872c] syscall_exit+0x0/0x40
+>> Instruction dump:
+>> 60000000 786b0420 38210070 7d635b78 e8010010 7c0803a6 4e800020 7c0802a6 
+>> f8010010 f821ff91 7c0004ac 89230000 <0c090000> 4c00012c 79290620 2f8900ff 
+> 
+> I see no obvious lockup sites near the end of sym_hcb_attach().  Maybe it's
+> being called lots of times from a higher level..  Do the traces all look
+> the same?
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
----
+Hi Andrew,
 
- hugetlbpage.c |   53 ++++++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 38 insertions(+), 15 deletions(-)
+I see this call trace twice and both looks similar and on another reboot
+the following trace is seen twice in different cpu
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index f4632ad..c6df45b 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -30,15 +30,11 @@
- #define NUM_LOW_AREAS	(0x100000000UL >> SID_SHIFT)
- #define NUM_HIGH_AREAS	(PGTABLE_RANGE >> HTLB_AREA_SHIFT)
- 
--#ifdef CONFIG_PPC_64K_PAGES
--#define HUGEPTE_INDEX_SIZE	(PMD_SHIFT-HPAGE_SHIFT)
--#else
--#define HUGEPTE_INDEX_SIZE	(PUD_SHIFT-HPAGE_SHIFT)
--#endif
--#define PTRS_PER_HUGEPTE	(1 << HUGEPTE_INDEX_SIZE)
--#define HUGEPTE_TABLE_SIZE	(sizeof(pte_t) << HUGEPTE_INDEX_SIZE)
-+unsigned int hugepte_shift;
-+#define PTRS_PER_HUGEPTE	(1 << hugepte_shift)
-+#define HUGEPTE_TABLE_SIZE	(sizeof(pte_t) << hugepte_shift)
- 
--#define HUGEPD_SHIFT		(HPAGE_SHIFT + HUGEPTE_INDEX_SIZE)
-+#define HUGEPD_SHIFT		(HPAGE_SHIFT + hugepte_shift)
- #define HUGEPD_SIZE		(1UL << HUGEPD_SHIFT)
- #define HUGEPD_MASK		(~(HUGEPD_SIZE-1))
- 
-@@ -105,7 +101,14 @@ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
- 			if (!pmd_none(*pm))
- 				return hugepte_offset((hugepd_t *)pm, addr);
- #else
--			return hugepte_offset((hugepd_t *)pu, addr);
-+			if (HPAGE_SHIFT == HPAGE_SHIFT_64K) {
-+				pmd_t *pm;
-+				pm = pmd_offset(pu, addr);
-+				if (!pmd_none(*pm))
-+					return hugepte_offset((hugepd_t *)pm, addr);
-+			} else {
-+				return hugepte_offset((hugepd_t *)pu, addr);
-+			}
- #endif
- 		}
- 	}
-@@ -133,7 +136,14 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr)
- 		if (pm)
- 			hpdp = (hugepd_t *)pm;
- #else
--		hpdp = (hugepd_t *)pu;
-+		if (HPAGE_SHIFT == HPAGE_SHIFT_64K) {
-+			pmd_t *pm;
-+			pm = pmd_alloc(mm, pu, addr);
-+			if (pm)
-+				hpdp = (hugepd_t *)pm;
-+		} else {
-+			hpdp = (hugepd_t *)pu;
-+		}
- #endif
- 	}
- 
-@@ -161,7 +171,6 @@ static void free_hugepte_range(struct mmu_gather *tlb, hugepd_t *hpdp)
- 						 PGF_CACHENUM_MASK));
- }
- 
--#ifdef CONFIG_PPC_64K_PAGES
- static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
- 				   unsigned long addr, unsigned long end,
- 				   unsigned long floor, unsigned long ceiling)
-@@ -194,7 +203,6 @@ static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
- 	pud_clear(pud);
- 	pmd_free_tlb(tlb, pmd);
- }
--#endif
- 
- static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
- 				   unsigned long addr, unsigned long end,
-@@ -213,9 +221,15 @@ static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
- 			continue;
- 		hugetlb_free_pmd_range(tlb, pud, addr, next, floor, ceiling);
- #else
--		if (pud_none(*pud))
--			continue;
--		free_hugepte_range(tlb, (hugepd_t *)pud);
-+		if (HPAGE_SHIFT == HPAGE_SHIFT_64K) {
-+			if (pud_none_or_clear_bad(pud))
-+				continue;
-+			hugetlb_free_pmd_range(tlb, pud, addr, next, floor, ceiling);
-+		} else {
-+			if (pud_none(*pud))
-+				continue;
-+			free_hugepte_range(tlb, (hugepd_t *)pud);
-+		}
- #endif
- 	} while (pud++, addr = next, addr != end);
- 
-@@ -538,6 +552,15 @@ void set_huge_psize(int psize)
- 			mmu_psize_defs[psize].shift == HPAGE_SHIFT_64K)) {
- 		HPAGE_SHIFT = mmu_psize_defs[psize].shift;
- 		mmu_huge_psize = psize;
-+#ifdef CONFIG_PPC_64K_PAGES
-+		hugepte_shift = (PMD_SHIFT-HPAGE_SHIFT);
-+#else
-+		if (HPAGE_SHIFT == HPAGE_SHIFT_64K)
-+			hugepte_shift = (PMD_SHIFT-HPAGE_SHIFT);
-+		else
-+			hugepte_shift = (PUD_SHIFT-HPAGE_SHIFT);
-+#endif
-+
- 	} else
- 		HPAGE_SHIFT = 0;
- }
+BUG: soft lockup detected on CPU#3!
+Call Trace:
+[C00000003FEDEDA0] [C000000000010220] .show_stack+0x68/0x1b0 (unreliable)
+[C00000003FEDEE40] [C0000000000A061C] .softlockup_tick+0xf0/0x13c
+[C00000003FEDEEF0] [C000000000072E2C] .run_local_timers+0x1c/0x30
+[C00000003FEDEF70] [C000000000022FA0] .timer_interrupt+0xa8/0x488
+[C00000003FEDF050] [C0000000000034EC] decrementer_common+0xec/0x100
+--- Exception: 901 at .ioread8+0x14/0x60
+    LR = .sym_hcb_attach+0x1194/0x1384 [sym53c8xx]
+[C00000003FEDF340] [D0000000002B3BC0] 0xd0000000002b3bc0 (unreliable)
+[C00000003FEDF3B0] [D00000000029A3C0] .sym_hcb_attach+0x1194/0x1384 [sym53c8xx]
+[C00000003FEDF480] [D000000000291D30] .sym2_probe+0x75c/0x9f8 [sym53c8xx]
+[C00000003FEDF710] [C0000000001B65A4] .pci_device_probe+0x13c/0x1dc
+[C00000003FEDF7D0] [C000000000219A0C] .driver_probe_device+0xa0/0x15c
+[C00000003FEDF870] [C000000000219C64] .__driver_attach+0xb4/0x138
+[C00000003FEDF900] [C00000000021913C] .bus_for_each_dev+0x7c/0xd4
+[C00000003FEDF9C0] [C0000000002198B0] .driver_attach+0x28/0x40
+[C00000003FEDFA40] [C000000000218BA4] .bus_add_driver+0x98/0x18c
+[C00000003FEDFAE0] [C00000000021A064] .driver_register+0xa8/0xc4
+[C00000003FEDFB60] [C0000000001B68AC] .__pci_register_driver+0x5c/0xa4
+[C00000003FEDFBF0] [D00000000029C204] .sym2_init+0x104/0x1550 [sym53c8xx]
+[C00000003FEDFC90] [C00000000008D1F4] .sys_init_module+0x1764/0x1998
+[C00000003FEDFE30] [C00000000000869C] syscall_exit+0x0/0x40
+
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
