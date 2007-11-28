@@ -1,21 +1,28 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.246])
-	by ozlabs.org (Postfix) with ESMTP id 288DBDDDCA
+Return-Path: <cn.vijaibaskar@gdatech.co.in>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 0B6D3DDD0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 14:25:56 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so246711anc
+	Wed, 28 Nov 2007 14:58:05 +1100 (EST)
+Received: from [172.29.36.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id ED17A8780BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Nov 2007 19:25:55 -0800 (PST)
-Date: Tue, 27 Nov 2007 21:25:48 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
-	Registers (BCSR)
-Message-ID: <20071127212548.3efd39e9@vader.jdub.homelinux.org>
-In-Reply-To: <409454.53699.qm@web45615.mail.sp1.yahoo.com>
-References: <409454.53699.qm@web45615.mail.sp1.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 27 Nov 2007 19:57:54 -0800 (PST)
+Received: from mail.gdatech.co.in (unknown [172.29.36.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id ABD568780A9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Nov 2007 19:57:54 -0800 (PST)
+Message-ID: <474CE85A.1020902@gdatech.co.in>
+Date: Wed, 28 Nov 2007 09:32:34 +0530
+From: vijay baskar <cn.vijaibaskar@gdatech.co.in>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: The question about the high memory support on MPC8360?
+References: <396049508.10992@tsinghua.org.cn>	<474A639A.3090006@gdatech.co.in>	<20071126165751.GA4415@loki.buserror.net>	<474B9CC0.2000803@gdatech.co.in>
+	<474C4DA9.6000205@freescale.com>
+In-Reply-To: <474C4DA9.6000205@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: =?UTF-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,62 +33,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 27 Nov 2007 02:47:45 -0800 (PST)
-Dell Query <dell.query@yahoo.com> wrote:
+Hi,
+"The kernel also allows hardcoded mapping
+of IO regions into its virtual address space through the
+io_block_mapping interface."
 
-> Hi,
-> 
-> I am creating a simple program which will try to read the board ID of the PPC440EPx thru BCSR but when I load it, it gives me "Data Read PLB Error". 
-> 
-> I am not sure if I missed out something.
-> 
-> I would really appreciate it if somebody could help me on this.
-> 
-> I have posted the source code below, as well as the complete message.
-> 
-> Many thanks!
-> 
-> SOURCE CODE:
-> ----------------------------------------------------------------------
-> #include <linux/module.h>
-> #include <linux/kernel.h>
-> #include <linux/ioport.h>
-> #include <linux/delay.h>
-> #include <linux/init.h>
-> #include <linux/interrupt.h>
-> #include <linux/platform_device.h>
-> #include <asm/irq.h>
-> #include <asm/io.h>
-> #include <linux/i2c.h>
-> #include <linux/i2c-id.h>
-> #include <asm/ocp.h>
-> #include <asm/ibm4xx.h>
-> 
-> MODULE_LICENSE("GPL");
-> 
-> #define BCSR_BASE   0xC0002000
+Can u tell me how this is in current arch/powerpc. Also does it mean 
+that whatever be the size of the ram > 768 MB there is not going to be 
+much improvement in performance in kernel space irrespective of invoking 
+CONFIG_HIGHMEM or not?
 
-This is wrong.  It's 0x1C0002000.
+Also do you think this low mem be enough if i have lots of kernel space 
+processes each invoking lots of kmallocs. Will there be bottle necks?? 
+Also what alternative do we have if  low mem of 768 MB is not enough??
 
-> #define BCSR0       0
-> #define BCSR1       1
-> #define BCSR2       2
-> 
-> #define USER_LED    0x2
-> #define SIZE_TO_MAP 10
-> 
-> #define LED_ON      0
-> 
-> uint __iomem *bcsrbase = NULL;
-> 
-> static int __init initFunction(void) {
->    uint tmp;
->    printk("<1> Calling init function.\n");
->    printk("<1> bcsrbase value %p...\n",bcsrbase);
->    printk("<1> Remapping %x...\n",BCSR_BASE);
->    /*map*/
->    bcsrbase = ioremap(BCSR_BASE, SIZE_TO_MAP);
+Scott Wood wrote:
 
-Since this seems to be arch/ppc, use ioremap64.
-
-josh
+> vijay baskar wrote:
+>
+>> The kernel maps the last 1 GB of the virtual address space one to one
+>> to the physical memory.
+>
+>
+> No, it maps 768MB of RAM in this manner.
+>
+>> This is called the kernel space. After the one
+>> to one mapping is done for the available physical memory, the
+>> remaining virtual addresses are used for vmalloc and ioremap.
+>
+>
+> And highmem mappings.
+>
+>> The kernel also allows hardcoded mapping
+>> of IO regions into its virtual address space through the
+>> io_block_mapping interface.
+>
+>
+> Not in current arch/powerpc kernels.
+>
+>> Many boards use the block IO mapping to
+>> map the CCSRBAR/IMMR into the kernel address space, such that the
+>> physical address and the virutal address is the same. Virtual
+>> addresses beyond these hardcoded mappings cannot be used by
+>> vmalloc/ioremap.
+>
+>
+> And this is why.
+>
+>> Now as more and more memory is added to the system the addresses
+>> available for vmalloc and ioremap gets reduced, and memory allocations
+>> start to fail, due to the lack of availability of virtual addresses.
+>
+>
+> How so?  The size of lowmem is constant once you reach the threshold, 
+> as is the size of the highmem mapping area.
+>
+> What *does* start to fail eventually, if you have a *lot* of highmem, 
+> is that you run out of lowmem for pagetables and such.
+>
+> -Scott
+>
+>
