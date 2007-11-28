@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9C987DDE21
+Return-Path: <SRS0=cDAn=QV=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 4A437DDDFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 19:45:44 +1100 (EST)
-Message-Id: <7793CF97-2634-4EB2-B354-F842605BE2E6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: robert lazarski <robertlazarski@gmail.com>
-In-Reply-To: <f87675ee0711261026k65d2d4e3pe74697abbc39930e@mail.gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Device tree and /proc/iomem question
-Date: Wed, 28 Nov 2007 01:02:19 -0600
-References: <f87675ee0711261026k65d2d4e3pe74697abbc39930e@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 28 Nov 2007 21:56:30 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
+	Registers (BCSR)
+Date: Wed, 28 Nov 2007 11:51:45 +0100
+References: <639733.2036.qm@web45601.mail.sp1.yahoo.com>
+In-Reply-To: <639733.2036.qm@web45601.mail.sp1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200711281151.45446.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,120 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 28 November 2007, Dell Query wrote:
+> Oh is it 0x1C0002000?
 
-On Nov 26, 2007, at 12:26 PM, robert lazarski wrote:
+Just to be sure here, we are talking about the AMCC Sequoia board, right?
 
-> Hi all, I'm using a recent pull of the paulus tree 2.6.24RC2 on my
-> custom 85xx board. I'm trying to test my PCI1, PCI2 and PCIe . My
-> device tree for PCI is:
->
-> 		pci@8000 {
-> 			compatible = "fsl,mpc8540-pci";
-> 			device_type = "pci";
-> 			interrupt-map-mask = <f800 0 0 7>;
-> 			interrupt-map = <
->
-> 				/* IDSEL 0x11 J17 Slot 1 */
-> 				8800 0 0 1 &mpic 2 1
-> 				8800 0 0 2 &mpic 3 1
-> 				8800 0 0 3 &mpic 4 1
-> 				8800 0 0 4 &mpic 1 1
->
-> 				/* IDSEL 0x12 J16 Slot 2 */
->
-> 				9000 0 0 1 &mpic 3 1
-> 				9000 0 0 2 &mpic 4 1
-> 				9000 0 0 3 &mpic 2 1
-> 				9000 0 0 4 &mpic 1 1>;
->
-> 			interrupt-parent = <&mpic>;
-> 			interrupts = <18 2>;
-> 			bus-range = <0 ff>;
-> 			ranges = <02000000 0 80000000 80000000 0 20000000
-> 				  01000000 0 00000000 e2000000 0 00100000>;
-> 			clock-frequency = <3f940aa>;
-> 			#interrupt-cells = <1>;
-> 			#size-cells = <2>;
-> 			#address-cells = <3>;
-> 			reg = <8000 1000>;
-> 		};
->
-> 		pci@c000 {
-> 			compatible = "fsl,mpc8540-pci";
-> 			device_type = "pci";
-> 			interrupt-map-mask = <f800 0 0 7>;
-> 			interrupt-map = <
->
-> 				/* IDSEL 0x11 J17 Slot 1 */
-> 				8800 0 0 1 &mpic 2 1
-> 				8800 0 0 2 &mpic 3 1
-> 				8800 0 0 3 &mpic 4 1
-> 				8800 0 0 4 &mpic 1 1
->
-> 				/* IDSEL 0x12 J16 Slot 2 */
->
-> 				9000 0 0 1 &mpic 3 1
-> 				9000 0 0 2 &mpic 4 1
-> 				9000 0 0 3 &mpic 2 1
-> 				9000 0 0 4 &mpic 1 1>;
->
-> 			interrupt-parent = <&mpic>;
-> 			interrupts = <18 2>;
-> 			bus-range = <0 ff>;
-> 			ranges = <02000000 0 c0000000 c0000000 0 20000000
-> 				  01000000 0 00000000 e2800000 0 00100000>;
-> 			clock-frequency = <3f940aa>;
-> 			#interrupt-cells = <1>;
-> 			#size-cells = <2>;
-> 			#address-cells = <3>;
-> 			reg = <c000 1000>;
-> 		};
->
-> 		pcie@a000 {
-> 			compatible = "fsl,mpc8548-pcie";
-> 			device_type = "pci";
-> 			#interrupt-cells = <1>;
-> 			#size-cells = <2>;
-> 			#address-cells = <3>;
-> 			reg = <a000 1000>;
-> 			bus-range = <0 ff>;
-> 			ranges = <02000000 0 a0000000 a0000000 0 20000000
-> 				  01000000 0 00000000 e3000000 0 00100000>;
-> 			clock-frequency = <1fca055>;
-> 			interrupt-parent = <&mpic>;
-> 			interrupts = <19 2>;
-> 			interrupt-map-mask = <f800 0 0 7>;
-> 			interrupt-map = <
-> 				/* IDSEL 0x0 */
-> 				0000 0 0 1 &mpic 0 1
-> 				0000 0 0 2 &mpic 1 1
-> 				0000 0 0 3 &mpic 2 1
-> 				0000 0 0 4 &mpic 3 1
-> 				>;
-> 		};
+> Where can I get the document? What I have is 0xC0002000 from
+> ep440xc_um_amcc.pdf file that I get from the accompanying PPC440EPx
+> resource CD.
 
-Take a look at the device trees in the kernel source.  You'll see we  
-moved PCI around so its at the root level.  Not sure if that's your  
-issue.
+Please take a look at the 440EPx data sheet. It has a nice table with an 
+overview of the address maps (table 1). Here you will notice that the EBC has 
+multiple maps, one starting at 0x1.c000.0000 and another one at 
+0x1.f000.0000. Yes, these are 36bit physical addresses. In U-Boot these are 
+mapped via the TLB to 0xc000.0000 and 0xf000.0000. So in U-Boot you are able 
+to access the CPLD at 0xc0000000. But in Linux you have to map the 36bit 
+address to get the virtual address which you need for accessing. And using 
+arch/ppc you need to call ioremap64() with this 36bit address as parameter.
 
-> I see all the above in /proc/device-tree/soc8548@e0000000 when booting
-> the kernel. I double checked my memory mapping in u-boot and it
-> appears to match my device tree. Yet I don't see any pci here:
->
-> root:~> cat /proc/iomem
-> e0004500-e0004507 : serial
-> e0004600-e0004607 : serial
-> e0024000-e0024fff : ethernet
->  e0024520-e002453f : mdio
-> e0025000-e0025fff : ethernet
-> e0026000-e0026fff : ethernet
-> e0027000-e0027fff : ethernet
->
-> cat /proc/bus/pci/devices shows nothing though I have a card in PCI1,
-> and all I see from dmesg is "PCI: Probing PCI hardware" . Any ideas?
+Hope this helps.
 
-It seems like its not even really probing or finding the buses.
+Best regards,
+Stefan
 
-Can you post what your board/platform code looks like?
-
-- k
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
