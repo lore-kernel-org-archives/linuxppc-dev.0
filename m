@@ -1,23 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 74357DDE1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 00:26:58 +1100 (EST)
-Subject: Re: NULL dereference in clockevents_program_event
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1195502804.19479.6.camel@johannes.berg>
-References: <1195502804.19479.6.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-quWCiOvAks0lV/vvf99N"
-Date: Wed, 28 Nov 2007 00:52:20 +0100
-Message-Id: <1196207540.6058.114.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@redhat.com>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 15803DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 00:33:34 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
+Date: Wed, 28 Nov 2007 14:32:07 +0100
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+	<474D61CF.6080400@linux.vnet.ibm.com>
+In-Reply-To: <474D61CF.6080400@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200711281432.09178.arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-quWCiOvAks0lV/vvf99N
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-> During a hibernate cycle on my G5, while machine was powering down after
-> saving the image, I just had a NULL dereference  in
-> clockevents_program_event when accessing dev->mode, dev was NULL.
+On Wednesday 28 November 2007, Kamalesh Babulal wrote:
+> Kernel build fails, with build error
 >=20
-> Unfortunately the machine rebooted before I was able to write down more
-> than the fact that it was called from tick_program_event(); the problem
-> doesn't seem to be easily reproducible.
+> =C2=A0 CC =C2=A0 =C2=A0 =C2=A0arch/powerpc/platforms/cell/spu_callbacks.o
+> In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
+> include/asm/systbl.h:312: error: =E2=80=98sys_timerfd=E2=80=99 undeclared=
+ here (not in a function)
+> make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
+> make[1]: *** [arch/powerpc/platforms/cell] Error 2
+> make: *** [arch/powerpc/platforms] Error 2
 >=20
-> From what I can see when doing the same thing, the shutdown attempts to
-> offline all CPUs. Because the snapshot was actually saved to disk and
-> the machine was shutting down I guess that the it happened at that time,
-> but I have no idea what else to do to debug this.
->=20
-> I have
->=20
-> | CONFIG_HIGH_RES_TIMERS=3Dy
-> | CONFIG_NO_HZ=3Dy
->=20
-> in this config.
 
-I just got the same or a similar thing again and was able to write down
-more of the stack dump:
+I guess all architectures except x86 are currently broken because they
+reference the old sys_timerfd function. This patch should add the missing
+bits to powerpc.
 
-NIP clock_events_program_event+0x20
-LR  tick_program_event+0x64
-Stack:
-hr_timer_interrupt+0x211
-timer_interrupt+0xc4
-decrementer_common+0x110
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-johannes
+=2D--
 
---=-quWCiOvAks0lV/vvf99N
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Disclaimer: Not tested at all, just applied common sense.
+Disclaimer2: conflicts with the sys_indirect kernel implementation
+sent by paulus last week.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUAR0yts6Vg1VMiehFYAQJYZA//cjhZh6nlGykdEVy22iX/daoDFItEtJ1e
-as1OIvnHZc4HUWzsoLeq8Mjj5cKYJrKObsEPRvTQ4F/8DDNCGD+BEAlreyb5y7o9
-G91olSBsyum52lSqMPt8gXKuFGm/S5gnLEXah9I0NV7R5N+6hbCJm7mczSV8dsbr
-fOiUNYOAMN4y/8pxOdyH1Yfp7m6pdiHpg4ElOpj72JeKBzHni9eMlYDQnNi1bJcB
-liP43mDA+vgZL1b4beXlXBbd4JUymhHLAkF1lGsihjI6uYzrdj3QEGc7wmSp2Njb
-vbnEQ5AjDM7rpf0Mk2tymFCVZbaUpnXcWPY5z3rJnPJE56uF6g56780AsjbsDUpe
-KUM2VKuLIM5dtE4uJtcEiyfWJZHTjkJxF7AxgileOnKBPH8TPCVFKIN4ueKTtGv6
-fCvUszHyXOWm/TWWCRFXhHrTvwGksMsiA/5susBn7A6ilytCMuyuVWidQlj9SVmH
-uRdo9m4T4URFs3S9LgllDrqE7aoWzGUwWzOLWmuccCiXqna5XuridfomRsDYvY0o
-HE3DRPUFZ0oRZ14LDAhr5WyaJpfBn88kXMFFm/R9JkoT4qp4wUw31PTlSRP6uqZQ
-P1TSlkSdqsMwWIflHqelhGVVXuH84pavg3DEGlLDSM58JTokXpuIaiEIryEBTKhC
-pi1rUHPseQ0=
-=D/Bl
------END PGP SIGNATURE-----
-
---=-quWCiOvAks0lV/vvf99N--
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 11d5383..b029368 100644
+=2D-- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -309,7 +309,9 @@ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
+ COMPAT_SYS_SPU(utimensat)
+ COMPAT_SYS_SPU(signalfd)
+=2DCOMPAT_SYS_SPU(timerfd)
++COMPAT_SYS_SPU(timerfd_create)
+ SYSCALL_SPU(eventfd)
+ COMPAT_SYS_SPU(sync_file_range2)
+ COMPAT_SYS(fallocate)
++COMPAT_SYS_SPU(sys_timerfd_settime)
++COMPAT_SYS_SPU(sys_timerfd_gettime)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 97d82b6..4ba2d20 100644
+=2D-- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -328,14 +328,16 @@
+ #define __NR_epoll_pwait	303
+ #define __NR_utimensat		304
+ #define __NR_signalfd		305
+=2D#define __NR_timerfd		306
++#define __NR_timerfd_create	306
+ #define __NR_eventfd		307
+ #define __NR_sync_file_range2	308
+ #define __NR_fallocate		309
++#define __NR_sys_timerfd_settime 310
++#define __NR_sys_timerfd_gettime 311
+=20
+ #ifdef __KERNEL__
+=20
+=2D#define __NR_syscalls		310
++#define __NR_syscalls		312
+=20
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
