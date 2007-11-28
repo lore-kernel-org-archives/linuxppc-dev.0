@@ -1,18 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id B3BD7DDD01
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 09:58:12 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] sys_indirect kernel implementation for PowerPC
-Date: Tue, 27 Nov 2007 23:57:56 +0100
-References: <18243.41278.72798.100000@cargo.ozlabs.ibm.com>
-	<20071121144245.e8abf9e8.sfr@canb.auug.org.au>
-In-Reply-To: <20071121144245.e8abf9e8.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200711272357.57007.arnd@arndb.de>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 343C3DDDD5
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 11:13:05 +1100 (EST)
+Date: Wed, 28 Nov 2007 11:13:02 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] kernel_execve is identical in 32 and 64 bit
+Message-Id: <20071128111302.78c94470.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +19,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 21 November 2007, Stephen Rothwell wrote:
-> > +++ b/include/asm-powerpc/systbl.h
-> > @@ -313,3 +313,4 @@ COMPAT_SYS_SPU(timerfd)
-> > =A0SYSCALL_SPU(eventfd)
-> > =A0COMPAT_SYS_SPU(sync_file_range2)
-> > =A0COMPAT_SYS(fallocate)
-> > +COMPAT_SYS(indirect)
->=20
-> Do the SPUs want this?
+so concolidate it into misc.S.
 
-Excellent question. Sorry for being late in my reply here. The calls
-that are marked non-spu capable are those that are harmful when run
-on the SPU, e.g. because they modify the signal mask -- the SPU cannot
-receive signals itself.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/misc.S    |    8 ++++++++
+ arch/powerpc/kernel/misc_32.S |    7 -------
+ arch/powerpc/kernel/misc_64.S |    7 -------
+ 3 files changed, 8 insertions(+), 14 deletions(-)
 
-sys_indirect is potentially very useful on the SPU, but we can't allow
-it if it gives you access to all other syscalls. If we want to use it
-on the SPU at some point, we may have to provide an alternative
-implementation that walks the spu_syscall_table instead.
-OTOH, if sys_indirect is mostly useful for the eventual addition of
-syslets, we can leave it out, because syslets don't make sense if
-you have no multithreading capability.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-	Arnd <><
+diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+index 330c9dc..74ce0c7 100644
+--- a/arch/powerpc/kernel/misc.S
++++ b/arch/powerpc/kernel/misc.S
+@@ -14,6 +14,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ #include <asm/ppc_asm.h>
++#include <asm/unistd.h>
+ 
+ 	.text
+ 
+@@ -43,3 +44,10 @@ _GLOBAL(add_reloc_offset)
+ 	add	r3,r3,r5
+ 	mtlr	r0
+ 	blr
++
++_GLOBAL(kernel_execve)
++	li	r0,__NR_execve
++	sc
++	bnslr
++	neg	r3,r3
++	blr
+diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+index 8b642ab..ea11378 100644
+--- a/arch/powerpc/kernel/misc_32.S
++++ b/arch/powerpc/kernel/misc_32.S
+@@ -793,13 +793,6 @@ _GLOBAL(kernel_thread)
+ 	addi	r1,r1,16
+ 	blr
+ 
+-_GLOBAL(kernel_execve)
+-	li	r0,__NR_execve
+-	sc
+-	bnslr
+-	neg	r3,r3
+-	blr
+-
+ /*
+  * This routine is just here to keep GCC happy - sigh...
+  */
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index bbb3ba5..a3c491e 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -518,13 +518,6 @@ _GLOBAL(giveup_altivec)
+ 
+ #endif /* CONFIG_ALTIVEC */
+ 
+-_GLOBAL(kernel_execve)
+-	li	r0,__NR_execve
+-	sc
+-	bnslr
+-	neg	r3,r3
+-	blr
+-
+ /* kexec_wait(phys_cpu)
+  *
+  * wait for the flag to change, indicating this kernel is going away but
+-- 
+1.5.3.6
