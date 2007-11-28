@@ -1,23 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Return-Path: <SRS0+703ff539752438bf2049+1557+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7C0C0DDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 09:30:08 +1100 (EST)
-Message-ID: <474DEB78.6010209@am.sony.com>
-Date: Wed, 28 Nov 2007 14:28:08 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 4/7] ps3: Add repository polling loop to work
-	around	hypervisor bug
-References: <20071128143142.580732000@pademelon.sonytel.be>
-	<20071128143438.407055000@pademelon.sonytel.be>
-In-Reply-To: <20071128143438.407055000@pademelon.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6CFBDDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 09:40:00 +1100 (EST)
+Subject: Re: [PATCH] MTD: pasemi_nand driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20071128221448.GA1144@lixom.net>
+References: <20071128221448.GA1144@lixom.net>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 22:40:32 +0000
+Message-Id: <1196289632.27384.0.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven wrote:
 
-> ps3: Add repository polling loop to work around hypervisor bug
-> 
-> On some firmware versions (e.g. 1.90), the storage device may not show up
-> in the repository immediately after receiving the notification message.
-> Add a small polling loop to make sure we don't miss it.
-> 
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> ---
->  arch/powerpc/platforms/ps3/device-init.c |   47 ++++++++++++++++++++++---------
->  1 files changed, 34 insertions(+), 13 deletions(-)
+On Wed, 2007-11-28 at 16:14 -0600, Olof Johansson wrote:
+> Plumbing for NAND connected via localbus on PA Semi PWRficient-based
+> boards.
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Any reason it lacks MODULE_DEVICE_TABLE() ?
+
+I note electra-ide lacks it too. So no autoload of either.
+
+-- 
+dwmw2
