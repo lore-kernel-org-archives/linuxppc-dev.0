@@ -1,26 +1,23 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound5-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 75393DDDFA
+Return-Path: <jwilliams@itee.uq.edu.au>
+Received: from mailhub4.uq.edu.au (mailhub4.uq.edu.au [130.102.149.131])
+	by ozlabs.org (Postfix) with ESMTP id 5BF04DDE27
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 11:28:41 +1100 (EST)
+	Wed, 28 Nov 2007 11:52:54 +1100 (EST)
+Message-ID: <474CBBDE.9010007@itee.uq.edu.au>
+Date: Wed, 28 Nov 2007 10:52:46 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Xilinx devicetrees
-Date: Tue, 27 Nov 2007 16:28:33 -0800
-In-Reply-To: <474CAE70.3030005@itee.uq.edu.au>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: Xilinx devicetrees
 References: <47480CF0.7090105@dlasys.net>
 	<fa686aa40711240912r192aba72o2cbdb798370e7b7c@mail.gmail.com>
 	<20071125052459.DA8B1EE805F@mail70-blu.bigfish.com>
 	<4749425C.5060207@dlasys.net>
 	<20071125181506.EE2041BA004F@mail141-cpk.bigfish.com>
 	<474CAE70.3030005@itee.uq.edu.au>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "John Williams" <jwilliams@itee.uq.edu.au>
-Message-Id: <20071128002835.068BE16A005D@mail198-sin.bigfish.com>
+	<20071128002835.068BE16A005D@mail198-sin.bigfish.com>
+In-Reply-To: <20071128002835.068BE16A005D@mail198-sin.bigfish.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: Michal Simek <simekm2@fel.cvut.cz>,
 	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -33,106 +30,106 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
-> -----Original Message-----
-> From: John Williams [mailto:jwilliams@itee.uq.edu.au]=20
-> Sent: Tuesday, November 27, 2007 3:55 PM
-> To: Stephen Neuendorffer
-> Cc: David H. Lynch Jr.; linuxppc-embedded; Michal Simek
-> Subject: Re: Xilinx devicetrees
->=20
->=20
-> MicroBlaze is a highly configurable CPU in terms of its=20
-> instruction set,=20
-> features and so on.  To make use of this, it is essential that each=20
-> kernel image be compiled to match the CPU configuration.  While a=20
-> generic kernel, making use of no features (MUL, DIV, Shift,=20
-> MSR ops etc)=20
-> would run on any CPU, performance would be abysmal.
+Stephen Neuendorffer wrote:
 
-I think the userspace is actually much more critical than the kernel for
-most of these things (with the exception of msrset/msrclr, and the
-barrel shifter perhaps).  Unfortunately, even if you implement an
-alternatives-style mechanism for the kernel, you're still hosed for
-userspace.  Once I a big enough system, it's just unfeasible to
-recompile everything anyway.  I think this is where autoconfig starts to
-break down.
+>>From: John Williams [mailto:jwilliams@itee.uq.edu.au] 
 
-> In my view it's not acceptable to present these as options=20
-> for the user=20
-> to select at kernel config time. With N yes/no parameters, there is 1=20
-> correct configuration, and 2^N-1 incorrect ones.  The odds of=20
-> the user=20
-> falling upon a configuration that at worst fails to boot, or=20
-> at best is=20
-> not optimally matched to the hardware, are high.
+>>MicroBlaze is a highly configurable CPU in terms of its 
+>>instruction set, 
+>>features and so on.  To make use of this, it is essential that each 
+>>kernel image be compiled to match the CPU configuration.  While a 
+>>generic kernel, making use of no features (MUL, DIV, Shift, 
+>>MSR ops etc) 
+>>would run on any CPU, performance would be abysmal.
+> 
+> I think the userspace is actually much more critical than the kernel for
+> most of these things (with the exception of msrset/msrclr, and the
+> barrel shifter perhaps).  Unfortunately, even if you implement an
+> alternatives-style mechanism for the kernel, you're still hosed for
+> userspace.  
 
-Yes.  Autoconfig does handle this in a fairly nice way.
+I haven't benchmarks each option on the kernel - you are right that 
+shift is a big one, but mul I think is also important, given that every 
+array access generates an integer multiply,
 
-> This same issue also applies to C libraries and apps - they must be=20
-> compiled with prior knowledge of the CPU.  This is why our=20
-> microblaze-uclinux-gcc toolchain, with multilib'd uClibc, is=20
-> almost 400meg!
->=20
-> Wrapping every mul, div, shift etc in a function call is clearly not=20
-> feasible.  Things like the msrset/msrclr ops have a modest but=20
-> measurable impact on kernel code size and performance - it's just not=20
-> reasonable to add any level of indirection in there.
->=20
-> I have thought about dynamic (boot-time) code re-writing as one=20
-> possibility here, but it very quickly gets nasty.  All of the=20
-> "optimised" opcodes (MUL/DIV/Shift etc) are smaller than=20
-> their emulated=20
-> counterparts, so in principle we could re-write the text segment with=20
-> the optimised opcode, then NOP pad, but that's still inefficient.  As=20
-> soon as we start talking about dynamic code relocation, re-writing=20
-> relative offsets in loops, ... yuck..  We'd be putting half of mb-ld=20
-> into the arch early boot code (or bootloader...)
->=20
-> The opposite approach, to build with all instructions enabled and=20
-> install exception handlers to deal with the fixups, is also=20
-> pretty awful.
+Once I a big enough system, it's just unfeasible to
+> recompile everything anyway.  I think this is where autoconfig starts to
+> break down.
 
-It's not nice, I agree.  I think the key principle should be that I
-should be able to get a system working as quickly as possible, and I
-might optimize things later.  One thing that device trees will allow is
-for *all* the drivers to get compiled in to the kernel, and only as a
-late stage operation does a designer need to start throwing things away.
-Using traps I can easily start with a 'kitchen sink' design, and start
-discarding processor features, relying on the traps.  When I get low
-enough down on the performance curve, I can uas an autoconfig-type
-mechanism to regain a little of what I lost by optimizing away the trap
-overhead.=20
+I'm not sure I agree, here, given that most people building MicroBlaze 
+systems are doing so with uClinux-dist (or PetaLinux), you can do a full 
+rebuilt, kernel libs apps, in a couple of minutes.  Much shorter than 
+sythnesis and P&R, that's for sure (and runtime is linear in size, 
+unlike P&R :)
 
-Personally, I think the easiest way out of all this is to just have less
-configurability.  For microblaze in general, this is too much of a
-restriction, but microblaze used as a control processor running linux,
-there are probably just a few design points that really make sense
-(probably size optimized: no options except maybe msrset/msrclr, and the
-kitchen sink).  If we go that far, we don't really need people to ever
-run autoconfig, or kernels, or anything.  Especially considering there
-is no easy way of selecting which of the 2^N design points I want
-*anyway*. :)
+> It's not nice, I agree.  I think the key principle should be that I
+> should be able to get a system working as quickly as possible, and I
+> might optimize things later.  One thing that device trees will allow is
+> for *all* the drivers to get compiled in to the kernel, and only as a
+> late stage operation does a designer need to start throwing things away.
+> Using traps I can easily start with a 'kitchen sink' design, and start
+> discarding processor features, relying on the traps.  When I get low
+> enough down on the performance curve, I can uas an autoconfig-type
+> mechanism to regain a little of what I lost by optimizing away the trap
+> overhead. 
 
-> I find myself asking the question - for what use cases does=20
-> the current=20
-> static approach used in MicroBlaze (with the PetaLinux BSP /=20
-> Kconfig.auto) *not* work?
->=20
-> One compromise approach might be to have a script in=20
-> arch/microblaze/scripts, called by the arch Makefile, that=20
-> cracks open=20
-> the DT at build time and extracts appropriate cpu flags.
+OK, but now we have a kernel dependent on *3* files - a DTS, a 
+Kconfig.auto, and (indirectly) the bitstream itself.
 
-Hmm... interesting idea, although parsing the source is likely
-difficult...  It's probably not worth it to go this far, I think.   As
-you say, why doesn't autoconfig of today work fine for this.
+> Personally, I think the easiest way out of all this is to just have less
+> configurability.  For microblaze in general, this is too much of a
+> restriction, but microblaze used as a control processor running linux,
+> there are probably just a few design points that really make sense
+> (probably size optimized: no options except maybe msrset/msrclr, and the
+> kitchen sink).  If we go that far, we don't really need people to ever
+> run autoconfig, or kernels, or anything.  Especially considering there
+> is no easy way of selecting which of the 2^N design points I want
+> *anyway*. :)
 
-> Finally, what is the LKML position on DT files going into the kernel=20
-> source tree?
+My experience tells me that if the microblaze can be configured in a 
+particular way, *someone* will want to do it (and still boot linux on 
+it!)  We still have people building MicroBlaze 3.00 in Spartan2E, with 
+EDK 6.3.  And autoconfig works!  Exceptions on/off, MMU on/off (runtime 
+configurable on that?).
 
-Source .dts go in and get compiled to binary blobs at compile time.  The
-'big' recent controversy is whether the source->binary compiler dtc
-should be mirrored in the Linux tree or not.
+Our ability to plug into the backend design database of EDK presents a 
+great opportunity - truly automatically configured kernels.  I think we 
+have a responsibility to leverage that power.    We are already there 
+with the static approach, I think we just need to make sure that 
+persists into the dynamic approach, and that we find a good mix of the two.
 
-Steve
+There are of course some semantic issues that the EDK cannot 
+automatically resolve - relative ordering and priority of multiple 
+peripheral instances for example.
+
+>>One compromise approach might be to have a script in 
+>>arch/microblaze/scripts, called by the arch Makefile, that 
+>>cracks open 
+>>the DT at build time and extracts appropriate cpu flags.
+> 
+> Hmm... interesting idea, although parsing the source is likely
+> difficult...  It's probably not worth it to go this far, I think.   As
+> you say, why doesn't autoconfig of today work fine for this.
+
+Well, copying multiple configuration files into the kernel is not ideal. 
+  Surely a little perl or python script would do the trick?  DTS syntax 
+is pretty clean, just find the CPU node and off we go.  Multiple CPU, 
+well... :)
+
+>>Finally, what is the LKML position on DT files going into the kernel 
+>>source tree?
+> 
+> 
+> Source .dts go in and get compiled to binary blobs at compile time.  The
+> 'big' recent controversy is whether the source->binary compiler dtc
+> should be mirrored in the Linux tree or not.
+
+OK.
+
+Another thing I suggested to Michal recently, perhaps we need 
+kernel/lib/libof to store common OF / DT handling code.  Much better 
+than duplicating it accross microblaze and PPC, and maybe other arch's 
+would also see the light..  That would also add a claim for the DTC to 
+go in scripts/
+
+John
