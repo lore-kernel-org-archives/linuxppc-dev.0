@@ -1,33 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6E8C1DDEC2
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 07:09:37 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lASK9YAY023692
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:34 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lASK9XK3431342
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:33 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lASK9WRE027058
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 15:09:33 -0500
-Date: Wed, 28 Nov 2007 14:09:32 -0600
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
-Message-ID: <20071128200932.GG19584@austin.ibm.com>
-References: <20071120012815.GB7969@austin.ibm.com>
-	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
-	<20071128110037.GB31217@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071128110037.GB31217@aepfle.de>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EE223DDE11
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 07:15:35 +1100 (EST)
+Subject: Re: [PATCH 2/2] [PPC 44x] enable L2-cache for ALPR, Katmai,
+	Ocotea, and Taishan
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20071128194727.GA22325@gate.ebshome.net>
+References: <1416528026.20071107014041@emcraft.com>
+	<1196120506.7157.18.camel@pasglop>
+	<20071128194727.GA22325@gate.ebshome.net>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 07:15:13 +1100
+Message-Id: <1196280913.13230.16.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,25 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 28, 2007 at 12:00:37PM +0100, Olaf Hering wrote:
-> On Tue, Nov 27, Will Schmidt wrote:
+
+On Wed, 2007-11-28 at 11:47 -0800, Eugene Surovegin wrote:
+> On Tue, Nov 27, 2007 at 10:41:46AM +1100, Benjamin Herrenschmidt wrote:
+> > BTW... Do you know why we can't just enable HW snoop ? The 440SPe
+> > documentation seems to indicate that this is supported by the L2 cache
+> > via snooping on the PLB.
 > 
-> > > -void rtas_os_term(char *str)
-> > > +void rtas_panic_msg(char *str)
-> 
-> > > -	if (panic_timeout)
-> > > -		return;
-> 
-> This change is wrong. Booting with panic=123 really means the system
-> has to reboot in 123 seconds after a panic.
+> Unless something has been changed significantly in the 44x port, but 
+> L2 cache code I wrote for 440GX did exactly this - we never needed any 
+> manual L2 cache management at all.
 
-And it does.
+Ah good. So we should port that code over instead.
 
-> But, maybe this panic_timeout check was moved elsewhere.
-
-It was *always* somewhere else; the check here was always wrong.
-
-This change makes the os-term call happen after the the panic
-timeout amount of time has elapsed.
-
---linas
+Thanks !
+Ben.
