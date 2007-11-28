@@ -1,22 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B2701DE085
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:52:35 +1100 (EST)
-Subject: RE: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F5203DF7871@orsmsx418.amr.corp.intel.com>
-References: <20071116073821.548CCDDDF4@ozlabs.org>
-	<36D9DB17C6DE9E40B059440DB8D95F5203DF7871@orsmsx418.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 06:52:12 +1100
-Message-Id: <1196279532.13230.14.camel@pasglop>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: RFC: Fix some lexical problems with references 
+In-Reply-To: Your message of "Thu, 22 Nov 2007 17:10:07 +1100."
+	<20071122061007.GA22888@localhost.localdomain>
+References: <20071122061007.GA22888@localhost.localdomain> 
+Date: Wed, 28 Nov 2007 13:53:38 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1IxSyY-0008Lf-4W@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +17,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, 2007-11-28 at 10:47 -0800, Brandeburg, Jesse wrote:
+So, like, the other day David Gibson mumbled:
+> The recent change to the lexer to only recognize property and node
+> names in the appropriate context removed a number of lexical warts in
+> our language that would have gotten ugly as we add expression support
+> and so forth.
 > 
-> > The side effect is that I removed the assignments to the netdev
-> > fields mem_start, mem_end and base_addr, which are totally useless
-> > for PCI devices.
+> But there's one nasty one remaining: references can contain a full
+> path, including the various problematic node name characters (',', '+'
+> and '-', for example).  This would cause trouble with expressions, and
+> it also causes trouble with the patch I'm working on to allow
+> expanding references to paths rather than phandles.  This patch
+> therefore reworks the lexer to mitigate these problems.
 > 
-> also, concerning this, ifconfig shows the output of these variables, I
-> don't think we want to blatantly remove them, as it is actually removing
-> information that is, if not used, at least displayed to user space.
+> 	- References to labels cause no problems.  These are now
+> recognized separately from references to full paths.  No syntax change
+> here.
+> 
+> 	- References to full paths, including problematic characters
+> are allowed by "quoting" the path with braces
+> e.g. &{/pci@10000/somedevice@3,8000}.  The braces protect any internal
+> problematic characters from being confused with operators or whatever.
+> 
+> 	- For compatibility with existing dts files, in v0 dts files
+> we allow bare references to paths as before &/foo/bar/whatever - but
+> *only* if the path contains no troublesome characters.  Specifically
+> only [a-zA-Z0-9_@/] are allowed.
+> 
+> This is an incompatible change to the dts-v1 format, but since AFAIK
+> no-one has yet switched to dts-v1 files, I think we can get away with
+> it.  Better to make the transition when people to convert to v1, and
+> get rid of the problematic old syntax.
+> 
+> Strictly speaking, it's also an incompatible change to the v0 format,
+> since some path references that were allowed before are no longer
+> allowed.  I suspect no-one has been using the no-longer-supported
+> forms (certainly none of the kernel dts files will cause trouble).  We
+> might need to think about this harder, though.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-It's not the right place to have that information and there is no
-room in the user space field to fit more than 32 bits on 32 bits
-platforms so I'd rather remove it. It's really only for ISA drivers that
-have user configurable addresses.
+Applied.
 
-Ben.
+jdl
