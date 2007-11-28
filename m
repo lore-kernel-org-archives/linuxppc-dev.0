@@ -1,19 +1,20 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 61AFADDE46
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:57:20 +1100 (EST)
-Date: Wed, 28 Nov 2007 11:50:37 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
-Message-ID: <20071128195037.GB22325@gate.ebshome.net>
-References: <7310408706.20071107014010@emcraft.com>
+Return-Path: <jesse.brandeburg@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+	by ozlabs.org (Postfix) with ESMTP id E38A2DDDEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 05:58:02 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7310408706.20071107014010@emcraft.com>
-Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
+Date: Wed, 28 Nov 2007 10:47:17 -0800
+Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5203DF7871@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <20071116073821.548CCDDDF4@ozlabs.org>
+References: <20071116073821.548CCDDDF4@ozlabs.org>
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 07, 2007 at 01:40:10AM +0300, Yuri Tikhonov wrote:
-> 
->  Hello all,
-> 
->  Here is a patch-set for support L2-cache synchronization routines for
-> the ppc44x processors family. I know that the "ppc" branch is for bug-fixing only, thus
-> the patch-set is just FYI [though enabled but non-coherent L2-cache may appear as a bug for
-> someone who uses one of the boards listed below :)].
-> 
-> [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range() implementation for ppc44x;
-> [PATCH 2/2] [PPC 44x] enable L2-cache for the following ppc44x-based boards: ALPR,
-> Katmai, Ocotea, and Taishan.
+Benjamin Herrenschmidt wrote:
+> The e1000 driver stores the content of the PCI resources into
+> unsigned long's before ioremapping. This breaks on 32 bits
+> platforms that support 64 bits MMIO resources such as ppc 44x.
+>=20
+> This fixes it by removing those temporary variables and passing
+> directly the result of pci_resource_start/len to ioremap.
 
-Why is this all needed?
+the patch is mostly fine, but looking through the tree, doesn't every
+driver that has 64 bit capable resources have this problem?
 
-IIRC ibm440gx_l2c_enable() configures 64G snoop region for L2C.
+in fact, skeleton module has this problem, if I'm not mistaken.  e1000
+isn't the only one. :-)
+=20
+> The side effect is that I removed the assignments to the netdev
+> fields mem_start, mem_end and base_addr, which are totally useless
+> for PCI devices.
 
-Did AMCC made non-only-coherent L2C chips recently?
+also, concerning this, ifconfig shows the output of these variables, I
+don't think we want to blatantly remove them, as it is actually removing
+information that is, if not used, at least displayed to user space.
 
--- 
-Eugene
+eth6      Link encap:Ethernet  HWaddr 00:0E:01:0C:02:03
+          inet addr:134.134.3.121  Bcast:134.134.3.255
+Mask:255.255.255.0
+          inet6 addr: fe80::20e:1ff:fe0c:203/64 Scope:Link
+          UP BROADCAST NOTRAILERS RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:9022519 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1303701 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:4044613454 (3857.2 Mb)  TX bytes:118365109 (112.8 Mb)
+          Base address:0xf000 Memory:feac0000-feae0000
+                                     ^^^^^^^^^^^^^^^^^
