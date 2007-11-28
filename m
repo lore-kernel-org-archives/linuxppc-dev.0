@@ -1,20 +1,32 @@
-Return-Path: <jesse.brandeburg@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
-	by ozlabs.org (Postfix) with ESMTP id E38A2DDDEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 05:58:02 +1100 (EST)
+Return-Path: <davidel@xmailserver.org>
+Received: from x35.xmailserver.org (x35.xmailserver.org [64.71.152.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "x35.xmailserver.org",
+	Issuer "x35.xmailserver.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id ADF5BDDE38
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:33:48 +1100 (EST)
+Received: from alien.or.mcafeemobile.com
+	by x35.xmailserver.org with [XMail 1.25 ESMTP Server]
+	id <S260A2D> for <linuxppc-dev@ozlabs.org> from
+	<davidel@xmailserver.org>; Wed, 28 Nov 2007 14:25:34 -0500
+Date: Wed, 28 Nov 2007 11:25:30 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.24-rc3-mm2 - Build Failure on powerpc timerfd() undeclared
+In-Reply-To: <20071128104345.9474025e.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0711281123360.14548@alien.or.mcafeemobile.com>
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+	<474D61CF.6080400@linux.vnet.ibm.com>
+	<200711281432.09178.arnd@arndb.de>
+	<20071128104345.9474025e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] e1000: Fix for 32 bits platforms with 64 bits resources
-Date: Wed, 28 Nov 2007 10:47:17 -0800
-Message-ID: <36D9DB17C6DE9E40B059440DB8D95F5203DF7871@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20071116073821.548CCDDDF4@ozlabs.org>
-References: <20071116073821.548CCDDDF4@ozlabs.org>
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Cc: netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="1795850513-290824188-1196277930=:14548"
+Cc: Michael Kerrisk <mtk-manpages@gmx.net>, Arnd Bergmann <arnd@arndb.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> The e1000 driver stores the content of the PCI resources into
-> unsigned long's before ioremapping. This breaks on 32 bits
-> platforms that support 64 bits MMIO resources such as ppc 44x.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--1795850513-290824188-1196277930=:14548
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+
+On Wed, 28 Nov 2007, Andrew Morton wrote:
+
+> On Wed, 28 Nov 2007 14:32:07 +0100 Arnd Bergmann <arnd@arndb.de> wrote:
 >=20
-> This fixes it by removing those temporary variables and passing
-> directly the result of pci_resource_start/len to ioremap.
+> > On Wednesday 28 November 2007, Kamalesh Babulal wrote:
+> > > Kernel build fails, with build error
+> > >=20
+> > > =C2=A0 CC =C2=A0 =C2=A0 =C2=A0arch/powerpc/platforms/cell/spu_callbac=
+ks.o
+> > > In file included from arch/powerpc/platforms/cell/spu_callbacks.c:49:
+> > > include/asm/systbl.h:312: error: =E2=80=98sys_timerfd=E2=80=99 undecl=
+ared here (not in a function)
+> > > make[2]: *** [arch/powerpc/platforms/cell/spu_callbacks.o] Error 1
+> > > make[1]: *** [arch/powerpc/platforms/cell] Error 2
+> > > make: *** [arch/powerpc/platforms] Error 2
+> > >=20
+> >=20
+> > I guess all architectures except x86 are currently broken because they
+> > reference the old sys_timerfd function.
+>=20
+> None of them were broken in my testing and I'm unsure why powerpc broke
+> here.
+>=20
+> > This patch should add the missing
+> > bits to powerpc.
+> >=20
+>=20
+> Because the patches in -mm left the stubs in place in sys_ni.c and powerp=
+c
+> _should_ have (incorrectly) picked those up.
 
-the patch is mostly fine, but looking through the tree, doesn't every
-driver that has 64 bit capable resources have this problem?
+My fault. I forgot to update sys_ni.c with the new functions (and with the
+sys_timerfd->sys_timerfd_create name change).
+Do you want a patch Andrew?
 
-in fact, skeleton module has this problem, if I'm not mistaken.  e1000
-isn't the only one. :-)
-=20
-> The side effect is that I removed the assignments to the netdev
-> fields mem_start, mem_end and base_addr, which are totally useless
-> for PCI devices.
 
-also, concerning this, ifconfig shows the output of these variables, I
-don't think we want to blatantly remove them, as it is actually removing
-information that is, if not used, at least displayed to user space.
 
-eth6      Link encap:Ethernet  HWaddr 00:0E:01:0C:02:03
-          inet addr:134.134.3.121  Bcast:134.134.3.255
-Mask:255.255.255.0
-          inet6 addr: fe80::20e:1ff:fe0c:203/64 Scope:Link
-          UP BROADCAST NOTRAILERS RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:9022519 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:1303701 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:4044613454 (3857.2 Mb)  TX bytes:118365109 (112.8 Mb)
-          Base address:0xf000 Memory:feac0000-feae0000
-                                     ^^^^^^^^^^^^^^^^^
+- Davide
+
+--1795850513-290824188-1196277930=:14548--
