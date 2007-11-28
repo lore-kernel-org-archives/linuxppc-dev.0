@@ -1,21 +1,19 @@
-Return-Path: <SRS0+703ff539752438bf2049+1557+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E89D2DDF0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:56:42 +1100 (EST)
-Subject: [PATCH] Stop phy code from returning success to unknown ioctls.
-From: David Woodhouse <dwmw2@infradead.org>
-To: jgarzik@pobox.com
-In-Reply-To: <1196273071.30806.46.camel@pmac.infradead.org>
-References: <1196273071.30806.46.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Wed, 28 Nov 2007 19:56:34 +0000
-Message-Id: <1196279794.30806.54.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
-	netdev@vger.kernel.org
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 61AFADDE46
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:57:20 +1100 (EST)
+Date: Wed, 28 Nov 2007 11:50:37 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH 0/2] [PPC 4xx] L2-cache synchronization for ppc44x
+Message-ID: <20071128195037.GB22325@gate.ebshome.net>
+References: <7310408706.20071107014010@emcraft.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7310408706.20071107014010@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This kind of sucks, and prevents the Fedora installer from using the
-device for network installs...
+On Wed, Nov 07, 2007 at 01:40:10AM +0300, Yuri Tikhonov wrote:
+> 
+>  Hello all,
+> 
+>  Here is a patch-set for support L2-cache synchronization routines for
+> the ppc44x processors family. I know that the "ppc" branch is for bug-fixing only, thus
+> the patch-set is just FYI [though enabled but non-coherent L2-cache may appear as a bug for
+> someone who uses one of the boards listed below :)].
+> 
+> [PATCH 1/2] [PPC 4xx] invalidate_l2cache_range() implementation for ppc44x;
+> [PATCH 2/2] [PPC 44x] enable L2-cache for the following ppc44x-based boards: ALPR,
+> Katmai, Ocotea, and Taishan.
 
-[root@efika phy]# iwconfig eth0                                                                                                                
-Warning: Driver for device eth0 has been compiled with an ancient version                                                                      
-of Wireless Extension, while this program support version 11 and later.                                                                        
-Some things may be broken...                                                                                                                   
-                                                                                                                                               
-eth0        ESSID:off/any  Nickname:""                                                                                                         
-          NWID:0  Channel:0  Access Point: 00:00:BF:81:14:E0                                                                                   
-          Bit Rate:-1.08206e+06 kb/s   Sensitivity=0/0                                                                                         
-          RTS thr:off   Fragment thr:off                                                                                                       
-          Encryption key:<too big>                                                                                                             
-          Power Management:off                                                                                                                 
-                                                                                                                                               
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Why is this all needed?
 
-diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-index 9bc1177..7c9e6e3 100644
---- a/drivers/net/phy/phy.c
-+++ b/drivers/net/phy/phy.c
-@@ -406,6 +406,9 @@ int phy_mii_ioctl(struct phy_device *phydev,
- 				&& phydev->drv->config_init)
- 			phydev->drv->config_init(phydev);
- 		break;
-+
-+	default:
-+		return -ENOTTY;
- 	}
- 
- 	return 0;
+IIRC ibm440gx_l2c_enable() configures 64G snoop region for L2C.
+
+Did AMCC made non-only-coherent L2C chips recently?
 
 -- 
-dwmw2
+Eugene
