@@ -1,20 +1,23 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id ED6E1DDE2B
+Return-Path: <fabio7774@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id B7C12DDE36
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Nov 2007 02:24:44 +1100 (EST)
-Received: from [134.94.232.103] (zel201.zel.kfa-juelich.de
-	[134.94.232.103])by zam837.fz-juelich.de (Postfix) with ESMTP id
-	9D7891000986for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 16:24:41 +0100 (CET)
-Message-ID: <474D8839.6020609@fz-juelich.de>
-Date: Wed, 28 Nov 2007 16:24:41 +0100
-From: schardt <g.schardt@fz-juelich.de>
+	Thu, 29 Nov 2007 02:42:10 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so1772099uge
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Nov 2007 07:42:09 -0800 (PST)
+Message-ID: <474D8C43.4030608@gmail.com>
+Date: Wed, 28 Nov 2007 17:41:55 +0200
 MIME-Version: 1.0
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Init hangs on Xilinx4
-Content-Type: text/plain;
-	charset=ISO-8859-1
+To: Ben Warren <bwarren@qstreams.com>
+Subject: Re: SPI driver for spi_mpc83xx
+References: <mailman.3149.1196114204.3099.linuxppc-embedded@ozlabs.org>
+	<474C6920.3030109@gmail.com> <474C70EF.4040800@qstreams.com>
+In-Reply-To: <474C70EF.4040800@qstreams.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+From: fabio777 <fabio7774@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: fabio777@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,43 +28,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Thanks Ben
+works.
 
-i still have some problems booting linux from flash and don't know how
-to debug.
-
-i have a xilinx4-ppc with 64MB Ram and 4MB Flash, U-Boot works fine,
-kernel is booting, but my little hello world program runs as init, died
-after printing "He" (intead of "Hello World"). i tried initramfs with
-build in cpio-image and jffs2 rootfs
-
-Is there a log-buffer to look at ?
-Should i try another compiler version ? (btw. booting from systemace
-works with the version i use).
-
----------------------------
-famous last words :
-
-[   50.476641] VFS: Mounted root (jffs2 filesystem).
-[   50.533581] Freeing unused kernel memory: 68k init
-He
----------------------------
-
-
-regards
-Georg
-
-
-
--------------------------------------------------------------------
--------------------------------------------------------------------
-Forschungszentrum Jülich GmbH
-52425 Jülich
-
-Sitz der Gesellschaft: Jülich
-Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
-Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
--------------------------------------------------------------------
--------------------------------------------------------------------
+Ben Warren wrote:
+> Fabio,
+>
+> Note: I've changed the e-mail subject back to the original. In the 
+> future, please ensure that it remains intact.
+>
+> fabio777 wrote:
+>> Thanks Ben,
+>>
+>> Here it is
+>>
+>> static struct fsl_spi_platform_data k_platform_data = {
+>> .initial_spmode = 0,
+>> .bus_num = 1,
+> Probably should be bus_num = 0
+>> .max_chipselect = 1,
+>> /* board specific information */
+>> .activate_cs = k_cs_activate,
+>> .deactivate_cs = k_cs_deactivate,
+>> .sysclk = 266,
+>> };
+>>
+>> static struct spi_board_info spi_board_info[] __initdata = { {
+>> .modalias = "kplus",
+>> .platform_data = &k_platform_data,
+>> .max_speed_hz = 120000,
+>> .bus_num = 1,
+> Again, bus_num probably should be 0
+>> .chip_select = 0,
+>> },
+>> };
+>>
+>>
+>> struct platform_device k_plus = {
+>> .name = "kplus",
+> name should be "mpc83xx_spi". At initialization, the SPI controller 
+> driver searches the registered platform devices (models of board 
+> hardware) for a match. Without a match, it gives up.
+>
+>> .id = 1,
+>> .dev = {
+>> .platform_data = &k_platform_data,
+>> },
+>> };
+>>
+>> platform_device_register(&k_plus);
+>>
+> Do you add the SPI controller's resources (base address and IRQ?) 
+> You'll need to in order for this to work. On my board, I use 
+> 'platform_device_register_simple()', passing the name and the two 
+> resources, then call 'platform_add_data()', passing in the platform 
+> data structure.
+>> spi_register_board_info(spi_board_info, ARRAY_SIZE(spi_board_info))
+>>
+> Good
+>> and then calls spi_register_driver(&k_driver);
+> I don't think this last call is needed.
+>>
+>> I can't get the into the *probe functions.
+>> Thanks
+>>
+> regards,
+> Ben
