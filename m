@@ -1,23 +1,21 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42617DDDF6
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 21:52:19 +1100 (EST)
-Date: Wed, 28 Nov 2007 10:52:12 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: pseries (power3) boot hang  (pageblock_nr_pages==0)
-Message-ID: <20071128105211.GB2238@csn.ul.ie>
-References: <1195682111.4421.23.camel@farscape.rchland.ibm.com>
-	<20071121220337.GB31674@csn.ul.ie>
-	<1196105757.11297.11.camel@farscape.rchland.ibm.com>
+Return-Path: <gorcunov@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.176])
+	by ozlabs.org (Postfix) with ESMTP id 8BC45DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 21:53:52 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so1950442wag
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 02:53:51 -0800 (PST)
+Message-ID: <aa79d98a0711280253x3d1d28d6qa0cee0b731e807fe@mail.gmail.com>
+Date: Wed, 28 Nov 2007 13:53:46 +0300
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
+In-Reply-To: <1196243333.2109.2.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1196105757.11297.11.camel@farscape.rchland.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linux Memory Management List <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <aa79d98a0711252346m583b652bocf72e11077da352e@mail.gmail.com>
+	<1196243333.2109.2.camel@concordia>
+Cc: Olof Johansson <olof@lixom.net>, PPCML <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (26/11/07 13:35), Will Schmidt didst pronounce:
-> 
-> On Wed, 2007-11-21 at 22:03 +0000, Mel Gorman wrote:
-> > On (21/11/07 15:55), Will Schmidt didst pronounce:
-> > > Hi Folks, 
-> > > 
-> > > I imagine this would be properly fixed with something similar to the
-> > > change for iSeries.  
-> > 
-> > Have you tried with the patch that fixed the iSeries boot problem?
-> > Thanks for tracking down the problem to such a specific place.
-> 
-> I had not, but gave this patch a spin this morning, and it does the
-> job.  :-)  
+On 11/28/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
+> > This patch adds checking for NULL value returned to prevent possible
+> > NULL pointer dereference.
+> > Also two unneeded 'return' are removed.
+> >
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > ---
+> > Any comments are welcome.
+>
+> I guess it's good to be paranoid, but this is a little verbose:
+>
+>        wi0 = of_get_property(node, "device-id", NULL);
+> +       if (unlikely((!wi0))) {
+> +               printk(KERN_ERR "PCI: device-id not found.\n");
+> +               goto error;
+> +       }
+>        wi1 = of_get_property(node, "vendor-id", NULL);
+> +       if (unlikely((!wi1))) {
+> +               printk(KERN_ERR "PCI: vendor-id not found.\n");
+> +               goto error;
+> +       }
+>        wi2 = of_get_property(node, "class-code", NULL);
+> +       if (unlikely((!wi2))) {
+> +               printk(KERN_ERR "PCI: class-code not found.\n");
+> +               goto error;
+> +       }
+>        wi3 = of_get_property(node, "revision-id", NULL);
+> +       if (unlikely((!wi3))) {
+> +               printk(KERN_ERR "PCI: revision-id not found.\n");
+> +               goto error;
+> +       }
+>
+> Perhaps instead:
+>
+>        wi0 = of_get_property(node, "device-id", NULL);
+>        wi1 = of_get_property(node, "vendor-id", NULL);
+>        wi2 = of_get_property(node, "class-code", NULL);
+>        wi3 = of_get_property(node, "revision-id", NULL);
+>
+>       if (!wi0 || !wi1 || !wi2 || !wi3) {
+>               printk(KERN_ERR "PCI: Missing device tree properties.\n");
+>               goto error;
+>       }
 
-Brilliant.
+Hi Michael, yes that is much better (actually I was doubt about what form of
+which the checking style to use - your form is much compact but mine does
+show where *exactly* the problem appeared). So 'case that is the fake driver
+your form is preferred ;) Ishizaki, could you use Michael's part then?
 
-> I was thinking (without really looking at it), that the
-> iseries fix was in platform specific code.   Silly me. :-)
-> 
-> So for the record, this patch also fixes power3 pSeries systems.
-> 
-> fwiw:
-> Tested-By:  Will Schmidt <will_schmidt@vnet.ibm.com>
-> 
+>
+>
+> cheers
+>
+> --
+> Michael Ellerman
+> OzLabs, IBM Australia Development Lab
+>
+> wwweb: http://michael.ellerman.id.au
+> phone: +61 2 6212 1183 (tie line 70 21183)
+>
+> We do not inherit the earth from our ancestors,
+> we borrow it from our children. - S.M.A.R.T Person
+>
+>
 
-Thanks a lot for reporting and testing Will.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Cyrill
