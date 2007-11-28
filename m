@@ -1,18 +1,16 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 45710DDDED
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 22:12:06 +1100 (EST)
-Date: Wed, 28 Nov 2007 12:00:37 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
-Message-ID: <20071128110037.GB31217@aepfle.de>
-References: <20071120012815.GB7969@austin.ibm.com>
-	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1196208960.11297.26.camel@farscape.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 28 Nov 2007 22:45:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: of_compat_cmp on various platforms
+Message-Id: <20071128224518.b09c5b7f.sfr@canb.auug.org.au>
+In-Reply-To: <9e4733910711271946q1b600d97mf5abe71cc64bbf81@mail.gmail.com>
+References: <9e4733910711271946q1b600d97mf5abe71cc64bbf81@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__28_Nov_2007_22_45_18_+1100_15x1ClGvSuGb_G_K"
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Nov 27, Will Schmidt wrote:
+--Signature=_Wed__28_Nov_2007_22_45_18_+1100_15x1ClGvSuGb_G_K
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > -void rtas_os_term(char *str)
-> > +void rtas_panic_msg(char *str)
+On Tue, 27 Nov 2007 22:46:16 -0500 "Jon Smirl" <jonsmirl@gmail.com> wrote:
+>
+> Is this right or should it be the same everywhere?
+>=20
+> asm-powerpc/prom.h:#define of_compat_cmp(s1, s2, l)     strcasecmp((s1), =
+(s2))
+> asm-sparc/prom.h:#define of_compat_cmp(s1, s2, l)       strncmp((s1), (s2=
+), (l))
+> asm-sparc64/prom.h:#define of_compat_cmp(s1, s2, l)     strncmp((s1), (s2=
+), (l))
 
-> > -	if (panic_timeout)
-> > -		return;
+The only reason these exist is because the sparc and powerpc versions
+needed to be different when I was consolidating the of routines.  One of
+the things we have to work on is finding the platforms/drivers where this
+matters and fix them.
 
-This change is wrong. Booting with panic=123 really means the system
-has to reboot in 123 seconds after a panic.
-But, maybe this panic_timeout check was moved elsewhere.
+So, for now, these need to be there.
 
-Please revert this part of commit
-a2b51812a4dc5db09ab4d4638d4d8ed456e2457e before 2.6.24 is released.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__28_Nov_2007_22_45_18_+1100_15x1ClGvSuGb_G_K
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHTVTWTgG2atn1QN8RArVYAJ0aOzAocZitDuQZ8h7TZws6cXzu4gCglnqo
+Du1LmyRVU4hSzypZan6BSNY=
+=9KQA
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__28_Nov_2007_22_45_18_+1100_15x1ClGvSuGb_G_K--
