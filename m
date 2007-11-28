@@ -1,13 +1,21 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: RFC: Fix some lexical problems with references 
-In-Reply-To: Your message of "Thu, 22 Nov 2007 17:10:07 +1100."
-	<20071122061007.GA22888@localhost.localdomain>
-References: <20071122061007.GA22888@localhost.localdomain> 
-Date: Wed, 28 Nov 2007 13:53:38 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IxSyY-0008Lf-4W@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BBC11DE115
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:54:10 +1100 (EST)
+Date: Wed, 28 Nov 2007 11:47:27 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [PPC 44x] enable L2-cache for ALPR, Katmai,
+	Ocotea, and Taishan
+Message-ID: <20071128194727.GA22325@gate.ebshome.net>
+References: <1416528026.20071107014041@emcraft.com>
+	<1196120506.7157.18.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196120506.7157.18.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, sr@denx.de, dzu@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,46 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> The recent change to the lexer to only recognize property and node
-> names in the appropriate context removed a number of lexical warts in
-> our language that would have gotten ugly as we add expression support
-> and so forth.
-> 
-> But there's one nasty one remaining: references can contain a full
-> path, including the various problematic node name characters (',', '+'
-> and '-', for example).  This would cause trouble with expressions, and
-> it also causes trouble with the patch I'm working on to allow
-> expanding references to paths rather than phandles.  This patch
-> therefore reworks the lexer to mitigate these problems.
-> 
-> 	- References to labels cause no problems.  These are now
-> recognized separately from references to full paths.  No syntax change
-> here.
-> 
-> 	- References to full paths, including problematic characters
-> are allowed by "quoting" the path with braces
-> e.g. &{/pci@10000/somedevice@3,8000}.  The braces protect any internal
-> problematic characters from being confused with operators or whatever.
-> 
-> 	- For compatibility with existing dts files, in v0 dts files
-> we allow bare references to paths as before &/foo/bar/whatever - but
-> *only* if the path contains no troublesome characters.  Specifically
-> only [a-zA-Z0-9_@/] are allowed.
-> 
-> This is an incompatible change to the dts-v1 format, but since AFAIK
-> no-one has yet switched to dts-v1 files, I think we can get away with
-> it.  Better to make the transition when people to convert to v1, and
-> get rid of the problematic old syntax.
-> 
-> Strictly speaking, it's also an incompatible change to the v0 format,
-> since some path references that were allowed before are no longer
-> allowed.  I suspect no-one has been using the no-longer-supported
-> forms (certainly none of the kernel dts files will cause trouble).  We
-> might need to think about this harder, though.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+On Tue, Nov 27, 2007 at 10:41:46AM +1100, Benjamin Herrenschmidt wrote:
+> BTW... Do you know why we can't just enable HW snoop ? The 440SPe
+> documentation seems to indicate that this is supported by the L2 cache
+> via snooping on the PLB.
 
-Applied.
+Unless something has been changed significantly in the 44x port, but 
+L2 cache code I wrote for 440GX did exactly this - we never needed any 
+manual L2 cache management at all.
 
-jdl
+-- 
+Eugene
