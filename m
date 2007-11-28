@@ -1,20 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 8FA2BDDE3B
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 03:29:00 +1100 (EST)
-Message-ID: <474D9758.9070200@ru.mvista.com>
-Date: Wed, 28 Nov 2007 19:29:12 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id EC3F3DDE9A
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 03:31:46 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/2] powerpc: add hugepagesz boot-time parameter
+Date: Wed, 28 Nov 2007 17:30:40 +0100
+References: <474CF68E.1040709@us.ibm.com> <200711280826.46820.arnd@arndb.de>
+	<20071128161201.GA10916@csn.ul.ie>
+In-Reply-To: <20071128161201.GA10916@csn.ul.ie>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
-	driver
-References: <20071127153708.GA12490@localhost.localdomain>	<20071127153908.GB14183@localhost.localdomain>	<20071127212222.GB10829@lixom.net>
-	<200711272233.00456.arnd@arndb.de>
-In-Reply-To: <200711272233.00456.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200711281730.40907.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, kniht@linux.vnet.ibm.com,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Wednesday 28 November 2007, Mel Gorman wrote:
+> On (28/11/07 08:26), Arnd Bergmann didst pronounce:
+> > On Wednesday 28 November 2007, Jon Tollefson wrote:
+> > > This patch adds the hugepagesz boot-time parameter for ppc64 that let=
+s=20
+> > > you pick the size for your huge pages. =A0The choices available are 6=
+4K=20
+> > > and 16M. =A0It defaults to 16M (previously the only choice) if nothin=
+g or=20
+> > > an invalid choice is specified. =A0Tested 64K huge pages with the=20
+> > > libhugetlbfs 1.2 release with its 'make func' and 'make stress' test=
+=20
+> > > invocations.
+> >=20
+> > How hard would it be to add the 1MB page size that some CPUs support
+> > as well? On systems with small physical memory like the PS3, that
+> > sounds very useful to me.
+> >=20
+>=20
+> Does the PS3 support 1M pages in hardware? When I last looked, the magic
+> ibm,segment-page-sizes file that described the supported pagesizes was
+> missing from the device tree. In this situation, the default sizes
+> become 4K and 16M because no other ones are advertised.
 
-Arnd Bergmann wrote:
+I think you can select the page size using a hypercall on the PS3.
+The CPU supports any two of (64k, 1M, 16M) simultaneously.
 
->>>This driver nicely wraps around pata_platform library functions,
->>>and provides OF platform bus bindings to the PATA devices.
-
->>>+static struct of_device_id pata_of_platform_match[] = {
->>>+     { .compatible = "pata-platform", },
->>>+};
-
->>"pata-platform" really means nothing outside of linux. A more
->>generic label would be useful.
-
-> Maybe the name of the standards it supports? Could be
-> "ata-4", "ata-5" and the like,
-
-    It's not clear what info this would provide.
-
-> or the exact transfer mode, like
-> "pata-udma-5", "pata-pio-3", "sata-150", etc.
-
-    I think this info should follow from the compatible property value 
-implicitly, or maybe this info should be conveyed in some optional properties. 
-It doesn't make sense to the generic platform driver anyway since it has no 
-notion about the mode programming specifics. I think that as the device being 
-driven is assumed to be a generic IDE device, the "compatible" property should 
-contain "generic" or something alike (as well as usual board's and chip's names).
-
-> 	Arnd <><
-
-MBR, Sergei
+	Arnd <><
