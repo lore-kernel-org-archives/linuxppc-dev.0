@@ -1,26 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <SRS0+703ff539752438bf2049+1557+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 32248DDE43
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:56:05 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	lASJu1e9005117
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 12:56:01 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lASJu0GM018790
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 13:56:00 -0600 (CST)
-Message-ID: <474DC7D0.4080907@freescale.com>
-Date: Wed, 28 Nov 2007 13:56:00 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Why are CONFIG_LOCKDEP_SUPPORT, CONFIG_TRACE_IRQFLAGS_SUPPORT, and
-	CONFIG_STACKTRACE_SUPPORT not defined for PowerPC?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E89D2DDF0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 06:56:42 +1100 (EST)
+Subject: [PATCH] Stop phy code from returning success to unknown ioctls.
+From: David Woodhouse <dwmw2@infradead.org>
+To: jgarzik@pobox.com
+In-Reply-To: <1196273071.30806.46.camel@pmac.infradead.org>
+References: <1196273071.30806.46.camel@pmac.infradead.org>
+Content-Type: text/plain
+Date: Wed, 28 Nov 2007 19:56:34 +0000
+Message-Id: <1196279794.30806.54.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These three Kconfig options:
+This kind of sucks, and prevents the Fedora installer from using the
+device for network installs...
 
-	CONFIG_LOCKDEP_SUPPORT
-	CONFIG_TRACE_IRQFLAGS_SUPPORT
-	CONFIG_STACKTRACE_SUPPORT
+[root@efika phy]# iwconfig eth0                                                                                                                
+Warning: Driver for device eth0 has been compiled with an ancient version                                                                      
+of Wireless Extension, while this program support version 11 and later.                                                                        
+Some things may be broken...                                                                                                                   
+                                                                                                                                               
+eth0        ESSID:off/any  Nickname:""                                                                                                         
+          NWID:0  Channel:0  Access Point: 00:00:BF:81:14:E0                                                                                   
+          Bit Rate:-1.08206e+06 kb/s   Sensitivity=0/0                                                                                         
+          RTS thr:off   Fragment thr:off                                                                                                       
+          Encryption key:<too big>                                                                                                             
+          Power Management:off                                                                                                                 
+                                                                                                                                               
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Are not defined for ppc or powerpc, but they are defined for several other 
-architectures.  I'm trying to debug some semaphore locks in ALSA, and these 
-defines are necessary to enable some other Kconfig features.
+diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+index 9bc1177..7c9e6e3 100644
+--- a/drivers/net/phy/phy.c
++++ b/drivers/net/phy/phy.c
+@@ -406,6 +406,9 @@ int phy_mii_ioctl(struct phy_device *phydev,
+ 				&& phydev->drv->config_init)
+ 			phydev->drv->config_init(phydev);
+ 		break;
++
++	default:
++		return -ENOTTY;
+ 	}
+ 
+ 	return 0;
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+dwmw2
