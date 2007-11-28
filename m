@@ -1,35 +1,30 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate7.uk.ibm.com (mtagate7.uk.ibm.com [195.212.29.140])
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28esmtp07.in.ibm.com (e28smtp07.in.ibm.com [59.145.155.7])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E69FBDDE29
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 00:47:08 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate7.uk.ibm.com (8.13.8/8.13.8) with ESMTP id lASDl28e359556
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 13:47:02 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.7) with
-	ESMTP id lASDl2Oc3043538
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 13:47:02 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id lASDkjqr011920
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 13:46:46 GMT
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"OF-General" <general@lists.openfabrics.org>,
-	Roland Dreier <rolandd@cisco.com>, "OF-EWG" <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Fix static rate if path faster than link
+	(Client CN "e28smtp07.in.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 56E65DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 01:33:44 +1100 (EST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+	by e28esmtp07.in.ibm.com (8.13.1/8.13.1) with ESMTP id lASEXNO3007237
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 20:03:23 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lASEXNXP4063402
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 20:03:23 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+	by d28av01.in.ibm.com (8.13.1/8.13.3) with ESMTP id lASEXMBs024459
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 14:33:22 GMT
+Message-ID: <474D7C32.1070809@linux.vnet.ibm.com>
+Date: Wed, 28 Nov 2007 20:03:22 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Date: Wed, 28 Nov 2007 15:46:28 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711281446.29085.fenkes@de.ibm.com>
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [BUG] 2.6.24-rc3-mm2 soft lockup while running tbench
+References: <20071128034140.648383f0.akpm@linux-foundation.org>
+In-Reply-To: <20071128034140.648383f0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,36 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The formula would yield -1 for this, which is wrong in a bad way (max
-throttling). Clamp to 0, which is the correct value.
+Hi Andrew,
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+while running tbench on the powerpc with 2.6.24-rc3-mm2 softlock up occurs
 
-This fixes another regression introduced in rc3.
-Please review and apply for 2.6.24-rc4. Thanks!
+BUG: soft lockup - CPU#0 stuck for 11s! [tbench:12183]
+NIP: c0000000000ac978 LR: c0000000000acff0 CTR: c00000000005c648
+REGS: C00000076F0F3200 TRAP: 0901   Not tainted  (2.6.24-rc3-mm2-autotest)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44000482  XER: 00000000
+TASK = C00000076F4BC000[12183] 'tbench' THREAD: C00000076F0F0000 CPU: 0
+NIP [c0000000000ac978] .get_page_from_freelist+0x1cc/0x754
+LR [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
+Call Trace:
+[c00000076f0f3480] [c00000076f0f3560] 0xc00000076f0f3560 (unreliable)
+[c00000076f0f3590] [c0000000000acff0] .__alloc_pages+0xb0/0x3a8
+[c00000076f0f3680] [c0000000000ce2e4] .alloc_pages_current+0xa8/0xc8
+[c00000076f0f3710] [c0000000000ac6ec] .__get_free_pages+0x20/0x70
+[c00000076f0f3790] [c0000000000d75c8] .__kmalloc_node_track_caller+0x60/0x148
+[c00000076f0f3840] [c0000000002c22b0] .__alloc_skb+0x98/0x184
+[c00000076f0f38f0] [c000000000306cd8] .tcp_sendmsg+0x1fc/0xe24
+[c00000076f0f3a10] [c0000000002b963c] .sock_sendmsg+0xe4/0x128
+[c00000076f0f3c10] [c0000000002ba4ec] .sys_sendto+0xd4/0x120
+[c00000076f0f3d90] [c0000000002df2f8] .compat_sys_socketcall+0x148/0x214
+[c00000076f0f3e30] [c00000000000872c] syscall_exit+0x0/0x40
+Instruction dump:
+720b0001 eb970000 40820070 72000002 4182000c e8bc0000 48000018 72080004 
+4182000c e8bc0008 48000008 e8bc0010 <e8c10078> 7f83e378 7de407b4 7e078378 
 
- drivers/infiniband/hw/ehca/ehca_av.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_av.c b/drivers/infiniband/hw/ehca/ehca_av.c
-index 453eb99..f7782c8 100644
---- a/drivers/infiniband/hw/ehca/ehca_av.c
-+++ b/drivers/infiniband/hw/ehca/ehca_av.c
-@@ -76,8 +76,12 @@ int ehca_calc_ipd(struct ehca_shca *shca, int port,
- 
- 	link = ib_width_enum_to_int(pa.active_width) * pa.active_speed;
- 
--	/* IPD = round((link / path) - 1) */
--	*ipd = ((link + (path >> 1)) / path) - 1;
-+	if (path >= link)
-+		/* no need to throttle if path faster than link */
-+		*ipd = 0;
-+	else
-+		/* IPD = round((link / path) - 1) */
-+		*ipd = ((link + (path >> 1)) / path) - 1;
- 
- 	return 0;
- }
 -- 
-1.5.2
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
