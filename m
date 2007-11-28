@@ -1,17 +1,20 @@
-Return-Path: <dell.query@yahoo.com>
-Received: from n7.bullet.ukl.yahoo.com (n7.bullet.ukl.yahoo.com
-	[217.146.182.187]) by ozlabs.org (Postfix) with SMTP id A8D12DDE21
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9C987DDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 19:26:02 +1100 (EST)
-Date: Tue, 27 Nov 2007 22:38:00 -0800 (PST)
-From: Dell Query <dell.query@yahoo.com>
-Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
-	Registers (BCSR)
-To: Josh Boyer <jwboyer@gmail.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <20071127212548.3efd39e9@vader.jdub.homelinux.org>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-750460071-1196231880=:2036"
-Message-ID: <639733.2036.qm@web45601.mail.sp1.yahoo.com>
+	Wed, 28 Nov 2007 19:45:44 +1100 (EST)
+Message-Id: <7793CF97-2634-4EB2-B354-F842605BE2E6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: robert lazarski <robertlazarski@gmail.com>
+In-Reply-To: <f87675ee0711261026k65d2d4e3pe74697abbc39930e@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Device tree and /proc/iomem question
+Date: Wed, 28 Nov 2007 01:02:19 -0600
+References: <f87675ee0711261026k65d2d4e3pe74697abbc39930e@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,106 +25,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-750460071-1196231880=:2036
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
 
-Oh is it 0x1C0002000?
+On Nov 26, 2007, at 12:26 PM, robert lazarski wrote:
 
-Where can I get the document? What I have is 0xC0002000 from ep440xc_um_amcc.pdf file that I get from the accompanying PPC440EPx resource CD.
+> Hi all, I'm using a recent pull of the paulus tree 2.6.24RC2 on my
+> custom 85xx board. I'm trying to test my PCI1, PCI2 and PCIe . My
+> device tree for PCI is:
+>
+> 		pci@8000 {
+> 			compatible = "fsl,mpc8540-pci";
+> 			device_type = "pci";
+> 			interrupt-map-mask = <f800 0 0 7>;
+> 			interrupt-map = <
+>
+> 				/* IDSEL 0x11 J17 Slot 1 */
+> 				8800 0 0 1 &mpic 2 1
+> 				8800 0 0 2 &mpic 3 1
+> 				8800 0 0 3 &mpic 4 1
+> 				8800 0 0 4 &mpic 1 1
+>
+> 				/* IDSEL 0x12 J16 Slot 2 */
+>
+> 				9000 0 0 1 &mpic 3 1
+> 				9000 0 0 2 &mpic 4 1
+> 				9000 0 0 3 &mpic 2 1
+> 				9000 0 0 4 &mpic 1 1>;
+>
+> 			interrupt-parent = <&mpic>;
+> 			interrupts = <18 2>;
+> 			bus-range = <0 ff>;
+> 			ranges = <02000000 0 80000000 80000000 0 20000000
+> 				  01000000 0 00000000 e2000000 0 00100000>;
+> 			clock-frequency = <3f940aa>;
+> 			#interrupt-cells = <1>;
+> 			#size-cells = <2>;
+> 			#address-cells = <3>;
+> 			reg = <8000 1000>;
+> 		};
+>
+> 		pci@c000 {
+> 			compatible = "fsl,mpc8540-pci";
+> 			device_type = "pci";
+> 			interrupt-map-mask = <f800 0 0 7>;
+> 			interrupt-map = <
+>
+> 				/* IDSEL 0x11 J17 Slot 1 */
+> 				8800 0 0 1 &mpic 2 1
+> 				8800 0 0 2 &mpic 3 1
+> 				8800 0 0 3 &mpic 4 1
+> 				8800 0 0 4 &mpic 1 1
+>
+> 				/* IDSEL 0x12 J16 Slot 2 */
+>
+> 				9000 0 0 1 &mpic 3 1
+> 				9000 0 0 2 &mpic 4 1
+> 				9000 0 0 3 &mpic 2 1
+> 				9000 0 0 4 &mpic 1 1>;
+>
+> 			interrupt-parent = <&mpic>;
+> 			interrupts = <18 2>;
+> 			bus-range = <0 ff>;
+> 			ranges = <02000000 0 c0000000 c0000000 0 20000000
+> 				  01000000 0 00000000 e2800000 0 00100000>;
+> 			clock-frequency = <3f940aa>;
+> 			#interrupt-cells = <1>;
+> 			#size-cells = <2>;
+> 			#address-cells = <3>;
+> 			reg = <c000 1000>;
+> 		};
+>
+> 		pcie@a000 {
+> 			compatible = "fsl,mpc8548-pcie";
+> 			device_type = "pci";
+> 			#interrupt-cells = <1>;
+> 			#size-cells = <2>;
+> 			#address-cells = <3>;
+> 			reg = <a000 1000>;
+> 			bus-range = <0 ff>;
+> 			ranges = <02000000 0 a0000000 a0000000 0 20000000
+> 				  01000000 0 00000000 e3000000 0 00100000>;
+> 			clock-frequency = <1fca055>;
+> 			interrupt-parent = <&mpic>;
+> 			interrupts = <19 2>;
+> 			interrupt-map-mask = <f800 0 0 7>;
+> 			interrupt-map = <
+> 				/* IDSEL 0x0 */
+> 				0000 0 0 1 &mpic 0 1
+> 				0000 0 0 2 &mpic 1 1
+> 				0000 0 0 3 &mpic 2 1
+> 				0000 0 0 4 &mpic 3 1
+> 				>;
+> 		};
 
-Thanks!
+Take a look at the device trees in the kernel source.  You'll see we  
+moved PCI around so its at the root level.  Not sure if that's your  
+issue.
 
-dell
+> I see all the above in /proc/device-tree/soc8548@e0000000 when booting
+> the kernel. I double checked my memory mapping in u-boot and it
+> appears to match my device tree. Yet I don't see any pci here:
+>
+> root:~> cat /proc/iomem
+> e0004500-e0004507 : serial
+> e0004600-e0004607 : serial
+> e0024000-e0024fff : ethernet
+>  e0024520-e002453f : mdio
+> e0025000-e0025fff : ethernet
+> e0026000-e0026fff : ethernet
+> e0027000-e0027fff : ethernet
+>
+> cat /proc/bus/pci/devices shows nothing though I have a card in PCI1,
+> and all I see from dmesg is "PCI: Probing PCI hardware" . Any ideas?
 
-Josh Boyer <jwboyer@gmail.com> wrote: On Tue, 27 Nov 2007 02:47:45 -0800 (PST)
-Dell Query  wrote:
+It seems like its not even really probing or finding the buses.
 
-> Hi,
-> 
-> I am creating a simple program which will try to read the board ID of the PPC440EPx thru BCSR but when I load it, it gives me "Data Read PLB Error". 
-> 
-> I am not sure if I missed out something.
-> 
-> I would really appreciate it if somebody could help me on this.
-> 
-> I have posted the source code below, as well as the complete message.
-> 
-> Many thanks!
-> 
-> SOURCE CODE:
-> ----------------------------------------------------------------------
-> #include 
+Can you post what your board/platform code looks like?
 
-> #include 
-
-> #include 
-
-> #include 
-
-> #include 
-
-> #include 
-
-> #include 
-
-> #include 
-> #include 
-> #include 
-
-> #include 
-
-> #include 
-> #include 
-> 
-> MODULE_LICENSE("GPL");
-> 
-> #define BCSR_BASE   0xC0002000
-
-This is wrong.  It's 0x1C0002000.
-
-> #define BCSR0       0
-> #define BCSR1       1
-> #define BCSR2       2
-> 
-> #define USER_LED    0x2
-> #define SIZE_TO_MAP 10
-> 
-> #define LED_ON      0
-> 
-> uint __iomem *bcsrbase = NULL;
-> 
-> static int __init initFunction(void) {
->    uint tmp;
->    printk("<1> Calling init function.\n");
->    printk("<1> bcsrbase value %p...\n",bcsrbase);
->    printk("<1> Remapping %x...\n",BCSR_BASE);
->    /*map*/
->    bcsrbase = ioremap(BCSR_BASE, SIZE_TO_MAP);
-
-Since this seems to be arch/ppc, use ioremap64.
-
-josh
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-       
----------------------------------
-Never miss a thing.   Make Yahoo your homepage.
---0-750460071-1196231880=:2036
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-Oh is it 0x1C0002000?<br><br>Where can I get the document? What I have is 0xC0002000 from ep440xc_um_amcc.pdf file that I get from the accompanying PPC440EPx resource CD.<br><br>Thanks!<br><br>dell<br><br><b><i>Josh Boyer &lt;jwboyer@gmail.com&gt;</i></b> wrote:<blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;"> On Tue, 27 Nov 2007 02:47:45 -0800 (PST)<br>Dell Query <dell.query@yahoo.com> wrote:<br><br>&gt; Hi,<br>&gt; <br>&gt; I am creating a simple program which will try to read the board ID of the PPC440EPx thru BCSR but when I load it, it gives me "Data Read PLB Error". <br>&gt; <br>&gt; I am not sure if I missed out something.<br>&gt; <br>&gt; I would really appreciate it if somebody could help me on this.<br>&gt; <br>&gt; I have posted the source code below, as well as the complete message.<br>&gt; <br>&gt; Many thanks!<br>&gt; <br>&gt; SOURCE CODE:<br>&gt;
- ----------------------------------------------------------------------<br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <asm><br>&gt; #include <asm><br>&gt; #include <linux><br>&gt; #include <linux><br>&gt; #include <asm><br>&gt; #include <asm><br>&gt; <br>&gt; MODULE_LICENSE("GPL");<br>&gt; <br>&gt; #define BCSR_BASE   0xC0002000<br><br>This is wrong.  It's 0x1C0002000.<br><br>&gt; #define BCSR0       0<br>&gt; #define BCSR1       1<br>&gt; #define BCSR2       2<br>&gt; <br>&gt; #define USER_LED    0x2<br>&gt; #define SIZE_TO_MAP 10<br>&gt; <br>&gt; #define LED_ON      0<br>&gt; <br>&gt; uint __iomem *bcsrbase = NULL;<br>&gt; <br>&gt; static int __init initFunction(void) {<br>&gt;    uint tmp;<br>&gt;    printk("&lt;1&gt; Calling init function.\n");<br>&gt;    printk("&lt;1&gt; bcsrbase value %p...\n",bcsrbase);<br>&gt;   
- printk("&lt;1&gt; Remapping %x...\n",BCSR_BASE);<br>&gt;    /*map*/<br>&gt;    bcsrbase = ioremap(BCSR_BASE, SIZE_TO_MAP);<br><br>Since this seems to be arch/ppc, use ioremap64.<br><br>josh<br>_______________________________________________<br>Linuxppc-embedded mailing list<br>Linuxppc-embedded@ozlabs.org<br>https://ozlabs.org/mailman/listinfo/linuxppc-embedded<br></asm></asm></linux></linux></asm></asm></linux></linux></linux></linux></linux></linux></linux></dell.query@yahoo.com></blockquote><br><p>&#32;
-
-
-
-      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
-
-
---0-750460071-1196231880=:2036--
+- k
