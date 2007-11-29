@@ -1,23 +1,19 @@
-Return-Path: <nish.aravamudan@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 52617DDED8
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 14:01:18 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so1896505nfd
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 19:01:17 -0800 (PST)
-Message-ID: <29495f1d0711281901l41986e58sf05b6f0fcdc13232@mail.gmail.com>
-Date: Wed, 28 Nov 2007 19:01:11 -0800
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/2] powerpc: add hugepagesz boot-time parameter
-In-Reply-To: <474E187E.7040404@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <474CF68E.1040709@us.ibm.com>
-	<20071128132816.542fa4df.randy.dunlap@oracle.com>
-	<29495f1d0711281736if4bd8b0wc77d3beb39cb1284@mail.gmail.com>
-	<474E187E.7040404@oracle.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>, kniht@linux.vnet.ibm.com,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 418C3DE1A0
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 14:23:01 +1100 (EST)
+Date: Thu, 29 Nov 2007 12:22:45 +0900 (JST)
+Message-Id: <20071129.122245.-1300543769.kouish@swc.toshiba.co.jp>
+To: gorcunov@gmail.com
+Subject: Re: [PATCH] PPC: CELLEB - fix potential NULL pointer dereference
+In-Reply-To: <aa79d98a0711280259o6cc6fb12mf020c4a986d84ca6@mail.gmail.com>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: olof@lixom.net, paulus@samba.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/28/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> Nish Aravamudan wrote:
-> > On 11/28/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> >> On Tue, 27 Nov 2007 23:03:10 -0600 Jon Tollefson wrote:
-> >>
-> >>> This patch adds the hugepagesz boot-time parameter for ppc64 that lets
-> >>> you pick the size for your huge pages.  The choices available are 64K
-> >>> and 16M.  It defaults to 16M (previously the only choice) if nothing or
-> >>> an invalid choice is specified.  Tested 64K huge pages with the
-> >>> libhugetlbfs 1.2 release with its 'make func' and 'make stress' test
-> >>> invocations.
-> >>>
-> >>> This patch requires the patch posted by Mel Gorman that adds
-> >>> HUGETLB_PAGE_SIZE_VARIABLE; "[PATCH] Fix boot problem with iSeries
-> >>> lacking hugepage support" on 2007-11-15.
-> >>>
-> >>> Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-> >>> ---
-> >>>
-> >>>  Documentation/kernel-parameters.txt |    1
-> >>>  arch/powerpc/mm/hash_utils_64.c     |   11 +--------
-> >>>  arch/powerpc/mm/hugetlbpage.c       |   41 ++++++++++++++++++++++++++++++++++++
-> >>>  include/asm-powerpc/mmu-hash64.h    |    1
-> >>>  mm/hugetlb.c                        |    1
-> >>>  5 files changed, 46 insertions(+), 9 deletions(-)
-> >>>
-> >>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> >>> index 33121d6..2fc1fb8 100644
-> >>> --- a/Documentation/kernel-parameters.txt
-> >>> +++ b/Documentation/kernel-parameters.txt
-> >>> @@ -685,6 +685,7 @@ and is between 256 and 4096 characters. It is defined in the file
-> >>>                       See Documentation/isdn/README.HiSax.
-> >>>
-> >>>       hugepages=      [HW,X86-32,IA-64] Maximal number of HugeTLB pages.
-> >>> +     hugepagesz=     [HW,IA-64,PPC] The size of the HugeTLB pages.
-> >> Any chance of spelling it as "hugepagesize" so that it's a little
-> >> less cryptic and more difficult to typo as "hugepages"?
-> >> (i.e., less confusion between them)
+Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> On 11/28/07, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > On 11/28/07, Michael Ellerman <michael@ellerman.id.au> wrote:
+> > > On Mon, 2007-11-26 at 10:46 +0300, Cyrill Gorcunov wrote:
+> > > > This patch adds checking for NULL value returned to prevent possible
+> > > > NULL pointer dereference.
+> > > > Also two unneeded 'return' are removed.
+> > > >
+> > > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> > > > ---
+> > > > Any comments are welcome.
+> > >
+> > > I guess it's good to be paranoid, but this is a little verbose:
+> > >
+> > >        wi0 = of_get_property(node, "device-id", NULL);
+> > > +       if (unlikely((!wi0))) {
+> > > +               printk(KERN_ERR "PCI: device-id not found.\n");
+> > > +               goto error;
+> > > +       }
+> > >        wi1 = of_get_property(node, "vendor-id", NULL);
+> > > +       if (unlikely((!wi1))) {
+> > > +               printk(KERN_ERR "PCI: vendor-id not found.\n");
+> > > +               goto error;
+> > > +       }
+> > >        wi2 = of_get_property(node, "class-code", NULL);
+> > > +       if (unlikely((!wi2))) {
+> > > +               printk(KERN_ERR "PCI: class-code not found.\n");
+> > > +               goto error;
+> > > +       }
+> > >        wi3 = of_get_property(node, "revision-id", NULL);
+> > > +       if (unlikely((!wi3))) {
+> > > +               printk(KERN_ERR "PCI: revision-id not found.\n");
+> > > +               goto error;
+> > > +       }
+> > >
+> > > Perhaps instead:
+> > >
+> > >        wi0 = of_get_property(node, "device-id", NULL);
+> > >        wi1 = of_get_property(node, "vendor-id", NULL);
+> > >        wi2 = of_get_property(node, "class-code", NULL);
+> > >        wi3 = of_get_property(node, "revision-id", NULL);
+> > >
+> > >       if (!wi0 || !wi1 || !wi2 || !wi3) {
+> > >               printk(KERN_ERR "PCI: Missing device tree properties.\n");
+> > >               goto error;
+> > >       }
 > >
-> > It already exists as hugepagesz= for IA64. Changing it to hugepagesize
-> > would either make ppc be different than IA64, or require keeping both
-> > so as to make IA64 setups continue working as before?
->
-> Oh, but it wasn't in Doc/kernel-parameters.txt ?  :(
+> > Hi Michael, yes that is much better (actually I was doubt about what form of
+> > which the checking style to use - your form is much compact but mine does
+> > show where *exactly* the problem appeared). So 'case that is the fake driver
+> > your form is preferred ;) Ishizaki, could you use Michael's part then?
+> >
+> > >
+> > >
+> > > cheers
+> > >
+> > > --
+> > > Michael Ellerman
+> > > OzLabs, IBM Australia Development Lab
+> > >
+> > > wwweb: http://michael.ellerman.id.au
+> > > phone: +61 2 6212 1183 (tie line 70 21183)
+> > >
+> > > We do not inherit the earth from our ancestors,
+> > > we borrow it from our children. - S.M.A.R.T Person
+> > >
+> > >
+> >
+> > Cyrill
+> >
+> Ishizaki I can update the patch if you needed. Should I?
+> 
+> Cyrill
 
-Nope :( I wonder how many other kernel parameters are in the same
-boat? Where's an RPJDay-script when you need it?
+There is no problem to use Michael's part, and I also prefer simple
+one like this.
 
-> OK, just leave it as is, I think.
+Cyrill, would you please update your patch?
 
-Yeah, I guess that's probably easiest...unfortunately.
-
--Nish
+Best regards,
+Kou Ishizaki
