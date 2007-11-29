@@ -1,25 +1,17 @@
-Return-Path: <cn.vijaibaskar@gdatech.co.in>
-Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
-	by ozlabs.org (Postfix) with ESMTP id A4129DDDEE
+Return-Path: <dell.query@yahoo.com>
+Received: from n6b.bullet.ukl.yahoo.com (n6b.bullet.ukl.yahoo.com
+	[217.146.182.216]) by ozlabs.org (Postfix) with SMTP id EA790DDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Nov 2007 18:24:41 +1100 (EST)
-Received: from [172.29.36.2] (localhost.localdomain [127.0.0.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id D73378780C0
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 23:24:29 -0800 (PST)
-Received: from mail.gdatech.co.in (unknown [172.29.36.1])
-	by predator.gdatech.co.in (Postfix-out) with ESMTP id 8B2138780AF
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Nov 2007 23:24:29 -0800 (PST)
-Message-ID: <474E6A58.2070200@gdatech.co.in>
-Date: Thu, 29 Nov 2007 12:59:28 +0530
-From: vijay baskar <cn.vijaibaskar@gdatech.co.in>
+	Thu, 29 Nov 2007 21:01:43 +1100 (EST)
+Date: Thu, 29 Nov 2007 02:01:40 -0800 (PST)
+From: Dell Query <dell.query@yahoo.com>
+Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
+	Registers (BCSR)
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200711290756.32565.sr@denx.de>
 MIME-Version: 1.0
-To: =?UTF-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>
-Subject: Re: The question about the high memory support on MPC8360?
-References: <396305910.05464@tsinghua.org.cn>
-In-Reply-To: <396305910.05464@tsinghua.org.cn>
-Content-Type: text/html; charset=UTF-8
+Content-Type: multipart/alternative; boundary="0-1523945702-1196330500=:37238"
+Message-ID: <539126.37238.qm@web45608.mail.sp1.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,123 +23,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content=3D"text/html;charset=3DUTF-8" http-equiv=3D"Content-Type"=
+--0-1523945702-1196330500=:37238
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi Stefan,
+
+1. I used the 0x1c0002000 offset because I was referring to the first reply that I received. Now, I used the address 0x1c0002000 and tried to read from it. I retrieved 0x0f01c087. May I know what does this mean? How does this data relate to Board ID?
+
+2. Referring back to "Embedded Planet 440xC" document, I tried to activate the USER_LED0/USER_LED1 (with new address 0x1c0000000 + 0x2 offset) by setting it to 0. But didn't see the led turned on. Did some experiments and tried 0x1c0000000 without offset, sent 0, and found that USER_LED0 (CR3) and USER_LED1 (CR4) are activated! This got me confused. May I know why is this so? Could you please refer me to some documents?
+
+
+Thanks for all the assistance.
+
+Regards,
+dell
+Stefan Roese <sr@denx.de> wrote: On Thursday 29 November 2007, Dell Query wrote:
+> I see. No wonder I couldn't get more information on BCSR. I should contact
+> sequoia to get the proper details like the correct addresses.
 >
-  <title></title>
-</head>
-<body bgcolor=3D"#ffffff" text=3D"#000000">
-=E9=83=AD=E5=8A=B2 wrote:
-<blockquote cite=3D"mid396305910.05464@tsinghua.org.cn" type=3D"cite">
-  <pre wrap=3D"">Hi,friends,
+> I already used ioremap64(), remapping 0x1c0002000. I got a hex value for
+> the Board ID but could figure out what it means. So I tried the
+> USER_LED0/USER_LED1 (base address+0x2), to see if I could turn on/off the
+> user LEDS, but still no luck. I think I am accessing the wrong addresses so
+> I need to verify it with them.
 
-   I plug in 2GB DDR-1 in my MPC8360 board,there are two DIMM-184 slots,e=
-ach
-DIMM-184 slot hold 1GB.Could you tell me how to let the linux know about =
-those
-2GB?
-   In uboot, I set up each DDR CS to visit 512MB, total 4 CS signal. DDR =
-window
-range is 2GB. I think the uboot has passed those DDR parameter to linux.
-   I once did a test that config the bootargs with mem=3D512M, then the l=
-inux just
-only find 512MB, but if I config the mem=3D2048M, the linux still find ab=
-out 750MB.
-   How to make the linux find the total 2GB memory?
+Why do think you need the offset 0x2000? I just tested on my Sequoia under 
+U-Boot and "see" the CPLD at address 0xc000.0000:
 
-  </pre>
-</blockquote>
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Hi Friend,<br>
-<br>
-I hope u had tracked the conversion that has been going on. The max mem
-that the kernel can show is only 768 MB because only that of memory is
-directly mapped with your ram.. No matter how much ram &gt; 768 MB (in
-powerpc.. it varies in other architectures) u have, the kernel will
-show only 768 MB.. This is called low mem.. <br>
-<br>
-How t o use high mem??<br>
-<br>
-scott can probably guide us on this.. I also have lot of confusions
-about high mem.. Also i would suggest you a bit of reading on virtual
-memory management on linux to get a grasp about how things are done<br>
-Rest for scott<br>
-<br>
-regards,<br>
-vijai<br>
-<br>
-<blockquote cite=3D"mid396305910.05464@tsinghua.org.cn" type=3D"cite">
-  <pre wrap=3D"">
+=> md.b c0000000 20
+c0000000: 0f 00 c0 07 00 80 00 80 00 20 00 00 00 00 00 00    ......... ......
+c0000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................
+
+So you should map not 0x1.c000.2000 but 0x1.c000.0000 under Linux. Please let 
+me know if this works.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
 
 
-  </pre>
-  <blockquote type=3D"cite">
-    <pre wrap=3D"">From: Scott Wood <a class=3D"moz-txt-link-rfc2396E" hr=
-ef=3D"mailto:scottwood@freescale.com">&lt;scottwood@freescale.com&gt;</a>
-Reply-To:=20
-To: vijay baskar <a class=3D"moz-txt-link-rfc2396E" href=3D"mailto:cn.vij=
-aibaskar@gdatech.co.in">&lt;cn.vijaibaskar@gdatech.co.in&gt;</a>
-Subject: Re: The question about the high memory support on MPC8360?
-Date:Wed, 28 Nov 2007 10:57:38 -0600
+       
+---------------------------------
+Never miss a thing.   Make Yahoo your homepage.
+--0-1523945702-1196330500=:37238
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-vijay baskar wrote:
-    </pre>
-    <blockquote type=3D"cite">
-      <pre wrap=3D"">Hi, "The kernel also allows hardcoded mapping of IO =
-regions into its=20
-virtual address space through the io_block_mapping interface."
+Hi Stefan,<br><br>1. I used the 0x1c0002000 offset because I was referring to the first reply that I received. Now, I used the address 0x1c0002000 and tried to read from it. I retrieved 0x0f01c087. May I know what does this mean? How does this data relate to Board ID?<br><br>2. Referring back to <tt><tt>"Embedded Planet 440xC" document, I tried to activate the USER_LED0/USER_LED1 (with new address 0x1c0000000 + 0x2 offset) by setting it to 0. But didn't see the led turned on. Did some experiments and tried 0x1c0000000 without offset, sent 0, and found that USER_LED0 (CR3) and USER_LED1 (CR4) are activated! This got me confused. May I know why is this so? Could you please refer me to some documents?<br><br><br>Thanks for all the assistance.<br><br>Regards,<br>dell<br></tt></tt><b><i>Stefan Roese &lt;sr@denx.de&gt;</i></b> wrote:<blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;"> On Thursday 29 November 2007, Dell
+ Query wrote:<br>&gt; I see. No wonder I couldn't get more information on BCSR. I should contact<br>&gt; sequoia to get the proper details like the correct addresses.<br>&gt;<br>&gt; I already used ioremap64(), remapping 0x1c0002000. I got a hex value for<br>&gt; the Board ID but could figure out what it means. So I tried the<br>&gt; USER_LED0/USER_LED1 (base address+0x2), to see if I could turn on/off the<br>&gt; user LEDS, but still no luck. I think I am accessing the wrong addresses so<br>&gt; I need to verify it with them.<br><br>Why do think you need the offset 0x2000? I just tested on my Sequoia under <br>U-Boot and "see" the CPLD at address 0xc000.0000:<br><br>=&gt; md.b c0000000 20<br>c0000000: 0f 00 c0 07 00 80 00 80 00 20 00 00 00 00 00 00    ......... ......<br>c0000010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00    ................<br><br>So you should map not 0x1.c000.2000 but 0x1.c000.0000 under Linux. Please let <br>me know if this works.<br><br>Best
+ regards,<br>Stefan<br><br>=====================================================================<br>DENX Software Engineering GmbH,     MD: Wolfgang Denk &amp; Detlev Zundel<br>HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany<br>Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de<br>=====================================================================<br></blockquote><br><p>&#32;
 
-Can u tell me how this is in current arch/powerpc.
-      </pre>
-    </blockquote>
-    <pre wrap=3D"">Everything is explicitly ioremapped.
-
-    </pre>
-    <blockquote type=3D"cite">
-      <pre wrap=3D"">Also does it mean that whatever be the size of the r=
-am &gt; 768 MB there
- is not going to be much improvement in performance in kernel space=20
-irrespective of invoking CONFIG_HIGHMEM or not?
-      </pre>
-    </blockquote>
-    <pre wrap=3D"">Well, the kernel can use highmem for cache...  I'm not=
- sure what you
-mean by "in kernel space".
-
-    </pre>
-    <blockquote type=3D"cite">
-      <pre wrap=3D"">Also do you think this low mem be enough if i have l=
-ots of kernel=20
-space processes each invoking lots of kmallocs.
-      </pre>
-    </blockquote>
-    <pre wrap=3D"">That depends on what you mean by "lots". :-)
-
-You'll have 768MB of lowmem, and kmallocs can only use lowmem.
-
-    </pre>
-    <blockquote type=3D"cite">
-      <pre wrap=3D"">Will there be bottle necks?? Also what alternative d=
-o we have if  low
-mem of 768 MB is not enough??
-      </pre>
-    </blockquote>
-    <pre wrap=3D"">You'll need to change the user/kernel split, and deal =
-with anything that=20
-breaks in the process.
-
-Or get a 64-bit chip. :-)
-
--Scott
-
-    </pre>
-  </blockquote>
-  <pre wrap=3D""><!---->
+      <hr size=1>Never miss a thing.  <a href="http://us.rd.yahoo.com/evt=51438/*http://www.yahoo.com/r/hs"> Make Yahoo your homepage.</a>
 
 
-  </pre>
-</blockquote>
-<br>
-</body>
-</html>
+--0-1523945702-1196330500=:37238--
