@@ -1,17 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 63757DDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 13:54:56 +1100 (EST)
-Date: Wed, 28 Nov 2007 20:58:06 -0600
-From: Olof Johansson <olof@lixom.net>
-To: jgarzik@pobox.com
-Subject: [PATCH] [11/12] pasemi_mac: Print warning when not attaching to a PHY
-Message-ID: <20071129025806.GL17215@lixom.net>
-References: <20071129025410.GA17215@lixom.net>
+Return-Path: <randy.dunlap@oracle.com>
+Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 80B58DDFFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 13:55:10 +1100 (EST)
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	lAT1ekAU013854
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 18:40:46 -0700
+Message-ID: <474E187E.7040404@oracle.com>
+Date: Wed, 28 Nov 2007 17:40:14 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071129025410.GA17215@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: add hugepagesz boot-time parameter
+References: <474CF68E.1040709@us.ibm.com>	
+	<20071128132816.542fa4df.randy.dunlap@oracle.com>
+	<29495f1d0711281736if4bd8b0wc77d3beb39cb1284@mail.gmail.com>
+In-Reply-To: <29495f1d0711281736if4bd8b0wc77d3beb39cb1284@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux Memory Management List <linux-mm@kvack.org>, kniht@linux.vnet.ibm.com,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-pasemi_mac: Print warning when not attaching to a PHY
+Nish Aravamudan wrote:
+> On 11/28/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> On Tue, 27 Nov 2007 23:03:10 -0600 Jon Tollefson wrote:
+>>
+>>> This patch adds the hugepagesz boot-time parameter for ppc64 that lets
+>>> you pick the size for your huge pages.  The choices available are 64K
+>>> and 16M.  It defaults to 16M (previously the only choice) if nothing or
+>>> an invalid choice is specified.  Tested 64K huge pages with the
+>>> libhugetlbfs 1.2 release with its 'make func' and 'make stress' test
+>>> invocations.
+>>>
+>>> This patch requires the patch posted by Mel Gorman that adds
+>>> HUGETLB_PAGE_SIZE_VARIABLE; "[PATCH] Fix boot problem with iSeries
+>>> lacking hugepage support" on 2007-11-15.
+>>>
+>>> Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+>>> ---
+>>>
+>>>  Documentation/kernel-parameters.txt |    1
+>>>  arch/powerpc/mm/hash_utils_64.c     |   11 +--------
+>>>  arch/powerpc/mm/hugetlbpage.c       |   41 ++++++++++++++++++++++++++++++++++++
+>>>  include/asm-powerpc/mmu-hash64.h    |    1
+>>>  mm/hugetlb.c                        |    1
+>>>  5 files changed, 46 insertions(+), 9 deletions(-)
+>>>
+>>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>>> index 33121d6..2fc1fb8 100644
+>>> --- a/Documentation/kernel-parameters.txt
+>>> +++ b/Documentation/kernel-parameters.txt
+>>> @@ -685,6 +685,7 @@ and is between 256 and 4096 characters. It is defined in the file
+>>>                       See Documentation/isdn/README.HiSax.
+>>>
+>>>       hugepages=      [HW,X86-32,IA-64] Maximal number of HugeTLB pages.
+>>> +     hugepagesz=     [HW,IA-64,PPC] The size of the HugeTLB pages.
+>> Any chance of spelling it as "hugepagesize" so that it's a little
+>> less cryptic and more difficult to typo as "hugepages"?
+>> (i.e., less confusion between them)
+> 
+> It already exists as hugepagesz= for IA64. Changing it to hugepagesize
+> would either make ppc be different than IA64, or require keeping both
+> so as to make IA64 setups continue working as before?
 
-Print a warning on the console when not connecting to a phy for an interface.
-It turns out to be a pretty common problem when someone gets the MDIO info
-wrong in their device tree, resulting in the macs running at a fixed 1Gbit FD.
+Oh, but it wasn't in Doc/kernel-parameters.txt ?  :(
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+OK, just leave it as is, I think.
 
-
----
- drivers/net/pasemi_mac.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-Index: k.org/drivers/net/pasemi_mac.c
-===================================================================
---- k.org.orig/drivers/net/pasemi_mac.c
-+++ k.org/drivers/net/pasemi_mac.c
-@@ -1064,11 +1064,12 @@ static int pasemi_mac_open(struct net_de
- 	write_mac_reg(mac, PAS_MAC_CFG_PCFG, flags);
- 
- 	ret = pasemi_mac_phy_init(dev);
--	/* Some configs don't have PHYs (XAUI etc), so don't complain about
--	 * failed init due to -ENODEV.
-+	/* Warn for missing PHY on SGMII (1Gig) ports.
- 	 */
--	if (ret && ret != -ENODEV)
--		dev_warn(&mac->pdev->dev, "phy init failed: %d\n", ret);
-+	if (ret && mac->type == MAC_TYPE_GMAC) {
-+		dev_warn(&mac->pdev->dev, "PHY init failed: %d.\n", ret);
-+		dev_warn(&mac->pdev->dev, "Defaulting to 1Gbit full duplex\n");
-+	}
- 
- 	netif_start_queue(dev);
- 	napi_enable(&mac->napi);
+Thanks,
+-- 
+~Randy
