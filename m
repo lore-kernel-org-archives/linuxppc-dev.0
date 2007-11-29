@@ -1,20 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 1D4DEDDDF0
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 92888DDE06
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Nov 2007 06:41:25 +1100 (EST)
+	Fri, 30 Nov 2007 07:03:45 +1100 (EST)
+Message-ID: <474F1B25.8080508@anagramm.de>
+Date: Thu, 29 Nov 2007 21:03:49 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: The question about the high memory support on MPC8360?
-Date: Thu, 29 Nov 2007 13:41:21 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B03AE4745@ismail.innsys.innovsys.com>
-In-Reply-To: <f87675ee0711290459r20aa606ak7b3be9d3b0a8ec1c@mail.gmail.com>
-References: <396305910.05464@tsinghua.org.cn> <474E6A58.2070200@gdatech.co.in>
-	<f87675ee0711290459r20aa606ak7b3be9d3b0a8ec1c@mail.gmail.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "robert lazarski" <robertlazarski@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: DS1337 RTC on I2C broken.
+References: <474DB27C.7020909@anagramm.de>
+	<20071128194321.0804b3aa@i1501.lan.towertech.it>
+In-Reply-To: <20071128194321.0804b3aa@i1501.lan.towertech.it>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: robert lazarski
-> Sent: Thursday, November 29, 2007 7:00 AM
-> Subject: Re: The question about the high memory support on MPC8360?
-> I also have a requirement to use more than 768MB and 0x30000000. I
-> have other problems at the moment, so I haven't tested this completely
-> yet. My limited understanding, though, is that to use more than 768MB
-> you have to change your kernel configuration, including shifting the
-> kernel start address. This is what I plan on testing for 1GB when I
-> have time:
->=20
-> CONFIG_ADVANCED_OPTIONS=3Dy
-> CONFIG_LOWMEM_SIZE_BOOL=3Dy
-> CONFIG_LOWMEM_SIZE=3D0x40000000
-> CONFIG_KERNEL_START_BOOL=3Dy
-> CONFIG_KERNEL_START=3D0xa0000000
-> # CONFIG_CONSISTENT_START_BOOL is not set
-> # CONFIG_CONSISTENT_SIZE_BOOL is not set
-> # CONFIG_BOOT_LOAD_BOOL is not set
->=20
-> If that works for current kernels, please respond to the list ;-) .
+Hi There!
 
-This is how I do 1G of mem on a /arch/ppc kernel. A short while (couple
-of weeks ago) I commented about thei s on a thread about setting up the
-TLB handlers on arch/powerpc, and asked if this was going to be possible
-to do, and basically got a resouding NO as answer.
+> Clemens Koller <clemens.koller@anagramm.de> wrote:
+>> Well, as already mentioned, I have problems to get my DS1337 RTC on I2C
+>> on my MPC8540(ads like) PowerPC working properly on
+>> latest 2.6.24-rc2-ge6a5c27f kernels. A paulus.git 2.6.21-rc5-g9a5ee4cc
+>> as well as a 2.6.22-rc6-gb75ae860 is working fine.
+>> (mainstream's console is broken, so cannot test these, yet.)
+>>
+>>
+>> My guess is that the new rtc-lib's RTC_DRV_DS1307 support is still broken
+>> and it also breaks the deprecated SENSORS_DS1337. :-(
 
-WHich means I'll be sticking to arch/ppc for a while yet.
-It would be nice to have this also working on arch/powerpc though.
+One more update:
+I am back to mainline (linus' .git) on 2.6.24-rc3-g09f345da to
+verify that the problem with the RTC still persists.
+
+I startet to bisect, but ran quickly into other crashes.
+(no console on 2.6.23-rc2 and 2.6.23)
+So, I just can tell that it broke in between 2.6.22-rc6-gb75ae860 and
+and 2.6.24-rc2-ge6a5c27f.
+
+Regards,
+
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
