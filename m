@@ -1,31 +1,25 @@
-Return-Path: <agl@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7D19FDDDF4
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 02:11:16 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lATFB1b2022688
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:11:01 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lATFB1Ep291802
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:11:01 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lATFB0lb018680
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:11:00 -0500
-Subject: Re: Problems booting a 64k page kernel
-From: aglitke <agl@us.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1196293142.7875.1.camel@concordia>
-References: <1196290249.27582.122.camel@localhost.localdomain>
-	<1196293142.7875.1.camel@concordia>
-Content-Type: text/plain
-Date: Thu, 29 Nov 2007 09:12:56 -0600
-Message-Id: <1196349176.27582.129.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id EC5F8DDE17
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 02:13:19 +1100 (EST)
+Date: Thu, 29 Nov 2007 16:13:14 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [POWERPC] Emulate isel (Integer Select) instruction
+In-Reply-To: <Pine.LNX.4.62.0711281148020.27512@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0711291612290.24058@pademelon.sonytel.be>
+References: <Pine.LNX.4.64.0711192135460.24923@blarg.am.freescale.net>
+	<20071120175416.GA4389@loki.buserror.net>
+	<B82E6C31-8BB7-4348-9426-B18A971172A9@kernel.crashing.org>
+	<Pine.LNX.4.62.0711211407260.12720@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0711271555520.5847@pademelon.sonytel.be>
+	<20071127152317.GA5230@lixom.net>
+	<Pine.LNX.4.62.0711281148020.27512@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1523692591-1196349194=:24058"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael, thanks for your reply...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I am seeing the segmentation fault both on the default SLES10 initrd and
-the default RHEL5.1 initrd.  Therefore, I am reasonably sure this is a
-problem with my kernel build and not the initrd itself.
+---584337861-1523692591-1196349194=:24058
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-On Thu, 2007-11-29 at 10:39 +1100, Michael Ellerman wrote:
-> On Wed, 2007-11-28 at 16:50 -0600, aglitke wrote:
-> > Hello all.  I am new to building 64k page kernels and can't seem to get
-> > one to boot correctly.  Everything looks okay until init gets a signal
-> > 11 while booting.  Attached is my boot log and the kernel config I used.
-> > To generate this config I merely enabled the 64k page option in make
-> > menuconfig to alter a previously working config.
-> > 
-> > Any help you can provide would be greatly appreciated.
-> 
-> I've seen that happen with an init linked with uClibc, its dynamic
-> loader was doing mmap with MAP_FIXED on non-64K aligned addresses.
-> What user space are you using?
-> 
-> cheers
-> 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+On Wed, 28 Nov 2007, Geert Uytterhoeven wrote:
+> +static inline void warn_emulated_sysctl_register(void)
+> +{
+> +	int res = register_sysctl_table(warn_emulated_sysctl_root);
+        ^^^^^^^^^^
+> +	printk("@@@ register_sysctl_table() returned %d\n", res);
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> +}
+
+Woops, that part shouldn't have been there...
+
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-1523692591-1196349194=:24058--
