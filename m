@@ -1,21 +1,14 @@
-Return-Path: <alan@akb.net>
-Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
-	by ozlabs.org (Postfix) with ESMTP id 88C20DDDE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 15:06:38 +1100 (EST)
-Received: by el-out-1112.google.com with SMTP id s27so788517ele
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 20:06:37 -0800 (PST)
-Message-ID: <bfa0697f0711282006o235c987eg80732114e489befd@mail.gmail.com>
-Date: Wed, 28 Nov 2007 21:06:36 -0700
-From: "Alan Bennett" <embedded@akb.net>
-Sender: alan@akb.net
-To: "Scott Wood" <scottwood@freescale.com>
-Subject: Re: Timers on mpc8248 etc...
-In-Reply-To: <474DFD15.603@freescale.com>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 9885DDDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 15:16:04 +1100 (EST)
+Date: Thu, 29 Nov 2007 15:16:03 +1100
+To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Increase the upper bound on NR_CPUS.
+Message-ID: <20071129041603.GM24243@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <bfa0697f0711281541l31225d59ne78c8fe40286052e@mail.gmail.com>
-	<474DFD15.603@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It comes from uboot.  Can you point me in the right direction to make
-sure its right?
-               PowerPC,8248@0 {
-                       device_type = "cpu";
-                       reg = <0>;
-                       d-cache-line-size = <d#32>;
-                       i-cache-line-size = <d#32>;
-                       d-cache-size = <d#16384>;
-                       i-cache-size = <d#16384>;
-                       timebase-frequency = <0>;
-                       clock-frequency = <0>;
-               };
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
+---
+why not?
 
-On 11/28/07, Scott Wood <scottwood@freescale.com> wrote:
-> Alan Bennett wrote:
-> > I've got a routine that needs to delay for X microseconds, this is a
-> > must.  The command after schedule_timeout must has to wait for the HW
-> > to complete a task that takes X microseconds.
-> >
-> > I would think that one way to do this is with a simple
-> > schedule_timeout.  But in the example below, the time that passes from
-> > run1() to dontrun() is far less than 3.2 msecs.  Infact, sometimes its
-> > ~ 800 micros according the a analyzer looking at points triggered in
-> > run1() and donrun().  Could this be a configuration problem with the
-> > timer/interrupt that generates the jiffies?
->
-> Are you sure the timebase frequency is set correctly in the device tree?
->
-> -Scott
->
+ arch/powerpc/platforms/Kconfig.cputype |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 99684ea..5d70862 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -220,8 +220,8 @@ config SMP
+ 	  If you don't know what to do here, say N.
+ 
+ config NR_CPUS
+-	int "Maximum number of CPUs (2-128)"
+-	range 2 128
++	int "Maximum number of CPUs (2-1024)"
++	range 2 1024
+ 	depends on SMP
+ 	default "32" if PPC64
+ 	default "4"
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
