@@ -1,14 +1,14 @@
 Return-Path: <gorcunov@gmail.com>
 Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 13B0DDDE43
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 06:45:58 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A9F72DDE30
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 06:46:18 +1100 (EST)
 Received: by ug-out-1314.google.com with SMTP id q7so2140057uge
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 11:45:58 -0800 (PST)
-Date: Thu, 29 Nov 2007 22:46:39 +0300
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 11:46:17 -0800 (PST)
+Date: Thu, 29 Nov 2007 22:46:54 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: PPCML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/5] PPC cleanup: celleb - do use for_each macro
-Message-ID: <20071129194639.GE12123@cvg>
+Subject: [PATCH 5/5] PPC cleanup: powermac - do use for_each macro
+Message-ID: <20071129194654.GF12123@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
@@ -26,29 +26,22 @@ From: Cyrill Gorcunov <gorcunov@gmail.com>
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
- arch/powerpc/platforms/celleb/scc_sio.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powermac/low_i2c.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/celleb/scc_sio.c b/arch/powerpc/platforms/celleb/scc_sio.c
-index 6100082..5e43bac 100644
---- a/arch/powerpc/platforms/celleb/scc_sio.c
-+++ b/arch/powerpc/platforms/celleb/scc_sio.c
-@@ -42,14 +42,13 @@ static struct {
- static int __init txx9_serial_init(void)
- {
- 	extern int early_serial_txx9_setup(struct uart_port *port);
--	struct device_node *node = NULL;
-+	struct device_node *node;
- 	int i;
- 	struct uart_port req;
- 	struct of_irq irq;
- 	struct resource res;
+diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+index da2007e..864fbf4 100644
+--- a/arch/powerpc/platforms/powermac/low_i2c.c
++++ b/arch/powerpc/platforms/powermac/low_i2c.c
+@@ -585,8 +585,7 @@ static void __init kw_i2c_probe(void)
+ 	struct device_node *np, *child, *parent;
  
--	while ((node = of_find_compatible_node(node,
--				"serial", "toshiba,sio-scc")) != NULL) {
-+	for_each_compatible_node(node, "serial", "toshiba,sio-scc") {
- 		for (i = 0; i < ARRAY_SIZE(txx9_scc_tab); i++) {
- 			if (!(txx9_serial_bitmap & (1<<i)))
- 				continue;
+ 	/* Probe keywest-i2c busses */
+-	for (np = NULL;
+-	     (np = of_find_compatible_node(np, "i2c","keywest-i2c")) != NULL;){
++	for_each_compatible_node(np, "i2c","keywest-i2c") {
+ 		struct pmac_i2c_host_kw *host;
+ 		int multibus, chans, i;
+ 
 -- 
 1.5.3.5
