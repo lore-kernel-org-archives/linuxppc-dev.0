@@ -1,13 +1,21 @@
-Return-Path: <orutsch@sympatec.com>
-Message-ID: <474E9BC0.5010806@sympatec.com>
-Date: Thu, 29 Nov 2007 12:00:16 +0100
-From: Oliver Rutsch <orutsch@sympatec.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: MPC5200 I2C and 2.6 kernel
-References: <20071128202245.90051247C1@gemini.denx.de>
-In-Reply-To: <20071128202245.90051247C1@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F0D00DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 22:32:26 +1100 (EST)
+Date: Thu, 29 Nov 2007 14:31:59 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: "Alan Bennett" <embedded@akb.net>
+Subject: Re: Timers on mpc8248 etc...
+Message-ID: <20071129143159.2538786d@kernel.crashing.org>
+In-Reply-To: <bfa0697f0711282006o235c987eg80732114e489befd@mail.gmail.com>
+References: <bfa0697f0711281541l31225d59ne78c8fe40286052e@mail.gmail.com>
+	<474DFD15.603@freescale.com>
+	<bfa0697f0711282006o235c987eg80732114e489befd@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,37 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 28 Nov 2007 21:06:36 -0700
+Alan Bennett wrote:
 
->> hwclock --debug tells me:
+> It comes from uboot.  Can you point me in the right direction to make
+> sure its right?
+>                PowerPC,8248@0 {
+>                        device_type = "cpu";
+>                        reg = <0>;
+>                        d-cache-line-size = <d#32>;
+>                        i-cache-line-size = <d#32>;
+>                        d-cache-size = <d#16384>;
+>                        i-cache-size = <d#16384>;
+>                        timebase-frequency = <0>;
+>                        clock-frequency = <0>;
+>                };
+>
+if your u-boot is up to  date, it will have fdt command, and by
+fdt boardsetup
+fdt print /
+
+inspect what u-boot did. Of course you should have dtb preloaded to memory and
+fdt addr <offset> should be said to let u-boot know where dtb resides.
+
+
 > 
->> hwclock: Open of /dev/rtc failed, errno=19: No such device.
-> 
-> Well... did you check how your /dev/rtc is set up? It used  to  be  a
-> misc  device with MAJ=10 MIN=135 in old kernel versions, but now it's
-> MAJ=254 MIN=4, i. e. it should look like this:
-> 
-> crw-r--r-- 1 root root 254,   0 Jun 22 18:30 /dev/rtc
-> 
+> On 11/28/07, Scott Wood <scottwood@freescale.com> wrote:
+> > Alan Bennett wrote:
+> > > I've got a routine that needs to delay for X microseconds, this
+> > > is a must.  The command after schedule_timeout must has to wait
+> > > for the HW to complete a task that takes X microseconds.
+> > >
+> > > I would think that one way to do this is with a simple
+> > > schedule_timeout.  But in the example below, the time that passes
+> > > from run1() to dontrun() is far less than 3.2 msecs.  Infact,
+> > > sometimes its ~ 800 micros according the a analyzer looking at
+> > > points triggered in run1() and donrun().  Could this be a
+> > > configuration problem with the timer/interrupt that generates the
+> > > jiffies?
+> >
+> > Are you sure the timebase frequency is set correctly in the device
+> > tree?
+> >
+> > -Scott
+> >
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-Yes this was not correct in my filesystem. But in your filesystem
-it looks like MAJ=254 MIN=0. I set MIN to 0 and applied Jon's
-suggestions and now it works! So many thanks to Wolfgang and Jon,
-this was really a hard problem for me!
-But I should mention that I modified my dts for the M41T00 RTC
-in the following way:
-
-	rtc@68 {
-		compatible = "stm,m41t00";
-		reg = <68>;
-	};
-
-In some piece of an older driver I found the I2C Address for this RTC
-(0x68), although the data sheet tells me that the slave address is 0xD0.
-However, now it's up and running!
-
-Thanks and bye,
 
 -- 
-Dipl. Ing. Oliver Rutsch
-EMail: orutsch@sympatec.com
+Sincerely, Vitaly
