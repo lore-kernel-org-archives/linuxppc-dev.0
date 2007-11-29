@@ -1,12 +1,12 @@
 Return-Path: <jack+f-291107@suse.cz>
 Received: from duck.suse.cz (styx.suse.cz [82.119.242.94])
-	by ozlabs.org (Postfix) with ESMTP id ABE0ADDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 23:37:39 +1100 (EST)
-Date: Thu, 29 Nov 2007 13:10:01 +0100
+	by ozlabs.org (Postfix) with ESMTP id EA61BDDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 01:40:32 +1100 (EST)
+Date: Thu, 29 Nov 2007 15:40:30 +0100
 From: Jan Kara <jack@suse.cz>
 To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
-Message-ID: <20071129121001.GD16558@duck.suse.cz>
+Message-ID: <20071129144030.GE16558@duck.suse.cz>
 References: <20071128034140.648383f0.akpm@linux-foundation.org>
 	<474E7F9E.9000601@linux.vnet.ibm.com>
 	<20071129010906.772e0c15.akpm@linux-foundation.org>
@@ -98,11 +98,97 @@ On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
 > 
 > reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
 > bug is not reproduced.
-  OK, thanks for testing. I was trying to reproduce the problem locally but
-without success so far - I guess it's either NFS or CIFS which makes the
-problem appear. I'll investigate more.
+  OK, it's a problem with CIFS. Its cifs_hardlink() function doesn't call
+d_instantiate() and thus returns a dentry with d_inode set to NULL. I'm not
+sure if such behavior is really correct but anyway, attached is a new
+version of the patch which should handle it gracefully. Kamalesh, can you
+please give it a try? Thanks.
 
 									Honza
 -- 
 Jan Kara <jack@suse.cz>
 SUSE Labs, CR
+---
+
+  Currently, no notification event has been sent when inode's link count
+changed. This is inconvenient for the application in some cases:
+  Suppose you have the following directory structure
+    foo/test
+    bar/
+
+  and you watch test. If someone does "mv foo/test bar/", you get event
+IN_MOVE_SELF and you know something has happened with the file "test".
+However if someone does "ln foo/test bar/test" and "rm foo/test" you get no
+inotify event for the file "test" (only directories "foo" and "bar" receive
+events).
+  Furthermore it could be argued that link count belongs to file's metadata
+and thus IN_ATTRIB should be sent when it changes.
+  The following patch implements sending of IN_ATTRIB inotify events when
+link count of the inode changes, i.e., when a hardlink to the inode is
+created or when it is removed. This event is sent in addition to all the
+events sent so far. In particular, when a last link to a file is removed,
+IN_ATTRIB event is sent in addition to IN_DELETE_SELF event.
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+
+diff --git a/fs/namei.c b/fs/namei.c
+index 3b993db..c1839d1 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2188,6 +2188,7 @@ int vfs_unlink(struct inode *dir, struct dentry *dentry)
+ 
+ 	/* We don't d_delete() NFS sillyrenamed files--they still exist. */
+ 	if (!error && !(dentry->d_flags & DCACHE_NFSFS_RENAMED)) {
++		fsnotify_link_count(dentry->d_inode);
+ 		d_delete(dentry);
+ 	}
+ 
+@@ -2360,7 +2361,7 @@ int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_de
+ 	error = dir->i_op->link(old_dentry, dir, new_dentry);
+ 	mutex_unlock(&old_dentry->d_inode->i_mutex);
+ 	if (!error)
+-		fsnotify_create(dir, new_dentry);
++		fsnotify_link(dir, old_dentry->d_inode, new_dentry);
+ 	return error;
+ }
+ 
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index 2bd31fa..d4b7c4a 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -92,6 +92,14 @@ static inline void fsnotify_inoderemove(struct inode *inode)
+ }
+ 
+ /*
++ * fsnotify_link_count - inode's link count changed
++ */
++static inline void fsnotify_link_count(struct inode *inode)
++{
++	inotify_inode_queue_event(inode, IN_ATTRIB, 0, NULL, NULL);
++}
++
++/*
+  * fsnotify_create - 'name' was linked in
+  */
+ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+@@ -103,6 +111,20 @@ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
+ }
+ 
+ /*
++ * fsnotify_link - new hardlink in 'inode' directory
++ * Note: We have to pass also the linked inode ptr as some filesystems leave
++ *   new_dentry->d_inode NULL and instantiate inode pointer later
++ */
++static inline void fsnotify_link(struct inode *dir, struct inode *inode, struct dentry *new_dentry)
++{
++	inode_dir_notify(dir, DN_CREATE);
++	inotify_inode_queue_event(dir, IN_CREATE, 0, new_dentry->d_name.name,
++				  inode);
++	fsnotify_link_count(inode);
++	audit_inode_child(new_dentry->d_name.name, new_dentry, dir);
++}
++
++/*
+  * fsnotify_mkdir - directory 'name' was created
+  */
+ static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
