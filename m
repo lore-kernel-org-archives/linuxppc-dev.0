@@ -1,22 +1,21 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 16B7CDDE34
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 14:42:50 +1100 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Fix static rate if path faster than link
-References: <200711281446.29085.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 28 Nov 2007 19:42:43 -0800
-In-Reply-To: <200711281446.29085.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Wed, 28 Nov 2007 15:46:28 +0200")
-Message-ID: <adatzn5n2do.fsf@cisco.com>
+Return-Path: <alan@akb.net>
+Received: from el-out-1112.google.com (el-out-1112.google.com [209.85.162.177])
+	by ozlabs.org (Postfix) with ESMTP id 88C20DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 15:06:38 +1100 (EST)
+Received: by el-out-1112.google.com with SMTP id s27so788517ele
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Nov 2007 20:06:37 -0800 (PST)
+Message-ID: <bfa0697f0711282006o235c987eg80732114e489befd@mail.gmail.com>
+Date: Wed, 28 Nov 2007 21:06:36 -0700
+From: "Alan Bennett" <embedded@akb.net>
+Sender: alan@akb.net
+To: "Scott Wood" <scottwood@freescale.com>
+Subject: Re: Timers on mpc8248 etc...
+In-Reply-To: <474DFD15.603@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LKML <linux-kernel@vger.kernel.org>, OF-EWG <ewg@lists.openfabrics.org>,
-	LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <bfa0697f0711281541l31225d59ne78c8fe40286052e@mail.gmail.com>
+	<474DFD15.603@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,4 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-thanks, applied
+It comes from uboot.  Can you point me in the right direction to make
+sure its right?
+               PowerPC,8248@0 {
+                       device_type = "cpu";
+                       reg = <0>;
+                       d-cache-line-size = <d#32>;
+                       i-cache-line-size = <d#32>;
+                       d-cache-size = <d#16384>;
+                       i-cache-size = <d#16384>;
+                       timebase-frequency = <0>;
+                       clock-frequency = <0>;
+               };
+
+
+On 11/28/07, Scott Wood <scottwood@freescale.com> wrote:
+> Alan Bennett wrote:
+> > I've got a routine that needs to delay for X microseconds, this is a
+> > must.  The command after schedule_timeout must has to wait for the HW
+> > to complete a task that takes X microseconds.
+> >
+> > I would think that one way to do this is with a simple
+> > schedule_timeout.  But in the example below, the time that passes from
+> > run1() to dontrun() is far less than 3.2 msecs.  Infact, sometimes its
+> > ~ 800 micros according the a analyzer looking at points triggered in
+> > run1() and donrun().  Could this be a configuration problem with the
+> > timer/interrupt that generates the jiffies?
+>
+> Are you sure the timebase frequency is set correctly in the device tree?
+>
+> -Scott
+>
