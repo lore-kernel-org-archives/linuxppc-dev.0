@@ -1,19 +1,20 @@
-Return-Path: <raul.moreno@telvent.abengoa.com>
-Received: from envio.abengoa.com (envio.abengoa.com [217.15.37.68])
-	by ozlabs.org (Postfix) with ESMTP id A21FFDDDDB
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 83DB5DDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Nov 2007 22:49:29 +1100 (EST)
-In-Reply-To: <474EA159.2040200@anagramm.de>
-Subject: Re: DS1337 RTC on I2C broken.
-To: Clemens Koller <clemens.koller@anagramm.de>
-Message-ID: <OF72889778.967E4ED4-ONC12573A2.003EEB4F-C12573A2.003F93BA@abengoa.com>
-Date: Thu, 29 Nov 2007 12:34:11 +0100
-From: raul.moreno@telvent.abengoa.com
+	Thu, 29 Nov 2007 23:42:58 +1100 (EST)
+Message-ID: <474EB36D.1080408@dlasys.net>
+Date: Thu, 29 Nov 2007 07:41:17 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
-	Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+To: schardt <g.schardt@fz-juelich.de>
+Subject: Re: Init hangs on Xilinx4
+References: <474D8839.6020609@fz-juelich.de>
+In-Reply-To: <474D8839.6020609@fz-juelich.de>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,86 +25,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello all,
+I had a similar problem. In my instance it turned out that I was
+inadvertently using the physical address of my uart as the output address.
+This worked during boot becasue there was a 1:1 physical-logical entry
+stuffed into the MMU. But since Linux did nto know about it, as soon as
+the VM system decided to use that TLB entry IO died - right in the
+middle of a string.
 
-I am trying to use some devices on i2c protocol, one of them is the DS1=
-337
-RTC, but I don't know too much about how.
-I am using the Linux kernel 2.6.15 and a mpc866 processor. I've seen th=
-ere
-is a cpm i2c interface for these processors (for a rpx board). However =
-the
-corresponding code (i2c-algo8xx) doesn't appear in the sources. The
-i2c-rpx.c just initializes the ioports, the adapter struct and the isr.=
+While it is unlikely you made exactly the same mistake. One area you can
+check is memory.
 
-Maybe I am not understanding the i2c driver right.
-I am a bit confused about it. Could you give me some help about how it
-works or what should I have to do?
+What is your output device ?
 
-Thanks in advance.
-Best regards,
-
-Ra=FAl Moreno
-
-
-
-Clemens Koller <clemens.koller@anagramm.de>
-Clemens Koller
-Enviado por:
-linuxppc-embedded-bounces+raul.moreno=3Dtelvent.abengoa.com@ozlabs.org
-29/11/2007 12:24
-                                                                       =
-                                                
- Para:   Alessandro Zummo <alessandro.zummo@towertech.it>              =
-                                                
-                                                                       =
-                                                
- cc:     rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org      =
-                                                
-                                                                       =
-                                                
- Asunto: Re: DS1337 RTC on I2C broken.                                 =
-                                                
-                                                                       =
-                                                
-
-
-
-
-
-Hello, Allessandro!
-
-Alessandro Zummo schrieb:
- > On Wed, 28 Nov 2007 19:25:00 +0100
- > Clemens Koller <clemens.koller@anagramm.de> wrote:
- >
- >> Well, as already mentioned, I have problems to get my DS1337 RTC on=
- I2C
- >> on my MPC8540(ads like) PowerPC working properly on
- >> latest 2.6.24-rc2-ge6a5c27f kernels. A paulus.git 2.6.21-rc5-g9a5ee=
-4cc
- >> as well as a 2.6.22-rc6-gb75ae860 is working fine.
- >> (mainstream's console is broken, so cannot test these, yet.)
-
-Just to give you an update: The latest paulus.git as of today
-(Linux-2.6.24-rc3-g0b47759d) is still broken. Same story as yesterday.
-
-Regards,
-
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Stra=DFe 45/1
-Linhof Werksgel=E4nde
-D-81379 M=FCnchen
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+schardt wrote:
+> Hi all,
+>
+> i still have some problems booting linux from flash and don't know how
+> to debug.
+>
+> i have a xilinx4-ppc with 64MB Ram and 4MB Flash, U-Boot works fine,
+> kernel is booting, but my little hello world program runs as init, died
+> after printing "He" (intead of "Hello World"). i tried initramfs with
+> build in cpio-image and jffs2 rootfs
+>
+> Is there a log-buffer to look at ?
+> Should i try another compiler version ? (btw. booting from systemace
+> works with the version i use).
+>
+> ---------------------------
+> famous last words :
+>
+> [   50.476641] VFS: Mounted root (jffs2 filesystem).
+> [   50.533581] Freeing unused kernel memory: 68k init
+> He
+> ---------------------------
+>
+>
+> regards
+> Georg
+>
+>
+>
+> -------------------------------------------------------------------
+> -------------------------------------------------------------------
+> Forschungszentrum Jülich GmbH
+> 52425 Jülich
+>
+> Sitz der Gesellschaft: Jülich
+> Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
+> Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
+> Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
+> Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
+> -------------------------------------------------------------------
+> -------------------------------------------------------------------
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>   
 
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-=
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
