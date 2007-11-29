@@ -1,14 +1,17 @@
-Return-Path: <tony@bakeyournoodle.com>
-Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
-	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 9885DDDDDB
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 15:16:04 +1100 (EST)
-Date: Thu, 29 Nov 2007 15:16:03 +1100
-To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] Increase the upper bound on NR_CPUS.
-Message-ID: <20071129041603.GM24243@bakeyournoodle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-From: tony@bakeyournoodle.com (Tony Breeds)
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Increase the upper bound on NR_CPUS.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+In-Reply-To: <20071129041603.GM24243@bakeyournoodle.com>
+References: <20071129041603.GM24243@bakeyournoodle.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-7biFUc+cX0cbQ+4yludL"
+Date: Thu, 29 Nov 2007 15:17:16 +1100
+Message-Id: <1196309836.7875.3.camel@concordia>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,31 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
----
-why not?
+--=-7biFUc+cX0cbQ+4yludL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- arch/powerpc/platforms/Kconfig.cputype |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Thu, 2007-11-29 at 15:16 +1100, Tony Breeds wrote:
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+>=20
+> ---
+> why not?
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 99684ea..5d70862 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -220,8 +220,8 @@ config SMP
- 	  If you don't know what to do here, say N.
- 
- config NR_CPUS
--	int "Maximum number of CPUs (2-128)"
--	range 2 128
-+	int "Maximum number of CPUs (2-1024)"
-+	range 2 1024
- 	depends on SMP
- 	default "32" if PPC64
- 	default "4"
+How big is say a pseries_defconfig with NR_CPUS =3D 1024 ?
 
-Yours Tony
+cheers
 
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-7biFUc+cX0cbQ+4yludL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHTj1MdSjSd0sB4dIRApujAKCaRdgyndbycVDkBrqJ8kFCeNYlZwCePDbD
+/gvDPw7puSv5+7/XjCNraes=
+=ItEJ
+-----END PGP SIGNATURE-----
+
+--=-7biFUc+cX0cbQ+4yludL--
