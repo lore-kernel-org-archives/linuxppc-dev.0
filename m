@@ -1,21 +1,13 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 87BC7DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 21:41:50 +1100 (EST)
-Date: Thu, 29 Nov 2007 11:41:47 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
-Message-ID: <20071129104147.GA3694@aepfle.de>
-References: <20071120012815.GB7969@austin.ibm.com>
-	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
-	<20071128110037.GB31217@aepfle.de>
-	<20071128200932.GG19584@austin.ibm.com>
+Return-Path: <orutsch@sympatec.com>
+Message-ID: <474E9BC0.5010806@sympatec.com>
+Date: Thu, 29 Nov 2007 12:00:16 +0100
+From: Oliver Rutsch <orutsch@sympatec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20071128200932.GG19584@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
-	paulus@samba.org
+To: Linuxppc-dev@ozlabs.org
+Subject: Re: MPC5200 I2C and 2.6 kernel
+References: <20071128202245.90051247C1@gemini.denx.de>
+In-Reply-To: <20071128202245.90051247C1@gemini.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +17,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 28, Linas Vepstas wrote:
+Hi,
 
-> On Wed, Nov 28, 2007 at 12:00:37PM +0100, Olaf Hering wrote:
-> > On Tue, Nov 27, Will Schmidt wrote:
-
-> > > > -	if (panic_timeout)
-> > > > -		return;
-> > 
-> > This change is wrong. Booting with panic=123 really means the system
-> > has to reboot in 123 seconds after a panic.
+>> hwclock --debug tells me:
 > 
-> And it does.
+>> hwclock: Open of /dev/rtc failed, errno=19: No such device.
+> 
+> Well... did you check how your /dev/rtc is set up? It used  to  be  a
+> misc  device with MAJ=10 MIN=135 in old kernel versions, but now it's
+> MAJ=254 MIN=4, i. e. it should look like this:
+> 
+> crw-r--r-- 1 root root 254,   0 Jun 22 18:30 /dev/rtc
+> 
 
-Have you ever tried it? Current state is that the JS20 hangs after
-panic, simply because it calls into the hypervisor (or whatever).
-To reproduce:
- mkdir ../O-os-term
- cp arch/powerpc/configs/pseries_defconfig ../O-os-term/.config
- yes '' | make -kj6 O=../O-os-term zImage
- scp -4pr ../O-os-term/arch/powerpc/boot/zImage root@tftp:/tftpboot/js20
+Yes this was not correct in my filesystem. But in your filesystem
+it looks like MAJ=254 MIN=0. I set MIN to 0 and applied Jon's
+suggestions and now it works! So many thanks to Wolfgang and Jon,
+this was really a hard problem for me!
+But I should mention that I modified my dts for the M41T00 RTC
+in the following way:
 
+	rtc@68 {
+		compatible = "stm,m41t00";
+		reg = <68>;
+	};
 
- boot /pci@8000000f8000000/pci@0/ethernet@1,1 debug panic=1 root=/dev/sdx42
+In some piece of an older driver I found the I2C Address for this RTC
+(0x68), although the data sheet tells me that the slave address is 0xD0.
+However, now it's up and running!
 
+Thanks and bye,
 
-Whoever relies on the string passing to the HMC can boot with panic=0 or
-use some sysctl to write to /proc/sys/kernel/panic
-So, please restore the panic_timeout check.
+-- 
+Dipl. Ing. Oliver Rutsch
+EMail: orutsch@sympatec.com
