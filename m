@@ -1,20 +1,16 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
-	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83DB5DDDEB
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Nov 2007 23:42:58 +1100 (EST)
-Message-ID: <474EB36D.1080408@dlasys.net>
-Date: Thu, 29 Nov 2007 07:41:17 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+Return-Path: <clemens.koller@anagramm.de>
+Message-ID: <474EB3DD.7030407@anagramm.de>
+Date: Thu, 29 Nov 2007 13:43:09 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-To: schardt <g.schardt@fz-juelich.de>
-Subject: Re: Init hangs on Xilinx4
-References: <474D8839.6020609@fz-juelich.de>
-In-Reply-To: <474D8839.6020609@fz-juelich.de>
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+To: raul.moreno@telvent.abengoa.com
+Subject: Re: DS1337 RTC on I2C broken.
+References: <OF72889778.967E4ED4-ONC12573A2.003EEB4F-C12573A2.003F93BA@abengoa.com>
+In-Reply-To: <OF72889778.967E4ED4-ONC12573A2.003EEB4F-C12573A2.003F93BA@abengoa.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded-bounces+raul.moreno=telvent.abengoa.com@ozlabs.org,
+	Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,72 +21,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I had a similar problem. In my instance it turned out that I was
-inadvertently using the physical address of my uart as the output address.
-This worked during boot becasue there was a 1:1 physical-logical entry
-stuffed into the MMU. But since Linux did nto know about it, as soon as
-the VM system decided to use that TLB entry IO died - right in the
-middle of a string.
+Hello, Raul!
 
-While it is unlikely you made exactly the same mistake. One area you can
-check is memory.
+raul.moreno@telvent.abengoa.com schrieb:
+ > I am trying to use some devices on i2c protocol, one of them is the DS1337
+ > RTC, but I don't know too much about how.
+ > I am using the Linux kernel 2.6.15 and a mpc866 processor.
 
-What is your output device ?
+I don't remember too much about these old kernels.
+And, please notice, that
+- I am on an mpc8540 which is quite different from your mpc866 processor.
+- I am on the latest kernels which are also very different from the old
+ones regarding the RTC subsystem.
 
-schardt wrote:
-> Hi all,
->
-> i still have some problems booting linux from flash and don't know how
-> to debug.
->
-> i have a xilinx4-ppc with 64MB Ram and 4MB Flash, U-Boot works fine,
-> kernel is booting, but my little hello world program runs as init, died
-> after printing "He" (intead of "Hello World"). i tried initramfs with
-> build in cpio-image and jffs2 rootfs
->
-> Is there a log-buffer to look at ?
-> Should i try another compiler version ? (btw. booting from systemace
-> works with the version i use).
->
-> ---------------------------
-> famous last words :
->
-> [   50.476641] VFS: Mounted root (jffs2 filesystem).
-> [   50.533581] Freeing unused kernel memory: 68k init
-> He
-> ---------------------------
->
->
-> regards
-> Georg
->
->
->
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
-> Forschungszentrum Jülich GmbH
-> 52425 Jülich
->
-> Sitz der Gesellschaft: Jülich
-> Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-> Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-> Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
-> Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
-> -------------------------------------------------------------------
-> -------------------------------------------------------------------
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
+Usually you have to configure the kernel using the right i2c interface
+for your processor (if supported). I am using the 'fsl-i2c' driver
+enabled by: I2C-support -> I2C Hardware Bus support -> MPC107/824x/85xx/52xx/86xx
+which will be:
+CONFIG_I2C_MPC=y
 
+Then, you might have to enable the (now deprecated)
+Misc I2C Chip Support -> Dallas DS1337 and ... Real Time Clock support
+which gives you:
+CONFIG_SENSORS_DS1337=y
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+ > I've seen there
+ > is a cpm i2c interface for these processors (for a rpx board).
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+the fsl-i2c might be the right place
+
+ > However the
+ > corresponding code (i2c-algo8xx) doesn't appear in the sources. The
+ > i2c-rpx.c just initializes the ioports, the adapter struct and the isr.
+ > Maybe I am not understanding the i2c driver right.
+ > I am a bit confused about it. Could you give me some help about how it
+ > works or what should I have to do?
+
+I would suggest - despite the current problems - to use a current
+kernel and check your mileage there.
+I don't want to ride dead horses anymore.
+
+Regards,
+
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
