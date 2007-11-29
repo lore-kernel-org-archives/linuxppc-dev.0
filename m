@@ -1,14 +1,26 @@
-Return-Path: <skrishnakar@gmail.com>
-Message-ID: <6213bc560711282323v20c245fewf4f8390c5591d681@mail.gmail.com>
-Date: Thu, 29 Nov 2007 12:53:19 +0530
-From: "srikanth krishnakar" <skrishnakar@gmail.com>
-To: Linuxppc-embedded@ozlabs.org
-Subject: SCC QMC driver Compilation
-In-Reply-To: <6213bc560711282312t6e504846hceb81162e63310c9@mail.gmail.com>
+Return-Path: <cn.vijaibaskar@gdatech.co.in>
+Received: from gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id A4129DDDEE
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Nov 2007 18:24:41 +1100 (EST)
+Received: from [172.29.36.2] (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id D73378780C0
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Nov 2007 23:24:29 -0800 (PST)
+Received: from mail.gdatech.co.in (unknown [172.29.36.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 8B2138780AF
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Nov 2007 23:24:29 -0800 (PST)
+Message-ID: <474E6A58.2070200@gdatech.co.in>
+Date: Thu, 29 Nov 2007 12:59:28 +0530
+From: vijay baskar <cn.vijaibaskar@gdatech.co.in>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_9877_12266683.1196320999868"
-References: <6213bc560711282312t6e504846hceb81162e63310c9@mail.gmail.com>
+To: =?UTF-8?B?6YOt5Yqy?= <guojin02@tsinghua.org.cn>
+Subject: Re: The question about the high memory support on MPC8360?
+References: <396305910.05464@tsinghua.org.cn>
+In-Reply-To: <396305910.05464@tsinghua.org.cn>
+Content-Type: text/html; charset=UTF-8
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,129 +31,123 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_9877_12266683.1196320999868
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content=3D"text/html;charset=3DUTF-8" http-equiv=3D"Content-Type"=
+>
+  <title></title>
+</head>
+<body bgcolor=3D"#ffffff" text=3D"#000000">
+=E9=83=AD=E5=8A=B2 wrote:
+<blockquote cite=3D"mid396305910.05464@tsinghua.org.cn" type=3D"cite">
+  <pre wrap=3D"">Hi,friends,
 
-Hi panto,
+   I plug in 2GB DDR-1 in my MPC8360 board,there are two DIMM-184 slots,e=
+ach
+DIMM-184 slot hold 1GB.Could you tell me how to let the linux know about =
+those
+2GB?
+   In uboot, I set up each DDR CS to visit 512MB, total 4 CS signal. DDR =
+window
+range is 2GB. I think the uboot has passed those DDR parameter to linux.
+   I once did a test that config the bootargs with mem=3D512M, then the l=
+inux just
+only find 512MB, but if I config the mem=3D2048M, the linux still find ab=
+out 750MB.
+   How to make the linux find the total 2GB memory?
 
-Good Day,
-
-I am trying to compile the QMC driver given for 2.4 kernel. but I am getting
-the IOCTL errors. Will you please let me know the solution for these.
-
-* Below is the log of Errors generated while compilation:**
-
-*ppc_8xx-gcc -D__KERNEL__ -I/home/TEST_QMC/linux- 2.4.20_mvl31/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common
--fomit-frame-pointer -I/home/TEST_QMC/linux-
-2.4.20_mvl31/arch/ppc-fsigned-char -msoft-float -pipe -ffixed-r2
--Wno-uninitialized -mmultiple
--mstring   -nostdinc -iwithprefix include -DKBUILD_BASENAME=qmc_core
--DEXPORT_SYMTAB -c qmc-core.c
-qmc-core.c: In function `qmc_ioctl':
-qmc-core.c:456: error: `QMC_IOC_MAGIC' undeclared (first use in this
-function)
-qmc-core.c:456: error: (Each undeclared identifier is reported only once
-qmc-core.c:456: error: for each function it appears in.)
-qmc-core.c:458: error: `QMC_IOC_MAXNR' undeclared (first use in this
-function)
-qmc-core.c:466: error: `QMC_IOCRESET' undeclared (first use in this
-function)
-qmc-core.c:469: error: `QMC_IOCSCONF' undeclared (first use in this
-function)
-qmc-core.c:470: error: `QMC_IOCGCONF' undeclared (first use in this
-function)
-qmc-core.c:471: error: storage size of `req' isn't known
-qmc-core.c:471: warning: unused variable `req'
-qmc-core.c :1012:2: #error Unknown board configuration.
-qmc-core.c: In function `qmc_setup':
-qmc-core.c:1311: error: `CLK_PCM_BIT' undeclared (first use in this
-function)
-qmc-core.c:1311: error: `X_PCMOUT1_BIT' undeclared (first use in this
-function)
-qmc-core.c:1311: error: `X_PCMIN1_BIT' undeclared (first use in this
-function)
-qmc-core.c:1313: error: `PCM_FS_BIT' undeclared (first use in this function)
-qmc-core.c: In function `qmc_cleanup':
-qmc-core.c :1640: error: `CLK_PCM_BIT' undeclared (first use in this
-function)
-qmc-core.c:1640: error: `X_PCMOUT1_BIT' undeclared (first use in this
-function)
-qmc-core.c:1640: error: `X_PCMIN1_BIT' undeclared (first use in this
-function)
-qmc-core.c: In function `devices_init':
-qmc-core.c:1662: error: `QMC_MAJOR' undeclared (first use in this function)
-qmc-core.c: In function `devices_cleanup':
-qmc-core.c:1684: error: `QMC_MAJOR' undeclared (first use in this function)
-make[3]: *** [qmc-core.o] Error 1
-make[3]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers/qmc'
-make[2]: *** [first_rule] Error 2
-make[2]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers/qmc '
-make[1]: *** [_subdir_qmc] Error 2
-make[1]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers'
-make: *** [_dir_drivers] Error 2
-[root@smk linux-2.4.20_mvl31]# vi drivers/qmc/qmc-core.c  +456 *
-
-*
-Waiting for your reply.
+  </pre>
+</blockquote>
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 Hi Friend,<br>
+<br>
+I hope u had tracked the conversion that has been going on. The max mem
+that the kernel can show is only 768 MB because only that of memory is
+directly mapped with your ram.. No matter how much ram &gt; 768 MB (in
+powerpc.. it varies in other architectures) u have, the kernel will
+show only 768 MB.. This is called low mem.. <br>
+<br>
+How t o use high mem??<br>
+<br>
+scott can probably guide us on this.. I also have lot of confusions
+about high mem.. Also i would suggest you a bit of reading on virtual
+memory management on linux to get a grasp about how things are done<br>
+Rest for scott<br>
+<br>
+regards,<br>
+vijai<br>
+<br>
+<blockquote cite=3D"mid396305910.05464@tsinghua.org.cn" type=3D"cite">
+  <pre wrap=3D"">
 
 
+  </pre>
+  <blockquote type=3D"cite">
+    <pre wrap=3D"">From: Scott Wood <a class=3D"moz-txt-link-rfc2396E" hr=
+ef=3D"mailto:scottwood@freescale.com">&lt;scottwood@freescale.com&gt;</a>
+Reply-To:=20
+To: vijay baskar <a class=3D"moz-txt-link-rfc2396E" href=3D"mailto:cn.vij=
+aibaskar@gdatech.co.in">&lt;cn.vijaibaskar@gdatech.co.in&gt;</a>
+Subject: Re: The question about the high memory support on MPC8360?
+Date:Wed, 28 Nov 2007 10:57:38 -0600
 
--- 
-"The Good You Do, The Best You GET"
+vijay baskar wrote:
+    </pre>
+    <blockquote type=3D"cite">
+      <pre wrap=3D"">Hi, "The kernel also allows hardcoded mapping of IO =
+regions into its=20
+virtual address space through the io_block_mapping interface."
 
-Regards
-Srikanth Krishnakar
-**********************
+Can u tell me how this is in current arch/powerpc.
+      </pre>
+    </blockquote>
+    <pre wrap=3D"">Everything is explicitly ioremapped.
+
+    </pre>
+    <blockquote type=3D"cite">
+      <pre wrap=3D"">Also does it mean that whatever be the size of the r=
+am &gt; 768 MB there
+ is not going to be much improvement in performance in kernel space=20
+irrespective of invoking CONFIG_HIGHMEM or not?
+      </pre>
+    </blockquote>
+    <pre wrap=3D"">Well, the kernel can use highmem for cache...  I'm not=
+ sure what you
+mean by "in kernel space".
+
+    </pre>
+    <blockquote type=3D"cite">
+      <pre wrap=3D"">Also do you think this low mem be enough if i have l=
+ots of kernel=20
+space processes each invoking lots of kmallocs.
+      </pre>
+    </blockquote>
+    <pre wrap=3D"">That depends on what you mean by "lots". :-)
+
+You'll have 768MB of lowmem, and kmallocs can only use lowmem.
+
+    </pre>
+    <blockquote type=3D"cite">
+      <pre wrap=3D"">Will there be bottle necks?? Also what alternative d=
+o we have if  low
+mem of 768 MB is not enough??
+      </pre>
+    </blockquote>
+    <pre wrap=3D"">You'll need to change the user/kernel split, and deal =
+with anything that=20
+breaks in the process.
+
+Or get a 64-bit chip. :-)
+
+-Scott
+
+    </pre>
+  </blockquote>
+  <pre wrap=3D""><!---->
 
 
-
--- 
-"The Good You Do, The Best You GET"
-
-Regards
-Srikanth Krishnakar
-**********************
-
-------=_Part_9877_12266683.1196320999868
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<br><div class="gmail_quote"><br>Hi panto,<br><br>Good Day,<br><br>I am trying to compile the QMC driver
-given for 2.4 kernel. but I am getting the IOCTL errors. Will you
-please let me know the solution for these.<br><br><b>
-<span style="font-family: times new roman,serif;"><font size="4">
-Below is the log of Errors generated while compilation:</font></span></b><i><span style="font-family: times new roman,serif;"><br><br></span></i><span style="font-family: times new roman,serif;">ppc_8xx-gcc
--D__KERNEL__ -I/home/TEST_QMC/linux-
-2.4.20_mvl31/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2
--fno-strict-aliasing -fno-common -fomit-frame-pointer
--I/home/TEST_QMC/linux-
-2.4.20_mvl31/arch/ppc -fsigned-char -msoft-float -pipe -ffixed-r2
--Wno-uninitialized -mmultiple -mstring&nbsp;&nbsp; -nostdinc -iwithprefix include
--DKBUILD_BASENAME=qmc_core&nbsp; -DEXPORT_SYMTAB -c qmc-core.c<br>qmc-core.c: In function `qmc_ioctl&#39;:
-<br>qmc-core.c:456: error: `QMC_IOC_MAGIC&#39; undeclared (first use in this function)<br>qmc-core.c:456: error: (Each undeclared identifier is reported only once<br>qmc-core.c:456: error: for each function it appears in.)
-<br>qmc-core.c:458: error: `QMC_IOC_MAXNR&#39; undeclared (first use in this function)<br>qmc-core.c:466: error: `QMC_IOCRESET&#39; undeclared (first use in this function)<br>qmc-core.c:469: error: `QMC_IOCSCONF&#39; undeclared (first use in this function)
-<br>qmc-core.c:470: error: `QMC_IOCGCONF&#39; undeclared (first use in this function)<br>qmc-core.c:471: error: storage size of `req&#39; isn&#39;t known<br>qmc-core.c:471: warning: unused variable `req&#39;<br>qmc-core.c
-
-
-
-:1012:2: #error Unknown board configuration.<br>qmc-core.c: In function `qmc_setup&#39;:<br>qmc-core.c:1311: error: `CLK_PCM_BIT&#39; undeclared (first use in this function)<br>qmc-core.c:1311: error: `X_PCMOUT1_BIT&#39; undeclared (first use in this function)
-<br>qmc-core.c:1311: error: `X_PCMIN1_BIT&#39; undeclared (first use in this function)<br>qmc-core.c:1313: error: `PCM_FS_BIT&#39; undeclared (first use in this function)<br>qmc-core.c: In function `qmc_cleanup&#39;:<br>
-
-
-qmc-core.c
-:1640: error: `CLK_PCM_BIT&#39; undeclared (first use in this function)<br>qmc-core.c:1640: error: `X_PCMOUT1_BIT&#39; undeclared (first use in this function)<br>qmc-core.c:1640: error: `X_PCMIN1_BIT&#39; undeclared (first use in this function)
-<br>qmc-core.c: In function `devices_init&#39;:<br>qmc-core.c:1662: error: `QMC_MAJOR&#39; undeclared (first use in this function)<br>qmc-core.c: In function `devices_cleanup&#39;:<br>qmc-core.c:1684: error: `QMC_MAJOR&#39; undeclared (first use in this function)
-<br>make[3]: *** [qmc-core.o] Error 1<br>make[3]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers/qmc&#39;<br>make[2]: *** [first_rule] Error 2<br>make[2]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers/qmc
-
-
-
-&#39;<br>make[1]: *** [_subdir_qmc] Error 2<br>make[1]: Leaving directory `/home/TEST_QMC/linux-2.4.20_mvl31/drivers&#39;<br>make: *** [_dir_drivers] Error 2<br>[root@smk linux-2.4.20_mvl31]# vi drivers/qmc/qmc-core.c&nbsp; +456
-</span><i><span style="font-family: times new roman,serif;"><br><br></span></i><br>Waiting for your reply. <br clear="all"><font color="#888888"><font color="#888888"><br></font><br clear="all"><br>-- <br>&quot;The Good You Do, The Best You GET&quot;
-<br><br>Regards<br>Srikanth Krishnakar<br>**********************
-</font></div><br><br clear="all"><br>-- <br>&quot;The Good You Do, The Best You GET&quot;<br><br>Regards<br>Srikanth Krishnakar<br>**********************
-
-------=_Part_9877_12266683.1196320999868--
+  </pre>
+</blockquote>
+<br>
+</body>
+</html>
