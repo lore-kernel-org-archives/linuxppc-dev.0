@@ -1,17 +1,18 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id A8F30DDDF9
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 15:23:15 +1100 (EST)
+Date: Thu, 29 Nov 2007 15:23:14 +1100
+To: Michael Ellerman <michael@ellerman.id.au>
 Subject: Re: [PATCH] Increase the upper bound on NR_CPUS.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Tony Breeds <tony@bakeyournoodle.com>
-In-Reply-To: <20071129041603.GM24243@bakeyournoodle.com>
+Message-ID: <20071129042314.GN24243@bakeyournoodle.com>
 References: <20071129041603.GM24243@bakeyournoodle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-7biFUc+cX0cbQ+4yludL"
-Date: Thu, 29 Nov 2007 15:17:16 +1100
-Message-Id: <1196309836.7875.3.camel@concordia>
-Mime-Version: 1.0
+	<1196309836.7875.3.camel@concordia>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1196309836.7875.3.camel@concordia>
+From: tony@bakeyournoodle.com (Tony Breeds)
 Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,41 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Nov 29, 2007 at 03:17:16PM +1100, Michael Ellerman wrote:
+> On Thu, 2007-11-29 at 15:16 +1100, Tony Breeds wrote:
+> > Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> > 
+> > ---
+> > why not?
+> 
+> How big is say a pseries_defconfig with NR_CPUS = 1024 ?
 
---=-7biFUc+cX0cbQ+4yludL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This is a ppc64_defconfig, with a couple of extra patches, and
+NR_CPUS=1024
 
-On Thu, 2007-11-29 at 15:16 +1100, Tony Breeds wrote:
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
->=20
-> ---
-> why not?
+tony@Sprygo:~/scratch/working$ size ../working_out/arch/powerpc/boot/zImage.{pmac,pseries,iseries} ../working_out/vmlinux
+   text    data     bss      dec     hex filename
+3697092    5356   48232  3750680  393b18 ../working_out/arch/powerpc/boot/zImage.pmac
+3697092    5356   48232  3750680  393b18 ../working_out/arch/powerpc/boot/zImage.pseries
+8101340 4994176  815544 13911060  d44414 ../working_out/arch/powerpc/boot/zImage.iseries
+8101340 4994176  815544 13911060  d44414 ../working_out/vmlinux
 
-How big is say a pseries_defconfig with NR_CPUS =3D 1024 ?
+Yours Tony
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-7biFUc+cX0cbQ+4yludL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHTj1MdSjSd0sB4dIRApujAKCaRdgyndbycVDkBrqJ8kFCeNYlZwCePDbD
-/gvDPw7puSv5+7/XjCNraes=
-=ItEJ
------END PGP SIGNATURE-----
-
---=-7biFUc+cX0cbQ+4yludL--
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
