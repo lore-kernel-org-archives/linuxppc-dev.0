@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id E7701DDD01
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 21:34:23 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Increase the upper bound on NR_CPUS.
-Date: Thu, 29 Nov 2007 11:33:40 +0100
-References: <20071129041603.GM24243@bakeyournoodle.com>
-In-Reply-To: <20071129041603.GM24243@bakeyournoodle.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 87BC7DDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 21:41:50 +1100 (EST)
+Date: Thu, 29 Nov 2007 11:41:47 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
+Message-ID: <20071129104147.GA3694@aepfle.de>
+References: <20071120012815.GB7969@austin.ibm.com>
+	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
+	<20071128110037.GB31217@aepfle.de>
+	<20071128200932.GG19584@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200711291133.41188.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20071128200932.GG19584@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Will Schmidt <will_schmidt@vnet.ibm.com>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,12 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 29 November 2007, Tony Breeds wrote:
-> why not?
+On Wed, Nov 28, Linas Vepstas wrote:
 
-In the past I've seen run-time problems because some parts of the
-code kmalloc NR_CPUS sized arrays, which can easily grow beyond
-the kmalloc limit of 128kb. Have you tried running some tests
-on a small machine with the big NR_CPUS?
+> On Wed, Nov 28, 2007 at 12:00:37PM +0100, Olaf Hering wrote:
+> > On Tue, Nov 27, Will Schmidt wrote:
 
-	Arnd <><
+> > > > -	if (panic_timeout)
+> > > > -		return;
+> > 
+> > This change is wrong. Booting with panic=123 really means the system
+> > has to reboot in 123 seconds after a panic.
+> 
+> And it does.
+
+Have you ever tried it? Current state is that the JS20 hangs after
+panic, simply because it calls into the hypervisor (or whatever).
+To reproduce:
+ mkdir ../O-os-term
+ cp arch/powerpc/configs/pseries_defconfig ../O-os-term/.config
+ yes '' | make -kj6 O=../O-os-term zImage
+ scp -4pr ../O-os-term/arch/powerpc/boot/zImage root@tftp:/tftpboot/js20
+
+
+ boot /pci@8000000f8000000/pci@0/ethernet@1,1 debug panic=1 root=/dev/sdx42
+
+
+Whoever relies on the string passing to the HMC can boot with panic=0 or
+use some sysctl to write to /proc/sys/kernel/panic
+So, please restore the panic_timeout check.
