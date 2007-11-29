@@ -1,19 +1,20 @@
-Return-Path: <g.schardt@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id B9A7FDDDFB
+Return-Path: <robertlazarski@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.226])
+	by ozlabs.org (Postfix) with ESMTP id A5170DDDEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Nov 2007 23:53:04 +1100 (EST)
-Message-ID: <474EB62D.9000908@fz-juelich.de>
-Date: Thu, 29 Nov 2007 13:53:01 +0100
-From: schardt <g.schardt@fz-juelich.de>
+	Thu, 29 Nov 2007 23:59:40 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 68so1665502wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Nov 2007 04:59:39 -0800 (PST)
+Message-ID: <f87675ee0711290459r20aa606ak7b3be9d3b0a8ec1c@mail.gmail.com>
+Date: Thu, 29 Nov 2007 07:59:33 -0500
+From: "robert lazarski" <robertlazarski@gmail.com>
+Subject: Re: The question about the high memory support on MPC8360?
+Cc: linuxppc-embedded@ozlabs.org
+In-Reply-To: <474E6A58.2070200@gdatech.co.in>
 MIME-Version: 1.0
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: Init hangs on Xilinx4
-References: <474D8839.6020609@fz-juelich.de> <474EB36D.1080408@dlasys.net>
-In-Reply-To: <474EB36D.1080408@dlasys.net>
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <396305910.05464@tsinghua.org.cn> <474E6A58.2070200@gdatech.co.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,42 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-David H. Lynch Jr. wrote:
-> I had a similar problem. In my instance it turned out that I was
-> inadvertently using the physical address of my uart as the output address.
-> This worked during boot becasue there was a 1:1 physical-logical entry
-> stuffed into the MMU. But since Linux did nto know about it, as soon as
-> the VM system decided to use that TLB entry IO died - right in the
-> middle of a string.
+On Nov 29, 2007 2:29 AM, vijay baskar <cn.vijaibaskar@gdatech.co.in> wrote:
 >
-> While it is unlikely you made exactly the same mistake. One area you can
-> check is memory.
+>  How to make the linux find the total 2GB memory?
 >
-> What is your output device ?
 >
->   
-My Output Device is a Xilinx UartLite at 0x40600000 and the kernel
-detects this
-as /dev/ttyUL0.
+>         Hi Friend,
+>
+>  I hope u had tracked the conversion that has been going on. The max mem
+> that the kernel can show is only 768 MB because only that of memory is
+> directly mapped with your ram.. No matter how much ram > 768 MB (in
+> powerpc.. it varies in other architectures) u have, the kernel will show
+> only 768 MB.. This is called low mem..
+>
+>  How t o use high mem??
+>
+>  scott can probably guide us on this.. I also have lot of confusions about
+> high mem.. Also i would suggest you a bit of reading on virtual memory
+> management on linux to get a grasp about how things are done
+>  Rest for scott
+>
+>  regards,
+>  vijai
+>
 
-Georg
+I also have a requirement to use more than 768MB and 0x30000000. I
+have other problems at the moment, so I haven't tested this completely
+yet. My limited understanding, though, is that to use more than 768MB
+you have to change your kernel configuration, including shifting the
+kernel start address. This is what I plan on testing for 1GB when I
+have time:
 
+CONFIG_ADVANCED_OPTIONS=y
+CONFIG_LOWMEM_SIZE_BOOL=y
+CONFIG_LOWMEM_SIZE=0x40000000
+CONFIG_KERNEL_START_BOOL=y
+CONFIG_KERNEL_START=0xa0000000
+# CONFIG_CONSISTENT_START_BOOL is not set
+# CONFIG_CONSISTENT_SIZE_BOOL is not set
+# CONFIG_BOOT_LOAD_BOOL is not set
 
+If that works for current kernels, please respond to the list ;-) .
 
-
-
-
-
--------------------------------------------------------------------
--------------------------------------------------------------------
-Forschungszentrum Jülich GmbH
-52425 Jülich
-
-Sitz der Gesellschaft: Jülich
-Eingetragen im Handelsregister des Amtsgerichts Düren Nr. HR B 3498
-Vorsitzende des Aufsichtsrats: MinDirig'in Bärbel Brumme-Bothe
-Geschäftsführung: Prof. Dr. Achim Bachem (Vorsitzender),
-Dr. Ulrich Krafft (stellv. Vorsitzender), Dr. Sebastian M. Schmidt
--------------------------------------------------------------------
--------------------------------------------------------------------
+HTH,
+Robert
