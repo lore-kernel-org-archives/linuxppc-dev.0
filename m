@@ -2,19 +2,19 @@ Return-Path: <adolnikov@ru.mvista.com>
 Received: from barber.spb.rtsoft.ru (unknown [212.176.242.38])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2426DDDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 02:39:22 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 99672DDE0C
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 02:41:30 +1100 (EST)
 Received: from barber.spb.rtsoft.ru (localhost.localdomain [127.0.0.1])
-	by barber.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id lATFdpbT015047
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 18:39:51 +0300
+	by barber.spb.rtsoft.ru (8.13.1/8.13.1) with ESMTP id lATFg014015096
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 18:42:00 +0300
 Received: (from root@localhost)
-	by barber.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id lATFdpMS015046
-	for linuxppc-dev@ozlabs.org; Thu, 29 Nov 2007 18:39:51 +0300
-Date: Thu, 29 Nov 2007 18:39:51 +0300
+	by barber.spb.rtsoft.ru (8.13.1/8.13.1/Submit) id lATFg0Ug015095
+	for linuxppc-dev@ozlabs.org; Thu, 29 Nov 2007 18:42:00 +0300
+Date: Thu, 29 Nov 2007 18:42:00 +0300
 From: Andrei Dolnikov <adolnikov@ru.mvista.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/5] PowerPC 74xx: Katana Qp bootwrapper
-Message-ID: <20071129153951.GD13751@ru.mvista.com>
+Subject: [PATCH 4/5] PowerPC 74xx: Katana Qp base support
+Message-ID: <20071129154200.GE13751@ru.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20071129150726.GA13751@ru.mvista.com>
@@ -27,49 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bootwrapper sources for Emerson Katana Qp
+Emerson Katana Qp platform specific code
 
 Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvista.com>
 
 ---
- Makefile          |    3
- cuboot-katanaqp.c |  470 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 472 insertions(+), 1 deletion(-)
+ Kconfig    |    9 +++
+ Makefile   |    1
+ katanaqp.c |  168 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 178 insertions(+)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 18e3271..92b8fac 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -56,7 +56,7 @@ src-plat := of.c cuboot-52xx.c cuboot-83xx.c cuboot-85xx.c holly.c \
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
--		fixed-head.S ep88xc.c cuboot-hpc2.c
-+		fixed-head.S ep88xc.c cuboot-hpc2.c cuboot-katanaqp.c
- src-boot := $(src-wlib) $(src-plat) empty.c
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index 8924095..33190bd 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -46,6 +46,15 @@ config PPC_PRPMC2800
+ 	help
+ 	  This option enables support for the Motorola PrPMC2800 board
  
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -159,6 +159,7 @@ image-$(CONFIG_EBONY)			+= treeImage.ebony cuImage.ebony
- image-$(CONFIG_BAMBOO)			+= treeImage.bamboo cuImage.bamboo
- image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
- image-$(CONFIG_WALNUT)			+= treeImage.walnut
-+image-$(CONFIG_PPC_KATANAQP)		+= cuImage.katanaqp
- endif
- 
- # For 32-bit powermacs, build the COFF and miboot images
-diff --git a/arch/powerpc/boot/cuboot-katanaqp.c b/arch/powerpc/boot/cuboot-katanaqp.c
++config PPC_KATANAQP
++	bool "Emerson-Katana Qp"
++	depends on EMBEDDED6xx
++	select MV64X60
++	select NOT_COHERENT_CACHE
++	select WANT_DEVICE_TREE
++	help
++	  This option enables support for the Emerson Katana Qp board
++
+ config TSI108_BRIDGE
+ 	bool
+ 	depends on MPC7448HPC2 || PPC_HOLLY
+diff --git a/arch/powerpc/platforms/embedded6xx/Makefile b/arch/powerpc/platforms/embedded6xx/Makefile
+index 844947c..c83558f 100644
+--- a/arch/powerpc/platforms/embedded6xx/Makefile
++++ b/arch/powerpc/platforms/embedded6xx/Makefile
+@@ -5,3 +5,4 @@ obj-$(CONFIG_MPC7448HPC2)	+= mpc7448_hpc2.o
+ obj-$(CONFIG_LINKSTATION)	+= linkstation.o ls_uart.o
+ obj-$(CONFIG_PPC_HOLLY)		+= holly.o
+ obj-$(CONFIG_PPC_PRPMC2800)	+= prpmc2800.o
++obj-$(CONFIG_PPC_KATANAQP)	+= katanaqp.o
+diff --git a/arch/powerpc/platforms/embedded6xx/katanaqp.c b/arch/powerpc/platforms/embedded6xx/katanaqp.c
 new file mode 100644
-index 0000000..19ba901
+index 0000000..64fb608
 --- /dev/null
-+++ b/arch/powerpc/boot/cuboot-katanaqp.c
-@@ -0,0 +1,470 @@
++++ b/arch/powerpc/platforms/embedded6xx/katanaqp.c
+@@ -0,0 +1,168 @@
 +/*
-+ * Emerson Katana Qp platform code.
++ * Board setup routines for the Emerson Katana Qp
 + *
-+ * Authors: Vladislav Buzov <buzov@ru.mvista.com>
++ * Authors: Vladislav Buzov <vbuzov@ru.mvista.com>
 + *	    Andrei Dolnikov <adolnikov@ru.mvista.com>
 + *
-+ * Based on prpmc2800.c by Mark A. Greer <mgreer@mvista.com>
++ * Based on prpmc2800.c by Dale Farnsworth <dale@farnsworth.org>
 + *
 + * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
 + * the terms of the GNU General Public License version 2.  This program
@@ -77,459 +86,157 @@ index 0000000..19ba901
 + * or implied.
 + */
 +
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "cuboot.h"
-+#include "ppcboot.h"
-+#include "types.h"
-+#include "page.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "io.h"
-+#include "ops.h"
-+#include "mv64x60.h"
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/seq_file.h>
++#include <linux/of_platform.h>
++#include <linux/pci.h>
 +
-+#define Mb	(1024U * 1024U)
-+#define Gb	(Mb * 1024U)
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/kexec.h>
 +
-+#define MHz	(1000U * 1000U)
-+#define GHz	(MHz * 1000U)
++#include <mm/mmu_decl.h>
 +
-+#define BOARD_MODEL		"Katana-Qp"
-+#define BOARD_MODEL_MAX		12	/* max strlen(BOARD_MODEL) + 1 */
-+#define BOARD_CFG_MAX		28	/* max strlen(BOARD_CFG) + 1 */
-+#define BOARD_MODEL_LEN		(BOARD_MODEL_MAX + BOARD_CFG_MAX)
++#include <sysdev/mv64x60.h>
 +
-+#define MTD_PART_NODE		"partition"
-+#define MTD_PART_NUM		3
-+#define MTD_PART_NODE_LEN	20
-+#define MTD_PART_MONITOR_SIZE	(1*Mb)
-+#define MTD_PART_KERNEL_SIZE	(2*Mb)
++#define PLATFORM_NAME_MAX	64
 +
-+/*
-+ * CPLD registers definitions
-+ */
++/* CPLD registers definitions */
 +#define KATANAQP_CPLD_RCR	0x0004	/* Reset command */
 +#define KATANAQP_CPLD_RCR_CPUHR	(1 << 7)
 +
-+#define KATANAQP_CPLD_JSR	0x0020	/* Jumper settings */
-+#define KATANAQP_CPLD_JSR_EBFM	(1 << 6)
++#define KATANAQP_CPLD_HVR	0x0020
 +
 +#define KATANAQP_CPLD_PSR	0x0030	/* PCI status */
 +#define KATANAQP_CPLD_PSR_PMCM	(1 << 1)
 +
-+#define KATANAQP_CPLD_HCR	0x0044	/* Hardware config */
++#define KATANAQP_CPLD_HCR	0x0044
 +
-+static bd_t bd;
++static char katanaqp_platform_name[PLATFORM_NAME_MAX];
 +
-+static u8 *bridge_base;
-+static u8 *cpld_base;
++static void __iomem *cpld_base;
 +
-+typedef enum {
-+	KATANAQP_UNKNOWN,
-+	KATANAQP_CFG_PRPMC_SINGLE,
-+	KATANAQP_CFG_PRPMC_DUAL,
-+	KATANAQP_CFG_PT2CC_SINGLE,
-+	KATANAQP_CFG_PT5CC_SINGLE,
-+	KATANAQP_CFG_MEDIA_DUAL,
-+	KATANAQP_CFG_PT2CC_DUAL,
-+	KATANAQP_CFG_PT5CC_DUAL,
-+	KATANAQP_CFG_PT5CC_CUSTOM,
-+	KATANAQP_CFG_MEDIA_SINGLE,
-+	KATANAQP_CFG_UNKNOWN,
-+} katanaqp_board_model;
-+
-+static katanaqp_board_model katanaqp_cfg;
-+
-+struct katanaqp_board_info {
-+	char *cfg_name;
-+	char eth_phys[3];
-+};
-+
-+struct katanaqp_mtd_part {
-+	char *name;
-+	u32 size;
-+	u32 ro;
-+};
-+
-+static struct katanaqp_board_info katanaqp_board_info[] = {
-+
-+	[KATANAQP_CFG_PRPMC_SINGLE] = {
-+		.cfg_name = "PrPMC Single Core",
-+		.eth_phys = {10, 13, 6},
-+	},
-+
-+	[KATANAQP_CFG_PRPMC_DUAL] = {
-+		.cfg_name = "PrPMC Dual Core",
-+		.eth_phys = {10, 13, 6}
-+	},
-+
-+	[KATANAQP_CFG_PT2CC_SINGLE] = {
-+		.cfg_name = "PT2CC Single Core",
-+		.eth_phys = {9, 8, 6},
-+	},
-+
-+	[KATANAQP_CFG_PT5CC_SINGLE] = {
-+		.cfg_name = "PT5CC Single Core",
-+		.eth_phys = {10, 13, 6},
-+	},
-+
-+	[KATANAQP_CFG_MEDIA_DUAL] = {
-+		.cfg_name = "Dual Core Media Blade",
-+		.eth_phys = {10, 13, 6},
-+	},
-+
-+	[KATANAQP_CFG_PT2CC_DUAL] = {
-+		.cfg_name = "PT2CC Dual Core",
-+		.eth_phys = {9, 8, 6},
-+	},
-+
-+	[KATANAQP_CFG_PT5CC_DUAL] = {
-+		.cfg_name = "PT5CC Dual Core",
-+		.eth_phys = {10, 13, 6},
-+	},
-+
-+	[KATANAQP_CFG_MEDIA_SINGLE] = {
-+		.cfg_name = "Single Core Media Blade",
-+		.eth_phys = {10, 13, 6},
-+	},
-+};
-+
-+/*
-+ * Second flash bank partition layout.
-+ */
-+static struct katanaqp_mtd_part katanaqp_mtd_parts[MTD_PART_NUM] = {
-+	{
-+		.name = "Secondary Monitor",
-+		.size = MTD_PART_MONITOR_SIZE,
-+		.ro = 1,
-+	},
-+
-+	{
-+		.name = "Secondary Kernel",
-+		.size = MTD_PART_KERNEL_SIZE,
-+	},
-+
-+	{
-+		/* Size depends on actual flash bank size */
-+		.name = "Secondary FS",
-+	},
-+};
-+
-+static u8 *katanaqp_get_cpld_base(void)
++static int katanaqp_exclude_device(struct pci_controller *hose, u_char bus,
++			    u_char devfn)
 +{
-+	u32 v;
-+	void *devp;
-+
-+	devp = finddevice("cpld");
-+	if (devp == NULL)
-+		fatal("Error: Missing CPLD device tree node\n\r");
-+
-+	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-+		fatal("Error: Can't get CPLD base address\n\r");
-+
-+	return (u8 *) v;
++	if (bus == 0 && PCI_SLOT(devfn) == 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	else
++		return PCIBIOS_SUCCESSFUL;
 +}
 +
-+static void katanaqp_get_cfg(void)
-+{
-+	katanaqp_cfg = in_8(cpld_base + KATANAQP_CPLD_HCR) & 0xf;
-+
-+	if (katanaqp_cfg > 9)
-+		katanaqp_cfg = KATANAQP_UNKNOWN;
-+}
-+
-+static int katanaqp_is_monarch(void)
++static int __init katanaqp_is_monarch(void)
 +{
 +	return !(in_8(cpld_base + KATANAQP_CPLD_PSR) &
 +		 KATANAQP_CPLD_PSR_PMCM);
 +}
 +
-+static void katanaqp_bridge_setup(void)
++static void __init katanaqp_setup_arch(void)
 +{
-+	u32 i, v[12], enables, acc_bits;
-+	u32 pci_base_hi, pci_base_lo, size, buf[2];
-+	unsigned long cpu_base;
-+	int rc;
-+	void *devp;
-+	u8 *bridge_pbase, is_coherent;
-+	struct mv64x60_cpu2pci_win *tbl;
-+
-+	bridge_pbase = mv64x60_get_bridge_pbase();
-+	is_coherent = mv64x60_is_coherent();
-+
-+	if (is_coherent)
-+		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_WB
-+		    | MV64x60_PCI_ACC_CNTL_SWAP_NONE
-+		    | MV64x60_PCI_ACC_CNTL_MBURST_32_BYTES
-+		    | MV64x60_PCI_ACC_CNTL_RDSIZE_32_BYTES;
-+	else
-+		acc_bits = MV64x60_PCI_ACC_CNTL_SNOOP_NONE
-+		    | MV64x60_PCI_ACC_CNTL_SWAP_NONE
-+		    | MV64x60_PCI_ACC_CNTL_MBURST_128_BYTES
-+		    | MV64x60_PCI_ACC_CNTL_RDSIZE_256_BYTES;
++	struct device_node *cpld;
 +
 +	/*
-+	 * MV64x60 boot code expects PCI host bridge to have 0 device
-+	 * number and access PCI configuration bridge registers by
-+	 * DEVFN(0, fn). This is not correct for bridges working in PCI-X
-+	 * mode since by default it has 0x1f device number stored in P2P
-+	 * configuration register.
++	 * ioremap cpld registers in case they are later
++	 * needed by katanaqp_reset_board().
 +	 */
-+	mv64x60_set_pci_bus(bridge_base, 1, 0, 0);
-+	
-+	mv64x60_config_ctlr_windows(bridge_base, bridge_pbase, is_coherent);
-+	mv64x60_config_pci_windows(bridge_base, bridge_pbase, 1, 0, acc_bits);
++	cpld = of_find_compatible_node(NULL, NULL, "altera,maxii");
++	cpld_base = of_iomap(cpld, 0);
 +
-+	/* Get the cpu -> pci i/o & mem mappings from the device tree */
-+	devp = finddevice("/mv64x60/pci");
-+	if (devp == NULL)
-+		fatal("Error: Missing /mv64x60/pci device tree node\n\r");
-+
-+	rc = getprop(devp, "ranges", v, sizeof(v));
-+	if (rc != sizeof(v))
-+		fatal("Error: Can't find /mv64x60/pci/ranges property\n\r");
-+
-+	/* Get the cpu -> pci i/o & mem mappings from the device tree */
-+	devp = finddevice("/mv64x60");
-+	if (devp == NULL)
-+		fatal("Error: Missing /mv64x60 device tree node\n\r");
-+
-+
-+	enables = in_le32((u32 *) (bridge_base + MV64x60_CPU_BAR_ENABLE));
-+	enables |= 0x0007fe00;	/* Disable all cpu->pci windows */
-+	out_le32((u32 *) (bridge_base + MV64x60_CPU_BAR_ENABLE), enables);
-+
-+	for (i = 0; i < 12; i += 6) {
-+		switch (v[i] & 0xff000000) {
-+		case 0x01000000:	/* PCI I/O Space */
-+			tbl = mv64x60_cpu2pci_io;
-+			break;
-+		case 0x02000000:	/* PCI MEM Space */
-+			tbl = mv64x60_cpu2pci_mem;
-+			break;
-+		default:
-+			continue;
-+		}
-+
-+		pci_base_hi = v[i + 1];
-+		pci_base_lo = v[i + 2];
-+		cpu_base = v[i + 3];
-+		size = v[i + 5];
-+
-+		buf[0] = cpu_base;
-+		buf[1] = size;
-+
-+		if (!dt_xlate_addr(devp, buf, sizeof(buf), &cpu_base))
-+			fatal("Error: Can't translate PCI address 0x%x\n\r",
-+			      (u32) cpu_base);
-+
-+		mv64x60_config_cpu2pci_window(bridge_base, 1, pci_base_hi,
-+					      pci_base_lo, cpu_base, size, tbl);
++#ifdef CONFIG_PCI
++	if (katanaqp_is_monarch()) {
++		mv64x60_pci_init();
++		ppc_md.pci_exclude_device = katanaqp_exclude_device;
 +	}
++#endif
 +
-+	/* Enable cpu->pci1 i/o, cpu->pci1 mem0 */
-+	enables &= ~0x0000c000;
-+	out_le32((u32 *) (bridge_base + MV64x60_CPU_BAR_ENABLE), enables);
-+
++	printk("Emerson Network Power %s\n", katanaqp_platform_name);
 +}
 +
-+/*
-+ * Different Katana Qp configurations have different flash sizes varying
-+ * from 16Mb to 64Mb. This routine determines an exact flash size and
-+ * updates the device tree accordingly.
-+ */
-+static void katanaqp_flash_fixup(void)
++static void katanaqp_reset_board(void)
 +{
-+	u32 flash0_size = 0, flash1_size = 0;
-+	u32 total_size, size_left;
-+	u32 part, part_offset;
-+	u32 rc, v[2];
-+	void *devp = NULL, *pp = NULL;
-+	char part_node[MTD_PART_NODE_LEN];
-+
-+	devp = finddevice("/mv64x60/flash");
-+	if (devp == NULL) {
-+		printf("Missing flash device tree node\n\r");
-+		return;
-+	}
-+
-+	/*
-+	 * Get fist flash size: bank0, bank1 and total
-+	 */
-+	flash0_size = mv64x60_get_devcs_size(bridge_base, 0);
-+	if (flash0_size == 0)
-+		return;
-+
-+	flash1_size = mv64x60_get_devcs_size(bridge_base, 1);
-+	total_size = flash0_size + flash1_size;
-+
-+	/*
-+	 * Set total flash size
-+	 */
-+	rc = getprop(devp, "reg", v, sizeof(v));
-+	if (rc != sizeof(v))
-+		fatal("Error: Can't find /mv64x60/flash/reg property\n\r");
-+	v[1] = total_size;
-+	setprop(devp, "reg", v, sizeof(v));
-+
-+	/*
-+	 * Set Primary FS partition size: up to the end of first flash bank
-+	 */
-+	pp = find_node_by_prop_value_str(NULL, "label", "Primary FS");
-+	if (pp == NULL)
-+		fatal("Error: Missing flash Primary FS device tree node\n\r");
-+
-+	rc = getprop(pp, "reg", v, sizeof(v));
-+	if (rc != sizeof(v))
-+		fatal("Error: Can't find /mv64x60/flash/partition@3000000 "
-+		      "property\n\r");
-+
-+	v[1] = flash0_size - MTD_PART_MONITOR_SIZE - MTD_PART_KERNEL_SIZE;
-+	setprop(pp, "reg", v, sizeof(v));
-+
-+	if (flash1_size == 0)
-+		/* Only 1 flash bank is presented */
-+		return;
-+
-+	/*
-+	 * Ok, there is a second flash bank. Let's split it to partitions.
-+	 */
-+
-+	part_offset = flash0_size;
-+	size_left = flash1_size;
-+
-+	/* Skip Secondary Monitor if Boot Failover mechanism is disabled */
-+	rc = in_8(cpld_base + KATANAQP_CPLD_JSR) & KATANAQP_CPLD_JSR_EBFM;
-+	part = rc ? 0 : 1;
-+
-+	for (; part < MTD_PART_NUM; part++) {
-+
-+		sprintf(part_node, "%s@%x", MTD_PART_NODE, part_offset);
-+		pp = create_node(devp, part_node);
-+		if (pp == NULL)
-+			fatal("Error: Can't create new partition node\n\r");
-+
-+		setprop_str(pp, "label", katanaqp_mtd_parts[part].name);
-+
-+		if (katanaqp_mtd_parts[part].ro)
-+			setprop(pp, "read-only", NULL, 0);
-+
-+		v[0] = part_offset;
-+		v[1] = katanaqp_mtd_parts[part].size;
-+		if (v[1] == 0)
-+			/* Take all remaining space */
-+			v[1] = size_left;
-+
-+		part_offset += v[1];
-+		size_left -= v[1];
-+
-+		setprop(pp, "reg", v, sizeof(v));
-+
-+	}
-+}
-+
-+static void katanaqp_fixups(void)
-+{
-+	u32 l, p, pnum;
-+	void *devp = NULL;
-+	struct katanaqp_board_info katanaqp_bif;
-+	char model[BOARD_MODEL_LEN];
-+
-+	/* Check Katana Qp configuration */
-+	katanaqp_get_cfg();
-+	if (katanaqp_cfg == KATANAQP_CFG_UNKNOWN)
-+		fatal("Error: Unsupported Katana Qp board configuration\n\r");
-+
-+	if (katanaqp_cfg == KATANAQP_CFG_PT5CC_CUSTOM) {
-+		printf("Katana Qp board custom configuration detected, "
-+		       "using device tree defaults. Please, supply a correct "
-+		       "device tree\n\r");
-+		return;
-+	}
-+
-+	katanaqp_bif = katanaqp_board_info[katanaqp_cfg];
-+
-+	/*
-+	 * Set /model appropriately
-+	 */
-+	devp = finddevice("/");
-+	if (devp == NULL)
-+		fatal("Error: Missing '/' device tree node\n\r");
-+
-+	/*
-+	 * Fix Board model name in device tree
-+	 */
-+	memset(model, 0, BOARD_MODEL_LEN);
-+
-+	strncpy(model, BOARD_MODEL, BOARD_MODEL_MAX - 1);
-+	l = strlen(model);
-+	model[l++] = ' ';
-+
-+	strncpy(&model[l], katanaqp_bif.cfg_name, BOARD_CFG_MAX - 1);
-+	l += strlen(&model[l]);
-+	model[l++] = '\0';
-+
-+	setprop(devp, "model", model, l);
-+
-+	/*
-+	 * Do necessary bridge setup if we are monarch
-+	 */
-+	if (katanaqp_is_monarch())
-+		katanaqp_bridge_setup();
-+
-+	/*
-+	 * Fix RAM size and setup MV64460 bridge
-+	 */
-+	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
-+
-+	/*
-+	 * Fix flash size and partition layout
-+	 */
-+	katanaqp_flash_fixup();
-+
-+	/*
-+	 * Fix clocks
-+	 */
-+	dt_fixup_cpu_clocks(bd.bi_intfreq, bd.bi_busfreq / 4, bd.bi_busfreq);
-+
-+	/*
-+	 * Fix phy addresses
-+	 */
-+	while ((devp = find_node_by_prop_value_str(devp, "comaptible",
-+						   "marvell,mv88e1111"))) {
-+		getprop(devp, "block-index", &p, sizeof(p));
-+		pnum = katanaqp_bif.eth_phys[p];
-+		setprop_val(devp, "reg", pnum);
-+	}
-+}
-+
-+static void katanaqp_reset(void)
-+{
++	local_irq_disable();
 +
 +	/* issue hard reset to the reset command register */
-+	if (cpld_base)
-+		out_8(cpld_base + KATANAQP_CPLD_RCR,
-+		      KATANAQP_CPLD_RCR_CPUHR);
-+
++	out_8(cpld_base + KATANAQP_CPLD_RCR, KATANAQP_CPLD_RCR_CPUHR);
 +	for (;;) ;
 +}
 +
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
++static void katanaqp_restart(char *cmd)
 +{
-+
-+	CUBOOT_INIT();
-+
-+	if (ft_init(_dtb_start, _dtb_end - _dtb_start, 16))
-+		exit();
-+
-+	bridge_base = mv64x60_get_bridge_base();
-+	cpld_base = katanaqp_get_cpld_base();
-+
-+	platform_ops.fixups = katanaqp_fixups;
-+	platform_ops.exit = katanaqp_reset;
-+
-+	if (serial_console_init() < 0)
-+		exit();
++	katanaqp_reset_board();
 +}
++
++static void katanaqp_show_cpuinfo(struct seq_file *m)
++{
++	uint memsize = total_memory;
++
++	seq_printf(m, "vendor\t\t: Emerson Network Power\n");
++
++	seq_printf(m, "hardware rev\t: %d\n",
++		   in_8(cpld_base + KATANAQP_CPLD_HVR));
++
++	seq_printf(m, "hardware config\t: %d\n",
++		   in_8(cpld_base + KATANAQP_CPLD_HCR));
++
++	seq_printf(m, "memory size\t: %d MB\n", memsize / (1024 * 1024));
++
++	seq_printf(m, "PCI\t\t: %sMonarch\n",
++		   katanaqp_is_monarch() ? "" : "Non-");
++}
++
++static int __init katanaqp_of_init(void)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "cfi-flash");
++	if (np)
++		of_platform_device_create(np, "of-flash", NULL);
++
++	return 0;
++}
++
++device_initcall(katanaqp_of_init);
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++static int __init katanaqp_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++	unsigned long len;
++	void *m;
++
++	if (!of_flat_dt_is_compatible(root, "emerson,Katana-Qp"))
++		return 0;
++
++	/* Update ppc_md.name with name from dt */
++	m = of_get_flat_dt_prop(root, "model", &len);
++	if (m)
++		strncpy(katanaqp_platform_name, m,
++			min((int)len, PLATFORM_NAME_MAX - 1));
++
++	return 1;
++}
++
++define_machine(katanaqp)
++{
++	.name			= katanaqp_platform_name,
++	.probe			= katanaqp_probe,
++	.setup_arch		= katanaqp_setup_arch,
++	.init_early		= mv64x60_init_early,
++	.show_cpuinfo		= katanaqp_show_cpuinfo,
++	.init_IRQ		= mv64x60_init_irq,
++	.get_irq		= mv64x60_get_irq,
++	.restart		= katanaqp_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++#ifdef CONFIG_KEXEC
++	.machine_kexec		= default_machine_kexec,
++	.machine_kexec_prepare	= default_machine_kexec_prepare,
++	.machine_crash_shutdown	= default_machine_crash_shutdown,
++#endif
++};
