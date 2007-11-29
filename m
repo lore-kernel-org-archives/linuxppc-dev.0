@@ -1,14 +1,14 @@
 Return-Path: <gorcunov@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id D2291DDE10
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 06:43:58 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id q7so2139706uge
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 11:43:58 -0800 (PST)
-Date: Thu, 29 Nov 2007 22:44:36 +0300
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id E98B1DDDF6
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 06:45:08 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id q7so2140057uge
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 11:45:07 -0800 (PST)
+Date: Thu, 29 Nov 2007 22:45:47 +0300
 From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: PPCML <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/5] PPC cleanup: sysdev - do use for_each macro
-Message-ID: <20071129194436.GB12123@cvg>
+Subject: [PATCH 2/5] PPC cleanup: do use for_each macro
+Message-ID: <20071129194547.GC12123@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
@@ -26,212 +26,62 @@ From: Cyrill Gorcunov <gorcunov@gmail.com>
 Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 ---
 
- arch/powerpc/sysdev/fsl_soc.c      |    7 +++----
- arch/powerpc/sysdev/mv64x60_dev.c  |   24 ++++++++++--------------
- arch/powerpc/sysdev/mv64x60_pci.c  |    4 ++--
- arch/powerpc/sysdev/mv64x60_udbg.c |    4 ++--
- arch/powerpc/sysdev/tsi108_dev.c   |    9 ++++-----
- arch/powerpc/sysdev/uic.c          |   17 +++++------------
- 6 files changed, 26 insertions(+), 39 deletions(-)
+ arch/powerpc/kernel/btext.c         |    2 +-
+ arch/powerpc/kernel/legacy_serial.c |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 3ace747..927c238 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -1125,13 +1125,12 @@ arch_initcall(fs_enet_of_init);
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index 3ef51fb..04c9249 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -234,7 +234,7 @@ int __init btext_find_display(int allow_nonstdout)
+ 	if (rc == 0 || !allow_nonstdout)
+ 		return rc;
  
- static int __init fsl_pcmcia_of_init(void)
- {
--	struct device_node *np = NULL;
-+	struct device_node *np;
- 	/*
- 	 * Register all the devices which type is "pcmcia"
- 	 */
--	while ((np = of_find_compatible_node(np,
--			"pcmcia", "fsl,pq-pcmcia")) != NULL)
--			    of_platform_device_create(np, "m8xx-pcmcia", NULL);
-+	for_each_compatible_node(np, "pcmcia", "fsl,pq-pcmcia")
-+		of_platform_device_create(np, "m8xx-pcmcia", NULL);
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/sysdev/mv64x60_dev.c b/arch/powerpc/sysdev/mv64x60_dev.c
-index 548a320..304056c 100644
---- a/arch/powerpc/sysdev/mv64x60_dev.c
-+++ b/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -241,7 +241,7 @@ static int __init mv64x60_eth_device_setup(struct device_node *np, int id)
- 
- 	/* only register the shared platform device the first time through */
- 	if (id == 0 && (err = eth_register_shared_pdev(np)))
--		return err;;
-+		return err;
- 
- 	memset(r, 0, sizeof(r));
- 	of_irq_to_resource(np, 0, &r[0]);
-@@ -451,22 +451,19 @@ static int __init mv64x60_device_setup(void)
- 	int id;
- 	int err;
- 
--	for (id = 0;
--	     (np = of_find_compatible_node(np, "serial", "marvell,mpsc")); id++)
--		if ((err = mv64x60_mpsc_device_setup(np, id)))
-+	id = 0;
-+	for_each_compatible_node(np, "serial", "marvell,mpsc")
-+		if ((err = mv64x60_mpsc_device_setup(np, id++)))
- 			goto error;
- 
--	for (id = 0;
--	     (np = of_find_compatible_node(np, "network",
--					   "marvell,mv64x60-eth"));
--	     id++)
--		if ((err = mv64x60_eth_device_setup(np, id)))
-+	id = 0;
-+	for_each_compatible_node(np, "network", "marvell,mv64x60-eth")
-+		if ((err = mv64x60_eth_device_setup(np, id++)))
- 			goto error;
- 
--	for (id = 0;
--	     (np = of_find_compatible_node(np, "i2c", "marvell,mv64x60-i2c"));
--	     id++)
--		if ((err = mv64x60_i2c_device_setup(np, id)))
-+	id = 0;
-+	for_each_compatible_node(np, "i2c", "marvell,mv64x60-i2c")
-+		if ((err = mv64x60_i2c_device_setup(np, id++)))
- 			goto error;
- 
- 	/* support up to one watchdog timer */
-@@ -477,7 +474,6 @@ static int __init mv64x60_device_setup(void)
- 		of_node_put(np);
+-	for (np = NULL; (np = of_find_node_by_type(np, "display"));) {
++	for_each_node_by_type(np, "display") {
+ 		if (of_get_property(np, "linux,opened", NULL)) {
+ 			printk("trying %s ...\n", np->full_name);
+ 			rc = btext_initialize(np);
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 4ed5887..b5dc646 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -307,7 +307,7 @@ void __init find_legacy_serial_ports(void)
  	}
  
--
- 	return 0;
- 
- error:
-diff --git a/arch/powerpc/sysdev/mv64x60_pci.c b/arch/powerpc/sysdev/mv64x60_pci.c
-index 6933f9c..d21ab8f 100644
---- a/arch/powerpc/sysdev/mv64x60_pci.c
-+++ b/arch/powerpc/sysdev/mv64x60_pci.c
-@@ -164,8 +164,8 @@ static int __init mv64x60_add_bridge(struct device_node *dev)
- 
- void __init mv64x60_pci_init(void)
- {
--	struct device_node *np = NULL;
-+	struct device_node *np;
- 
--	while ((np = of_find_compatible_node(np, "pci", "marvell,mv64x60-pci")))
-+	for_each_compatible_node(np, "pci", "marvell,mv64x60-pci")
- 		mv64x60_add_bridge(np);
- }
-diff --git a/arch/powerpc/sysdev/mv64x60_udbg.c b/arch/powerpc/sysdev/mv64x60_udbg.c
-index 367e7b1..35c77c7 100644
---- a/arch/powerpc/sysdev/mv64x60_udbg.c
-+++ b/arch/powerpc/sysdev/mv64x60_udbg.c
-@@ -85,10 +85,10 @@ static void mv64x60_udbg_init(void)
- 	if (!stdout)
- 		return;
- 
--	for (np = NULL;
--	     (np = of_find_compatible_node(np, "serial", "marvell,mpsc")); )
-+	for_each_compatible_node(np, "serial", "marvell,mpsc") {
- 		if (np == stdout)
- 			break;
-+	}
- 
- 	of_node_put(stdout);
- 	if (!np)
-diff --git a/arch/powerpc/sysdev/tsi108_dev.c b/arch/powerpc/sysdev/tsi108_dev.c
-index a113d80..be2808a 100644
---- a/arch/powerpc/sysdev/tsi108_dev.c
-+++ b/arch/powerpc/sysdev/tsi108_dev.c
-@@ -66,14 +66,12 @@ EXPORT_SYMBOL(get_vir_csrbase);
- static int __init tsi108_eth_of_init(void)
- {
- 	struct device_node *np;
--	unsigned int i;
-+	unsigned int i = 0;
- 	struct platform_device *tsi_eth_dev;
- 	struct resource res;
- 	int ret;
- 
--	for (np = NULL, i = 0;
--	     (np = of_find_compatible_node(np, "network", "tsi108-ethernet")) != NULL;
--	     i++) {
-+	for_each_compatible_node(np, "network", "tsi108-ethernet") {
- 		struct resource r[2];
- 		struct device_node *phy, *mdio;
- 		hw_info tsi_eth_data;
-@@ -98,7 +96,7 @@ static int __init tsi108_eth_of_init(void)
- 			__FUNCTION__,r[1].name, r[1].start, r[1].end);
- 
- 		tsi_eth_dev =
--		    platform_device_register_simple("tsi-ethernet", i, &r[0],
-+		    platform_device_register_simple("tsi-ethernet", i++, &r[0],
- 						    1);
- 
- 		if (IS_ERR(tsi_eth_dev)) {
-@@ -154,6 +152,7 @@ static int __init tsi108_eth_of_init(void)
- unreg:
- 	platform_device_unregister(tsi_eth_dev);
- err:
-+	of_node_put(np);
- 	return ret;
- }
- 
-diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-index 5149716..815d6db 100644
---- a/arch/powerpc/sysdev/uic.c
-+++ b/arch/powerpc/sysdev/uic.c
-@@ -326,28 +326,23 @@ void __init uic_init_tree(void)
- 	const u32 *interrupts;
- 
- 	/* First locate and initialize the top-level UIC */
--
--	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
--	while (np) {
-+	for_each_compatible_node(np, NULL, "ibm,uic") {
- 		interrupts = of_get_property(np, "interrupts", NULL);
--		if (! interrupts)
-+		if (!interrupts)
- 			break;
--
--		np = of_find_compatible_node(np, NULL, "ibm,uic");
+ 	/* First fill our array with SOC ports */
+-	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
++	for_each_compatible_node(np, "serial", "ns16550") {
+ 		struct device_node *soc = of_get_parent(np);
+ 		if (soc && !strcmp(soc->type, "soc")) {
+ 			index = add_legacy_soc_port(np, np);
+@@ -318,7 +318,7 @@ void __init find_legacy_serial_ports(void)
  	}
  
- 	BUG_ON(!np); /* uic_init_tree() assumes there's a UIC as the
- 		      * top-level interrupt controller */
- 	primary_uic = uic_init_one(np);
--	if (! primary_uic)
-+	if (!primary_uic)
- 		panic("Unable to initialize primary UIC %s\n", np->full_name);
- 
- 	irq_set_default_host(primary_uic->irqhost);
- 	of_node_put(np);
- 
- 	/* The scan again for cascaded UICs */
--	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
--	while (np) {
-+	for_each_compatible_node(np, NULL, "ibm,uic") {
- 		interrupts = of_get_property(np, "interrupts", NULL);
- 		if (interrupts) {
- 			/* Secondary UIC */
-@@ -355,7 +350,7 @@ void __init uic_init_tree(void)
- 			int ret;
- 
- 			uic = uic_init_one(np);
--			if (! uic)
-+			if (!uic)
- 				panic("Unable to initialize a secondary UIC %s\n",
- 				      np->full_name);
- 
-@@ -373,8 +368,6 @@ void __init uic_init_tree(void)
- 
- 			/* FIXME: setup critical cascade?? */
- 		}
--
--		np = of_find_compatible_node(np, NULL, "ibm,uic");
+ 	/* First fill our array with ISA ports */
+-	for (np = NULL; (np = of_find_node_by_type(np, "serial"));) {
++	for_each_node_by_type(np, "serial") {
+ 		struct device_node *isa = of_get_parent(np);
+ 		if (isa && !strcmp(isa->name, "isa")) {
+ 			index = add_legacy_isa_port(np, isa);
+@@ -329,7 +329,7 @@ void __init find_legacy_serial_ports(void)
  	}
- }
  
+ 	/* First fill our array with tsi-bridge ports */
+-	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
++	for_each_compatible_node(np, "serial", "ns16550") {
+ 		struct device_node *tsi = of_get_parent(np);
+ 		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
+ 			index = add_legacy_soc_port(np, np);
+@@ -340,7 +340,7 @@ void __init find_legacy_serial_ports(void)
+ 	}
+ 
+ 	/* First fill our array with opb bus ports */
+-	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
++	for_each_compatible_node(np, "serial", "ns16550") {
+ 		struct device_node *opb = of_get_parent(np);
+ 		if (opb && (!strcmp(opb->type, "opb") ||
+ 			    of_device_is_compatible(opb, "ibm,opb"))) {
 -- 
 1.5.3.5
