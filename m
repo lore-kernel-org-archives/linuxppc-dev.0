@@ -1,17 +1,21 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9A292DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 07:29:30 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: qe: fix device tree lookup code in qe_muram_init()
-Date: Thu, 29 Nov 2007 14:29:20 -0600
-Message-Id: <11963681602431-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43982DDEB6
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 07:55:14 +1100 (EST)
+Subject: Re: [PATCH 5/5] PPC cleanup: powermac - do use for_each macro
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+In-Reply-To: <20071129194654.GF12123@cvg>
+References: <20071129194654.GF12123@cvg>
+Content-Type: text/plain
+Date: Fri, 30 Nov 2007 07:54:59 +1100
+Message-Id: <1196369699.13230.62.camel@pasglop>
+Mime-Version: 1.0
+Cc: PPCML <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	LKML <linux-kernel@vger.kernel.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Function qe_muram_init() was only looking for a node called "data-only",
-instead of making sure it is the correct node.  This patch modifies
-qe_muram_init() to find the QE node first, then the MURAM node inside it,
-and then the data-only node.  It also reports errors.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/qe.c |   39 +++++++++++++++++++++++++++++++--------
- 1 files changed, 31 insertions(+), 8 deletions(-)
+On Thu, 2007-11-29 at 22:46 +0300, Cyrill Gorcunov wrote:
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> ---
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 3d57d38..298e073 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -282,6 +282,12 @@ static DEFINE_SPINLOCK(qe_muram_lock);
- static rh_block_t qe_boot_muram_rh_block[16];
- static rh_info_t qe_muram_info;
- 
-+/* Initialize the MURAM remote heap
-+ *
-+ * This function queries the device tree to obtain the offset within MURAM
-+ * to initialize the MURAM remote heap, and then it initializes the remote
-+ * heap with that value.
-+ */
- static void qe_muram_init(void)
- {
- 	struct device_node *np;
-@@ -294,15 +300,32 @@ static void qe_muram_init(void)
- 		sizeof(qe_boot_muram_rh_block) /
- 		sizeof(qe_boot_muram_rh_block[0]), qe_boot_muram_rh_block);
- 
--	/* Attach the usable muram area */
--	/* XXX: This is a subset of the available muram. It
--	 * varies with the processor and the microcode patches activated.
--	 */
--	if ((np = of_find_node_by_name(NULL, "data-only")) != NULL) {
--		address = *of_get_address(np, 0, &size, &flags);
--		of_node_put(np);
--		rh_attach_region(&qe_muram_info, address, (int) size);
-+	/* Find the data-only node in the QE's muram node */
-+	np = of_find_node_by_type(NULL, "qe");
-+	if (!np) {
-+		printk(KERN_ERR
-+			"qe-muram: cannot find 'qe' node in device tree\n");
-+		return;
-+	}
-+
-+	np = of_find_node_by_type(np, "muram");
-+	if (!np) {
-+		printk(KERN_ERR
-+			"qe-muram: cannot find 'muram' node in device tree\n");
-+		return;
- 	}
-+
-+	np = of_find_node_by_name(np, "data-only");
-+	if (!np) {
-+		printk(KERN_ERR "qe-muram: "
-+			"cannot find 'data-only' node in device tree\n");
-+		return;
-+	}
-+
-+	/* Attach the usable muram area */
-+	address = *of_get_address(np, 0, &size, &flags);
-+	of_node_put(np);
-+	rh_attach_region(&qe_muram_info, address, (int) size);
- }
- 
- /* This function returns an index into the MURAM area.
--- 
-1.5.2.4
+Ack.
+
+>  arch/powerpc/platforms/powermac/low_i2c.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
+> index da2007e..864fbf4 100644
+> --- a/arch/powerpc/platforms/powermac/low_i2c.c
+> +++ b/arch/powerpc/platforms/powermac/low_i2c.c
+> @@ -585,8 +585,7 @@ static void __init kw_i2c_probe(void)
+>  	struct device_node *np, *child, *parent;
+>  
+>  	/* Probe keywest-i2c busses */
+> -	for (np = NULL;
+> -	     (np = of_find_compatible_node(np, "i2c","keywest-i2c")) != NULL;){
+> +	for_each_compatible_node(np, "i2c","keywest-i2c") {
+>  		struct pmac_i2c_host_kw *host;
+>  		int multibus, chans, i;
+>  
