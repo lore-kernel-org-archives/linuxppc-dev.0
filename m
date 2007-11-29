@@ -1,22 +1,34 @@
-Return-Path: <jack+f-291107@suse.cz>
-Received: from duck.suse.cz (styx.suse.cz [82.119.242.94])
-	by ozlabs.org (Postfix) with ESMTP id EA61BDDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 01:40:32 +1100 (EST)
-Date: Thu, 29 Nov 2007 15:40:30 +0100
-From: Jan Kara <jack@suse.cz>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.24-rc3-mm2 kernel bug on nfs & cifs mounted partitions
-Message-ID: <20071129144030.GE16558@duck.suse.cz>
-References: <20071128034140.648383f0.akpm@linux-foundation.org>
-	<474E7F9E.9000601@linux.vnet.ibm.com>
-	<20071129010906.772e0c15.akpm@linux-foundation.org>
-	<474EA914.1060502@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <474EA914.1060502@linux.vnet.ibm.com>
-Cc: samba-technical@lists.samba.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, nfs@lists.sourceforge.net,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A50F5DDE01
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 04:20:13 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lATHK9o5020161
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 12:20:09 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lATHK8hL119486
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:20:08 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lATHK8tn014210
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 10:20:08 -0700
+Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Linas Vepstas <linas@austin.ibm.com>, Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20071128201838.GH19584@austin.ibm.com>
+References: <20071120012815.GB7969@austin.ibm.com>
+	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
+	<20071128201838.GH19584@austin.ibm.com>
+Content-Type: text/plain
+Date: Thu, 29 Nov 2007 11:19:50 -0600
+Message-Id: <1196356790.11297.36.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,169 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu 29-11-07 17:27:08, Kamalesh Babulal wrote:
-> Andrew Morton wrote:
-> > On Thu, 29 Nov 2007 14:30:14 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+On Wed, 2007-11-28 at 14:18 -0600, Linas Vepstas wrote:
+> On Tue, Nov 27, 2007 at 06:15:59PM -0600, Will Schmidt wrote:
+> > (resending with the proper "from" addr this time). 
 > > 
-> >> Hi Andrew,
-> >>
-> >> While running file system stress on nfs and cifs mounted partitions, the machine
-> >> drops to xmon
-> >>
-> >> 1:mon> e
-> >> cpu 0x1: Vector: 300 (Data Access) at [c000000080a9f880]
-> >>     pc: c0000000001392c8: .inotify_inode_queue_event+0x50/0x158
-> >>     lr: c0000000001074d0: .vfs_link+0x204/0x298
-> >>     sp: c000000080a9fb00
-> >>    msr: 8000000000009032
-> >>    dar: 280 
-> >>  dsisr: 40010000
-> >>   current = 0xc0000000c8e6f670
-> >>   paca    = 0xc000000000512c00
-> >>     pid   = 2848, comm = fsstress
-> >> 1:mon> t
-> >> [c000000080a9fbd0] c0000000001074d0 .vfs_link+0x204/0x298
-> >> [c000000080a9fc70] c00000000010b6e0 .sys_linkat+0x134/0x1b4
-> >> [c000000080a9fe30] c00000000000872c syscall_exit+0x0/0x40
-> >> --- Exception: c00 (System Call) at 000000000ff1bdfc
-> >> SP (ffeaed10) is in userspace
-> >> 1:mon> r
-> >> R00 = c0000000001074d0   R16 = 0000000000000000
-> >> R01 = c000000080a9fb00   R17 = 0000000000000000
-> >> R02 = c00000000060c380   R18 = 0000000000000000
-> >> R03 = 0000000000000000   R19 = 0000000000000000
-> >> R04 = 0000000000000004   R20 = 0000000000000000
-> >> R05 = 0000000000000000   R21 = 0000000000000000
-> >> R06 = 0000000000000000   R22 = 0000000000000000
-> >> R07 = 0000000000000000   R23 = 0000000000000004
-> >> R08 = 0000000000000000   R24 = 0000000000000280
-> >> R09 = 0000000000000000   R25 = fffffffffffff000
-> >> R10 = 0000000000000001   R26 = c000000082827790
-> >> R11 = c0000000003963e8   R27 = c0000000828275a0
-> >> R12 = d000000000deec78   R28 = 0000000000000000
-> >> R13 = c000000000512c00   R29 = c00000007b18fcf0
-> >> R14 = 0000000000000000   R30 = c0000000005bc088
-> >> R15 = 0000000000000000   R31 = 0000000000000000
-> >> pc  = c0000000001392c8 .inotify_inode_queue_event+0x50/0x158
-> >> lr  = c0000000001074d0 .vfs_link+0x204/0x298
-> >> msr = 8000000000009032   cr  = 24000882
-> >> ctr = c0000000003963e8   xer = 0000000000000000   trap =  300 
-> >> dar = 0000000000000280   dsisr = 40010000
-> >>
-> >>
-> >> The gdb output shows 
-> >>
-> >> 0xc0000000001076d4 is in vfs_symlink (include/linux/fsnotify.h:108).
-> >> 103      * fsnotify_create - 'name' was linked in
-> >> 104      */  
-> >> 105     static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
-> >> 106     {   
-> >> 107             inode_dir_notify(inode, DN_CREATE);
-> >> 108             inotify_inode_queue_event(inode, IN_CREATE, 0, dentry->d_name.name,
-> >> 109                                       dentry->d_inode);
-> >> 110             audit_inode_child(dentry->d_name.name, dentry, inode);
-> >> 111     }   
-> >> 112
-> >>
 > > 
-> > If it is reproducible can you please try reverting
-> > inotify-send-in_attrib-events-when-link-count-changes.patch?
+> > I'm seeing some funky behavior on power5/power6 partitions with this
+> > patch.    A "/sbin/reboot" is now behaving much more like a
+> > "/sbin/halt".
+> > 
+> > Anybody else seeing this, or is it time for me to call an exorcist for
+> > my boxes? 
 > 
-> Hi Andrew,
+> I beleive the patch
+> http://www.nabble.com/-PATCH--powerpc-pseries:-tell-phyp-to-auto-restart-t4847604.html
 > 
-> reverting the patch inotify-send-in_attrib-events-when-link-count-changes.patch, the 
-> bug is not reproduced.
-  OK, it's a problem with CIFS. Its cifs_hardlink() function doesn't call
-d_instantiate() and thus returns a dentry with d_inode set to NULL. I'm not
-sure if such behavior is really correct but anyway, attached is a new
-version of the patch which should handle it gracefully. Kamalesh, can you
-please give it a try? Thanks.
+> will cure this problem.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
+It does not.   this code is getting called, but still turns the box into
+a doorstop at /sbin/reboot. 
 
-  Currently, no notification event has been sent when inode's link count
-changed. This is inconvenient for the application in some cases:
-  Suppose you have the following directory structure
-    foo/test
-    bar/
+It does clear up if I apply this patch, which is a revert of part of
+your earlier patch.
 
-  and you watch test. If someone does "mv foo/test bar/", you get event
-IN_MOVE_SELF and you know something has happened with the file "test".
-However if someone does "ln foo/test bar/test" and "rm foo/test" you get no
-inotify event for the file "test" (only directories "foo" and "bar" receive
-events).
-  Furthermore it could be argued that link count belongs to file's metadata
-and thus IN_ATTRIB should be sent when it changes.
-  The following patch implements sending of IN_ATTRIB inotify events when
-link count of the inode changes, i.e., when a hardlink to the inode is
-created or when it is removed. This event is sent in addition to all the
-events sent so far. In particular, when a last link to a file is removed,
-IN_ATTRIB event is sent in addition to IN_DELETE_SELF event.
+My js2X also turns into a doorstop after /sbin/reboot..     Though I'm
+not going through a panic path, I wonder if the panic portion is OK and
+this is what Olaf is hitting.  
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff --git a/fs/namei.c b/fs/namei.c
-index 3b993db..c1839d1 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2188,6 +2188,7 @@ int vfs_unlink(struct inode *dir, struct dentry *dentry)
- 
- 	/* We don't d_delete() NFS sillyrenamed files--they still exist. */
- 	if (!error && !(dentry->d_flags & DCACHE_NFSFS_RENAMED)) {
-+		fsnotify_link_count(dentry->d_inode);
- 		d_delete(dentry);
- 	}
- 
-@@ -2360,7 +2361,7 @@ int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_de
- 	error = dir->i_op->link(old_dentry, dir, new_dentry);
- 	mutex_unlock(&old_dentry->d_inode->i_mutex);
- 	if (!error)
--		fsnotify_create(dir, new_dentry);
-+		fsnotify_link(dir, old_dentry->d_inode, new_dentry);
- 	return error;
- }
- 
-diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-index 2bd31fa..d4b7c4a 100644
---- a/include/linux/fsnotify.h
-+++ b/include/linux/fsnotify.h
-@@ -92,6 +92,14 @@ static inline void fsnotify_inoderemove(struct inode *inode)
- }
- 
- /*
-+ * fsnotify_link_count - inode's link count changed
-+ */
-+static inline void fsnotify_link_count(struct inode *inode)
-+{
-+	inotify_inode_queue_event(inode, IN_ATTRIB, 0, NULL, NULL);
-+}
-+
-+/*
-  * fsnotify_create - 'name' was linked in
-  */
- static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
-@@ -103,6 +111,20 @@ static inline void fsnotify_create(struct inode *inode, struct dentry *dentry)
- }
- 
- /*
-+ * fsnotify_link - new hardlink in 'inode' directory
-+ * Note: We have to pass also the linked inode ptr as some filesystems leave
-+ *   new_dentry->d_inode NULL and instantiate inode pointer later
-+ */
-+static inline void fsnotify_link(struct inode *dir, struct inode *inode, struct dentry *new_dentry)
-+{
-+	inode_dir_notify(dir, DN_CREATE);
-+	inotify_inode_queue_event(dir, IN_CREATE, 0, new_dentry->d_name.name,
-+				  inode);
-+	fsnotify_link_count(inode);
-+	audit_inode_child(new_dentry->d_name.name, new_dentry, dir);
-+}
-+
-+/*
-  * fsnotify_mkdir - directory 'name' was created
-  */
- static inline void fsnotify_mkdir(struct inode *inode, struct dentry *dentry)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index fdeefe5..c9fac5a 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -508,7 +508,7 @@ define_machine(pseries) {
+ 	.power_off		= pSeries_power_off,
+ 	.halt			= rtas_halt,
+ 	.panic			= rtas_panic_msg,
+-	.machine_shutdown	= rtas_os_term,
++/*	.machine_shutdown	= rtas_os_term,*/
+ 	.get_boot_time		= rtas_get_boot_time,
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.set_rtc_time		= rtas_set_rtc_time,
