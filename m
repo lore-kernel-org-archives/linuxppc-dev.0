@@ -1,15 +1,21 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910711281554q235c5b36x96d17ea046924600@mail.gmail.com>
-Date: Wed, 28 Nov 2007 18:54:52 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: MPC5200 I2C and 2.6 kernel
-In-Reply-To: <20071128202245.90051247C1@gemini.denx.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 7D50FDDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 11:14:13 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: PPC upstream kernel ignored DABR bug
+Date: Thu, 29 Nov 2007 01:13:28 +0100
+References: <20071126220224.GA5606@host0.dyn.jankratochvil.net>
+	<200711272335.36981.arnd@arndb.de> <474DF2D8.9010407@am.sony.com>
+In-Reply-To: <474DF2D8.9010407@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <474BEC4F.3080800@sympatec.com>
-	<20071128202245.90051247C1@gemini.denx.de>
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200711290113.29024.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Roland McGrath <roland@redhat.com>,
+	Jan Kratochvil <jan.kratochvil@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,84 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/28/07, Wolfgang Denk <wd@denx.de> wrote:
-> In message <474BEC4F.3080800@sympatec.com> you wrote:
-> >
-> > Regardless what I'm doing in the 2.6 kernel configuration I can't get
-> > this RTC running (I activated RTC support and the driver for the M41T00
-> > in the configuration).
-> > hwclock --debug tells me:
-
-
-You have to add the i2c device to this table in arch/powerpc/sysdev/fsl_soc.c
-
-static struct i2c_driver_device i2c_devices[] __initdata = {
-        {"ricoh,rs5c372a", "rtc-rs5c372", "rs5c372a",},
-        {"ricoh,rs5c372b", "rtc-rs5c372", "rs5c372b",},
-        {"ricoh,rv5c386",  "rtc-rs5c372", "rv5c386",},
-        {"ricoh,rv5c387a", "rtc-rs5c372", "rv5c387a",},
-        {"dallas,ds1307",  "rtc-ds1307",  "ds1307",},
-        {"dallas,ds1337",  "rtc-ds1307",  "ds1337",},
-        {"dallas,ds1338",  "rtc-ds1307",  "ds1338",},
-        {"dallas,ds1339",  "rtc-ds1307",  "ds1339",},
-        {"dallas,ds1340",  "rtc-ds1307",  "ds1340",},
-        {"stm,m41t00",     "rtc-ds1307",  "m41t00"},
-        {"dallas,ds1374",  "rtc-ds1374",  "rtc-ds1374",},
-};
-
-Then make a device tree node for it with the address.
-
-		i2c@3d40 {
-			compatible = "mpc5200b-i2c","mpc5200-i2c","fsl-i2c";
-			reg = <3d40 40>;
-			interrupts = <2 10 0>;
-			interrupt-parent = <&mpc5200_pic>;
-			fsl5200-clocking;
-
-			rtc@51 {
-				compatible = "epson,rtc8564";
-				reg = <51>;
-			};
-		};
-		
-The device will be named /dev/rtc0. A more update to date version of
-hwclock will find it or you can make a symlink from rtc to rtc0.
-
-When it works right:
-rtc-pcf8563 1-0051: rtc core: registered rtc-pcf8563 as rtc0
-rtc-pcf8563 1-0051: setting system clock to 2007-11-28 16:53:12 UTC (1196268792)
-
-I have a pending series of patches that removes this table and moves
-the aliasing into the i2c drivers. It is waiting for a core change to
-go into the i2c subsystem.
-
-
-> > hwclock: Open of /dev/rtc failed, errno=19: No such device.
+On Wednesday 28 November 2007 23:59:36 Geoff Levand wrote:
+> > This sounds like a bug recently reported by Uli Weigand. BenH
+> > said he'd take a look, but it probably fell under the table.
+> > The problem found by Uli is that on certain processors (Cell/B.E.
+> > in his case), the DABRX register needs to be set in order for
+> > the DABR to take effect.
 >
-> Well... did you check how your /dev/rtc is set up? It used  to  be  a
-> misc  device with MAJ=10 MIN=135 in old kernel versions, but now it's
-> MAJ=254 MIN=4, i. e. it should look like this:
->
-> crw-r--r-- 1 root root 254,   0 Jun 22 18:30 /dev/rtc
->
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> For every complex problem, there is a solution that is simple,  neat,
-> and wrong.                                           -- H. L. Mencken
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+> Just as a note, the PS3's lv1_set_dabr(), which we used for
+> ppc_md.set_dabr sets up both the DABRX and DABR registers.
 
+Yes, I know. I tried it on the PS3 first and couldn't reproduce
+the bug he saw on the blade.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+	Arnd <><
