@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 66294DDE0A
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 62C6CDDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 02:04:57 +1100 (EST)
-Message-ID: <47502679.2000303@freescale.com>
-Date: Fri, 30 Nov 2007 09:04:25 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Sat,  1 Dec 2007 02:09:40 +1100 (EST)
+Message-ID: <475027B9.4060804@anagramm.de>
+Date: Fri, 30 Nov 2007 16:09:45 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
 To: fabien <fabien.fb@gmail.com>
 Subject: Re: ppcboot and powerpc branch question
-References: <f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>	<fa686aa40711300543i47991fa6m9812231625205026@mail.gmail.com>
-	<f8f856500711300645p13dc4cb7m10d3361e1393632b@mail.gmail.com>
-In-Reply-To: <f8f856500711300645p13dc4cb7m10d3361e1393632b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>
+In-Reply-To: <f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,22 +23,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-fabien wrote:
-> Ok, thanks
-> So do I need to define a dts file or the bd_t struct only will be
-> sufficient to boot with cuImage ?
+fabien schrieb:
+> hi all,
+> 
+> After some problem with my custom board and kernel 2.6.19 about the
+> init process, i've moved
+> on 2.6.23 and that had fixed my problems. (related to this post :
+> http://marc.info/?l=linuxppc-embedded&m=119609022221017&w=2)
+> Apparently it was a problem with cpm_uart on SMC1.
+> (http://lkml.org/lkml/2007/9/23/99)
+> the patch have been integrated in 2.6.23. Now i use this kernel and
+> busybox works.
+> I want to migrated my board in powerpc branch instead of ppc (i plan
+> to use xenomai but in 2.6.23
+> there is only an adeos patch for piowerpc branch), but i see the use
+> of a device tree
+> instead of bd_t struct. I'm a bit disappointed because i also see that
+> older u-boot (in my case
+> ppcboot 1.1.5) aren't capable to pass dts to kernel.
+> Is there a way to keep my old bootloader to boot a powerpc branch kernel ?
 
-You need to define a dts file (see the existing ones in 
-arch/powerpc/boot/dts for examples), and set CONFIG_DEVICE_TREE to tell 
-the wrapper which one to include.
+please read linux/Documentation/powerpc/booting-without-of.txt
 
-Note that this dts must have linux,network-index properties in the 
-network nodes for the MAC addresses to be filled in, and must have 
-/chosen/linux,stdout-path if you want output from the wrapper (useful if 
-something goes wrong (such as insufficient memory to relocate the 
-kernel) or if you want to edit the command line).
+To get a cuImage, you
+- need to adjust your <platform>.dts and configure your kernel to use it.
+- need the latest dtc (device tree compiler),
+- need the latest mkimage (from the latest u-boot tree)
+- and build your cuImage by building the target zImage (make zImage)
+-> your cuImage then rests in i.e. arch/powerpc/boot/cuImage.<platform>
 
-You also need to do make zImage rather than make uImage for cuImage to 
-be built.
+Aside of no good documentation, I ran into the problem that the
+embedded device tree doesn't get updated by the bd_t struct properly
+(the mac addresses) in the latest versions of the kernel. This might be
+a bug or a configuration error on my side. I didn't check yet.
+U-Boot with full device tree support will hopfully fix that, when it's
+out.
 
--Scott
+Regards,
+
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
