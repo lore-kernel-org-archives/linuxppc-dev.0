@@ -1,31 +1,20 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE4C7DEEFD
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 16:43:38 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	lAU5hVwe024863
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 22:43:31 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lAU5hTt0026965
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2007 23:43:30 -0600 (CST)
-Subject: Re: [PATCH] Add MPC837xEMDS PCIE RC mode support
-From: Li Li <r64360@freescale.com>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071130041404.GB26982@lixom.net>
-References: <1196394334.29683.5.camel@Guyver>
-	<20071130041404.GB26982@lixom.net>
-Content-Type: text/plain
-Date: Fri, 30 Nov 2007 13:33:53 +0800
-Message-Id: <1196400833.31368.2.camel@Guyver>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 49385DDE1F
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 16:57:01 +1100 (EST)
+Date: Fri, 30 Nov 2007 16:56:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
+Message-Id: <20071130165651.b1b7c16c.sfr@canb.auug.org.au>
+In-Reply-To: <1196208960.11297.26.camel@farscape.rchland.ibm.com>
+References: <20071120012815.GB7969@austin.ibm.com>
+	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__30_Nov_2007_16_56_51_+1100_H_b49cjAMBYZgQXO"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,35 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-11-30 at 12:14 +0800, Olof Johansson wrote:
-> Hi,
-> 
-> On Fri, Nov 30, 2007 at 11:45:34AM +0800, Li Li wrote:
-> 
-> > +     pci2@e0009000 {
-> 
-> Why call it pci2@ (and pci3@ below)? They are clearly identifiable
-> with 
-> their unit addresses anyway.
-> 
-> > +config PPC_MPC83XX_PCIE 
-> > +     bool "MPC837X PCI Express support" 
-> > +     depends on PCIEPORTBUS && PPC_MPC837x 
-> > +     default n 
-> > +     help 
-> > +       Enables MPC837x PCI express RC mode
-> 
-> Why have a separate config option for this?
-> 
-> For systems where you don't want PCI-e configured, it should be left 
-> out of the device tree instead.
+--Signature=_Fri__30_Nov_2007_16_56_51_+1100_H_b49cjAMBYZgQXO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is easy to configure kernel than modify and recompile the dts.
-The pcie is default enabled in dts.
+On Tue, 27 Nov 2007 18:15:59 -0600 Will Schmidt <will_schmidt@vnet.ibm.com>=
+ wrote:
+>
+> (resending with the proper "from" addr this time).=20
+>=20
+>=20
+> I'm seeing some funky behavior on power5/power6 partitions with this
+> patch.    A "/sbin/reboot" is now behaving much more like a
+> "/sbin/halt".
+>=20
+> Anybody else seeing this, or is it time for me to call an exorcist for
+> my boxes?=20
 
-> 
-> 
-> 
-> -Olof
-> 
-- Tony
+On my Power5+ box, I get an error (code B200A101) logged every time I
+reboot and about half the time, the machine does not reboot but need to
+be power cycled. Removing the cited patch makes the error not by logged
+and reboots work fine.
+
+Paul and I have been having a look at this and Paul has asked the
+architects for clarification of when os-term should be used.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__30_Nov_2007_16_56_51_+1100_H_b49cjAMBYZgQXO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHT6YpTgG2atn1QN8RAg2KAKCRNNcn5aA9Besh/fi5M6+XyUAPPwCeNXzZ
+BGVY6N0XUNV0PQUes/HnqrY=
+=bO/s
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__30_Nov_2007_16_56_51_+1100_H_b49cjAMBYZgQXO--
