@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 17:10:38 +1100
-Subject: [PATCH 0/24] powerpc: 4xx PCI,
-	PCI-X and PCI-Express support among others
-Message-Id: <1196403038.569525.367459803520.qpush@grosgo>
+Date: Fri, 30 Nov 2007 17:10:39 +1100
+Subject: [PATCH 1/24] powerpc: Make isa_mem_base common to 32 and 64 bits
+In-Reply-To: <1196403038.569525.367459803520.qpush@grosgo>
+Message-Id: <20071130061142.7CF31DDE20@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,20 +15,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's a set of patches that bring PCI, PCI-X and PCI-Express
-support to 4xx on arch/powerpc. It also changes/fixed various
-bits and pieces, such as a bit of rework of arch/powerpc/boot
-4xx code, adding a couple of new platforms along the way. 
+This defines isa_mem_base on both 32 and 64 bits (it used to be 32 bits
+only). This avoids a few ifdef's in later patches and potentially can
+allow support for VGA text mode on 64 bits powerpc.
 
-There are some issues with the SCSI stack vs. non-coherent
-DMA that I'm working on fixing separately, and there's a
-problem I noticed with the e1000 driver vs. 64 bits resources
-on 32 bits architectures for which I also have a patch that
-I posted separately. Appart from that, I got it working fine
-with a USB2 card in an ebony and 2 USB storage devices.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Some of these patches are _NOT_ yet candidate for merging
-(mostly the board support ones), but you can review them and
-Josh can put them in an experimental tree.
+Small cleanup pre-requisite for my next patch
 
-There will be further cleanups and fixes before 2.6.25 opens
+ arch/powerpc/kernel/pci-common.c |    4 ++++
+ arch/powerpc/kernel/pci_32.c     |    1 -
+ include/asm-powerpc/io.h         |    5 +++--
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-work/arch/powerpc/kernel/pci-common.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2007-11-20 15:03:02.000000000 +1100
+@@ -52,6 +52,10 @@ int global_phb_number;		/* Global phb co
+ 
+ extern struct list_head hose_list;
+ 
++/* ISA Memory physical address */
++resource_size_t isa_mem_base;
++
++
+ /*
+  * pci_controller(phb) initialized common variables.
+  */
+Index: linux-work/include/asm-powerpc/io.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/io.h	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/include/asm-powerpc/io.h	2007-11-20 14:47:11.000000000 +1100
+@@ -50,15 +50,16 @@ extern int check_legacy_ioport(unsigned 
+ #define PCI_DRAM_OFFSET	pci_dram_offset
+ #else
+ #define _IO_BASE	pci_io_base
+-#define _ISA_MEM_BASE	0
++#define _ISA_MEM_BASE	isa_mem_base
+ #define PCI_DRAM_OFFSET	0
+ #endif
+ 
+ extern unsigned long isa_io_base;
+-extern unsigned long isa_mem_base;
+ extern unsigned long pci_io_base;
+ extern unsigned long pci_dram_offset;
+ 
++extern resource_size_t isa_mem_base;
++
+ #if defined(CONFIG_PPC32) && defined(CONFIG_PPC_INDIRECT_IO)
+ #error CONFIG_PPC_INDIRECT_IO is not yet supported on 32 bits
+ #endif
+Index: linux-work/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-11-20 14:42:49.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-11-20 15:02:43.000000000 +1100
+@@ -32,7 +32,6 @@
+ #endif
+ 
+ unsigned long isa_io_base     = 0;
+-unsigned long isa_mem_base    = 0;
+ unsigned long pci_dram_offset = 0;
+ int pcibios_assign_bus_offset = 1;
+ 
