@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 17:10:54 +1100
-Subject: [PATCH 14/24] powerpc: Add early udbg support for 40x processors
+Date: Fri, 30 Nov 2007 17:10:56 +1100
+Subject: [PATCH 15/24] powerpc: early debug forces console log level to max
 In-Reply-To: <1196403038.569525.367459803520.qpush@grosgo>
-Message-Id: <20071130061158.531B2DDED5@ozlabs.org>
+Message-Id: <20071130061200.4BAF9DDFAE@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,177 +15,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds some basic real mode based early udbg support for 40x
-in order to debug things more easily
+This patch makes the early debug option force the console loglevel
+to the max. The early debug option is meant to catch messages very
+early in the kernel boot process, in many cases, before the kernel
+has a chance to parse the "debug" command line argument. Thus it
+makes sense when CONFIG_PPC_EARLY_DEBUG is set, to force the console
+log level to the max at boot time.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/Kconfig.debug             |   13 +++++++++++
- arch/powerpc/kernel/misc_32.S          |   39 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/udbg.c             |    3 ++
- arch/powerpc/kernel/udbg_16550.c       |   33 +++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype |    1 
- include/asm-powerpc/udbg.h             |    1 
- 6 files changed, 90 insertions(+)
+ arch/powerpc/kernel/udbg.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-work/arch/powerpc/Kconfig.debug
-===================================================================
---- linux-work.orig/arch/powerpc/Kconfig.debug	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/arch/powerpc/Kconfig.debug	2007-11-26 09:45:59.000000000 +1100
-@@ -220,6 +220,14 @@ config PPC_EARLY_DEBUG_44x
- 	  Select this to enable early debugging for IBM 44x chips via the
- 	  inbuilt serial port.
- 
-+config PPC_EARLY_DEBUG_40x
-+	bool "Early serial debugging for IBM/AMCC 40x CPUs"
-+	depends on 40x
-+	help
-+	  Select this to enable early debugging for IBM 40x chips via the
-+	  inbuilt serial port. This works on chips with a 16550 compatible
-+	  UART. Xilinx chips with uartlite cannot use this option.
-+
- config PPC_EARLY_DEBUG_CPM
- 	bool "Early serial debugging for Freescale CPM-based serial ports"
- 	depends on SERIAL_CPM
-@@ -241,6 +249,11 @@ config PPC_EARLY_DEBUG_44x_PHYSHIGH
- 	depends on PPC_EARLY_DEBUG_44x
- 	default "0x1"
- 
-+config PPC_EARLY_DEBUG_40x_PHYSADDR
-+	hex "Early debug UART physical address"
-+	depends on PPC_EARLY_DEBUG_40x
-+	default "0xef600300"
-+
- config PPC_EARLY_DEBUG_CPM_ADDR
- 	hex "CPM UART early debug transmit descriptor address"
- 	depends on PPC_EARLY_DEBUG_CPM
-Index: linux-work/arch/powerpc/kernel/misc_32.S
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/misc_32.S	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/misc_32.S	2007-11-26 09:44:04.000000000 +1100
-@@ -206,6 +206,45 @@ _GLOBAL(_nmask_and_or_msr)
- 	isync
- 	blr			/* Done */
- 
-+#ifdef CONFIG_40x
-+
-+/*
-+ * Do an IO access in real mode
-+ */
-+_GLOBAL(real_readb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DR
-+	xori	r0,r0,MSR_DR
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	lbz	r3,0(r3)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
-+
-+	/*
-+ * Do an IO access in real mode
-+ */
-+_GLOBAL(real_writeb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DR
-+	xori	r0,r0,MSR_DR
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	stb	r3,0(r4)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
-+
-+#endif /* CONFIG_40x */
- 
- /*
-  * Flush MMU TLB
 Index: linux-work/arch/powerpc/kernel/udbg.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/udbg.c	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/udbg.c	2007-11-26 09:44:04.000000000 +1100
-@@ -54,6 +54,9 @@ void __init udbg_early_init(void)
- #elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
- 	/* PPC44x debug */
- 	udbg_init_44x_as1();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_40x)
-+	/* PPC40x debug */
-+	udbg_init_40x_realmode();
+--- linux-work.orig/arch/powerpc/kernel/udbg.c	2007-11-30 13:29:51.000000000 +1100
++++ linux-work/arch/powerpc/kernel/udbg.c	2007-11-30 13:29:56.000000000 +1100
+@@ -60,6 +60,10 @@ void __init udbg_early_init(void)
  #elif defined(CONFIG_PPC_EARLY_DEBUG_CPM)
  	udbg_init_cpm();
  #endif
-Index: linux-work/arch/powerpc/kernel/udbg_16550.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/udbg_16550.c	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/udbg_16550.c	2007-11-26 09:44:04.000000000 +1100
-@@ -225,3 +225,36 @@ void __init udbg_init_44x_as1(void)
- 	udbg_getc = udbg_44x_as1_getc;
++
++#ifdef CONFIG_PPC_EARLY_DEBUG
++	console_loglevel = 10;
++#endif
  }
- #endif /* CONFIG_PPC_EARLY_DEBUG_44x */
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_40x
-+static void udbg_40x_real_putc(char c)
-+{
-+	if (udbg_comport) {
-+		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
-+			/* wait for idle */;
-+		real_writeb(c, &udbg_comport->thr); eieio();
-+		if (c == '\n')
-+			udbg_40x_real_putc('\r');
-+	}
-+}
-+
-+static int udbg_40x_real_getc(void)
-+{
-+	if (udbg_comport) {
-+		while ((real_readb(&udbg_comport->lsr) & LSR_DR) == 0)
-+			; /* wait for char */
-+		return real_readb(&udbg_comport->rbr);
-+	}
-+	return -1;
-+}
-+
-+void __init udbg_init_40x_realmode(void)
-+{
-+	udbg_comport = (volatile struct NS16550 __iomem *)
-+		CONFIG_PPC_EARLY_DEBUG_40x_PHYSADDR;
-+
-+	udbg_putc = udbg_40x_real_putc;
-+	udbg_getc = udbg_40x_real_getc;
-+	udbg_getc_poll = NULL;
-+}
-+#endif /* CONFIG_PPC_EARLY_DEBUG_40x */
-Index: linux-work/include/asm-powerpc/udbg.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/udbg.h	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/include/asm-powerpc/udbg.h	2007-11-26 09:44:04.000000000 +1100
-@@ -48,6 +48,7 @@ extern void __init udbg_init_rtas_consol
- extern void __init udbg_init_debug_beat(void);
- extern void __init udbg_init_btext(void);
- extern void __init udbg_init_44x_as1(void);
-+extern void __init udbg_init_40x_realmode(void);
- extern void __init udbg_init_cpm(void);
  
- #endif /* __KERNEL__ */
-Index: linux-work/arch/powerpc/platforms/Kconfig.cputype
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/Kconfig.cputype	2007-11-26 09:38:46.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/Kconfig.cputype	2007-11-26 09:44:04.000000000 +1100
-@@ -43,6 +43,7 @@ config 40x
- 	bool "AMCC 40x"
- 	select PPC_DCR_NATIVE
- 	select WANT_DEVICE_TREE
-+	select PPC_UDBG_16550
- 
- config 44x
- 	bool "AMCC 44x"
+ /* udbg library, used by xmon et al */
