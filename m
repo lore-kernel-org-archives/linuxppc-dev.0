@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 17:10:44 +1100
-Subject: [PATCH 5/24] powerpc: Fix 440SPE machine check
+Date: Fri, 30 Nov 2007 17:10:45 +1100
+Subject: [PATCH 6/24] powerpc: Add xmon function to dump 44x TLB
 In-Reply-To: <1196403038.569525.367459803520.qpush@grosgo>
-Message-Id: <20071130061147.AE528DDEC6@ozlabs.org>
+Message-Id: <20071130061148.8B94EDDF21@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,53 +15,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 440SPE has a 440A core, and thus needs a setup_cpu function to
-fixup its machine check handler.
+This adds a function to xmon to dump the content of the 44x processor
+TLB with a little bit of decoding (but not much).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/cpu_setup_44x.S |    1 +
- arch/powerpc/kernel/cputable.c      |    3 +++
- 2 files changed, 4 insertions(+)
+Did that to track down some machine checks I was having while working
+on PCI support due to 32/64 bits resource screwage.
+Useful to see where a given MMIO virtual address really maps to.
 
-Index: linux-work/arch/powerpc/kernel/cpu_setup_44x.S
+ arch/powerpc/xmon/xmon.c |   38 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+Index: linux-work/arch/powerpc/xmon/xmon.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/cpu_setup_44x.S	2007-11-27 16:13:04.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/cpu_setup_44x.S	2007-11-27 16:13:09.000000000 +1100
-@@ -29,6 +29,7 @@ _GLOBAL(__setup_cpu_440epx)
- _GLOBAL(__setup_cpu_440grx)
- 	b	__plb_disable_wrp
- _GLOBAL(__setup_cpu_440gx)
-+_GLOBAL(__setup_cpu_440spe)
- 	b	__fixup_440A_mcheck
+--- linux-work.orig/arch/powerpc/xmon/xmon.c	2007-11-20 15:02:43.000000000 +1100
++++ linux-work/arch/powerpc/xmon/xmon.c	2007-11-20 17:04:48.000000000 +1100
+@@ -153,6 +153,10 @@ static const char *getvecname(unsigned l
  
-  /* Temporary fixup for arch/ppc until we kill the whole thing */
-Index: linux-work/arch/powerpc/kernel/cputable.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/cputable.c	2007-11-27 16:11:27.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/cputable.c	2007-11-27 16:13:51.000000000 +1100
-@@ -35,6 +35,7 @@ extern void __setup_cpu_440ep(unsigned l
- extern void __setup_cpu_440epx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440gx(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_440grx(unsigned long offset, struct cpu_spec* spec);
-+extern void __setup_cpu_440spe(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_750(unsigned long offset, struct cpu_spec* spec);
-@@ -1248,6 +1249,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features      = COMMON_USER_BOOKE,
- 		.icache_bsize           = 32,
- 		.dcache_bsize           = 32,
-+		.cpu_setup		= __setup_cpu_440spe,
- 		.platform               = "ppc440",
- 	},
- 	{ /* 440SPe Rev. B */
-@@ -1258,6 +1260,7 @@ static struct cpu_spec __initdata cpu_sp
- 		.cpu_user_features	= COMMON_USER_BOOKE,
- 		.icache_bsize		= 32,
- 		.dcache_bsize		= 32,
-+		.cpu_setup		= __setup_cpu_440spe,
- 		.platform		= "ppc440",
- 	},
- #endif /* CONFIG_44x */
+ static int do_spu_cmd(void);
+ 
++#ifdef CONFIG_44x
++static void dump_tlb_44x(void);
++#endif
++
+ int xmon_no_auto_backtrace;
+ 
+ extern void xmon_enter(void);
+@@ -231,6 +235,9 @@ Commands:\n\
+ #ifdef CONFIG_PPC_STD_MMU_32
+ "  u	dump segment registers\n"
+ #endif
++#ifdef CONFIG_44x
++"  u	dump TLB\n"
++#endif
+ "  ?	help\n"
+ "  zr	reboot\n\
+   zh	halt\n"
+@@ -856,6 +863,11 @@ cmds(struct pt_regs *excp)
+ 			dump_segments();
+ 			break;
+ #endif
++#ifdef CONFIG_44x
++		case 'u':
++			dump_tlb_44x();
++			break;
++#endif
+ 		default:
+ 			printf("Unrecognized command: ");
+ 		        do {
+@@ -2581,6 +2593,32 @@ void dump_segments(void)
+ }
+ #endif
+ 
++#ifdef CONFIG_44x
++static void dump_tlb_44x(void)
++{
++	int i;
++
++	for (i = 0; i < PPC44x_TLB_SIZE; i++) {
++		unsigned long w0,w1,w2;
++		asm volatile("tlbre  %0,%1,0" : "=r" (w0) : "r" (i));
++		asm volatile("tlbre  %0,%1,1" : "=r" (w1) : "r" (i));
++		asm volatile("tlbre  %0,%1,2" : "=r" (w2) : "r" (i));
++		printf("[%02x] %08x %08x %08x ", i, w0, w1, w2);
++		if (w0 & PPC44x_TLB_VALID) {
++			printf("V %08x -> %01x%08x %c%c%c%c%c",
++			       w0 & PPC44x_TLB_EPN_MASK,
++			       w1 & PPC44x_TLB_ERPN_MASK,
++			       w1 & PPC44x_TLB_RPN_MASK,
++			       (w2 & PPC44x_TLB_W) ? 'W' : 'w',
++			       (w2 & PPC44x_TLB_I) ? 'I' : 'i',
++			       (w2 & PPC44x_TLB_M) ? 'M' : 'm',
++			       (w2 & PPC44x_TLB_G) ? 'G' : 'g',
++			       (w2 & PPC44x_TLB_E) ? 'E' : 'e');
++		}
++		printf("\n");
++	}
++}
++#endif /* CONFIG_44x */
+ void xmon_init(int enable)
+ {
+ #ifdef CONFIG_PPC_ISERIES
