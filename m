@@ -1,22 +1,21 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp105.sbc.mail.mud.yahoo.com (smtp105.sbc.mail.mud.yahoo.com
-	[68.142.198.204]) by ozlabs.org (Postfix) with SMTP id A7FF8DDE01
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 10:25:26 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Arnd Bergmann <arnd@arndb.de>,
- avorontsov@ru.mvista.com
-Subject: Re: CPM2 USB host driver
-Date: Fri, 30 Nov 2007 15:18:42 -0800
-References: <200711301145.52926.laurentp@cse-semaphore.com>
-	<20071130161136.GA27760@localhost.localdomain>
-	<200711302332.21864.arnd@arndb.de>
-In-Reply-To: <200711302332.21864.arnd@arndb.de>
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
+	by ozlabs.org (Postfix) with ESMTP id BA834DDDFE
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 10:30:16 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so483758anc
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:30:15 -0800 (PST)
+Message-ID: <fa686aa40711301530k6001d563mb910f10b0d95503c@mail.gmail.com>
+Date: Fri, 30 Nov 2007 16:30:15 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: benh@kernel.crashing.org
+Subject: Re: [RFC/PATCH] Add a device_initcall to machdep_calls
+In-Reply-To: <1196463486.13230.116.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200711301518.43044.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net, mike@compulab.co.il
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071130225043.12499.86364.stgit@trillian.secretlab.ca>
+	<1196463486.13230.116.camel@pasglop>
+Cc: olof@lixom.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 30 November 2007, Arnd Bergmann wrote:
-> 6100 lines means it's still the second-largest hcd driver in the kernel,
-> only drivers/usb/host/u132-hcd.c has even more.
+On 11/30/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Fri, 2007-11-30 at 15:51 -0700, Grant Likely wrote:
+> >
+> > Add a device_initcall hook to machdep_calls so that platform code
+> > doesn't
+> > need to register device_initcalls that must first check what platform
+> > it is running on.
+> >
+> > This should (slightly) speed boot time on kernels that support a lot
+> > of
+> > boards and make device_initcall hooks slightly simpler to implement
+> > because the platform doesn't need to be tested when called.
+> >
+> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > ---
+> >
+> > Please comment; I think this is a good change, but I'd like some
+> > feedback.
+>
+> Hrm... I'm not too sure about it...
+>
+> My initial idea for dealing with that issue was more along the lines of
+> defining a set of
+>
+> machine_xxx_initcall(mach, function)
+>
+> Where xxx is (arch,core,subsys,fs,device, whatever...)
+>
+> Those could, at first be implemented as a simple macro wrapper that
+> expands to a function that tests machine_is() and calls the function,
+> and later one, we can do more fancy things, such as ELF sections with
+> function pointers in them.
 
-~/kernel/g26/drivers/usb/host$ wc -l ohci*[hc] |grep total
-  9485 total
-~/kernel/g26/drivers/usb/host$ wc -l ehci*[hc] |grep total
-  8709 total
-~/kernel/g26/drivers/usb/host$ wc -l uhci*[hc] |grep total
-  4211 total
-~/kernel/g26/drivers/usb/host$ wc -l sl811*[hc] |grep total
- 2472 total
-~/kernel/g26/drivers/usb/host$ 
+Is that level of sophistication really warranted for this scenario?
+When I'm writing platform code (and granted I'm focused on the
+embedded cases) then I've already tested for the board type and I
+already know if I want to run that code.  Typically that code is all
+contained within a single board file anyway.
 
-Of course a lot of the OHCI stuff is various flavors of bus glue
-(with more in the queue).  And for one nyet-merged driver:
+I'd rather start with the initcall unregistered and register it when
+the board is probed instead of registering by default and testing for
+exclusion.
 
-~/kernel/omap-2.6/drivers/usb/musb$ wc -l *[hc] |  grep total
- 15223 total
-~/kernel/omap-2.6/drivers/usb/musb$ 
+In other words it sound like an O(1) problem being solved with an O(n) solution.
 
-That's an OTG driver so it includes both host and peripheral
-sides, plus currently bus glue for three different chunks of
-silicon (DaVinci, OMAP, TUSB6010 ... Blackfin on the way)
-with three different DMA engines (sigh).
+Cheers,
+g.
 
-So it's not that big; larger than UHCI or sl811-hcd though.  ;)
-
-
-> My experience with other drivers moved into the kernel is that you
-> end up rewriting it completely anyway. I can also recommend starting
-> from scratch, and taking one of the in-kernel drivers as an example.
-
-Start-from-scratch vs Incremental-rewrite ... there are advantages
-to each approach.
-
-
-> Maybe Greg or David can give you a suggestion which one of them
-> serves as the best example for a new host driver.
-
-I don't even know what a CPM2 is, or what kind of host it has.
-(Wasn't CPM the predecessor of MS-DOS?)
-
-Suggestions would be futile.
-
-- Dave
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
