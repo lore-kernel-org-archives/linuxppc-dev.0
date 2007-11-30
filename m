@@ -1,17 +1,18 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 7719BDDEBB
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 455B3DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 05:16:56 +1100 (EST)
-Message-ID: <47505206.9080605@qstreams.com>
-Date: Fri, 30 Nov 2007 13:10:14 -0500
-From: Ben Warren <bwarren@qstreams.com>
-MIME-Version: 1.0
-To: Stuart Hodgson <stuart@quadrics.com>
-Subject: Re: Semaphores in eldk4.1
-References: <47503B5A.6090604@quadrics.com>
-In-Reply-To: <47503B5A.6090604@quadrics.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sat,  1 Dec 2007 09:15:57 +1100 (EST)
+To: fabien <fabien.fb@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ppcboot and powerpc branch question
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 30 Nov 2007 14:33:38 +0100."
+	<f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>
+Date: Fri, 30 Nov 2007 23:15:54 +0100
+Sender: wd@denx.de
+Message-Id: <20071130221554.3AA0124075@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,44 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-HI Stuart,
+In message <f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com> you wrote:
+> 
+> instead of bd_t struct. I'm a bit disappointed because i also see that
+> older u-boot (in my case
+> ppcboot 1.1.5) aren't capable to pass dts to kernel.
 
-Stuart Hodgson wrote:
-> Hi,
->
-> I have been suing the eldk4.1 tool chain for a few months now and have 
-> not not encountered any problems with building until now. I build for 
-> two slightly different archs, ppc_85xx and ppx_82xx.
->
-> The problem I have come up against is related to some of the semaphore 
-> functions in semaphore.h, namely sem_wait, sem_post. This was originally 
-> noticed in a third party driver I am porting from one board to another 
-> but a small test program has shown the same results.
->
-> Calls to these functions on the ppc_82xx platform return -1 with an 
-> error code of 38, in this case meaning  ENOSYS (not implemented). On the 
-> ppc_85xx the same program executes fine, thus I conclude that it is 
-> specific to the libc-2.3.5 for ppc_82xx. Has anyone else come across 
-> this problem, I did find one thread but there was no conclusion listed.
->
->   
-These work fine for me with ppc_6xx architecture and ELDK 4.1, although 
-they didn't with ELDK 4.0. In that case, I was getting ENOSYS on 
-sem_open() and sem_init(). Do these functions return 0 for you? I assume 
-you're using a kernel that supports POSIX semaphores (I think that 
-started at 2.6.12) and that you're using the glibc version of ELDK and 
-not ulibc.
-> I also can not find anything stating that these functions are not 
-> implemented for the 82xx arch compared with others for the eldk4.1
->
-> Thanks
->
-> Stuart
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->   
-regards,
-Ben
+PPCBoot was a in a distant  past  before  U-Boot.  Actually,  PPCBoot
+1.1.5 is more than 5 and a half years old. You cannot really expect a
+Neanderthal man to drive a space shuttle.
+
+> Is there a way to keep my old bootloader to boot a powerpc branch kernel ?
+
+No. Please use a current U-Boot (i. e. at least U-Boot 1.3.0).
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+As in certain cults it is possible to kill a process if you know  its
+true name.                      -- Ken Thompson and Dennis M. Ritchie
