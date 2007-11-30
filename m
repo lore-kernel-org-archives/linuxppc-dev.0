@@ -1,23 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CEA3DDE17
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 08:56:15 +1100 (EST)
-Message-Id: <EBE86B51-C550-47BA-8A71-1F7284E09F0E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1196456356.13230.104.camel@pasglop>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 2/11] ibm_newemac: Add ET1011c PHY support
-Date: Fri, 30 Nov 2007 15:56:09 -0600
-References: <1196401223.5661.297518056501.qpush@grosgo>
-	<20071130054126.E3EFADDE0C@ozlabs.org>
-	<20071130142904.GC3117@lixom.net>
-	<1196456356.13230.104.camel@pasglop>
-Cc: Olof Johansson <olof@lixom.net>, netdev@vger.kernel.org, jgarzik@pobox.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <Tom.Ziomek@motorola.com>
+Received: from mail119.messagelabs.com (mail119.messagelabs.com
+	[216.82.241.179]) by ozlabs.org (Postfix) with SMTP id 186C1DDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 09:11:26 +1100 (EST)
+Received: from az33exr04.mot.com (az33exr04.mot.com [10.64.251.234])
+	by motgate4.mot.com (8.12.11/Motorola) with ESMTP id lAUMBNBQ005210
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:11:23 -0700 (MST)
+Received: from az10vts02.mot.com (az10vts02.mot.com [10.64.251.243])
+	by az33exr04.mot.com (8.13.1/Vontu) with SMTP id lAUMBMHj027249
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 16:11:22 -0600 (CST)
+Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
+	by az33exr04.mot.com (8.13.1/8.13.0) with ESMTP id lAUMBKTC027241
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 16:11:21 -0600 (CST)
+Date: Fri, 30 Nov 2007 16:11:20 -0600 (CST)
+From: T Ziomek <ctz001@email.mot.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 15/24] powerpc: early debug forces console log level to max
+In-Reply-To: <1196456185.13230.100.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0711301605540.5450@gauley.ddna.labs.mot.com>
+References: <20071130061200.4BAF9DDFAE@ozlabs.org>
+	<Pine.LNX.4.64.0711301306520.5450@gauley.ddna.labs.mot.com>
+	<1196456185.13230.100.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Nov 30, 2007, at 2:59 PM, Benjamin Herrenschmidt wrote:
-
+On Sat, 1 Dec 2007, Benjamin Herrenschmidt wrote:
 >
-> On Fri, 2007-11-30 at 08:29 -0600, Olof Johansson wrote:
->> Hi,
+> On Fri, 2007-11-30 at 13:10 -0600, T Ziomek wrote:
+>>> This patch makes the early debug option force the console loglevel
+>>> to the max. The early debug option is meant to catch messages very
+>>> early in the kernel boot process, in many cases, before the kernel
+>>> has a chance to parse the "debug" command line argument. Thus it
+>>> makes sense when CONFIG_PPC_EARLY_DEBUG is set, to force the console
+>>> log level to the max at boot time.
+>>   . . .
+>>> +#ifdef CONFIG_PPC_EARLY_DEBUG
+>>> +     console_loglevel = 10;
+>>> +#endif
+>>> }
 >>
->> On Fri, Nov 30, 2007 at 04:40:24PM +1100, Benjamin Herrenschmidt  
->> wrote:
->>
->>> This adds support for the Agere ET1011c PHY as found on the AMCC  
->>> Taishan
->>> board.
->>
->> The whole patch has whitespace messed up (tabs vs spaces).
+>> The change makes sense, but wouldn't it also make sense to note it in
+>> arch/powerpc/Kconfig.debug?  Otherwise it's really hard to figure out
+>> why,
+>> after bringing up a new board, removing "debug" from the kernel cmd
+>> line
+>> does, well, nothing.
 >
-> Thanks for noticing it on the ...3rd time those are sent to the  
-> list...
+> Possibly, though you aren't supposed to leave EARLY_DEBUG enabled
+> once you are done debugging :-)
 
-Clearly if you used checkpatch.pl you'd have noticed this by now. :)
+I'm probably not the only person that would turn it on when needed, think
+"well, no harm in leaving it on for the rest of my development, and it
+might be handy; just turn it off when we're done".
 
-- k
+It's these kind of non-obvious but undocumented things that make a lot of
+OSS code a pain to work with for non-experts [1].  What's the harm in
+giving folks a heads-up?
+
+[1] : And I don't just mean newbies...I mean anybody who doesn't live in
+        the code on a daily basis year-round.
+
+-- 
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
