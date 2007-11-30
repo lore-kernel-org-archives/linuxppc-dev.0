@@ -1,22 +1,28 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id D4E84DDDF0
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 01:30:30 +1100 (EST)
-Date: Fri, 30 Nov 2007 15:30:28 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 1/11] ibm_newemac: Add BCM5248 and Marvell 88E1111 PHY
-	support
-In-Reply-To: <20071130142736.GB3117@lixom.net>
-Message-ID: <Pine.LNX.4.62.0711301530190.27308@pademelon.sonytel.be>
-References: <1196401223.5661.297518056501.qpush@grosgo>
-	<20071130054126.39BDCDDE0A@ozlabs.org>
-	<20071130142736.GB3117@lixom.net>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1956073448-1196433028=:27308"
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 70A3DDDE1C
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 01:48:30 +1100 (EST)
+Message-Id: <0494FF60-0E7E-4315-816F-716CC3C2EF04@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF029708189001A1CE7B@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH v7 7/9] ipic: clean up unsupported ack operations
+Date: Fri, 30 Nov 2007 08:48:23 -0600
+References: <1192793930-26039-1-git-send-email-leoli@freescale.com>
+	<1192793930-26039-2-git-send-email-leoli@freescale.com>
+	<1192793930-26039-3-git-send-email-leoli@freescale.com>
+	<1192793930-26039-4-git-send-email-leoli@freescale.com>
+	<1192793930-26039-5-git-send-email-leoli@freescale.com>
+	<1192793930-26039-6-git-send-email-leoli@freescale.com>
+	<1192793930-26039-7-git-send-email-leoli@freescale.com>
+	<1192793930-26039-8-git-send-email-leoli@freescale.com>
+	<0BCAE755-0506-405D-BFCA-94C2261CBE30@kernel.crashing.org>
+	<989B956029373F45A0B8AF029708189001A1CE7B@zch01exm26.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-1956073448-1196433028=:27308
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+On Nov 30, 2007, at 4:03 AM, Li Yang wrote:
 
-On Fri, 30 Nov 2007, Olof Johansson wrote:
-> On Fri, Nov 30, 2007 at 04:40:23PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > +static int m88e1111_init(struct mii_phy *phy)
-> > +{
-> > +	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
-> 
-> KERN_ level?
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Friday, November 30, 2007 8:36 AM
+>> To: Li Yang
+>> Cc: linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH v7 7/9] ipic: clean up unsupported ack operations
+>>
+>>
+>> On Oct 19, 2007, at 6:38 AM, Li Yang wrote:
+>>
+>>> IPIC controller doesn't support ack operations.  The
+>> pending registers
+>>> are read-only.  The patch removes ack operations which are
+>> not needed.
+>>>
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> ---
+>>> arch/powerpc/sysdev/ipic.c |   40 +
+>>> +--------------------------------------
+>>> 1 files changed, 2 insertions(+), 38 deletions(-)
+>>
+>> applied.
+>
+> Hi Kumar,
+>
+> Please hold on this one.  Actually external interrupts in edge mode  
+> need
+> this ack operation.  But in most cases (level triggered) ack is not
+> needed.  I will provide an updated patch later on to take care both
+> trigger modes.  Thanks.
 
-pr_
+Ok, I'll drop this patch.
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
-
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1956073448-1196433028=:27308--
+- k
