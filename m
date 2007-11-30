@@ -1,28 +1,19 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 975C6DDE2E
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 23:05:00 +1100 (EST)
-Date: Fri, 30 Nov 2007 15:09:31 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
-	driver
-Message-ID: <20071130120931.GA11286@localhost.localdomain>
-References: <20071127153708.GA12490@localhost.localdomain>
-	<20071127153908.GB14183@localhost.localdomain>
-	<20071127212222.GB10829@lixom.net>
-	<200711272233.00456.arnd@arndb.de>
-	<20071128154904.GA20722@localhost.localdomain>
-	<474D9327.9020305@ru.mvista.com> <20071129005440.GA2235@zarina>
-	<474FE332.8080103@ru.mvista.com>
-	<20071130105849.GA10840@localhost.localdomain>
-	<474FF776.1060803@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <474FF776.1060803@ru.mvista.com>
-Cc: Olof Johansson <olof@lixom.net>, cbou@mail.ru, linux-ide@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <laurentp@cse-semaphore.com>
+Received: from mailrelay003.isp.belgacom.be (mailrelay003.isp.belgacom.be
+	[195.238.6.53]) by ozlabs.org (Postfix) with ESMTP id 474B8DDEA3
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 23:30:31 +1100 (EST)
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: CPM2 USB host driver
+Date: Fri, 30 Nov 2007 13:30:18 +0100
+References: <200711301145.52926.laurentp@cse-semaphore.com>
+	<20071130141638.4e00258d@kernel.crashing.org>
+In-Reply-To: <20071130141638.4e00258d@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2699371.bMhLTZ6MzH";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200711301330.25100.laurentp@cse-semaphore.com>
+Cc: linuxppc-dev@ozlabs.org, mike@compulab.co.il
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,34 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 30, 2007 at 02:43:50PM +0300, Sergei Shtylyov wrote:
-> Anton Vorontsov wrote:
-> 
-> >>>Remaining question: any preferred name for that property? pio-mode okay?
-> >>>It's assuming that PIO6 capable bus supports PIO0 as well, thus no mask.
-> 
-> >>  I've already suggested "generic". A name "simple" also comes to my mind.
-> 
-> >You've misread my question. I didn't ask about driver name, but pio-mode
-> >property.
-> 
->    Probably "max-pio-mode" is a better variant.
+--nextPart2699371.bMhLTZ6MzH
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Why? pio-mode in pata-platform context is just something highly
-dependent on hardware, can not be touched. And we're passing
-pio-mode information from the hardware dependent source --
-device tree.
+On Friday 30 November 2007 12:16, Vitaly Bordug wrote:
+> On Fri, 30 Nov 2007 11:45:49 +0100
+>
+> Laurent Pinchart wrote:
+> > Hi everybody,
+> >
+> > Linux USB host support for the CPM, CPM2 and CPM2 pro is far from
+> > complete. Many people showed interest on this list (and on
+> > linuxppc-embedded) in the past, but nobody managed to complete a
+> > driver and get it merged.
+>
+> that is mainly because of its semi-software nature. However, any approach
+> would be helpful I beleive.
 
-The only difference between pata-platform's max-pio-mode and
-dedicated ata driver's pio-mode is that that for the first case
-bus already configured for specified mode, and for the second
-case dedicated driver should actually use this information
-to configure hardware.
+The CPM/CPM2 USB host controller does indeed put some pressure on the CPU. =
+The=20
+PowerQuick III family is much better in that respect as its USB host=20
+controller is EHCI compliant.
 
-No need for max- prefix, I think.
+We plan to use an external USB host controller when we will redesign the=20
+hardware. My goal in writting a CPM2 USB host driver is mainly to enable th=
+e=20
+hardware team to perform EMC testing on the USB interface. I don't expect i=
+t=20
+to be shipped to any client, but I'd still like to get it merged (if I=20
+complete the project) as I don't like throwing away useful code.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> > As I need USB host support on my MPC8248 (CPM2), I decided to scratch
+> > the itch and try to get a working driver that could be merged
+> > upstream. This mail describes my plans to make sure the code I write
+> > will be useful for other people.
+> >
+> > The driver will be based on the cpm2usb project
+> > (http://cpm2usb.sf.net/). As I don't own any CPM1-based platform, I
+> > will convert the driver to use the CPM2 transaction-level interface,
+> > thus making it incompatible with the CPM1. CPM1 support could be
+> > added back later. There is no planned release date, and more urgent
+> > projects could put this development on hold.
+> >
+> > Comments are welcome (and contributions too, especially in the form
+> > of a working driver :-)).
+>
+> I may have some WIP material left, will try to dig it out...
+
+Should I wait ?
+
+Best regards,
+
+=2D-=20
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chauss=E9e de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+=46 +32 (2) 387 42 75
+
+--nextPart2699371.bMhLTZ6MzH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBHUAJh8y9gWxC9vpcRAvdxAKDhKtpeJn8sPgN0RCc8JZCXt6QCtACg3RAL
+qCgCKLxGfedq7KYPx38AY/E=
+=cdTj
+-----END PGP SIGNATURE-----
+
+--nextPart2699371.bMhLTZ6MzH--
