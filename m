@@ -1,21 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1D24DDE9F
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 02:12:57 +1100 (EST)
-Message-Id: <51DE5987-D0DD-4E62-A99A-3D23ECFA9908@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071130141540.GA3117@lixom.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH 0/24] powerpc: 4xx PCI,
-	PCI-X and PCI-Express support among others
-Date: Fri, 30 Nov 2007 09:12:34 -0600
-References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130141540.GA3117@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 865B9DDE21
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 02:19:28 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	lAUFJNbb006798
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 08:19:24 -0700 (MST)
+Date: Fri, 30 Nov 2007 09:19:28 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH] Add MPC837xEMDS PCIE RC mode support
+Message-ID: <20071130151928.GB29484@loki.buserror.net>
+References: <1196394334.29683.5.camel@Guyver>
+	<4544168D-5E95-44E8-9128-6F343283EC82@freescale.com>
+	<1196412491.31962.9.camel@Guyver>
+	<7DF684FC-A53A-4F4D-903F-D50F1E0A486A@freescale.com>
+	<1196415470.2371.28.camel@Guyver>
+	<6FF36777-D91C-4B80-968B-CAEF11BC98ED@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6FF36777-D91C-4B80-968B-CAEF11BC98ED@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Li Li <r64360@freescale.com>,
+	Li Tony <Tony.Li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Nov 30, 2007 at 08:57:33AM -0600, Kumar Gala wrote:
+> On Nov 30, 2007, at 3:37 AM, Li Li wrote:
+> > If do it standard, a 256M config space, at least 256M mem space and  
+> > 16M
+> > io space are needed for each PCIE controller.
+> > To allocate PCIE window, the window size only can be 512M or 1G.
+> > If we choose 1G space, two PCIE controller needs 2G space.
+> > We do not have 2G free physical space now. Usually, we use upper 128M
+> > configure space. So, we have to cut down the config space.
 
-On Nov 30, 2007, at 8:15 AM, Olof Johansson wrote:
+That decision should be made in the kernel, not the dts.
 
-> On Fri, Nov 30, 2007 at 05:10:38PM +1100, Benjamin Herrenschmidt  
-> wrote:
->
->> There will be further cleanups and fixes before 2.6.25 opens
->
-> May I suggest running them through checkpatch.pl? It finds stuff in  
-> over
-> half of the ones I tried it on :)
+> Is it possible to make the outbound window for cfg space 4k and change  
+> the region of config space its looking at?
 
-You know of anyone that's integrated checkpatch.pl w/a git commit or  
-git-add? (effective run checkpatch.pl on the index before you commit  
-it).
+Yes, that'd be best.
 
-- k
+> > Here is a little complex. The MPC837xE board needs a carrier board to
+> > extend PCIE slot. If user does not populate carrier board onto MPC837xE
+> > board and do PCIE scan, the system will halt. I just want to provide a
+> > easy way to disable the PCIe other than modify and recompile the dts.
+> 
+> So I have to recompile the kernel for this case, that seems even more  
+> painful to the user.  Can we not detect if this board isn't there and  
+> not hang?
+
+Assuming it's similar to PCI on other 83xxMDS, yes -- there's a bit in the
+reset control words that can be checked.
+
+We don't currently do it on any 83xx that I'm aware of, though. :-P
+
+-Scott
