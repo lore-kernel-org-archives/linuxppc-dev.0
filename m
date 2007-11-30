@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <jgarzik@pobox.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 16:40:23 +1100
-Subject: [PATCH 1/11] ibm_newemac: Add BCM5248 and Marvell 88E1111 PHY support
+Date: Fri, 30 Nov 2007 16:40:24 +1100
+Subject: [PATCH 2/11] ibm_newemac: Add ET1011c PHY support
 In-Reply-To: <1196401223.5661.297518056501.qpush@grosgo>
-Message-Id: <20071130054126.39BDCDDE0A@ozlabs.org>
+Message-Id: <20071130054126.E3EFADDE0C@ozlabs.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,66 +17,68 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Stefan Roese <sr@denx.de>
 
-This patch adds BCM5248 and Marvell 88E1111 PHY support to NEW EMAC driver.
-These PHY chips are used on PowerPC 440EPx boards.
-The PHY code is based on the previous work by Stefan Roese <sr@denx.de>
+This adds support for the Agere ET1011c PHY as found on the AMCC Taishan
+board.
 
 Signed-off-by: Stefan Roese <sr@denx.de>
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
---- linux.orig/drivers/net/ibm_newemac/phy.c	2007-06-15 21:45:18.000000000 +0400
-+++ linux/drivers/net/ibm_newemac/phy.c	2007-06-15 20:45:15.000000000 +0400
-@@ -306,8 +306,47 @@
- 	.ops		= &cis8201_phy_ops
- };
+ drivers/net/ibm_newemac/phy.c |   37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+
+Index: linux-work/drivers/net/ibm_newemac/phy.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/phy.c	2007-11-08 18:54:12.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/phy.c	2007-11-08 18:54:13.000000000 +1100
+@@ -327,6 +327,42 @@ static int m88e1111_init(struct mii_phy 
+ 	return  0;
+ }
  
-+static struct mii_phy_def bcm5248_phy_def = {
-+
-+	.phy_id		= 0x0143bc00,
-+	.phy_id_mask	= 0x0ffffff0,
-+	.name		= "BCM5248 10/100 SMII Ethernet",
-+	.ops		= &generic_phy_ops
-+};
-+
-+static int m88e1111_init(struct mii_phy *phy)
++static int et1011c_init(struct mii_phy *phy)
 +{
-+	printk("%s: Marvell 88E1111 Ethernet\n", __FUNCTION__);
-+	phy_write(phy, 0x14, 0x0ce3);
-+	phy_write(phy, 0x18, 0x4101);
-+	phy_write(phy, 0x09, 0x0e00);
-+	phy_write(phy, 0x04, 0x01e1);
-+	phy_write(phy, 0x00, 0x9140);
-+	phy_write(phy, 0x00, 0x1140);
++        u16 reg_short;
 +
-+	return  0;
++        reg_short = (u16)(phy_read(phy,0x16));
++        reg_short &= ~(0x7);
++        reg_short |= 0x6;       /* RGMII Trace Delay*/
++        phy_write(phy, 0x16, reg_short);
++
++        reg_short = (u16)(phy_read(phy, 0x17));
++        reg_short &= ~(0x40);
++        phy_write(phy, 0x17, reg_short);
++
++        phy_write(phy,0x1c,0x74f0);
++        return 0;
 +}
 +
-+static struct mii_phy_ops m88e1111_phy_ops = {
-+	.init		= m88e1111_init,
-+	.setup_aneg	= genmii_setup_aneg,
-+	.setup_forced	= genmii_setup_forced,
-+	.poll_link	= genmii_poll_link,
-+	.read_link	= genmii_read_link
++static struct mii_phy_ops et1011c_phy_ops = {
++        .init           = et1011c_init,
++        .setup_aneg     = genmii_setup_aneg,
++        .setup_forced   = genmii_setup_forced,
++        .poll_link      = genmii_poll_link,
++        .read_link      = genmii_read_link
 +};
 +
-+static struct mii_phy_def m88e1111_phy_def = {
-+
-+	.phy_id		= 0x01410CC0,
-+	.phy_id_mask	= 0x0ffffff0,
-+	.name		= "Marvell 88E1111 Ethernet",
-+	.ops		= &m88e1111_phy_ops,
++static struct mii_phy_def et1011c_phy_def = {
++        .phy_id         = 0x0282f000,
++        .phy_id_mask    = 0x0fffff00,
++        .name           = "ET1011C Gigabit Ethernet",
++        .ops            = &et1011c_phy_ops
 +};
 +
- static struct mii_phy_def *mii_phy_table[] = {
- 	&cis8201_phy_def,
-+	&bcm5248_phy_def,
-+	&m88e1111_phy_def,
- 	&genmii_phy_def,
- 	NULL
++
++
++
++
+ static struct mii_phy_ops m88e1111_phy_ops = {
+ 	.init		= m88e1111_init,
+ 	.setup_aneg	= genmii_setup_aneg,
+@@ -344,6 +380,7 @@ static struct mii_phy_def m88e1111_phy_d
  };
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+ 
+ static struct mii_phy_def *mii_phy_table[] = {
++	&et1011c_phy_def,
+ 	&cis8201_phy_def,
+ 	&bcm5248_phy_def,
+ 	&m88e1111_phy_def,
