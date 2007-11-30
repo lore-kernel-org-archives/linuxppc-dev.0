@@ -1,21 +1,18 @@
-Return-Path: <chris.pagnotta@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 74A82DDE2A
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id EC692DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 09:26:28 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: ppcboot and powerpc branch question
-Date: Fri, 30 Nov 2007 14:25:35 -0800
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE48710BA65802@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <20071130221554.3AA0124075@gemini.denx.de>
-References: Your message of "Fri, 30 Nov 2007 14:33:38
-	+0100."<f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>
-	<20071130221554.3AA0124075@gemini.denx.de>
-From: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
-To: "Wolfgang Denk" <wd@denx.de>,
-	"fabien" <fabien.fb@gmail.com>
+	Sat,  1 Dec 2007 09:27:28 +1100 (EST)
+To: Stuart Hodgson <stuart@quadrics.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Semaphores in eldk4.1
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 30 Nov 2007 16:33:30 GMT."
+	<47503B5A.6090604@quadrics.com>
+Date: Fri, 30 Nov 2007 23:27:26 +0100
+Sender: wd@denx.de
+Message-Id: <20071130222726.1E0DB247C1@gemini.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,54 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolgang,
+In message <47503B5A.6090604@quadrics.com> you wrote:
+> 
+> I have been suing the eldk4.1 tool chain for a few months now and have 
 
-This question does pertain to the thread in question, but..
+Please post ELDK related questions on the ELDK mailing list instead,
+see http://lists.denx.de/mailman/listinfo/eldk
 
-I am currently using your ELDK 4.1 Uclibc and have written various
-scripts that allow it to be used with buildroot makefiles. Are you going
-to releasing a newer version anytime soon?
+> The problem I have come up against is related to some of the semaphore 
+> functions in semaphore.h, namely sem_wait, sem_post. This was originally 
+> noticed in a third party driver I am porting from one board to another 
+--------------------------^^^^^^^^
+> but a small test program has shown the same results.
 
-Thanks,
-Chris P.
+What exactly are you talking about? Device driver (i. e. kernel)
+code, or application (i. e. user space) code ?
 
------Original Message-----
-From: linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org]=
+> Calls to these functions on the ppc_82xx platform return -1 with an 
+> error code of 38, in this case meaning  ENOSYS (not implemented). On the 
 
-On Behalf Of Wolfgang Denk
-Sent: Friday, November 30, 2007 2:16 PM
-To: fabien
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ppcboot and powerpc branch question
+Did you enable the CONFIG_SYSVIPC option in your Linux kernel
+configuration?
 
-In message <f8f856500711300533t3bad1c1dxb4ff137534acbccb@mail.gmail.com>
-you wrote:
->=20
-> instead of bd_t struct. I'm a bit disappointed because i also see that
-> older u-boot (in my case
-> ppcboot 1.1.5) aren't capable to pass dts to kernel.
+> ppc_85xx the same program executes fine, thus I conclude that it is 
+> specific to the libc-2.3.5 for ppc_82xx. Has anyone else come across 
+> this problem, I did find one thread but there was no conclusion listed.
 
-PPCBoot was a in a distant  past  before  U-Boot.  Actually,  PPCBoot
-1.1.5 is more than 5 and a half years old. You cannot really expect a
-Neanderthal man to drive a space shuttle.
+There is absolutley no difference between ppc_85xx and ppc_82xx as
+far as library sources or configuration are concerned. The problem is
+most probably in your Linux kernel, I guess.
 
-> Is there a way to keep my old bootloader to boot a powerpc branch
-kernel ?
+> I also can not find anything stating that these functions are not 
+> implemented for the 82xx arch compared with others for the eldk4.1
 
-No. Please use a current U-Boot (i. e. at least U-Boot 1.3.0).
+Provide a test program that fails for yuou, and we can provide much
+better comments.
+
+But please post followups on the ELDK mailing list.
 
 Best regards,
 
 Wolfgang Denk
 
---=20
+-- 
 DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-As in certain cults it is possible to kill a process if you know  its
-true name.                      -- Ken Thompson and Dennis M. Ritchie
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Old programmers never die, they just become managers.
