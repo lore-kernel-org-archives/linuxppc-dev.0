@@ -1,31 +1,20 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB822DDE9E
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:19:32 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAUKJSOL009665
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAUKJSV0494000
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAUKJSAm005505
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
-Date: Fri, 30 Nov 2007 14:17:56 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/24] powerpc: 4xx PCI, PCI-X and PCI-Express support
-	among others
-Message-ID: <20071130141756.3aa3d38b@zod.rchland.ibm.com>
-In-Reply-To: <1196403038.569525.367459803520.qpush@grosgo>
-References: <1196403038.569525.367459803520.qpush@grosgo>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1DD12DDE0A
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:35:44 +1100 (EST)
+Subject: Re: [RFC][PATCH] [POWERPC] Allow caching of kmap_atomic page
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0711300311490.1799@blarg.am.freescale.net>
+References: <Pine.LNX.4.64.0711300311490.1799@blarg.am.freescale.net>
+Content-Type: text/plain
+Date: Sat, 01 Dec 2007 07:35:15 +1100
+Message-Id: <1196454915.13230.90.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,27 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Nov 2007 17:10:38 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> Here's a set of patches that bring PCI, PCI-X and PCI-Express
-> support to 4xx on arch/powerpc. It also changes/fixed various
-> bits and pieces, such as a bit of rework of arch/powerpc/boot
-> 4xx code, adding a couple of new platforms along the way. 
+On Fri, 2007-11-30 at 03:14 -0600, Kumar Gala wrote:
+> Skip updating the kmap_pte and flushing the TLB if the pte we
+> are about to write is the same as the one we wrote last time we
+> called kmap_atomic for this km_type.
 > 
-> There are some issues with the SCSI stack vs. non-coherent
-> DMA that I'm working on fixing separately, and there's a
-> problem I noticed with the e1000 driver vs. 64 bits resources
-> on 32 bits architectures for which I also have a patch that
-> I posted separately. Appart from that, I got it working fine
-> with a USB2 card in an ebony and 2 USB storage devices.
+> Also expose the flags to allow a caller to specify their own
+> flags for things like non-cacheable IO memory.
 > 
-> Some of these patches are _NOT_ yet candidate for merging
-> (mostly the board support ones), but you can review them and
-> Josh can put them in an experimental tree.
+> ---
+> 
+> This is the starts of some work Ben and I were discussion to allow us to
+> use kmap_atomic to access a page size region of PCI CFG space when its
+> provided as direct MMIO.
+> 
+> We also intend to provide a means to preload the TLB for SW managed TLB
+> machines.
 
-I've added these to the 2.6.25-candidates branch in my tree.  Fixed up
-the few conflicts manually.  I'll expect refreshes before merging
-anyway, but I'd like to get these out there for people to play with.
+We probably need to move that outside of highmem though...
 
-josh
+Cheers,
+Ben.
+
+> - k
+> 
+>  include/asm-powerpc/highmem.h |   16 +++++++++++++---
+>  1 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/asm-powerpc/highmem.h b/include/asm-powerpc/highmem.h
+> index f7b21ee..a50bb00 100644
+> --- a/include/asm-powerpc/highmem.h
+> +++ b/include/asm-powerpc/highmem.h
+> @@ -73,10 +73,12 @@ static inline void kunmap(struct page *page)
+>   * be used in IRQ contexts, so in some (very limited) cases we need
+>   * it.
+>   */
+> -static inline void *kmap_atomic(struct page *page, enum km_type type)
+> +static inline void *__kmap_atomic(struct page *page,
+> +				  enum km_type type, unsigned long flags)
+>  {
+>  	unsigned int idx;
+>  	unsigned long vaddr;
+> +	pte_t pte;
+> 
+>  	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
+>  	pagefault_disable();
+> @@ -88,12 +90,20 @@ static inline void *kmap_atomic(struct page *page, enum km_type type)
+>  #ifdef HIGHMEM_DEBUG
+>  	BUG_ON(!pte_none(*(kmap_pte+idx)));
+>  #endif
+> -	set_pte_at(&init_mm, vaddr, kmap_pte+idx, mk_pte(page, kmap_prot));
+> -	flush_tlb_page(NULL, vaddr);
+> +	pte = mk_pte(page, flags);
+> +	if (!pte_same(kmap_pte[idx], pte)) {
+> +		set_pte_at(&init_mm, vaddr, kmap_pte+idx, pte);
+> +		flush_tlb_page(NULL, vaddr);
+> +	}
+> 
+>  	return (void*) vaddr;
+>  }
+> 
+> +static inline void *kmap_atomic(struct page *page, enum km_type type)
+> +{
+> +	return __kmap_atomic(page, type, kmap_prot);
+> +}
+> +
+>  static inline void kunmap_atomic(void *kvaddr, enum km_type type)
+>  {
+>  #ifdef HIGHMEM_DEBUG
