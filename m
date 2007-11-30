@@ -1,26 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id AE1B2DDF5A
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 22:04:50 +1100 (EST)
-Message-ID: <474FEE5D.2030905@ru.mvista.com>
-Date: Fri, 30 Nov 2007 14:05:01 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 2/3] [libata] pata_of_platform: OF-Platform PATA device
-	driver
-References: <20071127153708.GA12490@localhost.localdomain>
-	<20071127153908.GB14183@localhost.localdomain>
-	<20071127212222.GB10829@lixom.net>
-	<200711272233.00456.arnd@arndb.de>
-	<20071128154904.GA20722@localhost.localdomain>
-	<474D9327.9020305@ru.mvista.com> <20071129005440.GA2235@zarina>
-	<474FE332.8080103@ru.mvista.com>
-	<20071130105849.GA10840@localhost.localdomain>
-In-Reply-To: <20071130105849.GA10840@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, cbou@mail.ru, linux-ide@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7447EDDEBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 22:17:01 +1100 (EST)
+Date: Fri, 30 Nov 2007 14:16:38 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Subject: Re: CPM2 USB host driver
+Message-ID: <20071130141638.4e00258d@kernel.crashing.org>
+In-Reply-To: <200711301145.52926.laurentp@cse-semaphore.com>
+References: <200711301145.52926.laurentp@cse-semaphore.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, mike@compulab.co.il
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,40 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Vorontsov wrote:
+On Fri, 30 Nov 2007 11:45:49 +0100
+Laurent Pinchart wrote:
 
->>>Remaining question: any preferred name for that property? pio-mode okay?
->>>It's assuming that PIO6 capable bus supports PIO0 as well, thus no mask.
+> Hi everybody,
+> 
+> Linux USB host support for the CPM, CPM2 and CPM2 pro is far from
+> complete. Many people showed interest on this list (and on
+> linuxppc-embedded) in the past, but nobody managed to complete a
+> driver and get it merged.
+> 
+that is mainly because of its semi-software nature. However, any approach
+would be helpful I beleive. 
 
->>   I've already suggested "generic". A name "simple" also comes to my mind.
+> As I need USB host support on my MPC8248 (CPM2), I decided to scratch
+> the itch and try to get a working driver that could be merged
+> upstream. This mail describes my plans to make sure the code I write
+> will be useful for other people.
+> 
+> The driver will be based on the cpm2usb project
+> (http://cpm2usb.sf.net/). As I don't own any CPM1-based platform, I
+> will convert the driver to use the CPM2 transaction-level interface,
+> thus making it incompatible with the CPM1. CPM1 support could be
+> added back later. There is no planned release date, and more urgent
+> projects could put this development on hold.
+> 
+> Comments are welcome (and contributions too, especially in the form
+> of a working driver :-)).
+> 
 
-> You've misread my question. I didn't ask about driver name, but pio-mode
-> property.
+I may have some WIP material left, will try to dig it out...
 
-    I'm OK with "pio-mode" then. Just don't think it makes much sense in the 
-context of this driver which has no provision for the programming the mode 
-timings (and if there were some provision, the *generic* platform driver 
-couldn't handle it anyway).
+> Best regards,
+> 
 
-> As for the driver name, it doesn't matter at all, as I've said already:
-> it's Linux specific anyway, and another compatible properties could be
-> added at any time, to a device tree and/or to the OF driver itself (if
-> some real OpenFirmware will pass some meaningful compatible property
-> that we'll have to match in that driver).
 
-> "generic" name is also bad one, it's confusing wrt ata_generic.c
-> driver (PCI).
-
-    The "compatible" property doesn't have to contain the driver name, so 
-there should be no confusion with the driver names. It's just different name 
-spaces. :-)
-
-> "simple" name doesn't tell anything at all. So, I'd rather stick with -platform name.
-
-    Well, those two should be "generic-ata" and "simple-ata" of course. And it 
-*does* tell that the driver just provides taskfile control, without the 
-transfer timing control and other fancy stuff...
-
-> Thanks,
-
-MBR, Sergei
+-- 
+Sincerely, Vitaly
