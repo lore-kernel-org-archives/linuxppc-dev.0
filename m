@@ -1,29 +1,28 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8F1ADDE37
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:17:42 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAUKHdSd025471
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:17:39 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAUKHcj6108902
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 13:17:38 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAUKHcm6004187
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 13:17:38 -0700
-Date: Fri, 30 Nov 2007 14:16:06 -0600
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB822DDE9E
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:19:32 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAUKJSOL009665
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lAUKJSV0494000
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lAUKJSAm005505
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 15:19:28 -0500
+Date: Fri, 30 Nov 2007 14:17:56 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 24/24] powerpc: Base support for 440SPe "Katmai" eval board
-Message-ID: <20071130141606.725e919b@zod.rchland.ibm.com>
-In-Reply-To: <20071130061209.497F3DE03A@ozlabs.org>
+Subject: Re: [PATCH 0/24] powerpc: 4xx PCI, PCI-X and PCI-Express support
+	among others
+Message-ID: <20071130141756.3aa3d38b@zod.rchland.ibm.com>
+In-Reply-To: <1196403038.569525.367459803520.qpush@grosgo>
 References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130061209.497F3DE03A@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -36,22 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Nov 2007 17:11:06 +1100
+On Fri, 30 Nov 2007 17:10:38 +1100
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> This adds base support for the Katmai board, including PCI-X and
-> PCI-Express (but no RTC, nvram, etc... yet).
+> Here's a set of patches that bring PCI, PCI-X and PCI-Express
+> support to 4xx on arch/powerpc. It also changes/fixed various
+> bits and pieces, such as a bit of rework of arch/powerpc/boot
+> 4xx code, adding a couple of new platforms along the way. 
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
+> There are some issues with the SCSI stack vs. non-coherent
+> DMA that I'm working on fixing separately, and there's a
+> problem I noticed with the e1000 driver vs. 64 bits resources
+> on 32 bits architectures for which I also have a patch that
+> I posted separately. Appart from that, I got it working fine
+> with a USB2 card in an ebony and 2 USB storage devices.
 > 
-> As for Taishan, the bootwrapper code can be simplified. In fact,
-> we probably don't need to probe clocks & memsize off the chip and
-> just trust what uboot tells us.
-> 
->  arch/powerpc/boot/44x.h             |    1 
->  arch/powerpc/boot/Makefile          |    7 
+> Some of these patches are _NOT_ yet candidate for merging
+> (mostly the board support ones), but you can review them and
+> Josh can put them in an experimental tree.
 
-Same small conflict as taishan.
+I've added these to the 2.6.25-candidates branch in my tree.  Fixed up
+the few conflicts manually.  I'll expect refreshes before merging
+anyway, but I'd like to get these out there for people to play with.
 
 josh
