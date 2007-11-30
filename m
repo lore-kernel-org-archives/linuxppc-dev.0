@@ -1,34 +1,16 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CE182DDE19
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 03:11:43 +1100 (EST)
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
-	[9.17.195.107])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lAUGBYHD011581
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 11:11:34 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lAUGBWYS195998
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 09:11:32 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lAUGBW3i011399
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 09:11:32 -0700
-Subject: Re: [PATCH] powerpc: fix os-term usage on kernel panic
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20071130165651.b1b7c16c.sfr@canb.auug.org.au>
-References: <20071120012815.GB7969@austin.ibm.com>
-	<1196208960.11297.26.camel@farscape.rchland.ibm.com>
-	<20071130165651.b1b7c16c.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Fri, 30 Nov 2007 10:11:32 -0600
-Message-Id: <1196439093.11297.52.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <mail4mz@gmail.com>
+Received: from rv-out-0910.google.com (rv-out-0910.google.com [209.85.198.185])
+	by ozlabs.org (Postfix) with ESMTP id 9868ADDE37
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 05:33:47 +1100 (EST)
+Received: by rv-out-0910.google.com with SMTP id c27so2023087rvf
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2007 10:33:46 -0800 (PST)
+Message-ID: <5c9cd53b0711301033w4b98a35coc275298d288973cb@mail.gmail.com>
+Date: Fri, 30 Nov 2007 13:33:46 -0500
+From: "mike zheng" <mail4mz@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: PCI configuration registers(BARs)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,40 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi All,
 
-On Fri, 2007-11-30 at 16:56 +1100, Stephen Rothwell wrote:
-> On Tue, 27 Nov 2007 18:15:59 -0600 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
-> >
-> > (resending with the proper "from" addr this time). 
-> > 
-> > 
-> > I'm seeing some funky behavior on power5/power6 partitions with this
-> > patch.    A "/sbin/reboot" is now behaving much more like a
-> > "/sbin/halt".
-> > 
-> > Anybody else seeing this, or is it time for me to call an exorcist for
-> > my boxes? 
-> 
-> On my Power5+ box, I get an error (code B200A101) logged every time I
-> reboot and about half the time, the machine does not reboot but need to
-> be power cycled. Removing the cited patch makes the error not by logged
-> and reboots work fine.
-> 
-> Paul and I have been having a look at this and Paul has asked the
-> architects for clarification of when os-term should be used.
+I set PCI configuration registers(BARs) of a PCI adapter as following in Uboot:
 
-The architects will have the correct answer of course.   
 
->From my reading of the papr, I've got the impression that there are two
-possibilities.    
+  base address 0 =              0xf4000001
+  base address 1 =              0xf4000041
+  base address 2 =              0xf4000081
+  base address 3 =              0xa0000000
+  base address 4 =              0xa0020000
+  base address 5 =              0x00000000
 
-First, the os-term never returns, and it's up to the service processor
-to do whatever it's going to do.  (call home, dump, something else).
-Nothing we can do there. 
+However when I start Linux2.4 kernel, the same adapter's PCI
+configuration registers have following values:
+BaseAddr[0]=0x3ffffc0
+BaseAddr[1]=0x3ffffb0
+BaseAddr[2]=0x3ffff00
+    After ioremap BaseAddr[3]=0xa1002000
+BaseAddr[3]=0xa1002000
+    After ioremap BaseAddr[4]=0xa1004000
+BaseAddr[4]=0xa1004000
+BaseAddr[5]=0x0
 
-Second, os-term returns, and it's up to the OS to call into power-off or
-system-reboot.
-I think this is more likely.   I havn't followed the path back from
-machine_restart to see exactly how we got there, but probably means a
-bit more logic to decide whether to call into rtas_restart() or
-pSeries_power_off() after the call to machine_shutdown.
+This is a working system on MPC8548, everything including PCI adapter
+works fine. My question is why the values are different in Uboot and
+Linux? The value under Uboot is reasonable, since the PCI outbound
+window is set up as 0xA0000000 and 0XF4000000. In addition, the value
+seems falling into the outbound window after the ioremap() is called
+on BAR3 and BAR4. The ioremap() will failed if I try to convert BAR0,
+BAR1, BAR2.
+
+Thanks in advance,
+
+Mike
