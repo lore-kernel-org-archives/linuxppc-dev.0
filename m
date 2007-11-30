@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <jgarzik@pobox.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 16:40:26 +1100
-Subject: [PATCH 4/11] ibm_newemac: Workaround reset timeout when no link
+Date: Fri, 30 Nov 2007 16:40:28 +1100
+Subject: [PATCH 5/11] ibm_newemac: Cleanup/Fix RGMII MDIO support detection
 In-Reply-To: <1196401223.5661.297518056501.qpush@grosgo>
-Message-Id: <20071130054129.C7EADDDE9E@ozlabs.org>
+Message-Id: <20071130054130.CD3D7DDECB@ozlabs.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,75 +15,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With some PHYs, when the link goes away, the EMAC reset fails due
-to the loss of the RX clock I believe.
-
-The old EMAC driver worked around that using some internal chip-specific
-clock force bits that are different on various 44x implementations.
-
-This is an attempt at doing it differently, by avoiding the reset when
-there is no link, but forcing loopback mode instead. It seems to work
-on my Taishan 440GX based board so far.
+More than just "AXON" version of EMAC RGMII supports MDIO, so replace
+the current test with a generic property in the device-tree that
+indicates such support.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Acked-by: Stefan Roese <sr@denx.de>
 ---
 
- drivers/net/ibm_newemac/core.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ arch/powerpc/boot/dts/sequoia.dts |    1 +
+ drivers/net/ibm_newemac/rgmii.c   |   20 +++++++++++---------
+ drivers/net/ibm_newemac/rgmii.h   |    5 +++--
+ 3 files changed, 15 insertions(+), 11 deletions(-)
 
-Index: linux-work/drivers/net/ibm_newemac/core.c
+Index: linux-work/drivers/net/ibm_newemac/rgmii.c
 ===================================================================
---- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-20 14:46:51.000000000 +1100
-+++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-20 14:46:58.000000000 +1100
-@@ -464,26 +464,34 @@ static int emac_configure(struct emac_in
- {
- 	struct emac_regs __iomem *p = dev->emacp;
- 	struct net_device *ndev = dev->ndev;
--	int tx_size, rx_size;
-+	int tx_size, rx_size, link = netif_carrier_ok(dev->ndev);
- 	u32 r, mr1 = 0;
+--- linux-work.orig/drivers/net/ibm_newemac/rgmii.c	2007-11-12 10:55:54.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/rgmii.c	2007-11-12 10:56:56.000000000 +1100
+@@ -140,7 +140,7 @@ void rgmii_get_mdio(struct of_device *of
  
- 	DBG(dev, "configure" NL);
+ 	RGMII_DBG2(dev, "get_mdio(%d)" NL, input);
  
--	if (emac_reset(dev) < 0)
-+	if (!link) {
-+		out_be32(&p->mr1, in_be32(&p->mr1)
-+			 | EMAC_MR1_FDE | EMAC_MR1_ILE);
-+		udelay(100);
-+	} else if (emac_reset(dev) < 0)
- 		return -ETIMEDOUT;
+-	if (dev->type != RGMII_AXON)
++	if (!(dev->flags & EMAC_RGMII_FLAG_HAS_MDIO))
+ 		return;
  
- 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH))
- 		tah_reset(dev->tah_dev);
+ 	mutex_lock(&dev->lock);
+@@ -161,7 +161,7 @@ void rgmii_put_mdio(struct of_device *of
  
--	DBG(dev, " duplex = %d, pause = %d, asym_pause = %d\n",
--	    dev->phy.duplex, dev->phy.pause, dev->phy.asym_pause);
-+	DBG(dev, " link = %d duplex = %d, pause = %d, asym_pause = %d\n",
-+	    link, dev->phy.duplex, dev->phy.pause, dev->phy.asym_pause);
+ 	RGMII_DBG2(dev, "put_mdio(%d)" NL, input);
  
- 	/* Default fifo sizes */
- 	tx_size = dev->tx_fifo_size;
- 	rx_size = dev->rx_fifo_size;
+-	if (dev->type != RGMII_AXON)
++	if (!(dev->flags & EMAC_RGMII_FLAG_HAS_MDIO))
+ 		return;
  
-+	/* No link, force loopback */
-+	if (!link)
-+		mr1 = EMAC_MR1_FDE | EMAC_MR1_ILE;
+ 	fer = in_be32(&p->fer);
+@@ -250,11 +250,13 @@ static int __devinit rgmii_probe(struct 
+ 		goto err_free;
+ 	}
+ 
+-	/* Check for RGMII type */
++	/* Check for RGMII flags */
++	if (of_get_property(ofdev->node, "has-mdio", NULL))
++		dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
 +
- 	/* Check for full duplex */
--	if (dev->phy.duplex == DUPLEX_FULL)
-+	else if (dev->phy.duplex == DUPLEX_FULL)
- 		mr1 |= EMAC_MR1_FDE | EMAC_MR1_MWSW_001;
++	/* CAB lacks the right properties, fix this up */
+ 	if (of_device_is_compatible(ofdev->node, "ibm,rgmii-axon"))
+-		dev->type = RGMII_AXON;
+-	else
+-		dev->type = RGMII_STANDARD;
++		dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
  
- 	/* Adjust fifo sizes, mr1 and timeouts based on link speed */
-@@ -1165,9 +1173,9 @@ static void emac_link_timer(struct work_
- 		link_poll_interval = PHY_POLL_LINK_ON;
- 	} else {
- 		if (netif_carrier_ok(dev->ndev)) {
--			emac_reinitialize(dev);
- 			netif_carrier_off(dev->ndev);
- 			netif_tx_disable(dev->ndev);
-+			emac_reinitialize(dev);
- 			emac_print_link_status(dev);
- 		}
- 		link_poll_interval = PHY_POLL_LINK_OFF;
+ 	DBG2(dev, " Boot FER = 0x%08x, SSR = 0x%08x\n",
+ 	     in_be32(&dev->base->fer), in_be32(&dev->base->ssr));
+@@ -263,9 +265,9 @@ static int __devinit rgmii_probe(struct 
+ 	out_be32(&dev->base->fer, 0);
+ 
+ 	printk(KERN_INFO
+-	       "RGMII %s %s initialized\n",
+-	       dev->type == RGMII_STANDARD ? "standard" : "axon",
+-	       ofdev->node->full_name);
++	       "RGMII %s initialized with%s MDIO support\n",
++	       ofdev->node->full_name,
++	       (dev->flags & EMAC_RGMII_FLAG_HAS_MDIO) ? "" : "out");
+ 
+ 	wmb();
+ 	dev_set_drvdata(&ofdev->dev, dev);
+Index: linux-work/drivers/net/ibm_newemac/rgmii.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/rgmii.h	2007-11-12 10:55:54.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/rgmii.h	2007-11-12 10:56:56.000000000 +1100
+@@ -35,8 +35,9 @@ struct rgmii_regs {
+ struct rgmii_instance {
+ 	struct rgmii_regs __iomem	*base;
+ 
+-	/* Type of RGMII bridge */
+-	int				type;
++	/* RGMII bridge flags */
++	int				flags;
++#define EMAC_RGMII_FLAG_HAS_MDIO	0x00000001
+ 
+ 	/* Only one EMAC whacks us at a time */
+ 	struct mutex			lock;
+Index: linux-work/arch/powerpc/boot/dts/sequoia.dts
+===================================================================
+--- linux-work.orig/arch/powerpc/boot/dts/sequoia.dts	2007-11-12 10:58:38.000000000 +1100
++++ linux-work/arch/powerpc/boot/dts/sequoia.dts	2007-11-12 10:58:47.000000000 +1100
+@@ -245,6 +245,7 @@
+ 				device_type = "rgmii-interface";
+ 				compatible = "ibm,rgmii-440epx", "ibm,rgmii";
+ 				reg = <ef601000 8>;
++				has-mdio;
+ 			};
+ 
+ 			EMAC0: ethernet@ef600e00 {
