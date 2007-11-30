@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <jgarzik@pobox.com>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 30 Nov 2007 16:40:34 +1100
-Subject: [PATCH 10/11] ibm_newemac: Call dev_set_drvdata() before tah_reset()
+Date: Fri, 30 Nov 2007 16:40:35 +1100
+Subject: [PATCH 11/11] emac: Update file headers copyright notices
 In-Reply-To: <1196401223.5661.297518056501.qpush@grosgo>
-Message-Id: <20071130054137.27959DDEE4@ozlabs.org>
+Message-Id: <20071130054138.69417DDECF@ozlabs.org>
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,31 +15,266 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Valentine Barshak <vbarshak@ru.mvista.com>
+This updates the copyright notices of the new EMAC driver to
+avoid confusion as who is to be blamed for new bugs.
 
-The patch moves dev_set_drvdata(&ofdev->dev, dev) up before tah_reset(ofdev)
-is called to avoid a NULL pointer dereference, since tah_reset uses drvdata.
-
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
+ 
+ drivers/net/ibm_newemac/core.c  |    5 +++++
+ drivers/net/ibm_newemac/core.h  |    5 +++++
+ drivers/net/ibm_newemac/debug.c |    5 +++++
+ drivers/net/ibm_newemac/debug.h |    5 +++++
+ drivers/net/ibm_newemac/emac.h  |    5 +++++
+ drivers/net/ibm_newemac/mal.c   |    5 +++++
+ drivers/net/ibm_newemac/mal.h   |    5 +++++
+ drivers/net/ibm_newemac/phy.c   |    5 +++++
+ drivers/net/ibm_newemac/phy.h   |    5 +++++
+ drivers/net/ibm_newemac/rgmii.c |    5 +++++
+ drivers/net/ibm_newemac/rgmii.h |    5 +++++
+ drivers/net/ibm_newemac/tah.c   |    5 +++++
+ drivers/net/ibm_newemac/tah.h   |    5 +++++
+ drivers/net/ibm_newemac/zmii.c  |    5 +++++
+ drivers/net/ibm_newemac/zmii.h  |    5 +++++
+ 15 files changed, 75 insertions(+)
 
-diff -pruN linux-2.6.orig/drivers/net/ibm_newemac/tah.c linux-2.6/drivers/net/ibm_newemac/tah.c
---- linux-2.6.orig/drivers/net/ibm_newemac/tah.c	2007-11-23 21:27:57.000000000 +0300
-+++ linux-2.6/drivers/net/ibm_newemac/tah.c	2007-11-23 21:35:12.000000000 +0300
-@@ -116,13 +116,14 @@ static int __devinit tah_probe(struct of
- 		goto err_free;
- 	}
- 
-+	dev_set_drvdata(&ofdev->dev, dev);
-+
- 	/* Initialize TAH and enable IPv4 checksum verification, no TSO yet */
- 	tah_reset(ofdev);
- 
- 	printk(KERN_INFO
- 	       "TAH %s initialized\n", ofdev->node->full_name);
- 	wmb();
--	dev_set_drvdata(&ofdev->dev, dev);
- 
- 	return 0;
- 
+Index: linux-work/drivers/net/ibm_newemac/core.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/core.c	2007-11-30 15:35:50.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/core.c	2007-11-30 16:03:30.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/core.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/core.h	2007-11-30 15:35:50.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/core.h	2007-11-30 16:03:23.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/debug.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/debug.c	2007-11-30 15:35:50.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/debug.c	2007-11-30 16:03:18.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, debug print routines.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/debug.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/debug.h	2007-11-30 15:35:50.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/debug.h	2007-11-30 16:03:15.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, debug print routines.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/emac.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/emac.h	2007-11-30 15:35:50.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/emac.h	2007-11-30 16:03:09.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Register definitions for PowerPC 4xx on-chip ethernet contoller
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/mal.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/mal.c	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/mal.c	2007-11-30 16:03:02.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Memory Access Layer (MAL) support
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/mal.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/mal.h	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/mal.h	2007-11-30 16:02:55.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Memory Access Layer (MAL) support
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/phy.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/phy.c	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/phy.c	2007-11-30 16:02:47.000000000 +1100
+@@ -8,6 +8,11 @@
+  * This file should be shared with other drivers or eventually
+  * merged as the "low level" part of miilib
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * (c) 2003, Benjamin Herrenscmidt (benh@kernel.crashing.org)
+  * (c) 2004-2005, Eugene Surovegin <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/phy.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/phy.h	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/phy.h	2007-11-30 16:02:32.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, PHY support
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  * February 2003
+  *
+Index: linux-work/drivers/net/ibm_newemac/rgmii.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/rgmii.c	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/rgmii.c	2007-11-30 16:02:23.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, RGMII bridge support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/rgmii.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/rgmii.h	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/rgmii.h	2007-11-30 16:02:19.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, RGMII bridge support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Based on ocp_zmii.h/ibm_emac_zmii.h
+  * Armin Kuster akuster@mvista.com
+  *
+Index: linux-work/drivers/net/ibm_newemac/tah.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/tah.c	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/tah.c	2007-11-30 16:02:11.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, TAH support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright 2004 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
+Index: linux-work/drivers/net/ibm_newemac/tah.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/tah.h	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/tah.h	2007-11-30 16:02:06.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, TAH support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright 2004 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
+Index: linux-work/drivers/net/ibm_newemac/zmii.c
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/zmii.c	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/zmii.c	2007-11-30 16:01:53.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, ZMII bridge support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
+Index: linux-work/drivers/net/ibm_newemac/zmii.h
+===================================================================
+--- linux-work.orig/drivers/net/ibm_newemac/zmii.h	2007-11-30 15:35:51.000000000 +1100
++++ linux-work/drivers/net/ibm_newemac/zmii.h	2007-11-30 16:01:33.000000000 +1100
+@@ -3,6 +3,11 @@
+  *
+  * Driver for PowerPC 4xx on-chip ethernet controller, ZMII bridge support.
+  *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * Based on the arch/ppc version of the driver:
++ *
+  * Copyright (c) 2004, 2005 Zultys Technologies.
+  * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
+  *
