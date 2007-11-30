@@ -1,19 +1,18 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 501E8DDE02
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
+	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 7719BDDEBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 05:11:57 +1100 (EST)
-Message-ID: <47505271.8030102@anagramm.de>
-Date: Fri, 30 Nov 2007 19:12:01 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Sat,  1 Dec 2007 05:16:56 +1100 (EST)
+Message-ID: <47505206.9080605@qstreams.com>
+Date: Fri, 30 Nov 2007 13:10:14 -0500
+From: Ben Warren <bwarren@qstreams.com>
 MIME-Version: 1.0
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-References: <474DB27C.7020909@anagramm.de>	<20071128194321.0804b3aa@i1501.lan.towertech.it>	<474F1B25.8080508@anagramm.de>	<20071129211912.46da8f5b@i1501.lan.towertech.it>	<474FEE20.6070606@anagramm.de>
-	<20071130122055.729dd3f8@i1501.lan.towertech.it>
-In-Reply-To: <20071130122055.729dd3f8@i1501.lan.towertech.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+To: Stuart Hodgson <stuart@quadrics.com>
+Subject: Re: Semaphores in eldk4.1
+References: <47503B5A.6090604@quadrics.com>
+In-Reply-To: <47503B5A.6090604@quadrics.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,91 +23,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, Alessandro!
+HI Stuart,
 
-Alessandro Zummo schrieb:
-> On Fri, 30 Nov 2007 12:04:00 +0100
-> Clemens Koller <clemens.koller@anagramm.de> wrote:
-> 
->> Modular doesn't make sense to me, because the filesystem check starts
->> to complain when last mount time was way to far in the past or in
->> the future. But I will try...
-> 
->  It's just to see if there's any timing issue like module-coming-up-before-bus-and/or-rtc.
->  it should work anyway, but who knows...
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ modprobe rtc-ds1307
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-rtc_ds1307              6944  0
-i2c_core               29936  1 rtc_ds1307
-rtc_core               24248  1 rtc_ds1307
-rtc_lib                 3456  2 rtc_ds1307,rtc_core
-
-i2c_core doesn't pull in i2c_mpc (the MPC107/85xx i2c driver)!
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ modprobe i2c-mpc
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-i2c_mpc                 8128  0
-rtc_ds1307              6944  0
-i2c_core               29936  2 i2c_mpc,rtc_ds1307
-rtc_core               24248  1 rtc_ds1307
-rtc_lib                 3456  2 rtc_ds1307,rtc_core
-
-it's still unused.
-Doing it the other way around:
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ modprobe i2c-mpc
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-i2c_mpc                 8128  0
-i2c_core               29936  1 i2c_mpc
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ modprobe rtc-ds1307
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/rtc$ lsmod
-Module                  Size  Used by
-rtc_ds1307              6944  0
-rtc_core               24248  1 rtc_ds1307
-rtc_lib                 3456  2 rtc_ds1307,rtc_core
-i2c_mpc                 8128  0
-i2c_core               29936  2 rtc_ds1307,i2c_mpc
-
-root@fox_1:/lib/modules/2.6.24-rc3-ge1cca7e8/kernel/drivers/i2c/busses$ cd /dev
-
-root@fox_1:/dev$ ls -la r*
-crw-rw-rw- 1 root root 1, 8 Jan  1  1970 random
-
-
-I guess I'll have to dig in the code now since this is a
-100% road block for my project. :-(
-
-Does it make sense to pickup some I2C people here?
-Same story, next week... Have a nice weekend.
-
-If you come up with some idea / patches, still let me know,
-I'll be able to login remotely.
-
-Thank you,
-Regards,
-
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Stuart Hodgson wrote:
+> Hi,
+>
+> I have been suing the eldk4.1 tool chain for a few months now and have 
+> not not encountered any problems with building until now. I build for 
+> two slightly different archs, ppc_85xx and ppx_82xx.
+>
+> The problem I have come up against is related to some of the semaphore 
+> functions in semaphore.h, namely sem_wait, sem_post. This was originally 
+> noticed in a third party driver I am porting from one board to another 
+> but a small test program has shown the same results.
+>
+> Calls to these functions on the ppc_82xx platform return -1 with an 
+> error code of 38, in this case meaning  ENOSYS (not implemented). On the 
+> ppc_85xx the same program executes fine, thus I conclude that it is 
+> specific to the libc-2.3.5 for ppc_82xx. Has anyone else come across 
+> this problem, I did find one thread but there was no conclusion listed.
+>
+>   
+These work fine for me with ppc_6xx architecture and ELDK 4.1, although 
+they didn't with ELDK 4.0. In that case, I was getting ENOSYS on 
+sem_open() and sem_init(). Do these functions return 0 for you? I assume 
+you're using a kernel that supports POSIX semaphores (I think that 
+started at 2.6.12) and that you're using the glibc version of ELDK and 
+not ulibc.
+> I also can not find anything stating that these functions are not 
+> implemented for the 82xx arch compared with others for the eldk4.1
+>
+> Thanks
+>
+> Stuart
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
+regards,
+Ben
