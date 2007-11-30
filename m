@@ -1,24 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18263DDE0D
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 08:45:43 +1100 (EST)
-Subject: Re: [PATCH 18/24] powerpc: Base support for 440GX Taishan eval board
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071130153242.6ea7e5ae@zod.rchland.ibm.com>
-References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130061203.B6239DDED7@ozlabs.org>
-	<20071130140825.67721825@zod.rchland.ibm.com>
-	<1196456229.13230.102.camel@pasglop>
-	<20071130153242.6ea7e5ae@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Sat, 01 Dec 2007 08:44:41 +1100
-Message-Id: <1196459081.13230.106.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	by ozlabs.org (Postfix) with ESMTP id 5CEA3DDE17
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 08:56:15 +1100 (EST)
+Message-Id: <EBE86B51-C550-47BA-8A71-1F7284E09F0E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: benh@kernel.crashing.org
+In-Reply-To: <1196456356.13230.104.camel@pasglop>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH 2/11] ibm_newemac: Add ET1011c PHY support
+Date: Fri, 30 Nov 2007 15:56:09 -0600
+References: <1196401223.5661.297518056501.qpush@grosgo>
+	<20071130054126.E3EFADDE0C@ozlabs.org>
+	<20071130142904.GC3117@lixom.net>
+	<1196456356.13230.104.camel@pasglop>
+Cc: Olof Johansson <olof@lixom.net>, netdev@vger.kernel.org, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +28,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-11-30 at 15:32 -0600, Josh Boyer wrote:
-> On Sat, 01 Dec 2007 07:57:09 +1100
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > 
-> > On Fri, 2007-11-30 at 14:08 -0600, Josh Boyer wrote:
-> > > On Fri, 30 Nov 2007 17:11:01 +1100
-> > > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > > 
-> > > > From: Hugh Blemings <hugh@blemings.org>
-> > > > 
-> > > > 
-> > > > Signed-off-by: Hugh Blemings <hugh@blemings.org>
-> > > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > > ---
-> > > > 
-> > > > This needs a bit of cleanup still, probably not to be merged as-is
-> > > > just yet (like using mtdcri/mfdcri for CPR access).
-> > > > 
-> > > >  arch/powerpc/Kconfig.debug           |    6 
-> > > >  arch/powerpc/boot/44x.h              |    1 
-> > > >  arch/powerpc/boot/Makefile           |    7 
-> > > 
-> > > Small conflict in the Makefile keeps this from applying cleanly.
-> > 
-> > Can you tell me more ? doesn't conflict here.
-> 
-> You have cuImage.bamboo with a comment in front of it.
+On Nov 30, 2007, at 2:59 PM, Benjamin Herrenschmidt wrote:
 
-Oh... yeah, ok, my bad, I see where that comes from. I'll fix it up.
+>
+> On Fri, 2007-11-30 at 08:29 -0600, Olof Johansson wrote:
+>> Hi,
+>>
+>> On Fri, Nov 30, 2007 at 04:40:24PM +1100, Benjamin Herrenschmidt  
+>> wrote:
+>>
+>>> This adds support for the Agere ET1011c PHY as found on the AMCC  
+>>> Taishan
+>>> board.
+>>
+>> The whole patch has whitespace messed up (tabs vs spaces).
+>
+> Thanks for noticing it on the ...3rd time those are sent to the  
+> list...
 
-Cheers,
-Ben.
+Clearly if you used checkpatch.pl you'd have noticed this by now. :)
+
+- k
