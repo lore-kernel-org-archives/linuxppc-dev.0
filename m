@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11703DDE09
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:57:50 +1100 (EST)
-Subject: Re: [PATCH 15/24] powerpc: early debug forces console log level to max
+	by ozlabs.org (Postfix) with ESMTP id 835B1DDE3E
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 07:58:24 +1100 (EST)
+Subject: Re: [PATCH 18/24] powerpc: Base support for 440GX Taishan eval board
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: T Ziomek <ctz001@email.mot.com>
-In-Reply-To: <Pine.LNX.4.64.0711301306520.5450@gauley.ddna.labs.mot.com>
-References: <20071130061200.4BAF9DDFAE@ozlabs.org>
-	<Pine.LNX.4.64.0711301306520.5450@gauley.ddna.labs.mot.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+In-Reply-To: <20071130140825.67721825@zod.rchland.ibm.com>
+References: <1196403038.569525.367459803520.qpush@grosgo>
+	<20071130061203.B6239DDED7@ozlabs.org>
+	<20071130140825.67721825@zod.rchland.ibm.com>
 Content-Type: text/plain
-Date: Sat, 01 Dec 2007 07:56:25 +1100
-Message-Id: <1196456185.13230.100.camel@pasglop>
+Date: Sat, 01 Dec 2007 07:57:09 +1100
+Message-Id: <1196456229.13230.102.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -26,27 +27,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Fri, 2007-11-30 at 13:10 -0600, T Ziomek wrote:
-> > This patch makes the early debug option force the console loglevel
-> > to the max. The early debug option is meant to catch messages very
-> > early in the kernel boot process, in many cases, before the kernel
-> > has a chance to parse the "debug" command line argument. Thus it
-> > makes sense when CONFIG_PPC_EARLY_DEBUG is set, to force the console
-> > log level to the max at boot time.
->   . . .
-> > +#ifdef CONFIG_PPC_EARLY_DEBUG
-> > +     console_loglevel = 10;
-> > +#endif
-> > }
+On Fri, 2007-11-30 at 14:08 -0600, Josh Boyer wrote:
+> On Fri, 30 Nov 2007 17:11:01 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> The change makes sense, but wouldn't it also make sense to note it in
-> arch/powerpc/Kconfig.debug?  Otherwise it's really hard to figure out
-> why,
-> after bringing up a new board, removing "debug" from the kernel cmd
-> line
-> does, well, nothing.
+> > From: Hugh Blemings <hugh@blemings.org>
+> > 
+> > 
+> > Signed-off-by: Hugh Blemings <hugh@blemings.org>
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > This needs a bit of cleanup still, probably not to be merged as-is
+> > just yet (like using mtdcri/mfdcri for CPR access).
+> > 
+> >  arch/powerpc/Kconfig.debug           |    6 
+> >  arch/powerpc/boot/44x.h              |    1 
+> >  arch/powerpc/boot/Makefile           |    7 
+> 
+> Small conflict in the Makefile keeps this from applying cleanly.
 
-Possibly, though you aren't supposed to leave EARLY_DEBUG enabled
-once you are done debugging :-)
+Can you tell me more ? doesn't conflict here.
 
 Ben.
