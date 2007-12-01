@@ -1,18 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DA46CDDDF7
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:17:26 +1100 (EST)
-Date: Sat, 1 Dec 2007 15:21:01 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] [PATCH] pasemi: NMI support with MPIC
-Message-ID: <20071201212101.GA29428@lixom.net>
-References: <20071201182841.GA25103@lixom.net>
-	<1196541525.13230.144.camel@pasglop>
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD130DDDFE
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:33:59 +1100 (EST)
+Message-ID: <4751D340.6020204@pobox.com>
+Date: Sat, 01 Dec 2007 16:33:52 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196541525.13230.144.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 1/3][RESEND] phylib: add PHY interface modes for internal
+	delay for tx and rx only
+References: <20071126161748.9671b828.kim.phillips@freescale.com>
+In-Reply-To: <20071126161748.9671b828.kim.phillips@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 02, 2007 at 07:38:45AM +1100, Benjamin Herrenschmidt wrote:
+Kim Phillips wrote:
+> Allow phylib specification of cases where hardware needs to configure
+> PHYs for Internal Delay only on either RX or TX (not both).
 > 
-> On Sat, 2007-12-01 at 12:28 -0600, Olof Johansson wrote:
-> > Some PWRficient-based boards have a NMI button that's wired up to a GPIO
-> > as interrupt source. By configuring the openpic accordingly, these get
-> > delivered as a machine check with high priority, instead of as an external
-> > interrupt.
-> > 
-> > The device tree contains a property "nmi-source" in the openpic node
-> > for these systems, and it's the (hwirq) source for the input.
-> > 
-> > Also, for these interrupts, the IACK is read from another register than
-> > the regular (MCACK), but they are EOI'd as usual. So implement said
-> > function for the mpic driver.
-> > 
-> > Finally, move a couple of external function defines to include/ instead
-> > of local under sysdev. Being able to mask/unmask and eoi directly saves
-> > us from setting up a dummy irq handler that will never be called.
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> Tested-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Acked-by: Li Yang <leoli@freescale.com>
+> ---
+>  include/linux/phy.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> It's interesting how creative implementors are with MPICs :-)
+> diff --git a/include/linux/phy.h b/include/linux/phy.h
+> index f0742b6..e10763d 100644
+> --- a/include/linux/phy.h
+> +++ b/include/linux/phy.h
+> @@ -58,6 +58,8 @@ typedef enum {
+>  	PHY_INTERFACE_MODE_RMII,
+>  	PHY_INTERFACE_MODE_RGMII,
+>  	PHY_INTERFACE_MODE_RGMII_ID,
+> +	PHY_INTERFACE_MODE_RGMII_RXID,
+> +	PHY_INTERFACE_MODE_RGMII_TXID,
+>  	PHY_INTERFACE_MODE_RTBI
+>  } phy_interface_t;
 
-:-)
-
-> Looks allright to me but I haven't tested for regressions.
-
-I've build tested all platforms, and I don't expect any runtime changes
-for others since they're not executing the new paths.
-
-
-Thanks,
-
--Olof
+applied 1-3
