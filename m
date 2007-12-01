@@ -1,22 +1,20 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48509DDE07
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 09:22:53 +1100 (EST)
-Date: Sun, 2 Dec 2007 01:22:35 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: cbou@mail.ru
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
-	layer functionality
-Message-ID: <20071202012235.4ad9abc3@kernel.crashing.org>
-In-Reply-To: <20071201213403.GA2350@zarina>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	<47516646.9000803@scram.de> <20071201213403.GA2350@zarina>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 68974DDF4B
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 09:54:56 +1100 (EST)
+Message-ID: <4751E639.8090308@garzik.org>
+Date: Sat, 01 Dec 2007 17:54:49 -0500
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 0/3] OF-platform PATA driver
+References: <20071127153708.GA12490@localhost.localdomain>
+In-Reply-To: <20071127153708.GA12490@localhost.localdomain>
+Content-Type: text/plain; charset=utf8; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-ide@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2 Dec 2007 00:34:03 +0300
 Anton Vorontsov wrote:
-
-> > If i understand your code correctly, you seem to rely on the fact 
-> > that fixed_phy_add() is called before the fixed MDIO bus is scanned
-> > for devices.  
+> Hi all,
 > 
-> Yes, indeed. The other name of "fixed phys" are "platform phys"
-> or "platform MDIO bus" on which virtual PHYs are placed.
+> Here is the second spin of the OF-platform PATA driver and
+> related patches.
 > 
-> That is, these phys supposed to be created by the platform setup
-> code (arch/). The rationale here is: we do hardware emulation, thus
-> to make drivers actually see that "hardware", we have to create it
-> early.
+> Changes since RFC:
+> - nuked drivers/ata/pata_platform.h;
+> - powerpc bits: proper localbus node added.
+> 
+> 
+> Thanks for the previous review! This time I'm collecting acks,
+> don't be shy to give 'em generously. ;-)
 
-well that was the intention but... The point is - as device is emulated, (nearly) everything is doable,
-and the only tradeoff to consider, is how far will we go with that emulation. IOW, PHYlib could be tricked
-to "do the right thing", and I thought about adding module flexibility...
-
-But thinking more about it, it seems that BSP-code-phy-creation just sucks less and is clear enough yet flexible.
--- 
-Sincerely, Vitaly
+if (ack_collected(PaulM))
+	push(ACK)
+else {
+	/* do nothing */
+}
