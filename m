@@ -2,20 +2,19 @@ Return-Path: <jgarzik@pobox.com>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CD130DDDFE
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:33:59 +1100 (EST)
-Message-ID: <4751D340.6020204@pobox.com>
-Date: Sat, 01 Dec 2007 16:33:52 -0500
+	by ozlabs.org (Postfix) with ESMTP id 19697DDE0A
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:36:03 +1100 (EST)
+Message-ID: <4751D3BD.6020106@pobox.com>
+Date: Sat, 01 Dec 2007 16:35:57 -0500
 From: Jeff Garzik <jgarzik@pobox.com>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/3][RESEND] phylib: add PHY interface modes for internal
-	delay for tx and rx only
-References: <20071126161748.9671b828.kim.phillips@freescale.com>
-In-Reply-To: <20071126161748.9671b828.kim.phillips@freescale.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] SET_NETDEV_DEV() in fec_mpc52xx.c
+References: <1196273071.30806.46.camel@pmac.infradead.org>
+In-Reply-To: <1196273071.30806.46.camel@pmac.infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen.puncer@telargo.com>,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips wrote:
-> Allow phylib specification of cases where hardware needs to configure
-> PHYs for Internal Delay only on either RX or TX (not both).
+David Woodhouse wrote:
+> This helps to allow the Fedora installer to use the built-in Ethernet on
+> the Efika for a network install.
 > 
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> Tested-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Acked-by: Li Yang <leoli@freescale.com>
-> ---
->  include/linux/phy.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 > 
-> diff --git a/include/linux/phy.h b/include/linux/phy.h
-> index f0742b6..e10763d 100644
-> --- a/include/linux/phy.h
-> +++ b/include/linux/phy.h
-> @@ -58,6 +58,8 @@ typedef enum {
->  	PHY_INTERFACE_MODE_RMII,
->  	PHY_INTERFACE_MODE_RGMII,
->  	PHY_INTERFACE_MODE_RGMII_ID,
-> +	PHY_INTERFACE_MODE_RGMII_RXID,
-> +	PHY_INTERFACE_MODE_RGMII_TXID,
->  	PHY_INTERFACE_MODE_RTBI
->  } phy_interface_t;
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -971,6 +971,8 @@ mpc52xx_fec_probe(struct of_device *op, const struct of_device_id *match)
+>  
+>  	mpc52xx_fec_reset_stats(ndev);
+>  
+> +	SET_NETDEV_DEV(ndev, &op->dev);
+> +
+>  	/* Register the new network device */
+>  	rv = register_netdev(ndev);
 
-applied 1-3
+applied
