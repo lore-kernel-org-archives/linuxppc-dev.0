@@ -1,24 +1,19 @@
-Return-Path: <alessandro.zummo@towertech.it>
-Received: from mx0.towertech.it (mx0.towertech.it [213.215.222.73])
-	by ozlabs.org (Postfix) with SMTP id 41723DDE24
+Return-Path: <narendra.sisodiya@gmail.com>
+Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
+	by ozlabs.org (Postfix) with ESMTP id 203ADDDDF8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 23:26:58 +1100 (EST)
-Date: Sat, 1 Dec 2007 13:24:23 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-Message-ID: <20071201132423.50fbedc0@i1501.lan.towertech.it>
-In-Reply-To: <47501A4F.8050400@anagramm.de>
-References: <474DB27C.7020909@anagramm.de>
-	<20071128194321.0804b3aa@i1501.lan.towertech.it>
-	<474F1B25.8080508@anagramm.de>
-	<20071129211912.46da8f5b@i1501.lan.towertech.it>
-	<474FEE20.6070606@anagramm.de>
-	<20071130122055.729dd3f8@i1501.lan.towertech.it>
-	<47501A4F.8050400@anagramm.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+	Sat,  1 Dec 2007 23:59:49 +1100 (EST)
+Received: by wa-out-1112.google.com with SMTP id m28so3884785wag
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 01 Dec 2007 04:59:48 -0800 (PST)
+Message-ID: <e3fb97f30712010459y1e15f593i58381ba81487960a@mail.gmail.com>
+Date: Sat, 1 Dec 2007 18:29:48 +0530
+From: "narendra sisodiya" <narendra.sisodiya@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Linux 2.4 on ML310 with PowerPC405
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_5834_14440793.1196513988620"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,31 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Nov 2007 15:12:31 +0100
-Clemens Koller <clemens.koller@anagramm.de> wrote:
+------=_Part_5834_14440793.1196513988620
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Hello, Alessandro!
-> 
-> Alessandro Zummo schrieb:
->  >  It's just to see if there's any timing issue like module-coming-up-before-bus-and/or-rtc.
->  >  it should work anyway, but who knows...  
-> 
-> Here comes more debugging output:
+Hi all,
+I am trying to port Linux on ML310 virtex 2 pro,,
+I am unable to compile my properly,,,
+here i documented my procedure,,,
+http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310
 
-
- [..]
-
- your .config is right, the drivers are loaded
- but they are not bound to the chips as they are supposed to do.
-
- can you check that i2c_board_info structures / i2c_register_board_info
- are used by your platform?
+Please check out ,, where i am doing mistake
 
 -- 
+Narendra Sisodiya
+MTech (Computer Technology), IIT Delhi
++91-9999232792
+http://www.techfandu.org/index.html
 
- Best regards,
+------=_Part_5834_14440793.1196513988620
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+Hi all,<br>I am trying to port Linux on ML310 virtex 2 pro,,<br>I am unable to compile my properly,,,<br>here i documented my procedure,,, <a href="http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310">http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310
+</a><br><br>Please check out ,, where i am doing mistake<br clear="all"><br>-- <br>Narendra Sisodiya<br>MTech (Computer Technology), IIT Delhi<br>+91-9999232792<br><a href="http://www.techfandu.org/index.html">http://www.techfandu.org/index.html
+</a>
 
-  http://www.towertech.it
+------=_Part_5834_14440793.1196513988620--
