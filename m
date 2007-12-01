@@ -1,21 +1,27 @@
-Return-Path: <jochen@scram.de>
-Received: from mail0.scram.de (mail0.scram.de [78.47.204.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail0.scram.de", Issuer "scram e.V. CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 62A2BDDDFA
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 00:48:58 +1100 (EST)
-Message-ID: <47516646.9000803@scram.de>
-Date: Sat, 01 Dec 2007 14:48:54 +0100
-From: Jochen Friedrich <jochen@scram.de>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 62B9DDDE03
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 01:40:26 +1100 (EST)
+Received: from mail01.m-online.net (mail.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id BA6A520D512
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 15:41:26 +0100 (CET)
+Received: from localhost (unknown [192.168.1.157])
+	by mail.m-online.net (Postfix) with ESMTP id CB220903D8
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 15:40:23 +0100 (CET)
+Received: from localhost ([192.168.3.149])
+	by localhost (scanner1.m-online.net [192.168.1.157]) (amavisd-new,
+	port 10024) with ESMTP id 6CeUkz80ZW7E for <linuxppc-dev@ozlabs.org>;
+	Sat,  1 Dec 2007 15:40:22 +0100 (CET)
+Received: from ibook.aepfle.de (DSL01.83.171.165.156.ip-pool.NEFkom.net
+	[83.171.165.156]) by mail.mnet-online.de (Postfix) with ESMTP
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2007 15:40:22 +0100 (CET)
+Date: Sat, 1 Dec 2007 15:40:21 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: serial console autodetection not working on powermac
+Message-ID: <20071201144021.GA13898@aepfle.de>
 MIME-Version: 1.0
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY layer
-	functionality
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-In-Reply-To: <20071126142906.19642.45540.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,64 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
 
-> With that patch fixed.c now fully emulates MDIO bus, thus no need
-> to duplicate PHY layer functionality. That, in turn, drastically
-> simplifies the code, and drops down line count.
->
-> As an additional bonus, now there is no need to register MDIO bus
-> for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
-> There is also no more need to pre-allocate PHYs via .config option,
-> this is all now handled dynamically.
->
-> p.s. Don't even try to understand patch content! Better: apply patch
-> and look into resulting drivers/net/phy/fixed.c.
->   
-If i understand your code correctly, you seem to rely on the fact 
-that fixed_phy_add() is called before the fixed MDIO bus is scanned for 
-devices. How is this supposed to work for modules or for the 
-PPC_CPM_NEW_BINDING mode where the device tree is no longer scanned 
-during fs_soc initialization but during device initialization?
+How is the serial console autodetection supposed to work with current
+kernels? arch/powerpc/kernel/legacy_serial.c is not compiled unless
+CONFIG_PPC_UDBG_16550 is selected.
+Even if I force this config option, legacy_serial_console remains -1 and
+the ch-a/ch-b check in check_legacy_serial_console() does not trigger.
+Can the ch-a/ch-b check in check_legacy_serial_console() trigger anyway?
 
-I tried to add fixed-phy support to fs_enet, but the fixed phy is not 
-found this way.
+The autodetection used to work in earlier kernels.
 
---- a/drivers/net/fs_enet/fs_enet-main.c
-+++ b/drivers/net/fs_enet/fs_enet-main.c
-@@ -36,6 +36,7 @@
- #include <linux/fs.h>
- #include <linux/platform_device.h>
- #include <linux/phy.h>
-+#include <linux/phy_fixed.h>
- 
- #include <linux/vmalloc.h>
- #include <asm/pgtable.h>
-@@ -1174,8 +1175,24 @@ static int __devinit find_phy(struct device_node *np,
-        struct device_node *phynode, *mdionode;
-        struct resource res;
-        int ret = 0, len;
-+       const u32 *data;
-+       struct fixed_phy_status status = {};
-+
-+       data  = of_get_property(np, "fixed-link", NULL);
-+       if (data) {
-+               status.link = 1;
-+               status.duplex = data[1];
-+               status.speed  = data[2];
-+
-+               ret = fixed_phy_add(PHY_POLL, data[0], &status);
-+               if (ret)
-+                       return ret;
-+
-+               snprintf(fpi->bus_id, 16, PHY_ID_FMT, 0, *data);
-+               return 0;
-+       }
- 
--       const u32 *data = of_get_property(np, "phy-handle", &len);
-+       data = of_get_property(np, "phy-handle", &len);
-        if (!data || len != 4)
-                return -EINVAL;
-
-Thanks,
-Jochen
+A compiletime check for CONFIG_SERIAL_PMACZILOG_TTYS is also required,
+to switch between ttyS and ttyPZ. Currently ttyS is hardcoded.
