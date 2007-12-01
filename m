@@ -1,20 +1,21 @@
-Return-Path: <jgarzik@pobox.com>
+Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7B612DDE05
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:54:09 +1100 (EST)
-Message-ID: <4751D7FD.8010801@pobox.com>
-Date: Sat, 01 Dec 2007 16:54:05 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+	by ozlabs.org (Postfix) with ESMTP id 1F391DDD04
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 08:59:56 +1100 (EST)
+Message-ID: <4751D958.6060500@garzik.org>
+Date: Sat, 01 Dec 2007 16:59:52 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] [1/12] pasemi_mac: RX/TX ring management cleanup
-References: <20071129025410.GA17215@lixom.net>
-	<20071129025428.GB17215@lixom.net>
-In-Reply-To: <20071129025428.GB17215@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY layer
+	functionality
+References: <20071126142906.19642.45540.stgit@localhost.localdomain>
+In-Reply-To: <20071126142906.19642.45540.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> pasemi_mac: RX/TX ring management cleanup
+Vitaly Bordug wrote:
+> With that patch fixed.c now fully emulates MDIO bus, thus no need
+> to duplicate PHY layer functionality. That, in turn, drastically
+> simplifies the code, and drops down line count.
 > 
-> Prepare a bit for supporting multiple TX queues by cleaning up some
-> of the ring management and shuffle things around a bit.
+> As an additional bonus, now there is no need to register MDIO bus
+> for each PHY, all emulated PHYs placed on the platform fixed MDIO bus.
+> There is also no more need to pre-allocate PHYs via .config option,
+> this is all now handled dynamically.
 > 
-> Signed-off-by: Olof Johansson <olof@lixom.net>
+> p.s. Don't even try to understand patch content! Better: apply patch
+> and look into resulting drivers/net/phy/fixed.c.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 
-applied 1-12
+what's the context of this patchset?  2.6.25?
+
+it's late for 2.6.24-rc, IMO.
+
+Do I have the latest version (sent Nov 26 @ 9:29am)?
+
+	Jeff
