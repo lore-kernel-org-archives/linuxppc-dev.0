@@ -1,19 +1,19 @@
-Return-Path: <narendra.sisodiya@gmail.com>
-Received: from wa-out-1112.google.com (wa-out-1112.google.com [209.85.146.182])
-	by ozlabs.org (Postfix) with ESMTP id 203ADDDDF8
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A1286DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Dec 2007 23:59:49 +1100 (EST)
-Received: by wa-out-1112.google.com with SMTP id m28so3884785wag
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 01 Dec 2007 04:59:48 -0800 (PST)
-Message-ID: <e3fb97f30712010459y1e15f593i58381ba81487960a@mail.gmail.com>
-Date: Sat, 1 Dec 2007 18:29:48 +0530
-From: "narendra sisodiya" <narendra.sisodiya@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Linux 2.4 on ML310 with PowerPC405
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5834_14440793.1196513988620"
+	Sun,  2 Dec 2007 09:54:35 +1100 (EST)
+To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ppcboot and powerpc branch question
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 30 Nov 2007 14:25:35 PST."
+	<821B2170E9E7F04FA38DF7EC21DE48710BA65802@VCAEXCH01.hq.corp.viasat.com>
+Date: Sat, 01 Dec 2007 23:54:32 +0100
+Sender: wd@denx.de
+Message-Id: <20071201225432.CA3D0247C1@gemini.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +24,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5834_14440793.1196513988620
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Dear Chris,
 
-Hi all,
-I am trying to port Linux on ML310 virtex 2 pro,,
-I am unable to compile my properly,,,
-here i documented my procedure,,,
-http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310
+in message <821B2170E9E7F04FA38DF7EC21DE48710BA65802@VCAEXCH01.hq.corp.viasat.com> you wrote:
+> 
+> I am currently using your ELDK 4.1 Uclibc and have written various
+> scripts that allow it to be used with buildroot makefiles. Are you going
+> to releasing a newer version anytime soon?
 
-Please check out ,, where i am doing mistake
+Yes, we just showed ELDK 4.2 at the SPS/IPC/Drives trade show in
+Nuremberg. OK, it's still beta since we wait for the final release of
+Xenomai 2.4, but PPC and PPC64 beta is available for testers.
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org]=
+
+
+Two remarks:
+- Please don't top post / full quote. See
+  http://www.netmeister.org/news/learn2quote.html
+- Please post ELDK related requests on the ELDK mailing list, see
+  http://lists.denx.de/mailman/listinfo/eldk
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Narendra Sisodiya
-MTech (Computer Technology), IIT Delhi
-+91-9999232792
-http://www.techfandu.org/index.html
-
-------=_Part_5834_14440793.1196513988620
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi all,<br>I am trying to port Linux on ML310 virtex 2 pro,,<br>I am unable to compile my properly,,,<br>here i documented my procedure,,, <a href="http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310">http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310
-</a><br><br>Please check out ,, where i am doing mistake<br clear="all"><br>-- <br>Narendra Sisodiya<br>MTech (Computer Technology), IIT Delhi<br>+91-9999232792<br><a href="http://www.techfandu.org/index.html">http://www.techfandu.org/index.html
-</a>
-
-------=_Part_5834_14440793.1196513988620--
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A good marriage would be between a blind wife and deaf husband.
+                                               -- Michel de Montaigne
