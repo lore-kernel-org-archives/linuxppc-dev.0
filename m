@@ -1,19 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5042ADDDE6
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 06:11:31 +1100 (EST)
-Date: Sun, 2 Dec 2007 13:15:14 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
-	platform code
-Message-ID: <20071202191514.GC12415@lixom.net>
-References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
-	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071202061033.21193.64818.stgit@trillian.secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AD006DDE1E
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 07:34:20 +1100 (EST)
+Subject: Re: [PATCH 12/24] powerpc: 4xx PLB to PCI Express support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200712021332.29074.sr@denx.de>
+References: <20071130061155.41D71DDF5F@ozlabs.org>
+	<200712021332.29074.sr@denx.de>
+Content-Type: text/plain
+Date: Mon, 03 Dec 2007 07:33:41 +1100
+Message-Id: <1196627621.13230.156.camel@pasglop>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 01, 2007 at 11:10:33PM -0700, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+
+On Sun, 2007-12-02 at 13:32 +0100, Stefan Roese wrote:
+> As already mentioned I'm experiencing some problems with this current
+> version. 
+> At least what's available in Josh's 2.6.25-candidates branch. The
+> kernel 
+> crashes in the first ppc4xx_pciex_read_config() call upon (after I
+> fixed the 
+> small problem mentioned further down below):
 > 
-> This patch makes the platform code use the new machine-specific initcall
-> hooks.  This has the advantage of not needing to explicitly test
-> machine_is() at the top of every initcall function.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+>         BUG_ON(hose != port->hose);
+>
+> So before digging into this deeper, I wanted to check if you don't
+> have a 
+> slightly "better" version which passed your tests with the sky2 PCIe
+> card.
 
-PA Semi parts:
+Yup, looks I forgot a quilt ref or something. I'll check. I'll also give
+port 1 and 2 a go (after fixing the DT).
 
-Acked-by: Olof Johansson <olof@lixom.net>
+I also want to change the config space code to use some fixmap type
+direct mapping/unmapping to remove bus number limitations as soon as
+Kumar has implemented the fixmap stuff, since he seems to be working on
+it now.
 
-Overall I approve of the approach as well, looks like a good idea.
-I tried building all defconfigs, they pass.
-
-
--Olof
+Ben.
