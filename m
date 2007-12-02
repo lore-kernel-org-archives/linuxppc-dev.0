@@ -1,12 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 7D40EDDE35
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 10:40:45 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 0/3] OF-platform PATA driver
+Date: Mon, 3 Dec 2007 00:40:21 +0100
+References: <20071127153708.GA12490@localhost.localdomain>
+	<20071202114617.GA2923@zarina> <20071202154539.GA12415@lixom.net>
+In-Reply-To: <20071202154539.GA12415@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
-Date: Mon, 3 Dec 2007 10:12:49 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712030040.22701.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Anton Vorontsov <cbou@mail.ru>,
+	Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,29 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Sunday 02 December 2007, Olof Johansson wrote:
 
-Please do
+> Yes, I agree with Sergei: I don't think the pio/ata mode belongs there,
+> "ata-generic" (or "generic-ata") sounds good to me. If firmwares want to
+> specify pata/sata stuff as more specific compatible fields, then they are
+> free to, but the driver shouldn't depend on it as long as "ata-generic"
+> is in the list.
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+Yes, that makes sense. Let me just make it clear that I no longer think
+we should have the PIO mode or the ATA level in the compatible property.
+The PIO modes should really have their own property, if any, and the ATA
+standard would need to be a property of the attached device, not a property
+of the controller.
 
-There are two commits there; one reverts a patch which was causing
-some machines to fail to come back up when rebooting, and the other
-only touches a couple of defconfigs.
+I can see a point in listing the ATA devices themselves in the device tree,
+but it's probably not really worth it for the fdt setup, since they
+can easily be probed at runtime.
 
-Thanks,
-Paul.
+> I will need to add a compatible field to it myself (our firmware uses
+> "electra-ide") + some minor changes, but I will do that on top of this
+> patch once it goes in since it involves removing the old code from
+> arch/powerpc/platforms/pasemi.
 
- arch/powerpc/kernel/rtas.c             |   12 ++++++------
- arch/powerpc/platforms/pseries/setup.c |    3 +--
- arch/ppc/configs/ml300_defconfig       |    2 +-
- arch/ppc/configs/ml403_defconfig       |    2 +-
- include/asm-powerpc/rtas.h             |    3 +--
- 5 files changed, 10 insertions(+), 12 deletions(-)
+I'd suggest to also have electra-ide hardcoded in the driver alongside
+ata-generic, as a special case for backwards compatibility.
 
-Grant Likely (1):
-      [POWERPC] Remove xmon from ml300 and ml403 defconfig in arch/ppc
-
-Paul Mackerras (1):
-      Revert "[POWERPC] Fix RTAS os-term usage on kernel panic"
+	Arnd <><
