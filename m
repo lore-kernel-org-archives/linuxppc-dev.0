@@ -1,20 +1,20 @@
-Return-Path: <cbou@mail.ru>
-Received: from mx30.mail.ru (mx30.mail.ru [194.67.23.238])
-	by ozlabs.org (Postfix) with ESMTP id 1315BDDDDB
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 11:05:16 +1100 (EST)
-Date: Sun, 2 Dec 2007 02:58:10 +0300
-From: Anton Vorontsov <cbou@mail.ru>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 0/3] OF-platform PATA driver
-Message-ID: <20071201235810.GA2635@zarina>
-References: <20071127153708.GA12490@localhost.localdomain>
-	<4751E639.8090308@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <4751E639.8090308@garzik.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-ide@vger.kernel.org,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
-Reply-To: cbou@mail.ru
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 581D6DDDFC
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 12:31:04 +1100 (EST)
+Subject: Re: serial console autodetection not working on powermac
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20071201144021.GA13898@aepfle.de>
+References: <20071201144021.GA13898@aepfle.de>
+Content-Type: text/plain
+Date: Sun, 02 Dec 2007 12:11:19 +1100
+Message-Id: <1196557879.13230.149.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Dec 01, 2007 at 05:54:49PM -0500, Jeff Garzik wrote:
-> Anton Vorontsov wrote:
-> > Hi all,
-> > 
-> > Here is the second spin of the OF-platform PATA driver and
-> > related patches.
-> > 
-> > Changes since RFC:
-> > - nuked drivers/ata/pata_platform.h;
-> > - powerpc bits: proper localbus node added.
-> > 
-> > 
-> > Thanks for the previous review! This time I'm collecting acks,
-> > don't be shy to give 'em generously. ;-)
-> if (ack_collected(PaulM))
-> 	push(ACK)
-> else {
-> 	/* do nothing */
-> }
 
-Yep, this is obvious.
+On Sat, 2007-12-01 at 15:40 +0100, Olaf Hering wrote:
+> How is the serial console autodetection supposed to work with current
+> kernels? arch/powerpc/kernel/legacy_serial.c is not compiled unless
+> CONFIG_PPC_UDBG_16550 is selected.
+> Even if I force this config option, legacy_serial_console remains -1 and
+> the ch-a/ch-b check in check_legacy_serial_console() does not trigger.
+> Can the ch-a/ch-b check in check_legacy_serial_console() trigger anyway?
+> 
+> The autodetection used to work in earlier kernels.
+> 
+> A compiletime check for CONFIG_SERIAL_PMACZILOG_TTYS is also required,
+> to switch between ttyS and ttyPZ. Currently ttyS is hardcoded.
 
-Here is the algo I'm following:
+It might well have bitrotted. It should be taken out of that file
+anyway. I'll have a look next week. Remind me if I forget :-)
 
-while (1) {
-	send_patches();
-
-	if (ack_collected(PaulM) && ack_collected(PowerPC_people))
-		break;
-
-	sleep(wait_for_comments_timeout); <-- currently here.
-}
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Ben.
