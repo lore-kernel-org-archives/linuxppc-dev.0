@@ -1,19 +1,11 @@
-Return-Path: <SRS0=Nfrs=QZ=denx.de=sr@srs.kundenserver.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 83D46DDE1B
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 09:01:06 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 12/24] powerpc: 4xx PLB to PCI Express support
-Date: Sun, 2 Dec 2007 23:01:03 +0100
-References: <20071130061155.41D71DDF5F@ozlabs.org>
-	<200712021332.29074.sr@denx.de>
-	<1196627621.13230.156.camel@pasglop>
-In-Reply-To: <1196627621.13230.156.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200712022301.03505.sr@denx.de>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
+Date: Mon, 3 Dec 2007 10:12:49 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,21 +16,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 02 December 2007, Benjamin Herrenschmidt wrote:
-> > So before digging into this deeper, I wanted to check if you don't
-> > have a
-> > slightly "better" version which passed your tests with the sky2 PCIe
-> > card.
->
-> Yup, looks I forgot a quilt ref or something. I'll check. I'll also give
-> port 1 and 2 a go (after fixing the DT).
->
-> I also want to change the config space code to use some fixmap type
-> direct mapping/unmapping to remove bus number limitations as soon as
-> Kumar has implemented the fixmap stuff, since he seems to be working on
-> it now.
+Linus,
 
-Great, thanks.
+Please do
 
-Best regards,
-Stefan
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+
+There are two commits there; one reverts a patch which was causing
+some machines to fail to come back up when rebooting, and the other
+only touches a couple of defconfigs.
+
+Thanks,
+Paul.
+
+ arch/powerpc/kernel/rtas.c             |   12 ++++++------
+ arch/powerpc/platforms/pseries/setup.c |    3 +--
+ arch/ppc/configs/ml300_defconfig       |    2 +-
+ arch/ppc/configs/ml403_defconfig       |    2 +-
+ include/asm-powerpc/rtas.h             |    3 +--
+ 5 files changed, 10 insertions(+), 12 deletions(-)
+
+Grant Likely (1):
+      [POWERPC] Remove xmon from ml300 and ml403 defconfig in arch/ppc
+
+Paul Mackerras (1):
+      Revert "[POWERPC] Fix RTAS os-term usage on kernel panic"
