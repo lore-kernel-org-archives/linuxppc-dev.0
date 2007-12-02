@@ -1,20 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 581D6DDDFC
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 12:31:04 +1100 (EST)
-Subject: Re: serial console autodetection not working on powermac
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olaf@aepfle.de>
-In-Reply-To: <20071201144021.GA13898@aepfle.de>
-References: <20071201144021.GA13898@aepfle.de>
-Content-Type: text/plain
-Date: Sun, 02 Dec 2007 12:11:19 +1100
-Message-Id: <1196557879.13230.149.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5CD64DDDFA
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 14:54:17 +1100 (EST)
+Date: Sat, 1 Dec 2007 21:57:55 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH 0/3] OF-platform PATA driver
+Message-ID: <20071202035755.GA3116@lixom.net>
+References: <20071127153708.GA12490@localhost.localdomain>
+	<4751E639.8090308@garzik.org> <20071201235810.GA2635@zarina>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071201235810.GA2635@zarina>
+Cc: linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sat, 2007-12-01 at 15:40 +0100, Olaf Hering wrote:
-> How is the serial console autodetection supposed to work with current
-> kernels? arch/powerpc/kernel/legacy_serial.c is not compiled unless
-> CONFIG_PPC_UDBG_16550 is selected.
-> Even if I force this config option, legacy_serial_console remains -1 and
-> the ch-a/ch-b check in check_legacy_serial_console() does not trigger.
-> Can the ch-a/ch-b check in check_legacy_serial_console() trigger anyway?
+On Sun, Dec 02, 2007 at 02:58:10AM +0300, Anton Vorontsov wrote:
+> On Sat, Dec 01, 2007 at 05:54:49PM -0500, Jeff Garzik wrote:
+> while (1) {
+> 	send_patches();
 > 
-> The autodetection used to work in earlier kernels.
+> 	if (ack_collected(PaulM) && ack_collected(PowerPC_people))
+> 		break;
 > 
-> A compiletime check for CONFIG_SERIAL_PMACZILOG_TTYS is also required,
-> to switch between ttyS and ttyPZ. Currently ttyS is hardcoded.
+> 	sleep(wait_for_comments_timeout); <-- currently here.
 
-It might well have bitrotted. It should be taken out of that file
-anyway. I'll have a look next week. Remind me if I forget :-)
+I still haven't seen you address the compatible comments (that
+pata-platform is suboptimal). Or did I miss some respin of the patches?
 
-Ben.
+
+-Olof
