@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD006DDE1E
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 07:34:20 +1100 (EST)
+Return-Path: <SRS0=Nfrs=QZ=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 83D46DDE1B
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 09:01:06 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH 12/24] powerpc: 4xx PLB to PCI Express support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200712021332.29074.sr@denx.de>
+Date: Sun, 2 Dec 2007 23:01:03 +0100
 References: <20071130061155.41D71DDF5F@ozlabs.org>
 	<200712021332.29074.sr@denx.de>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 07:33:41 +1100
-Message-Id: <1196627621.13230.156.camel@pasglop>
-Mime-Version: 1.0
+	<1196627621.13230.156.camel@pasglop>
+In-Reply-To: <1196627621.13230.156.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712022301.03505.sr@denx.de>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Sun, 2007-12-02 at 13:32 +0100, Stefan Roese wrote:
-> As already mentioned I'm experiencing some problems with this current
-> version. 
-> At least what's available in Josh's 2.6.25-candidates branch. The
-> kernel 
-> crashes in the first ppc4xx_pciex_read_config() call upon (after I
-> fixed the 
-> small problem mentioned further down below):
-> 
->         BUG_ON(hose != port->hose);
+On Sunday 02 December 2007, Benjamin Herrenschmidt wrote:
+> > So before digging into this deeper, I wanted to check if you don't
+> > have a
+> > slightly "better" version which passed your tests with the sky2 PCIe
+> > card.
 >
-> So before digging into this deeper, I wanted to check if you don't
-> have a 
-> slightly "better" version which passed your tests with the sky2 PCIe
-> card.
+> Yup, looks I forgot a quilt ref or something. I'll check. I'll also give
+> port 1 and 2 a go (after fixing the DT).
+>
+> I also want to change the config space code to use some fixmap type
+> direct mapping/unmapping to remove bus number limitations as soon as
+> Kumar has implemented the fixmap stuff, since he seems to be working on
+> it now.
 
-Yup, looks I forgot a quilt ref or something. I'll check. I'll also give
-port 1 and 2 a go (after fixing the DT).
+Great, thanks.
 
-I also want to change the config space code to use some fixmap type
-direct mapping/unmapping to remove bus number limitations as soon as
-Kumar has implemented the fixmap stuff, since he seems to be working on
-it now.
-
-Ben.
+Best regards,
+Stefan
