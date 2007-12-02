@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A1286DDDFC
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 5C1E6DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  2 Dec 2007 09:54:35 +1100 (EST)
-To: "Pagnotta, Chris" <chris.pagnotta@viasat.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: ppcboot and powerpc branch question
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 Nov 2007 14:25:35 PST."
-	<821B2170E9E7F04FA38DF7EC21DE48710BA65802@VCAEXCH01.hq.corp.viasat.com>
-Date: Sat, 01 Dec 2007 23:54:32 +0100
-Sender: wd@denx.de
-Message-Id: <20071201225432.CA3D0247C1@gemini.denx.de>
+	Sun,  2 Dec 2007 15:30:47 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so543544anc
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 01 Dec 2007 20:30:46 -0800 (PST)
+Message-ID: <fa686aa40712012030r6ca993aek5dd4e58c961ac6fb@mail.gmail.com>
+Date: Sat, 1 Dec 2007 21:30:45 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "narendra sisodiya" <narendra.sisodiya@gmail.com>
+Subject: Re: Linux 2.4 on ML310 with PowerPC405
+In-Reply-To: <e3fb97f30712010459y1e15f593i58381ba81487960a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <e3fb97f30712010459y1e15f593i58381ba81487960a@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,36 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Chris,
+On 12/1/07, narendra sisodiya <narendra.sisodiya@gmail.com> wrote:
+> Hi all,
+> I am trying to port Linux on ML310 virtex 2 pro,,
+> I am unable to compile my properly,,,
+> here i documented my procedure,,,
+> http://placements.techfandu.org/index.php?title=Linux_kernel_on_ML310
+>
+> Please check out ,, where i am doing mistake
 
-in message <821B2170E9E7F04FA38DF7EC21DE48710BA65802@VCAEXCH01.hq.corp.viasat.com> you wrote:
-> 
-> I am currently using your ELDK 4.1 Uclibc and have written various
-> scripts that allow it to be used with buildroot makefiles. Are you going
-> to releasing a newer version anytime soon?
+I'm sorry, but I don't understand where you are having your problems.
+Specifically, what error are you getting when your kernel fails to
+compile?
 
-Yes, we just showed ELDK 4.2 at the SPS/IPC/Drives trade show in
-Nuremberg. OK, it's still beta since we wait for the final release of
-Xenomai 2.4, but PPC and PPC64 beta is available for testers.
+As for the kernel version, I do not recommend using linux 2.4 any
+more.  You should consider using a 2.6 kernel instead.  I've got some
+documentation on the 2.6 kernel for virtex devices here:
 
-> -----Original Message-----
-> From: linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org
-> [mailto:linuxppc-embedded-bounces+chris.pagnotta=3Dviasat.com@ozlabs.org]=
+http://wiki.secretlab.ca/index.php/Linux_on_Xilinx_Virtex
 
-
-Two remarks:
-- Please don't top post / full quote. See
-  http://www.netmeister.org/news/learn2quote.html
-- Please post ELDK related requests on the ELDK mailing list, see
-  http://lists.denx.de/mailman/listinfo/eldk
-
-Best regards,
-
-Wolfgang Denk
+Cheers,
+g.
 
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A good marriage would be between a blind wife and deaf husband.
-                                               -- Michel de Montaigne
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
