@@ -1,31 +1,31 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
-	by ozlabs.org (Postfix) with ESMTP id 85F3ADDDF7
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 17:01:46 +1100 (EST)
-Received: from pd2mr5so.prod.shaw.ca (pd2mr5so-qfe3.prod.shaw.ca [10.0.141.8])
-	by l-daemon (Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15
-	2004))
-	with ESMTP id <0JSE004W4RDMGX40@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sat, 01 Dec 2007 23:00:58 -0700 (MST)
-Received: from pn2ml2so.prod.shaw.ca ([10.0.121.146])
-	by pd2mr5so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+Received: from pd3mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 2BEDFDDDFC
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Dec 2007 17:10:31 +1100 (EST)
+Received: from pd3mr1so.prod.shaw.ca
+	(pd3mr1so-qfe3.prod.shaw.ca [10.0.141.177]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JSE004B8RTIBL90@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sat, 01 Dec 2007 23:10:30 -0700 (MST)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
+	by pd3mr1so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
 	(built Sep
-	5 2006)) with ESMTP id <0JSE00BRWRDMLS40@pd2mr5so.prod.shaw.ca> for
-	linuxppc-dev@ozlabs.org; Sat, 01 Dec 2007 23:00:59 -0700 (MST)
+	5 2006)) with ESMTP id <0JSE00HQWRTIZD40@pd3mr1so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Sat, 01 Dec 2007 23:10:31 -0700 (MST)
 Received: from trillian.cg.shawcable.net ([68.147.67.118])
 	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
 	2006))
-	with ESMTP id <0JSE00E9ORDL1A30@l-daemon> for linuxppc-dev@ozlabs.org;
-	Sat, 01 Dec 2007 23:00:58 -0700 (MST)
-Date: Sat, 01 Dec 2007 23:00:57 -0700
+	with ESMTP id <0JSE00G7PRTGX600@l-daemon> for linuxppc-dev@ozlabs.org;
+	Sat, 01 Dec 2007 23:10:29 -0700 (MST)
+Date: Sat, 01 Dec 2007 23:10:28 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] Fix buglets in mpc5200 FEC code that are corrupting memory.
-To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jonsmirl@gmail.com,
-	jgarzik@pobox.com
-Message-id: <20071202055937.20940.38500.stgit@trillian.secretlab.ca>
+Subject: [PATCH v2 1/2] [POWERPC] Add machine initcall macros
+To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org,
+	vitb@kernel.crashing.org, galak@kernel.crashing.org, olof@lixom.net,
+	jwboyer@linux.vnet.ibm.com
+Message-id: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
 MIME-version: 1.0
 Content-type: text/plain; charset=utf-8
-Cc: dwmw2@infradead.org, domen.puncer@telargo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jon Smirl <jonsmirl@gmail.com>
+From: Grant Likely <grant.likely@secretlab.ca>
 
-This is the reason I couldn't get user space started or connect to my
-nfs server. Patch is against current linus git.
+The machine initcall macros allow initcalls to be registered which
+test machine_is() before executing the initcall.
 
-mpc5200 fec driver is corrupting memory. This patch fixes two bugs
-where the wrong skb buffer was being referenced.
-
-Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-Acked-by: Domen Puncer <domen.puncer@telargo.com>
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
-Jeff, this one hasn't been picked up for 2.6.24 yet and in needs to go in.
+ include/asm-powerpc/machdep.h |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-Thanks,
-g.
-
- drivers/net/fec_mpc52xx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
-index a8a0ee2..ddfcc0b 100644
---- a/drivers/net/fec_mpc52xx.c
-+++ b/drivers/net/fec_mpc52xx.c
-@@ -422,7 +422,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
+diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
+index 6968f43..d5cd982 100644
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -326,5 +326,28 @@ static inline void log_error(char *buf, unsigned int err_type, int fatal)
+ 		ppc_md.log_error(buf, err_type, fatal);
+ }
  
- 		rskb = bcom_retrieve_buffer(priv->rx_dmatsk, &status,
- 				(struct bcom_bd **)&bd);
--		dma_unmap_single(&dev->dev, bd->skb_pa, skb->len, DMA_FROM_DEVICE);
-+		dma_unmap_single(&dev->dev, bd->skb_pa, rskb->len, DMA_FROM_DEVICE);
- 
- 		/* Test for errors in received frame */
- 		if (status & BCOM_FEC_RX_BD_ERRORS) {
-@@ -467,7 +467,7 @@ static irqreturn_t mpc52xx_fec_rx_interrupt(int irq, void *dev_id)
- 			bcom_prepare_next_buffer(priv->rx_dmatsk);
- 
- 		bd->status = FEC_RX_BUFFER_SIZE;
--		bd->skb_pa = dma_map_single(&dev->dev, rskb->data,
-+		bd->skb_pa = dma_map_single(&dev->dev, skb->data,
- 				FEC_RX_BUFFER_SIZE, DMA_FROM_DEVICE);
- 
- 		bcom_submit_next_buffer(priv->rx_dmatsk, skb);
++#define __define_machine_initcall(mach,level,fn,id) \
++	static int __init __machine_initcall_##mach##_##fn(void) { \
++		if (machine_is(mach)) return fn(); \
++		return 0; \
++	} \
++	__define_initcall(level,__machine_initcall_##mach##_##fn,id);
++
++#define machine_core_initcall(mach,fn)		__define_machine_initcall(mach,"1",fn,1)
++#define machine_core_initcall_sync(mach,fn)	__define_machine_initcall(mach,"1s",fn,1s)
++#define machine_postcore_initcall(mach,fn)	__define_machine_initcall(mach,"2",fn,2)
++#define machine_postcore_initcall_sync(mach,fn)	__define_machine_initcall(mach,"2s",fn,2s)
++#define machine_arch_initcall(mach,fn)		__define_machine_initcall(mach,"3",fn,3)
++#define machine_arch_initcall_sync(mach,fn)	__define_machine_initcall(mach,"3s",fn,3s)
++#define machine_subsys_initcall(mach,fn)	__define_machine_initcall(mach,"4",fn,4)
++#define machine_subsys_initcall_sync(mach,fn)	__define_machine_initcall(mach,"4s",fn,4s)
++#define machine_fs_initcall(mach,fn)		__define_machine_initcall(mach,"5",fn,5)
++#define machine_fs_initcall_sync(mach,fn)	__define_machine_initcall(mach,"5s",fn,5s)
++#define machine_rootfs_initcall(mach,fn)	__define_machine_initcall(mach,"rootfs",fn,rootfs)
++#define machine_device_initcall(mach,fn)	__define_machine_initcall(mach,"6",fn,6)
++#define machine_device_initcall_sync(mach,fn)	__define_machine_initcall(mach,"6s",fn,6s)
++#define machine_late_initcall(mach,fn)		__define_machine_initcall(mach,"7",fn,7)
++#define machine_late_initcall_sync(mach,fn)	__define_machine_initcall(mach,"7s",fn,7s)
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_MACHDEP_H */
