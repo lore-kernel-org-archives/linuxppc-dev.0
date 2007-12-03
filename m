@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7AF55DDE46
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 07:53:03 +1100 (EST)
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+	by ozlabs.org (Postfix) with ESMTP id 0E2A6DDE18
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 07:55:11 +1100 (EST)
+Subject: Re: [PATCH 4/5] PowerPC 74xx: Katana Qp base support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andrei Dolnikov <adolnikov@ru.mvista.com>
-In-Reply-To: <20071129152836.GB13751@ru.mvista.com>
-References: <20071129152836.GB13751@ru.mvista.com>
+In-Reply-To: <20071129154200.GE13751@ru.mvista.com>
+References: <20071129154200.GE13751@ru.mvista.com>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 07:52:50 +1100
-Message-Id: <1196715170.13230.228.camel@pasglop>
+Date: Tue, 04 Dec 2007 07:54:59 +1100
+Message-Id: <1196715299.13230.230.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -24,17 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	model = "Katana-Qp"; /* Default */
-> +	compatible = "emerson,Katana-Qp";
-> +	coherency-off;
-> +
 
-What do that mean (coherency-off) ?
+On Thu, 2007-11-29 at 18:42 +0300, Andrei Dolnikov wrote:
+> +config PPC_KATANAQP
+> +       bool "Emerson-Katana Qp"
+> +       depends on EMBEDDED6xx
+> +       select MV64X60
+> +       select NOT_COHERENT_CACHE
+                 ^^^^^^^^^^^^^^^^^^
 
-Somebody is trying again to use a 74xx with non cache coherent DMA ?
-That isn't going to fly...
+Just one word: ARGHHHHHHHH !
+
+Oh and another one: WHY ?
 
 Ben.
- 
