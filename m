@@ -1,21 +1,34 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-va3-R.bigfish.com (outbound-va3.frontbridge.com
-	[216.32.180.16])
+Return-Path: <Tony.Li@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 9A7DCDDE44
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 14:34:00 +1100 (EST)
-Message-ID: <4753791E.6020703@am.sony.com>
-Date: Sun, 02 Dec 2007 19:33:50 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PPC BOOT] Create otheros.bld next to specified output file,
-	not in $object directory.
-References: <1196650083.13978.113.camel@pmac.infradead.org>
-In-Reply-To: <1196650083.13978.113.camel@pmac.infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60071DDE2D
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 14:53:46 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	lB33re6e010274
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 20:53:40 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB33rc08003944
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 21:53:39 -0600 (CST)
+Subject: Re: [PATCH] Add MPC837xEMDS PCIE RC mode support
+From: Li Li <r64360@freescale.com>
+To: Gala Kumar <kumar.gala@freescale.com>, Wood Scott <scottwood@freescale.com>
+In-Reply-To: <6FF36777-D91C-4B80-968B-CAEF11BC98ED@freescale.com>
+References: <1196394334.29683.5.camel@Guyver>
+	<4544168D-5E95-44E8-9128-6F343283EC82@freescale.com>
+	<1196412491.31962.9.camel@Guyver>
+	<7DF684FC-A53A-4F4D-903F-D50F1E0A486A@freescale.com>
+	<1196415470.2371.28.camel@Guyver>
+	<6FF36777-D91C-4B80-968B-CAEF11BC98ED@freescale.com>
+Content-Type: text/plain
+Date: Mon, 03 Dec 2007 11:43:30 +0800
+Message-Id: <1196653410.9642.21.camel@Guyver>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +38,306 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse wrote:
-> The bootwrapper script currently generates an 'otheros.bld' file in
-> addition to the file specified by the -o option, when asked to build a
-> wrapper for PS3.
+On Fri, 2007-11-30 at 22:57 +0800, Gala Kumar wrote:
 > 
-> It should do that in the same directory as the output, not the directory
-> where the wrapper objects are kept (which might potentially not be
-> writable when the script runs).
+> On Nov 30, 2007, at 3:37 AM, Li Li wrote:
+> 
+> > On Fri, 2007-11-30 at 17:05 +0800, Gala Kumar wrote: 
+> >>>>> + 
+> >>>>> +     pci2@e0009000 { 
+> >>>> 
+> >>>> I agree w/Olof.  This should be pcie@e0009000 
+> >>>>> 
+> >>>>> +             interrupt-map-mask = <f800 0 0 7>; 
+> >>>>> +             msi-available-ranges = <43 4 51 52 56 57 58 59>; 
+> >>>>> +             interrupt-map = < 
+> >>>>> +                     0000 0 0 1 &ipic 1 8 
+> >>>>> +                     0000 0 0 2 &ipic 1 8 
+> >>>>> +                     0000 0 0 3 &ipic 1 8 
+> >>>>> +                     0000 0 0 4 &ipic 1 8 
+> >>>>> +             >; 
+> >>>>> +             interrupt-parent = < &ipic >; 
+> >>>>> +             interrupts = <1 8>; 
+> >>>>> +             bus-range = <0 0>; 
+> >>>>> +             ranges = <02000000 0 A8000000 A8000000 0 10000000 
+> >>>>> +                       01000000 0 00000000 B8000000 0
+> 00800000>; 
+> >>>>> +             clock-frequency = <0>; 
+> >>>>> +             #interrupt-cells = <1>; 
+> >>>>> +             #size-cells = <2>; 
+> >>>>> +             #address-cells = <3>; 
+> >>>>> +             reg = <e0009000 00001000 
+> >>>>> +                    a0000000 08000000>; 
+> >>>> 
+> >>>> Shouldn't the reg size for the cfg space be 256M? 
+> >>> 
+> >>> 256M is a little too big for kernel. 
+> >> 
+> >> what do you mean too big?  Aren't you losing access to some 
+> >> bus/dev/fn 
+> >> than? 
+> > 
+> > If do it standard, a 256M config space, at least 256M mem space
+> and  
+> > 16M 
+> > io space are needed for each PCIE controller. 
+> > To allocate PCIE window, the window size only can be 512M or 1G. 
+> > If we choose 1G space, two PCIE controller needs 2G space. 
+> > We do not have 2G free physical space now. Usually, we use upper
+> 128M 
+> > configure space. So, we have to cut down the config space.
+> 
+> We'll cutting config space is problematic in that its a bug since
+> you  
+> might not be able to talk to a given device.
+> 
+> Is it possible to make the outbound window for cfg space 4k and
+> change  
+> the region of config space its looking at?
+> 
 
+I think that is possible but it means we have to reconfigure the PCIE
+controller`s outbound window at every time we want do PCI config space
+access in kernel. By now, all the PCIE controller is initialized on
+u-boot which like PCI controller`s case.So it is a little not compatible
+with the current kernel and u-boot assignment.
 
-Seems reasonable for installs from read-only media.
+> >>>>> diff --git a/arch/powerpc/platforms/83xx/Kconfig
+> b/arch/powerpc/ 
+> >>>>> platforms/83xx/Kconfig 
+> >>>>> index 0c61e7a..00154c5 100644 
+> >>>>> --- a/arch/powerpc/platforms/83xx/Kconfig 
+> >>>>> +++ b/arch/powerpc/platforms/83xx/Kconfig 
+> >>>>> @@ -87,3 +87,10 @@ config PPC_MPC837x 
+> >>>>>     select PPC_INDIRECT_PCI 
+> >>>>>     select FSL_SERDES 
+> >>>>>     default y if MPC837x_MDS 
+> >>>>> + 
+> >>>>> +config PPC_MPC83XX_PCIE 
+> >>>>> +     bool "MPC837X PCI Express support" 
+> >>>>> +     depends on PCIEPORTBUS && PPC_MPC837x 
+> >>>>> +     default n 
+> >>>>> +     help 
+> >>>>> +       Enables MPC837x PCI express RC mode 
+> >>>> 
+> >>>> This should be a hidden config that is just selected by 
+> >> PPC_MPC837x 
+> >>>> instead of a choice.  Also drop the depends on. 
+> >>>> 
+> >>> 
+> >>> In the dts file, the PCIE is default enabled. So, we should
+> provide 
+> >>> another way to disable the PCIE. 
+> >>> Modify and recompile the dts is a little unkind to user. 
+> >> 
+> >> Why do you something beyond CONFIG_PCI.  if you don't want PCIe
+> but 
+> >> do 
+> >> want PCI the extra code for PCIe isn't going to kill you. 
+> >> 
+> > 
+> > Here is a little complex. The MPC837xE board needs a carrier board
+> to 
+> > extend PCIE slot. If user does not populate carrier board onto  
+> > MPC837xE 
+> > board and do PCIE scan, the system will halt. 
+> > I just want to provide a easy way to disable the PCIe other than  
+> > modify 
+> > and recompile the dts.
+> 
+> So I have to recompile the kernel for this case, that seems even
+> more  
+> painful to the user.  Can we not detect if this board isn't there
+> and  
+> not hang?
+> 
 
- 
-> Arguably, the 'otheros.bld' ought to be created with the filename
-> specified as the -o argument. But that's a more intrusive change.
+Yes. you are right. But I think we lack of a mean to tell the user the
+exact mean of each device node and how to edit it.
+The linux menuconfig is more directed.
 
+As Scott said and AMHO, the dts describes what we have not what we want.
+If dts describes what we have, we must provide many dts files to provide
+various cpu feature combinations.
 
-Yes, I think it makes sense.  ps3-flash-util can handle any file
-name, so there is no real reason to have it named otheros.bld.
- 
+> >>>>> diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h 
+> >> b/arch/powerpc/ 
+> >>>>> platforms/83xx/mpc83xx.h 
+> >>>>> index b778cb4..2078da7 100644 
+> >>>>> --- a/arch/powerpc/platforms/83xx/mpc83xx.h 
+> >>>>> +++ b/arch/powerpc/platforms/83xx/mpc83xx.h 
+> >>>>> @@ -43,12 +43,18 @@ 
+> >>>>> #define PORTSCX_PTS_UTMI           0x00000000 
+> >>>>> #define PORTSCX_PTS_ULPI           0x80000000 
+> >>>>> 
+> >>>>> +/* PCIE Registers */ 
+> >>>>> +#define PEX_LTSSM_STAT               0x404 
+> >>>>> +#define PEX_LTSSM_STAT_L0    0x16 
+> >>>>> +#define PEX_GCLK_RATIO               0x440 
+> >>>>> + 
+> >>>> 
+> >>>> just move these into the .c file. 
+> > 
+> > ok. 
+> > 
+> >>>> 
+> >>>>> 
+> >>>>> /* 
+> >>>>> * Declaration for the various functions exported by the 
+> >>>>> * mpc83xx_* files. Mostly for use by mpc83xx_setup 
+> >>>>> */ 
+> >>>>> - 
+> >>>>> -extern int mpc83xx_add_bridge(struct device_node *dev); 
+> >>>>> +#define PPC_83XX_PCI 0x1 
+> >>>>> +#define PPC_83XX_PCIE        0x2 
+> >>>>> +extern int mpc83xx_add_bridge(struct device_node *dev, int 
+> >> flags); 
+> >>>>> extern void mpc83xx_restart(char *cmd); 
+> >>>>> extern long mpc83xx_time_init(void); 
+> >>>>> extern int mpc834x_usb_cfg(void); 
+> >>>>> diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/ 
+> >>>>> platforms/83xx/pci.c 
+> >>>>> index 80425d7..0b52b2e 100644 
+> >>>>> --- a/arch/powerpc/platforms/83xx/pci.c 
+> >>>>> +++ b/arch/powerpc/platforms/83xx/pci.c 
+> >>>>> @@ -25,6 +25,8 @@ 
+> >>>>> #include <asm/prom.h> 
+> >>>>> #include <sysdev/fsl_soc.h> 
+> >>>>> 
+> >>>>> +#include "mpc83xx.h" 
+> >>>>> + 
+> >>>>> #undef DEBUG 
+> >>>>> 
+> >>>>> #ifdef DEBUG 
+> >>>>> @@ -33,13 +35,157 @@ 
+> >>>>> #define DBG(x...) 
+> >>>>> #endif 
+> >>>>> 
+> >>>>> -int __init mpc83xx_add_bridge(struct device_node *dev) 
+> >>>>> +#if defined(CONFIG_PPC_MPC83XX_PCIE) 
+> >>>>> + 
+> >>>>> +/* PCIE config space Read/Write routines */ 
+> >>>> 
+> >>>> should really be called something like mpc83xx_pciex_read_config 
+> >>>>> 
+> >>>>> +static int direct_read_config_pcie(struct pci_bus *bus, 
+> >>>>> +                     uint devfn, int offset, int len, u32
+> *val) 
+> >>>>> +{ 
+> >>>>> +     struct pci_controller *hose = bus->sysdata; 
+> >>>>> +     void __iomem *cfg_addr; 
+> >>>>> +     u32 bus_no; 
+> >>>>> + 
+> >>>>> +     if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) 
+> >>>>> +             return PCIBIOS_DEVICE_NOT_FOUND; 
+> >>>>> + 
+> >>>>> +     if (ppc_md.pci_exclude_device) 
+> >>>>> +             if (ppc_md.pci_exclude_device(hose, bus->number, 
+> >>>> devfn)) 
+> >>>>> +                     return PCIBIOS_DEVICE_NOT_FOUND; 
+> >>>>> + 
+> >>>>> +     switch (len) { 
+> >>>>> +     case 2: 
+> >>>>> +             if (offset & 1) 
+> >>>>> +                     return -EINVAL; 
+> >>>>> +             break; 
+> >>>>> +     case 4: 
+> >>>>> +     if (offset & 3) 
+> >>>>> +             return -EINVAL; 
+> >>>>> +             break; 
+> >>>>> +     } 
+> >>>> 
+> >>>> fix formatting. 
+> >>>> 
+> >>>>> 
+> >>>>> + 
+> >>>>> +     pr_debug("_read_cfg_pcie: bus=%d devfn=%x off=%x len=%x
+> \n", 
+> >>>>> +             bus->number, devfn, offset, len); 
+> >>>>> + 
+> >>>>> +     if (bus->number == hose->first_busno) { 
+> >>>>> +             if (devfn & 0xf8) 
+> >>>>> +                     return PCIBIOS_DEVICE_NOT_FOUND; 
+> >>>> 
+> >>>> what is the 0xf8 all about? 
+> >>>> 
+> >>> 
+> >>> The pcie only have one link, so the dev number only can be 0, as 
+> >> well 
+> >>> the function number can be 0 ~ 7. 
+> >> 
+> >> I don't follow what the number of links has to do with dev number. 
+> > 
+> > The PCIE only have one link that mean one PCIE bus only can have
+> one 
+> > device populate on it. The dev number of this device must be 0. If
+> the 
+> > device number is not 0, we consider it is a error.
+> 
+> we should add a comment about that.
+> 
 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+yes
 
+> >>>>> +     addr = mbase + (cfg_addr & ~PAGE_MASK); 
+> >>>>> +     hose->cfg_addr = addr; 
+> >>>>> +     hose->ops = &direct_pcie_ops; 
+> >>>> 
+> >>>> what's the point of this function, why not just fold it into 
+> >>>> mpc83xx_setup_pcie 
+> >>>> 
+> >>>>> 
+> >>>>> +} 
+> >>>>> + 
+> >>>>> +static void __init mpc83xx_setup_pcie(struct pci_controller 
+> >> *hose, 
+> >>>>> +                     struct resource *reg, struct resource 
+> >>>> *cfg_space) 
+> >>>>> +{ 
+> >>>>> +     void __iomem *hose_cfg_base; 
+> >>>>> +     u32 val; 
+> >>>>> + 
+> >>>>> +     hose_cfg_base = ioremap(reg->start, reg->end - reg->start
+> + 
+> >>>> 1); 
+> >>>>> + 
+> >>>>> +     val = in_le32(hose_cfg_base + PEX_LTSSM_STAT); 
+> >>>>> +     if (val < PEX_LTSSM_STAT_L0) 
+> >>>>> +             hose->indirect_type |= 
+> >>>> PPC_INDIRECT_TYPE_NO_PCIE_LINK; 
+> >>>>> + 
+> >>>>> +     setup_direct_pcie(hose, cfg_space->start, 
+> >>>>> +                     cfg_space->end - cfg_space->start + 1); 
+> >>>>> +} 
+> >>>>> +#endif /* CONFIG_PPC_MPC83XX_PCIE */ 
+> >>>>> + 
+> >>>> 
+> >>>> We should do the same think fsl_pci does for primary, its passed 
+> >>>> into 
+> >>>> _add_bridge.  Also, can we not do what fsl_pci does and use PCI 
+> >>>> capabilities to determine we are a PCIe controller (and drop 
+> >> passing 
+> >>>> it in via flags). 
+> >>>> 
+> >>> 
+> >>> The mpc837x PCIE controller is a little different from mpc85xx. 
+> >>> It can not be access via PCI configure read/write. It only can be 
+> >>> accessed via memory-mapped read/write from core. 
+> >> 
+> >> You don't have access to your own config space? 
+> >> 
+> > 
+> > I can access it but can not via standard pci configure routine. 
+> > So, we use different way to access PCI and PCIE. If we want access
+> PCI 
+> > capabilities, we must know it is PCI controller or PCIE controller 
+> > first.
+> 
+> Duh, your right..  we should than expand flags to also have a  
+> PPC_83XX_PCI_IS_PRIMARY and let that get set by the caller.
+> 
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+yes
+
+> - k
+> 
