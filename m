@@ -1,21 +1,32 @@
-Return-Path: <SRS0+0172f75cf8e7244956cd+1562+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp2.linux-foundation.org (smtp2.linux-foundation.org
+	[207.189.120.14])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E3CADDEF0
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 08:06:20 +1100 (EST)
-Subject: Re: [PATCH] Generic RTC class support for ppc_md.[gs]et_rtc_time
-From: David Woodhouse <dwmw2@infradead.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1196714722.13230.224.camel@pasglop>
-References: <1196701493.13978.163.camel@pmac.infradead.org>
-	<1196714722.13230.224.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 21:06:14 +0000
-Message-Id: <1196715974.13978.176.camel@pmac.infradead.org>
+	(Client CN "smtp.linux-foundation.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 72449DDEB8
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 08:12:57 +1100 (EST)
+Date: Mon, 3 Dec 2007 13:11:50 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+Message-Id: <20071203131150.bb6f2e0b.akpm@linux-foundation.org>
+In-Reply-To: <474FBB86.5000004@linux.vnet.ibm.com>
+References: <474D0AAC.5010005@linux.vnet.ibm.com>
+	<20071127225328.9e3f3827.akpm@linux-foundation.org>
+	<474D15FF.5080508@linux.vnet.ibm.com>
+	<20071127232552.ad16e95c.akpm@linux-foundation.org>
+	<474E5CAC.9000108@linux.vnet.ibm.com>
+	<20071129003533.54b4b20e.akpm@linux-foundation.org>
+	<20071130063929.GD2754@fattire.cabal.ca>
+	<20071129230047.1b482562.akpm@linux-foundation.org>
+	<20071129230204.8698f47e.akpm@linux-foundation.org>
+	<474FBB86.5000004@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: rjw@sisk.pl, linux-scsi@vger.kernel.org, willy@debian.org,
+	linux-kernel@vger.kernel.org, kyle@mcmartin.ca,
+	linuxppc-dev@ozlabs.org, balbir@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +36,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-12-04 at 07:45 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-12-03 at 17:04 +0000, David Woodhouse wrote:
-> > It would be good to migrate the platform code to register RTC devices
-> > directly, but for now this will make them functional enough for most
-> > purposes...
+On Fri, 30 Nov 2007 12:58:06 +0530
+Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+
+> Andrew Morton wrote:
+> > On Thu, 29 Nov 2007 23:00:47 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> >> On Fri, 30 Nov 2007 01:39:29 -0500 Kyle McMartin <kyle@mcmartin.ca> wrote:
+> >>
+> >>> On Thu, Nov 29, 2007 at 12:35:33AM -0800, Andrew Morton wrote:
+> >>>> ten million is close enough to infinity for me to assume that we broke the
+> >>>> driver and that's never going to terminate.
+> >>>>
+> >>> how about this? doesn't break things on my pa8800:
+> >>>
+> >>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.c b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+> >>> index 463f119..ef01cb1 100644
+> >>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
+> >>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+> >>> @@ -1037,10 +1037,13 @@ restart_test:
+> >>>  	/*
+> >>>  	 *  Wait 'til done (with timeout)
+> >>>  	 */
+> >>> -	for (i=0; i<SYM_SNOOP_TIMEOUT; i++)
+> >>> +	do {	
+> >>>  		if (INB(np, nc_istat) & (INTF|SIP|DIP))
+> >>>  			break;
+> >>> -	if (i>=SYM_SNOOP_TIMEOUT) {
+> >>> +		msleep(10);
+> >>> +	} while (i++ < SYM_SNOOP_TIMEOUT);
+> >>> +
+> >>> +	if (i >= SYM_SNOOP_TIMEOUT) {
+> >>>  		printf ("CACHE TEST FAILED: timeout.\n");
+> >>>  		return (0x20);
+> >>>  	}
+> >>> diff --git a/drivers/scsi/sym53c8xx_2/sym_hipd.h b/drivers/scsi/sym53c8xx_2/sym_hipd.h
+> >>> index ad07880..85c483b 100644
+> >>> --- a/drivers/scsi/sym53c8xx_2/sym_hipd.h
+> >>> +++ b/drivers/scsi/sym53c8xx_2/sym_hipd.h
+> >>> @@ -339,7 +339,7 @@
+> >>>  /*
+> >>>   *  Misc.
+> >>>   */
+> >>> -#define SYM_SNOOP_TIMEOUT (10000000)
+> >>> +#define SYM_SNOOP_TIMEOUT (1000)
+> >>>  #define BUS_8_BIT	0
+> >>>  #define BUS_16_BIT	1
+> >>>  
+> >> That might be the fix, but do we know what we're actually fixing?  afaik
+> >> 2.6.24-rc3 doesn't get this timeout, 2.6.24-rc3-mm2 does get it and we
+> >> don't know why?
+> >>
+> > 
+> > <looks at Subject:>
+> > 
+> > <Checks that Rafael was cc'ed>
+> > 
+> > So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
 > 
-> Wouldn't it be best to do the other way around at some stage ?
+> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
+> 
 
-Yes, definitely. We can migrate them one at a time to the RTC class.
+There are effectively no drivers/scsi/ changes after 2.6.24-rc3 and we
+don't (I believe) have a clue what caused this regression.
 
-> We need to solve the problem of ppc_md. stuff being called by the core
-> in atomic contexts first though.
+Can you please do a bisection search on this?
 
-Where from?
-
--- 
-dwmw2
+Thanks.
