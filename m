@@ -1,25 +1,34 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
-	by ozlabs.org (Postfix) with ESMTP id 8DB96DDE3A
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 15:18:36 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so645207anc
-	for <linuxppc-dev@ozlabs.org>; Sun, 02 Dec 2007 20:18:35 -0800 (PST)
-Message-ID: <fa686aa40712022018n4801f589ma872f5332d2fd6c3@mail.gmail.com>
-Date: Sun, 2 Dec 2007 21:18:34 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Josh Boyer" <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/24] powerpc: 4xx PCI,
-	PCI-X and PCI-Express support among others
-In-Reply-To: <20071130185304.2ea3aad3@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0DAEADDE49
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 15:22:34 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB34MVwb009634
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 23:22:31 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB34MUT4123588
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 21:22:30 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB34MUf7022909
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 21:22:30 -0700
+Date: Sun, 2 Dec 2007 22:20:22 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 0/24] powerpc: 4xx PCI, PCI-X and PCI-Express support
+	among others
+Message-ID: <20071202222022.45839409@zod.rchland.ibm.com>
+In-Reply-To: <1196652270.13230.192.camel@pasglop>
 References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130141540.GA3117@lixom.net>
-	<51DE5987-D0DD-4E62-A99A-3D23ECFA9908@kernel.crashing.org>
-	<20071130152742.GB4196@lixom.net> <47503619.2010202@freescale.com>
-	<20071130185304.2ea3aad3@zod.rchland.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+	<20071130141756.3aa3d38b@zod.rchland.ibm.com>
+	<1196652270.13230.192.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,30 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 11/30/07, Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
-> On Fri, 30 Nov 2007 10:11:05 -0600
-> Jon Loeliger <jdl@freescale.com> wrote:
->
-> > Olof Johansson wrote:
-> >
-> > > I normally do "quilt diff | checkpatch.pl -" when use quilt. You could
-> > > similarly do "git diff HEAD | checkpatch.pl -". You'd always get the
-> > > warning about missing signed-off-by though.
-> >
-> > So do a "git log -p | checkpatch.pl -" instead? :-)
->
-> That sort of defeats the purpose of running checkpatch.pl _before_ you
-> commit things...
+On Mon, 03 Dec 2007 14:24:30 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-stg show | checkpatch.pl -
+> 
+> On Fri, 2007-11-30 at 14:17 -0600, Josh Boyer wrote:
+> > > Some of these patches are _NOT_ yet candidate for merging
+> > > (mostly the board support ones), but you can review them and
+> > > Josh can put them in an experimental tree.
+> > 
+> > I've added these to the 2.6.25-candidates branch in my tree.  Fixed up
+> > the few conflicts manually.  I'll expect refreshes before merging
+> > anyway, but I'd like to get these out there for people to play with.
+> 
+> BTW. You were telling me the other day about a problem with the clock
+> code. 
+> 
+> It looks like the problem is a subtle difference between 440EP /440EPx
+> and 440SPe / 440GX. The former has the EBC clock derived from the PLB
+> clock while the later has it derived from OPB... yuck.
 
-:-p
+Yes.
 
-g.
+> I'm fixing that.
 
+Ok.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+josh
