@@ -1,30 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D2CEDDE02
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 01:49:26 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB3EnNgQ008669
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 09:49:23 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB3EnJNk128418
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 07:49:20 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB3EnJ3w007493
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 07:49:19 -0700
-Date: Mon, 3 Dec 2007 08:49:00 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: for-2.6.25 branch created in powerpc.git
-Message-ID: <20071203084900.327d4abc@weaponx>
-In-Reply-To: <18259.35326.516899.603549@cargo.ozlabs.ibm.com>
-References: <18259.35326.516899.603549@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8BA45DDDEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 02:09:19 +1100 (EST)
+Date: Mon, 3 Dec 2007 09:08:44 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PPC BOOT] Find device-tree source file in default directory.
+Message-ID: <20071203150843.GA4393@loki.buserror.net>
+References: <1196650083.13978.113.camel@pmac.infradead.org>
+	<1196650164.13978.115.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196650164.13978.115.camel@pmac.infradead.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,14 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 3 Dec 2007 15:45:50 +1100
-Paul Mackerras <paulus@samba.org> wrote:
+On Mon, Dec 03, 2007 at 02:49:24AM +0000, David Woodhouse wrote:
+> If a .dts file is given to the bootwrapper script without a full path
+> name, look in a sensible place for it.
+> 
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+> 
+> --- a/arch/powerpc/boot/wrapper
+> +++ b/arch/powerpc/boot/wrapper
+> @@ -116,6 +118,9 @@ while [ "$#" -gt 0 ]; do
+>  done
+>  
+>  if [ -n "$dts" ]; then
+> +    if [ ! -r "$dts" -a -r "$object/dts/$dts" ]; then
+> +	dts="$object/dts/$dts"
+> +    fi
+>      if [ -z "$dtb" ]; then
+>  	dtb="$platform.dtb"
+>      fi
 
-> I have created a for-2.6.25 branch in my powerpc.git repository and
-> added the patches listed below to it.  The master branch points to the
-> same place as the for-2.6.25 branch.
+Shouldn't this be $srctree (which doesn't seem to be passed to wrapper at
+the moment), not $object?
 
-Are we going to merge DTC into the kernel?  If so, can we get that in
-this branch soon-ish, and with a version that supports dts-v1 files?
+BTW, if we do this, we should remove the part in arch/powerpc/boot/Makefile
+where this is done.
 
-josh
+-Scott
