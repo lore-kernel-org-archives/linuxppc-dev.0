@@ -1,17 +1,14 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 0FA04DDEB9
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 15:55:06 +1100 (EST)
-Date: Sun, 2 Dec 2007 22:58:53 -0600
+	by ozlabs.org (Postfix) with ESMTP id 4F489DDEA3
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 16:00:59 +1100 (EST)
+Date: Sun, 2 Dec 2007 23:04:47 -0600
 From: Olof Johansson <olof@lixom.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] [POWERPC] pasemi: Fix module information for gpio-mdio
-Message-ID: <20071203045853.GB24492@lixom.net>
-References: <20071203044016.GA24068@lixom.net>
-	<18259.35370.588914.613689@cargo.ozlabs.ibm.com>
+To: paulus@samba.org
+Subject: Please pull pasemi.git for-2.6.25 branch
+Message-ID: <20071203050446.GC24492@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18259.35370.588914.613689@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,18 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 03, 2007 at 03:46:34PM +1100, Paul Mackerras wrote:
-> Olof Johansson writes:
-> 
-> > Fix up the module information for gpio-mdio, it wouldn't load
-> > because of lacking license, and wouldn't auto-load because of missing
-> > MODULE_DEVICE_TABLE.
-> 
-> Needed for 2.6.24?
+Paul,
 
-It's annoying but not critical, and the workaround is simple (build it
-in). I've already queued it up in my for-2.6.25 git branch, that should
-be sufficient.
+Please do:
+
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/olof/pasemi.git for-2.6.25
+
+For the following patches queued up for 2.6.25. All but one are PA
+Semi-specific (the i2c boardinfo consolidation that's a pre-req for the
+platform-specific one).
+
+ arch/powerpc/platforms/pasemi/Kconfig     |    2 
+ arch/powerpc/platforms/pasemi/Makefile    |    2 
+ arch/powerpc/platforms/pasemi/cpufreq.c   |   19 +++++-
+ arch/powerpc/platforms/pasemi/gpio_mdio.c |   94 ++++++++++++++++++------------
+ arch/powerpc/platforms/pasemi/misc.c      |   66 +++++++++++++++++++++
+ arch/powerpc/platforms/pasemi/pasemi.h    |    6 +
+ arch/powerpc/platforms/pasemi/powersave.S |   11 +++
+ arch/powerpc/platforms/pasemi/setup.c     |   16 ++++-
+ arch/powerpc/sysdev/Makefile              |    1 
+ arch/powerpc/sysdev/fsl_soc.c             |   40 ------------
+ arch/powerpc/sysdev/i2c_of_mapping.c      |   61 +++++++++++++++++++
+ drivers/char/hw_random/Kconfig            |    2 
+ drivers/char/hw_random/pasemi-rng.c       |    7 --
+ drivers/edac/pasemi_edac.c                |    4 -
+ include/asm-powerpc/i2c_of.h              |   14 ++++
+ 15 files changed, 256 insertions(+), 89 deletions(-)
+
+
+Olof Johansson (7):
+      [POWERPC] pasemi: clean up mdio_gpio a bit
+      [POWERPC] pasemi: Broaden specific references to 1682M
+      [POWERPC] pasemi: Don't enter powersaving states from elevated astates
+      [POWERPC] pasemi: Move cpus to hold loop before restart
+      [POWERPC] Consolidate compatible-to-i2c_boardinfo mapping code
+      [POWERPC] pasemi: Register i2c_board_info
+      [POWERPC] pasemi: Fix module information for gpio-mdio
 
 
 Thanks,
