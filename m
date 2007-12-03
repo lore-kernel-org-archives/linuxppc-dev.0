@@ -1,33 +1,14 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0DAEADDE49
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 15:22:34 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB34MVwb009634
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 23:22:31 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB34MUT4123588
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 21:22:30 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB34MUf7022909
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 21:22:30 -0700
-Date: Sun, 2 Dec 2007 22:20:22 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 0/24] powerpc: 4xx PCI, PCI-X and PCI-Express support
-	among others
-Message-ID: <20071202222022.45839409@zod.rchland.ibm.com>
-In-Reply-To: <1196652270.13230.192.camel@pasglop>
-References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130141756.3aa3d38b@zod.rchland.ibm.com>
-	<1196652270.13230.192.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 3 Dec 2007 15:30:05 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/4] Use embedded dtc in kernel builds
+Message-ID: <20071203043005.GJ26919@localhost.localdomain>
+References: <20071112041126.GB2047@localhost.localdomain>
+	<20071112041524.D0C11DDED4@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071112041524.D0C11DDED4@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,30 +19,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 03 Dec 2007 14:24:30 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+This patch alters the kernel makefiles to build dtc from the sources
+embedded in the previous patch.  It also changes the
+arch/powerpc/boot/wrapper script to use the embedded dtc, rather than
+expecting a copy of dtc already installed on the system.
 
-> 
-> On Fri, 2007-11-30 at 14:17 -0600, Josh Boyer wrote:
-> > > Some of these patches are _NOT_ yet candidate for merging
-> > > (mostly the board support ones), but you can review them and
-> > > Josh can put them in an experimental tree.
-> > 
-> > I've added these to the 2.6.25-candidates branch in my tree.  Fixed up
-> > the few conflicts manually.  I'll expect refreshes before merging
-> > anyway, but I'd like to get these out there for people to play with.
-> 
-> BTW. You were telling me the other day about a problem with the clock
-> code. 
-> 
-> It looks like the problem is a subtle difference between 440EP /440EPx
-> and 440SPe / 440GX. The former has the EBC clock derived from the PLB
-> clock while the later has it derived from OPB... yuck.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-Yes.
+Previous version would screw up badly if building with O=...  Fixed
+now.
 
-> I'm fixing that.
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-10-22 13:55:49.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-12-03 15:23:08.000000000 +1100
+@@ -108,17 +108,52 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+ 	$(call if_changed,bootar)
+ 
+-hostprogs-y	:= addnote addRamDisk hack-coff mktree
++hostprogs-y	:= addnote addRamDisk hack-coff mktree dtc
+ 
+ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+ extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+ 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
+ 
+ wrapper		:=$(srctree)/$(src)/wrapper
+-wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
++wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree dtc) \
+ 			$(wrapper) FORCE
+ 
+ #############
++# Bits for building dtc
++# DTC_GENPARSER      := 1    # Uncomment to rebuild flex/bison output
++
++dtc-objs := dtc.o flattree.o fstree.o data.o livetree.o treesource.o srcpos.o checks.o
++dtc-objs += dtc-lexer.lex.o dtc-parser.tab.o
++dtc-objs := $(addprefix dtc-src/, $(dtc-objs))
++
++# prerequisites on generated files needs to be explicit
++$(obj)/dtc-src/dtc-parser.tab.o: $(obj)/dtc-src/dtc-parser.tab.c $(obj)/dtc-src/dtc-parser.tab.h
++$(obj)/dtc-src/dtc-lexer.lex.o:  $(obj)/dtc-src/dtc-lexer.lex.c $(obj)/dtc-src/dtc-parser.tab.h
++
++HOSTCFLAGS += -I$(src)/dtc-src/ -I$(src)/dtc-src/libfdt/
++
++targets += dtc-src/dtc-parser.tab.c
++targets += dtc-src/dtc-lexer.lex.c
++
++ifdef DTC_GENPARSER
++BISON = bison
++FLEX = flex
++
++quiet_cmd_bison = BISON   $@
++      cmd_bison = $(BISON) -o$@ -d $<; cp $@ $@_shipped
++quiet_cmd_flex = FLEX    $@
++      cmd_flex = $(FLEX) -o$@ $<; cp $@ $@_shipped
++
++$(obj)/dtc-src/dtc-parser.tab.c: $(src)/dtc-src/dtc-parser.y FORCE
++     $(call if_changed,bison)
++
++$(obj)/dtc-src/dtc-parser.tab.h: $(obj)/dtc-src/dtc-parser.tab.c
++
++$(obj)/dtc-src/dtc-lexer.lex.c: $(src)/dtc-src/dtc-lexer.l FORCE
++     $(call if_changed,flex)
++endif
++
++#############
+ # Bits for building various flavours of zImage
+ 
+ ifneq ($(CROSS32_COMPILE),)
+Index: working-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/wrapper	2007-12-03 13:17:20.000000000 +1100
++++ working-2.6/arch/powerpc/boot/wrapper	2007-12-03 13:47:12.000000000 +1100
+@@ -119,7 +119,7 @@ if [ -n "$dts" ]; then
+     if [ -z "$dtb" ]; then
+ 	dtb="$platform.dtb"
+     fi
+-    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts"
++    $object/dtc -O dtb -o "$dtb" -b 0 "$dts"
+ fi
+ 
+ if [ -z "$kernel" ]; then
 
-Ok.
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
