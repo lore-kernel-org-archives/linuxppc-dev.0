@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-va3-R.bigfish.com (outbound-va3.frontbridge.com
+	[216.32.180.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EB95DDE36
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 14:27:00 +1100 (EST)
-Subject: Re: [PATCH 0/24] powerpc: 4xx PCI, PCI-X and PCI-Express support
-	among others
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20071130141756.3aa3d38b@zod.rchland.ibm.com>
-References: <1196403038.569525.367459803520.qpush@grosgo>
-	<20071130141756.3aa3d38b@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 14:24:30 +1100
-Message-Id: <1196652270.13230.192.camel@pasglop>
-Mime-Version: 1.0
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9A7DCDDE44
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 14:34:00 +1100 (EST)
+Message-ID: <4753791E.6020703@am.sony.com>
+Date: Sun, 02 Dec 2007 19:33:50 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PPC BOOT] Create otheros.bld next to specified output file,
+	not in $object directory.
+References: <1196650083.13978.113.camel@pmac.infradead.org>
+In-Reply-To: <1196650083.13978.113.camel@pmac.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,24 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Fri, 2007-11-30 at 14:17 -0600, Josh Boyer wrote:
-> > Some of these patches are _NOT_ yet candidate for merging
-> > (mostly the board support ones), but you can review them and
-> > Josh can put them in an experimental tree.
+David Woodhouse wrote:
+> The bootwrapper script currently generates an 'otheros.bld' file in
+> addition to the file specified by the -o option, when asked to build a
+> wrapper for PS3.
 > 
-> I've added these to the 2.6.25-candidates branch in my tree.  Fixed up
-> the few conflicts manually.  I'll expect refreshes before merging
-> anyway, but I'd like to get these out there for people to play with.
+> It should do that in the same directory as the output, not the directory
+> where the wrapper objects are kept (which might potentially not be
+> writable when the script runs).
 
-BTW. You were telling me the other day about a problem with the clock
-code. 
 
-It looks like the problem is a subtle difference between 440EP /440EPx
-and 440SPe / 440GX. The former has the EBC clock derived from the PLB
-clock while the later has it derived from OPB... yuck.
+Seems reasonable for installs from read-only media.
 
-I'm fixing that.
+ 
+> Arguably, the 'otheros.bld' ought to be created with the filename
+> specified as the -o argument. But that's a more intrusive change.
 
-Cheers,
-Ben.
+
+Yes, I think it makes sense.  ps3-flash-util can handle any file
+name, so there is no real reason to have it named otheros.bld.
+ 
+
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+
+
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
