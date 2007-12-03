@@ -1,30 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 89D18DDE27
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 11:27:35 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB30RSV9024619
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB30RSMX112874
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB30RSJR025003
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
-Date: Sun, 2 Dec 2007 18:25:02 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Please pull powerpc.git merge branch
-Message-ID: <20071202182502.67c07a2c@zod.rchland.ibm.com>
-In-Reply-To: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
-References: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 3 Dec 2007 11:55:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Xilinx EDK BSP generation of device trees for microblaze and
+	PowerPC
+Message-ID: <20071203005542.GB26919@localhost.localdomain>
+References: <20071120194411.E183B100060@mail17-sin.bigfish.com>
+	<20071125062456.ABA4AA4804E@mail64-cpk.bigfish.com>
+	<fa686aa40711251447t57f96dd4iba51d68e1c9a9c5c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40711251447t57f96dd4iba51d68e1c9a9c5c@mail.gmail.com>
+Cc: Jon Loeliger <jdl@jdl.com>, microblaze-uclinux@itee.uq.edu.au,
+	Michal Simek <simekm2@fel.cvut.cz>, linuxppc-dev@ozlabs.org,
+	git <git@xilinx.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,34 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 3 Dec 2007 10:12:49 +1100
-Paul Mackerras <paulus@samba.org> wrote:
+On Sun, Nov 25, 2007 at 03:47:12PM -0700, Grant Likely wrote:
+> On 11/24/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
+[snip]
+> >  So: the mpmc generates a 'memory' node, corresponding to it's memory
+> > interface.  It also gets a separate entry which contains the (optional, not
+> > present in this example) slave management interface (for ECC and performance
+> > information), and any sdma ports.  In this case, this node is mpmc@90000000,
+> > because there is no management interface.  If a management interface was
+> > present, then it would be @ the management address.
+> 
+> I don't think this is right; but I'm not sure.  I don't know what the
+> best naming convention is for the case of no management interface, but
+> mpmc@90000000 doesn't feel right.
+> 
+> Segher, David; what's your opinion?
 
-> Linus,
-> 
-> Please do
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> There are two commits there; one reverts a patch which was causing
-> some machines to fail to come back up when rebooting, and the other
-> only touches a couple of defconfigs.
-> 
-> Thanks,
-> Paul.
-> 
->  arch/powerpc/kernel/rtas.c             |   12 ++++++------
->  arch/powerpc/platforms/pseries/setup.c |    3 +--
->  arch/ppc/configs/ml300_defconfig       |    2 +-
->  arch/ppc/configs/ml403_defconfig       |    2 +-
->  include/asm-powerpc/rtas.h             |    3 +--
->  5 files changed, 10 insertions(+), 12 deletions(-)
-> 
-> Grant Likely (1):
->       [POWERPC] Remove xmon from ml300 and ml403 defconfig in arch/ppc
+If a node is present, but has no reg property, then it should not have
+a unit address either.  AFAICT what you're doing here is having one
+node to represent the actual memory space (/memory@XXX, as it should
+be) and another to represent the memory controller's control
+interface.  That's reasonable, but the unit address of the control
+interface should be the address of the control registers, not the
+address of the memory.  If there is no control interface, there should
+be no node for it at all.
 
-Thanks Paul.  I had this one queued for you to pull, but you beat me to
-it.
+[snip]
+> >  The temac works similarly, although the temac itself doesn't have a slave
+> > interface, so no compatible node for it.  The sub nodes get the compatible
+> > string for the ll_temac driver.  In this case, there is only one temac port
+> > active.  Some of the parameters are specific to port 0, in which case the
+> > parameter names (e.g. phyaddr) are generated by stripping off the complete
+> > C_TEMAC0 prefix.  Other parameters (e.g. phy-type) are common to both sub
+> > nodes, but are duplicated to make it easier for the driver to get the
+> > information out.  At runtime, the driver has to follow the llink-connected
+> > path to find what it is connected to, and use the dma code, or the fifo
+> > code.
+> >
+> >  the xps-ll-fifo structure is a bit simpler, with llink-connected pointing
+> > to the fifo, which looks like a 'normal' peripheral.
+> >
+> >  Points for comment:
+> >  1) I don't like the "PIM3" label, which is artificial (i.e. it doesn't
+> > correspond to a name in the .mhs) and not guaranteed to be unique.  However,
+> > in the BSP generator it seems awkward to generate path references easily in
+> > a single pass.  What I'd might prefer is:
+> >                  DDR2_SDRAM: mpmc@90000000 {
+> >                          sdma@3 {
+> >
+> >  and refer to the sdma port using something like <&DDR2_SDRAM/sdma@3>, but I
+> > don't think you can do that in dtc?
+> 
+> If not, it is possible to extend the dtc syntax.  Jon, David?  Thoughts?
 
-josh
+&label/relative/path is not currently allowable in dtc.  I suppose
+it's possible to add it, but there are complications.  I'm already
+making some patches to deal with lexical ambiguities in the
+&/full/path syntax, and the new syntax would make things more
+complicated to deal with.  I'll think about it.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
