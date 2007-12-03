@@ -1,23 +1,17 @@
-Return-Path: <SRS0+0172f75cf8e7244956cd+1562+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 72DE3DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 09:44:28 +1100 (EST)
-Subject: Re: [PATCH] Generic RTC class support for ppc_md.[gs]et_rtc_time
-From: David Woodhouse <dwmw2@infradead.org>
-To: benh@kernel.crashing.org
-In-Reply-To: <1196721397.13230.236.camel@pasglop>
-References: <1196701493.13978.163.camel@pmac.infradead.org>
-	<1196714722.13230.224.camel@pasglop>
-	<1196715974.13978.176.camel@pmac.infradead.org>
-	<1196721397.13230.236.camel@pasglop>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 22:44:22 +0000
-Message-Id: <1196721862.13978.190.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id E19B4DDE0A
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 10:33:58 +1100 (EST)
+Date: Mon, 3 Dec 2007 17:37:52 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 0/4] Series to add device tree naming to i2c
+Message-ID: <20071203233752.GA7041@lixom.net>
+References: <20071203212032.23543.3453.stgit@terra.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071203212032.23543.3453.stgit@terra.home>
+Cc: linuxppc-dev@ozlabs.org, i2c@lm-sensors.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-12-04 at 09:36 +1100, Benjamin Herrenschmidt wrote:
-> Worst one is time_init :-) Way too early to do any i2c babbling. Then
-> there used to be something with the NTP writeback, dunno if it's
-> changed.
+On Mon, Dec 03, 2007 at 04:20:32PM -0500, Jon Smirl wrote:
+> The following series implements standard linux module aliasing for i2c modules
+> It then converts the mpc i2c driver from being a platform driver to an open
+> firmware one. I2C device names are picked up from the device tree. Module
+> aliasing is used to translate from device tree names into to linux kernel
+> names. Several i2c drivers are updated to use the new aliasing. 
 
-Setting the system time seems to be done in the new RTC class by a
-late_initcall() in drivers/rtc/hctosys.c. In fact, it could even be done
-in userspace.
+May I ask why you want to modify the i2c layer instead of keeping the
+OF->i2c driver mapping in PPC code? It seems simpler to keep it in the
+PPC-specific code, since otherwise you might end up with confused i2c
+driver writers that make up their own OF names without knowing for sure
+that's what will be used. No?
 
-NTP uses update_persistent_clock() and doesn't seem to have been
-'solved' yet for the new RTC class. I don't think there's any particular
-reason for it to do i2c stuff in that context though.
+I recently posted (and asked Paulus to pull) a patch where I consolidate
+the fsl_soc mapping code so I can also use that on pasemi, and modified
+the pasemi platform code to setup the board_info from the device tree
+accordingly.
 
--- 
-dwmw2
+Finally, whitespace is broken in several of your patches.
+
+
+-Olof
