@@ -1,17 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1418CDDE17
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 11:04:22 +1100 (EST)
-Date: Mon, 3 Dec 2007 18:07:44 -0600
-From: Olof Johansson <olof@lixom.net>
-To: paulus@samba.org
-Subject: Re: Please pull pasemi.git for-2.6.25 branch
-Message-ID: <20071204000744.GC7041@lixom.net>
-References: <20071203050446.GC24492@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071203050446.GC24492@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <k-ueda@ct.jp.nec.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 4D2B2DDDF9
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 09:55:55 +1100 (EST)
+Date: Mon, 03 Dec 2007 17:55:44 -0500 (EST)
+Message-Id: <20071203.175544.13775421.k-ueda@ct.jp.nec.com>
+To: Geert.Uytterhoeven@sonycom.com
+Subject: Re: [PATCH 09/28] blk_end_request: changing ps3disk (take 3)
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+In-Reply-To: <Pine.LNX.4.64.0712021032490.29349@anakin>
+References: <20071130.182810.98558485.k-ueda@ct.jp.nec.com>
+	<Pine.LNX.4.64.0712021032490.29349@anakin>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: k-ueda@ct.jp.nec.com, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, dm-devel@redhat.com,
+	bharrosh@panasas.com, j-nomura@ce.jp.nec.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 02, 2007 at 11:04:47PM -0600, Olof Johansson wrote:
-> Paul,
+Hi Geert,
+
+On Sun, 2 Dec 2007 10:34:56 +0100 (CET), Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> On Fri, 30 Nov 2007, Kiyoshi Ueda wrote:
+> > This patch converts ps3disk to use blk_end_request().
+>                                      ^^^^^^^^^^^^^^^
+> Patch subject and description are inconsistent with actual change.
 > 
-> Please do:
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/olof/pasemi.git for-2.6.25
-> 
-> For the following patches queued up for 2.6.25. All but one are PA
-> Semi-specific (the i2c boardinfo consolidation that's a pre-req for the
-> platform-specific one).
+> > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+> > ---
+> >  drivers/block/ps3disk.c |    6 +-----
+> >  1 files changed, 1 insertion(+), 5 deletions(-)
+> > 
+> > Index: 2.6.24-rc3-mm2/drivers/block/ps3disk.c
+> > ===================================================================
+> > --- 2.6.24-rc3-mm2.orig/drivers/block/ps3disk.c
+> > +++ 2.6.24-rc3-mm2/drivers/block/ps3disk.c
+> > @@ -280,11 +280,7 @@ static irqreturn_t ps3disk_interrupt(int
+> >  	}
+> >  
+> >  	spin_lock(&priv->lock);
+> > -	if (!end_that_request_first(req, uptodate, num_sectors)) {
+> > -		add_disk_randomness(req->rq_disk);
+> > -		blkdev_dequeue_request(req);
+> > -		end_that_request_last(req, uptodate);
+> > -	}
+> > +	__blk_end_request(req, uptodate, num_sectors << 9);
+>       ^^^^^^^^^^^^^^^^^
 
-Sorry for the churn here, I hope you haven't pulled yet.
+Thank you for the comment.
+The description meant the blk_end_request family, not actual function,
+blk_end_request().  But as you pointed out, it is misleading.
+I'll change the description of all related patches.
 
-Based on today's i2c patches from Jon Smirl, it makes more sense for me
-to hold off on my i2c changes and make them on top of his work once that
-has been merged.
-
-I've backed out and rebased the patch set, new shortlog and diffstat:
-
- arch/powerpc/platforms/pasemi/Kconfig     |    2 
- arch/powerpc/platforms/pasemi/cpufreq.c   |   19 +++++-
- arch/powerpc/platforms/pasemi/gpio_mdio.c |   94 ++++++++++++++++++------------
- arch/powerpc/platforms/pasemi/pasemi.h    |    6 +
- arch/powerpc/platforms/pasemi/powersave.S |   11 +++
- arch/powerpc/platforms/pasemi/setup.c     |   16 ++++-
- drivers/char/hw_random/Kconfig            |    2 
- drivers/char/hw_random/pasemi-rng.c       |    7 --
- drivers/edac/pasemi_edac.c                |    4 -
- 9 files changed, 111 insertions(+), 50 deletions(-)
-
-Olof Johansson (5):
-      [POWERPC] pasemi: clean up mdio_gpio a bit
-      [POWERPC] pasemi: Broaden specific references to 1682M
-      [POWERPC] pasemi: Don't enter powersaving states from elevated astates
-      [POWERPC] pasemi: Move cpus to hold loop before restart
-      [POWERPC] pasemi: Fix module information for gpio-mdio
-
-
--Olof
+Thanks,
+Kiyoshi Ueda
