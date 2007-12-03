@@ -1,22 +1,32 @@
-Return-Path: <SRS0+0172f75cf8e7244956cd+1562+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4682DDDE33
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 02:13:44 +1100 (EST)
-Subject: Re: [PPC BOOT] Find device-tree source file in default directory.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20071203150843.GA4393@loki.buserror.net>
-References: <1196650083.13978.113.camel@pmac.infradead.org>
-	<1196650164.13978.115.camel@pmac.infradead.org>
-	<20071203150843.GA4393@loki.buserror.net>
-Content-Type: text/plain
-Date: Mon, 03 Dec 2007 15:13:39 +0000
-Message-Id: <1196694819.13978.158.camel@pmac.infradead.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D636ADE058
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 02:15:03 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB3FExWH017850
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 10:14:59 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB3FEpMr168498
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 08:14:51 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB3FEoND024952
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 08:14:50 -0700
+Date: Mon, 3 Dec 2007 09:14:48 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: Re: for-2.6.25 branch created in powerpc.git
+Message-ID: <20071203091448.6fae31d2@weaponx>
+In-Reply-To: <1196658999.13230.197.camel@pasglop>
+References: <18259.35326.516899.603549@cargo.ozlabs.ibm.com>
+	<1196658999.13230.197.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 03 Dec 2007 16:16:39 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Mon, 2007-12-03 at 09:08 -0600, Scott Wood wrote:
-> Shouldn't this be $srctree (which doesn't seem to be passed to wrapper at
-> the moment), not $object?
 > 
-> BTW, if we do this, we should remove the part in arch/powerpc/boot/Makefile
-> where this is done.
+> On Mon, 2007-12-03 at 15:45 +1100, Paul Mackerras wrote:
+> >       [POWERPC] Add xmon function to dump 44x TLB
+> 
+> That will go via jwb, there's already some updated versions of that in
+> my tree.
 
-It wasn't really done for the benefit of the in-kernel invocation -- it
-was done so that the installed standalone copy of the wrapper doesn't
-need a full path.
+Just send me an incremental version.  If it's already in Paul's tree, I
+don't really see a reason to play the revert and reapply game.
 
-We _could_ make the in-kernel setup use it -- but then you just have to
-pass the directory as a separate argument, instead of prepending it to
-the name of the dts file, as you observe... so there didn't seem to be a
-lot of point.
-
--- 
-dwmw2
+josh
