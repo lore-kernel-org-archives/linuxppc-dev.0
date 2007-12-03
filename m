@@ -1,20 +1,22 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 513E4DDE0D
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C7367DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 04:40:59 +1100 (EST)
-Message-ID: <47543FAD.7040504@anagramm.de>
-Date: Mon, 03 Dec 2007 18:41:01 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Tue,  4 Dec 2007 04:48:55 +1100 (EST)
+Message-ID: <475441DD.9030601@ovro.caltech.edu>
+Date: Mon, 03 Dec 2007 09:50:21 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-References: <474DB27C.7020909@anagramm.de>	<20071128194321.0804b3aa@i1501.lan.towertech.it>	<474F1B25.8080508@anagramm.de>	<20071129211912.46da8f5b@i1501.lan.towertech.it>	<474FEE20.6070606@anagramm.de>	<20071130122055.729dd3f8@i1501.lan.towertech.it>	<47541D70.2040805@anagramm.de>
-	<47542A50.1030208@anagramm.de> <47543351.2080904@freescale.com>
-In-Reply-To: <47543351.2080904@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+To: Matt Porter <mporter@kernel.crashing.org>
+Subject: Re: Maximum ioremap size for ppc arch?
+References: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
+	<20071203153009.GA30746@gate.crashing.org>
+In-Reply-To: <20071203153009.GA30746@gate.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,71 +27,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Scott!
+Hi Matt,
 
-Scott Wood schrieb:
- > Clemens Koller wrote:
- >> [OT+sarcasm on]
- >>
- >> So, the time is over, where you just enable a driver in the kernel
- >> config and
- >> the device gets probed and - if it's probed successfully - it usually
- >> works.
- >
- > The problem is the "probed successfully" bit -- i2c can't be
- > automatically detected like PCI can, and the probing that was being done
- > before was very error-prone.
+> On Mon, Dec 03, 2007 at 09:22:06AM -0000, michael.firth@bt.com wrote:
+>> I'm trying to get am MPC834x system running that has 256MBytes of NOR
+>> flash connected.
+>>
+>> The physmap flash driver is failing to ioremap() that amount of space,
+>> while on a similar system with 128Mbytes of flash, there are no
+>> problems.
+>>
+>> Is this a known limitation of ioremap() on the ppc architecture, or
+>> specifically the MPC834x family, and is there any (hopefully easy) way
+>> to increase this limit?
+> 
+> The answer is "it depends". It depends on the amount of system memory
+> you have. By default, your system memory is mapped at 0xc0000000, leaving
+> not enough space for vmalloc allocations to grab 256MB for the
+> ioremap (and avoid the fixed virtual mapping in the high virtual
+> address area).
+> 
+> See the "Advanced setup" menu. Normally, you can set "Set custom kernel
+> base address" to 0xa0000000 safely. That will give you an additional
+> 256MB of vmalloc space. On arch/powerpc, you'll also have to set
+> "Size of user task space" to 0x80000000 or 0xa0000000.
 
-I think I understood the original purpose of device trees, or it's
-intended advantage but don't see much of this yet.
+Could you comment on a similar problem I had/have.
 
-Before (2.6.22) everything was working fine just by enabling the proper
-kernel config. But in it's current implementation I primarily see the
-an additional, duplicate, badly documented configuration step for
-these - in my case - stupid, usually trivial to handle RTC chips.
+I have a CPU with 1GB memory, and I use about 20 cPCI boards that
+I give 8MB windows in PCI space. When I was trying to load my
+custom driver with these boards, it would give me ioremap failures.
+On a CPU that had 512MB of memory it worked fine. My 'temporary hack'
+(which is still in place) for the 1GB CPUs was to add mem=512M (or 
+whatever it is) to the kernel command line. That was a good
+enough fix at the time :)
 
- > That's the simplest way, but not the only way.  You could also have a
- > wrapper platform that chooses the proper device tree based on something
- > you detect.
+I have figured I was running out of page table entries or something
+like that and was going to investigate one of these days ...
 
-Here is the problem:
-something it detects = probing (what we planned to avoid)
-something I detect = configurating (currently duplicated work).
-This wrapper platform doesn't really exist yet in practice.
+However, perhaps it was that I was running out of address space.
+But 0xC0000000 is at 3GB, I can't see that I would be triggering
+an address space issue:
 
- >> Hmmm... this just s****!
- >
- > There are some growing pains, but the old method of blindly poking at
- > i2c addresses and hoping that the first driver to ask for a port that
- > something responds to is actually the right driver for that port is just
- > shit.
+1GB = 0x40000000
+20 x 8MB = 160MB
 
-That's not a good example: Of course, blindly poking is bad...
-therefore there is the (kernel.)configuration step to have only
-the relevant drivers enabled:
-The Philips PCF8563 is on address 0x51 and the DS13x7 on 0x68.
-The drivers don't touch foreign addresses at all and they are
-fixed. No issues there... proved by 2.6.22.
+But, I figured I'd ask anyway :)
 
-Well, I don't want to start a flamewar on this since we have had
-already enough pro & contra Device Tree discussions. I just want
-to point out that the current situation doesn't really follow
-the KISS principle at all in my eyes.
+Thanks,
+Dave
 
-Here, the next idea which comes to my mind:
-Maybe we should think about a kernel-config -> dts compiler for
-the future where the enabled drivers generate their default dts
-entries automagically?
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+PS. The CPUs in this case are x86 based, while the PCI boards use
+PLX-9054 bridges. I'm building new peripheral boards with MPC8349EAs
+so this problem is going to rear its ugly head again soon, when
+I work on the drivers for the new peripheral boards.
