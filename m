@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E5DBDDE07
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 07:45:47 +1100 (EST)
-Subject: Re: [PATCH] Generic RTC class support for ppc_md.[gs]et_rtc_time
+	by ozlabs.org (Postfix) with ESMTP id 7AF55DDE46
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 07:53:03 +1100 (EST)
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1196701493.13978.163.camel@pmac.infradead.org>
-References: <1196701493.13978.163.camel@pmac.infradead.org>
+To: Andrei Dolnikov <adolnikov@ru.mvista.com>
+In-Reply-To: <20071129152836.GB13751@ru.mvista.com>
+References: <20071129152836.GB13751@ru.mvista.com>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 07:45:22 +1100
-Message-Id: <1196714722.13230.224.camel@pasglop>
+Date: Tue, 04 Dec 2007 07:52:50 +1100
+Message-Id: <1196715170.13230.228.camel@pasglop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Reply-To: benh@kernel.crashing.org
@@ -24,16 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> 	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +	model = "Katana-Qp"; /* Default */
+> +	compatible = "emerson,Katana-Qp";
+> +	coherency-off;
+> +
 
-On Mon, 2007-12-03 at 17:04 +0000, David Woodhouse wrote:
-> It would be good to migrate the platform code to register RTC devices
-> directly, but for now this will make them functional enough for most
-> purposes...
+What do that mean (coherency-off) ?
 
-Wouldn't it be best to do the other way around at some stage ?
-
-We need to solve the problem of ppc_md. stuff being called by the core
-in atomic contexts first though.
+Somebody is trying again to use a 74xx with non cache coherent DMA ?
+That isn't going to fly...
 
 Ben.
  
