@@ -1,21 +1,18 @@
-Return-Path: <niklaus.giger@member.fsf.org>
-Received: from viefep24-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id C47BDDDE35
+Return-Path: <dell.query@yahoo.com>
+Received: from n8.bullet.ukl.yahoo.com (n8.bullet.ukl.yahoo.com
+	[217.146.182.188]) by ozlabs.org (Postfix) with SMTP id 5ACFCDDDFE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Dec 2007 07:41:56 +1100 (EST)
-Received: from ng ([77.56.222.4]) by viefep28-int.chello.at
-	(InterMail vM.7.08.02.02 201-2186-121-104-20070414) with ESMTP
-	id <20071202204130.GURZ9569.viefep28-int.chello.at@ng>
-	for <linuxppc-embedded@ozlabs.org>; Sun, 2 Dec 2007 21:41:30 +0100
-From: Niklaus Giger <niklaus.giger@member.fsf.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Problem compiling sequoia using DENX kernel. Xenomai-patch required?
-Date: Sun, 2 Dec 2007 21:41:35 +0100
+	Mon,  3 Dec 2007 18:17:27 +1100 (EST)
+Date: Sun, 2 Dec 2007 23:17:25 -0800 (PST)
+From: Dell Query <dell.query@yahoo.com>
+Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
+	Registers (BCSR)
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200711291113.10356.sr@denx.de>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_AixUH8U7KMufXyl"
-Message-Id: <200712022141.36467.niklaus.giger@member.fsf.org>
-Reply-To: niklaus.giger@member.fsf.org
+Content-Type: multipart/alternative; boundary="0-1637888658-1196666245=:82133"
+Message-ID: <86675.82133.qm@web45613.mail.sp1.yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,127 +23,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_AixUH8U7KMufXyl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--0-1637888658-1196666245=:82133
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi
+Hi Stefan,
 
-I tried with (tags DENX-v2.6.23.9, DENX-v.2.6.23, master) to build a kernel 
-for the sequoia board.
-I am using ELDK 4.1. I did a 
-git checkout -b copy-master master
-make ARCH=powerpc CROSS_COMPILE=ppc_4xx- CFLAGS=-g sequoia_defconfig 
-make ARCH=powerpc CROSS_COMPILE=ppc_4xx- CFLAGS=-g zImage 
+I finally got the new pdf files from other Resource CDs and used 0xc000000 address, without 0x2000 offset.
 
-First I stumbled about problem compiling arch/powerpc/platforms/44x/ppc4xx*.c
-file with errors like
-arch/powerpc/platforms/44x/ppc4xx-pci.c: In function 'ppc4xx_setup_pci':
-arch/powerpc/platforms/44x/ppc4xx-pci.c:62: sorry, unimplemented: inlining 
-failed in call to 'pci_cfg_out': function body not available
-arch/powerpc/platforms/44x/ppc4xx-pci.c:98: sorry, unimplemented: called from 
-here
+It works! Thanks a lot for the help.
 
-After applying the at attached patch I got farther till
-  CC      kernel/softirq.o
-kernel/softirq.c: In function 'raise_softirq':
-kernel/softirq.c:319: sorry, unimplemented: inlining failed in call 
-to 'raise_softirq_irqoff': function body not available
-kernel/softirq.c:342: sorry, unimplemented: called from here
-make[2]: *** [kernel/softirq.o] Fehler 1
+But may I know why in Linux it is mapped to 0x1c000000, wherein the doc stated 0xc000000?
 
-I thought that denx compiled images for the sequoia using 2.6.23. 
-Do they only work after having applied the Xenomai patch? Because if I apply 
-the Xenomai patch, the kernel compiles cleanly. In this case  I think it 
-would be nice to get somewhere a hint (or did I missed it somewhere) that 
-this is a requirement. I lost quite a few hours as I wanted to first compile 
-a "normal" kernel and afterwars apply the xenomai patch.
+Thanks a lot!
 
-Any clarifikation would be appreciated.
+Stefan Roese <sr@denx.de> wrote: Hi Dell (???),
 
-Best regards
+On Thursday 29 November 2007, Dell Query wrote:
+> 1. I used the 0x1c0002000 offset because I was referring to the first reply
+> that I received. Now, I used the address 0x1c0002000 and tried to read from
+> it. I retrieved 0x0f01c087. May I know what does this mean? How does this
+> data relate to Board ID?
 
--- 
-Niklaus Giger
+Please refer to the document describing the CPLD registers. They are byte 
+registers and not 32bit lword registers (see below).
 
---Boundary-00=_AixUH8U7KMufXyl
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="powerpc.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="powerpc.diff"
+> 2. Referring back to "Embedded Planet 440xC" document, I tried to activate
+> the USER_LED0/USER_LED1 (with new address 0x1c0000000 + 0x2 offset) by
+> setting it to 0. But didn't see the led turned on. Did some experiments and
+> tried 0x1c0000000 without offset, sent 0, and found that USER_LED0 (CR3)
+> and USER_LED1 (CR4) are activated! This got me confused. May I know why is
+> this so? Could you please refer me to some documents?
 
-diff --git a/arch/powerpc/platforms/44x/ppc4xx-nand.c b/arch/powerpc/platforms/44x/ppc4xx-nand.c
-index 2fb553b..0574d2c 100644
---- a/arch/powerpc/platforms/44x/ppc4xx-nand.c
-+++ b/arch/powerpc/platforms/44x/ppc4xx-nand.c
-@@ -29,8 +29,6 @@
- #include <linux/mtd/nand.h>
- #include <linux/mtd/ndfc.h>
- 
--#include <mm/mmu_decl.h>
--
- #include <asm/system.h>
- #include <asm/atomic.h>
- #include <asm/prom.h>
-diff --git a/arch/powerpc/platforms/44x/ppc4xx-pci.c b/arch/powerpc/platforms/44x/ppc4xx-pci.c
-index 4666250..137555f 100644
---- a/arch/powerpc/platforms/44x/ppc4xx-pci.c
-+++ b/arch/powerpc/platforms/44x/ppc4xx-pci.c
-@@ -26,8 +26,6 @@
- #include <linux/module.h>
- #include <linux/io.h>
- 
--#include <mm/mmu_decl.h>
--
- #include <asm/system.h>
- #include <asm/atomic.h>
- #include <asm/pci-bridge.h>
-@@ -44,6 +42,7 @@
- #endif
- 
- #ifdef CONFIG_PCI
-+extern unsigned long total_memory;
- 
- int ppc4xx_exclude_device(struct pci_controller *hose, u_char bus,
- 			   u_char devfn)
-@@ -53,21 +52,6 @@ int ppc4xx_exclude_device(struct pci_controller *hose, u_char bus,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--inline void pci_writel(void *pci_reg_base, u32 offset, unsigned int val)
--{
--	writel(val, pci_reg_base + offset);
--}
--
--inline void pci_cfg_out(void *cfg, u32 offset, unsigned int value)
--{
--	out_le32((void *)((u32) cfg + offset), value);
--}
--
--inline u32 pci_cfg_in(void *cfg, u32 offset)
--{
--	return in_le32((void *)((u32) cfg + offset));
--}
--
- static void __init ppc4xx_setup_pci(struct pci_controller *hose,
- 				     void *pci_reg_base, void *pci_cfg_base)
- {
-diff --git a/arch/powerpc/platforms/44x/ppc4xx-usb.c b/arch/powerpc/platforms/44x/ppc4xx-usb.c
-index 1b07689..87e87e6 100644
---- a/arch/powerpc/platforms/44x/ppc4xx-usb.c
-+++ b/arch/powerpc/platforms/44x/ppc4xx-usb.c
-@@ -25,8 +25,6 @@
- #include <linux/module.h>
- #include <linux/io.h>
- 
--#include <mm/mmu_decl.h>
--
- #include <asm/system.h>
- #include <asm/atomic.h>
- #include <asm/prom.h>
+The address of the CPLD is without this 0x2000 offset as it seems. Maybe the 
+Sequoia users manual is incorrect here.
 
---Boundary-00=_AixUH8U7KMufXyl--
+Make sure that you address these registers with the correct functions. That is 
+in_8()/out_8(). Here a log from U-Boot:
+
+=> md.l c0000000 1
+c0000000: 0f00c007    ....
+=> md.b c0000000 4
+c0000000: 0f 00 c0 07    ....
+
+By writing 0x00 to offset 0x02 (LED control) I am able to set the user led's. 
+This should work in Linux the same way:
+
+=> mw.b c0000002 00
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
+
+
+       
+---------------------------------
+Be a better sports nut! Let your teams follow you with Yahoo Mobile. Try it now.
+--0-1637888658-1196666245=:82133
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hi Stefan,<br><br>I finally got the new pdf files from other Resource CDs and used 0xc000000 address, without 0x2000 offset.<br><br>It works! Thanks a lot for the help.<br><br>But may I know why in Linux it is mapped to 0x1c000000, wherein the doc stated 0xc000000?<br><br>Thanks a lot!<br><br><b><i>Stefan Roese &lt;sr@denx.de&gt;</i></b> wrote:<blockquote class="replbq" style="border-left: 2px solid rgb(16, 16, 255); margin-left: 5px; padding-left: 5px;"> Hi Dell (???),<br><br>On Thursday 29 November 2007, Dell Query wrote:<br>&gt; 1. I used the 0x1c0002000 offset because I was referring to the first reply<br>&gt; that I received. Now, I used the address 0x1c0002000 and tried to read from<br>&gt; it. I retrieved 0x0f01c087. May I know what does this mean? How does this<br>&gt; data relate to Board ID?<br><br>Please refer to the document describing the CPLD registers. They are byte <br>registers and not 32bit lword registers (see below).<br><br>&gt; 2. Referring back to
+ "Embedded Planet 440xC" document, I tried to activate<br>&gt; the USER_LED0/USER_LED1 (with new address 0x1c0000000 + 0x2 offset) by<br>&gt; setting it to 0. But didn't see the led turned on. Did some experiments and<br>&gt; tried 0x1c0000000 without offset, sent 0, and found that USER_LED0 (CR3)<br>&gt; and USER_LED1 (CR4) are activated! This got me confused. May I know why is<br>&gt; this so? Could you please refer me to some documents?<br><br>The address of the CPLD is without this 0x2000 offset as it seems. Maybe the <br>Sequoia users manual is incorrect here.<br><br>Make sure that you address these registers with the correct functions. That is <br>in_8()/out_8(). Here a log from U-Boot:<br><br>=&gt; md.l c0000000 1<br>c0000000: 0f00c007    ....<br>=&gt; md.b c0000000 4<br>c0000000: 0f 00 c0 07    ....<br><br>By writing 0x00 to offset 0x02 (LED control) I am able to set the user led's. <br>This should work in Linux the same way:<br><br>=&gt; mw.b c0000002
+ 00<br><br>Best regards,<br>Stefan<br><br>=====================================================================<br>DENX Software Engineering GmbH,     MD: Wolfgang Denk &amp; Detlev Zundel<br>HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany<br>Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de<br>=====================================================================<br></blockquote><br><p>&#32;
+      <hr size=1>Be a better sports nut! Let your teams follow you 
+with Yahoo Mobile. <a href="http://us.rd.yahoo.com/evt=51731/*http://mobile.yahoo.com/sports;_ylt=At9_qDKvtAbMuh1G1SQtBI7ntAcJ
+">Try it now.</a>
+--0-1637888658-1196666245=:82133--
