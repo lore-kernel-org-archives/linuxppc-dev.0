@@ -2,19 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1ADADDE9D
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 08:03:58 +1100 (EST)
-Subject: Re: [PATCH] ipic: change ack operation that register is accessed
-	only when needed
+	by ozlabs.org (Postfix) with ESMTP id BB73ADDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 08:04:23 +1100 (EST)
+Subject: Re: [PATCH] Add IPIC MSI interrupt support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-In-Reply-To: <1196684780-28408-1-git-send-email-leoli@freescale.com>
-References: <1196684780-28408-1-git-send-email-leoli@freescale.com>
+To: Li Li <r64360@freescale.com>
+In-Reply-To: <1196672870.14353.21.camel@Guyver>
+References: <1196394519.29683.8.camel@Guyver>
+	<1196654521.13554.32.camel@concordia>
+	<1196672870.14353.21.camel@Guyver>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 08:02:27 +1100
-Message-Id: <1196715747.13230.233.camel@pasglop>
+Date: Tue, 04 Dec 2007 08:03:32 +1100
+Message-Id: <1196715812.13230.234.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,41 +28,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
->  static void ipic_ack_irq(unsigned int virq)
->  {
-> -	struct ipic *ipic = ipic_from_irq(virq);
->  	unsigned int src = ipic_irq_to_hw(virq);
-> -	unsigned long flags;
-> -	u32 temp;
->  
-> -	spin_lock_irqsave(&ipic_lock, flags);
-> +	/* Only external interrupts in edge mode support ACK */
-> +	if (unlikely(ipic_info[src].ack &&
-> +			((get_irq_desc(virq)->status & IRQ_TYPE_SENSE_MASK) ==
-> +			IRQ_TYPE_EDGE_FALLING))) {
-> +		struct ipic *ipic = ipic_from_irq(virq);
-> +		unsigned long flags;
-> +		u32 temp;
->  
-> -	temp = ipic_read(ipic->regs, ipic_info[src].pend);
-> -	temp |= (1 << (31 - ipic_info[src].bit));
-> -	ipic_write(ipic->regs, ipic_info[src].pend, temp);
-> +		spin_lock_irqsave(&ipic_lock, flags);
->  
-> -	spin_unlock_irqrestore(&ipic_lock, flags);
-> +		temp = ipic_read(ipic->regs, ipic_info[src].ack);
-> +		temp |= (1 << (31 - ipic_info[src].bit));
-> +		ipic_write(ipic->regs, ipic_info[src].ack, temp);
-> +
-> +		spin_unlock_irqrestore(&ipic_lock, flags);
-> +	}
->  }
+On Mon, 2007-12-03 at 17:07 +0800, Li Li wrote:
+> 
+> In IPIC, the 8 MSI interrupts is handled as level intrrupt.
+> I just provide a versatile in case it is changed.
 
-That doesn't look right... 
-
-That should be handled by the higher level flow handler. The generic
-edge one calls ack and the level one mask_and_ack. Just make them do the
-right thing, no need to test for the flow type in the low level
-function.
+Level ? Are you sure ? MSIs are by definition edge interrupts... Or do
+you have some weird logic that asserts a level input until you go ack
+something ? Sounds weird...
 
 Ben.
