@@ -1,25 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <mporter@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E1522DDE17
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 94F31DDE1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 05:07:26 +1100 (EST)
-Message-ID: <475445DF.6080202@freescale.com>
-Date: Mon, 03 Dec 2007 12:07:27 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-References: <474DB27C.7020909@anagramm.de>	<20071128194321.0804b3aa@i1501.lan.towertech.it>	<474F1B25.8080508@anagramm.de>	<20071129211912.46da8f5b@i1501.lan.towertech.it>	<474FEE20.6070606@anagramm.de>	<20071130122055.729dd3f8@i1501.lan.towertech.it>	<47541D70.2040805@anagramm.de>
-	<47542A50.1030208@anagramm.de> <47543351.2080904@freescale.com>
-	<47543FAD.7040504@anagramm.de>
-In-Reply-To: <47543FAD.7040504@anagramm.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+	Tue,  4 Dec 2007 06:07:44 +1100 (EST)
+Date: Mon, 3 Dec 2007 13:07:23 -0600
+From: Matt Porter <mporter@kernel.crashing.org>
+To: David Hawkins <dwh@ovro.caltech.edu>
+Subject: Re: Maximum ioremap size for ppc arch?
+Message-ID: <20071203190723.GB30746@gate.crashing.org>
+References: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
+	<20071203153009.GA30746@gate.crashing.org>
+	<475441DD.9030601@ovro.caltech.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <475441DD.9030601@ovro.caltech.edu>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,44 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clemens Koller wrote:
-> Scott Wood schrieb:
->  > The problem is the "probed successfully" bit -- i2c can't be
->  > automatically detected like PCI can, and the probing that was being done
->  > before was very error-prone.
+On Mon, Dec 03, 2007 at 09:50:21AM -0800, David Hawkins wrote:
+> Could you comment on a similar problem I had/have.
 > 
-> I think I understood the original purpose of device trees, or it's
-> intended advantage but don't see much of this yet.
+> I have a CPU with 1GB memory, and I use about 20 cPCI boards that
+> I give 8MB windows in PCI space. When I was trying to load my
+> custom driver with these boards, it would give me ioremap failures.
+> On a CPU that had 512MB of memory it worked fine. My 'temporary hack'
+> (which is still in place) for the 1GB CPUs was to add mem=512M (or 
+> whatever it is) to the kernel command line. That was a good
+> enough fix at the time :)
 > 
-> Before (2.6.22) everything was working fine just by enabling the proper
-> kernel config.
+> I have figured I was running out of page table entries or something
+> like that and was going to investigate one of these days ...
+> 
+> However, perhaps it was that I was running out of address space.
+> But 0xC0000000 is at 3GB, I can't see that I would be triggering
+> an address space issue:
+> 
+> 1GB = 0x40000000
+> 20 x 8MB = 160MB
+> 
+> But, I figured I'd ask anyway :)
 
-Just because it worked fine *for you* doesn't mean it worked fine in 
-general.
+Yes, same thing. There's N ways to fix it. But I see you're talking
+x86.
 
-1. This means that you can't use the same kernel with different 
-hardware, which is precisely what you were complaining that you couldn't do.
-2. What if you have two i2c devices at the same address on different 
-buses?  Or if you have two devices, these devices can reside on a 
-variety of ports, and the driver for one tries to probe the port of the 
-other?  .config doesn't help you now.
-3. What if you need to pass in extra information to the driver, such as 
-the exact chip type when more than one is handled by the same driver, or 
-the IRQ line if the chip uses one, etc?
+> PS. The CPUs in this case are x86 based, while the PCI boards use
+> PLX-9054 bridges. I'm building new peripheral boards with MPC8349EAs
+> so this problem is going to rear its ugly head again soon, when
+> I work on the drivers for the new peripheral boards.
 
-> Well, I don't want to start a flamewar on this since we have had
-> already enough pro & contra Device Tree discussions. I just want
-> to point out that the current situation doesn't really follow
-> the KISS principle at all in my eyes.
+You should be able to do something similar on x86 but the details
+are TBD. I would probably try to limit low memory to 512MB in the
+x86 case.
 
-It should be as simple as it can be and still work, but no simpler. 
-Before, it was too simple to work.
-
-> Here, the next idea which comes to my mind:
-> Maybe we should think about a kernel-config -> dts compiler for
-> the future where the enabled drivers generate their default dts
-> entries automagically?
-
-Sorry, there's just not enough information in .config for that.
-
--Scott
+-Matt
