@@ -1,19 +1,18 @@
-Return-Path: <mporter@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 13D56DDE03
+Return-Path: <lokowich@acdstar.com>
+Received: from g2host.com (mailfront1.g2host.com [208.42.176.212])
+	by ozlabs.org (Postfix) with ESMTP id 7E5BFDDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 02:30:21 +1100 (EST)
-Date: Mon, 3 Dec 2007 09:30:09 -0600
-From: Matt Porter <mporter@kernel.crashing.org>
-To: michael.firth@bt.com
-Subject: Re: Maximum ioremap size for ppc arch?
-Message-ID: <20071203153009.GA30746@gate.crashing.org>
-References: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
+	Tue,  4 Dec 2007 03:01:58 +1100 (EST)
+Message-ID: <47542865.30308@acdstar.com>
+Date: Mon, 03 Dec 2007 10:01:41 -0600
+From: lokowich <lokowich@acdstar.com>
+MIME-Version: 1.0
+To: Roman Fietze <roman.fietze@telemotive.de>
+Subject: Re: SDRAM failures on MPC5200B
+References: <46A0D76E.4030101@acdstar.com> <4739ADDC.8010402@acdstar.com>
+	<200711131540.18315.roman.fietze@telemotive.de>
+In-Reply-To: <200711131540.18315.roman.fietze@telemotive.de>
+Content-Type: text/html; charset=ISO-8859-1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,27 +24,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 03, 2007 at 09:22:06AM -0000, michael.firth@bt.com wrote:
-> I'm trying to get am MPC834x system running that has 256MBytes of NOR
-> flash connected.
-> 
-> The physmap flash driver is failing to ioremap() that amount of space,
-> while on a similar system with 128Mbytes of flash, there are no
-> problems.
-> 
-> Is this a known limitation of ioremap() on the ppc architecture, or
-> specifically the MPC834x family, and is there any (hopefully easy) way
-> to increase this limit?
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<br>
+<br>
+Roman Fietze wrote:
+<blockquote cite="mid:200711131540.18315.roman.fietze@telemotive.de"
+ type="cite">
+  <pre wrap="">Hallo Mark,
 
-The answer is "it depends". It depends on the amount of system memory
-you have. By default, your system memory is mapped at 0xc0000000, leaving
-not enough space for vmalloc allocations to grab 256MB for the
-ioremap (and avoid the fixed virtual mapping in the high virtual
-address area).
+On Tuesday 13 November 2007 14:59:56 lokowich wrote:
 
-See the "Advanced setup" menu. Normally, you can set "Set custom kernel
-base address" to 0xa0000000 safely. That will give you an additional
-256MB of vmalloc space. On arch/powerpc, you'll also have to set
-"Size of user task space" to 0x80000000 or 0xa0000000.
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">A follow-up: The first version of our termination network was based
+on the Lite5200 reference design, but was confirmed by Freescale to
+be inadequate. We revised the hardware per their errata, terminating
+both ends of the data bus. This fixed the problem. Thanks for the
+helpful feedback.
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+If I can remember it correctly, the is no errata on the Freescale
+documentation web pages specifying to terminate the SDRAM data lines
+on both ends. The only document I can remember that specifies
+something similar is AN3045, "A comparison of the MPC5200B (Mask Set
+M62C) with prior MPC5200 Versions" on page 2, in the chapter
+"1. Overview".
 
--Matt
+Could you please give me some hint about what errata or other document
+we probably missed?
+  </pre>
+</blockquote>
+This is message from Freescale to our HW engineer and was in reference
+to Figure 1 in AN3045 <br>
+<blockquote type="cite">
+  <pre wrap="">A design could avoid termination resistors if the trace delay is less than
+1/6 of the rise fall/time, if the output impedance matches the trace
+impedance or if the switching waveform is not so important (like PCI
+synchronous signals). The first two conditions are not met for MPC5200B DDR
+signals with 5 cm traces.
+
+The MPC5200B memory controller's nominal output impedance is 22 Ohms (16..35
+worst case range).
+The nominal rise/fall time is ~400ps. However, worst case r/f time is about
+200ps.
+
+Thus, MPC5200B memory design must include signal terminations. The most
+critical signals are memory clocks and DQS. The ringing on these signals (at
+the threshold level) is not allowed.
+The recommended series resistor value is 20..30 Ohms (may depend on the
+load). 
+Bidirectional signals (DQM) should have series termination at both ends of
+data bus. It is common recommendation for MPC5200B memory design as well as
+for MPC5200 Rev.A.
+
+Lite5200B board doesn't follow these recommendations. This was done before
+the importance of the correct termination resistors was known. A large
+number of the issues people are having in moving from the MPC5200 to the
+MPC5200B are caused by not using the correct termination resistors. The
+Lite5200B board should not be used as an example.
+
+Memory system design must ensure AC timing specs for MPC5200 and SDRAM.
+Memory signals must have valid levels within setup/hold time window. The
+ringing caused by the PCB trace reflections must be damped before the input
+setup window begins. The ringing reduces time margins provided for signals.
+Proper termination of the signal removes the ringing. 
+
+Using proper series termination solves most issues caused by poor signal
+integrity. In order to find optimal termination, use IBIS models of MPC5200
+and SDRAM to simulate signal waveforms</pre>
+</blockquote>
+<blockquote cite="mid:200711131540.18315.roman.fietze@telemotive.de"
+ type="cite">
+  <pre wrap="">
+Maybe I have to tell our HW people that it will be necessary to fix
+our design as well.
+
+
+Thank you
+
+Roman
+
+  </pre>
+  <pre wrap="">
+<hr size="4" width="90%">
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></pre>
+</blockquote>
+</body>
+</html>
