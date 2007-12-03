@@ -1,21 +1,24 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id CF128DDEC3
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2042EDDD0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 06:35:26 +1100 (EST)
-Message-ID: <47545A81.90804@anagramm.de>
-Date: Mon, 03 Dec 2007 20:35:29 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Tue,  4 Dec 2007 06:50:08 +1100 (EST)
+Message-ID: <47545E47.8010408@ovro.caltech.edu>
+Date: Mon, 03 Dec 2007 11:51:35 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-References: <474DB27C.7020909@anagramm.de>	<20071128194321.0804b3aa@i1501.lan.towertech.it>	<474F1B25.8080508@anagramm.de>	<20071129211912.46da8f5b@i1501.lan.towertech.it>	<474FEE20.6070606@anagramm.de>	<20071130122055.729dd3f8@i1501.lan.towertech.it>	<47541D70.2040805@anagramm.de>
-	<47542A50.1030208@anagramm.de> <47543351.2080904@freescale.com>
-	<47543FAD.7040504@anagramm.de> <475445DF.6080202@freescale.com>
-In-Reply-To: <475445DF.6080202@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+To: Matt Porter <mporter@kernel.crashing.org>
+Subject: Re: Maximum ioremap size for ppc arch?
+References: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
+	<20071203153009.GA30746@gate.crashing.org>
+	<475441DD.9030601@ovro.caltech.edu>
+	<20071203190723.GB30746@gate.crashing.org>
+In-Reply-To: <20071203190723.GB30746@gate.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,41 +29,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello, Scott!
+Hi Matt,
 
-Scott Wood schrieb:
- >> Here, the next idea which comes to my mind:
- >> Maybe we should think about a kernel-config -> dts compiler for
- >> the future where the enabled drivers generate their default dts
- >> entries automagically?
- >
- > Sorry, there's just not enough information in .config for that.
+> Yes, same thing. There's N ways to fix it. But I see you're talking
+> x86.
+> 
+>> PS. The CPUs in this case are x86 based, while the PCI boards use
+>> PLX-9054 bridges. I'm building new peripheral boards with MPC8349EAs
+>> so this problem is going to rear its ugly head again soon, when
+>> I work on the drivers for the new peripheral boards.
+> 
+> You should be able to do something similar on x86 but the details
+> are TBD. I would probably try to limit low memory to 512MB in the
+> x86 case.
 
-If there is really the need to put more information (which I don't
-see in the case of the RTCs) to .config, it might be an idea to
-extend the current structure for this use instead of duplicating
-and maintaining a second repository.
+Yeah, that works for me. The CPUs were ordered with 512MB,
+but arrived with 1GB. It was thought a windfall at the time ...
+but not-so after the driver weirdness :)
 
-And regarding the DS1337 (or the PCF8563 and similar RTCs):
-It's address (0x68) is immutable fixed by the manufacturer
-of that device. So, why do we include it in the DT, when we
-already told the kernel what driver we want to use?
+Thanks for the info. Now at least if I want to understand the
+problem, I know where to look.
 
-Even if I have an eeprom which can have varying addresses,
-I can simply tell the driver/the kernel .config what address
-it should use... If I want to be able to alter that address
-for whatever reason by OF, I still don't want to touch a
-separate file in the kernel tree.
-
-Regards,
--- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Cheers,
+Dave
