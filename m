@@ -1,26 +1,21 @@
-Return-Path: <jtyner@eon.cs.ucr.edu>
-Received: from mail.cs.ucr.edu (mail.cs.ucr.edu [138.23.169.83])
-	by ozlabs.org (Postfix) with ESMTP id 2CEE5DDE9C
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 07:58:40 +1100 (EST)
-Received: from mail.cs.ucr.edu (localhost.localdomain [127.0.0.1])
-	by mail.cs.ucr.edu (Postfix) with ESMTP id CEB2F2AEB9D
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 12:58:37 -0800 (PST)
-Received: from eon.cs.ucr.edu (eon.cs.ucr.edu [138.23.169.9])
-	by mail.cs.ucr.edu (Postfix) with ESMTP id 7D18A2AEB8B
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 12:58:37 -0800 (PST)
-Received: from eon.cs.ucr.edu (localhost.localdomain [127.0.0.1])
-	by eon.cs.ucr.edu (Postfix) with ESMTP id 65FE6F3FC9
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 12:58:38 -0800 (PST)
-Received: (from jtyner@localhost)
-	by eon.cs.ucr.edu (8.13.1/8.13.1/Submit) id lB3KwcND027038
-	for linuxppc-dev@ozlabs.org; Mon, 3 Dec 2007 12:58:38 -0800
-Date: Mon, 3 Dec 2007 12:58:38 -0800
-From: John Tyner <jtyner@cs.ucr.edu>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix 8xx compile errors
-Message-ID: <20071203205837.GA22557@cs.ucr.edu>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C1ADADDE9D
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 08:03:58 +1100 (EST)
+Subject: Re: [PATCH] ipic: change ack operation that register is accessed
+	only when needed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Yang <leoli@freescale.com>
+In-Reply-To: <1196684780-28408-1-git-send-email-leoli@freescale.com>
+References: <1196684780-28408-1-git-send-email-leoli@freescale.com>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 08:02:27 +1100
+Message-Id: <1196715747.13230.233.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="n8g4imXOkfNTN/H1"
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,53 +26,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+>  static void ipic_ack_irq(unsigned int virq)
+>  {
+> -	struct ipic *ipic = ipic_from_irq(virq);
+>  	unsigned int src = ipic_irq_to_hw(virq);
+> -	unsigned long flags;
+> -	u32 temp;
+>  
+> -	spin_lock_irqsave(&ipic_lock, flags);
+> +	/* Only external interrupts in edge mode support ACK */
+> +	if (unlikely(ipic_info[src].ack &&
+> +			((get_irq_desc(virq)->status & IRQ_TYPE_SENSE_MASK) ==
+> +			IRQ_TYPE_EDGE_FALLING))) {
+> +		struct ipic *ipic = ipic_from_irq(virq);
+> +		unsigned long flags;
+> +		u32 temp;
+>  
+> -	temp = ipic_read(ipic->regs, ipic_info[src].pend);
+> -	temp |= (1 << (31 - ipic_info[src].bit));
+> -	ipic_write(ipic->regs, ipic_info[src].pend, temp);
+> +		spin_lock_irqsave(&ipic_lock, flags);
+>  
+> -	spin_unlock_irqrestore(&ipic_lock, flags);
+> +		temp = ipic_read(ipic->regs, ipic_info[src].ack);
+> +		temp |= (1 << (31 - ipic_info[src].bit));
+> +		ipic_write(ipic->regs, ipic_info[src].ack, temp);
+> +
+> +		spin_unlock_irqrestore(&ipic_lock, flags);
+> +	}
+>  }
 
-Building for 8xx fails to compile due to errors in a couple of places. 
-The first is due to the casting of an lvalue (if I remember correctly), 
-and the second was due to the cpmp variable being declared static even 
-though the headers previously defined it as extern. The following patch 
-corrects these errors. The patch is against 2.4 since that's what I'm 
-working with. (I've been unable to get 2.6 to run properly on my 
-hardware so far.)
+That doesn't look right... 
 
-Please CC me on any responses since I'm not subscribed.
+That should be handled by the higher level flow handler. The generic
+edge one calls ack and the level one mask_and_ack. Just make them do the
+right thing, no need to test for the flow type in the low level
+function.
 
-Thanks,
-John
-
-
-
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="8xx_compile.patch"
-
-diff -ruNa linux-2.4.35.4.orig/arch/ppc/8xx_io/uart.c linux-2.4.35.4/arch/ppc/8xx_io/uart.c
---- linux-2.4.35.4.orig/arch/ppc/8xx_io/uart.c	2007-11-17 09:23:15.000000000 -0800
-+++ linux-2.4.35.4/arch/ppc/8xx_io/uart.c	2007-11-27 11:28:09.000000000 -0800
-@@ -2292,7 +2292,8 @@
- 
- 		/* Get the address of the host memory buffer.*/
- 		info = &consinfo;
--		info->tx_bd_base = (cbd_t *)bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
-+		bdbase = (cbd_t *)&cpmp->cp_dpmem[up->smc_tbase];
-+		info->tx_bd_base = (cbd_t *)bdbase;
- 		info->tx_cur = (cbd_t *)bdbase;
- 	}
- 	max_tx_size = console_tx_buf_len;
-diff -ruNa linux-2.4.35.4.orig/arch/ppc/boot/simple/m8xx_tty.c linux-2.4.35.4/arch/ppc/boot/simple/m8xx_tty.c
---- linux-2.4.35.4.orig/arch/ppc/boot/simple/m8xx_tty.c	2007-11-17 09:23:15.000000000 -0800
-+++ linux-2.4.35.4/arch/ppc/boot/simple/m8xx_tty.c	2007-11-27 11:28:42.000000000 -0800
-@@ -30,7 +30,7 @@
- #define SMC_INDEX	0
- #endif
- 
--static cpm8xx_t	*cpmp = (cpm8xx_t *)&(((immap_t *)IMAP_ADDR)->im_cpm);
-+cpm8xx_t	*cpmp = (cpm8xx_t *)&(((immap_t *)IMAP_ADDR)->im_cpm);
- 
- unsigned long
- serial_init(int ignored, bd_t *bd)
-
---n8g4imXOkfNTN/H1--
+Ben.
