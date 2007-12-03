@@ -1,22 +1,25 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C7367DDE30
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E1522DDE17
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 04:48:55 +1100 (EST)
-Message-ID: <475441DD.9030601@ovro.caltech.edu>
-Date: Mon, 03 Dec 2007 09:50:21 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Tue,  4 Dec 2007 05:07:26 +1100 (EST)
+Message-ID: <475445DF.6080202@freescale.com>
+Date: Mon, 03 Dec 2007 12:07:27 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Matt Porter <mporter@kernel.crashing.org>
-Subject: Re: Maximum ioremap size for ppc arch?
-References: <36D7B34A3A79F84F82FA0C154F299F2505FE26D2@E03MVX1-UKDY.domain1.systemhost.net>
-	<20071203153009.GA30746@gate.crashing.org>
-In-Reply-To: <20071203153009.GA30746@gate.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
+References: <474DB27C.7020909@anagramm.de>	<20071128194321.0804b3aa@i1501.lan.towertech.it>	<474F1B25.8080508@anagramm.de>	<20071129211912.46da8f5b@i1501.lan.towertech.it>	<474FEE20.6070606@anagramm.de>	<20071130122055.729dd3f8@i1501.lan.towertech.it>	<47541D70.2040805@anagramm.de>
+	<47542A50.1030208@anagramm.de> <47543351.2080904@freescale.com>
+	<47543FAD.7040504@anagramm.de>
+In-Reply-To: <47543FAD.7040504@anagramm.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,57 +30,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Matt,
-
-> On Mon, Dec 03, 2007 at 09:22:06AM -0000, michael.firth@bt.com wrote:
->> I'm trying to get am MPC834x system running that has 256MBytes of NOR
->> flash connected.
->>
->> The physmap flash driver is failing to ioremap() that amount of space,
->> while on a similar system with 128Mbytes of flash, there are no
->> problems.
->>
->> Is this a known limitation of ioremap() on the ppc architecture, or
->> specifically the MPC834x family, and is there any (hopefully easy) way
->> to increase this limit?
+Clemens Koller wrote:
+> Scott Wood schrieb:
+>  > The problem is the "probed successfully" bit -- i2c can't be
+>  > automatically detected like PCI can, and the probing that was being done
+>  > before was very error-prone.
 > 
-> The answer is "it depends". It depends on the amount of system memory
-> you have. By default, your system memory is mapped at 0xc0000000, leaving
-> not enough space for vmalloc allocations to grab 256MB for the
-> ioremap (and avoid the fixed virtual mapping in the high virtual
-> address area).
+> I think I understood the original purpose of device trees, or it's
+> intended advantage but don't see much of this yet.
 > 
-> See the "Advanced setup" menu. Normally, you can set "Set custom kernel
-> base address" to 0xa0000000 safely. That will give you an additional
-> 256MB of vmalloc space. On arch/powerpc, you'll also have to set
-> "Size of user task space" to 0x80000000 or 0xa0000000.
+> Before (2.6.22) everything was working fine just by enabling the proper
+> kernel config.
 
-Could you comment on a similar problem I had/have.
+Just because it worked fine *for you* doesn't mean it worked fine in 
+general.
 
-I have a CPU with 1GB memory, and I use about 20 cPCI boards that
-I give 8MB windows in PCI space. When I was trying to load my
-custom driver with these boards, it would give me ioremap failures.
-On a CPU that had 512MB of memory it worked fine. My 'temporary hack'
-(which is still in place) for the 1GB CPUs was to add mem=512M (or 
-whatever it is) to the kernel command line. That was a good
-enough fix at the time :)
+1. This means that you can't use the same kernel with different 
+hardware, which is precisely what you were complaining that you couldn't do.
+2. What if you have two i2c devices at the same address on different 
+buses?  Or if you have two devices, these devices can reside on a 
+variety of ports, and the driver for one tries to probe the port of the 
+other?  .config doesn't help you now.
+3. What if you need to pass in extra information to the driver, such as 
+the exact chip type when more than one is handled by the same driver, or 
+the IRQ line if the chip uses one, etc?
 
-I have figured I was running out of page table entries or something
-like that and was going to investigate one of these days ...
+> Well, I don't want to start a flamewar on this since we have had
+> already enough pro & contra Device Tree discussions. I just want
+> to point out that the current situation doesn't really follow
+> the KISS principle at all in my eyes.
 
-However, perhaps it was that I was running out of address space.
-But 0xC0000000 is at 3GB, I can't see that I would be triggering
-an address space issue:
+It should be as simple as it can be and still work, but no simpler. 
+Before, it was too simple to work.
 
-1GB = 0x40000000
-20 x 8MB = 160MB
+> Here, the next idea which comes to my mind:
+> Maybe we should think about a kernel-config -> dts compiler for
+> the future where the enabled drivers generate their default dts
+> entries automagically?
 
-But, I figured I'd ask anyway :)
+Sorry, there's just not enough information in .config for that.
 
-Thanks,
-Dave
-
-PS. The CPUs in this case are x86 based, while the PCI boards use
-PLX-9054 bridges. I'm building new peripheral boards with MPC8349EAs
-so this problem is going to rear its ugly head again soon, when
-I work on the drivers for the new peripheral boards.
+-Scott
