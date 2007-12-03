@@ -1,21 +1,30 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B3C6DDDE24
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 10:54:52 +1100 (EST)
-Date: Sun, 2 Dec 2007 17:58:38 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/3] OF-platform PATA driver
-Message-ID: <20071202235838.GA19678@lixom.net>
-References: <20071127153708.GA12490@localhost.localdomain>
-	<20071202114617.GA2923@zarina> <20071202154539.GA12415@lixom.net>
-	<200712030040.22701.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200712030040.22701.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Anton Vorontsov <cbou@mail.ru>,
-	Paul Mundt <lethal@linux-sh.org>, Jeff Garzik <jeff@garzik.org>,
-	linux-ide@vger.kernel.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 89D18DDE27
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Dec 2007 11:27:35 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB30RSV9024619
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB30RSMX112874
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB30RSJR025003
+	for <linuxppc-dev@ozlabs.org>; Sun, 2 Dec 2007 19:27:28 -0500
+Date: Sun, 2 Dec 2007 18:25:02 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Please pull powerpc.git merge branch
+Message-ID: <20071202182502.67c07a2c@zod.rchland.ibm.com>
+In-Reply-To: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
+References: <18259.15345.627820.551644@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +34,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 03, 2007 at 12:40:21AM +0100, Arnd Bergmann wrote:
-> On Sunday 02 December 2007, Olof Johansson wrote:
+On Mon, 3 Dec 2007 10:12:49 +1100
+Paul Mackerras <paulus@samba.org> wrote:
+
+> Linus,
 > 
-> > Yes, I agree with Sergei: I don't think the pio/ata mode belongs there,
-> > "ata-generic" (or "generic-ata") sounds good to me. If firmwares want to
-> > specify pata/sata stuff as more specific compatible fields, then they are
-> > free to, but the driver shouldn't depend on it as long as "ata-generic"
-> > is in the list.
+> Please do
 > 
-> Yes, that makes sense. Let me just make it clear that I no longer think
-> we should have the PIO mode or the ATA level in the compatible property.
-> The PIO modes should really have their own property, if any, and the ATA
-> standard would need to be a property of the attached device, not a property
-> of the controller.
-
-Right. And configuring PIO modes is something quite hardware specific,
-which defeats the purpose of having a "generic" driver as a catch-all
-for "simple" configs in the first place. If the hardware needs (much)
-tuning it probably makes more sense to do it as a separate driver.
-
-> I can see a point in listing the ATA devices themselves in the device tree,
-> but it's probably not really worth it for the fdt setup, since they
-> can easily be probed at runtime.
-
-If the firmware probes them and/or knows about them. It's the kind of
-thing that can change quite often. We don't list USB devices under the usb
-controllers either, since they're quite volatile and the device tree is
-(fairly) static on the DTS-based platforms.
-
-> > I will need to add a compatible field to it myself (our firmware uses
-> > "electra-ide") + some minor changes, but I will do that on top of this
-> > patch once it goes in since it involves removing the old code from
-> > arch/powerpc/platforms/pasemi.
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 > 
-> I'd suggest to also have electra-ide hardcoded in the driver alongside
-> ata-generic, as a special case for backwards compatibility.
+> There are two commits there; one reverts a patch which was causing
+> some machines to fail to come back up when rebooting, and the other
+> only touches a couple of defconfigs.
+> 
+> Thanks,
+> Paul.
+> 
+>  arch/powerpc/kernel/rtas.c             |   12 ++++++------
+>  arch/powerpc/platforms/pseries/setup.c |    3 +--
+>  arch/ppc/configs/ml300_defconfig       |    2 +-
+>  arch/ppc/configs/ml403_defconfig       |    2 +-
+>  include/asm-powerpc/rtas.h             |    3 +--
+>  5 files changed, 10 insertions(+), 12 deletions(-)
+> 
+> Grant Likely (1):
+>       [POWERPC] Remove xmon from ml300 and ml403 defconfig in arch/ppc
 
-Yep, that's my plan, I'll do that when I move it over.
+Thanks Paul.  I had this one queued for you to pull, but you beat me to
+it.
 
-
--Olof
+josh
