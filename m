@@ -1,20 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 68831DDE01
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:56:48 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so902088anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Dec 2007 12:56:47 -0800 (PST)
-Message-ID: <fa686aa40712041256j4d4a79dap776124dd9715d4ee@mail.gmail.com>
-Date: Tue, 4 Dec 2007 13:56:47 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [POWERPC] Xilinx: clear data caches.
-In-Reply-To: <20071204204915.AF346C18071@mail45-blu.bigfish.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 429D2DE049
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:59:42 +1100 (EST)
+Date: Tue, 4 Dec 2007 15:03:44 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] pata_of_platform: Move electra-ide support over to new
+	framework
+Message-ID: <20071204210344.GE8099@lixom.net>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204204432.GD8099@lixom.net> <4755BD7B.6030208@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071204204915.AF346C18071@mail45-blu.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4755BD7B.6030208@garzik.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-ide@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,68 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/4/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
-> This code is needed to boot without a boot loader.
+On Tue, Dec 04, 2007 at 03:50:03PM -0500, Jeff Garzik wrote:
+> Olof Johansson wrote:
+>> [POWERPC] Move electra-ide support over to new pata_of_platform framework
+>> Move electra-ide glue over to the new pata_of_platform framework, and
+>> add the quirks needed to that driver.
+>> Signed-off-by: Olof Johansson <olof@lixom.net>
+>> ---
+>> I'll remove the electra-ide stuff from arch/powerpc/platforms/pasemi
+>> once this hits a common tree, since otherwise I'd be without IDE until
+>> they converge (i.e.  2.6.25 merge window).
 >
-> Grant:  I'm not sure where the right place to put this is.  I'm assuming we'll actually need some boot code that is not generic?  Also, note that there is a V4FX errata workaround in arch/ppc/boot/head.S, which probably also needs to get pulled to powerpc.
+> FWIW I'm presuming this work will go via a powerpc tree not libata... 
+> Generally that's not the case, but here it's largely an arch-specific work.
 
-Thanks Steve, I'll pull this into my tree.  I hope to find some time
-to get the raw platform cleaned up to get into mainline.
+Ok, that works. I was thinking of letting this patch go through libata,
+and do the removal through the powerpc merge path. But I can do both
+through powerpc.
 
-And, yes, the V4FX errata needs to be merged into arch/powerpc.
-
-Thanks again!
-g.
-
->
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> ---
->  arch/powerpc/boot/raw-platform.c |   22 ++++++++++++++++++++++
->  1 files changed, 22 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/boot/raw-platform.c b/arch/powerpc/boot/raw-platform.c
-> index b9caeee..2a5e493 100644
-> --- a/arch/powerpc/boot/raw-platform.c
-> +++ b/arch/powerpc/boot/raw-platform.c
-> @@ -24,6 +24,28 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
->                     unsigned long r6, unsigned long r7)
->  {
->         u64 memsize64 = memsize[0];
-> +       static const unsigned long line_size = 32;
-> +       static const unsigned long congruence_classes = 256;
-> +       unsigned long addr;
-> +       unsigned long dccr;
-> +
-> +       /*
-> +        * Invalidate the data cache if the data cache is turned off.
-> +        * - The 405 core does not invalidate the data cache on power-up
-> +        *   or reset but does turn off the data cache. We cannot assume
-> +        *   that the cache contents are valid.
-> +        * - If the data cache is turned on this must have been done by
-> +        *   a bootloader and we assume that the cache contents are
-> +        *   valid.
-> +        */
-> +       __asm__("mfdccr %0": "=r" (dccr));
-> +       if (dccr == 0) {
-> +               for (addr = 0;
-> +                    addr < (congruence_classes * line_size);
-> +                    addr += line_size) {
-> +                       __asm__("dccci 0,%0": :"b"(addr));
-> +               }
-> +       }
->
->         if (mem_size_cells == 2) {
->                 memsize64 <<= 32;
-> --
-> 1.5.3.4-dirty
->
->
->
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+-Olof
