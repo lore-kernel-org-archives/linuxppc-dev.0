@@ -1,23 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1E5F3DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:01:13 +1100 (EST)
-In-Reply-To: <1196279794.30806.54.camel@pmac.infradead.org>
-References: <1196273071.30806.46.camel@pmac.infradead.org>
-	<1196279794.30806.54.camel@pmac.infradead.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8D34458A-2CE9-4FA7-AE28-4D148E08CCDF@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] Stop phy code from returning success to unknown ioctls.
-Date: Tue, 4 Dec 2007 14:00:42 -0600
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
-	Domen Puncer <domen.puncer@telargo.com>, netdev@vger.kernel.org
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40712041205o39ba4e3epcbc008ea47bd83cc@mail.gmail.com>
+Date: Tue, 4 Dec 2007 13:05:46 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 5/7] powerpc: Replace ppc_md.power_off with pm_power_off
+In-Reply-To: <1196798152.13230.308.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071204053736.GA27862@mag.az.mvista.com>
+	<20071204054821.GF27862@mag.az.mvista.com>
+	<1196752989.13230.265.camel@pasglop>
+	<20071204180148.GA1579@mag.az.mvista.com>
+	<1196798152.13230.308.camel@pasglop>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,53 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 12/4/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Tue, 2007-12-04 at 11:01 -0700, Mark A. Greer wrote:
+> > On Tue, Dec 04, 2007 at 06:23:09PM +1100, Benjamin Herrenschmidt wrote:
+> > >
+> > > On Mon, 2007-12-03 at 22:48 -0700, Mark A. Greer wrote:
+> > > > From: Mark A. Greer <mgreer@mvista.com>
+> > > >
+> > > > The ppc_md.power_off hook performs the same function that the
+> > > > pm_power_off hook is supposed to.  However, it is powerpc-specific
+> > > > and prevents kernel drivers (e.g., IPMI) from changing how a platform
+> > > > is powered off.  So, get rid of ppc_md.power_off and replace it with
+> > > > pm_power_off.
+> > >
+> > > I'm less happy with that one... probably aesthetics :-)
+> > >
+> > > Can't we just have the generic code call pm_power_off and ppc_md and
+> > > which ever powers the machine off wins ?
+> >
+> > Yes, that would be easy to do.  Seems like duplication though.
+> > If you are sure you're okay with the duplication, I'll do that.
+>
+> Let's ask Paulus what he thinks.
 
-On Nov 28, 2007, at 13:56, David Woodhouse wrote:
+We could simply have the setup code copy the ppc_md.power_off pointer
+into pm_power_off; that we retain the nice assignment in
+define_machine(), but eliminate the duplicated calls.
 
-> This kind of sucks, and prevents the Fedora installer from using the
-> device for network installs...
->
-> [root@efika phy]# iwconfig eth0
-> Warning: Driver for device eth0 has been compiled with an ancient  
-> version
-> of Wireless Extension, while this program support version 11 and  
-> later.
-> Some things may be broken...
->
-> eth0        ESSID:off/any  Nickname:""
->           NWID:0  Channel:0  Access Point: 00:00:BF:81:14:E0
->           Bit Rate:-1.08206e+06 kb/s   Sensitivity=0/0
->           RTS thr:off   Fragment thr:off
->           Encryption key:<too big>
->           Power Management:off
->
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Cheers,
+g.
 
-d'oh!
-
-Acked-by: Andy Fleming <afleming@freescale.com>
-
-
->
-> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
-> index 9bc1177..7c9e6e3 100644
-> --- a/drivers/net/phy/phy.c
-> +++ b/drivers/net/phy/phy.c
-> @@ -406,6 +406,9 @@ int phy_mii_ioctl(struct phy_device *phydev,
->  				&& phydev->drv->config_init)
->  			phydev->drv->config_init(phydev);
->  		break;
-> +
-> +	default:
-> +		return -ENOTTY;
->  	}
->
->  	return 0;
->
-> -- 
-> dwmw2
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
