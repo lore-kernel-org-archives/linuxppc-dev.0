@@ -1,27 +1,29 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <jdl@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
 	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B4CACDDE23
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:13:55 +1100 (EST)
-Date: Tue, 4 Dec 2007 07:13:59 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] Add IPIC MSI interrupt support
-Message-ID: <20071204131359.GA5784@loki.buserror.net>
-References: <1196394519.29683.8.camel@Guyver>
-	<1196654521.13554.32.camel@concordia>
-	<1196672870.14353.21.camel@Guyver>
-	<1196746689.20158.4.camel@concordia>
-	<995B09A8299C2C44B59866F6391D2635D75588@zch01exm21.fsl.freescale.net>
-	<1196769858.32524.8.camel@concordia>
+	by ozlabs.org (Postfix) with ESMTP id C4B21DDDF7
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:14:43 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	lB4DEdL2004191
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 06:14:39 -0700 (MST)
+Message-ID: <475552BE.1030407@freescale.com>
+Date: Tue, 04 Dec 2007 07:14:38 -0600
+From: Jon Loeliger <jdl@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196769858.32524.8.camel@concordia>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
+To: Jon Loeliger <jdl@freescale.com>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+References: <20071129150726.GA13751@ru.mvista.com>
+	<20071129152836.GB13751@ru.mvista.com>
+	<20071203015018.GC26919@localhost.localdomain>
+	<1196709993.7735.3.camel@ld0161-tx32>
+	<20071204003354.GB32577@localhost.localdomain>
+In-Reply-To: <20071204003354.GB32577@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 11:04:18PM +1100, Michael Ellerman wrote:
-> On Tue, 2007-12-04 at 18:34 +0800, Li Tony wrote:
-> > I am not very sure about spin_lock influence.
-> > But maybe somebody will change the virq_to_hw implementation.
-> > I will take virq_to_hw instead. 
+David Gibson wrote:
+> On Mon, Dec 03, 2007 at 01:26:34PM -0600, Jon Loeliger wrote:
+>> On Sun, 2007-12-02 at 19:50, David Gibson wrote:
+>>
+>>>> +		clock-frequency = <7f28155>;		/* 133.333333 MHz */
+>>> You can use <d# 133333333> to avoid the ugly hex.
+>> Better still, blaze a new trail, convert it to /dts-v1/ and
+>> use clock-frequency = <133333333> straight up!
 > 
-> I mean the time to take the function call should be pretty small
-> compared to taking and releasing a spinlock - but if you have
-> performance numbers to prove otherwise let me know :)
+> Hrm.. probably best to wait for dtc to go into the kernel for that.
+> 
 
-I don't think the IPIC is used on any SMP platforms at the moment, so
-there's no spinlock overhead other than disabling interrupts...
+I disagree.
 
-That said, it's not worth reimplementing to avoid a function call.
-
--Scott
+jdl
