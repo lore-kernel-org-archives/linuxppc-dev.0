@@ -1,28 +1,25 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
+	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58EE6DDE05
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 21:49:50 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CD95CDDDE6
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 21:51:56 +1100 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	lB4Anhe8001609
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 03:49:44 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB4AngeV001649
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 04:49:42 -0600 (CST)
-Subject: [PATCH 2/2] powerpc: Add IPIC MSI support
-From: Li Li <r64360@freescale.com>
-To: Kumar Gala <kumar.gala@freescale.com>,
-	kim phillips <Kim.Phillips@freescale.com>, michael@ellerman.id.au,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 18:39:20 +0800
-Message-Id: <1196764760.2573.10.camel@Guyver>
-Mime-Version: 1.0
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	lB4ApoGY001508
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 03:51:50 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB4ApnGq002385
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 04:51:49 -0600 (CST)
+From: Li Yang <leoli@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] ipic: ack only for edge interrupts
+Date: Tue,  4 Dec 2007 19:01:40 +0800
+Message-Id: <1196766100-7411-1-git-send-email-leoli@freescale.com>
+Cc: Li Yang <leoli@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,592 +29,618 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modified based on discussion on list.
+Only external interrupts in edge detect mode support ack operation.
+Therefore, in most cases ack is not needed.  The patch makes ipic
+ack only when it's needed.  This could boost over all system performance.
 
-1. Adopt virq_to_hw routine
-2. Correct a legacy bug
-
-Implements the IPIC MSI as two level interrupt controller.
-
-Signed-off-by: Tony Li <tony.li@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/boot/dts/mpc8377_mds.dts     |   14 ++
- arch/powerpc/boot/dts/mpc8378_mds.dts     |   14 ++
- arch/powerpc/boot/dts/mpc8379_mds.dts     |   14 ++
- arch/powerpc/platforms/83xx/Kconfig       |    6 +
- arch/powerpc/platforms/83xx/mpc837x_mds.c |    7 +
- arch/powerpc/sysdev/Makefile              |    1 +
- arch/powerpc/sysdev/ipic_msi.c            |  359 +++++++++++++++++++++++++++++
- include/asm-powerpc/ipic_msi.h            |   66 ++++++
- 8 files changed, 481 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/sysdev/ipic_msi.c
- create mode 100644 include/asm-powerpc/ipic_msi.h
+Update to use different irq_chip for level and edge interrupts as Ben
+suggested.
+Supercedes [PATCH] ipic: change ack operation that register is accessed
+only when needed
 
-diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 8f54349..c11e529 100644
---- a/arch/powerpc/boot/dts/mpc8377_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -210,6 +210,20 @@
- 			#interrupt-cells = <2>;
- 			reg = <700 100>;
- 		};
-+
-+		ipic-msi@7c0 {
-+			compatible = "fsl,ipic-msi";
-+			reg = <7c0 40>;
-+			interrupts = < 43 8
-+				       4  8
-+				       51 8
-+				       52 8
-+				       56 8
-+				       57 8
-+				       58 8
-+				       59 8 >;
-+			interrupt-parent = < &ipic >;
-+		};
- 	};
+ arch/powerpc/sysdev/ipic.c |  113 +++++++++++++++++---------------------------
+ arch/powerpc/sysdev/ipic.h |    6 +--
+ 2 files changed, 45 insertions(+), 74 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+index 7168b03..7274750 100644
+--- a/arch/powerpc/sysdev/ipic.c
++++ b/arch/powerpc/sysdev/ipic.c
+@@ -30,11 +30,11 @@
+ #include "ipic.h"
  
- 	pci@e0008500 {
-diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index e09b0c5..7b0bf1b 100644
---- a/arch/powerpc/boot/dts/mpc8378_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -192,6 +192,20 @@
- 			#interrupt-cells = <2>;
- 			reg = <700 100>;
- 		};
-+
-+		ipic-msi@7c0 {
-+			compatible = "fsl,ipic-msi";
-+			reg = <7c0 40>;
-+			interrupts = < 43 8
-+				       4  8
-+				       51 8
-+				       52 8
-+				       56 8
-+				       57 8
-+				       58 8
-+				       59 8 >;
-+			interrupt-parent = < &ipic >;
-+		};
- 	};
+ static struct ipic * primary_ipic;
++static struct irq_chip ipic_level_irq_chip, ipic_edge_irq_chip;
+ static DEFINE_SPINLOCK(ipic_lock);
  
- 	pci@e0008500 {
-diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
-index cdb4426..9fe4bd2 100644
---- a/arch/powerpc/boot/dts/mpc8379_mds.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
-@@ -236,6 +236,20 @@
- 			#interrupt-cells = <2>;
- 			reg = <700 100>;
- 		};
-+
-+		ipic-msi@7c0 {
-+			compatible = "fsl,ipic-msi";
-+			reg = <7c0 40>;
-+			interrupts = < 43 8
-+				       4  8
-+				       51 8
-+				       52 8
-+				       56 8
-+				       57 8
-+				       58 8
-+				       59 8 >;
-+			interrupt-parent = < &ipic >;
-+		};
- 	};
+ static struct ipic_info ipic_info[] = {
+ 	[1] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_C,
+ 		.force	= IPIC_SIFCR_H,
+@@ -42,7 +42,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 0,
+ 	},
+ 	[2] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_C,
+ 		.force	= IPIC_SIFCR_H,
+@@ -50,7 +49,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 1,
+ 	},
+ 	[4] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_C,
+ 		.force	= IPIC_SIFCR_H,
+@@ -58,7 +56,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 3,
+ 	},
+ 	[9] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -66,7 +63,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 0,
+ 	},
+ 	[10] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -74,7 +70,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 1,
+ 	},
+ 	[11] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -82,7 +77,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 2,
+ 	},
+ 	[12] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -90,7 +84,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 3,
+ 	},
+ 	[13] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -98,7 +91,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[14] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -106,7 +98,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[15] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -114,7 +105,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[16] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_D,
+ 		.force	= IPIC_SIFCR_H,
+@@ -122,7 +112,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[17] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -130,7 +120,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[18] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -138,7 +128,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[19] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -146,7 +136,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[20] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -154,7 +144,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[21] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -162,7 +152,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[22] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -170,7 +160,7 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[23] = {
+-		.pend	= IPIC_SEPNR,
++		.ack	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SEFCR,
+@@ -178,7 +168,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[32] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -186,7 +175,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 0,
+ 	},
+ 	[33] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -194,7 +182,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 1,
+ 	},
+ 	[34] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -202,7 +189,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 2,
+ 	},
+ 	[35] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -210,7 +196,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 3,
+ 	},
+ 	[36] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -218,7 +203,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[37] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -226,7 +210,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[38] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -234,7 +217,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[39] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_A,
+ 		.force	= IPIC_SIFCR_H,
+@@ -242,7 +224,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[42] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_B,
+ 		.force	= IPIC_SIFCR_H,
+@@ -250,7 +231,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 2,
+ 	},
+ 	[44] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_B,
+ 		.force	= IPIC_SIFCR_H,
+@@ -258,7 +238,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[45] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_B,
+ 		.force	= IPIC_SIFCR_H,
+@@ -266,7 +245,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 5,
+ 	},
+ 	[46] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_B,
+ 		.force	= IPIC_SIFCR_H,
+@@ -274,7 +252,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 6,
+ 	},
+ 	[47] = {
+-		.pend	= IPIC_SIPNR_H,
+ 		.mask	= IPIC_SIMSR_H,
+ 		.prio	= IPIC_SIPRR_B,
+ 		.force	= IPIC_SIFCR_H,
+@@ -282,7 +259,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 7,
+ 	},
+ 	[48] = {
+-		.pend	= IPIC_SEPNR,
+ 		.mask	= IPIC_SEMSR,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SEFCR,
+@@ -290,7 +266,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 4,
+ 	},
+ 	[64] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SIFCR_L,
+@@ -298,7 +273,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 0,
+ 	},
+ 	[65] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SIFCR_L,
+@@ -306,7 +280,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 1,
+ 	},
+ 	[66] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SIFCR_L,
+@@ -314,7 +287,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 2,
+ 	},
+ 	[67] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_A,
+ 		.force	= IPIC_SIFCR_L,
+@@ -322,7 +294,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 3,
+ 	},
+ 	[68] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SIFCR_L,
+@@ -330,7 +301,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 0,
+ 	},
+ 	[69] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SIFCR_L,
+@@ -338,7 +308,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 1,
+ 	},
+ 	[70] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SIFCR_L,
+@@ -346,7 +315,6 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 2,
+ 	},
+ 	[71] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= IPIC_SMPRR_B,
+ 		.force	= IPIC_SIFCR_L,
+@@ -354,133 +322,114 @@ static struct ipic_info ipic_info[] = {
+ 		.prio_mask = 3,
+ 	},
+ 	[72] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 8,
+ 	},
+ 	[73] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 9,
+ 	},
+ 	[74] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 10,
+ 	},
+ 	[75] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 11,
+ 	},
+ 	[76] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 12,
+ 	},
+ 	[77] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 13,
+ 	},
+ 	[78] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 14,
+ 	},
+ 	[79] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 15,
+ 	},
+ 	[80] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 16,
+ 	},
+ 	[81] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 17,
+ 	},
+ 	[82] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 18,
+ 	},
+ 	[84] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 20,
+ 	},
+ 	[85] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 21,
+ 	},
+ 	[86] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 22,
+ 	},
+ 	[87] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 23,
+ 	},
+ 	[88] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 24,
+ 	},
+ 	[89] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 25,
+ 	},
+ 	[90] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+ 		.bit	= 26,
+ 	},
+ 	[91] = {
+-		.pend	= IPIC_SIPNR_L,
+ 		.mask	= IPIC_SIMSR_L,
+ 		.prio	= 0,
+ 		.force	= IPIC_SIFCR_L,
+@@ -534,6 +483,10 @@ static void ipic_mask_irq(unsigned int virq)
+ 	temp &= ~(1 << (31 - ipic_info[src].bit));
+ 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
  
- 	pci@e0008500 {
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 00154c5..4c51f78 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -88,6 +88,12 @@ config PPC_MPC837x
- 	select FSL_SERDES
- 	default y if MPC837x_MDS
- 
-+config IPIC_MSI
-+	bool
-+	depends on PCI_MSI
-+	default y if PPC_MPC837x
-+	default n
++	/* mb() can't guarantee that masking is finished.  But it does finish
++	 * for nearly all cases. */
++	mb();
 +
- config PPC_MPC83XX_PCIE
- 	bool "MPC837X PCI Express support"
- 	depends on PCIEPORTBUS && PPC_MPC837x
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index b1d3570..f68a7e9 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -17,6 +17,7 @@
- 
- #include <asm/time.h>
- #include <asm/ipic.h>
-+#include <asm/ipic_msi.h>
- #include <asm/udbg.h>
- #include <asm/prom.h>
- 
-@@ -94,6 +95,12 @@ static void __init mpc837x_mds_init_IRQ(void)
- 	 * in case the boot rom changed something on us.
- 	 */
- 	ipic_set_default_priority();
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,ipic-msi");
-+	if (!np)
-+		return;
-+
-+	ipic_msi_init(np, ipic_msi_cascade);
+ 	spin_unlock_irqrestore(&ipic_lock, flags);
  }
  
- /*
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 99a77d7..5946b6a 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -25,6 +25,7 @@ ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
-+obj-$(CONFIG_IPIC_MSI)		+= ipic_msi.o
- obj-$(CONFIG_4xx)		+= uic.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
- endif
-diff --git a/arch/powerpc/sysdev/ipic_msi.c b/arch/powerpc/sysdev/ipic_msi.c
-new file mode 100644
-index 0000000..6c54f50
---- /dev/null
-+++ b/arch/powerpc/sysdev/ipic_msi.c
-@@ -0,0 +1,359 @@
-+/*
-+ * arch/powerpc/sysdev/ipic_msi.c
-+ *
-+ * IPIC MSI routines implementations.
-+ *
-+ * Auther: Tony Li <tony.li@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+@@ -546,9 +499,13 @@ static void ipic_ack_irq(unsigned int virq)
+ 
+ 	spin_lock_irqsave(&ipic_lock, flags);
+ 
+-	temp = ipic_read(ipic->regs, ipic_info[src].pend);
++	temp = ipic_read(ipic->regs, ipic_info[src].ack);
+ 	temp |= (1 << (31 - ipic_info[src].bit));
+-	ipic_write(ipic->regs, ipic_info[src].pend, temp);
++	ipic_write(ipic->regs, ipic_info[src].ack, temp);
 +
++	/* mb() can't guarantee that ack is finished.  But it does finish
++	 * for nearly all cases. */
++	mb();
+ 
+ 	spin_unlock_irqrestore(&ipic_lock, flags);
+ }
+@@ -566,9 +523,13 @@ static void ipic_mask_irq_and_ack(unsigned int virq)
+ 	temp &= ~(1 << (31 - ipic_info[src].bit));
+ 	ipic_write(ipic->regs, ipic_info[src].mask, temp);
+ 
+-	temp = ipic_read(ipic->regs, ipic_info[src].pend);
++	temp = ipic_read(ipic->regs, ipic_info[src].ack);
+ 	temp |= (1 << (31 - ipic_info[src].bit));
+-	ipic_write(ipic->regs, ipic_info[src].pend, temp);
++	ipic_write(ipic->regs, ipic_info[src].ack, temp);
 +
-+#include <linux/pci.h>
-+#include <linux/msi.h>
-+#include <linux/irq.h>
-+
-+#include <asm/ipic_msi.h>
-+
-+#define MSIR0	0x43
-+#define MSIR1	0x4
-+#define MSIR2	0x51
-+#define MSIR3	0x52
-+#define MSIR4	0x56
-+#define MSIR5	0x57
-+#define MSIR6	0x58
-+#define MSIR7	0x59
-+
-+
-+static struct ipic_msi *ipic_msi;
-+static DEFINE_SPINLOCK(ipic_msi_lock);
-+static DEFINE_SPINLOCK(ipic_msi_bitmap_lock);
-+
-+static inline u32 ipic_msi_read(volatile u32 __iomem *base, unsigned int reg)
-+{
-+	return in_be32(base + (reg >> 2));
-+}
-+
-+static inline void ipic_msi_write(volatile u32 __iomem *base,
-+					unsigned int reg, u32 value)
-+{
-+	out_be32(base + (reg >> 2), value);
-+}
-+
-+static struct ipic_msi * ipic_msi_from_irq(unsigned int virq)
-+{
-+	return ipic_msi;
-+}
-+
-+#define	ipic_msi_irq_to_hw(virq)	virq_to_hw(virq)
-+static void ipic_msi_unmask(unsigned int virq)
-+{
-+	struct ipic_msi *msi = ipic_msi_from_irq(virq);
-+	unsigned int src = ipic_msi_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 temp;
-+
-+	spin_lock_irqsave(&ipic_msi_lock, flags);
-+	temp = ipic_msi_read(msi->regs, IPIC_MSIMR);
-+	ipic_msi_write(msi->regs, IPIC_MSIMR,
-+		temp & ~(1 << (src / msi->int_per_msir)));
-+
-+	spin_unlock_irqrestore(&ipic_msi_lock, flags);
-+}
-+
-+static void ipic_msi_mask(unsigned int virq)
-+{
-+	struct ipic_msi *msi = ipic_msi_from_irq(virq);
-+	unsigned int src = ipic_msi_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 temp;
-+
-+	spin_lock_irqsave(&ipic_msi_lock, flags);
-+
-+	temp = ipic_msi_read(msi->regs, IPIC_MSIMR);
-+	ipic_msi_write(msi->regs, IPIC_MSIMR,
-+		temp | (1 << (src / msi->int_per_msir)));
-+
-+	spin_unlock_irqrestore(&ipic_msi_lock, flags);
-+}
-+/*
-+ * We do not need this actually. The MSIR register has been read once
-+ * in ipic_msi_get_irq. So, this MSI interrupt has been acked
-+ */
-+static void ipic_msi_ack(unsigned int virq)
-+{
-+	struct ipic_msi *msi = ipic_msi_from_irq(virq);
-+	unsigned int src = ipic_msi_irq_to_hw(virq);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ipic_msi_lock, flags);
-+
-+	ipic_msi_read(msi->regs, IPIC_MSIR0 + (4 * (src / msi->int_per_msir)));
-+
-+	spin_unlock_irqrestore(&ipic_msi_lock,flags);
-+}
-+
-+static struct irq_chip ipic_msi_chip = {
-+	.typename = " IPIC MSI ",
-+	.unmask = ipic_msi_unmask,
-+	.mask = ipic_msi_mask,
-+	.ack = ipic_msi_ack,
++	/* mb() can't guarantee that ack is finished.  But it does finish
++	 * for nearly all cases. */
++	mb();
+ 
+ 	spin_unlock_irqrestore(&ipic_lock, flags);
+ }
+@@ -590,14 +551,22 @@ static int ipic_set_irq_type(unsigned int virq, unsigned int flow_type)
+ 			flow_type);
+ 		return -EINVAL;
+ 	}
++	/* ipic supports only edge mode on external interrupts */
++	if ((flow_type & IRQ_TYPE_EDGE_FALLING) && !ipic_info[src].ack) {
++		printk(KERN_ERR "ipic: edge sense not supported on internal "
++				"interrupts\n");
++		return -EINVAL;
++	}
+ 
+ 	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
+ 	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
+ 	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
+ 		desc->status |= IRQ_LEVEL;
+ 		desc->handle_irq = handle_level_irq;
++		desc->chip = &ipic_level_irq_chip;
+ 	} else {
+ 		desc->handle_irq = handle_edge_irq;
++		desc->chip = &ipic_edge_irq_chip;
+ 	}
+ 
+ 	/* only EXT IRQ senses are programmable on ipic
+@@ -622,7 +591,16 @@ static int ipic_set_irq_type(unsigned int virq, unsigned int flow_type)
+ 	return 0;
+ }
+ 
+-static struct irq_chip ipic_irq_chip = {
++/* level interrupts and edge interrupts have different ack operations */
++static struct irq_chip ipic_level_irq_chip = {
++	.typename	= " IPIC  ",
++	.unmask		= ipic_unmask_irq,
++	.mask		= ipic_mask_irq,
++	.mask_ack	= ipic_mask_irq,
++	.set_type	= ipic_set_irq_type,
 +};
 +
-+static int ipic_msi_host_map(struct irq_host *h, unsigned int virq,
-+				irq_hw_number_t hw)
-+{
-+	struct ipic_msi *msi = h->host_data;
-+	struct irq_chip *chip = msi->hc_irq;
-+
-+	set_irq_chip_data(virq, msi);
-+	get_irq_desc(virq)->status |= IRQ_TYPE_EDGE_FALLING;
-+
-+	set_irq_chip_and_handler(virq, chip, handle_edge_irq);
-+	return 0;
-+}
-+
-+static struct irq_host_ops ipic_msi_host_ops = {
-+	.map = ipic_msi_host_map,
-+};
-+
-+irq_hw_number_t ipic_msi_alloc_hwirqs(struct ipic_msi *msi, int num)
-+{
-+	unsigned long flags;
-+	int offset, order = get_count_order(num);
-+
-+	spin_lock_irqsave(&ipic_msi_bitmap_lock, flags);
-+
-+	offset = bitmap_find_free_region(msi->ipic_msi_bitmap,
-+			msi->nr_msir * msi->int_per_msir, order);
-+
-+	spin_unlock_irqrestore(&ipic_msi_bitmap_lock, flags);
-+
-+	pr_debug("%s: allocated 0x%x (2^%d) at offset 0x%x\n",
-+		__FUNCTION__, num, order, offset);
-+
-+	return offset;
-+}
-+
-+void ipic_msi_free_hwirqs(struct ipic_msi *msi, int offset, int num)
-+{
-+	unsigned long flags;
-+	int order = get_count_order(num);
-+
-+	pr_debug("%s: freeing 0x%x (2^%d) at offset 0x%x\n",
-+		__FUNCTION__, num, order, offset);
-+
-+	spin_lock_irqsave(&ipic_msi_bitmap_lock, flags);
-+	bitmap_release_region(msi->ipic_msi_bitmap, offset, order);
-+	spin_unlock_irqrestore(&ipic_msi_bitmap_lock, flags);
-+}
-+
-+static int ipic_msi_init_allocator(struct ipic_msi *msi)
-+{
-+	int size;
-+
-+	size = BITS_TO_LONGS(msi->nr_msir * msi->int_per_msir) * sizeof(long);
-+	msi->ipic_msi_bitmap = alloc_maybe_bootmem(size, GFP_KERNEL);
-+
-+	if (msi->ipic_msi_bitmap == NULL) {
-+		pr_debug("%s: ENOMEM allocating allocator bitmap!\n",
-+				__FUNCTION__);
-+		return -ENOMEM;
-+	}
-+	memset(msi->ipic_msi_bitmap, 0, size);
-+
-+	return 0;
-+}
-+
-+static void ipic_msi_compose_msg(struct ipic_msi *msi, int hwirq,
-+						struct msi_msg *msg)
-+{
-+	unsigned int srs;
-+	unsigned int ibs;
-+
-+	srs = hwirq / msi->int_per_msir;
-+	ibs = hwirq - srs * msi->int_per_msir;
-+
-+	msg->address_lo = msi->msi_addr_lo;
-+	msg->address_hi = msi->msi_addr_hi;
-+	msg->data = (srs << 5) | (ibs & 0x1F);
-+
-+	pr_debug("%s: allocated srs: %d, ibs: %d\n",
-+		__FUNCTION__, srs, ibs);
-+
-+}
-+
-+static int ipic_msi_setup_irqs(struct pci_dev *pdev, int nvec, int type)
-+{
-+	struct ipic_msi *msi = ipic_msi;
-+	irq_hw_number_t hwirq;
-+	unsigned int virq;
-+	struct msi_desc *entry;
-+	struct msi_msg msg;
-+
-+	list_for_each_entry(entry, &pdev->msi_list, list) {
-+		hwirq = ipic_msi_alloc_hwirqs(msi, 1);
-+		if (hwirq < 0) {
-+			pr_debug("%s: fail allocating msi interrupt\n",
-+					__FUNCTION__);
-+			return hwirq;
-+		}
-+
-+		/* This hwirq belongs to the irq_host other than irq_host of IPIC
-+ 		 * So, it is independent to hwirq of IPIC */
-+		virq = irq_create_mapping(msi->irqhost, hwirq);
-+		if (virq == NO_IRQ) {
-+			pr_debug("%s: fail mapping hwirq 0x%lx\n",
-+					__FUNCTION__, hwirq);
-+			ipic_msi_free_hwirqs(msi, hwirq, 1);
-+			return -ENOSPC;
-+		}
-+		set_irq_msi(virq, entry);
-+		ipic_msi_compose_msg(msi, hwirq, &msg);
-+		write_msi_msg(virq, &msg);
-+	}
-+
-+	return 0;
-+}
-+
-+static void ipic_msi_teardown_irqs(struct pci_dev *pdev)
-+{
-+	struct msi_desc *entry;
-+	struct ipic_msi *msi = ipic_msi;
-+
-+	list_for_each_entry(entry, &pdev->msi_list, list) {
-+		if (entry->irq == NO_IRQ)
-+			continue;
-+		set_irq_msi(entry->irq, NULL);
-+		ipic_msi_free_hwirqs(msi, virq_to_hw(entry->irq), 1);
-+		irq_dispose_mapping(entry->irq);
-+	}
-+
-+	return;
-+}
-+
-+void __init ipic_msi_init(struct device_node *node,
-+			void (*handler)(unsigned int irq, struct irq_desc *desc))
-+{
-+	struct ipic_msi *msi;
-+	struct resource res;
-+	int i;
-+	int rc = 0;
-+
-+	msi = alloc_maybe_bootmem(sizeof(*msi), GFP_KERNEL);
-+	if (msi == NULL)
-+		return;
-+
-+	memset(msi, 0, sizeof(*msi));
-+
-+
-+	msi->irqhost = irq_alloc_host(of_node_get(node), IRQ_HOST_MAP_LINEAR,
-+					NR_MSIR, &ipic_msi_host_ops, 0);
-+	if (msi->irqhost == NULL) {
-+		of_node_put(node);
-+		goto out;
-+	}
-+
-+	rc = of_address_to_resource(node, 0, &res);
-+	if (rc) {
-+		of_node_put(node);
-+		goto out;
-+	}
-+
-+	msi->regs = ioremap(res.start, res.end - res.start + 1);
-+	msi->irqhost->host_data = msi;
-+	msi->hc_irq = &ipic_msi_chip;
-+
-+	msi->msi_addr_lo = 0xE00007F8;
-+	msi->msi_addr_hi = 0;
-+	msi->nr_msir = ARRAY_SIZE(msi->msir);
-+	msi->int_per_msir = 32;
-+	for (i = 0; i < msi->nr_msir; i++) {
-+		unsigned int virt_msir = irq_of_parse_and_map(node, i);
-+		if (virt_msir != NO_IRQ) {
-+			set_irq_data(virt_msir, msi);
-+			set_irq_chained_handler(virt_msir, handler);
-+			msi->msir[i] = virt_msir;
-+		} else
-+			msi->msir[i] = NO_IRQ;
-+	}
-+
-+	rc = ipic_msi_init_allocator(msi);
-+	if (rc)
-+		goto out;
-+
-+	ipic_msi = msi;
-+
-+	WARN_ON(ppc_md.setup_msi_irqs);
-+	ppc_md.setup_msi_irqs = ipic_msi_setup_irqs;
-+	ppc_md.teardown_msi_irqs = ipic_msi_teardown_irqs;
-+
-+	return;
-+
-+out:
-+	if (mem_init_done)
-+		kfree(msi);
-+
-+	return;
-+}
-+
-+static int ipic_msi_get_irq(struct ipic_msi *msi, int virt_msir)
-+{
-+	int msir = -1;
-+	unsigned int temp;
-+	unsigned int offset;
-+	int i;
-+
-+	for (i = 0; i < msi->nr_msir; i++)
-+		if (virt_msir == msi->msir[i]) {
-+			msir = i;
-+			break;
-+		}
-+
-+	if (i >= msi->nr_msir)
-+		return NO_IRQ;
-+
-+	temp = ipic_msi_read(msi->regs, IPIC_MSIR0 + (i * 4));
-+	offset = ffs(temp) - 1;
-+
-+	return irq_linear_revmap(msi->irqhost, (msir * msi->int_per_msir + offset));
-+}
-+
-+void ipic_msi_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	struct ipic_msi *msi;
-+	unsigned int cascade_irq;
-+
-+	spin_lock(&desc->lock);
-+	if (desc->chip->mask_ack)
-+		desc->chip->mask_ack(irq);
-+	else {
-+		desc->chip->mask(irq);
-+		desc->chip->ack(irq);
-+	}
-+
-+	if (unlikely(desc->status & IRQ_INPROGRESS))
-+		goto unlock;
-+
-+	desc->status |= IRQ_INPROGRESS;
-+	msi = desc->handler_data;
-+	cascade_irq = ipic_msi_get_irq(msi, irq);
-+
-+	spin_unlock(&desc->lock);
-+
-+	if (cascade_irq != NO_IRQ)
-+		generic_handle_irq(cascade_irq);
-+
-+	spin_lock(&desc->lock);
-+	desc->status &= ~IRQ_INPROGRESS;
-+	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
-+		desc->chip->unmask(irq);
-+
-+unlock:
-+	spin_unlock(&desc->lock);
-+}
-diff --git a/include/asm-powerpc/ipic_msi.h b/include/asm-powerpc/ipic_msi.h
-new file mode 100644
-index 0000000..2f578da
---- /dev/null
-+++ b/include/asm-powerpc/ipic_msi.h
-@@ -0,0 +1,66 @@
-+/*
-+ * include/asm-powerpc/ipic_msi.h
-+ *
-+ * IPIC MSI structure.
-+ *
-+ * Author: Tony Li <tony.li@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#ifndef _ASM_POWERPC_IPIC_MSI_H
-+#define _ASM_POWERPC_IPIC_MSI_H
-+
-+#define NR_MSIR	8
-+/* MSI interrupt register offset compared to MSI base address (0xc0) */
-+#define IPIC_MSIR0	0x0	/* MSI Interrupt Reg 0 */
-+#define IPIC_MSIR1	0x4	/* MSI Interrupt Reg 1 */
-+#define IPIC_MSIR2	0x8	/* MSI Interrupt Reg 2 */
-+#define IPIC_MSIR3	0xC	/* MSI Interrupt Reg 3 */
-+#define IPIC_MSIR4	0x10	/* MSI Interrupt Reg 4 */
-+#define IPIC_MSIR5	0x14	/* MSI Interrupt Reg 5 */
-+#define IPIC_MSIR6	0x18	/* MSI Interrupt Reg 6 */
-+#define IPIC_MSIR7	0x1C	/* MSI Interrupt Reg 7 */
-+#define IPIC_MSIMR	0x30	/* MSI Interrupt Mask Reg */
-+#define IPIC_MSISR	0x34	/* MSI Interrupt Status Reg */
-+#define IPIC_MSIIR	0x38	/* MSI Interrupt Index Reg */
-+
-+struct ipic_msi {
-+	volatile u32 __iomem *regs;
-+
-+	struct irq_host *irqhost;
-+	struct irq_chip *hc_irq;
-+
-+	unsigned long cascade_irq;
-+	unsigned int msir[8];
-+
-+	u32 msi_addr_lo;
-+	u32 msi_addr_hi;
-+
-+	int nr_msir;
-+	int int_per_msir;
-+
-+	void *ipic_msi_bitmap;
-+};
-+
-+#ifdef CONFIG_IPIC_MSI
-+extern void ipic_msi_cascade(unsigned int irq, struct irq_desc *desc);
-+extern void __init ipic_msi_init(struct device_node *node,
-+		void (*handler)(unsigned int irq, struct irq_desc *desc));
-+#else
-+void __inline__ ipic_msi_cascade(unsigned int irq, struct irq_desc *desc)
-+{
-+	return;
-+}
-+void __inline__ __init ipic_msi_init(struct device_node *node,
-+		void (*handler)(unsigned int irq, struct irq_desc *desc))
-+{
-+	return;
-+}
-+#endif
-+
-+#endif /* _ASM_POWERPC_IPIC_MSI_H */
++static struct irq_chip ipic_edge_irq_chip = {
+ 	.typename	= " IPIC  ",
+ 	.unmask		= ipic_unmask_irq,
+ 	.mask		= ipic_mask_irq,
+@@ -641,13 +619,9 @@ static int ipic_host_map(struct irq_host *h, unsigned int virq,
+ 			 irq_hw_number_t hw)
+ {
+ 	struct ipic *ipic = h->host_data;
+-	struct irq_chip *chip;
+-
+-	/* Default chip */
+-	chip = &ipic->hc_irq;
+ 
+ 	set_irq_chip_data(virq, ipic);
+-	set_irq_chip_and_handler(virq, chip, handle_level_irq);
++	set_irq_chip_and_handler(virq, &ipic_level_irq_chip, handle_level_irq);
+ 
+ 	/* Set default irq type */
+ 	set_irq_type(virq, IRQ_TYPE_NONE);
+@@ -706,7 +680,6 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
+ 	ipic->regs = ioremap(res.start, res.end - res.start + 1);
+ 
+ 	ipic->irqhost->host_data = ipic;
+-	ipic->hc_irq = ipic_irq_chip;
+ 
+ 	/* init hw */
+ 	ipic_write(ipic->regs, IPIC_SICNR, 0x0);
+diff --git a/arch/powerpc/sysdev/ipic.h b/arch/powerpc/sysdev/ipic.h
+index 1158b8f..9391c57 100644
+--- a/arch/powerpc/sysdev/ipic.h
++++ b/arch/powerpc/sysdev/ipic.h
+@@ -44,13 +44,11 @@ struct ipic {
+ 
+ 	/* The remapper for this IPIC */
+ 	struct irq_host		*irqhost;
+-
+-	/* The "linux" controller struct */
+-	struct irq_chip		hc_irq;
+ };
+ 
+ struct ipic_info {
+-	u8	pend;		/* pending register offset from base */
++	u8	ack;		/* pending register offset from base if the irq
++				   supports ack operation */
+ 	u8	mask;		/* mask register offset from base */
+ 	u8	prio;		/* priority register offset from base */
+ 	u8	force;		/* force register offset from base */
 -- 
-1.5.2
+1.5.3.5.643.g40e25
