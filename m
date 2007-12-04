@@ -1,18 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/7] powerpc: Replace ppc_md.power_off with pm_power_off
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20071204180148.GA1579@mag.az.mvista.com>
-References: <20071204053736.GA27862@mag.az.mvista.com>
-	<20071204054821.GF27862@mag.az.mvista.com>
-	<1196752989.13230.265.camel@pasglop>
-	<20071204180148.GA1579@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Wed, 05 Dec 2007 06:55:52 +1100
-Message-Id: <1196798152.13230.308.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9BFDFDDFC6
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:57:19 +1100 (EST)
+Date: Tue, 4 Dec 2007 14:01:21 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v2 2/4] [libata] pata_of_platform: OF-Platform PATA
+	device driver
+Message-ID: <20071204200121.GA6782@lixom.net>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204170719.GB15599@localhost.localdomain>
+	<20071204184826.GA5758@lixom.net>
+	<20071204194921.GB1253@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071204194921.GB1253@localhost.localdomain>
+Cc: linux-ide@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Dec 04, 2007 at 10:49:21PM +0300, Anton Vorontsov wrote:
+>  	tristate "Generic platform device PATA support"
+> -	depends on EMBEDDED || ARCH_RPC
+> +	depends on EMBEDDED || ARCH_PPC
 
-On Tue, 2007-12-04 at 11:01 -0700, Mark A. Greer wrote:
-> On Tue, Dec 04, 2007 at 06:23:09PM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > On Mon, 2007-12-03 at 22:48 -0700, Mark A. Greer wrote:
-> > > From: Mark A. Greer <mgreer@mvista.com>
-> > > 
-> > > The ppc_md.power_off hook performs the same function that the
-> > > pm_power_off hook is supposed to.  However, it is powerpc-specific
-> > > and prevents kernel drivers (e.g., IPMI) from changing how a platform
-> > > is powered off.  So, get rid of ppc_md.power_off and replace it with
-> > > pm_power_off.
-> > 
-> > I'm less happy with that one... probably aesthetics :-)
-> > 
-> > Can't we just have the generic code call pm_power_off and ppc_md and
-> > which ever powers the machine off wins ?
-> 
-> Yes, that would be easy to do.  Seems like duplication though.
-> If you are sure you're okay with the duplication, I'll do that.
+It needs to be || PPC, not || ARCH_PPC.
 
-Let's ask Paulus what he thinks.
 
-Ben.
+-Olof
