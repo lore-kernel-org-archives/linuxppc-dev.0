@@ -1,18 +1,33 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 64A00DDDFA
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 12:21:50 +1100 (EST)
-Date: Mon, 3 Dec 2007 18:23:29 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
-Message-ID: <20071204012329.GA18903@mag.az.mvista.com>
-References: <20071129152836.GB13751@ru.mvista.com>
-	<1196715170.13230.228.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196715170.13230.228.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Tony.Li@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 30F26DDE22
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 12:52:15 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	lB41q9UV007298
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 18:52:10 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB41q7hf020099
+	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 19:52:08 -0600 (CST)
+Subject: Re: [PATCH] Add IPIC MSI interrupt support
+From: Li Li <r64360@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1196715812.13230.234.camel@pasglop>
+References: <1196394519.29683.8.camel@Guyver>
+	<1196654521.13554.32.camel@concordia>
+	<1196672870.14353.21.camel@Guyver>
+	<1196715812.13230.234.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 09:41:50 +0800
+Message-Id: <1196732510.2910.3.camel@Guyver>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,88 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 07:52:50AM +1100, Benjamin Herrenschmidt wrote:
-> > 	#address-cells = <1>;
-> > +	#size-cells = <1>;
-> > +	model = "Katana-Qp"; /* Default */
-> > +	compatible = "emerson,Katana-Qp";
-> > +	coherency-off;
-> > +
+On Tue, 2007-12-04 at 05:03 +0800, Benjamin Herrenschmidt wrote:
 > 
-> What do that mean (coherency-off) ?
+> On Mon, 2007-12-03 at 17:07 +0800, Li Li wrote: 
+> > 
+> > In IPIC, the 8 MSI interrupts is handled as level intrrupt. 
+> > I just provide a versatile in case it is changed.
 > 
-> Somebody is trying again to use a 74xx with non cache coherent DMA ?
+> Level ? Are you sure ? MSIs are by definition edge interrupts... Or
+> do 
+> you have some weird logic that asserts a level input until you go ack 
+> something ? Sounds weird...
+> 
 
-Hi Ben.
+The second one.
+The MSI is edge interrupt. The 256 MSI interrupts are divided into 8
+groups. Each group can generate a interrupt to core. This interrupts are
+level and asserted untile ack MSI interrupt. A little weird.
 
-I suspect Andrei got that from the prpmc2800 dts which I made so I'll
-jump in.  (BTW, this is the same debate we have every year or two. :)
+> Ben.
+> 
+> 
 
-By looking at the dts, that board has an mv64460 which has a couple
-issues when it comes to coherency (depending on the rev of the chip).
-
-One is about not being able to use DCBST instructions with coherency on
-and the other is about limiting the length of one of the traces (which
-at least one board manufacturer that I know of refuses to implement).
-The first one is supposed to be fixed by rev A1 of the part and the second
-is supposed to be fixed by rev B0 of the part.  I don't know what rev(s)
-are on the board(s) Andrei is using.  If its B0 or later, in theory, the
-part should work with coherency on.
-
-Andrei, have you tested with coherency on?
-
---
-
-As far as the prpmc2800 (mv64360)...
-
-[I don't know what an NDA let's me say or not so I'll just give
-summaries of the errata.  If you or another reader has signed the NDA
-you/they can look them up.]
-
-I don't recall all of the details anymore but these are the errata I saw
-by quickly scanning the 64360's list.
-
-- "FEr CPU-#1":
-
-Basically the CPU could read a stale cache line.  Supposed to be fixed
-in rev A2 & B0 but I haven't verified.
-
-- "FEr MPSC-#1":
-
-The MPSC can't access a coherent memory region.
-This is pretty much a show stopper for the prpmc2800.
-
-There are no plans to fix that erratum.
-
-- "FEr PCI-#4" (Detailed by Application Note AN-84):
-
-[This isn't strictly a coherency issue but having coherency enabled
-exacerbates the problem.]  Basically, the bridge can let the cpu read
-a pci device's registers before all of the data the PCI devices has
-written has actually made it to memory.  This and the fact that the
-device's write data may be stuck in the PCI Slave Write Buffer
-(which isn't checked for coherency), the cpu can get stale data.
-
-There are no plans to fix that erratum.
-
-- "FEr PCI-#5" (Detailed by Application Note AN-85):
-
-With certain PCI devices and with coherency enabled, some combinations
-of PCI transactions can cause a deadlock.  There is a workaround
-documented but I've tried it and it didn't work for me (but I can't be
-sure that was the erratum I was bumping into).
-
-There are no plans to fix that erratum.
---
-
-So, the answer depends on what part & what rev of the part you have
-(e.g., the pegasos doesn't use the MPSC and apparently has the other
-issues worked around so it can turn on coherency but the prpmc2800
-doesn't so it needs coherency off).
-
-BTW, I haven't forgotten the inherent bug you described when coherency
-is off (/me too lazy to find link to the email) but AFAIK I've never run
-into it.  However, if I turn on coherency and stress the PCI bus, it
-hangs (I can't even look at memory thru a bdi).
-
-Mark
+- Tony
