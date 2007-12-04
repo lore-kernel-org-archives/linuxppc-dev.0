@@ -1,13 +1,15 @@
-Return-Path: <mgreer@mvista.com>
-Date: Mon, 3 Dec 2007 22:50:16 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 7/7] powerpc: Remove incorrect panic() calls
-Message-ID: <20071204055016.GH27862@mag.az.mvista.com>
-References: <20071204053736.GA27862@mag.az.mvista.com>
+Return-Path: <paulus@ozlabs.org>
+Message-ID: <18260.59921.473117.994246@cargo.ozlabs.ibm.com>
+Date: Tue, 4 Dec 2007 16:48:01 +1100
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071204053736.GA27862@mag.az.mvista.com>
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powermac: proper sleep management
+In-Reply-To: <1194981933.6695.17.camel@johannes.berg>
+References: <1194981933.6695.17.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pm <linux-pm@lists.osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,53 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mark A. Greer <mgreer@mvista.com>
+Johannes Berg writes:
 
-Platform-specific restart routines should not call panic() when they
-fail.  Instead, they should return so the caller (machine_restart())
-can halt the system more gracefully.
+> +		printk(KERN_INFO
+> +		       "via-pmu: the PMU_IOC_SLEEP ioctl is deprecated.\n");
+> +		printk(KERN_INFO "via-pmu: use \"echo mem >"
+> +		       " /sys/power/state\"  instead!\n");
+> +		printk(KERN_INFO
+> +		       "via-pmu: this ioctl will be removed soon.\n");
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
- arch/powerpc/platforms/82xx/pq2.c              |    2 --
- arch/powerpc/platforms/8xx/m8xx_setup.c        |    1 -
- arch/powerpc/platforms/embedded6xx/prpmc2800.c |    1 -
- 3 files changed, 4 deletions(-)
+I don't like this.  I would rather keep the ioctls indefinitely and
+not make any noise about programs using them.  The ioctls are part of
+the kernel/user ABI, and thus need to be preserved, especially since
+it only takes about 6 or 7 lines of code to implement them.
 
-diff --git a/arch/powerpc/platforms/82xx/pq2.c b/arch/powerpc/platforms/82xx/pq2.c
-index a497cba..16cd460 100644
---- a/arch/powerpc/platforms/82xx/pq2.c
-+++ b/arch/powerpc/platforms/82xx/pq2.c
-@@ -31,8 +31,6 @@ void pq2_restart(char *cmd)
- 	/* Clear the ME,EE,IR & DR bits in MSR to cause checkstop */
- 	mtmsr(mfmsr() & ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR));
- 	in_8(&cpm2_immr->im_clkrst.res[0]);
--
--	panic("Restart failed\n");
- }
- 
- #ifdef CONFIG_PCI
-diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-index d35eda8..1014310 100644
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -221,7 +221,6 @@ void mpc8xx_restart(char *cmd)
- 	mtmsr(mfmsr() & ~0x1000);
- 
- 	in_8(&clk_r->res[0]);
--	panic("Restart failed\n");
- }
- 
- static void cpm_cascade(unsigned int irq, struct irq_desc *desc)
-diff --git a/arch/powerpc/platforms/embedded6xx/prpmc2800.c b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-index 653a5eb..fe5920c 100644
---- a/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-+++ b/arch/powerpc/platforms/embedded6xx/prpmc2800.c
-@@ -108,7 +108,6 @@ static void prpmc2800_restart(char *cmd)
- 	prpmc2800_reset_board();
- 
- 	while (i-- > 0);
--	panic("restart failed\n");
- }
- 
- #ifdef CONFIG_NOT_COHERENT_CACHE
+Paul.
