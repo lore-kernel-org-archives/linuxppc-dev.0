@@ -1,34 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1340DDEA3
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 09:36:51 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB4MalLj003466
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 17:36:47 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB4Mabrn091476
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 15:36:38 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB4Maam5013249
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 15:36:37 -0700
-Date: Tue, 4 Dec 2007 16:34:09 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Merge dtc
-Message-ID: <20071204163409.6d03c7a5@zod.rchland.ibm.com>
-In-Reply-To: <18261.53985.700234.923526@cargo.ozlabs.ibm.com>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<1196733544.13978.201.camel@pmac.infradead.org>
-	<18261.53985.700234.923526@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Gibson <david@gibson.dropbear.id.au>,
-	David Woodhouse <dwmw2@infradead.org>, David
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AC1C3DE047
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 09:40:12 +1100 (EST)
+Message-ID: <4755D73D.7040204@freescale.com>
+Date: Tue, 04 Dec 2007 16:39:57 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712042313.58252.arnd@arndb.de>
+In-Reply-To: <200712042313.58252.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,30 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 5 Dec 2007 09:21:21 +1100
-Paul Mackerras <paulus@samba.org> wrote:
+Arnd Bergmann wrote:
 
-> David Woodhouse writes:
-> 
-> > I think this is a bad idea -- it's hardly a difficult for those people
-> > who _do_ need dts to obtain it separately.
-> 
-> The trouble is that it's not just people who are making a kernel for a
-> specific embedded board that need dtc.  These days anyone who wants to
-> try cross-compiling a powerpc kernel and does a make allyesconfig, or
-> who picks cell_defconfig or ps3_defconfig to try, needs dtc if their
-> kernel build is to go all the way through and give them an exit status
-> of 0.  I can see that for people who are trying to do the right thing
-> and compile-test their patch across architectures, it's annoying that
-> powerpc has an extra external requirement when no other architecture
-> does, and it usually just means they don't compile-test on powerpc.
-> 
-> Of the various options for solving this, including dtc in the kernel
-> sources seems best to me.
+> I'm guessing that you don't really mean dma_addr_t here, but rather
+> phys_addr_t, which is something different.
 
-Using that same reasoning, should we merge a mkimage patch for the
-boards that use U-Boot?
+Now that I think about it, I don't know which is correct.  The value is plugged 
+into the pointer register of a buffer descriptor, and the QE performs a DMA-like 
+memory transfer from that address into its local memory.  I don't know if the QE 
+is considered "external" enough that the address is a DMA address or a physical 
+address.
 
-(That's a serious question, not a smart-ass response)
+When I program the DMA controller, I give it a dma_addr_t.  And yet, the DMA 
+controller and the QE are both devices on the SoC.  So if the DMA controller 
+takes a dma_addr_t, then shouldn't the QE also take one?
 
-josh
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
