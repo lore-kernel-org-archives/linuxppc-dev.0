@@ -1,27 +1,27 @@
 Return-Path: <Tony.Li@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "az33egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A11C7DDE06
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 21:45:51 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	lB4AjcCF014165
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 03:45:39 -0700 (MST)
+	by ozlabs.org (Postfix) with ESMTP id 58EE6DDE05
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 21:49:50 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	lB4Anhe8001609
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 03:49:44 -0700 (MST)
 Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
 	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id lB4AjaOd025647
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 04:45:37 -0600 (CST)
-Subject: [PATCH 1/2] powerpc: Add MPC837xE MDS PCIE RC mode support
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB4AngeV001649
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 04:49:42 -0600 (CST)
+Subject: [PATCH 2/2] powerpc: Add IPIC MSI support
 From: Li Li <r64360@freescale.com>
 To: Kumar Gala <kumar.gala@freescale.com>,
-	kim phillips <Kim.Phillips@freescale.com>,
+	kim phillips <Kim.Phillips@freescale.com>, michael@ellerman.id.au,
 	linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 18:35:14 +0800
-Message-Id: <1196764514.2573.4.camel@Guyver>
+Date: Tue, 04 Dec 2007 18:39:20 +0800
+Message-Id: <1196764760.2573.10.camel@Guyver>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,622 +32,592 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Modified based on discussion in list.
+Modified based on discussion on list.
 
-1.Change the device node to pcie
-2.Add PPC_83XX_PCI_PRIMARY flag
-3.Rearrange the codes
+1. Adopt virq_to_hw routine
+2. Correct a legacy bug
 
-The PCIE controller is initiated in u-boot.
+Implements the IPIC MSI as two level interrupt controller.
 
 Signed-off-by: Tony Li <tony.li@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8377_mds.dts     |   54 ++++++++--
- arch/powerpc/boot/dts/mpc8378_mds.dts     |   54 ++++++++--
- arch/powerpc/platforms/83xx/Kconfig       |    7 +
- arch/powerpc/platforms/83xx/mpc8313_rdb.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc832x_mds.c |   12 ++-
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc834x_itx.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc834x_mds.c |   10 ++-
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   12 ++-
- arch/powerpc/platforms/83xx/mpc837x_mds.c |   19 +++-
- arch/powerpc/platforms/83xx/mpc83xx.h     |    6 +-
- arch/powerpc/platforms/83xx/pci.c         |  174 +++++++++++++++++++++++++++--
- 12 files changed, 338 insertions(+), 40 deletions(-)
+ arch/powerpc/boot/dts/mpc8377_mds.dts     |   14 ++
+ arch/powerpc/boot/dts/mpc8378_mds.dts     |   14 ++
+ arch/powerpc/boot/dts/mpc8379_mds.dts     |   14 ++
+ arch/powerpc/platforms/83xx/Kconfig       |    6 +
+ arch/powerpc/platforms/83xx/mpc837x_mds.c |    7 +
+ arch/powerpc/sysdev/Makefile              |    1 +
+ arch/powerpc/sysdev/ipic_msi.c            |  359 +++++++++++++++++++++++++++++
+ include/asm-powerpc/ipic_msi.h            |   66 ++++++
+ 8 files changed, 481 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/ipic_msi.c
+ create mode 100644 include/asm-powerpc/ipic_msi.h
 
 diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-index 4402e39..8f54349 100644
+index 8f54349..c11e529 100644
 --- a/arch/powerpc/boot/dts/mpc8377_mds.dts
 +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-@@ -197,14 +197,6 @@
- 			clock = <d#100>;
+@@ -210,6 +210,20 @@
+ 			#interrupt-cells = <2>;
+ 			reg = <700 100>;
  		};
- 
--		serdes2:serdes@e3100 {
--			compatible = "fsl,serdes";
--			reg = <e3100 100>;
--			vdd-1v;
--			protocol = "pcie";
--			clock = <d#100>;
--		};
--
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
-@@ -279,4 +271,50 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
++
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <7c0 40>;
++			interrupts = < 43 8
++				       4  8
++				       51 8
++				       52 8
++				       56 8
++				       57 8
++				       58 8
++				       59 8 >;
++			interrupt-parent = < &ipic >;
++		};
  	};
-+
-+	pcie@e0009000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 1 8
-+			0000 0 0 2 &ipic 1 8
-+			0000 0 0 3 &ipic 1 8
-+			0000 0 0 4 &ipic 1 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <1 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 A8000000 A8000000 0 10000000
-+		          01000000 0 00000000 B8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e0009000 00001000
-+		       a0000000 08000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
-+
-+	pcie@e000a000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 2 8
-+			0000 0 0 2 &ipic 2 8
-+			0000 0 0 3 &ipic 2 8
-+			0000 0 0 4 &ipic 2 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <2 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 C8000000 C8000000 0 10000000
-+			  01000000 0 00000000 D8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e000a000 00001000
-+		       c0000000 08000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
- };
+ 
+ 	pci@e0008500 {
 diff --git a/arch/powerpc/boot/dts/mpc8378_mds.dts b/arch/powerpc/boot/dts/mpc8378_mds.dts
-index 54171f4..e09b0c5 100644
+index e09b0c5..7b0bf1b 100644
 --- a/arch/powerpc/boot/dts/mpc8378_mds.dts
 +++ b/arch/powerpc/boot/dts/mpc8378_mds.dts
-@@ -179,14 +179,6 @@
- 			clock = <d#100>;
+@@ -192,6 +192,20 @@
+ 			#interrupt-cells = <2>;
+ 			reg = <700 100>;
  		};
- 
--		serdes2:serdes@e3100 {
--			compatible = "fsl,serdes";
--			reg = <e3100 100>;
--			vdd-1v;
--			protocol = "pcie";
--			clock = <d#100>;
--		};
--
- 		/* IPIC
- 		 * interrupts cell = <intr #, sense>
- 		 * sense values match linux IORESOURCE_IRQ_* defines:
-@@ -261,4 +253,50 @@
- 		compatible = "fsl,mpc8349-pci";
- 		device_type = "pci";
++
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <7c0 40>;
++			interrupts = < 43 8
++				       4  8
++				       51 8
++				       52 8
++				       56 8
++				       57 8
++				       58 8
++				       59 8 >;
++			interrupt-parent = < &ipic >;
++		};
  	};
+ 
+ 	pci@e0008500 {
+diff --git a/arch/powerpc/boot/dts/mpc8379_mds.dts b/arch/powerpc/boot/dts/mpc8379_mds.dts
+index cdb4426..9fe4bd2 100644
+--- a/arch/powerpc/boot/dts/mpc8379_mds.dts
++++ b/arch/powerpc/boot/dts/mpc8379_mds.dts
+@@ -236,6 +236,20 @@
+ 			#interrupt-cells = <2>;
+ 			reg = <700 100>;
+ 		};
 +
-+	pcie@e0009000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 1 8
-+			0000 0 0 2 &ipic 1 8
-+			0000 0 0 3 &ipic 1 8
-+			0000 0 0 4 &ipic 1 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <1 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 A8000000 A8000000 0 10000000
-+		          01000000 0 00000000 B8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e0009000 00001000
-+		       a0000000 08000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
-+
-+	pcie@e000a000 {
-+		interrupt-map-mask = <f800 0 0 7>;
-+		interrupt-map = <
-+			0000 0 0 1 &ipic 2 8
-+			0000 0 0 2 &ipic 2 8
-+			0000 0 0 3 &ipic 2 8
-+			0000 0 0 4 &ipic 2 8
-+		>;
-+		interrupt-parent = < &ipic >;
-+		interrupts = <2 8>;
-+		bus-range = <0 0>;
-+		ranges = <02000000 0 C8000000 C8000000 0 10000000
-+			  01000000 0 00000000 D8000000 0 00800000>;
-+		clock-frequency = <0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		reg = <e000a000 00001000
-+		       c0000000 08000000>;
-+		compatible = "fsl,mpc8377-pcie";
-+		device_type = "pci";
-+	};
- };
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <7c0 40>;
++			interrupts = < 43 8
++				       4  8
++				       51 8
++				       52 8
++				       56 8
++				       57 8
++				       58 8
++				       59 8 >;
++			interrupt-parent = < &ipic >;
++		};
+ 	};
+ 
+ 	pci@e0008500 {
 diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 0c61e7a..00154c5 100644
+index 00154c5..4c51f78 100644
 --- a/arch/powerpc/platforms/83xx/Kconfig
 +++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -87,3 +87,10 @@ config PPC_MPC837x
- 	select PPC_INDIRECT_PCI
+@@ -88,6 +88,12 @@ config PPC_MPC837x
  	select FSL_SERDES
  	default y if MPC837x_MDS
-+
-+config PPC_MPC83XX_PCIE
-+	bool "MPC837X PCI Express support"
-+	depends on PCIEPORTBUS && PPC_MPC837x
+ 
++config IPIC_MSI
++	bool
++	depends on PCI_MSI
++	default y if PPC_MPC837x
 +	default n
-+	help
-+	  Enables MPC837x PCI express RC mode
-diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-index 33766b8..25d8df4 100644
---- a/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
-@@ -37,14 +37,20 @@ static void __init mpc8313_rdb_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc8313_rdb_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 	mpc831x_usb_cfg();
- }
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 972fa85..ddb0b2e 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -58,6 +58,9 @@ static u8 *bcsr_regs = NULL;
- static void __init mpc832x_sys_setup_arch(void)
- {
- 	struct device_node *np;
-+#ifdef CONFIG_PCI
-+	int primary_pci_bus = 1;
-+#endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc832x_sys_setup_arch()", 0);
-@@ -73,8 +76,13 @@ static void __init mpc832x_sys_setup_arch(void)
- 	}
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index fbca336..aef35f5 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -87,14 +87,20 @@ static void __init mpc832x_rdb_setup_arch(void)
- {
- #if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc832x_rdb_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-index aa76819..c428f62 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
-@@ -46,14 +46,20 @@ static void __init mpc834x_itx_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc834x_itx_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- 	mpc834x_usb_cfg();
-diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-index 00aed7c..e86dce8 100644
---- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
-@@ -77,14 +77,20 @@ static void __init mpc834x_mds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc834x_mds_setup_arch()", 0);
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- 	mpc834xemds_usb_cfg();
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 0f3855c..6e6670c 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -64,6 +64,9 @@ static u8 *bcsr_regs = NULL;
- static void __init mpc836x_mds_setup_arch(void)
- {
- 	struct device_node *np;
-+#ifdef CONFIG_PCI
-+	int primary_pci_bus = 1;
-+#endif
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc836x_mds_setup_arch()", 0);
-@@ -79,8 +82,13 @@ static void __init mpc836x_mds_setup_arch(void)
- 	}
- 
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
- #endif
- 
- #ifdef CONFIG_QUICC_ENGINE
++
+ config PPC_MPC83XX_PCIE
+ 	bool "MPC837X PCI Express support"
+ 	depends on PCIEPORTBUS && PPC_MPC837x
 diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-index 166c111..b1d3570 100644
+index b1d3570..f68a7e9 100644
 --- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
 +++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-@@ -36,14 +36,29 @@ static void __init mpc837x_mds_setup_arch(void)
- {
- #ifdef CONFIG_PCI
- 	struct device_node *np;
-+	int primary_pci_bus = 1;
- #endif
+@@ -17,6 +17,7 @@
  
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc837x_mds_setup_arch()", 0);
+ #include <asm/time.h>
+ #include <asm/ipic.h>
++#include <asm/ipic_msi.h>
+ #include <asm/udbg.h>
+ #include <asm/prom.h>
  
- #ifdef CONFIG_PCI
--	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci")
--		mpc83xx_add_bridge(np);
-+	for_each_compatible_node(np, "pci", "fsl,mpc8349-pci") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCI);
-+	}
-+#endif
-+#ifdef CONFIG_PPC_MPC83XX_PCIE
-+	for_each_compatible_node(np, "pci", "fsl,mpc8377-pcie") {
-+		if (primary_pci_bus) {
-+			mpc83xx_add_bridge(np, PPC_83XX_PCIE | PPC_83XX_PCI_PRIMARY);
-+			primary_pci_bus = 0;
-+		} else
-+			mpc83xx_add_bridge(np, PPC_83XX_PCIE);
-+	}
- #endif
+@@ -94,6 +95,12 @@ static void __init mpc837x_mds_init_IRQ(void)
+ 	 * in case the boot rom changed something on us.
+ 	 */
+ 	ipic_set_default_priority();
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,ipic-msi");
++	if (!np)
++		return;
++
++	ipic_msi_init(np, ipic_msi_cascade);
  }
  
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index b778cb4..552e9bf 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -47,8 +47,10 @@
-  * Declaration for the various functions exported by the
-  * mpc83xx_* files. Mostly for use by mpc83xx_setup
-  */
--
--extern int mpc83xx_add_bridge(struct device_node *dev);
-+#define PPC_83XX_PCI_PRIMARY	0x1
-+#define PPC_83XX_PCI		0x2
-+#define PPC_83XX_PCIE		0x4
-+extern int mpc83xx_add_bridge(struct device_node *dev, int flags);
- extern void mpc83xx_restart(char *cmd);
- extern long mpc83xx_time_init(void);
- extern int mpc834x_usb_cfg(void);
-diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
-index 80425d7..9004140 100644
---- a/arch/powerpc/platforms/83xx/pci.c
-+++ b/arch/powerpc/platforms/83xx/pci.c
-@@ -25,6 +25,8 @@
- #include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
- 
-+#include "mpc83xx.h"
+ /*
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 99a77d7..5946b6a 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -25,6 +25,7 @@ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
++obj-$(CONFIG_IPIC_MSI)		+= ipic_msi.o
+ obj-$(CONFIG_4xx)		+= uic.o
+ obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
+ endif
+diff --git a/arch/powerpc/sysdev/ipic_msi.c b/arch/powerpc/sysdev/ipic_msi.c
+new file mode 100644
+index 0000000..6c54f50
+--- /dev/null
++++ b/arch/powerpc/sysdev/ipic_msi.c
+@@ -0,0 +1,359 @@
++/*
++ * arch/powerpc/sysdev/ipic_msi.c
++ *
++ * IPIC MSI routines implementations.
++ *
++ * Auther: Tony Li <tony.li@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
- #undef DEBUG
- 
- #ifdef DEBUG
-@@ -33,13 +35,159 @@
- #define DBG(x...)
- #endif
- 
--int __init mpc83xx_add_bridge(struct device_node *dev)
-+#if defined(CONFIG_PPC_MPC83XX_PCIE)
 +
-+/* PCIE Registers */
-+#define PEX_LTSSM_STAT		0x404
-+#define PEX_LTSSM_STAT_L0	0x16
-+#define PEX_GCLK_RATIO		0x440
++#include <linux/pci.h>
++#include <linux/msi.h>
++#include <linux/irq.h>
 +
-+/* PCIE config space Read/Write routines */
-+static int direct_read_config_pcie(struct pci_bus *bus,
-+			uint devfn, int offset, int len, u32 *val)
++#include <asm/ipic_msi.h>
++
++#define MSIR0	0x43
++#define MSIR1	0x4
++#define MSIR2	0x51
++#define MSIR3	0x52
++#define MSIR4	0x56
++#define MSIR5	0x57
++#define MSIR6	0x58
++#define MSIR7	0x59
++
++
++static struct ipic_msi *ipic_msi;
++static DEFINE_SPINLOCK(ipic_msi_lock);
++static DEFINE_SPINLOCK(ipic_msi_bitmap_lock);
++
++static inline u32 ipic_msi_read(volatile u32 __iomem *base, unsigned int reg)
 +{
-+	struct pci_controller *hose = bus->sysdata;
-+	void __iomem *cfg_addr;
-+	u32 bus_no;
-+
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	if (ppc_md.pci_exclude_device)
-+		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 2:
-+		if (offset & 1)
-+			return -EINVAL;
-+		break;
-+	case 4:
-+	if (offset & 3)
-+		return -EINVAL;
-+		break;
-+	}
-+
-+	pr_debug("_read_cfg_pcie: bus=%d devfn=%x off=%x len=%x\n",
-+		bus->number, devfn, offset, len);
-+
-+	if (bus->number == hose->first_busno) {
-+		/*
-+		 * The PCIE can only link one device.
-+		 * It`s device number must be 0
-+		 */
-+		if (devfn & 0xf8)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+		bus_no = hose->self_busno;
-+	} else
-+		bus_no = bus->number;
-+
-+	cfg_addr = (void __iomem *)((ulong) hose->cfg_addr +
-+		((bus_no << 20) | (devfn << 12) | (offset & 0xfff)));
-+
-+	switch (len) {
-+	case 1:
-+		*val = in_8(cfg_addr);
-+		break;
-+	case 2:
-+		*val = in_le16(cfg_addr);
-+		break;
-+	default:
-+		*val = in_le32(cfg_addr);
-+		break;
-+	}
-+	pr_debug("_read_cfg_pcie: val=%x cfg_addr=%p\n", *val, cfg_addr);
-+
-+	return PCIBIOS_SUCCESSFUL;
++	return in_be32(base + (reg >> 2));
 +}
 +
-+static int direct_write_config_pcie(struct pci_bus *bus,
-+			uint devfn, int offset, int len, u32 val)
++static inline void ipic_msi_write(volatile u32 __iomem *base,
++					unsigned int reg, u32 value)
 +{
-+	struct pci_controller *hose = bus->sysdata;
-+	void __iomem *cfg_addr;
-+	u32 bus_no;
-+
-+	if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	if (ppc_md.pci_exclude_device)
-+		if (ppc_md.pci_exclude_device(hose, bus->number, devfn))
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	switch (len) {
-+	case 2:
-+		if (offset & 1)
-+			return -EINVAL;
-+		break;
-+	case 4:
-+		if (offset & 3)
-+			return -EINVAL;
-+		break;
-+	}
-+
-+	if (bus->number == hose->first_busno) {
-+		/*
-+		 * The PCIE can only link one device.
-+		 * It`s device number must be 0
-+		 */
-+		if (devfn & 0xf8)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+		bus_no = hose->self_busno;
-+	} else
-+		bus_no = bus->number;
-+
-+	cfg_addr = (void __iomem *)((ulong) hose->cfg_addr +
-+		((bus_no << 20) | (devfn << 12) | (offset & 0xfff)));
-+
-+	switch (len) {
-+	case 1:
-+		out_8(cfg_addr, val);
-+		break;
-+	case 2:
-+		out_le16(cfg_addr, val);
-+		break;
-+	default:
-+		out_le32(cfg_addr, val);
-+		break;
-+	}
-+
-+	return PCIBIOS_SUCCESSFUL;
++	out_be32(base + (reg >> 2), value);
 +}
 +
-+static struct pci_ops direct_pcie_ops = {
-+	direct_read_config_pcie,
-+	direct_write_config_pcie
++static struct ipic_msi * ipic_msi_from_irq(unsigned int virq)
++{
++	return ipic_msi;
++}
++
++#define	ipic_msi_irq_to_hw(virq)	virq_to_hw(virq)
++static void ipic_msi_unmask(unsigned int virq)
++{
++	struct ipic_msi *msi = ipic_msi_from_irq(virq);
++	unsigned int src = ipic_msi_irq_to_hw(virq);
++	unsigned long flags;
++	u32 temp;
++
++	spin_lock_irqsave(&ipic_msi_lock, flags);
++	temp = ipic_msi_read(msi->regs, IPIC_MSIMR);
++	ipic_msi_write(msi->regs, IPIC_MSIMR,
++		temp & ~(1 << (src / msi->int_per_msir)));
++
++	spin_unlock_irqrestore(&ipic_msi_lock, flags);
++}
++
++static void ipic_msi_mask(unsigned int virq)
++{
++	struct ipic_msi *msi = ipic_msi_from_irq(virq);
++	unsigned int src = ipic_msi_irq_to_hw(virq);
++	unsigned long flags;
++	u32 temp;
++
++	spin_lock_irqsave(&ipic_msi_lock, flags);
++
++	temp = ipic_msi_read(msi->regs, IPIC_MSIMR);
++	ipic_msi_write(msi->regs, IPIC_MSIMR,
++		temp | (1 << (src / msi->int_per_msir)));
++
++	spin_unlock_irqrestore(&ipic_msi_lock, flags);
++}
++/*
++ * We do not need this actually. The MSIR register has been read once
++ * in ipic_msi_get_irq. So, this MSI interrupt has been acked
++ */
++static void ipic_msi_ack(unsigned int virq)
++{
++	struct ipic_msi *msi = ipic_msi_from_irq(virq);
++	unsigned int src = ipic_msi_irq_to_hw(virq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&ipic_msi_lock, flags);
++
++	ipic_msi_read(msi->regs, IPIC_MSIR0 + (4 * (src / msi->int_per_msir)));
++
++	spin_unlock_irqrestore(&ipic_msi_lock,flags);
++}
++
++static struct irq_chip ipic_msi_chip = {
++	.typename = " IPIC MSI ",
++	.unmask = ipic_msi_unmask,
++	.mask = ipic_msi_mask,
++	.ack = ipic_msi_ack,
 +};
 +
-+static void __init mpc83xx_setup_pcie(struct pci_controller *hose,
-+			struct resource *reg, struct resource *cfg_space)
++static int ipic_msi_host_map(struct irq_host *h, unsigned int virq,
++				irq_hw_number_t hw)
 +{
-+	void __iomem *hose_cfg_base, *mbase;
-+	u32 val;
++	struct ipic_msi *msi = h->host_data;
++	struct irq_chip *chip = msi->hc_irq;
 +
-+	hose_cfg_base = ioremap(reg->start, reg->end - reg->start + 1);
++	set_irq_chip_data(virq, msi);
++	get_irq_desc(virq)->status |= IRQ_TYPE_EDGE_FALLING;
 +
-+	val = in_le32(hose_cfg_base + PEX_LTSSM_STAT);
-+	if (val < PEX_LTSSM_STAT_L0)
-+		hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+
-+	mbase = ioremap(cfg_space->start & PAGE_MASK, cfg_space->end - cfg_space->start + 1);
-+	hose->cfg_addr = mbase + (cfg_space->start & ~PAGE_MASK);
-+	hose->ops = &direct_pcie_ops;
++	set_irq_chip_and_handler(virq, chip, handle_edge_irq);
++	return 0;
 +}
-+#endif /* CONFIG_PPC_MPC83XX_PCIE */
 +
-+int __init mpc83xx_add_bridge(struct device_node *dev, int flags)
- {
- 	int len;
- 	struct pci_controller *hose;
- 	struct resource rsrc;
-+#if defined(CONFIG_PPC_MPC83XX_PCIE)
-+	struct resource cfg_space;
-+#endif
- 	const int *bus_range;
--	int primary = 1, has_address = 0;
-+	int has_address = 0;
- 	phys_addr_t immr = get_immrbase();
- 
- 	DBG("Adding PCI host bridge %s\n", dev->full_name);
-@@ -63,17 +211,24 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
- 
- 	/* MPC83xx supports up to two host controllers one at 0x8500 from immrbar
--	 * the other at 0x8600, we consider the 0x8500 the primary controller
-+	 * the other at 0x8600.
- 	 */
- 	/* PCI 1 */
--	if ((rsrc.start & 0xfffff) == 0x8500) {
-+	if ((rsrc.start & 0xfffff) == 0x8500)
- 		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304, 0);
--	}
- 	/* PCI 2 */
--	if ((rsrc.start & 0xfffff) == 0x8600) {
-+	if ((rsrc.start & 0xfffff) == 0x8600)
- 		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384, 0);
--		primary = 0;
++static struct irq_host_ops ipic_msi_host_ops = {
++	.map = ipic_msi_host_map,
++};
 +
-+#if defined(CONFIG_PPC_MPC83XX_PCIE)
-+	if (flags & PPC_83XX_PCIE) {
-+		if (of_address_to_resource(dev, 1, &cfg_space)) {
-+			printk("PCIE RC losts configure space. Skip it\n");
-+			return 1;
++irq_hw_number_t ipic_msi_alloc_hwirqs(struct ipic_msi *msi, int num)
++{
++	unsigned long flags;
++	int offset, order = get_count_order(num);
++
++	spin_lock_irqsave(&ipic_msi_bitmap_lock, flags);
++
++	offset = bitmap_find_free_region(msi->ipic_msi_bitmap,
++			msi->nr_msir * msi->int_per_msir, order);
++
++	spin_unlock_irqrestore(&ipic_msi_bitmap_lock, flags);
++
++	pr_debug("%s: allocated 0x%x (2^%d) at offset 0x%x\n",
++		__FUNCTION__, num, order, offset);
++
++	return offset;
++}
++
++void ipic_msi_free_hwirqs(struct ipic_msi *msi, int offset, int num)
++{
++	unsigned long flags;
++	int order = get_count_order(num);
++
++	pr_debug("%s: freeing 0x%x (2^%d) at offset 0x%x\n",
++		__FUNCTION__, num, order, offset);
++
++	spin_lock_irqsave(&ipic_msi_bitmap_lock, flags);
++	bitmap_release_region(msi->ipic_msi_bitmap, offset, order);
++	spin_unlock_irqrestore(&ipic_msi_bitmap_lock, flags);
++}
++
++static int ipic_msi_init_allocator(struct ipic_msi *msi)
++{
++	int size;
++
++	size = BITS_TO_LONGS(msi->nr_msir * msi->int_per_msir) * sizeof(long);
++	msi->ipic_msi_bitmap = alloc_maybe_bootmem(size, GFP_KERNEL);
++
++	if (msi->ipic_msi_bitmap == NULL) {
++		pr_debug("%s: ENOMEM allocating allocator bitmap!\n",
++				__FUNCTION__);
++		return -ENOMEM;
++	}
++	memset(msi->ipic_msi_bitmap, 0, size);
++
++	return 0;
++}
++
++static void ipic_msi_compose_msg(struct ipic_msi *msi, int hwirq,
++						struct msi_msg *msg)
++{
++	unsigned int srs;
++	unsigned int ibs;
++
++	srs = hwirq / msi->int_per_msir;
++	ibs = hwirq - srs * msi->int_per_msir;
++
++	msg->address_lo = msi->msi_addr_lo;
++	msg->address_hi = msi->msi_addr_hi;
++	msg->data = (srs << 5) | (ibs & 0x1F);
++
++	pr_debug("%s: allocated srs: %d, ibs: %d\n",
++		__FUNCTION__, srs, ibs);
++
++}
++
++static int ipic_msi_setup_irqs(struct pci_dev *pdev, int nvec, int type)
++{
++	struct ipic_msi *msi = ipic_msi;
++	irq_hw_number_t hwirq;
++	unsigned int virq;
++	struct msi_desc *entry;
++	struct msi_msg msg;
++
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		hwirq = ipic_msi_alloc_hwirqs(msi, 1);
++		if (hwirq < 0) {
++			pr_debug("%s: fail allocating msi interrupt\n",
++					__FUNCTION__);
++			return hwirq;
 +		}
-+		mpc83xx_setup_pcie(hose, &rsrc, &cfg_space);
- 	}
++
++		/* This hwirq belongs to the irq_host other than irq_host of IPIC
++ 		 * So, it is independent to hwirq of IPIC */
++		virq = irq_create_mapping(msi->irqhost, hwirq);
++		if (virq == NO_IRQ) {
++			pr_debug("%s: fail mapping hwirq 0x%lx\n",
++					__FUNCTION__, hwirq);
++			ipic_msi_free_hwirqs(msi, hwirq, 1);
++			return -ENOSPC;
++		}
++		set_irq_msi(virq, entry);
++		ipic_msi_compose_msg(msi, hwirq, &msg);
++		write_msi_msg(virq, &msg);
++	}
++
++	return 0;
++}
++
++static void ipic_msi_teardown_irqs(struct pci_dev *pdev)
++{
++	struct msi_desc *entry;
++	struct ipic_msi *msi = ipic_msi;
++
++	list_for_each_entry(entry, &pdev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++		set_irq_msi(entry->irq, NULL);
++		ipic_msi_free_hwirqs(msi, virq_to_hw(entry->irq), 1);
++		irq_dispose_mapping(entry->irq);
++	}
++
++	return;
++}
++
++void __init ipic_msi_init(struct device_node *node,
++			void (*handler)(unsigned int irq, struct irq_desc *desc))
++{
++	struct ipic_msi *msi;
++	struct resource res;
++	int i;
++	int rc = 0;
++
++	msi = alloc_maybe_bootmem(sizeof(*msi), GFP_KERNEL);
++	if (msi == NULL)
++		return;
++
++	memset(msi, 0, sizeof(*msi));
++
++
++	msi->irqhost = irq_alloc_host(of_node_get(node), IRQ_HOST_MAP_LINEAR,
++					NR_MSIR, &ipic_msi_host_ops, 0);
++	if (msi->irqhost == NULL) {
++		of_node_put(node);
++		goto out;
++	}
++
++	rc = of_address_to_resource(node, 0, &res);
++	if (rc) {
++		of_node_put(node);
++		goto out;
++	}
++
++	msi->regs = ioremap(res.start, res.end - res.start + 1);
++	msi->irqhost->host_data = msi;
++	msi->hc_irq = &ipic_msi_chip;
++
++	msi->msi_addr_lo = 0xE00007F8;
++	msi->msi_addr_hi = 0;
++	msi->nr_msir = ARRAY_SIZE(msi->msir);
++	msi->int_per_msir = 32;
++	for (i = 0; i < msi->nr_msir; i++) {
++		unsigned int virt_msir = irq_of_parse_and_map(node, i);
++		if (virt_msir != NO_IRQ) {
++			set_irq_data(virt_msir, msi);
++			set_irq_chained_handler(virt_msir, handler);
++			msi->msir[i] = virt_msir;
++		} else
++			msi->msir[i] = NO_IRQ;
++	}
++
++	rc = ipic_msi_init_allocator(msi);
++	if (rc)
++		goto out;
++
++	ipic_msi = msi;
++
++	WARN_ON(ppc_md.setup_msi_irqs);
++	ppc_md.setup_msi_irqs = ipic_msi_setup_irqs;
++	ppc_md.teardown_msi_irqs = ipic_msi_teardown_irqs;
++
++	return;
++
++out:
++	if (mem_init_done)
++		kfree(msi);
++
++	return;
++}
++
++static int ipic_msi_get_irq(struct ipic_msi *msi, int virt_msir)
++{
++	int msir = -1;
++	unsigned int temp;
++	unsigned int offset;
++	int i;
++
++	for (i = 0; i < msi->nr_msir; i++)
++		if (virt_msir == msi->msir[i]) {
++			msir = i;
++			break;
++		}
++
++	if (i >= msi->nr_msir)
++		return NO_IRQ;
++
++	temp = ipic_msi_read(msi->regs, IPIC_MSIR0 + (i * 4));
++	offset = ffs(temp) - 1;
++
++	return irq_linear_revmap(msi->irqhost, (msir * msi->int_per_msir + offset));
++}
++
++void ipic_msi_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	struct ipic_msi *msi;
++	unsigned int cascade_irq;
++
++	spin_lock(&desc->lock);
++	if (desc->chip->mask_ack)
++		desc->chip->mask_ack(irq);
++	else {
++		desc->chip->mask(irq);
++		desc->chip->ack(irq);
++	}
++
++	if (unlikely(desc->status & IRQ_INPROGRESS))
++		goto unlock;
++
++	desc->status |= IRQ_INPROGRESS;
++	msi = desc->handler_data;
++	cascade_irq = ipic_msi_get_irq(msi, irq);
++
++	spin_unlock(&desc->lock);
++
++	if (cascade_irq != NO_IRQ)
++		generic_handle_irq(cascade_irq);
++
++	spin_lock(&desc->lock);
++	desc->status &= ~IRQ_INPROGRESS;
++	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
++		desc->chip->unmask(irq);
++
++unlock:
++	spin_unlock(&desc->lock);
++}
+diff --git a/include/asm-powerpc/ipic_msi.h b/include/asm-powerpc/ipic_msi.h
+new file mode 100644
+index 0000000..2f578da
+--- /dev/null
++++ b/include/asm-powerpc/ipic_msi.h
+@@ -0,0 +1,66 @@
++/*
++ * include/asm-powerpc/ipic_msi.h
++ *
++ * IPIC MSI structure.
++ *
++ * Author: Tony Li <tony.li@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef _ASM_POWERPC_IPIC_MSI_H
++#define _ASM_POWERPC_IPIC_MSI_H
++
++#define NR_MSIR	8
++/* MSI interrupt register offset compared to MSI base address (0xc0) */
++#define IPIC_MSIR0	0x0	/* MSI Interrupt Reg 0 */
++#define IPIC_MSIR1	0x4	/* MSI Interrupt Reg 1 */
++#define IPIC_MSIR2	0x8	/* MSI Interrupt Reg 2 */
++#define IPIC_MSIR3	0xC	/* MSI Interrupt Reg 3 */
++#define IPIC_MSIR4	0x10	/* MSI Interrupt Reg 4 */
++#define IPIC_MSIR5	0x14	/* MSI Interrupt Reg 5 */
++#define IPIC_MSIR6	0x18	/* MSI Interrupt Reg 6 */
++#define IPIC_MSIR7	0x1C	/* MSI Interrupt Reg 7 */
++#define IPIC_MSIMR	0x30	/* MSI Interrupt Mask Reg */
++#define IPIC_MSISR	0x34	/* MSI Interrupt Status Reg */
++#define IPIC_MSIIR	0x38	/* MSI Interrupt Index Reg */
++
++struct ipic_msi {
++	volatile u32 __iomem *regs;
++
++	struct irq_host *irqhost;
++	struct irq_chip *hc_irq;
++
++	unsigned long cascade_irq;
++	unsigned int msir[8];
++
++	u32 msi_addr_lo;
++	u32 msi_addr_hi;
++
++	int nr_msir;
++	int int_per_msir;
++
++	void *ipic_msi_bitmap;
++};
++
++#ifdef CONFIG_IPIC_MSI
++extern void ipic_msi_cascade(unsigned int irq, struct irq_desc *desc);
++extern void __init ipic_msi_init(struct device_node *node,
++		void (*handler)(unsigned int irq, struct irq_desc *desc));
++#else
++void __inline__ ipic_msi_cascade(unsigned int irq, struct irq_desc *desc)
++{
++	return;
++}
++void __inline__ __init ipic_msi_init(struct device_node *node,
++		void (*handler)(unsigned int irq, struct irq_desc *desc))
++{
++	return;
++}
 +#endif
- 
- 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%016llx. "
- 	       "Firmware bus number: %d->%d\n",
-@@ -85,7 +240,10 @@ int __init mpc83xx_add_bridge(struct device_node *dev)
- 
- 	/* Interpret the "ranges" property */
- 	/* This also maps the I/O region and sets isa_io/mem_base */
--	pci_process_bridge_OF_ranges(hose, dev, primary);
-+	if (flags & PPC_83XX_PCI_PRIMARY)
-+		pci_process_bridge_OF_ranges(hose, dev, 1);
-+	else
-+		pci_process_bridge_OF_ranges(hose, dev, 0);
- 
- 	return 0;
- }
++
++#endif /* _ASM_POWERPC_IPIC_MSI_H */
 -- 
 1.5.2
