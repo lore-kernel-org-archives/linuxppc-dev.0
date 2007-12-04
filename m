@@ -1,33 +1,14 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D510DE23F
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 11:50:39 +1100 (EST)
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
-	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id lB40oIBI020382
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:33 +1100
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB40oJQg2617458
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:19 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB40o2CD009462
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:03 +1100
-Date: Tue, 4 Dec 2007 11:28:46 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH 2/2] powerpc: make 64K huge pages more reliable
-Message-ID: <20071204002846.GA32577@localhost.localdomain>
-References: <474CF694.8040700@us.ibm.com>
-	<20071203020648.GF26919@localhost.localdomain>
-	<47547A79.2060206@redhat.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 4 Dec 2007 11:52:38 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] Improved documentation of device tree 'ranges'.
+Message-ID: <20071204005238.GE32577@localhost.localdomain>
+References: <20071203174403.C740719B0073@mail119-sin.bigfish.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <47547A79.2060206@redhat.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, kniht@linux.vnet.ibm.com,
-	Linux Memory Management List <linux-mm@kvack.org>
+In-Reply-To: <20071203174403.C740719B0073@mail119-sin.bigfish.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,35 +18,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 03, 2007 at 04:51:53PM -0500, Chris Snook wrote:
-> David Gibson wrote:
-> > On Tue, Nov 27, 2007 at 11:03:16PM -0600, Jon Tollefson wrote:
-> >> This patch adds reliability to the 64K huge page option by making use of 
-> >> the PMD for 64K huge pages when base pages are 4k.  So instead of a 12 
-> >> bit pte it would be 7 bit pmd and a 5 bit pte. The pgd and pud offsets 
-> >> would continue as 9 bits and 7 bits respectively.  This will allow the 
-> >> pgtable to fit in one base page.  This patch would have to be applied 
-> >> after part 1.
-> > 
-> > Hrm.. shouldn't we just ban 64K hugepages on a 64K base page size
-> > setup?  There's not a whole lot of point to it, after all...
-> > 
+On Mon, Dec 03, 2007 at 09:45:03AM -0800, Stephen Neuendorffer wrote:
+> I was misled by the prior language.  I've attempted to clarify how
+> 'ranges' are used, in particular, how to get a 1:1 mapping.
+
+Sounds good, except for one detail.  I think we should avoid using
+the "1:1" terminology: to a mathematician, at least, "1:1" is much
+weaker than "identity mapping" which is what an empty ranges actually
+implies.
+
+So, I think we should explicitly say that an empty ranges implies that
+parent bus address space is identical to child bus address space.
+
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   11 +++++++----
+>  1 files changed, 7 insertions(+), 4 deletions(-)
 > 
-> Actually, it sounds to me like an ideal way to benchmark the
-> efficiency of the hugepage implementation and VM effects, without
-> the TLB performance obscuring the results.
-
-Well.. maybe.  The pagetable format, and therefore the hugepage size,
-will affect the size of that overhead so even with this its not clear
-how meaningful test results would be.
-
-> I agree that it's not something people will want to do very often,
-> but the same can be said about quite a lot of strange things that we
-> allow just because there's no fundamental reason why they cannot be.
-
-Hrm, yeah I guess, since this was a fairly simple fix.  I still don't
-think it's worth jumping through too many hoops to make this possible,
-though.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index e9a3cb1..aad8bf5 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -711,13 +711,14 @@ define a bus type with a more complex address format, including things
+>  like address space bits, you'll have to add a bus translator to the
+>  prom_parse.c file of the recent kernels for your bus type.
+>  
+> -The "reg" property only defines addresses and sizes (if #size-cells
+> -is non-0) within a given bus. In order to translate addresses upward
+> +The "reg" property only defines addresses and sizes (if #size-cells is
+> +non-0) within a given bus. In order to translate addresses upward
+>  (that is into parent bus addresses, and possibly into CPU physical
+>  addresses), all busses must contain a "ranges" property. If the
+>  "ranges" property is missing at a given level, it's assumed that
+> -translation isn't possible. The format of the "ranges" property for a
+> -bus is a list of:
+> +translation isn't possible, i.e., the registers are not visible on the
+> +parent bus.  The format of the "ranges" property for a bus is a list
+> +of:
+>  
+>  	bus address, parent bus address, size
+>  
+> @@ -735,6 +736,8 @@ fit in a single 32-bit word.   New 32-bit powerpc boards should use a
+>  1/1 format, unless the processor supports physical addresses greater
+>  than 32-bits, in which case a 2/1 format is recommended.
+>  
+> +Alternatively, the "ranges" property may be empty, indicating that the
+> +registers are visible on the parent bus, with 1:1 address translation.
+>  
+>  2) Note about "compatible" properties
+>  -------------------------------------
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
