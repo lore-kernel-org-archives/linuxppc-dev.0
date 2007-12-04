@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8DA12DDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:32:58 +1100 (EST)
-Message-ID: <4755E3A6.80704@freescale.com>
-Date: Tue, 04 Dec 2007 17:32:54 -0600
-From: Scott Wood <scottwood@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2FA07DDE42
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:37:50 +1100 (EST)
+Date: Tue, 4 Dec 2007 17:36:08 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: [FDT][PATCH] Fix padding options
+Message-ID: <Pine.LNX.4.64.0712041734580.1979@blarg.am.freescale.net>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
-References: <11967907173600-git-send-email-timur@freescale.com>	<200712042313.58252.arnd@arndb.de>
-	<4755D73D.7040204@freescale.com> <200712050026.07616.arnd@arndb.de>
-In-Reply-To: <200712050026.07616.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> From a code clarity perspective, the interesting point is that dma_addr_t is
-> what comes back from the functions in dma-mapping.h. If you don't use them,
-> a physical address is phys_addr_t.
-> 
-> You can argue that the QS is really a DMA device, but in that case you
-> should convert the driver to use the DMA mapping interfaces correctly,
-> which I would consider overkill.
+"Add an option to pad the blob that is generated" broke the padding
+support.  We were updating the fdt header after writing it.
 
-Why is it overkill?
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
--Scott
+Better commit message for this, since my commit ID is different.
+
+ flattree.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/flattree.c b/flattree.c
+index c860b63..eb9c82c 100644
+--- a/flattree.c
++++ b/flattree.c
+@@ -399,6 +399,12 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+ 	if (padsize > 0)
+ 		padlen = padsize;
+
++	if (padlen > 0) {
++		int tsize = be32_to_cpu(fdt.totalsize);
++		tsize += padlen;
++		fdt.totalsize = cpu_to_be32(tsize);
++	}
++
+ 	/*
+ 	 * Assemble the blob: start with the header, add with alignment
+ 	 * the reserve buffer, add the reserve map terminating zeroes,
+@@ -414,12 +420,8 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+ 	/*
+ 	 * If the user asked for more space than is used, pad out the blob.
+ 	 */
+-	if (padlen > 0) {
+-		int tsize = be32_to_cpu(fdt.totalsize);
+-		tsize += padlen;
++	if (padlen > 0)
+ 		blob = data_append_zeroes(blob, padlen);
+-		fdt.totalsize = cpu_to_be32(tsize);
+-	}
+
+ 	fwrite(blob.val, blob.len, 1, f);
+
+-- 
+1.5.3.4
