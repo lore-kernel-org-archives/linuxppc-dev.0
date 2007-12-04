@@ -1,23 +1,13 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id ACB68DDFDD
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:44:22 +1100 (EST)
-Message-ID: <4755E65B.3050208@freescale.com>
-Date: Tue, 04 Dec 2007 17:44:27 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <timur@freescale.com>
+Message-ID: <4755E6AC.9020808@freescale.com>
+Date: Tue, 04 Dec 2007 17:45:48 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
-References: <11967907173600-git-send-email-timur@freescale.com>
-	<200712050026.07616.arnd@arndb.de> <4755E3A6.80704@freescale.com>
-	<200712050039.39153.arnd@arndb.de>
-In-Reply-To: <200712050039.39153.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+To: Markus Rechberger <markus.rechberger@amd.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Subject: Fix Firmware class name collision
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +17,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Wednesday 05 December 2007, Scott Wood wrote:
->>> You can argue that the QS is really a DMA device, but in that
->>> case you should convert the driver to use the DMA mapping
->>> interfaces correctly, which I would consider overkill.
->> Why is it overkill?
->> 
-> 
-> Well, if the QE can never be used with an IOMMU anyway,
+Markus and Greg,
 
-I'm unconvinced that that will always be the case.
+I've found a problem with this patch that probably affects a number of embedded 
+PowerPC systems:
 
-> The DMA mapping API is meant for the cases where physical and dma 
-> addresses can be different in the first place.
+http://marc.info/?l=linux-kernel&m=119222892713518&w=2
 
-It's also used for noncoherent DMA; while it's unlikely Freescale will 
-come out with a QE 8xx chip any time soon, there could be hardware bugs 
-or performance considerations that make it desireable to treat it as 
-non-coherent.
+The problem is that the device name for many PowerPC SoC devices is based on the 
+physical address.  So we have stuff like this:
 
--Scott
+# ls -l /sys/devices/
+drwxr-xr-x    9 root     root            0 Nov  9 17:29 e0000000.soc8323
+drwxr-xr-x   11 root     root            0 Nov  9 17:22 e0100000.qe
+[snip]
+# ls -l /sys/devices/e0000000.soc8323/
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0000200.wdt
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0000700.pic
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0001400.par_io
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0003000.i2c
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0004500.serial
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0004600.serial
+drwxr-xr-x    2 root     root            0 Nov  9 17:34 e0030000.crypto
+[snip]
+
+With this patch, the device names in /sys/class/firmware look like this:
+
+# ls -l /sys/class/firmware/
+drwxr-xr-x    2 root     root            0 Nov  9 17:37 firmware-e0102400.u
+-rw-r--r--    1 root     root         4096 Nov  9 17:22 timeout
+
+In other words, the only thing you get is the first letter of the device name. 
+You used to get the whole name.  The physical address obviously isn't very helpful.
+
+The problem is the size of the string is only 20 characters:
+
+static inline void fw_setup_device_id(struct device *f_dev, struct device *dev)
+{
+	snprintf(f_dev->bus_id, BUS_ID_SIZE, "firmware-%s", dev->bus_id);
+}
+
+Now, there are two solutions:
+
+1) Change the PowerPC device names from physical_address.device_name to 
+device_name.physical_address (so that e0102400.ucc becomes ucc.e0102400)
+
+2) Change fw_setup_device_id() to something like this:
+
+	snprintf(f_dev->bus_id, BUS_ID_SIZE, "fw-%s", dev->bus_id);
+
+which do you think is a better idea?
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
