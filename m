@@ -1,19 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DF93BDDF57
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:28:18 +1100 (EST)
-Date: Tue, 4 Dec 2007 13:32:20 -0600
-From: Olof Johansson <olof@lixom.net>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 2/2] [POWERPC] pasemi: Register i2c_board_info
-Message-ID: <20071204193220.GC5758@lixom.net>
-References: <20071130032645.GA25580@lixom.net>
-	<20071130032923.GB25580@lixom.net>
-	<1196774926.13978.225.camel@pmac.infradead.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id B2DE5DDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:36:34 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
+	platform code
+Date: Tue, 4 Dec 2007 20:35:59 +0100
+References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
+	<fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
+	<fa686aa40712040621r3103bae9hd900c23d48273360@mail.gmail.com>
+In-Reply-To: <fa686aa40712040621r3103bae9hd900c23d48273360@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196774926.13978.225.camel@pmac.infradead.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712042036.00785.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 01:28:46PM +0000, David Woodhouse wrote:
+On Tuesday 04 December 2007, Grant Likely wrote:
+> On 12/4/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> > On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > > You seem to have missed the PS3 *_initcall()s.
+> > > Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
+> > > of machine_is(ps3).
+> >
+> > That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
+> > substitute so I left it alone.
 > 
-> On Thu, 2007-11-29 at 21:29 -0600, Olof Johansson wrote:
-> > +                               continue;
-> > +
-> > +                       info.addr = *addr;
-> > +
-> > +                       i2c_register_board_info(PCI_FUNC(pdev->devfn),
-> > &info,
-> > +                                               1);
-> > +               }
-> > +       }
-> 
-> +       /* Ensure that buses up to 2 are reserved */
-> +       i2c_register_board_info(2, NULL, 0);
-> +
-> 
-> 
-> > +       return 0;
-> > +}
-> > +device_initcall(pasemi_register_i2c_devices);
-> > +#endif
-> 
-> 
-> Otherwise when you make i2c-pasemi use i2c_add_numbered_adapter(), it
-> might fail to register the third bus -- because there were no devices
-> preregistered on it, so something else might have stolen that bus number
-> already.
+> On that topic; I left some pseries and iseries stuff alone also for
+> the same reason.
 
-Good point, I'd missed that. Thanks!
+Yes, and in many cases it's the right answer to base a decision on a specific
+feature rather than a platform name, for two reasons:
 
-> You might want to add the patch to use i2c_add_numbered_adapter() to
-> your tree, btw.
+1. If another platform gets added that uses the same firmware feature, it
+will automatically do the right thing.
 
-Yep, I realized that after (re)asking Paul to pull though, and didn't
-want to do a third request before he's done it. :)
+2. The call to firmware_has_feature() turns into a compile-time check in
+many cases, so if the kernel does not contain support for any firmware
+with the given feature, all the code referenced it can get optimized
+away by the compiler.
 
-If he doesn't pull in the next few days I might just keep adding new
-patches as they come in though, and add it back.
+If we have many cases where an initcall is done based on a specific fw-feature
+or cpu-feature, we might want to add a similar initcall mechanism for those
+along the lines of machine_xxx_initcall, but of course we should be sure
+not to overengineer things here.
 
-
--Olof
+	Arnd <><
