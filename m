@@ -1,16 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <4755E835.6070704@freescale.com>
-Date: Tue, 04 Dec 2007 17:52:21 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 83F28DDFDB
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:56:51 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+Date: Wed, 5 Dec 2007 00:56:39 +0100
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712050026.07616.arnd@arndb.de> <4755E701.3040908@freescale.com>
+In-Reply-To: <4755E701.3040908@freescale.com>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Fix Firmware class name collision
-References: <4755E6AC.9020808@freescale.com>
-In-Reply-To: <4755E6AC.9020808@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Markus Rechberger <markus.rechberger@amd.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712050056.40543.arnd@arndb.de>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> 
-> In other words, the only thing you get is the first letter of the device name. 
-> You used to get the whole name.  The physical address obviously isn't very helpful.
+On Wednesday 05 December 2007, Timur Tabi wrote:
+> Arnd Bergmann wrote:
+>=20
+> > You can argue that the QS is really a DMA device, but in that case you
+> > should convert the driver to use the DMA mapping interfaces correctly,
+> > which I would consider overkill.
+>=20
+> I'm confused. =A0I'm already calling dma_alloc_coherent() and getting a d=
+ma_addr_t=20
+> back. =A0Why do I need to use mapping functions to convert between virtua=
+l and=20
+> physical/bus addresses?
 
-The physical address certainly is useful when you have more than one 
-device of the same name.
+No, I'm sorry but I'm the one who was confused. The problem I saw was that
+you return something offset from "bd_phys" as a dma_addr_t. This would be
+a lot easier if you had called it bd_bus or bd_dma instead of bd_phys, but
+your code looks absolutely correct upon closer inspection.
 
-> Now, there are two solutions:
-> 
-> 1) Change the PowerPC device names from physical_address.device_name to 
-> device_name.physical_address (so that e0102400.ucc becomes ucc.e0102400)
-
-So then you'd get "firmware-ucc.e01024".  What if there's another ucc at 
-  e0102480?  For devices with longer names, you'd have even less 
-precision in the address.
-
--Scott
+	Arnd <><
