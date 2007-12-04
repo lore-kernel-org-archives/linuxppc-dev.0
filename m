@@ -1,24 +1,44 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.242])
-	by ozlabs.org (Postfix) with ESMTP id DAD00DDE25
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 01:21:24 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so853307anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Dec 2007 06:21:24 -0800 (PST)
-Message-ID: <fa686aa40712040621r3103bae9hd900c23d48273360@mail.gmail.com>
-Date: Tue, 4 Dec 2007 07:21:23 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
-	platform code
-In-Reply-To: <fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 09D46DDE1B
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 01:58:11 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id lB4Ew5ac006561
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 01:58:05 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB4F1jbB280852
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 02:01:46 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB4EvrwT023426
+	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 01:57:54 +1100
+Message-ID: <47556AE5.8010708@linux.vnet.ibm.com>
+Date: Tue, 04 Dec 2007 20:27:41 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
-	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
-	<Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
-	<fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
-Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+References: <474D0AAC.5010005@linux.vnet.ibm.com>
+	<20071127225328.9e3f3827.akpm@linux-foundation.org>
+	<474D15FF.5080508@linux.vnet.ibm.com>
+	<20071127232552.ad16e95c.akpm@linux-foundation.org>
+	<474E5CAC.9000108@linux.vnet.ibm.com>
+	<20071129003533.54b4b20e.akpm@linux-foundation.org>
+	<20071130063929.GD2754@fattire.cabal.ca>
+	<20071129230047.1b482562.akpm@linux-foundation.org>
+	<20071129230204.8698f47e.akpm@linux-foundation.org>
+	<474FBB86.5000004@linux.vnet.ibm.com>
+	<20071204122005.GA27286@elte.hu>
+In-Reply-To: <20071204122005.GA27286@elte.hu>
+Content-Type: text/plain; charset=us-ascii
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org,
+	Matthew Wilcox <willy@debian.org>, LKML <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +48,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/4/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > On Sat, 1 Dec 2007, Grant Likely wrote:
-> > > From: Grant Likely <grant.likely@secretlab.ca>
-> > >
-> > > This patch makes the platform code use the new machine-specific initcall
-> > > hooks.  This has the advantage of not needing to explicitly test
-> > > machine_is() at the top of every initcall function.
-> >
-> > You seem to have missed the PS3 *_initcall()s.
-> > Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
-> > of machine_is(ps3).
->
-> That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
-> substitute so I left it alone.
+Ingo Molnar wrote:
+> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+> 
+>>> So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
+>> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
+> 
+> just to make sure: this is a real lockup and failed bootup (or device 
+> init), not just a message, right?
+> 
+> 	Ingo
+> --
 
-On that topic; I left some pseries and iseries stuff alone also for
-the same reason.
+Hi Ingo,
 
-Cheers,
-g.
+This softlockup is seen in the 2.6.24-rc4 either and looks like a message because 
+this is seen while running tbench and machine continues running other test's after 
+the softlockup messages and some times seen with the bootup, but the machines reaches the 
+login prompt and able to continue running tests.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
