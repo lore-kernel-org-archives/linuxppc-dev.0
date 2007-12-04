@@ -1,21 +1,19 @@
-Return-Path: <stephen.neuendorffer@xilinx.com>
-Received: from outbound7-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 38B92DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 16:31:54 +1100 (EST)
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id B8918DDE20
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 16:32:44 +1100 (EST)
+Date: Mon, 3 Dec 2007 22:34:27 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071204053427.GB27063@mag.az.mvista.com>
+References: <20071129152836.GB13751@ru.mvista.com>
+	<1196715170.13230.228.camel@pasglop>
+	<20071204012329.GA18903@mag.az.mvista.com>
+	<1196734483.13230.256.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C83636.F637172F"
-Subject: RE: [PATCH] [POWERPC] [v2] Improved documentation of device
-	tree'ranges'.
-Date: Mon, 3 Dec 2007 21:27:08 -0800
-References: <20071204010818.AD4231798062@mail212-sin.bigfish.com>
-	<20071204024025.GG32577@localhost.localdomain>
-From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>
-Message-Id: <20071204053148.C2FBCF00059@mail199-blu.bigfish.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196734483.13230.256.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,116 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Tue, Dec 04, 2007 at 01:14:43PM +1100, Benjamin Herrenschmidt wrote:
+> 
+>  .../... (snip scary bunch of errata)
+> 
+> > - "FEr PCI-#4" (Detailed by Application Note AN-84):
+> > 
+> > [This isn't strictly a coherency issue but having coherency enabled
+> > exacerbates the problem.]  Basically, the bridge can let the cpu read
+> > a pci device's registers before all of the data the PCI devices has
+> > written has actually made it to memory.  This and the fact that the
+> > device's write data may be stuck in the PCI Slave Write Buffer
+> > (which isn't checked for coherency), the cpu can get stale data.
+> > 
+> > There are no plans to fix that erratum.
+> 
+> So if I understand correctly, there's no plan to fix a major PCI spec
+> violation which prevent any kind of reliable implementation whatsoever ?
 
-------_=_NextPart_001_01C83636.F637172F
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+That's just for that particular part (e.g., 64360).  Newer parts like
+the 64460 have it fixed.
 
+> > So, the answer depends on what part & what rev of the part you have
+> > (e.g., the pegasos doesn't use the MPSC and apparently has the other
+> > issues worked around so it can turn on coherency but the prpmc2800
+> > doesn't so it needs coherency off).
+> > 
+> > BTW, I haven't forgotten the inherent bug you described when coherency
+> > is off (/me too lazy to find link to the email) but AFAIK I've never run
+> > into it.  However, if I turn on coherency and stress the PCI bus, it
+> > hangs (I can't even look at memory thru a bdi).
+> 
+> Well, as it is today, the "classic" MMU code cannot deal with !coherent.
+> The entire linear mapping is always mapped cacheable with BATs, so stuff
+> may be brought into the cache at any time, potentially polluting DMA
+> data.
+>
+> Dealing with that would be hard. It might be possible by using G on the
+> entire linear mapping like we do on 4xx (yuck), and/or by not using
+> D-BATs (the kernel will blow up in various areas without I-BATs).
 
-I'm actually a little embarrassed that I didn't pick that nit myself.. =
-:)
+Hrm, I didn't realize it was in such bad shape.  I'll have to take a
+closer look.
 
------Original Message-----
-From: David Gibson [mailto:david@gibson.dropbear.id.au]
-Sent: Mon 12/3/2007 6:40 PM
-To: Stephen Neuendorffer
-Cc: grant.likely@secretlab.ca; linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] [v2] Improved documentation of device =
-tree'ranges'.
-=20
-
-On Mon, Dec 03, 2007 at 05:08:57PM -0800, Stephen Neuendorffer wrote:
-> I was misled by the prior language.  I've attempted to clarify how
-> 'ranges' are used, in particular, how to get an identity mapping.
->=20
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
-
-Thanks for the update.  I particularly dislike the "1:1" terminology,
-because in maths-speak *any* ranges translation is 1:1, unless it
-includes overlapping ranges.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ =
-_other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
-
-
-------_=_NextPart_001_01C83636.F637172F
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7652.24">
-<TITLE>RE: [PATCH] [POWERPC] [v2] Improved documentation of device =
-tree'ranges'.</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-<BR>
-
-<P><FONT SIZE=3D2>I'm actually a little embarrassed that I didn't pick =
-that nit myself.. :)<BR>
-<BR>
------Original Message-----<BR>
-From: David Gibson [<A =
-HREF=3D"mailto:david@gibson.dropbear.id.au">mailto:david@gibson.dropbear.=
-id.au</A>]<BR>
-Sent: Mon 12/3/2007 6:40 PM<BR>
-To: Stephen Neuendorffer<BR>
-Cc: grant.likely@secretlab.ca; linuxppc-dev@ozlabs.org<BR>
-Subject: Re: [PATCH] [POWERPC] [v2] Improved documentation of device =
-tree'ranges'.<BR>
-<BR>
-<BR>
-On Mon, Dec 03, 2007 at 05:08:57PM -0800, Stephen Neuendorffer =
-wrote:<BR>
-&gt; I was misled by the prior language.&nbsp; I've attempted to clarify =
-how<BR>
-&gt; 'ranges' are used, in particular, how to get an identity =
-mapping.<BR>
-&gt;<BR>
-&gt; Signed-off-by: Stephen Neuendorffer =
-&lt;stephen.neuendorffer@xilinx.com&gt;<BR>
-<BR>
-Acked-by: David Gibson &lt;david@gibson.dropbear.id.au&gt;<BR>
-<BR>
-Thanks for the update.&nbsp; I particularly dislike the &quot;1:1&quot; =
-terminology,<BR>
-because in maths-speak *any* ranges translation is 1:1, unless it<BR>
-includes overlapping ranges.<BR>
-<BR>
---<BR>
-David Gibson&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | I'll have my music baroque, =
-and my code<BR>
-david AT gibson.dropbear.id.au&nbsp; | minimalist, thank you.&nbsp; NOT =
-_the_ _other_<BR>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | _way_ _around_!<BR>
-<A =
-HREF=3D"http://www.ozlabs.org/~dgibson">http://www.ozlabs.org/~dgibson</A=
-><BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C83636.F637172F--
+Mark
