@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C59FCDDF5F
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:58:15 +1100 (EST)
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
-References: <20071204060911.EA82BDDE19@ozlabs.org>
-	<Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
-Content-Type: text/plain
-Date: Wed, 05 Dec 2007 06:57:59 +1100
-Message-Id: <1196798279.13230.312.camel@pasglop>
-Mime-Version: 1.0
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1E5F3DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:01:13 +1100 (EST)
+In-Reply-To: <1196279794.30806.54.camel@pmac.infradead.org>
+References: <1196273071.30806.46.camel@pmac.infradead.org>
+	<1196279794.30806.54.camel@pmac.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8D34458A-2CE9-4FA7-AE28-4D148E08CCDF@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] Stop phy code from returning success to unknown ioctls.
+Date: Tue, 4 Dec 2007 14:00:42 -0600
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
+	Domen Puncer <domen.puncer@telargo.com>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +28,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-12-04 at 13:39 +0100, Geert Uytterhoeven wrote:
-> 
-> Can we please have them in <linux/ioport.h>? They look very useful to
-> me
-> elsewhere (other bus drivers, device drivers), too.
-> 
-> What about naming the printf format specifier macros more like in C99,
-> e.g.
-> PRI*?
+On Nov 28, 2007, at 13:56, David Woodhouse wrote:
 
-That's a can of worms I just didn't want to open...
+> This kind of sucks, and prevents the Fedora installer from using the
+> device for network installs...
+>
+> [root@efika phy]# iwconfig eth0
+> Warning: Driver for device eth0 has been compiled with an ancient  
+> version
+> of Wireless Extension, while this program support version 11 and  
+> later.
+> Some things may be broken...
+>
+> eth0        ESSID:off/any  Nickname:""
+>           NWID:0  Channel:0  Access Point: 00:00:BF:81:14:E0
+>           Bit Rate:-1.08206e+06 kb/s   Sensitivity=0/0
+>           RTS thr:off   Fragment thr:off
+>           Encryption key:<too big>
+>           Power Management:off
+>
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Ben.
+d'oh!
+
+Acked-by: Andy Fleming <afleming@freescale.com>
+
+
+>
+> diff --git a/drivers/net/phy/phy.c b/drivers/net/phy/phy.c
+> index 9bc1177..7c9e6e3 100644
+> --- a/drivers/net/phy/phy.c
+> +++ b/drivers/net/phy/phy.c
+> @@ -406,6 +406,9 @@ int phy_mii_ioctl(struct phy_device *phydev,
+>  				&& phydev->drv->config_init)
+>  			phydev->drv->config_init(phydev);
+>  		break;
+> +
+> +	default:
+> +		return -ENOTTY;
+>  	}
+>
+>  	return 0;
+>
+> -- 
+> dwmw2
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
