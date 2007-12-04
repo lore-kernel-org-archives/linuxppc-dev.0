@@ -1,21 +1,17 @@
-Return-Path: <k-ueda@ct.jp.nec.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 4D2B2DDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 09:55:55 +1100 (EST)
-Date: Mon, 03 Dec 2007 17:55:44 -0500 (EST)
-Message-Id: <20071203.175544.13775421.k-ueda@ct.jp.nec.com>
-To: Geert.Uytterhoeven@sonycom.com
-Subject: Re: [PATCH 09/28] blk_end_request: changing ps3disk (take 3)
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-In-Reply-To: <Pine.LNX.4.64.0712021032490.29349@anakin>
-References: <20071130.182810.98558485.k-ueda@ct.jp.nec.com>
-	<Pine.LNX.4.64.0712021032490.29349@anakin>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: k-ueda@ct.jp.nec.com, linux-scsi@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, dm-devel@redhat.com,
-	bharrosh@panasas.com, j-nomura@ce.jp.nec.com
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 4 Dec 2007 11:33:54 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071204003354.GB32577@localhost.localdomain>
+References: <20071129150726.GA13751@ru.mvista.com>
+	<20071129152836.GB13751@ru.mvista.com>
+	<20071203015018.GC26919@localhost.localdomain>
+	<1196709993.7735.3.camel@ld0161-tx32>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196709993.7735.3.camel@ld0161-tx32>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Geert,
-
-On Sun, 2 Dec 2007 10:34:56 +0100 (CET), Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Fri, 30 Nov 2007, Kiyoshi Ueda wrote:
-> > This patch converts ps3disk to use blk_end_request().
->                                      ^^^^^^^^^^^^^^^
-> Patch subject and description are inconsistent with actual change.
+On Mon, Dec 03, 2007 at 01:26:34PM -0600, Jon Loeliger wrote:
+> On Sun, 2007-12-02 at 19:50, David Gibson wrote:
 > 
-> > Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> > Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> > ---
-> >  drivers/block/ps3disk.c |    6 +-----
-> >  1 files changed, 1 insertion(+), 5 deletions(-)
-> > 
-> > Index: 2.6.24-rc3-mm2/drivers/block/ps3disk.c
-> > ===================================================================
-> > --- 2.6.24-rc3-mm2.orig/drivers/block/ps3disk.c
-> > +++ 2.6.24-rc3-mm2/drivers/block/ps3disk.c
-> > @@ -280,11 +280,7 @@ static irqreturn_t ps3disk_interrupt(int
-> >  	}
-> >  
-> >  	spin_lock(&priv->lock);
-> > -	if (!end_that_request_first(req, uptodate, num_sectors)) {
-> > -		add_disk_randomness(req->rq_disk);
-> > -		blkdev_dequeue_request(req);
-> > -		end_that_request_last(req, uptodate);
-> > -	}
-> > +	__blk_end_request(req, uptodate, num_sectors << 9);
->       ^^^^^^^^^^^^^^^^^
+> > > +		clock-frequency = <7f28155>;		/* 133.333333 MHz */
+> > You can use <d# 133333333> to avoid the ugly hex.
+> 
+> Better still, blaze a new trail, convert it to /dts-v1/ and
+> use clock-frequency = <133333333> straight up!
 
-Thank you for the comment.
-The description meant the blk_end_request family, not actual function,
-blk_end_request().  But as you pointed out, it is misleading.
-I'll change the description of all related patches.
+Hrm.. probably best to wait for dtc to go into the kernel for that.
 
-Thanks,
-Kiyoshi Ueda
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
