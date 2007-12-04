@@ -1,17 +1,34 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <Tony.Li@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2BFB1DDE1B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 19:41:15 +1100 (EST)
-Date: Tue, 04 Dec 2007 17:41:07 +0900 (JST)
-Message-Id: <20071204.174107.-1625850822.kouish@swc.toshiba.co.jp>
-To: paulus@samba.org
-Subject: [PATCH 3/3] update celleb_defconfig to support for native CBE
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 442E2DDE05
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 20:20:38 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	lB49KWKu029486
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 02:20:33 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB49KVK2028899
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 03:20:32 -0600 (CST)
+Subject: Re: [PATCH] Add IPIC MSI interrupt support
+From: Li Li <r64360@freescale.com>
+To: benh@kernel.crashing.org
+In-Reply-To: <1196754717.13230.286.camel@pasglop>
+References: <1196394519.29683.8.camel@Guyver>
+	<1196654521.13554.32.camel@concordia>
+	<1196672870.14353.21.camel@Guyver>
+	<1196746689.20158.4.camel@concordia>
+	<1196754717.13230.286.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 17:10:10 +0800
+Message-Id: <1196759410.28693.5.camel@Guyver>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,94 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch updates celleb_defconfig to support for native CBE.
+Yes. According to the PCI spec, a PCI device can request multi MSI
+interrupts and require that interrupts are consecutive.
+But it is ok if only allocate one to it.
+Anyway, the hwirq should be allocated from bitmap instead of increment
+by hand.
 
-Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
----
+I will correct this and resend the patch.
 
-Index: linux-powerpc-git/arch/powerpc/configs/celleb_defconfig
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/configs/celleb_defconfig
-+++ linux-powerpc-git/arch/powerpc/configs/celleb_defconfig
-@@ -44,7 +44,8 @@ CONFIG_AUDIT_ARCH=y
- CONFIG_GENERIC_BUG=y
- # CONFIG_DEFAULT_UIMAGE is not set
- # CONFIG_PPC_DCR_NATIVE is not set
--# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_PPC_DCR_MMIO=y
-+CONFIG_PPC_DCR=y
- CONFIG_PPC_OF_PLATFORM_PCI=y
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
-@@ -141,7 +142,7 @@ CONFIG_PPC_MULTIPLATFORM=y
- CONFIG_PPC_CELLEB=y
- # CONFIG_PPC_PS3 is not set
- CONFIG_PPC_CELL=y
--# CONFIG_PPC_CELL_NATIVE is not set
-+CONFIG_PPC_CELL_NATIVE=y
- # CONFIG_PPC_IBM_CELL_BLADE is not set
- 
- #
-@@ -150,18 +151,24 @@ CONFIG_PPC_CELL=y
- CONFIG_SPU_FS=y
- CONFIG_SPU_FS_64K_LS=y
- CONFIG_SPU_BASE=y
-+CONFIG_CBE_RAS=y
-+# CONFIG_CBE_THERM is not set
- # CONFIG_PQ2ADS is not set
-+CONFIG_PPC_NATIVE=y
-+CONFIG_UDBG_RTAS_CONSOLE=y
- CONFIG_PPC_UDBG_BEAT=y
--# CONFIG_MPIC is not set
-+CONFIG_MPIC=y
- # CONFIG_MPIC_WEIRD is not set
- # CONFIG_PPC_I8259 is not set
- # CONFIG_U3_DART is not set
--# CONFIG_PPC_RTAS is not set
-+CONFIG_PPC_RTAS=y
-+# CONFIG_RTAS_ERROR_LOGGING is not set
-+# CONFIG_RTAS_PROC is not set
- # CONFIG_MMIO_NVRAM is not set
- # CONFIG_PPC_MPC106 is not set
- # CONFIG_PPC_970_NAP is not set
--# CONFIG_PPC_INDIRECT_IO is not set
--# CONFIG_GENERIC_IOMAP is not set
-+CONFIG_PPC_INDIRECT_IO=y
-+CONFIG_GENERIC_IOMAP=y
- # CONFIG_CPU_FREQ is not set
- # CONFIG_CPM2 is not set
- # CONFIG_FSL_ULI1575 is not set
-@@ -723,6 +730,7 @@ CONFIG_SERIAL_TXX9_CONSOLE=y
- CONFIG_UNIX98_PTYS=y
- # CONFIG_LEGACY_PTYS is not set
- CONFIG_HVC_DRIVER=y
-+CONFIG_HVC_RTAS=y
- CONFIG_HVC_BEAT=y
- # CONFIG_IPMI_HANDLER is not set
- CONFIG_WATCHDOG=y
-@@ -732,6 +740,7 @@ CONFIG_WATCHDOG=y
- # Watchdog Device Drivers
- #
- # CONFIG_SOFT_WATCHDOG is not set
-+# CONFIG_WATCHDOG_RTAS is not set
- 
- #
- # PCI-based Watchdog Cards
-@@ -1243,16 +1252,7 @@ CONFIG_XMON_DEFAULT=y
- CONFIG_XMON_DISASSEMBLY=y
- CONFIG_IRQSTACKS=y
- # CONFIG_BOOTX_TEXT is not set
--CONFIG_PPC_EARLY_DEBUG=y
--# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
--# CONFIG_PPC_EARLY_DEBUG_G5 is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
--# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
--# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
--# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
--CONFIG_PPC_EARLY_DEBUG_BEAT=y
--# CONFIG_PPC_EARLY_DEBUG_44x is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
- 
- #
- # Security options
+- Tony
+
+On Tue, 2007-12-04 at 15:51 +0800, Benjamin Herrenschmidt wrote:
+> > I'm not sure what you mean? For MSI there is only one MSI per
+> device, 
+> > but this code is used also for MSI-X which supports > 1 MSI per
+> device.
+> 
+> Or more specifically, for MSI, -linux- supports only one per device
+> (in 
+> theory, it's possible to have multiple MSI non-X but it's a mess).
+> 
+> > Either way we shouldn't be incrementing hwirq by hand, it's
+> reassigned 
+> > at the top of the loop. I think that's left over from old code that 
+> > allocated nvec hwirqs in a block and then created virq mappings for
+> each 
+> > one, whereas the new code allocates each hwirq separately. 
+> > 
+> > cheers 
+> > 
+> > _______________________________________________ 
+> > Linuxppc-dev mailing list 
+> > Linuxppc-dev@ozlabs.org 
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
