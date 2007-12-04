@@ -1,20 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Dec 2007 09:12:09 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Merge dtc
-Message-ID: <20071204221209.GB2521@localhost.localdomain>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<1196733544.13978.201.camel@pmac.infradead.org>
-	<E1IzXmf-0005RJ-27@jdl.com>
-	<20071204092611.79e08953@zod.rchland.ibm.com>
-	<E38C9A55-77FC-46DE-AE30-A03A244656EB@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E38C9A55-77FC-46DE-AE30-A03A244656EB@kernel.crashing.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
-	Paul Mackerras <paulus@samba.org>,
-	David Woodhouse <dwmw2@infradead.org>, Paul@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 43701DDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 09:18:43 +1100 (EST)
+Message-Id: <E0243CA4-29EA-4148-936C-817CDC12F5D1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071204220432.GA2521@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [FDT][PATCH] Fix padding options
+Date: Tue, 4 Dec 2007 16:18:31 -0600
+References: <Pine.LNX.4.64.0712041027330.29174@blarg.am.freescale.net>
+	<20071204220432.GA2521@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,48 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 10:04:53AM -0600, Kumar Gala wrote:
-> 
-> On Dec 4, 2007, at 9:26 AM, Josh Boyer wrote:
-> 
-> > On Tue, 04 Dec 2007 07:25:57 -0600
-> > Jon Loeliger <jdl@jdl.com> wrote:
-> >
-> >> So, like, the other day David Woodhouse mumbled:
-> >>>
-> >>> I think this is a bad idea -- it's hardly a difficult for those  
-> >>> people
-> >>> who _do_ need dts to obtain it separately.
-> >>>
-> >>> We shouldn't be merging _more_ stuff in.
-> >>
-> >> Thanks for chiming in here, David W.  As far as I can tell
-> >> so far, the only two people who have voiced an opinion on
-> >> this issue are Dave G, submitting patches, and me disagreeing
-> >> with the approach.  :-)
-> >>
-> >> Anyone else?
-> >
-> > I don't see an overwhelmingly great reason to merge it.  It might help
-> > test people who do automated rebuilds, etc and aren't used to dealing
-> > with powerpc and it's requirements.  Outside of that, I see it as
-> > dual-maintenance.
-> >
-> > But I'm not doing the maintenance, and it doesn't effect me too much.
-> > I only ask that a decision is made and executed on soon so we can move
-> > on.
-> 
-> I'm also in disagreement of duplicating dtc in the kernel.
-> 
-> However, if we are going to do this we should make the path expansion  
-> for labels work before we do it.
+I guess it was really git commit  
+2b7dc8dce549ad72ad437b254bf756d7ba4c2a5a
 
-Since we're going to have to update the in-kernel copy reasonably
-frequently anyway, I don't see that there's much point in waiting for
-particular features to be implemented.
+Add an option to pad the blob that is generated
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+- k
+
+On Dec 4, 2007, at 4:04 PM, David Gibson wrote:
+
+> On Tue, Dec 04, 2007 at 10:27:52AM -0600, Kumar Gala wrote:
+>> commit 22e787ca2b1e49a9a0f3c43262564ab1038c5c3c broke the padding
+>> support.  We were updating the fdt header after writing it.
+>
+> Uh.. I can't find a commit with that SHA1.  Which one are you
+> referring to?
+>
+> -- 
+> David Gibson			| I'll have my music baroque, and my code
+> david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_  
+> _other_
+> 				| _way_ _around_!
+> http://www.ozlabs.org/~dgibson
