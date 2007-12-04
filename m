@@ -1,44 +1,33 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (E23SMTP05.au.ibm.com [202.81.18.174])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e23smtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 09D46DDE1B
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 01:58:11 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by e23smtp05.au.ibm.com (8.13.1/8.13.1) with ESMTP id lB4Ew5ac006561
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 01:58:05 +1100
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB4F1jbB280852
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 02:01:46 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB4EvrwT023426
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 01:57:54 +1100
-Message-ID: <47556AE5.8010708@linux.vnet.ibm.com>
-Date: Tue, 04 Dec 2007 20:27:41 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
-References: <474D0AAC.5010005@linux.vnet.ibm.com>
-	<20071127225328.9e3f3827.akpm@linux-foundation.org>
-	<474D15FF.5080508@linux.vnet.ibm.com>
-	<20071127232552.ad16e95c.akpm@linux-foundation.org>
-	<474E5CAC.9000108@linux.vnet.ibm.com>
-	<20071129003533.54b4b20e.akpm@linux-foundation.org>
-	<20071130063929.GD2754@fattire.cabal.ca>
-	<20071129230047.1b482562.akpm@linux-foundation.org>
-	<20071129230204.8698f47e.akpm@linux-foundation.org>
-	<474FBB86.5000004@linux.vnet.ibm.com>
-	<20071204122005.GA27286@elte.hu>
-In-Reply-To: <20071204122005.GA27286@elte.hu>
-Content-Type: text/plain; charset=us-ascii
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org,
-	Matthew Wilcox <willy@debian.org>, LKML <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5FC6BDDDFC
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 02:28:58 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB4FSr1E026969
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 10:28:53 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB4FSrJC095578
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 10:28:53 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB4FSrsx000717
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 10:28:53 -0500
+Date: Tue, 4 Dec 2007 09:26:11 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: Merge dtc
+Message-ID: <20071204092611.79e08953@zod.rchland.ibm.com>
+In-Reply-To: <E1IzXmf-0005RJ-27@jdl.com>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<1196733544.13978.201.camel@pmac.infradead.org>
+	<E1IzXmf-0005RJ-27@jdl.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul, David Woodhouse <dwmw2@infradead.org>,
+	Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -48,27 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ingo Molnar wrote:
-> * Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
->>> So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
->> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
-> 
-> just to make sure: this is a real lockup and failed bootup (or device 
-> init), not just a message, right?
-> 
-> 	Ingo
-> --
+On Tue, 04 Dec 2007 07:25:57 -0600
+Jon Loeliger <jdl@jdl.com> wrote:
 
-Hi Ingo,
+> So, like, the other day David Woodhouse mumbled:
+> > 
+> > I think this is a bad idea -- it's hardly a difficult for those people
+> > who _do_ need dts to obtain it separately.
+> > 
+> > We shouldn't be merging _more_ stuff in.
+> 
+> Thanks for chiming in here, David W.  As far as I can tell
+> so far, the only two people who have voiced an opinion on
+> this issue are Dave G, submitting patches, and me disagreeing
+> with the approach.  :-)
+> 
+> Anyone else?
 
-This softlockup is seen in the 2.6.24-rc4 either and looks like a message because 
-this is seen while running tbench and machine continues running other test's after 
-the softlockup messages and some times seen with the bootup, but the machines reaches the 
-login prompt and able to continue running tests.
+I don't see an overwhelmingly great reason to merge it.  It might help
+test people who do automated rebuilds, etc and aren't used to dealing
+with powerpc and it's requirements.  Outside of that, I see it as
+dual-maintenance.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+But I'm not doing the maintenance, and it doesn't effect me too much.
+I only ask that a decision is made and executed on soon so we can move
+on.
+
+josh
