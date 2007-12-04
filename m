@@ -1,23 +1,24 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 39DCADDE49
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:36:37 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so848127anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Dec 2007 05:36:36 -0800 (PST)
-Message-ID: <fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
-Date: Tue, 4 Dec 2007 06:36:35 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 37B2BDDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:43:58 +1100 (EST)
+Date: Tue, 4 Dec 2007 14:43:57 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Grant Likely <grant.likely@secretlab.ca>,
+	Geoff Levand <geoffrey.levand@am.sony.com>
 Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
 	platform code
-In-Reply-To: <Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
+Message-ID: <Pine.LNX.4.62.0712041442530.12181@pademelon.sonytel.be>
 References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
 	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
 	<Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
-Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
+	<fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-343205874-1196775837=:12181"
+Cc: olof@lixom.net, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> On Sat, 1 Dec 2007, Grant Likely wrote:
-> > From: Grant Likely <grant.likely@secretlab.ca>
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---584337861-343205874-1196775837=:12181
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 4 Dec 2007, Grant Likely wrote:
+> On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > On Sat, 1 Dec 2007, Grant Likely wrote:
+> > > From: Grant Likely <grant.likely@secretlab.ca>
+> > >
+> > > This patch makes the platform code use the new machine-specific initcall
+> > > hooks.  This has the advantage of not needing to explicitly test
+> > > machine_is() at the top of every initcall function.
 > >
-> > This patch makes the platform code use the new machine-specific initcall
-> > hooks.  This has the advantage of not needing to explicitly test
-> > machine_is() at the top of every initcall function.
->
-> You seem to have missed the PS3 *_initcall()s.
-> Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
-> of machine_is(ps3).
+> > You seem to have missed the PS3 *_initcall()s.
+> > Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
+> > of machine_is(ps3).
+> 
+> That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
+> substitute so I left it alone.
 
-That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
-substitute so I left it alone.
+I think it's OK. But...
 
-Cheers,
-g.
+Geoff: is there any specific reason why you used
+firmware_has_feature(FW_FEATURE_PS3_LV1)?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-343205874-1196775837=:12181--
