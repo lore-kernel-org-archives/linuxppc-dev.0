@@ -1,33 +1,14 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 30F26DDE22
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 12:52:15 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	lB41q9UV007298
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 18:52:10 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB41q7hf020099
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 19:52:08 -0600 (CST)
-Subject: Re: [PATCH] Add IPIC MSI interrupt support
-From: Li Li <r64360@freescale.com>
-To: benh@kernel.crashing.org
-In-Reply-To: <1196715812.13230.234.camel@pasglop>
-References: <1196394519.29683.8.camel@Guyver>
-	<1196654521.13554.32.camel@concordia>
-	<1196672870.14353.21.camel@Guyver>
-	<1196715812.13230.234.camel@pasglop>
+Return-Path: <SRS0+d99126679a6468e47a3e+1563+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Subject: Re: Merge dtc
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071016050217.GA9052@localhost.localdomain>
+References: <20071016050217.GA9052@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 09:41:50 +0800
-Message-Id: <1196732510.2910.3.camel@Guyver>
+Date: Tue, 04 Dec 2007 01:59:04 +0000
+Message-Id: <1196733544.13978.201.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,26 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-12-04 at 05:03 +0800, Benjamin Herrenschmidt wrote:
-> 
-> On Mon, 2007-12-03 at 17:07 +0800, Li Li wrote: 
-> > 
-> > In IPIC, the 8 MSI interrupts is handled as level intrrupt. 
-> > I just provide a versatile in case it is changed.
-> 
-> Level ? Are you sure ? MSIs are by definition edge interrupts... Or
-> do 
-> you have some weird logic that asserts a level input until you go ack 
-> something ? Sounds weird...
-> 
 
-The second one.
-The MSI is edge interrupt. The 256 MSI interrupts are divided into 8
-groups. Each group can generate a interrupt to core. This interrupts are
-level and asserted untile ack MSI interrupt. A little weird.
-
-> Ben.
+On Tue, 2007-10-16 at 15:02 +1000, David Gibson wrote:
+> This very large patch incorporates a copy of dtc into the kernel
+> source, in arch/powerpc/boot/dtc-src.  This means that dtc is no
+> longer an external dependency to build kernels with configurations
+> which need a dtb file.
 > 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 > 
+> Too big for the list, full patch at
+> http://ozlabs.org/~dgibson/home/merge-dtc.patch
 
-- Tony
+I think this is a bad idea -- it's hardly a difficult for those people
+who _do_ need dts to obtain it separately.
+
+It's bad enough that I have to separate out the bootwrapper code, which
+probably ought to live outside the kernel. We shouldn't be merging
+_more_ stuff in.
+
+-- 
+dwmw2
