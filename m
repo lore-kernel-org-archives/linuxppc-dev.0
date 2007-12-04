@@ -1,13 +1,13 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F4C9DDE0C
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 19:38:35 +1100 (EST)
-Date: Tue, 04 Dec 2007 17:38:24 +0900 (JST)
-Message-Id: <20071204.173824.-1350527485.kouish@swc.toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 2BFB1DDE1B
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 19:41:15 +1100 (EST)
+Date: Tue, 04 Dec 2007 17:41:07 +0900 (JST)
+Message-Id: <20071204.174107.-1625850822.kouish@swc.toshiba.co.jp>
 To: paulus@samba.org
-Subject: [PATCH 2/3] celleb: add supporting for native CBE
+Subject: [PATCH 3/3] update celleb_defconfig to support for native CBE
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,227 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds supporting for native CBE on Celleb.  Many codes in
-platforms/cell/ are used when native CBE environment.
+This patch updates celleb_defconfig to support for native CBE.
 
 Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/cell/iommu.c
+Index: linux-powerpc-git/arch/powerpc/configs/celleb_defconfig
 ===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/cell/iommu.c
-+++ linux-powerpc-git/arch/powerpc/platforms/cell/iommu.c
-@@ -34,6 +34,7 @@
- #include <asm/udbg.h>
- #include <asm/of_platform.h>
- #include <asm/lmb.h>
-+#include <asm/firmware.h>
- #include <asm/cell-regs.h>
+--- linux-powerpc-git.orig/arch/powerpc/configs/celleb_defconfig
++++ linux-powerpc-git/arch/powerpc/configs/celleb_defconfig
+@@ -44,7 +44,8 @@ CONFIG_AUDIT_ARCH=y
+ CONFIG_GENERIC_BUG=y
+ # CONFIG_DEFAULT_UIMAGE is not set
+ # CONFIG_PPC_DCR_NATIVE is not set
+-# CONFIG_PPC_DCR_MMIO is not set
++CONFIG_PPC_DCR_MMIO=y
++CONFIG_PPC_DCR=y
+ CONFIG_PPC_OF_PLATFORM_PCI=y
+ CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
  
- #include "interrupt.h"
-@@ -699,7 +700,8 @@ static int __init cell_iommu_init(void)
- {
- 	struct device_node *np;
+@@ -141,7 +142,7 @@ CONFIG_PPC_MULTIPLATFORM=y
+ CONFIG_PPC_CELLEB=y
+ # CONFIG_PPC_PS3 is not set
+ CONFIG_PPC_CELL=y
+-# CONFIG_PPC_CELL_NATIVE is not set
++CONFIG_PPC_CELL_NATIVE=y
+ # CONFIG_PPC_IBM_CELL_BLADE is not set
  
--	if (!machine_is(cell))
-+	if ((!machine_is(cell) && !machine_is(celleb)) ||
-+	    firmware_has_feature(FW_FEATURE_LPAR))
- 		return -ENODEV;
+ #
+@@ -150,18 +151,24 @@ CONFIG_PPC_CELL=y
+ CONFIG_SPU_FS=y
+ CONFIG_SPU_FS_64K_LS=y
+ CONFIG_SPU_BASE=y
++CONFIG_CBE_RAS=y
++# CONFIG_CBE_THERM is not set
+ # CONFIG_PQ2ADS is not set
++CONFIG_PPC_NATIVE=y
++CONFIG_UDBG_RTAS_CONSOLE=y
+ CONFIG_PPC_UDBG_BEAT=y
+-# CONFIG_MPIC is not set
++CONFIG_MPIC=y
+ # CONFIG_MPIC_WEIRD is not set
+ # CONFIG_PPC_I8259 is not set
+ # CONFIG_U3_DART is not set
+-# CONFIG_PPC_RTAS is not set
++CONFIG_PPC_RTAS=y
++# CONFIG_RTAS_ERROR_LOGGING is not set
++# CONFIG_RTAS_PROC is not set
+ # CONFIG_MMIO_NVRAM is not set
+ # CONFIG_PPC_MPC106 is not set
+ # CONFIG_PPC_970_NAP is not set
+-# CONFIG_PPC_INDIRECT_IO is not set
+-# CONFIG_GENERIC_IOMAP is not set
++CONFIG_PPC_INDIRECT_IO=y
++CONFIG_GENERIC_IOMAP=y
+ # CONFIG_CPU_FREQ is not set
+ # CONFIG_CPM2 is not set
+ # CONFIG_FSL_ULI1575 is not set
+@@ -723,6 +730,7 @@ CONFIG_SERIAL_TXX9_CONSOLE=y
+ CONFIG_UNIX98_PTYS=y
+ # CONFIG_LEGACY_PTYS is not set
+ CONFIG_HVC_DRIVER=y
++CONFIG_HVC_RTAS=y
+ CONFIG_HVC_BEAT=y
+ # CONFIG_IPMI_HANDLER is not set
+ CONFIG_WATCHDOG=y
+@@ -732,6 +740,7 @@ CONFIG_WATCHDOG=y
+ # Watchdog Device Drivers
+ #
+ # CONFIG_SOFT_WATCHDOG is not set
++# CONFIG_WATCHDOG_RTAS is not set
  
- 	/* If IOMMU is disabled or we have little enough RAM to not need
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/Kconfig
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/Kconfig
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/Kconfig
-@@ -2,6 +2,8 @@ config PPC_CELLEB
- 	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_CELL
-+	select PPC_CELL_NATIVE
-+	select PPC_RTAS
- 	select PPC_INDIRECT_IO
- 	select PPC_OF_PLATFORM_PCI
- 	select HAS_TXX9_SERIAL
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/iommu.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
-@@ -24,6 +24,7 @@
- #include <linux/pci.h>
+ #
+ # PCI-based Watchdog Cards
+@@ -1243,16 +1252,7 @@ CONFIG_XMON_DEFAULT=y
+ CONFIG_XMON_DISASSEMBLY=y
+ CONFIG_IRQSTACKS=y
+ # CONFIG_BOOTX_TEXT is not set
+-CONFIG_PPC_EARLY_DEBUG=y
+-# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
+-# CONFIG_PPC_EARLY_DEBUG_G5 is not set
+-# CONFIG_PPC_EARLY_DEBUG_RTAS_PANEL is not set
+-# CONFIG_PPC_EARLY_DEBUG_RTAS_CONSOLE is not set
+-# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
+-# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
+-# CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE is not set
+-CONFIG_PPC_EARLY_DEBUG_BEAT=y
+-# CONFIG_PPC_EARLY_DEBUG_44x is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
  
- #include <asm/of_platform.h>
-+#include <asm/firmware.h>
- 
- #include "beat_wrapper.h"
- 
-@@ -91,7 +92,7 @@ static struct notifier_block celleb_of_b
- 
- static int __init celleb_init_iommu(void)
- {
--	if (!machine_is(celleb))
-+	if (!firmware_has_feature(FW_FEATURE_BEAT))
- 		return -ENODEV;
- 
- 	celleb_init_direct_mapping();
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
-===================================================================
---- linux-powerpc-git.orig/arch/powerpc/platforms/celleb/setup.c
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/setup.c
-@@ -53,11 +53,16 @@
- #include <asm/spu_priv1.h>
- #include <asm/firmware.h>
- #include <asm/of_platform.h>
-+#include <asm/rtas.h>
-+#include <asm/cell-regs.h>
- 
- #include "interrupt.h"
- #include "beat_wrapper.h"
- #include "beat.h"
- #include "pci.h"
-+#include "../cell/interrupt.h"
-+#include "../cell/pervasive.h"
-+#include "../cell/ras.h"
- 
- static char celleb_machine_type[128] = "Celleb";
- 
-@@ -88,16 +93,74 @@ static void celleb_progress(char *s, uns
- 	printk("*** %04x : %s\n", hex, s ? s : "");
- }
- 
--static void __init celleb_setup_arch(void)
-+static void __init celleb_init_IRQ_native(void)
-+{
-+	iic_init_IRQ();
-+	spider_init_IRQ();
-+}
-+
-+static void __init celleb_setup_arch_beat(void)
- {
-+	ppc_md.restart		= beat_restart;
-+	ppc_md.power_off	= beat_power_off;
-+	ppc_md.halt		= beat_halt;
-+	ppc_md.get_rtc_time	= beat_get_rtc_time;
-+	ppc_md.set_rtc_time	= beat_set_rtc_time;
-+	ppc_md.power_save	= beat_power_save;
-+	ppc_md.nvram_size	= beat_nvram_get_size;
-+	ppc_md.nvram_read	= beat_nvram_read;
-+	ppc_md.nvram_write	= beat_nvram_write;
-+	ppc_md.set_dabr		= beat_set_xdabr;
-+	ppc_md.init_IRQ		= beatic_init_IRQ;
-+	ppc_md.get_irq		= beatic_get_irq;
-+#ifdef CONFIG_KEXEC
-+	ppc_md.kexec_cpu_down	= beat_kexec_cpu_down;
-+#endif
-+
- #ifdef CONFIG_SPU_BASE
--	spu_priv1_ops = &spu_priv1_beat_ops;
--	spu_management_ops = &spu_management_of_ops;
-+	spu_priv1_ops		= &spu_priv1_beat_ops;
-+	spu_management_ops	= &spu_management_of_ops;
- #endif
- 
- #ifdef CONFIG_SMP
- 	smp_init_celleb();
- #endif
-+}
-+
-+static void __init celleb_setup_arch_native(void)
-+{
-+	ppc_md.restart		= rtas_restart;
-+	ppc_md.power_off	= rtas_power_off;
-+	ppc_md.halt		= rtas_halt;
-+	ppc_md.get_boot_time	= rtas_get_boot_time;
-+	ppc_md.get_rtc_time	= rtas_get_rtc_time;
-+	ppc_md.set_rtc_time	= rtas_set_rtc_time;
-+	ppc_md.init_IRQ		= celleb_init_IRQ_native;
-+
-+#ifdef CONFIG_SPU_BASE
-+	spu_priv1_ops		= &spu_priv1_mmio_ops;
-+	spu_management_ops	= &spu_management_of_ops;
-+#endif
-+
-+	cbe_regs_init();
-+
-+#ifdef CONFIG_CBE_RAS
-+	cbe_ras_init();
-+#endif
-+
-+#ifdef CONFIG_SMP
-+	smp_init_cell();
-+#endif
-+
-+	cbe_pervasive_init();
-+}
-+
-+static void __init celleb_setup_arch(void)
-+{
-+	if (firmware_has_feature(FW_FEATURE_BEAT))
-+		celleb_setup_arch_beat();
-+	else
-+		celleb_setup_arch_native();
- 
- 	/* init to some ~sane value until calibrate_delay() runs */
- 	loops_per_jiffy = 50000000;
-@@ -111,12 +174,19 @@ static int __init celleb_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if (!of_flat_dt_is_compatible(root, "Beat"))
--		return 0;
-+	if (of_flat_dt_is_compatible(root, "Beat")) {
-+		powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS
-+			| FW_FEATURE_BEAT | FW_FEATURE_LPAR;
-+		hpte_init_beat_v3();
-+		return 1;
-+	}
-+	if (of_flat_dt_is_compatible(root, "TOSHIBA,Celleb")) {
-+		powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS;
-+		hpte_init_native();
-+		return 1;
-+	}
- 
--	powerpc_firmware_features |= FW_FEATURE_CELLEB_POSSIBLE;
--	hpte_init_beat_v3();
--	return 1;
-+	return 0;
- }
- 
- static struct of_device_id celleb_bus_ids[] __initdata = {
-@@ -144,24 +214,11 @@ define_machine(celleb) {
- 	.probe			= celleb_probe,
- 	.setup_arch		= celleb_setup_arch,
- 	.show_cpuinfo		= celleb_show_cpuinfo,
--	.restart		= beat_restart,
--	.power_off		= beat_power_off,
--	.halt			= beat_halt,
--	.get_rtc_time		= beat_get_rtc_time,
--	.set_rtc_time		= beat_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= celleb_progress,
--	.power_save		= beat_power_save,
--	.nvram_size		= beat_nvram_get_size,
--	.nvram_read		= beat_nvram_read,
--	.nvram_write		= beat_nvram_write,
--	.set_dabr		= beat_set_xdabr,
--	.init_IRQ		= beatic_init_IRQ,
--	.get_irq		= beatic_get_irq,
- 	.pci_probe_mode 	= celleb_pci_probe_mode,
- 	.pci_setup_phb		= celleb_setup_phb,
- #ifdef CONFIG_KEXEC
--	.kexec_cpu_down		= beat_kexec_cpu_down,
- 	.machine_kexec		= default_machine_kexec,
- 	.machine_kexec_prepare	= default_machine_kexec_prepare,
- 	.machine_crash_shutdown	= default_machine_crash_shutdown,
-Index: linux-powerpc-git/include/asm-powerpc/firmware.h
-===================================================================
---- linux-powerpc-git.orig/include/asm-powerpc/firmware.h
-+++ linux-powerpc-git/include/asm-powerpc/firmware.h
-@@ -64,7 +64,7 @@ enum {
- 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
- 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
- 	FW_FEATURE_CELLEB_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_BEAT,
--	FW_FEATURE_CELLEB_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_BEAT,
-+	FW_FEATURE_CELLEB_ALWAYS = 0,
- 	FW_FEATURE_NATIVE_POSSIBLE = 0,
- 	FW_FEATURE_NATIVE_ALWAYS = 0,
- 	FW_FEATURE_POSSIBLE =
+ #
+ # Security options
