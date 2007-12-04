@@ -2,23 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A908FDDD04
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 18:39:22 +1100 (EST)
-Subject: RE: [PATCH] ipic: change ack operation that register
-	isaccessedonly when needed
+	by ozlabs.org (Postfix) with ESMTP id 9AEDEDDE08
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 18:52:19 +1100 (EST)
+Subject: Re: [PATCH] Add IPIC MSI interrupt support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF029708189001B4D360@zch01exm26.fsl.freescale.net>
-References: <1196684780-28408-1-git-send-email-leoli@freescale.com>
-	<1196715747.13230.233.camel@pasglop>
-	<989B956029373F45A0B8AF029708189001B4D2DE@zch01exm26.fsl.freescale.net>
-	<1196734556.13230.258.camel@pasglop>
-	<989B956029373F45A0B8AF029708189001B4D360@zch01exm26.fsl.freescale.net>
+To: michael@ellerman.id.au
+In-Reply-To: <1196746689.20158.4.camel@concordia>
+References: <1196394519.29683.8.camel@Guyver>
+	<1196654521.13554.32.camel@concordia>
+	<1196672870.14353.21.camel@Guyver>
+	<1196746689.20158.4.camel@concordia>
 Content-Type: text/plain
-Date: Tue, 04 Dec 2007 18:39:05 +1100
-Message-Id: <1196753945.13230.280.camel@pasglop>
+Date: Tue, 04 Dec 2007 18:51:57 +1100
+Message-Id: <1196754717.13230.286.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>,
+	Li Li <r64360@freescale.com>, Li Tony <Tony.Li@freescale.com>
 Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -29,43 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> I'm not sure what you mean? For MSI there is only one MSI per device,
+> but this code is used also for MSI-X which supports > 1 MSI per device.
 
-On Tue, 2007-12-04 at 15:23 +0800, Li Yang wrote:
-> > -----Original Message-----
-> > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] 
-> > Sent: Tuesday, December 04, 2007 10:16 AM
-> > To: Li Yang
-> > Cc: galak@kernel.crashing.org; linuxppc-dev@ozlabs.org
-> > Subject: RE: [PATCH] ipic: change ack operation that register 
-> > isaccessedonly when needed
-> > 
-> > 
-> > On Tue, 2007-12-04 at 10:06 +0800, Li Yang wrote:
-> > > > That should be handled by the higher level flow handler. 
-> > The generic 
-> > > > edge one calls ack and the level one mask_and_ack.
-> > > > Just make them do the right thing, no need to test for 
-> > the flow type 
-> > > > in the low level function.
-> > > 
-> > > But actually ack is called by edge and per cpu handlers.  
-> > Mask_and_ack 
-> > > is also called by edge handler when the same interrupt is 
-> > already in 
-> > > progress.  So I don't think that ack/mask_and_ack 
-> > implicates flow type 
-> > > by design.
-> > 
-> > They do and you can pass different irq_chip with different 
-> > mask/ack routines if necessary.
-> Hi Ben,
+Or more specifically, for MSI, -linux- supports only one per device (in
+theory, it's possible to have multiple MSI non-X but it's a mess).
+
+> Either way we shouldn't be incrementing hwirq by hand, it's reassigned
+> at the top of the loop. I think that's left over from old code that
+> allocated nvec hwirqs in a block and then created virq mappings for each
+> one, whereas the new code allocates each hwirq separately.
 > 
-> I mean that mask_ack_irq() routine is used by both generic
-> handle_edge_irq() and handle_level_irq().  mask_ack_irq doesn't know if
-> the flow type is level or edge.  Do you suggest to use different
-> irq_chip for level and edge?
-
-That would be an option. I dislike testing the flow type in the fast
-path.
-
-Ben.
+> cheers
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
