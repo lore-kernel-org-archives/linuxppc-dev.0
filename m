@@ -1,18 +1,20 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from viefep16-int.chello.at (viefep18-int.chello.at [213.46.255.22])
-	by ozlabs.org (Postfix) with ESMTP id C6144DDE0A
+Return-Path: <SRS0=8W1B=Q3=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id A027CDDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 19:45:11 +1100 (EST)
-Message-ID: <475512F2.6040503@chello.nl>
-Date: Tue, 04 Dec 2007 09:42:26 +0100
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Tue,  4 Dec 2007 20:27:23 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Dell Query <dell.query@yahoo.com>
+Subject: Re: Unable to Read PPC440EPx Board ID thru Board Control and Status
+	Registers (BCSR)
+Date: Tue, 4 Dec 2007 10:28:07 +0100
+References: <86675.82133.qm@web45613.mail.sp1.yahoo.com>
+In-Reply-To: <86675.82133.qm@web45613.mail.sp1.yahoo.com>
 MIME-Version: 1.0
-To: lobo fan <lobofan@gmail.com>
-Subject: Re: reboot of mpc8270 sometimes fails
-References: <d111b2340711212024o2c261b6bn790edf4b4b9f9d50@mail.gmail.com>
-In-Reply-To: <d111b2340711212024o2c261b6bn790edf4b4b9f9d50@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712041028.07380.sr@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,50 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Index: m8260_setup.c
-===================================================================
-RCS file: /home/.dbCVS_linux/kernel_2_4_25/arch/ppc/kernel/m8260_setup.c,v
-retrieving revision 1.1.1.2
-retrieving revision 1.2
-diff -c -r1.1.1.2 -r1.2
-*** m8260_setup.c	2006/11/17 07:58:49	1.1.1.2
---- m8260_setup.c	2007/10/08 07:53:54	1.2
-***************
-*** 148,154 ****
---- 148,164 ----
-  		if (!strncmp(cmd, "startaddr=", 10))
-  			startaddr = simple_strtoul(&cmd[10], NULL, 0);
-  	}
-+ #if defined (CONFIG_8260)
-+ 	{
-+ #include <asm-ppc/cpm_8260.h>
-+ 	    volatile	cpm8260_t	*cp = &((immap_t *)IMAP_ADDR)->im_cpm;
-  
-+ 	    cp->cp_cpcr = (CPM_CR_RST | CPM_CR_FLG);   /* see page 14.17 $14.4.2 of the CPM manual */
-+ 	    
-+ 	    while (cp->cp_cpcr & CPM_CR_FLG);          /* Wait for it (should be 2 clocks). */
-+ 
-+ 	}
-+ #endif
-  	m8260_gorom((unsigned int)__pa(__res), startaddr);
-  }
-  
+On Monday 03 December 2007, Dell Query wrote:
+> I finally got the new pdf files from other Resource CDs and used 0xc000000
+> address, without 0x2000 offset.
 
+Good.
 
-
-
-lobo fan schreef:
-> Hi Theo,
-> Could you please give me the patch? I am very interested in your patch.
+> It works! Thanks a lot for the help.
 >
-> -- 
-> Thanks.
->
-> Best Regards,
-> Lobo
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> But may I know why in Linux it is mapped to 0x1c000000, wherein the doc
+> stated 0xc000000?
+
+The doc most probably only refers to the virtual address mapped in U-Boot 
+here.
+
+Best regards,
+Stefan
+
+=====================================================================
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+=====================================================================
