@@ -1,32 +1,18 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A3AF0DDE2B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 13:07:07 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	lB42726L013768
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 19:07:02 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id lB427177029067
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Dec 2007 20:07:01 -0600 (CST)
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 5ECFBDDE2D
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 13:08:41 +1100 (EST)
+Date: Mon, 3 Dec 2007 19:10:26 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Andrei Dolnikov <adolnikov@ru.mvista.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
+Message-ID: <20071204021026.GB18903@mag.az.mvista.com>
+References: <20071129150726.GA13751@ru.mvista.com>
+	<20071129152836.GB13751@ru.mvista.com>
+	<20071203015018.GC26919@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] ipic: change ack operation that register is accessedonly
-	when needed
-Date: Tue, 4 Dec 2007 10:06:47 +0800
-Message-ID: <989B956029373F45A0B8AF029708189001B4D2DE@zch01exm26.fsl.freescale.net>
-In-Reply-To: <1196715747.13230.233.camel@pasglop>
-References: <1196684780-28408-1-git-send-email-leoli@freescale.com>
-	<1196715747.13230.233.camel@pasglop>
-From: "Li Yang" <LeoLi@freescale.com>
-To: <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071203015018.GC26919@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,55 +22,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
-> Sent: Tuesday, December 04, 2007 5:02 AM
-> To: Li Yang
-> Cc: galak@kernel.crashing.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] ipic: change ack operation that register=20
-> is accessedonly when needed
->=20
->=20
-> >  static void ipic_ack_irq(unsigned int virq)  {
-> > -	struct ipic *ipic =3D ipic_from_irq(virq);
-> >  	unsigned int src =3D ipic_irq_to_hw(virq);
-> > -	unsigned long flags;
-> > -	u32 temp;
-> > =20
-> > -	spin_lock_irqsave(&ipic_lock, flags);
-> > +	/* Only external interrupts in edge mode support ACK */
-> > +	if (unlikely(ipic_info[src].ack &&
-> > +			((get_irq_desc(virq)->status &=20
-> IRQ_TYPE_SENSE_MASK) =3D=3D
-> > +			IRQ_TYPE_EDGE_FALLING))) {
-> > +		struct ipic *ipic =3D ipic_from_irq(virq);
-> > +		unsigned long flags;
-> > +		u32 temp;
-> > =20
-> > -	temp =3D ipic_read(ipic->regs, ipic_info[src].pend);
-> > -	temp |=3D (1 << (31 - ipic_info[src].bit));
-> > -	ipic_write(ipic->regs, ipic_info[src].pend, temp);
-> > +		spin_lock_irqsave(&ipic_lock, flags);
-> > =20
-> > -	spin_unlock_irqrestore(&ipic_lock, flags);
-> > +		temp =3D ipic_read(ipic->regs, ipic_info[src].ack);
-> > +		temp |=3D (1 << (31 - ipic_info[src].bit));
-> > +		ipic_write(ipic->regs, ipic_info[src].ack, temp);
+On Mon, Dec 03, 2007 at 12:50:18PM +1100, David Gibson wrote:
+> On Thu, Nov 29, 2007 at 06:28:36PM +0300, Andrei Dolnikov wrote:
+> > Device tree source file for the Emerson Katana Qp board
+> > 
+> > Signed-off-by: Andrei Dolnikov <adolnikov@ru.mvisa.com>
+> > 
+> > ---
+> >  katanaqp.dts |  360 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 360 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/boot/dts/katanaqp.dts b/arch/powerpc/boot/dts/katanaqp.dts
+> > new file mode 100644
+> > index 0000000..98257a2
+> > --- /dev/null
+> > +++ b/arch/powerpc/boot/dts/katanaqp.dts
+> > @@ -0,0 +1,360 @@
+> > +/* Device Tree Source for Emerson Katana Qp
+> > + *
+> > + * Authors: Vladislav Buzov <vbuzov@ru.mvista.com>
+> > + *	    Andrei Dolnikov <adolnikov@ru.mvista.com>
+> > + * 
+> > + * Based on prpmc8200.dts by Mark A. Greer <mgreer@mvista.com>
+> > + *
+> > + * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
+> > + * the terms of the GNU General Public License version 2.  This program
+> > + * is licensed "as is" without any warranty of any kind, whether express
+> > + * or implied.
+> > + *
+> > + */
 > > +
-> > +		spin_unlock_irqrestore(&ipic_lock, flags);
-> > +	}
-> >  }
->=20
-> That doesn't look right...=20
->=20
-> That should be handled by the higher level flow handler. The=20
-> generic edge one calls ack and the level one mask_and_ack.=20
-> Just make them do the right thing, no need to test for the=20
-> flow type in the low level function.
+> > +/ {
+> > +	#address-cells = <1>;
+> > +	#size-cells = <1>;
+> > +	model = "Katana-Qp"; /* Default */
+> > +	compatible = "emerson,Katana-Qp";
+> > +	coherency-off;
+> 
+> What is this property for?
 
-But actually ack is called by edge and per cpu handlers.  Mask_and_ack
-is also called by edge handler when the same interrupt is already in
-progress.  So I don't think that ack/mask_and_ack implicates flow type
-by design.
+Its needed to tell the bootwrapper that the platform does not have
+coherency enabled (since our policy is that you can't use a CONFIG_ option).
+The bootwrapper needs to know that if/when it sets up the windows for
+its I/O devices (e.g., enet, mpsc) to system memory.  I needed to do
+this on the prpmc2800 because the firmware didn't set up those windows
+correctly.  I don't know if the Katana Qp's firmware sets the up
+correctly or not.
 
-- Leo
+> > +	mv64x60@f8100000 { /* Marvell Discovery */
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		model = "mv64460";			/* Default */
+> > +		compatible = "marvell,mv64x60";
+> 
+> Compatible properties should not have "x" asn in 64x60 here.  If
+> there's a suitable name for the general register interface use that,
+> otherwise use the specific model number of the earliest device to
+> implement this register interface.  Later models should have a
+> compatible property which lists their specific model, followed by the
+> earlier model number with which they're compatible.
+
+This came from the prpmc2800's dts which has become out-of-date.
+Both dts files need to be updated.
+
+> > +		ethernet@2000 {
+> > +			reg = <2000 2000>;
+> 
+> Are the registers for the 3 ethernets really all together?  This bank
+> can't be subdivided into seperate register blocks for each MAC?
+
+Unfortunately there are some registers that are shared so you can't
+divide them up nicely.
+
+> > +			eth0 {
+> > +				device_type = "network";
+> > +				compatible = "marvell,mv64x60-eth";
+> > +				block-index = <0>;
+> 
+> This block-index thing is crap.  If you really need to subindex nodes
+> like this, use "reg", with an appropriate #address-cells in the
+> parent, then the nodes will also get sensible unit addresses.
+
+So how would that work for the "PHY Address Register 0x2000", say,
+where bits 0-4 set the device addr for PHY 0; bits 5-9 set the device
+addr for PHY 1; bts 10-14 set the devce addr for PHY 2?
+
+> > +				interrupts = <20>;
+> > +				interrupt-parent = <&/mv64x60/pic>;
+> 
+> You should use a label for the PIC to make things more readable.
+
+More that needs to be updated in prpmc2800.  :(
+
+> > +		sdma@4000 {
+> > +			compatible = "marvell,mv64x60-sdma";
+> > +			reg = <4000 c18>;
+> > +			virtual-reg = <f8104000>;
+> 
+> Why does this node have virtual-reg?
+
+"virtual-reg" is a special property that doesn't get translated thru
+the parent mappings.  It should never be used in the kernel.  Its
+purpose is to give code in the bootwrapper the exact address that it
+should use to access a register or block of registers or ...
+Its needed here because the MPSC (serial) driver uses the SDMA unit
+to perform console I/O in the bootwrapper (e.g., cmdline editing, printf's).
+
+Yes, this needs to be documented.
+
+> > +		mpsc@8000 {
+> > +			device_type = "serial";
+> > +			compatible = "marvell,mpsc";
+> > +			reg = <8000 38>;
+> > +			virtual-reg = <f8108000>;
+> > +			sdma = <&/mv64x60/sdma@4000>;
+> > +			brg = <&/mv64x60/brg@b200>;
+> > +			cunit = <&/mv64x60/cunit@f200>;
+> > +			mpscrouting = <&/mv64x60/mpscrouting@b400>;
+> > +			mpscintr = <&/mv64x60/mpscintr@b800>;
+> > +			block-index = <0>;
+> 
+> What is this block-index thing about here?  Since the devices are
+> disambiguated by their register address, why do you need it?
+
+This particular one is needed to access the correct MPSC interrupt reg.
+Maybe it would be better to make a new property for this but it was only
+one reg and block-index was already there and basically served that
+purpose so I used it.  I'd be happy to use an alternative if you have
+something you think is better.
+
+> > +		pic {
+> 
+> Needs a unit address.
+
+Okay.
+
+> > +		cpu-error@0070 {
+> 
+> The unit address should notr include leading zeroes.
+
+Okay.
+
+Mark
