@@ -1,32 +1,21 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94709DDE17
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:20:51 +1100 (EST)
-Date: Tue, 4 Dec 2007 13:20:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
-Message-ID: <20071204122005.GA27286@elte.hu>
-References: <474D0AAC.5010005@linux.vnet.ibm.com>
-	<20071127225328.9e3f3827.akpm@linux-foundation.org>
-	<474D15FF.5080508@linux.vnet.ibm.com>
-	<20071127232552.ad16e95c.akpm@linux-foundation.org>
-	<474E5CAC.9000108@linux.vnet.ibm.com>
-	<20071129003533.54b4b20e.akpm@linux-foundation.org>
-	<20071130063929.GD2754@fattire.cabal.ca>
-	<20071129230047.1b482562.akpm@linux-foundation.org>
-	<20071129230204.8698f47e.akpm@linux-foundation.org>
-	<474FBB86.5000004@linux.vnet.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 9C692DDE11
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:23:31 +1100 (EST)
+Date: Tue, 4 Dec 2007 13:23:26 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
+	platform code
+In-Reply-To: <20071202061033.21193.64818.stgit@trillian.secretlab.ca>
+Message-ID: <Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
+References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
+	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <474FBB86.5000004@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org,
-	Matthew Wilcox <willy@debian.org>, LKML <linux-kernel@vger.kernel.org>,
-	Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-110698418-1196771006=:12181"
+Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,14 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+---584337861-110698418-1196771006=:12181
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-> > So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
+On Sat, 1 Dec 2007, Grant Likely wrote:
+> From: Grant Likely <grant.likely@secretlab.ca>
 > 
-> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
+> This patch makes the platform code use the new machine-specific initcall
+> hooks.  This has the advantage of not needing to explicitly test
+> machine_is() at the top of every initcall function.
 
-just to make sure: this is a real lockup and failed bootup (or device 
-init), not just a message, right?
+You seem to have missed the PS3 *_initcall()s.
+Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
+of machine_is(ps3).
 
-	Ingo
+With kind regards,
+ 
+Geert Uytterhoeven
+Software Architect
+
+Sony Network and Software Technology Center Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+ 
+Phone:    +32 (0)2 700 8453	
+Fax:      +32 (0)2 700 8622	
+E-mail:   Geert.Uytterhoeven@sonycom.com	
+Internet: http://www.sony-europe.com/
+ 	
+Sony Network and Software Technology Center Europe	
+A division of Sony Service Centre (Europe) N.V.	
+Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
+VAT BE 0413.825.160 · RPR Brussels	
+Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
+---584337861-110698418-1196771006=:12181--
