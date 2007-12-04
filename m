@@ -1,11 +1,17 @@
-Return-Path: <benh@ozlabs.org>
-To: Greg Kroah-Hartman <greg@kroah.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] powerpc: Rework the
+	machine_[restart|power_off|halt] routines
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 04 Dec 2007 17:08:03 +1100
-Subject: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b resources
-Message-Id: <20071204060911.EA82BDDE19@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20071204054718.GE27862@mag.az.mvista.com>
+References: <20071204053736.GA27862@mag.az.mvista.com>
+	<20071204054718.GE27862@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Tue, 04 Dec 2007 18:20:36 +1100
+Message-Id: <1196752836.13230.262.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,193 +21,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current pci_assign_unassigned_resources() code doesn't work properly
-on 32 bits platforms with 64 bits resources. The main reason is the use
-of unsigned long in various places instead of resource_size_t.
 
-This fixes it, along with some tricks to avoid casting to 64 bits on
-platforms that don't need it in every printk around.
+On Mon, 2007-12-03 at 22:47 -0700, Mark A. Greer wrote:
+> From: Mark A. Greer <mgreer@mvista.com>
+> 
+> Factor out common code from the machine_xxx routines and make them better
+> handle a ppc_md hook that doesn't exist or fails better.  In particular,
+> have machine_power_off() try ppc_md.halt if ppc_md.power_off is NULL or fails,
+> and have machine_halt() try to power off when ppc_md.halt is NULL or fails.
+> 
+> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 
-This is a pre-requisite for making powerpc use the generic code instead of
-its own half-useful implementation.
+Quick glance... looks fine.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
- drivers/pci/pci.h       |   11 +++++++++++
- drivers/pci/setup-bus.c |   32 +++++++++++++++++---------------
- drivers/pci/setup-res.c |    5 ++---
- include/linux/pci.h     |    4 ++--
- 4 files changed, 32 insertions(+), 20 deletions(-)
-
-Index: linux-work/drivers/pci/pci.h
-===================================================================
---- linux-work.orig/drivers/pci/pci.h	2007-12-04 17:00:43.000000000 +1100
-+++ linux-work/drivers/pci/pci.h	2007-12-04 17:02:11.000000000 +1100
-@@ -91,3 +91,14 @@ pci_match_one_device(const struct pci_de
- }
- 
- struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-+
-+#ifdef CONFIG_RESOURCES_64BIT
-+#define RESOURCE_ORDER(order)	(1ULL << (order))
-+#define RES_PR			"%016llx"
-+#else
-+#define RESOURCE_ORDER(order)	(1UL << (order))
-+#define RES_PR			"%08lx"
-+#endif
-+
-+#define RANGE_PR		RES_PR "-" RES_PR
-+
-Index: linux-work/drivers/pci/setup-bus.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-bus.c	2007-12-04 17:00:43.000000000 +1100
-+++ linux-work/drivers/pci/setup-bus.c	2007-12-04 17:04:23.000000000 +1100
-@@ -26,6 +26,7 @@
- #include <linux/cache.h>
- #include <linux/slab.h>
- 
-+#include "pci.h"
- 
- #define DEBUG_CONFIG 1
- #if DEBUG_CONFIG
-@@ -89,8 +90,9 @@ void pci_setup_cardbus(struct pci_bus *b
- 		 * The IO resource is allocated a range twice as large as it
- 		 * would normally need.  This allows us to set both IO regs.
- 		 */
--		printk("  IO window: %08lx-%08lx\n",
--			region.start, region.end);
-+		printk(KERN_INFO "  IO window: 0x%08lx-0x%08lx\n",
-+		       (unsigned long)region.start,
-+		       (unsigned long)region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_0,
- 					region.start);
- 		pci_write_config_dword(bridge, PCI_CB_IO_LIMIT_0,
-@@ -99,7 +101,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[1]);
- 	if (bus->resource[1]->flags & IORESOURCE_IO) {
--		printk("  IO window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  IO window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
- 					region.start);
-@@ -109,7 +111,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[2]);
- 	if (bus->resource[2]->flags & IORESOURCE_MEM) {
--		printk("  PREFETCH window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  PREFETCH window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
- 					region.start);
-@@ -119,7 +121,7 @@ void pci_setup_cardbus(struct pci_bus *b
- 
- 	pcibios_resource_to_bus(bridge, &region, bus->resource[3]);
- 	if (bus->resource[3]->flags & IORESOURCE_MEM) {
--		printk("  MEM window: %08lx-%08lx\n",
-+		printk(KERN_INFO "  MEM window: "RANGE_PR"\n",
- 			region.start, region.end);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
- 					region.start);
-@@ -159,7 +161,8 @@ pci_setup_bridge(struct pci_bus *bus)
- 		/* Set up upper 16 bits of I/O base/limit. */
- 		io_upper16 = (region.end & 0xffff0000) | (region.start >> 16);
- 		DBG(KERN_INFO "  IO window: %04lx-%04lx\n",
--				region.start, region.end);
-+		    (unsigned long)region.start,
-+		    (unsigned long)region.end);
- 	}
- 	else {
- 		/* Clear upper 16 bits of I/O base/limit. */
-@@ -180,7 +183,7 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[1]->flags & IORESOURCE_MEM) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  MEM window: %08lx-%08lx\n",
-+		DBG(KERN_INFO "  MEM window: "RANGE_PR"\n",
- 				region.start, region.end);
- 	}
- 	else {
-@@ -199,7 +202,7 @@ pci_setup_bridge(struct pci_bus *bus)
- 	if (bus->resource[2]->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
--		DBG(KERN_INFO "  PREFETCH window: %08lx-%08lx\n",
-+		DBG(KERN_INFO "  PREFETCH window: "RANGE_PR"\n",
- 				region.start, region.end);
- 	}
- 	else {
-@@ -323,8 +326,8 @@ static void pbus_size_io(struct pci_bus 
- static int pbus_size_mem(struct pci_bus *bus, unsigned long mask, unsigned long type)
- {
- 	struct pci_dev *dev;
--	unsigned long min_align, align, size;
--	unsigned long aligns[12];	/* Alignments from 1Mb to 2Gb */
-+	resource_size_t min_align, align, size;
-+	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
- 	int order, max_order;
- 	struct resource *b_res = find_free_bus_resource(bus, type);
- 
-@@ -340,7 +343,7 @@ static int pbus_size_mem(struct pci_bus 
- 		
- 		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
- 			struct resource *r = &dev->resource[i];
--			unsigned long r_size;
-+			resource_size_t r_size;
- 
- 			if (r->parent || (r->flags & mask) != type)
- 				continue;
-@@ -350,10 +353,9 @@ static int pbus_size_mem(struct pci_bus 
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				printk(KERN_WARNING "PCI: region %s/%d "
--				       "too large: %llx-%llx\n",
-+				       "too large: " RANGE_PR "\n",
- 					pci_name(dev), i,
--					(unsigned long long)r->start,
--					(unsigned long long)r->end);
-+					r->start, r->end);
- 				r->flags = 0;
- 				continue;
- 			}
-@@ -372,7 +374,7 @@ static int pbus_size_mem(struct pci_bus 
- 	align = 0;
- 	min_align = 0;
- 	for (order = 0; order <= max_order; order++) {
--		unsigned long align1 = 1UL << (order + 20);
-+		resource_size_t align1 = RESOURCE_ORDER(order + 20);
- 
- 		if (!align)
- 			min_align = align1;
-Index: linux-work/drivers/pci/setup-res.c
-===================================================================
---- linux-work.orig/drivers/pci/setup-res.c	2007-12-04 17:00:43.000000000 +1100
-+++ linux-work/drivers/pci/setup-res.c	2007-12-04 17:02:11.000000000 +1100
-@@ -51,9 +51,8 @@ pci_update_resource(struct pci_dev *dev,
- 
- 	pcibios_resource_to_bus(dev, &region, res);
- 
--	pr_debug("  got res [%llx:%llx] bus [%lx:%lx] flags %lx for "
--		 "BAR %d of %s\n", (unsigned long long)res->start,
--		 (unsigned long long)res->end,
-+	pr_debug("  got res ["RANGE_PR"] bus ["RANGE_PR"] flags %lx for "
-+		 "BAR %d of %s\n", res->start, res->end,
- 		 region.start, region.end, res->flags, resno, pci_name(dev));
- 
- 	new = region.start | (res->flags & PCI_REGION_FLAG_MASK);
-Index: linux-work/include/linux/pci.h
-===================================================================
---- linux-work.orig/include/linux/pci.h	2007-12-04 17:00:43.000000000 +1100
-+++ linux-work/include/linux/pci.h	2007-12-04 17:02:11.000000000 +1100
-@@ -314,8 +314,8 @@ struct pci_raw_ops {
- extern struct pci_raw_ops *raw_pci_ops;
- 
- struct pci_bus_region {
--	unsigned long start;
--	unsigned long end;
-+	resource_size_t start;
-+	resource_size_t end;
- };
- 
- struct pci_dynids {
+> ---
+>  arch/powerpc/kernel/setup-common.c |   40 ++++++++++++++-------------
+>  1 file changed, 22 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+> index 6adb5a1..1f8f9aa 100644
+> --- a/arch/powerpc/kernel/setup-common.c
+> +++ b/arch/powerpc/kernel/setup-common.c
+> @@ -105,17 +105,23 @@ void machine_shutdown(void)
+>  		ppc_md.machine_shutdown();
+>  }
+>  
+> -void machine_restart(char *cmd)
+> +static void default_halt(const char *s)
+>  {
+> -	machine_shutdown();
+> -	if (ppc_md.restart)
+> -		ppc_md.restart(cmd);
+>  #ifdef CONFIG_SMP
+>  	smp_send_stop();
+>  #endif
+> -	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+> +	printk(KERN_EMERG "%s", s);
+>  	local_irq_disable();
+> -	while (1) ;
+> +	while (1);
+> +}
+> +
+> +void machine_restart(char *cmd)
+> +{
+> +	machine_shutdown();
+> +	if (ppc_md.restart)
+> +		ppc_md.restart(cmd);
+> +	default_halt("System not restarted; halting instead.\n"
+> +			"OK to turn off power\n");
+>  }
+>  
+>  void machine_power_off(void)
+> @@ -123,12 +129,10 @@ void machine_power_off(void)
+>  	machine_shutdown();
+>  	if (ppc_md.power_off)
+>  		ppc_md.power_off();
+> -#ifdef CONFIG_SMP
+> -	smp_send_stop();
+> -#endif
+> -	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+> -	local_irq_disable();
+> -	while (1) ;
+> +	printk(KERN_EMERG "System not powered off; halting instead.\n");
+> +	if (ppc_md.halt)
+> +		ppc_md.halt();
+> +	default_halt("OK to turn off power\n");
+>  }
+>  /* Used by the G5 thermal driver */
+>  EXPORT_SYMBOL_GPL(machine_power_off);
+> @@ -141,12 +145,12 @@ void machine_halt(void)
+>  	machine_shutdown();
+>  	if (ppc_md.halt)
+>  		ppc_md.halt();
+> -#ifdef CONFIG_SMP
+> -	smp_send_stop();
+> -#endif
+> -	printk(KERN_EMERG "System Halted, OK to turn off power\n");
+> -	local_irq_disable();
+> -	while (1) ;
+> +	if (ppc_md.power_off) {
+> +		printk(KERN_EMERG "System not halted; powering off instead.\n");
+> +		ppc_md.power_off();
+> +		printk(KERN_EMERG "Poweroff failed.\n");
+> +	}
+> +	default_halt("OK to turn off power\n");
+>  }
+>  
+> 
