@@ -1,21 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 89B1DDDE20
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:39:49 +1100 (EST)
-Date: Tue, 4 Dec 2007 13:39:47 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-In-Reply-To: <20071204060911.EA82BDDE19@ozlabs.org>
-Message-ID: <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
-References: <20071204060911.EA82BDDE19@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 989BEDDE11
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:11:13 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/3] cell: fix undefined reference to mmio_nvram_init
+Date: Tue, 4 Dec 2007 14:10:42 +0100
+References: <20071204.173453.-1300514021.kouish@swc.toshiba.co.jp>
+In-Reply-To: <20071204.173453.-1300514021.kouish@swc.toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-1571979154-1196771987=:12181"
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712041410.43736.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,74 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-1571979154-1196771987=:12181
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 4 Dec 2007, Benjamin Herrenschmidt wrote:
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
-> 
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
-> 
-> This is a pre-requisite for making powerpc use the generic code instead of
-> its own half-useful implementation.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
->  drivers/pci/pci.h       |   11 +++++++++++
->  drivers/pci/setup-bus.c |   32 +++++++++++++++++---------------
->  drivers/pci/setup-res.c |    5 ++---
->  include/linux/pci.h     |    4 ++--
->  4 files changed, 32 insertions(+), 20 deletions(-)
-> 
-> Index: linux-work/drivers/pci/pci.h
-> ===================================================================
-> --- linux-work.orig/drivers/pci/pci.h	2007-12-04 17:00:43.000000000 +1100
-> +++ linux-work/drivers/pci/pci.h	2007-12-04 17:02:11.000000000 +1100
-> @@ -91,3 +91,14 @@ pci_match_one_device(const struct pci_de
->  }
->  
->  struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
-> +
-> +#ifdef CONFIG_RESOURCES_64BIT
-> +#define RESOURCE_ORDER(order)	(1ULL << (order))
-> +#define RES_PR			"%016llx"
-> +#else
-> +#define RESOURCE_ORDER(order)	(1UL << (order))
-> +#define RES_PR			"%08lx"
+On Tuesday 04 December 2007, Ishizaki Kou wrote:
+>=20
+> +#ifdef CONFIG_MMIO_NVRAM
+> =A0=A0=A0=A0=A0=A0=A0=A0mmio_nvram_init();
 > +#endif
-> +
-> +#define RANGE_PR		RES_PR "-" RES_PR
+> =A0}
 
-Can we please have them in <linux/ioport.h>? They look very useful to me
-elsewhere (other bus drivers, device drivers), too.
+The patch is technically correct, but the preferred way of doing this is
+to define a conditional inline function in the header, like:
 
-What about naming the printf format specifier macros more like in C99, e.g.
-PRI*?
+#ifdef CONFIG_MMIO_NVRAM
+extern int mmio_nvram_init(void);
+#else
+static inline int mmio_nvram_init(void)
+{
+	return 0;
+}
+#endif
 
-With kind regards,
- 
-Geert Uytterhoeven
-Software Architect
+so that the caller does not need to know about it.
 
-Sony Network and Software Technology Center Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
- 
-Phone:    +32 (0)2 700 8453	
-Fax:      +32 (0)2 700 8622	
-E-mail:   Geert.Uytterhoeven@sonycom.com	
-Internet: http://www.sony-europe.com/
- 	
-Sony Network and Software Technology Center Europe	
-A division of Sony Service Centre (Europe) N.V.	
-Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
-VAT BE 0413.825.160 · RPR Brussels	
-Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-1571979154-1196771987=:12181--
+	Arnd <><
