@@ -1,20 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 86CB7DDE07
+Return-Path: <stephen.neuendorffer@xilinx.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5AE97DDFC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Dec 2007 10:08:18 +1100 (EST)
-To: niklaus.giger@member.fsf.org
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problem compiling sequoia using DENX kernel. Xenomai-patch
-	required?
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 02 Dec 2007 21:41:35 +0100."
-	<200712022141.36467.niklaus.giger@member.fsf.org>
-Date: Tue, 04 Dec 2007 00:08:16 +0100
-Sender: wd@denx.de
-Message-Id: <20071203230816.1C502242E9@gemini.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  4 Dec 2007 11:50:15 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: current ARCH=powerpc for v2pro.
+Date: Mon, 3 Dec 2007 16:48:48 -0800
+In-Reply-To: <fa686aa40711302239u56a264ddyaaad454bc00bb4dd@mail.gmail.com>
+References: <20071130222205.73E79A68013@mail72-blu.bigfish.com>
+	<fa686aa40711302239u56a264ddyaaad454bc00bb4dd@mail.gmail.com>
+From: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Message-Id: <20071204004843.8B5FB1C20046@mail6-sin.bigfish.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,57 +28,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200712022141.36467.niklaus.giger@member.fsf.org> you wrote:
-> 
-> I tried with (tags DENX-v2.6.23.9, DENX-v.2.6.23, master) to build a kernel 
-> for the sequoia board.
-> I am using ELDK 4.1. I did a 
-> git checkout -b copy-master master
-> make ARCH=powerpc CROSS_COMPILE=ppc_4xx- CFLAGS=-g sequoia_defconfig 
-> make ARCH=powerpc CROSS_COMPILE=ppc_4xx- CFLAGS=-g zImage 
+I tried that, which essentially differed from what I was trying in that
+interrupts were turned off.
+It fails in the same way as before.
 
-The ARCH=powerpc is the "interesting" part here.
+I've booted ARCH=3Dppc from your tree on the exact same hardware design,
+and as near as I can tell, the code that runs in the kernel proper up to
+the point where I see the machine check is almost identical.
 
-> First I stumbled about problem compiling arch/powerpc/platforms/44x/ppc4xx*.c
-> file with errors like
-> arch/powerpc/platforms/44x/ppc4xx-pci.c: In function 'ppc4xx_setup_pci':
-> arch/powerpc/platforms/44x/ppc4xx-pci.c:62: sorry, unimplemented: inlining 
-> failed in call to 'pci_cfg_out': function body not available
-> arch/powerpc/platforms/44x/ppc4xx-pci.c:98: sorry, unimplemented: called from 
-> here
+The machine check (a trap into the Machine Check handler at 0x200)
+occurs at a nondeterministic point during the execution of memset_io in
+early_init.
 
-There are many moving targets in the ARCH=powerpc hemisphere for 4xx
-systems...
+In the kernel I have, _bss_start is c02c8000, and these are the
+registers in the trap handler on two different runs of the kernel:
 
-> I thought that denx compiled images for the sequoia using 2.6.23. 
+    r3: c02c80cc r5: 00022874
+    r3: c02c8248 r5: 000226f4
 
-Yes, we do. But stable support is only available  with  the  arch/ppc
-tree yet.
+r3 is the current point being initialized, and r5 is the count remaining
+in the .bss.
 
-> Do they only work after having applied the Xenomai patch? Because if I apply 
+So, what would cause a machine check in the middle of a loop, in the
+middle of the almost the simplest code absolutely possible, and not on
+an obvious memory boundary?
 
-No.
+Steve
 
-> the Xenomai patch, the kernel compiles cleanly. In this case  I think it 
-
-That's just lucky coincidence...
-
-> would be nice to get somewhere a hint (or did I missed it somewhere) that 
-> this is a requirement. I lost quite a few hours as I wanted to first compile 
-> a "normal" kernel and afterwars apply the xenomai patch.
-
-I'm afraid "normal" here still means arch/ppc  -  hopefully  for  not
-long any more. Note: a matching Xenomai patch for arch/ppc will be in
-Xenomai 2.4 when it comes out in a few days.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Good manners are the settled  medium  of  social,  as  specie  is  of
-commercial, life; returns are equally expected for both.
-           - Lord Chesterfield _Letters to his Son_, 25 December 1753
+> -----Original Message-----
+> From: glikely@secretlab.ca [mailto:glikely@secretlab.ca] On=20
+> Behalf Of Grant Likely
+> Sent: Friday, November 30, 2007 10:40 PM
+> To: Stephen Neuendorffer
+> Cc: linuxppc-embedded
+> Subject: Re: current ARCH=3Dpowerpc for v2pro.
+>=20
+> On 11/30/07, Stephen Neuendorffer=20
+> <stephen.neuendorffer@xilinx.com> wrote:
+> >
+> > Grant,
+> >
+> > I'm trying to bring up your arch/powerpc work, using a compiled in
+> > device tree.  I added this:
+> >
+> <snip>
+> >
+> > Which seems bizarre, because that code is very simple.  I'm guessing
+> > that something in the memory configuration is wierd (or maybe
+> > zImage.virtex is not the right way to do this?) but I'm a=20
+> little lost
+> > where to look from here.  I also tried it with both=20
+> paulus_master and
+> > your virtex-for-2.6.24 branch.
+>=20
+>=20
+> I've got a patch that adds 'raw' image support (originally written by
+> Scott Wood) which somewhat works for booting (but not entirely; I
+> haven't had time to dig into it properly yet).  It's not suitable to
+> go into mainline yet.  I'll try to get the patch out to my tree this
+> evening... actually I've been trying to get my tree pushed out all
+> today, but other things keep coming up.  :-)
+>=20
+> <several hours after I wrote the above>
+>=20
+> Okay, I pushed my current patch set out to the master branch of my
+> linux-2.6-virtex tree.  Give it a whirl.  It's not perfect, but it
+> should be usable for booting.
+>=20
+> Cheers,
+> g.
+>=20
+> --=20
+> Grant Likely, B.Sc., P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+>=20
+>=20
