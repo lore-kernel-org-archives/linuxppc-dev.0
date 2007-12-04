@@ -1,19 +1,19 @@
-Return-Path: <news@alea.gnuu.de>
-Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
-	by ozlabs.org (Postfix) with ESMTP id 61B43DDF3D
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:07:22 +1100 (EST)
-Received: from news by alea.gnuu.de with local (Exim 4.63)
-	(envelope-from <news@alea.gnuu.de>) id 1Izg8V-0004iY-LZ
-	for linuxppc-dev@ozlabs.org; Tue, 04 Dec 2007 23:21:03 +0100
-To: linuxppc-dev@ozlabs.org
-From: =?UTF-8?Q?J=C3=B6rg?= Sommer <joerg@alea.gnuu.de>
-Subject: Re: [PATCH v2] Fix hardware IRQ time accounting problem.
-Date: Tue, 4 Dec 2007 22:21:03 +0000 (UTC)
-Message-ID: <slrnflbkmf.6uo.joerg@alea.gnuu.de>
-References: <20071204055144.GR24243@bakeyournoodle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Sender: news <news@alea.gnuu.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3EC37DDE0F
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:26:18 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+Date: Wed, 5 Dec 2007 00:26:07 +0100
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712042313.58252.arnd@arndb.de> <4755D73D.7040204@freescale.com>
+In-Reply-To: <4755D73D.7040204@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712050026.07616.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hallo Tony,
+On Tuesday 04 December 2007, Timur Tabi wrote:
+> When I program the DMA controller, I give it a dma_addr_t. =A0And yet, th=
+e DMA=20
+> controller and the QE are both devices on the SoC. =A0So if the DMA contr=
+oller=20
+> takes a dma_addr_t, then shouldn't the QE also take one?
+>=20
 
-Tony Breeds <tony@bakeyournoodle.com> wrote:
-> The commit fa13a5a1f25f671d084d8884be96fc48d9b68275 (sched: restore
-> deterministic CPU accounting on powerpc), unconditionally calls
-> update_process_tick() in system context.  In the deterministic accounting case
-> this is the correct thing to do.  However, in the non-deterministic accounting
-> case we need to not do this, and results in the time accounted as hardware irq
-> time being artificially elevated.
->
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> ---
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 41e13f4..b9d8837 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -350,7 +350,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
->  	local_irq_save(flags);
->  
->  	account_system_vtime(current);
-> -	account_process_tick(current, 0);
-> +	account_process_vtime(current);
->  	calculate_steal_time();
+=46rom a code clarity perspective, the interesting point is that dma_addr_t=
+ is
+what comes back from the functions in dma-mapping.h. If you don't use them,
+a physical address is phys_addr_t.
 
-This patch works for me. The high hardware interrupt load is gone. Thanks.
+You can argue that the QS is really a DMA device, but in that case you
+should convert the driver to use the DMA mapping interfaces correctly,
+which I would consider overkill.
 
-Bye, Jörg.
--- 
-Der Klügere gibt so lange nach bis er der Dumme ist.
+	Arnd <><
