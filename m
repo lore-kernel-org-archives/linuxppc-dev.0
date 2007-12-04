@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D863BDDEC7
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:39:05 +1100 (EST)
-Message-Id: <CDF55957-23B4-44BD-B6EC-22EE4DFD94A8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20071204222047.GA5771@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [FDT][PATCH] Print out the total size as part of ftdump
-Date: Tue, 4 Dec 2007 17:38:50 -0600
-References: <Pine.LNX.4.64.0712041032580.29317@blarg.am.freescale.net>
-	<20071204222047.GA5771@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id BD829DDEEE
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:39:43 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+Date: Wed, 5 Dec 2007 00:39:38 +0100
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712050026.07616.arnd@arndb.de> <4755E3A6.80704@freescale.com>
+In-Reply-To: <4755E3A6.80704@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200712050039.39153.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 05 December 2007, Scott Wood wrote:
+> 
+> > You can argue that the QS is really a DMA device, but in that case you
+> > should convert the driver to use the DMA mapping interfaces correctly,
+> > which I would consider overkill.
+> 
+> Why is it overkill?
+> 
 
-On Dec 4, 2007, at 4:20 PM, David Gibson wrote:
+Well, if the QE can never be used with an IOMMU anyway, you don't
+lose any functionality by considering it a physical address instead of
+a DMA address.
 
-> On Tue, Dec 04, 2007 at 10:33:20AM -0600, Kumar Gala wrote:
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->
-> You know, the whole batch of fprintf()s of header information in
-> dt_from_blob() are really just a debugging hack that uglifies dtc's
-> output.  The whole lot could be moved over to ftdump instead, which
-> is, after all, *supposed* to be a debugging hack.
+The DMA mapping API is meant for the cases where physical and dma
+addresses can be different in the first place.
 
-Yeah, I realized having a way to dump just the header info was nice.
-
-- k
+	Arnd <><
