@@ -1,21 +1,21 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
-	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 9C692DDE11
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:23:31 +1100 (EST)
-Date: Tue, 4 Dec 2007 13:23:26 +0100 (CET)
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 89B1DDDE20
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:39:49 +1100 (EST)
+Date: Tue, 4 Dec 2007 13:39:47 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
-	platform code
-In-Reply-To: <20071202061033.21193.64818.stgit@trillian.secretlab.ca>
-Message-ID: <Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
-References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
-	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+In-Reply-To: <20071204060911.EA82BDDE19@ozlabs.org>
+Message-ID: <Pine.LNX.4.62.0712041337530.12181@pademelon.sonytel.be>
+References: <20071204060911.EA82BDDE19@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: MULTIPART/MIXED;
-	BOUNDARY="-584337861-110698418-1196771006=:12181"
-Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
+	BOUNDARY="-584337861-1571979154-1196771987=:12181"
+Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +28,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
----584337861-110698418-1196771006=:12181
+---584337861-1571979154-1196771987=:12181
 Content-Type: TEXT/PLAIN; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 
-On Sat, 1 Dec 2007, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+On Tue, 4 Dec 2007, Benjamin Herrenschmidt wrote:
+> The current pci_assign_unassigned_resources() code doesn't work properly
+> on 32 bits platforms with 64 bits resources. The main reason is the use
+> of unsigned long in various places instead of resource_size_t.
 > 
-> This patch makes the platform code use the new machine-specific initcall
-> hooks.  This has the advantage of not needing to explicitly test
-> machine_is() at the top of every initcall function.
+> This fixes it, along with some tricks to avoid casting to 64 bits on
+> platforms that don't need it in every printk around.
+> 
+> This is a pre-requisite for making powerpc use the generic code instead of
+> its own half-useful implementation.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>  drivers/pci/pci.h       |   11 +++++++++++
+>  drivers/pci/setup-bus.c |   32 +++++++++++++++++---------------
+>  drivers/pci/setup-res.c |    5 ++---
+>  include/linux/pci.h     |    4 ++--
+>  4 files changed, 32 insertions(+), 20 deletions(-)
+> 
+> Index: linux-work/drivers/pci/pci.h
+> ===================================================================
+> --- linux-work.orig/drivers/pci/pci.h	2007-12-04 17:00:43.000000000 +1100
+> +++ linux-work/drivers/pci/pci.h	2007-12-04 17:02:11.000000000 +1100
+> @@ -91,3 +91,14 @@ pci_match_one_device(const struct pci_de
+>  }
+>  
+>  struct pci_dev *pci_find_upstream_pcie_bridge(struct pci_dev *pdev);
+> +
+> +#ifdef CONFIG_RESOURCES_64BIT
+> +#define RESOURCE_ORDER(order)	(1ULL << (order))
+> +#define RES_PR			"%016llx"
+> +#else
+> +#define RESOURCE_ORDER(order)	(1UL << (order))
+> +#define RES_PR			"%08lx"
+> +#endif
+> +
+> +#define RANGE_PR		RES_PR "-" RES_PR
 
-You seem to have missed the PS3 *_initcall()s.
-Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
-of machine_is(ps3).
+Can we please have them in <linux/ioport.h>? They look very useful to me
+elsewhere (other bus drivers, device drivers), too.
+
+What about naming the printf format specifier macros more like in C99, e.g.
+PRI*?
 
 With kind regards,
  
@@ -61,4 +95,4 @@ A division of Sony Service Centre (Europe) N.V.
 Registered office: Technologielaan 7 · B-1840 Londerzeel · Belgium	
 VAT BE 0413.825.160 · RPR Brussels	
 Fortis Bank Zaventem · Swift GEBABEBB08A · IBAN BE39001382358619
----584337861-110698418-1196771006=:12181--
+---584337861-1571979154-1196771987=:12181--
