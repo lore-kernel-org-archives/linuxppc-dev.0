@@ -1,18 +1,11 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3EC37DDE0F
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:26:18 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
-Date: Wed, 5 Dec 2007 00:26:07 +0100
-References: <11967907173600-git-send-email-timur@freescale.com>
-	<200712042313.58252.arnd@arndb.de> <4755D73D.7040204@freescale.com>
-In-Reply-To: <4755D73D.7040204@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 5 Dec 2007 10:27:04 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: dtc: Generate useful error message for properties after subnodes
+Message-ID: <20071204232704.GD9487@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712050026.07616.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,21 +16,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 04 December 2007, Timur Tabi wrote:
-> When I program the DMA controller, I give it a dma_addr_t. =A0And yet, th=
-e DMA=20
-> controller and the QE are both devices on the SoC. =A0So if the DMA contr=
-oller=20
-> takes a dma_addr_t, then shouldn't the QE also take one?
->=20
+On several occasions, I've accidentally put properties after subnodes
+in a dts file.  I've then spent ages thinking that the resulting
+syntax error was because of something else.
 
-=46rom a code clarity perspective, the interesting point is that dma_addr_t=
- is
-what comes back from the functions in dma-mapping.h. If you don't use them,
-a physical address is phys_addr_t.
+This patch arranges for this specific syntax error to generate a more
+specific and useful error message.
 
-You can argue that the QS is really a DMA device, but in that case you
-should convert the driver to use the DMA mapping interfaces correctly,
-which I would consider overkill.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-	Arnd <><
+Index: dtc/tests/prop-after-subnode.dts
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ dtc/tests/prop-after-subnode.dts	2007-12-05 10:24:52.000000000 +1100
+@@ -0,0 +1,9 @@
++/dts-v1/;
++
++/ {
++	node1 {
++	};
++	prop;
++	node2 {
++	};
++};
+Index: dtc/dtc-parser.y
+===================================================================
+--- dtc.orig/dtc-parser.y	2007-12-05 10:12:10.000000000 +1100
++++ dtc/dtc-parser.y	2007-12-05 10:18:26.000000000 +1100
+@@ -276,6 +276,11 @@
+ 		{
+ 			$$ = chain_node($1, $2);
+ 		}
++	| subnode propdef
++		{
++			yyerror("syntax error: properties must precede subnodes\n");
++			YYERROR;
++		}
+ 	;
+ 
+ subnode:
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
