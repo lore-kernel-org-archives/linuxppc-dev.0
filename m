@@ -1,14 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Dec 2007 09:04:32 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [FDT][PATCH] Fix padding options
-Message-ID: <20071204220432.GA2521@localhost.localdomain>
-References: <Pine.LNX.4.64.0712041027330.29174@blarg.am.freescale.net>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 445EADDFD2
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 09:06:31 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
+	platform code
+Date: Tue, 4 Dec 2007 23:05:56 +0100
+References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
+	<200712042036.00785.arnd@arndb.de>
+	<1196800273.13230.333.camel@pasglop>
+In-Reply-To: <1196800273.13230.333.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0712041027330.29174@blarg.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712042305.56881.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 10:27:52AM -0600, Kumar Gala wrote:
-> commit 22e787ca2b1e49a9a0f3c43262564ab1038c5c3c broke the padding
-> support.  We were updating the fdt header after writing it.
+On Tuesday 04 December 2007, Benjamin Herrenschmidt wrote:
+> > 2. The call to firmware_has_feature() turns into a compile-time check
+> > in
+> > many cases, so if the kernel does not contain support for any firmware
+> > with the given feature, all the code referenced it can get optimized
+> > away by the compiler.
+> 
+> The machine init stuff will soon get rid of whatever test is in it too,
+> as soon as I get to do the ELF magic.
 
-Uh.. I can't find a commit with that SHA1.  Which one are you
-referring to?
+Section magic is often painful and causes a number of problems. Moreover, it
+won't do the same thing as what the compiler can do. Consider
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+static int x __attribute__((section("some_platform.data"))) = 1;
+static int f(void) __attribute__((section("some_platform.text")));
+{
+	if (firmware_has_feature(FOO))
+		return x;
+	return 0;
+}
+
+When firmware_has_feature(FOO) statically evaluates to false, f becomes an
+empty function and x is left out from the object file.
+If you turn it into a platform_is() check and discard all "some_platform"
+sections, you need to have both in the vmlinux file and can discard them
+at run time, which is something completely different. You can also
+discard them in the linker script, but that's a lot more work than having
+the compiler do the right thing.
+
+	Arnd <><
