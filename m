@@ -1,22 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: RE: [PATCH] Add IPIC MSI interrupt support
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Li Tony <Tony.Li@freescale.com>
-In-Reply-To: <995B09A8299C2C44B59866F6391D2635D75588@zch01exm21.fsl.freescale.net>
-References: <1196394519.29683.8.camel@Guyver>
-	<1196654521.13554.32.camel@concordia>
-	<1196672870.14353.21.camel@Guyver>
-	<1196746689.20158.4.camel@concordia>
-	<995B09A8299C2C44B59866F6391D2635D75588@zch01exm21.fsl.freescale.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-MNXgi35vWGI6zfC6jCGJ"
-Date: Tue, 04 Dec 2007 23:04:18 +1100
-Message-Id: <1196769858.32524.8.camel@concordia>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-	Gala Kumar <kumar.gala@freescale.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 94709DDE17
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 23:20:51 +1100 (EST)
+Date: Tue, 4 Dec 2007 13:20:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.24-rc3-git2 softlockup detected
+Message-ID: <20071204122005.GA27286@elte.hu>
+References: <474D0AAC.5010005@linux.vnet.ibm.com>
+	<20071127225328.9e3f3827.akpm@linux-foundation.org>
+	<474D15FF.5080508@linux.vnet.ibm.com>
+	<20071127232552.ad16e95c.akpm@linux-foundation.org>
+	<474E5CAC.9000108@linux.vnet.ibm.com>
+	<20071129003533.54b4b20e.akpm@linux-foundation.org>
+	<20071130063929.GD2754@fattire.cabal.ca>
+	<20071129230047.1b482562.akpm@linux-foundation.org>
+	<20071129230204.8698f47e.akpm@linux-foundation.org>
+	<474FBB86.5000004@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <474FBB86.5000004@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org,
+	Matthew Wilcox <willy@debian.org>, LKML <linux-kernel@vger.kernel.org>,
+	Kyle McMartin <kyle@mcmartin.ca>, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,79 +37,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-MNXgi35vWGI6zfC6jCGJ
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+* Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-On Tue, 2007-12-04 at 18:34 +0800, Li Tony wrote:
-> > From: Michael Ellerman [mailto:michael@ellerman.id.au]=20
-> > Sent: 2007=E5=B9=B412=E6=9C=884=E6=97=A5 13:38
-> > To: Li Tony
-> > Cc: Li Tony; Gala Kumar; linuxppc-dev
-> > Subject: Re: [PATCH] Add IPIC MSI interrupt support
-> >=20
-> > On Mon, 2007-12-03 at 17:07 +0800, Li Li wrote:
-> > > Hi Michael,
-> > >=20
-> > > I emulate mpic to write this IPIC MSI routines. :)
-> > >=20
-> > >=20
-> > > > > diff --git a/arch/powerpc/platforms/83xx/mpc837x_mds.c=20
-> > > > > b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-> > > > > index 6048f1b..dbea34b 100644
-> > > > > --- a/arch/powerpc/platforms/83xx/mpc837x_mds.c
-> > > > > +++ b/arch/powerpc/platforms/83xx/mpc837x_mds.c
-> >=20
-> > > > > +
-> > > > > +#define	ipic_msi_irq_to_hw(virq)=09
-> > ((unsigned int)irq_map[virq].hwirq)
-> > > >=20
-> > > > What's wrong with virq_to_hw() ?
-> > > >=20
-> > >=20
-> > > viqr_to_hw is not __inline__.
-> >=20
-> > Hmm, ok. The three places you use it you also take a spin=20
-> > lock, so I'm not sure the function call's really going to=20
-> > kill you performance wise.
-> >=20
->=20
-> I am not very sure about spin_lock influence.
-> But maybe somebody will change the virq_to_hw implementation.
-> I will take virq_to_hw instead.=20
+> > So 2.6.24-rc3 was OK and 2.6.24-rc3-git2 is not?
+> 
+> Yes, the 2.6.24-rc3 was Ok and this is seen from 2.6.24-rc3-git2/3/4.
 
-I mean the time to take the function call should be pretty small
-compared to taking and releasing a spinlock - but if you have
-performance numbers to prove otherwise let me know :)
+just to make sure: this is a real lockup and failed bootup (or device 
+init), not just a message, right?
 
-> I see that the virq_to_hw is do inline in 2.6.22.
-> Why remove it?
-
-It was made non-inline because modules want to use it, and we didn't
-want to export the irq_map to modules as well.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-MNXgi35vWGI6zfC6jCGJ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHVUJCdSjSd0sB4dIRAorgAJ9eTv5i+BZv/gJm/fcx9F9ZO+yPpwCdGeIl
-EwpBGaMeLZaWjb6bDWETHbA=
-=9Y3F
------END PGP SIGNATURE-----
-
---=-MNXgi35vWGI6zfC6jCGJ--
+	Ingo
