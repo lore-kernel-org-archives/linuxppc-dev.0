@@ -1,23 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1D2F9DDE3B
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 13:16:32 +1100 (EST)
-Subject: RE: [PATCH] ipic: change ack operation that register is
-	accessedonly when needed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang <LeoLi@freescale.com>
-In-Reply-To: <989B956029373F45A0B8AF029708189001B4D2DE@zch01exm26.fsl.freescale.net>
-References: <1196684780-28408-1-git-send-email-leoli@freescale.com>
-	<1196715747.13230.233.camel@pasglop>
-	<989B956029373F45A0B8AF029708189001B4D2DE@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 13:15:56 +1100
-Message-Id: <1196734556.13230.258.camel@pasglop>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 4 Dec 2007 13:40:25 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+Subject: Re: [PATCH] [POWERPC] [v2] Improved documentation of device tree
+	'ranges'.
+Message-ID: <20071204024025.GG32577@localhost.localdomain>
+References: <20071204010818.AD4231798062@mail212-sin.bigfish.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071204010818.AD4231798062@mail212-sin.bigfish.com>
 Cc: linuxppc-dev@ozlabs.org
-Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +20,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Tue, 2007-12-04 at 10:06 +0800, Li Yang wrote:
-> > That should be handled by the higher level flow handler. The 
-> > generic edge one calls ack and the level one mask_and_ack. 
-> > Just make them do the right thing, no need to test for the 
-> > flow type in the low level function.
+On Mon, Dec 03, 2007 at 05:08:57PM -0800, Stephen Neuendorffer wrote:
+> I was misled by the prior language.  I've attempted to clarify how
+> 'ranges' are used, in particular, how to get an identity mapping.
 > 
-> But actually ack is called by edge and per cpu handlers.  Mask_and_ack
-> is also called by edge handler when the same interrupt is already in
-> progress.  So I don't think that ack/mask_and_ack implicates flow type
-> by design.
+> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
 
-They do and you can pass different irq_chip with different mask/ack
-routines if necessary.
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-Ben.
+Thanks for the update.  I particularly dislike the "1:1" terminology,
+because in maths-speak *any* ranges translation is 1:1, unless it
+includes overlapping ranges.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
