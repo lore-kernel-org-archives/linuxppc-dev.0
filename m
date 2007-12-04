@@ -1,21 +1,23 @@
-Return-Path: <SRS0+d99126679a6468e47a3e+1563+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58BDEDDF56
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:28:55 +1100 (EST)
-Subject: Re: [PATCH 2/2] [POWERPC] pasemi: Register i2c_board_info
-From: David Woodhouse <dwmw2@infradead.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20071130032923.GB25580@lixom.net>
-References: <20071130032645.GA25580@lixom.net>
-	<20071130032923.GB25580@lixom.net>
-Content-Type: text/plain
-Date: Tue, 04 Dec 2007 13:28:46 +0000
-Message-Id: <1196774926.13978.225.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
+	by ozlabs.org (Postfix) with ESMTP id 39DCADDE49
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:36:37 +1100 (EST)
+Received: by an-out-0708.google.com with SMTP id c37so848127anc
+	for <linuxppc-dev@ozlabs.org>; Tue, 04 Dec 2007 05:36:36 -0800 (PST)
+Message-ID: <fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
+Date: Tue, 4 Dec 2007 06:36:35 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Geert Uytterhoeven" <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
+	platform code
+In-Reply-To: <Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
+	<20071202061033.21193.64818.stgit@trillian.secretlab.ca>
+	<Pine.LNX.4.62.0712041320250.12181@pademelon.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org, olof@lixom.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> On Sat, 1 Dec 2007, Grant Likely wrote:
+> > From: Grant Likely <grant.likely@secretlab.ca>
+> >
+> > This patch makes the platform code use the new machine-specific initcall
+> > hooks.  This has the advantage of not needing to explicitly test
+> > machine_is() at the top of every initcall function.
+>
+> You seem to have missed the PS3 *_initcall()s.
+> Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
+> of machine_is(ps3).
 
-On Thu, 2007-11-29 at 21:29 -0600, Olof Johansson wrote:
-> +                               continue;
-> +
-> +                       info.addr = *addr;
-> +
-> +                       i2c_register_board_info(PCI_FUNC(pdev->devfn),
-> &info,
-> +                                               1);
-> +               }
-> +       }
+That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
+substitute so I left it alone.
 
-+       /* Ensure that buses up to 2 are reserved */
-+       i2c_register_board_info(2, NULL, 0);
-+
-
-
-> +       return 0;
-> +}
-> +device_initcall(pasemi_register_i2c_devices);
-> +#endif
-
-
-Otherwise when you make i2c-pasemi use i2c_add_numbered_adapter(), it
-might fail to register the third bus -- because there were no devices
-preregistered on it, so something else might have stolen that bus number
-already.
-
-You might want to add the patch to use i2c_add_numbered_adapter() to
-your tree, btw.
+Cheers,
+g.
 
 -- 
-dwmw2
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
