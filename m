@@ -1,12 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Dec 2007 09:50:25 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Trivial lexer cleanups
-Message-ID: <20071204225025.GB9487@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <news@alea.gnuu.de>
+Received: from uucp.gnuu.de (banki.eumelnet.de [83.246.114.63])
+	by ozlabs.org (Postfix) with ESMTP id 61B43DDF3D
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 10:07:22 +1100 (EST)
+Received: from news by alea.gnuu.de with local (Exim 4.63)
+	(envelope-from <news@alea.gnuu.de>) id 1Izg8V-0004iY-LZ
+	for linuxppc-dev@ozlabs.org; Tue, 04 Dec 2007 23:21:03 +0100
+To: linuxppc-dev@ozlabs.org
+From: =?UTF-8?Q?J=C3=B6rg?= Sommer <joerg@alea.gnuu.de>
+Subject: Re: [PATCH v2] Fix hardware IRQ time accounting problem.
+Date: Tue, 4 Dec 2007 22:21:03 +0000 (UTC)
+Message-ID: <slrnflbkmf.6uo.joerg@alea.gnuu.de>
+References: <20071204055144.GR24243@bakeyournoodle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@alea.gnuu.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,58 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch applies a couple of tiny cleanups to the lexer.  The
-not-very-useful 'WS' named pattern is removed, and the debugging
-printf() for single character tokens is moved to the top of the
-action, which results in less confusing output when LEXDEBUG is
-switched on (because it goes before the printf()s for possible
-resulting lexer state changes).
+Hallo Tony,
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Tony Breeds <tony@bakeyournoodle.com> wrote:
+> The commit fa13a5a1f25f671d084d8884be96fc48d9b68275 (sched: restore
+> deterministic CPU accounting on powerpc), unconditionally calls
+> update_process_tick() in system context.  In the deterministic accounting case
+> this is the correct thing to do.  However, in the non-deterministic accounting
+> case we need to not do this, and results in the time accounted as hardware irq
+> time being artificially elevated.
+>
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+> ---
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 41e13f4..b9d8837 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -350,7 +350,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+>  	local_irq_save(flags);
+>  
+>  	account_system_vtime(current);
+> -	account_process_tick(current, 0);
+> +	account_process_vtime(current);
+>  	calculate_steal_time();
 
-Index: dtc/dtc-lexer.l
-===================================================================
---- dtc.orig/dtc-lexer.l	2007-11-22 17:29:51.000000000 +1100
-+++ dtc/dtc-lexer.l	2007-11-22 17:30:55.000000000 +1100
-@@ -29,7 +29,6 @@ PROPNODECHAR	[a-zA-Z0-9,._+*#?@-]
- PATHCHAR	({PROPNODECHAR}|[/])
- LEGACYPATHCHAR	[a-zA-Z0-9_@/]
- LABEL		[a-zA-Z_][a-zA-Z0-9_]*
--WS		[[:space:]]
- 
- %{
- #include "dtc.h"
-@@ -193,7 +192,7 @@ static int dts_version; /* = 0 */
- 		}
- 
- 
--<*>{WS}+	/* eat whitespace */
-+<*>[[:space:]]+	/* eat whitespace */
- 
- <*>"/*"([^*]|\*+[^*/])*\*+"/"	{
- 			yylloc.filenum = srcpos_filenum;
-@@ -207,6 +206,8 @@ static int dts_version; /* = 0 */
- <*>.		{
- 			yylloc.filenum = srcpos_filenum;
- 			yylloc.first_line = yylineno;
-+			DPRINT("Char: %c (\\x%02x)\n", yytext[0],
-+				(unsigned)yytext[0]);
- 			if (yytext[0] == '[') {
- 				DPRINT("<BYTESTRING>\n");
- 				BEGIN(BYTESTRING);
-@@ -216,9 +217,6 @@ static int dts_version; /* = 0 */
- 				DPRINT("<PROPNODENAME>\n");
- 				BEGIN(PROPNODENAME);
- 			}
--			DPRINT("Char: %c (\\x%02x)\n", yytext[0],
--				(unsigned)yytext[0]);
--
- 			return yytext[0];
- 		}
- 
+This patch works for me. The high hardware interrupt load is gone. Thanks.
 
+Bye, Jörg.
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Der Klügere gibt so lange nach bis er der Dumme ist.
