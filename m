@@ -1,25 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 22731DDF22
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:24:17 +1100 (EST)
-Message-ID: <4755A942.2010802@freescale.com>
-Date: Tue, 04 Dec 2007 13:23:46 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id DF93BDDF57
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:28:18 +1100 (EST)
+Date: Tue, 4 Dec 2007 13:32:20 -0600
+From: Olof Johansson <olof@lixom.net>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 2/2] [POWERPC] pasemi: Register i2c_board_info
+Message-ID: <20071204193220.GC5758@lixom.net>
+References: <20071130032645.GA25580@lixom.net>
+	<20071130032923.GB25580@lixom.net>
+	<1196774926.13978.225.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v2 3/4] [POWERPC] MPC8349E-mITX: introduce localbus and
-	pata nodes
-References: <20071204170442.GA10460@localhost.localdomain>	<20071204170726.GC15599@localhost.localdomain>
-	<20071204191657.GB5758@lixom.net>
-In-Reply-To: <20071204191657.GB5758@lixom.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196774926.13978.225.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
-> Hi,
+On Tue, Dec 04, 2007 at 01:28:46PM +0000, David Woodhouse wrote:
 > 
-> On Tue, Dec 04, 2007 at 08:07:26PM +0300, Anton Vorontsov wrote:
->> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
->> index 5072f6d..c459b0a 100644
->> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
->> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
->> @@ -249,6 +249,22 @@
->>  		device_type = "pci";
->>  	};
->>  
->> +	localbus@e0005000 {
->> +		#address-cells = <2>;
->> +		#size-cells = <1>;
->> +		compatible = "fsl,mpc8349emitx-localbus",
->> +			     "fsl,mpc8349e-localbus",
->> +			     "fsl,pq2pro-localbus";
->> +		reg = <e0005000 d8>;
->> +		ranges = <3 0 f0000000 210>;
->>  
->> -
->> +		pata@3,0 {
+> On Thu, 2007-11-29 at 21:29 -0600, Olof Johansson wrote:
+> > +                               continue;
+> > +
+> > +                       info.addr = *addr;
+> > +
+> > +                       i2c_register_board_info(PCI_FUNC(pdev->devfn),
+> > &info,
+> > +                                               1);
+> > +               }
+> > +       }
 > 
-> What's the ,0 for?
+> +       /* Ensure that buses up to 2 are reserved */
+> +       i2c_register_board_info(2, NULL, 0);
+> +
+> 
+> 
+> > +       return 0;
+> > +}
+> > +device_initcall(pasemi_register_i2c_devices);
+> > +#endif
+> 
+> 
+> Otherwise when you make i2c-pasemi use i2c_add_numbered_adapter(), it
+> might fail to register the third bus -- because there were no devices
+> preregistered on it, so something else might have stolen that bus number
+> already.
 
-chipselect 3, offset 0.
+Good point, I'd missed that. Thanks!
 
--Scott
+> You might want to add the patch to use i2c_add_numbered_adapter() to
+> your tree, btw.
+
+Yep, I realized that after (re)asking Paul to pull though, and didn't
+want to do a third request before he's done it. :)
+
+If he doesn't pull in the next few days I might just keep adding new
+patches as they come in though, and add it back.
+
+
+-Olof
