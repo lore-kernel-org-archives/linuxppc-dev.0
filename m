@@ -1,19 +1,23 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id 9F3A8DDE29
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 03:04:13 +1100 (EST)
-Received: from sceptre (localhost.localdomain [127.0.0.1])
-	by sceptre.pobox.com (Postfix) with ESMTP id 2FE672FA
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 11:04:32 -0500 (EST)
-Received: from thinkcentre (24-155-246-53.dyn.grandenetworks.net
-	[24.155.246.53])
-	by sceptre.sasl.smtp.pobox.com (Postfix) with ESMTP id F31BB9CCAB
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 11:04:31 -0500 (EST)
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] lparcfg: remove useless buffer allocation
-Date: Tue,  4 Dec 2007 10:03:49 -0600
-Message-Id: <1196784229-30575-1-git-send-email-ntl@pobox.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DB2F0DDEDD
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 03:07:36 +1100 (EST)
+Message-Id: <E38C9A55-77FC-46DE-AE30-A03A244656EB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jon Loeliger <jdl@jdl.com>, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20071204092611.79e08953@zod.rchland.ibm.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Merge dtc
+Date: Tue, 4 Dec 2007 10:04:53 -0600
+References: <20071016050217.GA9052@localhost.localdomain>
+	<1196733544.13978.201.camel@pmac.infradead.org>
+	<E1IzXmf-0005RJ-27@jdl.com>
+	<20071204092611.79e08953@zod.rchland.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>, Paul@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 'data' member of proc_ppc64_lparcfg is unused, but the lparcfg
-module's init routine allocates 4K for it.
 
-Remove the code which allocates and frees this buffer.
+On Dec 4, 2007, at 9:26 AM, Josh Boyer wrote:
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
- arch/powerpc/kernel/lparcfg.c |   12 +-----------
- 1 files changed, 1 insertions(+), 11 deletions(-)
+> On Tue, 04 Dec 2007 07:25:57 -0600
+> Jon Loeliger <jdl@jdl.com> wrote:
+>
+>> So, like, the other day David Woodhouse mumbled:
+>>>
+>>> I think this is a bad idea -- it's hardly a difficult for those  
+>>> people
+>>> who _do_ need dts to obtain it separately.
+>>>
+>>> We shouldn't be merging _more_ stuff in.
+>>
+>> Thanks for chiming in here, David W.  As far as I can tell
+>> so far, the only two people who have voiced an opinion on
+>> this issue are Dave G, submitting patches, and me disagreeing
+>> with the approach.  :-)
+>>
+>> Anyone else?
+>
+> I don't see an overwhelmingly great reason to merge it.  It might help
+> test people who do automated rebuilds, etc and aren't used to dealing
+> with powerpc and it's requirements.  Outside of that, I see it as
+> dual-maintenance.
+>
+> But I'm not doing the maintenance, and it doesn't effect me too much.
+> I only ask that a decision is made and executed on soon so we can move
+> on.
 
-Tested with "cat /proc/ppc64/lparcfg" on Power5.
+I'm also in disagreement of duplicating dtc in the kernel.
 
-diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
-index ff781b2..dcb89a8 100644
---- a/arch/powerpc/kernel/lparcfg.c
-+++ b/arch/powerpc/kernel/lparcfg.c
-@@ -41,7 +41,6 @@
- /* #define LPARCFG_DEBUG */
- 
- static struct proc_dir_entry *proc_ppc64_lparcfg;
--#define LPARCFG_BUFF_SIZE 4096
- 
- /*
-  * Track sum of all purrs across all processors. This is used to further
-@@ -595,13 +594,6 @@ int __init lparcfg_init(void)
- 	ent = create_proc_entry("ppc64/lparcfg", mode, NULL);
- 	if (ent) {
- 		ent->proc_fops = &lparcfg_fops;
--		ent->data = kmalloc(LPARCFG_BUFF_SIZE, GFP_KERNEL);
--		if (!ent->data) {
--			printk(KERN_ERR
--			       "Failed to allocate buffer for lparcfg\n");
--			remove_proc_entry("lparcfg", ent->parent);
--			return -ENOMEM;
--		}
- 	} else {
- 		printk(KERN_ERR "Failed to create ppc64/lparcfg\n");
- 		return -EIO;
-@@ -613,10 +605,8 @@ int __init lparcfg_init(void)
- 
- void __exit lparcfg_cleanup(void)
- {
--	if (proc_ppc64_lparcfg) {
--		kfree(proc_ppc64_lparcfg->data);
-+	if (proc_ppc64_lparcfg)
- 		remove_proc_entry("lparcfg", proc_ppc64_lparcfg->parent);
--	}
- }
- 
- module_init(lparcfg_init);
--- 
-1.5.3.4.206.g58ba4
+However, if we are going to do this we should make the path expansion  
+for labels work before we do it.
+
+- k
