@@ -1,20 +1,12 @@
 Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id B8918DDE20
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 16:32:44 +1100 (EST)
-Date: Mon, 3 Dec 2007 22:34:27 -0700
+Date: Mon, 3 Dec 2007 22:37:36 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] PowerPC 74xx: Katana Qp device tree
-Message-ID: <20071204053427.GB27063@mag.az.mvista.com>
-References: <20071129152836.GB13751@ru.mvista.com>
-	<1196715170.13230.228.camel@pasglop>
-	<20071204012329.GA18903@mag.az.mvista.com>
-	<1196734483.13230.256.camel@pasglop>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [RFC 0/7] powerpc: Rework pm_power_off &
+	machine_[restart|power_off|halt]
+Message-ID: <20071204053736.GA27862@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196734483.13230.256.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,47 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 01:14:43PM +1100, Benjamin Herrenschmidt wrote:
-> 
->  .../... (snip scary bunch of errata)
-> 
-> > - "FEr PCI-#4" (Detailed by Application Note AN-84):
-> > 
-> > [This isn't strictly a coherency issue but having coherency enabled
-> > exacerbates the problem.]  Basically, the bridge can let the cpu read
-> > a pci device's registers before all of the data the PCI devices has
-> > written has actually made it to memory.  This and the fact that the
-> > device's write data may be stuck in the PCI Slave Write Buffer
-> > (which isn't checked for coherency), the cpu can get stale data.
-> > 
-> > There are no plans to fix that erratum.
-> 
-> So if I understand correctly, there's no plan to fix a major PCI spec
-> violation which prevent any kind of reliable implementation whatsoever ?
+We seem to have the pm_power_off hook wrong in arch/powerpc.  From the
+other arches and from how its used by the rest of the kernel (e.g., ipmi),
+it should point to the lowest-level power off function not to
+machine_power_off().  Actually, machine_power_off() should call pm_power_off
+since AFAICT it is the one and only interface used by the rest of the kernel
+to power a machine off (with one exception which I believe to be a bug and
+have a patch in this series to fix).
 
-That's just for that particular part (e.g., 64360).  Newer parts like
-the 64460 have it fixed.
+While looking at this, I found several bits of code that needed minor
+rework and/or cleaning up.  These bits include: refactoring some
+common code used by the machine_xxx routines, having machine_power_off
+call ppc_md.halt if there ppc_md.power_off is NULL or returns, having
+machine_halt call ppc_md.power_off it ppc_md.halt is NULL or returns,
+and removing some useless xxx_halt and xxx_power_off routines in
+platform code.
 
-> > So, the answer depends on what part & what rev of the part you have
-> > (e.g., the pegasos doesn't use the MPSC and apparently has the other
-> > issues worked around so it can turn on coherency but the prpmc2800
-> > doesn't so it needs coherency off).
-> > 
-> > BTW, I haven't forgotten the inherent bug you described when coherency
-> > is off (/me too lazy to find link to the email) but AFAIK I've never run
-> > into it.  However, if I turn on coherency and stress the PCI bus, it
-> > hangs (I can't even look at memory thru a bdi).
-> 
-> Well, as it is today, the "classic" MMU code cannot deal with !coherent.
-> The entire linear mapping is always mapped cacheable with BATs, so stuff
-> may be brought into the cache at any time, potentially polluting DMA
-> data.
->
-> Dealing with that would be hard. It might be possible by using G on the
-> entire linear mapping like we do on 4xx (yuck), and/or by not using
-> D-BATs (the kernel will blow up in various areas without I-BATs).
+With the new usage of pm_power_off, the ppc_md.power_off hook is
+no longer needed and pm_power_off will be assigned in the platform
+probe routine.
 
-Hrm, I didn't realize it was in such bad shape.  I'll have to take a
-closer look.
+The end result of all of these patches should make the check of
+pm_power_off being NULL in kernel/sys.c:sys_reboot useful for powerpc,
+eliminate the need for platform halt routines to call the power off routine
+(and vice versa), allow things like IPMI to take over pm_power_off
+when they need to, and make the power off/halt related code a bit cleaner
+& consistent.
+
+I still have to make sure I didn't miss anything and I haven't compiled
+all the files I've touched so these aren't submission candidates yet.
+
+I'd appreciate any feedback.
+
+Thanks,
 
 Mark
