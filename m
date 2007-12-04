@@ -1,12 +1,33 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 4 Dec 2007 11:49:43 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Fix uninitialized use of structure_ok
-Message-ID: <20071204004943.GD32577@localhost.localdomain>
+Return-Path: <dwg@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (E23SMTP06.au.ibm.com [202.81.18.175])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e23smtp06.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1D510DE23F
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 11:50:39 +1100 (EST)
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [202.81.18.234])
+	by e23smtp06.au.ibm.com (8.13.1/8.13.1) with ESMTP id lB40oIBI020382
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:33 +1100
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB40oJQg2617458
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:19 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB40o2CD009462
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 11:50:03 +1100
+Date: Tue, 4 Dec 2007 11:28:46 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Chris Snook <csnook@redhat.com>
+Subject: Re: [PATCH 2/2] powerpc: make 64K huge pages more reliable
+Message-ID: <20071204002846.GA32577@localhost.localdomain>
+References: <474CF694.8040700@us.ibm.com>
+	<20071203020648.GF26919@localhost.localdomain>
+	<47547A79.2060206@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <47547A79.2060206@redhat.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, kniht@linux.vnet.ibm.com,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,95 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My rework of the tree checking code introduced a potentially nasty bug
-- it uses the structure_ok variable uninitialized.  This patch fixes
-the problem.  It's a fairly ugly bandaid approach, but the ugly will
-disappear once future patches have folded the semantic checks into the
-new framework.
+On Mon, Dec 03, 2007 at 04:51:53PM -0500, Chris Snook wrote:
+> David Gibson wrote:
+> > On Tue, Nov 27, 2007 at 11:03:16PM -0600, Jon Tollefson wrote:
+> >> This patch adds reliability to the 64K huge page option by making use of 
+> >> the PMD for 64K huge pages when base pages are 4k.  So instead of a 12 
+> >> bit pte it would be 7 bit pmd and a 5 bit pte. The pgd and pud offsets 
+> >> would continue as 9 bits and 7 bits respectively.  This will allow the 
+> >> pgtable to fit in one base page.  This patch would have to be applied 
+> >> after part 1.
+> > 
+> > Hrm.. shouldn't we just ban 64K hugepages on a 64K base page size
+> > setup?  There's not a whole lot of point to it, after all...
+> > 
+> 
+> Actually, it sounds to me like an ideal way to benchmark the
+> efficiency of the hugepage implementation and VM effects, without
+> the TLB performance obscuring the results.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Well.. maybe.  The pagetable format, and therefore the hugepage size,
+will affect the size of that overhead so even with this its not clear
+how meaningful test results would be.
 
-Index: dtc/checks.c
-===================================================================
---- dtc.orig/checks.c	2007-12-03 17:14:27.000000000 +1100
-+++ dtc/checks.c	2007-12-03 17:14:39.000000000 +1100
-@@ -270,8 +270,12 @@ static struct check *check_table[] = {
- 	&phandle_references,
- };
- 
--void process_checks(int force, struct node *dt)
-+int check_semantics(struct node *dt, int outversion, int boot_cpuid_phys);
-+
-+void process_checks(int force, struct boot_info *bi,
-+		    int checkflag, int outversion, int boot_cpuid_phys)
- {
-+	struct node *dt = bi->dt;
- 	int i;
- 	int error = 0;
- 
-@@ -292,6 +296,16 @@ void process_checks(int force, struct no
- 				"output forced\n");
- 		}
- 	}
-+
-+	if (checkflag) {
-+		if (error) {
-+			fprintf(stderr, "Warning: Skipping semantic checks due to structural errors\n");
-+		} else {
-+			if (!check_semantics(bi->dt, outversion,
-+					     boot_cpuid_phys))
-+				fprintf(stderr, "Warning: Input tree has semantic errors\n");
-+		}
-+	}
- }
- 
- /*
-Index: dtc/dtc.c
-===================================================================
---- dtc.orig/dtc.c	2007-12-03 17:14:27.000000000 +1100
-+++ dtc/dtc.c	2007-12-03 17:14:39.000000000 +1100
-@@ -119,7 +119,6 @@ int main(int argc, char *argv[])
- 	FILE *outf = NULL;
- 	int outversion = DEFAULT_FDT_VERSION;
- 	int boot_cpuid_phys = 0xfeedbeef;
--	int structure_ok;
- 
- 	quiet      = 0;
- 	reservenum = 0;
-@@ -193,17 +192,7 @@ int main(int argc, char *argv[])
- 	if (! bi || ! bi->dt)
- 		die("Couldn't read input tree\n");
- 
--	process_checks(force, bi->dt);
--
--	if (check) {
--		if (!structure_ok) {
--			fprintf(stderr, "Warning: Skipping semantic checks due to structural errors\n");
--		} else {
--			if (!check_semantics(bi->dt, outversion,
--					     boot_cpuid_phys))
--				fprintf(stderr, "Warning: Input tree has semantic errors\n");
--		}
--	}
-+	process_checks(force, bi, check, outversion, boot_cpuid_phys);
- 
- 	if (streq(outname, "-")) {
- 		outf = stdout;
-Index: dtc/dtc.h
-===================================================================
---- dtc.orig/dtc.h	2007-12-03 17:15:04.000000000 +1100
-+++ dtc/dtc.h	2007-12-03 17:15:14.000000000 +1100
-@@ -236,8 +236,8 @@ struct boot_info *build_boot_info(struct
- 
- /* Checks */
- 
--void process_checks(int force, struct node *dt);
--int check_semantics(struct node *dt, int outversion, int boot_cpuid_phys);
-+void process_checks(int force, struct boot_info *bi,
-+		    int checkflag, int outversion, int boot_cpuid_phys);
- 
- /* Flattened trees */
- 
+> I agree that it's not something people will want to do very often,
+> but the same can be said about quite a lot of strange things that we
+> allow just because there's no fundamental reason why they cannot be.
+
+Hrm, yeah I guess, since this was a fairly simple fix.  I still don't
+think it's worth jumping through too many hoops to make this possible,
+though.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
