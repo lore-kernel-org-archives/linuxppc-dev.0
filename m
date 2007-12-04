@@ -1,18 +1,17 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B3B1FDDF13
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:36:57 +1100 (EST)
-Date: Tue, 4 Dec 2007 14:40:59 -0600
+	by ozlabs.org (Postfix) with ESMTP id 3E834DDED5
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 07:40:30 +1100 (EST)
+Date: Tue, 4 Dec 2007 14:44:32 -0600
 From: Olof Johansson <olof@lixom.net>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH v2 1/4] [libata] pata_platform: make probe and remove
-	functions device type neutral
-Message-ID: <20071204204059.GC8099@lixom.net>
+Subject: [PATCH] pata_of_platform: Move electra-ide support over to new
+	framework
+Message-ID: <20071204204432.GD8099@lixom.net>
 References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204170625.GA15599@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071204170625.GA15599@localhost.localdomain>
+In-Reply-To: <20071204170442.GA10460@localhost.localdomain>
 Cc: Jeff Garzik <jeff@garzik.org>, Arnd Bergmann <arnd@arndb.de>,
 	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
 	Paul Mundt <lethal@linux-sh.org>
@@ -25,19 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 08:06:25PM +0300, Anton Vorontsov wrote:
-> Split pata_platform_{probe,remove} into two pieces:
-> 1. pata_platform_{probe,remove} -- platform_device-dependant bits;
-> 2. __ptata_platform_{probe,remove} -- device type neutral bits.
-> 
-> This is done to not duplicate code for the OF-platform driver.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+[POWERPC] Move electra-ide support over to new pata_of_platform framework
 
-Acked-by: Olof Johansson <olof@lixom.net>
+Move electra-ide glue over to the new pata_of_platform framework, and
+add the quirks needed to that driver.
 
-Tested with both the old pata_platform and new pata_of_platform drivers on
-PA Semi Electra (see separate post with pata_of_platform cutover patch).
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+---
+
+I'll remove the electra-ide stuff from arch/powerpc/platforms/pasemi
+once this hits a common tree, since otherwise I'd be without IDE until
+they converge (i.e.  2.6.25 merge window).
 
 
 -Olof
+
+diff --git a/drivers/ata/pata_of_platform.c b/drivers/ata/pata_of_platform.c
+index 4daf118..3e9675a 100644
+--- a/drivers/ata/pata_of_platform.c
++++ b/drivers/ata/pata_of_platform.c
+@@ -34,11 +34,20 @@ static int __devinit pata_of_platform_probe(struct of_device *ofdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = of_address_to_resource(dn, 1, &ctl_res);
+-	if (ret) {
+-		dev_err(&ofdev->dev, "can't get CTL address from "
+-			"device tree\n");
+-		return -EINVAL;
++	if (of_device_is_compatible(dn, "electra-ide")) {
++		/* Altstatus is really at offset 0x3f6 from the primary window
++		 * on electra-ide. Adjust ctl_res and io_res accordingly.
++		 */
++		ctl_res = io_res;
++		ctl_res.start = ctl_res.start+0x3f6;
++		io_res.end = ctl_res.start-1;
++	} else {
++		ret = of_address_to_resource(dn, 1, &ctl_res);
++		if (ret) {
++			dev_err(&ofdev->dev, "can't get CTL address from "
++				"device tree\n");
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	ret = of_irq_to_resource(dn, 0, &irq_res);
+@@ -76,6 +85,7 @@ static int __devexit pata_of_platform_remove(struct of_device *ofdev)
+ 
+ static struct of_device_id pata_of_platform_match[] = {
+ 	{ .compatible = "ata-generic", },
++	{ .compatible = "electra-ide", },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, pata_of_platform_match);
