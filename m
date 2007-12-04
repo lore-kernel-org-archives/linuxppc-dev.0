@@ -1,21 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id B2DE5DDDFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:36:34 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 2/2] [POWERPC] Use new machine_xxx_initcall hooks in
-	platform code
-Date: Tue, 4 Dec 2007 20:35:59 +0100
-References: <20071202061028.21193.39309.stgit@trillian.secretlab.ca>
-	<fa686aa40712040536h18bd60d3xf89af1f89f6a92ad@mail.gmail.com>
-	<fa686aa40712040621r3103bae9hd900c23d48273360@mail.gmail.com>
-In-Reply-To: <fa686aa40712040621r3103bae9hd900c23d48273360@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712042036.00785.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, olof@lixom.net
+Return-Path: <avorontsov@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 22631DDF38
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 06:41:31 +1100 (EST)
+Date: Tue, 4 Dec 2007 22:45:31 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v2 3/4] [POWERPC] MPC8349E-mITX: introduce localbus and
+	pata nodes
+Message-ID: <20071204194531.GA1253@localhost.localdomain>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204170726.GC15599@localhost.localdomain>
+	<20071204191657.GB5758@lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf8
+In-Reply-To: <20071204191657.GB5758@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mundt <lethal@linux-sh.org>,
+	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
+	linux-ide@vger.kernel.org
+Reply-To: avorontsov@ru.mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +27,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 04 December 2007, Grant Likely wrote:
-> On 12/4/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> > On 12/4/07, Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> > > You seem to have missed the PS3 *_initcall()s.
-> > > Probably because they test for firmware_has_feature(FW_FEATURE_PS3_LV1) instead
-> > > of machine_is(ps3).
-> >
-> > That's exactly why; I didn't know if 'machine_is(ps3)' was a suitable
-> > substitute so I left it alone.
+On Tue, Dec 04, 2007 at 01:16:57PM -0600, Olof Johansson wrote:
+> Hi,
 > 
-> On that topic; I left some pseries and iseries stuff alone also for
-> the same reason.
+> On Tue, Dec 04, 2007 at 08:07:26PM +0300, Anton Vorontsov wrote:
+> > diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+> > index 5072f6d..c459b0a 100644
+[...]
+> > +static struct of_device_id mpc834x_itx_ids[] = {
+> > +	{ .name = "localbus", },
+> > +	{},
+> > +};
+> 
+> Please add the "compatible" field here (fsl,pq2pro-localbus should do
+> just fine), instead of the name.
 
-Yes, and in many cases it's the right answer to base a decision on a specific
-feature rather than a platform name, for two reasons:
+Done, thanks.
 
-1. If another platform gets added that uses the same firmware feature, it
-will automatically do the right thing.
+- - - -
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: [PATCH v2.1] [POWERPC] MPC8349E-mITX: introduce localbus and pata nodes
 
-2. The call to firmware_has_feature() turns into a compile-time check in
-many cases, so if the kernel does not contain support for any firmware
-with the given feature, all the code referenced it can get optimized
-away by the compiler.
+This patch adds localbus and pata nodes to use CF IDE interface
+on MPC8349E-mITX boards.
 
-If we have many cases where an initcall is done based on a specific fw-feature
-or cpu-feature, we might want to add a similar initcall mechanism for those
-along the lines of machine_xxx_initcall, but of course we should be sure
-not to overengineer things here.
+Patch also adds code to probe localbus.
 
-	Arnd <><
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |   18 +++++++++++++++++-
+ arch/powerpc/platforms/83xx/mpc834x_itx.c |   17 +++++++++++++++++
+ 2 files changed, 34 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 5072f6d..c459b0a 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -249,6 +249,22 @@
+ 		device_type = "pci";
+ 	};
+ 
++	localbus@e0005000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc8349emitx-localbus",
++			     "fsl,mpc8349e-localbus",
++			     "fsl,pq2pro-localbus";
++		reg = <e0005000 d8>;
++		ranges = <3 0 f0000000 210>;
+ 
+-
++		pata@3,0 {
++			compatible = "fsl,mpc8349emitx-pata", "ata-generic";
++			reg = <3 0 10 3 20c 4>;
++			reg-shift = <1>;
++			pio-mode = <6>;
++			interrupts = <17 8>;
++			interrupt-parent = <&ipic>;
++		};
++	};
+ };
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+index aa76819..4797850 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_itx.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+@@ -23,6 +23,7 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
++#include <linux/of_platform.h>
+ 
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+@@ -37,6 +38,22 @@
+ 
+ #include "mpc83xx.h"
+ 
++static struct of_device_id mpc834x_itx_ids[] = {
++	{ .compatible = "fsl,pq2pro-localbus", },
++	{},
++};
++
++static int __init mpc834x_itx_declare_of_platform_devices(void)
++{
++	if (!machine_is(mpc834x_itx))
++		return 0;
++
++	of_platform_bus_probe(NULL, mpc834x_itx_ids, NULL);
++
++	return 0;
++}
++device_initcall(mpc834x_itx_declare_of_platform_devices);
++
+ /* ************************************************************************
+  *
+  * Setup the architecture
+-- 
+1.5.2.2
