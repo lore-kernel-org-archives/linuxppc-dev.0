@@ -1,15 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-Message-ID: <18260.59921.473117.994246@cargo.ozlabs.ibm.com>
-Date: Tue, 4 Dec 2007 16:48:01 +1100
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id A0495DDE2A
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Dec 2007 16:51:44 +1100 (EST)
+Date: Tue, 4 Dec 2007 16:51:44 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Paul Mackerras <paulus@samba.org>, LinuxPPC-dev <linuxppc-dev@ozlabs.org>,
+	Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] Fix hardware IRQ time accounting problem.
+Message-ID: <20071204055144.GR24243@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] powermac: proper sleep management
-In-Reply-To: <1194981933.6695.17.camel@johannes.berg>
-References: <1194981933.6695.17.camel@johannes.berg>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-pm <linux-pm@lists.osdl.org>
+Content-Type: text/plain; charset=utf-8
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+	Frederik Himpe <fhimpe@telenet.be>, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
+The commit fa13a5a1f25f671d084d8884be96fc48d9b68275 (sched: restore
+deterministic CPU accounting on powerpc), unconditionally calls
+update_process_tick() in system context.  In the deterministic accounting case
+this is the correct thing to do.  However, in the non-deterministic accounting
+case we need to not do this, and results in the time accounted as hardware irq
+time being artificially elevated.
 
-> +		printk(KERN_INFO
-> +		       "via-pmu: the PMU_IOC_SLEEP ioctl is deprecated.\n");
-> +		printk(KERN_INFO "via-pmu: use \"echo mem >"
-> +		       " /sys/power/state\"  instead!\n");
-> +		printk(KERN_INFO
-> +		       "via-pmu: this ioctl will be removed soon.\n");
+Also this patch collapses 2 consecutive '#ifdef CONFIG_VIRT_CPU_ACCOUNTING'
+checks in time.h into one for neatness.
 
-I don't like this.  I would rather keep the ioctls indefinitely and
-not make any noise about programs using them.  The ioctls are part of
-the kernel/user ABI, and thus need to be preserved, especially since
-it only takes about 6 or 7 lines of code to implement them.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+The problem was seen and reported by Johannes Berg  and Frederik Himpe.
+Paul, I think this is good for 2.6.24.
 
-Paul.
+Changes since v1:
+ - I noticed that the #define was explictly using "current" rather than
+   the task passed in.  Using tsk is the right thing to do.
+ - The whiteapce changes dirty-up the patch and are un-needed with the
+   change above.
+
+ arch/powerpc/kernel/process.c |    2 +-
+ include/asm-powerpc/time.h    |    8 ++------
+ 2 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 41e13f4..b9d8837 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -350,7 +350,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	local_irq_save(flags);
+ 
+ 	account_system_vtime(current);
+-	account_process_tick(current, 0);
++	account_process_vtime(current);
+ 	calculate_steal_time();
+ 
+ 	last = _switch(old_thread, new_thread);
+diff --git a/include/asm-powerpc/time.h b/include/asm-powerpc/time.h
+index 780f826..a7281e0 100644
+--- a/include/asm-powerpc/time.h
++++ b/include/asm-powerpc/time.h
+@@ -237,18 +237,14 @@ struct cpu_usage {
+ 
+ DECLARE_PER_CPU(struct cpu_usage, cpu_usage_array);
+ 
+-#ifdef CONFIG_VIRT_CPU_ACCOUNTING
+-extern void account_process_vtime(struct task_struct *tsk);
+-#else
+-#define account_process_vtime(tsk)		do { } while (0)
+-#endif
+-
+ #if defined(CONFIG_VIRT_CPU_ACCOUNTING)
+ extern void calculate_steal_time(void);
+ extern void snapshot_timebases(void);
++#define account_process_vtime(tsk)		account_process_tick(tsk, 0);
+ #else
+ #define calculate_steal_time()			do { } while (0)
+ #define snapshot_timebases()			do { } while (0)
++#define account_process_vtime(tsk)		do { } while (0)
+ #endif
+ 
+ extern void secondary_cpu_time_init(void);
+-- 
+1.5.3.6
