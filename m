@@ -1,18 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 989BEDDE11
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:11:13 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/3] cell: fix undefined reference to mmio_nvram_init
-Date: Tue, 4 Dec 2007 14:10:42 +0100
-References: <20071204.173453.-1300514021.kouish@swc.toshiba.co.jp>
-In-Reply-To: <20071204.173453.-1300514021.kouish@swc.toshiba.co.jp>
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B4CACDDE23
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 00:13:55 +1100 (EST)
+Date: Tue, 4 Dec 2007 07:13:59 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Add IPIC MSI interrupt support
+Message-ID: <20071204131359.GA5784@loki.buserror.net>
+References: <1196394519.29683.8.camel@Guyver>
+	<1196654521.13554.32.camel@concordia>
+	<1196672870.14353.21.camel@Guyver>
+	<1196746689.20158.4.camel@concordia>
+	<995B09A8299C2C44B59866F6391D2635D75588@zch01exm21.fsl.freescale.net>
+	<1196769858.32524.8.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712041410.43736.arnd@arndb.de>
-Cc: paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196769858.32524.8.camel@concordia>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+	Gala Kumar <kumar.gala@freescale.com>, Li Tony <Tony.Li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 04 December 2007, Ishizaki Kou wrote:
->=20
-> +#ifdef CONFIG_MMIO_NVRAM
-> =A0=A0=A0=A0=A0=A0=A0=A0mmio_nvram_init();
-> +#endif
-> =A0}
+On Tue, Dec 04, 2007 at 11:04:18PM +1100, Michael Ellerman wrote:
+> On Tue, 2007-12-04 at 18:34 +0800, Li Tony wrote:
+> > I am not very sure about spin_lock influence.
+> > But maybe somebody will change the virq_to_hw implementation.
+> > I will take virq_to_hw instead. 
+> 
+> I mean the time to take the function call should be pretty small
+> compared to taking and releasing a spinlock - but if you have
+> performance numbers to prove otherwise let me know :)
 
-The patch is technically correct, but the preferred way of doing this is
-to define a conditional inline function in the header, like:
+I don't think the IPIC is used on any SMP platforms at the moment, so
+there's no spinlock overhead other than disabling interrupts...
 
-#ifdef CONFIG_MMIO_NVRAM
-extern int mmio_nvram_init(void);
-#else
-static inline int mmio_nvram_init(void)
-{
-	return 0;
-}
-#endif
+That said, it's not worth reimplementing to avoid a function call.
 
-so that the caller does not need to know about it.
-
-	Arnd <><
+-Scott
