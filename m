@@ -1,17 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 5 Dec 2007 15:21:26 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 7/11] ibm_newemac: Skip EMACs that are marked unused by
-	the firmware
-Message-ID: <20071205042126.GE12855@localhost.localdomain>
-References: <20071205001539.97730DE091@ozlabs.org>
-	<20071205035345.GA12855@localhost.localdomain>
-	<1196828329.13230.356.camel@pasglop>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 464E1DDF37
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 15:33:27 +1100 (EST)
+Date: Tue, 4 Dec 2007 22:37:32 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: Merge dtc
+Message-ID: <20071205043732.GA16104@lixom.net>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<1196733544.13978.201.camel@pmac.infradead.org>
+	<18261.53985.700234.923526@cargo.ozlabs.ibm.com>
+	<20071204163409.6d03c7a5@zod.rchland.ibm.com>
+	<18262.2934.447856.686438@cargo.ozlabs.ibm.com>
+	<20071204202625.05367103@zod.rchland.ibm.com>
+	<20071204220012.1b91c27c@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196828329.13230.356.camel@pasglop>
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+In-Reply-To: <20071204220012.1b91c27c@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,19 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 05, 2007 at 03:18:49PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Wed, 2007-12-05 at 14:53 +1100, David Gibson wrote:
-> > It occurred to me the other day.  Instead of using a new "unused"
-> > property for this, should we be using the OF standard "status"
-> > property.
-> 
-> Dunno... it's really not wired. Probably not even clocked.
+On Tue, Dec 04, 2007 at 10:00:12PM -0600, Josh Boyer wrote:
 
-status = "fail-notconnected"; ?
+> So if mkimage is going to be put in-kernel, I'd rather it be in a more
+> generic place.  Arguably, dtc should go there as well seeing as how
+> microblaze could probably use it too.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Well, kconfig is in scripts/ in spite of not being a script. Maybe
+dtc and mkimage should go there too?
+
+
+-Olof
