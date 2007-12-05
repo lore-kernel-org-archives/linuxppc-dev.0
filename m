@@ -1,19 +1,29 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20071205093054.GA23229@kroah.com>
-References: <20071205093054.GA23229@kroah.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-CRFWAJjNy6+pDpjK21d4"
-Date: Wed, 05 Dec 2007 22:10:31 +1100
-Message-Id: <1196853031.6759.7.camel@concordia>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9B4DCDDDF4
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 23:11:49 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1IzslO-0005mc-Ml
+	for linuxppc-dev@ozlabs.org; Wed, 05 Dec 2007 11:50:02 +0000
+Received: from artipc9.vub.ac.be ([134.184.26.59])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 05 Dec 2007 11:50:02 +0000
+Received: from fhimpe by artipc9.vub.ac.be with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Wed, 05 Dec 2007 11:50:02 +0000
+To: linuxppc-dev@ozlabs.org
+From: Frederik Himpe <fhimpe@telenet.be>
+Subject: Re: [PATCH v2] Fix hardware IRQ time accounting problem.
+Date: Wed, 5 Dec 2007 11:39:25 +0000 (UTC)
+Message-ID: <fj62ld$6eo$1@ger.gmane.org>
+References: <20071204055144.GR24243@bakeyournoodle.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, "Kyle A. Lucke" <klucke@us.ibm.com>,
-	paulus@samba.org, linux-kernel@vger.kernel.org,
-	David Gibson <dwg@au1.ibm.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=UTF-8
+Sender: news <news@ger.gmane.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,54 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 04 Dec 2007 16:51:44 +1100, Tony Breeds wrote:
 
---=-CRFWAJjNy6+pDpjK21d4
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> The commit fa13a5a1f25f671d084d8884be96fc48d9b68275 (sched: restore
+> deterministic CPU accounting on powerpc), unconditionally calls
+> update_process_tick() in system context.  In the deterministic
+> accounting case this is the correct thing to do.  However, in the
+> non-deterministic accounting case we need to not do this, and results in
+> the time accounted as hardware irq time being artificially elevated.
+> 
+> Also this patch collapses 2 consecutive '#ifdef
+> CONFIG_VIRT_CPU_ACCOUNTING' checks in time.h into one for neatness.
 
-On Wed, 2007-12-05 at 01:30 -0800, Greg KH wrote:
-> In doing a massive kobject cleanup of the kernel tree, I ran across the
-> iseries_veth.c driver.
->=20
-> It looks like the driver is creating a number of subdirectories under
-> the driver sysfs directory.  This is odd and probably wrong.  You want
-> these virtual connections to show up in the main sysfs device tree, not
-> under the driver directory.
->=20
-> I'll be glad to totally guess and try to move it around in the sysfs
-> tree, but odds are I'll get it all wrong as I can't really test this
-> out :)
->=20
-> Any hints on what this driver is trying to do in this sysfs directories?
+I can confirm this patch fixed the problem for me. Thank you!
 
-I wrote the code, I think, but it's been a while - I'll have a look at
-it tomorrow.
-
-Why is it "odd and probably wrong" to create subdirectories under the
-driver in sysfs?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-CRFWAJjNy6+pDpjK21d4
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHVocndSjSd0sB4dIRAjaYAJ9OZhuAhxI2vbdF1hIiRajoCY/rjgCfTS/s
-vJPPnnU8o3gnnvUnEBpmyCU=
-=3mbJ
------END PGP SIGNATURE-----
-
---=-CRFWAJjNy6+pDpjK21d4--
+-- 
+Frederik Himpe
