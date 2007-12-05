@@ -1,19 +1,17 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98F42DDF69
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 12:09:42 +1100 (EST)
-Date: Wed, 5 Dec 2007 04:09:27 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: John Tyner <jtyner@cs.ucr.edu>
-Subject: Re: [PATCH] Fix 8xx compile errors
-Message-ID: <20071205040927.4fa4e28f@kernel.crashing.org>
-In-Reply-To: <20071203205837.GA22557@cs.ucr.edu>
-References: <20071203205837.GA22557@cs.ucr.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18261.64094.20273.969051@cargo.ozlabs.ibm.com>
+Date: Wed, 5 Dec 2007 12:09:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Merge dtc
+In-Reply-To: <1196807633.13978.383.camel@pmac.infradead.org>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<1196733544.13978.201.camel@pmac.infradead.org>
+	<18261.53985.700234.923526@cargo.ozlabs.ibm.com>
+	<1196807633.13978.383.camel@pmac.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 3 Dec 2007 12:58:38 -0800
-John Tyner wrote:
+David Woodhouse writes:
 
-> Building for 8xx fails to compile due to errors in a couple of
-> places. The first is due to the casting of an lvalue (if I remember
-> correctly), and the second was due to the cpmp variable being
-> declared static even though the headers previously defined it as
-> extern. The following patch corrects these errors. The patch is
-> against 2.4 since that's what I'm working with. (I've been unable to
-> get 2.6 to run properly on my hardware so far.)
-> 
-> Please CC me on any responses since I'm not subscribed.
-> 
-You don't need these quirks with 2.6 and arch/powerpc... It does not use 8xx_io
-and arch/powerpc/boot/* having a bit different meaning.
+> Make vmlinux the default target instead of zImage would seem like a
+> better answer. I'm surprised that it isn't like that already, in fact --
+> and I'm only inferring that it isn't from your message. I always thought
+> that if I typed 'make' I got the vmlinux and not a zImage.
 
-What is your platform btw? Adding something to 8xx camp should not be huge effort with powerpc... 
+You're obviously an old-timer. :)  Plain "make" has made the zImage
+since at least 2002 in 32-bit and since January 2004 in 64-bit.
 
--- 
-Sincerely, Vitaly
+The alternative to including dtc is to include compiled versions of
+all the .dts files.  The difficulty with that is that .dtb files are
+binary blobs which can't be updated with a patch.  The shipped
+versions could possibly be shipped as .S versions, or I (and everyone
+else who has a tree that I pull from) could have something in my/their
+patch-applying scripts that updates the .dtbs if necessary, but in
+both cases things could get out of sync for one reason or another
+without it being obvious.
+
+In contrast, if the version of dtc in the kernel tree gets out of
+date, it will become obvious pretty quickly because compiles will
+start failing.  And anyway, the kernel dtc only needs to be recent
+enough to compile the .dts files in the kernel tree.
+
+Paul.
