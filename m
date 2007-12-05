@@ -1,21 +1,15 @@
-Return-Path: <avorontsov@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id B7978DDE4A
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 02:33:33 +1100 (EST)
-Date: Wed, 5 Dec 2007 18:37:27 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH v2 1/4] [libata] pata_platform: make probe and remove
-	functions device type neutral
-Message-ID: <20071205153727.GA27896@localhost.localdomain>
-References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204170625.GA15599@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-In-Reply-To: <20071204170625.GA15599@localhost.localdomain>
-Cc: Olof Johansson <olof@lixom.net>, Paul Mundt <lethal@linux-sh.org>,
-	Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>
-Reply-To: avorontsov@ru.mvista.com
+Return-Path: <timur@freescale.com>
+Message-ID: <4756DAA4.7070702@freescale.com>
+Date: Wed, 05 Dec 2007 11:06:44 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>, PowerPC dev list <Linuxppc-dev@ozlabs.org>
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712042313.58252.arnd@arndb.de> <4755D5C7.5050307@freescale.com>
+	<200712050037.11489.arnd@arndb.de>
+In-Reply-To: <200712050037.11489.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 08:06:25PM +0300, Anton Vorontsov wrote:
-> Split pata_platform_{probe,remove} into two pieces:
-> 1. pata_platform_{probe,remove} -- platform_device-dependant bits;
-> 2. __ptata_platform_{probe,remove} -- device type neutral bits.
-> 
-> This is done to not duplicate code for the OF-platform driver.
+Arnd Bergmann wrote:
 
-Paul, do you have any objections regarding that one?
+> In that case, I think the right solution would be to have different properties
+> in the device tree, depending on whether or not you have a soft-uart and whether
+> you need to download the microcode.
+> Having only a compile time option is very bad because it prevents you from
+> using the driver on a multi-platform kernel.
 
-If there is no objections, could you stamp Acked-by on it?
-Thus I can resend this set one more time for the merge, w/o
-fourth patch.
+I can see putting the option to need Soft-UART in the device, because this is an 
+attribute of the hardware.  The silicon is broken and UART functionality is 
+provided via a secondary mechanism.
 
->  /**
-> - *	pata_platform_probe		-	attach a platform interface
-> - *	@pdev: platform device
-> + *	__pata_platform_probe		-	attach a platform interface
-> + *	@dev: device
-> + *	@io_res: Resource representing I/O base
-> + *	@ctl_res: Resource representing CTL base
-> + *	@irq_res: Resource representing IRQ and its flags
-> + *	@ioport_shift: I/O port shift
-  + *	@__pio_mask: PIO mask
+I'm not so crazy about an option to tell the driver to upload the firmware.  So 
+look at this:
 
-^^^ added
+		ucc@2400 {
+			device_type = "serial";
+			compatible = "ucc_uart";
+			model = "UCC";
+			device-id = <5>;	/* The UCC number, 1-7*/
+			port-number = <0>;	/* Which ttyQEx device */
+			soft-uart;		/* We need Soft-UART */
+			upload-firmware;	/* Driver should upload FW */
+			...
 
-Thanks,
+In a sense, this is just a message from U-Boot to the driver.  It's not really 
+an attribute of the hardware.
+
+One thing I could do is create a new node under the QE node that describes any 
+uploaded microcode.  The nature of the QE microcode is that only one can be 
+present at any time.  So I could do this:
+
+	qe@e0100000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		device_type = "qe";
+		model = "QE";
+		ranges = <0 e0100000 00100000>;
+		...
+
+		microcode@100 {	/* 100 is offset within I-RAM where the microcode was uploaded */
+			name = "Soft-UART";
+			extended_modes = <0 0>;
+			vtraps = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
+		}
+
+The extended_modes and vtraps are data that the driver needs any way (for 
+Soft-UART, it's all zeros, but not for other microcodes).  I currently don't 
+have a way to pass this information from U-Boot to the kernel.  The driver could 
+then look for this node, and if it finds it, it would know *not* to try to 
+upload the microcode itself.  And it would also have the extended_modes and 
+vtraps information that it might need.
+
+This would solve your problem and mine.
+
+> gcc tries to use only aligned accesses, depending on the the target CPU, so
+> you may end up accessing a member as bytes instead of words.
+
+Would it do that even if the member were naturally aligned?  I find that hard to 
+believe, since the compiler always knows the alignment of its members.
+
+  OTOH, if this
+> structure is always in __iomem and you use in_be32() and the like, there is
+> no problem at all.
+
+I do.  I generally only pack structures that are defined by external hardware, 
+and this is one.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+Timur Tabi
+Linux kernel developer at Freescale
