@@ -1,31 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A442CDDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 09:46:59 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB5Mkurk027445
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 17:46:56 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB5MkuXY452030
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 17:46:56 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB5MktV1000402
-	for <linuxppc-dev@ozlabs.org>; Wed, 5 Dec 2007 17:46:56 -0500
-Date: Wed, 5 Dec 2007 16:44:08 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: dtc: RFC: Fix some lexical problems with references
-Message-ID: <20071205164408.53745866@zod.rchland.ibm.com>
-In-Reply-To: <20071205163409.77fba42b@zod.rchland.ibm.com>
-References: <20071122061007.GA22888@localhost.localdomain>
-	<20071205163409.77fba42b@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 73663DDD0A
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 10:32:01 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
+Date: Thu, 6 Dec 2007 00:31:42 +0100
+References: <11968944871776-git-send-email-timur@freescale.com>
+In-Reply-To: <11968944871776-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712060031.43171.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,59 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 5 Dec 2007 16:34:09 -0600
-Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+On Wednesday 05 December 2007, Timur Tabi wrote:
+> Define the layout of a binary blob that contains a QE firmware and instru=
+ctions
+> on how to upload it. =A0Add function qe_upload_firmware() to parse the bl=
+ob
+> and perform the actual upload. =A0Fully define 'struct rsp' in immap_qe.h=
+ to
+> include the actual RISC Special Registers.
+>=20
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 
-> On Thu, 22 Nov 2007 17:10:07 +1100
-> David Gibson <david@gibson.dropbear.id.au> wrote:
-> 
-> > The recent change to the lexer to only recognize property and node
-> > names in the appropriate context removed a number of lexical warts in
-> > our language that would have gotten ugly as we add expression support
-> > and so forth.
-> > 
-> > But there's one nasty one remaining: references can contain a full
-> > path, including the various problematic node name characters (',', '+'
-> > and '-', for example).  This would cause trouble with expressions, and
-> > it also causes trouble with the patch I'm working on to allow
-> > expanding references to paths rather than phandles.  This patch
-> > therefore reworks the lexer to mitigate these problems.
-> > 
-> > 	- References to labels cause no problems.  These are now
-> > recognized separately from references to full paths.  No syntax change
-> > here.
-> > 
-> > 	- References to full paths, including problematic characters
-> > are allowed by "quoting" the path with braces
-> > e.g. &{/pci@10000/somedevice@3,8000}.  The braces protect any internal
-> > problematic characters from being confused with operators or whatever.
-> > 
-> > 	- For compatibility with existing dts files, in v0 dts files
-> > we allow bare references to paths as before &/foo/bar/whatever - but
-> > *only* if the path contains no troublesome characters.  Specifically
-> > only [a-zA-Z0-9_@/] are allowed.
-> > 
-> > This is an incompatible change to the dts-v1 format, but since AFAIK
-> > no-one has yet switched to dts-v1 files, I think we can get away with
-> > it.  Better to make the transition when people to convert to v1, and
-> > get rid of the problematic old syntax.
-> > 
-> > Strictly speaking, it's also an incompatible change to the v0 format,
-> > since some path references that were allowed before are no longer
-> > allowed.  I suspect no-one has been using the no-longer-supported
-> > forms (certainly none of the kernel dts files will cause trouble).  We
-> > might need to think about this harder, though.
-> > 
-> > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> 
-> So this breaks some of the in-kernel DTS files.  Example, bamboo.dts on
-> line 19 produces:
-> 
-> bamboo.dts: 19 syntax error
-> FATAL ERROR: Couldn't read input tree
-> 
-> I tried quoting the path with {} but that didn't seem to work.
+The code looks entirely fine to me, but after looking at it, it occurred to
+me that you may want to think about having support for autoloading
+the firmware based on a property in the device tree. For the spidernet
+driver on the Cell blade, we first also did an implementation that called
+request_firmware to load the microcode into the spider chip, but we later
+added a property (24kb long in our case) that simply contained the whole
+blob in the the device tree.
+This made it _much_ easier to support things like NFS root and distribution
+installers and avoided all licensing problems because the blob can now
+be shipped with the board instead of as part of the GPL software.
 
-Nevermind, the quoting worked.
+Of course, that approach does not help you if the blob is not GPL compatible
+and you are relying on the dts file to be linked into the kernel, but it
+may be good if your driver supports it anyway so you can pass it down from
+the system boot loader to the kernel. In your driver, it's just a few lines
+of extra code and you can of course still leave the request_firmware call
+in place for other scenarios.
 
-josh
+	Arnd <><
