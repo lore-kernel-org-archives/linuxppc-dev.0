@@ -1,21 +1,19 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 86CAADDFDB
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 11:05:48 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so928630anc
-	for <linuxppc-dev@ozlabs.org>; Tue, 04 Dec 2007 16:05:23 -0800 (PST)
-Message-ID: <fa686aa40712041605g642f1f73p59bb945ecacf6324@mail.gmail.com>
-Date: Tue, 4 Dec 2007 17:05:23 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "Stephen Neuendorffer" <stephen.neuendorffer@xilinx.com>
-Subject: Re: [PATCH] [XILINX][HWICAP] Xilinx Internal Configuration Access
-	Port device driver.
-In-Reply-To: <20071204235725.61AD6A08071@mail81-dub.bigfish.com>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 4 Dec 2007 17:07:53 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/7] powerpc: Replace ppc_md.power_off with pm_power_off
+Message-ID: <20071205000752.GE18063@mag.az.mvista.com>
+References: <20071204053736.GA27862@mag.az.mvista.com>
+	<20071204054821.GF27862@mag.az.mvista.com>
+	<1196752989.13230.265.camel@pasglop>
+	<20071204180148.GA1579@mag.az.mvista.com>
+	<1196798152.13230.308.camel@pasglop>
+	<fa686aa40712041205o39ba4e3epcbc008ea47bd83cc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20071204235725.61AD6A08071@mail81-dub.bigfish.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <fa686aa40712041205o39ba4e3epcbc008ea47bd83cc@mail.gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12/4/07, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com> wrote:
-> Supports static platform_device and static device tree configuration.
-> This is a standalone driver that does not depend on EDK generated
-> files.  However, it is also somewhat different in functionality from
-> the standard EDK driver.
->
-> 1) The EDK driver doesn't support readback, which this driver does.
-> 2) The EDK driver supports fine granularity reading and writing, which
-> this driver does not.  The fine granularity support is heavily
-> architecture independent, which makes it difficult to make the driver
-> forward compatible.  The fine granularity support is also complex and
-> probably better handled in user space anyway.
->
-> Signed-off-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-> ---
->
-> Grant,
->
-> No comments last time... It would be nice if this merged with 2.6.25, I think.
+On Tue, Dec 04, 2007 at 01:05:46PM -0700, Grant Likely wrote:
+> On 12/4/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > On Tue, 2007-12-04 at 11:01 -0700, Mark A. Greer wrote:
+> > > On Tue, Dec 04, 2007 at 06:23:09PM +1100, Benjamin Herrenschmidt wrote:
+> > > >
+> > > > On Mon, 2007-12-03 at 22:48 -0700, Mark A. Greer wrote:
+> > > > > From: Mark A. Greer <mgreer@mvista.com>
+> > > > >
+> > > > > The ppc_md.power_off hook performs the same function that the
+> > > > > pm_power_off hook is supposed to.  However, it is powerpc-specific
+> > > > > and prevents kernel drivers (e.g., IPMI) from changing how a platform
+> > > > > is powered off.  So, get rid of ppc_md.power_off and replace it with
+> > > > > pm_power_off.
+> > > >
+> > > > I'm less happy with that one... probably aesthetics :-)
+> > > >
+> > > > Can't we just have the generic code call pm_power_off and ppc_md and
+> > > > which ever powers the machine off wins ?
+> > >
+> > > Yes, that would be easy to do.  Seems like duplication though.
+> > > If you are sure you're okay with the duplication, I'll do that.
+> >
+> > Let's ask Paulus what he thinks.
+> 
+> We could simply have the setup code copy the ppc_md.power_off pointer
+> into pm_power_off; that we retain the nice assignment in
+> define_machine(), but eliminate the duplicated calls.
 
-Sorry Steve, I must have missed it.  I'll review and comment.
+Hmm, yeah, that would look nice--nicer than what I have.  The only
+issue I have with it is that we still have duplication and potential
+for reassigning the wrong one (e.g., reassigning ppc_md.power_off instead
+of pm_power_off in maple/setup.c:maple_use_rtas_reboot_and_halt_if_present()).
 
-Cheers,
-g.
+We could call both in machine_power_off but that's messy too (IMHO).
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Paul, do you have an opinion?
+
+Mark
