@@ -1,18 +1,22 @@
-Return-Path: <jcd@tribudubois.net>
-Received: from smtp4-g19.free.fr (smtp4-g19.free.fr [212.27.42.30])
-	by ozlabs.org (Postfix) with ESMTP id 7944EDDE9C
+Return-Path: <scottwood@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DDBE2DDE01
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Dec 2007 04:07:38 +1100 (EST)
-From: Jean-Christophe Dubois <jcd@tribudubois.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel symbol version history
-Date: Wed, 5 Dec 2007 18:07:35 +0100
-References: <4756CF15.2090805@dlasys.net>
-In-Reply-To: <4756CF15.2090805@dlasys.net>
+	Thu,  6 Dec 2007 04:46:16 +1100 (EST)
+Message-ID: <4756E3E8.8090102@freescale.com>
+Date: Wed, 05 Dec 2007 11:46:16 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200712051807.36357.jcd@tribudubois.net>
+To: michael.firth@bt.com
+Subject: Re: Maximum ioremap size for ppc arch?
+References: <36D7B34A3A79F84F82FA0C154F299F2506080F6F@E03MVX1-UKDY.domain1.systemhost.net>
+In-Reply-To: <36D7B34A3A79F84F82FA0C154F299F2506080F6F@E03MVX1-UKDY.domain1.systemhost.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+michael.firth@bt.com wrote:
+> My main queries are: 1) Why did changing the kernel base address to
+> 0x80000000 make the system unstable?
 
-You could try the various "linux cross reference" web site out there. It is 
-not necessarily complete (some linux version might be missing)  but it can be 
-usefull to lookup if some symbols/define/typedef were available in a 
-particular Linux version.
+Because there's a bug somewhere. :-)
 
-Have a look there.
+> 2) Currently IMMRBAR has the same physical and virtual address. Does 
+> this need to be the case?
 
-http://free-electrons.com/community/kernel/lxr
+No, and it is not done that way in arch/powerpc.
 
-Regards
+> 3) Why the kernel is designed to run at 0xc0000000?
 
-JC
+My guess is because it's a number that Linus pulled out of thin air back
+when a gig of RAM was unimaginably large. :-P
 
-On Wednesday 05 December 2007 17:17:25 David H. Lynch Jr. wrote:
->     This might be slightly OT here, but would anyone know where there
-> might be a reference that indicates at precisely what version a given
-> symbol either appeared or disappeared within the  Linux kernel ?
->
->      As an example if a driver is supposed to work for 2.6 and 2.4 and
-> uses sysfs, or cdev, or alloc_chr_dev_region or ...
->     How can one tell at what point that api or symbol appeared so that
-> the proper conditionals appear within the driver.
->
->     The last one that bit me was I made a collection of casting changes
-> to address 64bit vs. 32bit targets, and found that using the C99 fixed
-> size types - uint32_t, ... made life much more pleasant, after putting
-> them I nobody else could build because uintptr_t did not appear until
-> 2.6.24, and I still have not figured out exactly when uint32_t etc.
-> appeared.
->
->     I would think there ought to be some resource besides group memory
-> to look this up ?
->     Is there a way to use git to look back through the history of a
-> symbol rather than a file.
+> This seems to leave only 1GB of addressing space for all the
+> physically addressable memory (RAM + ioremapped + registers), while
+> reserving 3GB of space for user processes. The 3GB is presumably
+> mostly unusable on a system without a large amount of swap, as the
+> 1GB limit on memory will prevent much more than that being available
+> for user space.
+
+Well, it's also useful for sparse mappings, but I agree that the 3/1 
+split is probably suboptimal for most workloads.
+
+-Scott
