@@ -1,22 +1,16 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E3ED0DE077
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 12:23:14 +1100 (EST)
-Date: Wed, 5 Dec 2007 04:22:58 +0300
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
-	layer functionality
-Message-ID: <20071205042258.486f5738@kernel.crashing.org>
-In-Reply-To: <4755B395.6070104@garzik.org>
-References: <20071126142906.19642.45540.stgit@localhost.localdomain>
-	<4755B395.6070104@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org
+Return-Path: <timur@freescale.com>
+Message-ID: <4755FEA0.1050005@freescale.com>
+Date: Tue, 04 Dec 2007 19:28:00 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Fix Firmware class name collision
+References: <4755E6AC.9020808@freescale.com> <4755E835.6070704@freescale.com>
+In-Reply-To: <4755E835.6070704@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Greg Kroah-Hartman <gregkh@suse.de>,
+	Markus Rechberger <markus.rechberger@amd.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 04 Dec 2007 15:07:49 -0500
-Jeff Garzik wrote:
+Scott Wood wrote:
 
-> Vitaly Bordug wrote:
-> > With that patch fixed.c now fully emulates MDIO bus, thus no need
-> > to duplicate PHY layer functionality. That, in turn, drastically
-> > simplifies the code, and drops down line count.
-> > 
-> > As an additional bonus, now there is no need to register MDIO bus
-> > for each PHY, all emulated PHYs placed on the platform fixed MDIO
-> > bus. There is also no more need to pre-allocate PHYs via .config
-> > option, this is all now handled dynamically.
-> > 
-> > p.s. Don't even try to understand patch content! Better: apply patch
-> > and look into resulting drivers/net/phy/fixed.c.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-> 
-> ACK, I presume this will go via the ppc tree?
-> 
+> The physical address certainly is useful when you have more than one 
+> device of the same name.
 
-Yes, I'll add your ack in next respin and will ask Paul to consider it,
-if you don't mind.
+What I meant was that the physical address isn't helpful by itself.
+
+> So then you'd get "firmware-ucc.e01024".  What if there's another ucc at 
+>  e0102480?  For devices with longer names, you'd have even less 
+> precision in the address.
+
+Maybe we need to consider a more sophisticated algorithm, one that guarantees 
+that the device name in its entirety is preserved?  Either that, or replace 
+the physical address with something shorter, like the offset to the root node 
+only?  That way, ucc.e0102400 because just ucc.2400.
 
 -- 
-Sincerely, Vitaly
+Timur Tabi
+Linux Kernel Developer @ Freescale
