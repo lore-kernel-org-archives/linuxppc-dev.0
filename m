@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 838DCDDF49
+Return-Path: <bounces@nabble.com>
+Received: from kuber.nabble.com (kuber.nabble.com [216.139.236.158])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 95655DDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Dec 2007 04:50:33 +1100 (EST)
-Message-ID: <4756E4F0.8050906@freescale.com>
-Date: Wed, 05 Dec 2007 11:50:40 -0600
-From: Scott Wood <scottwood@freescale.com>
+	Thu,  6 Dec 2007 05:00:32 +1100 (EST)
+Received: from isper.nabble.com ([192.168.236.156])
+	by kuber.nabble.com with esmtp (Exim 4.63)
+	(envelope-from <bounces@nabble.com>) id 1IzyXt-000573-CD
+	for linuxppc-embedded@ozlabs.org; Wed, 05 Dec 2007 10:00:29 -0800
+Message-ID: <14177109.post@talk.nabble.com>
+Date: Wed, 5 Dec 2007 10:00:29 -0800 (PST)
+From: khollan <khollan@daktronics.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Uboot and ML410
 MIME-Version: 1.0
-To: michael.firth@bt.com
-Subject: Re: Maximum ioremap size for ppc arch?
-References: <36D7B34A3A79F84F82FA0C154F299F2506080F6F@E03MVX1-UKDY.domain1.systemhost.net>
-	<4756E3E8.8090102@freescale.com>
-In-Reply-To: <4756E3E8.8090102@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,18 +26,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> michael.firth@bt.com wrote:
->> This seems to leave only 1GB of addressing space for all the
->> physically addressable memory (RAM + ioremapped + registers), while
->> reserving 3GB of space for user processes. The 3GB is presumably
->> mostly unusable on a system without a large amount of swap, as the
->> 1GB limit on memory will prevent much more than that being available
->> for user space.
-> 
-> Well, it's also useful for sparse mappings, but I agree that the 3/1 
-> split is probably suboptimal for most workloads.
 
-Oh, and the 3G user is also useful for accessing highmem, of course.
+Hi 
 
--Scott
+Is there a patch to include support for the ml410 in the Main git tree of
+u-boot?  I tried compiling Xilinx's tree but it seems it won't compile
+correctly with my version of make (3.81).  Also is there any support for the
+Hard TEMAC in u-boot?  I tried looking for both of these questions but a lot
+of the threads were unanswered questions.  Thanks for your help
+
+kholland
+-- 
+View this message in context: http://www.nabble.com/Uboot-and-ML410-tf4951335.html#a14177109
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
