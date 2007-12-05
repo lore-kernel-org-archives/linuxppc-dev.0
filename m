@@ -2,18 +2,21 @@ Return-Path: <vitb@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0EBE3DDE19
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 12:11:20 +1100 (EST)
-Date: Wed, 5 Dec 2007 04:11:11 +0300
+	by ozlabs.org (Postfix) with ESMTP id E3ED0DE077
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 12:23:14 +1100 (EST)
+Date: Wed, 5 Dec 2007 04:22:58 +0300
 From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: John Tyner <jtyner@cs.ucr.edu>
-Subject: Re: [PATCH] Make QSpan PCI work
-Message-ID: <20071205041111.4c1f466f@kernel.crashing.org>
-In-Reply-To: <20071203210500.GB22557@cs.ucr.edu>
-References: <20071203210500.GB22557@cs.ucr.edu>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 1/3] [NET] phy/fixed.c: rework to not duplicate PHY
+	layer functionality
+Message-ID: <20071205042258.486f5738@kernel.crashing.org>
+In-Reply-To: <4755B395.6070104@garzik.org>
+References: <20071126142906.19642.45540.stgit@localhost.localdomain>
+	<4755B395.6070104@garzik.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 3 Dec 2007 13:05:00 -0800
-John Tyner wrote:
+On Tue, 04 Dec 2007 15:07:49 -0500
+Jeff Garzik wrote:
 
-> The following patch makes the QSpan PCI code compile and work on my 
-> hardware. The patch is against 2.4, but I'm hoping it will still be
-> viewed as useful since the code currently does not even compile (2.6
-> is the same). I had to make a change to move the PCI setup later in
-> the m8xx_setup code as well because the kernel would crash during the 
-> pcibios_alloc_controller because the bootmem stuff had not come up
-> yet.
+> Vitaly Bordug wrote:
+> > With that patch fixed.c now fully emulates MDIO bus, thus no need
+> > to duplicate PHY layer functionality. That, in turn, drastically
+> > simplifies the code, and drops down line count.
+> > 
+> > As an additional bonus, now there is no need to register MDIO bus
+> > for each PHY, all emulated PHYs placed on the platform fixed MDIO
+> > bus. There is also no more need to pre-allocate PHYs via .config
+> > option, this is all now handled dynamically.
+> > 
+> > p.s. Don't even try to understand patch content! Better: apply patch
+> > and look into resulting drivers/net/phy/fixed.c.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 > 
-This looks interesting, but again would make a lot of sense for powerpc and 2.6.
-Is that possible to have your patches rebased against 2.6, arch/ppc at least?
+> ACK, I presume this will go via the ppc tree?
+> 
+
+Yes, I'll add your ack in next respin and will ask Paul to consider it,
+if you don't mind.
 
 -- 
 Sincerely, Vitaly
