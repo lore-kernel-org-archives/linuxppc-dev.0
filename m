@@ -2,8 +2,9 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Wed, 05 Dec 2007 11:53:00 +1100
-Subject: [RFC/PATCH 0/6] powerpc: 32 bits PCI updates
-Message-Id: <1196815980.72143.899704305870.qpush@grosgo>
+Subject: [RFC/PATCH 1/6] powerpc: pci32: remove bogus alignment message
+In-Reply-To: <1196815980.72143.899704305870.qpush@grosgo>
+Message-Id: <20071205005410.0007BDDF93@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,24 +14,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This serie of patches converts the 32 bits PCI code to use the generic
-pci_assign_unassigned_resources() instead of its own assignment code
-which was unable to deal with unassigned PCI<->PCI bridges among
-other issues.
+There's a stale & bogus piece of code in 32 bits PCI code that
+complains about ISA related alignment issues. Just remove it.
 
-We also add flags to control the behaviour of the PCI code, such as
-letting some platforms force a full re-assignment (similar to what
-pci-auto used to provide in arch/ppc) and remove a whole bunch of
-hackish code that is made obsolete by that change.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-This also brings us one step closer to a merge of the PCI code with
-ppc64 as we are now in a shape where most of that resource management
-code will be able to move to pci-common.c and be used by 64 bits.
+ arch/powerpc/kernel/pci_32.c |    6 ------
+ 1 file changed, 6 deletions(-)
 
-32 bits platforms with 64 bits resources support will also need my
-separate patch to fix the generic setup-bus.c for that situation.
-
-Note that the patch that updates 4xx platforms to enable full resource
-assignments applied on top of my 4xx series for which I'll post a new
-version soon. You can apply the other ones and ignore this one if you
-want to test on some other platform without the other patch serie.
+Index: linux-work/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-12-04 16:59:57.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-12-04 16:59:57.000000000 +1100
+@@ -199,12 +199,6 @@ void pcibios_align_resource(void *data, 
+ 	if (res->flags & IORESOURCE_IO) {
+ 		resource_size_t start = res->start;
+ 
+-		if (size > 0x100) {
+-			printk(KERN_ERR "PCI: I/O Region %s/%d too large"
+-			       " (%lld bytes)\n", pci_name(dev),
+-			       dev->resource - res, (unsigned long long)size);
+-		}
+-
+ 		if (start & 0x300) {
+ 			start = (start + 0x3ff) & ~0x3ff;
+ 			res->start = start;
