@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 69411DE0E5
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 13:37:42 +1100 (EST)
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <20071204060911.EA82BDDE19@ozlabs.org>
-References: <20071204060911.EA82BDDE19@ozlabs.org>
-Content-Type: text/plain
-Date: Wed, 05 Dec 2007 13:37:03 +1100
-Message-Id: <1196822223.13230.344.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 918A4DDF48
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 14:22:52 +1100 (EST)
+Date: Tue, 4 Dec 2007 21:26:57 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH v2 2/4] [libata] pata_of_platform: OF-Platform PATA
+	device driver
+Message-ID: <20071205032657.GB13906@lixom.net>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204170719.GB15599@localhost.localdomain>
+	<20071204184826.GA5758@lixom.net>
+	<20071204194921.GB1253@localhost.localdomain>
+	<20071204200121.GA6782@lixom.net>
+	<20071205004841.GA25905@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071205004841.GA25905@linux-sh.org>
+Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Tue, 2007-12-04 at 17:08 +1100, Benjamin Herrenschmidt wrote:
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
+On Wed, Dec 05, 2007 at 09:48:41AM +0900, Paul Mundt wrote:
+> On Tue, Dec 04, 2007 at 02:01:21PM -0600, Olof Johansson wrote:
+> > On Tue, Dec 04, 2007 at 10:49:21PM +0300, Anton Vorontsov wrote:
+> > >  	tristate "Generic platform device PATA support"
+> > > -	depends on EMBEDDED || ARCH_RPC
+> > > +	depends on EMBEDDED || ARCH_PPC
+> > 
+> > It needs to be || PPC, not || ARCH_PPC.
+> > 
+> Wrong. It needs to be EMBEDDED || ARCH_RPC || PPC.
 > 
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
-> 
-> This is a pre-requisite for making powerpc use the generic code instead of
-> its own half-useful implementation.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ARCH_RPC is not a typo, it's an ARM platform. Please grep first :-)
 
-Drop it for now, stupid warnings without 64 bits resources... I'll fix
-that.
+I'm sorry, but seeing ARCH_RPC and not having an arch/rpc made me
+suspect it being a typo. It surprises me that the ARM guys chose such
+a generic prefix as ARCH_ for their specific platforms.  (powerpc uses
+PPC_<platform>).
 
-Ben.
+Anyway, thanks for catching it.
+
+
+-Olof
