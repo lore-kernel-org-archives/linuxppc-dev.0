@@ -1,22 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D330DDE0F
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 10:37:28 +1100 (EST)
-Message-ID: <4757362F.7040404@freescale.com>
-Date: Wed, 05 Dec 2007 17:37:19 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B1E34DDE21
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 10:38:48 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/7] Set archdata.dma_data for direct DMA in
+	cell_dma_dev_setup()
+Date: Thu, 6 Dec 2007 00:38:37 +0100
+References: <ac4252cfbaa0c1a3534443007417dfc43b597eb5.1196839256.git.michael@ellerman.id.au>
+In-Reply-To: <ac4252cfbaa0c1a3534443007417dfc43b597eb5.1196839256.git.michael@ellerman.id.au>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
-References: <11968944871776-git-send-email-timur@freescale.com>
-	<200712060031.43171.arnd@arndb.de>
-In-Reply-To: <200712060031.43171.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712060038.38469.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +22,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+On Wednesday 05 December 2007, Michael Ellerman wrote:
+> Store a pointer to the direct_dma_offset in each device's dma_data
+> in the case where we're using the direct DMA ops.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-> Of course, that approach does not help you if the blob is not GPL compatible
-> and you are relying on the dts file to be linked into the kernel, 
-
-Well, the blobs will never be GPL compatible, which is why I created the 
-firmware binary format.  Previously, the firmware was shipped as header files 
-with code like this:
-
-#define MPC8323_R1_0_UC_PATCH   \
-{   \
-	  0xb3ff0006   \
-	, 0xffffffff   \
-	, 0xb3ff0009   \
-	, 0xffffffff   \
-	, 0xb3ff000c   \
-	, 0xffffffff   \
-
-and so on.
-
-To address the issue of loading the firmware before the kernel boots, I have 
-ported qe_upload_firmware() to U-Boot, and provided a command-line command for 
-uploading a firmware at an address in flash.  The blob can be placed in flash, 
-and then a boot script will load it.  The U-Boot version of qe_upload_firmware() 
-will also create the 'firmware' node in the device tree.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Acked-by: Arnd Bergmann <arnd@arndb.de>
