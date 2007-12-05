@@ -1,18 +1,27 @@
-Return-Path: <michael.firth@bt.com>
-Received: from smtp4.smtp.bt.com (smtp4.smtp.bt.com [217.32.164.151])
-	by ozlabs.org (Postfix) with ESMTP id 2FE07DDE16
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id D9C88DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Dec 2007 20:50:20 +1100 (EST)
+	Wed,  5 Dec 2007 21:27:35 +1100 (EST)
+Message-ID: <47567D1C.5020908@anagramm.de>
+Date: Wed, 05 Dec 2007 11:27:40 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Maximum ioremap size for ppc arch?
-Date: Wed, 5 Dec 2007 09:50:16 -0000
-Message-ID: <36D7B34A3A79F84F82FA0C154F299F2506080F6F@E03MVX1-UKDY.domain1.systemhost.net>
-In-Reply-To: <20071203153009.GA30746@gate.crashing.org>
-From: <michael.firth@bt.com>
-To: <mporter@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
+References: <474FEE20.6070606@anagramm.de>
+	<20071130122055.729dd3f8@i1501.lan.towertech.it>
+	<47541D70.2040805@anagramm.de> <47542A50.1030208@anagramm.de>
+	<47543351.2080904@freescale.com> <47543FAD.7040504@anagramm.de>
+	<475445DF.6080202@freescale.com> <47545A81.90804@anagramm.de>
+	<20071203204652.GB4850@loki.buserror.net>
+	<47553D31.4080306@anagramm.de>
+	<20071204130841.GA5765@loki.buserror.net>
+	<4755731D.4050106@anagramm.de> <47557B6B.9020105@freescale.com>
+In-Reply-To: <47557B6B.9020105@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,93 +32,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Matt Porter [mailto:mporter@kernel.crashing.org]=20
-> Sent: 03 December 2007 15:30
-> To: Firth,MJC,Michael,DMM R
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Maximum ioremap size for ppc arch?
->=20
-> On Mon, Dec 03, 2007 at 09:22:06AM -0000, michael.firth@bt.com wrote:
-> > I'm trying to get am MPC834x system running that has=20
-> 256MBytes of NOR=20
-> > flash connected.
-> >=20
-> > The physmap flash driver is failing to ioremap() that=20
-> amount of space,=20
-> > while on a similar system with 128Mbytes of flash, there are no=20
-> > problems.
-> >=20
-> > Is this a known limitation of ioremap() on the ppc architecture, or=20
-> > specifically the MPC834x family, and is there any=20
-> (hopefully easy) way=20
-> > to increase this limit?
->=20
-> The answer is "it depends". It depends on the amount of=20
-> system memory you have. By default, your system memory is=20
-> mapped at 0xc0000000, leaving not enough space for vmalloc=20
-> allocations to grab 256MB for the ioremap (and avoid the=20
-> fixed virtual mapping in the high virtual address area).
->=20
-> See the "Advanced setup" menu. Normally, you can set "Set=20
-> custom kernel base address" to 0xa0000000 safely. That will=20
-> give you an additional 256MB of vmalloc space. On=20
-> arch/powerpc, you'll also have to set "Size of user task=20
-> space" to 0x80000000 or 0xa0000000.
->=20
-> -Matt
->=20
+Hi, Scott!
 
-I've solved my problem for now, but I'm not sure I'm that happy that
-it's a scalable solution.
+ >> Well, the subject is about RTCs.
+ >
+ > Not really, it's about a change in the i2c subsystem (I noticed you
+ > didn't include the i2c list or linuxppc-dev... you'd get a larger
+ > audience of the people that actually made the change that way).  That it
+ > happens to be an RTC chip you're using on the i2c bus is an
+ > inconsequential detail.
 
-I tried moving the kernel base address to 0x80000000, but the system
-became very unstable - in particular, though it detected the flash
-partitions, as soon as I tried to write to them the system spontaneously
-rebooted - not even a kernel panic, just a straight reboot.
+Looks like I wasn't subscribed to the list anymore, so I
+missed lots of DT related discussions - my bad. :-(
 
-As I'm using arch/ppc, it seems that the default user task space is
-0x80000000 which shouldn't have conflicted with this.
+ >> Well... let's take it easy. I'll dig into the pcf8563 code now.
+ >
+ > BTW, there were patches posted recently by Jon Smirl to convert that
+ > driver to new-style, and to change the i2c subsystem to have the OF
+ > matches in the driver itself.
 
-It seemed that the bottom of the vmalloc space is defined as 'start of
-kernel + amount of physical RAM', which in the case of our board becomes
-'0xc0000000 + 0x10000000', as there is 256MB of RAM present. The top of
-vmalloc space was being limited by the CPU registers, mapped by IMMRBAR.
-This was configured to 0xe0000000, which left only 256MB of vmalloc
-space.
+That looks promising. I really didn't expect to find rtc driver names
+in fsl_soc.c...
 
-I've got things working by moving IMMRBAR up to 0xeff00000, which gives
-nearly 256MB more vmalloc space.
-
-My main queries are:
-1) Why did changing the kernel base address to 0x80000000 make the
-system unstable? Would 0xa0000000 as suggested not have caused this
-problem?
-2) Currently IMMRBAR has the same physical and virtual address. Does
-this need to be the case? If this is a restriction, it seems to mean
-that the top 256MB of the virtual address space becomes unusable.
-3) Why the kernel is designed to run at 0xc0000000? This seems to leave
-only 1GB of addressing space for all the physically addressable memory
-(RAM + ioremapped + registers), while reserving 3GB of space for user
-processes. The 3GB is presumably mostly unusable on a system without a
-large amount of swap, as the 1GB limit on memory will prevent much more
-than that being available for user space.
-
-Thanks for the assistance so far, the pointer to the definition of
-VMALLOC_START and VMALLOC_END gave me the hook in I needed to work out
-where the limitation was coming from. I would suggest that its also
-worth changing at the error message that's generated when the vmalloc
-space is exhausted:
-
-"allocation failed: out of vmalloc space - use vmalloc=3D<size> to
-increase size."
-
->From my understanding of the code so far, it seems that the 'vmalloc'
-command line option is only available on the x86 architecture.
-
-What is the process for getting a concensus on this, and getting the
-message changed?
-
-Thanks again
-
-Michael
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
