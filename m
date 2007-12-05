@@ -1,26 +1,21 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 56109DDE0A
+Return-Path: <dhlii@dlasys.net>
+Received: from mx.dlasys.net (24.152.192.123.res-cmts.eph.ptd.net
+	[24.152.192.123]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0F2F5DDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Dec 2007 21:30:04 +1100 (EST)
-Message-ID: <47567DB3.8030304@anagramm.de>
-Date: Wed, 05 Dec 2007 11:30:11 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+	Thu,  6 Dec 2007 03:20:42 +1100 (EST)
+Received: from [206.223.20.150] (helo=hp-dhlii.dlasys.net)
+	by mx.dlasys.net with esmtp (Exim 4.67 #1 (Debian))
+	id 1Izwqv-0004o7-SF
+	for <linuxppc-embedded@ozlabs.org>; Wed, 05 Dec 2007 11:12:01 -0500
+Message-ID: <4756CF15.2090805@dlasys.net>
+Date: Wed, 05 Dec 2007 11:17:25 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: OT: Re: solved: Re: [rtc-linux] Re: DS1337 RTC on I2C broken.
-References: <474FEE20.6070606@anagramm.de> <47542A50.1030208@anagramm.de>	
-	<47543351.2080904@freescale.com> <47543FAD.7040504@anagramm.de>	
-	<475445DF.6080202@freescale.com> <47545A81.90804@anagramm.de>	
-	<20071203204652.GB4850@loki.buserror.net>	
-	<47553D31.4080306@anagramm.de>	
-	<20071204130841.GA5765@loki.buserror.net>	
-	<4755731D.4050106@anagramm.de>
-	<9e4733910712040919v6208c5a3o1afd456c86a37589@mail.gmail.com>
-In-Reply-To: <9e4733910712040919v6208c5a3o1afd456c86a37589@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Kernel symbol version history
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,40 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jon Smirl schrieb:
-> On 12/4/07, Clemens Koller <clemens.koller@anagramm.de> wrote:
->> That was discussed already in detail in several threads and there
->> were already decisions made that the DT went into the kernel - no problem
->> with that.
->> I just don't see that it 'really does help' in it's current state if
->> things are broken in a way they are hard to fix for non DT-familiar
->> developers, almost impossible to fix for users which just need to
->> compile their own kernel to achieve their project goal.
->>
->> Well... let's take it easy. I'll dig into the pcf8563 code now.
-> 
-> Most of this is addressed in the patch series starting with this message:
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-December/047382.html
-> 
-> The pcf8563 driver is converted to the new format and is modified to
-> pick up it's address from the device tree.
-> 
-> This patch series is being held waiting for an ok on the low level
-> changes to the i2c subsystem. Hopefully it will go into 2.6.25
+    This might be slightly OT here, but would anyone know where there
+might be a reference that indicates at precisely what version a given
+symbol either appeared or disappeared within the  Linux kernel ?
 
-Thanks Jon, thanks Scott for the pointers, this works for me.
-(Patches have some whitespace damage, you propably want to run
-it thru checkpatch.pl before pushing upstream.)
+     As an example if a driver is supposed to work for 2.6 and 2.4 and
+uses sysfs, or cdev, or alloc_chr_dev_region or ...
+    How can one tell at what point that api or symbol appeared so that
+the proper conditionals appear within the driver.
 
-Regards,
+    The last one that bit me was I made a collection of casting changes
+to address 64bit vs. 32bit targets, and found that using the C99 fixed
+size types - uint32_t, ... made life much more pleasant, after putting
+them I nobody else could build because uintptr_t did not appear until
+2.6.24, and I still have not figured out exactly when uint32_t etc.
+appeared.
+
+    I would think there ought to be some resource besides group memory
+to look this up ?
+    Is there a way to use git to look back through the history of a
+symbol rather than a file.
+
+
+
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
