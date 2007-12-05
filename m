@@ -1,24 +1,36 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 918A4DDF48
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 14:22:52 +1100 (EST)
-Date: Tue, 4 Dec 2007 21:26:57 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH v2 2/4] [libata] pata_of_platform: OF-Platform PATA
-	device driver
-Message-ID: <20071205032657.GB13906@lixom.net>
-References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204170719.GB15599@localhost.localdomain>
-	<20071204184826.GA5758@lixom.net>
-	<20071204194921.GB1253@localhost.localdomain>
-	<20071204200121.GA6782@lixom.net>
-	<20071205004841.GA25905@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071205004841.GA25905@linux-sh.org>
-Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 203F8DE0D3
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 15:02:45 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB542gqI023531
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 23:02:42 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB542gGK138820
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 23:02:42 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB542fUm026797
+	for <linuxppc-dev@ozlabs.org>; Tue, 4 Dec 2007 23:02:42 -0500
+Date: Tue, 4 Dec 2007 22:00:12 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Merge dtc
+Message-ID: <20071204220012.1b91c27c@zod.rchland.ibm.com>
+In-Reply-To: <20071204202625.05367103@zod.rchland.ibm.com>
+References: <20071016050217.GA9052@localhost.localdomain>
+	<1196733544.13978.201.camel@pmac.infradead.org>
+	<18261.53985.700234.923526@cargo.ozlabs.ibm.com>
+	<20071204163409.6d03c7a5@zod.rchland.ibm.com>
+	<18262.2934.447856.686438@cargo.ozlabs.ibm.com>
+	<20071204202625.05367103@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 05, 2007 at 09:48:41AM +0900, Paul Mundt wrote:
-> On Tue, Dec 04, 2007 at 02:01:21PM -0600, Olof Johansson wrote:
-> > On Tue, Dec 04, 2007 at 10:49:21PM +0300, Anton Vorontsov wrote:
-> > >  	tristate "Generic platform device PATA support"
-> > > -	depends on EMBEDDED || ARCH_RPC
-> > > +	depends on EMBEDDED || ARCH_PPC
-> > 
-> > It needs to be || PPC, not || ARCH_PPC.
-> > 
-> Wrong. It needs to be EMBEDDED || ARCH_RPC || PPC.
+On Tue, 4 Dec 2007 20:26:25 -0600
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
+
+> On Wed, 5 Dec 2007 13:22:46 +1100
+> Paul Mackerras <paulus@samba.org> wrote:
 > 
-> ARCH_RPC is not a typo, it's an ARM platform. Please grep first :-)
+> > Josh Boyer writes:
+> > 
+> > > Using that same reasoning, should we merge a mkimage patch for the
+> > > boards that use U-Boot?
+> > 
+> > I think so.  It's fairly small and it would mean that people could
+> > cross-compile all the defconfigs easily.
+> 
+> I'll try to work up a patch tonight.
 
-I'm sorry, but seeing ARCH_RPC and not having an arch/rpc made me
-suspect it being a typo. It surprises me that the ARM guys chose such
-a generic prefix as ARCH_ for their specific platforms.  (powerpc uses
-PPC_<platform>).
+OK so it won't be tonight.
 
-Anyway, thanks for catching it.
+The problem we have with mkimage, unlike DTC at the moment, is that it
+_is_ used on other architectures.  There's already a mkuboot.sh script,
+which calls mkimage, in scripts/ right now.  Adding mkimage to
+arch/powerpc only seems pretty wrong.
 
+So if mkimage is going to be put in-kernel, I'd rather it be in a more
+generic place.  Arguably, dtc should go there as well seeing as how
+microblaze could probably use it too.
 
--Olof
+josh
