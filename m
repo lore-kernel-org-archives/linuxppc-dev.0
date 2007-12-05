@@ -1,22 +1,18 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.245])
-	by ozlabs.org (Postfix) with ESMTP id 43893DDDF0
+Return-Path: <jcd@tribudubois.net>
+Received: from smtp4-g19.free.fr (smtp4-g19.free.fr [212.27.42.30])
+	by ozlabs.org (Postfix) with ESMTP id 7944EDDE9C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Dec 2007 03:49:36 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id c37so1017279anc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 05 Dec 2007 08:49:35 -0800 (PST)
-Message-ID: <fa686aa40712050849j2da48e9eq3e46b20bc1d72b45@mail.gmail.com>
-Date: Wed, 5 Dec 2007 09:49:35 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@secretlab.ca
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Thu,  6 Dec 2007 04:07:38 +1100 (EST)
+From: Jean-Christophe Dubois <jcd@tribudubois.net>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: Kernel symbol version history
+Date: Wed, 5 Dec 2007 18:07:35 +0100
+References: <4756CF15.2090805@dlasys.net>
 In-Reply-To: <4756CF15.2090805@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4756CF15.2090805@dlasys.net>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712051807.36357.jcd@tribudubois.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,7 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 12/5/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+Hi David,
+
+You could try the various "linux cross reference" web site out there. It is 
+not necessarily complete (some linux version might be missing)  but it can be 
+usefull to lookup if some symbols/define/typedef were available in a 
+particular Linux version.
+
+Have a look there.
+
+http://free-electrons.com/community/kernel/lxr
+
+Regards
+
+JC
+
+On Wednesday 05 December 2007 17:17:25 David H. Lynch Jr. wrote:
 >     This might be slightly OT here, but would anyone know where there
 > might be a reference that indicates at precisely what version a given
 > symbol either appeared or disappeared within the  Linux kernel ?
@@ -36,10 +47,6 @@ On 12/5/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
 > uses sysfs, or cdev, or alloc_chr_dev_region or ...
 >     How can one tell at what point that api or symbol appeared so that
 > the proper conditionals appear within the driver.
-
-the 'gitk' tool allows you to search for the addition or removal of a
-string.  You
-
 >
 >     The last one that bit me was I made a collection of casting changes
 > to address 64bit vs. 32bit targets, and found that using the C99 fixed
@@ -52,37 +59,3 @@ string.  You
 > to look this up ?
 >     Is there a way to use git to look back through the history of a
 > symbol rather than a file.
-
-grant@trillian:~/hacking/linux-2.6$ grep "uint32_t" include/* -r | grep typedef
-include/linux/types.h:typedef           __u32           uint32_t;
-grant@trillian:~/hacking/linux-2.6$ git log -p include/linux/types.h | vim -
-(Search for the string uint32_t)
-
-Looks like it was there before Linus started using git.
-
-
->
->
->
-> --
-> Dave Lynch                                                  DLA Systems
-> Software Development:                                    Embedded Linux
-> 717.627.3770           dhlii@dlasys.net           http://www.dlasys.net
-> fax: 1.253.369.9244                                Cell: 1.717.587.7774
-> Over 25 years' experience in platforms, languages, and technologies too numerous to list.
->
-> "Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-> Albert Einstein
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
