@@ -1,22 +1,21 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from mx.gate01.com (pip10.gyao.ne.jp [61.122.117.248])
+Return-Path: <vitb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33F37DE0B6
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 11:57:08 +1100 (EST)
-Date: Wed, 5 Dec 2007 09:56:43 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [PATCH v2 4/4] [libata] pata_platform: s/ioport_shift/reg_shift/g
-Message-ID: <20071205005643.GA28860@linux-sh.org>
-References: <20071204170442.GA10460@localhost.localdomain>
-	<20071204170745.GD15599@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071204170745.GD15599@localhost.localdomain>
-Cc: Jeff Garzik <jeff@garzik.org>, Arnd Bergmann <arnd@arndb.de>,
-	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Olof Johansson <olof@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id B8A7FDE086
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 11:59:56 +1100 (EST)
+Date: Wed, 5 Dec 2007 03:59:35 +0300
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
+Message-ID: <20071205035935.75088890@kernel.crashing.org>
+In-Reply-To: <200712050056.40543.arnd@arndb.de>
+References: <11967907173600-git-send-email-timur@freescale.com>
+	<200712050026.07616.arnd@arndb.de> <4755E701.3040908@freescale.com>
+	<200712050056.40543.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 04, 2007 at 08:07:45PM +0300, Anton Vorontsov wrote:
-> This patch renames ioport_shift member of pata_platform_info
-> structure to reg_shift. Users of pata_platform are followed
-> appropriately.
-> 
-> Rationale of that change is: shifting applies to the whole memory
-> mapped region, not only to the command block of the ATA registers,
-> despite the fact that shifting is meaningless for ctl register.
-> 
-It's called ioport_shift because of the fact it shifts an ioport, namely
-a struct ata_ioport *. We could rename it, but I really don't see the
-point. If you don't like the choice of name on your platform, add a
-comment to your platform-specific code noting this particular outrage so
-it can be grepped for by future generations ;-)
+On Wed, 5 Dec 2007 00:56:39 +0100
+Arnd Bergmann wrote:
 
-Nacked-by: Paul Mundt <lethal@linux-sh.org>
+> On Wednesday 05 December 2007, Timur Tabi wrote:
+> > Arnd Bergmann wrote:
+> >=20
+> > > You can argue that the QS is really a DMA device, but in that
+> > > case you should convert the driver to use the DMA mapping
+> > > interfaces correctly, which I would consider overkill.
+> >=20
+> > I'm confused. =C2=A0I'm already calling dma_alloc_coherent() and getting
+> > a dma_addr_t back. =C2=A0Why do I need to use mapping functions to
+> > convert between virtual and physical/bus addresses?
+>=20
+> No, I'm sorry but I'm the one who was confused. The problem I saw was
+> that you return something offset from "bd_phys" as a dma_addr_t. This
+> would be a lot easier if you had called it bd_bus or bd_dma instead
+> of bd_phys, but your code looks absolutely correct upon closer
+> inspection.
+>=20
+Adding my 2 cents, we already have very similar thing in cpm_uart driver...
+
+> 	Arnd <><
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+--=20
+Sincerely, Vitaly
