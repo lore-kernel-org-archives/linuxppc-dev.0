@@ -1,15 +1,19 @@
-Return-Path: <timur@freescale.com>
-Message-ID: <4756DAA4.7070702@freescale.com>
-Date: Wed, 05 Dec 2007 11:06:44 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <CFester@iphase.com>
+Received: from exmail.interphase.iphase.com (h126.iphase.com [157.175.3.126])
+	by ozlabs.org (Postfix) with ESMTP id C2571DDE9B
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 04:21:28 +1100 (EST)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>, PowerPC dev list <Linuxppc-dev@ozlabs.org>
-Subject: Re: ucc_uart: add support for Freescale QUICCEngine UART
-References: <11967907173600-git-send-email-timur@freescale.com>
-	<200712042313.58252.arnd@arndb.de> <4755D5C7.5050307@freescale.com>
-	<200712050037.11489.arnd@arndb.de>
-In-Reply-To: <200712050037.11489.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C83761.9760D900"
+Subject: Re: Regarding MPC8641D
+Date: Wed, 5 Dec 2007 11:06:56 -0600
+Message-ID: <1196874416.32356.3.camel@kaboom.lisle.iphase.com>
+In-Reply-To: <14166848.post@talk.nabble.com>
+References: <14166848.post@talk.nabble.com>
+From: "Christopher Fester" <CFester@iphase.com>
+To: "sivaji" <rameshmrm@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Christopher Fester <cfester@iphase.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,74 +23,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+This is a multi-part message in MIME format.
 
-> In that case, I think the right solution would be to have different properties
-> in the device tree, depending on whether or not you have a soft-uart and whether
-> you need to download the microcode.
-> Having only a compile time option is very bad because it prevents you from
-> using the driver on a multi-platform kernel.
+------_=_NextPart_001_01C83761.9760D900
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I can see putting the option to need Soft-UART in the device, because this is an 
-attribute of the hardware.  The silicon is broken and UART functionality is 
-provided via a secondary mechanism.
+On Tue, 2007-12-04 at 23:51 -0800, sivaji wrote:
+>             We have designed  a MPC8641D based AMC card. We are using =
+the
+> kernel (2.6.23-rc4) and uboot (1.2.0).  When we disable the core1 Low =
+Memory
+> offset mode the kernel was up and when we enable this core1 Low Memory
+> offset mode kernel was not up, It was hang after MPIC initialization.
+[snip!]
+>                      After this the kernel was hang, i want to know =
+why
+> kernel was hang when we enalbe Low memory Offset mode. Please help me =
+to fix
+> this issue.
 
-I'm not so crazy about an option to tell the driver to upload the firmware.  So 
-look at this:
+Have you compiled your kernel for SMP mode?  I believe the Low memory
+offset mode is only for AMP mode (vxworks can use this, probably other
+OSes).  I don't know if the kernel has support for any multiprocessing
+mode other than SMP.
 
-		ucc@2400 {
-			device_type = "serial";
-			compatible = "ucc_uart";
-			model = "UCC";
-			device-id = <5>;	/* The UCC number, 1-7*/
-			port-number = <0>;	/* Which ttyQEx device */
-			soft-uart;		/* We need Soft-UART */
-			upload-firmware;	/* Driver should upload FW */
-			...
+Hope that helps,
+Chris
 
-In a sense, this is just a message from U-Boot to the driver.  It's not really 
-an attribute of the hardware.
+------_=_NextPart_001_01C83761.9760D900
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-One thing I could do is create a new node under the QE node that describes any 
-uploaded microcode.  The nature of the QE microcode is that only one can be 
-present at any time.  So I could do this:
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7652.24">
+<TITLE>Re: Regarding MPC8641D</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
 
-	qe@e0100000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		device_type = "qe";
-		model = "QE";
-		ranges = <0 e0100000 00100000>;
-		...
+<P><FONT SIZE=3D2>On Tue, 2007-12-04 at 23:51 -0800, sivaji wrote:<BR>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; We have designed&nbsp; a MPC8641D based AMC card. We are using =
+the<BR>
+&gt; kernel (2.6.23-rc4) and uboot (1.2.0).&nbsp; When we disable the =
+core1 Low Memory<BR>
+&gt; offset mode the kernel was up and when we enable this core1 Low =
+Memory<BR>
+&gt; offset mode kernel was not up, It was hang after MPIC =
+initialization.<BR>
+[snip!]<BR>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; After this the =
+kernel was hang, i want to know why<BR>
+&gt; kernel was hang when we enalbe Low memory Offset mode. Please help =
+me to fix<BR>
+&gt; this issue.<BR>
+<BR>
+Have you compiled your kernel for SMP mode?&nbsp; I believe the Low =
+memory<BR>
+offset mode is only for AMP mode (vxworks can use this, probably =
+other<BR>
+OSes).&nbsp; I don't know if the kernel has support for any =
+multiprocessing<BR>
+mode other than SMP.<BR>
+<BR>
+Hope that helps,<BR>
+Chris<BR>
+</FONT>
+</P>
 
-		microcode@100 {	/* 100 is offset within I-RAM where the microcode was uploaded */
-			name = "Soft-UART";
-			extended_modes = <0 0>;
-			vtraps = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
-		}
-
-The extended_modes and vtraps are data that the driver needs any way (for 
-Soft-UART, it's all zeros, but not for other microcodes).  I currently don't 
-have a way to pass this information from U-Boot to the kernel.  The driver could 
-then look for this node, and if it finds it, it would know *not* to try to 
-upload the microcode itself.  And it would also have the extended_modes and 
-vtraps information that it might need.
-
-This would solve your problem and mine.
-
-> gcc tries to use only aligned accesses, depending on the the target CPU, so
-> you may end up accessing a member as bytes instead of words.
-
-Would it do that even if the member were naturally aligned?  I find that hard to 
-believe, since the compiler always knows the alignment of its members.
-
-  OTOH, if this
-> structure is always in __iomem and you use in_be32() and the like, there is
-> no problem at all.
-
-I do.  I generally only pack structures that are defined by external hardware, 
-and this is one.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+</BODY>
+</HTML>
+------_=_NextPart_001_01C83761.9760D900--
