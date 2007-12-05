@@ -1,17 +1,12 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09C8ADDEBD
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 01:47:08 +1100 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [FDT][PATCH] Fix padding options 
-In-Reply-To: Your message of "Tue, 04 Dec 2007 17:36:08 CST."
-	<Pine.LNX.4.64.0712041734580.1979@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0712041734580.1979@blarg.am.freescale.net> 
-Date: Wed, 05 Dec 2007 08:47:05 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: dtc: Implement path references 
+In-Reply-To: Your message of "Wed, 05 Dec 2007 10:43:50 +1100."
+	<20071204234350.GE9487@localhost.localdomain>
+References: <20071204234350.GE9487@localhost.localdomain> 
+Date: Wed, 05 Dec 2007 08:47:42 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1IzvWj-0005c2-5c@jdl.com>
+Message-Id: <E1IzvXK-0005cJ-O8@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,11 +17,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Kumar Gala mumbled:
-> "Add an option to pad the blob that is generated" broke the padding
-> support.  We were updating the fdt header after writing it.
+So, like, the other day David Gibson mumbled:
+> This patch extends dtc syntax to allow references (&label, or
+> &{/full/path}) directly within property definitions, rather than
+> inside a cell list.  Such references are expanded to the full path of
+> the referenced node, as a string, instead of to a phandle as
+> references within cell lists are evaluated.
 > 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> A testcase is also included.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Excellent.  Very timely! :-)
 
 Applied.
 
