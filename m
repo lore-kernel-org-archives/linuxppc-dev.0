@@ -1,17 +1,22 @@
-Return-Path: <SRS0+7b6c58ac77c6cabb7cfb+1564+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Subject: Re: Merge dtc
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1196807633.13978.383.camel@pmac.infradead.org>
-References: <20071016050217.GA9052@localhost.localdomain>
-	<1196733544.13978.201.camel@pmac.infradead.org>
-	<18261.53985.700234.923526@cargo.ozlabs.ibm.com>
-	<1196807633.13978.383.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Wed, 05 Dec 2007 00:54:38 +0000
-Message-Id: <1196816078.13978.411.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <lethal@linux-sh.org>
+Received: from mx.gate01.com (pip10.gyao.ne.jp [61.122.117.248])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 33F37DE0B6
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2007 11:57:08 +1100 (EST)
+Date: Wed, 5 Dec 2007 09:56:43 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [PATCH v2 4/4] [libata] pata_platform: s/ioport_shift/reg_shift/g
+Message-ID: <20071205005643.GA28860@linux-sh.org>
+References: <20071204170442.GA10460@localhost.localdomain>
+	<20071204170745.GD15599@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071204170745.GD15599@localhost.localdomain>
+Cc: Jeff Garzik <jeff@garzik.org>, Arnd Bergmann <arnd@arndb.de>,
+	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Olof Johansson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Dec 04, 2007 at 08:07:45PM +0300, Anton Vorontsov wrote:
+> This patch renames ioport_shift member of pata_platform_info
+> structure to reg_shift. Users of pata_platform are followed
+> appropriately.
+> 
+> Rationale of that change is: shifting applies to the whole memory
+> mapped region, not only to the command block of the ATA registers,
+> despite the fact that shifting is meaningless for ctl register.
+> 
+It's called ioport_shift because of the fact it shifts an ioport, namely
+a struct ata_ioport *. We could rename it, but I really don't see the
+point. If you don't like the choice of name on your platform, add a
+comment to your platform-specific code noting this particular outrage so
+it can be grepped for by future generations ;-)
 
-On Tue, 2007-12-04 at 22:33 +0000, David Woodhouse wrote:
-> Make vmlinux the default target instead of zImage would seem like a
-> better answer. I'm surprised that it isn't like that already, in fact --
-> and I'm only inferring that it isn't from your message. I always thought
-> that if I typed 'make' I got the vmlinux and not a zImage.
-
-Ooh, no -- I don't. I get an error, and I never even noticed...
-
-  WRAP    arch/powerpc/boot/zImage.chrp
-  WRAP    arch/powerpc/boot/zImage.pmac
-  WRAP    arch/powerpc/boot/cuImage.52xx
-/pmac/git/libertas-2.6/arch/powerpc/boot/wrapper: line 257: mkimage: command not found
-make[1]: *** [arch/powerpc/boot/cuImage.52xx] Error 127
-
-
-I'd be perfectly happy with 'make vmlinux then' as a response to anyone
-who complains. And in fact since it'll correctly make the vmlinux and
-_then_ fail to create the zImage, I would have thought that anyone with
-even a modicum of common sense will _notice_ that, and start using 
-'make vmlinux' all by themselves without prompting.
-
--- 
-dwmw2
+Nacked-by: Paul Mundt <lethal@linux-sh.org>
