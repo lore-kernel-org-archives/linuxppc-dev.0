@@ -1,11 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
-Message-Id: <ed0aab681311a3c6d53354d39a6c4aea5b77b133.1196839256.git.michael@ellerman.id.au>
+Message-Id: <4058299ab263711f8d57d53b23a11b363db33395.1196839256.git.michael@ellerman.id.au>
 In-Reply-To: <ac4252cfbaa0c1a3534443007417dfc43b597eb5.1196839256.git.michael@ellerman.id.au>
 References: <ac4252cfbaa0c1a3534443007417dfc43b597eb5.1196839256.git.michael@ellerman.id.au>
 From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 3/7] Use archdata.dma_data in dma_direct_ops
-Date: Wed,  5 Dec 2007 18:21:00 +1100 (EST)
+Subject: [PATCH 4/7] Have cell use its own dma_direct_offset variable
+Date: Wed,  5 Dec 2007 18:21:01 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,64 +15,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that all platforms using dma_direct_offset setup the archdata.dma_data
-correctly, we can change the dma_direct_ops to retrieve the offset from
-the dma_data, rather than directly from the global.
+Rather than using the global variable, have cell use its own variable to
+store the direct DMA offset.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/kernel/dma_64.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/cell/iommu.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/dma_64.c b/arch/powerpc/kernel/dma_64.c
-index 14206e3..19d5fb0 100644
---- a/arch/powerpc/kernel/dma_64.c
-+++ b/arch/powerpc/kernel/dma_64.c
-@@ -117,6 +117,18 @@ EXPORT_SYMBOL(dma_iommu_ops);
-  */
- unsigned long dma_direct_offset;
- 
-+static unsigned long get_dma_direct_offset(struct device *dev)
-+{
-+	unsigned long *offset;
-+
-+	offset = dev->archdata.dma_data;
-+
-+	if (offset)
-+		return *offset;
-+
-+	return 0;
-+}
-+
- static void *dma_direct_alloc_coherent(struct device *dev, size_t size,
- 				       dma_addr_t *dma_handle, gfp_t flag)
- {
-@@ -130,7 +142,7 @@ static void *dma_direct_alloc_coherent(struct device *dev, size_t size,
- 		return NULL;
- 	ret = page_address(page);
- 	memset(ret, 0, size);
--	*dma_handle = virt_to_abs(ret) | dma_direct_offset;
-+	*dma_handle = virt_to_abs(ret) | get_dma_direct_offset(dev);
- 
- 	return ret;
- }
-@@ -145,7 +157,7 @@ static dma_addr_t dma_direct_map_single(struct device *dev, void *ptr,
- 					size_t size,
- 					enum dma_data_direction direction)
- {
--	return virt_to_abs(ptr) | dma_direct_offset;
-+	return virt_to_abs(ptr) | get_dma_direct_offset(dev);
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index 2edb1ad..d2f9242 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -489,6 +489,8 @@ static struct cbe_iommu *cell_iommu_for_node(int nid)
+ 	return NULL;
  }
  
- static void dma_direct_unmap_single(struct device *dev, dma_addr_t dma_addr,
-@@ -161,7 +173,7 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 	int i;
++static unsigned long cell_dma_direct_offset;
++
+ static void cell_dma_dev_setup(struct device *dev)
+ {
+ 	struct iommu_window *window;
+@@ -496,7 +498,7 @@ static void cell_dma_dev_setup(struct device *dev)
+ 	struct dev_archdata *archdata = &dev->archdata;
  
- 	for_each_sg(sgl, sg, nents, i) {
--		sg->dma_address = sg_phys(sg) | dma_direct_offset;
-+		sg->dma_address = sg_phys(sg) | get_dma_direct_offset(dev);
- 		sg->dma_length = sg->length;
+ 	if (get_pci_dma_ops() == &dma_direct_ops) {
+-		archdata->dma_data = &dma_direct_offset;
++		archdata->dma_data = &cell_dma_direct_offset;
+ 		return;
  	}
  
+@@ -654,7 +656,7 @@ static int __init cell_iommu_init_disabled(void)
+ 
+ 	/* If we have no Axon, we set up the spider DMA magic offset */
+ 	if (of_find_node_by_name(NULL, "axon") == NULL)
+-		dma_direct_offset = SPIDER_DMA_OFFSET;
++		cell_dma_direct_offset = SPIDER_DMA_OFFSET;
+ 
+ 	/* Now we need to check to see where the memory is mapped
+ 	 * in PCI space. We assume that all busses use the same dma
+@@ -688,10 +690,10 @@ static int __init cell_iommu_init_disabled(void)
+ 		return -ENODEV;
+ 	}
+ 
+-	dma_direct_offset += base;
++	cell_dma_direct_offset += base;
+ 
+ 	printk("iommu: disabled, direct DMA offset is 0x%lx\n",
+-	       dma_direct_offset);
++	       cell_dma_direct_offset);
+ 
+ 	return 0;
+ }
 -- 
 1.5.3.7.1.g4e596e
