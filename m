@@ -2,17 +2,17 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 88CA3DDFB5
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:14:48 +1100 (EST)
-Date: Thu, 6 Dec 2007 13:12:58 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 45A94DDF68
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:17:28 +1100 (EST)
+Date: Thu, 6 Dec 2007 13:15:19 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y
-	on FSL_BOOKE
-Message-ID: <Pine.LNX.4.64.0712061312510.18193@blarg.am.freescale.net>
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: Please pull from 'for-2.6.24' branch
+Message-ID: <Pine.LNX.4.64.0712061314230.18227@blarg.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, chombourger@gmail.com
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, chombourger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The size of swapper_pg_dir is 8k instead of 4k when using 64-bit PTEs
-(CONFIG_PTE_64BIT).
+Please pull from 'for-2.6.24' branch of
 
-This was reported by Cedric Hombourger <chombourger@gmail.com>
+	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
-
-This is in my git tree, branch for-2.6.24 and I'll forward on a pull
-request to Paul & Linus for it.
+to receive the following updates:
 
  arch/powerpc/kernel/asm-offsets.c    |    3 +--
  arch/powerpc/kernel/head_32.S        |    2 +-
@@ -40,6 +35,22 @@ request to Paul & Linus for it.
  arch/powerpc/kernel/head_fsl_booke.S |    2 +-
  include/asm-powerpc/pgtable-ppc32.h  |    5 +++++
  6 files changed, 10 insertions(+), 6 deletions(-)
+
+Kumar Gala (1):
+      [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y on FSL_BOOKE
+
+commit bee86f14d51a5a9a3b1897e301da1e415df0ba23
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Thu Dec 6 13:11:04 2007 -0600
+
+    [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y on FSL_BOOKE
+
+    The size of swapper_pg_dir is 8k instead of 4k when using 64-bit PTEs
+    (CONFIG_PTE_64BIT).
+
+    This was reported by Cedric Hombourger <chombourger@gmail.com>
+
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
 diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
 index d67bcd8..ed083fe 100644
@@ -123,5 +134,3 @@ index fea2d8f..d1332bb 100644
  #define PTRS_PER_PTE	(1 << PTE_SHIFT)
  #define PTRS_PER_PMD	1
  #define PTRS_PER_PGD	(1 << (32 - PGDIR_SHIFT))
--- 
-1.5.3.4
