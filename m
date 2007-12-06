@@ -1,23 +1,22 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 35E59DDEDD
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 03:57:08 +1100 (EST)
-Subject: Re: [PATCH 19/19] [POWERPC] pci_controller->arch_data really is a
-	struct device_node *
+	by ozlabs.org (Postfix) with ESMTP id DDC06DE004
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 04:03:15 +1100 (EST)
+Subject: Re: [RFC/PATCH 5/10] powerpc: pci32: Remove obsolete PowerMac bus
+	number hack
 From: Jon Loeliger <jdl@freescale.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20071207020542.577bbfe8.sfr@canb.auug.org.au>
-References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-	<20071207020542.577bbfe8.sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <20071206081245.EBC65DE18E@ozlabs.org>
+References: <20071206081245.EBC65DE18E@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1196960204.18340.7.camel@ld0161-tx32>
+Message-Id: <1196960570.18340.9.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Thu, 06 Dec 2007 10:56:44 -0600
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Date: Thu, 06 Dec 2007 11:02:50 -0600
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-12-06 at 09:05, Stephen Rothwell wrote:
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+On Thu, 2007-12-06 at 02:11, Benjamin Herrenschmidt wrote:
+> The 32 bits PCI code carries an old hack that was only useful for G5
+> machines. Nowdays, the 32 bits kernel doesn't support any of those
+> machines anymore so the hack is basically never used, remove it.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
->  arch/powerpc/kernel/pci_32.c               |    6 +++---
->  arch/powerpc/kernel/pci_64.c               |    6 ++----
->  arch/powerpc/kernel/pci_dn.c               |    2 +-
->  arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    2 +-
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
->  arch/powerpc/platforms/powermac/pci.c      |    2 +-
->  arch/powerpc/platforms/pseries/iommu.c     |    2 +-
->  include/asm-powerpc/pci-bridge.h           |    5 +++--
->  8 files changed, 13 insertions(+), 14 deletions(-)
+> 
+>  arch/powerpc/kernel/pci_32.c |   11 -----------
+>  1 file changed, 11 deletions(-)
+> 
+> Index: linux-work/arch/powerpc/kernel/pci_32.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-12-05 11:36:30.000000000 +1100
+> +++ linux-work/arch/powerpc/kernel/pci_32.c	2007-12-05 11:36:36.000000000 +1100
+> @@ -922,17 +922,6 @@ long sys_pciconfig_iobase(long which, un
+>  	struct pci_controller* hose;
+>  	long result = -EOPNOTSUPP;
+>  
+> -	/* Argh ! Please forgive me for that hack, but that's the
+> -	 * simplest way to get existing XFree to not lockup on some
+> -	 * G5 machines... So when something asks for bus 0 io base
+> -	 * (bus 0 is HT root), we return the AGP one instead.
+> -	 */
+> -#ifdef CONFIG_PPC_PMAC
+> -	if (machine_is(powermac) && machine_is_compatible("MacRISC4"))
+> -		if (bus == 0)
+> -			bus = 0xf0;
+> -#endif /* CONFIG_PPC_PMAC */
+> -
 
-I see that 86xx tinkering, so...
+I believe, with this patch, you are officially forgiven. :-)
 
-Acked-by:  Jon Loeliger <jdl@freescale.com>
-
-that.
-
-Thanks,
 jdl
