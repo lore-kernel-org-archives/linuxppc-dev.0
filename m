@@ -1,17 +1,18 @@
-Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7D000DE11F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 04:27:38 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
-Subject: [PATCH v3] qe: add ability to upload QE firmware
-Date: Thu,  6 Dec 2007 11:27:19 -0600
-Message-Id: <11969620393002-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 1A5B8DDE16
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 04:56:36 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linuxppc-dev Digest, Vol 40, Issue 57
+Date: Thu, 6 Dec 2007 09:52:59 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A766F@corpexc01.corp.networkrobots.com>
+In-Reply-To: <mailman.414.1196916416.10024.linuxppc-dev@ozlabs.org>
+References: <mailman.414.1196916416.10024.linuxppc-dev@ozlabs.org>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <rameshmrm@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,791 +22,695 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Define the layout of a binary blob that contains a QE firmware and instructions
-on how to upload it.  Add function qe_upload_firmware() to parse the blob
-and perform the actual upload.  Fully define 'struct rsp' in immap_qe.h to
-include the actual RISC Special Registers.  Added description of a new
-QE firmware node to booting-without-of.txt.
+Hello Bala,
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
+I don't think the ioremap issues are related with low memory offset
+mode. But again, I am not sure if you (system by default does not do it)
+are reserving that area (from 256 to 512 which is low memory offset
+region). Further, where do you get this 504 number specifically?
+
+If you want, I can try out your code on my 8641D board.
+
+Thanks
+Siva
+
+
+Date: Wed, 5 Dec 2007 17:45:01 -0800 (PST)
+From: sivaji <rameshmrm@gmail.com>
+Subject: Re: Regarding MPC8641D
+To: linuxppc-dev@ozlabs.org
+Message-ID: <14184891.post@talk.nabble.com>
+Content-Type: text/plain; charset=3Dus-ascii
+
+
+Hi,
+           We need only SMP mode, asper ur idea let me disable the Low
+memory offset mode. We face some issues when ioremap in the kernel, we
+guess
+the problem is related to Low memory offset mode so only we go for that.
+Consider now the Low memory offset is disable the bootargs
+(root=3D/dev/ram
+console=3DttyS0, mem=3D504M). When mem=3D504 or greater than  we are not =
+able
+to
+ioremap, if mem is less than 500 there was no issues on ioremap. We
+can't
+understand why ioremap was failed for 504M?
+
+Thanks and Regards
+S.Balamurugan
+
+
+Siva Prasad-3 wrote:
+>=20
+> Hi,
+>=20
+> If you want to use SMP, do not enable low memory offset mode. That is
+> only and only for AMP, not for SMP. All the exception vectors go into
+a
+> different address range for core1, once you enable that, resulting in
+a
+> need for entirely different copy of OS (be it Linux, or any other OS).
+>=20
+> You are in the right path. Just don't enable low memory offset mode,
+> unless you are looking for Assymetric multi-processing.
+>=20
+> - siva
+>=20
+>=20
+>=20
+>=20
+> Message: 6
+> Date: Wed, 5 Dec 2007 16:45:31 -0800 (PST)
+> From: sivaji <rameshmrm@gmail.com>
+> Subject: Re: Regarding MPC8641D
+> To: linuxppc-dev@ozlabs.org
+> Message-ID: <14184234.post@talk.nabble.com>
+> Content-Type: text/plain; charset=3Dus-ascii
+>=20
+>=20
+> Hai,
+>              The kernel was compiled in SMP mode. The low memory
+offset
+> mode
+> is only for AMP mode means, then how we test both the core 0 and 1 in
+> the
+> linux kernel ?. Asper my understanding if we enable the Low Memory
+> Offset
+> mode, then only the core1 translation is enabled. If we disalbed the
+Low
+> Memory offset mode, Only Core 0  will work in SMP mode and Core 1 will
+> idle.
+> If we want to test the efficient of Dual core means we need to enable
+> both
+> the core and Low Memory Offset Mode. For this configuration linux
+kernel
+> was
+> not up.
+> ( Please correct me if I am wrong )
+>=20
+> Thanks and Regards
+> Sivaji
+>=20
+>=20
+> Chris Fester wrote:
+>>=20
+>> On Tue, 2007-12-04 at 23:51 -0800, sivaji wrote:
+>>>             We have designed  a MPC8641D based AMC card. We are
+using
+> the
+>>> kernel (2.6.23-rc4) and uboot (1.2.0).  When we disable the core1
+Low
+>>> Memory
+>>> offset mode the kernel was up and when we enable this core1 Low
+> Memory
+>>> offset mode kernel was not up, It was hang after MPIC
+initialization.
+>> [snip!]
+>>>                      After this the kernel was hang, i want to know
+> why
+>>> kernel was hang when we enalbe Low memory Offset mode. Please help
+me
+> to
+>>> fix
+>>> this issue.
+>>=20
+>> Have you compiled your kernel for SMP mode?  I believe the Low memory
+>> offset mode is only for AMP mode (vxworks can use this, probably
+other
+>> OSes).  I don't know if the kernel has support for any
+multiprocessing
+>> mode other than SMP.
+>>=20
+>> Hope that helps,
+>> Chris
+>>=20
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
+>=20
+
+--=20
+View this message in context:
+http://www.nabble.com/Regarding-MPC8641D-tf4948004.html#a14184891
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
+
+
+
+------------------------------
+
+Message: 2
+Date: Wed, 5 Dec 2007 20:55:05 -0500
+From: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Link up/down messages from 5200 ethernet driver
+To: "Grant Likely" <grant.likely@secretlab.ca>, 	"Domen Puncer"
+	<domen.puncer@telargo.com>, 	"PowerPC dev list"
+	<Linuxppc-dev@ozlabs.org>
+Message-ID:
+	<9e4733910712051755l76c0403bo4a60834928a35c2@mail.gmail.com>
+Content-Type: text/plain; charset=3DUTF-8
+
+Why does the fec5200 driver sometimes not print 'PHY' correctly?
+
+phyCORE-MPC5200B-tiny login: T?V? f0003000:10 - Link is Down
+T?Y: f0003000:10 - Link is Up - 100/Full
+T?Y: f0003000:10 - Link is Down
+PHY: f0003000:10 - Link is Up - 100/Full
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
+
+------------------------------
+
+Message: 3
+Date: Thu, 6 Dec 2007 13:07:50 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+Subject: dtc: Remove space from flex command line
+To: Jon Loeliger <jdl@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Message-ID: <20071206020750.GE17577@localhost.localdomain>
+Content-Type: text/plain; charset=3Dus-ascii
+
+Author: Geoff Levand <geoffrey.levand@am.sony.com>
+
+Apparently some versions of flex don't correctly parse the -o
+parameter, if there's a space between the -o and its argument.  So,
+this patch removes it.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+Index: dtc/Makefile
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- dtc.orig/Makefile	2007-12-06 13:03:41.000000000 +1100
++++ dtc/Makefile	2007-12-06 13:03:45.000000000 +1100
+@@ -206,7 +206,7 @@
+=20
+ %.lex.c: %.l
+ 	@$(VECHO) LEX $@
+-	$(LEX) -o $@ $<
++	$(LEX) -o$@ $<
+=20
+ %.tab.c %.tab.h %.output: %.y
+ 	@$(VECHO) BISON $@
+
+--=20
+David Gibson			| I'll have my music baroque, and my
+code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_
+_other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+
+------------------------------
+
+Message: 4
+Date: Thu, 6 Dec 2007 13:39:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH 1/2] [POWERPC] iommu_free_table doesn't need the
+	device_node
+To: paulus@samba.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Message-ID: <20071206133919.9c609f17.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=3DUS-ASCII
+
+It only needs the iommu_table address.  It also makes use of the node
+name to print error messages.  So just pass it the things it needs.
+This reduces the places that know about the pci_dn by one.
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ arch/powerpc/kernel/iommu.c            |    8 +++-----
+ arch/powerpc/platforms/pseries/iommu.c |    2 +-
+ include/asm-powerpc/iommu.h            |    3 +--
+ 3 files changed, 5 insertions(+), 8 deletions(-)
 
-Forgot to include booting-without-of.txt
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-This patch is for Kumar's for-2.6.25 branch.  This code is necessary for
-my QE UART driver.
-
- Documentation/powerpc/00-INDEX               |    3 +
- Documentation/powerpc/booting-without-of.txt |   33 +++-
- Documentation/powerpc/qe_firmware.txt        |  295 ++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig               |    1 +
- arch/powerpc/sysdev/qe_lib/qe.c              |  240 +++++++++++++++++++++
- include/asm-powerpc/immap_qe.h               |   34 +++-
- include/asm-powerpc/qe.h                     |   61 ++++++
- 7 files changed, 663 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/powerpc/qe_firmware.txt
-
-diff --git a/Documentation/powerpc/00-INDEX b/Documentation/powerpc/00-INDEX
-index 94a3c57..3be84aa 100644
---- a/Documentation/powerpc/00-INDEX
-+++ b/Documentation/powerpc/00-INDEX
-@@ -28,3 +28,6 @@ sound.txt
- 	- info on sound support under Linux/PPC
- zImage_layout.txt
- 	- info on the kernel images for Linux/PPC
-+qe_firmware.txt
-+	- describes the layout of firmware binaries for the Freescale QUICC
-+	  Engine and the code that parses and uploads the microcode therein.
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index e9a3cb1..9c69995 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -52,7 +52,10 @@ Table of Contents
-       i) Freescale QUICC Engine module (QE)
-       j) CFI or JEDEC memory-mapped NOR flash
-       k) Global Utilities Block
--      l) Xilinx IP cores
-+      l) Freescale Communications Processor Module
-+      m) Chipselect/Local Bus
-+      n) 4xx/Axon EMAC ethernet nodes
-+      o) Xilinx IP cores
- 
-   VII - Specifying interrupt information for devices
-     1) interrupts property
-@@ -1772,6 +1775,32 @@ platforms are moved over to use the flattened-device-tree model.
- 		};
- 	};
- 
-+   viii) Uploaded QE firmware
-+
-+	 If a new firwmare has been uploaded to the QE (usually by the
-+	 boot loader), then a 'firmware' child node should be added to the QE
-+	 node.  This node provides information on the uploaded firmware that
-+	 device drivers may need.
-+
-+	 Required properties:
-+	 - name: The string name of the firmware.  This is taken from the
-+		 'id' member of the qe_firmware structure of the uploaded
-+		 firmware.  Device drivers can search this string to determine
-+		 if the firmware they want is already present.
-+	 - extended_modes: The Extended Modes bitfield, taken from the
-+			   firmware binary.  It is a 64-bit number represented
-+			   as an array of two 32-bit numbers.
-+	 - vtraps: The virtual traps, taken from the firmware binary.  It is an
-+		   array of 16 32-bit numbers.
-+
-+	Example:
-+
-+		firmware {
-+			name = "Soft-UART";
-+			extended_modes = <0 0>;
-+			vtraps = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
-+		}
-+
-    j) CFI or JEDEC memory-mapped NOR flash
- 
-     Flash chips (Memory Technology Devices) are often used for solid state
-@@ -2254,7 +2283,7 @@ platforms are moved over to use the flattened-device-tree model.
- 			   available.
- 			   For Axon: 0x0000012a
- 
--   l) Xilinx IP cores
-+   o) Xilinx IP cores
- 
-    The Xilinx EDK toolchain ships with a set of IP cores (devices) for use
-    in Xilinx Spartan and Virtex FPGAs.  The devices cover the whole range
-diff --git a/Documentation/powerpc/qe_firmware.txt b/Documentation/powerpc/qe_firmware.txt
-new file mode 100644
-index 0000000..8962664
---- /dev/null
-+++ b/Documentation/powerpc/qe_firmware.txt
-@@ -0,0 +1,295 @@
-+	   Freescale QUICC Engine Firmware Uploading
-+	   -----------------------------------------
-+
-+(c) 2007 Timur Tabi <timur at freescale.com>,
-+    Freescale Semiconductor
-+
-+Table of Contents
-+=================
-+
-+  I - Software License for Firmware
-+
-+  II - Microcode Availability
-+
-+  III - Description and Terminology
-+
-+  IV - Microcode Programming Details
-+
-+  V - Firmware Structure Layout
-+
-+  VI - Sample Code for Creating Firmware Files
-+
-+Revision Information
-+====================
-+
-+November 30, 2007: Rev 1.0 - Initial version
-+
-+I - Software License for Firmware
-+=================================
-+
-+Each firmware file comes with its own software license.  For information on
-+the particular license, please see the license text that is distributed with
-+the firmware.
-+
-+II - Microcode Availability
-+===========================
-+
-+Firmware files are distributed through various channels.  Some are available on
-+http://opensource.freescale.com.  For other firmware files, please contact
-+your Freescale representative or your operating system vendor.
-+
-+III - Description and Terminology
-+================================
-+
-+In this document, the term 'microcode' refers to the sequence of 32-bit
-+integers that compose the actual QE microcode.
-+
-+The term 'firmware' refers to a binary blob that contains the microcode as
-+well as other data that
-+
-+	1) describes the microcode's purpose
-+	2) describes how and where to upload the microcode
-+	3) specifies the values of various registers
-+	4) includes additional data for use by specific device drivers
-+
-+Firmware files are binary files that contain only a firmware.
-+
-+IV - Microcode Programming Details
-+===================================
-+
-+The QE architecture allows for only one microcode present in I-RAM for each
-+RISC processor.  To replace any current microcode, a full QE reset (which
-+disables the microcode) must be performed first.
-+
-+QE microcode is uploaded using the following procedure:
-+
-+1) The microcode is placed into I-RAM at a specific location, using the
-+   IRAM.IADD and IRAM.IDATA registers.
-+
-+2) The CERCR.CIR bit is set to 0 or 1, depending on whether the firmware
-+   needs split I-RAM.  Split I-RAM is only meaningful for SOCs that have
-+   QEs with multiple RISC processors, such as the 8360.  Splitting the I-RAM
-+   allows each processor to run a different microcode, effectively creating an
-+   asymmetric multiprocessing (AMP) system.
-+
-+3) The TIBCR trap registers are loaded with the addresses of the trap handlers
-+   in the microcode.
-+
-+4) The RSP.ECCR register is programmed with the value provided.
-+
-+5) If necessary, device drivers that need the virtual traps and extended mode
-+   data will use them.
-+
-+Virtual Microcode Traps
-+
-+These virtual traps are conditional branches in the microcode.  These are
-+"soft" provisional introduced in the ROMcode in order to enable higher
-+flexibility and save h/w traps If new features are activated or an issue is
-+being fixed in the RAM package utilizing they should be activated.  This data
-+structure signals the microcode which of these virtual traps is active.
-+
-+This structure contains 6 words that the application should copy to some
-+specific been defined.  This table describes the structure.
-+
-+	---------------------------------------------------------------
-+	| Offset in |                  | Destination Offset | Size of |
-+	|   array   |     Protocol     |   within PRAM      | Operand |
-+	--------------------------------------------------------------|
-+	|     0     | Ethernet         |      0xF8          | 4 bytes |
-+	|           | interworking     |                    |         |
-+	---------------------------------------------------------------
-+	|     4     | ATM              |      0xF8          | 4 bytes |
-+	|           | interworking     |                    |         |
-+	---------------------------------------------------------------
-+	|     8     | PPP              |      0xF8          | 4 bytes |
-+	|           | interworking     |                    |         |
-+	---------------------------------------------------------------
-+	|     12    | Ethernet RX      |      0x22          | 1 byte  |
-+	|           | Distributor Page |                    |         |
-+	---------------------------------------------------------------
-+	|     16    | ATM Globtal      |      0x28          | 1 byte  |
-+	|           | Params Table     |                    |         |
-+	---------------------------------------------------------------
-+	|     20    | Insert Frame     |      0xF8          | 4 bytes |
-+	---------------------------------------------------------------
-+
-+
-+Extended Modes
-+
-+This is a double word bit array (64 bits) that defines special functionality
-+which has an impact on the softwarew drivers.  Each bit has its own impact
-+and has special instructions for the s/w associated with it.  This structure is
-+described in this table:
-+
-+	-----------------------------------------------------------------------
-+	| Bit #  |     Name     |   Description                               |
-+	-----------------------------------------------------------------------
-+	|   0    | General      | Indicates that prior to each host command   |
-+	|        | push command | given by the application, the software must |
-+	|        |              | assert a special host command (push command)|
-+	|        |              | CECDR = 0x00800000.                         |
-+	|        |              | CECR = 0x01c1000f.                          |
-+	-----------------------------------------------------------------------
-+	|   1    | UCC ATM      | Indicates that after issuing ATM RX INIT    |
-+	|        | RX INIT      | command, the host must issue another special|
-+	|        | push command | command (push command) and immediately      |
-+	|        |              | following that re-issue the ATM RX INIT     |
-+	|        |              | command. (This makes the sequence of        |
-+	|        |              | initializing the ATM receiver a sequence of |
-+	|        |              | three host commands)                        |
-+	|        |              | CECDR = 0x00800000.                         |
-+	|        |              | CECR = 0x01c1000f.                          |
-+	-----------------------------------------------------------------------
-+	|   2    | Add/remove   | Indicates that following the specific host  |
-+	|        | command      | command: "Add/Remove entry in Hash Lookup   |
-+	|        | validation   | Table" used in Interworking setup, the user |
-+	|        |              | must issue another command.                 |
-+	|        |              | CECDR = 0xce000003.                         |
-+	|        |              | CECR = 0x01c10f58.                          |
-+	-----------------------------------------------------------------------
-+	|   3    | General push | Indicates that the s/w has to initialize    |
-+	|        | command      | some pointers in the Ethernet thread pages  |
-+	|        |              | which are used when Header Compression is   |
-+	|        |              | activated.  The full details of these       |
-+	|        |              | pointers is located in the software drivers.|
-+	-----------------------------------------------------------------------
-+	|   4    | General push | Indicates that after issuing Ethernet TX    |
-+	|        | command      | INIT command, user must issue this command  |
-+	|        |              | for each SNUM of Ethernet TX thread.        |
-+	|        |              | CECDR = 0x00800003.                         |
-+	|        |              | CECR = 0x7'b{0}, 8'b{Enet TX thread SNUM},  |
-+	|        |              |        1'b{1}, 12'b{0}, 4'b{1}              |
-+	-----------------------------------------------------------------------
-+	| 5 - 31 |     N/A      | Reserved, set to zero.                      |
-+	-----------------------------------------------------------------------
-+
-+V - Firmware Structure Layout
-+==============================
-+
-+QE microcode from Freescale is typically provided as a header file.  This
-+header file contains macros that define the microcode binary itself as well as
-+some other data used in uploading that microcode.  The format of these files
-+do not lend themselves to simple inclusion into other code.  Hence,
-+the need for a more portable format.  This section defines that format.
-+
-+Instead of distributing a header file, the microcode and related data are
-+embedded into a binary blob.  This blob is passed to the qe_upload_firmware()
-+function, which parses the blob and performs everything necessary to upload
-+the microcode.
-+
-+All integers are big-endian.  See the comments for function
-+qe_upload_firmware() for up-to-date implementation information.
-+
-+This structure supports versioning, where the version of the structure is
-+embedded into the structure itself.  To ensure forward and backwards
-+compatibility, all versions of the structure must use the same 'qe_header'
-+structure at the beginning.
-+
-+'header' (type: struct qe_header):
-+	The 'length' field is the size, in bytes, of the entire structure,
-+	including all the microcode embedded in it, as well as the CRC (if
-+	present).
-+
-+	The 'magic' field is an array of three bytes that contains the letters
-+	'Q', 'E', and 'F'.  This is an identifier that indicates that this
-+	structure is a QE Firmware structure.
-+
-+	The 'version' field is a single byte that indicates the version of this
-+	structure.  If the layout of the structure should ever need to be
-+	changed to add support for additional types of microcode, then the
-+	version number should also be changed.
-+
-+The 'id' field is a null-terminated string(suitable for printing) that
-+identifies the firmware.
-+
-+The 'count' field indicates the number of 'microcode' structures.  There
-+must be one and only one 'microcode' structure for each RISC processor.
-+Therefore, this field also represents the number of RISC processors for this
-+SOC.
-+
-+The 'soc' structure contains the SOC numbers and revisions used to match
-+the microcode to the SOC itself.  Normally, the microcode loader should
-+check the data in this structure with the SOC number and revisions, and
-+only upload the microcode if there's a match.  However, this check is not
-+made on all platforms.
-+
-+Although it is not recommended, you can specify '0' in the soc.model
-+field to skip matching SOCs altogether.
-+
-+The 'model' field is a 16-bit number that matches the actual SOC. The
-+'major' and 'minor' fields are the major and minor revision numbrs,
-+respectively, of the SOC.
-+
-+For example, to match the 8323, revision 1.0:
-+     soc.model = 8323
-+     soc.major = 1
-+     soc.minor = 0
-+
-+'padding' is neccessary for structure alignment.  This field ensures that the
-+'extended_modes' field is aligned on a 64-bit boundary.
-+
-+'extended_modes' is a bitfield that defines special functionality which has an
-+impact on the device drivers.  Each bit has its own impact and has special
-+instructions for the driver associated with it.  This field is stored in
-+the QE library and available to any driver that calles qe_get_firmware_info().
-+
-+'vtraps' is an array of 8 words that contain virtual trap values for each
-+virtual traps.  As with 'extended_modes', this field is stored in the QE
-+library and available to any driver that calles qe_get_firmware_info().
-+
-+'microcode' (type: struct qe_microcode):
-+	For each RISC processor there is one 'microcode' structure.  The first
-+	'microcode' structure is for the first RISC, and so on.
-+
-+	The 'id' field is a null-terminated string suitable for printing that
-+	identifies this particular microcode.
-+
-+	'traps' is an array of 16 words that contain hardware trap values
-+	for each of the 16 traps.  If trap[i] is 0, then this particular
-+	trap is to be ignored (i.e. not written to TIBCR[i]).  The entire value
-+	is written as-is to the TIBCR[i] register, so be sure to set the EN
-+	and T_IBP bits if necessary.
-+
-+	'eccr' is the value to program into the ECCR register.
-+
-+	'iram_offset' is the offset into IRAM to start writing the
-+	microcode.
-+
-+	'count' is the number of 32-bit words in the microcode.
-+
-+	'code_offset' is the offset, in bytes, from the beginning of this
-+	structure where the microcode itself can be found.  The first
-+	microcode binary should be located immediately after the 'microcode'
-+	array.
-+
-+	'major', 'minor', and 'revision' are the major, minor, and revision
-+	version numbers, respectively, of the microcode.  If all values are 0,
-+	then these fields are ignored.
-+
-+	'reserved' is necessary for structure alignment.  Since 'microcode'
-+	is an array, the 64-bit 'extended_modes' field needs to be aligned
-+	on a 64-bit boundary, and this can only happen if the size of
-+	'microcode' is a multiple of 8 bytes.  To ensure that, we add
-+	'reserved'.
-+
-+After the last microcode is a 32-bit CRC.  It can be calculated using
-+this algorithm:
-+
-+u32 crc32(const u8 *p, unsigned int len)
-+{
-+	unsigned int i;
-+	u32 crc = 0;
-+
-+	while (len--) {
-+	   crc ^= *p++;
-+	   for (i = 0; i < 8; i++)
-+		   crc = (crc >> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
-+	}
-+	return crc;
-+}
-+
-+VI - Sample Code for Creating Firmware Files
-+============================================
-+
-+A Python program that creates firmware binaries from the header files normally
-+distributed by Freescale can be found on http://opensource.freescale.com.
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index ea22cad..18f101b 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -265,6 +265,7 @@ config TAU_AVERAGE
- config QUICC_ENGINE
- 	bool
- 	select PPC_LIB_RHEAP
-+	select CRC32
- 	help
- 	  The QUICC Engine (QE) is a new generation of communications
- 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 1df3b4a..497eb88 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -25,6 +25,7 @@
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/ioport.h>
-+#include <linux/crc32.h>
- #include <asm/irq.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -362,3 +363,242 @@ void *qe_muram_addr(unsigned long offset)
- 	return (void *)&qe_immr->muram[offset];
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 2d0c9ef..47c3fe5 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -526,16 +526,14 @@ struct iommu_table *iommu_init_table(struct
+iommu_table *tbl, int nid)
+ 	return tbl;
  }
- EXPORT_SYMBOL(qe_muram_addr);
-+
-+/* The maximum number of RISCs we support */
-+#define MAX_QE_RISC     2
-+
-+/* Firmware information stored here for qe_get_firmware_info() */
-+static struct qe_firmware_info qe_firmware_info;
-+
-+/*
-+ * Set to 1 if QE firmware has been uploaded, and therefore
-+ * qe_firmware_info contains valid data.
-+ */
-+static int qe_firmware_uploaded;
-+
-+/*
-+ * Upload a QE microcode
-+ *
-+ * This function is a worker function for qe_upload_firmware().  It does
-+ * the actual uploading of the microcode.
-+ */
-+static void qe_upload_microcode(const void *base,
-+	const struct qe_microcode *ucode)
-+{
-+	const __be32 *code = base + be32_to_cpu(ucode->code_offset);
-+	unsigned int i;
-+
-+	if (ucode->major || ucode->minor || ucode->revision)
-+		printk(KERN_INFO "qe-firmware: "
-+			"uploading microcode '%s' version %u.%u.%u\n",
-+			ucode->id, ucode->major, ucode->minor, ucode->revision);
-+	else
-+		printk(KERN_INFO "qe-firmware: "
-+			"uploading microcode '%s'\n", ucode->id);
-+
-+	/* Use auto-increment */
-+	out_be32(&qe_immr->iram.iadd, be32_to_cpu(ucode->iram_offset) |
-+		QE_IRAM_IADD_AIE | QE_IRAM_IADD_BADDR);
-+
-+	for (i = 0; i < be32_to_cpu(ucode->count); i++)
-+		out_be32(&qe_immr->iram.idata, be32_to_cpu(code[i]));
-+}
-+
-+/*
-+ * Upload a microcode to the I-RAM at a specific address.
-+ *
-+ * See Documentation/powerpc/qe-firmware.txt for information on QE microcode
-+ * uploading.
-+ *
-+ * Currently, only version 1 is supported, so the 'version' field must be
-+ * set to 1.
-+ *
-+ * The SOC model and revision are not validated, they are only displayed for
-+ * informational purposes.
-+ *
-+ * 'calc_size' is the calculated size, in bytes, of the firmware structure and
-+ * all of the microcode structures, minus the CRC.
-+ *
-+ * 'length' is the size that the structure says it is, including the CRC.
-+ */
-+int qe_upload_firmware(const struct qe_firmware *firmware)
-+{
-+	unsigned int i;
-+	unsigned int j;
-+	u32 crc;
-+	size_t calc_size = sizeof(struct qe_firmware);
-+	size_t length;
-+	const struct qe_header *hdr;
-+
-+	if (!firmware) {
-+		printk(KERN_ERR "qe-firmware: invalid pointer\n");
-+		return -EINVAL;
-+	}
-+
-+	hdr = &firmware->header;
-+	length = be32_to_cpu(hdr->length);
-+
-+	/* Check the magic */
-+	if ((hdr->magic[0] != 'Q') || (hdr->magic[1] != 'E') ||
-+	    (hdr->magic[2] != 'F')) {
-+		printk(KERN_ERR "qe-firmware: not a microcode\n");
-+		return -EPERM;
-+	}
-+
-+	/* Check the version */
-+	if (hdr->version != 1) {
-+		printk(KERN_ERR "qe-firmware: unsupported version\n");
-+		return -EPERM;
-+	}
-+
-+	/* Validate some of the fields */
-+	if ((firmware->count < 1) || (firmware->count >= MAX_QE_RISC)) {
-+		printk(KERN_ERR "qe-firmware: invalid data\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Validate the length and check if there's a CRC */
-+	calc_size += (firmware->count - 1) * sizeof(struct qe_microcode);
-+
-+	for (i = 0; i < firmware->count; i++)
-+		/*
-+		 * For situations where the second RISC uses the same microcode
-+		 * as the first, the 'code_offset' and 'count' fields will be
-+		 * zero, so it's okay to add those.
-+		 */
-+		calc_size += sizeof(__be32) *
-+			be32_to_cpu(firmware->microcode[i].count);
-+
-+	/* Validate the length */
-+	if (length != calc_size + sizeof(__be32)) {
-+		printk(KERN_ERR "qe-firmware: invalid length\n");
-+		return -EPERM;
-+	}
-+
-+	/* Validate the CRC */
-+	crc = be32_to_cpu(*(__be32 *)((void *)firmware + calc_size));
-+	if (crc != crc32(0, firmware, calc_size)) {
-+		printk(KERN_ERR "qe-firmware: firmware CRC is invalid\n");
-+		return -EIO;
-+	}
-+
-+	/*
-+	 * If the microcode calls for it, split the I-RAM.
-+	 */
-+	if (!firmware->split)
-+		setbits16(&qe_immr->cp.cercr, QE_CP_CERCR_CIR);
-+
-+	if (firmware->soc.model)
-+		printk(KERN_INFO
-+			"qe-firmware: firmware '%s' for %u V%u.%u\n",
-+			firmware->id, be16_to_cpu(firmware->soc.model),
-+			firmware->soc.major, firmware->soc.minor);
-+	else
-+		printk(KERN_INFO "qe-firmware: firmware '%s'\n",
-+			firmware->id);
-+
-+	/*
-+	 * The QE only supports one microcode per RISC, so clear out all the
-+	 * saved microcode information and put in the new.
-+	 */
-+	memset(&qe_firmware_info, 0, sizeof(qe_firmware_info));
-+	strcpy(qe_firmware_info.id, firmware->id);
-+	qe_firmware_info.extended_modes = firmware->extended_modes;
-+	memcpy(qe_firmware_info.vtraps, firmware->vtraps,
-+		sizeof(firmware->vtraps));
-+
-+	/* Loop through each microcode. */
-+	for (i = 0; i < firmware->count; i++) {
-+		const struct qe_microcode *ucode = &firmware->microcode[i];
-+
-+		/* Upload a microcode if it's present */
-+		if (ucode->code_offset)
-+			qe_upload_microcode(firmware, ucode);
-+
-+		/* Program the traps for this processor */
-+		for (j = 0; j < 16; j++) {
-+			u32 trap = be32_to_cpu(ucode->traps[j]);
-+
-+			if (trap)
-+				out_be32(&qe_immr->rsp[i].tibcr[j], trap);
-+		}
-+
-+		/* Enable traps */
-+		out_be32(&qe_immr->rsp[i].eccr, be32_to_cpu(ucode->eccr));
-+	}
-+
-+	qe_firmware_uploaded = 1;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(qe_upload_firmware);
-+
-+/*
-+ * Get info on the currently-loaded firmware
-+ *
-+ * This function also checks the device tree to see if the boot loader has
-+ * uploaded a firmware already.
-+ */
-+struct qe_firmware_info *qe_get_firmware_info(void)
-+{
-+	static int initialized;
-+
-+	/*
-+	 * If we haven't checked yet, and a driver hasn't uploaded a firmware
-+	 * yet, then check the device tree for information.
-+	 */
-+	do {
-+		struct device_node *qe;
-+		struct device_node *fw = NULL;
-+		const char *sprop;
-+		const u32 *iprop;
-+
-+		if (initialized || qe_firmware_uploaded)
-+			break;
-+
-+		initialized = 1;
-+
-+		qe = of_find_node_by_type(NULL, "qe");
-+		if (!qe)
-+			break;
-+
-+		/* Find the 'firmware' child node */
-+		while ((fw = of_get_next_child(qe, fw)))
-+			if (strcmp(fw->name, "firmware") == 0)
-+				break;
-+
-+		/* Did we find the 'firmware' node? */
-+		if (!fw) {
-+			of_node_put(qe);
-+			break;
-+		}
-+
-+		qe_firmware_uploaded = 1;
-+
-+		/* Copy the data into qe_firmware_info*/
-+		sprop = of_get_property(fw, "id", NULL);
-+		if (sprop)
-+			strncpy(qe_firmware_info.id, sprop,
-+				sizeof(qe_firmware_info.id) - 1);
-+
-+		iprop = of_get_property(fw, "extended_modes", NULL);
-+		if (iprop)
-+			qe_firmware_info.extended_modes =
-+				(u64) iprop[0] << 32 | iprop[1];
-+
-+		iprop = of_get_property(fw, "virtual_traps", NULL);
-+		if (iprop) {
-+			unsigned int i = 0;
-+
-+			for (; i < ARRAY_SIZE(qe_firmware_info.vtraps); i++)
-+				qe_firmware_info.vtraps[i] = iprop[i];
-+		}
-+
-+		of_node_put(fw);
-+		of_node_put(qe);
-+	} while (0);
-+
-+	return qe_firmware_uploaded ? &qe_firmware_info : NULL;
-+}
-+EXPORT_SYMBOL(qe_get_firmware_info);
-+
-diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
-index aba9806..82a4526 100644
---- a/include/asm-powerpc/immap_qe.h
-+++ b/include/asm-powerpc/immap_qe.h
-@@ -393,9 +393,39 @@ struct dbg {
- 	u8	res2[0x48];
- } __attribute__ ((packed));
- 
--/* RISC Special Registers (Trap and Breakpoint) */
-+/*
-+ * RISC Special Registers (Trap and Breakpoint).  These are described in
-+ * the QE Developer's Handbook.
-+ */
- struct rsp {
--	u32	reg[0x40];	/* 64 32-bit registers */
-+	__be32 tibcr[16];	/* Trap/instruction breakpoint control regs */
-+	u8 res0[64];
-+	__be32 ibcr0;
-+	__be32 ibs0;
-+	__be32 ibcnr0;
-+	u8 res1[4];
-+	__be32 ibcr1;
-+	__be32 ibs1;
-+	__be32 ibcnr1;
-+	__be32 npcr;
-+	__be32 dbcr;
-+	__be32 dbar;
-+	__be32 dbamr;
-+	__be32 dbsr;
-+	__be32 dbcnr;
-+	u8 res2[12];
-+	__be32 dbdr_h;
-+	__be32 dbdr_l;
-+	__be32 dbdmr_h;
-+	__be32 dbdmr_l;
-+	__be32 bsr;
-+	__be32 bor;
-+	__be32 bior;
-+	u8 res3[4];
-+	__be32 iatr[4];
-+	__be32 eccr;		/* Exception control configuration register */
-+	__be32 eicr;
-+	u8 res4[0x100-0xf8];
- } __attribute__ ((packed));
- 
- struct qe_immap {
-diff --git a/include/asm-powerpc/qe.h b/include/asm-powerpc/qe.h
-index bcf60be..35c7b8d 100644
---- a/include/asm-powerpc/qe.h
-+++ b/include/asm-powerpc/qe.h
-@@ -93,6 +93,58 @@ unsigned long qe_muram_alloc_fixed(unsigned long offset, int size);
- void qe_muram_dump(void);
- void *qe_muram_addr(unsigned long offset);
- 
-+/* Structure that defines QE firmware binary files.
-+ *
-+ * See Documentation/powerpc/qe-firmware.txt for a description of these
-+ * fields.
-+ */
-+struct qe_firmware {
-+	struct qe_header {
-+		__be32 length;  /* Length of the entire structure, in bytes */
-+		u8 magic[3];    /* Set to { 'Q', 'E', 'F' } */
-+		u8 version;     /* Version of this layout. First ver is '1' */
-+	} header;
-+	u8 id[62];      /* Null-terminated identifier string */
-+	u8 split;	/* 0 = shared I-RAM, 1 = split I-RAM */
-+	u8 count;       /* Number of microcode[] structures */
-+	struct {
-+		__be16 model;   	/* The SOC model  */
-+		u8 major;       	/* The SOC revision major */
-+		u8 minor;       	/* The SOC revision minor */
-+	} __attribute__ ((packed)) soc;
-+	u8 padding[4];			/* Reserved, for alignment */
-+	__be64 extended_modes;		/* Extended modes */
-+	__be32 vtraps[8];		/* Virtual trap addresses */
-+	u8 reserved[4];			/* Reserved, for future expansion */
-+	struct qe_microcode {
-+		u8 id[32];      	/* Null-terminated identifier */
-+		__be32 traps[16];       /* Trap addresses, 0 == ignore */
-+		__be32 eccr;    	/* The value for the ECCR register */
-+		__be32 iram_offset;     /* Offset into I-RAM for the code */
-+		__be32 count;   	/* Number of 32-bit words of the code */
-+		__be32 code_offset;     /* Offset of the actual microcode */
-+		u8 major;       	/* The microcode version major */
-+		u8 minor;       	/* The microcode version minor */
-+		u8 revision;		/* The microcode version revision */
-+		u8 padding;		/* Reserved, for alignment */
-+		u8 reserved[4];		/* Reserved, for future expansion */
-+	} __attribute__ ((packed)) microcode[1];
-+	/* All microcode binaries should be located here */
-+	/* CRC32 should be located here, after the microcode binaries */
-+} __attribute__ ((packed));
-+
-+struct qe_firmware_info {
-+	char id[64];		/* Firmware name */
-+	u32 vtraps[8];		/* Virtual trap addresses */
-+	u64 extended_modes;	/* Extended modes */
-+};
-+
-+/* Upload a firmware to the QE */
-+int qe_upload_firmware(const struct qe_firmware *firmware);
-+
-+/* Obtain information on the uploaded firmware */
-+struct qe_firmware_info *qe_get_firmware_info(void);
-+
- /* Buffer descriptors */
- struct qe_bd {
- 	__be16 status;
-@@ -328,6 +380,15 @@ enum comm_dir {
- 
- #define QE_SDEBCR_BA_MASK	0x01FFFFFF
- 
-+/* Communication Processor */
-+#define QE_CP_CERCR_MEE		0x8000	/* Multi-user RAM ECC enable */
-+#define QE_CP_CERCR_IEE		0x4000	/* Instruction RAM ECC enable */
-+#define QE_CP_CERCR_CIR		0x0800	/* Common instruction RAM */
-+
-+/* I-RAM */
-+#define QE_IRAM_IADD_AIE	0x80000000	/* Auto Increment Enable */
-+#define QE_IRAM_IADD_BADDR	0x00080000	/* Base Address */
-+
- /* UPC */
- #define UPGCR_PROTOCOL	0x80000000	/* protocol ul2 or pl2 */
- #define UPGCR_TMS	0x40000000	/* Transmit master/slave mode */
--- 
-1.5.2.4
+=20
+-void iommu_free_table(struct device_node *dn)
++void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+ {
+-	struct pci_dn *pdn =3D dn->data;
+-	struct iommu_table *tbl =3D pdn->iommu_table;
+ 	unsigned long bitmap_sz, i;
+ 	unsigned int order;
+=20
+ 	if (!tbl || !tbl->it_map) {
+ 		printk(KERN_ERR "%s: expected TCE map for %s\n",
+__FUNCTION__,
+-				dn->full_name);
++				node_name);
+ 		return;
+ 	}
+=20
+@@ -544,7 +542,7 @@ void iommu_free_table(struct device_node *dn)
+ 	for (i =3D 0; i < (tbl->it_size/64); i++) {
+ 		if (tbl->it_map[i] !=3D 0) {
+ 			printk(KERN_WARNING "%s: Unexpected TCEs for
+%s\n",
+-				__FUNCTION__, dn->full_name);
++				__FUNCTION__, node_name);
+ 			break;
+ 		}
+ 	}
+diff --git a/arch/powerpc/platforms/pseries/iommu.c
+b/arch/powerpc/platforms/pseries/iommu.c
+index be17d23..d4e9d85 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -556,7 +556,7 @@ static int iommu_reconfig_notifier(struct
+notifier_block *nb, unsigned long acti
+ 	case PSERIES_RECONFIG_REMOVE:
+ 		if (pci && pci->iommu_table &&
+ 		    of_get_property(np, "ibm,dma-window", NULL))
+-			iommu_free_table(np);
++			iommu_free_table(pci->iommu_table,
+np->full_name);
+ 		break;
+ 	default:
+ 		err =3D NOTIFY_DONE;
+diff --git a/include/asm-powerpc/iommu.h b/include/asm-powerpc/iommu.h
+index 4a82fdc..7a3cef7 100644
+--- a/include/asm-powerpc/iommu.h
++++ b/include/asm-powerpc/iommu.h
+@@ -69,10 +69,9 @@ struct iommu_table {
+ };
+=20
+ struct scatterlist;
+-struct device_node;
+=20
+ /* Frees table for an individual device node */
+-extern void iommu_free_table(struct device_node *dn);
++extern void iommu_free_table(struct iommu_table *tbl, const char
+*node_name);
+=20
+ /* Initializes an iommu_table based in values set in the passed-in
+  * structure
+--=20
+1.5.3.7
+
+
+
+------------------------------
+
+Message: 5
+Date: Thu, 6 Dec 2007 13:40:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH 2/2] [POWERPC] pSeries: remove dependency on pci_dn
+	bussubno
+To: paulus@samba.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Message-ID: <20071206134029.af8c291d.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=3DUS-ASCII
+
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/platforms/pseries/iommu.c |   24 +++++++-----------------
+ 1 files changed, 7 insertions(+), 17 deletions(-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c
+b/arch/powerpc/platforms/pseries/iommu.c
+index d4e9d85..ebb9313 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -296,11 +296,12 @@ static void iommu_table_setparms(struct
+pci_controller *phb,
+ static void iommu_table_setparms_lpar(struct pci_controller *phb,
+ 				      struct device_node *dn,
+ 				      struct iommu_table *tbl,
+-				      const void *dma_window)
++				      const void *dma_window,
++				      int bussubno)
+ {
+ 	unsigned long offset, size;
+=20
+-	tbl->it_busno  =3D PCI_DN(dn)->bussubno;
++	tbl->it_busno  =3D bussubno;
+ 	of_parse_dma_window(dn, dma_window, &tbl->it_index, &offset,
+&size);
+=20
+ 	tbl->it_base   =3D 0;
+@@ -420,17 +421,10 @@ static void pci_dma_bus_setup_pSeriesLP(struct
+pci_bus *bus)
+ 	    pdn->full_name, ppci->iommu_table);
+=20
+ 	if (!ppci->iommu_table) {
+-		/* Bussubno hasn't been copied yet.
+-		 * Do it now because iommu_table_setparms_lpar needs it.
+-		 */
+-
+-		ppci->bussubno =3D bus->number;
+-
+ 		tbl =3D kmalloc_node(sizeof(struct iommu_table),
+GFP_KERNEL,
+ 				   ppci->phb->node);
+-
+-		iommu_table_setparms_lpar(ppci->phb, pdn, tbl,
+dma_window);
+-
++		iommu_table_setparms_lpar(ppci->phb, pdn, tbl,
+dma_window,
++			bus->number);
+ 		ppci->iommu_table =3D iommu_init_table(tbl,
+ppci->phb->node);
+ 		DBG("  created table: %p\n", ppci->iommu_table);
+ 	}
+@@ -523,14 +517,10 @@ static void pci_dma_dev_setup_pSeriesLP(struct
+pci_dev *dev)
+=20
+ 	pci =3D PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+-		/* iommu_table_setparms_lpar needs bussubno. */
+-		pci->bussubno =3D pci->phb->bus->number;
+-
+ 		tbl =3D kmalloc_node(sizeof(struct iommu_table),
+GFP_KERNEL,
+ 				   pci->phb->node);
+-
+-		iommu_table_setparms_lpar(pci->phb, pdn, tbl,
+dma_window);
+-
++		iommu_table_setparms_lpar(pci->phb, pdn, tbl,
+dma_window,
++			pci->phb->bus->number);
+ 		pci->iommu_table =3D iommu_init_table(tbl,
+pci->phb->node);
+ 		DBG("  created table: %p\n", pci->iommu_table);
+ 	} else {
+--=20
+1.5.3.7
+
+
+
+------------------------------
+
+Message: 6
+Date: Thu, 06 Dec 2007 14:22:27 +1100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with
+	64b	resources
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org
+Message-ID: <1196911347.7033.15.camel@pasglop>
+Content-Type: text/plain
+
+
+On Wed, 2007-12-05 at 17:40 +1100, Benjamin Herrenschmidt wrote:
+> The current pci_assign_unassigned_resources() code doesn't work
+properly
+> on 32 bits platforms with 64 bits resources. The main reason is the
+use
+> of unsigned long in various places instead of resource_size_t.
+>=20
+> This fixes it, along with some tricks to avoid casting to 64 bits on
+> platforms that don't need it in every printk around.
+>=20
+> This is a pre-requisite for making powerpc use the generic code
+instead of
+> its own half-useful implementation.
+>=20
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>=20
+> This version fixes some stupid warnings when using 32 bits resources
+
+ ... and has warnings on 64 bits platforms... GRRRR
+
+This whole issue of printk vs. resource_size_t is a terrible mess :-(
+
+Part of the problem is that resource_size_t can be either u32 or u64..
+
+that is  it can be either unsigned int, unsigned long or unsigned long
+long... and we have no way to reliably printk that.
+
+Any clever idea before I start pushing filthy macros up linux/types.h ?
+
+Cheers,
+Ben.
+
+
+
+
+------------------------------
+
+Message: 7
+Date: Thu, 6 Dec 2007 14:32:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Use SLB size from the device tree
+To: Michael Neuling <mikey@neuling.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,	Will
+	Schmidt <will_schmidt@vnet.ibm.com>
+Message-ID: <18263.27999.950921.122870@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=3Dus-ascii
+
+Michael Neuling writes:
+
+> Currently we hardwire the number of SLBs but the PAPR says we export
+an
+> ibm,slb-size property to specify the number of SLB entries.  This
+patch
+> uses this property instead of assuming 64 always.  If no property is
+> found, we assume 64 entries as before.
+
+On 32-bit platforms (e.g. powermac) I get:
+
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c: In function
+'check_cpu_slb_size':
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error:
+'mmu_slb_size' undeclared (first use in this function)
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: (Each
+undeclared identifier is reported only once
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: for
+each function it appears in.)
+make[2]: *** [arch/powerpc/kernel/prom.o] Error 1
+
+Paul.
+
+
+------------------------------
+
+Message: 8
+Date: Thu, 06 Dec 2007 14:48:18 +1100
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: drivers/net/iseries_veth.c dubious sysfs usage
+To: Greg KH <greg@kroah.com>
+Cc: linuxppc-dev@ozlabs.org, "Kyle A. Lucke" <klucke@us.ibm.com>,
+	paulus@samba.org, linux-kernel@vger.kernel.org,	David Gibson
+	<dwg@au1.ibm.com>
+Message-ID: <1196912898.14754.13.camel@concordia>
+Content-Type: text/plain; charset=3D"us-ascii"
+
+On Wed, 2007-12-05 at 13:41 -0800, Greg KH wrote:
+> On Wed, Dec 05, 2007 at 10:10:31PM +1100, Michael Ellerman wrote:
+> > On Wed, 2007-12-05 at 01:30 -0800, Greg KH wrote:
+> > > In doing a massive kobject cleanup of the kernel tree, I ran
+across the
+> > > iseries_veth.c driver.
+> > >=20
+> > > It looks like the driver is creating a number of subdirectories
+under
+> > > the driver sysfs directory.  This is odd and probably wrong.  You
+want
+> > > these virtual connections to show up in the main sysfs device
+tree, not
+> > > under the driver directory.
+> > >=20
+> > > I'll be glad to totally guess and try to move it around in the
+sysfs
+> > > tree, but odds are I'll get it all wrong as I can't really test
+this
+> > > out :)
+> > >=20
+> > > Any hints on what this driver is trying to do in this sysfs
+directories?
+> >=20
+> > I wrote the code, I think, but it's been a while - I'll have a look
+at
+> > it tomorrow.
+>=20
+> Yes, can you send me the sysfs tree output of the driver directory,
+and
+> what exactly the different files in there are supposed to be used for?
+
+Sure. My version of tar (1.15.1) doesn't seem to be able to tar up /sys,
+so hopefully this is sufficient:
+
+igoeast:~# cd /sys/class/net/eth1/
+igoeast:/sys/class/net/eth1# ls -la
+total 0
+drwxr-xr-x  4 root root    0 Dec  6 10:22 .
+drwxr-xr-x  6 root root    0 Dec  6 10:21 ..
+-r--r--r--  1 root root 4096 Dec  6 10:30 addr_len
+-r--r--r--  1 root root 4096 Dec  6 10:30 address
+-r--r--r--  1 root root 4096 Dec  6 10:30 broadcast
+-r--r--r--  1 root root 4096 Dec  6 10:30 carrier
+lrwxrwxrwx  1 root root    0 Dec  6 10:22 device ->
+../../../devices/vio/3
+-r--r--r--  1 root root 4096 Dec  6 10:30 dormant
+-r--r--r--  1 root root 4096 Dec  6 10:30 features
+-rw-r--r--  1 root root 4096 Dec  6 10:30 flags
+-r--r--r--  1 root root 4096 Dec  6 10:30 ifindex
+-r--r--r--  1 root root 4096 Dec  6 10:30 iflink
+-r--r--r--  1 root root 4096 Dec  6 10:30 link_mode
+-rw-r--r--  1 root root 4096 Dec  6 10:30 mtu
+-r--r--r--  1 root root 4096 Dec  6 10:30 operstate
+drwxr-xr-x  2 root root    0 Dec  6 10:30 statistics
+lrwxrwxrwx  1 root root    0 Dec  6 10:30 subsystem ->
+../../../class/net
+-rw-r--r--  1 root root 4096 Dec  6 10:30 tx_queue_len
+-r--r--r--  1 root root 4096 Dec  6 10:30 type
+-rw-r--r--  1 root root 4096 Dec  6 10:30 uevent
+drwxr-xr-x  2 root root    0 Dec  6 10:30 veth_port
+
+Each net device has a port structure associated with it, the fields
+should be fairly self explanatory, they're all read only I think.
+
+igoeast:/sys/class/net/eth1# find veth_port/
+veth_port/
+veth_port/mac_addr
+veth_port/lpar_map
+veth_port/stopped_map
+veth_port/promiscuous
+veth_port/num_mcast
+
+
+igoeast:/sys/class/net/eth1# cd device/driver
+
+igoeast:/sys/class/net/eth1/device/driver# ls -l
+total 0
+lrwxrwxrwx  1 root root    0 Dec  6 10:21 2 -> ../../../../devices/vio/2
+lrwxrwxrwx  1 root root    0 Dec  6 10:21 3 -> ../../../../devices/vio/3
+--w-------  1 root root 4096 Dec  6 10:21 bind
+drwxr-xr-x  2 root root    0 Dec  6 10:21 cnx00
+drwxr-xr-x  2 root root    0 Dec  6 10:21 cnx02
+drwxr-xr-x  2 root root    0 Dec  6 10:21 cnx03
+drwxr-xr-x  2 root root    0 Dec  6 10:21 cnx04
+lrwxrwxrwx  1 root root    0 Dec  6 10:21 module ->
+../../../../module/iseries_veth
+--w-------  1 root root 4096 Dec  6 10:21 uevent
+--w-------  1 root root 4096 Dec  6 10:21 unbind
+
+The driver has a connection to all the other lpars, this is entirely
+independent of the net devices.
+
+igoeast:/sys/class/net/eth1/device/driver# find cnx00/
+cnx00/
+cnx00/outstanding_tx
+cnx00/remote_lp
+cnx00/num_events
+cnx00/reset_timeout
+cnx00/last_contact
+cnx00/state
+cnx00/src_inst
+cnx00/dst_inst
+cnx00/num_pending_acks
+cnx00/num_ack_events
+cnx00/ack_timeout
+
+
+> > Why is it "odd and probably wrong" to create subdirectories under
+the
+> > driver in sysfs?
+>=20
+> Because a driver does not have "devices" under it in the sysfs tree.
+> All devices liven in the /sys/devices/ tree so we can properly manage
+> them that way.  A driver will then bind to a device, and the driver
+core
+> will set up the linkages in sysfs properly so that everthing looks
+> uniform.
+
+OK. They're not "devices" that we create under the driver, they're just
+attributes of the driver, and they happen to be in groups so I put them
+in subdirectories.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 189 bytes
+Desc: This is a digitally signed message part
+Url :
+http://ozlabs.org/pipermail/linuxppc-dev/attachments/20071206/f7bfe206/a
+ttachment-0001.pgp=20
+
+------------------------------
+
+Message: 9
+Date: Wed, 5 Dec 2007 21:46:53 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: Link up/down messages from 5200 ethernet driver
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,	Domen Puncer
+	<domen.puncer@telargo.com>
+Message-ID:
+	<fa686aa40712052046s5887c9fewa61c2921a22f5c80@mail.gmail.com>
+Content-Type: text/plain; charset=3DUTF-8
+
+On 12/5/07, Jon Smirl <jonsmirl@gmail.com> wrote:
+> Why does the fec5200 driver sometimes not print 'PHY' correctly?
+>
+> phyCORE-MPC5200B-tiny login: T?V? f0003000:10 - Link is Down
+> T?Y: f0003000:10 - Link is Up - 100/Full
+> T?Y: f0003000:10 - Link is Down
+> PHY: f0003000:10 - Link is Up - 100/Full
+
+Weird; that line comes from drivers/net/phy/phy.c in
+phy_print_status(), and it's just a a pr_info statement.  I suppose it
+might be a stack overrun, but I'd expect more severe symptoms if that
+was the case.
+
+That *looks* like a serial stream corruption.  Is that the output of
+your serial port?  Does dmesg show the same corruption?
+
+Cheers,
+g.
+
+--=20
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
+
+------------------------------
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+End of Linuxppc-dev Digest, Vol 40, Issue 57
+********************************************
