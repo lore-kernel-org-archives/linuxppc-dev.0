@@ -1,32 +1,35 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87BE3DDF3B
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 07:29:00 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6KStLo007596
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 15:28:55 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB6KSkiJ042624
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:28:48 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB6KSk30010859
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:28:46 -0700
-Date: Thu, 6 Dec 2007 14:25:45 -0600
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60A3BDDFA9
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 07:35:04 +1100 (EST)
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+	[9.17.195.228])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6KZ049004509
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 15:35:00 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB6KYwSW117980
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:34:59 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB6KYtWt001552
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:34:55 -0700
+Received: from zod.rchland.ibm.com (wecm-9-67-146-77.wecm.ibm.com
+	[9.67.146.77])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	lB6KYsXf001471
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:34:54 -0700
+Date: Thu, 6 Dec 2007 14:32:02 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/25] powerpc: 4xx PCI, PCI-X and PCI-Express support
-	among others
-Message-ID: <20071206142545.437958e1@zod.rchland.ibm.com>
-In-Reply-To: <1196927999.714593.205329520306.qpush@grosgo>
-References: <1196927999.714593.205329520306.qpush@grosgo>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.25-candidates branch updated in 4xx tree
+Message-ID: <20071206143202.331082b3@zod.rchland.ibm.com>
+In-Reply-To: <20071204131139.3c6be92f@zod.rchland.ibm.com>
+References: <20071204131139.3c6be92f@zod.rchland.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,22 +39,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 06 Dec 2007 18:59:59 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, 4 Dec 2007 13:11:39 -0600
+Josh Boyer <jwboyer@linux.vnet.ibm.com> wrote:
 
-> Here's a set of patches that bring PCI, PCI-X and PCI-Express
-> support to 4xx on arch/powerpc. It also changes/fixed various
-> bits and pieces, such as a bit of rework of arch/powerpc/boot
-> 4xx code, adding a couple of new platforms along the way. 
-> 
-> There are some issues with the SCSI stack vs. non-coherent
-> DMA that I'm working on fixing separately, and there's a
-> problem I noticed with the e1000 driver vs. 64 bits resources
-> on 32 bits architectures for which I also have a patch that
-> I posted separately. Appart from that, I got it working fine
-> with a USB2 card in an ebony and 2 USB storage devices.
-> 
+> For those following my tree, I've added a 2.6.25-candidates branch and
+> based it off of Paul's latest master.  (If you've already pulled
+> you'll have to reset, sorry.)
 
-These are now in my 2.6.25-candidates tree.
+I've updated this again with BenH's latest PCI patch series.  There are
+a couple more commits from Stefan and Valentine for various platform
+fixes, and I've also fixed the 4xx DTS files to work with both the old
+and new DTC versions.
 
 josh
