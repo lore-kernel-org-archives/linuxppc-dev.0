@@ -1,18 +1,23 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <greg@kroah.com>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C7619DDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 17:44:03 +1100 (EST)
-Date: Thu, 06 Dec 2007 15:43:55 +0900 (JST)
-Message-Id: <20071206.154355.-1300541609.kouish@swc.toshiba.co.jp>
-To: arnd@arndb.de
-Subject: Re: [PATCH 2/3] celleb: add supporting for native CBE
-In-Reply-To: <200712041421.47378.arnd@arndb.de>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 8714ADDDF9
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 18:34:48 +1100 (EST)
+Date: Wed, 5 Dec 2007 22:39:40 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+Message-ID: <20071206063940.GA16474@kroah.com>
+References: <20071205064116.D849BDE10A@ozlabs.org>
+	<1196911347.7033.15.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1196911347.7033.15.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,86 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> wrote:
-> On Tuesday 04 December 2007, Ishizaki Kou wrote:
-> > This patch adds supporting for native CBE on Celleb. Many codes in
-> > platforms/cell/ are used when native CBE environment.
+On Thu, Dec 06, 2007 at 02:22:27PM +1100, Benjamin Herrenschmidt wrote:
+> 
+> On Wed, 2007-12-05 at 17:40 +1100, Benjamin Herrenschmidt wrote:
+> > The current pci_assign_unassigned_resources() code doesn't work properly
+> > on 32 bits platforms with 64 bits resources. The main reason is the use
+> > of unsigned long in various places instead of resource_size_t.
 > > 
-> > Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
+> > This fixes it, along with some tricks to avoid casting to 64 bits on
+> > platforms that don't need it in every printk around.
+> > 
+> > This is a pre-requisite for making powerpc use the generic code instead of
+> > its own half-useful implementation.
+> > 
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > ---
+> > 
+> > This version fixes some stupid warnings when using 32 bits resources
 > 
-> Ah, excellent to hear that this is now working!
+>  ... and has warnings on 64 bits platforms... GRRRR
 > 
-> I'd suggest doing the initialization in a different way, so that you don't
-> need to decide on so many attributes dynamically. The easiest way would
-> probably be to have two separate define_machine() calls in the celleb
-> definition, like
+> This whole issue of printk vs. resource_size_t is a terrible mess :-(
 > 
-> define_machine(celleb_beat) {
->         .probe                  = celleb_probe_beat,
->         .setup_arch             = celleb_setup_arch_native,
->         .show_cpuinfo           = celleb_show_cpuinfo,
->         .restart                = beat_restart,
->         .power_off              = beat_power_off,
->         .halt                   = beat_halt,
->         .get_rtc_time           = beat_get_rtc_time,
->         .set_rtc_time           = beat_set_rtc_time,
->         .calibrate_decr         = generic_calibrate_decr,
->         .progress               = celleb_progress,
->         .power_save             = beat_power_save,
->         .nvram_size             = beat_nvram_get_size,
->         .nvram_read             = beat_nvram_read,
->         .nvram_write            = beat_nvram_write,
->         .set_dabr               = beat_set_xdabr,
->         .init_IRQ               = beatic_init_IRQ,
->         .get_irq                = beatic_get_irq,
->         .pci_probe_mode         = celleb_pci_probe_mode,
->         .pci_setup_phb          = celleb_setup_phb,
-> 	...
-> };
+> Part of the problem is that resource_size_t can be either u32 or u64..
 > 
-> define_machine(celleb_native) {
->         .probe                  = celleb_probe_native,
->         .setup_arch             = celleb_setup_arch_native,
->         .show_cpuinfo           = celleb_show_cpuinfo,
->         .restart                = rtas_restart,
->         .power_off              = rtas_power_off,
->         .halt                   = rtas_halt,
->         .get_rtc_time           = rtas_get_rtc_time,
->         .set_rtc_time           = rtas_set_rtc_time,
->         .calibrate_decr         = generic_calibrate_decr,
->         .progress               = celleb_progress,
->         .init_IRQ               = celleb_init_IRQ_native,
->         .get_irq                = celleb_get_irq_native,
->         .pci_probe_mode         = celleb_pci_probe_mode,
->         .pci_setup_phb          = celleb_setup_phb,
-> 	...
-> };
-> 
-> For this, you can either have the two machine definitions in the
-> same celleb/setup.c, or split setup.c into machine specific files,
-> depending on how much ends up being shared in the end.
+> that is  it can be either unsigned int, unsigned long or unsigned long
+> long... and we have no way to reliably printk that.
 
-Thanks for your suggestion. I'll try to split into two machine
-definitions.
+We do this already just fine.  Take a look in the kernel, I think we
+just always cast it to long long to be uniform.
 
+> Any clever idea before I start pushing filthy macros up linux/types.h ?
 
-> An interesting question still is how close the native celleb machine
-> definition is to the one from platforms/cell/setup.c. Maybe it's best
-> to have a common machine definition for these two in the end.
+I don't think any macros are needed.
 
-You know celleb-native is between celleb-beat and cell blade. I also
-think it's best if we can use a common machine definition and a common
-setup code. But there are many differences mainly caused by their
-firmwares, and this disturbs the integration. I think celleb-native is
-closer to celleb-beat than to cell blade. So I put celleb-native code
-in platforms/celleb.
+thanks,
 
-
-> 	Arnd <><
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
-Best regards,
-Kou Ishizaki
+greg k-h
