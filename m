@@ -1,23 +1,32 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C63F2DE0CE
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:46:13 +1100 (EST)
-Message-ID: <4758193B.5080707@freescale.com>
-Date: Thu, 06 Dec 2007 09:46:03 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
-References: <11968944871776-git-send-email-timur@freescale.com>
-	<200712060117.14768.arnd@arndb.de> <47580F43.7020404@freescale.com>
-	<200712061631.19485.arnd@arndb.de>
-In-Reply-To: <200712061631.19485.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 33C28DDEBF
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:48:16 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6EkeLb027348
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 09:46:40 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB6Fm7hR061444
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 08:48:08 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB6Fm66o012755
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 08:48:06 -0700
+Date: Thu, 6 Dec 2007 09:44:48 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Powerpc PCI cleanups (mainly iSeries)
+Message-ID: <20071206094448.4de7967a@zod.rchland.ibm.com>
+In-Reply-To: <20071207020726.8c0ea12b.sfr@canb.auug.org.au>
+References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
+	<20071207020726.8c0ea12b.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,47 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+On Fri, 7 Dec 2007 02:07:26 +1100
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> My point is that you could have some extra code that calls your
-> qe_upload_firmware() when the device tree contains the blob but the boot
-> loader did not already load it.
+> On Thu, 6 Dec 2007 18:00:45 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > I started out looking for ways to remove our dependencies on pci_dn and
+> > got sidetracked into clening up the iSeries PCI code.  The intention of
+> > the following set of patches is that there be no semantic changes
+> > (mostly).
+> 
+> Some of these will clearly conflict with Benh's PCI work.  We will sot
+> that out between us.  :-)
 
-The current design of the 'firmware' node is such that if present, that means 
-that the firmware has already been uploaded.
+In the meantime...
 
-We can't use the device tree to tell the kernel which firmware to upload, 
-because that is determined exclusively by the user's application.  The drivers 
-are ultimately responsible for deciding which firmware to use.
+My tree is going to carry BenH's patches since they're obviously
+important to 4xx.  If these conflicts get sorted out soon, that would
+be good :).  At some point I'm going to start sending stuff to Paul.
 
-> This helps e.g. for the case where you
-> want to be able to install a generic Linux distribution that is not
-> able to ship with your firmware blob in the kernel or the root file system.
-> Putting the blob in the device tree makes it easier to get to a running
-> system then.
-
-But where would the blob come from?  Probably from flash or a TFTP server.  In 
-that case, the boot loader can still handle it.
-
-> You can argue that the boot loader can always load the firmware in the
-> first place, but then you wouldn't need an implementation of
-> qe_upload_firmware in the kernel any more.
-
-You might want to do runtime swapping of firmwares.  One of the drawbacks of the 
-QE microcode design is that you can only have one microcode uploaded at a time. 
-  If you need to have two different microcodes (e.g. Soft-UART and 
-interworking), then you need to merge the source code for those two into a new 
-microcode and compile that.
-
-You might need to do full reset of the QE, which would require re-uploading.
-
-You might not know until after the kernel boots which firmware you want.
-
-In reality, having the boot loader load the firmware will usually be the 
-preferred approach, because that's simpler.  Having it in both U-Boot and the 
-kernel covers all situations, though.  There would be no need for the bootloader 
-to pass the firmware to the kernel.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+josh
