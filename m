@@ -1,18 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 45A94DDF68
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:17:28 +1100 (EST)
-Date: Thu, 6 Dec 2007 13:15:19 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Please pull from 'for-2.6.24' branch
-Message-ID: <Pine.LNX.4.64.0712061314230.18227@blarg.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, chombourger@gmail.com
+Return-Path: <grant.likely@secretlab.ca>
+Received: from pd2mo1so.prod.shaw.ca (idcmail-mo1so.shaw.ca [24.71.223.10])
+	by ozlabs.org (Postfix) with ESMTP id 3FCD6DDFB2
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:18:11 +1100 (EST)
+Received: from pd2mr2so.prod.shaw.ca
+	(pd2mr2so-qfe3.prod.shaw.ca [10.0.141.109]) by l-daemon
+	(Sun ONE Messaging Server 6.0 HotFix 1.01 (built Mar 15 2004))
+	with ESMTP id <0JSN0031K6W3JV90@l-daemon> for linuxppc-dev@ozlabs.org;
+	Thu, 06 Dec 2007 12:16:51 -0700 (MST)
+Received: from pn2ml1so.prod.shaw.ca ([10.0.121.145])
+	by pd2mr2so.prod.shaw.ca (Sun Java System Messaging Server 6.2-7.05
+	(built Sep
+	5 2006)) with ESMTP id <0JSN004006VW3Z20@pd2mr2so.prod.shaw.ca> for
+	linuxppc-dev@ozlabs.org; Thu, 06 Dec 2007 12:16:51 -0700 (MST)
+Received: from trillian.cg.shawcable.net ([68.147.67.118])
+	by l-daemon (Sun Java System Messaging Server 6.2-7.05 (built Sep 5
+	2006))
+	with ESMTP id <0JSN00KR26VU6420@l-daemon> for linuxppc-dev@ozlabs.org;
+	Thu, 06 Dec 2007 12:16:44 -0700 (MST)
+Date: Thu, 06 Dec 2007 12:16:44 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] [PPC] virtex bug fix: Use canonical value for AC97 interrupt
+	xparams
+To: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-id: <20071206191602.29192.42800.stgit@trillian.secretlab.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,115 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for-2.6.24' branch of
+From: Grant Likely <grant.likely@secretlab.ca>
 
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for-2.6.24
+The ml300 and ml403 xparameters.h files use different macros for the AC97
+interrupt pin assignments.  This patch normalizes them to a canonical
+value similar to what EDK generates for most other devices
 
-to receive the following updates:
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
 
- arch/powerpc/kernel/asm-offsets.c    |    3 +--
- arch/powerpc/kernel/head_32.S        |    2 +-
- arch/powerpc/kernel/head_40x.S       |    2 +-
- arch/powerpc/kernel/head_44x.S       |    2 +-
- arch/powerpc/kernel/head_fsl_booke.S |    2 +-
- include/asm-powerpc/pgtable-ppc32.h  |    5 +++++
- 6 files changed, 10 insertions(+), 6 deletions(-)
+Josh, Paulus; this is a bug fix needed to get ml300 support to compile
+in arch/ppc.  Please merge for 2.6.24
 
-Kumar Gala (1):
-      [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y on FSL_BOOKE
+Thanks,
+g.
 
-commit bee86f14d51a5a9a3b1897e301da1e415df0ba23
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Thu Dec 6 13:11:04 2007 -0600
+ arch/ppc/platforms/4xx/xparameters/xparameters.h |    8 ++++++++
+ arch/ppc/syslib/virtex_devices.c                 |    8 ++++----
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-    [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y on FSL_BOOKE
-
-    The size of swapper_pg_dir is 8k instead of 4k when using 64-bit PTEs
-    (CONFIG_PTE_64BIT).
-
-    This was reported by Cedric Hombourger <chombourger@gmail.com>
-
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index d67bcd8..ed083fe 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -326,8 +326,7 @@ int main(void)
- 	DEFINE(VMALLOC_START_VSID, KERNEL_VSID(VMALLOC_START));
- #endif
-
--#ifdef CONFIG_PPC64
- 	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
--#endif
-+
- 	return 0;
- }
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index a5b13ae..0f4fac5 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -1311,7 +1311,7 @@ empty_zero_page:
-
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	4096
-+	.space	PGD_TABLE_SIZE
-
- 	.globl intercept_table
- intercept_table:
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index cfefc2d..8552e67 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -994,7 +994,7 @@ empty_zero_page:
- 	.space	4096
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	4096
-+	.space	PGD_TABLE_SIZE
-
-
- /* Stack for handling critical exceptions from kernel mode */
-diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
-index 409db61..56aba84 100644
---- a/arch/powerpc/kernel/head_44x.S
-+++ b/arch/powerpc/kernel/head_44x.S
-@@ -722,7 +722,7 @@ empty_zero_page:
-  */
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	8192
-+	.space	PGD_TABLE_SIZE
-
- /* Reserved 4k for the critical exception stack & 4k for the machine
-  * check stack per CPU for kernel mode exceptions */
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 4b98227..7aecb39 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1035,7 +1035,7 @@ empty_zero_page:
- 	.space	4096
- 	.globl	swapper_pg_dir
- swapper_pg_dir:
--	.space	4096
-+	.space	PGD_TABLE_SIZE
-
- /* Reserved 4k for the critical exception stack & 4k for the machine
-  * check stack per CPU for kernel mode exceptions */
-diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
-index fea2d8f..d1332bb 100644
---- a/include/asm-powerpc/pgtable-ppc32.h
-+++ b/include/asm-powerpc/pgtable-ppc32.h
-@@ -86,6 +86,11 @@ extern int icache_44x_need_flush;
-  * entries per page directory level: our page-table tree is two-level, so
-  * we don't really have any PMD directory.
-  */
-+#ifndef __ASSEMBLY__
-+#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
-+#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
-+#endif	/* __ASSEMBLY__ */
-+
- #define PTRS_PER_PTE	(1 << PTE_SHIFT)
- #define PTRS_PER_PMD	1
- #define PTRS_PER_PGD	(1 << (32 - PGDIR_SHIFT))
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+index 01aa043..8ef0887 100644
+--- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+@@ -15,8 +15,16 @@
+ 
+ #if defined(CONFIG_XILINX_ML300)
+   #include "xparameters_ml300.h"
++  #define XPAR_INTC_0_AC97_CONTROLLER_REF_0_PLAYBACK_VEC_ID \
++  	XPAR_DCR_INTC_0_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_INTR
++  #define XPAR_INTC_0_AC97_CONTROLLER_REF_0_RECORD_VEC_ID \
++	XPAR_DCR_INTC_0_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_INTR
+ #elif defined(CONFIG_XILINX_ML403)
+   #include "xparameters_ml403.h"
++  #define XPAR_INTC_0_AC97_CONTROLLER_REF_0_PLAYBACK_VEC_ID \
++  	XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_INTR
++  #define XPAR_INTC_0_AC97_CONTROLLER_REF_0_RECORD_VEC_ID \
++	XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_INTR
+ #else
+   /* Add other board xparameter includes here before the #else */
+   #error No xparameters_*.h file included
+diff --git a/arch/ppc/syslib/virtex_devices.c b/arch/ppc/syslib/virtex_devices.c
+index f658ff3..7322781 100644
+--- a/arch/ppc/syslib/virtex_devices.c
++++ b/arch/ppc/syslib/virtex_devices.c
+@@ -98,13 +98,13 @@
+ 			.flags = IORESOURCE_MEM, \
+ 		}, \
+ 		{ \
+-			.start = XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_##num##_PLAYBACK_INTERRUPT_INTR, \
+-			.end = XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_##num##_PLAYBACK_INTERRUPT_INTR, \
++			.start = XPAR_INTC_0_AC97_CONTROLLER_REF_##num##_PLAYBACK_VEC_ID, \
++			.end = XPAR_INTC_0_AC97_CONTROLLER_REF_##num##_PLAYBACK_VEC_ID, \
+ 			.flags = IORESOURCE_IRQ, \
+ 		}, \
+ 		{ \
+-			.start = XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_##num##_RECORD_INTERRUPT_INTR, \
+-			.end = XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_##num##_RECORD_INTERRUPT_INTR, \
++			.start = XPAR_INTC_0_AC97_CONTROLLER_REF_##num##_RECORD_VEC_ID, \
++			.end = XPAR_INTC_0_AC97_CONTROLLER_REF_##num##_RECORD_VEC_ID, \
+ 			.flags = IORESOURCE_IRQ, \
+ 		}, \
+ 	}, \
