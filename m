@@ -1,17 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5536CDE255
+	by ozlabs.org (Postfix) with ESMTP id DA861DDF31
 	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:59 +1100 (EST)
 Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 3114C368006
+	by smtps.tip.net.au (Postfix) with ESMTP id ACD19368002
 	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:59 +1100 (EST)
-Date: Fri, 7 Dec 2007 01:55:50 +1100
+Date: Fri, 7 Dec 2007 01:56:55 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 11/19] [POWERPC] iSeries: iseries_ds_addr is only used in pci.c
-Message-Id: <20071207015550.e6dc6fde.sfr@canb.auug.org.au>
+Subject: [PATCH 12/19] [POWERPC] iSeries: reduce dependence on pci_dn bussubno
+Message-Id: <20071207015655.bf31fc29.sfr@canb.auug.org.au>
 In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -28,63 +28,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/iseries/pci.c |   11 +++++++++++
- arch/powerpc/platforms/iseries/pci.h |   13 +------------
- 2 files changed, 12 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/iseries/pci.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 3cf51c6..b46d8c5 100644
+index b46d8c5..7e00e35 100644
 --- a/arch/powerpc/platforms/iseries/pci.c
 +++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -69,6 +69,17 @@ static const char pci_io_text[] = "iSeries PCI I/O";
- static DEFINE_SPINLOCK(iomm_table_lock);
+@@ -190,6 +190,7 @@ void __init iSeries_pci_final_fixup(void)
+ 	for_each_pci_dev(pdev) {
+ 		struct pci_dn *pdn;
+ 		const u32 *agent;
++		const u32 *sub_bus;
  
- /*
-+ * Generate a Direct Select Address for the Hypervisor
-+ */
-+static inline u64 iseries_ds_addr(struct device_node *node)
-+{
-+	struct pci_dn *pdn = PCI_DN(node);
-+
-+	return ((u64)pdn->busno << 48) + ((u64)pdn->bussubno << 40)
-+			+ ((u64)0x10 << 32);
-+}
-+
-+/*
-  * iomm_table_allocate_entry
-  *
-  * Adds pci_dev entry in address translation table
-diff --git a/arch/powerpc/platforms/iseries/pci.h b/arch/powerpc/platforms/iseries/pci.h
-index 3cb18fa..3af9cf1 100644
---- a/arch/powerpc/platforms/iseries/pci.h
-+++ b/arch/powerpc/platforms/iseries/pci.h
-@@ -30,7 +30,7 @@
-  * End Change Activity
-  */
+ 		node = find_device_node(pdev->bus->number, pdev->devfn);
+ 		printk("pci dev %p (%x.%x), node %p\n", pdev,
+@@ -202,23 +203,23 @@ void __init iSeries_pci_final_fixup(void)
  
--#include <asm/pci-bridge.h>
-+#include <asm/iseries/hv_types.h>
+ 		pdn = PCI_DN(node);
+ 		agent = of_get_property(node, "linux,agent-id", NULL);
+-		if (pdn && agent) {
+-			u8 irq = iSeries_allocate_IRQ(pdn->busno, 0,
+-					pdn->bussubno);
++		sub_bus = of_get_property(node, "linux,subbus", NULL);
++		if (pdn && agent && sub_bus) {
++			u8 irq = iSeries_allocate_IRQ(pdn->busno, 0, *sub_bus);
+ 			int err;
  
- struct pci_dev;				/* For Forward Reference */
- 
-@@ -47,17 +47,6 @@ struct pci_dev;				/* For Forward Reference */
- #define ISERIES_GET_DEVICE_FROM_SUBBUS(subbus)		((subbus >> 5) & 0x7)
- #define ISERIES_GET_FUNCTION_FROM_SUBBUS(subbus)	((subbus >> 2) & 0x7)
- 
--/*
-- * Generate a Direct Select Address for the Hypervisor
-- */
--static inline u64 iseries_ds_addr(struct device_node *node)
--{
--	struct pci_dn *pdn = PCI_DN(node);
--
--	return ((u64)pdn->busno << 48) + ((u64)pdn->bussubno << 40)
--			+ ((u64)0x10 << 32);
--}
--
- extern void	iSeries_Device_Information(struct pci_dev *PciDev, int count,
- 			u16 bus, HvSubBusNumber subbus);
- #ifdef CONFIG_PCI
+-			err = HvCallXm_connectBusUnit(pdn->busno, pdn->bussubno,
++			err = HvCallXm_connectBusUnit(pdn->busno, *sub_bus,
+ 					*agent, irq);
+ 			if (err)
+ 				pci_log_error("Connect Bus Unit",
+-					pdn->busno, pdn->bussubno, *agent, err);
++					pdn->busno, *sub_bus, *agent, err);
+ 			else {
+ 				err = HvCallPci_configStore8(pdn->busno,
+-					pdn->bussubno, *agent,
++					*sub_bus, *agent,
+ 					PCI_INTERRUPT_LINE, irq);
+ 				if (err)
+ 					pci_log_error("PciCfgStore Irq Failed!",
+-						pdn->busno, pdn->bussubno,
++						pdn->busno, *sub_bus,
+ 						*agent, err);
+ 				else
+ 					pdev->irq = irq;
+@@ -229,8 +230,7 @@ void __init iSeries_pci_final_fixup(void)
+ 		pdev->sysdata = node;
+ 		PCI_DN(node)->pcidev = pdev;
+ 		allocate_device_bars(pdev);
+-		iSeries_Device_Information(pdev, num_dev, pdn->busno,
+-				pdn->bussubno);
++		iSeries_Device_Information(pdev, num_dev, pdn->busno, *sub_bus);
+ 		iommu_devnode_init_iSeries(pdev, node);
+ 	}
+ 	iSeries_activate_IRQs();
 -- 
 1.5.3.7
 
