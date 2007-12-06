@@ -1,18 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A0F9CDDF69
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:02 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 24CC9DE284
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:03 +1100 (EST)
 Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 7BC0B368002
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:02 +1100 (EST)
-Date: Fri, 7 Dec 2007 02:03:23 +1100
+	by smtps.tip.net.au (Postfix) with ESMTP id 0625D368002
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:03 +1100 (EST)
+Date: Fri, 7 Dec 2007 02:04:33 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 17/19] [POWERPC] remove some iSeries platform checks from
-	the PCI code
-Message-Id: <20071207020323.8d06e4f1.sfr@canb.auug.org.au>
+Subject: [PATCH 18/19] [POWERPC] Don't special case pci_domain_nr() for iSeries
+Message-Id: <20071207020433.96653b94.sfr@canb.auug.org.au>
 In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -29,81 +28,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/pci_64.c         |   23 ++++++++---------------
+ arch/powerpc/kernel/pci-common.c     |    9 ++-------
  arch/powerpc/platforms/iseries/pci.c |    2 ++
- 2 files changed, 10 insertions(+), 15 deletions(-)
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 42ff9c9..acf1219 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -31,7 +31,6 @@
- #include <asm/byteorder.h>
- #include <asm/machdep.h>
- #include <asm/ppc-pci.h>
--#include <asm/firmware.h>
- 
- #ifdef DEBUG
- #include <asm/udbg.h>
-@@ -197,9 +196,6 @@ static void __init pcibios_claim_of_setup(void)
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 252dd1e..e0d4a2a 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -118,15 +118,10 @@ int pcibios_vaddr_is_ioport(void __iomem *address)
+  */
+ int pci_domain_nr(struct pci_bus *bus)
  {
- 	struct pci_bus *b;
- 
 -	if (firmware_has_feature(FW_FEATURE_ISERIES))
--		return;
--
- 	list_for_each_entry(b, &pci_root_buses, node)
- 		pcibios_claim_one_bus(b);
- }
-@@ -477,8 +473,7 @@ void __devinit scan_phb(struct pci_controller *hose)
- 	bus->secondary = hose->first_busno;
- 	hose->bus = bus;
+-		return 0;
+-	else {
+-		struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pci_controller *hose = pci_bus_to_host(bus);
  
--	if (!firmware_has_feature(FW_FEATURE_ISERIES))
--		pcibios_map_io_space(bus);
-+	pcibios_map_io_space(bus);
- 
- 	bus->resource[0] = res = &hose->io_resource;
- 	if (res->flags && request_resource(&ioport_resource, res)) {
-@@ -527,15 +522,13 @@ static int __init pcibios_init(void)
- 		pci_bus_add_devices(hose->bus);
- 	}
- 
--	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
--		if (pci_probe_only)
--			pcibios_claim_of_setup();
--		else
--			/* FIXME: `else' will be removed when
--			   pci_assign_unassigned_resources() is able to work
--			   correctly with [partially] allocated PCI tree. */
--			pci_assign_unassigned_resources();
+-		return hose->global_number;
 -	}
-+	if (pci_probe_only)
-+		pcibios_claim_of_setup();
-+	else
-+		/* FIXME: `else' will be removed when
-+		   pci_assign_unassigned_resources() is able to work
-+		   correctly with [partially] allocated PCI tree. */
-+		pci_assign_unassigned_resources();
++	return hose->global_number;
+ }
+-
+ EXPORT_SYMBOL(pci_domain_nr);
  
- 	/* Call machine dependent final fixup */
- 	if (ppc_md.pcibios_fixup)
+ #ifdef CONFIG_PPC_OF
 diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 4bcf446..db0a17e 100644
+index db0a17e..3071a30 100644
 --- a/arch/powerpc/platforms/iseries/pci.c
 +++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -646,6 +646,8 @@ void __init iSeries_pcibios_init(void)
- 	/* Install IO hooks */
- 	ppc_pci_io = iseries_pci_io;
+@@ -673,6 +673,8 @@ void __init iSeries_pcibios_init(void)
+ 		phb = pcibios_alloc_controller(node);
+ 		if (phb == NULL)
+ 			continue;
++		/* All legacy iSeries PHBs are in domain zero */
++		phb->global_number = 0;
  
-+	pci_probe_only = 1;
-+
- 	/* iSeries has no IO space in the common sense, it needs to set
- 	 * the IO base to 0
- 	 */
+ 		phb->pci_mem_offset = bus;
+ 		phb->first_busno = bus;
 -- 
 1.5.3.7
-
 
 -- 
 Cheers,
