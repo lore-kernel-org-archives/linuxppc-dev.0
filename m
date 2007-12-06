@@ -1,19 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A93DCDDF79
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 05:29:00 +1100 (EST)
-Date: Thu, 6 Dec 2007 12:33:19 -0600
-From: Olof Johansson <olof@lixom.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 07/19] [POWERPC] iSeries: unindent and clean
-	iSeries_pci_final_fixup
-Message-ID: <20071206183319.GA9949@lixom.net>
-References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-	<20071207015148.917436cc.sfr@canb.auug.org.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 88CA3DDFB5
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:14:48 +1100 (EST)
+Date: Thu, 6 Dec 2007 13:12:58 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] [POWERPC] Fix swapper_pg_dir size when CONFIG_PTE_64BIT=y
+	on FSL_BOOKE
+Message-ID: <Pine.LNX.4.64.0712061312510.18193@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20071207015148.917436cc.sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@osdl.org>, chombourger@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 07, 2007 at 01:51:48AM +1100, Stephen Rothwell wrote:
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/platforms/iseries/pci.c |   68 +++++++++++++++++----------------
->  1 files changed, 35 insertions(+), 33 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-> index cff832a..8e2ac3d 100644
-> --- a/arch/powerpc/platforms/iseries/pci.c
-> +++ b/arch/powerpc/platforms/iseries/pci.c
-> @@ -177,47 +177,49 @@ void __init iSeries_pci_final_fixup(void)
->  
->  	printk("pcibios_final_fixup\n");
->  	for_each_pci_dev(pdev) {
-> +		struct pci_dn *pdn;
-> +		const u32 *agent;
-> +
->  		node = find_device_node(pdev->bus->number, pdev->devfn);
->  		printk("pci dev %p (%x.%x), node %p\n", pdev,
->  		       pdev->bus->number, pdev->devfn, node);
-> +		if (!node) {
-> +			printk("PCI: Device Tree not found for 0x%016lX\n",
-> +					(unsigned long)pdev);
+The size of swapper_pg_dir is 8k instead of 4k when using 64-bit PTEs
+(CONFIG_PTE_64BIT).
 
-Hi,
+This was reported by Cedric Hombourger <chombourger@gmail.com>
 
-Care to add KERN_ levels, while you're touching it? (both printks above
-lack them).
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+
+This is in my git tree, branch for-2.6.24 and I'll forward on a pull
+request to Paul & Linus for it.
+
+ arch/powerpc/kernel/asm-offsets.c    |    3 +--
+ arch/powerpc/kernel/head_32.S        |    2 +-
+ arch/powerpc/kernel/head_40x.S       |    2 +-
+ arch/powerpc/kernel/head_44x.S       |    2 +-
+ arch/powerpc/kernel/head_fsl_booke.S |    2 +-
+ include/asm-powerpc/pgtable-ppc32.h  |    5 +++++
+ 6 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index d67bcd8..ed083fe 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -326,8 +326,7 @@ int main(void)
+ 	DEFINE(VMALLOC_START_VSID, KERNEL_VSID(VMALLOC_START));
+ #endif
+
+-#ifdef CONFIG_PPC64
+ 	DEFINE(PGD_TABLE_SIZE, PGD_TABLE_SIZE);
+-#endif
++
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+index a5b13ae..0f4fac5 100644
+--- a/arch/powerpc/kernel/head_32.S
++++ b/arch/powerpc/kernel/head_32.S
+@@ -1311,7 +1311,7 @@ empty_zero_page:
+
+ 	.globl	swapper_pg_dir
+ swapper_pg_dir:
+-	.space	4096
++	.space	PGD_TABLE_SIZE
+
+ 	.globl intercept_table
+ intercept_table:
+diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+index cfefc2d..8552e67 100644
+--- a/arch/powerpc/kernel/head_40x.S
++++ b/arch/powerpc/kernel/head_40x.S
+@@ -994,7 +994,7 @@ empty_zero_page:
+ 	.space	4096
+ 	.globl	swapper_pg_dir
+ swapper_pg_dir:
+-	.space	4096
++	.space	PGD_TABLE_SIZE
 
 
--Olof
+ /* Stack for handling critical exceptions from kernel mode */
+diff --git a/arch/powerpc/kernel/head_44x.S b/arch/powerpc/kernel/head_44x.S
+index 409db61..56aba84 100644
+--- a/arch/powerpc/kernel/head_44x.S
++++ b/arch/powerpc/kernel/head_44x.S
+@@ -722,7 +722,7 @@ empty_zero_page:
+  */
+ 	.globl	swapper_pg_dir
+ swapper_pg_dir:
+-	.space	8192
++	.space	PGD_TABLE_SIZE
+
+ /* Reserved 4k for the critical exception stack & 4k for the machine
+  * check stack per CPU for kernel mode exceptions */
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 4b98227..7aecb39 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -1035,7 +1035,7 @@ empty_zero_page:
+ 	.space	4096
+ 	.globl	swapper_pg_dir
+ swapper_pg_dir:
+-	.space	4096
++	.space	PGD_TABLE_SIZE
+
+ /* Reserved 4k for the critical exception stack & 4k for the machine
+  * check stack per CPU for kernel mode exceptions */
+diff --git a/include/asm-powerpc/pgtable-ppc32.h b/include/asm-powerpc/pgtable-ppc32.h
+index fea2d8f..d1332bb 100644
+--- a/include/asm-powerpc/pgtable-ppc32.h
++++ b/include/asm-powerpc/pgtable-ppc32.h
+@@ -86,6 +86,11 @@ extern int icache_44x_need_flush;
+  * entries per page directory level: our page-table tree is two-level, so
+  * we don't really have any PMD directory.
+  */
++#ifndef __ASSEMBLY__
++#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
++#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
++#endif	/* __ASSEMBLY__ */
++
+ #define PTRS_PER_PTE	(1 << PTE_SHIFT)
+ #define PTRS_PER_PMD	1
+ #define PTRS_PER_PGD	(1 << (32 - PGDIR_SHIFT))
+-- 
+1.5.3.4
