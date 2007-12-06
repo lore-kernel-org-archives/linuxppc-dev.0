@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 06 Dec 2007 19:11:36 +1100
-Subject: [RFC/PATCH 8/10] powerpc: Merge PCI resource fixups
+Date: Thu, 06 Dec 2007 19:11:37 +1100
+Subject: [RFC/PATCH 9/10] powerpc: Merge PCI resource allocation & assignment
 In-Reply-To: <1196928690.864849.322811660859.qpush@grosgo>
-Message-Id: <20071206081248.38101DE5B8@ozlabs.org>
+Message-Id: <20071206081248.EABE4DE5D9@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,14 +14,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The PCI code in 32 and 64 bits fixes up resources differently.
+The 32 bits PCI code now uses the generic code for assigning unassigned
+resources and an algorithm similar to x86 for claiming existing ones.
 
-32 bits uses a header quirk plus handles bridges in pcibios_fixup_bus()
-while 64 bits does things in various places depending on whether you
-are using OF probing, using PCI hotplug, etc...
+This works far better than the 64 bits code which basically can only
+claim existing ones (pci_probe_only=1) or would fall appart completely.
 
-This merges those by basically using the 32 bits approach for both,
-with various tweaks to make 64 bits work with the new approach.
+This merges them so that the new 32 bits implementation is used for both.
+
+64 bits now gets the new PCI flags for controlling the behaviour, though
+the old pci_probe_only global is still there for now to be cleared if you
+want to.
+
+I kept a pcibios_claim_one_bus() function mostly based on the old 64
+bits code for use by the DLPAR hotplug. This will have to be cleaned
+up, thought I hope it will work in the meantime.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
@@ -29,616 +36,847 @@ Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 This requires serious testing which I haven't had a chance to do yet,
 especially with DLPAR PCI hotplug.
 
- arch/powerpc/kernel/pci-common.c           |  132 ++++++++++++++++++++++++++++-
- arch/powerpc/kernel/pci_32.c               |   83 ------------------
- arch/powerpc/kernel/pci_64.c               |  106 +++--------------------
- arch/powerpc/platforms/pseries/pci_dlpar.c |   14 +--
- drivers/pci/hotplug/rpadlpar_core.c        |    2 
- include/asm-powerpc/machdep.h              |   14 +--
- include/asm-powerpc/pci-bridge.h           |    2 
- include/asm-powerpc/pci.h                  |    6 -
- 8 files changed, 169 insertions(+), 190 deletions(-)
+ arch/powerpc/kernel/pci-common.c      |  288 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/pci_32.c          |  246 -----------------------------
+ arch/powerpc/kernel/pci_64.c          |  123 +-------------
+ arch/powerpc/platforms/powermac/pci.c |    3 
+ include/asm-powerpc/pci-bridge.h      |    9 -
+ include/asm-powerpc/pci.h             |    8 
+ 6 files changed, 312 insertions(+), 365 deletions(-)
 
-Index: linux-work/arch/powerpc/kernel/pci_64.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci_64.c	2007-12-06 19:03:41.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci_64.c	2007-12-06 19:03:42.000000000 +1100
-@@ -11,7 +11,7 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
--#undef DEBUG
-+#define DEBUG
- 
- #include <linux/kernel.h>
- #include <linux/pci.h>
-@@ -42,9 +42,6 @@
- 
- unsigned long pci_probe_only = 1;
- 
--static void fixup_resource(struct resource *res, struct pci_dev *dev);
--static void do_bus_setup(struct pci_bus *bus);
--
- /* pci_io_base -- the base address from which io bars are offsets.
-  * This is the lowest I/O base address (so bar values are always positive),
-  * and it *must* be the start of ISA space if an ISA bus exists because
-@@ -227,7 +224,6 @@ static void pci_parse_of_addrs(struct de
- 		res->end = base + size - 1;
- 		res->flags = flags;
- 		res->name = pci_name(dev);
--		fixup_resource(res, dev);
- 	}
- }
- 
-@@ -296,7 +292,7 @@ struct pci_dev *of_create_pci_dev(struct
- EXPORT_SYMBOL(of_create_pci_dev);
- 
- void __devinit of_scan_bus(struct device_node *node,
--				  struct pci_bus *bus)
-+			   struct pci_bus *bus)
- {
- 	struct device_node *child = NULL;
- 	const u32 *reg;
-@@ -305,6 +301,7 @@ void __devinit of_scan_bus(struct device
- 
- 	DBG("of_scan_bus(%s) bus no %d... \n", node->full_name, bus->number);
- 
-+	/* Scan direct children */
- 	while ((child = of_get_next_child(node, child)) != NULL) {
- 		DBG("  * %s\n", child->full_name);
- 		reg = of_get_property(child, "reg", &reglen);
-@@ -316,19 +313,26 @@ void __devinit of_scan_bus(struct device
- 		dev = of_create_pci_dev(child, bus, devfn);
- 		if (!dev)
- 			continue;
--		DBG("dev header type: %x\n", dev->hdr_type);
-+		DBG("    dev header type: %x\n", dev->hdr_type);
-+	}
-+
-+	/* Ally all fixups */
-+	pcibios_fixup_of_probed_bus(bus);
- 
-+	/* Now scan child busses */
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
- 		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
--		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
--			of_scan_pci_bridge(child, dev);
-+		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
-+			struct device_node *child = pci_device_to_OF_node(dev);
-+			if (dev)
-+				of_scan_pci_bridge(child, dev);
-+		}
- 	}
--
--	do_bus_setup(bus);
- }
- EXPORT_SYMBOL(of_scan_bus);
- 
- void __devinit of_scan_pci_bridge(struct device_node *node,
--			 	struct pci_dev *dev)
-+				  struct pci_dev *dev)
- {
- 	struct pci_bus *bus;
- 	const u32 *busrange, *ranges;
-@@ -398,7 +402,6 @@ void __devinit of_scan_pci_bridge(struct
- 		res->start = of_read_number(&ranges[1], 2);
- 		res->end = res->start + size - 1;
- 		res->flags = flags;
--		fixup_resource(res, dev);
- 	}
- 	sprintf(bus->name, "PCI Bus %04x:%02x", pci_domain_nr(bus),
- 		bus->number);
-@@ -655,51 +658,13 @@ int __devinit pcibios_map_io_space(struc
- }
- EXPORT_SYMBOL_GPL(pcibios_map_io_space);
- 
--static void __devinit fixup_resource(struct resource *res, struct pci_dev *dev)
--{
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
--	unsigned long offset;
--
--	if (res->flags & IORESOURCE_IO) {
--		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
--		res->start += offset;
--		res->end += offset;
--	} else if (res->flags & IORESOURCE_MEM) {
--		res->start += hose->pci_mem_offset;
--		res->end += hose->pci_mem_offset;
--	}
--}
--
--void __devinit pcibios_fixup_device_resources(struct pci_dev *dev,
--					      struct pci_bus *bus)
--{
--	/* Update device resources.  */
--	int i;
--
--	DBG("%s: Fixup resources:\n", pci_name(dev));
--	for (i = 0; i < PCI_NUM_RESOURCES; i++) {
--		struct resource *res = &dev->resource[i];
--		if (!res->flags)
--			continue;
--
--		DBG("  0x%02x < %08lx:0x%016lx...0x%016lx\n",
--		    i, res->flags, res->start, res->end);
--
--		fixup_resource(res, dev);
--
--		DBG("       > %08lx:0x%016lx...0x%016lx\n",
--		    res->flags, res->start, res->end);
--	}
--}
--EXPORT_SYMBOL(pcibios_fixup_device_resources);
--
- void __devinit pcibios_setup_new_device(struct pci_dev *dev)
- {
- 	struct dev_archdata *sd = &dev->dev.archdata;
- 
- 	sd->of_node = pci_device_to_OF_node(dev);
- 
--	DBG("PCI device %s OF node: %s\n", pci_name(dev),
-+	DBG("PCI: device %s OF node: %s\n", pci_name(dev),
- 	    sd->of_node ? sd->of_node->full_name : "<none>");
- 
- 	sd->dma_ops = pci_dma_ops;
-@@ -713,7 +678,7 @@ void __devinit pcibios_setup_new_device(
- }
- EXPORT_SYMBOL(pcibios_setup_new_device);
- 
--static void __devinit do_bus_setup(struct pci_bus *bus)
-+void __devinit pcibios_do_bus_setup(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
- 
-@@ -722,42 +687,7 @@ static void __devinit do_bus_setup(struc
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list)
- 		pcibios_setup_new_device(dev);
--
--	/* Read default IRQs and fixup if necessary */
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		pci_read_irq_line(dev);
--		if (ppc_md.pci_irq_fixup)
--			ppc_md.pci_irq_fixup(dev);
--	}
--}
--
--void __devinit pcibios_fixup_bus(struct pci_bus *bus)
--{
--	struct pci_dev *dev = bus->self;
--	struct device_node *np;
--
--	np = pci_bus_to_OF_node(bus);
--
--	DBG("pcibios_fixup_bus(%s)\n", np ? np->full_name : "<???>");
--
--	if (dev && pci_probe_only &&
--	    (dev->class >> 8) == PCI_CLASS_BRIDGE_PCI) {
--		/* This is a subordinate bridge */
--
--		pci_read_bridge_bases(bus);
--		pcibios_fixup_device_resources(dev, bus);
--	}
--
--	do_bus_setup(bus);
--
--	if (!pci_probe_only)
--		return;
--
--	list_for_each_entry(dev, &bus->devices, bus_list)
--		if ((dev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
--			pcibios_fixup_device_resources(dev, bus);
- }
--EXPORT_SYMBOL(pcibios_fixup_bus);
- 
- unsigned long pci_address_to_pio(phys_addr_t address)
- {
 Index: linux-work/arch/powerpc/kernel/pci-common.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-12-06 19:03:41.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci-common.c	2007-12-06 19:03:42.000000000 +1100
-@@ -16,7 +16,7 @@
-  * 2 of the License, or (at your option) any later version.
-  */
+--- linux-work.orig/arch/powerpc/kernel/pci-common.c	2007-12-06 19:03:42.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci-common.c	2007-12-06 19:03:47.000000000 +1100
+@@ -55,6 +55,8 @@ extern struct list_head hose_list;
+ /* ISA Memory physical address */
+ resource_size_t isa_mem_base;
  
--#undef DEBUG
-+#define DEBUG
++/* Default PCI flags is 0 */
++unsigned int ppc_pci_flags;
  
- #include <linux/kernel.h>
- #include <linux/pci.h>
-@@ -712,3 +712,133 @@ void pcibios_bus_to_resource(struct pci_
- 	res->end = (region->end + offset) & mask;
+ /*
+  * pci_controller(phb) initialized common variables.
+@@ -842,3 +844,289 @@ void __devinit pcibios_fixup_of_probed_b
+ {
+ 	__pcibios_fixup_bus(bus);
  }
- EXPORT_SYMBOL(pcibios_bus_to_resource);
 +
-+/* Fixup a bus resource into a linux resource */
-+static void __devinit fixup_resource(struct resource *res, struct pci_dev *dev)
++static int skip_isa_ioresource_align(struct pci_dev *dev)
 +{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	resource_size_t offset = 0, mask = (resource_size_t)-1;
++	if ((ppc_pci_flags & PPC_PCI_CAN_SKIP_ISA_ALIGN) &&
++	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
++		return 1;
++	return 0;
++}
++
++/*
++ * We need to avoid collisions with `mirrored' VGA ports
++ * and other strange ISA hardware, so we always want the
++ * addresses to be allocated in the 0x000-0x0ff region
++ * modulo 0x400.
++ *
++ * Why? Because some silly external IO cards only decode
++ * the low 10 bits of the IO address. The 0x00-0xff region
++ * is reserved for motherboard devices that decode all 16
++ * bits, so it's ok to allocate at, say, 0x2800-0x28ff,
++ * but we want to try to avoid allocating at 0x2900-0x2bff
++ * which might have be mirrored at 0x0100-0x03ff..
++ */
++void pcibios_align_resource(void *data, struct resource *res,
++				resource_size_t size, resource_size_t align)
++{
++	struct pci_dev *dev = data;
 +
 +	if (res->flags & IORESOURCE_IO) {
-+		offset = (unsigned long)hose->io_base_virt - _IO_BASE;
-+		mask = 0xffffffffu;
-+	} else if (res->flags & IORESOURCE_MEM)
-+		offset = hose->pci_mem_offset;
++		resource_size_t start = res->start;
 +
-+	res->start = (res->start + offset) & mask;
-+	res->end = (res->end + offset) & mask;
-+
-+	pr_debug("PCI:%s            %016llx-%016llx\n",
-+		 pci_name(dev),
-+		 (unsigned long long)res->start,
-+		 (unsigned long long)res->end);
-+}
-+
-+
-+/* This header fixup will do the resource fixup for all devices as they are
-+ * probed, but not for bridge ranges
-+ */
-+static void __devinit pcibios_fixup_resources(struct pci_dev *dev)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	int i;
-+
-+	if (!hose) {
-+		printk(KERN_ERR "No host bridge for PCI dev %s !\n",
-+		       pci_name(dev));
-+		return;
-+	}
-+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+		struct resource *res = dev->resource + i;
-+		if (!res->flags)
-+			continue;
-+		if (res->end == 0xffffffff) {
-+			pr_debug("PCI:%s Resource %d %016llx-%016llx [%x] is unassigned\n",
-+				 pci_name(dev), i,
-+				 (unsigned long long)res->start,
-+				 (unsigned long long)res->end,
-+				 (unsigned int)res->flags);
-+			res->end -= res->start;
-+			res->start = 0;
-+			res->flags |= IORESOURCE_UNSET;
-+			continue;
++		if (skip_isa_ioresource_align(dev))
++			return;
++		if (start & 0x300) {
++			start = (start + 0x3ff) & ~0x3ff;
++			res->start = start;
 +		}
++	}
++}
++EXPORT_SYMBOL(pcibios_align_resource);
 +
-+		pr_debug("PCI:%s Resource %d %016llx-%016llx [%x] fixup...\n",
-+			 pci_name(dev), i,
-+			 (unsigned long long)res->start,\
-+			 (unsigned long long)res->end,
-+			 (unsigned int)res->flags);
++/*
++ * Reparent resource children of pr that conflict with res
++ * under res, and make res replace those children.
++ */
++static int __init reparent_resources(struct resource *parent,
++				     struct resource *res)
++{
++	struct resource *p, **pp;
++	struct resource **firstpp = NULL;
 +
-+		fixup_resource(res, dev);
++	for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
++		if (p->end < res->start)
++			continue;
++		if (res->end < p->start)
++			break;
++		if (p->start < res->start || p->end > res->end)
++			return -1;	/* not completely contained */
++		if (firstpp == NULL)
++			firstpp = pp;
++	}
++	if (firstpp == NULL)
++		return -1;	/* didn't find any conflicting entries? */
++	res->parent = parent;
++	res->child = *firstpp;
++	res->sibling = *pp;
++	*firstpp = res;
++	*pp = NULL;
++	for (p = res->child; p != NULL; p = p->sibling) {
++		p->parent = res;
++		DBG(KERN_INFO "PCI: reparented %s [%llx..%llx] under %s\n",
++		    p->name,
++		    (unsigned long long)p->start,
++		    (unsigned long long)p->end, res->name);
++	}
++	return 0;
++}
++
++/*
++ *  Handle resources of PCI devices.  If the world were perfect, we could
++ *  just allocate all the resource regions and do nothing more.  It isn't.
++ *  On the other hand, we cannot just re-allocate all devices, as it would
++ *  require us to know lots of host bridge internals.  So we attempt to
++ *  keep as much of the original configuration as possible, but tweak it
++ *  when it's found to be wrong.
++ *
++ *  Known BIOS problems we have to work around:
++ *	- I/O or memory regions not configured
++ *	- regions configured, but not enabled in the command register
++ *	- bogus I/O addresses above 64K used
++ *	- expansion ROMs left enabled (this may sound harmless, but given
++ *	  the fact the PCI specs explicitly allow address decoders to be
++ *	  shared between expansion ROMs and other resource regions, it's
++ *	  at least dangerous)
++ *
++ *  Our solution:
++ *	(1) Allocate resources for all buses behind PCI-to-PCI bridges.
++ *	    This gives us fixed barriers on where we can allocate.
++ *	(2) Allocate resources for all enabled devices.  If there is
++ *	    a collision, just mark the resource as unallocated. Also
++ *	    disable expansion ROMs during this step.
++ *	(3) Try to allocate resources for disabled devices.  If the
++ *	    resources were assigned correctly, everything goes well,
++ *	    if they weren't, they won't disturb allocation of other
++ *	    resources.
++ *	(4) Assign new addresses to resources which were either
++ *	    not configured at all or misconfigured.  If explicitly
++ *	    requested by the user, configure expansion ROM address
++ *	    as well.
++ */
++
++static void __init pcibios_allocate_bus_resources(struct list_head *bus_list)
++{
++	struct pci_bus *bus;
++	int i;
++	struct resource *res, *pr;
++
++	/* Depth-First Search on bus tree */
++	list_for_each_entry(bus, bus_list, node) {
++		for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
++			if ((res = bus->resource[i]) == NULL || !res->flags
++			    || res->start > res->end)
++				continue;
++			if (bus->parent == NULL)
++				pr = (res->flags & IORESOURCE_IO)?
++					&ioport_resource : &iomem_resource;
++			else {
++				/* Don't bother with non-root busses when
++				 * re-assigning all resources.
++				 */
++				if (ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)
++					continue;
++				pr = pci_find_parent_resource(bus->self, res);
++				if (pr == res) {
++					/* this happens when the generic PCI
++					 * code (wrongly) decides that this
++					 * bridge is transparent  -- paulus
++					 */
++					continue;
++				}
++			}
++
++			DBG("PCI: %s (bus %d) bridge rsrc %d: %016llx-%016llx "
++			    "[0x%x], parent %p (%s)\n",
++			    bus->self ? pci_name(bus->self) : "PHB",
++			    bus->number, i,
++			    (unsigned long long)res->start,
++			    (unsigned long long)res->end,
++			    (unsigned int)res->flags,
++			    pr, (pr && pr->name) ? pr->name : "nil");
++
++			if (pr && !(pr->flags & IORESOURCE_UNSET)) {
++				if (request_resource(pr, res) == 0)
++					continue;
++				/*
++				 * Must be a conflict with an existing entry.
++				 * Move that entry (or entries) under the
++				 * bridge resource and try again.
++				 */
++				if (reparent_resources(pr, res) == 0)
++					continue;
++			}
++			printk(KERN_WARNING
++			       "PCI: Cannot allocate resource region "
++			       "%d of PCI bridge %d, will remap\n",
++			       i, bus->number);
++			res->flags |= IORESOURCE_UNSET;
++		}
++		pcibios_allocate_bus_resources(&bus->children);
++	}
++}
++
++static inline void __devinit alloc_resource(struct pci_dev *dev, int idx)
++{
++	struct resource *pr, *r = &dev->resource[idx];
++
++	DBG("PCI: Allocating %s: Resource %d: %016llx..%016llx [%x]\n",
++	    pci_name(dev), idx,
++	    (unsigned long long)r->start,
++	    (unsigned long long)r->end,
++	    (unsigned int)r->flags);
++
++	pr = pci_find_parent_resource(dev, r);
++	if (!pr || (pr->flags & IORESOURCE_UNSET) ||
++	    request_resource(pr, r) < 0) {
++		printk(KERN_WARNING "PCI: Cannot allocate resource region %d"
++		       " of device %s, will remap\n", idx, pci_name(dev));
++		if (pr)
++			DBG("PCI:  parent is %p: %016llx-%016llx [%x]\n", pr,
++			    (unsigned long long)pr->start,
++			    (unsigned long long)pr->end,
++			    (unsigned int)pr->flags);
++		/* We'll assign a new address later */
++		r->flags |= IORESOURCE_UNSET;
++		r->end -= r->start;
++		r->start = 0;
++	}
++}
++
++static void __init pcibios_allocate_resources(int pass)
++{
++	struct pci_dev *dev = NULL;
++	int idx, disabled;
++	u16 command;
++	struct resource *r;
++
++	for_each_pci_dev(dev) {
++		pci_read_config_word(dev, PCI_COMMAND, &command);
++		for (idx = 0; idx < 6; idx++) {
++			r = &dev->resource[idx];
++			if (r->parent)		/* Already allocated */
++				continue;
++			if (!r->flags || (r->flags & IORESOURCE_UNSET))
++				continue;	/* Not assigned at all */
++			if (r->flags & IORESOURCE_IO)
++				disabled = !(command & PCI_COMMAND_IO);
++			else
++				disabled = !(command & PCI_COMMAND_MEMORY);
++			if (pass == disabled)
++				alloc_resource(dev, idx);
++		}
++		if (pass)
++			continue;
++		r = &dev->resource[PCI_ROM_RESOURCE];
++		if (r->flags & IORESOURCE_ROM_ENABLE) {
++			/* Turn the ROM off, leave the resource region,
++			 * but keep it unregistered.
++			 */
++			u32 reg;
++			DBG("PCI: Switching off ROM of %s\n", pci_name(dev));
++			r->flags &= ~IORESOURCE_ROM_ENABLE;
++			pci_read_config_dword(dev, dev->rom_base_reg, &reg);
++			pci_write_config_dword(dev, dev->rom_base_reg,
++					       reg & ~PCI_ROM_ADDRESS_ENABLE);
++		}
++	}
++}
++
++void __init pcibios_resource_survey(void)
++{
++	/* Allocate and assign resources. If we re-assign everything, then
++	 * we skip the allocate phase
++	 */
++	pcibios_allocate_bus_resources(&pci_root_buses);
++
++	if (!(ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)) {
++		pcibios_allocate_resources(0);
++		pcibios_allocate_resources(1);
 +	}
 +
-+	/* Call machine specific resource fixup */
-+	if (ppc_md.pcibios_fixup_resources)
-+		ppc_md.pcibios_fixup_resources(dev);
++	if (!(ppc_pci_flags & PPC_PCI_PROBE_ONLY)) {
++		DBG("PCI: Assigning unassigned resouces...\n");
++		pci_assign_unassigned_resources();
++	}
++
++	/* Call machine dependent fixup */
++	if (ppc_md.pcibios_fixup)
++		ppc_md.pcibios_fixup();
 +}
-+DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pcibios_fixup_resources);
 +
-+static void __devinit __pcibios_fixup_bus(struct pci_bus *bus)
++#ifdef CONFIG_HOTPLUG
++/* This is used by the pSeries hotplug driver to allocate resource
++ * of newly plugged busses. We can try to consolidate with the
++ * rest of the code later, for now, keep it as-is
++ */
++void __devinit pcibios_claim_one_bus(struct pci_bus *bus)
 +{
-+	struct pci_dev *dev = bus->self;
++	struct pci_dev *dev;
++	struct pci_bus *child_bus;
 +
-+	pr_debug("PCI: Fixup bus %d (%s)\n", bus->number, dev ? pci_name(dev) : "PHB");
-+
-+	/* Fixup PCI<->PCI bridges. Host bridges are handled separately, for
-+	 * now differently between 32 and 64 bits.
-+	 */
-+	if (dev != NULL) {
-+		struct resource *res;
++	list_for_each_entry(dev, &bus->devices, bus_list) {
 +		int i;
 +
-+		for (i = 0; i < PCI_BUS_NUM_RESOURCES; ++i) {
-+			if ((res = bus->resource[i]) == NULL)
-+				continue;
-+			if (!res->flags || bus->self->transparent)
-+				continue;
++		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
++			struct resource *r = &dev->resource[i];
 +
-+			pr_debug("PCI:%s Bus rsrc %d %016llx-%016llx [%x] fixup...\n",
-+				 pci_name(dev), i,
-+				 (unsigned long long)res->start,\
-+				 (unsigned long long)res->end,
-+				 (unsigned int)res->flags);
-+
-+			fixup_resource(res, dev);
++			if (r->parent || !r->start || !r->flags)
++				continue;
++			pci_claim_resource(dev, i);
 +		}
 +	}
 +
-+	/* Additional setup that is different between 32 and 64 bits for now */
-+	pcibios_do_bus_setup(bus);
-+
-+	/* Platform specific bus fixups */
-+	if (ppc_md.pcibios_fixup_bus)
-+		ppc_md.pcibios_fixup_bus(bus);
-+
-+	/* Read default IRQs and fixup if necessary */
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		pci_read_irq_line(dev);
-+		if (ppc_md.pci_irq_fixup)
-+			ppc_md.pci_irq_fixup(dev);
-+	}
++	list_for_each_entry(child_bus, &bus->children, node)
++		pcibios_claim_one_bus(child_bus);
 +}
-+
-+void __devinit pcibios_fixup_bus(struct pci_bus *bus)
-+{
-+	/* When called from the generic PCI probe, read PCI<->PCI bridge
-+	 * bases before proceeding
-+	 */
-+	if (bus->self != NULL)
-+		pci_read_bridge_bases(bus);
-+	__pcibios_fixup_bus(bus);
-+}
-+EXPORT_SYMBOL(pcibios_fixup_bus);
-+
-+/* When building a bus from the OF tree rather than probing, we need a
-+ * slightly different version of the fixup which doesn't read the
-+ * bridge bases using config space accesses
-+ */
-+void __devinit pcibios_fixup_of_probed_bus(struct pci_bus *bus)
-+{
-+	__pcibios_fixup_bus(bus);
-+}
++EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
++#endif /* CONFIG_HOTPLUG */
 Index: linux-work/arch/powerpc/kernel/pci_32.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-12-06 19:03:41.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/pci_32.c	2007-12-06 19:03:42.000000000 +1100
-@@ -40,7 +40,6 @@ unsigned int ppc_pci_flags;
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-12-06 19:03:42.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-12-06 19:03:47.000000000 +1100
+@@ -35,13 +35,9 @@ unsigned long isa_io_base     = 0;
+ unsigned long pci_dram_offset = 0;
+ int pcibios_assign_bus_offset = 1;
  
+-/* Default PCI flags is 0 */
+-unsigned int ppc_pci_flags;
+-
  void pcibios_make_OF_bus_map(void);
  
--static void pcibios_fixup_resources(struct pci_dev* dev);
  static void fixup_broken_pcnet32(struct pci_dev* dev);
- static int reparent_resources(struct resource *parent, struct resource *res);
+-static int reparent_resources(struct resource *parent, struct resource *res);
  static void fixup_cpc710_pci64(struct pci_dev* dev);
-@@ -98,53 +97,6 @@ fixup_cpc710_pci64(struct pci_dev* dev)
+ #ifdef CONFIG_PPC_OF
+ static u8* pci_to_OF_bus_map;
+@@ -97,170 +93,6 @@ fixup_cpc710_pci64(struct pci_dev* dev)
  }
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64);
  
--static void
--pcibios_fixup_resources(struct pci_dev *dev)
+-static int skip_isa_ioresource_align(struct pci_dev *dev)
 -{
--	struct pci_controller* hose = (struct pci_controller *)dev->sysdata;
--	int i;
--	resource_size_t offset, mask;
--
--	if (!hose) {
--		printk(KERN_ERR "No hose for PCI dev %s!\n", pci_name(dev));
--		return;
--	}
--	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		struct resource *res = dev->resource + i;
--		if (!res->flags)
--			continue;
--		if (res->end == 0xffffffff) {
--			DBG("PCI:%s Resource %d [%016llx-%016llx] is unassigned\n",
--			    pci_name(dev), i, (u64)res->start, (u64)res->end);
--			res->end -= res->start;
--			res->start = 0;
--			res->flags |= IORESOURCE_UNSET;
--			continue;
--		}
--		offset = 0;
--		mask = (resource_size_t)-1;
--		if (res->flags & IORESOURCE_MEM) {
--			offset = hose->pci_mem_offset;
--		} else if (res->flags & IORESOURCE_IO) {
--			offset = (unsigned long) hose->io_base_virt
--				- isa_io_base;
--			mask = 0xffffffffu;
--		}
--		if (offset != 0) {
--			res->start = (res->start + offset) & mask;
--			res->end = (res->end + offset) & mask;
--			DBG("PCI: Fixup res %d (0x%lx) of dev %s: %llx -> %llx\n",
--			    i, res->flags, pci_name(dev),
--			    (u64)res->start - offset, (u64)res->start);
--		}
--	}
--
--	/* Call machine specific resource fixup */
--	if (ppc_md.pcibios_fixup_resources)
--		ppc_md.pcibios_fixup_resources(dev);
+-	if ((ppc_pci_flags & PPC_PCI_CAN_SKIP_ISA_ALIGN) &&
+-	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
+-		return 1;
+-	return 0;
 -}
--DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID,		PCI_ANY_ID,			pcibios_fixup_resources);
 -
- static int skip_isa_ioresource_align(struct pci_dev *dev)
- {
- 	if ((ppc_pci_flags & PPC_PCI_CAN_SKIP_ISA_ALIGN) &&
-@@ -757,14 +709,14 @@ pcibios_init(void)
- 
- subsys_initcall(pcibios_init);
- 
--void pcibios_fixup_bus(struct pci_bus *bus)
-+void __devinit pcibios_do_bus_setup(struct pci_bus *bus)
- {
- 	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
- 	unsigned long io_offset;
- 	struct resource *res;
--	struct pci_dev *dev;
- 	int i;
- 
-+	/* Hookup PHB resources */
- 	io_offset = (unsigned long)hose->io_base_virt - isa_io_base;
- 	if (bus->parent == NULL) {
- 		/* This is a host bridge - fill in its resources */
-@@ -795,37 +747,6 @@ void pcibios_fixup_bus(struct pci_bus *b
- 			}
- 			bus->resource[i+1] = res;
- 		}
--	} else {
--		/* This is a subordinate bridge */
--		pci_read_bridge_bases(bus);
+-/*
+- * We need to avoid collisions with `mirrored' VGA ports
+- * and other strange ISA hardware, so we always want the
+- * addresses to be allocated in the 0x000-0x0ff region
+- * modulo 0x400.
+- *
+- * Why? Because some silly external IO cards only decode
+- * the low 10 bits of the IO address. The 0x00-0xff region
+- * is reserved for motherboard devices that decode all 16
+- * bits, so it's ok to allocate at, say, 0x2800-0x28ff,
+- * but we want to try to avoid allocating at 0x2900-0x2bff
+- * which might have be mirrored at 0x0100-0x03ff..
+- */
+-void pcibios_align_resource(void *data, struct resource *res,
+-				resource_size_t size, resource_size_t align)
+-{
+-	struct pci_dev *dev = data;
 -
--		for (i = 0; i < 4; ++i) {
--			if ((res = bus->resource[i]) == NULL)
--				continue;
--			if (!res->flags || bus->self->transparent)
--				continue;
--			if (io_offset && (res->flags & IORESOURCE_IO)) {
--				res->start = (res->start + io_offset) &
--					0xffffffffu;
--				res->end = (res->end + io_offset) &
--					0xffffffffu;
--			} else if (hose->pci_mem_offset
--				   && (res->flags & IORESOURCE_MEM)) {
--				res->start += hose->pci_mem_offset;
--				res->end += hose->pci_mem_offset;
--			}
+-	if (res->flags & IORESOURCE_IO) {
+-		resource_size_t start = res->start;
+-
+-		if (skip_isa_ioresource_align(dev))
+-			return;
+-		if (start & 0x300) {
+-			start = (start + 0x3ff) & ~0x3ff;
+-			res->start = start;
 -		}
 -	}
+-}
+-EXPORT_SYMBOL(pcibios_align_resource);
 -
--	/* Platform specific bus fixups */
--	if (ppc_md.pcibios_fixup_bus)
--		ppc_md.pcibios_fixup_bus(bus);
+-/*
+- *  Handle resources of PCI devices.  If the world were perfect, we could
+- *  just allocate all the resource regions and do nothing more.  It isn't.
+- *  On the other hand, we cannot just re-allocate all devices, as it would
+- *  require us to know lots of host bridge internals.  So we attempt to
+- *  keep as much of the original configuration as possible, but tweak it
+- *  when it's found to be wrong.
+- *
+- *  Known BIOS problems we have to work around:
+- *	- I/O or memory regions not configured
+- *	- regions configured, but not enabled in the command register
+- *	- bogus I/O addresses above 64K used
+- *	- expansion ROMs left enabled (this may sound harmless, but given
+- *	  the fact the PCI specs explicitly allow address decoders to be
+- *	  shared between expansion ROMs and other resource regions, it's
+- *	  at least dangerous)
+- *
+- *  Our solution:
+- *	(1) Allocate resources for all buses behind PCI-to-PCI bridges.
+- *	    This gives us fixed barriers on where we can allocate.
+- *	(2) Allocate resources for all enabled devices.  If there is
+- *	    a collision, just mark the resource as unallocated. Also
+- *	    disable expansion ROMs during this step.
+- *	(3) Try to allocate resources for disabled devices.  If the
+- *	    resources were assigned correctly, everything goes well,
+- *	    if they weren't, they won't disturb allocation of other
+- *	    resources.
+- *	(4) Assign new addresses to resources which were either
+- *	    not configured at all or misconfigured.  If explicitly
+- *	    requested by the user, configure expansion ROM address
+- *	    as well.
+- */
 -
--	/* Read default IRQs and fixup if necessary */
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		pci_read_irq_line(dev);
--		if (ppc_md.pci_irq_fixup)
--			ppc_md.pci_irq_fixup(dev);
- 	}
+-static void __init
+-pcibios_allocate_bus_resources(struct list_head *bus_list)
+-{
+-	struct pci_bus *bus;
+-	int i;
+-	struct resource *res, *pr;
+-
+-	/* Depth-First Search on bus tree */
+-	list_for_each_entry(bus, bus_list, node) {
+-		for (i = 0; i < 4; ++i) {
+-			if ((res = bus->resource[i]) == NULL || !res->flags
+-			    || res->start > res->end)
+-				continue;
+-			if (bus->parent == NULL)
+-				pr = (res->flags & IORESOURCE_IO)?
+-					&ioport_resource : &iomem_resource;
+-			else {
+-				/* Don't bother with non-root busses when
+-				 * re-assigning all resources.
+-				 */
+-				if (ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)
+-					continue;
+-				pr = pci_find_parent_resource(bus->self, res);
+-				if (pr == res) {
+-					/* this happens when the generic PCI
+-					 * code (wrongly) decides that this
+-					 * bridge is transparent  -- paulus
+-					 */
+-					continue;
+-				}
+-			}
+-
+-			DBG("PCI: dev %s (bus 0x%02x) bridge rsrc %d: %016llx..%016llx "
+-			    "(f:0x%08lx), parent %p\n",
+-			    bus->self ? pci_name(bus->self) : "PHB", bus->number, i,
+-			    (u64)res->start, (u64)res->end, res->flags, pr);
+-
+-			if (pr && !(pr->flags & IORESOURCE_UNSET)) {
+-				if (request_resource(pr, res) == 0)
+-					continue;
+-				/*
+-				 * Must be a conflict with an existing entry.
+-				 * Move that entry (or entries) under the
+-				 * bridge resource and try again.
+-				 */
+-				if (reparent_resources(pr, res) == 0)
+-					continue;
+-			}
+-			printk(KERN_WARNING
+-			       "PCI: Cannot allocate resource region "
+-			       "%d of PCI bridge %d, will remap\n",
+-			       i, bus->number);
+-			res->flags |= IORESOURCE_UNSET;
+-		}
+-		pcibios_allocate_bus_resources(&bus->children);
+-	}
+-}
+-
+-/*
+- * Reparent resource children of pr that conflict with res
+- * under res, and make res replace those children.
+- */
+-static int __init
+-reparent_resources(struct resource *parent, struct resource *res)
+-{
+-	struct resource *p, **pp;
+-	struct resource **firstpp = NULL;
+-
+-	for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+-		if (p->end < res->start)
+-			continue;
+-		if (res->end < p->start)
+-			break;
+-		if (p->start < res->start || p->end > res->end)
+-			return -1;	/* not completely contained */
+-		if (firstpp == NULL)
+-			firstpp = pp;
+-	}
+-	if (firstpp == NULL)
+-		return -1;	/* didn't find any conflicting entries? */
+-	res->parent = parent;
+-	res->child = *firstpp;
+-	res->sibling = *pp;
+-	*firstpp = res;
+-	*pp = NULL;
+-	for (p = res->child; p != NULL; p = p->sibling) {
+-		p->parent = res;
+-		DBG(KERN_INFO "PCI: reparented %s [%llx..%llx] under %s\n",
+-		    p->name, (u64)p->start, (u64)p->end, res->name);
+-	}
+-	return 0;
+-}
+ 
+ void __init
+ update_bridge_resource(struct pci_dev *dev, struct resource *res)
+@@ -318,63 +150,6 @@ update_bridge_resource(struct pci_dev *d
+ 	pci_write_config_word(dev, PCI_COMMAND, cmd);
  }
  
-Index: linux-work/arch/powerpc/platforms/pseries/pci_dlpar.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/pseries/pci_dlpar.c	2007-12-06 19:03:39.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/pseries/pci_dlpar.c	2007-12-06 19:03:42.000000000 +1100
-@@ -83,7 +83,7 @@ EXPORT_SYMBOL_GPL(pcibios_remove_pci_dev
+-static inline void alloc_resource(struct pci_dev *dev, int idx)
+-{
+-	struct resource *pr, *r = &dev->resource[idx];
+-
+-	DBG("PCI: Allocating %s: Resource %d: %016llx..%016llx (f=%lx)\n",
+-	    pci_name(dev), idx, (u64)r->start, (u64)r->end, r->flags);
+-	pr = pci_find_parent_resource(dev, r);
+-	if (!pr || (pr->flags & IORESOURCE_UNSET) ||  request_resource(pr, r) < 0) {
+-		printk(KERN_WARNING "PCI: Cannot allocate resource region %d"
+-		       " of device %s, will remap\n", idx, pci_name(dev));
+-		if (pr)
+-			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
+-			    pr, (u64)pr->start, (u64)pr->end, pr->flags);
+-		/* We'll assign a new address later */
+-		r->flags |= IORESOURCE_UNSET;
+-		r->end -= r->start;
+-		r->start = 0;
+-	}
+-}
+-
+-static void __init
+-pcibios_allocate_resources(int pass)
+-{
+-	struct pci_dev *dev = NULL;
+-	int idx, disabled;
+-	u16 command;
+-	struct resource *r;
+-
+-	for_each_pci_dev(dev) {
+-		pci_read_config_word(dev, PCI_COMMAND, &command);
+-		for (idx = 0; idx < 6; idx++) {
+-			r = &dev->resource[idx];
+-			if (r->parent)		/* Already allocated */
+-				continue;
+-			if (!r->flags || (r->flags & IORESOURCE_UNSET))
+-				continue;	/* Not assigned at all */
+-			if (r->flags & IORESOURCE_IO)
+-				disabled = !(command & PCI_COMMAND_IO);
+-			else
+-				disabled = !(command & PCI_COMMAND_MEMORY);
+-			if (pass == disabled)
+-				alloc_resource(dev, idx);
+-		}
+-		if (pass)
+-			continue;
+-		r = &dev->resource[PCI_ROM_RESOURCE];
+-		if (r->flags & IORESOURCE_ROM_ENABLE) {
+-			/* Turn the ROM off, leave the resource region, but keep it unregistered. */
+-			u32 reg;
+-			DBG("PCI: Switching off ROM of %s\n", pci_name(dev));
+-			r->flags &= ~IORESOURCE_ROM_ENABLE;
+-			pci_read_config_dword(dev, dev->rom_base_reg, &reg);
+-			pci_write_config_dword(dev, dev->rom_base_reg,
+-					       reg & ~PCI_ROM_ADDRESS_ENABLE);
+-		}
+-	}
+-}
  
- /* Must be called before pci_bus_add_devices */
- void
--pcibios_fixup_new_pci_devices(struct pci_bus *bus, int fix_bus)
-+pcibios_fixup_new_pci_devices(struct pci_bus *bus)
+ #ifdef CONFIG_PPC_OF
+ /*
+@@ -649,8 +424,7 @@ void pcibios_make_OF_bus_map(void)
+ }
+ #endif /* CONFIG_PPC_OF */
+ 
+-static int __init
+-pcibios_init(void)
++static int __init pcibios_init(void)
  {
- 	struct pci_dev *dev;
+ 	struct pci_controller *hose, *tmp;
+ 	struct pci_bus *bus;
+@@ -683,22 +457,8 @@ pcibios_init(void)
+ 	if (pci_assign_all_buses && have_of)
+ 		pcibios_make_OF_bus_map();
  
-@@ -98,8 +98,6 @@ pcibios_fixup_new_pci_devices(struct pci
- 			/* Fill device archdata and setup iommu table */
- 			pcibios_setup_new_device(dev);
- 
--			if(fix_bus)
--				pcibios_fixup_device_resources(dev, bus);
- 			pci_read_irq_line(dev);
- 			for (i = 0; i < PCI_NUM_RESOURCES; i++) {
- 				struct resource *r = &dev->resource[i];
-@@ -132,8 +130,8 @@ pcibios_pci_config_bridge(struct pci_dev
- 
- 	pci_scan_child_bus(child_bus);
- 
--	/* Fixup new pci devices without touching bus struct */
--	pcibios_fixup_new_pci_devices(child_bus, 0);
-+	/* Fixup new pci devices */
-+	pcibios_fixup_new_pci_devices(child_bus);
- 
- 	/* Make the discovered devices available */
- 	pci_bus_add_devices(child_bus);
-@@ -169,7 +167,7 @@ pcibios_add_pci_devices(struct pci_bus *
- 		/* use ofdt-based probe */
- 		of_scan_bus(dn, bus);
- 		if (!list_empty(&bus->devices)) {
--			pcibios_fixup_new_pci_devices(bus, 0);
-+			pcibios_fixup_new_pci_devices(bus);
- 			pci_bus_add_devices(bus);
- 			eeh_add_device_tree_late(bus);
- 		}
-@@ -178,7 +176,7 @@ pcibios_add_pci_devices(struct pci_bus *
- 		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
- 		num = pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
- 		if (num) {
--			pcibios_fixup_new_pci_devices(bus, 1);
-+			pcibios_fixup_new_pci_devices(bus);
- 			pci_bus_add_devices(bus);
- 			eeh_add_device_tree_late(bus);
- 		}
-@@ -208,7 +206,7 @@ struct pci_controller * __devinit init_p
- 		eeh_add_device_tree_early(dn);
- 
- 	scan_phb(phb);
--	pcibios_fixup_new_pci_devices(phb->bus, 0);
-+	pcibios_fixup_new_pci_devices(phb->bus);
- 	pci_bus_add_devices(phb->bus);
- 	eeh_add_device_tree_late(phb->bus);
- 
-Index: linux-work/drivers/pci/hotplug/rpadlpar_core.c
-===================================================================
---- linux-work.orig/drivers/pci/hotplug/rpadlpar_core.c	2007-12-06 19:03:39.000000000 +1100
-+++ linux-work/drivers/pci/hotplug/rpadlpar_core.c	2007-12-06 19:03:42.000000000 +1100
-@@ -155,7 +155,7 @@ static void dlpar_pci_add_bus(struct dev
- 	    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
- 		of_scan_pci_bridge(dn, dev);
- 
--	pcibios_fixup_new_pci_devices(dev->subordinate,0);
-+	pcibios_fixup_new_pci_devices(dev->subordinate);
- 
- 	/* Claim new bus resources */
- 	pcibios_claim_one_bus(dev->bus);
-Index: linux-work/include/asm-powerpc/machdep.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/machdep.h	2007-12-06 19:03:39.000000000 +1100
-+++ linux-work/include/asm-powerpc/machdep.h	2007-12-06 19:03:42.000000000 +1100
-@@ -205,13 +205,6 @@ struct machdep_calls {
- 	 * optional PCI "hooks"
- 	 */
- 
--	/* Called after PPC generic resource fixup to perform
--	   machine specific fixups */
--	void (*pcibios_fixup_resources)(struct pci_dev *);
+-	/* Call machine dependent fixup */
+-	if (ppc_md.pcibios_fixup)
+-		ppc_md.pcibios_fixup();
 -
--	/* Called for each PCI bus in the system when it's probed */
--	void (*pcibios_fixup_bus)(struct pci_bus *);
+-	/* Allocate and assign resources. If we re-assign everything, then
+-	 * we skip the allocate phase
+-	 */
+-	pcibios_allocate_bus_resources(&pci_root_buses);
+-	if (!(ppc_pci_flags & PPC_PCI_REASSIGN_ALL_RSRC)) {
+-		pcibios_allocate_resources(0);
+-		pcibios_allocate_resources(1);
+-	}
+-	if (!(ppc_pci_flags & PPC_PCI_PROBE_ONLY)) {
+-		DBG("PCI: Assigning unassigned resouces...\n");
+-		pci_assign_unassigned_resources();
+-	}
++	/* Call common code to handle resource allocation */
++	pcibios_resource_survey();
+ 
+ 	/* Call machine dependent post-init code */
+ 	if (ppc_md.pcibios_after_init)
+Index: linux-work/arch/powerpc/kernel/pci_64.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_64.c	2007-12-06 19:03:42.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_64.c	2007-12-06 19:03:47.000000000 +1100
+@@ -76,88 +76,6 @@ static void fixup_broken_pcnet32(struct 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TRIDENT, PCI_ANY_ID, fixup_broken_pcnet32);
+ 
+ 
+-/*
+- * We need to avoid collisions with `mirrored' VGA ports
+- * and other strange ISA hardware, so we always want the
+- * addresses to be allocated in the 0x000-0x0ff region
+- * modulo 0x400.
+- *
+- * Why? Because some silly external IO cards only decode
+- * the low 10 bits of the IO address. The 0x00-0xff region
+- * is reserved for motherboard devices that decode all 16
+- * bits, so it's ok to allocate at, say, 0x2800-0x28ff,
+- * but we want to try to avoid allocating at 0x2900-0x2bff
+- * which might have be mirrored at 0x0100-0x03ff..
+- */
+-void pcibios_align_resource(void *data, struct resource *res,
+-			    resource_size_t size, resource_size_t align)
+-{
+-	struct pci_dev *dev = data;
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+-	resource_size_t start = res->start;
+-	unsigned long alignto;
 -
- 	/* Called when pci_enable_device() is called (initial=0) or
- 	 * when a device with no assigned resource is found (initial=1).
- 	 * Returns 0 to allow assignment/enabling of the device. */
-@@ -225,6 +218,13 @@ struct machdep_calls {
+-	if (res->flags & IORESOURCE_IO) {
+-	        unsigned long offset = (unsigned long)hose->io_base_virt -
+-					_IO_BASE;
+-		/* Make sure we start at our min on all hoses */
+-		if (start - offset < PCIBIOS_MIN_IO)
+-			start = PCIBIOS_MIN_IO + offset;
+-
+-		/*
+-		 * Put everything into 0x00-0xff region modulo 0x400
+-		 */
+-		if (start & 0x300)
+-			start = (start + 0x3ff) & ~0x3ff;
+-
+-	} else if (res->flags & IORESOURCE_MEM) {
+-		/* Make sure we start at our min on all hoses */
+-		if (start - hose->pci_mem_offset < PCIBIOS_MIN_MEM)
+-			start = PCIBIOS_MIN_MEM + hose->pci_mem_offset;
+-
+-		/* Align to multiple of size of minimum base.  */
+-		alignto = max(0x1000UL, align);
+-		start = ALIGN(start, alignto);
+-	}
+-
+-	res->start = start;
+-}
+-
+-void __devinit pcibios_claim_one_bus(struct pci_bus *b)
+-{
+-	struct pci_dev *dev;
+-	struct pci_bus *child_bus;
+-
+-	list_for_each_entry(dev, &b->devices, bus_list) {
+-		int i;
+-
+-		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
+-			struct resource *r = &dev->resource[i];
+-
+-			if (r->parent || !r->start || !r->flags)
+-				continue;
+-			pci_claim_resource(dev, i);
+-		}
+-	}
+-
+-	list_for_each_entry(child_bus, &b->children, node)
+-		pcibios_claim_one_bus(child_bus);
+-}
+-#ifdef CONFIG_HOTPLUG
+-EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
+-#endif
+-
+-static void __init pcibios_claim_of_setup(void)
+-{
+-	struct pci_bus *b;
+-
+-	if (firmware_has_feature(FW_FEATURE_ISERIES))
+-		return;
+-
+-	list_for_each_entry(b, &pci_root_buses, node)
+-		pcibios_claim_one_bus(b);
+-}
+-
+ static u32 get_int_prop(struct device_node *np, const char *name, u32 def)
+ {
+ 	const u32 *prop;
+@@ -428,6 +346,7 @@ void __devinit scan_phb(struct pci_contr
  
- #endif /* CONFIG_PPC32 */
+ 	DBG("Scanning PHB %s\n", node ? node->full_name : "<NO NAME>");
  
-+	/* Called after PPC generic resource fixup to perform
-+	   machine specific fixups */
-+	void (*pcibios_fixup_resources)(struct pci_dev *);
++	/* Create an empty bus for the toplevel */
+ 	bus = pci_create_bus(hose->parent, hose->first_busno, hose->ops, node);
+ 	if (bus == NULL) {
+ 		printk(KERN_ERR "Failed to create bus for PCI domain %04x\n",
+@@ -437,27 +356,17 @@ void __devinit scan_phb(struct pci_contr
+ 	bus->secondary = hose->first_busno;
+ 	hose->bus = bus;
+ 
++	/* Get some IO space for the new PHB */
+ 	if (!firmware_has_feature(FW_FEATURE_ISERIES))
+ 		pcibios_map_io_space(bus);
+ 
++	/* Wire up PHB bus resources */
+ 	bus->resource[0] = res = &hose->io_resource;
+-	if (res->flags && request_resource(&ioport_resource, res)) {
+-		printk(KERN_ERR "Failed to request PCI IO region "
+-		       "on PCI domain %04x\n", hose->global_number);
+-		DBG("res->start = 0x%016lx, res->end = 0x%016lx\n",
+-		    res->start, res->end);
+-	}
+-
+-	for (i = 0; i < 3; ++i) {
+-		res = &hose->mem_resources[i];
+-		bus->resource[i+1] = res;
+-		if (res->flags && request_resource(&iomem_resource, res))
+-			printk(KERN_ERR "Failed to request PCI memory region "
+-			       "on PCI domain %04x\n", hose->global_number);
+-	}
++	for (i = 0; i < 3; ++i)
++		bus->resource[i+1] = &hose->mem_resources[i];
+ 
++	/* Get probe mode and perform scan */
+ 	mode = PCI_PROBE_NORMAL;
+-
+ 	if (node && ppc_md.pci_probe_mode)
+ 		mode = ppc_md.pci_probe_mode(bus);
+ 	DBG("    probe mode: %d\n", mode);
+@@ -474,6 +383,8 @@ static int __init pcibios_init(void)
+ {
+ 	struct pci_controller *hose, *tmp;
+ 
++	printk(KERN_INFO "PCI: Probing PCI hardware\n");
 +
-+	/* Called for each PCI bus in the system when it's probed */
-+	void (*pcibios_fixup_bus)(struct pci_bus *);
-+
- 	/* Called to shutdown machine specific hardware not already controlled
- 	 * by other drivers.
+ 	/* For now, override phys_mem_access_prot. If we need it,
+ 	 * later, we may move that initialization to each ppc_md
  	 */
+@@ -484,25 +395,17 @@ static int __init pcibios_init(void)
+ 
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware\n");
+ 
++	if (pci_probe_only)
++		ppc_pci_flags |= PPC_PCI_PROBE_ONLY;
++
+ 	/* Scan all of the recorded PCI controllers.  */
+ 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+ 		scan_phb(hose);
+ 		pci_bus_add_devices(hose->bus);
+ 	}
+ 
+-	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
+-		if (pci_probe_only)
+-			pcibios_claim_of_setup();
+-		else
+-			/* FIXME: `else' will be removed when
+-			   pci_assign_unassigned_resources() is able to work
+-			   correctly with [partially] allocated PCI tree. */
+-			pci_assign_unassigned_resources();
+-	}
+-
+-	/* Call machine dependent final fixup */
+-	if (ppc_md.pcibios_fixup)
+-		ppc_md.pcibios_fixup();
++	/* Call common code to handle resource allocation */
++	pcibios_resource_survey();
+ 
+ 	printk(KERN_DEBUG "PCI: Probing PCI hardware done\n");
+ 
 Index: linux-work/include/asm-powerpc/pci-bridge.h
 ===================================================================
---- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-12-06 19:03:39.000000000 +1100
-+++ linux-work/include/asm-powerpc/pci-bridge.h	2007-12-06 19:03:42.000000000 +1100
-@@ -260,7 +260,7 @@ void pcibios_remove_pci_devices(struct p
+--- linux-work.orig/include/asm-powerpc/pci-bridge.h	2007-12-06 19:03:42.000000000 +1100
++++ linux-work/include/asm-powerpc/pci-bridge.h	2007-12-06 19:03:47.000000000 +1100
+@@ -6,11 +6,6 @@
+ #include <linux/list.h>
+ #include <linux/ioport.h>
  
- /** Discover new pci devices under this bus, and add them */
- void pcibios_add_pci_devices(struct pci_bus * bus);
--void pcibios_fixup_new_pci_devices(struct pci_bus *bus, int fix_bus);
-+void pcibios_fixup_new_pci_devices(struct pci_bus *bus);
+-#ifndef CONFIG_PPC64
+-
+-struct device_node;
+-struct pci_controller;
+-
+ extern unsigned int ppc_pci_flags;
+ enum {
+ 	/* Force re-assigning all resources (ignore firmware
+@@ -35,6 +30,10 @@ enum {
+ 	PPC_PCI_COMPAT_DOMAIN_0		= 0x00000020,
+ };
  
- extern int pcibios_remove_root_bus(struct pci_controller *phb);
++#ifndef CONFIG_PPC64
++
++struct device_node;
++struct pci_controller;
  
+ /*
+  * Structure of a PCI controller (host bridge)
 Index: linux-work/include/asm-powerpc/pci.h
 ===================================================================
---- linux-work.orig/include/asm-powerpc/pci.h	2007-12-06 19:03:39.000000000 +1100
-+++ linux-work/include/asm-powerpc/pci.h	2007-12-06 19:03:42.000000000 +1100
-@@ -196,9 +196,6 @@ static inline struct resource *pcibios_s
- 	return root;
- }
+--- linux-work.orig/include/asm-powerpc/pci.h	2007-12-06 19:03:42.000000000 +1100
++++ linux-work/include/asm-powerpc/pci.h	2007-12-06 19:03:47.000000000 +1100
+@@ -36,14 +36,10 @@ struct pci_dev;
  
--extern void pcibios_fixup_device_resources(struct pci_dev *dev,
--			struct pci_bus *bus);
--
- extern void pcibios_setup_new_device(struct pci_dev *dev);
+ /*
+  * Set this to 1 if you want the kernel to re-assign all PCI
+- * bus numbers
++ * bus numbers (don't do that on ppc64 yet !)
+  */
+-#ifdef CONFIG_PPC64
+-#define pcibios_assign_all_busses()	0
+-#else
+ #define pcibios_assign_all_busses()    	(ppc_pci_flags & \
+ 					 PPC_PCI_REASSIGN_ALL_BUS)
+-#endif
+ #define pcibios_scan_all_fns(a, b)	0
+ 
+ static inline void pcibios_set_master(struct pci_dev *dev)
+@@ -200,6 +196,8 @@ extern void pcibios_setup_new_device(str
  
  extern void pcibios_claim_one_bus(struct pci_bus *b);
-@@ -226,5 +223,8 @@ extern void pci_resource_to_user(const s
- 				 const struct resource *rsrc,
- 				 resource_size_t *start, resource_size_t *end);
  
-+extern void pcibios_do_bus_setup(struct pci_bus *bus);
-+extern void pcibios_fixup_of_probed_bus(struct pci_bus *bus);
++extern void pcibios_resource_survey(void);
 +
- #endif	/* __KERNEL__ */
- #endif /* __ASM_POWERPC_PCI_H */
+ extern struct pci_controller *init_phb_dynamic(struct device_node *dn);
+ 
+ extern struct pci_dev *of_create_pci_dev(struct device_node *node,
+Index: linux-work/arch/powerpc/platforms/powermac/pci.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/pci.c	2007-12-06 19:03:39.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/pci.c	2007-12-06 19:03:47.000000000 +1100
+@@ -994,9 +994,8 @@ void __init pmac_pci_init(void)
+ 	struct device_node *np, *root;
+ 	struct device_node *ht = NULL;
+ 
+-#ifdef CONFIG_PPC32
+ 	ppc_pci_flags = PPC_PCI_CAN_SKIP_ISA_ALIGN;
+-#endif
++
+ 	root = of_find_node_by_path("/");
+ 	if (root == NULL) {
+ 		printk(KERN_CRIT "pmac_pci_init: can't find root "
