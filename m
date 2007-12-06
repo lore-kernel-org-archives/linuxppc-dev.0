@@ -1,25 +1,17 @@
-Return-Path: <willy@parisc-linux.org>
-Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.parisc-linux.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4C2C4DDE2C
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 19:39:02 +1100 (EST)
-Date: Thu, 6 Dec 2007 01:16:28 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-Message-ID: <20071206081628.GA15868@parisc-linux.org>
-References: <20071205064116.D849BDE10A@ozlabs.org>
-	<1196911347.7033.15.camel@pasglop>
-	<20071206063940.GA16474@kroah.com>
-	<1196927934.7033.39.camel@pasglop>
+Return-Path: <SRS0=GNhQ=Q5=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 7A1C5DDF46
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 20:27:02 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 11/25] powerpc: 4xx PLB to PCI Express support
+Date: Thu, 6 Dec 2007 10:26:56 +0100
+References: <20071206080120.B47DBDDF15@ozlabs.org>
+In-Reply-To: <20071206080120.B47DBDDF15@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196927934.7033.39.camel@pasglop>
-Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712061026.57215.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +21,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 06, 2007 at 06:58:54PM +1100, Benjamin Herrenschmidt wrote:
-> I was just hoping somebody had a better idea, like a way to add a new
-> format specifier to printk without losing gcc type checking :-)
+On Thursday 06 December 2007, Benjamin Herrenschmidt wrote:
+> This adds to the previous 2 patches the support for the 4xx PCI Express
+> cells as found in the 440SPe revA, revB and 405EX.
+>
+> Unfortunately, due to significant differences between these, and other
+> interesting "features" of those pieces of HW, the code isn't as simple
+> as it is for PCI and PCI-X and some of the functions differ significantly
+> between the 3 implementations. Thus, not only this code can only support
+> those 3 implementations for now and will refuse to operate on any other,
+> but there are added ifdef's to avoid the bloat of building a fairly large
+> amount of code on platforms that don't need it.
+>
+> Also, this code currently only supports fully initializing root complex
+> nodes, not endpoint. Some more code will have to be lifted from the
+> arch/ppc implementation to add the endpoint support, though it's mostly
+> differences in memory mapping, and the question on how to represent
+> endpoint mode PCI in the device-tree is thus open.
+>
+> Many thanks to Stefan Roese for testing & fixing up the 405EX bits !
 
-It's been discussed before.  Some of the solutions discussed:
+You're welcome. Thank you for doing the "dirty work".
 
- - Add something like PRI_RES which can be concatenated into a printk.
-   Ugly.
- - Patch gcc to allow user-definable types.  I think OpenBSD has a patch
-   for this.  Then we have to get that patch propagated to all the
-   people who compile the kernel.  Unappetising.
- - Disable gcc's printk checking, teach sparse to typecheck printk.
-   Most people don't run sparse yet.
+Please find some comments below.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+<snip>
+
+> +/* Check that the core has been initied and if not, do it */
+> +static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+> +{
+> +	static int core_init;
+> +	int count = -ENODEV;
+> +
+> +	if (core_init++)
+> +		return 0;
+> +
+> +#ifdef CONFIG_44x
+> +	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
+> +		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
+> +	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
+> +		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
+
+We need some runtime detection of the 440SPe revision here. There are boards 
+out there (e.g. AMCC Yucca) which can be equipped with both PPC 
+revisions. :-(
+
+> +#endif /* CONFIG_44x    */
+> +#ifdef CONFIG_40x
+> +	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+> +		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
+> +#endif
+
+Why those #ifdef's? Just code-size reasons, since 40x and 44x will most likely 
+never be built into one image? 
+
+Thanks.
+
+Best regards,
+Stefan
