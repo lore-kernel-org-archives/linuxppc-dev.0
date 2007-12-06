@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 06 Dec 2007 19:00:23 +1100
-Subject: [PATCH 24/25] powerpc: Base support for 440SPe "Katmai" eval board
+Date: Thu, 06 Dec 2007 19:00:24 +1100
+Subject: [PATCH 25/25] powerpc: 4xx PCI-E Link setup improvements
 In-Reply-To: <1196927999.714593.205329520306.qpush@grosgo>
-Message-Id: <20071206080134.7DB7CDE155@ozlabs.org>
+Message-Id: <20071206080135.3EF52DE16F@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,621 +14,400 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds base support for the Katmai board, including PCI-X and
-PCI-Express (but no RTC, nvram, etc... yet).
+This improves the way the 4xx PCI-E code handles checking for a link
+and adds explicit testing of CRS result codes on config space accesses.
+
+This should make it more reliable.
+
+Also, bridges with no link are now still created, though config space
+accesses beyond the root complex are filtered. This is one step toward
+eventually supporting hotplug.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-As for Taishan, the bootwrapper code can be simplified. In fact,
-we probably don't need to probe clocks & memsize off the chip and
-just trust what uboot tells us.
+ arch/powerpc/sysdev/ppc4xx_pci.c |  222 +++++++++++++++++++++++----------------
+ arch/powerpc/sysdev/ppc4xx_pci.h |    2 
+ 2 files changed, 134 insertions(+), 90 deletions(-)
 
- arch/powerpc/boot/Makefile          |    5 
- arch/powerpc/boot/cuboot-katmai.c   |   56 +++++
- arch/powerpc/boot/dts/katmai.dts    |  393 ++++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/44x/Kconfig  |   13 +
- arch/powerpc/platforms/44x/Makefile |    3 
- arch/powerpc/platforms/44x/katmai.c |   63 +++++
- 6 files changed, 531 insertions(+), 2 deletions(-)
-
-Index: linux-work/arch/powerpc/platforms/44x/Kconfig
+Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 ===================================================================
---- linux-work.orig/arch/powerpc/platforms/44x/Kconfig	2007-12-05 11:58:28.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/44x/Kconfig	2007-12-05 11:58:32.000000000 +1100
-@@ -30,6 +30,15 @@ config TAISHAN
- 	help
- 	  This option enables support for the IBM PPC440GX "Taishan" evaluation board.
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-05 16:57:11.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-06 16:51:15.000000000 +1100
+@@ -16,6 +16,8 @@
+  *
+  */
  
-+config KATMAI
-+	bool "Katmai"
-+	depends on 44x
-+	default n
-+	select 440SPe
-+	select PPC4xx_PCI_EXPRESS
-+	help
-+	  This option enables support for the AMCC PPC440SPe evaluation board.
++#undef DEBUG
 +
- #config LUAN
- #	bool "Luan"
- #	depends on 44x
-@@ -74,6 +83,10 @@ config 440GX
- config 440SP
- 	bool
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+@@ -536,10 +538,13 @@ struct ppc4xx_pciex_port
+ 	struct device_node	*node;
+ 	unsigned int		index;
+ 	int			endpoint;
++	int			link;
++	int			has_ibpre;
+ 	unsigned int		sdr_base;
+ 	dcr_host_t		dcrs;
+ 	struct resource		cfg_space;
+ 	struct resource		utl_regs;
++	void __iomem		*utl_base;
+ };
  
-+config 440SPe
-+        select IBM_NEW_EMAC_EMAC4
-+	bool
-+
- # 44x errata/workaround config symbols, selected by the CPU models above
- config IBM440EP_ERR42
- 	bool
-Index: linux-work/arch/powerpc/platforms/44x/Makefile
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/44x/Makefile	2007-12-05 11:58:28.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/44x/Makefile	2007-12-05 11:58:32.000000000 +1100
-@@ -1,5 +1,6 @@
- obj-$(CONFIG_44x)	:= misc_44x.o
- obj-$(CONFIG_EBONY)	+= ebony.o
- obj-$(CONFIG_TAISHAN)	+= taishan.o
--obj-$(CONFIG_BAMBOO) += bamboo.o
-+obj-$(CONFIG_BAMBOO)	+= bamboo.o
- obj-$(CONFIG_SEQUOIA)	+= sequoia.o
-+obj-$(CONFIG_KATMAI)	+= katmai.o
-Index: linux-work/arch/powerpc/boot/dts/katmai.dts
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/boot/dts/katmai.dts	2007-12-05 12:00:37.000000000 +1100
-@@ -0,0 +1,393 @@
-+/*
-+ * Device Tree Source for AMCC Katmai eval board
-+ *
-+ * Copyright (c) 2006, 2007 IBM Corp.
-+ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-+ *
-+ * Copyright (c) 2006, 2007 IBM Corp.
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ */
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "amcc,katmai";
-+	compatible = "amcc,katmai";
-+	dcr-parent = <&/cpus/PowerPC,440SPe@0>;
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		PowerPC,440SPe@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <0>; /* Filled in by zImage */
-+			timebase-frequency = <0>; /* Filled in by zImage */
-+			i-cache-line-size = <20>;
-+			d-cache-line-size = <20>;
-+			i-cache-size = <20000>;
-+			d-cache-size = <20000>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0>; /* Filled in by zImage */
-+	};
-+
-+	UIC0: interrupt-controller0 {
-+		compatible = "ibm,uic-440spe","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+	};
-+
-+	UIC1: interrupt-controller1 {
-+		compatible = "ibm,uic-440spe","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC2: interrupt-controller2 {
-+		compatible = "ibm,uic-440spe","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <2>;
-+		dcr-reg = <0e0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <a 4 b 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	UIC3: interrupt-controller3 {
-+		compatible = "ibm,uic-440spe","ibm,uic";
-+		interrupt-controller;
-+		cell-index = <3>;
-+		dcr-reg = <0f0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <10 4 11 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
-+
-+	SDR0: sdr {
-+		compatible = "ibm,sdr-440spe";
-+		dcr-reg = <00e 002>;
-+	};
-+
-+	CPR0: cpr {
-+		compatible = "ibm,cpr-440spe";
-+		dcr-reg = <00c 002>;
-+	};
-+
-+	plb {
-+		compatible = "ibm,plb-440spe", "ibm,plb-440gp", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; /* Filled in by zImage */
-+
-+		SDRAM0: sdram {
-+			compatible = "ibm,sdram-440spe", "ibm,sdram-405gp";
-+			dcr-reg = <010 2>;
-+		};
-+
-+		MAL0: mcmal {
-+			compatible = "ibm,mcmal-440spe", "ibm,mcmal2";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <2>;
-+			num-rx-chans = <1>;
-+			interrupt-parent = <&MAL0>;
-+			interrupts = <0 1 2 3 4>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = </*TXEOB*/ 0 &UIC1 6 4
-+					 /*RXEOB*/ 1 &UIC1 7 4
-+					 /*SERR*/  2 &UIC1 1 4
-+					 /*TXDE*/  3 &UIC1 2 4
-+					 /*RXDE*/  4 &UIC1 3 4>;
-+		};
-+
-+		POB0: opb {
-+		  	compatible = "ibm,opb-440spe", "ibm,opb-440gp", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+		  	ranges = <00000000 4 e0000000 20000000>;
-+		  	clock-frequency = <0>; /* Filled in by zImage */
-+
-+			EBC0: ebc {
-+				compatible = "ibm,ebc-440spe", "ibm,ebc-440gp", "ibm,ebc";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; /* Filled in by zImage */
-+				ranges;
-+				interrupts = <5 1>;
-+				interrupt-parent = <&UIC1>;
-+			};
-+
-+			UART0: serial@10000200 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <10000200 8>;
-+				virtual-reg = <a0000200>;
-+		   		clock-frequency = <0>; /* Filled in by zImage */
-+		   		current-speed = <1c200>;
-+		   		interrupt-parent = <&UIC0>;
-+		   		interrupts = <0 4>;
-+	   		};
-+
-+			UART1: serial@10000300 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <10000300 8>;
-+				virtual-reg = <a0000300>;
-+		   		clock-frequency = <0>;
-+		   		current-speed = <0>;
-+		   		interrupt-parent = <&UIC0>;
-+		   		interrupts = <1 4>;
-+	   		};
-+
-+
-+			UART2: serial@10000600 {
-+		   		device_type = "serial";
-+		   		compatible = "ns16550";
-+		   		reg = <10000600 8>;
-+				virtual-reg = <a0000600>;
-+		   		clock-frequency = <0>;
-+		   		current-speed = <0>;
-+		   		interrupt-parent = <&UIC1>;
-+		   		interrupts = <5 4>;
-+	   		};
-+
-+			IIC0: i2c@10000400 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
-+				reg = <10000400 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+
-+			IIC1: i2c@10000500 {
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440spe", "ibm,iic-440gp", "ibm,iic";
-+				reg = <10000500 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <3 4>;
-+			};
-+
-+			EMAC0: ethernet@10000800 {
-+				linux,network-index = <0>;
-+				device_type = "network";
-+				compatible = "ibm,emac-440spe", "ibm,emac4";
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1c 4 1d 4>;
-+				reg = <10000800 70>;
-+				local-mac-address = [000000000000];
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "gmii";
-+				phy-map = <00000000>;
-+				has-inverted-stacr-oc;
-+				has-new-stacr-staopc;
-+			};
-+		};
-+
-+		PCIX0: pci@c0ec00000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pcix-440spe", "ibm,plb-pcix";
-+			primary;
-+			large-inbound-windows;
-+			enable-msi-hole;
-+			reg = <c 0ec00000   8	/* Config space access */
-+			       0 0 0		/* no IACK cycles */
-+			       c 0ed00000   4   /* Special cycles */
-+			       c 0ec80000 100	/* Internal registers */
-+			       c 0ec80100  fc>;	/* Internal messaging registers */
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000d 80000000 0 80000000
-+				  01000000 0 00000000 0000000c 08000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 0 to 0xf */
-+			bus-range = <0 f>;
-+
-+			/*
-+			 * On Katmai, the following PCI-X interrupts signals
-+			 * have to be enabled via jumpers (only INTA is
-+			 * enabled per default):
-+			 *
-+			 * INTB: J3: 1-2
-+			 * INTC: J2: 1-2
-+			 * INTD: J1: 1-2
-+			 */
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 1 */
-+				0800 0 0 1 &UIC1 14 8
-+				0800 0 0 2 &UIC1 13 8
-+				0800 0 0 3 &UIC1 12 8
-+				0800 0 0 4 &UIC1 11 8
-+			>;
-+		};
-+
-+		PCIE0: pciex@d00000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			primary;
-+			port = <0>; /* port number */
-+			reg = <d 00000000 20000000	/* Config space access */
-+			       c 10000000 00001000>;	/* Registers */
-+			dcr-reg = <100 020>;
-+			sdr-base = <300>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000e 00000000 0 80000000
-+				  01000000 0 00000000 0000000f 80000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 10 to 0x1f */
-+			bus-range = <10 1f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC3 0 4 /* swizzled int A */
-+				0000 0 0 2 &UIC3 1 4 /* swizzled int B */
-+				0000 0 0 3 &UIC3 2 4 /* swizzled int C */
-+				0000 0 0 4 &UIC3 3 4 /* swizzled int D */>;
-+		};
-+
-+		PCIE1: pciex@d20000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			primary;
-+			port = <1>; /* port number */
-+			reg = <d 20000000 20000000	/* Config space access */
-+			       c 10001000 00001000>;	/* Registers */
-+			dcr-reg = <120 020>;
-+			sdr-base = <340>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000e 80000000 0 80000000
-+				  01000000 0 00000000 0000000f 80010000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 10 to 0x1f */
-+			bus-range = <20 2f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC3 4 4 /* swizzled int A */
-+				0000 0 0 2 &UIC3 5 4 /* swizzled int B */
-+				0000 0 0 3 &UIC3 6 4 /* swizzled int C */
-+				0000 0 0 4 &UIC3 7 4 /* swizzled int D */>;
-+		};
-+
-+		PCIE2: pciex@d40000000 {
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb-pciex-440speB", "ibm,plb-pciex";
-+			primary;
-+			port = <2>; /* port number */
-+			reg = <d 40000000 20000000	/* Config space access */
-+			       c 10002000 00001000>;	/* Registers */
-+			dcr-reg = <140 020>;
-+			sdr-base = <370>;
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 0000000f 00000000 0 80000000
-+				  01000000 0 00000000 0000000f 80020000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* This drives busses 10 to 0x1f */
-+			bus-range = <30 3f>;
-+
-+			/* Legacy interrupts (note the weird polarity, the bridge seems
-+			 * to invert PCIe legacy interrupts).
-+			 * We are de-swizzling here because the numbers are actually for
-+			 * port of the root complex virtual P2P bridge. But I want
-+			 * to avoid putting a node for it in the tree, so the numbers
-+			 * below are basically de-swizzled numbers.
-+			 * The real slot is on idsel 0, so the swizzling is 1:1
-+			 */
-+			interrupt-map-mask = <0000 0 0 7>;
-+			interrupt-map = <
-+				0000 0 0 1 &UIC3 8 4 /* swizzled int A */
-+				0000 0 0 2 &UIC3 9 4 /* swizzled int B */
-+				0000 0 0 3 &UIC3 a 4 /* swizzled int C */
-+				0000 0 0 4 &UIC3 b 4 /* swizzled int D */>;
-+		};
-+	};
-+
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@10000200";
-+	};
-+};
-Index: linux-work/arch/powerpc/platforms/44x/katmai.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/platforms/44x/katmai.c	2007-12-05 11:58:32.000000000 +1100
-@@ -0,0 +1,63 @@
-+/*
-+ * Katmai board specific routines
-+ *
-+ * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-+ * Copyright 2007 IBM Corp.
-+ *
-+ * Based on the Bamboo code by
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>
-+ * Copyright 2007 IBM Corporation
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/of_platform.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+
-+#include "44x.h"
-+
-+static struct of_device_id katmai_of_bus[] = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
-+};
-+
-+static int __init katmai_device_probe(void)
+ static struct ppc4xx_pciex_port *ppc4xx_pciex_ports;
+@@ -711,29 +716,44 @@ static int ppc440spe_pciex_init_port_hw(
+ 	return 0;
+ }
+ 
+-static int ppc440speA_pciex_init_utl(struct ppc4xx_pciex_port *port)
++static int ppc440speA_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
 +{
-+	if (!machine_is(katmai))
-+		return 0;
++	return ppc440spe_pciex_init_port_hw(port);
++}
 +
-+	of_platform_bus_probe(NULL, katmai_of_bus, NULL);
++static int ppc440speB_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
+ {
+-	void __iomem *utl_base;
++	int rc = ppc440spe_pciex_init_port_hw(port);
 +
++	port->has_ibpre = 1;
++
++	return rc;
++}
+ 
++static int ppc440speA_pciex_init_utl(struct ppc4xx_pciex_port *port)
++{
+ 	/* XXX Check what that value means... I hate magic */
+ 	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x68782800);
+ 
+-	utl_base = ioremap(port->utl_regs.start, 0x100);
+-	BUG_ON(utl_base == NULL);
+-
+ 	/*
+ 	 * Set buffer allocations and then assert VRB and TXE.
+ 	 */
+-	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
+-	out_be32(utl_base + PEUTL_INTR,    0x02000000);
+-	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
+-	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
+-	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
+-	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
+-	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
+-	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
++	out_be32(port->utl_base + PEUTL_OUTTR,   0x08000000);
++	out_be32(port->utl_base + PEUTL_INTR,    0x02000000);
++	out_be32(port->utl_base + PEUTL_OPDBSZ,  0x10000000);
++	out_be32(port->utl_base + PEUTL_PBBSZ,   0x53000000);
++	out_be32(port->utl_base + PEUTL_IPHBSZ,  0x08000000);
++	out_be32(port->utl_base + PEUTL_IPDBSZ,  0x10000000);
++	out_be32(port->utl_base + PEUTL_RCIRQEN, 0x00f00000);
++	out_be32(port->utl_base + PEUTL_PCTL,    0x80800066);
+ 
+-	iounmap(utl_base);
 +	return 0;
 +}
-+device_initcall(katmai_device_probe);
 +
-+static int __init katmai_probe(void)
++static int ppc440speB_pciex_init_utl(struct ppc4xx_pciex_port *port)
 +{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "amcc,katmai"))
-+		return 0;
-+
-+	return 1;
++	/* Report CRS to the operating system */
++	out_be32(port->utl_base + PEUTL_PBCTL,    0x08000000);
+ 
+ 	return 0;
+ }
+@@ -741,14 +761,15 @@ static int ppc440speA_pciex_init_utl(str
+ static struct ppc4xx_pciex_hwops ppc440speA_pcie_hwops __initdata =
+ {
+ 	.core_init	= ppc440spe_pciex_core_init,
+-	.port_init_hw	= ppc440spe_pciex_init_port_hw,
++	.port_init_hw	= ppc440speA_pciex_init_port_hw,
+ 	.setup_utl	= ppc440speA_pciex_init_utl,
+ };
+ 
+ static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
+ {
+ 	.core_init	= ppc440spe_pciex_core_init,
+-	.port_init_hw	= ppc440spe_pciex_init_port_hw,
++	.port_init_hw	= ppc440speB_pciex_init_port_hw,
++	.setup_utl	= ppc440speB_pciex_init_utl,
+ };
+ 
+ 
+@@ -826,30 +847,21 @@ static int ppc405ex_pciex_init_port_hw(s
+ 
+ static int ppc405ex_pciex_init_utl(struct ppc4xx_pciex_port *port)
+ {
+-	void __iomem *utl_base;
+-
+ 	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x0);
+ 
+-	utl_base = ioremap(port->utl_regs.start, 0x100);
+-	BUG_ON(utl_base == NULL);
+-
+ 	/*
+ 	 * Set buffer allocations and then assert VRB and TXE.
+ 	 */
+-	out_be32(utl_base + PEUTL_OUTTR,   0x02000000);
+-	out_be32(utl_base + PEUTL_INTR,    0x02000000);
+-	out_be32(utl_base + PEUTL_OPDBSZ,  0x04000000);
+-	out_be32(utl_base + PEUTL_PBBSZ,   0x21000000);
+-	out_be32(utl_base + PEUTL_IPHBSZ,  0x02000000);
+-	out_be32(utl_base + PEUTL_IPDBSZ,  0x04000000);
+-	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
+-	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
+-
+-	out_be32(utl_base + PEUTL_PBCTL,   0x0800000c);
+-	out_be32(utl_base + PEUTL_RCSTA,
+-		 in_be32(utl_base + PEUTL_RCSTA) | 0x000040000);
++	out_be32(port->utl_base + PEUTL_OUTTR,   0x02000000);
++	out_be32(port->utl_base + PEUTL_INTR,    0x02000000);
++	out_be32(port->utl_base + PEUTL_OPDBSZ,  0x04000000);
++	out_be32(port->utl_base + PEUTL_PBBSZ,   0x21000000);
++	out_be32(port->utl_base + PEUTL_IPHBSZ,  0x02000000);
++	out_be32(port->utl_base + PEUTL_IPDBSZ,  0x04000000);
++	out_be32(port->utl_base + PEUTL_RCIRQEN, 0x00f00000);
++	out_be32(port->utl_base + PEUTL_PCTL,    0x80800066);
+ 
+-	iounmap(utl_base);
++	out_be32(port->utl_base + PEUTL_PBCTL,   0x08000000);
+ 
+ 	return 0;
+ }
+@@ -931,17 +943,29 @@ static void __init ppc4xx_pciex_port_ini
+ 	dcr_write(port->dcrs, DCRO_PEGPL_MSGMSK, 0);
+ }
+ 
+-static int __init ppc4xx_pciex_port_init(struct ppc4xx_pciex_port *port)
++static int __init ppc4xx_pciex_wait_on_sdr(struct ppc4xx_pciex_port *port,
++					   unsigned int sdr_offset,
++					   unsigned int mask,
++					   unsigned int value,
++					   int timeout_ms)
+ {
+-	int attempts, rc = 0;
+ 	u32 val;
+ 
+-	/* Check if it's endpoint or root complex
+-	 *
+-	 * XXX Do we want to use the device-tree instead ? --BenH.
+-	 */
+-	val = mfdcri(SDR0, port->sdr_base + PESDRn_DLPSET);
+-	port->endpoint = (((val >> 20) & 0xf) != PTYPE_ROOT_PORT);
++	while(timeout_ms--) {
++		val = mfdcri(SDR0, port->sdr_base + sdr_offset);
++		if ((val & mask) == value) {
++			pr_debug("PCIE%d: Wait on SDR %x success with tm %d (%08x)\n",
++				 port->index, sdr_offset, timeout_ms, val);
++			return 0;
++		}
++		msleep(1);
++	}
++	return -1;
 +}
 +
-+define_machine(katmai) {
-+	.name 				= "Katmai",
-+	.probe 				= katmai_probe,
-+	.progress 			= udbg_progress,
-+	.init_IRQ 			= uic_init_tree,
-+	.get_irq 			= uic_get_irq,
-+	.restart			= ppc44x_reset_system,
-+	.calibrate_decr			= generic_calibrate_decr,
-+};
-Index: linux-work/arch/powerpc/boot/cuboot-katmai.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/arch/powerpc/boot/cuboot-katmai.c	2007-12-05 11:58:32.000000000 +1100
-@@ -0,0 +1,56 @@
-+/*
-+ * Old U-boot compatibility for Katmai
-+ *
-+ * Author: Hugh Blemings <hugh@au.ibm.com>
-+ *
-+ * Copyright 2007 Hugh Blemings, IBM Corporation.
-+ *   Based on cuboot-ebony.c which is:
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ *   Based on cuboot-83xx.c, which is:
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+#include "reg.h"
-+#include "dcr.h"
-+#include "4xx.h"
-+#include "44x.h"
-+#include "cuboot.h"
-+
-+#define TARGET_44x
-+#include "ppcboot.h"
-+
-+static bd_t bd;
-+
-+BSS_STACK(4096);
-+
-+static void katmai_fixups(void)
++static int __init ppc4xx_pciex_port_init(struct ppc4xx_pciex_port *port)
 +{
-+	unsigned long sysclk = 33333000;
-+
-+	/* 440SP Clock logic is all but identical to 440GX
-+	 * so we just use that code for now at least
++	int rc = 0;
+ 
+ 	/* Init HW */
+ 	if (ppc4xx_pciex_hwops->port_init_hw)
+@@ -949,44 +973,40 @@ static int __init ppc4xx_pciex_port_init
+ 	if (rc != 0)
+ 		return rc;
+ 
+-	/*
+-	 * Notice: the following delay has critical impact on device
+-	 * initialization - if too short (<50ms) the link doesn't get up.
+-	 *
+-	 * XXX FIXME: There are various issues with that link up thingy,
+-	 * we could just wait for the link with a timeout but Stefan says
+-	 * some cards need more time even after the link is up. I'll
+-	 * investigate. For now, we keep a fixed 1s delay.
+-	 *
+-	 * Ultimately, it should be made asynchronous so all ports are
+-	 * brought up simultaneously though.
+-	 */
+-	printk(KERN_INFO "PCIE%d: Waiting for link to go up...\n",
++	printk(KERN_INFO "PCIE%d: Checking link...\n",
+ 	       port->index);
+-	msleep(1000);
+-
+-	/*
+-	 * Check that we exited the reset state properly
+-	 */
+-	val = mfdcri(SDR0, port->sdr_base + PESDRn_RCSSTS);
+-	if (val & (1 << 20)) {
+-		printk(KERN_WARNING "PCIE%d: PGRST failed %08x\n",
+-		       port->index, val);
+-		return -1;
+-	}
+ 
+-	/*
+-	 * Verify link is up
+-	 */
+-	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
+-	if (!(val & 0x00001000)) {
+-		printk(KERN_INFO "PCIE%d: link is not up !\n",
++	/* Wait for reset to complete */
++	if (ppc4xx_pciex_wait_on_sdr(port, PESDRn_RCSSTS, 1 << 20, 0, 10)) {
++		printk(KERN_WARNING "PCIE%d: PGRST failed\n",
+ 		       port->index);
+ 		return -1;
+ 	}
+ 
+-	printk(KERN_INFO "PCIE%d: link is up !\n",
+-	       port->index);
++	/* Check for card presence detect if supported, if not, just wait for
++	 * link unconditionally.
++	 *
++	 * note that we don't fail if there is no link, we just filter out
++	 * config space accesses. That way, it will be easier to implement
++	 * hotplug later on.
 +	 */
-+	ibm440spe_fixup_clocks(sysclk, 6 * 1843200, 0);
++	if (!port->has_ibpre ||
++	    !ppc4xx_pciex_wait_on_sdr(port, PESDRn_LOOP,
++				      1 << 28, 1 << 28, 100)) {
++		printk(KERN_INFO
++		       "PCIE%d: Device detected, waiting for link...\n",
++		       port->index);
++		if (ppc4xx_pciex_wait_on_sdr(port, PESDRn_LOOP,
++					     0x1000, 0x1000, 2000))
++			printk(KERN_WARNING
++			       "PCIE%d: Link up failed\n", port->index);
++		else {
++			printk(KERN_INFO
++			       "PCIE%d: link is up !\n", port->index);
++			port->link = 1;
++		}
++	} else
++		printk(KERN_INFO "PCIE%d: No device detected.\n", port->index);
+ 
+ 	/*
+ 	 * Initialize mapping: disable all regions and configure
+@@ -995,12 +1015,13 @@ static int __init ppc4xx_pciex_port_init
+ 	ppc4xx_pciex_port_init_mapping(port);
+ 
+ 	/*
+-	 * Setup UTL registers - but only on revA!
+-	 * We use default settings for revB chip.
+-	 *
+-	 * To be reworked. We may also be able to move that to
+-	 * before the link wait
+-	 * --BenH.
++	 * Map UTL
++	 */
++	port->utl_base = ioremap(port->utl_regs.start, 0x100);
++	BUG_ON(port->utl_base == NULL);
 +
-+	ibm440spe_fixup_memsize();
++	/*
++	 * Setup UTL registers --BenH.
+ 	 */
+ 	if (ppc4xx_pciex_hwops->setup_utl)
+ 		ppc4xx_pciex_hwops->setup_utl(port);
+@@ -1008,15 +1029,13 @@ static int __init ppc4xx_pciex_port_init
+ 	/*
+ 	 * Check for VC0 active and assert RDY.
+ 	 */
+-	attempts = 10;
+-	while (!(mfdcri(SDR0, port->sdr_base + PESDRn_RCSSTS) & (1 << 16))) {
+-		if (!(attempts--)) {
+-			printk(KERN_INFO "PCIE%d: VC0 not active\n",
+-			       port->index);
+-			return -1;
+-		}
+-		msleep(1000);
++	if (port->link &&
++	    ppc4xx_pciex_wait_on_sdr(port, PESDRn_RCSSTS,
++				     1 << 16, 1 << 16, 5000)) {
++		printk(KERN_INFO "PCIE%d: VC0 not active\n", port->index);
++		port->link = 0;
+ 	}
 +
-+	dt_fixup_mac_address(0, bd.bi_enetaddr);
+ 	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
+ 	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) | 1 << 20);
+ 	msleep(100);
+@@ -1053,6 +1072,10 @@ static int ppc4xx_pciex_validate_bdf(str
+ 	    PCI_SLOT(devfn) != 0)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
++	/* Check if we have a link */
++	if ((bus->number != port->hose->first_busno) && !port->link)
++		return PCIBIOS_DEVICE_NOT_FOUND;
 +
-+	ibm4xx_fixup_ebc_ranges("/plb/opb/ebc");
-+}
+ 	return 0;
+ }
+ 
+@@ -1097,6 +1120,9 @@ static int ppc4xx_pciex_read_config(stru
+ 	gpl_cfg = dcr_read(port->dcrs, DCRO_PEGPL_CFG);
+ 	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg | GPL_DMER_MASK_DISA);
+ 
++	/* Make sure no CRS is recorded */
++	out_be32(port->utl_base + PEUTL_RCSTA, 0x00040000);
 +
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+		   unsigned long r6, unsigned long r7)
-+{
-+	CUBOOT_INIT();
+ 	switch (len) {
+ 	case 1:
+ 		*val = in_8((u8 *)(addr + offset));
+@@ -1114,6 +1140,14 @@ static int ppc4xx_pciex_read_config(stru
+ 		 bus->number, hose->first_busno, hose->last_busno,
+ 		 devfn, offset, len, addr + offset, *val);
+ 
++	/* Check for CRS (440SPe rev B does that for us but heh ..) */
++	if (in_be32(port->utl_base + PEUTL_RCSTA) & 0x00040000) {
++		pr_debug("Got CRS !\n");
++		if (len != 0 && offset != 0)
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		*val = 0xffff0001;
++	}
 +
-+	platform_ops.fixups = katmai_fixups;
-+	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
-+	serial_console_init();
-+}
-Index: linux-work/arch/powerpc/boot/Makefile
+ 	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg);
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+@@ -1283,8 +1317,11 @@ static void __init ppc4xx_pciex_port_set
+ 	void __iomem *mbase = NULL, *cfg_data = NULL;
+ 
+ 	/* XXX FIXME: Handle endpoint mode properly */
+-	if (port->endpoint)
++	if (port->endpoint) {
++		printk(KERN_WARNING "PCIE%d: Port in endpoint mode !\n",
++		       port->index);
+ 		return;
++	}
+ 
+ 	/* Check if primary bridge */
+ 	if (of_get_property(port->node, "primary", NULL))
+@@ -1429,6 +1466,9 @@ static void __init ppc4xx_probe_pciex_br
+ 	}
+ 	port->sdr_base = *pval;
+ 
++	/* XXX Currently, we only support root complex mode */
++	port->endpoint = 0;
++
+ 	/* Fetch config space registers address */
+ 	if (of_address_to_resource(np, 0, &port->cfg_space)) {
+ 		printk(KERN_ERR "%s: Can't get PCI-E config space !",
+@@ -1452,8 +1492,10 @@ static void __init ppc4xx_probe_pciex_br
+ 	port->dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
+ 
+ 	/* Initialize the port specific registers */
+-	if (ppc4xx_pciex_port_init(port))
++	if (ppc4xx_pciex_port_init(port)) {
++		printk(KERN_WARNING "PCIE%d: Port init failed\n", port->index);
+ 		return;
++	}
+ 
+ 	/* Setup the linux hose data structure */
+ 	ppc4xx_pciex_port_setup_hose(port);
+Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.h
 ===================================================================
---- linux-work.orig/arch/powerpc/boot/Makefile	2007-12-05 11:58:28.000000000 +1100
-+++ linux-work/arch/powerpc/boot/Makefile	2007-12-05 11:58:32.000000000 +1100
-@@ -38,6 +38,7 @@ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(ob
- $(obj)/4xx.o: BOOTCFLAGS += -mcpu=440
- $(obj)/ebony.o: BOOTCFLAGS += -mcpu=440
- $(obj)/cuboot-taishan.o: BOOTCFLAGS += -mcpu=440
-+$(obj)/cuboot-katmai.o: BOOTCFLAGS += -mcpu=440
- $(obj)/treeboot-walnut.o: BOOTCFLAGS += -mcpu=405
- 
- 
-@@ -58,7 +59,8 @@ src-plat := of.c cuboot-52xx.c cuboot-83
- 		cuboot-ebony.c treeboot-ebony.c prpmc2800.c \
- 		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
- 		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c cuboot-bamboo.c \
--		fixed-head.S ep88xc.c cuboot-hpc2.c ep405.c cuboot-taishan.c
-+		fixed-head.S ep88xc.c cuboot-hpc2.c ep405.c cuboot-taishan.c \
-+		cuboot-katmai.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -163,6 +165,7 @@ image-$(CONFIG_BAMBOO)			+= treeImage.ba
- image-$(CONFIG_SEQUOIA)			+= cuImage.sequoia
- image-$(CONFIG_WALNUT)			+= treeImage.walnut
- image-$(CONFIG_TAISHAN)			+= cuImage.taishan
-+image-$(CONFIG_KATMAI)			+= cuImage.katmai
- endif
- 
- # For 32-bit powermacs, build the COFF and miboot images
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-05 16:57:11.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-05 16:57:26.000000000 +1100
+@@ -330,6 +330,8 @@
+ /*
+  * Config space register offsets
+  */
++#define PECFG_ECRTCTL		0x074
++
+ #define PECFG_BAR0LMPA		0x210
+ #define PECFG_BAR0HMPA		0x214
+ #define PECFG_BAR1MPA		0x218
