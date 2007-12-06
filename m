@@ -1,12 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <18263.58540.584289.779571@cargo.ozlabs.ibm.com>
-Date: Thu, 6 Dec 2007 23:01:48 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AC59DDDE16
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 00:24:25 +1100 (EST)
+Message-Id: <C608AAD4-29F7-4D5D-AA85-3B28CCCAADE5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <20071206081628.GA15868@parisc-linux.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+Date: Thu, 6 Dec 2007 07:24:12 -0600
+References: <20071205064116.D849BDE10A@ozlabs.org>
+	<1196911347.7033.15.camel@pasglop>
+	<20071206063940.GA16474@kroah.com>
+	<1196927934.7033.39.camel@pasglop>
+	<20071206081628.GA15868@parisc-linux.org>
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,73 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do
+On Dec 6, 2007, at 2:16 AM, Matthew Wilcox wrote:
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> On Thu, Dec 06, 2007 at 06:58:54PM +1100, Benjamin Herrenschmidt  
+> wrote:
+>> I was just hoping somebody had a better idea, like a way to add a new
+>> format specifier to printk without losing gcc type checking :-)
+>
+> It's been discussed before.  Some of the solutions discussed:
+>
+> - Add something like PRI_RES which can be concatenated into a printk.
+>   Ugly.
+> - Patch gcc to allow user-definable types.  I think OpenBSD has a  
+> patch
+>   for this.  Then we have to get that patch propagated to all the
+>   people who compile the kernel.  Unappetising.
+> - Disable gcc's printk checking, teach sparse to typecheck printk.
+>   Most people don't run sparse yet.
 
-There is one commit there that fixes a bug where some machines were
-incorrectly reporting over 50% hard irq time even when idle, and three
-commits that update defconfigs.
+How does gcc deal with glibc extension to allow people to add their  
+own specifiers?
 
-Thanks,
-Paul.
+http://www.gnu.org/software/libc/manual/html_node/Customizing-Printf.html
 
- arch/powerpc/configs/bamboo_defconfig        |   22 +--
- arch/powerpc/configs/cell_defconfig          |  176 ++++++++++++---------
- arch/powerpc/configs/celleb_defconfig        |  170 +++++++++++---------
- arch/powerpc/configs/chrp32_defconfig        |  163 +++++++++++---------
- arch/powerpc/configs/ebony_defconfig         |   25 +--
- arch/powerpc/configs/ep88xc_defconfig        |   92 +++++------
- arch/powerpc/configs/g5_defconfig            |  150 ++++++++++--------
- arch/powerpc/configs/holly_defconfig         |  136 +++++++++-------
- arch/powerpc/configs/iseries_defconfig       |  123 ++++++++-------
- arch/powerpc/configs/kilauea_defconfig       |   79 ++++-----
- arch/powerpc/configs/linkstation_defconfig   |  152 ++++++++++--------
- arch/powerpc/configs/lite5200_defconfig      |  119 +++++++-------
- arch/powerpc/configs/maple_defconfig         |  126 ++++++++-------
- arch/powerpc/configs/mpc7448_hpc2_defconfig  |  137 +++++++++-------
- arch/powerpc/configs/mpc8272_ads_defconfig   |  106 +++++++------
- arch/powerpc/configs/mpc8313_rdb_defconfig   |  173 ++++++++++-----------
- arch/powerpc/configs/mpc832x_mds_defconfig   |  155 +++++++++----------
- arch/powerpc/configs/mpc832x_rdb_defconfig   |  167 ++++++++++----------
- arch/powerpc/configs/mpc834x_itx_defconfig   |  156 +++++++++----------
- arch/powerpc/configs/mpc834x_itxgp_defconfig |  161 ++++++++++---------
- arch/powerpc/configs/mpc834x_mds_defconfig   |  149 +++++++++---------
- arch/powerpc/configs/mpc836x_mds_defconfig   |  155 +++++++++----------
- arch/powerpc/configs/mpc8540_ads_defconfig   |  101 ++++++------
- arch/powerpc/configs/mpc8544_ds_defconfig    |  130 ++++++++--------
- arch/powerpc/configs/mpc8560_ads_defconfig   |  104 ++++++------
- arch/powerpc/configs/mpc8568mds_defconfig    |  161 ++++++++++---------
- arch/powerpc/configs/mpc8572_ds_defconfig    |  130 ++++++++--------
- arch/powerpc/configs/mpc85xx_cds_defconfig   |  126 ++++++++-------
- arch/powerpc/configs/mpc8610_hpcd_defconfig  |  114 ++++++--------
- arch/powerpc/configs/mpc8641_hpcn_defconfig  |  131 ++++++++--------
- arch/powerpc/configs/mpc866_ads_defconfig    |  107 ++++++-------
- arch/powerpc/configs/mpc885_ads_defconfig    |   98 ++++++------
- arch/powerpc/configs/pasemi_defconfig        |    8 +
- arch/powerpc/configs/pmac32_defconfig        |  217 ++++++++++++++++----------
- arch/powerpc/configs/ppc64_defconfig         |    9 +
- arch/powerpc/configs/pq2fads_defconfig       |  148 +++++++++++-------
- arch/powerpc/configs/prpmc2800_defconfig     |  150 +++++++++---------
- arch/powerpc/configs/ps3_defconfig           |  177 +++++++++++----------
- arch/powerpc/configs/pseries_defconfig       |  156 ++++++++++---------
- arch/powerpc/configs/sequoia_defconfig       |  111 +++++++------
- arch/powerpc/configs/walnut_defconfig        |   22 +--
- arch/powerpc/kernel/process.c                |    2 
- include/asm-powerpc/time.h                   |    8 -
- 43 files changed, 2650 insertions(+), 2452 deletions(-)
-
-Geoff Levand (1):
-      [POWERPC] PS3: Update ps3_defconfig
-
-Paul Mackerras (1):
-      [POWERPC] Update defconfigs
-
-Stephen Rothwell (1):
-      [POWERPC] Update iseries_defconfig
-
-Tony Breeds (1):
-      [POWERPC] Fix hardware IRQ time accounting problem.
+- k
