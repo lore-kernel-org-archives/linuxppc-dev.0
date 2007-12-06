@@ -1,18 +1,18 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9ED91DDF81
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 24F67DE069
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:01 +1100 (EST)
 Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 79292368002
+	by smtps.tip.net.au (Postfix) with ESMTP id 05021368002
 	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:08:00 +1100 (EST)
-Date: Fri, 7 Dec 2007 01:58:01 +1100
+Date: Fri, 7 Dec 2007 01:59:01 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 13/19] [POWERPC] iSeries: make pcibios_final_fixup not
-	depend on pci_dn
-Message-Id: <20071207015801.1321a751.sfr@canb.auug.org.au>
+Subject: [PATCH 14/19] [POWERPC] Inline pci_setup_pci_controller as it has
+	become trivial
+Message-Id: <20071207015901.4b6c80bf.sfr@canb.auug.org.au>
 In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -26,76 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+and it becomes clear that we should use zalloc_maybe_bootmem.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/iseries/pci.c |   27 ++++++++++++---------------
- 1 files changed, 12 insertions(+), 15 deletions(-)
+ arch/powerpc/kernel/pci-common.c |   22 ++++++----------------
+ 1 files changed, 6 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 7e00e35..4bcf446 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -188,39 +188,36 @@ void __init iSeries_pci_final_fixup(void)
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0bf969e..252dd1e 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -54,27 +54,17 @@ static int global_phb_number;		/* Global phb counter */
+ resource_size_t isa_mem_base    = 0;
  
- 	printk("pcibios_final_fixup\n");
- 	for_each_pci_dev(pdev) {
--		struct pci_dn *pdn;
- 		const u32 *agent;
- 		const u32 *sub_bus;
-+		unsigned char bus = pdev->bus->number;
  
--		node = find_device_node(pdev->bus->number, pdev->devfn);
--		printk("pci dev %p (%x.%x), node %p\n", pdev,
--		       pdev->bus->number, pdev->devfn, node);
-+		node = find_device_node(bus, pdev->devfn);
-+		printk("pci dev %p (%x.%x), node %p\n", pdev, bus,
-+			pdev->devfn, node);
- 		if (!node) {
- 			printk("PCI: Device Tree not found for 0x%016lX\n",
- 					(unsigned long)pdev);
- 			continue;
- 		}
+-/*
+- * pci_controller(phb) initialized common variables.
+- */
+-static void __devinit pci_setup_pci_controller(struct pci_controller *hose)
+-{
+-	memset(hose, 0, sizeof(struct pci_controller));
+-
+-	spin_lock(&hose_spinlock);
+-	hose->global_number = global_phb_number++;
+-	list_add_tail(&hose->list_node, &hose_list);
+-	spin_unlock(&hose_spinlock);
+-}
+-
+-struct pci_controller * pcibios_alloc_controller(struct device_node *dev)
++struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ {
+ 	struct pci_controller *phb;
  
--		pdn = PCI_DN(node);
- 		agent = of_get_property(node, "linux,agent-id", NULL);
- 		sub_bus = of_get_property(node, "linux,subbus", NULL);
--		if (pdn && agent && sub_bus) {
--			u8 irq = iSeries_allocate_IRQ(pdn->busno, 0, *sub_bus);
-+		if (agent && sub_bus) {
-+			u8 irq = iSeries_allocate_IRQ(bus, 0, *sub_bus);
- 			int err;
- 
--			err = HvCallXm_connectBusUnit(pdn->busno, *sub_bus,
-+			err = HvCallXm_connectBusUnit(bus, *sub_bus,
- 					*agent, irq);
- 			if (err)
- 				pci_log_error("Connect Bus Unit",
--					pdn->busno, *sub_bus, *agent, err);
-+					bus, *sub_bus, *agent, err);
- 			else {
--				err = HvCallPci_configStore8(pdn->busno,
--					*sub_bus, *agent,
--					PCI_INTERRUPT_LINE, irq);
-+				err = HvCallPci_configStore8(bus, *sub_bus,
-+					*agent, PCI_INTERRUPT_LINE, irq);
- 				if (err)
- 					pci_log_error("PciCfgStore Irq Failed!",
--						pdn->busno, *sub_bus,
--						*agent, err);
-+						bus, *sub_bus, *agent, err);
- 				else
- 					pdev->irq = irq;
- 			}
-@@ -230,7 +227,7 @@ void __init iSeries_pci_final_fixup(void)
- 		pdev->sysdata = node;
- 		PCI_DN(node)->pcidev = pdev;
- 		allocate_device_bars(pdev);
--		iSeries_Device_Information(pdev, num_dev, pdn->busno, *sub_bus);
-+		iSeries_Device_Information(pdev, num_dev, bus, *sub_bus);
- 		iommu_devnode_init_iSeries(pdev, node);
- 	}
- 	iSeries_activate_IRQs();
+-	phb = alloc_maybe_bootmem(sizeof(struct pci_controller), GFP_KERNEL);
++	phb = zalloc_maybe_bootmem(sizeof(struct pci_controller), GFP_KERNEL);
+ 	if (phb == NULL)
+ 		return NULL;
+-	pci_setup_pci_controller(phb);
++	spin_lock(&hose_spinlock);
++	phb->global_number = global_phb_number++;
++	list_add_tail(&phb->list_node, &hose_list);
++	spin_unlock(&hose_spinlock);
+ 	phb->arch_data = dev;
+ 	phb->is_dynamic = mem_init_done;
+ #ifdef CONFIG_PPC64
 -- 
 1.5.3.7
 
