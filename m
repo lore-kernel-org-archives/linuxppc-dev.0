@@ -1,19 +1,14 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp116.sbc.mail.sp1.yahoo.com (smtp116.sbc.mail.sp1.yahoo.com
-	[69.147.64.89]) by ozlabs.org (Postfix) with SMTP id 5BED9DE015
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 08:29:51 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 2/2] usb: Remove OHCI useless masking/unmasking of WDH
-	interrupt
-Date: Thu, 6 Dec 2007 13:29:46 -0800
-References: <20071125225543.374E0DDF17@ozlabs.org>
-In-Reply-To: <20071125225543.374E0DDF17@ozlabs.org>
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6EC07DDEEF
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 08:49:40 +1100 (EST)
+Message-ID: <47586E72.3050106@anagramm.de>
+Date: Thu, 06 Dec 2007 22:49:38 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200712061329.47591.david-b@pacbell.net>
-Cc: linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: MPC85xx DMA drivers, first testing results.
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +18,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] usb: Remove OHCI useless masking/unmasking of WDH interrupt
+Hi There!
 
-The OHCI driver's IRQ handler, while processing a WDH interrupt, masks
-and unmasks it.  I believe this is both broken (the write may still be
-posted during the donelist processing it's trying to safeguard) and
-useless as this IRQ may not be reissued until it's acked (unless this
-legacy code is an uncommented workaround for some chip erratum).
+I just tried to use the fsldma on the mpc8540. It seems to work fine
+here, but I would be glad if somebody can confirm before I move on:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Worth IMO holding till 2.6.25-early.
+I added the following to my mpc8540ads compatible board's .dts
+(see my comments, where the not yet available documentation
+was unclear):
 
---- g26.orig/drivers/usb/host/ohci-hcd.c	2007-12-06 08:42:24.000000000 -0800
-+++ g26/drivers/usb/host/ohci-hcd.c	2007-12-06 08:42:29.000000000 -0800
-@@ -807,13 +807,9 @@ static irqreturn_t ohci_irq (struct usb_
- 	}
- 
- 	if (ints & OHCI_INTR_WDH) {
--		if (HC_IS_RUNNING(hcd->state))
--			ohci_writel (ohci, OHCI_INTR_WDH, &regs->intrdisable);
- 		spin_lock (&ohci->lock);
- 		dl_done_list (ohci);
- 		spin_unlock (&ohci->lock);
--		if (HC_IS_RUNNING(hcd->state))
--			ohci_writel (ohci, OHCI_INTR_WDH, &regs->intrenable);
- 	}
- 
- 	if (quirk_zfmicro(ohci) && (ints & OHCI_INTR_SF)) {
+dma@21000 {
+         #address-cells = <1>;
+         #size-cells = <1>;
+         compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
+         device-id = <0>;
+         reg = <21300 4>;        /* DGSR - DMA general status register */
+         /* reg = <21000 4>;*/   /* or use offset of DMA machine ??? */
+         ranges = <0 21100 200>; /* we have 4 DMA channels at 21100, size=80 each */
+         dma-channel@0 {
+                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
+                 device-id = <0>; /* or cell-index ??? */
+                 reg = <0 80>;
+                 interrupt-parent = <&mpic>;
+                 interrupts = <14 2>;
+         };
+         dma-channel@80 {        /* or use 0,1,2,3 instead of 0,80,100,180 ??? */
+                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
+                 device-id = <1>;
+                 reg = <80 80>;
+                 interrupt-parent = <&mpic>;
+                 interrupts = <15 2>;
+         };
+         dma-channel@100 {
+                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
+                 device-id = <2>;
+                 reg = <100 80>;
+                 interrupt-parent = <&mpic>;
+                 interrupts = <16 2>;
+         };
+         dma-channel@180 {
+                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
+                 device-id = <3>;
+                 reg = <180 80>;
+                 interrupt-parent = <&mpic>;
+                 interrupts = <17 2>;
+         };
+};
+
+
+$ dmesg then says:
+
+of-fsl-dma e0021300.dma: Probe the Freescale DMA driver for fsl,mpc8540-dma controller at 0xe0021300...
+of-fsl-dma-channel e0021100.dma-channe: selftest: start...
+of-fsl-dma-channel e0021100.dma-channe: selftest: finished, err=0.
+of-fsl-dma-channel e0021100.dma-channe: #0 (fsl,mpc8540-dma-channel), irq 21
+of-fsl-dma-channel e0021180.dma-channe: selftest: start...
+of-fsl-dma-channel e0021180.dma-channe: selftest: finished, err=0.
+of-fsl-dma-channel e0021180.dma-channe: #1 (fsl,mpc8540-dma-channel), irq 22
+of-fsl-dma-channel e0021200.dma-channe: selftest: start...
+of-fsl-dma-channel e0021200.dma-channe: selftest: finished, err=0.
+of-fsl-dma-channel e0021200.dma-channe: #2 (fsl,mpc8540-dma-channel), irq 23
+of-fsl-dma-channel e0021280.dma-channe: selftest: start...
+of-fsl-dma-channel e0021280.dma-channe: selftest: finished, err=0.
+of-fsl-dma-channel e0021280.dma-channe: #3 (fsl,mpc8540-dma-channel), irq 24
+
+I added another dev_info() to get at least a glue that the selftest is run.
+It looks like dev_info(fsl_chan->dev, ...); seems to be truncated.
+
+I have no idea if interrupts are working well... the callback isn't
+used yet.
+
+Otherwise, nice work! :-) I'm looking forward to see this functionality
+in mainline.
+
+Regards,
+-- 
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
