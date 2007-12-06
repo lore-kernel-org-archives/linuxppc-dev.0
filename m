@@ -1,14 +1,24 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 6EC07DDEEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 08:49:40 +1100 (EST)
-Message-ID: <47586E72.3050106@anagramm.de>
-Date: Thu, 06 Dec 2007 22:49:38 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 54E5ADDF5F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 08:50:26 +1100 (EST)
+Message-ID: <47581F7D.1040102@freescale.com>
+Date: Thu, 06 Dec 2007 10:12:45 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: MPC85xx DMA drivers, first testing results.
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Kumar Gala <kumar.gala@freescale.com>
+Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
+References: <11968944871776-git-send-email-timur@freescale.com>
+	<200712061631.19485.arnd@arndb.de> <4758193B.5080707@freescale.com>
+	<200712061658.08791.arnd@arndb.de> <47581C58.8060906@freescale.com>
+	<7245C82C-BCFC-4E38-8685-8C17B4300341@freescale.com>
+In-Reply-To: <7245C82C-BCFC-4E38-8685-8C17B4300341@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,88 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi There!
+Kumar Gala wrote:
 
-I just tried to use the fsldma on the mpc8540. It seems to work fine
-here, but I would be glad if somebody can confirm before I move on:
+> When I wait you come up with a new version.. so I'm waiting to see if v3 
+> comes out :)
 
-I added the following to my mpc8540ads compatible board's .dts
-(see my comments, where the not yet available documentation
-was unclear):
+Well, I guess I can't blame you for that. :-)
 
-dma@21000 {
-         #address-cells = <1>;
-         #size-cells = <1>;
-         compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
-         device-id = <0>;
-         reg = <21300 4>;        /* DGSR - DMA general status register */
-         /* reg = <21000 4>;*/   /* or use offset of DMA machine ??? */
-         ranges = <0 21100 200>; /* we have 4 DMA channels at 21100, size=80 each */
-         dma-channel@0 {
-                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
-                 device-id = <0>; /* or cell-index ??? */
-                 reg = <0 80>;
-                 interrupt-parent = <&mpic>;
-                 interrupts = <14 2>;
-         };
-         dma-channel@80 {        /* or use 0,1,2,3 instead of 0,80,100,180 ??? */
-                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
-                 device-id = <1>;
-                 reg = <80 80>;
-                 interrupt-parent = <&mpic>;
-                 interrupts = <15 2>;
-         };
-         dma-channel@100 {
-                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
-                 device-id = <2>;
-                 reg = <100 80>;
-                 interrupt-parent = <&mpic>;
-                 interrupts = <16 2>;
-         };
-         dma-channel@180 {
-                 compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
-                 device-id = <3>;
-                 reg = <180 80>;
-                 interrupt-parent = <&mpic>;
-                 interrupts = <17 2>;
-         };
-};
+I think these patches are final:
 
+[PATCH 1/2] qe: add function qe_clock_source (dated 12/3)
+[PATCH 2/2] ucc_geth: use rx-clock-name and tx-clock-name device tree properties 
+(dated 12/3)
+[PATCH v2] qe: add ability to upload QE firmware
 
-$ dmesg then says:
-
-of-fsl-dma e0021300.dma: Probe the Freescale DMA driver for fsl,mpc8540-dma controller at 0xe0021300...
-of-fsl-dma-channel e0021100.dma-channe: selftest: start...
-of-fsl-dma-channel e0021100.dma-channe: selftest: finished, err=0.
-of-fsl-dma-channel e0021100.dma-channe: #0 (fsl,mpc8540-dma-channel), irq 21
-of-fsl-dma-channel e0021180.dma-channe: selftest: start...
-of-fsl-dma-channel e0021180.dma-channe: selftest: finished, err=0.
-of-fsl-dma-channel e0021180.dma-channe: #1 (fsl,mpc8540-dma-channel), irq 22
-of-fsl-dma-channel e0021200.dma-channe: selftest: start...
-of-fsl-dma-channel e0021200.dma-channe: selftest: finished, err=0.
-of-fsl-dma-channel e0021200.dma-channe: #2 (fsl,mpc8540-dma-channel), irq 23
-of-fsl-dma-channel e0021280.dma-channe: selftest: start...
-of-fsl-dma-channel e0021280.dma-channe: selftest: finished, err=0.
-of-fsl-dma-channel e0021280.dma-channe: #3 (fsl,mpc8540-dma-channel), irq 24
-
-I added another dev_info() to get at least a glue that the selftest is run.
-It looks like dev_info(fsl_chan->dev, ...); seems to be truncated.
-
-I have no idea if interrupts are working well... the callback isn't
-used yet.
-
-Otherwise, nice work! :-) I'm looking forward to see this functionality
-in mainline.
-
-Regards,
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Timur Tabi
+Linux kernel developer at Freescale
