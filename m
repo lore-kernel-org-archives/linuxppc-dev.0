@@ -1,18 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BAD4CDE1FF
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:56 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5C245DE04F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:57 +1100 (EST)
 Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 87C44368002
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:56 +1100 (EST)
-Date: Fri, 7 Dec 2007 01:51:48 +1100
+	by smtps.tip.net.au (Postfix) with ESMTP id 19018368002
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:57 +1100 (EST)
+Date: Fri, 7 Dec 2007 01:52:45 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 07/19] [POWERPC] iSeries: unindent and clean
-	iSeries_pci_final_fixup
-Message-Id: <20071207015148.917436cc.sfr@canb.auug.org.au>
+Subject: [PATCH 08/19] [POWERPC] iSeries: consoldiate PCI IO error check
+Message-Id: <20071207015245.05cac2a7.sfr@canb.auug.org.au>
 In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -29,96 +28,187 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/iseries/pci.c |   68 +++++++++++++++++----------------
- 1 files changed, 35 insertions(+), 33 deletions(-)
+ arch/powerpc/platforms/iseries/pci.c |  105 ++++++++-------------------------
+ 1 files changed, 26 insertions(+), 79 deletions(-)
 
 diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index cff832a..8e2ac3d 100644
+index 8e2ac3d..105b23d 100644
 --- a/arch/powerpc/platforms/iseries/pci.c
 +++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -177,47 +177,49 @@ void __init iSeries_pci_final_fixup(void)
+@@ -342,7 +342,7 @@ static int check_return_code(char *type, struct device_node *dn,
+  */
+ static inline struct device_node *xlate_iomm_address(
+ 		const volatile void __iomem *addr,
+-		u64 *dsaptr, u64 *bar_offset)
++		u64 *dsaptr, u64 *bar_offset, const char *func)
+ {
+ 	unsigned long orig_addr;
+ 	unsigned long base_addr;
+@@ -350,8 +350,20 @@ static inline struct device_node *xlate_iomm_address(
+ 	struct device_node *dn;
  
- 	printk("pcibios_final_fixup\n");
- 	for_each_pci_dev(pdev) {
-+		struct pci_dn *pdn;
-+		const u32 *agent;
+ 	orig_addr = (unsigned long __force)addr;
+-	if ((orig_addr < BASE_IO_MEMORY) || (orig_addr >= max_io_memory))
++	if ((orig_addr < BASE_IO_MEMORY) || (orig_addr >= max_io_memory)) {
++		static unsigned long last_jiffies;
++		static int num_printed;
 +
- 		node = find_device_node(pdev->bus->number, pdev->devfn);
- 		printk("pci dev %p (%x.%x), node %p\n", pdev,
- 		       pdev->bus->number, pdev->devfn, node);
-+		if (!node) {
-+			printk("PCI: Device Tree not found for 0x%016lX\n",
-+					(unsigned long)pdev);
-+			continue;
++		if ((jiffies - last_jiffies) > 60 * HZ) {
++			last_jiffies = jiffies;
++			num_printed = 0;
 +		}
- 
--		if (node != NULL) {
--			struct pci_dn *pdn = PCI_DN(node);
--			const u32 *agent;
++		if (num_printed++ < 10)
++			printk(KERN_ERR
++				"iSeries_%s: invalid access at IO address %p\n",
++				func, addr);
+ 		return NULL;
++	}
+ 	base_addr = orig_addr - BASE_IO_MEMORY;
+ 	ind = base_addr / IOMM_TABLE_ENTRY_SIZE;
+ 	dn = iomm_table[ind];
+@@ -377,21 +389,10 @@ static u8 iSeries_read_byte(const volatile void __iomem *addr)
+ 	int retry = 0;
+ 	struct HvCallPci_LoadReturn ret;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
 -
--			agent = of_get_property(node, "linux,agent-id", NULL);
--			if ((pdn != NULL) && (agent != NULL)) {
--				u8 irq = iSeries_allocate_IRQ(pdn->busno, 0,
--						pdn->bussubno);
--				int err;
--
--				err = HvCallXm_connectBusUnit(pdn->busno, pdn->bussubno,
--						*agent, irq);
-+		pdn = PCI_DN(node);
-+		agent = of_get_property(node, "linux,agent-id", NULL);
-+		if (pdn && agent) {
-+			u8 irq = iSeries_allocate_IRQ(pdn->busno, 0,
-+					pdn->bussubno);
-+			int err;
-+
-+			err = HvCallXm_connectBusUnit(pdn->busno, pdn->bussubno,
-+					*agent, irq);
-+			if (err)
-+				pci_log_error("Connect Bus Unit",
-+					pdn->busno, pdn->bussubno, *agent, err);
-+			else {
-+				err = HvCallPci_configStore8(pdn->busno,
-+					pdn->bussubno, *agent,
-+					PCI_INTERRUPT_LINE, irq);
- 				if (err)
--					pci_log_error("Connect Bus Unit",
--						pdn->busno, pdn->bussubno, *agent, err);
--				else {
--					err = HvCallPci_configStore8(pdn->busno, pdn->bussubno,
--							*agent,
--							PCI_INTERRUPT_LINE,
--							irq);
--					if (err)
--						pci_log_error("PciCfgStore Irq Failed!",
--							pdn->busno, pdn->bussubno, *agent, err);
--				}
--				if (!err)
-+					pci_log_error("PciCfgStore Irq Failed!",
-+						pdn->busno, pdn->bussubno,
-+						*agent, err);
-+				else
- 					pdev->irq = irq;
- 			}
-+		}
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
++		xlate_iomm_address(addr, &dsa, &bar_offset, "read_byte");
  
--			++num_dev;
--			pdev->sysdata = node;
--			PCI_DN(node)->pcidev = pdev;
--			allocate_device_bars(pdev);
--			iSeries_Device_Information(pdev, num_dev);
--			iommu_devnode_init_iSeries(pdev, node);
--		} else
--			printk("PCI: Device Tree not found for 0x%016lX\n",
--					(unsigned long)pdev);
-+		num_dev++;
-+		pdev->sysdata = node;
-+		PCI_DN(node)->pcidev = pdev;
-+		allocate_device_bars(pdev);
-+		iSeries_Device_Information(pdev, num_dev);
-+		iommu_devnode_init_iSeries(pdev, node);
- 	}
- 	iSeries_activate_IRQs();
- 	mf_display_src(0xC9000200);
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_read_byte: invalid access at IO address %p\n",
+-			       addr);
++	if (dn == NULL)
+ 		return 0xff;
+-	}
+ 	do {
+ 		HvCall3Ret16(HvCallPciBarLoad8, &ret, dsa, bar_offset, 0);
+ 	} while (check_return_code("RDB", dn, &retry, ret.rc) != 0);
+@@ -406,21 +407,10 @@ static u16 iSeries_read_word(const volatile void __iomem *addr)
+ 	int retry = 0;
+ 	struct HvCallPci_LoadReturn ret;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
+-
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
++		xlate_iomm_address(addr, &dsa, &bar_offset, "read_word");
+ 
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_read_word: invalid access at IO address %p\n",
+-			       addr);
++	if (dn == NULL)
+ 		return 0xffff;
+-	}
+ 	do {
+ 		HvCall3Ret16(HvCallPciBarLoad16, &ret, dsa,
+ 				bar_offset, 0);
+@@ -436,21 +426,10 @@ static u32 iSeries_read_long(const volatile void __iomem *addr)
+ 	int retry = 0;
+ 	struct HvCallPci_LoadReturn ret;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
+-
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
++		xlate_iomm_address(addr, &dsa, &bar_offset, "read_long");
+ 
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_read_long: invalid access at IO address %p\n",
+-			       addr);
++	if (dn == NULL)
+ 		return 0xffffffff;
+-	}
+ 	do {
+ 		HvCall3Ret16(HvCallPciBarLoad32, &ret, dsa,
+ 				bar_offset, 0);
+@@ -470,20 +449,10 @@ static void iSeries_write_byte(u8 data, volatile void __iomem *addr)
+ 	int retry = 0;
+ 	u64 rc;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
++		xlate_iomm_address(addr, &dsa, &bar_offset, "write_byte");
+ 
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
+-
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_write_byte: invalid access at IO address %p\n", addr);
++	if (dn == NULL)
+ 		return;
+-	}
+ 	do {
+ 		rc = HvCall4(HvCallPciBarStore8, dsa, bar_offset, data, 0);
+ 	} while (check_return_code("WWB", dn, &retry, rc) != 0);
+@@ -496,21 +465,10 @@ static void iSeries_write_word(u16 data, volatile void __iomem *addr)
+ 	int retry = 0;
+ 	u64 rc;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
+-
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
++		xlate_iomm_address(addr, &dsa, &bar_offset, "write_word");
+ 
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_write_word: invalid access at IO address %p\n",
+-			       addr);
++	if (dn == NULL)
+ 		return;
+-	}
+ 	do {
+ 		rc = HvCall4(HvCallPciBarStore16, dsa, bar_offset, data, 0);
+ 	} while (check_return_code("WWW", dn, &retry, rc) != 0);
+@@ -523,21 +481,10 @@ static void iSeries_write_long(u32 data, volatile void __iomem *addr)
+ 	int retry = 0;
+ 	u64 rc;
+ 	struct device_node *dn =
+-		xlate_iomm_address(addr, &dsa, &bar_offset);
++		xlate_iomm_address(addr, &dsa, &bar_offset, "write_long");
+ 
+-	if (dn == NULL) {
+-		static unsigned long last_jiffies;
+-		static int num_printed;
+-
+-		if ((jiffies - last_jiffies) > 60 * HZ) {
+-			last_jiffies = jiffies;
+-			num_printed = 0;
+-		}
+-		if (num_printed++ < 10)
+-			printk(KERN_ERR "iSeries_write_long: invalid access at IO address %p\n",
+-			       addr);
++	if (dn == NULL)
+ 		return;
+-	}
+ 	do {
+ 		rc = HvCall4(HvCallPciBarStore32, dsa, bar_offset, data, 0);
+ 	} while (check_return_code("WWL", dn, &retry, rc) != 0);
 -- 
 1.5.3.7
 
