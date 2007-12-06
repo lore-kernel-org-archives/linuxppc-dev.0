@@ -1,28 +1,29 @@
 Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 67917DDF64
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:59:32 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6JxUPG013917
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 14:59:30 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB6JxTCI125114
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 14:59:29 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB6JxT3h023046
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 14:59:29 -0500
-Date: Thu, 6 Dec 2007 13:56:37 -0600
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 87BE3DDF3B
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 07:29:00 +1100 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6KStLo007596
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 15:28:55 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB6KSkiJ042624
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:28:48 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB6KSk30010859
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 13:28:46 -0700
+Date: Thu, 6 Dec 2007 14:25:45 -0600
 From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 18/25] powerpc: Base support for 440GX Taishan eval board
-Message-ID: <20071206135637.49bb1ce3@zod.rchland.ibm.com>
-In-Reply-To: <20071206080129.737E8DE09F@ozlabs.org>
+Subject: Re: [PATCH 0/25] powerpc: 4xx PCI, PCI-X and PCI-Express support
+	among others
+Message-ID: <20071206142545.437958e1@zod.rchland.ibm.com>
+In-Reply-To: <1196927999.714593.205329520306.qpush@grosgo>
 References: <1196927999.714593.205329520306.qpush@grosgo>
-	<20071206080129.737E8DE09F@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -35,19 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 06 Dec 2007 19:00:18 +1100
+On Thu, 06 Dec 2007 18:59:59 +1100
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> From: Hugh Blemings <hugh@blemings.org>
+> Here's a set of patches that bring PCI, PCI-X and PCI-Express
+> support to 4xx on arch/powerpc. It also changes/fixed various
+> bits and pieces, such as a bit of rework of arch/powerpc/boot
+> 4xx code, adding a couple of new platforms along the way. 
 > 
+> There are some issues with the SCSI stack vs. non-coherent
+> DMA that I'm working on fixing separately, and there's a
+> problem I noticed with the e1000 driver vs. 64 bits resources
+> on 32 bits architectures for which I also have a patch that
+> I posted separately. Appart from that, I got it working fine
+> with a USB2 card in an ebony and 2 USB storage devices.
 > 
-> Signed-off-by: Hugh Blemings <hugh@blemings.org>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> This needs a bit of cleanup still, probably not to be merged as-is
-> just yet (like using mtdcri/mfdcri for CPR access).
 
-A defconfig for it would be nice.
+These are now in my 2.6.25-candidates tree.
 
 josh
