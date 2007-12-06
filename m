@@ -1,12 +1,23 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Date: Thu, 6 Dec 2007 16:48:26 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] PowerPC 4xx: rework UIC cascade irq handling
-Message-ID: <20071206134826.GA8077@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: david@gibson.dropbear.id.au
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 82B09DDEE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:04:30 +1100 (EST)
+Message-ID: <47580F43.7020404@freescale.com>
+Date: Thu, 06 Dec 2007 09:03:31 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
+References: <11968944871776-git-send-email-timur@freescale.com>
+	<200712060056.39368.arnd@arndb.de> <47573CCE.4000606@freescale.com>
+	<200712060117.14768.arnd@arndb.de>
+In-Reply-To: <200712060117.14768.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,97 +27,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a UIC cascade handler rework to use set_irq_chained_handler() for cascade,
-just like othe ppc platforms do. With current implementation we have additional
-redirection for irq handler and we call generic_handle_irq twice 
-(once for the primary uic and the other time for handling cascade interrupt).
-This causes Ingo's realtime support patch to stop working on 4xx.
-Not sure of any other possible problems though, but with set_irq_chained_handler()
-we can abolish "struct irqaction cascade" from the chip descriptor and call
-generic_handle_irq() once, directly for cascade irq.
+Arnd Bergmann wrote:
+> On Thursday 06 December 2007, Timur Tabi wrote:
+>>> In that case, I think it
+>>> would really be better to just put the blob into the tree and only
+>>> have the fw loading code in the kernel instead of duplicating it in the boot
+>>> loader.
+>> That would require the firmware to present in RAM for all time, since the device 
+>> tree cannot be unloaded.
+> 
+> Yes, that's a backdraw of my approach, but in the case of spidernet, it was only
+> an insignificant amount of RAM. Don't know what sizes of RAM and QE firmware
+> to expect typically on the machines you care about.
 
-Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
----
- arch/powerpc/sysdev/uic.c |   36 +++++++++++++++++++-----------------
- 1 files changed, 19 insertions(+), 17 deletions(-)
+I'm only familiar with the UART microcode, which is relatively small.  I'll add 
+this feature to my to-do list.
 
-diff -pruN linux-2.6.orig/arch/powerpc/sysdev/uic.c linux-2.6/arch/powerpc/sysdev/uic.c
---- linux-2.6.orig/arch/powerpc/sysdev/uic.c	2007-12-05 20:07:22.000000000 +0300
-+++ linux-2.6/arch/powerpc/sysdev/uic.c	2007-12-05 21:34:56.000000000 +0300
-@@ -53,9 +53,6 @@ struct uic {
- 
- 	/* The remapper for this UIC */
- 	struct irq_host	*irqhost;
--
--	/* For secondary UICs, the cascade interrupt's irqaction */
--	struct irqaction cascade;
- };
- 
- static void uic_unmask_irq(unsigned int virq)
-@@ -264,23 +261,36 @@ static struct irq_host_ops uic_host_ops 
- 	.xlate	= uic_host_xlate,
- };
- 
--irqreturn_t uic_cascade(int virq, void *data)
-+void uic_irq_cascade(unsigned int virq, struct irq_desc *desc)
- {
--	struct uic *uic = data;
-+	struct uic *uic = get_irq_data(virq);
- 	u32 msr;
- 	int src;
- 	int subvirq;
- 
-+	spin_lock(&desc->lock);
-+	if (desc->status & IRQ_LEVEL)
-+		desc->chip->mask(virq);
-+	else
-+		desc->chip->mask_ack(virq);
-+	spin_unlock(&desc->lock);
-+
- 	msr = mfdcr(uic->dcrbase + UIC_MSR);
- 	if (!msr) /* spurious interrupt */
--		return IRQ_HANDLED;
-+		goto uic_irq_ret;
- 
- 	src = 32 - ffs(msr);
- 
- 	subvirq = irq_linear_revmap(uic->irqhost, src);
- 	generic_handle_irq(subvirq);
- 
--	return IRQ_HANDLED;
-+uic_irq_ret:
-+	spin_lock(&desc->lock);
-+	if (desc->status & IRQ_LEVEL)
-+		desc->chip->ack(virq);
-+	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
-+		desc->chip->unmask(virq);
-+	spin_unlock(&desc->lock);
- }
- 
- static struct uic * __init uic_init_one(struct device_node *node)
-@@ -368,7 +378,6 @@ void __init uic_init_tree(void)
- 		if (interrupts) {
- 			/* Secondary UIC */
- 			int cascade_virq;
--			int ret;
- 
- 			uic = uic_init_one(np);
- 			if (! uic)
-@@ -377,15 +386,8 @@ void __init uic_init_tree(void)
- 
- 			cascade_virq = irq_of_parse_and_map(np, 0);
- 
--			uic->cascade.handler = uic_cascade;
--			uic->cascade.name = "UIC cascade";
--			uic->cascade.dev_id = uic;
--
--			ret = setup_irq(cascade_virq, &uic->cascade);
--			if (ret)
--				printk(KERN_ERR "Failed to setup_irq(%d) for "
--				       "UIC%d cascade\n", cascade_virq,
--				       uic->index);
-+			set_irq_data(cascade_virq, uic);
-+			set_irq_chained_handler(cascade_virq, uic_irq_cascade);
- 
- 			/* FIXME: setup critical cascade?? */
- 		}
+> Right, so you can't really get around having it in some boot loaders at least.
+> IIRC you said that the firmware is only needed for serial output on some chips
+> but not on others. What about the case where you don't need it for serial but
+> still want to provide it by the firmware, and perhaps use something other than
+> U-boot? Is that relevant?
+
+In this particular case, the UART firmware is needed on some chips only because 
+those chips are broken in silicon.  AFAIK, only 8323 and 8360 are affected. 
+None of the 85xx chips with QE have the broken UART silicon, so they don't need 
+this firmware.
+
+The whole point behind having binary firmware blobs is so that *any* OS, 
+boot-loader, or even an application can upload firmware without worrying about 
+licensing issues.  The code to parse and process the blobs is open source.
+
+There are other firmwares, such as firmware for TCP/IP interworking. 
+Unfortunately, I don't have any direct experience with those firmwares, but in 
+discussions with QE engineers who have, my approach works.  My hope is that 
+every OS that runs on our QE-enabled parts will contain a version of 
+qe_upload_firmware().
+
+> I'm not trying to convince you of this if it's completely pointless for
+> all your systems, just want to make sure you're aware of this option,
+> because spending a few extra code lines on it now may save you some trouble
+> if you need this later.
+
+Um, I think I'm a little confused as to what your point is.  My code is just a 
+generic QE firmware uploader.
+
+>> Technically, the firmware could be considered a device on the QE, because it's 
+>> loaded into I-RAM and it can significantly alter the behavior of the device. 
+> 
+> Well, it doesn't have any of the standard properties like registers or interrupts
+> though.
+
+Well, there are registers for accessing I-RAM.  It's not memory mapped - you 
+have to write the I-RAM internal address to one register, and then write the 
+data to another register, in order to actually write to I-RAM.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
