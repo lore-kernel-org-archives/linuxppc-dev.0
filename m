@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Remove space from flex command line 
-In-Reply-To: Your message of "Thu, 06 Dec 2007 13:07:50 +1100."
-	<20071206020750.GE17577@localhost.localdomain>
-References: <20071206020750.GE17577@localhost.localdomain> 
-Date: Thu, 06 Dec 2007 09:19:48 -0600
+Subject: Re: dtc: More detailed testing of tree checks 
+In-Reply-To: Your message of "Thu, 06 Dec 2007 16:56:55 +1100."
+	<20071206055655.GC19927@localhost.localdomain>
+References: <20071206055655.GC19927@localhost.localdomain> 
+Date: Thu, 06 Dec 2007 09:20:06 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1J0IVw-00057d-TT@jdl.com>
+Message-Id: <E1J0IWE-00057t-3T@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,21 +18,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> Author: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-> Apparently some versions of flex don't correctly parse the -o
-> parameter, if there's a space between the -o and its argument.  So,
-> this patch removes it.
+> This patch modifies the dtc-checkfails.sh testcase wrapper so that
+> instead of testing just that dtc fails with a particular error code on
+> the sample input, it scans dtc's stderr output looking for a message
+> that dtc failed a specific check or checks.  This has several advantages:
+> 	- It means we more precisely check dtc's checking behaviour
+> 	- It means we can check for generation of warnings using the
+> same script
+> 	- It means we can test cases where dtc should generate
+> multiple errors or warnings from different checks
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
 Applied.
 
-Note, the way to specify the Author of a git patch is to
-include the "From: Name <addr>" line at the beginning of
-the patch's log message.
-
-Oh, and, the author's SOB should be there too...? :-)
-
-Thanks,
 jdl
