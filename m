@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 0CC5EDDDEF
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 13:40:48 +1100 (EST)
-Date: Thu, 6 Dec 2007 13:39:19 +1100
+	by ozlabs.org (Postfix) with ESMTP id 7666EDDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 13:40:49 +1100 (EST)
+Date: Thu, 6 Dec 2007 13:40:29 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 1/2] [POWERPC] iommu_free_table doesn't need the device_node
-Message-Id: <20071206133919.9c609f17.sfr@canb.auug.org.au>
+Subject: [PATCH 2/2] [POWERPC] pSeries: remove dependency on pci_dn bussubno
+Message-Id: <20071206134029.af8c291d.sfr@canb.auug.org.au>
+In-Reply-To: <20071206133919.9c609f17.sfr@canb.auug.org.au>
+References: <20071206133919.9c609f17.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,81 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It only needs the iommu_table address.  It also makes use of the node
-name to print error messages.  So just pass it the things it needs.
-This reduces the places that know about the pci_dn by one.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/iommu.c            |    8 +++-----
- arch/powerpc/platforms/pseries/iommu.c |    2 +-
- include/asm-powerpc/iommu.h            |    3 +--
- 3 files changed, 5 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c |   24 +++++++-----------------
+ 1 files changed, 7 insertions(+), 17 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 2d0c9ef..47c3fe5 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -526,16 +526,14 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 	return tbl;
- }
- 
--void iommu_free_table(struct device_node *dn)
-+void iommu_free_table(struct iommu_table *tbl, const char *node_name)
- {
--	struct pci_dn *pdn = dn->data;
--	struct iommu_table *tbl = pdn->iommu_table;
- 	unsigned long bitmap_sz, i;
- 	unsigned int order;
- 
- 	if (!tbl || !tbl->it_map) {
- 		printk(KERN_ERR "%s: expected TCE map for %s\n", __FUNCTION__,
--				dn->full_name);
-+				node_name);
- 		return;
- 	}
- 
-@@ -544,7 +542,7 @@ void iommu_free_table(struct device_node *dn)
- 	for (i = 0; i < (tbl->it_size/64); i++) {
- 		if (tbl->it_map[i] != 0) {
- 			printk(KERN_WARNING "%s: Unexpected TCEs for %s\n",
--				__FUNCTION__, dn->full_name);
-+				__FUNCTION__, node_name);
- 			break;
- 		}
- 	}
 diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index be17d23..d4e9d85 100644
+index d4e9d85..ebb9313 100644
 --- a/arch/powerpc/platforms/pseries/iommu.c
 +++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -556,7 +556,7 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
- 	case PSERIES_RECONFIG_REMOVE:
- 		if (pci && pci->iommu_table &&
- 		    of_get_property(np, "ibm,dma-window", NULL))
--			iommu_free_table(np);
-+			iommu_free_table(pci->iommu_table, np->full_name);
- 		break;
- 	default:
- 		err = NOTIFY_DONE;
-diff --git a/include/asm-powerpc/iommu.h b/include/asm-powerpc/iommu.h
-index 4a82fdc..7a3cef7 100644
---- a/include/asm-powerpc/iommu.h
-+++ b/include/asm-powerpc/iommu.h
-@@ -69,10 +69,9 @@ struct iommu_table {
- };
+@@ -296,11 +296,12 @@ static void iommu_table_setparms(struct pci_controller *phb,
+ static void iommu_table_setparms_lpar(struct pci_controller *phb,
+ 				      struct device_node *dn,
+ 				      struct iommu_table *tbl,
+-				      const void *dma_window)
++				      const void *dma_window,
++				      int bussubno)
+ {
+ 	unsigned long offset, size;
  
- struct scatterlist;
--struct device_node;
+-	tbl->it_busno  = PCI_DN(dn)->bussubno;
++	tbl->it_busno  = bussubno;
+ 	of_parse_dma_window(dn, dma_window, &tbl->it_index, &offset, &size);
  
- /* Frees table for an individual device node */
--extern void iommu_free_table(struct device_node *dn);
-+extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 	tbl->it_base   = 0;
+@@ -420,17 +421,10 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 	    pdn->full_name, ppci->iommu_table);
  
- /* Initializes an iommu_table based in values set in the passed-in
-  * structure
+ 	if (!ppci->iommu_table) {
+-		/* Bussubno hasn't been copied yet.
+-		 * Do it now because iommu_table_setparms_lpar needs it.
+-		 */
+-
+-		ppci->bussubno = bus->number;
+-
+ 		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   ppci->phb->node);
+-
+-		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+-
++		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window,
++			bus->number);
+ 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+ 		DBG("  created table: %p\n", ppci->iommu_table);
+ 	}
+@@ -523,14 +517,10 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+-		/* iommu_table_setparms_lpar needs bussubno. */
+-		pci->bussubno = pci->phb->bus->number;
+-
+ 		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   pci->phb->node);
+-
+-		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+-
++		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window,
++			pci->phb->bus->number);
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 		DBG("  created table: %p\n", pci->iommu_table);
+ 	} else {
 -- 
 1.5.3.7
