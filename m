@@ -1,12 +1,12 @@
 Return-Path: <jdl@jdl.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: More detailed testing of tree checks 
-In-Reply-To: Your message of "Thu, 06 Dec 2007 16:56:55 +1100."
-	<20071206055655.GC19927@localhost.localdomain>
-References: <20071206055655.GC19927@localhost.localdomain> 
-Date: Thu, 06 Dec 2007 09:20:06 -0600
+Subject: Re: dtc: Migrate "one cell" checks to new framework 
+In-Reply-To: Your message of "Thu, 06 Dec 2007 16:59:45 +1100."
+	<20071206055945.GD19927@localhost.localdomain>
+References: <20071206055945.GD19927@localhost.localdomain> 
+Date: Thu, 06 Dec 2007 09:20:21 -0600
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1J0IWE-00057t-3T@jdl.com>
+Message-Id: <E1J0IWU-000587-0i@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,15 +18,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> This patch modifies the dtc-checkfails.sh testcase wrapper so that
-> instead of testing just that dtc fails with a particular error code on
-> the sample input, it scans dtc's stderr output looking for a message
-> that dtc failed a specific check or checks.  This has several advantages:
-> 	- It means we more precisely check dtc's checking behaviour
-> 	- It means we can check for generation of warnings using the
-> same script
-> 	- It means we can test cases where dtc should generate
-> multiple errors or warnings from different checks
+> This patch converts to the new tree checking framework those checks
+> which verify that certain properties (#address-cells and #size-cells)
+> are exactly one cell in size, when present.
+> 
+> We also drop the old-style check for "linux,phandle" being one cell,
+> since that is already implied in the the existing new-style checks on
+> the linux,phandle property.
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
