@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31FABDDDE9
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 14:22:45 +1100 (EST)
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Kroah-Hartman <greg@kroah.com>
-In-Reply-To: <20071205064116.D849BDE10A@ozlabs.org>
-References: <20071205064116.D849BDE10A@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 06 Dec 2007 14:22:27 +1100
-Message-Id: <1196911347.7033.15.camel@pasglop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org
-Reply-To: benh@kernel.crashing.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18263.27999.950921.122870@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Dec 2007 14:32:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] Use SLB size from the device tree
+In-Reply-To: <510.1194565218@neuling.org>
+References: <510.1194565218@neuling.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Will Schmidt <will_schmidt@vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,33 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Michael Neuling writes:
 
-On Wed, 2007-12-05 at 17:40 +1100, Benjamin Herrenschmidt wrote:
-> The current pci_assign_unassigned_resources() code doesn't work properly
-> on 32 bits platforms with 64 bits resources. The main reason is the use
-> of unsigned long in various places instead of resource_size_t.
-> 
-> This fixes it, along with some tricks to avoid casting to 64 bits on
-> platforms that don't need it in every printk around.
-> 
-> This is a pre-requisite for making powerpc use the generic code instead of
-> its own half-useful implementation.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> This version fixes some stupid warnings when using 32 bits resources
+> Currently we hardwire the number of SLBs but the PAPR says we export an
+> ibm,slb-size property to specify the number of SLB entries.  This patch
+> uses this property instead of assuming 64 always.  If no property is
+> found, we assume 64 entries as before.
 
- ... and has warnings on 64 bits platforms... GRRRR
+On 32-bit platforms (e.g. powermac) I get:
 
-This whole issue of printk vs. resource_size_t is a terrible mess :-(
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c: In function 'check_cpu_slb_size':
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: 'mmu_slb_size' undeclared (first use in this function)
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: (Each undeclared identifier is reported only once
+/home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: for each function it appears in.)
+make[2]: *** [arch/powerpc/kernel/prom.o] Error 1
 
-Part of the problem is that resource_size_t can be either u32 or u64..
-
-that is  it can be either unsigned int, unsigned long or unsigned long
-long... and we have no way to reliably printk that.
-
-Any clever idea before I start pushing filthy macros up linux/types.h ?
-
-Cheers,
-Ben.
+Paul.
