@@ -1,14 +1,19 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id B1B30DDF13
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:33 +1100 (EST)
-Message-ID: <47581031.2010501@anagramm.de>
-Date: Thu, 06 Dec 2007 16:07:29 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Are the MPC85xx DMA drivers already in a tree?
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 77B49DDF6D
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:52 +1100 (EST)
+Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by smtps.tip.net.au (Postfix) with ESMTP id 5408D368002
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:52 +1100 (EST)
+Date: Thu, 6 Dec 2007 18:00:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Powerpc PCI cleanups (mainly iSeries)
+Message-Id: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi all,
 
-I want to update a driver to test my mileage with the
-Freescale DMA drivers for MPC85xx from Zhang Wei from 2007-09-07.
+I started out looking for ways to remove our dependencies on pci_dn and
+got sidetracked into clening up the iSeries PCI code.  The intention of
+the following set of patches is that there be no semantic changes
+(mostly).
 
-Are those already available in some git tree to pull from?
-What are the most current trees for powerpc development?
-(galak, paulus, ?)
+Overall diffstat looks like this:
+ arch/powerpc/kernel/pci-common.c           |   31 +--
+ arch/powerpc/kernel/pci_32.c               |    6 +-
+ arch/powerpc/kernel/pci_64.c               |   40 +--
+ arch/powerpc/kernel/pci_dn.c               |    2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    2 +-
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+ arch/powerpc/platforms/iseries/pci.c       |  426 +++++++++++-----------------
+ arch/powerpc/platforms/iseries/pci.h       |   20 +-
+ arch/powerpc/platforms/iseries/setup.c     |    2 +
+ arch/powerpc/platforms/iseries/vpdinfo.c   |   17 +-
+ arch/powerpc/platforms/powermac/pci.c      |    2 +-
+ arch/powerpc/platforms/pseries/iommu.c     |    2 +-
+ include/asm-powerpc/pci-bridge.h           |  156 ++++------
+ include/asm-powerpc/ppc-pci.h              |    3 -
+ 14 files changed, 266 insertions(+), 445 deletions(-)
 
-Also, any Documentation to the current/planned DMA
-implementation or demo drivers are welcome.
-I want to pull big chunks of bulk data from an FPGA connected to
-the local bus to main memory.
+This entire set sits on top of benh's "Make isa_mem_base common to 32 and
+64 bits" and "Merge pci_process_bridge_OF_ranges" patches and my
+"iommu_free_table doesn't need the device_node" and "pSeries: remove
+dependency on pci_dn bussubno" patches posted earlier.
 
-Regards,
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
