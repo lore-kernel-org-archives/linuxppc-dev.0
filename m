@@ -1,20 +1,14 @@
-Return-Path: <jonsmirl@gmail.com>
-Message-ID: <9e4733910712052219i678b7f82x1d02d9f095d00df8@mail.gmail.com>
-Date: Thu, 6 Dec 2007 01:19:30 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Matt Sealey" <matt@genesi-usa.com>
-Subject: Re: Link up/down messages from 5200 ethernet driver
-In-Reply-To: <fa686aa40712052208o3722cf60qfcac9b56ecc6184f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-References: <9e4733910712051755l76c0403bo4a60834928a35c2@mail.gmail.com>
-	<fa686aa40712052046s5887c9fewa61c2921a22f5c80@mail.gmail.com>
-	<9e4733910712052140j70f48f05qbbf9af082ba4747c@mail.gmail.com>
-	<9e4733910712052143l581207d4l163b7d1be8b27e1d@mail.gmail.com>
-	<fa686aa40712052208o3722cf60qfcac9b56ecc6184f@mail.gmail.com>
-Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
-	Domen Puncer <domen.puncer@telargo.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Use SLB size from the device tree 
+In-reply-to: <18263.27999.950921.122870@cargo.ozlabs.ibm.com> 
+References: <510.1194565218@neuling.org>
+	<18263.27999.950921.122870@cargo.ozlabs.ibm.com>
+Date: Thu, 06 Dec 2007 17:24:48 +1100
+Message-ID: <17679.1196922288@neuling.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Will Schmidt <will_schmidt@vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +18,185 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gMTIvNi8wNywgR3JhbnQgTGlrZWx5IDxncmFudC5saWtlbHlAc2VjcmV0bGFiLmNhPiB3cm90
-ZToKPiBPbiAxMi81LzA3LCBKb24gU21pcmwgPGpvbnNtaXJsQGdtYWlsLmNvbT4gd3JvdGU6Cj4g
-PiBPbiAxMi82LzA3LCBKb24gU21pcmwgPGpvbnNtaXJsQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPiA+
-IE9uIDEyLzUvMDcsIEdyYW50IExpa2VseSA8Z3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYT4gd3Jv
-dGU6Cj4gPiA+ID4gT24gMTIvNS8wNywgSm9uIFNtaXJsIDxqb25zbWlybEBnbWFpbC5jb20+IHdy
-b3RlOgo+ID4gPiA+ID4gV2h5IGRvZXMgdGhlIGZlYzUyMDAgZHJpdmVyIHNvbWV0aW1lcyBub3Qg
-cHJpbnQgJ1BIWScgY29ycmVjdGx5Pwo+ID4gPiA+ID4KPiA+ID4gPiA+IHBoeUNPUkUtTVBDNTIw
-MEItdGlueSBsb2dpbjogVNikVu+/vSBmMDAwMzAwMDoxMCAtIExpbmsgaXMgRG93bgo+ID4gPiA+
-ID4gVO+/vVk6IGYwMDAzMDAwOjEwIC0gTGluayBpcyBVcCAtIDEwMC9GdWxsCj4gPiA+ID4gPiBU
-77+9WTogZjAwMDMwMDA6MTAgLSBMaW5rIGlzIERvd24KPiA+ID4gPiA+IFBIWTogZjAwMDMwMDA6
-MTAgLSBMaW5rIGlzIFVwIC0gMTAwL0Z1bGwKPiA+ID4gPgo+ID4gPiA+IFdlaXJkOyB0aGF0IGxp
-bmUgY29tZXMgZnJvbSBkcml2ZXJzL25ldC9waHkvcGh5LmMgaW4KPiA+ID4gPiBwaHlfcHJpbnRf
-c3RhdHVzKCksIGFuZCBpdCdzIGp1c3QgYSBhIHByX2luZm8gc3RhdGVtZW50LiAgSSBzdXBwb3Nl
-IGl0Cj4gPiA+ID4gbWlnaHQgYmUgYSBzdGFjayBvdmVycnVuLCBidXQgSSdkIGV4cGVjdCBtb3Jl
-IHNldmVyZSBzeW1wdG9tcyBpZiB0aGF0Cj4gPiA+ID4gd2FzIHRoZSBjYXNlLgo+ID4gPiA+Cj4g
-PiA+ID4gVGhhdCAqbG9va3MqIGxpa2UgYSBzZXJpYWwgc3RyZWFtIGNvcnJ1cHRpb24uICBJcyB0
-aGF0IHRoZSBvdXRwdXQgb2YKPiA+ID4gPiB5b3VyIHNlcmlhbCBwb3J0PyAgRG9lcyBkbWVzZyBz
-aG93IHRoZSBzYW1lIGNvcnJ1cHRpb24/Cj4gPiA+Cj4gPiA+IFRoYXQncyB0aGUgc2VyaWFsIHBv
-cnQgb3V0cHV0Lgo+ID4gPiBkbWVzZyBpcyBvay4KPiA+ID4KPiA+ID4gTm90aGluZyBlbHNlIEkg
-ZG8gY2FuIG1lc3MgdXAgdGhlIHNlcmlhbCBwb3J0Lgo+ID4KPiA+IE1heWJlIHRoZSBLRVJOX0lO
-Rk8gcHJlZml4IGlzIHNlbmRpbmcgb3V0IGNvbnRyb2wgY2hhcmFjdGVycyB0aGF0IG1lc3MKPiA+
-IHVwIHRoZSBzZXJpYWwgb3V0cHV0Pwo+Cj4gTW9yZSBsaWtlbHkgdGhlIEV0aGVybmV0IGxpbmsg
-c3RhdGUgY2hhbmdlIGlzIGludGVyZmVyaW5nIHdpdGggdGhlCj4gc2VyaWFsIGxpbmUgYXQgdGhl
-IGVsZWN0cmljYWwgbGV2ZWwuICBUcnkgdHdlYWtpbmcgdGhlIHNlcmlhbCBjbG9jayB1cAo+IG9y
-IGRvd24gYSB0aW55IGJpdCwgdGhhdCBtaWdodCBtYWtlIGl0IG1vcmUgc3RhYmxlLiAgKEkndmUg
-aGFkIHRvIGRvCj4gdGhhdCBvbiBvbmUgb2YgbXkgYm9hcmRzIGhlcmUgdG8gZ2V0IHN0YWJsZSBz
-ZXJpYWwgb3V0cHV0KS4KClRoYXQgYXBwZWFycyB0byBiZSB0aGUgcHJvYmxlbS4gSXQncyBteSBF
-ZmlrYSB0aGF0IGlzIGNvcnJ1cHRpbmcgdGhlCm1lc3NhZ2UuIE9uIHRoZSBFZmlrYSBFdGhlcm5l
-dCBhbmQgc2VyaWFsIGFyZSByaWdodCBuZXh0IHRvIGVhY2gKb3RoZXIuIE15IFBoeXRlYyBzeXN0
-ZW0gaXMgb2ssIHNlcmlhbCBhbmQgRXRoZXJuZXQgYXJlIGF0IG9wcG9zaXRlCmVuZHMgb2YgdGhl
-IGJvYXJkLgoKPgo+IENoZWVycywKPiBnLgo+Cj4KPiAtLQo+IEdyYW50IExpa2VseSwgQi5TYy4s
-IFAuRW5nLgo+IFNlY3JldCBMYWIgVGVjaG5vbG9naWVzIEx0ZC4KPiBncmFudC5saWtlbHlAc2Vj
-cmV0bGFiLmNhCj4gKDQwMykgMzk5LTAxOTUKPgoKCi0tIApKb24gU21pcmwKam9uc21pcmxAZ21h
-aWwuY29tCg==
+Currently we hardwire the number of SLBs but PAPR says we export an
+ibm,slb-size property to specify the number of SLB entries.  This
+patch uses this property instead of assuming 64.  If no property is
+found, we assume 64 entries as before.
+
+This soft patches the SLB handler, so it won't change performance at
+all.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+
+> On 32-bit platforms (e.g. powermac) I get:
+> 
+> /home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c: In function 'check_cp
+u_slb_size':
+> /home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: 'mmu_slb_s
+ize' undeclared (first use in this function)
+> /home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: (Each unde
+clared identifier is reported only once
+> /home/paulus/kernel/powerpc/arch/powerpc/kernel/prom.c:592: error: for each f
+unction it appears in.)
+> make[2]: *** [arch/powerpc/kernel/prom.o] Error 1
+
+Here's a nickel kid, buy yourself another 32bits! :-)
+
+Or in other words....  Sorry about that!  Below should fix it.
+
+ arch/powerpc/kernel/prom.c            |   15 +++++++++++++++
+ arch/powerpc/mm/hash_utils_64.c       |    1 +
+ arch/powerpc/mm/slb.c                 |    3 +++
+ arch/powerpc/mm/slb_low.S             |    5 +++--
+ arch/powerpc/platforms/pasemi/setup.c |    3 ++-
+ arch/powerpc/xmon/xmon.c              |    2 +-
+ include/asm-powerpc/mmu-hash64.h      |    1 +
+ include/asm-powerpc/reg.h             |    6 ------
+ 8 files changed, 26 insertions(+), 10 deletions(-)
+
+Index: linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/kernel/prom.c
++++ linux-2.6-ozlabs/arch/powerpc/kernel/prom.c
+@@ -583,6 +583,20 @@ static void __init check_cpu_pa_features
+ 		      ibm_pa_features, ARRAY_SIZE(ibm_pa_features));
+ }
+ 
++#ifdef CONFIG_PPC64
++static void __init check_cpu_slb_size(unsigned long node)
++{
++	u32 *slb_size_ptr;
++
++	slb_size_ptr = of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
++	if (slb_size_ptr != NULL) {
++		mmu_slb_size = *slb_size_ptr;
++	}
++}
++#else
++#define check_cpu_slb_size(node) do { } while(0)
++#endif
++
+ static struct feature_property {
+ 	const char *name;
+ 	u32 min_value;
+@@ -713,6 +727,7 @@ static int __init early_init_dt_scan_cpu
+ 
+ 	check_cpu_feature_properties(node);
+ 	check_cpu_pa_features(node);
++	check_cpu_slb_size(node);
+ 
+ #ifdef CONFIG_PPC_PSERIES
+ 	if (nthreads > 1)
+Index: linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/hash_utils_64.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/hash_utils_64.c
+@@ -96,6 +96,7 @@ int mmu_vmalloc_psize = MMU_PAGE_4K;
+ int mmu_io_psize = MMU_PAGE_4K;
+ int mmu_kernel_ssize = MMU_SEGSIZE_256M;
+ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
++u16 mmu_slb_size = 64;
+ #ifdef CONFIG_HUGETLB_PAGE
+ int mmu_huge_psize = MMU_PAGE_16M;
+ unsigned int HPAGE_SHIFT;
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb.c
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb.c
+@@ -256,6 +256,7 @@ void slb_initialize(void)
+ 	static int slb_encoding_inited;
+ 	extern unsigned int *slb_miss_kernel_load_linear;
+ 	extern unsigned int *slb_miss_kernel_load_io;
++	extern unsigned int *slb_compare_rr_to_size;
+ 
+ 	/* Prepare our SLB miss handler based on our page size */
+ 	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
+@@ -269,6 +270,8 @@ void slb_initialize(void)
+ 				   SLB_VSID_KERNEL | linear_llp);
+ 		patch_slb_encoding(slb_miss_kernel_load_io,
+ 				   SLB_VSID_KERNEL | io_llp);
++		patch_slb_encoding(slb_compare_rr_to_size,
++				   mmu_slb_size);
+ 
+ 		DBG("SLB: linear  LLP = %04x\n", linear_llp);
+ 		DBG("SLB: io      LLP = %04x\n", io_llp);
+Index: linux-2.6-ozlabs/arch/powerpc/mm/slb_low.S
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/mm/slb_low.S
++++ linux-2.6-ozlabs/arch/powerpc/mm/slb_low.S
+@@ -227,8 +227,9 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_ISER
+ 
+ 7:	ld	r10,PACASTABRR(r13)
+ 	addi	r10,r10,1
+-	/* use a cpu feature mask if we ever change our slb size */
+-	cmpldi	r10,SLB_NUM_ENTRIES
++	/* This gets soft patched on boot. */
++_GLOBAL(slb_compare_rr_to_size)
++	cmpldi	r10,0
+ 
+ 	blt+	4f
+ 	li	r10,SLB_NUM_BOLTED
+Index: linux-2.6-ozlabs/arch/powerpc/platforms/pasemi/setup.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/platforms/pasemi/setup.c
++++ linux-2.6-ozlabs/arch/powerpc/platforms/pasemi/setup.c
+@@ -36,6 +36,7 @@
+ #include <asm/smp.h>
+ #include <asm/time.h>
+ #include <asm/of_platform.h>
++#include <asm/mmu.h>
+ 
+ #include <pcmcia/ss.h>
+ #include <pcmcia/cistpl.h>
+@@ -295,7 +296,7 @@ static int pas_machine_check_handler(str
+ 		int i;
+ 
+ 		printk(KERN_ERR "slb contents:\n");
+-		for (i = 0; i < SLB_NUM_ENTRIES; i++) {
++		for (i = 0; i < mmu_slb_size; i++) {
+ 			asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
+ 			asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
+ 			printk(KERN_ERR "%02d %016lx %016lx\n", i, e, v);
+Index: linux-2.6-ozlabs/arch/powerpc/xmon/xmon.c
+===================================================================
+--- linux-2.6-ozlabs.orig/arch/powerpc/xmon/xmon.c
++++ linux-2.6-ozlabs/arch/powerpc/xmon/xmon.c
+@@ -2543,7 +2543,7 @@ static void dump_slb(void)
+ 
+ 	printf("SLB contents of cpu %x\n", smp_processor_id());
+ 
+-	for (i = 0; i < SLB_NUM_ENTRIES; i++) {
++	for (i = 0; i < mmu_slb_size; i++) {
+ 		asm volatile("slbmfee  %0,%1" : "=r" (tmp) : "r" (i));
+ 		printf("%02d %016lx ", i, tmp);
+ 
+Index: linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/mmu-hash64.h
++++ linux-2.6-ozlabs/include/asm-powerpc/mmu-hash64.h
+@@ -180,6 +180,7 @@ extern int mmu_vmalloc_psize;
+ extern int mmu_io_psize;
+ extern int mmu_kernel_ssize;
+ extern int mmu_highuser_ssize;
++extern u16 mmu_slb_size;
+ 
+ /*
+  * If the processor supports 64k normal pages but not 64k cache
+Index: linux-2.6-ozlabs/include/asm-powerpc/reg.h
+===================================================================
+--- linux-2.6-ozlabs.orig/include/asm-powerpc/reg.h
++++ linux-2.6-ozlabs/include/asm-powerpc/reg.h
+@@ -691,12 +691,6 @@
+ #define PV_BE		0x0070
+ #define PV_PA6T		0x0090
+ 
+-/*
+- * Number of entries in the SLB. If this ever changes we should handle
+- * it with a use a cpu feature fixup.
+- */
+-#define SLB_NUM_ENTRIES 64
+-
+ /* Macros for setting and retrieving special purpose registers */
+ #ifndef __ASSEMBLY__
+ #define mfmsr()		({unsigned long rval; \
