@@ -1,16 +1,23 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id F0452DDF68
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:21:13 +1100 (EST)
-Message-ID: <47584A77.3080109@anagramm.de>
-Date: Thu, 06 Dec 2007 20:16:07 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9594ADDFF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 06:48:47 +1100 (EST)
+Message-ID: <47581C58.8060906@freescale.com>
+Date: Thu, 06 Dec 2007 09:59:20 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: Are the MPC85xx DMA drivers already in a tree?
-References: <47581031.2010501@anagramm.de>
-In-Reply-To: <47581031.2010501@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
+References: <11968944871776-git-send-email-timur@freescale.com>
+	<200712061631.19485.arnd@arndb.de> <4758193B.5080707@freescale.com>
+	<200712061658.08791.arnd@arndb.de>
+In-Reply-To: <200712061658.08791.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Clemens Koller schrieb:
- > I want to update a driver to test my mileage with the
- > Freescale DMA drivers for MPC85xx from Zhang Wei from 2007-09-07.
- >
- > Are those already available in some git tree to pull from?
- > What are the most current trees for powerpc development?
- > (galak, paulus, ?)
+Arnd Bergmann wrote:
 
-Okay, I've found that stuff in 2.6.24-rc4-mm1
-I'll see if I can get something to work.
+> Ok, looks you were right from the start (again), thanks for your patience
+> explaining this to me.
 
-Regards,
+No problem.  No all I need is for Kumar to apply the patches!
+
+
 -- 
-Clemens Koller
-__________________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Straße 45/1
-Linhof Werksgelände
-D-81379 München
-Tel.089-741518-50
-Fax 089-741518-19
-http://www.anagramm-technology.com
+Timur Tabi
+Linux kernel developer at Freescale
