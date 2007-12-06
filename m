@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 06 Dec 2007 19:00:08 +1100
-Subject: [PATCH 10/25] powerpc: 4xx PLB to PCI 2.x support
+Date: Thu, 06 Dec 2007 19:00:09 +1100
+Subject: [PATCH 11/25] powerpc: 4xx PLB to PCI Express support
 In-Reply-To: <1196927999.714593.205329520306.qpush@grosgo>
-Message-Id: <20071206080119.8D157DDF82@ozlabs.org>
+Message-Id: <20071206080120.B47DBDDF15@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,73 +14,804 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds to the previous patch the support for the 4xx PCI 2.x
-bridges.
+This adds to the previous 2 patches the support for the 4xx PCI Express
+cells as found in the 440SPe revA, revB and 405EX.
+
+Unfortunately, due to significant differences between these, and other
+interesting "features" of those pieces of HW, the code isn't as simple
+as it is for PCI and PCI-X and some of the functions differ significantly
+between the 3 implementations. Thus, not only this code can only support
+those 3 implementations for now and will refuse to operate on any other,
+but there are added ifdef's to avoid the bloat of building a fairly large
+amount of code on platforms that don't need it.
+
+Also, this code currently only supports fully initializing root complex
+nodes, not endpoint. Some more code will have to be lifted from the
+arch/ppc implementation to add the endpoint support, though it's mostly
+differences in memory mapping, and the question on how to represent
+endpoint mode PCI in the device-tree is thus open.
+
+Many thanks to Stefan Roese for testing & fixing up the 405EX bits !
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Stefan Roese <sr@denx.de>
 ---
 
-This version implement the basic support for the 405GP bridge,
-I haven't yet looked at differences that other implementations
-may have for the PCI 2.x part.
-
- arch/powerpc/sysdev/ppc4xx_pci.c |  183 ++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/ppc4xx_pci.h |   19 ++++
- 2 files changed, 201 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig             |    1 
+ arch/powerpc/sysdev/Kconfig      |    8 
+ arch/powerpc/sysdev/ppc4xx_pci.c |  999 ++++++++++++++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/ppc4xx_pci.h |  242 +++++++++
+ 4 files changed, 1230 insertions(+), 20 deletions(-)
 
 Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 ===================================================================
---- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-03 12:09:54.000000000 +1100
-+++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-03 12:10:36.000000000 +1100
-@@ -21,6 +21,38 @@ static int dma_offset_set;
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-05 11:10:44.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.c	2007-12-05 11:57:26.000000000 +1100
+@@ -3,16 +3,31 @@
+  *
+  * Copyright 2007 Ben. Herrenschmidt <benh@kernel.crashing.org>, IBM Corp.
+  *
++ * Most PCI Express code is coming from Stefan Roese implementation for
++ * arch/ppc in the Denx tree, slightly reworked by me.
++ *
++ * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ *
++ * Some of that comes itself from a previous implementation for 440SPE only
++ * by Roland Dreier:
++ *
++ * Copyright (c) 2005 Cisco Systems.  All rights reserved.
++ * Roland Dreier <rolandd@cisco.com>
++ *
+  */
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
+ #include <linux/init.h>
+ #include <linux/of.h>
++#include <linux/bootmem.h>
++#include <linux/delay.h>
+ 
+ #include <asm/io.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
++#include <asm/dcr.h>
++#include <asm/dcr-regs.h>
+ 
+ #include "ppc4xx_pci.h"
+ 
+@@ -21,6 +36,17 @@ static int dma_offset_set;
  /* Move that to a useable header */
  extern unsigned long total_memory;
  
-+static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
-+{
-+	struct pci_controller *hose;
-+	struct device_node *np;
-+	int i;
++#define U64_TO_U32_LOW(val)	((u32)((val) & 0x00000000ffffffffULL))
++#define U64_TO_U32_HIGH(val)	((u32)((val) >> 32))
 +
-+	if (dev->devfn != 0 || dev->bus->self != NULL)
-+		return;
++#ifdef CONFIG_RESOURCES_64BIT
++#define RES_TO_U32_LOW(val)	U64_TO_U32_LOW(val)
++#define RES_TO_U32_HIGH(val)	U64_TO_U32_HIGH(val)
++#else
++#define RES_TO_U32_LOW(val)	(val)
++#define RES_TO_U32_HIGH(val)	(0)
++#endif
 +
-+	hose = pci_bus_to_host(dev->bus);
-+	if (hose == NULL)
-+		return;
-+	np = hose->arch_data;
+ static void fixup_ppc4xx_pci_bridge(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose;
+@@ -127,8 +153,9 @@ static int __init ppc4xx_parse_dma_range
+ 	 * DMA bounce buffers
+ 	 */
+ 	if (size < total_memory) {
+-		printk(KERN_ERR "%s: dma-ranges too small\n",
+-		       node->full_name);
++		printk(KERN_ERR "%s: dma-ranges too small "
++		       "(size=%llx total_memory=%lx)\n",
++		       node->full_name, size, total_memory);
+ 		return -ENXIO;
+ 	}
+ 
+@@ -181,13 +208,8 @@ static void __init ppc4xx_configure_pci_
+ 
+ 		/* Calculate register values */
+ 		la = res->start;
+-#ifdef CONFIG_RESOURCES_64BIT
+-		pciha = (res->start - hose->pci_mem_offset) >> 32;
+-		pcila = (res->start - hose->pci_mem_offset) & 0xffffffffu;
+-#else
+-		pciha = 0;
+-		pcila = res->start - hose->pci_mem_offset;
+-#endif
++		pciha = RES_TO_U32_HIGH(res->start - hose->pci_mem_offset);
++		pcila = RES_TO_U32_LOW(res->start - hose->pci_mem_offset);
+ 
+ 		ma = res->end + 1 - res->start;
+ 		if (!is_power_of_2(ma) || ma < 0x1000 || ma > 0xffffffffu) {
+@@ -337,16 +359,10 @@ static void __init ppc4xx_configure_pcix
+ 		}
+ 
+ 		/* Calculate register values */
+-#ifdef CONFIG_RESOURCES_64BIT
+-		lah = res->start >> 32;
+-		lal = res->start & 0xffffffffu;
+-		pciah = (res->start - hose->pci_mem_offset) >> 32;
+-		pcial = (res->start - hose->pci_mem_offset) & 0xffffffffu;
+-#else
+-		lah = pciah = 0;
+-		lal = res->start;
+-		pcial = res->start - hose->pci_mem_offset;
+-#endif
++		lah = RES_TO_U32_HIGH(res->start);
++		lal = RES_TO_U32_LOW(res->start);
++		pciah = RES_TO_U32_HIGH(res->start - hose->pci_mem_offset);
++		pcial = RES_TO_U32_LOW(res->start - hose->pci_mem_offset);
+ 		sa = res->end + 1 - res->start;
+ 		if (!is_power_of_2(sa) || sa < 0x100000 ||
+ 		    sa > 0xffffffffu) {
+@@ -496,20 +512,963 @@ static void __init ppc4xx_probe_pcix_bri
+ 		iounmap(reg);
+ }
+ 
++#ifdef CONFIG_PPC4xx_PCI_EXPRESS
 +
-+	if (!of_device_is_compatible(np, "ibm,plb-pciex") &&
-+	    !of_device_is_compatible(np, "ibm,plb-pcix") &&
-+	    !of_device_is_compatible(np, "ibm,plb-pci"))
-+		return;
-+
-+	/* Hide the PCI host BARs from the kernel as their content doesn't
-+	 * fit well in the resource management
-+	 */
-+	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-+		dev->resource[i].start = dev->resource[i].end = 0;
-+		dev->resource[i].flags = 0;
-+	}
-+
-+	printk(KERN_INFO "PCI: Hiding 4xx host bridge resources %s\n",
-+	       pci_name(dev));
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, fixup_ppc4xx_pci_bridge);
-+
- static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
- 					  void __iomem *reg,
- 					  struct resource *res)
-@@ -126,9 +158,158 @@ static int __init ppc4xx_parse_dma_range
  /*
-  * 4xx PCI 2.x part
+  * 4xx PCI-Express part
++ *
++ * We support 3 parts currently based on the compatible property:
++ *
++ * ibm,plb-pciex-440speA
++ * ibm,plb-pciex-440speB
++ * ibm,plb-pciex-405ex
++ *
++ * Anything else will be rejected for now as they are all subtly
++ * different unfortunately.
++ *
   */
 +
-+static void __init ppc4xx_configure_pci_PMMs(struct pci_controller *hose,
-+					     void __iomem *reg)
++#define MAX_PCIE_BUS_MAPPED	0x10
++
++struct ppc4xx_pciex_port
 +{
-+	struct device_node *np = hose->arch_data;
-+	u32 la, ma, pcila, pciha;
++	struct pci_controller	*hose;
++	struct device_node	*node;
++	unsigned int		index;
++	int			endpoint;
++	unsigned int		sdr_base;
++	dcr_host_t		dcrs;
++	struct resource		cfg_space;
++	struct resource		utl_regs;
++};
++
++static struct ppc4xx_pciex_port *ppc4xx_pciex_ports;
++static unsigned int ppc4xx_pciex_port_count;
++
++struct ppc4xx_pciex_hwops
++{
++	int (*core_init)(struct device_node *np);
++	int (*port_init_hw)(struct ppc4xx_pciex_port *port);
++	int (*setup_utl)(struct ppc4xx_pciex_port *port);
++};
++
++static struct ppc4xx_pciex_hwops *ppc4xx_pciex_hwops;
++
++#ifdef CONFIG_44x
++
++/* Check various reset bits of the 440SPe PCIe core */
++static int __init ppc440spe_pciex_check_reset(struct device_node *np)
++{
++	u32 valPE0, valPE1, valPE2;
++	int err = 0;
++
++	/* SDR0_PEGPLLLCT1 reset */
++	if (!(mfdcri(SDR0, PESDR0_PLLLCT1) & 0x01000000)) {
++		/*
++		 * the PCIe core was probably already initialised
++		 * by firmware - let's re-reset RCSSET regs
++		 *
++		 * -- Shouldn't we also re-reset the whole thing ? -- BenH
++		 */
++		pr_debug("PCIE: SDR0_PLLLCT1 already reset.\n");
++		mtdcri(SDR0, PESDR0_440SPE_RCSSET, 0x01010000);
++		mtdcri(SDR0, PESDR1_440SPE_RCSSET, 0x01010000);
++		mtdcri(SDR0, PESDR2_440SPE_RCSSET, 0x01010000);
++	}
++
++	valPE0 = mfdcri(SDR0, PESDR0_440SPE_RCSSET);
++	valPE1 = mfdcri(SDR0, PESDR1_440SPE_RCSSET);
++	valPE2 = mfdcri(SDR0, PESDR2_440SPE_RCSSET);
++
++	/* SDR0_PExRCSSET rstgu */
++	if (!(valPE0 & 0x01000000) ||
++	    !(valPE1 & 0x01000000) ||
++	    !(valPE2 & 0x01000000)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET rstgu error\n");
++		err = -1;
++	}
++
++	/* SDR0_PExRCSSET rstdl */
++	if (!(valPE0 & 0x00010000) ||
++	    !(valPE1 & 0x00010000) ||
++	    !(valPE2 & 0x00010000)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET rstdl error\n");
++		err = -1;
++	}
++
++	/* SDR0_PExRCSSET rstpyn */
++	if ((valPE0 & 0x00001000) ||
++	    (valPE1 & 0x00001000) ||
++	    (valPE2 & 0x00001000)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET rstpyn error\n");
++		err = -1;
++	}
++
++	/* SDR0_PExRCSSET hldplb */
++	if ((valPE0 & 0x10000000) ||
++	    (valPE1 & 0x10000000) ||
++	    (valPE2 & 0x10000000)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET hldplb error\n");
++		err = -1;
++	}
++
++	/* SDR0_PExRCSSET rdy */
++	if ((valPE0 & 0x00100000) ||
++	    (valPE1 & 0x00100000) ||
++	    (valPE2 & 0x00100000)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET rdy error\n");
++		err = -1;
++	}
++
++	/* SDR0_PExRCSSET shutdown */
++	if ((valPE0 & 0x00000100) ||
++	    (valPE1 & 0x00000100) ||
++	    (valPE2 & 0x00000100)) {
++		printk(KERN_INFO "PCIE: SDR0_PExRCSSET shutdown error\n");
++		err = -1;
++	}
++
++	return err;
++}
++
++/* Global PCIe core initializations for 440SPe core */
++static int __init ppc440spe_pciex_core_init(struct device_node *np)
++{
++	int time_out = 20;
++
++	/* Set PLL clock receiver to LVPECL */
++	mtdcri(SDR0, PESDR0_PLLLCT1, mfdcri(SDR0, PESDR0_PLLLCT1) | 1 << 28);
++
++	/* Shouldn't we do all the calibration stuff etc... here ? */
++	if (ppc440spe_pciex_check_reset(np))
++		return -ENXIO;
++
++	if (!(mfdcri(SDR0, PESDR0_PLLLCT2) & 0x10000)) {
++		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
++		       "failed (0x%08x)\n",
++		       mfdcri(SDR0, PESDR0_PLLLCT2));
++		return -1;
++	}
++
++	/* De-assert reset of PCIe PLL, wait for lock */
++	mtdcri(SDR0, PESDR0_PLLLCT1,
++	       mfdcri(SDR0, PESDR0_PLLLCT1) & ~(1 << 24));
++	udelay(3);
++
++	while (time_out) {
++		if (!(mfdcri(SDR0, PESDR0_PLLLCT3) & 0x10000000)) {
++			time_out--;
++			udelay(1);
++		} else
++			break;
++	}
++	if (!time_out) {
++		printk(KERN_INFO "PCIE: VCO output not locked\n");
++		return -1;
++	}
++
++	pr_debug("PCIE initialization OK\n");
++
++	return 3;
++}
++
++static int ppc440spe_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
++{
++	u32 val = 1 << 24;
++
++	if (port->endpoint)
++		val = PTYPE_LEGACY_ENDPOINT << 20;
++	else
++		val = PTYPE_ROOT_PORT << 20;
++
++	if (port->index == 0)
++		val |= LNKW_X8 << 12;
++	else
++		val |= LNKW_X4 << 12;
++
++	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET, val);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x20222222);
++	if (of_device_is_compatible(port->node, "ibm,plb-pciex-440speA"))
++		mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x11000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL0SET1, 0x35000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL1SET1, 0x35000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL2SET1, 0x35000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL3SET1, 0x35000000);
++	if (port->index == 0) {
++		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL4SET1,
++		       0x35000000);
++		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL5SET1,
++		       0x35000000);
++		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL6SET1,
++		       0x35000000);
++		mtdcri(SDR0, port->sdr_base + PESDRn_440SPE_HSSL7SET1,
++		       0x35000000);
++	}
++	val = mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET);
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++	       (val & ~(1 << 24 | 1 << 16)) | 1 << 12);
++
++	return 0;
++}
++
++static int ppc440speA_pciex_init_utl(struct ppc4xx_pciex_port *port)
++{
++	void __iomem *utl_base;
++
++	/* XXX Check what that value means... I hate magic */
++	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x68782800);
++
++	utl_base = ioremap(port->utl_regs.start, 0x100);
++	BUG_ON(utl_base == NULL);
++
++	/*
++	 * Set buffer allocations and then assert VRB and TXE.
++	 */
++	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
++	out_be32(utl_base + PEUTL_INTR,    0x02000000);
++	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
++	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
++	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
++	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
++	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
++	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
++
++	iounmap(utl_base);
++
++	return 0;
++}
++
++static struct ppc4xx_pciex_hwops ppc440speA_pcie_hwops __initdata =
++{
++	.core_init	= ppc440spe_pciex_core_init,
++	.port_init_hw	= ppc440spe_pciex_init_port_hw,
++	.setup_utl	= ppc440speA_pciex_init_utl,
++};
++
++static struct ppc4xx_pciex_hwops ppc440speB_pcie_hwops __initdata =
++{
++	.core_init	= ppc440spe_pciex_core_init,
++	.port_init_hw	= ppc440spe_pciex_init_port_hw,
++};
++
++
++#endif /* CONFIG_44x */
++
++#ifdef CONFIG_40x
++
++static int __init ppc405ex_pciex_core_init(struct device_node *np)
++{
++	/* Nothing to do, return 2 ports */
++	return 2;
++}
++
++static void ppc405ex_pcie_phy_reset(struct ppc4xx_pciex_port *port)
++{
++	/* Assert the PE0_PHY reset */
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01010000);
++	msleep(1);
++
++	/* deassert the PE0_hotreset */
++	if (port->endpoint)
++		mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01111000);
++	else
++		mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x01101000);
++
++	/* poll for phy !reset */
++	/* XXX FIXME add timeout */
++	while (!(mfdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSTA) & 0x00001000))
++		;
++
++	/* deassert the PE0_gpl_utl_reset */
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET, 0x00101000);
++}
++
++static int ppc405ex_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
++{
++	u32 val;
++
++	if (port->endpoint)
++		val = PTYPE_LEGACY_ENDPOINT;
++	else
++		val = PTYPE_ROOT_PORT;
++
++	mtdcri(SDR0, port->sdr_base + PESDRn_DLPSET,
++	       1 << 24 | val << 20 | LNKW_X1 << 12);
++
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET1, 0x00000000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_UTLSET2, 0x01010000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSET1, 0x720F0000);
++	mtdcri(SDR0, port->sdr_base + PESDRn_405EX_PHYSET2, 0x70600003);
++
++	/*
++	 * Only reset the PHY when no link is currently established.
++	 * This is for the Atheros PCIe board which has problems to establish
++	 * the link (again) after this PHY reset. All other currently tested
++	 * PCIe boards don't show this problem.
++	 * This has to be re-tested and fixed in a later release!
++	 */
++#if 0 /* XXX FIXME: Not resetting the PHY will leave all resources
++       * configured as done previously by U-Boot. Then Linux will currently
++       * not reassign them. So the PHY reset is now done always. This will
++       * lead to problems with the Atheros PCIe board again.
++       */
++	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
++	if (!(val & 0x00001000))
++		ppc405ex_pcie_phy_reset(port);
++#else
++	ppc405ex_pcie_phy_reset(port);
++#endif
++
++	dcr_write(port->dcrs, DCRO_PEGPL_CFG, 0x10000000);  /* guarded on */
++
++	return 0;
++}
++
++static int ppc405ex_pciex_init_utl(struct ppc4xx_pciex_port *port)
++{
++	void __iomem *utl_base;
++
++	dcr_write(port->dcrs, DCRO_PEGPL_SPECIAL, 0x0);
++
++	utl_base = ioremap(port->utl_regs.start, 0x100);
++	BUG_ON(utl_base == NULL);
++
++	/*
++	 * Set buffer allocations and then assert VRB and TXE.
++	 */
++	out_be32(utl_base + PEUTL_OUTTR,   0x02000000);
++	out_be32(utl_base + PEUTL_INTR,    0x02000000);
++	out_be32(utl_base + PEUTL_OPDBSZ,  0x04000000);
++	out_be32(utl_base + PEUTL_PBBSZ,   0x21000000);
++	out_be32(utl_base + PEUTL_IPHBSZ,  0x02000000);
++	out_be32(utl_base + PEUTL_IPDBSZ,  0x04000000);
++	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
++	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
++
++	out_be32(utl_base + PEUTL_PBCTL,   0x0800000c);
++	out_be32(utl_base + PEUTL_RCSTA,
++		 in_be32(utl_base + PEUTL_RCSTA) | 0x000040000);
++
++	iounmap(utl_base);
++
++	return 0;
++}
++
++static struct ppc4xx_pciex_hwops ppc405ex_pcie_hwops __initdata =
++{
++	.core_init	= ppc405ex_pciex_core_init,
++	.port_init_hw	= ppc405ex_pciex_init_port_hw,
++	.setup_utl	= ppc405ex_pciex_init_utl,
++};
++
++#endif /* CONFIG_40x */
++
++
++/* Check that the core has been initied and if not, do it */
++static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
++{
++	static int core_init;
++	int count = -ENODEV;
++
++	if (core_init++)
++		return 0;
++
++#ifdef CONFIG_44x
++	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
++		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
++	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
++		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
++#endif /* CONFIG_44x    */
++#ifdef CONFIG_40x
++	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
++		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
++#endif
++	if (ppc4xx_pciex_hwops == NULL) {
++		printk(KERN_WARNING "PCIE: unknown host type %s\n",
++		       np->full_name);
++		return -ENODEV;
++	}
++
++	count = ppc4xx_pciex_hwops->core_init(np);
++	if (count > 0) {
++		ppc4xx_pciex_ports =
++		       kzalloc(count * sizeof(struct ppc4xx_pciex_port),
++			       GFP_KERNEL);
++		if (ppc4xx_pciex_ports) {
++			ppc4xx_pciex_port_count = count;
++			return 0;
++		}
++		printk(KERN_WARNING "PCIE: failed to allocate ports array\n");
++		return -ENOMEM;
++	}
++	return -ENODEV;
++}
++
++static void __init ppc4xx_pciex_port_init_mapping(struct ppc4xx_pciex_port *port)
++{
++	/* We map PCI Express configuration based on the reg property */
++	dcr_write(port->dcrs, DCRO_PEGPL_CFGBAH,
++		  RES_TO_U32_HIGH(port->cfg_space.start));
++	dcr_write(port->dcrs, DCRO_PEGPL_CFGBAL,
++		  RES_TO_U32_LOW(port->cfg_space.start));
++
++	/* XXX FIXME: Use size from reg property. For now, map 512M */
++	dcr_write(port->dcrs, DCRO_PEGPL_CFGMSK, 0xe0000001);
++
++	/* We map UTL registers based on the reg property */
++	dcr_write(port->dcrs, DCRO_PEGPL_REGBAH,
++		  RES_TO_U32_HIGH(port->utl_regs.start));
++	dcr_write(port->dcrs, DCRO_PEGPL_REGBAL,
++		  RES_TO_U32_LOW(port->utl_regs.start));
++
++	/* XXX FIXME: Use size from reg property */
++	dcr_write(port->dcrs, DCRO_PEGPL_REGMSK, 0x00007001);
++
++	/* Disable all other outbound windows */
++	dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL, 0);
++	dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL, 0);
++	dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKL, 0);
++	dcr_write(port->dcrs, DCRO_PEGPL_MSGMSK, 0);
++}
++
++static int __init ppc4xx_pciex_port_init(struct ppc4xx_pciex_port *port)
++{
++	int attempts, rc = 0;
++	u32 val;
++
++	/* Check if it's endpoint or root complex
++	 *
++	 * XXX Do we want to use the device-tree instead ? --BenH.
++	 */
++	val = mfdcri(SDR0, port->sdr_base + PESDRn_DLPSET);
++	port->endpoint = (((val >> 20) & 0xf) != PTYPE_ROOT_PORT);
++
++	/* Init HW */
++	if (ppc4xx_pciex_hwops->port_init_hw)
++		rc = ppc4xx_pciex_hwops->port_init_hw(port);
++	if (rc != 0)
++		return rc;
++
++	/*
++	 * Notice: the following delay has critical impact on device
++	 * initialization - if too short (<50ms) the link doesn't get up.
++	 *
++	 * XXX FIXME: There are various issues with that link up thingy,
++	 * we could just wait for the link with a timeout but Stefan says
++	 * some cards need more time even after the link is up. I'll
++	 * investigate. For now, we keep a fixed 1s delay.
++	 *
++	 * Ultimately, it should be made asynchronous so all ports are
++	 * brought up simultaneously though.
++	 */
++	printk(KERN_INFO "PCIE%d: Waiting for link to go up...\n",
++	       port->index);
++	msleep(1000);
++
++	/*
++	 * Check that we exited the reset state properly
++	 */
++	val = mfdcri(SDR0, port->sdr_base + PESDRn_RCSSTS);
++	if (val & (1 << 20)) {
++		printk(KERN_WARNING "PCIE%d: PGRST failed %08x\n",
++		       port->index, val);
++		return -1;
++	}
++
++	/*
++	 * Verify link is up
++	 */
++	val = mfdcri(SDR0, port->sdr_base + PESDRn_LOOP);
++	if (!(val & 0x00001000)) {
++		printk(KERN_INFO "PCIE%d: link is not up !\n",
++		       port->index);
++		return -1;
++	}
++
++	printk(KERN_INFO "PCIE%d: link is up !\n",
++	       port->index);
++
++	/*
++	 * Initialize mapping: disable all regions and configure
++	 * CFG and REG regions based on resources in the device tree
++	 */
++	ppc4xx_pciex_port_init_mapping(port);
++
++	/*
++	 * Setup UTL registers - but only on revA!
++	 * We use default settings for revB chip.
++	 *
++	 * To be reworked. We may also be able to move that to
++	 * before the link wait
++	 * --BenH.
++	 */
++	if (ppc4xx_pciex_hwops->setup_utl)
++		ppc4xx_pciex_hwops->setup_utl(port);
++
++	/*
++	 * Check for VC0 active and assert RDY.
++	 */
++	attempts = 10;
++	while (!(mfdcri(SDR0, port->sdr_base + PESDRn_RCSSTS) & (1 << 16))) {
++		if (!(attempts--)) {
++			printk(KERN_INFO "PCIE%d: VC0 not active\n",
++			       port->index);
++			return -1;
++		}
++		msleep(1000);
++	}
++	mtdcri(SDR0, port->sdr_base + PESDRn_RCSSET,
++	       mfdcri(SDR0, port->sdr_base + PESDRn_RCSSET) | 1 << 20);
++	msleep(100);
++
++	return 0;
++}
++
++static int ppc4xx_pciex_validate_bdf(struct ppc4xx_pciex_port *port,
++				     struct pci_bus *bus,
++				     unsigned int devfn)
++{
++	static int message;
++
++	/* Endpoint can not generate upstream(remote) config cycles */
++	if (port->endpoint && bus->number != port->hose->first_busno)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	/* Check we are within the mapped range */
++	if (bus->number > port->hose->last_busno) {
++		if (!message) {
++			printk(KERN_WARNING "Warning! Probing bus %u"
++			       " out of range !\n", bus->number);
++			message++;
++		}
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	}
++
++	/* The root complex has only one device / function */
++	if (bus->number == port->hose->first_busno && devfn != 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	/* The other side of the RC has only one device as well */
++	if (bus->number == (port->hose->first_busno + 1) &&
++	    PCI_SLOT(devfn) != 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	return 0;
++}
++
++static void __iomem *ppc4xx_pciex_get_config_base(struct ppc4xx_pciex_port *port,
++						  struct pci_bus *bus,
++						  unsigned int devfn)
++{
++	int relbus;
++
++	/* Remove the casts when we finally remove the stupid volatile
++	 * in struct pci_controller
++	 */
++	if (bus->number == port->hose->first_busno)
++		return (void __iomem *)port->hose->cfg_addr;
++
++	relbus = bus->number - (port->hose->first_busno + 1);
++	return (void __iomem *)port->hose->cfg_data +
++		((relbus  << 20) | (devfn << 12));
++}
++
++static int ppc4xx_pciex_read_config(struct pci_bus *bus, unsigned int devfn,
++				    int offset, int len, u32 *val)
++{
++	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
++	struct ppc4xx_pciex_port *port =
++		&ppc4xx_pciex_ports[hose->indirect_type];
++	void __iomem *addr;
++	u32 gpl_cfg;
++
++	BUG_ON(hose != port->hose);
++
++	if (ppc4xx_pciex_validate_bdf(port, bus, devfn) != 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	addr = ppc4xx_pciex_get_config_base(port, bus, devfn);
++
++	/*
++	 * Reading from configuration space of non-existing device can
++	 * generate transaction errors. For the read duration we suppress
++	 * assertion of machine check exceptions to avoid those.
++	 */
++	gpl_cfg = dcr_read(port->dcrs, DCRO_PEGPL_CFG);
++	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg | GPL_DMER_MASK_DISA);
++
++	switch (len) {
++	case 1:
++		*val = in_8((u8 *)(addr + offset));
++		break;
++	case 2:
++		*val = in_le16((u16 *)(addr + offset));
++		break;
++	default:
++		*val = in_le32((u32 *)(addr + offset));
++		break;
++	}
++
++	pr_debug("pcie-config-read: bus=%3d [%3d..%3d] devfn=0x%04x"
++		 " offset=0x%04x len=%d, addr=0x%p val=0x%08x\n",
++		 bus->number, hose->first_busno, hose->last_busno,
++		 devfn, offset, len, addr + offset, *val);
++
++	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg);
++
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static int ppc4xx_pciex_write_config(struct pci_bus *bus, unsigned int devfn,
++				     int offset, int len, u32 val)
++{
++	struct pci_controller *hose = (struct pci_controller *) bus->sysdata;
++	struct ppc4xx_pciex_port *port =
++		&ppc4xx_pciex_ports[hose->indirect_type];
++	void __iomem *addr;
++	u32 gpl_cfg;
++
++	if (ppc4xx_pciex_validate_bdf(port, bus, devfn) != 0)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	addr = ppc4xx_pciex_get_config_base(port, bus, devfn);
++
++	/*
++	 * Reading from configuration space of non-existing device can
++	 * generate transaction errors. For the read duration we suppress
++	 * assertion of machine check exceptions to avoid those.
++	 */
++	gpl_cfg = dcr_read(port->dcrs, DCRO_PEGPL_CFG);
++	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg | GPL_DMER_MASK_DISA);
++
++	pr_debug("pcie-config-write: bus=%3d [%3d..%3d] devfn=0x%04x"
++		 " offset=0x%04x len=%d, addr=0x%p val=0x%08x\n",
++		 bus->number, hose->first_busno, hose->last_busno,
++		 devfn, offset, len, addr + offset, val);
++
++	switch (len) {
++	case 1:
++		out_8((u8 *)(addr + offset), val);
++		break;
++	case 2:
++		out_le16((u16 *)(addr + offset), val);
++		break;
++	default:
++		out_le32((u32 *)(addr + offset), val);
++		break;
++	}
++
++	dcr_write(port->dcrs, DCRO_PEGPL_CFG, gpl_cfg);
++
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static struct pci_ops ppc4xx_pciex_pci_ops =
++{
++	.read  = ppc4xx_pciex_read_config,
++	.write = ppc4xx_pciex_write_config,
++};
++
++static void __init ppc4xx_configure_pciex_POMs(struct ppc4xx_pciex_port *port,
++					       struct pci_controller *hose,
++					       void __iomem *mbase)
++{
++	u32 lah, lal, pciah, pcial, sa;
 +	int i, j;
 +
 +	/* Setup outbound memory windows */
@@ -90,182 +821,570 @@ Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.c
 +		/* we only care about memory windows */
 +		if (!(res->flags & IORESOURCE_MEM))
 +			continue;
-+		if (j > 2) {
++		if (j > 1) {
 +			printk(KERN_WARNING "%s: Too many ranges\n",
-+			       np->full_name);
++			       port->node->full_name);
 +			break;
 +		}
 +
 +		/* Calculate register values */
-+		la = res->start;
-+#ifdef CONFIG_RESOURCES_64BIT
-+		pciha = (res->start - hose->pci_mem_offset) >> 32;
-+		pcila = (res->start - hose->pci_mem_offset) & 0xffffffffu;
-+#else
-+		pciha = 0;
-+		pcila = res->start - hose->pci_mem_offset;
-+#endif
-+
-+		ma = res->end + 1 - res->start;
-+		if (!is_power_of_2(ma) || ma < 0x1000 || ma > 0xffffffffu) {
++		lah = RES_TO_U32_HIGH(res->start);
++		lal = RES_TO_U32_LOW(res->start);
++		pciah = RES_TO_U32_HIGH(res->start - hose->pci_mem_offset);
++		pcial = RES_TO_U32_LOW(res->start - hose->pci_mem_offset);
++		sa = res->end + 1 - res->start;
++		if (!is_power_of_2(sa) || sa < 0x100000 ||
++		    sa > 0xffffffffu) {
 +			printk(KERN_WARNING "%s: Resource out of range\n",
-+			       np->full_name);
++			       port->node->full_name);
 +			continue;
 +		}
-+		ma = (0xffffffffu << ilog2(ma)) | 0x1;
-+		if (res->flags & IORESOURCE_PREFETCH)
-+			ma |= 0x2;
++		sa = (0xffffffffu << ilog2(sa)) | 0x1;
 +
 +		/* Program register values */
-+		writel(la, reg + PCIL0_PMM0LA + (0x10 * j));
-+		writel(pcila, reg + PCIL0_PMM0PCILA + (0x10 * j));
-+		writel(pciha, reg + PCIL0_PMM0PCIHA + (0x10 * j));
-+		writel(ma, reg + PCIL0_PMM0MA + (0x10 * j));
++		switch (j) {
++		case 0:
++			out_le32(mbase + PECFG_POM0LAH, pciah);
++			out_le32(mbase + PECFG_POM0LAL, pcial);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR1BAH, lah);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR1BAL, lal);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKH, 0x7fffffff);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR1MSKL, sa | 3);
++			break;
++		case 1:
++			out_le32(mbase + PECFG_POM1LAH, pciah);
++			out_le32(mbase + PECFG_POM1LAL, pcial);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAH, lah);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR2BAL, lal);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKH, 0x7fffffff);
++			dcr_write(port->dcrs, DCRO_PEGPL_OMR2MSKL, sa | 3);
++			break;
++		}
 +		j++;
++	}
++
++	/* Configure IO, always 64K starting at 0 */
++	if (hose->io_resource.flags & IORESOURCE_IO) {
++		lah = RES_TO_U32_HIGH(hose->io_base_phys);
++		lal = RES_TO_U32_LOW(hose->io_base_phys);
++		out_le32(mbase + PECFG_POM2LAH, 0);
++		out_le32(mbase + PECFG_POM2LAL, 0);
++		dcr_write(port->dcrs, DCRO_PEGPL_OMR3BAH, lah);
++		dcr_write(port->dcrs, DCRO_PEGPL_OMR3BAL, lal);
++		dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKH, 0x7fffffff);
++		dcr_write(port->dcrs, DCRO_PEGPL_OMR3MSKL, 0xffff0000 | 3);
 +	}
 +}
 +
-+static void __init ppc4xx_configure_pci_PTMs(struct pci_controller *hose,
-+					     void __iomem *reg,
-+					     const struct resource *res)
++static void __init ppc4xx_configure_pciex_PIMs(struct ppc4xx_pciex_port *port,
++					       struct pci_controller *hose,
++					       void __iomem *mbase,
++					       struct resource *res)
 +{
 +	resource_size_t size = res->end - res->start + 1;
-+	u32 sa;
++	u64 sa;
 +
 +	/* Calculate window size */
-+	sa = (0xffffffffu << ilog2(size)) | 1;
-+	sa |= 0x1;
++	sa = (0xffffffffffffffffull << ilog2(size));;
++	if (res->flags & IORESOURCE_PREFETCH)
++		sa |= 0x8;
 +
-+	/* RAM is always at 0 local for now */
-+	writel(0, reg + PCIL0_PTM1LA);
-+	writel(sa, reg + PCIL0_PTM1MS);
++	out_le32(mbase + PECFG_BAR0HMPA, RES_TO_U32_HIGH(sa));
++	out_le32(mbase + PECFG_BAR0LMPA, RES_TO_U32_LOW(sa));
 +
-+	/* Map on PCI side */
-+	early_write_config_dword(hose, hose->first_busno, 0,
-+				 PCI_BASE_ADDRESS_1, res->start);
-+	early_write_config_dword(hose, hose->first_busno, 0,
-+				 PCI_BASE_ADDRESS_2, 0x00000000);
-+	early_write_config_word(hose, hose->first_busno, 0,
-+				PCI_COMMAND, 0x0006);
++	/* The setup of the split looks weird to me ... let's see if it works */
++	out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
++	out_le32(mbase + PECFG_PIM0LAH, 0x00000000);
++	out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
++	out_le32(mbase + PECFG_PIM1LAH, 0x00000000);
++	out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
++	out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
++
++	/* Enable inbound mapping */
++	out_le32(mbase + PECFG_PIMEN, 0x1);
++
++	out_le32(mbase + PCI_BASE_ADDRESS_0, RES_TO_U32_LOW(res->start));
++	out_le32(mbase + PCI_BASE_ADDRESS_1, RES_TO_U32_HIGH(res->start));
++
++	/* Enable I/O, Mem, and Busmaster cycles */
++	out_le16(mbase + PCI_COMMAND,
++		 in_le16(mbase + PCI_COMMAND) |
++		 PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
 +}
 +
- static void __init ppc4xx_probe_pci_bridge(struct device_node *np)
- {
- 	/* NYI */
-+	struct resource rsrc_cfg;
-+	struct resource rsrc_reg;
++static void __init ppc4xx_pciex_port_setup_hose(struct ppc4xx_pciex_port *port)
++{
 +	struct resource dma_window;
 +	struct pci_controller *hose = NULL;
-+	void __iomem *reg = NULL;
 +	const int *bus_range;
-+	int primary = 0;
++	int primary = 0, busses;
++	void __iomem *mbase = NULL, *cfg_data = NULL;
++
++	/* XXX FIXME: Handle endpoint mode properly */
++	if (port->endpoint)
++		return;
++
++	/* Check if primary bridge */
++	if (of_get_property(port->node, "primary", NULL))
++		primary = 1;
++
++	/* Get bus range if any */
++	bus_range = of_get_property(port->node, "bus-range", NULL);
++
++	/* Allocate the host controller data structure */
++	hose = pcibios_alloc_controller(port->node);
++	if (!hose)
++		goto fail;
++
++	/* We stick the port number in "indirect_type" so the config space
++	 * ops can retrieve the port data structure easily
++	 */
++	hose->indirect_type = port->index;
++
++	/* Get bus range */
++	hose->first_busno = bus_range ? bus_range[0] : 0x0;
++	hose->last_busno = bus_range ? bus_range[1] : 0xff;
++
++	/* Because of how big mapping the config space is (1M per bus), we
++	 * limit how many busses we support. In the long run, we could replace
++	 * that with something akin to kmap_atomic instead. We set aside 1 bus
++	 * for the host itself too.
++	 */
++	busses = hose->last_busno - hose->first_busno; /* This is off by 1 */
++	if (busses > MAX_PCIE_BUS_MAPPED) {
++		busses = MAX_PCIE_BUS_MAPPED;
++		hose->last_busno = hose->first_busno + busses;
++	}
++
++	/* We map the external config space in cfg_data and the host config
++	 * space in cfg_addr. External space is 1M per bus, internal space
++	 * is 4K
++	 */
++	cfg_data = ioremap(port->cfg_space.start +
++				 (hose->first_busno + 1) * 0x100000,
++				 busses * 0x100000);
++	mbase = ioremap(port->cfg_space.start + 0x10000000, 0x1000);
++	if (cfg_data == NULL || mbase == NULL) {
++		printk(KERN_ERR "%s: Can't map config space !",
++		       port->node->full_name);
++		goto fail;
++	}
++
++	hose->cfg_data = cfg_data;
++	hose->cfg_addr = mbase;
++
++	pr_debug("PCIE %s, bus %d..%d\n", port->node->full_name,
++		 hose->first_busno, hose->last_busno);
++	pr_debug("     config space mapped at: root @0x%p, other @0x%p\n",
++		 hose->cfg_addr, hose->cfg_data);
++
++	/* Setup config space */
++	hose->ops = &ppc4xx_pciex_pci_ops;
++	port->hose = hose;
++	mbase = (void __iomem *)hose->cfg_addr;
++
++	/*
++	 * Set bus numbers on our root port
++	 */
++	out_8(mbase + PCI_PRIMARY_BUS, hose->first_busno);
++	out_8(mbase + PCI_SECONDARY_BUS, hose->first_busno + 1);
++	out_8(mbase + PCI_SUBORDINATE_BUS, hose->last_busno);
++
++	/*
++	 * OMRs are already reset, also disable PIMs
++	 */
++	out_le32(mbase + PECFG_PIMEN, 0);
++
++	/* Parse outbound mapping resources */
++	pci_process_bridge_OF_ranges(hose, port->node, primary);
++
++	/* Parse inbound mapping resources */
++	if (ppc4xx_parse_dma_ranges(hose, mbase, &dma_window) != 0)
++		goto fail;
++
++	/* Configure outbound ranges POMs */
++	ppc4xx_configure_pciex_POMs(port, hose, mbase);
++
++	/* Configure inbound ranges PIMs */
++	ppc4xx_configure_pciex_PIMs(port, hose, mbase, &dma_window);
++
++	/* The root complex doesn't show up if we don't set some vendor
++	 * and device IDs into it. Those are the same bogus one that the
++	 * initial code in arch/ppc add. We might want to change that.
++	 */
++	out_le16(mbase + 0x200, 0xaaa0 + port->index);
++	out_le16(mbase + 0x202, 0xbed0 + port->index);
++
++	/* Set Class Code to PCI-PCI bridge and Revision Id to 1 */
++	out_le32(mbase + 0x208, 0x06040001);
++
++	printk(KERN_INFO "PCIE%d: successfully set as root-complex\n",
++	       port->index);
++	return;
++ fail:
++	if (hose)
++		pcibios_free_controller(hose);
++	if (cfg_data)
++		iounmap(cfg_data);
++	if (mbase)
++		iounmap(mbase);
++}
++
+ static void __init ppc4xx_probe_pciex_bridge(struct device_node *np)
+ {
+-	/* NYI */
++	struct ppc4xx_pciex_port *port;
++	const u32 *pval;
++	int portno;
++	unsigned int dcrs;
++
++	/* First, proceed to core initialization as we assume there's
++	 * only one PCIe core in the system
++	 */
++	if (ppc4xx_pciex_check_core_init(np))
++		return;
++
++	/* Get the port number from the device-tree */
++	pval = of_get_property(np, "port", NULL);
++	if (pval == NULL) {
++		printk(KERN_ERR "PCIE: Can't find port number for %s\n",
++		       np->full_name);
++		return;
++	}
++	portno = *pval;
++	if (portno >= ppc4xx_pciex_port_count) {
++		printk(KERN_ERR "PCIE: port number out of range for %s\n",
++		       np->full_name);
++		return;
++	}
++	port = &ppc4xx_pciex_ports[portno];
++	port->index = portno;
++	port->node = of_node_get(np);
++	pval = of_get_property(np, "sdr-base", NULL);
++	if (pval == NULL) {
++		printk(KERN_ERR "PCIE: missing sdr-base for %s\n",
++		       np->full_name);
++		return;
++	}
++	port->sdr_base = *pval;
 +
 +	/* Fetch config space registers address */
-+	if (of_address_to_resource(np, 0, &rsrc_cfg)) {
-+		printk(KERN_ERR "%s:Can't get PCI config register base !",
++	if (of_address_to_resource(np, 0, &port->cfg_space)) {
++		printk(KERN_ERR "%s: Can't get PCI-E config space !",
 +		       np->full_name);
 +		return;
 +	}
 +	/* Fetch host bridge internal registers address */
-+	if (of_address_to_resource(np, 3, &rsrc_reg)) {
-+		printk(KERN_ERR "%s: Can't get PCI internal register base !",
++	if (of_address_to_resource(np, 1, &port->utl_regs)) {
++		printk(KERN_ERR "%s: Can't get UTL register base !",
 +		       np->full_name);
 +		return;
 +	}
 +
-+	/* Check if primary bridge */
-+	if (of_get_property(np, "primary", NULL))
-+		primary = 1;
-+
-+	/* Get bus range if any */
-+	bus_range = of_get_property(np, "bus-range", NULL);
-+
-+	/* Map registers */
-+	reg = ioremap(rsrc_reg.start, rsrc_reg.end + 1 - rsrc_reg.start);
-+	if (reg == NULL) {
-+		printk(KERN_ERR "%s: Can't map registers !", np->full_name);
-+		goto fail;
++	/* Map DCRs */
++	dcrs = dcr_resource_start(np, 0);
++	if (dcrs == 0) {
++		printk(KERN_ERR "%s: Can't get DCR register base !",
++		       np->full_name);
++		return;
 +	}
++	port->dcrs = dcr_map(np, dcrs, dcr_resource_len(np, 0));
 +
-+	/* Allocate the host controller data structure */
-+	hose = pcibios_alloc_controller(np);
-+	if (!hose)
-+		goto fail;
++	/* Initialize the port specific registers */
++	if (ppc4xx_pciex_port_init(port))
++		return;
 +
-+	hose->first_busno = bus_range ? bus_range[0] : 0x0;
-+	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-+
-+	/* Setup config space */
-+	setup_indirect_pci(hose, rsrc_cfg.start, rsrc_cfg.start + 0x4, 0);
-+
-+	/* Disable all windows */
-+	writel(0, reg + PCIL0_PMM0MA);
-+	writel(0, reg + PCIL0_PMM1MA);
-+	writel(0, reg + PCIL0_PMM2MA);
-+	writel(0, reg + PCIL0_PTM1MS);
-+	writel(0, reg + PCIL0_PTM2MS);
-+
-+	/* Parse outbound mapping resources */
-+	pci_process_bridge_OF_ranges(hose, np, primary);
-+
-+	/* Parse inbound mapping resources */
-+	if (ppc4xx_parse_dma_ranges(hose, reg, &dma_window) != 0)
-+		goto fail;
-+
-+	/* Configure outbound ranges POMs */
-+	ppc4xx_configure_pci_PMMs(hose, reg);
-+
-+	/* Configure inbound ranges PIMs */
-+	ppc4xx_configure_pci_PTMs(hose, reg, &dma_window);
-+
-+	/* We don't need the registers anymore */
-+	iounmap(reg);
-+	return;
-+
-+ fail:
-+	if (hose)
-+		pcibios_free_controller(hose);
-+	if (reg)
-+		iounmap(reg);
++	/* Setup the linux hose data structure */
++	ppc4xx_pciex_port_setup_hose(port);
  }
  
- /*
-@@ -156,7 +337,7 @@ static void __init ppc4xx_configure_pcix
- 		}
++#endif /* CONFIG_PPC4xx_PCI_EXPRESS */
++
+ static int __init ppc4xx_pci_find_bridges(void)
+ {
+ 	struct device_node *np;
  
- 		/* Calculate register values */
--#ifdef CONFIG_PTE_64BIT
-+#ifdef CONFIG_RESOURCES_64BIT
- 		lah = res->start >> 32;
- 		lal = res->start & 0xffffffffu;
- 		pciah = (res->start - hose->pci_mem_offset) >> 32;
++#ifdef CONFIG_PPC4xx_PCI_EXPRESS
+ 	for_each_compatible_node(np, NULL, "ibm,plb-pciex")
+ 		ppc4xx_probe_pciex_bridge(np);
++#endif
+ 	for_each_compatible_node(np, NULL, "ibm,plb-pcix")
+ 		ppc4xx_probe_pcix_bridge(np);
+ 	for_each_compatible_node(np, NULL, "ibm,plb-pci")
 Index: linux-work/arch/powerpc/sysdev/ppc4xx_pci.h
 ===================================================================
---- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-03 12:09:20.000000000 +1100
-+++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-03 12:10:06.000000000 +1100
-@@ -101,6 +101,25 @@
- #define PCIX0_MSGOH		0x10c
- #define PCIX0_IM		0x1f8
+--- linux-work.orig/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-05 11:10:44.000000000 +1100
++++ linux-work/arch/powerpc/sysdev/ppc4xx_pci.h	2007-12-05 11:56:20.000000000 +1100
+@@ -121,5 +121,247 @@
+ #define PCIL0_PTM2MS		0x38
+ #define PCIL0_PTM2LA		0x3c
  
 +/*
-+ * 4xx PCI bridge register definitions
++ * 4xx PCIe bridge register definitions
 + */
-+#define PCIL0_PMM0LA		0x00
-+#define PCIL0_PMM0MA		0x04
-+#define PCIL0_PMM0PCILA		0x08
-+#define PCIL0_PMM0PCIHA		0x0c
-+#define PCIL0_PMM1LA		0x10
-+#define PCIL0_PMM1MA		0x14
-+#define PCIL0_PMM1PCILA		0x18
-+#define PCIL0_PMM1PCIHA		0x1c
-+#define PCIL0_PMM2LA		0x20
-+#define PCIL0_PMM2MA		0x24
-+#define PCIL0_PMM2PCILA		0x28
-+#define PCIL0_PMM2PCIHA		0x2c
-+#define PCIL0_PTM1MS		0x30
-+#define PCIL0_PTM1LA		0x34
-+#define PCIL0_PTM2MS		0x38
-+#define PCIL0_PTM2LA		0x3c
- 
++
++/* DCR offsets */
++#define DCRO_PEGPL_CFGBAH		0x00
++#define DCRO_PEGPL_CFGBAL		0x01
++#define DCRO_PEGPL_CFGMSK		0x02
++#define DCRO_PEGPL_MSGBAH		0x03
++#define DCRO_PEGPL_MSGBAL		0x04
++#define DCRO_PEGPL_MSGMSK		0x05
++#define DCRO_PEGPL_OMR1BAH		0x06
++#define DCRO_PEGPL_OMR1BAL		0x07
++#define DCRO_PEGPL_OMR1MSKH		0x08
++#define DCRO_PEGPL_OMR1MSKL		0x09
++#define DCRO_PEGPL_OMR2BAH		0x0a
++#define DCRO_PEGPL_OMR2BAL		0x0b
++#define DCRO_PEGPL_OMR2MSKH		0x0c
++#define DCRO_PEGPL_OMR2MSKL		0x0d
++#define DCRO_PEGPL_OMR3BAH		0x0e
++#define DCRO_PEGPL_OMR3BAL		0x0f
++#define DCRO_PEGPL_OMR3MSKH		0x10
++#define DCRO_PEGPL_OMR3MSKL		0x11
++#define DCRO_PEGPL_REGBAH		0x12
++#define DCRO_PEGPL_REGBAL		0x13
++#define DCRO_PEGPL_REGMSK		0x14
++#define DCRO_PEGPL_SPECIAL		0x15
++#define DCRO_PEGPL_CFG			0x16
++#define DCRO_PEGPL_ESR			0x17
++#define DCRO_PEGPL_EARH			0x18
++#define DCRO_PEGPL_EARL			0x19
++#define DCRO_PEGPL_EATR			0x1a
++
++/* DMER mask */
++#define GPL_DMER_MASK_DISA	0x02000000
++
++/*
++ * System DCRs (SDRs)
++ */
++#define PESDR0_PLLLCT1			0x03a0
++#define PESDR0_PLLLCT2			0x03a1
++#define PESDR0_PLLLCT3			0x03a2
++
++/*
++ * 440SPe additional DCRs
++ */
++#define PESDR0_440SPE_UTLSET1		0x0300
++#define PESDR0_440SPE_UTLSET2		0x0301
++#define PESDR0_440SPE_DLPSET		0x0302
++#define PESDR0_440SPE_LOOP		0x0303
++#define PESDR0_440SPE_RCSSET		0x0304
++#define PESDR0_440SPE_RCSSTS		0x0305
++#define PESDR0_440SPE_HSSL0SET1		0x0306
++#define PESDR0_440SPE_HSSL0SET2		0x0307
++#define PESDR0_440SPE_HSSL0STS		0x0308
++#define PESDR0_440SPE_HSSL1SET1		0x0309
++#define PESDR0_440SPE_HSSL1SET2		0x030a
++#define PESDR0_440SPE_HSSL1STS		0x030b
++#define PESDR0_440SPE_HSSL2SET1		0x030c
++#define PESDR0_440SPE_HSSL2SET2		0x030d
++#define PESDR0_440SPE_HSSL2STS		0x030e
++#define PESDR0_440SPE_HSSL3SET1		0x030f
++#define PESDR0_440SPE_HSSL3SET2		0x0310
++#define PESDR0_440SPE_HSSL3STS		0x0311
++#define PESDR0_440SPE_HSSL4SET1		0x0312
++#define PESDR0_440SPE_HSSL4SET2		0x0313
++#define PESDR0_440SPE_HSSL4STS	       	0x0314
++#define PESDR0_440SPE_HSSL5SET1		0x0315
++#define PESDR0_440SPE_HSSL5SET2		0x0316
++#define PESDR0_440SPE_HSSL5STS		0x0317
++#define PESDR0_440SPE_HSSL6SET1		0x0318
++#define PESDR0_440SPE_HSSL6SET2		0x0319
++#define PESDR0_440SPE_HSSL6STS		0x031a
++#define PESDR0_440SPE_HSSL7SET1		0x031b
++#define PESDR0_440SPE_HSSL7SET2		0x031c
++#define PESDR0_440SPE_HSSL7STS		0x031d
++#define PESDR0_440SPE_HSSCTLSET		0x031e
++#define PESDR0_440SPE_LANE_ABCD		0x031f
++#define PESDR0_440SPE_LANE_EFGH		0x0320
++
++#define PESDR1_440SPE_UTLSET1		0x0340
++#define PESDR1_440SPE_UTLSET2		0x0341
++#define PESDR1_440SPE_DLPSET		0x0342
++#define PESDR1_440SPE_LOOP		0x0343
++#define PESDR1_440SPE_RCSSET		0x0344
++#define PESDR1_440SPE_RCSSTS		0x0345
++#define PESDR1_440SPE_HSSL0SET1		0x0346
++#define PESDR1_440SPE_HSSL0SET2		0x0347
++#define PESDR1_440SPE_HSSL0STS		0x0348
++#define PESDR1_440SPE_HSSL1SET1		0x0349
++#define PESDR1_440SPE_HSSL1SET2		0x034a
++#define PESDR1_440SPE_HSSL1STS		0x034b
++#define PESDR1_440SPE_HSSL2SET1		0x034c
++#define PESDR1_440SPE_HSSL2SET2		0x034d
++#define PESDR1_440SPE_HSSL2STS		0x034e
++#define PESDR1_440SPE_HSSL3SET1		0x034f
++#define PESDR1_440SPE_HSSL3SET2		0x0350
++#define PESDR1_440SPE_HSSL3STS		0x0351
++#define PESDR1_440SPE_HSSCTLSET		0x0352
++#define PESDR1_440SPE_LANE_ABCD		0x0353
++
++#define PESDR2_440SPE_UTLSET1		0x0370
++#define PESDR2_440SPE_UTLSET2		0x0371
++#define PESDR2_440SPE_DLPSET		0x0372
++#define PESDR2_440SPE_LOOP		0x0373
++#define PESDR2_440SPE_RCSSET		0x0374
++#define PESDR2_440SPE_RCSSTS		0x0375
++#define PESDR2_440SPE_HSSL0SET1		0x0376
++#define PESDR2_440SPE_HSSL0SET2		0x0377
++#define PESDR2_440SPE_HSSL0STS		0x0378
++#define PESDR2_440SPE_HSSL1SET1		0x0379
++#define PESDR2_440SPE_HSSL1SET2		0x037a
++#define PESDR2_440SPE_HSSL1STS		0x037b
++#define PESDR2_440SPE_HSSL2SET1		0x037c
++#define PESDR2_440SPE_HSSL2SET2		0x037d
++#define PESDR2_440SPE_HSSL2STS		0x037e
++#define PESDR2_440SPE_HSSL3SET1		0x037f
++#define PESDR2_440SPE_HSSL3SET2		0x0380
++#define PESDR2_440SPE_HSSL3STS		0x0381
++#define PESDR2_440SPE_HSSCTLSET		0x0382
++#define PESDR2_440SPE_LANE_ABCD		0x0383
++
++/*
++ * 405EX additional DCRs
++ */
++#define PESDR0_405EX_UTLSET1		0x0400
++#define PESDR0_405EX_UTLSET2		0x0401
++#define PESDR0_405EX_DLPSET		0x0402
++#define PESDR0_405EX_LOOP		0x0403
++#define PESDR0_405EX_RCSSET		0x0404
++#define PESDR0_405EX_RCSSTS		0x0405
++#define PESDR0_405EX_PHYSET1		0x0406
++#define PESDR0_405EX_PHYSET2		0x0407
++#define PESDR0_405EX_BIST		0x0408
++#define PESDR0_405EX_LPB		0x040B
++#define PESDR0_405EX_PHYSTA		0x040C
++
++#define PESDR1_405EX_UTLSET1		0x0440
++#define PESDR1_405EX_UTLSET2		0x0441
++#define PESDR1_405EX_DLPSET		0x0442
++#define PESDR1_405EX_LOOP		0x0443
++#define PESDR1_405EX_RCSSET		0x0444
++#define PESDR1_405EX_RCSSTS		0x0445
++#define PESDR1_405EX_PHYSET1		0x0446
++#define PESDR1_405EX_PHYSET2		0x0447
++#define PESDR1_405EX_BIST		0x0448
++#define PESDR1_405EX_LPB		0x044B
++#define PESDR1_405EX_PHYSTA		0x044C
++
++/*
++ * Of the above, some are common offsets from the base
++ */
++#define PESDRn_UTLSET1			0x00
++#define PESDRn_UTLSET2			0x01
++#define PESDRn_DLPSET			0x02
++#define PESDRn_LOOP			0x03
++#define PESDRn_RCSSET			0x04
++#define PESDRn_RCSSTS			0x05
++
++/* 440spe only */
++#define PESDRn_440SPE_HSSL0SET1		0x06
++#define PESDRn_440SPE_HSSL0SET2		0x07
++#define PESDRn_440SPE_HSSL0STS		0x08
++#define PESDRn_440SPE_HSSL1SET1		0x09
++#define PESDRn_440SPE_HSSL1SET2		0x0a
++#define PESDRn_440SPE_HSSL1STS		0x0b
++#define PESDRn_440SPE_HSSL2SET1		0x0c
++#define PESDRn_440SPE_HSSL2SET2		0x0d
++#define PESDRn_440SPE_HSSL2STS		0x0e
++#define PESDRn_440SPE_HSSL3SET1		0x0f
++#define PESDRn_440SPE_HSSL3SET2		0x10
++#define PESDRn_440SPE_HSSL3STS		0x11
++
++/* 440spe port 0 only */
++#define PESDRn_440SPE_HSSL4SET1		0x12
++#define PESDRn_440SPE_HSSL4SET2		0x13
++#define PESDRn_440SPE_HSSL4STS	       	0x14
++#define PESDRn_440SPE_HSSL5SET1		0x15
++#define PESDRn_440SPE_HSSL5SET2		0x16
++#define PESDRn_440SPE_HSSL5STS		0x17
++#define PESDRn_440SPE_HSSL6SET1		0x18
++#define PESDRn_440SPE_HSSL6SET2		0x19
++#define PESDRn_440SPE_HSSL6STS		0x1a
++#define PESDRn_440SPE_HSSL7SET1		0x1b
++#define PESDRn_440SPE_HSSL7SET2		0x1c
++#define PESDRn_440SPE_HSSL7STS		0x1d
++
++/* 405ex only */
++#define PESDRn_405EX_PHYSET1		0x06
++#define PESDRn_405EX_PHYSET2		0x07
++#define PESDRn_405EX_PHYSTA		0x0c
++
++/*
++ * UTL register offsets
++ */
++#define PEUTL_PBCTL		0x00
++#define PEUTL_PBBSZ		0x20
++#define PEUTL_OPDBSZ		0x68
++#define PEUTL_IPHBSZ		0x70
++#define PEUTL_IPDBSZ		0x78
++#define PEUTL_OUTTR		0x90
++#define PEUTL_INTR		0x98
++#define PEUTL_PCTL		0xa0
++#define PEUTL_RCSTA		0xB0
++#define PEUTL_RCIRQEN		0xb8
++
++/*
++ * Config space register offsets
++ */
++#define PECFG_BAR0LMPA		0x210
++#define PECFG_BAR0HMPA		0x214
++#define PECFG_BAR1MPA		0x218
++#define PECFG_BAR2LMPA		0x220
++#define PECFG_BAR2HMPA		0x224
++
++#define PECFG_PIMEN		0x33c
++#define PECFG_PIM0LAL		0x340
++#define PECFG_PIM0LAH		0x344
++#define PECFG_PIM1LAL		0x348
++#define PECFG_PIM1LAH		0x34c
++#define PECFG_PIM01SAL		0x350
++#define PECFG_PIM01SAH		0x354
++
++#define PECFG_POM0LAL		0x380
++#define PECFG_POM0LAH		0x384
++#define PECFG_POM1LAL		0x388
++#define PECFG_POM1LAH		0x38c
++#define PECFG_POM2LAL		0x390
++#define PECFG_POM2LAH		0x394
++
++
++enum
++{
++	PTYPE_ENDPOINT		= 0x0,
++	PTYPE_LEGACY_ENDPOINT	= 0x1,
++	PTYPE_ROOT_PORT		= 0x4,
++
++	LNKW_X1			= 0x1,
++	LNKW_X4			= 0x4,
++	LNKW_X8			= 0x8
++};
++
  
  #endif /* __PPC4XX_PCI_H__ */
+Index: linux-work/arch/powerpc/Kconfig
+===================================================================
+--- linux-work.orig/arch/powerpc/Kconfig	2007-12-05 11:09:41.000000000 +1100
++++ linux-work/arch/powerpc/Kconfig	2007-12-05 11:10:44.000000000 +1100
+@@ -178,6 +178,7 @@ config PPC_OF_PLATFORM_PCI
+ 
+ source "init/Kconfig"
+ 
++source "arch/powerpc/sysdev/Kconfig"
+ source "arch/powerpc/platforms/Kconfig"
+ 
+ menu "Kernel options"
+Index: linux-work/arch/powerpc/sysdev/Kconfig
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/sysdev/Kconfig	2007-12-05 11:10:44.000000000 +1100
+@@ -0,0 +1,8 @@
++# For a description of the syntax of this configuration file,
++# see Documentation/kbuild/kconfig-language.txt.
++#
++
++config PPC4xx_PCI_EXPRESS
++	bool
++	depends on PCI && 4xx
++	default n
