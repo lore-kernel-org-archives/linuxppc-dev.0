@@ -2,13 +2,13 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A270DDE04
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 17:36:41 +1100 (EST)
-Date: Thu, 06 Dec 2007 15:36:27 +0900 (JST)
-Message-Id: <20071206.153627.-1300541280.kouish@swc.toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id C7619DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 17:44:03 +1100 (EST)
+Date: Thu, 06 Dec 2007 15:43:55 +0900 (JST)
+Message-Id: <20071206.154355.-1300541609.kouish@swc.toshiba.co.jp>
 To: arnd@arndb.de
-Subject: Re: [PATCH 1/3] cell: fix undefined reference to mmio_nvram_init
-In-Reply-To: <200712041410.43736.arnd@arndb.de>
+Subject: Re: [PATCH 2/3] celleb: add supporting for native CBE
+In-Reply-To: <200712041421.47378.arnd@arndb.de>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -24,27 +24,84 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Arnd Bergmann <arnd@arndb.de> wrote:
 > On Tuesday 04 December 2007, Ishizaki Kou wrote:
+> > This patch adds supporting for native CBE on Celleb. Many codes in
+> > platforms/cell/ are used when native CBE environment.
 > > 
-> > +#ifdef CONFIG_MMIO_NVRAM
-> > 	mmio_nvram_init();
-> > +#endif
-> >  }
+> > Signed-off-by: Kou Ishizaki <Kou.Ishizaki@toshiba.co.jp>
 > 
-> The patch is technically correct, but the preferred way of doing this is
-> to define a conditional inline function in the header, like:
+> Ah, excellent to hear that this is now working!
 > 
-> #ifdef CONFIG_MMIO_NVRAM
-> extern int mmio_nvram_init(void);
-> #else
-> static inline int mmio_nvram_init(void)
-> {
-> 	return 0;
-> }
-> #endif
+> I'd suggest doing the initialization in a different way, so that you don't
+> need to decide on so many attributes dynamically. The easiest way would
+> probably be to have two separate define_machine() calls in the celleb
+> definition, like
 > 
-> so that the caller does not need to know about it.
+> define_machine(celleb_beat) {
+>         .probe                  = celleb_probe_beat,
+>         .setup_arch             = celleb_setup_arch_native,
+>         .show_cpuinfo           = celleb_show_cpuinfo,
+>         .restart                = beat_restart,
+>         .power_off              = beat_power_off,
+>         .halt                   = beat_halt,
+>         .get_rtc_time           = beat_get_rtc_time,
+>         .set_rtc_time           = beat_set_rtc_time,
+>         .calibrate_decr         = generic_calibrate_decr,
+>         .progress               = celleb_progress,
+>         .power_save             = beat_power_save,
+>         .nvram_size             = beat_nvram_get_size,
+>         .nvram_read             = beat_nvram_read,
+>         .nvram_write            = beat_nvram_write,
+>         .set_dabr               = beat_set_xdabr,
+>         .init_IRQ               = beatic_init_IRQ,
+>         .get_irq                = beatic_get_irq,
+>         .pci_probe_mode         = celleb_pci_probe_mode,
+>         .pci_setup_phb          = celleb_setup_phb,
+> 	...
+> };
+> 
+> define_machine(celleb_native) {
+>         .probe                  = celleb_probe_native,
+>         .setup_arch             = celleb_setup_arch_native,
+>         .show_cpuinfo           = celleb_show_cpuinfo,
+>         .restart                = rtas_restart,
+>         .power_off              = rtas_power_off,
+>         .halt                   = rtas_halt,
+>         .get_rtc_time           = rtas_get_rtc_time,
+>         .set_rtc_time           = rtas_set_rtc_time,
+>         .calibrate_decr         = generic_calibrate_decr,
+>         .progress               = celleb_progress,
+>         .init_IRQ               = celleb_init_IRQ_native,
+>         .get_irq                = celleb_get_irq_native,
+>         .pci_probe_mode         = celleb_pci_probe_mode,
+>         .pci_setup_phb          = celleb_setup_phb,
+> 	...
+> };
+> 
+> For this, you can either have the two machine definitions in the
+> same celleb/setup.c, or split setup.c into machine specific files,
+> depending on how much ends up being shared in the end.
 
-Okay, I'll change my patch to rewrite include/asm-powerpc/nvram.h.
+Thanks for your suggestion. I'll try to split into two machine
+definitions.
+
+
+> An interesting question still is how close the native celleb machine
+> definition is to the one from platforms/cell/setup.c. Maybe it's best
+> to have a common machine definition for these two in the end.
+
+You know celleb-native is between celleb-beat and cell blade. I also
+think it's best if we can use a common machine definition and a common
+setup code. But there are many differences mainly caused by their
+firmwares, and this disturbs the integration. I think celleb-native is
+closer to celleb-beat than to cell blade. So I put celleb-native code
+in platforms/celleb.
+
+
+> 	Arnd <><
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
 Best regards,
 Kou Ishizaki
