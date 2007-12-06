@@ -1,10 +1,11 @@
 Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 06 Dec 2007 19:00:10 +1100
-Subject: [PATCH 12/25] powerpc: PCI support for 4xx Ebony board
+Date: Thu, 06 Dec 2007 19:00:19 +1100
+Subject: [PATCH 20/25] powerpc: Wire up 440EP USB controlle support to Bamboo
+	board
 In-Reply-To: <1196927999.714593.205329520306.qpush@grosgo>
-Message-Id: <20071206080121.D9FEBDDFB2@ozlabs.org>
+Message-Id: <20071206080130.CCFD7DE0DA@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,65 +15,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This wires up the 4xx PCI support & device tree bits for
-440GP based Ebony platform.
+This adds the definition of the on-chip OHCI controller to the
+Bamboo board's device-tree. This is enough to get it probed and
+working, though a separate patch fixing a bug in the OHCI driver
+is needed to make it reliable.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/boot/dts/ebony.dts |   41 +++++++++++++++++++++++++++++++++++-----
- 1 file changed, 36 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/dts/bamboo.dts |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Index: linux-work/arch/powerpc/boot/dts/ebony.dts
+Index: linux-work/arch/powerpc/boot/dts/bamboo.dts
 ===================================================================
---- linux-work.orig/arch/powerpc/boot/dts/ebony.dts	2007-10-15 11:19:35.000000000 +1000
-+++ linux-work/arch/powerpc/boot/dts/ebony.dts	2007-11-27 18:27:37.000000000 +1100
-@@ -284,12 +284,43 @@
- 
+--- linux-work.orig/arch/powerpc/boot/dts/bamboo.dts	2007-11-26 10:11:09.000000000 +1100
++++ linux-work/arch/powerpc/boot/dts/bamboo.dts	2007-11-27 14:37:50.000000000 +1100
+@@ -238,6 +238,13 @@
+ 				zmii-device = <&ZMII0>;
+ 				zmii-channel = <1>;
+ 			};
++
++			usb@ef601000 {
++				compatible = "ohci-be";
++				reg = <ef601000 80>;
++				interrupts = <8 1 9 1>;
++				interrupt-parent = < &UIC1 >;
++			};
  		};
  
--		PCIX0: pci@1234 {
-+		PCIX0: pci@20ec00000 {
- 			device_type = "pci";
--			/* FIXME */
--			reg = <2 0ec00000 8
--			       2 0ec80000 f0
--			       2 0ec80100 fc>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			compatible = "ibm,plb440gp-pcix", "ibm,plb-pcix";
-+			primary;
-+			reg = <2 0ec00000 8	/* Config space access */
-+			       0 0 0		/* no IACK cycles */
-+			       2 0ed00000 4     /* Special cycles */
-+			       2 0ec80000 f0	/* Internal registers */
-+			       2 0ec80100 fc>;	/* Internal messaging registers */
-+
-+			/* Outbound ranges, one memory and one IO,
-+			 * later cannot be changed
-+			 */
-+			ranges = <02000000 0 80000000 00000003 80000000 0 80000000
-+				  01000000 0 00000000 00000002 08000000 0 00010000>;
-+
-+			/* Inbound 2GB range starting at 0 */
-+			dma-ranges = <42000000 0 0 0 0 0 80000000>;
-+
-+			/* Ebony has all 4 IRQ pins tied together per slot */
-+			interrupt-map-mask = <f800 0 0 0>;
-+			interrupt-map = <
-+				/* IDSEL 1 */
-+				0800 0 0 0 &UIC0 17 8
-+
-+				/* IDSEL 2 */
-+				1000 0 0 0 &UIC0 18 8
-+
-+				/* IDSEL 3 */
-+				1800 0 0 0 &UIC0 19 8
-+
-+				/* IDSEL 4 */
-+				2000 0 0 0 &UIC0 1a 8
-+			>;
- 		};
- 	};
- 
+ 		PCI0: pci@ec000000 {
