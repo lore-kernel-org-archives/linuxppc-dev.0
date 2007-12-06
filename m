@@ -1,32 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 33C28DDEBF
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:48:16 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB6EkeLb027348
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 09:46:40 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB6Fm7hR061444
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 08:48:08 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB6Fm66o012755
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 08:48:06 -0700
-Date: Thu, 6 Dec 2007 09:44:48 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: Powerpc PCI cleanups (mainly iSeries)
-Message-ID: <20071206094448.4de7967a@zod.rchland.ibm.com>
-In-Reply-To: <20071207020726.8c0ea12b.sfr@canb.auug.org.au>
-References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
-	<20071207020726.8c0ea12b.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 4F32CDE073
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:48:46 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
+Date: Thu, 6 Dec 2007 16:48:23 +0100
+References: <200712061607.20004.fenkes@de.ibm.com>
+In-Reply-To: <200712061607.20004.fenkes@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712061648.24806.arnd@arndb.de>
+Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+	OF-EWG <ewg@lists.openfabrics.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, OF-General <general@lists.openfabrics.org>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,23 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 7 Dec 2007 02:07:26 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+On Thursday 06 December 2007, Joachim Fenkes wrote:
+> =A0=A0=A0=A0=A0=A0=A0=A0printk(KERN_INFO "eHCA Infiniband Device Driver "
+> =A0=A0=A0=A0=A0=A0=A0=A0 =A0 =A0 =A0 "(Version " HCAD_VERSION ")\n");
+> =A0
+> +=A0=A0=A0=A0=A0=A0=A0/* Autodetect hCall locking -- we can't read the fi=
+rmware version
+> +=A0=A0=A0=A0=A0=A0=A0 * directly, but we know that starting with POWER6,=
+ all firmware
+> +=A0=A0=A0=A0=A0=A0=A0 * versions are good.
+> +=A0=A0=A0=A0=A0=A0=A0 */
+> +=A0=A0=A0=A0=A0=A0=A0if (ehca_lock_hcalls =3D=3D -1)
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0ehca_lock_hcalls =3D !(cur_=
+cpu_spec->cpu_user_features
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0 =A0 =A0 & PPC_FEATURE_ARCH_2_05);
+> +
+> =A0=A0=A0=A0=A0=A0=A0=A0ret =3D ehca_create_comp_pool();
+> =A0=A0=A0=A0=A0=A0=A0=A0if (ret) {
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0ehca_gen_err("Cannot crea=
+te comp pool.");
 
-> On Thu, 6 Dec 2007 18:00:45 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > I started out looking for ways to remove our dependencies on pci_dn and
-> > got sidetracked into clening up the iSeries PCI code.  The intention of
-> > the following set of patches is that there be no semantic changes
-> > (mostly).
-> 
-> Some of these will clearly conflict with Benh's PCI work.  We will sot
-> that out between us.  :-)
+We already talked about this yesterday, but I still feel that checking the
+instruction set of the CPU should not be used to determine whether a
+specific device driver implementation is used int hypervisor.
 
-In the meantime...
+At the very least, I think you should change this to read the hypervisor
+version number from the device tree, though the ideal solution would be
+to have the absence of this bug encoded in the device node for the ehca
+device itself.
 
-My tree is going to carry BenH's patches since they're obviously
-important to 4xx.  If these conflicts get sorted out soon, that would
-be good :).  At some point I'm going to start sending stuff to Paul.
+Regarding the performance problem, have you checked whether converting all
+your spin_lock_irqsave to spin_lock/spin_lock_irq improves your performance
+on the older machines? Maybe it's already fast enough that way.
 
-josh
+	Arnd <><
