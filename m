@@ -1,23 +1,23 @@
-Return-Path: <kumar.gala@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7C325DDF73
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 03:02:51 +1100 (EST)
-Message-Id: <7245C82C-BCFC-4E38-8685-8C17B4300341@freescale.com>
-From: Kumar Gala <kumar.gala@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <47581C58.8060906@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
-Date: Thu, 6 Dec 2007 10:02:31 -0600
-References: <11968944871776-git-send-email-timur@freescale.com>
-	<200712061631.19485.arnd@arndb.de> <4758193B.5080707@freescale.com>
-	<200712061658.08791.arnd@arndb.de> <47581C58.8060906@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id 35E59DDEDD
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 03:57:08 +1100 (EST)
+Subject: Re: [PATCH 19/19] [POWERPC] pci_controller->arch_data really is a
+	struct device_node *
+From: Jon Loeliger <jdl@freescale.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20071207020542.577bbfe8.sfr@canb.auug.org.au>
+References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
+	<20071207020542.577bbfe8.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Message-Id: <1196960204.18340.7.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 06 Dec 2007 10:56:44 -0600
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-12-06 at 09:05, Stephen Rothwell wrote:
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/kernel/pci_32.c               |    6 +++---
+>  arch/powerpc/kernel/pci_64.c               |    6 ++----
+>  arch/powerpc/kernel/pci_dn.c               |    2 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    2 +-
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+>  arch/powerpc/platforms/powermac/pci.c      |    2 +-
+>  arch/powerpc/platforms/pseries/iommu.c     |    2 +-
+>  include/asm-powerpc/pci-bridge.h           |    5 +++--
+>  8 files changed, 13 insertions(+), 14 deletions(-)
 
-On Dec 6, 2007, at 9:59 AM, Timur Tabi wrote:
+I see that 86xx tinkering, so...
 
-> Arnd Bergmann wrote:
->
->> Ok, looks you were right from the start (again), thanks for your  
->> patience
->> explaining this to me.
->
-> No problem.  No all I need is for Kumar to apply the patches!
+Acked-by:  Jon Loeliger <jdl@freescale.com>
 
-When I wait you come up with a new version.. so I'm waiting to see if  
-v3 comes out :)
+that.
 
-- k
+Thanks,
+jdl
