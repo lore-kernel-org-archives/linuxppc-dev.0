@@ -1,20 +1,19 @@
-Return-Path: <bersace@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.188])
-	by ozlabs.org (Postfix) with ESMTP id 1D542DDE23
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:30:58 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id c10so130122nfd
-	for <linuxppc-dev@ozlabs.org>; Thu, 06 Dec 2007 07:30:56 -0800 (PST)
-Subject: Re: [PATCH] windfarm: add PowerMac 12,1 support
-From: =?ISO-8859-1?Q?=C9tienne?= Bersac <bersace@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1196904050.7132.36.camel@thilivren>
-References: <1196904050.7132.36.camel@thilivren>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-6htvF0Eu5v/CY29jJEnD"
-Date: Thu, 06 Dec 2007 16:30:51 +0100
-Message-Id: <1196955051.6862.10.camel@thilivren>
-Mime-Version: 1.0
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 87C27DDF78
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:31:32 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
+Date: Thu, 6 Dec 2007 16:31:18 +0100
+References: <11968944871776-git-send-email-timur@freescale.com>
+	<200712060117.14768.arnd@arndb.de> <47580F43.7020404@freescale.com>
+In-Reply-To: <47580F43.7020404@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200712061631.19485.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,69 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 06 December 2007, Timur Tabi wrote:
+> > I'm not trying to convince you of this if it's completely pointless for
+> > all your systems, just want to make sure you're aware of this option,
+> > because spending a few extra code lines on it now may save you some tro=
+uble
+> > if you need this later.
+>=20
+> Um, I think I'm a little confused as to what your point is. =A0My code is=
+ just a=20
+> generic QE firmware uploader.
 
---=-6htvF0Eu5v/CY29jJEnD
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+My point is that you could have some extra code that calls your
+qe_upload_firmware() when the device tree contains the blob but the boot
+loader did not already load it. This helps e.g. for the case where you
+want to be able to install a generic Linux distribution that is not
+able to ship with your firmware blob in the kernel or the root file system.
+Putting the blob in the device tree makes it easier to get to a running
+system then.
 
-Hi,
+You can argue that the boot loader can always load the firmware in the
+first place, but then you wouldn't need an implementation of
+qe_upload_firmware in the kernel any more.
 
-> +	/* First, locate the params for this model */
-> +	for (i =3D 0; i < PM121_NUM_CONFIGS; i++) {
-> +		param =3D &(pm121_sys_all_params[loop_id][i]);
-> +		if (param->model_id =3D=3D pm121_mach_model)
-> +			break;
-> +	}
-> +
-> +	/* No params found, put fans to max */
-> +	if (param =3D=3D NULL) {
-> +		printk(KERN_WARNING "pm121: %s fan config not found "
-> +		       " for this machine model\n",
-> +		       loop_names[loop_id]);
-> +		goto fail;
-> +	}
-
-This part might be buggy. param NULL only when PM121_NUM_CONFIGS is 0.
-The original code was :
-
-
-+	for (i =3D 0; i < PM121_NUM_CONFIGS; i++) {
-+		if (pm121_sys_all_params[loop_id][i].model_id =3D=3D pm121_mach_model) {
-+			param =3D &(pm121_sys_all_params[loop_id][i]);
-+			break;
-+		}
-+	}
-
-But the line is wider than 80 chars. An alternative would be  :
-
-
-+	for (i =3D 0; i < PM121_NUM_CONFIGS; i++) {
-+		param =3D &(pm121_sys_all_params[loop_id][i]);
-+		if (param->model_id =3D=3D pm121_mach_model)
-+			break;
-+		else
-+			param =3D NULL;
-+	}
-
-I wonder if that's more readable.
-
-
-Regards,
-=C3=89tienne.
---=20
-E Ultre=C3=AFa !
-
---=-6htvF0Eu5v/CY29jJEnD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHWBWrbyMDDeXZS7URAgFAAJ9fS4pQp5lGFVpHff1hAclb7lPIzQCfX1zm
-+hi6KZr7whSyl06ziJDBj5k=
-=9C0N
------END PGP SIGNATURE-----
-
---=-6htvF0Eu5v/CY29jJEnD--
+	Arnd <><
