@@ -1,17 +1,17 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 5C245DE04F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:57 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 09658DE22D
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:58 +1100 (EST)
 Received: from ash.ozlabs.ibm.com (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 19018368002
+	by smtps.tip.net.au (Postfix) with ESMTP id B3D9C368002
 	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 02:07:57 +1100 (EST)
-Date: Fri, 7 Dec 2007 01:52:45 +1100
+Date: Fri, 7 Dec 2007 01:53:44 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 08/19] [POWERPC] iSeries: consoldiate PCI IO error check
-Message-Id: <20071207015245.05cac2a7.sfr@canb.auug.org.au>
+Subject: [PATCH 09/19] [POWERPC] iSeries: remove one layer of IO routines
+Message-Id: <20071207015344.c903f3e1.sfr@canb.auug.org.au>
 In-Reply-To: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -28,187 +28,207 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/iseries/pci.c |  105 ++++++++-------------------------
- 1 files changed, 26 insertions(+), 79 deletions(-)
+ arch/powerpc/platforms/iseries/pci.c |   68 +++++++++------------------------
+ 1 files changed, 19 insertions(+), 49 deletions(-)
 
 diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 8e2ac3d..105b23d 100644
+index 105b23d..8844d3e 100644
 --- a/arch/powerpc/platforms/iseries/pci.c
 +++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -342,7 +342,7 @@ static int check_return_code(char *type, struct device_node *dn,
+@@ -382,7 +382,7 @@ static inline struct device_node *xlate_iomm_address(
+  * On MM I/O error, all ones are returned and iSeries_pci_IoError is cal
+  * else, data is returned in Big Endian format.
   */
- static inline struct device_node *xlate_iomm_address(
- 		const volatile void __iomem *addr,
--		u64 *dsaptr, u64 *bar_offset)
-+		u64 *dsaptr, u64 *bar_offset, const char *func)
+-static u8 iSeries_read_byte(const volatile void __iomem *addr)
++static u8 iseries_readb(const volatile void __iomem *addr)
  {
- 	unsigned long orig_addr;
- 	unsigned long base_addr;
-@@ -350,8 +350,20 @@ static inline struct device_node *xlate_iomm_address(
- 	struct device_node *dn;
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -400,7 +400,7 @@ static u8 iSeries_read_byte(const volatile void __iomem *addr)
+ 	return ret.value;
+ }
  
- 	orig_addr = (unsigned long __force)addr;
--	if ((orig_addr < BASE_IO_MEMORY) || (orig_addr >= max_io_memory))
-+	if ((orig_addr < BASE_IO_MEMORY) || (orig_addr >= max_io_memory)) {
-+		static unsigned long last_jiffies;
-+		static int num_printed;
-+
-+		if ((jiffies - last_jiffies) > 60 * HZ) {
-+			last_jiffies = jiffies;
-+			num_printed = 0;
-+		}
-+		if (num_printed++ < 10)
-+			printk(KERN_ERR
-+				"iSeries_%s: invalid access at IO address %p\n",
-+				func, addr);
- 		return NULL;
-+	}
- 	base_addr = orig_addr - BASE_IO_MEMORY;
- 	ind = base_addr / IOMM_TABLE_ENTRY_SIZE;
- 	dn = iomm_table[ind];
-@@ -377,21 +389,10 @@ static u8 iSeries_read_byte(const volatile void __iomem *addr)
- 	int retry = 0;
- 	struct HvCallPci_LoadReturn ret;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
--
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "read_byte");
+-static u16 iSeries_read_word(const volatile void __iomem *addr)
++static u16 iseries_readw_be(const volatile void __iomem *addr)
+ {
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -419,7 +419,7 @@ static u16 iSeries_read_word(const volatile void __iomem *addr)
+ 	return ret.value;
+ }
  
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_read_byte: invalid access at IO address %p\n",
--			       addr);
-+	if (dn == NULL)
- 		return 0xff;
--	}
- 	do {
- 		HvCall3Ret16(HvCallPciBarLoad8, &ret, dsa, bar_offset, 0);
- 	} while (check_return_code("RDB", dn, &retry, ret.rc) != 0);
-@@ -406,21 +407,10 @@ static u16 iSeries_read_word(const volatile void __iomem *addr)
- 	int retry = 0;
- 	struct HvCallPci_LoadReturn ret;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
--
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "read_word");
- 
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_read_word: invalid access at IO address %p\n",
--			       addr);
-+	if (dn == NULL)
- 		return 0xffff;
--	}
- 	do {
- 		HvCall3Ret16(HvCallPciBarLoad16, &ret, dsa,
- 				bar_offset, 0);
-@@ -436,21 +426,10 @@ static u32 iSeries_read_long(const volatile void __iomem *addr)
- 	int retry = 0;
- 	struct HvCallPci_LoadReturn ret;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
--
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "read_long");
- 
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_read_long: invalid access at IO address %p\n",
--			       addr);
-+	if (dn == NULL)
- 		return 0xffffffff;
--	}
- 	do {
- 		HvCall3Ret16(HvCallPciBarLoad32, &ret, dsa,
- 				bar_offset, 0);
-@@ -470,20 +449,10 @@ static void iSeries_write_byte(u8 data, volatile void __iomem *addr)
- 	int retry = 0;
- 	u64 rc;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "write_byte");
- 
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
--
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_write_byte: invalid access at IO address %p\n", addr);
-+	if (dn == NULL)
- 		return;
--	}
- 	do {
- 		rc = HvCall4(HvCallPciBarStore8, dsa, bar_offset, data, 0);
+-static u32 iSeries_read_long(const volatile void __iomem *addr)
++static u32 iseries_readl_be(const volatile void __iomem *addr)
+ {
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -442,7 +442,7 @@ static u32 iSeries_read_long(const volatile void __iomem *addr)
+  * Write MM I/O Instructions for the iSeries
+  *
+  */
+-static void iSeries_write_byte(u8 data, volatile void __iomem *addr)
++static void iseries_writeb(u8 data, volatile void __iomem *addr)
+ {
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -458,7 +458,7 @@ static void iSeries_write_byte(u8 data, volatile void __iomem *addr)
  	} while (check_return_code("WWB", dn, &retry, rc) != 0);
-@@ -496,21 +465,10 @@ static void iSeries_write_word(u16 data, volatile void __iomem *addr)
- 	int retry = 0;
- 	u64 rc;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
--
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "write_word");
+ }
  
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_write_word: invalid access at IO address %p\n",
--			       addr);
-+	if (dn == NULL)
- 		return;
--	}
- 	do {
- 		rc = HvCall4(HvCallPciBarStore16, dsa, bar_offset, data, 0);
+-static void iSeries_write_word(u16 data, volatile void __iomem *addr)
++static void iseries_writew_be(u16 data, volatile void __iomem *addr)
+ {
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -474,7 +474,7 @@ static void iSeries_write_word(u16 data, volatile void __iomem *addr)
  	} while (check_return_code("WWW", dn, &retry, rc) != 0);
-@@ -523,21 +481,10 @@ static void iSeries_write_long(u32 data, volatile void __iomem *addr)
- 	int retry = 0;
- 	u64 rc;
- 	struct device_node *dn =
--		xlate_iomm_address(addr, &dsa, &bar_offset);
-+		xlate_iomm_address(addr, &dsa, &bar_offset, "write_long");
+ }
  
--	if (dn == NULL) {
--		static unsigned long last_jiffies;
--		static int num_printed;
--
--		if ((jiffies - last_jiffies) > 60 * HZ) {
--			last_jiffies = jiffies;
--			num_printed = 0;
--		}
--		if (num_printed++ < 10)
--			printk(KERN_ERR "iSeries_write_long: invalid access at IO address %p\n",
--			       addr);
-+	if (dn == NULL)
- 		return;
--	}
- 	do {
- 		rc = HvCall4(HvCallPciBarStore32, dsa, bar_offset, data, 0);
+-static void iSeries_write_long(u32 data, volatile void __iomem *addr)
++static void iseries_writel_be(u32 data, volatile void __iomem *addr)
+ {
+ 	u64 bar_offset;
+ 	u64 dsa;
+@@ -490,54 +490,24 @@ static void iSeries_write_long(u32 data, volatile void __iomem *addr)
  	} while (check_return_code("WWL", dn, &retry, rc) != 0);
+ }
+ 
+-static u8 iseries_readb(const volatile void __iomem *addr)
+-{
+-	return iSeries_read_byte(addr);
+-}
+-
+ static u16 iseries_readw(const volatile void __iomem *addr)
+ {
+-	return le16_to_cpu(iSeries_read_word(addr));
++	return le16_to_cpu(iseries_readw_be(addr));
+ }
+ 
+ static u32 iseries_readl(const volatile void __iomem *addr)
+ {
+-	return le32_to_cpu(iSeries_read_long(addr));
+-}
+-
+-static u16 iseries_readw_be(const volatile void __iomem *addr)
+-{
+-	return iSeries_read_word(addr);
+-}
+-
+-static u32 iseries_readl_be(const volatile void __iomem *addr)
+-{
+-	return iSeries_read_long(addr);
+-}
+-
+-static void iseries_writeb(u8 data, volatile void __iomem *addr)
+-{
+-	iSeries_write_byte(data, addr);
++	return le32_to_cpu(iseries_readl_be(addr));
+ }
+ 
+ static void iseries_writew(u16 data, volatile void __iomem *addr)
+ {
+-	iSeries_write_word(cpu_to_le16(data), addr);
++	iseries_writew_be(cpu_to_le16(data), addr);
+ }
+ 
+ static void iseries_writel(u32 data, volatile void __iomem *addr)
+ {
+-	iSeries_write_long(cpu_to_le32(data), addr);
+-}
+-
+-static void iseries_writew_be(u16 data, volatile void __iomem *addr)
+-{
+-	iSeries_write_word(data, addr);
+-}
+-
+-static void iseries_writel_be(u32 data, volatile void __iomem *addr)
+-{
+-	iSeries_write_long(data, addr);
++	iseries_writel(cpu_to_le32(data), addr);
+ }
+ 
+ static void iseries_readsb(const volatile void __iomem *addr, void *buf,
+@@ -545,7 +515,7 @@ static void iseries_readsb(const volatile void __iomem *addr, void *buf,
+ {
+ 	u8 *dst = buf;
+ 	while(count-- > 0)
+-		*(dst++) = iSeries_read_byte(addr);
++		*(dst++) = iseries_readb(addr);
+ }
+ 
+ static void iseries_readsw(const volatile void __iomem *addr, void *buf,
+@@ -553,7 +523,7 @@ static void iseries_readsw(const volatile void __iomem *addr, void *buf,
+ {
+ 	u16 *dst = buf;
+ 	while(count-- > 0)
+-		*(dst++) = iSeries_read_word(addr);
++		*(dst++) = iseries_readw_be(addr);
+ }
+ 
+ static void iseries_readsl(const volatile void __iomem *addr, void *buf,
+@@ -561,7 +531,7 @@ static void iseries_readsl(const volatile void __iomem *addr, void *buf,
+ {
+ 	u32 *dst = buf;
+ 	while(count-- > 0)
+-		*(dst++) = iSeries_read_long(addr);
++		*(dst++) = iseries_readl_be(addr);
+ }
+ 
+ static void iseries_writesb(volatile void __iomem *addr, const void *buf,
+@@ -569,7 +539,7 @@ static void iseries_writesb(volatile void __iomem *addr, const void *buf,
+ {
+ 	const u8 *src = buf;
+ 	while(count-- > 0)
+-		iSeries_write_byte(*(src++), addr);
++		iseries_writeb(*(src++), addr);
+ }
+ 
+ static void iseries_writesw(volatile void __iomem *addr, const void *buf,
+@@ -577,7 +547,7 @@ static void iseries_writesw(volatile void __iomem *addr, const void *buf,
+ {
+ 	const u16 *src = buf;
+ 	while(count-- > 0)
+-		iSeries_write_word(*(src++), addr);
++		iseries_writew_be(*(src++), addr);
+ }
+ 
+ static void iseries_writesl(volatile void __iomem *addr, const void *buf,
+@@ -585,7 +555,7 @@ static void iseries_writesl(volatile void __iomem *addr, const void *buf,
+ {
+ 	const u32 *src = buf;
+ 	while(count-- > 0)
+-		iSeries_write_long(*(src++), addr);
++		iseries_writel_be(*(src++), addr);
+ }
+ 
+ static void iseries_memset_io(volatile void __iomem *addr, int c,
+@@ -594,7 +564,7 @@ static void iseries_memset_io(volatile void __iomem *addr, int c,
+ 	volatile char __iomem *d = addr;
+ 
+ 	while (n-- > 0)
+-		iSeries_write_byte(c, d++);
++		iseries_writeb(c, d++);
+ }
+ 
+ static void iseries_memcpy_fromio(void *dest, const volatile void __iomem *src,
+@@ -604,7 +574,7 @@ static void iseries_memcpy_fromio(void *dest, const volatile void __iomem *src,
+ 	const volatile char __iomem *s = src;
+ 
+ 	while (n-- > 0)
+-		*d++ = iSeries_read_byte(s++);
++		*d++ = iseries_readb(s++);
+ }
+ 
+ static void iseries_memcpy_toio(volatile void __iomem *dest, const void *src,
+@@ -614,7 +584,7 @@ static void iseries_memcpy_toio(volatile void __iomem *dest, const void *src,
+ 	volatile char __iomem *d = dest;
+ 
+ 	while (n-- > 0)
+-		iSeries_write_byte(*s++, d++);
++		iseries_writeb(*s++, d++);
+ }
+ 
+ /* We only set MMIO ops. The default PIO ops will be default
 -- 
 1.5.3.7
 
