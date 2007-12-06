@@ -1,12 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 6 Dec 2007 17:04:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Remove obsolete check_properties() function
-Message-ID: <20071206060404.GF19927@localhost.localdomain>
+Return-Path: <glikely@secretlab.ca>
+Message-ID: <fa686aa40712052208o3722cf60qfcac9b56ecc6184f@mail.gmail.com>
+Date: Wed, 5 Dec 2007 23:08:00 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@secretlab.ca
+To: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: Link up/down messages from 5200 ethernet driver
+In-Reply-To: <9e4733910712052143l581207d4l163b7d1be8b27e1d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+References: <9e4733910712051755l76c0403bo4a60834928a35c2@mail.gmail.com>
+	<fa686aa40712052046s5887c9fewa61c2921a22f5c80@mail.gmail.com>
+	<9e4733910712052140j70f48f05qbbf9af082ba4747c@mail.gmail.com>
+	<9e4733910712052143l581207d4l163b7d1be8b27e1d@mail.gmail.com>
+Cc: PowerPC dev list <Linuxppc-dev@ozlabs.org>,
+	Domen Puncer <domen.puncer@telargo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,94 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-After the last couple of patches converting various old-style semantic
-checks to the new framework, the only thing that the old-style
-check_properties() function still checks is that the size of "reg"
-properties is a multiple of the cell size.
-
-This patch removes check_properties() and all related code and data.
-The check on the size of reg properties is folded into the existing
-check for the format of "reg" properties (still old-style for the time
-being).
-
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-
-Index: dtc/checks.c
-===================================================================
---- dtc.orig/checks.c	2007-12-05 11:08:45.000000000 +1100
-+++ dtc/checks.c	2007-12-05 11:08:48.000000000 +1100
-@@ -412,46 +412,6 @@
- 
- #define DO_ERR(...) do {ERRMSG(__VA_ARGS__); ok = 0; } while (0)
- 
--static int must_be_cells(struct property *prop, struct node *node)
--{
--	if ((prop->val.len % sizeof(cell_t)) != 0) {
--		ERRMSG("\"%s\" property in %s is not a multiple of cell size\n",
--		       prop->name, node->fullpath);
--		return 0;
--	}
--
--	return 1;
--}
--
--static struct {
--	char *propname;
--	int (*check_fn)(struct property *prop, struct node *node);
--} prop_checker_table[] = {
--	{"reg", must_be_cells},
--};
--
--static int check_properties(struct node *node)
--{
--	struct property *prop;
--	struct node *child;
--	int i;
--	int ok = 1;
--
--	for_each_property(node, prop)
--		for (i = 0; i < ARRAY_SIZE(prop_checker_table); i++)
--			if (streq(prop->name, prop_checker_table[i].propname))
--				if (! prop_checker_table[i].check_fn(prop, node)) {
--					ok = 0;
--					break;
--				}
--
--	for_each_child(node, child)
--		if (! check_properties(child))
--			ok = 0;
--
--	return ok;
--}
--
- #define CHECK_HAVE(node, propname) \
- 	do { \
- 		if (! (prop = get_property((node), (propname)))) \
-@@ -672,10 +632,9 @@
- 
- 	prop = get_property(node, "reg");
- 	if (prop) {
--		int len = prop->val.len / 4;
--
--		if ((len % (addr_cells+size_cells)) != 0)
--			DO_ERR("\"reg\" property in %s has invalid length (%d) for given #address-cells (%d) and #size-cells (%d)\n",
-+		int reg_entry_len = (addr_cells + size_cells) * sizeof(cell_t);
-+		if ((prop->val.len % reg_entry_len) != 0)
-+			DO_ERR("\"reg\" property in %s has invalid length (%d bytes) for given #address-cells (%d) and #size-cells (%d)\n",
- 			       node->fullpath, prop->val.len,
- 			       addr_cells, size_cells);
- 	}
-@@ -699,7 +658,6 @@
- {
- 	int ok = 1;
- 
--	ok = ok && check_properties(dt);
- 	ok = ok && check_addr_size_reg(dt, -1, -1);
- 	ok = ok && check_root(dt);
- 	ok = ok && check_cpus(dt, outversion, boot_cpuid_phys);
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+T24gMTIvNS8wNywgSm9uIFNtaXJsIDxqb25zbWlybEBnbWFpbC5jb20+IHdyb3RlOgo+IE9uIDEy
+LzYvMDcsIEpvbiBTbWlybCA8am9uc21pcmxAZ21haWwuY29tPiB3cm90ZToKPiA+IE9uIDEyLzUv
+MDcsIEdyYW50IExpa2VseSA8Z3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYT4gd3JvdGU6Cj4gPiA+
+IE9uIDEyLzUvMDcsIEpvbiBTbWlybCA8am9uc21pcmxAZ21haWwuY29tPiB3cm90ZToKPiA+ID4g
+PiBXaHkgZG9lcyB0aGUgZmVjNTIwMCBkcml2ZXIgc29tZXRpbWVzIG5vdCBwcmludCAnUEhZJyBj
+b3JyZWN0bHk/Cj4gPiA+ID4KPiA+ID4gPiBwaHlDT1JFLU1QQzUyMDBCLXRpbnkgbG9naW46IFTY
+pFbvv70gZjAwMDMwMDA6MTAgLSBMaW5rIGlzIERvd24KPiA+ID4gPiBU77+9WTogZjAwMDMwMDA6
+MTAgLSBMaW5rIGlzIFVwIC0gMTAwL0Z1bGwKPiA+ID4gPiBU77+9WTogZjAwMDMwMDA6MTAgLSBM
+aW5rIGlzIERvd24KPiA+ID4gPiBQSFk6IGYwMDAzMDAwOjEwIC0gTGluayBpcyBVcCAtIDEwMC9G
+dWxsCj4gPiA+Cj4gPiA+IFdlaXJkOyB0aGF0IGxpbmUgY29tZXMgZnJvbSBkcml2ZXJzL25ldC9w
+aHkvcGh5LmMgaW4KPiA+ID4gcGh5X3ByaW50X3N0YXR1cygpLCBhbmQgaXQncyBqdXN0IGEgYSBw
+cl9pbmZvIHN0YXRlbWVudC4gIEkgc3VwcG9zZSBpdAo+ID4gPiBtaWdodCBiZSBhIHN0YWNrIG92
+ZXJydW4sIGJ1dCBJJ2QgZXhwZWN0IG1vcmUgc2V2ZXJlIHN5bXB0b21zIGlmIHRoYXQKPiA+ID4g
+d2FzIHRoZSBjYXNlLgo+ID4gPgo+ID4gPiBUaGF0ICpsb29rcyogbGlrZSBhIHNlcmlhbCBzdHJl
+YW0gY29ycnVwdGlvbi4gIElzIHRoYXQgdGhlIG91dHB1dCBvZgo+ID4gPiB5b3VyIHNlcmlhbCBw
+b3J0PyAgRG9lcyBkbWVzZyBzaG93IHRoZSBzYW1lIGNvcnJ1cHRpb24/Cj4gPgo+ID4gVGhhdCdz
+IHRoZSBzZXJpYWwgcG9ydCBvdXRwdXQuCj4gPiBkbWVzZyBpcyBvay4KPiA+Cj4gPiBOb3RoaW5n
+IGVsc2UgSSBkbyBjYW4gbWVzcyB1cCB0aGUgc2VyaWFsIHBvcnQuCj4KPiBNYXliZSB0aGUgS0VS
+Tl9JTkZPIHByZWZpeCBpcyBzZW5kaW5nIG91dCBjb250cm9sIGNoYXJhY3RlcnMgdGhhdCBtZXNz
+Cj4gdXAgdGhlIHNlcmlhbCBvdXRwdXQ/CgpNb3JlIGxpa2VseSB0aGUgRXRoZXJuZXQgbGluayBz
+dGF0ZSBjaGFuZ2UgaXMgaW50ZXJmZXJpbmcgd2l0aCB0aGUKc2VyaWFsIGxpbmUgYXQgdGhlIGVs
+ZWN0cmljYWwgbGV2ZWwuICBUcnkgdHdlYWtpbmcgdGhlIHNlcmlhbCBjbG9jayB1cApvciBkb3du
+IGEgdGlueSBiaXQsIHRoYXQgbWlnaHQgbWFrZSBpdCBtb3JlIHN0YWJsZS4gIChJJ3ZlIGhhZCB0
+byBkbwp0aGF0IG9uIG9uZSBvZiBteSBib2FyZHMgaGVyZSB0byBnZXQgc3RhYmxlIHNlcmlhbCBv
+dXRwdXQpLgoKQ2hlZXJzLApnLgoKCi0tIApHcmFudCBMaWtlbHksIEIuU2MuLCBQLkVuZy4KU2Vj
+cmV0IExhYiBUZWNobm9sb2dpZXMgTHRkLgpncmFudC5saWtlbHlAc2VjcmV0bGFiLmNhCig0MDMp
+IDM5OS0wMTk1Cg==
