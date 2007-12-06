@@ -1,10 +1,23 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 06 Dec 2007 19:11:38 +1100
-Subject: [RFC/PATCH 10/10] powerpc: Clear pci_probe_only on 64 bits PowerMac
-In-Reply-To: <1196928690.864849.322811660859.qpush@grosgo>
-Message-Id: <20071206081249.94627DE5F2@ozlabs.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from vervifontaine.sonycom.com (vervifontaine.sonytel.be
+	[80.88.33.193]) by ozlabs.org (Postfix) with ESMTP id 2420EDE988
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 19:13:15 +1100 (EST)
+Date: Thu, 6 Dec 2007 09:13:04 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
+	resources
+In-Reply-To: <1196927934.7033.39.camel@pasglop>
+Message-ID: <Pine.LNX.4.62.0712060910160.9929@pademelon.sonytel.be>
+References: <20071205064116.D849BDE10A@ozlabs.org>
+	<1196911347.7033.15.camel@pasglop>
+	<20071206063940.GA16474@kroah.com> <1196927934.7033.39.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Greg KH <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,27 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It should now be safe to re-assign unassigned resources on 64 bits PowerMac
-machines (G5s). This clears pci_probe_only on those.
+On Thu, 6 Dec 2007, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-12-05 at 22:39 -0800, Greg KH wrote:
+> > > that is  it can be either unsigned int, unsigned long or unsigned
+> > long
+> > > long... and we have no way to reliably printk that.
+> > 
+> > We do this already just fine.  Take a look in the kernel, I think we
+> > just always cast it to long long to be uniform.
+> 
+> I wanted to avoid that for two reasons:
+> 
+>  - casts are fugly
+>  - it adds support code to cast & handle 64 bits to 32 bits platforms
+>    that wouldn't normally need it
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Indeed. I still have a few places to fix it up in the Zorro bus code and
+drivers. Everything is 32 bit, but allyesconfig sets CONFIG_RESOURCES_64BIT...
+In some way I liked the recent suggestion to make CONFIG_RESOURCES_64BIT
+depend on something...
 
- arch/powerpc/platforms/powermac/pci.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Now, if you really think that's the way to go, I'll respin with casts
+> (I've used cast in subsequent patches merging bits & pieces of the
+> powerpc 32 and 64 bits PCI code too in fact).
 
-Index: linux-work/arch/powerpc/platforms/powermac/pci.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/pci.c	2007-12-06 18:50:37.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/pci.c	2007-12-06 18:51:33.000000000 +1100
-@@ -1041,8 +1041,8 @@ void __init pmac_pci_init(void)
- 	}
- 	/* pmac_check_ht_link(); */
- 
--	/* Tell pci.c to not use the common resource allocation mechanism */
--	pci_probe_only = 1;
-+	/* We can allocate missing resources if any */
-+	pci_probe_only = 0;
- 
- #else /* CONFIG_PPC64 */
- 	init_p2pbridge();
+And casting to `unsigned long' for Zorro bus may sound fine, except what if
+one day we'll need 64-bit resources for one platform?
+
+> I was just hoping somebody had a better idea, like a way to add a new
+> format specifier to printk without losing gcc type checking :-)
+
+#define PRI* (...) ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
