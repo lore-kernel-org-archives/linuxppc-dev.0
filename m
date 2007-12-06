@@ -1,23 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 37E2DDDF3F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 05:27:13 +1100 (EST)
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] IB/ehca: Serialize HCA-related hCalls on POWER5
-References: <200712061607.20004.fenkes@de.ibm.com>
-	<200712061648.24806.arnd@arndb.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 06 Dec 2007 10:27:09 -0800
-In-Reply-To: <200712061648.24806.arnd@arndb.de> (Arnd Bergmann's message of
-	"Thu, 6 Dec 2007 16:48:23 +0100")
-Message-ID: <ada7ijrd6gy.fsf@cisco.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id A93DCDDF79
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 05:29:00 +1100 (EST)
+Date: Thu, 6 Dec 2007 12:33:19 -0600
+From: Olof Johansson <olof@lixom.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 07/19] [POWERPC] iSeries: unindent and clean
+	iSeries_pci_final_fixup
+Message-ID: <20071206183319.GA9949@lixom.net>
+References: <20071206180045.0eb1db98.sfr@canb.auug.org.au>
+	<20071207015148.917436cc.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-	OF-EWG <ewg@lists.openfabrics.org>, linuxppc-dev@ozlabs.org,
-	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-	OF-General <general@lists.openfabrics.org>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071207015148.917436cc.sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > > +               ehca_lock_hcalls = !(cur_cpu_spec->cpu_user_features
- > > +                                    & PPC_FEATURE_ARCH_2_05);
+On Fri, Dec 07, 2007 at 01:51:48AM +1100, Stephen Rothwell wrote:
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/platforms/iseries/pci.c |   68 +++++++++++++++++----------------
+>  1 files changed, 35 insertions(+), 33 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
+> index cff832a..8e2ac3d 100644
+> --- a/arch/powerpc/platforms/iseries/pci.c
+> +++ b/arch/powerpc/platforms/iseries/pci.c
+> @@ -177,47 +177,49 @@ void __init iSeries_pci_final_fixup(void)
+>  
+>  	printk("pcibios_final_fixup\n");
+>  	for_each_pci_dev(pdev) {
+> +		struct pci_dn *pdn;
+> +		const u32 *agent;
+> +
+>  		node = find_device_node(pdev->bus->number, pdev->devfn);
+>  		printk("pci dev %p (%x.%x), node %p\n", pdev,
+>  		       pdev->bus->number, pdev->devfn, node);
+> +		if (!node) {
+> +			printk("PCI: Device Tree not found for 0x%016lX\n",
+> +					(unsigned long)pdev);
 
- > We already talked about this yesterday, but I still feel that checking the
- > instruction set of the CPU should not be used to determine whether a
- > specific device driver implementation is used int hypervisor.
+Hi,
 
-I had the same reaction... is testing cpu_user_features really the
-best way to detect this issue?
+Care to add KERN_ levels, while you're touching it? (both printks above
+lack them).
 
-I'll hold off applying this for a few days so you guys can decide the
-best thing to do.  We'll definitely get some fix into 2.6.24 but we
-have time to make a good decision.
 
- > Regarding the performance problem, have you checked whether converting all
- > your spin_lock_irqsave to spin_lock/spin_lock_irq improves your performance
- > on the older machines? Maybe it's already fast enough that way.
-
-It does seem that the only places that the hcall_lock is taken also
-use msleep, so they must always be in process context.  So you can
-safely just use spin_lock(), right?
-
- - R.
+-Olof
