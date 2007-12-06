@@ -1,24 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54E5ADDF5F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 08:50:26 +1100 (EST)
-Message-ID: <47581F7D.1040102@freescale.com>
-Date: Thu, 06 Dec 2007 10:12:45 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <kumar.gala@freescale.com>
-Subject: Re: [PATCH v2] qe: add ability to upload QE firmware
-References: <11968944871776-git-send-email-timur@freescale.com>
-	<200712061631.19485.arnd@arndb.de> <4758193B.5080707@freescale.com>
-	<200712061658.08791.arnd@arndb.de> <47581C58.8060906@freescale.com>
-	<7245C82C-BCFC-4E38-8685-8C17B4300341@freescale.com>
-In-Reply-To: <7245C82C-BCFC-4E38-8685-8C17B4300341@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8BB79DDF04
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 09:21:43 +1100 (EST)
+Subject: Re: [PATCH 11/25] powerpc: 4xx PLB to PCI Express support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200712061026.57215.sr@denx.de>
+References: <20071206080120.B47DBDDF15@ozlabs.org>
+	<200712061026.57215.sr@denx.de>
+Content-Type: text/plain
+Date: Fri, 07 Dec 2007 09:21:26 +1100
+Message-Id: <1196979686.6599.1.camel@pasglop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: benh@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
 
-> When I wait you come up with a new version.. so I'm waiting to see if v3 
-> comes out :)
+> > +/* Check that the core has been initied and if not, do it */
+> > +static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+> > +{
+> > +	static int core_init;
+> > +	int count = -ENODEV;
+> > +
+> > +	if (core_init++)
+> > +		return 0;
+> > +
+> > +#ifdef CONFIG_44x
+> > +	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
+> > +		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
+> > +	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
+> > +		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
+> 
+> We need some runtime detection of the 440SPe revision here. There are boards 
+> out there (e.g. AMCC Yucca) which can be equipped with both PPC 
+> revisions. :-(
 
-Well, I guess I can't blame you for that. :-)
+Ah... crap ! Do you think we should put that in the boot wrapper and
+fixup the device-tree or should we put it in the PCIe code proper ?
 
-I think these patches are final:
+> > +#endif /* CONFIG_44x    */
+> > +#ifdef CONFIG_40x
+> > +	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+> > +		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
+> > +#endif
+> 
+> Why those #ifdef's? Just code-size reasons, since 40x and 44x will most likely 
+> never be built into one image? 
 
-[PATCH 1/2] qe: add function qe_clock_source (dated 12/3)
-[PATCH 2/2] ucc_geth: use rx-clock-name and tx-clock-name device tree properties 
-(dated 12/3)
-[PATCH v2] qe: add ability to upload QE firmware
+Code size... I know how keen embedded people are to keep their kernel
+small and as of today, you can't build 40x and 44x support in the same
+image, so I didn't want to be blamed for adding bloat in that case :-)
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Ben.
