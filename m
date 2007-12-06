@@ -1,18 +1,17 @@
 Return-Path: <sprasad@bivio.net>
 Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
-	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 5BCE4DDE03
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 12:09:20 +1100 (EST)
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 3F7CEDDDEE
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 12:17:42 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: Regarding MPC8641D
-Date: Wed, 5 Dec 2007 17:05:49 -0800
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A75D5@corpexc01.corp.networkrobots.com>
-In-Reply-To: <mailman.9.1196902804.16874.linuxppc-dev@ozlabs.org>
-References: <mailman.9.1196902804.16874.linuxppc-dev@ozlabs.org>
+Subject: RE: Regarding MPC8641D
+Date: Wed, 5 Dec 2007 17:14:11 -0800
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D7011A75DC@corpexc01.corp.networkrobots.com>
+References: <mailman.9.1196902804.16874.linuxppc-dev@ozlabs.org> 
 From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>
-Cc: rameshmrm@gmail.com
+To: <rameshmrm@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,6 +20,21 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+BTW... it is not true that core1 is idle when low memory offset mode is
+disabled. Taking core1 out of reset will enable core1 to start booting.
+These two are two different things.
+
+- Siva
+
+
+
+-----Original Message-----
+From: Siva Prasad=20
+Sent: Wednesday, December 05, 2007 5:06 PM
+To: 'linuxppc-dev@ozlabs.org'
+Cc: 'rameshmrm@gmail.com'
+Subject: Regarding MPC8641D
 
 Hi,
 
