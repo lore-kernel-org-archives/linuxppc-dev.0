@@ -1,19 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 8EA27DDE0A
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2007 22:51:30 +1100 (EST)
-Date: Thu, 6 Dec 2007 22:51:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH 8/10] powerpc: Merge PCI resource fixups
-Message-Id: <20071206225121.d5bc5685.sfr@canb.auug.org.au>
-In-Reply-To: <20071206081248.38101DE5B8@ozlabs.org>
-References: <1196928690.864849.322811660859.qpush@grosgo>
-	<20071206081248.38101DE5B8@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__6_Dec_2007_22_51_21_+1100_nm1WKBYJy0hLslyg"
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18263.58540.584289.779571@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Dec 2007 23:01:48 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,53 +16,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__6_Dec_2007_22_51_21_+1100_nm1WKBYJy0hLslyg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Linus,
 
-On Thu, 06 Dec 2007 19:11:36 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
->
-> @@ -316,19 +313,26 @@ void __devinit of_scan_bus(struct device
->  		dev =3D of_create_pci_dev(child, bus, devfn);
->  		if (!dev)
->  			continue;
-> -		DBG("dev header type: %x\n", dev->hdr_type);
-> +		DBG("    dev header type: %x\n", dev->hdr_type);
-> +	}
-> +
-> +	/* Ally all fixups */
-> +	pcibios_fixup_of_probed_bus(bus);
-> =20
-> +	/* Now scan child busses */
-> +	list_for_each_entry(dev, &bus->devices, bus_list) {
->  		if (dev->hdr_type =3D=3D PCI_HEADER_TYPE_BRIDGE ||
-> -		    dev->hdr_type =3D=3D PCI_HEADER_TYPE_CARDBUS)
-> -			of_scan_pci_bridge(child, dev);
-> +		    dev->hdr_type =3D=3D PCI_HEADER_TYPE_CARDBUS) {
-> +			struct device_node *child =3D pci_device_to_OF_node(dev);
-> +			if (dev)
-                            ^^^
-child?
+Please do
 
-> +				of_scan_pci_bridge(child, dev);
-> +		}
->  	}
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
---Signature=_Thu__6_Dec_2007_22_51_21_+1100_nm1WKBYJy0hLslyg
-Content-Type: application/pgp-signature
+There is one commit there that fixes a bug where some machines were
+incorrectly reporting over 50% hard irq time even when idle, and three
+commits that update defconfigs.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Thanks,
+Paul.
 
-iD8DBQFHV+I+TgG2atn1QN8RAgrTAJ4wMppnrVzUGFF7L3PaqtztyFicRACfSKBi
-2R/z6XXAwdYarxyFZJ3zrco=
-=Shjc
------END PGP SIGNATURE-----
+ arch/powerpc/configs/bamboo_defconfig        |   22 +--
+ arch/powerpc/configs/cell_defconfig          |  176 ++++++++++++---------
+ arch/powerpc/configs/celleb_defconfig        |  170 +++++++++++---------
+ arch/powerpc/configs/chrp32_defconfig        |  163 +++++++++++---------
+ arch/powerpc/configs/ebony_defconfig         |   25 +--
+ arch/powerpc/configs/ep88xc_defconfig        |   92 +++++------
+ arch/powerpc/configs/g5_defconfig            |  150 ++++++++++--------
+ arch/powerpc/configs/holly_defconfig         |  136 +++++++++-------
+ arch/powerpc/configs/iseries_defconfig       |  123 ++++++++-------
+ arch/powerpc/configs/kilauea_defconfig       |   79 ++++-----
+ arch/powerpc/configs/linkstation_defconfig   |  152 ++++++++++--------
+ arch/powerpc/configs/lite5200_defconfig      |  119 +++++++-------
+ arch/powerpc/configs/maple_defconfig         |  126 ++++++++-------
+ arch/powerpc/configs/mpc7448_hpc2_defconfig  |  137 +++++++++-------
+ arch/powerpc/configs/mpc8272_ads_defconfig   |  106 +++++++------
+ arch/powerpc/configs/mpc8313_rdb_defconfig   |  173 ++++++++++-----------
+ arch/powerpc/configs/mpc832x_mds_defconfig   |  155 +++++++++----------
+ arch/powerpc/configs/mpc832x_rdb_defconfig   |  167 ++++++++++----------
+ arch/powerpc/configs/mpc834x_itx_defconfig   |  156 +++++++++----------
+ arch/powerpc/configs/mpc834x_itxgp_defconfig |  161 ++++++++++---------
+ arch/powerpc/configs/mpc834x_mds_defconfig   |  149 +++++++++---------
+ arch/powerpc/configs/mpc836x_mds_defconfig   |  155 +++++++++----------
+ arch/powerpc/configs/mpc8540_ads_defconfig   |  101 ++++++------
+ arch/powerpc/configs/mpc8544_ds_defconfig    |  130 ++++++++--------
+ arch/powerpc/configs/mpc8560_ads_defconfig   |  104 ++++++------
+ arch/powerpc/configs/mpc8568mds_defconfig    |  161 ++++++++++---------
+ arch/powerpc/configs/mpc8572_ds_defconfig    |  130 ++++++++--------
+ arch/powerpc/configs/mpc85xx_cds_defconfig   |  126 ++++++++-------
+ arch/powerpc/configs/mpc8610_hpcd_defconfig  |  114 ++++++--------
+ arch/powerpc/configs/mpc8641_hpcn_defconfig  |  131 ++++++++--------
+ arch/powerpc/configs/mpc866_ads_defconfig    |  107 ++++++-------
+ arch/powerpc/configs/mpc885_ads_defconfig    |   98 ++++++------
+ arch/powerpc/configs/pasemi_defconfig        |    8 +
+ arch/powerpc/configs/pmac32_defconfig        |  217 ++++++++++++++++----------
+ arch/powerpc/configs/ppc64_defconfig         |    9 +
+ arch/powerpc/configs/pq2fads_defconfig       |  148 +++++++++++-------
+ arch/powerpc/configs/prpmc2800_defconfig     |  150 +++++++++---------
+ arch/powerpc/configs/ps3_defconfig           |  177 +++++++++++----------
+ arch/powerpc/configs/pseries_defconfig       |  156 ++++++++++---------
+ arch/powerpc/configs/sequoia_defconfig       |  111 +++++++------
+ arch/powerpc/configs/walnut_defconfig        |   22 +--
+ arch/powerpc/kernel/process.c                |    2 
+ include/asm-powerpc/time.h                   |    8 -
+ 43 files changed, 2650 insertions(+), 2452 deletions(-)
 
---Signature=_Thu__6_Dec_2007_22_51_21_+1100_nm1WKBYJy0hLslyg--
+Geoff Levand (1):
+      [POWERPC] PS3: Update ps3_defconfig
+
+Paul Mackerras (1):
+      [POWERPC] Update defconfigs
+
+Stephen Rothwell (1):
+      [POWERPC] Update iseries_defconfig
+
+Tony Breeds (1):
+      [POWERPC] Fix hardware IRQ time accounting problem.
