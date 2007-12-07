@@ -1,16 +1,16 @@
 Return-Path: <b04825@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B4BB8DDDF2
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 02:32:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id ADE2BDDDFF
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 02:44:07 +1100 (EST)
 From: Timur Tabi <timur@freescale.com>
 To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH v4] qe: add ability to upload QE firmware
-Date: Fri,  7 Dec 2007 09:32:09 -0600
-Message-Id: <1197041529242-git-send-email-timur@freescale.com>
+Subject: [PATCH v5] qe: add ability to upload QE firmware
+Date: Fri,  7 Dec 2007 09:43:53 -0600
+Message-Id: <11970422334145-git-send-email-timur@freescale.com>
 Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,7 +30,7 @@ QE firmware node to booting-without-of.txt.
 Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
 
-Fixed mismatch between code and documentation in booting-without-of.txt.
+Argh, another booting-without-of.txt fix.  There are 8 virtual traps, not 16.
 
 This patch is for Kumar's for-2.6.25 branch.  This code is necessary for
 my QE UART driver.
@@ -57,7 +57,7 @@ index 94a3c57..3be84aa 100644
 +	- describes the layout of firmware binaries for the Freescale QUICC
 +	  Engine and the code that parses and uploads the microcode therein.
 diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index e9a3cb1..6546b81 100644
+index e9a3cb1..8b27711 100644
 --- a/Documentation/powerpc/booting-without-of.txt
 +++ b/Documentation/powerpc/booting-without-of.txt
 @@ -52,7 +52,10 @@ Table of Contents
@@ -92,14 +92,14 @@ index e9a3cb1..6546b81 100644
 +			   firmware binary.  It is a 64-bit number represented
 +			   as an array of two 32-bit numbers.
 +	 - virtual_traps: The virtual traps, taken from the firmware binary.
-+			  It is an array of 16 32-bit numbers.
++			  It is an array of 8 32-bit numbers.
 +
 +	 Example:
 +
 +		firmware {
 +			id = "Soft-UART";
 +			extended_modes = <0 0>;
-+			virtual_traps = <0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0>;
++			virtual_traps = <0 0 0 0 0 0 0 0>;
 +		}
 +
     j) CFI or JEDEC memory-mapped NOR flash
