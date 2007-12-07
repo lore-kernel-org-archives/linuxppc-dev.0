@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Dec 2007 18:08:03 +1100
+Date: Fri, 7 Dec 2007 18:08:20 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: dtc: Allow gcc format warnings for check_msg()
-Message-ID: <20071207070803.GF566@localhost.localdomain>
+Subject: dtc: Fix silly typo in dtc-checkfails.sh
+Message-ID: <20071207070820.GG566@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,25 +16,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-check_msg() takes printf() like arguments, so tell gcc to produce
-printf() like warnings for it.
+Too much C coding makes for dumb errors in shell.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/checks.c
+Index: dtc/tests/dtc-checkfails.sh
 ===================================================================
---- dtc.orig/checks.c	2007-12-07 17:10:23.000000000 +1100
-+++ dtc/checks.c	2007-12-07 17:13:16.000000000 +1100
-@@ -87,6 +87,9 @@ struct check {
- #define BATCH_CHECK(nm, lvl, ...) \
- 	CHECK(nm, NULL, NULL, NULL, NULL, lvl, __VA_ARGS__)
+--- dtc.orig/tests/dtc-checkfails.sh	2007-12-07 17:14:52.000000000 +1100
++++ dtc/tests/dtc-checkfails.sh	2007-12-07 17:15:21.000000000 +1100
+@@ -23,7 +23,7 @@ fi
  
-+#ifdef __GNUC__
-+static inline void check_msg(struct check *c, const char *fmt, ...) __attribute__((format (printf, 2, 3)));
-+#endif
- static inline void check_msg(struct check *c, const char *fmt, ...)
- {
- 	va_list ap;
+ for c in $CHECKS; do
+     if ! grep -E "^(ERROR)|(Warning) \($c\):" $LOG > /dev/null; then
+-	FAIL "Failed to trigger check \"%c\""
++	FAIL "Failed to trigger check \"$c\""
+     fi
+ done
+ 
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
