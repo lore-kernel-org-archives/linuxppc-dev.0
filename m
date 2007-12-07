@@ -1,19 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4E315DDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 17:55:56 +1100 (EST)
-Received: from ash.ozlabs.ibm.com (bh02i525f01.au.ibm.com [202.81.18.30])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by smtps.tip.net.au (Postfix) with ESMTP id 129AB368006
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 17:55:56 +1100 (EST)
-Date: Fri, 7 Dec 2007 17:55:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] [POWERPC] eeh: avoid a possible NULL pointer dereference
-Message-Id: <20071207175551.df0d7779.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <SRS0=99Ew=Q6=denx.de=sr@srs.kundenserver.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id C2599DDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 18:02:14 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 11/25] powerpc: 4xx PLB to PCI Express support
+Date: Fri, 7 Dec 2007 08:02:00 +0100
+References: <20071206080120.B47DBDDF15@ozlabs.org>
+	<200712061026.57215.sr@denx.de> <1196979686.6599.1.camel@pasglop>
+In-Reply-To: <1196979686.6599.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200712070802.01126.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 06 December 2007, Benjamin Herrenschmidt wrote:
+> > > +/* Check that the core has been initied and if not, do it */
+> > > +static int __init ppc4xx_pciex_check_core_init(struct device_node *np)
+> > > +{
+> > > +	static int core_init;
+> > > +	int count = -ENODEV;
+> > > +
+> > > +	if (core_init++)
+> > > +		return 0;
+> > > +
+> > > +#ifdef CONFIG_44x
+> > > +	if (of_device_is_compatible(np, "ibm,plb-pciex-440speA"))
+> > > +		ppc4xx_pciex_hwops = &ppc440speA_pcie_hwops;
+> > > +	else if (of_device_is_compatible(np, "ibm,plb-pciex-440speB"))
+> > > +		ppc4xx_pciex_hwops = &ppc440speB_pcie_hwops;
+> >
+> > We need some runtime detection of the 440SPe revision here. There are
+> > boards out there (e.g. AMCC Yucca) which can be equipped with both PPC
+> > revisions. :-(
+>
+> Ah... crap ! Do you think we should put that in the boot wrapper and
+> fixup the device-tree or should we put it in the PCIe code proper ?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/platforms/pseries/eeh_driver.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+How about this: We change the compatible node to "plb-pciex-440spe" 
+(without "A" and "B) and make a PVR runtime detection in the 4xx-pci driver.
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 06b89b5..68ea5ee 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -310,8 +310,6 @@ struct pci_dn * handle_eeh_events (struct eeh_event *event)
- 	const char *location, *pci_str, *drv_str;
- 
- 	frozen_dn = find_device_pe(event->dn);
--	frozen_bus = pcibios_find_pci_bus(frozen_dn);
--
- 	if (!frozen_dn) {
- 
- 		location = of_get_property(event->dn, "ibm,loc-code", NULL);
-@@ -321,6 +319,8 @@ struct pci_dn * handle_eeh_events (struct eeh_event *event)
- 		        location, pci_name(event->dev));
- 		return NULL;
- 	}
-+
-+	frozen_bus = pcibios_find_pci_bus(frozen_dn);
- 	location = of_get_property(frozen_dn, "ibm,loc-code", NULL);
- 	location = location ? location : "unknown";
- 
--- 
-1.5.3.7
+What do you think? Should I prepare a patch for this?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > > +#endif /* CONFIG_44x    */
+> > > +#ifdef CONFIG_40x
+> > > +	if (of_device_is_compatible(np, "ibm,plb-pciex-405ex"))
+> > > +		ppc4xx_pciex_hwops = &ppc405ex_pcie_hwops;
+> > > +#endif
+> >
+> > Why those #ifdef's? Just code-size reasons, since 40x and 44x will most
+> > likely never be built into one image?
+>
+> Code size... I know how keen embedded people are to keep their kernel
+> small and as of today, you can't build 40x and 44x support in the same
+> image, so I didn't want to be blamed for adding bloat in that case :-)
+
+Ok. Thanks.
+
+Best regards,
+Stefan
