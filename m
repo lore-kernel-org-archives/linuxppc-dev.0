@@ -1,11 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 7 Dec 2007 13:01:30 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH] add MPC837x MDS board default device tree
+Message-ID: <20071207020130.GA26412@localhost.localdomain>
+References: <1196851073-11801-1-git-send-email-leoli@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <18264.39946.115015.191506@cargo.ozlabs.ibm.com>
-Date: Fri, 7 Dec 2007 12:04:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
+In-Reply-To: <1196851073-11801-1-git-send-email-leoli@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,80 +18,99 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Wed, Dec 05, 2007 at 06:37:53PM +0800, Li Yang wrote:
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Update SATA nodes; remove serdes nodes; add aliases and labels.
+> 
+>  arch/powerpc/boot/dts/mpc8377_mds.dts |  270 +++++++++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/mpc8378_mds.dts |  256 +++++++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/mpc8379_mds.dts |  284 +++++++++++++++++++++++++++++++++
+>  3 files changed, 810 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
+>  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
+>  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
+> new file mode 100644
+> index 0000000..919ffd0
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
+[snip]
+> +	aliases {
+> +		ethernet0 = "/soc@e0000000/ethernet@24000";
+> +		ethernet1 = "/soc@e0000000/ethernet@25000";
+> +		serial0 = "/soc@e0000000/serial@4500";
+> +		serial1 = "/soc@e0000000/serial@4600";
+> +		pci0 = "/pci@e0008500";
 
-I have added another commit to my powerpc.git tree merge branch, so
-please do:
+You can use path references for these now.
 
-git pull \
-master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> +	};
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,837x@0 {
 
-(the mirroring seems to be slow today).
+This should absolutely not have a "x" in it.  Either have an exact
+model, or just use "cpu@9" (in which case you can put the model in
+"compatible").
 
-The diffstat and log below reflect the new commit plus the 4 in my
-last pull request.
+[snip]
+> +		i2c@3000 {
+> +			device_type = "i2c";
 
-Thanks,
-Paul.
+Drop the device_type.  No "i2c" device_type class is defined.
 
- arch/powerpc/configs/bamboo_defconfig            |   22 +-
- arch/powerpc/configs/cell_defconfig              |  176 ++++++++++--------
- arch/powerpc/configs/celleb_defconfig            |  170 +++++++++--------
- arch/powerpc/configs/chrp32_defconfig            |  163 +++++++++--------
- arch/powerpc/configs/ebony_defconfig             |   25 +--
- arch/powerpc/configs/ep88xc_defconfig            |   92 +++++----
- arch/powerpc/configs/g5_defconfig                |  150 ++++++++-------
- arch/powerpc/configs/holly_defconfig             |  136 +++++++-------
- arch/powerpc/configs/iseries_defconfig           |  123 ++++++------
- arch/powerpc/configs/kilauea_defconfig           |   79 +++-----
- arch/powerpc/configs/linkstation_defconfig       |  152 ++++++++-------
- arch/powerpc/configs/lite5200_defconfig          |  119 ++++++------
- arch/powerpc/configs/maple_defconfig             |  126 ++++++-------
- arch/powerpc/configs/mpc7448_hpc2_defconfig      |  137 +++++++-------
- arch/powerpc/configs/mpc8272_ads_defconfig       |  106 ++++++-----
- arch/powerpc/configs/mpc8313_rdb_defconfig       |  173 +++++++++---------
- arch/powerpc/configs/mpc832x_mds_defconfig       |  155 ++++++++--------
- arch/powerpc/configs/mpc832x_rdb_defconfig       |  167 ++++++++---------
- arch/powerpc/configs/mpc834x_itx_defconfig       |  156 ++++++++--------
- arch/powerpc/configs/mpc834x_itxgp_defconfig     |  161 +++++++++-------
- arch/powerpc/configs/mpc834x_mds_defconfig       |  149 +++++++--------
- arch/powerpc/configs/mpc836x_mds_defconfig       |  155 ++++++++--------
- arch/powerpc/configs/mpc8540_ads_defconfig       |  101 +++++-----
- arch/powerpc/configs/mpc8544_ds_defconfig        |  130 +++++++------
- arch/powerpc/configs/mpc8560_ads_defconfig       |  104 +++++------
- arch/powerpc/configs/mpc8568mds_defconfig        |  161 ++++++++--------
- arch/powerpc/configs/mpc8572_ds_defconfig        |  130 +++++++------
- arch/powerpc/configs/mpc85xx_cds_defconfig       |  126 ++++++-------
- arch/powerpc/configs/mpc8610_hpcd_defconfig      |  114 +++++-------
- arch/powerpc/configs/mpc8641_hpcn_defconfig      |  131 +++++++------
- arch/powerpc/configs/mpc866_ads_defconfig        |  107 +++++------
- arch/powerpc/configs/mpc885_ads_defconfig        |   98 +++++-----
- arch/powerpc/configs/pasemi_defconfig            |    8 +
- arch/powerpc/configs/pmac32_defconfig            |  217 ++++++++++++++--------
- arch/powerpc/configs/ppc64_defconfig             |    9 +
- arch/powerpc/configs/pq2fads_defconfig           |  148 +++++++++------
- arch/powerpc/configs/prpmc2800_defconfig         |  150 ++++++++-------
- arch/powerpc/configs/ps3_defconfig               |  177 +++++++++---------
- arch/powerpc/configs/pseries_defconfig           |  156 +++++++++-------
- arch/powerpc/configs/sequoia_defconfig           |  111 ++++++-----
- arch/powerpc/configs/walnut_defconfig            |   22 +-
- arch/powerpc/kernel/process.c                    |    2 
- arch/ppc/platforms/4xx/xparameters/xparameters.h |    8 +
- arch/ppc/syslib/virtex_devices.c                 |    8 -
- include/asm-powerpc/time.h                       |    8 -
- 45 files changed, 2662 insertions(+), 2456 deletions(-)
+[snip]
+> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+> +		usb@23000 {
+> +			device_type = "usb";
 
-Geoff Levand (1):
-      [POWERPC] PS3: Update ps3_defconfig
+Drop device_type here too.
 
-Grant Likely (1):
-      [POWERPC] virtex bug fix: Use canonical value for AC97 interrupt xparams
+> +			compatible = "fsl-usb2-dr";
+> +			reg = <23000 1000>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			interrupt-parent = < &ipic >;
+> +			interrupts = <26 8>;
+> +			phy_type = "utmi_wide";
+> +		};
+> +
+> +		mdio@24520 {
+> +			device_type = "mdio";
+> +			compatible = "gianfar";
 
-Paul Mackerras (1):
-      [POWERPC] Update defconfigs
+Grr... not your fault, but this crap in the gianfar driver where it
+uses the same compatible property for the mdio and MAC has to be
+fixed.
 
-Stephen Rothwell (1):
-      [POWERPC] Update iseries_defconfig
+[snip]
 
-Tony Breeds (1):
-      [POWERPC] Fix hardware IRQ time accounting problem.
+> +		serial1:serial@4600 {
+
+Standard style puts a space after the colon.
+
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4600 100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <a 8>;
+> +			interrupt-parent = < &ipic >;
+> +		};
+> +
+> +		crypto@30000 {
+> +			model = "SEC3";
+> +			compatible = "talitos";
+
+This driver, also, needs fixing to recognize a better formatted
+compatible property.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
