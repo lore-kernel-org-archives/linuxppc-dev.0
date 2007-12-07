@@ -1,24 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from bombadil.infradead.org (bombadil.infradead.org [18.85.46.34])
+Return-Path: <timur@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC62CDDDEF
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 11:58:10 +1100 (EST)
-Date: Thu, 6 Dec 2007 17:00:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] pci: Fix bus resource assignment on 32 bits with 64b
-	resources
-Message-ID: <20071207010001.GA23575@kroah.com>
-References: <20071205064116.D849BDE10A@ozlabs.org>
-	<1196911347.7033.15.camel@pasglop>
-	<20071206063940.GA16474@kroah.com>
-	<1196927934.7033.39.camel@pasglop>
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7E9D3DDDD6
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 12:29:38 +1100 (EST)
+Message-ID: <4758A27F.7030601@freescale.com>
+Date: Thu, 06 Dec 2007 19:31:43 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196927934.7033.39.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org
+To: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Re: MPC85xx DMA drivers, first testing results.
+References: <47586E72.3050106@anagramm.de>
+In-Reply-To: <47586E72.3050106@anagramm.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,28 +25,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 06, 2007 at 06:58:54PM +1100, Benjamin Herrenschmidt wrote:
+Clemens Koller wrote:
+> Hi There!
 > 
-> On Wed, 2007-12-05 at 22:39 -0800, Greg KH wrote:
-> > > that is  it can be either unsigned int, unsigned long or unsigned
-> > long
-> > > long... and we have no way to reliably printk that.
-> > 
-> > We do this already just fine.  Take a look in the kernel, I think we
-> > just always cast it to long long to be uniform.
+> I just tried to use the fsldma on the mpc8540. It seems to work fine
+> here, but I would be glad if somebody can confirm before I move on:
 > 
-> I wanted to avoid that for two reasons:
+> I added the following to my mpc8540ads compatible board's .dts
+> (see my comments, where the not yet available documentation
+> was unclear):
 > 
->  - casts are fugly
->  - it adds support code to cast & handle 64 bits to 32 bits platforms
->    that wouldn't normally need it
+> dma@21000 {
+>          #address-cells = <1>;
+>          #size-cells = <1>;
+>          compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
+>          device-id = <0>;
+>          reg = <21300 4>;        /* DGSR - DMA general status register */
+>          /* reg = <21000 4>;*/   /* or use offset of DMA machine ??? */
+>          ranges = <0 21100 200>; /* we have 4 DMA channels at 21100, size=80 each */
+>          dma-channel@0 {
+>                  compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
+>                  device-id = <0>; /* or cell-index ??? */
+>                  reg = <0 80>;
+>                  interrupt-parent = <&mpic>;
+>                  interrupts = <14 2>;
+>          };
 
-But that is how we already handle this today, in numerous places in the
-kernel for this very type.
+Do this:
 
-So, you can disagree that this is what we need to do, and if so, feel
-free to fix up a whole lot of files in the tree :)
+                 dma@21300 {
+                         #address-cells = <1>;
+                         #size-cells = <1>;
+                         compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
+                         cell-index = <0>;
+                         reg = <21300 4>; /* DMA general status register */
+                         ranges = <0 21100 200>;
 
-thanks,
+                         dma-channel@0 {
+                                 compatible = "fsl,mpc8540-dma-channel", 
+"fsl,eloplus-dma-channel";
+                                 cell-index = <0>;
+                                 reg = <0 80>;
+                                 interrupt-parent = <&mpic>;
+                                 interrupts = <14 2>;
+                         };
 
-greg k-h
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
