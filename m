@@ -1,13 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 7 Dec 2007 13:01:30 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] add MPC837x MDS board default device tree
-Message-ID: <20071207020130.GA26412@localhost.localdomain>
-References: <1196851073-11801-1-git-send-email-leoli@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1196851073-11801-1-git-send-email-leoli@freescale.com>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C75E5DDDFB
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 13:22:15 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB72MAf9016356
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 21:22:10 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
+	lB72MARV418082
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 21:22:10 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	lB72M9iL008543
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 21:22:09 -0500
+Date: Thu, 6 Dec 2007 20:19:13 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 8/25] powerpc: Improve support for 4xx indirect DCRs
+Message-ID: <20071206201913.498185e6@zod.rchland.ibm.com>
+In-Reply-To: <20071206080117.754FEDDE45@ozlabs.org>
+References: <1196927999.714593.205329520306.qpush@grosgo>
+	<20071206080117.754FEDDE45@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,99 +35,189 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Dec 05, 2007 at 06:37:53PM +0800, Li Yang wrote:
-> Signed-off-by: Li Yang <leoli@freescale.com>
+On Thu, 06 Dec 2007 19:00:06 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> Accessing indirect DCRs is done via a pair of address/data DCRs.
+> 
+> Such accesses are thus inherently racy, vs. interrupts, preemption
+> and possibly SMP if 4xx SMP cores are ever used.
+> 
+> This updates the mfdcri/mtdcri macros in dcr-native.h (which were
+> so far unused) to use a spinlock.
+> 
+> In addition, add some common definitions to a new dcr-regs.h file.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
-> Update SATA nodes; remove serdes nodes; add aliases and labels.
 > 
->  arch/powerpc/boot/dts/mpc8377_mds.dts |  270 +++++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8378_mds.dts |  256 +++++++++++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc8379_mds.dts |  284 +++++++++++++++++++++++++++++++++
->  3 files changed, 810 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/dts/mpc8377_mds.dts
->  create mode 100644 arch/powerpc/boot/dts/mpc8378_mds.dts
->  create mode 100644 arch/powerpc/boot/dts/mpc8379_mds.dts
 > 
-> diff --git a/arch/powerpc/boot/dts/mpc8377_mds.dts b/arch/powerpc/boot/dts/mpc8377_mds.dts
-> new file mode 100644
-> index 0000000..919ffd0
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/mpc8377_mds.dts
-[snip]
-> +	aliases {
-> +		ethernet0 = "/soc@e0000000/ethernet@24000";
-> +		ethernet1 = "/soc@e0000000/ethernet@25000";
-> +		serial0 = "/soc@e0000000/serial@4500";
-> +		serial1 = "/soc@e0000000/serial@4600";
-> +		pci0 = "/pci@e0008500";
-
-You can use path references for these now.
-
-> +	};
+>  arch/powerpc/sysdev/dcr.c        |    1 
+>  include/asm-powerpc/dcr-native.h |   30 +++++++++++-----
+>  include/asm-powerpc/dcr-regs.h   |   72 +++++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/dcr.h        |    1 
+>  4 files changed, 96 insertions(+), 8 deletions(-)
+> 
+> Index: linux-work/arch/powerpc/sysdev/dcr.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/sysdev/dcr.c	2007-11-28 13:34:45.000000000 +1100
+> +++ linux-work/arch/powerpc/sysdev/dcr.c	2007-11-28 13:34:48.000000000 +1100
+> @@ -139,3 +139,4 @@ void dcr_unmap(dcr_host_t host, unsigned
+>  EXPORT_SYMBOL_GPL(dcr_unmap);
+> 
+>  #endif /* !defined(CONFIG_PPC_DCR_NATIVE) */
 > +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
+
+Somehow I doubt this single extraneous whitespace addition is really
+needed.
+
+
+> Index: linux-work/include/asm-powerpc/dcr-native.h
+> ===================================================================
+> --- linux-work.orig/include/asm-powerpc/dcr-native.h	2007-11-28 13:33:51.000000000 +1100
+> +++ linux-work/include/asm-powerpc/dcr-native.h	2007-11-28 15:22:22.000000000 +1100
+> @@ -22,6 +22,8 @@
+>  #ifdef __KERNEL__
+>  #ifndef __ASSEMBLY__
+> 
+> +#include <linux/spinlock.h>
 > +
-> +		PowerPC,837x@0 {
-
-This should absolutely not have a "x" in it.  Either have an exact
-model, or just use "cpu@9" (in which case you can put the model in
-"compatible").
-
-[snip]
-> +		i2c@3000 {
-> +			device_type = "i2c";
-
-Drop the device_type.  No "i2c" device_type class is defined.
-
-[snip]
-> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
-> +		usb@23000 {
-> +			device_type = "usb";
-
-Drop device_type here too.
-
-> +			compatible = "fsl-usb2-dr";
-> +			reg = <23000 1000>;
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			interrupt-parent = < &ipic >;
-> +			interrupts = <26 8>;
-> +			phy_type = "utmi_wide";
-> +		};
+>  typedef struct {
+>  	unsigned int base;
+>  } dcr_host_t;
+> @@ -55,18 +57,30 @@ do {								\
+>  } while (0)
+> 
+>  /* R/W of indirect DCRs make use of standard naming conventions for DCRs */
+> -#define mfdcri(base, reg)			\
+> -({						\
+> -	mtdcr(base ## _CFGADDR, base ## _ ## reg);	\
+> -	mfdcr(base ## _CFGDATA);			\
+> +extern spinlock_t dcr_ind_lock;
 > +
-> +		mdio@24520 {
-> +			device_type = "mdio";
-> +			compatible = "gianfar";
-
-Grr... not your fault, but this crap in the gianfar driver where it
-uses the same compatible property for the mdio and MAC has to be
-fixed.
-
-[snip]
-
-> +		serial1:serial@4600 {
-
-Standard style puts a space after the colon.
-
-> +			device_type = "serial";
-> +			compatible = "ns16550";
-> +			reg = <4600 100>;
-> +			clock-frequency = <0>;
-> +			interrupts = <a 8>;
-> +			interrupt-parent = < &ipic >;
-> +		};
+> +#define mfdcri(base, reg)				\
+> +({							\
+> +	unsigned long flags; 				\
+> +	unsigned int val;				\
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+> +	val = mfdcr(DCRN_ ## base ## _CONFIG_DATA);	\
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+> +	val;						\
+>  })
+> 
+> -#define mtdcri(base, reg, data)			\
+> -do {						\
+> -	mtdcr(base ## _CFGADDR, base ## _ ## reg);	\
+> -	mtdcr(base ## _CFGDATA, data);		\
+> +#define mtdcri(base, reg, data)				\
+> +do {							\
+> +	unsigned long flags; 				\
+> +	spin_lock_irqsave(&dcr_ind_lock, flags);	\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_ADDR, reg);	\
+> +	mtdcr(DCRN_ ## base ## _CONFIG_DATA, data);	\
+> +	spin_unlock_irqrestore(&dcr_ind_lock, flags);	\
+>  } while (0)
+> 
 > +
-> +		crypto@30000 {
-> +			model = "SEC3";
-> +			compatible = "talitos";
+> +
 
-This driver, also, needs fixing to recognize a better formatted
-compatible property.
+More bogus whitespace.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+>  #endif /* __ASSEMBLY__ */
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_DCR_NATIVE_H */
+> Index: linux-work/include/asm-powerpc/dcr.h
+> ===================================================================
+> --- linux-work.orig/include/asm-powerpc/dcr.h	2007-11-28 13:40:13.000000000 +1100
+> +++ linux-work/include/asm-powerpc/dcr.h	2007-11-28 13:49:37.000000000 +1100
+> @@ -40,6 +40,7 @@ extern unsigned int dcr_resource_len(str
+>  				     unsigned int index);
+>  #endif /* CONFIG_PPC_MERGE */
+> 
+> +
+
+You really like whitespace.  Again I don't see anything needed for this
+file :)
+
+>  #endif /* CONFIG_PPC_DCR */
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_POWERPC_DCR_H */
+> Index: linux-work/include/asm-powerpc/dcr-regs.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-work/include/asm-powerpc/dcr-regs.h	2007-11-28 14:43:25.000000000 +1100
+> @@ -0,0 +1,72 @@
+> +/*
+> + * Common DCR / SDR / CPR register definitions used on various IBM/AMCC
+> + * 4xx processors
+> + *
+> + *    Copyright 2007 Benjamin Herrenschmidt, IBM Corp
+> + *                   <benh@kernel.crashing.org>
+> + *
+> + * Mostly lifted from asm-ppc/ibm4xx.h by
+> + *
+> + *    Copyright (c) 1999 Grant Erickson <grant@lcse.umn.edu>
+> + *
+> + */
+> +
+> +#ifndef __DCR_REGS_H__
+> +#define __DCR_REGS_H__
+> +
+> +/*
+> + * Most DCRs used for controlling devices such as the MAL, DMA engine,
+> + * etc... are obtained for the device tree.
+> + *
+> + * The definitions in this files are fixed DCRs and indirect DCRs that
+> + * are commonly used outside of specific drivers or refer to core
+> + * common registers that may occasionally have to be tweaked outside
+> + * of the driver main register set
+> + */
+> +
+> +/* CPRs (440GX and 440SP/440SPe) */
+> +#define DCRN_CPR0_CONFIG_ADDR	0xc
+> +#define DCRN_CPR0_CONFIG_DATA	0xd
+> +
+> +/* SDRs (440GX and 440SP/440SPe) */
+> +#define DCRN_SDR0_CONFIG_ADDR 	0xe
+> +#define DCRN_SDR0_CONFIG_DATA	0xf
+> +
+> +#define SDR0_PFC0		0x4100
+> +#define SDR0_PFC1		0x4101
+> +#define SDR0_PFC1_EPS		0x1c00000
+> +#define SDR0_PFC1_EPS_SHIFT	22
+> +#define SDR0_PFC1_RMII		0x02000000
+> +#define SDR0_MFR		0x4300
+> +#define SDR0_MFR_TAH0 		0x80000000  	/* TAHOE0 Enable */
+> +#define SDR0_MFR_TAH1 		0x40000000  	/* TAHOE1 Enable */
+> +#define SDR0_MFR_PCM  		0x10000000  	/* PPC440GP irq compat mode */
+> +#define SDR0_MFR_ECS  		0x08000000  	/* EMAC int clk */
+> +#define SDR0_MFR_T0TXFL		0x00080000
+> +#define SDR0_MFR_T0TXFH		0x00040000
+> +#define SDR0_MFR_T1TXFL		0x00020000
+> +#define SDR0_MFR_T1TXFH		0x00010000
+> +#define SDR0_MFR_E0TXFL		0x00008000
+> +#define SDR0_MFR_E0TXFH		0x00004000
+> +#define SDR0_MFR_E0RXFL		0x00002000
+> +#define SDR0_MFR_E0RXFH		0x00001000
+> +#define SDR0_MFR_E1TXFL		0x00000800
+> +#define SDR0_MFR_E1TXFH		0x00000400
+> +#define SDR0_MFR_E1RXFL		0x00000200
+> +#define SDR0_MFR_E1RXFH		0x00000100
+> +#define SDR0_MFR_E2TXFL		0x00000080
+> +#define SDR0_MFR_E2TXFH		0x00000040
+> +#define SDR0_MFR_E2RXFL		0x00000020
+> +#define SDR0_MFR_E2RXFH		0x00000010
+> +#define SDR0_MFR_E3TXFL		0x00000008
+> +#define SDR0_MFR_E3TXFH		0x00000004
+> +#define SDR0_MFR_E3RXFL		0x00000002
+> +#define SDR0_MFR_E3RXFH		0x00000001
+> +#define SDR0_UART0		0x0120
+> +#define SDR0_UART1		0x0121
+> +#define SDR0_UART2		0x0122
+> +#define SDR0_UART3		0x0123
+> +#define SDR0_CUST0		0x4000
+> +
+> +
+> +#endif /* __DCR_REGS_H__ */
