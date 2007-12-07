@@ -1,31 +1,19 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8EB57DDEF7
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 14:42:29 +1100 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id lB73gQLx011684
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 22:42:26 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.7) with ESMTP id
-	lB73gPvI127332
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 20:42:26 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	lB73gP5v018707
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Dec 2007 20:42:25 -0700
-Date: Thu, 6 Dec 2007 21:39:28 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: dtc: Reinstate full old-style reference-to-path for v0 dts files
-Message-ID: <20071206213928.1f6a2e1f@zod.rchland.ibm.com>
-In-Reply-To: <20071207033826.GD26412@localhost.localdomain>
-References: <20071207033826.GD26412@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp109.mail.mud.yahoo.com (smtp109.mail.mud.yahoo.com
+	[209.191.85.219]) by ozlabs.org (Postfix) with SMTP id 1B533DDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 15:13:59 +1100 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 1/3] POWERPC: don't cast a pointer to pointer of list_head
+Date: Fri, 7 Dec 2007 15:07:09 +1100
+References: <4757C1DA.6060603@cn.fujitsu.com>
+In-Reply-To: <4757C1DA.6060603@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200712071507.10161.nickpiggin@yahoo.com.au>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	paulus@samba.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,15 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 7 Dec 2007 14:38:26 +1100
-David Gibson <david@gibson.dropbear.id.au> wrote:
+On Thursday 06 December 2007 20:33, Li Zefan wrote:
+> The casting is safe only when the list_head member is the
+> first member of the structure.
 
-> Commit 7c44c2f9cb1cc2df7aacd13decfc4e64b73d1730 broke backwards
-> compatibility more badly than I realised.  Contrary to what I thought
-> there are in-kernel, in-use dts files which relied on
-> references-to-path with paths including a comma, which no longer
-> compile after that commit.
+Even so, I don't think too safe :) It might technically work,
+but it could break more easily.
 
-There won't be shortly.  I'm reworking them anyway.
+So even if you find places where list_head is the first member of
+a structure, it would be nice to explicitly use the list_head member
+and avoid casts IMO.
 
-josh
+Thanks,
+Nick
+
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>
+> ---
+>  arch/ppc/syslib/ocp.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/ppc/syslib/ocp.c b/arch/ppc/syslib/ocp.c
+> index 3f5be2c..d42d408 100644
+> --- a/arch/ppc/syslib/ocp.c
+> +++ b/arch/ppc/syslib/ocp.c
+> @@ -376,7 +376,7 @@ ocp_remove_one_device(unsigned int vendor, unsigned int
+> function, int index)
+>
+>  	down_write(&ocp_devices_sem);
+>  	dev = __ocp_find_device(vendor, function, index);
+> -	list_del((struct list_head *)dev);
+> +	list_del(&dev->link);
+>  	up_write(&ocp_devices_sem);
+>
+>  	DBG(("ocp: ocp_remove_one_device(vendor: %x, function: %x, index: %d)...
+> done.\n", vendor, function, index));
