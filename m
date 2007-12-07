@@ -1,21 +1,12 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7E9D3DDDD6
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2007 12:29:38 +1100 (EST)
-Message-ID: <4758A27F.7030601@freescale.com>
-Date: Thu, 06 Dec 2007 19:31:43 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: MPC85xx DMA drivers, first testing results.
-References: <47586E72.3050106@anagramm.de>
-In-Reply-To: <47586E72.3050106@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <18264.39946.115015.191506@cargo.ozlabs.ibm.com>
+Date: Fri, 7 Dec 2007 12:04:10 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +16,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Clemens Koller wrote:
-> Hi There!
-> 
-> I just tried to use the fsldma on the mpc8540. It seems to work fine
-> here, but I would be glad if somebody can confirm before I move on:
-> 
-> I added the following to my mpc8540ads compatible board's .dts
-> (see my comments, where the not yet available documentation
-> was unclear):
-> 
-> dma@21000 {
->          #address-cells = <1>;
->          #size-cells = <1>;
->          compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
->          device-id = <0>;
->          reg = <21300 4>;        /* DGSR - DMA general status register */
->          /* reg = <21000 4>;*/   /* or use offset of DMA machine ??? */
->          ranges = <0 21100 200>; /* we have 4 DMA channels at 21100, size=80 each */
->          dma-channel@0 {
->                  compatible = "fsl,mpc8540-dma-channel", "fsl,eloplus-dma-channel";
->                  device-id = <0>; /* or cell-index ??? */
->                  reg = <0 80>;
->                  interrupt-parent = <&mpic>;
->                  interrupts = <14 2>;
->          };
+Linus,
 
-Do this:
+I have added another commit to my powerpc.git tree merge branch, so
+please do:
 
-                 dma@21300 {
-                         #address-cells = <1>;
-                         #size-cells = <1>;
-                         compatible = "fsl,mpc8540-dma", "fsl,eloplus-dma";
-                         cell-index = <0>;
-                         reg = <21300 4>; /* DMA general status register */
-                         ranges = <0 21100 200>;
+git pull \
+master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-                         dma-channel@0 {
-                                 compatible = "fsl,mpc8540-dma-channel", 
-"fsl,eloplus-dma-channel";
-                                 cell-index = <0>;
-                                 reg = <0 80>;
-                                 interrupt-parent = <&mpic>;
-                                 interrupts = <14 2>;
-                         };
+(the mirroring seems to be slow today).
 
+The diffstat and log below reflect the new commit plus the 4 in my
+last pull request.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Thanks,
+Paul.
+
+ arch/powerpc/configs/bamboo_defconfig            |   22 +-
+ arch/powerpc/configs/cell_defconfig              |  176 ++++++++++--------
+ arch/powerpc/configs/celleb_defconfig            |  170 +++++++++--------
+ arch/powerpc/configs/chrp32_defconfig            |  163 +++++++++--------
+ arch/powerpc/configs/ebony_defconfig             |   25 +--
+ arch/powerpc/configs/ep88xc_defconfig            |   92 +++++----
+ arch/powerpc/configs/g5_defconfig                |  150 ++++++++-------
+ arch/powerpc/configs/holly_defconfig             |  136 +++++++-------
+ arch/powerpc/configs/iseries_defconfig           |  123 ++++++------
+ arch/powerpc/configs/kilauea_defconfig           |   79 +++-----
+ arch/powerpc/configs/linkstation_defconfig       |  152 ++++++++-------
+ arch/powerpc/configs/lite5200_defconfig          |  119 ++++++------
+ arch/powerpc/configs/maple_defconfig             |  126 ++++++-------
+ arch/powerpc/configs/mpc7448_hpc2_defconfig      |  137 +++++++-------
+ arch/powerpc/configs/mpc8272_ads_defconfig       |  106 ++++++-----
+ arch/powerpc/configs/mpc8313_rdb_defconfig       |  173 +++++++++---------
+ arch/powerpc/configs/mpc832x_mds_defconfig       |  155 ++++++++--------
+ arch/powerpc/configs/mpc832x_rdb_defconfig       |  167 ++++++++---------
+ arch/powerpc/configs/mpc834x_itx_defconfig       |  156 ++++++++--------
+ arch/powerpc/configs/mpc834x_itxgp_defconfig     |  161 +++++++++-------
+ arch/powerpc/configs/mpc834x_mds_defconfig       |  149 +++++++--------
+ arch/powerpc/configs/mpc836x_mds_defconfig       |  155 ++++++++--------
+ arch/powerpc/configs/mpc8540_ads_defconfig       |  101 +++++-----
+ arch/powerpc/configs/mpc8544_ds_defconfig        |  130 +++++++------
+ arch/powerpc/configs/mpc8560_ads_defconfig       |  104 +++++------
+ arch/powerpc/configs/mpc8568mds_defconfig        |  161 ++++++++--------
+ arch/powerpc/configs/mpc8572_ds_defconfig        |  130 +++++++------
+ arch/powerpc/configs/mpc85xx_cds_defconfig       |  126 ++++++-------
+ arch/powerpc/configs/mpc8610_hpcd_defconfig      |  114 +++++-------
+ arch/powerpc/configs/mpc8641_hpcn_defconfig      |  131 +++++++------
+ arch/powerpc/configs/mpc866_ads_defconfig        |  107 +++++------
+ arch/powerpc/configs/mpc885_ads_defconfig        |   98 +++++-----
+ arch/powerpc/configs/pasemi_defconfig            |    8 +
+ arch/powerpc/configs/pmac32_defconfig            |  217 ++++++++++++++--------
+ arch/powerpc/configs/ppc64_defconfig             |    9 +
+ arch/powerpc/configs/pq2fads_defconfig           |  148 +++++++++------
+ arch/powerpc/configs/prpmc2800_defconfig         |  150 ++++++++-------
+ arch/powerpc/configs/ps3_defconfig               |  177 +++++++++---------
+ arch/powerpc/configs/pseries_defconfig           |  156 +++++++++-------
+ arch/powerpc/configs/sequoia_defconfig           |  111 ++++++-----
+ arch/powerpc/configs/walnut_defconfig            |   22 +-
+ arch/powerpc/kernel/process.c                    |    2 
+ arch/ppc/platforms/4xx/xparameters/xparameters.h |    8 +
+ arch/ppc/syslib/virtex_devices.c                 |    8 -
+ include/asm-powerpc/time.h                       |    8 -
+ 45 files changed, 2662 insertions(+), 2456 deletions(-)
+
+Geoff Levand (1):
+      [POWERPC] PS3: Update ps3_defconfig
+
+Grant Likely (1):
+      [POWERPC] virtex bug fix: Use canonical value for AC97 interrupt xparams
+
+Paul Mackerras (1):
+      [POWERPC] Update defconfigs
+
+Stephen Rothwell (1):
+      [POWERPC] Update iseries_defconfig
+
+Tony Breeds (1):
+      [POWERPC] Fix hardware IRQ time accounting problem.
