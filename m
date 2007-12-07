@@ -1,22 +1,13 @@
-Return-Path: <rientjes@google.com>
-Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 46662DDE23
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 10:12:11 +1100 (EST)
-Date: Fri, 7 Dec 2007 15:11:18 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-In-Reply-To: <4759C89B.9000709@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.0.9999.0712071510370.27689@chino.kir.corp.google.com>
-References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-	<20071207221106.GH16824@localdomain>
-	<4759C89B.9000709@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 8 Dec 2007 10:22:42 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: dtc: Convert #address-cells and #size-cells related checks
+Message-ID: <20071207232242.GA2454@localhost.localdomain>
+References: <20071207030555.GB26412@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20071207030555.GB26412@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +17,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 8 Dec 2007, Balbir Singh wrote:
-
-> Yes, they all appear on node 0. We could have tweaks to distribute CPU's
-> as well.
+On Fri, Dec 07, 2007 at 02:05:55PM +1100, David Gibson wrote:
+> This patch converts checks related to #address-cells and #size-cells
+> to the new framework.  Specifically, it reimplements the check that
+> "reg" properties have a valid size based on the relevant
+> #address-cells and #size-cells values.  The new implementation uses
+> the correct default value, unlike the old-style check which assumed
+> the values were inherited by default.
 > 
+> It also implements a new, similar test for "ranges" properties.
+> 
+> Finally, since relying on the default values of these variables is
+> considered not-good-practice these days, it implements a "style" check
+> which will give a warning if the tree ever relies on the default
+> values (that is if any node with either "reg" or "ranges" appears
+> under a parent which has no #address-cells or #size-cells property).
 
-You're going to want to distribute the cpu's based on how they match up 
-physically with the actual platform that you're running on.  x86_64 does 
-this already and it makes fake NUMA more useful because it matches the 
-real-life case more often.
+Oops, that should, of course, be:
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
