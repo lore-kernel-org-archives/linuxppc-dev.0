@@ -1,22 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 35BADDDE39
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 08:58:54 +1100 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 91870DDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Dec 2007 09:01:45 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- balbir@linux.vnet.ibm.com
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Fake NUMA emulation for PowerPC
-Date: Fri, 7 Dec 2007 22:58:17 +0100
+Date: Fri, 7 Dec 2007 23:01:38 +0100
 References: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
-	<4759BCBA.7060800@linux.vnet.ibm.com>
-	<4759BE88.3020702@linux.vnet.ibm.com>
-In-Reply-To: <4759BE88.3020702@linux.vnet.ibm.com>
+In-Reply-To: <20071207211425.10223.91240.sendpatchset@balbir-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200712072258.19331.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	LKML <linux-kernel@vger.kernel.org>
+Message-Id: <200712072301.38723.arnd@arndb.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,27 +24,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Friday 07 December 2007, Balbir Singh wrote:
-> Balbir Singh wrote:
-> > Geert Uytterhoeven wrote:
-> >> On Sat, 8 Dec 2007, Balbir Singh wrote:
-> >>> +=A0=A0=A0if (strstr(p, "fake=3D"))
-> >>> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0cmdline =3D p + 5;=A0=A0=A0=A0=A0=
-=A0=A0=A0/* 5 is faster than strlen("fake=3D") */
-> >> Really? My gcc is smart enough to replace the `strlen("fake=3D")' by 5=
-, even
-> >> without -O.
-> >>
-> >=20
-> > Thanks for pointing that out, but I am surprised that a compiler would
-> > interpret library routines like strlen.
-> >=20
->=20
-> I just tested it and it turns out that you are right. I'll go hunt to
-> see where gcc gets its magic powers from.
->=20
+> Here's a dumb simple implementation of fake NUMA nodes for PowerPC. Fake
+> NUMA nodes can be specified using the following command line option
+> 
+> numa=fake=<node range>
+> 
+> node range is of the format <range1>,<range2>,...<rangeN>
 
-Even if it wasn't: Why the heck would you want to optimize this? The functi=
-on
-is run _once_ at boot time and the object code gets thrown away afterwards!
+Excellent idea! I'd love to have this in RHEL5u1, because that would make
+that distro boot on certain machines that have more memory than is supported
+without an iommu driver. The problem we have is that when you simply
+say mem=1G but all of the first gigabyte is on the first node, you end
+up with a memoryless node, which is not supported.
+
+Unfortunately, it comes too late for me now, as all new distros already boot
+on Cell machines that need an IOMMU.
 
 	Arnd <><
